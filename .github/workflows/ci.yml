@@ -41,6 +41,8 @@ jobs:
         run: npm ci
       - name: i18n parity (EN/AR)
         run: node ../../scripts/check-i18n.mjs
+      - name: Test
+        run: npm test
       - name: Build
         run: npm run build
       - name: Audit

@@ -1,0 +1,114 @@
+/*
+ * Reusable UI primitives and cross-cutting states (empty / loading / error /
+ * permission-denied). Built on tokens; light + dark + RTL come for free.
+ * WCAG 2.2 AA: visible focus, ≥36px targets, label-bearing controls.
+ */
+
+/* ============================ Buttons ============================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  block-size: 36px; padding-inline: var(--sp-4); border-radius: var(--r-md);
+  border: 1px solid transparent; font: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: var(--primary-fg); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover:not(:disabled) { background: var(--subtle); }
+.btn-ghost { background: transparent; color: var(--text-2); }
+.btn-ghost:hover:not(:disabled) { background: var(--subtle); color: var(--text); }
+
+/* ============================ Status chip ============================ */
+/* Status = label + colored dot. Never color alone (WCAG 1.4.1). */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  block-size: 24px; padding-inline: 9px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.status-chip-dot { inline-size: 6px; block-size: 6px; border-radius: var(--r-full); flex: 0 0 auto; }
+.status-chip.neutral { background: var(--st-neutral-bg); color: var(--st-neutral-fg); }
+.status-chip.neutral .status-chip-dot { background: var(--st-neutral-dot); }
+.status-chip.info { background: var(--st-info-bg); color: var(--st-info-fg); }
+.status-chip.info .status-chip-dot { background: var(--st-info-dot); }
+.status-chip.scheduled { background: var(--st-sched-bg); color: var(--st-sched-fg); }
+.status-chip.scheduled .status-chip-dot { background: var(--st-sched-dot); }
+.status-chip.warn { background: var(--st-warn-bg); color: var(--st-warn-fg); }
+.status-chip.warn .status-chip-dot { background: var(--st-warn-dot); }
+.status-chip.success { background: var(--st-success-bg); color: var(--st-success-fg); }
+.status-chip.success .status-chip-dot { background: var(--st-success-dot); }
+.status-chip.danger { background: var(--st-danger-bg); color: var(--st-danger-fg); }
+.status-chip.danger .status-chip-dot { background: var(--st-danger-dot); }
+
+/* ============================ Card ============================ */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+}
+.card-pad { padding: var(--sp-5); }
+
+/* ============================ States ============================ */
+.state {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: var(--sp-3); padding: var(--sp-10) var(--sp-6);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
+}
+.state-icon {
+  inline-size: 44px; block-size: 44px; border-radius: var(--r-full);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--subtle); color: var(--text-3);
+}
+.state-icon.error { background: var(--st-danger-bg); color: var(--st-danger-fg); }
+.state-icon.denied { background: var(--st-warn-bg); color: var(--st-warn-fg); }
+.state-title { margin: 0; font-size: 15px; font-weight: 600; }
+.state-body { margin: 0; max-inline-size: 42ch; font-size: 13px; color: var(--text-2); }
+.state-actions { display: flex; gap: var(--sp-2); margin-block-start: var(--sp-1); }
+
+/* Skeleton shimmer for loading states. */
+.skeleton {
+  background: linear-gradient(90deg, var(--subtle) 25%, var(--sunken) 37%, var(--subtle) 63%);
+  background-size: 400% 100%; border-radius: var(--r-md);
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+.skeleton-row { block-size: 14px; margin-block-end: var(--sp-3); }
+@keyframes skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* ============================ Notification center ============================ */
+.notif-panel {
+  position: absolute; inset-block-start: 48px; inset-inline-end: var(--sp-4); z-index: 40;
+  inline-size: 360px; max-block-size: 70vh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+}
+.notif-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4); border-block-end: 1px solid var(--border-soft);
+  font-size: 13px; font-weight: 600;
+}
+.notif-item {
+  display: flex; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4);
+  border-block-end: 1px solid var(--border-soft); text-decoration: none; color: inherit;
+}
+.notif-item:hover { background: var(--subtle); }
+.notif-item.unread { background: var(--primary-tint); }
+
+/* ============================ Sortable list (DnD) ============================ */
+.sortable-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); margin-block-end: var(--sp-2);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+}
+.sortable-item.dragging { box-shadow: var(--shadow-lg); border-color: var(--accent); }
+.sortable-handle {
+  display: flex; align-items: center; color: var(--text-3); cursor: grab;
+  background: none; border: 0; padding: var(--sp-1);
+}
+.sortable-handle:active { cursor: grabbing; }
+.sortable-move {
+  inline-size: 28px; block-size: 28px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text-2); cursor: pointer;
+}
+.sortable-move:disabled { opacity: .4; cursor: not-allowed; }

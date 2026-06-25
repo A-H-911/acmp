@@ -1,28 +1,84 @@
 {
   "app": { "name": "ACMP", "tagline": "Architecture Committee Management Platform" },
-  "nav": {
-    "dashboard": "Dashboard",
-    "topics": "Topics",
-    "meetings": "Meetings",
-    "decisions": "Decisions",
-    "actions": "Actions",
-    "members": "Members"
-  },
   "common": {
-    "language": "Language",
-    "theme": "Theme",
-    "light": "Light",
-    "dark": "Dark",
+    "search": "Search",
+    "switchTo": "Switch to {{lang}}",
     "english": "English",
     "arabic": "العربية",
+    "light": "Light mode",
+    "dark": "Dark mode",
     "loading": "Loading…",
-    "error": "Something went wrong",
+    "error": "Something went wrong. Please try again.",
     "empty": "Nothing here yet",
-    "permissionDenied": "You do not have access to this"
+    "permissionDenied": "You do not have access to this.",
+    "retry": "Retry",
+    "goToDashboard": "Go to dashboard",
+    "skipToContent": "Skip to main content",
+    "comingSoon": "This area will be built in a later phase."
   },
+  "nav": {
+    "primary": "Primary navigation",
+    "readOnly": "Read-only",
+    "session": "My session",
+    "submit": "Submit topic",
+    "home": "Home",
+    "backlog": "Backlog",
+    "agenda": "Agenda & meetings",
+    "decisions": "Decisions",
+    "actions": "Actions",
+    "adrs": "ADRs & invariants",
+    "risks": "Risks",
+    "deps": "Dependencies",
+    "research": "Research",
+    "wiki": "Knowledge / Wiki",
+    "diagrams": "Diagrams",
+    "reports": "Reports",
+    "audit": "Audit trail",
+    "admin": "Administration"
+  },
+  "navGroup": {
+    "committee": "Committee",
+    "governance": "Governance",
+    "knowledge": "Knowledge",
+    "insights": "Insights",
+    "system": "System"
+  },
+  "role": {
+    "chairman": "Chairman",
+    "secretary": "Secretary",
+    "member": "Member",
+    "reviewer": "Reviewer",
+    "auditor": "Auditor",
+    "administrator": "Administrator",
+    "submitter": "Submitter",
+    "guest": "Guest / Presenter"
+  },
+  "auth": {
+    "signIn": "Sign in with Keycloak",
+    "completing": "Completing sign-in…",
+    "failedTitle": "Sign-in failed"
+  },
+  "notif": {
+    "title": "Notifications",
+    "emptyTitle": "You're all caught up",
+    "emptyBody": "New notifications about your topics, meetings, and actions will appear here."
+  },
+  "state": {
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Items will appear here once they are created.",
+    "errorTitle": "Something went wrong",
+    "deniedTitle": "Access denied"
+  },
+  "dnd": {
+    "dragHandle": "Reorder {{name}}",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down"
+  },
+  "dev": { "role": "Preview role (dev only)", "roleShort": "Role" },
   "dashboard": {
-    "title": "Committee Dashboard",
-    "welcome": "Welcome to the Architecture Committee platform.",
-    "placeholder": "Modules will appear here as they are built."
-  }
+    "title": "Committee dashboard",
+    "welcome": "Welcome, {{name}}.",
+    "placeholder": "Role-tailored widgets will appear here as modules are built."
+  },
+  "notFound": { "body": "We couldn't find that page." }
 }

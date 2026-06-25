@@ -19,6 +19,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > foundation phase — no feature AC flips. The Membership domain capability behind AC-058 (deactivate keeps
 > attribution) and AC-059 (directory readable by all roles) exists with unit tests, but both criteria require
 > HTTP + authorization + UI, which land in P4 — so they remain `Pending`. See progress-log P2 entry.
+>
+> P3 update (2026-06-25): frontend foundation (app shell, role-filtered nav, OIDC wiring, design system,
+> states, dnd). First phase to move localization/a11y ACs: **AC-040, AC-042, AC-045, AC-046 → Met** (Vitest +
+> live axe render across EN/AR × light/dark, 0 violations), **AC-041 → Partial** (RTL confirmed by hand;
+> automated VR → P17). AC-039 (locale switch preserves form data) stays `Pending` — no form in the shell yet
+> (P5+). AC-043/044 (keyboard DnD alternative for backlog/agenda) stay `Pending`: the shared keyboard-accessible
+> `SortableList` is built + tested in P3 but isn't wired into those screens until P5/P6. AC-001/005/006/008
+> (Keycloak login, RBAC 403) stay `Pending` → P4 (no Keycloak container; server enforcement is P4). Nav/route
+> gating in P3 hides UI only — it is not authorization. See progress-log P3 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
@@ -61,13 +70,13 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-037 | MoM | Pending | — | Change-request → back to Draft |
 | AC-038 | MoM | Pending | — | Approve → Published + notify |
 | AC-039 | Localization | Pending | — | Locale switch preserves form data |
-| AC-040 | Localization | Pending | — | dir=rtl mirrored layout |
-| AC-041 | Localization | Pending | — | RTL visual regression clean |
-| AC-042 | Localization | Pending | — | Theme persisted across sessions |
+| AC-040 | Localization | Met | i18n/direction.test.ts + axe render | dir=rtl mirrored layout — sidebar→inline-end, Arabic font, logical CSS; verified live (P3) |
+| AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
+| AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
 | AC-043 | Accessibility | Pending | — | Keyboard DnD alt (backlog) |
 | AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
-| AC-045 | Accessibility | Pending | — | Visible focus ≥3:1 |
-| AC-046 | Accessibility | Pending | — | Labels, aria, contrast, reading order |
+| AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
+| AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
 | AC-047 | Unsaved-work | Pending | — | Route-change guard |
 | AC-048 | Unsaved-work | Pending | — | beforeunload dialog |
 | AC-049 | File upload | Pending | — | Size/MIME rejection, localized |
@@ -89,4 +98,4 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 0 Met · 66 Pending (PH-0 baseline).
+**Summary:** 66 ACs · 4 Met (AC-040/042/045/046) · 1 Partial (AC-041) · 61 Pending. (P3 frontend foundation.)

@@ -1,57 +1,143 @@
+/*
+ * Base reset, typography, and the application shell (topbar + sidebar + main).
+ * All spacing uses CSS logical properties so the layout mirrors in RTL
+ * without per-direction overrides (ADR-0012, guardrail 9).
+ */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 
 body {
-  font-family: var(--font-sans);
-  background: var(--color-bg);
-  color: var(--color-text);
+  font-family: var(--font-app);
+  background: var(--bg-app);
+  color: var(--text);
+  font-size: 14px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* All spacing uses logical properties so the layout mirrors correctly in RTL. */
+a { color: inherit; }
+
+/* One global focus treatment — visible, ≥3:1 against any surface (AC-045). */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Skip link — keyboard users jump past the chrome to main content. */
+.skip-link {
+  position: absolute; inset-block-start: -100px; inset-inline-start: var(--sp-2);
+  z-index: 100; padding: var(--sp-2) var(--sp-3);
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+}
+.skip-link:focus { inset-block-start: var(--sp-2); }
+
+/* ============================ App shell ============================ */
 .app-shell { display: flex; flex-direction: column; min-block-size: 100vh; }
 
-.app-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-inline: var(--space-3); padding-block: var(--space-2);
-  background: var(--color-surface);
-  border-block-end: 1px solid var(--color-border);
+.topbar {
+  display: flex; align-items: center; gap: var(--sp-4);
+  block-size: 54px; padding-inline: var(--sp-4) var(--sp-5);
+  background: var(--header); border-block-end: 1px solid var(--border);
 }
-.brand { display: flex; flex-direction: column; }
-.brand-mark { font-weight: 700; font-size: 1.25rem; letter-spacing: 0.04em; color: var(--color-accent); }
-.brand-tagline { font-size: 0.8rem; color: var(--color-text-muted); }
-.header-controls { display: flex; gap: var(--space-1); }
+.topbar-brand { display: flex; align-items: center; gap: var(--sp-3); min-inline-size: 160px; }
+.brand-badge {
+  inline-size: 28px; block-size: 28px; border-radius: var(--r-sm);
+  background: var(--primary); color: #fff; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-word { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+.topbar-spacer { flex: 1 1 0; }
 
-.control {
-  min-inline-size: 2.5rem; padding-block: 0.4rem; padding-inline: 0.7rem;
-  background: transparent; color: var(--color-text);
-  border: 1px solid var(--color-border); border-radius: var(--radius);
-  cursor: pointer; font: inherit;
+.search {
+  flex: 1 1 auto; max-inline-size: 440px; position: relative;
+  display: flex; align-items: center;
 }
-.control:hover { border-color: var(--color-accent); color: var(--color-accent); }
-.control:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.search-icon {
+  position: absolute; inset-inline-start: 11px; color: var(--text-3);
+  display: flex; pointer-events: none;
+}
+.search-input {
+  inline-size: 100%; block-size: 36px; padding-inline: 36px 12px;
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13px;
+  outline: none;
+}
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
 
-.app-body { display: flex; flex: 1; }
-.app-nav {
-  display: flex; flex-direction: column; gap: 0.25rem;
-  inline-size: 14rem; padding: var(--space-2);
-  background: var(--color-surface);
-  border-inline-end: 1px solid var(--color-border);
+/* Icon buttons in the chrome (toggles, bell) — ≥34px hit target. */
+.icon-btn {
+  inline-size: 34px; block-size: 34px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text-2); cursor: pointer;
 }
-.nav-link {
-  padding-block: 0.5rem; padding-inline: 0.75rem;
-  border-radius: var(--radius); color: var(--color-text-muted); text-decoration: none;
+.icon-btn:hover { background: var(--subtle); }
+.chip-btn {
+  block-size: 34px; padding-inline: 11px; display: flex; align-items: center; gap: 7px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text-2); cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600;
 }
-.nav-link:hover { background: var(--color-bg); color: var(--color-text); }
-.nav-link.active { background: var(--color-accent); color: var(--color-accent-contrast); }
-.nav-link:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.chip-btn:hover { background: var(--subtle); }
+.notif-dot {
+  position: absolute; inset-block-start: -3px; inset-inline-end: -3px;
+  inline-size: 8px; block-size: 8px; border-radius: var(--r-full);
+  background: var(--st-danger-dot); border: 2px solid var(--header);
+}
 
-.app-main { flex: 1; padding: var(--space-4); }
-.page { max-inline-size: 60rem; }
-.page-title { margin-block: 0 var(--space-2); font-size: 1.75rem; }
-.page-lead { color: var(--color-text-muted); margin-block-end: var(--space-3); }
-.surface-card {
-  padding: var(--space-3); background: var(--color-surface);
-  border: 1px solid var(--color-border); border-radius: var(--radius);
+.topbar-user { display: flex; align-items: center; gap: var(--sp-2); padding-inline-start: var(--sp-1); }
+.avatar {
+  inline-size: 28px; block-size: 28px; border-radius: var(--r-full);
+  background: var(--primary); color: #fff; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
 }
-.surface-card.muted { color: var(--color-text-muted); }
+.topbar-user-name { display: block; font-size: 12px; font-weight: 600; }
+/* --text-2 (not --text-3): at 10.5px this label needs ≥4.5:1 for WCAG AA. */
+.topbar-user-role { display: block; font-size: 10.5px; color: var(--text-2); }
+
+.app-body { display: flex; flex: 1; min-block-size: 0; }
+
+/* ============================ Sidebar nav ============================ */
+.sidebar {
+  flex: 0 0 244px; overflow-y: auto;
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--surface); border-inline-end: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.nav-group-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+  color: var(--text-3); padding: 12px 10px 5px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  block-size: 38px; padding-inline: 11px; border-radius: var(--r-md);
+  color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 500;
+}
+.nav-item:hover { background: var(--subtle); color: var(--text); }
+.nav-item.active { background: var(--primary-tint); color: var(--accent); font-weight: 600; }
+.nav-item-label { flex: 1 1 auto; min-inline-size: 0; }
+.nav-item-count {
+  flex: 0 0 auto; font-size: 11px; font-weight: 700; color: var(--text-2);
+  background: var(--sunken); border-radius: 10px; padding: 1px 7px;
+}
+.nav-item-viewonly { flex: 0 0 auto; color: var(--text-3); display: flex; }
+.nav-item.cta {
+  border: 1px solid var(--accent); background: var(--primary-tint);
+  color: var(--accent); font-weight: 600; margin-block-end: var(--sp-1);
+}
+
+.app-main { flex: 1; min-inline-size: 0; padding: var(--sp-6) var(--sp-6) 110px; }
+.page { max-inline-size: 72rem; margin-inline: auto; }
+.page-title { margin-block: 0 var(--sp-2); font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+.page-lead { color: var(--text-2); margin-block-end: var(--sp-5); font-size: 13.5px; }
+
+/* Directional glyphs (chevrons/arrows) mirror in RTL. Mark them with this class. */
+[dir="rtl"] .dir-flip { transform: scaleX(-1); }

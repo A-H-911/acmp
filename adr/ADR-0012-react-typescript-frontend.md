@@ -4,6 +4,8 @@
 - Date: 2026-06-24
 - Deciders: Architecture Committee (secretary-confirmed)
 
+> **Amended by [ADR-0015](ADR-0015-react-19-amends-0012.md) (2026-06-25):** the React major version is **19**, not 18. Every other decision in this ADR (TypeScript, Vite, `react-i18next` EN/AR, RTL via CSS logical properties + `dir`, light/dark tokens, `@dnd-kit`) remains in force.
+
 ## Context and Problem Statement
 
 ACMP requires a web frontend that is bilingual (EN/AR), supports RTL layout, is accessible, and provides rich interactions (drag-and-drop backlog/agenda prioritization, kanban views, real-time notification updates). The technology stack must be compatible with the .NET/REST backend (ADR-0002), supportable by the existing team, and deployable as a static asset bundle served by the ACMP server or a separate nginx container.

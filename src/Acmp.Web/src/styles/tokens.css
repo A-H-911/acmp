@@ -1,27 +1,63 @@
+/*
+ * ACMP design tokens — single source of truth for color, type, spacing, motion.
+ * Mirrors the "ACMP Design System" Claude Design file. Light is the default;
+ * [data-theme="dark"] overrides the themeable set. Components never hard-code
+ * color/spacing — they consume these custom properties (ADR-0012).
+ *
+ * Fonts are self-hosted via @fontsource (imported in main.tsx), NOT a CDN —
+ * the platform must run air-gapped on-prem (CON-001 / guardrail 3).
+ */
 :root {
-  --color-bg: #f6f8fa;
-  --color-surface: #ffffff;
-  --color-text: #1a1d21;
-  --color-text-muted: #5b6470;
-  --color-border: #e2e6ea;
-  --color-accent: #1f6feb;
-  --color-accent-contrast: #ffffff;
+  /* Non-themeable scales */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
+  --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px; --r-full: 9999px;
+  --dur-fast: 120ms; --dur: 180ms; --dur-slow: 280ms;
+  --ease: cubic-bezier(.2, .6, .2, 1);
 
-  --radius: 10px;
-  --space-1: 0.5rem;
-  --space-2: 1rem;
-  --space-3: 1.5rem;
-  --space-4: 2rem;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-arabic: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* --font-app is the active family; flipped to Arabic under [dir="rtl"]. */
+  --font-app: var(--font-sans);
 
-  --font-sans: system-ui, -apple-system, "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif;
+  /* Themeable — light (default) */
+  --bg-app: #e9edf1; --surface: #ffffff; --subtle: #f4f6f8; --sunken: #e6eaee; --header: #f8f9fb;
+  --border: #dde2e8; --border-soft: #e9edf1; --border-strong: #c5ccd5;
+  --text: #1a232f; --text-2: #56616f; --text-3: #6b7480;
+  --primary: #1a4f8a; --primary-hover: #163f6e; --primary-fg: #ffffff;
+  --accent: #1a5fae; --primary-tint: #e9f1f9;
+  --focus: #1a5fae; --scroll: #c5ccd5; --ring: rgba(26, 79, 138, .12);
+  --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .08);
+  --shadow-lg: 0 10px 30px rgba(16, 24, 40, .12);
+
+  /* Semantic status roles — each maps a status model to bg/fg/dot.
+     Meaning is carried by label + dot, never color alone (WCAG 2.2 AA). */
+  --st-neutral-bg: #eceef1; --st-neutral-fg: #48505c; --st-neutral-dot: #7a8694;
+  --st-info-bg: #e6effa; --st-info-fg: #15558f; --st-info-dot: #2f74c0;
+  --st-sched-bg: #ecebfb; --st-sched-fg: #473ba0; --st-sched-dot: #6b5ce0;
+  --st-warn-bg: #fbf0d6; --st-warn-fg: #83540a; --st-warn-dot: #cf8a1c;
+  --st-success-bg: #dcefe1; --st-success-fg: #1d6a39; --st-success-dot: #2f9e54;
+  --st-danger-bg: #fbe2e2; --st-danger-fg: #9f2530; --st-danger-dot: #d6453f;
 }
 
 [data-theme="dark"] {
-  --color-bg: #0d1117;
-  --color-surface: #161b22;
-  --color-text: #e6edf3;
-  --color-text-muted: #8b949e;
-  --color-border: #30363d;
-  --color-accent: #4c8dff;
-  --color-accent-contrast: #0d1117;
+  --bg-app: #0d1116; --surface: #161c23; --subtle: #1b222a; --sunken: #0a0e12; --header: #141a20;
+  --border: #2a333d; --border-soft: #222a33; --border-strong: #3a4651;
+  --text: #e7ebf0; --text-2: #9eaab7; --text-3: #828d9c;
+  --primary: #1f5fa8; --primary-hover: #2a6fbb; --primary-fg: #ffffff;
+  --accent: #6db0ee; --primary-tint: #15273a;
+  --focus: #6db0ee; --scroll: #3a4651; --ring: rgba(109, 176, 238, .16);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 2px 6px rgba(0, 0, 0, .35);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, .5);
+
+  --st-neutral-bg: #232c35; --st-neutral-fg: #aeb9c5; --st-neutral-dot: #7d8a98;
+  --st-info-bg: #13283f; --st-info-fg: #86baf0; --st-info-dot: #3f86cf;
+  --st-sched-bg: #201d3d; --st-sched-fg: #a99ff4; --st-sched-dot: #7a6cef;
+  --st-warn-bg: #33260f; --st-warn-fg: #e2af57; --st-warn-dot: #cf8a1c;
+  --st-success-bg: #10301d; --st-success-fg: #6ec78a; --st-success-dot: #2f9e54;
+  --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d6453f;
 }
+
+/* Arabic locale uses the Plex Arabic family (set on <html dir="rtl">). */
+[dir="rtl"] { --font-app: var(--font-arabic); }

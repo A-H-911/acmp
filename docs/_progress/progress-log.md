@@ -12,6 +12,69 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P3 — Frontend Foundation & App Shell
+
+### 2026-06-25 — P3 complete: design-system shell, role-filtered nav, OIDC wiring, states, accessible DnD
+
+**Done (all in `src/Acmp.Web`).** Built the React + TS + Vite application shell to match the Claude Design
+**ACMP Design System** and **Navigation & IA** files (visual layer) over docs/14 behavior:
+- **Design tokens** (`styles/tokens.css`) — full light+dark token set from the design system (surfaces, 6
+  semantic status roles each with bg/fg/dot, `--sp-*`/`--r-*`/motion, IBM Plex type). `global.css` +
+  `components.css` migrated to the design token names. **Fonts self-hosted via `@fontsource`** (bundled by
+  Vite, not a CDN) so the SPA runs air-gapped — CON-001 / guardrail 3.
+- **App shell** — `TopBar` (brand, global search, locale + theme toggles, notification bell, read-only
+  role/identity cluster), 244px role-filtered `SideNav` (design GROUPS: Committee/Governance/Knowledge/
+  Insights/System + CTA group), `NotificationCenter` shell (empty state; feed is a later phase), `AppShell`
+  (skip link → chrome → routed main inside an `ErrorBoundary`). All layout via CSS logical properties → mirrors
+  in RTL with no per-direction overrides.
+- **Auth** (`auth/`) — `react-oidc-context` + `oidc-client-ts` for Keycloak auth-code+PKCE, config from
+  `VITE_OIDC_*` (no secrets in source). `useAuth` exposes canonical roles mapped from claims
+  (`rolesFromClaims`, README §C, "coordinator"→secretary alias). `ProtectedRoute` + `RequireRole` route gates;
+  Login/AuthCallback pages. **DEV-only auth stub** (role switcher) gated behind `import.meta.env.DEV` — absent
+  from the prod bundle; prod with no IdP **fails closed**. Nav/route gating hides UI only; the API enforces (P4).
+- **Server state** — `@tanstack/react-query` provider + `apiClient` (bearer token + `Accept-Language` + RFC7807
+  Problem Details → typed `ApiError`). No endpoint hooks yet (no real data in P3).
+- **States** — Empty/Loading(skeleton)/Error/PermissionDenied + class `ErrorBoundary` (docs/14 §4); `StatusChip`
+  (label + dot, never color-alone), `Button`, `Card`.
+- **Accessible DnD** — shared generic `SortableList` (`@dnd-kit` pointer+keyboard) **plus** explicit Move up/down
+  keyboard fallback (docs/14 §5, ADR-0012). Component + test only; backlog/agenda consume it at P5/P6.
+- **i18n** — `en.json`/`ar.json` expanded to the full shell vocabulary (66 keys), parity green. Routing for all
+  nav areas → foundation placeholders (no feature screens). NotFound page.
+- **Tests/CI** — Vitest + RTL + jsdom (`vitest.config.ts` separate from `vite.config.ts` to avoid the Vite 8/
+  rolldown vs vitest nested-Vite type clash). **21 tests**: nav gating, claim→role mapping, theme persistence
+  (AC-042), RTL direction (AC-040), SortableList keyboard reorder, RequireRole 403, StatusChip, SideNav role
+  filtering. Added `npm test` to the CI frontend job (i18n parity already wired).
+
+**Verification.** `dotnet`-side untouched. Frontend: i18n parity (66 keys) ✅ · `tsc -b && vite build` clean
+(bundle 125 kB gzip, within the <300 kB app budget) ✅ · 21/21 tests ✅ · oxlint clean ✅ · **axe (WCAG 2.2 AA)
+0 violations across EN/AR × light/dark** (rendered live; fixed one finding — `.topbar-user-role` 10.5px label
+was 4.49:1, raised `--text-3`→`--text-2`) ✅ · RTL render confirmed by screenshot (sidebar mirrors to
+inline-end, Arabic font + content, read-only markers).
+
+**Decisions recorded (no silent drift, guardrail 11):**
+- **React 19 vs ADR-0012 (says 18).** P1 silently installed React 19. Surfaced and resolved via **ADR-0015**
+  (amends ADR-0012, keeps 19) — a settled-ADR change needs an ADR, not just a log line (guardrail 1). ADR-0012
+  carries a forward-link note; adr/README index updated.
+- **Self-hosted fonts (CON-001).** The design loads IBM Plex from Google Fonts CDN; replaced with `@fontsource`
+  packages so production runs air-gapped. No new ADR — implements an existing constraint.
+- **OIDC dev-stub.** DEV-gated, never in prod bundle; recorded as the P3→P4 boundary (live Keycloak login +
+  server claim→role mapping = P4).
+- `strict: true` added to `tsconfig.app.json` (CLAUDE.md requires it).
+
+**Acceptance audit.** **AC-040, AC-042, AC-045, AC-046 → Met** (trace to tests + axe render); **AC-041 →
+Partial** (manual RTL; automated VR → P17). AC-039 (form-data preservation) stays Pending — no form in the shell
+yet. AC-043/044 (keyboard DnD on backlog/agenda) stay Pending — the shared component is built+tested but not yet
+wired into those screens (P5/P6). AC-001/005/006/008 (Keycloak login, RBAC 403) stay Pending → P4.
+
+**Deferrals → phase:** live Keycloak login + claim→role server mapping + 401/403 → P4 · automated RTL/visual
+regression + Lighthouse gate → P17 · notification feed → Notifications phase · search results page → later ·
+favicon.ico 404 in dev is cosmetic (a `favicon.svg` exists).
+
+**Next (await go-ahead):** P4 Identity & Permissions (Membership full: claim→role mapping, policy + ABAC, SoD,
+permission-matrix suite, 401/403 fix) — or P5 Topics/Backlog (core loop), which will consume `SortableList`.
+
+---
+
 ## P2 — Backend Foundation & Reference Module Pattern
 
 ### 2026-06-25 — P2 verified: pattern already delivered by the P1 scaffold; closed with deferral notes
