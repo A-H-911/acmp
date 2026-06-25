@@ -100,8 +100,10 @@
       "user": "Name / email",
       "role": "Committee role",
       "membership": "Committee membership",
+      "assignments": "Assignments",
       "status": "Status"
     },
+    "assignmentsHint": "Topic and action assignments appear here once those modules ship.",
     "fromKeycloak": "from Keycloak",
     "votingEligible": "Voting-eligible",
     "observer": "Observer",

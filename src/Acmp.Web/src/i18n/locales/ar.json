@@ -100,8 +100,10 @@
       "user": "الاسم / البريد",
       "role": "دور اللجنة",
       "membership": "عضوية اللجنة",
+      "assignments": "الإسنادات",
       "status": "الحالة"
     },
+    "assignmentsHint": "تظهر إسنادات المواضيع والإجراءات هنا عند إطلاق تلك الوحدات.",
     "fromKeycloak": "من Keycloak",
     "votingEligible": "مؤهّل للتصويت",
     "observer": "مراقب",

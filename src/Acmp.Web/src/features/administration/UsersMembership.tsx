@@ -40,6 +40,14 @@ function LockIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11" />
+    </svg>
+  );
+}
+
 const TABS = ['users', 'templates', 'health', 'notifications'] as const;
 
 export function UsersMembership() {
@@ -98,9 +106,14 @@ function Directory({ members, isArabic }: { members: Member[]; isArabic: boolean
       </div>
 
       <div className="adm-filters">
-        <button type="button" className="adm-filter" disabled>{t('admin.filter.role')}</button>
-        <button type="button" className="adm-filter" disabled>{t('admin.filter.status')}</button>
-        <button type="button" className="adm-filter" disabled>{t('admin.filter.membership')}</button>
+        {(['role', 'status', 'membership'] as const).map((f) => (
+          <button key={f} type="button" className="adm-filter">
+            {t(`admin.filter.${f}`)}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        ))}
         <span className="adm-count">{t('admin.showing', { count: members.length })}</span>
       </div>
 
@@ -109,6 +122,7 @@ function Directory({ members, isArabic }: { members: Member[]; isArabic: boolean
           <span className="adm-hcell" role="columnheader">{t('admin.col.user')}</span>
           <span className="adm-hcell" role="columnheader">{t('admin.col.role')}</span>
           <span className="adm-hcell" role="columnheader">{t('admin.col.membership')}</span>
+          <span className="adm-hcell" role="columnheader">{t('admin.col.assignments')}</span>
           <span className="adm-hcell" role="columnheader">{t('admin.col.status')}</span>
         </div>
 
@@ -130,17 +144,34 @@ function Directory({ members, isArabic }: { members: Member[]; isArabic: boolean
             </span>
 
             <span className="adm-cell" role="cell">
-              <span className="adm-chips">
-                {m.streams.length === 0 ? (
-                  <span className="adm-chip observer">{t('admin.observer')}</span>
-                ) : (
-                  m.streams.map((s) => (
-                    <span className="adm-chip" key={s.publicId}>{isArabic ? s.nameAr : s.nameEn}</span>
-                  ))
-                )}
-                {m.isVotingEligible && (
-                  <span className="adm-vote"><span className="adm-vote-dot" aria-hidden="true" />{t('admin.votingEligible')}</span>
-                )}
+              <span className="adm-membership">
+                <span className="adm-chips">
+                  {m.streams.length === 0 ? (
+                    <span className="adm-chip observer">{t('admin.observer')}</span>
+                  ) : (
+                    m.streams.map((s) => (
+                      <span className="adm-chip" key={s.publicId}>{isArabic ? s.nameAr : s.nameEn}</span>
+                    ))
+                  )}
+                </span>
+                <span className="adm-vote">
+                  <span
+                    className="adm-switch"
+                    role="switch"
+                    aria-checked={m.isVotingEligible}
+                    aria-disabled="true"
+                    aria-label={t('admin.votingEligible')}
+                  >
+                    <span className="adm-knob" aria-hidden="true" />
+                  </span>
+                  {t('admin.votingEligible')}
+                </span>
+              </span>
+            </span>
+
+            <span className="adm-cell" role="cell">
+              <span className="adm-assign" title={t('admin.assignmentsHint')}>
+                <CheckIcon />—
               </span>
             </span>
 

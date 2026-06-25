@@ -46,17 +46,27 @@ describe('UsersMembership (AC-059)', () => {
     expect(screen.getByText('Roles are read-only')).toBeInTheDocument();
   });
 
-  it('marks voting eligibility and a member with no streams as an observer', () => {
+  it('marks a member with no streams as an observer', () => {
     result({ data: MEMBERS });
     renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
-    expect(screen.getByText('Voting-eligible')).toBeInTheDocument();
     expect(screen.getByText('Observer')).toBeInTheDocument();
+    expect(screen.getAllByText('Voting-eligible')).toHaveLength(2); // label per row
   });
 
-  it('exposes a table with the four directory columns', () => {
+  it('exposes a table with the five directory columns (matches the design layout)', () => {
     result({ data: MEMBERS });
     renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
-    expect(screen.getAllByRole('columnheader')).toHaveLength(4);
+    expect(screen.getAllByRole('columnheader')).toHaveLength(5);
+  });
+
+  it('renders the read-only voting-eligibility switch per member', () => {
+    result({ data: MEMBERS });
+    renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+    const switches = screen.getAllByRole('switch');
+    expect(switches).toHaveLength(2);
+    expect(switches[0]).toHaveAttribute('aria-checked', 'true'); // Khalid: voting-eligible
+    expect(switches[1]).toHaveAttribute('aria-checked', 'false'); // Audit Office: not
+    switches.forEach((s) => expect(s).toHaveAttribute('aria-disabled', 'true'));
   });
 
   it('shows the empty state when there are no members', () => {

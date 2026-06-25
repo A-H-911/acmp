@@ -11,11 +11,20 @@ public partial class Membership_P4_Identity : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.RenameColumn(
+        // Explicit drop + add (not a rename): IsActive is superseded by MembershipStatus, so its
+        // boolean values must NOT carry into the new, unrelated IsVotingEligible flag.
+        migrationBuilder.DropColumn(
             name: "IsActive",
             schema: "membership",
+            table: "committee_members");
+
+        migrationBuilder.AddColumn<bool>(
+            name: "IsVotingEligible",
+            schema: "membership",
             table: "committee_members",
-            newName: "IsVotingEligible");
+            type: "bit",
+            nullable: false,
+            defaultValue: false);
 
         migrationBuilder.AddColumn<int>(
             name: "Status",
@@ -188,10 +197,17 @@ public partial class Membership_P4_Identity : Migration
             schema: "membership",
             table: "committee_members");
 
-        migrationBuilder.RenameColumn(
+        migrationBuilder.DropColumn(
             name: "IsVotingEligible",
             schema: "membership",
+            table: "committee_members");
+
+        migrationBuilder.AddColumn<bool>(
+            name: "IsActive",
+            schema: "membership",
             table: "committee_members",
-            newName: "IsActive");
+            type: "bit",
+            nullable: false,
+            defaultValue: false);
     }
 }

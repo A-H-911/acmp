@@ -56,10 +56,22 @@ Users & Membership UI.
   states, and the disabled future tabs. Reuses P3 design tokens (`--st-*` match the design exactly) and
   CSS logical properties (mirrors in RTL). 25 EN/AR keys added (parity green). Route `/admin` (admin-gated).
 
-**Verification.** Backend **299/299** green (5 domain · 3 ArchUnit boundary · 281 application incl. the
-**248-case permission-matrix suite** with independently-encoded A/AiO/D expectations · 10 WebApplicationFactory
-integration via `TestAuthHandler`). Web **32/32** (7 new), `tsc -b && vite build` clean (130 kB gzip < 300 kB
-budget), oxlint clean, i18n parity **91/91**. New integration project `Acmp.Api.Tests`.
+**Verification.** Backend **302/302** green (5 domain · 3 ArchUnit boundary · 281 application incl. the
+**248-case permission-matrix suite** with independently-encoded A/AiO/D expectations · 13 WebApplicationFactory
+integration via `TestAuthHandler` **+ the real Keycloak JwtBearer scheme** (anonymous/bogus-token → 401,
+not 500; health stays anonymous)). Web **33/33**, `tsc -b && vite build` clean (130 kB gzip < 300 kB budget),
+oxlint clean, i18n parity **93/93**. New integration project `Acmp.Api.Tests`.
+
+**Post-review hardening (advisor pass).**
+- **Frontend re-matched the design** — restored the 5th *Assignments* column (placeholder `—`; topic/action
+  counts land P5/P8) and rendered voting eligibility as the design's **read-only switch** (was a badge).
+  Visually verified by rendering the real CSS in Chrome (Playwright screenshot) against the design source.
+- **Migration corrected** — EF inferred an `IsActive`→`IsVotingEligible` column *rename* (would carry the old
+  active-flag values into the unrelated eligibility flag); rewritten as explicit drop + add. SQL re-generated
+  and inspected (`ef migrations script`); full `docker compose up` apply is the operator's check (the
+  sandbox blocked launching the stack).
+- **Config placeholders** — documented `Authentication:Keycloak:*` + `Authorization:RoleMapping:*` in
+  `appsettings.json` and `deploy/.env.example` (fail-closed defaults; no secrets).
 
 **Decisions recorded (no silent drift, guardrail 11):**
 - **Role not admin-settable.** Per ADR-0004 ("roles sourced from Keycloak; ACMP creates the profile, not the
