@@ -49,7 +49,7 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar-brand">
-        <span className="brand-badge"><Icon name="building" size={16} aria-hidden /></span>
+        <img className="brand-mark" src="/favicon.svg" alt="" width={26} height={26} />
         <span className="brand-word">{t('app.name')}</span>
       </div>
 

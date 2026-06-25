@@ -1,3 +1,5 @@
+<p align="center"><img src="src/Acmp.Web/public/favicon.svg" alt="ACMP logo" width="72" height="72" /></p>
+
 # Architecture Committee Management Platform (ACMP) — Planning & Execution Package
 
 **Status:** Draft v1.0 · **Date:** 2026-06-24 · **Audience:** Engineering / execution (the lead secretary + the Claude Code execution agent) · **Downstream executor:** Claude Code · **Design executor:** Claude Design

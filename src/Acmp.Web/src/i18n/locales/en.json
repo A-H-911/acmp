@@ -54,11 +54,13 @@
     "guest": "Guest / Presenter"
   },
   "auth": {
-    "signIn": "Sign in with Keycloak",
+    "login": "Log in",
     "logout": "Log out",
     "accountMenu": "Account menu",
     "completing": "Completing sign-in…",
-    "failedTitle": "Sign-in failed"
+    "failedTitle": "Sign-in failed",
+    "signedOut": "You've been signed out.",
+    "sessionExpired": "Your session expired. Please log in again."
   },
   "notif": {
     "title": "Notifications",
