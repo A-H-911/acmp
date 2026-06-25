@@ -1,0 +1,64 @@
+# Phase-Specific Prompts — ACMP (Deliverable 56)
+
+Copy-pasteable prompts for each build slice. **Every prompt assumes the agent has read `/CLAUDE.md`, `/docs/README.md`, and `/execution-handoff/agent-guardrails.md`.** Each ends by requiring tests + acceptance criteria + audit + EN/AR/RTL, and updates to the progress log and acceptance audit. Work top to bottom; the core loop (Topics → Meetings → Decisions → Actions) is PH-1 priority.
+
+> Standard footer for every prompt below (the agent must satisfy it): *Ship with unit + integration tests; satisfy the relevant `AC-###` (`/docs/40`); enforce authorization (`/docs/10`) and emit `AuditEvent`s; no hardcoded strings (EN+AR) and verify RTL; no secrets in source; update `/docs/_progress/progress-log.md` and `acceptance-audit.md`; conventional commits; raise an ADR for any new architecture decision.*
+
+---
+
+## P1 — Repository initialization
+Scaffold the repo exactly per `/docs/34-repository-structure.md`: solution, `Acmp.Api` host, `src/BuildingBlocks` shared kernel, a `tests/` tree, `/deploy` (Dockerfiles + `docker-compose.yml` with api/web/sqlserver/seq/minio), `/.github/workflows` skeleton (`/docs/32`), `.editorconfig`, analyzers, `dotnet format`, and architecture-test project that fails on cross-module table access. Add health checks, Serilog→Seq, OpenTelemetry, and externalized config (env + Docker secrets, `.env` git-ignored). Deliver a `docker compose up` that brings up the stack healthy. No business features yet.
+
+## P2 — Backend foundation
+Establish the modular-monolith host and the **reference module pattern** end-to-end on one small module (recommend **Membership**): Domain/Application/Infrastructure layers, MediatR pipeline behaviors (validation via FluentValidation, authorization, audit, logging), EF Core DbContext with **schema-per-module**, forward-only migrations, the `ICurrentUser`/`IClock`/`IFileStore`/`INotificationChannel` abstractions, Problem Details error model, REST conventions, and OpenAPI. Prove the vertical slice with one command + one query + tests. This pattern is the template for every later module.
+
+## P3 — Frontend foundation
+React 18 + TS + Vite app shell: routing, OIDC login against Keycloak (auth-code + PKCE) with role claims, TanStack Query API client, design tokens (light/dark), `react-i18next` with EN + AR resource files and a **CI i18n-parity check**, RTL via CSS logical properties + `dir` toggle, base layout + role-based navigation (`/docs/14`), and the empty/loading/error/permission-denied state patterns. Wire `@dnd-kit` with a keyboard-accessible fallback as a shared component. Verify the shell renders correctly in AR/RTL and dark mode.
+
+## P4 — Identity & permissions
+Implement the **Membership** module fully: map Keycloak group/realm-role claims → canonical roles (`/docs/README §C`); committee membership administration; per-topic capabilities (Owner/Assignee/Presenter) as relationships; ASP.NET **policy-based authorization** + **ABAC** handlers (stream scope: all-read, write by role/ownership; SoD rules); delegation/temporary assignment. Build the **permission-matrix test suite** from `/docs/10`. No self-registration. Acceptance: `/docs/40` AC for auth, ABAC, SoD.
+
+## P5 — Topic & backlog management
+Implement **Topics**: intake/submission + triage (accept/reject/return), the Topic aggregate + lifecycle (`/docs/12`), topic types + urgency/scope/source attributes (`/docs/09`), affected streams/systems, dependencies/risks references, attachments (MinIO via `IFileStore` with validation), and the **Backlog** as views over Topics (list/table/kanban/calendar/timeline, filter/sort/saved-views, prioritization incl. accessible DnD, aging indicators, status). Workflows W1–W5 (`/docs/13`). This is the heart of the core loop — prioritize it.
+
+## P6 — Agenda & meeting management
+Implement **Meetings**: agenda builder (select backlog topics, DnD ordering, time-box, presenter assignment, publish, carry-over), meeting creation + scheduling, attendance/apologies, discussion notes. Workflows W6–W9. Notifications (in-app) for agenda publication and meeting scheduling. Track actual time per topic.
+
+## P7 — Minutes & decisions
+Implement **Minutes of Meeting** (capture, versioning, review/approve, immutable after publish) and the **Decisions** module (decision record with rationale/alternatives/conditions/authority/effective date; outcomes per `/docs/README §E`; supersede; link to topic/meeting; convert decision → ADR). Workflows W10, W12, W17, W21. Enforce immutability + audit. Acceptance: decision-history/immutability AC.
+
+## P8 — Actions & follow-up
+Implement **Actions**: create from topics/meetings/decisions/risks; owner + contributors; due dates; status + progress; evidence/attachments; reminders + overdue escalation (app-owned Hangfire jobs + in-app notifications); completion criteria + verification (verifier ≠ owner). Workflows W13, W14, W22. Overdue is derived. Acceptance: action lifecycle + SoD AC.
+
+## P9 — Voting
+Implement **Voting** (domain may be stubbed in PH-1 for the core loop; full UX here in PH-2): configure eligible voters, open/close, options, abstentions, quorum; **always attributed**; record comments; **immutable after close**; chairman final approval/override recorded by name; conflict-of-interest recusal; voting summaries. Workflow W11. Acceptance: voting-integrity AC (quorum gate, attribution, chairman-not-sole-counter, immutability + hash-chain).
+
+## P10 — Risks & dependencies
+Implement **Risks** (identify/categorize/assess probability×impact/exposure/owner/mitigation/residual/status/escalation; associate with topics/decisions/actions/ADRs/systems/streams) and **Dependencies** (typed edges between topics/decisions/actions/systems/services/teams/streams/partners/ADRs; blocked-work detection; cross-stream impact; upstream/downstream). Workflows W15. Dashboards for risk exposure + dependencies. Keep `Dependency` (governed, status-bearing) distinct from generic `Relationship` (trace edge).
+
+## P11 — ADRs & invariants
+Implement the **Governance** module: in-app **ADRs** (MADR template, lifecycle, supersede/deprecate, searchable repository, links to topics/decisions/research/diagrams/actions/risks/systems) and **Architecture Invariants** (categories, scope, rationale, exceptions, violations, periodic review, links to ADRs/decisions). Use the concept disambiguation in `/docs/22 §A` (principle/standard/policy/constraint/invariant/decision/ADR) — do not create duplicate concepts. Workflows W18, W21.
+
+## P12 — Dashboards & reports
+Implement **Reporting**: read models + columnstore; the dashboards in `/docs/27` (backlog status, aging, meeting readiness, decision status, pending approvals, overdue actions, risk exposure, dependencies, throughput, attendance, executive summary) and the `KPI-##` catalog (`/docs/28`); interactive filtering, drill-down, export (CSV/PDF), scheduled reports (Hangfire → in-app), role-based views. Basic dashboards are PH-1; advanced analytics PH-3. Validate chart-lib RTL (`OQ`).
+
+## P13 — Webex integration (Phase 2)
+Implement the **Webex adapter** behind `INotificationChannel` + a meeting-metadata client, per `/docs/18` + ADR-0005: bot + **Adaptive Cards v1.3** notifications (≤80KB), meeting metadata + recording links, webhook for recording-ready, OAuth/bot token (scoped), webhook signature verification, **429 + Retry-After** backoff via Hangfire. **Do not** assume programmatic Webex Assistant transcripts. Keep Webex strictly behind the adapter — v1 must run without it. If the environment is air-gapped, build the adapter but don't deploy a live connection.
+
+## P14 — Tarseem integration (Phase 2)
+Integrate **Tarseem** behind `IDiagramRenderer` per `/docs/19` + ADR-0006: run Tarseem as a containerized render sidecar (thin HTTP wrapper around `tarseem generate`) or a Hangfire worker invoking the CLI; **store the JSON spec as the version-controlled source of truth** (`Diagram.Spec`, `SpecHash`); store artifacts (SVG/PNG/PDF/drawio/pptx) in MinIO; surface the capability report; self-repair on the coded error contract; attach diagrams to topics/ADRs/decisions via `Relationship`. **Do not build a diagram engine.** Handle Tarseem-unavailable gracefully.
+
+## P15 — Keystone integration (optional, Phase 3)
+Implement the optional **Research** import per `/docs/20` + ADR-0007: `IResearchImporter` that ingests a Keystone package's structured artifacts (manifest, requirements, decisions, risks, acceptance criteria, traceability) and maps them to ResearchMission/Finding/Recommendation + links. The Research module must already work **standalone** (manual entry) before this. Keystone is never embedded or a hard dependency. Adopt its ID scheme (already done in this package).
+
+## P16 — Security hardening
+Apply `/docs/25` controls to OWASP ASVS 5.0 L2: finalize authz + SoD, session/MFA at Keycloak, input validation/output encoding, file-upload + malware scanning (ClamAV sidecar `OQ`), encryption in transit (TLS everywhere) + at rest (SQL TDE, MinIO SSE), secret management, audit immutability + hash-chain verification, insider-risk controls, notification security, strict CSP, container hardening (non-root, read-only FS), and dependency/secret/image scanning + SBOM. Map each to a threat in `/docs/24`. Run the security test suite.
+
+## P17 — Testing
+Bring the full test suite to the targets in `/docs/31`: coverage thresholds, permission-matrix, workflow, audit-trail, voting-integrity, decision-history, localization/RTL, accessibility (axe), migration, backup/restore, and mocked integration contracts. Wire all gates into CI (`/docs/32`). Ensure the **acceptance audit** maps every `AC-###` to a passing test (G-TRACE/G-PROGRESS).
+
+## P18 — Deployment
+Finalize per `/docs/33`: multi-stage Dockerfiles, production `docker-compose` (+ overrides), externalized/secret config, EF migration-on-deploy strategy, nightly SQL + MinIO backup, **warm standby** restore-and-promote for 99.9%, health/readiness wiring, and the deployment + rollback **runbook**. Validate a clean `docker compose up` on a fresh VM and a tested restore.
+
+## P19 — Final audit & release readiness
+Run the **release-readiness checklist** (`/docs/45`) and the Definition of Done (`/docs/44`): all phase acceptance + exit criteria met; security scans clean; backup/restore tested; EN/AR + RTL complete; WCAG 2.2 AA; observability + alerts live; runbook + rollback ready; secretary/chairman UAT + security sign-off. Produce a final acceptance-audit report (every `AC-###` → verdict) and a release notes summary. Nothing ships with open `[BLOCK]` items.
