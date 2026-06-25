@@ -13,7 +13,7 @@ interface StateProps {
   body?: string;
   icon?: ReactNode;
   action?: ReactNode;
-  tone?: 'default' | 'error' | 'denied';
+  tone?: 'default' | 'error';
 }
 
 function StateShell({ title, body, icon, action, tone = 'default' }: StateProps) {
@@ -29,7 +29,7 @@ function StateShell({ title, body, icon, action, tone = 'default' }: StateProps)
 
 export function EmptyState({ title, body }: { title?: string; body?: string }) {
   const { t } = useTranslation();
-  return <StateShell icon={<Icon name="inbox" size={20} />} title={title ?? t('state.emptyTitle')} body={body ?? t('state.emptyBody')} />;
+  return <StateShell icon={<Icon name="doc" size={20} />} title={title ?? t('state.emptyTitle')} body={body ?? t('state.emptyBody')} />;
 }
 
 export function LoadingState({ label }: { label?: string }) {
@@ -51,7 +51,7 @@ export function ErrorState({ title, body, onRetry }: { title?: string; body?: st
   return (
     <StateShell
       tone="error"
-      icon={<Icon name="risk" size={20} aria-hidden />}
+      icon={<Icon name="alertCircle" size={20} aria-hidden />}
       title={title ?? t('state.errorTitle')}
       body={body ?? t('common.error')}
       action={onRetry && <Button variant="secondary" onClick={onRetry}>{t('common.retry')}</Button>}
@@ -63,8 +63,7 @@ export function PermissionDenied({ body }: { body?: string }) {
   const { t } = useTranslation();
   return (
     <StateShell
-      tone="denied"
-      icon={<Icon name="audit" size={20} aria-hidden />}
+      icon={<Icon name="lock" size={20} aria-hidden />}
       title={t('state.deniedTitle')}
       body={body ?? t('common.permissionDenied')}
     />

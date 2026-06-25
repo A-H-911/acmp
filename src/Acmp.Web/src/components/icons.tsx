@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
 export type IconName =
   | 'home' | 'backlog' | 'calendar' | 'decision' | 'action' | 'adr' | 'risk'
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
-  | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'building'
+  | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
   | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout';
 
 const PATHS: Record<IconName, ReactNode> = {
@@ -34,7 +34,9 @@ const PATHS: Record<IconName, ReactNode> = {
   sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" /></>,
   moon: <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />,
   eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="2.5" /></>,
-  building: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
+  doc: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6M9 13h3" /></>,
+  alertCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></>,
+  lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
   chevron: <path d="M9 18l6-6-6-6" />,
   chevronDown: <path d="M6 9l6 6 6-6" />,

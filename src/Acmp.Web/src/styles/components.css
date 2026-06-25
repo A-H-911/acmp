@@ -7,18 +7,20 @@
 /* ============================ Buttons ============================ */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
-  block-size: 36px; padding-inline: var(--sp-4); border-radius: var(--r-md);
-  border: 1px solid transparent; font: inherit; font-size: 13px; font-weight: 600;
+  block-size: 38px; padding-inline: var(--sp-4); border-radius: var(--control-radius);
+  border: 1px solid transparent; font: inherit; font-size: 13.5px; font-weight: 600;
   cursor: pointer; text-decoration: none; white-space: nowrap;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
-.btn-primary { background: var(--primary); color: var(--primary-fg); }
+.btn-primary { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow); }
 .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
 .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
 .btn-secondary:hover:not(:disabled) { background: var(--subtle); }
-.btn-ghost { background: transparent; color: var(--text-2); }
-.btn-ghost:hover:not(:disabled) { background: var(--subtle); color: var(--text); }
+.btn-ghost { background: transparent; color: var(--accent); }
+.btn-ghost:hover:not(:disabled) { background: var(--primary-tint); }
+.btn-danger { background: var(--st-danger-dot); color: #fff; }
+.btn-danger:hover:not(:disabled) { filter: brightness(.94); }
 
 /* ============================ Status chip ============================ */
 /* Status = label + colored dot. Never color alone (WCAG 1.4.1). */
@@ -55,12 +57,13 @@
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
 }
 .state-icon {
-  inline-size: 44px; block-size: 44px; border-radius: var(--r-full);
+  inline-size: 40px; block-size: 40px; border-radius: var(--r-lg);
   display: flex; align-items: center; justify-content: center;
   background: var(--subtle); color: var(--text-3);
 }
+/* Error is the only non-neutral state tile. Permission-denied stays calm/neutral
+   (design: a gray "No access" tile, not an amber warning). */
 .state-icon.error { background: var(--st-danger-bg); color: var(--st-danger-fg); }
-.state-icon.denied { background: var(--st-warn-bg); color: var(--st-warn-fg); }
 .state-title { margin: 0; font-size: 15px; font-weight: 600; }
 .state-body { margin: 0; max-inline-size: 42ch; font-size: 13px; color: var(--text-2); }
 .state-actions { display: flex; gap: var(--sp-2); margin-block-start: var(--sp-1); }
