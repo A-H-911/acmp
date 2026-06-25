@@ -14,6 +14,34 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## PH-0 — Validation & Repository Foundation
 
+### 2026-06-25 — P1 scaffold complete (STOP point; report before P2)
+
+**Done**
+- Solution `acmp.sln` (.NET 8, SDK pinned 8.0.422) + `Acmp.Shared` kernel + **Membership** reference
+  module (Domain/Application/Infrastructure), MediatR pipeline (validation, authorization, audit-stamp,
+  logging), `IClock`/`ICurrentUser`/`IFileStore`(MinIO)/`INotificationChannel`, ProblemDetails,
+  health checks, Serilog→Seq, OpenTelemetry, EF migration `Membership_Initial`. **Builds clean; 7 tests pass**
+  (3 ArchUnit boundary, 2 domain, 2 handler).
+- React 18 + Vite web shell: routing, i18n EN/AR, RTL (logical CSS), light/dark tokens. **Builds clean;
+  i18n parity OK (21 keys).**
+- `deploy/`: `Dockerfile.api` (+curl for healthcheck), `Dockerfile.web` (nginx, SPA + `/api` proxy, CSP),
+  `docker-compose.yml` (api/web/sqlserver/seq/minio), `.env.example`. `.github/workflows/ci.yml`
+  (format/build/test + web build/i18n/audit), dev scripts.
+- **`docker compose up --build` → healthy:** api (migrations applied on startup), sqlserver, web all
+  `healthy`; seq + minio running. `/healthz`=200, `/readyz`=Healthy, `/api/members`=401 (auth lands P3 —
+  pipeline + authorization behavior confirmed working).
+
+**Fixes during bring-up**
+- OTel OTLP exporter 1.9.0 → 1.10.0 (cleared an advisory; remaining NU1902 is moderate, allowed by DoD;
+  logged for P16 dependency scan).
+- web healthcheck `localhost`→`127.0.0.1` (busybox wget resolved IPv6 `::1`; nginx is IPv4-only).
+
+**Decisions recorded**
+- OQ-012 resolved to (a): separate nginx `web` container (per user instruction + docs/34 §8), overriding
+  the recommended default (b). Logged in ph0-validation §3/§6.
+
+**Next (P2 — await go-ahead):** backend reference-module deepening / Identity & Permissions per phase-prompts.
+
 ### 2026-06-25 — PH-0 kickoff
 
 **Done**

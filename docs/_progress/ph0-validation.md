@@ -139,6 +139,6 @@ No business features in P1 (per phase-prompt P1).
 - [x] Domain/modules/roles/core-loop confirmed against canon.
 - [x] PH-0/P1 open-decision defaults applied and recorded; org answers folded in.
 - [x] Toolchain verified (.NET 8 / Node / Docker CLI / Git).
-- [ ] Docker daemon healthy.
+- [x] Docker daemon healthy (Docker Desktop started during PH-0).
 - [x] Arabic FTS spike run and recorded (§7) — stock image lacks FTS; recall test deferred to P5; v1 = SQL FTS stands.
-- [ ] Repo scaffolded per `docs/34`; `docker compose up` healthy. → **report before P2**.
+- [x] Repo scaffolded per `docs/34`; `docker compose up` healthy (api + sqlserver + web healthy; seq + minio running). → **report before P2**.
