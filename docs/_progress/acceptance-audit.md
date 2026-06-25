@@ -40,14 +40,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > only (bundled Keycloak + ACMP-owned realm + realm bootstrap); no app behavior changed. **Live-verified:**
 > `docker compose up` brought all 6 services up HEALTHY, Keycloak imported the `acmp` realm, OIDC discovery
 > issuer = `http://keycloak.localhost:8085/realms/acmp` (PKCE S256), `GET /api/members` → 401 (fail-closed),
-> and the **P4-deferred `Membership_P4_Identity` migration applied** on api startup. **AC-001 → Partial**
-> (realm live + discovery + fail-closed 401 proven against the real authority; full **browser** login
-> round-trip → dashboard-with-roles still pending). **AC-004 stays Pending** (realm idle-timeout/session policy
-> not yet configured — OQ-003). Both finalize at P18/UAT. See progress-log CHANGE-001 entry.
+> and the **P4-deferred `Membership_P4_Identity` migration applied** on api startup. **Browser login
+> round-trip driven successfully** (Chrome authz-code + PKCE → access token with `aud: acmp-api` +
+> `realm_access.roles: [Administrator, Secretary]` → `GET /api/members` 200). **AC-001 → Partial** (SSO
+> login + role mapping + API authorization proven end-to-end; the only remaining piece is a deployed-SPA
+> build-arg gap — `Dockerfile.web` needs `VITE_OIDC_*` so the UI can initiate login). **AC-004 stays Pending**
+> (realm idle-timeout/session policy not yet configured — OQ-003). See progress-log CHANGE-001 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Partial | manual (live stack: realm import + OIDC discovery + 401) | Bundled realm live (ADR-0015); issuer/PKCE verified, fail-closed 401 vs real authority; full browser login round-trip → P18/UAT |
+| AC-001 | Auth & Identity | Partial | manual (live: browser PKCE login → token [roles Administrator,Secretary; aud acmp-api] → GET /api/members 200) | SSO login round-trip proven end-to-end against the bundled realm. Remaining: deployed SPA can't initiate login (web Dockerfile needs VITE_OIDC build args) |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
 | AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |

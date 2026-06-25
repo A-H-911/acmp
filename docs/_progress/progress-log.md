@@ -63,8 +63,17 @@ successfully` (KC 26.0.8). **OIDC discovery issuer = `http://keycloak.localhost:
 to the pinned `KC_HOSTNAME`; PKCE **S256** advertised), and the API resolves it via `extra_hosts` (api healthy).
 **`GET /api/members` → 401** against the real authority (fail-closed still holds). **P4 migration applied** on
 api startup: `Database migrations applied.` (`Membership_P4_Identity` — closes the P4-deferred `docker compose up`
-apply). Backend **311** + web **33** untouched (no app code changed). Still pending: a full **browser** login
-round-trip (PKCE redirect → dashboard with mapped roles) and realm idle-timeout policy → AC-001/AC-004.
+apply). Backend **311** + web **33** untouched (no app code changed).
+
+**Browser login round-trip — done (2026-06-25).** Set a password for the `acmp-admin` realm user via the
+Keycloak admin API, then drove the **full authorization-code + PKCE flow in Chrome**: Keycloak login page →
+submit → redirect to `http://localhost:8088/?code=…&iss=http://keycloak.localhost:8085/realms/acmp` (state
+matched). Exchanged the code (with the PKCE verifier) → access token with **`iss`** correct, **`aud: acmp-api`**,
+**`realm_access.roles: [Administrator, Secretary]`**, groups `[/Administrator, /Secretary]`; **`GET /api/members`
+with that bearer → 200**. End-to-end identity contract proven (browser login → mapped roles → API authorizes).
+**Remaining gap (not identity):** `deploy/Dockerfile.web` runs `npm run build` with no `VITE_OIDC_*` build args,
+so the deployed SPA bundle can't *initiate* login through the UI (fails closed) — needs build-arg wiring
+(ARG/ENV in the web Dockerfile + compose `build.args`). Idle-timeout/session policy still pending → AC-004.
 
 **Decisions / drift (guardrail 11).**
 - **No new ADR** — ADR-0015 covers this; this is its rollout (CHANGE-001 §6).
