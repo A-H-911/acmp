@@ -103,6 +103,32 @@ a { color: inherit; }
 /* --text-2 (not --text-3): at 10.5px this label needs ≥4.5:1 for WCAG AA. */
 .topbar-user-role { display: block; font-size: 10.5px; color: var(--text-2); }
 
+/* Identity dropdown (design "Navigation & IA": avatar + name + role → role="menu" panel). */
+.user-menu { position: relative; display: flex; }
+.user-menu-trigger {
+  display: flex; align-items: center; gap: var(--sp-2);
+  block-size: 40px; padding-inline: var(--sp-1) var(--sp-2);
+  border: 1px solid transparent; border-radius: 9px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.user-menu-trigger:hover { background: var(--subtle); border-color: var(--border); }
+.user-menu-caret { color: var(--text-3); transform: rotate(90deg); }
+.user-menu-trigger[aria-expanded='true'] .user-menu-caret { transform: rotate(-90deg); }
+.user-menu-panel {
+  position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0;
+  inline-size: 240px; padding: 6px; z-index: 60;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; box-shadow: var(--shadow-lg);
+}
+.user-menu-id { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 6px; }
+.user-menu-sep { block-size: 1px; background: var(--border); margin-block: 4px; }
+.user-menu-item {
+  display: flex; align-items: center; gap: 10px; inline-size: 100%;
+  text-align: start; border: 0; border-radius: 8px; padding: 8px 10px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.user-menu-item:hover { background: var(--subtle); }
+
 .app-body { display: flex; flex: 1; min-block-size: 0; }
 
 /* ============================ Sidebar nav ============================ */
