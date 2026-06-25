@@ -24,10 +24,10 @@ This repository is a **planning and handoff package**, not application code. It 
 
 **The platform must not depend on the organization's shared runtime infrastructure.** Specifically it does **not** use the org's **Hangfire**, **ELK/Seq**, or **centralized notification platform (Email/SMS/Firebase)**. ACMP **builds and self-hosts its own** background processing, observability/logging, and notification channels as part of its own deployment.
 
-Two deliberate, explicitly-allowed exceptions (not "operational infra we'd otherwise build"):
-- **SQL Server** — the mandated datastore; ACMP runs **its own database/instance**.
-- **Identity (OIDC)** — ACMP **federates** to **Keycloak** for SSO. This is a brief-mandated SSO federation; ACMP consumes identity (it does not build an IdP).
-- **Webex** — an external SaaS integration via a pluggable adapter (allowed; not org runtime infra).
+As of **ADR-0015 (2026-06-25), ACMP owns and bundles all of its runtime dependencies** — there are **no external runtime services** in v1:
+- **SQL Server** — the mandated datastore, **bundled in ACMP's own Docker Compose stack**.
+- **Identity (OIDC)** — **Keycloak is self-hosted as a bundled container with an ACMP-owned realm** (authorization-code + PKCE; roles from realm-role/group claims; no self-registration). ACMP does **not** federate to an org IdP (the org has none) and does **not** build its own authorization server — it runs Keycloak. *(Updated from the original "federate to org Keycloak" — see ADR-0015.)*
+- **Webex** — the **only** external dependency: a deferred **Phase-2** SaaS integration via a pluggable adapter (not a v1 runtime service).
 
 Everything else the platform needs, it ships in its own containers.
 
@@ -112,7 +112,7 @@ Everything else the platform needs, it ships in its own containers.
 | Macro-architecture | **Modular monolith** (single deployable, logically modular). Microservices explicitly rejected for v1. | ADR-0001 |
 | Backend | **.NET 8 (LTS), ASP.NET Core, REST**. Clean Architecture per module + vertical-slice handlers (MediatR). EF Core. | ADR-0002 |
 | Primary datastore | **Microsoft SQL Server** only (transactional + reporting via columnstore + full-text search). ACMP runs its own DB instance. No second DB in v1. | ADR-0003 |
-| Identity | **Keycloak (OIDC)** is the identity provider — ACMP federates to it for SSO (authorization-code + PKCE), consumes roles/group claims, and does **not** build its own IdP. **No public self-registration**; invitation/provisioned onboarding only. | ADR-0004 |
+| Identity | **Keycloak (OIDC)** is the identity provider — **self-hosted as a bundled container with an ACMP-owned realm** (ADR-0015; authorization-code + PKCE; roles from realm-role/group claims; ACMP does **not** build its own authorization server, and does **not** federate to an org IdP). **No public self-registration**; invitation/provisioned onboarding (manual in the Keycloak admin console). | ADR-0004, ADR-0015 |
 | Notifications | **Channel-abstraction** (`INotificationChannel`). **v1 channel = in-app notification center only (no email in v1).** **Webex adapter = Phase 2.** Email deferred until an SMTP relay is available. Webex never hard-coded; no org notification platform. | ADR-0005 |
 | Diagrams | **Tarseem** as a containerized render sidecar; **JSON spec is the version-controlled source of truth**, artifacts are generated. | ADR-0006 |
 | Research/planning | **Keystone is OPTIONAL** — a companion Claude Code workflow for Research/Discovery topics. The Research module works **standalone**; when used, the platform **imports** Keystone's structured artifacts and **adopts its ID scheme**. Never embedded as a service, never a hard dependency. | ADR-0007 |
@@ -175,8 +175,7 @@ Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM)
 1. **Architecture governance, not project management.** Every feature must serve committee governance/traceability; reject generic PM creep.
 2. **Modular monolith first.** No distributed architecture without a demonstrated, measured need.
 3. **SQL Server is enough.** No second datastore without evidence.
-4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, and notification channels using standard open-source libraries; it integrates **Tarseem** (diagrams) and **optionally Keystone** (research/discovery — not required), and federates identity to **Keycloak (OIDC)**.
+4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, and notification channels using standard open-source libraries; it integrates **Tarseem** (diagrams) and **optionally Keystone** (research/discovery — not required), and **self-hosts Keycloak (OIDC)** for identity (ADR-0015).
 5. **Human-reviewed automation.** AI-extracted transcript content is *candidate* until a human approves it.
 6. **Auditable & immutable where it matters.** Votes and issued decisions cannot be silently changed.
 7. **Bilingual and RTL are first-class**, not bolted on.
-8. 
