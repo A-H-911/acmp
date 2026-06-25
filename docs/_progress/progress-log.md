@@ -58,6 +58,18 @@ No new production code was warranted — rebuilding what exists would violate gu
 feature ACs (AC-058/059) land in P4 with HTTP + authz + UI. Domain capability + unit tests exist but the criteria
 are not yet demonstrable end-to-end, so nothing flips to Met/Partial (conservative; G-TRACE).
 
+### 2026-06-25 — P2 review: closed the one blocker (pipeline/validator test coverage)
+
+P2 review (audit-only) found a single blocking gap: handler tests bypassed the MediatR pipeline, leaving
+`InviteMemberValidator` and all three behaviors at **0%** coverage and `Membership.Application` at **70.5%
+line** (below the 80% gate, docs/31 §6.2). Closed it with `MembershipPipelineTests` — 4 tests driving
+`InviteMemberCommand` through the **real** pipeline (logging→authz→validation→handler) per docs/31 §2.2:
+valid+Administrator passes; invalid command → `ValidationException` (handler never runs); unauthenticated
+and wrong-role → `UnauthorizedAccessException`. Result: **11/11 tests pass, 0 warnings**;
+`Membership.Application` **100% line/branch**, `Membership.Domain` **100%**, validator + behaviors **100%**.
+Tracked deferrals unchanged (AuditEvent→BL-066, policy authz + 401/403→P4, localized errors→BL-016,
+integration tests→P4). **P2 verdict now GO.**
+
 **Next (await go-ahead):** P3 frontend-foundation completion (OIDC/Keycloak login, TanStack Query, `@dnd-kit`)
 and/or P4 Identity & Permissions (claim→role mapping, policy + ABAC handlers, permission-matrix suite, 401/403 fix).
 
