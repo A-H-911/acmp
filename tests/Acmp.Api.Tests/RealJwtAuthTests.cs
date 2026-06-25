@@ -1,13 +1,13 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
+using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using FluentAssertions;
 
 namespace Acmp.Api.Tests;
 
