@@ -14,6 +14,11 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
+>
+> P2 update (2026-06-25): reference module pattern verified (build clean, 7/7 tests). Still a pattern/
+> foundation phase — no feature AC flips. The Membership domain capability behind AC-058 (deactivate keeps
+> attribution) and AC-059 (directory readable by all roles) exists with unit tests, but both criteria require
+> HTTP + authorization + UI, which land in P4 — so they remain `Pending`. See progress-log P2 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|

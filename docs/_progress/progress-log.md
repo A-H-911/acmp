@@ -12,6 +12,57 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P2 — Backend Foundation & Reference Module Pattern
+
+### 2026-06-25 — P2 verified: pattern already delivered by the P1 scaffold; closed with deferral notes
+
+**Finding.** Every P2 deliverable was already implemented during the P1 scaffold. Re-read the actual code
+(not the log summary) against the P2 checklist and re-verified from ground truth: `dotnet test acmp.sln`
+→ **7/7 pass** (2 domain, 2 application, 3 architecture); only NU1902 (moderate, logged for P16) remains.
+No new production code was warranted — rebuilding what exists would violate guardrail 12 / ponytail.
+
+**P2 checklist → status (Membership = reference module):**
+- Domain/Application/Infrastructure layers — ✅ `CommitteeMember` aggregate (factory + `CommitteeMemberInvitedEvent`),
+  `InviteMember` command slice, `GetMembers` query slice, `MembershipDbContext` + config + migration.
+- MediatR pipeline behaviors — ✅ logging → authorization → validation (outer→inner, registered in
+  `SharedKernelExtensions`). Validation via FluentValidation (`InviteMemberValidator`); authorization via the
+  `IAuthorizedRequest` opt-in marker + `AllowedRoles` (guardrail-4 day-one hook; full ABAC/SoD = P4).
+- EF Core schema-per-module — ✅ `HasDefaultSchema("membership")`, maps only its own `DbSet`; enforced by the
+  ArchUnit boundary tests.
+- Forward-only migration — ✅ `Membership_Initial`.
+- Problem Details error model — ✅ `GlobalExceptionHandler`: `ValidationException`→400 (+`errors`),
+  `InvalidOperationException`→409, `UnauthorizedAccessException`→401, else 500.
+- REST + OpenAPI — ✅ `/api/members` GET+POST (`Results.Created` + location); Swagger wired (non-prod).
+- Abstractions — ✅ `IClock`/`ICurrentUser`/`IFileStore` registered + implemented; **`INotificationChannel`
+  interface established, concrete impl deferred to BL-052** (in-app notification center). 3 wired + 1 established.
+- Vertical-slice proof — ✅ one command (InviteMember) + one query (GetMembers) + tests (domain; handler
+  invite→get + duplicate-reject; ArchUnit boundary). Also proven live in P1 (`docker compose up` healthy,
+  `/api/members`=401 confirmed the auth pipeline executes).
+
+**Deliberate deviations / deferrals (recorded — no silent drift, guardrail 11):**
+- **Audit = field-stamping, not a pipeline behavior.** The P2 prompt lists "audit" among the behaviors;
+  implemented instead as central `CreatedBy/At` + `UpdatedBy/At` stamping in `ModuleDbContext.SaveChangesAsync`
+  (every `AuditableEntity`, one place). Rationale: the append-only `AuditEvent` log + hash chain is BL-066,
+  sequenced before votes/decisions; emitting `AuditEvent`s now would pre-empt that phase with no store to write
+  to. Stamping satisfies who/when traceability at P2 level. Consistent with ADR-0009 — no new ADR needed.
+- **401-vs-403 (finding for P4, ties to BL-020 / AC-005/006/008).** `AuthorizationBehavior` throws
+  `UnauthorizedAccessException` for both "not authenticated" and "authenticated-but-wrong-role", and the host
+  maps both to 401. Role-denial for an authenticated user must be **403** (only missing/invalid token = 401).
+  Fix belongs in P4 (authorization rework + permission-matrix suite). Both touch-points are single centralized
+  files (shared behavior + host handler), so deferral carries no per-module-copy cost and no AC depends on it yet.
+- **API integration tests** (WebApplicationFactory + Testcontainers + a fake-Keycloak `TestAuthHandler`,
+  docs/34 §5) deferred to P4, when a JWT injector exists to exercise the HTTP authz path meaningfully.
+  Handler-level slice tests cover Invite→Get end-to-end today.
+
+**Acceptance audit.** Unchanged — all 66 ACs remain `Pending`. P2 is a pattern/foundation phase; the Membership
+feature ACs (AC-058/059) land in P4 with HTTP + authz + UI. Domain capability + unit tests exist but the criteria
+are not yet demonstrable end-to-end, so nothing flips to Met/Partial (conservative; G-TRACE).
+
+**Next (await go-ahead):** P3 frontend-foundation completion (OIDC/Keycloak login, TanStack Query, `@dnd-kit`)
+and/or P4 Identity & Permissions (claim→role mapping, policy + ABAC handlers, permission-matrix suite, 401/403 fix).
+
+---
+
 ## PH-0 — Validation & Repository Foundation
 
 ### 2026-06-25 — P1 scaffold complete (STOP point; report before P2)
