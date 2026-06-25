@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Acmp.Shared.Application.Exceptions;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,9 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         var (status, title) = exception switch
         {
             ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
+            ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Forbidden"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
+            KeyNotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             InvalidOperationException => (StatusCodes.Status409Conflict, "Conflict"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };

@@ -28,6 +28,8 @@ public sealed class MembershipDbContextFactory : IDesignTimeDbContextFactory<Mem
         public bool IsAuthenticated => false;
         public string? UserId => null;
         public string? UserName => null;
+        public string? Email => null;
+        public string? DisplayName => null;
         public IReadOnlyCollection<string> Roles => Array.Empty<string>();
         public bool IsInRole(string role) => false;
     }

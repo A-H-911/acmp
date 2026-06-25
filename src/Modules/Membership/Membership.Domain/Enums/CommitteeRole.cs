@@ -1,7 +1,10 @@
 ﻿namespace Acmp.Modules.Membership.Domain.Enums;
 
 // Canonical global roles (README section C). Sourced from Keycloak group/realm-role claims
-// (ADR-0004) and mapped to these; ACMP does not assign roles itself.
+// (ADR-0004) and mapped to these; ACMP does not assign roles itself. Member names match the
+// canonical role-name strings (Acmp.Shared.Authorization.AcmpRoles) via nameof so the enum and
+// the authorization vocabulary never drift. Guest = Guest/Presenter; the Presenter ability is the
+// per-topic relationship (docs/10 §D), not a separate global role.
 public enum CommitteeRole
 {
     Chairman = 0,
@@ -11,5 +14,5 @@ public enum CommitteeRole
     Auditor = 4,
     Administrator = 5,
     Submitter = 6,
-    GuestPresenter = 7
+    Guest = 7
 }

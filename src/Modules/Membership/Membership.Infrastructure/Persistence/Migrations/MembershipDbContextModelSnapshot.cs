@@ -49,7 +49,7 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsVotingEligible")
                         .HasColumnType("bit");
 
                     b.Property<string>("KeycloakUserId")
@@ -61,6 +61,9 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
@@ -81,6 +84,233 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("committee_members", "membership");
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.Delegation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Capability")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<long>("DelegateMemberId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("DelegatorMemberId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("ValidFrom")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ValidTo")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("PublicId");
+
+                    b.HasIndex("DelegatorMemberId");
+
+                    b.HasIndex("DelegateMemberId", "ValidTo");
+
+                    b.ToTable("delegations", "membership");
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.Stream", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("PublicId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("streams", "membership");
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.TopicCapabilityGrant", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Capability")
+                        .HasColumnType("int");
+
+                    b.Property<long>("CommitteeMemberId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid?>("MeetingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TopicId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset?>("ValidFrom")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ValidTo")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("PublicId");
+
+                    b.HasIndex("CommitteeMemberId", "TopicId");
+
+                    b.ToTable("topic_capability_grants", "membership");
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.CommitteeMember", b =>
+                {
+                    b.OwnsMany("Acmp.Modules.Membership.Domain.MemberStreamAssignment", "Streams", b1 =>
+                        {
+                            b1.Property<long>("CommitteeMemberId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("StreamId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<long>("StreamId"));
+
+                            b1.HasKey("CommitteeMemberId", "StreamId");
+
+                            b1.ToTable("member_streams", "membership");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CommitteeMemberId");
+                        });
+
+                    b.Navigation("Streams");
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.Delegation", b =>
+                {
+                    b.HasOne("Acmp.Modules.Membership.Domain.CommitteeMember", null)
+                        .WithMany()
+                        .HasForeignKey("DelegateMemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Acmp.Modules.Membership.Domain.CommitteeMember", null)
+                        .WithMany()
+                        .HasForeignKey("DelegatorMemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.Stream", b =>
+                {
+                    b.OwnsOne("Acmp.Shared.Domain.ValueObjects.LocalizedString", "Name", b1 =>
+                        {
+                            b1.Property<long>("StreamId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("Ar")
+                                .IsRequired()
+                                .HasMaxLength(128)
+                                .HasColumnType("nvarchar(128)")
+                                .HasColumnName("name_ar");
+
+                            b1.Property<string>("En")
+                                .IsRequired()
+                                .HasMaxLength(128)
+                                .HasColumnType("nvarchar(128)")
+                                .HasColumnName("name_en");
+
+                            b1.HasKey("StreamId");
+
+                            b1.ToTable("streams", "membership");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StreamId");
+                        });
+
+                    b.Navigation("Name")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Acmp.Modules.Membership.Domain.TopicCapabilityGrant", b =>
+                {
+                    b.HasOne("Acmp.Modules.Membership.Domain.CommitteeMember", null)
+                        .WithMany()
+                        .HasForeignKey("CommitteeMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

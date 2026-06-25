@@ -1,0 +1,243 @@
+/*
+ * Administration → Users & Membership screen. Mirrors the "ACMP Administration" Claude Design
+ * file (that screen only). All color/spacing comes from design tokens; layout uses CSS logical
+ * properties so it mirrors cleanly under [dir="rtl"] with no per-direction overrides.
+ */
+
+.adm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-3);
+}
+.adm-head-sub {
+  margin-block-start: var(--sp-1);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.adm-provision {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 38px;
+  padding-inline: var(--sp-4);
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--primary);
+  color: var(--primary-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.adm-provision:hover {
+  background: var(--primary-hover);
+}
+
+/* Sub-tabs (only Users & Membership is implemented in this phase). */
+.adm-tabs {
+  display: flex;
+  gap: 2px;
+  margin-block-end: var(--sp-4);
+  border-block-end: 1px solid var(--border);
+  overflow-x: auto;
+}
+.adm-tab {
+  height: 40px;
+  padding-inline: var(--sp-4);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+  white-space: nowrap;
+}
+.adm-tab[aria-current='page'] {
+  color: var(--text);
+  border-block-end-color: var(--accent);
+}
+.adm-tab:disabled {
+  color: var(--text-3);
+  cursor: not-allowed;
+}
+
+/* Keycloak read-only notice. */
+.adm-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  background: var(--st-info-bg);
+  border: 1px solid var(--st-info-dot);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  margin-block-end: var(--sp-4);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--st-info-fg);
+}
+.adm-banner svg {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+}
+
+/* Filter row. */
+.adm-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-4);
+}
+.adm-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 34px;
+  padding-inline: var(--sp-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.adm-filter:disabled {
+  cursor: not-allowed;
+}
+.adm-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Table. */
+.adm-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.adm-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.6fr) 168px minmax(200px, 1.4fr) 120px;
+  align-items: center;
+}
+.adm-hrow {
+  background: var(--header);
+  border-block-end: 1px solid var(--border);
+}
+.adm-hcell {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--sp-4);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: start;
+}
+.adm-row {
+  border-block-end: 1px solid var(--border-soft);
+  min-block-size: 62px;
+}
+.adm-row:last-child {
+  border-block-end: 0;
+}
+.adm-cell {
+  padding: var(--sp-2) var(--sp-4);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.adm-user {
+  gap: var(--sp-3);
+}
+.adm-avatar {
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  color: var(--primary-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.adm-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.adm-email {
+  display: block;
+  font-size: 12px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-role {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.adm-role-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.adm-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 11px;
+  color: var(--text-3);
+}
+.adm-chips {
+  display: flex;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.adm-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+}
+.adm-chip.observer {
+  font-style: italic;
+}
+.adm-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--st-success-fg);
+}
+.adm-vote .status-chip-dot,
+.adm-vote-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--r-full);
+  background: var(--st-success-dot);
+}

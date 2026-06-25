@@ -1,8 +1,10 @@
 ﻿using Acmp.Api.Endpoints;
 using Acmp.Api.Infrastructure;
+using Acmp.Api.Infrastructure.Authentication;
 using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
 using Acmp.Shared;
+using Acmp.Shared.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -19,6 +21,10 @@ builder.Host.UseSerilog((context, services, config) => config
 // Shared kernel (clock, current-user, file store, MediatR behaviors) + modules.
 builder.Services.AddSharedKernel(builder.Configuration);
 builder.Services.AddMembershipModule(builder.Configuration);
+
+// Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
+builder.Services.AddAcmpAuthentication(builder.Configuration);
+builder.Services.AddAcmpAuthorization(builder.Configuration);
 
 // One MediatR registration over the shared + module application assemblies.
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
@@ -46,6 +52,9 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Swagger in non-production only (OQ-019).
 if (!app.Environment.IsProduction())

@@ -28,25 +28,32 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > `SortableList` is built + tested in P3 but isn't wired into those screens until P5/P6. AC-001/005/006/008
 > (Keycloak login, RBAC 403) stay `Pending` → P4 (no Keycloak container; server enforcement is P4). Nav/route
 > gating in P3 hides UI only — it is not authorization. See progress-log P3 entry.
+>
+> P4 update (2026-06-25): Identity & Permissions. Server-side Keycloak claim→role mapping, ASP.NET
+> policy-based authorization over the full docs/10 §C matrix, ABAC handlers (stream/ownership/delegation),
+> SoD predicates, the 401-vs-403 fix, and the Membership module (JIT provisioning, deactivation, streams,
+> delegation) + the Users & Membership admin screen. **Met:** AC-002, AC-008, AC-058, AC-059. **Partial**
+> (mechanism proven, end-to-end deferred to the consuming phase): AC-003/005/006/007 (RBAC/SoD-5 + audit→BL-066),
+> AC-009/010/011 (ABAC, → P5+), AC-012/013/015/016 (SoD predicates, → P8/P9). See progress-log P4 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Pending | — | Keycloak SSO login |
-| AC-002 | Auth & Identity | Pending | — | Role from claim → Secretary |
-| AC-003 | Auth & Identity | Pending | — | No-claim → deny/Submitter + AuthEvent |
-| AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth, no data loss |
-| AC-005 | RBAC | Pending | — | Submitter nav hidden + 403 |
-| AC-006 | RBAC | Pending | — | Auditor read-only + 403 |
-| AC-007 | RBAC | Pending | — | Admin ≠ committee-content (SoD-5) |
-| AC-008 | RBAC | Pending | — | No token → 401 |
-| AC-009 | ABAC | Pending | — | Owner edit allowed, non-owner 403 |
-| AC-010 | ABAC | Pending | — | Stream scope → 403 |
-| AC-011 | ABAC | Pending | — | Presenter scoped to topic+meeting |
-| AC-012 | SoD-1 | Pending | — | Verifier ≠ owner (negative) |
-| AC-013 | SoD-1 | Pending | — | Verifier ≠ owner (positive) |
-| AC-014 | SoD-2 | Pending | — | MoM approver = sole author → flagged |
-| AC-015 | SoD-3 | Pending | — | Chairman not sole vote-counter |
-| AC-016 | SoD-3 | Pending | — | Chairman override w/ co-attestation |
+| AC-001 | Auth & Identity | Pending | — | Keycloak SSO login (needs live realm; JWT bearer wired P4) |
+| AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
+| AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
+| AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (Keycloak session + form auto-save) |
+| AC-005 | RBAC | Partial | PermissionMatrixTests + MembershipApiTests | Submitter denied (matrix every restricted policy + HTTP 403); nav hidden P3; named feature endpoints P5–P9 |
+| AC-006 | RBAC | Partial | PermissionMatrixTests + MembershipApiTests | Auditor 403 on mutate (matrix + HTTP); audit-on-deny → BL-066; feature endpoints P5+ |
+| AC-007 | RBAC | Partial | PermissionMatrixTests | SoD-5 proven: Administrator denied on every committee-content policy; live vote/decision API 403 → P7/P9 |
+| AC-008 | RBAC | Met | MembershipApiTests (No_token_returns_401) | RequireAuthorization + JwtBearer → 401 without a token |
+| AC-009 | ABAC | Partial | AbacHandlerTests + PermissionMatrixTests | Owner-widens-AiO proven on stub resource; live Topic edit 403 → P5 |
+| AC-010 | ABAC | Partial | AbacHandlerTests + MembershipResolverTests | Stream scope handler + resolver proven; live action-on-out-of-scope-topic 403 → P5/P8 |
+| AC-011 | ABAC | Partial | AbacHandlerTests | Capability scoped to the specific topic proven; presenter meeting-window enforcement → P6 |
+| AC-012 | SoD-1 | Partial | SegregationOfDutiesTests | Verifier≠owner predicate proven; Action.Verify enforcement → P8 |
+| AC-013 | SoD-1 | Partial | SegregationOfDutiesTests | Independent-verifier predicate proven; positive path at Action.Verify → P8 |
+| AC-014 | SoD-2 | Pending | — | MoM approver = sole author → MoM module (P7) |
+| AC-015 | SoD-3 | Partial | SegregationOfDutiesTests | Co-attestation predicate proven; Vote close + chair-approve enforcement → P9 |
+| AC-016 | SoD-3 | Partial | SegregationOfDutiesTests | Co-attestation predicate proven; override-with-co-attest record → P9 |
 | AC-017 | Audit | Pending | — | State change → audit entry |
 | AC-018 | Audit | Pending | — | Audit row immutable |
 | AC-019 | Audit | Pending | — | Hash-chain integrity check |
@@ -88,8 +95,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |
 | AC-057 | Aging | Pending | — | SLA aging badge + notify |
-| AC-058 | Membership | Pending | — | Deactivate keeps historical attribution |
-| AC-059 | Membership | Pending | — | Member directory readable by all roles |
+| AC-058 | Membership | Met | CommitteeMemberTests + MembershipFeatureTests | Deactivate → Disabled; name/email/role/attribution intact |
+| AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |
 | AC-060 | Search & Trace | Pending | — | Global search grouped results |
 | AC-061 | Search & Trace | Pending | — | Arabic search via word-breaker |
 | AC-062 | Search & Trace | Pending | — | Traceability panel up/downstream |
@@ -98,4 +105,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 4 Met (AC-040/042/045/046) · 1 Partial (AC-041) · 61 Pending. (P3 frontend foundation.)
+**Summary:** 66 ACs · 9 Met (AC-002/008/040/042/045/046/058/059) · 11 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 46 Pending. (Through P4 Identity & Permissions.)
+
+> P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
+> that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
+> unit-tested but whose end-to-end demonstration needs a not-yet-built aggregate (Topics P5, Actions P8,
+> Votes P9, MoM P7), endpoint, or the immutable audit store (BL-066) are **Partial**, with the consuming
+> phase named. This avoids over-claiming: the policy/handler/predicate is proven now; the live HTTP path
+> lands with its module.

@@ -20,6 +20,10 @@ public sealed class CurrentUserService : ICurrentUser
 
     public string? UserName => User?.FindFirst("preferred_username")?.Value ?? User?.Identity?.Name;
 
+    public string? Email => User?.FindFirst("email")?.Value;
+
+    public string? DisplayName => User?.FindFirst("name")?.Value ?? UserName;
+
     public IReadOnlyCollection<string> Roles =>
         User?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray() ?? Array.Empty<string>();
 

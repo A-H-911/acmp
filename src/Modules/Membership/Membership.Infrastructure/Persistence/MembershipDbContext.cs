@@ -3,6 +3,7 @@ using Acmp.Modules.Membership.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Stream = Acmp.Modules.Membership.Domain.Stream;
 
 namespace Acmp.Modules.Membership.Infrastructure.Persistence;
 
@@ -17,6 +18,9 @@ public sealed class MembershipDbContext : ModuleDbContext, IMembershipDbContext
     }
 
     public DbSet<CommitteeMember> Members => Set<CommitteeMember>();
+    public DbSet<Stream> Streams => Set<Stream>();
+    public DbSet<TopicCapabilityGrant> TopicCapabilities => Set<TopicCapabilityGrant>();
+    public DbSet<Delegation> Delegations => Set<Delegation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -16,11 +16,23 @@ public sealed class CommitteeMemberConfiguration : IEntityTypeConfiguration<Comm
         b.Property(x => x.FullName).IsRequired().HasMaxLength(256);
         b.Property(x => x.Email).IsRequired().HasMaxLength(256);
         b.Property(x => x.Role).HasConversion<int>().IsRequired();
-        b.Property(x => x.IsActive).IsRequired();
+        b.Property(x => x.Status).HasConversion<int>().IsRequired();
+        b.Property(x => x.IsVotingEligible).IsRequired();
         b.Property(x => x.CreatedBy).IsRequired().HasMaxLength(128);
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.HasIndex(x => x.KeycloakUserId).IsUnique();
         b.HasIndex(x => x.Email).IsUnique();
+        b.Ignore(x => x.IsActive); // derived from Status
         b.Ignore(x => x.DomainEvents);
+
+        // Stream assignments are an owned collection accessed through the _streams backing field.
+        b.Navigation(x => x.Streams).UsePropertyAccessMode(PropertyAccessMode.Field);
+        b.OwnsMany(x => x.Streams, sa =>
+        {
+            sa.ToTable("member_streams");
+            sa.WithOwner().HasForeignKey(s => s.CommitteeMemberId);
+            sa.HasKey(s => new { s.CommitteeMemberId, s.StreamId });
+            sa.Property(s => s.StreamId);
+        });
     }
 }

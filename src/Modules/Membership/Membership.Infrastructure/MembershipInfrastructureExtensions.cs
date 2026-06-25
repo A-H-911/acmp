@@ -1,6 +1,8 @@
 ﻿using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Application.Abstractions;
+using Acmp.Modules.Membership.Infrastructure.Authorization;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
+using Acmp.Shared.Authorization.Abac;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,12 @@ public static class MembershipInfrastructureExtensions
                 sql.MigrationsHistoryTable("__EFMigrationsHistory", MembershipDbContext.Schema)));
 
         services.AddScoped<IMembershipDbContext>(sp => sp.GetRequiredService<MembershipDbContext>());
+
+        // ABAC ports the shared-kernel authorization handlers depend on (docs/10 §D/§E).
+        services.AddScoped<IUserStreamProvider, UserStreamProvider>();
+        services.AddScoped<ITopicCapabilityResolver, TopicCapabilityResolver>();
+        services.AddScoped<IDelegationResolver, DelegationResolver>();
+
         services.AddMembershipApplication();
         return services;
     }

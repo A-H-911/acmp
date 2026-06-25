@@ -12,6 +12,82 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P4 — Identity & Permissions
+
+### 2026-06-25 — P4 complete: claim→role mapping, policy + ABAC authorization, SoD, full Membership module, Users & Membership screen
+
+**Done.** Implemented the authorization framework + the Membership module fully, plus the admin
+Users & Membership UI.
+
+- **Authentication (host, ADR-0004).** Config-driven Keycloak `JwtBearer` (`Authentication:Keycloak`);
+  `OnTokenValidated` maps realm/group role claims → canonical ACMP role claims via `IRoleClaimMapper`.
+  Local token validation (signature/issuer/audience); with no Authority configured the scheme rejects
+  every token so protected endpoints return **401** (fail-closed). `UseAuthentication/UseAuthorization`
+  wired; the members group is `RequireAuthorization()`.
+- **Claim→role mapping.** `KeycloakRoleClaimMapper` mirrors the SPA `roles.ts` normalization (bare /
+  `acmp-` / `/acmp/` / group-path / `coordinator`→Secretary alias) + config overrides
+  (`Authorization:RoleMapping:ClaimToRole`). No-claim default = **deny** (`DefaultRole=null`, AC-003) with
+  an `AuthEvent`.
+- **401-vs-403 fix (carried defect).** New `ForbiddenAccessException`→**403**; `UnauthorizedAccessException`
+  stays **401**. Primary gate is ASP.NET policy authorization (middleware → correct 401/403); the MediatR
+  `AuthorizationBehavior` is defense-in-depth and now throws Forbidden for authenticated-wrong-role and
+  emits an audit signal on deny.
+- **Policy registry (docs/10 §C).** 31 named policies registered as `CapabilityRequirement(allowRoles,
+  ownerRoles)`; Deny = absence of both, so **SoD-5** (Administrator walled off committee content) is
+  structural. `CapabilityHandler` evaluates RBAC → allow-if-owner relationship → delegation widening.
+- **ABAC (docs/10 §D/§E).** `IAbacResource` contracts (`ITopicScopedResource`/`IStreamScopedResource`),
+  `StreamScopeHandler`, capability/ownership + delegation handlers, and Membership-implemented resolvers
+  (`IUserStreamProvider`/`ITopicCapabilityResolver`/`IDelegationResolver`). `ConfidentialityRequirement`
+  deliberately **cut** (no P4 AC; YAGNI). Per-capability gating (Owner-edit vs Presenter-read) and the
+  grant-on-accept flow are P5 (no Topics aggregate yet).
+- **SoD predicates.** `SegregationOfDuties.CanVerifyAction` (SoD-1) and `HasIndependentCoAttestation`
+  (SoD-3) — pure guards the Actions (P8) / Voting (P9) modules will call; proven now.
+- **Membership module (ADR-0004 reconciliation).** `CommitteeMember` reworked: `Role` is a **claims-derived
+  cache** refreshed each login (JIT `Provision`/`SyncFromClaims`) — **not** admin-settable; the
+  role-setting `InviteMember` was removed. Added `MembershipStatus` (Active/Invited/Disabled),
+  `IsVotingEligible`, stream assignments, `Stream`, `TopicCapabilityGrant`, `Delegation`. Features:
+  `GetMembers` (directory), `GetStreams`, `ProvisionCurrentUser` (`/me`), `DeactivateMember` (AC-058),
+  `AssignStreams`, `CreateDelegation`. `CommitteeRole.GuestPresenter`→`Guest` (aligns enum ↔ `AcmpRoles` ↔
+  SPA). New forward-only migration `Membership_P4_Identity`. `IAuditSink` (Serilog→Seq interim; immutable
+  store = BL-066).
+- **Frontend.** Administration → **Users & Membership** screen (the design's "ACMP Administration" file,
+  that screen only), wired to `GET /api/members` via TanStack Query: Keycloak read-only banner,
+  role + "from Keycloak" lock, committee/stream chips + Observer + Voting-eligible, status chips, the four
+  states, and the disabled future tabs. Reuses P3 design tokens (`--st-*` match the design exactly) and
+  CSS logical properties (mirrors in RTL). 25 EN/AR keys added (parity green). Route `/admin` (admin-gated).
+
+**Verification.** Backend **299/299** green (5 domain · 3 ArchUnit boundary · 281 application incl. the
+**248-case permission-matrix suite** with independently-encoded A/AiO/D expectations · 10 WebApplicationFactory
+integration via `TestAuthHandler`). Web **32/32** (7 new), `tsc -b && vite build` clean (130 kB gzip < 300 kB
+budget), oxlint clean, i18n parity **91/91**. New integration project `Acmp.Api.Tests`.
+
+**Decisions recorded (no silent drift, guardrail 11):**
+- **Role not admin-settable.** Per ADR-0004 ("roles sourced from Keycloak; ACMP creates the profile, not the
+  identity") + the design banner. Reworked the aggregate to JIT provisioning; this aligns code to a settled
+  ADR — no new ADR. The design has no create-user form ("Provision via Keycloak" is external).
+- **AC-003 default role = deny** (`DefaultRole=null`, configurable). Fail-closed matches deny-by-default;
+  docs/40 allows "deny OR minimum default".
+- **OQ-AUTH-001/002/003** resolved to docs/10 recommended defaults: read-visible/write-scoped streams
+  (already settled in README §C), single `Guest` role + Presenter relationship, Reviewer non-voting.
+- **Audit interim.** `IAuditSink`→Serilog/Seq now; the immutable hash-chained `AuditEvent` store is BL-066
+  (sequenced before votes). AC-003/006 are **Partial** for this reason (advisor-flagged).
+- **ABAC trimmed** to stream/ownership/delegation (no Confidentiality) and no standalone capability-grant
+  endpoint — both YAGNI until Topics exist (P5).
+
+**Acceptance audit.** **Met:** AC-002, AC-008, AC-058, AC-059. **Partial** (mechanism proven; end-to-end
+deferred to the consuming phase): AC-003/005/006/007 (RBAC/SoD-5; audit→BL-066), AC-009/010/011 (ABAC→P5+),
+AC-012/013/015/016 (SoD→P8/P9). AC-001/004 stay Pending (live Keycloak realm + idle-timeout).
+
+**Deferrals → phase:** per-capability ABAC gating + grant-on-accept + live ABAC HTTP 403 → P5 · SoD-1
+enforcement → P8 · SoD-3 + chair-approve → P9 · MoM SoD-2 → P7 · immutable hash-chained audit store
+(AuthEvent) → BL-066 · live Keycloak login + idle timeout (AC-001/004) → needs a realm · automated
+visual-regression/axe of the new screen → P17.
+
+**Next (await go-ahead):** P5 Topics & Backlog — the core loop; consumes `SortableList`, the ABAC
+`IAbacResource` contracts (Topic implements stream/owner), and grant-on-accept for per-topic capabilities.
+
+---
+
 ## P3 — Frontend Foundation & App Shell
 
 ### 2026-06-25 — P3 complete: design-system shell, role-filtered nav, OIDC wiring, states, accessible DnD

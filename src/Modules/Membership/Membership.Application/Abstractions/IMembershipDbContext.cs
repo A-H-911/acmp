@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Membership.Domain;
 using Microsoft.EntityFrameworkCore;
+using Stream = Acmp.Modules.Membership.Domain.Stream;
 
 namespace Acmp.Modules.Membership.Application.Abstractions;
 
@@ -8,5 +9,8 @@ namespace Acmp.Modules.Membership.Application.Abstractions;
 public interface IMembershipDbContext
 {
     DbSet<CommitteeMember> Members { get; }
+    DbSet<Stream> Streams { get; }
+    DbSet<TopicCapabilityGrant> TopicCapabilities { get; }
+    DbSet<Delegation> Delegations { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

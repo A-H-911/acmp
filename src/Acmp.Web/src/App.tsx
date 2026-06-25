@@ -6,6 +6,7 @@ import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage';
 import PlaceholderPage from './pages/PlaceholderPage';
+import AdministrationPage from './pages/AdministrationPage';
 
 /*
  * Route tree for the P3 shell. Every nav area resolves to a foundation
@@ -40,7 +41,7 @@ export default function App() {
           <Route path="search" element={<PlaceholderPage titleKey="common.search" />} />
 
           <Route path="admin" element={<RequireRole roles={['administrator']} />}>
-            <Route index element={<PlaceholderPage titleKey="nav.admin" />} />
+            <Route index element={<AdministrationPage />} />
           </Route>
           <Route
             path="admin/audit"

@@ -12,6 +12,10 @@ public static class MigrationRunner
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
 
+        // Non-relational providers (the in-memory store used by integration tests) have no migrations.
+        if (!db.Database.IsRelational())
+            return;
+
         const int maxAttempts = 12;
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {

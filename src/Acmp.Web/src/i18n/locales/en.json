@@ -80,5 +80,34 @@
     "welcome": "Welcome, {{name}}.",
     "placeholder": "Role-tailored widgets will appear here as modules are built."
   },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Users, roles, and committee membership",
+    "provision": "Provision via Keycloak",
+    "tabs": {
+      "users": "Users & Membership",
+      "templates": "Templates",
+      "health": "System Health",
+      "notifications": "Notification Settings"
+    },
+    "kc": {
+      "title": "Roles are read-only",
+      "note": "committee roles are sourced from Keycloak claims. ACMP does not create accounts or edit roles — there is no self-registration. Membership and voting eligibility are managed here."
+    },
+    "filter": { "role": "Role", "status": "Status", "membership": "Membership" },
+    "showing": "Showing {{count}} users",
+    "col": {
+      "user": "Name / email",
+      "role": "Committee role",
+      "membership": "Committee membership",
+      "status": "Status"
+    },
+    "fromKeycloak": "from Keycloak",
+    "votingEligible": "Voting-eligible",
+    "observer": "Observer",
+    "status": { "active": "Active", "invited": "Invited", "disabled": "Disabled" },
+    "emptyTitle": "No members yet",
+    "emptyBody": "Members appear here after they first sign in through Keycloak."
+  },
   "notFound": { "body": "We couldn't find that page." }
 }

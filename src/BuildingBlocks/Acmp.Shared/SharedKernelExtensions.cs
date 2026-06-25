@@ -1,5 +1,6 @@
 ﻿using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Behaviors;
+using Acmp.Shared.Infrastructure.Audit;
 using Acmp.Shared.Infrastructure.FileStorage;
 using Acmp.Shared.Infrastructure.Identity;
 using Acmp.Shared.Infrastructure.Time;
@@ -18,6 +19,9 @@ public static class SharedKernelExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddSingleton<IClock, SystemClock>();
+
+        // P4 interim audit sink (structured log -> Seq). Replaced by the durable AuditEvent store (BL-066).
+        services.AddScoped<IAuditSink, SerilogAuditSink>();
 
         // Behaviors wrap the handler outer-to-inner in registration order:
         // logging (outermost) -> authorization -> validation (closest to the handler).
