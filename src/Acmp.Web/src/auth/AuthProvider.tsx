@@ -17,6 +17,7 @@ import { oidcConfig, oidcEnabled } from './authConfig';
 import { rolesFromClaims, type CommitteeRole } from './roles';
 import { claimStringsFrom, displayNameFrom, initialsFrom, type OidcProfileLike } from './oidcProfile';
 import { setTokenGetter } from '../api/apiClient';
+import { setAuthStatus } from './authStatus';
 
 function OidcBridge({ children }: { children: ReactNode }) {
   const oidc = useOidc();
@@ -24,6 +25,17 @@ function OidcBridge({ children }: { children: ReactNode }) {
   useEffect(() => {
     setTokenGetter(() => oidc.user?.access_token);
   }, [oidc.user]);
+  // Flag an expired/failed-renew session so the LoginPage can explain why the user
+  // landed back here (Keycloak end-session redirects to the login route).
+  useEffect(() => {
+    const onExpired = () => setAuthStatus('session_expired');
+    oidc.events.addAccessTokenExpired(onExpired);
+    oidc.events.addSilentRenewError(onExpired);
+    return () => {
+      oidc.events.removeAccessTokenExpired(onExpired);
+      oidc.events.removeSilentRenewError(onExpired);
+    };
+  }, [oidc.events]);
   const value = useMemo<AcmpAuth>(() => {
     const profile = oidc.user?.profile as OidcProfileLike | undefined;
     const name = displayNameFrom(profile);
@@ -35,7 +47,7 @@ function OidcBridge({ children }: { children: ReactNode }) {
       displayName: name,
       initials: initialsFrom(name),
       signIn: () => void oidc.signinRedirect(),
-      signOut: () => void oidc.signoutRedirect(),
+      signOut: () => { setAuthStatus('signed_out'); void oidc.signoutRedirect(); },
     };
   }, [oidc]);
   return <AcmpAuthContext.Provider value={value}>{children}</AcmpAuthContext.Provider>;

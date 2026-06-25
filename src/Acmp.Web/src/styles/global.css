@@ -53,6 +53,16 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: center;
 }
 .brand-word { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+/* Brand mark — one source SVG (public/favicon.svg) reused in the header, login, and favicon. */
+.brand-mark { display: block; flex: 0 0 auto; border-radius: 8px; }
+
+/* Sign-in / landing route. */
+.login-status {
+  margin: 0 0 var(--sp-4); padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--subtle); color: var(--text-2); font-size: 13px;
+}
+.login-toggles { display: flex; gap: var(--sp-2); justify-content: center; margin-block-start: var(--sp-3); }
 .topbar-spacer { flex: 1 1 0; }
 
 .search {
