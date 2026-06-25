@@ -54,10 +54,17 @@ Prod uses a real reverse-proxy hostname + TLS (P18).
 
 **Datastore = OQ-038 → (a) Postgres-for-Keycloak.** `docs/42` default; app data stays SQL-only (ADR-0003).
 
-**Verification.** `node scripts/check-self-contained.mjs` ✅ (7 services, 0 external) + negative-tested
-(flags an external host, exit 1). `docker compose --env-file .env config -q` ✅ parses. Realm JSON well-formed.
-Backend **311** + web **33** untouched (no app code changed). **Operator-gated:** live `docker compose up`
-of the 6-service stack + a login round-trip (sandbox cannot launch the stack — same stance as the P4 migration apply).
+**Verification — live (2026-06-25).** `node scripts/check-self-contained.mjs` ✅ (7 services, 0 external) +
+negative-tested (flags an external host, exit 1). `docker compose --env-file .env config -q` ✅ parses.
+**`docker compose up -d --build` brought the full 6-service stack up — all HEALTHY:** api, web, keycloak,
+keycloak-db, sqlserver healthy; minio running (no healthcheck). The KC `/health/ready` probe (bash `/dev/tcp`
+on mgmt port 9000) works. **Keycloak realm import succeeded** — log: `Realm 'acmp' imported … Import finished
+successfully` (KC 26.0.8). **OIDC discovery issuer = `http://keycloak.localhost:8085/realms/acmp`** (byte-identical
+to the pinned `KC_HOSTNAME`; PKCE **S256** advertised), and the API resolves it via `extra_hosts` (api healthy).
+**`GET /api/members` → 401** against the real authority (fail-closed still holds). **P4 migration applied** on
+api startup: `Database migrations applied.` (`Membership_P4_Identity` — closes the P4-deferred `docker compose up`
+apply). Backend **311** + web **33** untouched (no app code changed). Still pending: a full **browser** login
+round-trip (PKCE redirect → dashboard with mapped roles) and realm idle-timeout policy → AC-001/AC-004.
 
 **Decisions / drift (guardrail 11).**
 - **No new ADR** — ADR-0015 covers this; this is its rollout (CHANGE-001 §6).

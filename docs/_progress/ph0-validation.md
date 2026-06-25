@@ -76,10 +76,12 @@ still need human confirmation where noted.
 Postgres-for-Keycloak** (`keycloak-db`, volume `kcdata`) — the `docs/42` recommended default and Keycloak's
 most battle-tested store; ACMP *application* data stays SQL-Server-only (ADR-0003 / CON-002). Static
 validation done: `docker compose --env-file .env config` parses clean; the realm bootstrap is well-formed.
-The **live** spike (`docker compose up` of `keycloak` + `keycloak-db` + a login round-trip) is the
-**operator's verification** — the build sandbox cannot launch the stack (same constraint noted for the P4
-migration apply). Keycloak-on-SQL-Server (option b) was not pursued; revisit only if the Postgres sidecar
-proves operationally undesirable.
+**Live bring-up done (2026-06-25):** `docker compose up -d --build` started `keycloak` + `keycloak-db`
+(Postgres) HEALTHY; Keycloak imported the `acmp` realm successfully (KC 26.0.8); OIDC discovery issuer =
+`http://keycloak.localhost:8085/realms/acmp` with PKCE S256. The earlier "sandbox cannot launch the stack"
+note (P4-era, when Docker Desktop's engine was down) **no longer holds** — the daemon was reachable and the
+6-service stack came up. Keycloak-on-SQL-Server (option b) was not pursued; revisit only if the Postgres
+sidecar proves operationally undesirable.
 
 ## 4. Finding — search-engine discrepancy (recorded, follow ADR)
 

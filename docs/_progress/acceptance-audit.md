@@ -36,16 +36,18 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (mechanism proven, end-to-end deferred to the consuming phase): AC-003/005/006/007 (RBAC/SoD-5 + audit→BL-066),
 > AC-009/010/011 (ABAC, → P5+), AC-012/013/015/016 (SoD predicates, → P8/P9). See progress-log P4 entry.
 >
-> CHANGE-001 update (2026-06-25): self-hosted-Keycloak infra change-slice (ADR-0015). **No AC flips** — this
-> is infrastructure/ownership only (bundled Keycloak + ACMP-owned realm + realm bootstrap), no app behavior
-> changed. AC-001 (Keycloak SSO login) and AC-004 (idle-timeout re-auth) stay **Pending**: the realm + OIDC
-> client now ship in `deploy/keycloak/`, but both still require a **live** `docker compose up` + login
-> round-trip, which the build sandbox cannot run (operator-gated). They flip to Met when verified live (P18/UAT).
-> See progress-log CHANGE-001 entry.
+> CHANGE-001 update (2026-06-25): self-hosted-Keycloak infra change-slice (ADR-0015). Infrastructure/ownership
+> only (bundled Keycloak + ACMP-owned realm + realm bootstrap); no app behavior changed. **Live-verified:**
+> `docker compose up` brought all 6 services up HEALTHY, Keycloak imported the `acmp` realm, OIDC discovery
+> issuer = `http://keycloak.localhost:8085/realms/acmp` (PKCE S256), `GET /api/members` → 401 (fail-closed),
+> and the **P4-deferred `Membership_P4_Identity` migration applied** on api startup. **AC-001 → Partial**
+> (realm live + discovery + fail-closed 401 proven against the real authority; full **browser** login
+> round-trip → dashboard-with-roles still pending). **AC-004 stays Pending** (realm idle-timeout/session policy
+> not yet configured — OQ-003). Both finalize at P18/UAT. See progress-log CHANGE-001 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Pending | — | Keycloak SSO login; realm now bundled (ADR-0015, `deploy/keycloak/`); needs live login round-trip |
+| AC-001 | Auth & Identity | Partial | manual (live stack: realm import + OIDC discovery + 401) | Bundled realm live (ADR-0015); issuer/PKCE verified, fail-closed 401 vs real authority; full browser login round-trip → P18/UAT |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
 | AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |
@@ -112,8 +114,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 9 Met (AC-002/008/040/042/045/046/058/059) · 11 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 46 Pending. (Through P4 Identity & Permissions.)
+**Summary:** 66 ACs · 9 Met (AC-002/008/040/042/045/046/058/059) · 12 Partial
+(AC-001/003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 45 Pending. (Through P4 + CHANGE-001 live bring-up.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
