@@ -26,8 +26,10 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
   }, [open, onClose]);
 
   if (!open) return null;
+  // Non-modal click-away popover: a labelled region, not a dialog (which would
+  // imply focus capture / aria-modal we deliberately don't apply here).
   return (
-    <div className="notif-panel" ref={ref} role="dialog" aria-label={t('notif.title')}>
+    <div className="notif-panel" ref={ref} role="region" aria-label={t('notif.title')}>
       <div className="notif-panel-head">
         <span>{t('notif.title')}</span>
       </div>

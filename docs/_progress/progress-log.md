@@ -41,15 +41,18 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 - **i18n** — `en.json`/`ar.json` expanded to the full shell vocabulary (66 keys), parity green. Routing for all
   nav areas → foundation placeholders (no feature screens). NotFound page.
 - **Tests/CI** — Vitest + RTL + jsdom (`vitest.config.ts` separate from `vite.config.ts` to avoid the Vite 8/
-  rolldown vs vitest nested-Vite type clash). **21 tests**: nav gating, claim→role mapping, theme persistence
+  rolldown vs vitest nested-Vite type clash). **25 tests**: nav gating, claim→role mapping, OIDC profile helpers, theme persistence
   (AC-042), RTL direction (AC-040), SortableList keyboard reorder, RequireRole 403, StatusChip, SideNav role
   filtering. Added `npm test` to the CI frontend job (i18n parity already wired).
 
 **Verification.** `dotnet`-side untouched. Frontend: i18n parity (66 keys) ✅ · `tsc -b && vite build` clean
-(bundle 125 kB gzip, within the <300 kB app budget) ✅ · 21/21 tests ✅ · oxlint clean ✅ · **axe (WCAG 2.2 AA)
-0 violations across EN/AR × light/dark** (rendered live; fixed one finding — `.topbar-user-role` 10.5px label
-was 4.49:1, raised `--text-3`→`--text-2`) ✅ · RTL render confirmed by screenshot (sidebar mirrors to
-inline-end, Arabic font + content, read-only markers).
+(bundle 125 kB gzip, within the <300 kB app budget) ✅ · **25/25 tests** ✅ · oxlint clean ✅ · **axe (WCAG 2.2
+AA) 0 violations across EN/AR × light/dark** ✅ — the axe pass rendered live and covered the chrome, a
+placeholder route (EmptyState), the error state + skeleton, **all six StatusChip tones**, and the **open
+notification panel**; fixed two findings: `.topbar-user-role` 10.5px label was 4.49:1 (`--text-3`→`--text-2`),
+and `NotificationCenter` was `role="dialog"` without focus management → changed to a labelled `role="region"`
+(non-modal popover). RTL + dark confirmed by screenshot (sidebar mirrors to inline-end, Arabic font + content,
+read-only markers; dark surfaces legible).
 
 **Decisions recorded (no silent drift, guardrail 11):**
 - **React 19 vs ADR-0012 (says 18).** P1 silently installed React 19. Surfaced and resolved via **ADR-0015**
