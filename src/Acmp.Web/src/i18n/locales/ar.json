@@ -1,0 +1,28 @@
+{
+  "app": { "name": "ACMP", "tagline": "منصة إدارة لجنة معمارية المؤسسة" },
+  "nav": {
+    "dashboard": "لوحة المعلومات",
+    "topics": "المواضيع",
+    "meetings": "الاجتماعات",
+    "decisions": "القرارات",
+    "actions": "الإجراءات",
+    "members": "الأعضاء"
+  },
+  "common": {
+    "language": "اللغة",
+    "theme": "السمة",
+    "light": "فاتح",
+    "dark": "داكن",
+    "english": "English",
+    "arabic": "العربية",
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ ما",
+    "empty": "لا يوجد شيء بعد",
+    "permissionDenied": "ليس لديك صلاحية الوصول"
+  },
+  "dashboard": {
+    "title": "لوحة معلومات اللجنة",
+    "welcome": "مرحبًا بك في منصة لجنة المعمارية.",
+    "placeholder": "ستظهر الوحدات هنا عند بنائها."
+  }
+}

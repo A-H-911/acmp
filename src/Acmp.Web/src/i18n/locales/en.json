@@ -1,0 +1,28 @@
+{
+  "app": { "name": "ACMP", "tagline": "Architecture Committee Management Platform" },
+  "nav": {
+    "dashboard": "Dashboard",
+    "topics": "Topics",
+    "meetings": "Meetings",
+    "decisions": "Decisions",
+    "actions": "Actions",
+    "members": "Members"
+  },
+  "common": {
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "english": "English",
+    "arabic": "العربية",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "empty": "Nothing here yet",
+    "permissionDenied": "You do not have access to this"
+  },
+  "dashboard": {
+    "title": "Committee Dashboard",
+    "welcome": "Welcome to the Architecture Committee platform.",
+    "placeholder": "Modules will appear here as they are built."
+  }
+}
