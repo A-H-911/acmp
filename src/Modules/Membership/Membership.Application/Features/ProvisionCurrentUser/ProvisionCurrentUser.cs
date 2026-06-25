@@ -24,12 +24,14 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
     private readonly IMembershipDbContext _db;
     private readonly ICurrentUser _user;
     private readonly IClock _clock;
+    private readonly IAuditSink _audit;
 
-    public ProvisionCurrentUserHandler(IMembershipDbContext db, ICurrentUser user, IClock clock)
+    public ProvisionCurrentUserHandler(IMembershipDbContext db, ICurrentUser user, IClock clock, IAuditSink audit)
     {
         _db = db;
         _user = user;
         _clock = clock;
+        _audit = audit;
     }
 
     public async Task<MemberProfileDto> Handle(ProvisionCurrentUserCommand request, CancellationToken ct)
@@ -45,6 +47,7 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
         var email = _user.Email ?? string.Empty;
 
         var member = await _db.Members.FirstOrDefaultAsync(m => m.KeycloakUserId == sub, ct);
+        var created = member is null;
         if (member is null)
         {
             member = CommitteeMember.Provision(sub, displayName, email, role, _clock.UtcNow);
@@ -56,6 +59,9 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
         }
 
         await _db.SaveChangesAsync(ct);
+
+        await _audit.EmitAsync(created ? "Membership.MemberProvisioned" : "Membership.ProfileSynced", sub,
+            new { member.PublicId, role = member.Role.ToString() }, ct);
 
         return new MemberProfileDto(
             member.PublicId, member.FullName, member.Email, member.Role.ToString(),

@@ -12,7 +12,7 @@ namespace Acmp.Api.Tests;
 // after mapping, so policies and ICurrentUser see canonical role claims.
 public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    public const string Scheme = "Test";
+    public const string SchemeName = "Test";
     public const string RolesHeader = "X-Test-Roles";
     public const string SubHeader = "X-Test-Sub";
 
@@ -36,8 +36,8 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         foreach (var role in rolesHeader.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             claims.Add(new Claim(ClaimTypes.Role, role));
 
-        var identity = new ClaimsIdentity(claims, Scheme, ClaimTypes.Name, ClaimTypes.Role);
-        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme);
+        var identity = new ClaimsIdentity(claims, SchemeName, ClaimTypes.Name, ClaimTypes.Role);
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

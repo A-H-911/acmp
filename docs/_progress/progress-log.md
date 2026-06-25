@@ -73,6 +73,23 @@ oxlint clean, i18n parity **93/93**. New integration project `Acmp.Api.Tests`.
 - **Config placeholders** — documented `Authentication:Keycloak:*` + `Authorization:RoleMapping:*` in
   `appsettings.json` and `deploy/.env.example` (fail-closed defaults; no secrets).
 
+**P4 review — NO-GO gaps closed (round 2).** A full phase audit (acceptance, coverage, DoD, guardrails)
+returned NO-GO on four fixable gaps; all closed:
+- **AuditEvent on every state-mutating op** (guardrail 5 / docs/26 / DoD [HARD]) — `DeactivateMember`,
+  `AssignStreams`, `CreateDelegation`, and `ProvisionCurrentUser` now emit via `IAuditSink` on success
+  (entity, action, actor, before/after); emission asserted in tests. Field-stamping was not enough; the
+  immutable hash-chained store remains BL-066.
+- **RTL visual verification** (DoD [HARD]) — rendered the Users & Membership screen with `dir=rtl` +
+  Arabic in Chrome: fully mirrored (provision button + count to inline-end, columns right→left, switch
+  knob mirrors, email stays LTR), no LTR artifacts.
+- **Untested handlers + JWT extraction** — added direct tests for `AssignStreams`/`CreateDelegation`/
+  `GetStreams`; extracted the Keycloak `realm_access`/`resource_access`/`groups` JSON parsing to a
+  testable `KeycloakClaims.RoleValues` helper (host wiring now calls it) with unit tests for every shape.
+- **CS0108 warning** — renamed `TestAuthHandler.Scheme` → `SchemeName`. Code warnings now **zero**
+  (only 4 tracked NU1902 OpenTelemetry advisories → P16).
+
+Backend now **311 tests** (5 domain · 3 ArchUnit · 290 application · 13 integration), all green. **Verdict: GO.**
+
 **Decisions recorded (no silent drift, guardrail 11):**
 - **Role not admin-settable.** Per ADR-0004 ("roles sourced from Keycloak; ACMP creates the profile, not the
   identity") + the design banner. Reworked the aggregate to JIT provisioning; this aligns code to a settled

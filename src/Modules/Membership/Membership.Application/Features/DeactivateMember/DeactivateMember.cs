@@ -22,14 +22,28 @@ public sealed class DeactivateMemberValidator : AbstractValidator<DeactivateMemb
 public sealed class DeactivateMemberHandler : IRequestHandler<DeactivateMemberCommand>
 {
     private readonly IMembershipDbContext _db;
+    private readonly ICurrentUser _user;
+    private readonly IAuditSink _audit;
 
-    public DeactivateMemberHandler(IMembershipDbContext db) => _db = db;
+    public DeactivateMemberHandler(IMembershipDbContext db, ICurrentUser user, IAuditSink audit)
+    {
+        _db = db;
+        _user = user;
+        _audit = audit;
+    }
 
     public async Task Handle(DeactivateMemberCommand request, CancellationToken ct)
     {
         var member = await _db.Members.FirstOrDefaultAsync(m => m.PublicId == request.MemberPublicId, ct)
             ?? throw new KeyNotFoundException("Committee member not found.");
+
+        var before = member.Status;
         member.Deactivate();
         await _db.SaveChangesAsync(ct);
+
+        // State change on a governed record -> audit (docs/26, guardrail 5). Interim sink (Serilog->Seq);
+        // the immutable hash-chained AuditEvent store is BL-066.
+        await _audit.EmitAsync("Membership.MemberDeactivated", _user.UserId,
+            new { member.PublicId, before = before.ToString(), after = member.Status.ToString() }, ct);
     }
 }

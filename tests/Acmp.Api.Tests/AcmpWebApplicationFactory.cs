@@ -27,8 +27,8 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<MembershipDbContext>();
             services.AddDbContext<MembershipDbContext>(o => o.UseInMemoryDatabase(_dbName));
 
-            services.AddAuthentication(TestAuthHandler.Scheme)
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.Scheme, _ => { });
+            services.AddAuthentication(TestAuthHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
         });
     }
 

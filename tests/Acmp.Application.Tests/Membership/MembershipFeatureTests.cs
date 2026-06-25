@@ -41,13 +41,15 @@ public class MembershipFeatureTests
         return clock;
     }
 
+    private static IAuditSink Audit() => Substitute.For<IAuditSink>();
+
     [Fact]
     public async Task Provision_seeds_local_profile_with_role_from_claims()
     {
         var user = CurrentUser("kc-1", "Khalid A.", "khalid@acmp.gov", "Secretary");
         await using var db = NewDb(user);
 
-        var profile = await new ProvisionCurrentUserHandler(db, user, Clock())
+        var profile = await new ProvisionCurrentUserHandler(db, user, Clock(), Audit())
             .Handle(new ProvisionCurrentUserCommand(), CancellationToken.None);
 
         profile.Role.Should().Be("Secretary");                 // AC-002
@@ -60,7 +62,7 @@ public class MembershipFeatureTests
         var user = CurrentUser("kc-2", "Multi", "m@acmp.gov", "Member", "Chairman");
         await using var db = NewDb(user);
 
-        var profile = await new ProvisionCurrentUserHandler(db, user, Clock())
+        var profile = await new ProvisionCurrentUserHandler(db, user, Clock(), Audit())
             .Handle(new ProvisionCurrentUserCommand(), CancellationToken.None);
 
         profile.Role.Should().Be("Chairman");
@@ -72,7 +74,7 @@ public class MembershipFeatureTests
     {
         var user = CurrentUser("kc-3", "Before", "before@acmp.gov", "Member");
         await using var db = NewDb(user);
-        var handler = new ProvisionCurrentUserHandler(db, user, Clock());
+        var handler = new ProvisionCurrentUserHandler(db, user, Clock(), Audit());
 
         await handler.Handle(new ProvisionCurrentUserCommand(), CancellationToken.None);
         user.DisplayName.Returns("After");
@@ -90,7 +92,7 @@ public class MembershipFeatureTests
         var user = CurrentUser("kc-4", "No Role", "nr@acmp.gov");
         await using var db = NewDb(user);
 
-        var act = () => new ProvisionCurrentUserHandler(db, user, Clock())
+        var act = () => new ProvisionCurrentUserHandler(db, user, Clock(), Audit())
             .Handle(new ProvisionCurrentUserCommand(), CancellationToken.None);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
@@ -104,12 +106,15 @@ public class MembershipFeatureTests
         var member = CommitteeMember.Provision("kc-bob", "Bob", "bob@acmp.gov", CommitteeRole.Member, DateTimeOffset.UtcNow);
         db.Members.Add(member);
         await db.SaveChangesAsync();
+        var audit = Audit();
 
-        await new DeactivateMemberHandler(db).Handle(new DeactivateMemberCommand(member.PublicId), CancellationToken.None);
+        await new DeactivateMemberHandler(db, admin, audit).Handle(new DeactivateMemberCommand(member.PublicId), CancellationToken.None);
 
         var stored = await db.Members.SingleAsync(m => m.KeycloakUserId == "kc-bob");
         stored.IsActive.Should().BeFalse();              // AC-058
         stored.FullName.Should().Be("Bob");              // attribution intact
+        // State change emits an AuditEvent (docs/26, guardrail 5).
+        await audit.Received(1).EmitAsync("Membership.MemberDeactivated", "kc-admin", Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -118,7 +123,7 @@ public class MembershipFeatureTests
         var admin = CurrentUser("kc-admin", "Admin", "admin@acmp.gov", "Administrator");
         await using var db = NewDb(admin);
 
-        var act = () => new DeactivateMemberHandler(db).Handle(new DeactivateMemberCommand(Guid.NewGuid()), CancellationToken.None);
+        var act = () => new DeactivateMemberHandler(db, admin, Audit()).Handle(new DeactivateMemberCommand(Guid.NewGuid()), CancellationToken.None);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }

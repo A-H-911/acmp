@@ -34,11 +34,13 @@ public sealed class CreateDelegationHandler : IRequestHandler<CreateDelegationCo
 {
     private readonly IMembershipDbContext _db;
     private readonly ICurrentUser _user;
+    private readonly IAuditSink _audit;
 
-    public CreateDelegationHandler(IMembershipDbContext db, ICurrentUser user)
+    public CreateDelegationHandler(IMembershipDbContext db, ICurrentUser user, IAuditSink audit)
     {
         _db = db;
         _user = user;
+        _audit = audit;
     }
 
     public async Task<Guid> Handle(CreateDelegationCommand request, CancellationToken ct)
@@ -53,6 +55,9 @@ public sealed class CreateDelegationHandler : IRequestHandler<CreateDelegationCo
             delegator.Id, target.Id, request.Capability.Trim(), request.ValidFrom, request.ValidTo);
         _db.Delegations.Add(delegation);
         await _db.SaveChangesAsync(ct);
+
+        await _audit.EmitAsync("Membership.DelegationCreated", _user.UserId,
+            new { delegation.PublicId, request.DelegateMemberPublicId, request.Capability, request.ValidFrom, request.ValidTo }, ct);
 
         return delegation.PublicId;
     }

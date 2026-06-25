@@ -23,8 +23,15 @@ public sealed class AssignStreamsValidator : AbstractValidator<AssignStreamsComm
 public sealed class AssignStreamsHandler : IRequestHandler<AssignStreamsCommand>
 {
     private readonly IMembershipDbContext _db;
+    private readonly ICurrentUser _user;
+    private readonly IAuditSink _audit;
 
-    public AssignStreamsHandler(IMembershipDbContext db) => _db = db;
+    public AssignStreamsHandler(IMembershipDbContext db, ICurrentUser user, IAuditSink audit)
+    {
+        _db = db;
+        _user = user;
+        _audit = audit;
+    }
 
     public async Task Handle(AssignStreamsCommand request, CancellationToken ct)
     {
@@ -38,5 +45,8 @@ public sealed class AssignStreamsHandler : IRequestHandler<AssignStreamsCommand>
 
         member.AssignStreams(streamIds);
         await _db.SaveChangesAsync(ct);
+
+        await _audit.EmitAsync("Membership.StreamsAssigned", _user.UserId,
+            new { request.MemberPublicId, streamCount = streamIds.Count }, ct);
     }
 }

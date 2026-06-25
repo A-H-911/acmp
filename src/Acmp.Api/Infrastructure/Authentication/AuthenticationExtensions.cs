@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -49,7 +48,7 @@ public static class AuthenticationExtensions
         var principal = context.Principal!;
         var identity = (ClaimsIdentity)principal.Identity!;
 
-        var roles = mapper.Map(ExtractRawRoleClaims(principal));
+        var roles = mapper.Map(KeycloakClaims.RoleValues(principal));
 
         if (roles.Count == 0)
         {
@@ -67,62 +66,5 @@ public static class AuthenticationExtensions
         foreach (var role in roles)
             if (!principal.IsInRole(role))
                 identity.AddClaim(new Claim(ClaimTypes.Role, role));
-    }
-
-    // Gathers candidate role/group strings from a Keycloak token: realm_access.roles and
-    // resource_access.{client}.roles (nested JSON claims), the "groups" claim, and flat role claims.
-    private static IEnumerable<string> ExtractRawRoleClaims(ClaimsPrincipal principal)
-    {
-        var values = new List<string>();
-        foreach (var claim in principal.Claims)
-        {
-            switch (claim.Type)
-            {
-                case "groups":
-                case "roles":
-                case "role":
-                case ClaimTypes.Role:
-                    values.Add(claim.Value);
-                    break;
-                case "realm_access":
-                case "resource_access":
-                    values.AddRange(ExtractJsonRoles(claim.Value));
-                    break;
-            }
-        }
-        return values;
-    }
-
-    private static IEnumerable<string> ExtractJsonRoles(string json)
-    {
-        var result = new List<string>();
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            CollectRoles(doc.RootElement, result);
-        }
-        catch (JsonException)
-        {
-            // A flat (non-JSON) claim value of this name — ignore; flat roles are read elsewhere.
-        }
-        return result;
-    }
-
-    private static void CollectRoles(JsonElement element, List<string> sink)
-    {
-        if (element.ValueKind != JsonValueKind.Object) return;
-        foreach (var prop in element.EnumerateObject())
-        {
-            if (prop.NameEquals("roles") && prop.Value.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var role in prop.Value.EnumerateArray())
-                    if (role.ValueKind == JsonValueKind.String)
-                        sink.Add(role.GetString()!);
-            }
-            else
-            {
-                CollectRoles(prop.Value, sink);
-            }
-        }
     }
 }
