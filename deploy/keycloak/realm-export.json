@@ -1,0 +1,116 @@
+{
+  "realm": "acmp",
+  "enabled": true,
+  "displayName": "ACMP — Architecture Committee",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "resetPasswordAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "Chairman", "description": "Committee chairman — final approval/override (docs/10 §B)." },
+      { "name": "Secretary", "description": "Secretary of the Committee — primary user, triage, agenda, minutes." },
+      { "name": "Member", "description": "Committee member — reviews and votes." },
+      { "name": "Reviewer", "description": "Reviewer — non-voting review input." },
+      { "name": "Auditor", "description": "Auditor — read-only access to audit records." },
+      { "name": "Administrator", "description": "Platform administrator — users/config; walled off committee content (SoD-5)." },
+      { "name": "Submitter", "description": "Stream requester — submits topics." },
+      { "name": "Guest", "description": "Guest/Presenter — time-boxed; Presenter is a per-topic relationship, not this role." }
+    ]
+  },
+  "groups": [
+    { "name": "Chairman", "realmRoles": ["Chairman"] },
+    { "name": "Secretary", "realmRoles": ["Secretary"] },
+    { "name": "Member", "realmRoles": ["Member"] },
+    { "name": "Reviewer", "realmRoles": ["Reviewer"] },
+    { "name": "Auditor", "realmRoles": ["Auditor"] },
+    { "name": "Administrator", "realmRoles": ["Administrator"] },
+    { "name": "Submitter", "realmRoles": ["Submitter"] },
+    { "name": "Guest", "realmRoles": ["Guest"] }
+  ],
+  "clients": [
+    {
+      "clientId": "acmp-web",
+      "name": "ACMP SPA / BFF",
+      "description": "Public OIDC client for the React SPA — authorization-code + PKCE (ADR-0004 / ADR-0015).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://keycloak.localhost:8088/*",
+        "http://localhost:8088/*",
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://keycloak.localhost:8088",
+        "http://localhost:8088",
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8088/*##http://localhost:5173/*"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "roles"],
+      "protocolMappers": [
+        {
+          "name": "acmp-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "acmp-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "groups",
+            "full.path": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "acmp-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@acmp.local",
+      "firstName": "ACMP",
+      "lastName": "Administrator",
+      "requiredActions": ["UPDATE_PASSWORD"],
+      "realmRoles": ["Administrator", "Secretary"],
+      "groups": ["/Administrator", "/Secretary"]
+    }
+  ]
+}

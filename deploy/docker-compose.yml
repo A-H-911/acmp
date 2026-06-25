@@ -40,6 +40,59 @@ services:
     volumes:
       - minio-data:/data
 
+  # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
+  # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
+  # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/33, ADR-0015).
+  keycloak-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${KC_DB_USER}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    volumes:
+      - kcdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d keycloak || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # Self-hosted Keycloak (ADR-0015): bundled IdP with the ACMP-owned realm. On first start it
+  # imports deploy/keycloak/realm-export.json (realm + OIDC client + 8 roles/groups + initial admin).
+  # start-dev is the dev profile; prod hardening (production mode, real hostname, TLS) is a P18 override.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/keycloak"
+      KC_DB_USERNAME: ${KC_DB_USER}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_ENABLED: "true"
+      # Pin the issuer so the SPA (browser) and the API (in-cluster) agree byte-for-byte.
+      # `*.localhost` resolves to loopback in browsers; the api reaches it via extra_hosts below.
+      KC_HOSTNAME: "http://keycloak.localhost:8085"
+      KC_HOSTNAME_STRICT: "false"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    ports:
+      - "8085:8080"
+    healthcheck:
+      # KC 25+ exposes health on the management port 9000; the image has bash but no curl/wget,
+      # so probe the readiness endpoint over bash's /dev/tcp. ponytail: standard KC compose probe.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 60s
+
   api:
     build:
       context: ..
@@ -52,14 +105,26 @@ services:
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
+      # Bundled Keycloak realm (ADR-0015). Issuer must match the SPA's exactly; RequireHttpsMetadata
+      # is false only for the in-stack http dev profile — set true behind TLS in prod (P18).
+      Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
+      Authentication__Keycloak__RequireHttpsMetadata: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
       OTEL_SERVICE_NAME: "acmp-api"
+    extra_hosts:
+      # Resolve the Keycloak issuer host to the Docker host (where port 8085 is published) so the
+      # api validates tokens against the same issuer URL the browser used.
+      - "keycloak.localhost:host-gateway"
     depends_on:
       sqlserver:
         condition: service_healthy
       seq:
         condition: service_started
       minio:
+        condition: service_started
+      keycloak:
+        # service_started, not _healthy: JwtBearer fetches OIDC metadata lazily on first request
+        # (with retry), so the api need not block boot on Keycloak's slower readiness.
         condition: service_started
     ports:
       - "8080:8080"
@@ -90,3 +155,4 @@ volumes:
   mssql-data:
   seq-data:
   minio-data:
+  kcdata:        # self-hosted Keycloak datastore (ADR-0015 / OQ-038); in backup/restore scope

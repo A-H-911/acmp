@@ -43,7 +43,7 @@ still need human confirmation where noted.
 
 | OQ | Topic | Applied for PH-0/P1 | Confirm by |
 |---|---|---|---|
-| OQ-030 | CI system | **GitHub Actions, GitHub-hosted runners** (repo `github.com/A-H-911/acmp`) | self-hosted-for-prod → OQ-038 |
+| OQ-030 | CI system | **GitHub Actions, GitHub-hosted runners** (repo `github.com/A-H-911/acmp`) | self-hosted-for-prod → OQ-041 |
 | OQ-031 | Registry | **Public registry + image-digest pinning** (build machine has direct internet) | prod air-gap → P16/P18 |
 | OQ-032 | NuGet/npm mirror | **Direct access** (not air-gapped) | prod air-gap → P16/P18 |
 | OQ-024 | TLS | **TLS 1.2+**, no internal mTLS v1 | security review → P16 |
@@ -65,9 +65,21 @@ still need human confirmation where noted.
 | OQ-006/010/008 | Enum lists (Source / Meeting type / cadence) | proposed defaults; **Secretary validates before P5/P6** | Secretary |
 
 **New open question raised at PH-0 (to be added to `docs/42` after confirmation):**
-- **OQ-038 — Prod CI runner:** PH-1 skeleton uses GitHub-hosted runners. Production builds for an
+- **OQ-041 — Prod CI runner:** PH-1 skeleton uses GitHub-hosted runners. Production builds for an
   on-prem (possibly air-gapped) VM likely need a **self-hosted GitHub Actions runner** + package/registry
   mirrors. Owner: DevSecOps/Org IT. Needed-by: P18. Default: provision a self-hosted runner before prod cutover.
+  > **Renumbered 2026-06-25 (was OQ-038).** ADR-0015 / CHANGE-001 canonically assigned **OQ-038 = Keycloak
+  > datastore** in `docs/42`. This PH-0 CI-runner item was only ever a *proposed* note (never added to the
+  > registry under that number), so it moves to **OQ-041** to avoid the collision. `docs/42` keeps OQ-038 = KC store.
+
+**OQ-038 — Keycloak datastore (resolved 2026-06-25, CHANGE-001 infra-slice).** Chose **(a) dedicated
+Postgres-for-Keycloak** (`keycloak-db`, volume `kcdata`) — the `docs/42` recommended default and Keycloak's
+most battle-tested store; ACMP *application* data stays SQL-Server-only (ADR-0003 / CON-002). Static
+validation done: `docker compose --env-file .env config` parses clean; the realm bootstrap is well-formed.
+The **live** spike (`docker compose up` of `keycloak` + `keycloak-db` + a login round-trip) is the
+**operator's verification** — the build sandbox cannot launch the stack (same constraint noted for the P4
+migration apply). Keycloak-on-SQL-Server (option b) was not pursued; revisit only if the Postgres sidecar
+proves operationally undesirable.
 
 ## 4. Finding — search-engine discrepancy (recorded, follow ADR)
 

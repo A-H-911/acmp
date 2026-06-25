@@ -12,6 +12,63 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## CHANGE-001 — Self-Hosted Keycloak; all runtime dependencies bundled (ADR-0015)
+
+### 2026-06-25 — Infra change-slice applied (post-P4, before P5). No P4/app rework.
+
+**Why.** ASM-001 (org provides Keycloak) is **false** — the org has no Keycloak. Per **ADR-0015**
+(secretary-directed), ACMP now **self-hosts Keycloak** as a bundled container with an **ACMP-owned realm**,
+and SQL Server stays bundled → **v1 has zero external runtime services** (CON-001 strengthened; ADR-0013's
+"two external exceptions" carve-out withdrawn). The OIDC contract is unchanged (authz-code + PKCE, roles
+from realm-role/group claims, no self-registration; manual provisioning in the KC admin console), so the
+**P4 identity/Membership code needs no rework** — verified by reading it (`AuthenticationExtensions` is
+purely `Authentication:Keycloak:Authority`-driven; `KeycloakRoleClaimMapper` normalizes against `AcmpRoles.All`).
+
+**Done (infra + config only).**
+- **`deploy/docker-compose.yml`** — added `keycloak` (`quay.io/keycloak/keycloak:26.0`, `start-dev
+  --import-realm`, health on mgmt `/health/ready`) + `keycloak-db` (`postgres:16`, `kcdata` volume,
+  `pg_isready` health). Wired `api` → `Authentication__Keycloak__Authority` at the in-stack realm
+  (`RequireHttpsMetadata=false` for the http dev profile), `depends_on: keycloak service_started`
+  (JwtBearer fetches metadata lazily, so api boot need not block on KC readiness). `sqlserver` already bundled.
+- **`deploy/keycloak/realm-export.json`** — realm `acmp`; **public PKCE client `acmp-web`** (standard flow,
+  S256) with an **audience mapper → `acmp-api`** (the api validates `aud`) + realm-role/group claim mappers;
+  the **8 canonical roles as realm roles AND groups**, named verbatim from `AcmpRoles.All`
+  (`…,Submitter,Guest` — **not** "Guest/Presenter", which the leaf-after-`/` mapper would mis-map to
+  `presenter`); initial admin user `acmp-admin` (Administrator+Secretary) with **no committed credential**
+  (`UPDATE_PASSWORD` required action — guardrail 7).
+- **`deploy/keycloak/README.md`** — realm import, manual provisioning (Q3), the issuer/hostname wiring,
+  the OQ-038 datastore decision, and P18 prod-hardening notes.
+- **Env** — `deploy/.env.example` + local `deploy/.env` gained `KC_BOOTSTRAP_ADMIN_*`, `KC_DB_*`,
+  `KEYCLOAK_AUTHORITY`; `src/Acmp.Web/.env.example` `VITE_OIDC_AUTHORITY` now points at the bundled realm.
+  `appsettings.json` keeps its **secure defaults** (empty Authority + `RequireHttpsMetadata=true`); in-stack
+  values live only in compose/env. No secrets committed.
+- **Self-contained lint** — new `scripts/check-self-contained.mjs` (Node, matches `check-i18n.mjs`):
+  scans compose runtime hosts, allowing only in-stack services + loopback/`*.localhost` + `*.webex.com`
+  (Phase 2). Wired into CI as a new `compose` job alongside `docker compose config` validation.
+
+**Issuer/hostname (the one real subtlety).** `AuthenticationExtensions` exposes only `Authority` (one URL
+for metadata fetch *and* issuer validation), so the issuer must be byte-identical for browser and api.
+Pinned `KC_HOSTNAME=http://keycloak.localhost:8085`: the browser auto-resolves `*.localhost` to loopback;
+the api reaches the same host via `extra_hosts: keycloak.localhost:host-gateway`. **No P4 code change.**
+Prod uses a real reverse-proxy hostname + TLS (P18).
+
+**Datastore = OQ-038 → (a) Postgres-for-Keycloak.** `docs/42` default; app data stays SQL-only (ADR-0003).
+
+**Verification.** `node scripts/check-self-contained.mjs` ✅ (7 services, 0 external) + negative-tested
+(flags an external host, exit 1). `docker compose --env-file .env config -q` ✅ parses. Realm JSON well-formed.
+Backend **311** + web **33** untouched (no app code changed). **Operator-gated:** live `docker compose up`
+of the 6-service stack + a login round-trip (sandbox cannot launch the stack — same stance as the P4 migration apply).
+
+**Decisions / drift (guardrail 11).**
+- **No new ADR** — ADR-0015 covers this; this is its rollout (CHANGE-001 §6).
+- **OQ-038 ID collision fixed.** Canon `docs/42` binds **OQ-038 = Keycloak datastore**; a stale PH-0 note had
+  reused OQ-038 for "prod CI runner" (never canonicalized) → **renumbered to OQ-041** in `ph0-validation.md`
+  + this log. Surfaced, not silently resolved.
+- **OQ-040** (bundled SQL Server prod edition/licensing) remains for human confirmation at deploy (P18);
+  **OQ-039** (future upstream federation) deferred.
+
+---
+
 ## P4 — Identity & Permissions
 
 ### 2026-06-25 — P4 complete: claim→role mapping, policy + ABAC authorization, SoD, full Membership module, Users & Membership screen
@@ -290,7 +347,8 @@ and/or P4 Identity & Permissions (claim→role mapping, policy + ABAC handlers, 
 **Decisions applied (OQ defaults + org answers 2026-06-25)**
 - Env not air-gapped on build machine → direct NuGet/npm, public registry + digest pinning (OQ-031/032).
   Prod VM air-gap recorded as an open item for P16/P18 (offline images + mirror path), not a scaffold blocker.
-- CI = GitHub Actions, GitHub-hosted runners for skeleton; "self-hosted runner for prod" → new OQ (OQ-038).
+- CI = GitHub Actions, GitHub-hosted runners for skeleton; "self-hosted runner for prod" → new OQ (OQ-041;
+  renumbered from OQ-038 on 2026-06-25 — ADR-0015/CHANGE-001 canonically took OQ-038 for the Keycloak datastore).
 - TLS 1.2+ default, flag for security review at P16 (OQ-024).
 - MFA: Chairman+Secretary required, 60-min idle — recorded, finalized at Keycloak setup (OQ-003).
 - Standby: cold + documented restore, revisit P18 (OQ-020).

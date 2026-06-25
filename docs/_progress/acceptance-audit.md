@@ -35,13 +35,20 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > delegation) + the Users & Membership admin screen. **Met:** AC-002, AC-008, AC-058, AC-059. **Partial**
 > (mechanism proven, end-to-end deferred to the consuming phase): AC-003/005/006/007 (RBAC/SoD-5 + audit→BL-066),
 > AC-009/010/011 (ABAC, → P5+), AC-012/013/015/016 (SoD predicates, → P8/P9). See progress-log P4 entry.
+>
+> CHANGE-001 update (2026-06-25): self-hosted-Keycloak infra change-slice (ADR-0015). **No AC flips** — this
+> is infrastructure/ownership only (bundled Keycloak + ACMP-owned realm + realm bootstrap), no app behavior
+> changed. AC-001 (Keycloak SSO login) and AC-004 (idle-timeout re-auth) stay **Pending**: the realm + OIDC
+> client now ship in `deploy/keycloak/`, but both still require a **live** `docker compose up` + login
+> round-trip, which the build sandbox cannot run (operator-gated). They flip to Met when verified live (P18/UAT).
+> See progress-log CHANGE-001 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Pending | — | Keycloak SSO login (needs live realm; JWT bearer wired P4) |
+| AC-001 | Auth & Identity | Pending | — | Keycloak SSO login; realm now bundled (ADR-0015, `deploy/keycloak/`); needs live login round-trip |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
-| AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (Keycloak session + form auto-save) |
+| AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |
 | AC-005 | RBAC | Partial | PermissionMatrixTests + MembershipApiTests | Submitter denied (matrix every restricted policy + HTTP 403); nav hidden P3; named feature endpoints P5–P9 |
 | AC-006 | RBAC | Partial | PermissionMatrixTests + MembershipApiTests | Auditor 403 on mutate (matrix + HTTP); audit-on-deny → BL-066; feature endpoints P5+ |
 | AC-007 | RBAC | Partial | PermissionMatrixTests | SoD-5 proven: Administrator denied on every committee-content policy; live vote/decision API 403 → P7/P9 |
