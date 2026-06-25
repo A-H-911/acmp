@@ -51,7 +51,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Met | manual (live: browser PKCE login → token [roles Administrator,Secretary; aud acmp-api] → GET /api/members 200; SPA presents Keycloak sign-in) | SSO login round-trip proven end-to-end vs bundled realm; deployed SPA wired (VITE_OIDC build args) and initiates login. Automated UI regression → P17 |
+| AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout mechanism works; logout *button* missing → UI backlog. Automated UI regression → P17 |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
 | AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |

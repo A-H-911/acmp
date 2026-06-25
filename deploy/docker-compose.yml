@@ -19,14 +19,25 @@ services:
       start_period: 30s
 
   seq:
-    image: datalust/seq:latest
+    # Pinned by digest (was :latest — unpinned caused the firstRun-password break; OQ-031 digest pinning).
+    image: datalust/seq@sha256:868a12e93ec0b8c993767a7dd4cd6c8ebc441511c79e4cfac66c911f62d4db65
     environment:
       ACCEPT_EULA: "Y"
+      # Recent Seq requires a first-run admin password OR an explicit no-auth opt-out, else it exits on
+      # startup. The bundled Seq is internal dev observability (UI on a loopback host port); prod sets
+      # SEQ_FIRSTRUN_ADMINPASSWORD instead (docs/33 / P18).
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
     ports:
-      - "5341:5341"   # ingestion (Serilog + OTLP)
-      - "8081:80"     # Seq UI
+      - "5341:5341"   # ingestion (Serilog + OTLP) — app uses internal seq:5341, host map is operator-only
+      - "8341:80"     # Seq UI (was 8081 — remapped to avoid common host port conflicts)
     volumes:
       - seq-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   minio:
     image: minio/minio:latest
@@ -39,6 +50,12 @@ services:
       - "9001:9001"   # console
     volumes:
       - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's

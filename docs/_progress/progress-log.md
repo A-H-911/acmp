@@ -14,6 +14,48 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## CHANGE-001 — Self-Hosted Keycloak; all runtime dependencies bundled (ADR-0015)
 
+### 2026-06-25 — Review remediation: 6/6 healthy + full browser login/logout cycle
+
+Acting on the change-slice review (NO-GO on stack health), fixed the gaps and then drove the **full
+browser cycle** end-to-end — which surfaced one more real bug (CSP).
+
+**Remediation (infra/config only):**
+- **seq was down** — root cause was *not* the port: recent `datalust/seq` requires a first-run admin
+  password or an explicit opt-out. Added `SEQ_FIRSTRUN_NOAUTHENTICATION: "true"` (internal dev
+  observability; prod sets `SEQ_FIRSTRUN_ADMINPASSWORD`), **pinned seq by digest** (was `:latest` — the
+  unpinned bump is what broke it; OQ-031), and remapped the Seq UI host port **8081→8341** (operator's
+  host-conflict request; app uses internal `seq:5341`).
+- **Healthchecks added for seq and minio** (both images ship `curl`): `…/health` and
+  `…/minio/health/live`. Item 1 can now assert all services healthy.
+- **CSP bug (found by the real browser flow).** The deployed SPA could not start login: the nginx CSP was
+  `connect-src 'self'`, which blocked the SPA's cross-origin OIDC metadata/token `fetch` to the Keycloak
+  origin (top-level redirects aren't governed by `connect-src`, which is why the direct authz URL worked
+  but the app button silently failed — `signinRedirect` rejected on "Failed to fetch"). Added the Keycloak
+  origin to **`connect-src`** and **`frame-src`** (silent-renew iframe). Dev origin hardcoded; prod must
+  template its real KC origin (P18). Rebuilt `web`; verified the CSP header live.
+
+**Live verification (clean `docker compose down` → up):** **all 6 services HEALTHY** (api, web, keycloak,
+sqlserver, seq, minio) + keycloak-db healthy. Backend **311/311** green (Domain 5 · Application 290 incl.
+the 248-case permission-matrix · Architecture 3 · Api 13). Self-contained lint green. Realm verified live
+via admin API (8 realm roles + 8 groups = canonical names; client `acmp-web` public + standardFlow + PKCE
+S256; `acmp-admin` enabled).
+
+**Full browser cycle (Chrome, real UI):**
+1. **ACMP → Keycloak:** `/login` → "Sign in via Keycloak" → SPA `signinRedirect` builds its own PKCE
+   request (`redirect_uri=/auth/callback`, S256) → Keycloak login page.
+2. **Keycloak → ACMP:** `acmp-admin` creds → submit → `/auth/callback` → SPA exchanges the code →
+   **`/dashboard` authenticated** (sessionStorage holds the access token; API authorizes).
+3. **Logout:** clear local token + Keycloak end-session (`/logout` with `id_token_hint`) → redirect to the
+   post-logout URI → app finds no token → **`/login`** (logged out).
+
+**Finding (not blocking CHANGE-001; → P5/UI backlog):** the app has **no logout UI control** — `signOut`
+(`oidc.signoutRedirect()`) is wired in the auth context but no component surfaces it (the P3 identity
+cluster is read-only). The logout *mechanism* works (demonstrated above); a sign-out button/menu needs
+adding to the TopBar. Logged for the UI backlog.
+
+**AC-001 → Met (UI-verified):** the SSO login round-trip now completes through the app UI, not just the
+direct protocol flow. **AC-004** still Pending (realm idle-timeout policy, OQ-003).
+
 ### 2026-06-25 — Infra change-slice applied (post-P4, before P5). No P4/app rework.
 
 **Why.** ASM-001 (org provides Keycloak) is **false** — the org has no Keycloak. Per **ADR-0015**
