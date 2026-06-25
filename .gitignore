@@ -1,0 +1,44 @@
+# ── .NET ──────────────────────────────────────────────
+bin/
+obj/
+out/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userosscache
+.vs/
+TestResults/
+*.trx
+*.coverage
+*.cobertura.xml
+coverage.*.json
+project.lock.json
+.dotnet/
+
+# ── Node / Vite ───────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+playwright-report/
+test-results/
+*.local
+
+# ── Env & secrets (NEVER commit) ──────────────────────
+*.env
+!*.env.example
+deploy/secrets/*
+!deploy/secrets/.gitkeep
+deploy/nginx/certs/*
+!deploy/nginx/certs/.gitkeep
+
+# ── OS / editor ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+
+# ── Logs ──────────────────────────────────────────────
+*.log
