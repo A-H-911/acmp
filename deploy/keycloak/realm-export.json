@@ -80,7 +80,7 @@
             "jsonType.label": "String",
             "multivalued": "true",
             "access.token.claim": "true",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "userinfo.token.claim": "true"
           }
         },
@@ -93,7 +93,7 @@
             "claim.name": "groups",
             "full.path": "true",
             "access.token.claim": "true",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "userinfo.token.claim": "true"
           }
         }

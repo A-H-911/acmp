@@ -34,6 +34,8 @@ jobs:
           node-version: '22'
       - name: Self-contained lint (ADR-0015 / CON-001 — no external runtime hosts)
         run: node scripts/check-self-contained.mjs
+      - name: Realm export check (roles reach the SPA via the ID token)
+        run: node scripts/check-realm-export.mjs
       - name: Validate docker-compose
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example config -q
 
