@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: dotnet restore acmp.sln
+      - name: Format check
+        run: dotnet format acmp.sln --verify-no-changes --no-restore
+      - name: Build
+        run: dotnet build acmp.sln -c Release --no-restore
+      - name: Test
+        run: dotnet test acmp.sln -c Release --no-build
+      - name: Vulnerable packages (report)
+        run: dotnet list acmp.sln package --vulnerable --include-transitive
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Acmp.Web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/Acmp.Web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: i18n parity (EN/AR)
+        run: node ../../scripts/check-i18n.mjs
+      - name: Build
+        run: npm run build
+      - name: Audit
+        run: npm audit --audit-level=high
