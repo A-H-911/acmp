@@ -1,5 +1,3 @@
-<p align="center"><img src="../src/Acmp.Web/public/favicon.svg" alt="ACMP logo" width="72" height="72" /></p>
-
 # Architecture Committee Management Platform (ACMP) — Planning & Execution Package
 
 **Status:** Draft v1.0 · **Date:** 2026-06-24 · **Audience:** Engineering / execution (the lead secretary + the Claude Code execution agent) · **Downstream executor:** Claude Code · **Design executor:** Claude Design
@@ -177,7 +175,4 @@ Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM)
 1. **Architecture governance, not project management.** Every feature must serve committee governance/traceability; reject generic PM creep.
 2. **Modular monolith first.** No distributed architecture without a demonstrated, measured need.
 3. **SQL Server is enough.** No second datastore without evidence.
-4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, and notification channels using standard open-source libraries; it integrates **Tarseem** (diagrams) and **optionally Keystone** (research/discovery — not required), and **self-hosts Keycloak (OIDC)** for identity (ADR-0015).
-5. **Human-reviewed automation.** AI-extracted transcript content is *candidate* until a human approves it.
-6. **Auditable & immutable where it matters.** Votes and issued decisions cannot be silently changed.
-7. **Bilingual and RTL are first-class**, not bolted on.
+4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, a
