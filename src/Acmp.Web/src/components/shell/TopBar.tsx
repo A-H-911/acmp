@@ -1,10 +1,11 @@
 /*
- * Top chrome (docs/14 §2, design "Navigation & IA"): brand, global search,
- * locale + theme toggles, notification bell, and the read-only role/identity
- * cluster. Present on every page. Search is wired as a form but the results
- * page is a later phase; here it routes to /search.
+ * Top chrome (docs/14 §2; design "ACMP" app shell + "Navigation & IA"): brand,
+ * global search, locale + theme toggles, notification bell, and the profile
+ * menu — avatar + name + role trigger → role="menu" panel holding the identity
+ * and a Log out item (OIDC end-session against the self-hosted Keycloak realm,
+ * ADR-0015). Present on every page.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
@@ -19,14 +20,30 @@ export function TopBar() {
   const { displayName, initials, roles, signOut } = useAuth();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [query, setQuery] = useState('');
 
   const otherLang = i18n.language === 'ar' ? 'en' : 'ar';
   const roleLabel = roles[0] ? t(`role.${roles[0]}`) : '';
 
+  // Escape closes the profile menu; outside-click is caught by the backdrop.
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setProfileOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [profileOpen]);
+
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
+
+  // OIDC end-session (oidc-client-ts signoutRedirect): clears the local session/
+  // tokens and redirects to the post-logout (login) route. See AuthProvider.
+  const onLogout = () => {
+    setProfileOpen(false);
+    signOut();
   };
 
   return (
@@ -86,22 +103,43 @@ export function TopBar() {
         <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
       </button>
 
-      <div className="topbar-user">
-        <span className="avatar" aria-hidden="true">{initials}</span>
-        <span style={{ lineHeight: 1.1 }}>
-          <span className="topbar-user-name">{displayName}</span>
-          <span className="topbar-user-role">{roleLabel}</span>
-        </span>
-      </div>
+      <div className="profile-menu">
+        <button
+          type="button"
+          className="profile-trigger"
+          aria-haspopup="menu"
+          aria-expanded={profileOpen}
+          aria-label={t('auth.accountMenu')}
+          onClick={() => setProfileOpen((o) => !o)}
+        >
+          <span className="avatar" aria-hidden="true">{initials}</span>
+          <span className="profile-trigger-id">
+            <span className="topbar-user-name">{displayName}</span>
+            <span className="topbar-user-role">{roleLabel}</span>
+          </span>
+          <Icon name="chevronDown" size={14} className="profile-trigger-caret" aria-hidden />
+        </button>
 
-      <button
-        type="button"
-        className="icon-btn"
-        onClick={signOut}
-        aria-label={t('auth.signOut')}
-      >
-        <Icon name="logout" size={17} />
-      </button>
+        {profileOpen && (
+          <>
+            <div className="profile-backdrop" onClick={() => setProfileOpen(false)} aria-hidden="true" />
+            <div className="profile-panel" role="menu" aria-label={displayName || t('auth.accountMenu')}>
+              <div className="profile-id">
+                <span className="avatar" aria-hidden="true">{initials}</span>
+                <span className="profile-id-text">
+                  <span className="profile-id-name">{displayName}</span>
+                  <span className="profile-id-role">{roleLabel}</span>
+                </span>
+              </div>
+              <div className="profile-sep" role="separator" />
+              <button type="button" className="profile-item" role="menuitem" onClick={onLogout}>
+                <Icon name="logout" size={17} className="dir-flip" aria-hidden />
+                <span className="profile-item-label">{t('auth.logout')}</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </header>
   );
 }
