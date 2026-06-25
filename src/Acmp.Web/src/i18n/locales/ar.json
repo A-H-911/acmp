@@ -55,6 +55,7 @@
   },
   "auth": {
     "signIn": "تسجيل الدخول عبر Keycloak",
+    "signOut": "تسجيل الخروج",
     "completing": "جارٍ إكمال تسجيل الدخول…",
     "failedTitle": "فشل تسجيل الدخول"
   },

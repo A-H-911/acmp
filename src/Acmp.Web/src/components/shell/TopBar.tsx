@@ -16,7 +16,7 @@ import { DevRoleSwitcher } from './DevRoleSwitcher';
 export function TopBar() {
   const { t, i18n } = useTranslation();
   const { theme, toggle } = useTheme();
-  const { displayName, initials, roles } = useAuth();
+  const { displayName, initials, roles, signOut } = useAuth();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -93,6 +93,15 @@ export function TopBar() {
           <span className="topbar-user-role">{roleLabel}</span>
         </span>
       </div>
+
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={signOut}
+        aria-label={t('auth.signOut')}
+      >
+        <Icon name="logout" size={17} />
+      </button>
     </header>
   );
 }

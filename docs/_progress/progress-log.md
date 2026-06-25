@@ -14,6 +14,22 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## CHANGE-001 — Self-Hosted Keycloak; all runtime dependencies bundled (ADR-0015)
 
+### 2026-06-25 — Carry-forward findings resolved: logout UI control + CSP templating
+
+Both findings from the change-slice review are closed and verified:
+- **Logout UI control.** Added a sign-out button to the `TopBar` (new `logout` icon + `auth.signOut`
+  EN/AR keys) wired to the auth-context `signOut` (`oidc.signoutRedirect()`). New `TopBar.test.tsx`
+  asserts the control invokes `signOut`. **Browser-verified end-to-end:** authenticated `/dashboard` →
+  clicked sign-out → Keycloak end-session → back to `/login` (logged out).
+- **CSP templating.** The nginx CSP Keycloak origin is no longer hardcoded: `nginx.conf` →
+  `default.conf.template` using `${KEYCLOAK_ORIGIN}`, substituted at container start (nginx envsubst with
+  `NGINX_ENVSUBST_FILTER=KEYCLOAK_ORIGIN` so `$host`/`$uri`/`$scheme` are preserved). Driven by a runtime
+  `KEYCLOAK_ORIGIN` env on the `web` service (compose + `.env`/`.env.example`) — each environment sets its
+  own origin with no rebuild. Verified live: CSP header renders the substituted origin; `/api/` proxy still works.
+
+Verification: web **34/34** tests (incl. the new TopBar test), i18n parity **94 keys**, self-contained lint
+green, web image rebuilt + healthy, full browser login→logout re-run clean. Backend untouched (still 311).
+
 ### 2026-06-25 — Review remediation: 6/6 healthy + full browser login/logout cycle
 
 Acting on the change-slice review (NO-GO on stack health), fixed the gaps and then drove the **full

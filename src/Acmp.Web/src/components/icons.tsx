@@ -10,7 +10,7 @@ export type IconName =
   | 'home' | 'backlog' | 'calendar' | 'decision' | 'action' | 'adr' | 'risk'
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'building'
-  | 'plus' | 'chevron' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox';
+  | 'plus' | 'chevron' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -40,6 +40,7 @@ const PATHS: Record<IconName, ReactNode> = {
   grip: <><circle cx="9" cy="6" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="18" r="1" /><circle cx="15" cy="6" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="18" r="1" /></>,
   arrowUp: <path d="M12 19V5M5 12l7-7 7 7" />,
   arrowDown: <path d="M12 5v14M5 12l7 7 7-7" />,
+  logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></>,
 };
 
 interface IconProps {

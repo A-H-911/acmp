@@ -161,6 +161,9 @@ services:
         # so the browser and api agree byte-for-byte. Public PKCE client, no secret.
         VITE_OIDC_AUTHORITY: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
         VITE_OIDC_CLIENT_ID: "acmp-web"
+    environment:
+      # CSP Keycloak origin, substituted into the nginx template at startup (runtime, no rebuild).
+      KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN:-http://keycloak.localhost:8085}"
     depends_on:
       api:
         condition: service_healthy
