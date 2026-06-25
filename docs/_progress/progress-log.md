@@ -71,9 +71,13 @@ submit → redirect to `http://localhost:8088/?code=…&iss=http://keycloak.loca
 matched). Exchanged the code (with the PKCE verifier) → access token with **`iss`** correct, **`aud: acmp-api`**,
 **`realm_access.roles: [Administrator, Secretary]`**, groups `[/Administrator, /Secretary]`; **`GET /api/members`
 with that bearer → 200**. End-to-end identity contract proven (browser login → mapped roles → API authorizes).
-**Remaining gap (not identity):** `deploy/Dockerfile.web` runs `npm run build` with no `VITE_OIDC_*` build args,
-so the deployed SPA bundle can't *initiate* login through the UI (fails closed) — needs build-arg wiring
-(ARG/ENV in the web Dockerfile + compose `build.args`). Idle-timeout/session policy still pending → AC-004.
+**SPA build-arg wiring — fixed (2026-06-25).** `deploy/Dockerfile.web` now takes `VITE_OIDC_AUTHORITY`/
+`VITE_OIDC_CLIENT_ID`/`VITE_OIDC_SCOPE` as `ARG`→`ENV` before `npm run build`; compose passes them via
+`web.build.args` from `KEYCLOAK_AUTHORITY` (so SPA + api share one issuer). Rebuilt `web`; verified the issuer
+is **baked into the bundle** (`grep` of `/usr/share/nginx/html/assets`) and the SPA now redirects to `/login`
+and renders the **"Sign in via Keycloak"** CTA (was failing closed). **AC-001 → Met** (SSO login round-trip +
+role mapping + API authorization proven; SPA initiates login; automated UI regression → P17). Idle-timeout/
+session policy still pending → AC-004 (OQ-003).
 
 **Decisions / drift (guardrail 11).**
 - **No new ADR** — ADR-0015 covers this; this is its rollout (CHANGE-001 §6).

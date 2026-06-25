@@ -42,14 +42,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > issuer = `http://keycloak.localhost:8085/realms/acmp` (PKCE S256), `GET /api/members` → 401 (fail-closed),
 > and the **P4-deferred `Membership_P4_Identity` migration applied** on api startup. **Browser login
 > round-trip driven successfully** (Chrome authz-code + PKCE → access token with `aud: acmp-api` +
-> `realm_access.roles: [Administrator, Secretary]` → `GET /api/members` 200). **AC-001 → Partial** (SSO
-> login + role mapping + API authorization proven end-to-end; the only remaining piece is a deployed-SPA
-> build-arg gap — `Dockerfile.web` needs `VITE_OIDC_*` so the UI can initiate login). **AC-004 stays Pending**
-> (realm idle-timeout/session policy not yet configured — OQ-003). See progress-log CHANGE-001 entry.
+> `realm_access.roles: [Administrator, Secretary]` → `GET /api/members` 200). The deployed SPA was then
+> wired (`Dockerfile.web` + compose `build.args` bake `VITE_OIDC_*`) and rebuilt; it now redirects to
+> `/login` and presents the Keycloak sign-in CTA against the same baked issuer. **AC-001 → Met** (SSO
+> login + role mapping + API authorization proven end-to-end; SPA initiates login; automated UI regression
+> → P17). **AC-004 stays Pending** (realm idle-timeout/session policy not yet configured — OQ-003).
+> See progress-log CHANGE-001 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Partial | manual (live: browser PKCE login → token [roles Administrator,Secretary; aud acmp-api] → GET /api/members 200) | SSO login round-trip proven end-to-end against the bundled realm. Remaining: deployed SPA can't initiate login (web Dockerfile needs VITE_OIDC build args) |
+| AC-001 | Auth & Identity | Met | manual (live: browser PKCE login → token [roles Administrator,Secretary; aud acmp-api] → GET /api/members 200; SPA presents Keycloak sign-in) | SSO login round-trip proven end-to-end vs bundled realm; deployed SPA wired (VITE_OIDC build args) and initiates login. Automated UI regression → P17 |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
 | AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |
@@ -116,8 +118,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 9 Met (AC-002/008/040/042/045/046/058/059) · 12 Partial
-(AC-001/003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 45 Pending. (Through P4 + CHANGE-001 live bring-up.)
+**Summary:** 66 ACs · 9 Met (AC-001/002/008/040/042/045/046/058/059) · 12 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 45 Pending. (Through P4 + CHANGE-001 live bring-up + SSO login.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

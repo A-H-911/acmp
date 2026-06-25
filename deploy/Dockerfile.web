@@ -4,6 +4,15 @@ WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./
 RUN npm ci
 COPY src/Acmp.Web/ ./
+# OIDC config is baked into the SPA bundle at build time (Vite). Passed via compose build.args
+# (ADR-0015). Empty authority/client => the prod bundle fails closed (no dev stub). No secrets here:
+# a public PKCE client has no secret (guardrail 7).
+ARG VITE_OIDC_AUTHORITY=""
+ARG VITE_OIDC_CLIENT_ID="acmp-web"
+ARG VITE_OIDC_SCOPE="openid profile email"
+ENV VITE_OIDC_AUTHORITY=$VITE_OIDC_AUTHORITY \
+    VITE_OIDC_CLIENT_ID=$VITE_OIDC_CLIENT_ID \
+    VITE_OIDC_SCOPE=$VITE_OIDC_SCOPE
 RUN npm run build
 
 FROM nginx:alpine AS final
