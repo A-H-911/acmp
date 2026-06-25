@@ -1,11 +1,10 @@
 /*
  * Top chrome (docs/14 §2, design "Navigation & IA"): brand, global search,
- * locale + theme toggles, notification bell, and the identity cluster — a
- * dropdown menu (design pattern: avatar + name + role → role="menu" panel).
- * Roles are read-only (sourced from Keycloak); the menu hosts account actions,
- * Sign out for now. Search is wired as a form; the results page is a later phase.
+ * locale + theme toggles, notification bell, and the read-only role/identity
+ * cluster. Present on every page. Search is wired as a form but the results
+ * page is a later phase; here it routes to /search.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
@@ -20,27 +19,10 @@ export function TopBar() {
   const { displayName, initials, roles, signOut } = useAuth();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const userRef = useRef<HTMLDivElement>(null);
 
   const otherLang = i18n.language === 'ar' ? 'en' : 'ar';
   const roleLabel = roles[0] ? t(`role.${roles[0]}`) : '';
-
-  // Close the account menu on Escape or click-away (mirrors NotificationCenter).
-  useEffect(() => {
-    if (!userOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setUserOpen(false);
-    const onClick = (e: MouseEvent) => {
-      if (userRef.current && !userRef.current.contains(e.target as Node)) setUserOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onClick);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onClick);
-    };
-  }, [userOpen]);
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,42 +86,22 @@ export function TopBar() {
         <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
       </button>
 
-      <div className="user-menu" ref={userRef}>
-        <button
-          type="button"
-          className="user-menu-trigger"
-          aria-haspopup="menu"
-          aria-expanded={userOpen}
-          aria-label={t('auth.accountMenu')}
-          onClick={() => setUserOpen((o) => !o)}
-        >
-          <span className="avatar" aria-hidden="true">{initials}</span>
-          <span style={{ lineHeight: 1.1 }}>
-            <span className="topbar-user-name">{displayName}</span>
-            <span className="topbar-user-role">{roleLabel}</span>
-          </span>
-          <Icon name="chevron" size={14} className="user-menu-caret" aria-hidden />
-        </button>
-
-        {userOpen && (
-          <div className="user-menu-panel" role="menu" aria-label={t('auth.accountMenu')}>
-            <div className="user-menu-id">
-              <span className="topbar-user-name">{displayName}</span>
-              <span className="topbar-user-role">{roleLabel ? `${roleLabel} · ` : ''}{t('admin.fromKeycloak')}</span>
-            </div>
-            <div className="user-menu-sep" role="separator" />
-            <button
-              type="button"
-              className="user-menu-item"
-              role="menuitem"
-              onClick={() => { setUserOpen(false); signOut(); }}
-            >
-              <Icon name="logout" size={16} />
-              {t('auth.signOut')}
-            </button>
-          </div>
-        )}
+      <div className="topbar-user">
+        <span className="avatar" aria-hidden="true">{initials}</span>
+        <span style={{ lineHeight: 1.1 }}>
+          <span className="topbar-user-name">{displayName}</span>
+          <span className="topbar-user-role">{roleLabel}</span>
+        </span>
       </div>
+
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={signOut}
+        aria-label={t('auth.signOut')}
+      >
+        <Icon name="logout" size={17} />
+      </button>
     </header>
   );
 }

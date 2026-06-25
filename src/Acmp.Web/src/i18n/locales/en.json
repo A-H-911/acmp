@@ -56,7 +56,6 @@
   "auth": {
     "signIn": "Sign in with Keycloak",
     "signOut": "Sign out",
-    "accountMenu": "Account menu",
     "completing": "Completing sign-in…",
     "failedTitle": "Sign-in failed"
   },
