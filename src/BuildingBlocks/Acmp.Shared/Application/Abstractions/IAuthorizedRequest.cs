@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Application.Abstractions;
+﻿namespace Acmp.Shared.Application.Abstractions;
 
 // Opt-in marker for MediatR requests that require one of a set of global roles. The
 // AuthorizationBehavior enforces it. Full policy + ABAC (stream scope, SoD) lands in P4; this is

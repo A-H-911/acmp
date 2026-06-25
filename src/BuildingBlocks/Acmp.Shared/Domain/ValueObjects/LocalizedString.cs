@@ -1,4 +1,4 @@
-using Acmp.Shared.Domain.Enums;
+﻿using Acmp.Shared.Domain.Enums;
 
 namespace Acmp.Shared.Domain.ValueObjects;
 

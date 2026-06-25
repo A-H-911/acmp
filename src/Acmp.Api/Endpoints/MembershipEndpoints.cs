@@ -1,4 +1,4 @@
-using Acmp.Modules.Membership.Application.Features.GetMembers;
+﻿using Acmp.Modules.Membership.Application.Features.GetMembers;
 using Acmp.Modules.Membership.Application.Features.InviteMember;
 using MediatR;
 

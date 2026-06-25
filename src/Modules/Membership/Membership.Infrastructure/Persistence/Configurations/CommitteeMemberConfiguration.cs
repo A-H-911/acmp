@@ -1,4 +1,4 @@
-using Acmp.Modules.Membership.Domain;
+﻿using Acmp.Modules.Membership.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

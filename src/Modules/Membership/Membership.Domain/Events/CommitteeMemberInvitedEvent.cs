@@ -1,4 +1,4 @@
-using Acmp.Shared.Domain.Events;
+﻿using Acmp.Shared.Domain.Events;
 
 namespace Acmp.Modules.Membership.Domain.Events;
 

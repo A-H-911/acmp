@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Application.Abstractions;
+﻿namespace Acmp.Shared.Application.Abstractions;
 
 // Object storage abstraction (ADR-0014). v1 implementation = self-hosted MinIO. Sensitive files
 // are served via short-lived pre-signed URLs rather than streamed through the API.

@@ -1,4 +1,4 @@
-using Acmp.Shared.Contracts.Notifications;
+﻿using Acmp.Shared.Contracts.Notifications;
 
 namespace Acmp.Shared.Application.Abstractions;
 

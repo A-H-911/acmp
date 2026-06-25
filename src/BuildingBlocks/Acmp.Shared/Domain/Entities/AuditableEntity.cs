@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Domain.Entities;
+﻿namespace Acmp.Shared.Domain.Entities;
 
 // Lightweight creation/modification stamps, filled by the module DbContext on SaveChanges.
 // The immutable, hash-chained AuditEvent log (ADR-0009) is a separate Audit-module concern.

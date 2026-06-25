@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Acmp.Modules.Membership.Application.Features.InviteMember;
 

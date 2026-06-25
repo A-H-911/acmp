@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Membership.Domain.Enums;
+﻿namespace Acmp.Modules.Membership.Domain.Enums;
 
 // Canonical global roles (README section C). Sourced from Keycloak group/realm-role claims
 // (ADR-0004) and mapped to these; ACMP does not assign roles itself.

@@ -1,4 +1,4 @@
-using Acmp.Modules.Membership.Infrastructure.Persistence;
+﻿using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Api.Infrastructure;

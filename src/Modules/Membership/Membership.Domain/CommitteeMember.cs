@@ -1,4 +1,4 @@
-using Acmp.Modules.Membership.Domain.Enums;
+﻿using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Membership.Domain.Events;
 using Acmp.Shared.Domain.Entities;
 

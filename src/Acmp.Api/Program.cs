@@ -1,12 +1,12 @@
-using Acmp.Api.Endpoints;
+﻿using Acmp.Api.Endpoints;
 using Acmp.Api.Infrastructure;
 using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
 using Acmp.Shared;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Serilog;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 

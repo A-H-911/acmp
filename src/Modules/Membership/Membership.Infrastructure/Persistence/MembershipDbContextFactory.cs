@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Acmp.Shared.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
