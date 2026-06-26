@@ -14,6 +14,59 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P5 — Topic & Backlog Management
 
+### 2026-06-26 — P5b PR2: Submit topic form (W1) wired to POST /api/topics
+
+**Scope.** Second P5b slice — the **Submit topic** screen matching the design's submit screen. Branch
+`feat/P5b-submit`. Web suite **79 tests green** (was 72; +7 SubmitTopic incl. its own axe case), i18n parity
+226, oxlint + build clean. Also resolves the **auth-bootstrap 401** found in PR1 (shipped separately as #12,
+already on `main`).
+
+**Done.**
+- **Router migrated to a data router** (`createBrowserRouter(createRoutesFromElements(...))`, keeping App's
+  JSX route tree) so `useBlocker` is available for the unsaved-work guard (AC-047). Providers unchanged.
+- `api/topics.ts` — `useSubmitTopic` (POST) + `uploadTopicAttachment` (multipart, field `file`).
+- `features/topics/SubmitTopic.tsx` — sticky section nav + 5 fieldsets (Type & title / Justification /
+  Scope / Attachments / Urgency); **4 type cards** + **3 urgency cards** (canonical taxonomies);
+  title counter; client-side **localized required-field validation** (AC-030/049 display); free-text
+  **token inputs** for streams & systems; **drop-zone file staging** with a 50 MB client check, uploaded to
+  the new topic on submit (AC-049/050 path); **autosave to localStorage** with a live indicator; **Save draft**.
+- **Unsaved-work guard:** `useBlocker` route-change guard → confirm Dialog (AC-047); `beforeunload` listener
+  when dirty (AC-048). Programmatic post-submit / save-draft navigation bypasses the guard via a ref.
+- On submit: POST → upload staged files → clear draft → redirect to the new topic's detail route.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; in the file header comment).**
+- **No Scope/Source picker** — `source` defaults to `CommitteeMember`, Scope is derived server-side (P5a).
+- **4 types / Urgency Normal·Urgent·Critical** (canonical), not the design's 3 + "low".
+- **Plain textarea** for description — the design's rich-text toolbar is mock chrome; we store plain text.
+- **Streams & systems are free-text token inputs** (no committed stream registry in the web yet), not the
+  design's fixed stream toggle-chips — revisit when a streams endpoint exists.
+- **Autosave is client-side (localStorage)** — there is no server draft endpoint in P5; the indicator and
+  "Save draft" reflect that. The guard warns before leaving an unsubmitted topic (the draft is kept either way).
+- **Section nav scrolls to fieldsets** (single scrollable form), not a multi-step wizard.
+- **No new ADR** (UI on the settled stack; the router-config change is the same react-router, data-router mode).
+
+**Verification.** Automated gate green: web **79/79** (Vitest+RTL behavior — validation, AC-039 locale-preserve,
+AC-047 guard, submit payload, file-size reject — + **axe WCAG 2.2 AA**), i18n parity 226, oxlint, `tsc -b` +
+vite build.
+- **AA contrast verified offline** for the submit screen's text/bg combos (both themes); fixed three
+  light-mode `--text-3` real-text spots that fell below 4.5:1 (`.sub-drop-hint`/`.sub-foot-note` on `--subtle`
+  = 4.37; selected `.sub-card-desc` on `--primary-tint` = 4.15) → `--text-2` (CHANGE-003 precedent).
+- **RTL-safety** confirmed (logical-properties-only audit of `topics.css`).
+- **Pending — live authenticated pass** (real POST + MinIO attachment upload for AC-049/050, AR/RTL + dark
+  visual): tests mock `useSubmitTopic`/`uploadTopicAttachment`, so the real submit + upload path is not yet
+  run end-to-end. Recommended before merge (creates a real topic in the dev DB).
+
+**Acceptance audit (this entry).** **Met (newly):** **AC-039** (locale switch preserves form data — unit-tested),
+**AC-047** (in-app route-change guard via useBlocker — unit-tested). **Partial (newly):** **AC-048**
+(`beforeunload` wired when dirty; native browser dialog isn't unit-testable in jsdom → live pass). AC-030 gains
+a client-side localized-validation UI test ref (server-side localized messages still BL-016); AC-049/050 gain
+the upload-wiring UI (live MinIO → the live pass). AC-009/034 (per-topic edit lock over the live UI) → PR3.
+
+**Next.** Live authenticated pass (real submit + MinIO), then PR3 (Topic detail: header, Overview/Discussion/
+History tabs, comment POST, empty relationships sidebar; AC-009/034 over the live UI).
+
+---
+
 ### 2026-06-26 — P5b PR1: Backlog read path (table + list views) wired to GET /api/topics
 
 **Scope.** First of four P5b slices (the design's three screens — backlog/submit/detail). PR1 ships the
