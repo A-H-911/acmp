@@ -12,6 +12,81 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P5 — Topic & Backlog Management
+
+### 2026-06-26 — P5a backend complete: Topics module (domain → application → infrastructure → API), live-verified on real SQL Server
+
+**Scope.** The backend half of P5 — the core-loop heart (intake → triage → backlog) — built as a new
+`Topics` module on the established modular-monolith pattern. The UI (P5b) follows. Branch `feat/P5-topics`
+(4 commits); **353 tests green** (23 domain · 3→**8** arch · 307 application · 20 API); solution builds.
+
+**Done.**
+- **Domain** (`Topic` aggregate). Full canonical lifecycle state machine (docs/12 §1) — Submit/Triage/
+  Accept/Reject/Defer/Reactivate/Prepare/Reopen/Schedule/Decide/Close/Convert; guards reject illegal
+  transitions; content locks after Accept (AC-034); metadata editable until Decided, then immutable.
+  Enums per docs/09 (Type×4, Urgency Normal/Urgent/Critical, Scope×4, Source×10, Status×13). Child
+  entities: `TopicAttachment` (MinIO metadata), `TopicComment` (immutable), `TopicStatusEvent`
+  (append-only history → immutable rejection record, AC-032/033). ABAC contracts implemented
+  (`IStreamScopedResource`/`ITopicScopedResource`).
+- **Application** (MediatR slices, FluentValidation, `IAuditSink` on every state change): SubmitTopic
+  (W1), AcceptTopic (W2 + grant-on-accept), RejectTopic/DeferTopic (W20), PrepareTopic (W4),
+  PrioritizeTopic (W3), UpdateTopic (AC-034 phase-aware), AddTopicComment (BL-033), AttachFileToTopic
+  (AC-049/050), GetBacklog (filter/sort/page + SLA aging AC-057), GetTopicDetail. **Live ABAC** via a new
+  shared `IResourceAuthorizer` seam (the P4→P5 deferral made concrete): handlers load the Topic then
+  `EnsureAsync(topic, policy)` against the registered `CapabilityRequirement`.
+- **Infrastructure.** `TopicsDbContext` (schema `topics`) — streams/systems/tags as JSON columns
+  (value-converter), attachments/comments/history as owned child tables, enums as int. Forward-only
+  migration `Topics_P5_Initial`; `TopicKeyGenerator` (gap-free `TOP-YYYY-###`); the Membership-side
+  `ITopicCapabilityWriter` (grant-on-accept) registered alongside the ABAC read providers; `MigrationRunner`
+  now migrates every module context.
+- **API.** `/api/topics` (submit/backlog/detail/accept/reject/defer/prepare/priority/update/comments/
+  attachments) with policy RBAC + in-handler ABAC; global `JsonStringEnumConverter` wire contract.
+- **ArchUnit.** Boundary tests extended to both modules + cross-module isolation (Topics ⟂ Membership);
+  3 → 8 tests, all green.
+
+**Live verification (real stack, 2026-06-26).** `docker compose up -d --build` → **all 7 services HEALTHY**;
+api log `Database migrations applied.` (both module contexts on real SQL Server). All five Topics tables
+materialized: `topics.topics`, `topic_attachments`, `topic_comments`, `topic_status_events`,
+`topic_key_counters` (+ `membership.topic_capability_grants` for grant-on-accept). `/api/topics` → **401**
+without a token (fail-closed). **Authenticated round-trip through the real PKCE login** (acmp-admin →
+token `iss=keycloak.localhost/realms/acmp`, `aud=acmp-api`, roles `[Administrator,Secretary]`):
+`GET /api/topics` 200; `POST /api/topics` 201 → **TOP-2026-001**; `GET` detail reads back
+`streams=[identity,platform]`, `tags=[SecurityArch]`, `history=1`. **Direct SQL confirms** the JSON
+columns persisted (`streams = ["identity","platform"]`, `tags = ["SecurityArch"]`), the owned
+`topic_status_events` row exists, and `topic_key_counters` advanced to `2026 → 2`. This closes the
+InMemory-only gap: the write path persists JSON columns + owned tables on real SQL Server.
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **No new ADR** — new module on the settled architecture; no architecture change.
+- **5 design↔behavior reconciliations** (design = visual SoT, package = data SoT; recorded in code
+  comments at each point): (1) **4 topic types** not the design's 3 (doc 09 adds EnhancementInnovation);
+  (2) **Urgency = Normal/Urgent/Critical** not the design's "low" (doc 09 §B.1 SLAs); (3) **single-language
+  topic title/description** (the design's bilingual sample is demo; UI chrome stays full EN/AR i18n);
+  (4) **Scope derived** from affected-stream count + **Source defaulted**, both Secretary-adjustable in
+  triage (the submit form has no picker for either); (5) **kanban 5 buckets** are a backlog view grouping
+  over canonical status — DnD performs only P5-legal transitions (schedule needs a Meeting → P6).
+- **Identity model.** Actor/author/submitter = Keycloak subject + name snapshot (matches `IAuditSink`/
+  `ICurrentUser`, no per-command member lookup); Owner = member PublicId + name; grant-on-accept resolves
+  owner → grant inside Membership. Corrected mid-build from an initial `Guid actorId`.
+- **Attachment limit = 50 MB** (AC-049 configurable default), not the design's "25 MB" hint (display copy).
+- **ponytail ceilings noted:** key generator is a get-increment-save (gap-free, fine at committee scale;
+  unique `Key` index fails loud on the rare race); backlog stream/text filters run in memory post-fetch.
+
+**Acceptance audit (this entry).** **Met:** AC-031 (reject needs reason, 400 over HTTP). **Partial**
+(mechanism built + tested; live-HTTP or consuming phase named): AC-030 (server validation + 400 proven;
+localized messages → BL-016), AC-032 (immutable event persisted; submitter notify → Notifications phase),
+AC-033 (no mutation surface; DB-enforced immutability + hash-chain → BL-066), AC-034 (content lock +
+metadata-only-Secretary enforced in domain + handler; live 403 path → P17), AC-035 (Prepared + audit
+proven), AC-049/050 (size/MIME validation + IFileStore upload + DocumentAttached audit via handler tests;
+live MinIO → P5b), AC-057 (aging badge live-verified; SLA-breach notification → Notifications phase),
+AC-009 (grant-on-accept + ABAC owner check proven live on accept; per-topic edit 403 → P5b). AC-010
+stays Partial (stream-scope on actions → P8).
+
+**Next.** P5a PR (push → CI green → review GO → squash-merge). Then **P5b** — the three design-matched
+screens (`ACMP Backlog & Topic.dc.html`: backlog 5 views, submit form, topic detail) wired to this API.
+
+---
+
 ## CHANGE-003 — Local-design source of truth + shared component library + screen composition
 
 ### 2026-06-26 — Re-did the UI for fidelity against the LOCAL `/ACMP product context/*.dc.html`
