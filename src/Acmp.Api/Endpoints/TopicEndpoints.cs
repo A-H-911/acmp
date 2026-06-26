@@ -1,4 +1,6 @@
 using Acmp.Modules.Topics.Application.Features.AcceptTopic;
+using Acmp.Modules.Topics.Application.Features.AddTopicComment;
+using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
@@ -6,6 +8,7 @@ using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
+using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -77,6 +80,30 @@ public static class TopicEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.BacklogPrioritize);
 
+        // Edit (AC-034) — phase-aware authorization in the handler.
+        group.MapPut("/{id:guid}", async (Guid id, UpdateTopicBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new UpdateTopicCommand(id, body.Title, body.Description, body.Justification,
+                body.Urgency, body.Streams, body.Systems, body.Tags), ct);
+            return Results.NoContent();
+        });
+
+        // BL-033: discussion comment — any authenticated member.
+        group.MapPost("/{id:guid}/comments", async (Guid id, ReasonBody body, ISender sender, CancellationToken ct) =>
+        {
+            var commentId = await sender.Send(new AddTopicCommentCommand(id, body.Reason), ct);
+            return Results.Created($"/api/topics/{id}/comments/{commentId}", new { id = commentId });
+        });
+
+        // AC-049/050: attach a file (multipart). Size/MIME validated in the handler.
+        group.MapPost("/{id:guid}/attachments", async (Guid id, IFormFile file, ISender sender, CancellationToken ct) =>
+        {
+            await using var stream = file.OpenReadStream();
+            var dto = await sender.Send(new AttachFileToTopicCommand(id, file.FileName,
+                file.ContentType, file.Length, stream), ct);
+            return Results.Created($"/api/topics/{id}/attachments/{dto.Id}", dto);
+        }).DisableAntiforgery();
+
         return app;
     }
 
@@ -84,4 +111,6 @@ public static class TopicEndpoints
     public sealed record ReasonBody(string Reason);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
+    public sealed record UpdateTopicBody(string Title, string Description, string Justification,
+        TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags);
 }

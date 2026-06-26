@@ -35,6 +35,10 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     MembershipApplicationExtensions.Assembly,
     TopicsApplicationExtensions.Assembly));
 
+// Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+
 // Problem Details error model (no leaking stack traces).
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
