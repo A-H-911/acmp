@@ -48,6 +48,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > login + role mapping + API authorization proven end-to-end; SPA initiates login; automated UI regression
 > → P17). **AC-004 stays Pending** (realm idle-timeout/session policy not yet configured — OQ-003).
 > See progress-log CHANGE-001 entry.
+>
+> CHANGE-002 update (2026-06-26): design-fidelity reconciliation across all built surfaces
+> (tokens, shared components, shell, nav, Sign In, Admin) to the "ACMP product context" Claude
+> Design package. **No AC verdict changes** — this is visual/copy reconciliation, not new
+> features. Deterministic gates green (web 37/37, build, oxlint, i18n parity 102 keys); design
+> targets source-verified against the design files. Touches the localization/a11y surfaces behind
+> **AC-040/041/045/046** (RTL active-rail mirroring, neutral permission-denied tone, tonal sign-in
+> banners, AR tagline fix): their **live axe (WCAG 2.2 AA) + RTL/dark re-verification is pending a
+> browser pass** and is the confirmatory step before re-asserting those verdicts. See progress-log
+> CHANGE-002 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
