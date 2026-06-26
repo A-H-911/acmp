@@ -120,6 +120,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > collected in the UI. Web 94/94 (incl. axe AA), i18n parity 278, build/oxlint clean. Live kanban pass
 > recommended. **P5b screens complete** (backlog 3 live views, submit, detail). See progress-log P5b PR4 entry.
 
+> CHANGE-004 update (2026-06-26): fixed the Keycloak `acmp-web` access token missing `sub` (the built-in
+> `basic` client scope was unassigned in KC 24+) — JIT provisioning (`POST /me`) threw "Authentication
+> required" for every user, leaving the member directory empty. Realm-export fix + the SPA now calls `POST /me`
+> on login. **Live-verified end-to-end:** provisioning → 200, directory → 1 member, then the kanban accept
+> (M-move → owner → `POST /accept` 204 → status Accepted + owner assigned) — **AC-009 grant-on-accept now
+> proven live through the UI** (stays Partial pending the per-topic edit-403 path). Also makes **AC-002**'s
+> live JIT actually function (was test-proven only). See progress-log CHANGE-004.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

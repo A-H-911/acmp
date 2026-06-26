@@ -10,13 +10,13 @@
  * Live Keycloak login + server claim→role mapping land in P4; here we wire the
  * flow and gate the UI. Nav/route gating hides UI; the API enforces access.
  */
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AuthProvider as OidcProvider, useAuth as useOidc } from 'react-oidc-context';
 import { AcmpAuthContext, type AcmpAuth } from './AcmpAuthContext';
 import { oidcConfig, oidcEnabled } from './authConfig';
 import { rolesFromClaims, type CommitteeRole } from './roles';
 import { claimStringsFrom, displayNameFrom, initialsFrom, type OidcProfileLike } from './oidcProfile';
-import { setTokenGetter } from '../api/apiClient';
+import { api, setTokenGetter } from '../api/apiClient';
 import { setAuthStatus } from './authStatus';
 
 function OidcBridge({ children }: { children: ReactNode }) {
@@ -29,6 +29,17 @@ function OidcBridge({ children }: { children: ReactNode }) {
   // an idempotent module-level write (no React state, no re-render) and the closure reads
   // oidc.user lazily at fetch time.
   setTokenGetter(() => oidc.user?.access_token);
+  // JIT-provision the caller's local committee profile from Keycloak claims on login (ADR-0004:
+  // "the SPA calls on login"). Idempotent server-side (provision-or-sync); the ref fires it once per
+  // authenticated session, and resets on failure so a transient error retries on the next render.
+  const provisioned = useRef(false);
+  useEffect(() => {
+    if (!oidc.isAuthenticated || !oidc.user || provisioned.current) return;
+    provisioned.current = true;
+    void api('/members/me', { method: 'POST' }).catch(() => {
+      provisioned.current = false;
+    });
+  }, [oidc.isAuthenticated, oidc.user]);
   // Flag an expired/failed-renew session so the LoginPage can explain why the user
   // landed back here (Keycloak end-session redirects to the login route).
   useEffect(() => {
