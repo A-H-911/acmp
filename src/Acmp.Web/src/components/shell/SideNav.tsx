@@ -15,6 +15,11 @@ export function SideNav() {
   const { t } = useTranslation();
   const { roles } = useAuth();
   const groups = useMemo(() => buildNav(roles), [roles]);
+  // A path that prefixes another nav path (e.g. /admin vs /admin/audit) must match
+  // exactly, or both items light up as active. Compute that set once.
+  const allPaths = useMemo(() => groups.flatMap((g) => g.items.map((i) => i.path)), [groups]);
+  const exactMatch = (path: string) =>
+    path === '/dashboard' || allPaths.some((p) => p !== path && p.startsWith(`${path}/`));
 
   return (
     <nav className="sidebar" aria-label={t('nav.primary')}>
@@ -25,7 +30,7 @@ export function SideNav() {
             <NavLink
               key={item.key}
               to={item.path}
-              end={item.path === '/dashboard'}
+              end={exactMatch(item.path)}
               className={({ isActive }) => `nav-item ${item.cta ? 'cta' : ''} ${isActive ? 'active' : ''}`}
             >
               <Icon name={item.icon} size={17} />

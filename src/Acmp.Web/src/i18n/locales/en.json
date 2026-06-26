@@ -1,7 +1,8 @@
 {
-  "app": { "name": "ACMP", "tagline": "Architecture Committee Management Platform" },
+  "app": { "name": "ACMP", "committee": "Architecture Committee", "tagline": "Architecture Committee Management Platform" },
   "common": {
     "search": "Search",
+    "searchPlaceholder": "Search topics, decisions, ADRs, actions…",
     "switchTo": "Switch to {{lang}}",
     "english": "English",
     "arabic": "العربية",
@@ -19,21 +20,21 @@
   "nav": {
     "primary": "Primary navigation",
     "readOnly": "Read-only",
-    "session": "My session",
-    "submit": "Submit topic",
+    "session": "My Session",
+    "submit": "Submit Topic",
     "home": "Home",
     "backlog": "Backlog",
-    "agenda": "Agenda & meetings",
+    "agenda": "Agenda & Meetings",
     "decisions": "Decisions",
     "actions": "Actions",
-    "adrs": "ADRs & invariants",
+    "adrs": "ADRs & Invariants",
     "risks": "Risks",
     "deps": "Dependencies",
     "research": "Research",
     "wiki": "Knowledge / Wiki",
     "diagrams": "Diagrams",
     "reports": "Reports",
-    "audit": "Audit trail",
+    "audit": "Audit Trail",
     "admin": "Administration"
   },
   "navGroup": {
@@ -57,6 +58,9 @@
     "login": "Log in",
     "logout": "Log out",
     "accountMenu": "Account menu",
+    "subtitle": "Sign in to continue",
+    "secure": "You’ll continue to the secure identity service to sign in.",
+    "invite": "Access is by invitation only · authentication is handled by the central identity service.",
     "completing": "Completing sign-in…",
     "failedTitle": "Sign-in failed",
     "signedOut": "You've been signed out.",
@@ -78,7 +82,7 @@
     "moveUp": "Move {{name}} up",
     "moveDown": "Move {{name}} down"
   },
-  "dev": { "role": "Preview role (dev only)", "roleShort": "Role" },
+  "dev": { "role": "Preview role (dev only)", "roleShort": "Role", "rolesHeader": "Roles are read-only from Keycloak" },
   "dashboard": {
     "title": "Committee dashboard",
     "welcome": "Welcome, {{name}}.",

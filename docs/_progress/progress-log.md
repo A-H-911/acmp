@@ -12,6 +12,64 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## CHANGE-002 — Design-fidelity reconciliation (frontend ↔ Claude Design package)
+
+### 2026-06-26 — UI reconciled to the "ACMP product context" design across all built surfaces
+
+**Why.** A surface-by-surface audit (4 parallel comparison agents, then independent
+source-verification of every CRITICAL/MAJOR finding against the design `.dc.html` files)
+found the implemented UI had drifted from the design system on shared components, shell
+chrome, the brand mark, and several copy/AR gaps. Reviewed adversarially (devil's-advocate
+pass) before any edit — which corrected one **wrong fix mechanism** (header scroll) and
+surfaced an inter-file authority rule for design drift.
+
+**Done (one branch `chore/design-fidelity-reconciliation`, 6 ordered commits).**
+- **Tokens (1/6):** added `--control-radius: 9px` (the design's off-scale control radius).
+  Token *values* were already a byte-match (light + dark) — no value changes.
+- **Shared components (2/6):** buttons → 38px / 13.5px / `--control-radius`, primary
+  `box-shadow`, **ghost reads `--accent`** (was gray) with `--primary-tint` hover, + danger
+  variant. State tiles → 40px rounded-square (was 44px circle); **permission-denied is now a
+  neutral "No access" tile** (was amber-warn) per the design's calm treatment; glyphs
+  document/circle-exclamation/padlock. Removed the dead `building` icon.
+- **Shell (3/6):** **brand mark replaced** — the house-glyph favicon → the design's "A"
+  monogram (drives header + login + favicon); two-line brand. Topbar 60px, **sticky** +
+  translucent blur; **sidebar sticky** below it (document keeps scrolling — matches the
+  design; no `app-main` overflow container). Notification bell **drops the always-on red dot**
+  (it showed over an empty inbox); empty panel is a calm "all caught up" success state.
+  Search: descriptive placeholder (EN+AR), 38/9/13.5, 560px. Chrome reordered lang→theme→bell.
+- **Nav (4/6):** active item gains the design's **3px accent rail** (inline-start, RTL-safe);
+  rows 40px/13.5px (CTA 38px); "My Session" uses a distinct video glyph; EN labels → Title Case.
+- **Screens + copy (5/6):** **Sign In** restructured to the design — top-right bordered
+  controls, **tonal status banner** (signed-out=info / expired=warn + icon), divider, "Sign in
+  to continue" subtitle, 48px CTA with an enter glyph (RTL-flipped), lock + secure-hint row,
+  invite footer, heavier local card shadow. New `auth.subtitle/secure/invite` (EN+AR, verbatim
+  from the design). **AR tagline fixed** (`منصة إدارة لجنة المعمارية` → `…لجنة الهندسة المعمارية`
+  — was missing الهندسة; guardrail 9). Admin: disabled the non-functional filter buttons.
+
+**Verification (deterministic, green at each step):** `tsc -b` + `vite build` clean
+(gzip 130.9 kB JS < 300 kB budget), **web 37/37 tests**, oxlint clean, **i18n parity 102 keys**.
+Backend untouched. Design-side targets were source-verified verbatim from the Design System,
+Logo, Sign In, ACMP shell, and Navigation & IA `.dc.html` files (not agent transcription).
+
+**Decisions / notes (no silent drift, guardrail 11).**
+- **No new ADR** — visual reconciliation to the approved design package; no architecture change.
+- **Design authority per surface** (for inter-file drift): tokens/components/shell → Design
+  System; nav → Navigation & IA; sign-in → Sign In; brand → Logo. Surface-specific file wins.
+- **Sign In card shadow** kept as a *local* override (operator decision) — global `--shadow-lg`
+  token untouched (blast-radius control).
+- **Skipped (honest):** admin grid-column-width tweak (DF-28) — unverified, marginal cosmetic;
+  changing toward an unverified target risked regression. Per-role nav labels ("My Submissions"
+  for submitter) deferred — a behavior feature for the submitter flow (P5), not a fidelity defect.
+
+**Remaining verification (not blocking the diff):** live browser axe (WCAG 2.2 AA) + RTL/dark
+visual re-check across EN-light and AR-RTL-dark per surface — the deterministic gates and
+source-verified token contrast hold, but the live axe/screenshot pass is the confirmatory step
+(AC-040/041/045/046). To run against `vite dev` + the DEV auth stub.
+
+**Next:** push branch → PR → monitor remote CI to green → review GO → squash-merge. Then P5.
+
+---
+
 ## CHANGE-001 — Self-Hosted Keycloak; all runtime dependencies bundled (ADR-0015)
 
 ### 2026-06-25 — Carry-forward findings resolved: logout UI control + CSP templating

@@ -1,0 +1,11 @@
+{
+  "name": "acmp-parity",
+  "private": true,
+  "type": "module",
+  "description": "Design-parity harness: pixel-diff rendered components against the Claude Design reference.",
+  "bin": { "parity-diff": "./diff.mjs" },
+  "dependencies": {
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0"
+  }
+}

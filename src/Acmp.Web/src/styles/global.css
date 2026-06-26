@@ -41,32 +41,66 @@ a { color: inherit; }
 /* ============================ App shell ============================ */
 .app-shell { display: flex; flex-direction: column; min-block-size: 100vh; }
 
+/* Sticky chrome: header pinned to the top, sidebar pinned below it; the document
+   scrolls underneath (matches the design — not an overflow container on main). */
 .topbar {
+  position: sticky; inset-block-start: 0; z-index: 40;
   display: flex; align-items: center; gap: var(--sp-4);
-  block-size: 54px; padding-inline: var(--sp-4) var(--sp-5);
-  background: var(--header); border-block-end: 1px solid var(--border);
+  block-size: 60px; padding-inline: var(--sp-4) var(--sp-5);
+  background: color-mix(in srgb, var(--header) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-block-end: 1px solid var(--border);
 }
 .topbar-brand { display: flex; align-items: center; gap: var(--sp-3); min-inline-size: 160px; }
-.brand-badge {
-  inline-size: 28px; block-size: 28px; border-radius: var(--r-sm);
-  background: var(--primary); color: #fff; flex: 0 0 auto;
-  display: flex; align-items: center; justify-content: center;
-}
+.brand-id { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-word { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+.brand-sub { font-size: 11px; color: var(--text-3); }
 /* Brand mark — one source SVG (public/favicon.svg) reused in the header, login, and favicon. */
-.brand-mark { display: block; flex: 0 0 auto; border-radius: 8px; }
+.brand-mark { display: block; flex: 0 0 auto; border-radius: 8px; box-shadow: var(--shadow); }
 
-/* Sign-in / landing route. */
-.login-status {
-  margin: 0 0 var(--sp-4); padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--border); border-radius: var(--r-md);
-  background: var(--subtle); color: var(--text-2); font-size: 13px;
+/* ===================== Sign-in / landing route (design "ACMP Sign In") ===================== */
+.login-shell { min-block-size: 100vh; display: flex; flex-direction: column; }
+.login-header {
+  flex: 0 0 auto; block-size: 64px; display: flex; align-items: center; justify-content: flex-end;
+  gap: var(--sp-2); padding-inline: var(--sp-6);
 }
-.login-toggles { display: flex; gap: var(--sp-2); justify-content: center; margin-block-start: var(--sp-3); }
+.login-ctl {
+  block-size: 40px; padding-inline: 13px; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  background: var(--surface); color: var(--text-2); font: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer;
+}
+.login-ctl-icon { inline-size: 40px; padding-inline: 0; justify-content: center; }
+.login-ctl:hover { background: var(--subtle); color: var(--text); }
+.login-main {
+  flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-4); padding: var(--sp-6) var(--sp-6) 96px;
+}
+/* Heavier than the global --shadow-lg token, matching the Sign In design's local card elevation. */
+.login-card { inline-size: min(416px, 100%); text-align: center; box-shadow: 0 18px 50px rgba(16, 24, 40, .16); }
+.login-mark { margin-inline: auto; margin-block-end: var(--sp-4); box-shadow: none; filter: drop-shadow(var(--shadow)); }
+.login-title { margin: 0; font-size: 27px; font-weight: 700; }
+.login-appname { margin-block-start: 5px; font-size: 13.5px; font-weight: 500; color: var(--text-2); }
+.login-divider { border: 0; border-block-start: 1px solid var(--border-soft); margin-block: 22px; }
+.login-subtitle { margin: 0 0 var(--sp-5); font-size: 14.5px; color: var(--text-2); }
+.login-cta { inline-size: 100%; block-size: 48px; font-size: 14.5px; border-radius: 11px; gap: 9px; }
+.login-secure {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  margin-block-start: var(--sp-4); font-size: 11.5px; color: var(--text-3);
+}
+.login-invite { margin: 0; text-align: center; font-size: 12px; color: var(--text-3); max-inline-size: 416px; }
+.login-status {
+  inline-size: min(416px, 100%); display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; border-radius: 11px; font-size: 13px; font-weight: 500;
+}
+.login-status svg { flex: 0 0 auto; margin-block-start: 1px; }
+.login-status-info { background: var(--st-info-bg); color: var(--st-info-fg); border: 1px solid color-mix(in srgb, var(--st-info-fg) 22%, transparent); }
+.login-status-warn { background: var(--st-warn-bg); color: var(--st-warn-fg); border: 1px solid color-mix(in srgb, var(--st-warn-fg) 24%, transparent); }
+
 .topbar-spacer { flex: 1 1 0; }
 
 .search {
-  flex: 1 1 auto; max-inline-size: 440px; position: relative;
+  flex: 1 1 auto; max-inline-size: 560px; min-inline-size: 0; position: relative;
   display: flex; align-items: center;
 }
 .search-icon {
@@ -74,9 +108,9 @@ a { color: inherit; }
   display: flex; pointer-events: none;
 }
 .search-input {
-  inline-size: 100%; block-size: 36px; padding-inline: 36px 12px;
-  border: 1px solid var(--border); border-radius: var(--r-lg);
-  background: var(--surface); color: var(--text); font: inherit; font-size: 13px;
+  inline-size: 100%; block-size: 38px; padding-inline: 38px 12px;
+  border: 1px solid var(--border); border-radius: var(--control-radius);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13.5px;
   outline: none;
 }
 .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
@@ -96,11 +130,6 @@ a { color: inherit; }
   font: inherit; font-size: 12.5px; font-weight: 600;
 }
 .chip-btn:hover { background: var(--subtle); }
-.notif-dot {
-  position: absolute; inset-block-start: -3px; inset-inline-end: -3px;
-  inline-size: 8px; block-size: 8px; border-radius: var(--r-full);
-  background: var(--st-danger-dot); border: 2px solid var(--header);
-}
 
 .topbar-user { display: flex; align-items: center; gap: var(--sp-2); padding-inline-start: var(--sp-1); }
 .avatar {
@@ -158,11 +187,50 @@ a { color: inherit; }
 .profile-item:hover { background: var(--subtle); color: var(--text); }
 .profile-item-label { flex: 1 1 auto; }
 
+/* DEV role switcher — matches the design's role menu (Navigation & IA). Dev-only. */
+.role-menu { position: relative; display: flex; }
+.role-menu-trigger {
+  display: flex; align-items: center; gap: 9px;
+  block-size: 40px; min-inline-size: 210px; padding-inline: 8px 12px;
+  border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  background: var(--surface); color: inherit; font: inherit; cursor: pointer; text-align: start;
+}
+.role-menu-trigger:hover { background: var(--subtle); }
+.role-avatar {
+  inline-size: 28px; block-size: 28px; border-radius: var(--r-full); flex: 0 0 auto;
+  background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.role-menu-id { flex: 1 1 auto; min-inline-size: 0; line-height: 1.15; }
+.role-menu-label { display: block; font-size: 13px; font-weight: 600; }
+.role-menu-sub { display: block; font-size: 11px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role-menu-caret { color: var(--text-3); flex: 0 0 auto; }
+.role-menu-panel {
+  position: absolute; inset-block-start: 46px; inset-inline-end: 0; z-index: 70;
+  inline-size: 280px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 11px; box-shadow: var(--shadow-lg);
+}
+.role-menu-head {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--text-3); padding: 8px 10px 5px;
+}
+.role-menu-item {
+  display: flex; align-items: center; gap: 10px; inline-size: 100%;
+  border: 0; border-radius: var(--r-md); padding: 8px 10px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: start;
+}
+.role-menu-item:hover { background: var(--subtle); }
+.role-menu-item[aria-checked='true'] { background: var(--primary-tint); }
+.role-menu-item .role-avatar { inline-size: 26px; block-size: 26px; font-size: 10.5px; }
+.role-menu-item-label { flex: 1 1 auto; min-inline-size: 0; font-size: 13px; font-weight: 600; }
+.role-menu-check { color: var(--accent); flex: 0 0 auto; }
+
 .app-body { display: flex; flex: 1; min-block-size: 0; }
 
 /* ============================ Sidebar nav ============================ */
 .sidebar {
-  flex: 0 0 244px; overflow-y: auto;
+  flex: 0 0 244px;
+  position: sticky; inset-block-start: 60px; block-size: calc(100vh - 60px); overflow-y: auto;
   padding: var(--sp-4) var(--sp-3);
   background: var(--surface); border-inline-end: 1px solid var(--border);
   display: flex; flex-direction: column; gap: 3px;
@@ -172,12 +240,20 @@ a { color: inherit; }
   color: var(--text-3); padding: 12px 10px 5px;
 }
 .nav-item {
+  position: relative;
   display: flex; align-items: center; gap: 10px;
-  block-size: 38px; padding-inline: 11px; border-radius: var(--r-md);
-  color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 500;
+  block-size: 40px; padding-inline: 11px; border-radius: var(--r-md);
+  color: var(--text-2); text-decoration: none; font-size: 13.5px; font-weight: 500;
 }
 .nav-item:hover { background: var(--subtle); color: var(--text); }
 .nav-item.active { background: var(--primary-tint); color: var(--accent); font-weight: 600; }
+/* Active-item accent rail on the inline-start edge (design Navigation & IA).
+   Logical end-radius so the rounding mirrors correctly in RTL. */
+.nav-item.active::before {
+  content: ""; position: absolute; inset-inline-start: 0; inset-block: 9px;
+  inline-size: 3px; background: var(--accent);
+  border-start-end-radius: 4px; border-end-end-radius: 4px;
+}
 .nav-item-label { flex: 1 1 auto; min-inline-size: 0; }
 .nav-item-count {
   flex: 0 0 auto; font-size: 11px; font-weight: 700; color: var(--text-2);
@@ -185,7 +261,7 @@ a { color: inherit; }
 }
 .nav-item-viewonly { flex: 0 0 auto; color: var(--text-3); display: flex; }
 .nav-item.cta {
-  border: 1px solid var(--accent); background: var(--primary-tint);
+  block-size: 38px; border: 1px solid var(--accent); background: var(--primary-tint);
   color: var(--accent); font-weight: 600; margin-block-end: var(--sp-1);
 }
 
