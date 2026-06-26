@@ -1,4 +1,4 @@
-using Acmp.Modules.Topics.Domain.Enums;
+﻿using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Domain.Events;
 
 namespace Acmp.Modules.Topics.Domain.Events;

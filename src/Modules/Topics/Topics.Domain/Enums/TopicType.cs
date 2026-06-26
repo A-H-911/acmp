@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Topics.Domain.Enums;
+﻿namespace Acmp.Modules.Topics.Domain.Enums;
 
 // Canonical Topic Type taxonomy (docs/09 §A, README §D) — deliberately exactly four. Type drives the
 // required template, the default triage workflow, and the SLA urgency thresholds. Subtypes are tags,

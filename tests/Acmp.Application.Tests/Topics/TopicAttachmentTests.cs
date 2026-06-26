@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;

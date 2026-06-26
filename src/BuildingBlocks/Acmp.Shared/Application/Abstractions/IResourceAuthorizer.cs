@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Application.Abstractions;
+﻿namespace Acmp.Shared.Application.Abstractions;
 
 // Resource-based (ABAC) authorization seam for application handlers. Endpoint-level RBAC
 // (RequireAuthorization(policy)) and the MediatR AuthorizationBehavior cover role checks, but

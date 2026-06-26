@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Topics.Domain.Enums;
+﻿namespace Acmp.Modules.Topics.Domain.Enums;
 
 // Canonical Topic status model (README §E, docs/12 §1). The single state machine; "TopicRequest" is the
 // pre-Accepted projection (Draft/Submitted/Triage), not a separate entity (docs/11 §A.2). Backlog views

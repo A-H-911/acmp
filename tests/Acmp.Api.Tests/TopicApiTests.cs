@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using Acmp.Modules.Membership.Domain.Enums;
 using FluentAssertions;

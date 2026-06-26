@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Topics.Application;
+﻿namespace Acmp.Modules.Topics.Application;
 
 // File-upload constraints (AC-049). Configurable via "Topics:Attachments"; defaults to the AC-049
 // default of 50 MB and the document/diagram types the design's upload hint lists (PDF/PNG/SVG/DOCX)

@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Topics.Application.Contracts;
+﻿namespace Acmp.Modules.Topics.Application.Contracts;
 
 // Read models returned to the SPA. Enums are projected as their string names (stable wire contract,
 // localized in the UI). Owner/actor names are display snapshots stored on the aggregate. AgeDays is
