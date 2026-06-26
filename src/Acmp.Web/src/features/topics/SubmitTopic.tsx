@@ -125,12 +125,18 @@ export function SubmitTopic() {
     if (typeof IntersectionObserver === 'undefined') return;
     const els = STEPS.map((s) => document.getElementById(`sec-${s}`)).filter((el): el is HTMLElement => !!el);
     if (els.length === 0) return;
+    // Track which sections are in the active band across callbacks (IO entries are deltas, not the full
+    // set), so scrolling up re-adds upper sections and scrolling down removes them — symmetric both ways.
+    const visible = new Set<string>();
     const obs = new IntersectionObserver(
       (entries) => {
-        const top = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (top) setActiveStep(top.target.id.replace('sec-', ''));
+        for (const e of entries) {
+          const id = e.target.id.replace('sec-', '');
+          if (e.isIntersecting) visible.add(id);
+          else visible.delete(id);
+        }
+        const current = STEPS.find((s) => visible.has(s)); // topmost in document order
+        if (current) setActiveStep(current);
       },
       { rootMargin: '-90px 0px -55% 0px' },
     );
