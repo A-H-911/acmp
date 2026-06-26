@@ -10,7 +10,7 @@ export type IconName =
   | 'home' | 'backlog' | 'calendar' | 'session' | 'decision' | 'action' | 'adr' | 'risk'
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
-  | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check';
+  | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -46,6 +46,7 @@ const PATHS: Record<IconName, ReactNode> = {
   arrowDown: <path d="M12 5v14M5 12l7 7 7-7" />,
   logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></>,
   check: <path d="M20 6L9 17l-5-5" />,
+  login: <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />,
 };
 
 interface IconProps {

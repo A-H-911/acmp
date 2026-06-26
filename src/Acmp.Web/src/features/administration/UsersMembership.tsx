@@ -107,7 +107,7 @@ function Directory({ members, isArabic }: { members: Member[]; isArabic: boolean
 
       <div className="adm-filters">
         {(['role', 'status', 'membership'] as const).map((f) => (
-          <button key={f} type="button" className="adm-filter">
+          <button key={f} type="button" className="adm-filter" disabled>
             {t(`admin.filter.${f}`)}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 9l6 6 6-6" />
