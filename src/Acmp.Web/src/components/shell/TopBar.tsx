@@ -49,8 +49,11 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar-brand">
-        <img className="brand-mark" src="/favicon.svg" alt="" width={26} height={26} />
-        <span className="brand-word">{t('app.name')}</span>
+        <img className="brand-mark" src="/favicon.svg" alt="" width={30} height={30} />
+        <span className="brand-id">
+          <span className="brand-word">{t('app.name')}</span>
+          <span className="brand-sub">{t('app.committee')}</span>
+        </span>
       </div>
 
       <form className="search" role="search" onSubmit={onSearch}>
@@ -58,8 +61,8 @@ export function TopBar() {
         <input
           className="search-input"
           type="search"
-          aria-label={t('common.search')}
-          placeholder={t('common.search')}
+          aria-label={t('common.searchPlaceholder')}
+          placeholder={t('common.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -79,6 +82,15 @@ export function TopBar() {
         {otherLang === 'ar' ? 'العربية' : 'EN'}
       </button>
 
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={toggle}
+        aria-label={t(theme === 'dark' ? 'common.light' : 'common.dark')}
+      >
+        <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
+      </button>
+
       <div style={{ position: 'relative' }}>
         <button
           type="button"
@@ -89,19 +101,9 @@ export function TopBar() {
           onClick={() => setNotifOpen((o) => !o)}
         >
           <Icon name="bell" size={16} />
-          <span className="notif-dot" aria-hidden="true" />
         </button>
         <NotificationCenter open={notifOpen} onClose={() => setNotifOpen(false)} />
       </div>
-
-      <button
-        type="button"
-        className="icon-btn"
-        onClick={toggle}
-        aria-label={t(theme === 'dark' ? 'common.light' : 'common.dark')}
-      >
-        <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
-      </button>
 
       <div className="profile-menu">
         <button

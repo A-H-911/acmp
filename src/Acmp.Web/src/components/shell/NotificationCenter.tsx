@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from '../states';
+import { Icon } from '../icons';
 
 export function NotificationCenter({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
@@ -33,8 +33,10 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
       <div className="notif-panel-head">
         <span>{t('notif.title')}</span>
       </div>
-      <div style={{ padding: 'var(--sp-4)' }}>
-        <EmptyState title={t('notif.emptyTitle')} body={t('notif.emptyBody')} />
+      <div className="notif-empty">
+        <div className="state-icon success"><Icon name="check" size={20} aria-hidden /></div>
+        <p className="state-title">{t('notif.emptyTitle')}</p>
+        <p className="state-body">{t('notif.emptyBody')}</p>
       </div>
     </div>
   );

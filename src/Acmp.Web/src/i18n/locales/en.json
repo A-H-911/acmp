@@ -1,7 +1,8 @@
 {
-  "app": { "name": "ACMP", "tagline": "Architecture Committee Management Platform" },
+  "app": { "name": "ACMP", "committee": "Architecture Committee", "tagline": "Architecture Committee Management Platform" },
   "common": {
     "search": "Search",
+    "searchPlaceholder": "Search topics, decisions, ADRs, actions…",
     "switchTo": "Switch to {{lang}}",
     "english": "English",
     "arabic": "العربية",

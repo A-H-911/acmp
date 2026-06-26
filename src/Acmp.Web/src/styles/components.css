@@ -64,6 +64,7 @@
 /* Error is the only non-neutral state tile. Permission-denied stays calm/neutral
    (design: a gray "No access" tile, not an amber warning). */
 .state-icon.error { background: var(--st-danger-bg); color: var(--st-danger-fg); }
+.state-icon.success { background: var(--st-success-bg); color: var(--st-success-fg); }
 .state-title { margin: 0; font-size: 15px; font-weight: 600; }
 .state-body { margin: 0; max-inline-size: 42ch; font-size: 13px; color: var(--text-2); }
 .state-actions { display: flex; gap: var(--sp-2); margin-block-start: var(--sp-1); }
@@ -81,7 +82,7 @@
 /* ============================ Notification center ============================ */
 .notif-panel {
   position: absolute; inset-block-start: 48px; inset-inline-end: var(--sp-4); z-index: 40;
-  inline-size: 360px; max-block-size: 70vh; overflow-y: auto;
+  inline-size: 388px; max-block-size: 70vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
 }
@@ -96,6 +97,11 @@
 }
 .notif-item:hover { background: var(--subtle); }
 .notif-item.unread { background: var(--primary-tint); }
+/* Empty inbox = a calm "all caught up" success state (design page 79). */
+.notif-empty {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: var(--sp-2); padding: var(--sp-6) var(--sp-4);
+}
 
 /* ============================ Sortable list (DnD) ============================ */
 .sortable-item {
