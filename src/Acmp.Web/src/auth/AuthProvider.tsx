@@ -21,10 +21,14 @@ import { setAuthStatus } from './authStatus';
 
 function OidcBridge({ children }: { children: ReactNode }) {
   const oidc = useOidc();
-  // Feed the current access token to the API client (outside React).
-  useEffect(() => {
-    setTokenGetter(() => oidc.user?.access_token);
-  }, [oidc.user]);
+  // Feed the current access token to the API client (outside React). Wired SYNCHRONOUSLY during
+  // render, not in an effect: React flushes a parent's effects AFTER its children's, so a child
+  // query (e.g. the backlog) would fire its first fetch with the stale (undefined-token) getter on a
+  // hard load / refresh / deep-link → spurious 401 until a manual retry. Setting it in render
+  // guarantees getToken() returns the current token before any child query runs. The assignment is
+  // an idempotent module-level write (no React state, no re-render) and the closure reads
+  // oidc.user lazily at fetch time.
+  setTokenGetter(() => oidc.user?.access_token);
   // Flag an expired/failed-renew session so the LoginPage can explain why the user
   // landed back here (Keycloak end-session redirects to the login route).
   useEffect(() => {
