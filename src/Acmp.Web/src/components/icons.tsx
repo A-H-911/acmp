@@ -11,7 +11,8 @@ export type IconName =
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
   | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
-  | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle';
+  | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle'
+  | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'funnel';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -52,6 +53,13 @@ const PATHS: Record<IconName, ReactNode> = {
   checkCircle: <><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></>,
   infoCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
   warnTriangle: <><path d="M12 4l9 16H3L12 4z" /><path d="M12 11v3M12 17h.01" /></>,
+  // Backlog view-switcher + toolbar glyphs (paths lifted from the design file).
+  viewList: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
+  viewTable: <path d="M3 9h18M3 15h18M9 3v18M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />,
+  viewKanban: <path d="M4 4h5v16H4zM10 4h5v10h-5zM16 4h4v13h-4z" />,
+  viewTimeline: <path d="M3 12h4l3-8 4 16 3-8h4" />,
+  download: <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />,
+  funnel: <path d="M5 4h14M7 4v6l-3 8h16l-3-8V4" />,
 };
 
 interface IconProps {

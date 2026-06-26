@@ -1,0 +1,303 @@
+/*
+ * Backlog (P5b) — composes shared Table / Segmented / Select / MultiSelect / Pagination /
+ * StatusChip / Tag / states. Only backlog-specific layout + cell styling lives here. All
+ * logical properties so the screen mirrors under [dir="rtl"] with no per-direction overrides.
+ */
+
+/* ---- header ---- */
+.bk-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-3);
+}
+.bk-head-sub {
+  margin-block-start: var(--sp-1);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.bk-head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* ---- view switcher row ---- */
+.bk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-3);
+}
+.bk-view-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- filter bar ---- */
+.bk-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-4);
+}
+.bk-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.bk-search > svg {
+  position: absolute;
+  inset-inline-start: 10px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.bk-search input {
+  height: 36px;
+  inline-size: 220px;
+  padding-inline: 32px var(--sp-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: 12.5px;
+}
+.bk-search input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.bk-divider {
+  inline-size: 1px;
+  block-size: 22px;
+  background: var(--border);
+}
+.bk-filter {
+  min-inline-size: 150px;
+}
+.bk-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  /* --text-2 not --text-3: small body text must clear AA 4.5:1 (CHANGE-003 precedent). */
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* ---- shared cell bits (table + list) ---- */
+.bk-key {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.bk-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.bk-urgent-ic {
+  color: var(--st-danger-dot);
+  flex: 0 0 auto;
+}
+.bk-topic-link {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bk-topic-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.bk-streams {
+  display: flex;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.bk-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.bk-avatar {
+  inline-size: 23px;
+  block-size: 23px;
+  border-radius: var(--r-full);
+  background: var(--sunken);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.bk-owner-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+.bk-muted {
+  /* --text-2 not --text-3: "Unassigned" is real text and must clear AA 4.5:1 (CHANGE-003 precedent). */
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+.bk-age {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--text-2);
+  font-feature-settings: 'tnum';
+}
+.bk-age.breached {
+  color: var(--st-danger-fg);
+}
+.bk-urg {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.bk-urg.urgent,
+.bk-urg.critical {
+  color: var(--st-danger-fg);
+}
+
+/* ---- list view ---- */
+.bk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.bk-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+}
+.bk-list-item:hover {
+  border-color: var(--border-strong);
+  background: var(--subtle);
+}
+.bk-list-accent {
+  inline-size: 4px;
+  align-self: stretch;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  background: var(--st-neutral-dot);
+}
+.bk-list-accent.tone-neutral { background: var(--st-neutral-dot); }
+.bk-list-accent.tone-info { background: var(--st-info-dot); }
+.bk-list-accent.tone-scheduled { background: var(--st-sched-dot); }
+.bk-list-accent.tone-warn { background: var(--st-warn-dot); }
+.bk-list-accent.tone-success { background: var(--st-success-dot); }
+.bk-list-accent.tone-danger { background: var(--st-danger-dot); }
+.bk-list-main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.bk-list-id {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+}
+.bk-list-title {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bk-list-meta {
+  margin-block-start: 6px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.bk-list-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.bk-urgent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--st-danger-fg);
+  background: var(--st-danger-bg);
+  border-radius: var(--r-sm);
+  padding: 1px 6px;
+}
+
+/* ---- coming-soon view shell ---- */
+.bk-shell {
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 56px var(--sp-6);
+  text-align: center;
+}
+.bk-shell-icon {
+  inline-size: 52px;
+  block-size: 52px;
+  margin: 0 auto var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--subtle);
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bk-shell-title {
+  margin: 0 0 7px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.bk-shell-body {
+  margin: 0 auto;
+  max-inline-size: 380px;
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+/* ---- empty / footer ---- */
+.bk-empty-actions {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: center;
+  margin-block-start: var(--sp-4);
+}
+.bk-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: var(--sp-4);
+}

@@ -7,6 +7,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import AdministrationPage from './pages/AdministrationPage';
+import { Backlog } from './features/topics/Backlog';
 
 /*
  * Route tree for the P3 shell. Every nav area resolves to a foundation
@@ -27,7 +28,9 @@ export default function App() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
           <Route path="topics/new" element={<PlaceholderPage titleKey="nav.submit" />} />
-          <Route path="backlog" element={<PlaceholderPage titleKey="nav.backlog" />} />
+          <Route path="backlog" element={<Backlog />} />
+          {/* Topic detail screen lands in P5b PR3; interim placeholder keeps backlog row links from 404ing. */}
+          <Route path="topics/:key" element={<PlaceholderPage titleKey="nav.backlog" />} />
           <Route path="meetings" element={<PlaceholderPage titleKey="nav.agenda" />} />
           <Route path="decisions" element={<PlaceholderPage titleKey="nav.decisions" />} />
           <Route path="actions" element={<PlaceholderPage titleKey="nav.actions" />} />

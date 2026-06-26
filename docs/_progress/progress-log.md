@@ -14,6 +14,80 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P5 — Topic & Backlog Management
 
+### 2026-06-26 — P5b PR1: Backlog read path (table + list views) wired to GET /api/topics
+
+**Scope.** First of four P5b slices (the design's three screens — backlog/submit/detail). PR1 ships the
+**Backlog read path**: the `useBacklog` server-state hook + the Backlog screen (table & list views live,
+full filter bar, four screen states, pagination, the SLA aging badge, and honest "coming soon" shells for
+the not-yet-data-backed views). Branch `feat/P5b-backlog`. Web suite **72 tests green** (was 59; +13 Backlog
+behavior, +1 axe), prod build + oxlint clean, i18n parity **175 keys**.
+
+**Done.**
+- `api/topics.ts` — `useBacklog(params)` (TanStack Query) over `GET /api/topics`; typed `TopicSummary` /
+  `PagedResult`; repeated-`status` query binding; `placeholderData` keeps the page visible during refetch.
+  Read-by-key vs mutate-by-id documented for the later slices.
+- `features/topics/Backlog.tsx` — composed from the shared library (Breadcrumb, Segmented, Select,
+  MultiSelect, Table, StatusChip, Tag, Pagination, states). **Table** (8 cols, API-backed sorts on
+  title/status/age/urgency) and **List** (cards) live; search + Status/Type/Urgency filters functional;
+  4 states (loading/error/empty/live) driven by the query; **SLA aging badge** from the DTO's `slaBreached`
+  (AC-057 signal); pagination. `topicMeta.ts` holds the pure status→tone / initials mappers (unit-reusable).
+- **Honest shells (agreed "live-3 + honest-shells" decision):** Kanban/Calendar/Timeline render a
+  "coming soon" shell (kanban → PR4; calendar/timeline need meeting/decision data → P6); Export + Saved-views
+  are disabled affordances. No faking data that doesn't exist yet.
+- **Shared-component a11y fix (root cause):** `MultiSelect` input gained `role="combobox"` —
+  `aria-expanded`/`aria-haspopup` are invalid on a bare textbox; surfaced by the new backlog axe case.
+- i18n: full `topics.*` EN+AR namespace (parity green); 6 new view/toolbar icons; `/backlog` route wired;
+  interim `topics/:key` placeholder route so row links don't 404 before PR3.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file header comment).**
+- The design's **Data: live/loading/empty/error** segmented is a mock preview toggle, not a product control —
+  dropped (state comes from the query), like the dev role switcher.
+- **Aging color is driven by `slaBreached`** (real time-in-status SLA, AC-057), not the design's raw age-day
+  thresholds.
+- **Only API-backed sorts** exposed (title/status/age/urgency); the design's Owner sort has no server sort.
+- **Stream/Owner filters rendered but disabled** this slice — they need a verified option source (stream
+  registry + owner directory keyed to topic owner ids); follow-up.
+- **Row navigation = a title link** (accessible primary action), not a whole-row button (doesn't nest in
+  table grid semantics).
+- **Error state** drops the design's request-id line + Contact-support (no client request-id / support flow).
+- **Re-slice:** priority reorder (SortableList) + kanban DnD + the "M" move (AC-043) moved to **PR4** so all
+  DnD lands in one coherent slice; PR1 is the pure read path.
+- **No new ADR** (UI on the settled stack).
+
+**Verification.** Automated gate green: web **72/72** (Vitest+RTL behavior + **axe WCAG 2.2 AA** structure/ARIA
+on the live table), i18n parity (175), oxlint, `tsc -b` + vite build, **remote CI green (PR #11)**.
+- **AA contrast (the gap the jsdom axe gate skips) verified offline** for every backlog text/background combo
+  in **both light and dark** — all clear 4.5:1 (lowest 5.35: `.bk-count` text-2 on the page bg; it would have
+  failed at ~3.9 with `--text-3`, confirming the `--text-3`→`--text-2` fix was necessary).
+- **RTL-safety confirmed deterministically** — `topics.css` uses logical properties only (zero physical
+  left/right/margin/padding), so mirroring is guaranteed by construction (same approach as the shared components).
+- **Authenticated live browser pass — done (2026-06-26, Playwright on the rebuilt `web` @ `localhost:8088`,
+  authenticated as `acmp-admin` via real Keycloak PKCE).** `GET /api/topics` → **200**; TOP-2026-001 renders
+  with the wire contract confirmed live: `GovernanceStandardization`→"Governance", `Submitted`, `Critical`
+  (urgent marker), streams `identity`/`platform` tags, null owner→"Unassigned", `ageDays 0`→"0d", "Showing 1
+  of 1". **EN-light** faithful to the design (breadcrumb, header, 5-view switcher, disabled Export/Saved-views,
+  greyed Stream/Owner filters, 8-col table with Age sorted). **AR + dark**: full RTL mirroring (sidebar→inline-end,
+  columns reversed, controls mirrored), dark theme, complete Arabic i18n; user-content title + stream codes
+  correctly stay LTR. Confirms AC-040 RTL on a new surface and AC-057 aging badge end-to-end.
+- **Finding (pre-existing, app-wide — not P5b-specific): hard-load/refresh/deep-link to a data route races the
+  auth bootstrap.** A direct `GET` of `/backlog` (page reload) fired the query before the auth layer rewired the
+  token getter → transient **401** → error state until **Retry** (then 200). Affects any data route on
+  refresh/bookmark (the SPA's normal in-app nav keeps the token wired, so click-through works first try). Root
+  fix belongs in the auth/query bootstrap (gate queries until the token getter is set, or expose `accessToken`
+  and `enabled`-gate) — a shared-infra follow-up, deliberately **not** folded into this UI slice.
+- **Minor nit:** the count reads "1 topics" — plural suffixes were avoided to keep EN/AR i18n key parity
+  (Arabic has 6 plural categories); reword to a count-free phrasing later if desired.
+
+**Acceptance audit (this entry).** **No verdict flips** — PR1 is a read-only surface; the headline ACs land
+in later slices. AC-057 gains a UI test ref (badge now rendered in the backlog, unit-tested; stays Partial
+pending live browser + breach-notification). AC-043 stays Pending (DnD → PR4); AC-039/047/048 → PR2;
+AC-009/034 live edit/owner → PR3.
+
+**Next.** Live visual/RTL pass on the rebuilt stack, then PR2 (Submit form: 5 fieldsets, autosave-draft,
+unsaved-work guard, file upload, locale-preserve).
+
+---
+
 ### 2026-06-26 — P5a backend complete: Topics module (domain → application → infrastructure → API), live-verified on real SQL Server
 
 **Scope.** The backend half of P5 — the core-loop heart (intake → triage → backlog) — built as a new

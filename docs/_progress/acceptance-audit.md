@@ -84,6 +84,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > AC-032, AC-033, AC-034, AC-035, AC-049, AC-050, AC-057. The Topics UI (P5b) and the Notifications/Hangfire
 > + immutable-audit (BL-066) phases carry the remaining end-to-end demonstrations. See progress-log P5a entry.
 
+> P5b PR1 update (2026-06-26): Backlog read path (table + list views) wired to `GET /api/topics`. Read-only
+> surface — **no verdict flips**. **AC-057** aging badge is now rendered in the backlog UI (`Backlog.test`),
+> stays Partial pending the live browser pass + the SLA-breach notification (Notifications phase). Web 72/72
+> (incl. live **axe WCAG 2.2 AA** on the table), i18n parity 175, oxlint + build clean. **Live authenticated
+> browser pass done** (Playwright, real Keycloak PKCE): `GET /api/topics` 200, wire contract confirmed live
+> (enum→label, streams, null-owner, age); EN-light faithful to the design; AR+dark RTL-mirrored with full i18n;
+> AA contrast computed offline (all combos pass, both themes). Found a pre-existing app-wide auth-bootstrap race
+> (hard-reload of a data route → transient 401 until retry) — shared-infra follow-up, not P5b. AC-043 (keyboard
+> DnD on backlog) re-slotted to P5b PR4 (all DnD in one
+> slice); AC-039/047/048 → PR2 (submit form); AC-009/034 live edit/owner → PR3. See progress-log P5b PR1 entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -142,7 +153,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |
-| AC-057 | Aging | Partial | TopicApplicationTests + TopicHandlerTests (live SlaBreached) | Aging badge computed + live-verified; SLA-breach notification → Notifications phase |
+| AC-057 | Aging | Partial | TopicApplicationTests + TopicHandlerTests (live SlaBreached) + Backlog.test (badge rendered) | Aging badge computed + rendered in the backlog UI (slaBreached-driven, unit-tested); live browser pass + SLA-breach notification → Notifications phase |
 | AC-058 | Membership | Met | CommitteeMemberTests + MembershipFeatureTests | Deactivate → Disabled; name/email/role/attribution intact |
 | AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |
 | AC-060 | Search & Trace | Pending | — | Global search grouped results |
@@ -155,7 +166,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Summary:** 66 ACs · 10 Met (AC-001/002/008/031/040/042/045/046/058/059) · 20 Partial
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/049/050/057 + AC-041) · 36 Pending.
-(Through P5a backend + live SQL round-trip.)
+(Through P5b PR1 — backlog read path; P5a backend + live SQL round-trip. No verdict change in PR1.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

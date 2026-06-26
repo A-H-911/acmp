@@ -119,5 +119,84 @@
     "emptyTitle": "لا أعضاء بعد",
     "emptyBody": "يظهر الأعضاء هنا بعد أول تسجيل دخول عبر Keycloak."
   },
+  "topics": {
+    "home": "الرئيسية",
+    "backlog": "قائمة المواضيع",
+    "count": "{{total}} موضوعًا في القائمة",
+    "export": "تصدير",
+    "newTopic": "موضوع جديد",
+    "comingSoon": "قريبًا",
+    "viewLabel": "عرض القائمة",
+    "view": { "list": "قائمة", "table": "جدول", "kanban": "كانبان", "calendar": "تقويم", "timeline": "خط زمني" },
+    "savedViews": "العروض المحفوظة",
+    "searchLabel": "تصفية المواضيع",
+    "searchPlaceholder": "تصفية المواضيع…",
+    "filtersLabel": "مرشّحات القائمة",
+    "removeFilter": "إزالة {{label}}",
+    "noMatches": "لا تطابقات",
+    "filter": {
+      "status": "الحالة",
+      "type": "النوع",
+      "stream": "المسار",
+      "owner": "المالك",
+      "urgency": "الأهمية",
+      "anyType": "أي نوع",
+      "anyUrgency": "أي أهمية",
+      "anyStream": "أي مسار",
+      "anyOwner": "أي مالك"
+    },
+    "showing": "عرض {{shown}} من {{total}}",
+    "pageNav": "صفحات القائمة",
+    "prevPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "tableCaption": "مواضيع القائمة",
+    "col": {
+      "key": "المعرّف",
+      "topic": "الموضوع",
+      "type": "النوع",
+      "streams": "المسارات",
+      "owner": "المالك",
+      "status": "الحالة",
+      "age": "العمر",
+      "urgency": "الأهمية"
+    },
+    "urgent": "عاجل",
+    "unassigned": "غير مُسنَد",
+    "age": "{{days}} ي",
+    "ageLabel": "{{days}} يومًا",
+    "slaBreached": "تجاوز مهلة المراجعة",
+    "empty": {
+      "title": "لا مواضيع تطابق المرشّحات",
+      "body": "لا عناصر تطابق المرشّحات الحالية. امسح المرشّحات أو قدّم موضوعًا جديدًا للبدء."
+    },
+    "clearFilters": "مسح المرشّحات",
+    "error": {
+      "title": "تعذّر تحميل القائمة",
+      "body": "الخدمة غير متاحة مؤقتًا. مرشّحاتك محفوظة — أعد المحاولة بعد قليل."
+    },
+    "shell": { "title": "العرض قادم قريبًا", "body": "هذا العرض غير متاح بعد." },
+    "type": {
+      "ResearchDiscovery": "بحث",
+      "ArchitectureDecision": "قرار معماري",
+      "EnhancementInnovation": "تحسين",
+      "GovernanceStandardization": "حوكمة"
+    },
+    "urgency": { "Normal": "عادي", "Urgent": "عاجل", "Critical": "حرج" },
+    "status": {
+      "Draft": "مسودة",
+      "Submitted": "مُقدّم",
+      "Triage": "فرز",
+      "Accepted": "مقبول",
+      "Prepared": "مُهيّأ",
+      "Scheduled": "مجدول",
+      "InCommittee": "في اللجنة",
+      "Decided": "تم البتّ",
+      "Closed": "مغلق",
+      "Rejected": "مرفوض",
+      "Deferred": "مؤجّل",
+      "Reopened": "أُعيد فتحه",
+      "Converted": "محوّل"
+    }
+  },
   "notFound": { "body": "تعذّر العثور على تلك الصفحة." }
 }
