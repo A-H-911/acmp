@@ -69,12 +69,13 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > RTL/dark re-verification remains the confirmatory step** (component a11y semantics are now
 > unit-tested; token contrast is a byte-match to the design). See progress-log CHANGE-003.
 >
-> CHANGE-003 live visual pass (2026-06-26): ran Playwright across the shell + Admin in
-> **EN-light and AR-RTL-dark** — **live in-browser axe (WCAG 2.2 AA) clean in both**, after
-> fixing one real contrast gap (`.brand-sub` 4.49→AA via `--text-3`→`--text-2`). RTL mirroring
-> + dark confirmed visually. **AC-045/046 reconfirmed Met** (live axe both directions/themes);
-> **AC-040** RTL-mirror confirmed; **AC-041** stays Partial (automated visual-regression suite
-> → P17). Login visual deferred to the live IdP flow (dev stub auto-authenticates).
+> CHANGE-003 live visual pass (2026-06-26): ran Playwright across the shell, Admin, **and Login**
+> in **EN-light and AR-RTL-dark** — **live in-browser axe (WCAG 2.2 AA) clean on all surfaces in
+> both**, after fixing two real contrast gaps (`.brand-sub` 4.49, `.login-invite` 4.02 → AA via
+> `--text-3`→`--text-2`). RTL mirroring + dark + the AR tagline confirmed visually on every surface
+> (Login rendered via an `VITE_OIDC_*`-enabled dev server). **AC-045/046 reconfirmed Met** (live axe
+> both directions/themes, all surfaces incl. Login); **AC-040** RTL-mirror confirmed; **AC-041**
+> stays Partial (automated visual-regression suite → P17).
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|

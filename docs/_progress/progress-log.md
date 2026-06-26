@@ -63,16 +63,17 @@ parity **103 keys**; prod bundle confirmed to exclude the dev role switcher. Bac
 - **Authority split** for design inter-file conflicts: shell chrome/nav-container metrics →
   `ACMP.dc.html` (Q4); nav-item anatomy → `Navigation & IA`; primitives → `Design System`.
 
-**Live visual pass — done (2026-06-26).** Playwright across the shell + Admin in **EN-light and
-AR-RTL-dark** (dev stub): **live in-browser axe (WCAG 2.2 AA) clean in both** — after fixing one
-real gap the jsdom axe can't compute: `.brand-sub` was `--text-3` on the `--header` surface =
-**4.49:1** (just under AA 4.5); bumped to `--text-2` (same call CHANGE-002 made for the other small
-chrome labels). RTL fully mirrors (sidebar→inline-end, active accent rail, underline tabs, search),
-dark surfaces legible, the **primary plinth mark** renders in the header. Screenshots captured
-(`acmp-{dashboard,admin}-{en-light,ar-rtl-dark}.png`). (Login's visual needs the real IdP flow —
-the dev stub auto-authenticates so `/login` redirects; Login stays source-verified + axe-clean. The
-populated Admin table is covered by unit + axe tests; the dev-only run has no backend so the API
-fails → the composed ErrorState shows.)
+**Live visual pass — done (2026-06-26).** Playwright across the shell, Admin, **and Login** in
+**EN-light and AR-RTL-dark** — **live in-browser axe (WCAG 2.2 AA) clean on every surface in both
+directions/themes** — after fixing **two** real contrast gaps the jsdom axe can't compute:
+`.brand-sub` (`--text-3` on `--header`, **4.49:1**) and `.login-invite` (`--text-3` on `--bg-app`,
+**4.02:1**), both → `--text-2` (same AA bump CHANGE-002 made for the other small chrome labels).
+RTL fully mirrors (sidebar→inline-end, active accent rail, underline tabs, search, login controls
+→inline-end, the CTA enter-glyph flips), dark surfaces legible, the **primary plinth mark** renders,
+and the **AR tagline** (…لجنة الهندسة المعمارية) is correct. Login was rendered by running the dev
+server with `VITE_OIDC_*` set (bypasses the auto-auth dev stub → `/login` shows the Keycloak CTA
+without completing the round-trip). Six frames screenshotted. (The populated Admin table is covered
+by unit + axe tests; the backend-less dev run shows the composed ErrorState.)
 
 **Next.** Push branch → PR → monitor remote CI to green → review GO → squash-merge. Then P5.
 
