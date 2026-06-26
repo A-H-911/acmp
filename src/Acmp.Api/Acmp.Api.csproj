@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Membership\Membership.Infrastructure\Acmp.Modules.Membership.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Topics\Topics.Infrastructure\Acmp.Modules.Topics.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
   </ItemGroup>
 

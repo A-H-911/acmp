@@ -1,19 +1,24 @@
 ﻿using Acmp.Modules.Membership.Infrastructure.Persistence;
+using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Api.Infrastructure;
 
-// Applies module migrations on startup, retrying while SQL Server warms up in Compose.
+// Applies every module's migrations on startup, retrying while SQL Server warms up in Compose.
 public static class MigrationRunner
 {
     public static async Task MigrateAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        var contexts = new DbContext[]
+        {
+            scope.ServiceProvider.GetRequiredService<MembershipDbContext>(),
+            scope.ServiceProvider.GetRequiredService<TopicsDbContext>(),
+        };
 
         // Non-relational providers (the in-memory store used by integration tests) have no migrations.
-        if (!db.Database.IsRelational())
+        if (contexts.Any(c => !c.Database.IsRelational()))
             return;
 
         const int maxAttempts = 12;
@@ -21,7 +26,8 @@ public static class MigrationRunner
         {
             try
             {
-                await db.Database.MigrateAsync();
+                foreach (var db in contexts)
+                    await db.Database.MigrateAsync();
                 logger.LogInformation("Database migrations applied.");
                 return;
             }
