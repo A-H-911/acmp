@@ -5,14 +5,19 @@
  * and a Log out item (OIDC end-session against the self-hosted Keycloak realm,
  * ADR-0015). Present on every page.
  */
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
 import { useTheme } from '../../theme/useTheme';
 import { Icon } from '../icons';
 import { NotificationCenter } from './NotificationCenter';
-import { DevRoleSwitcher } from './DevRoleSwitcher';
+
+// DEV-only role switcher, dynamically imported behind import.meta.env.DEV so its
+// code is dropped from the production bundle (the dead branch is tree-shaken out).
+const DevRoleSwitcher = import.meta.env.DEV
+  ? lazy(() => import('./DevRoleSwitcher').then((m) => ({ default: m.DevRoleSwitcher })))
+  : null;
 
 export function TopBar() {
   const { t, i18n } = useTranslation();
@@ -70,7 +75,11 @@ export function TopBar() {
 
       <div className="topbar-spacer" />
 
-      <DevRoleSwitcher />
+      {DevRoleSwitcher && (
+        <Suspense fallback={null}>
+          <DevRoleSwitcher />
+        </Suspense>
+      )}
 
       <button
         type="button"

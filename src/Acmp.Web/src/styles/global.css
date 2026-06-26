@@ -45,10 +45,9 @@ a { color: inherit; }
    scrolls underneath (matches the design — not an overflow container on main). */
 .topbar {
   position: sticky; inset-block-start: 0; z-index: 40;
-  display: flex; align-items: center; gap: var(--sp-4);
-  block-size: 60px; padding-inline: var(--sp-4) var(--sp-5);
-  background: color-mix(in srgb, var(--header) 88%, transparent);
-  backdrop-filter: blur(8px);
+  display: flex; align-items: center; gap: 18px;
+  block-size: 58px; padding-inline: 16px 18px;
+  background: var(--header);
   border-block-end: 1px solid var(--border);
 }
 .topbar-brand { display: flex; align-items: center; gap: var(--sp-3); min-inline-size: 160px; }
@@ -229,9 +228,11 @@ a { color: inherit; }
 
 /* ============================ Sidebar nav ============================ */
 .sidebar {
-  flex: 0 0 244px;
-  position: sticky; inset-block-start: 60px; block-size: calc(100vh - 60px); overflow-y: auto;
-  padding: var(--sp-4) var(--sp-3);
+  /* ACMP.dc.html app shell (Q4 authority): 248px, padding 20/14. Sticky offset and
+     height use the 58px header (the design file's own 60px here is a 2px self-inconsistency). */
+  flex: 0 0 248px;
+  position: sticky; inset-block-start: 58px; block-size: calc(100vh - 58px); overflow-y: auto;
+  padding: 20px 14px;
   background: var(--surface); border-inline-end: 1px solid var(--border);
   display: flex; flex-direction: column; gap: 3px;
 }
