@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  [data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);--edge:#c0c8d2;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);--edge:#3a4651;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpDash{to{stroke-dashoffset:-12}}
+  .acmp-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+  <div aria-live="polite" class="acmp-sr">{{ liveMsg }}</div>
+
+  <!-- TOP BAR -->
+  <header style="position:sticky;top:0;z-index:40;height:56px;display:flex;align-items:center;gap:14px;padding-inline:20px;background:color-mix(in srgb,var(--header) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div><span style="font-size:15px;font-weight:700;letter-spacing:.3px">ACMP</span></div>
+    <span style="font-size:12.5px;color:var(--text-3)">{{ t.tracePage }}</span>
+    <div style="flex:1 1 auto"></div>
+    <button onClick="{{ toggleDir }}" style="height:36px;padding-inline:11px;display:flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:600" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+    <button onClick="{{ toggleTheme }}" aria-label="Theme" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+  </header>
+
+  <main style="max-width:1320px;margin:0 auto;padding:22px 26px 80px">
+    <nav aria-label="Breadcrumb" style="font-size:12.5px;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:7px"><span>{{ t.backlog }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">TOP-2026-014</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="color:var(--text-2)">{{ t.traceability }}</span></nav>
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+      <div><h1 style="margin:0;font-size:21px;font-weight:700">{{ t.title }}</h1><div style="margin-top:4px;font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);color:var(--accent)">TOP-2026-014</span><span style="width:3px;height:3px;border-radius:50%;background:var(--text-3)"></span><span>{{ t.subtitle }}</span></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start">
+
+      <!-- ===== (a) COMPACT RELATIONSHIPS PANEL ===== -->
+      <aside aria-label="{{ t.relTitle }}" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;position:sticky;top:74px">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--subtle)">
+          <div style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M18 8.5v7M8 8l8 8"></path></svg><h2 style="margin:0;font-size:14px;font-weight:600">{{ t.relTitle }}</h2><span style="margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1px 8px">{{ relTotal }}</span></div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:3px">{{ t.relSub }}</div>
+        </div>
+        <div style="padding:5px 0;max-height:560px;overflow-y:auto">
+          <sc-for list="{{ relGroups }}" as="g" hint-placeholder-count="6">
+            <div style="border-bottom:1px solid var(--border-soft)">
+              <button onClick="{{ g.toggle }}" aria-expanded="{{ g.openStr }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:start;border:0;background:transparent;padding:10px 16px" style-hover="background:var(--subtle)">
+                <span style="width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:{{ g.iconBg }};color:{{ g.iconFg }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ g.icon }}"></path></svg></span>
+                <span style="flex:1 1 auto;min-width:0"><span style="display:flex;align-items:center;gap:7px"><span style="font-size:12.5px;font-weight:600;color:var(--text)">{{ g.label }}</span><span style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:{{ g.dirColor }}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ g.dirArrow }}"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>{{ g.dir }}</span></span></span>
+                <span style="font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:9px;padding:0 7px;flex:0 0 auto">{{ g.count }}</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ g.caret }}"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+              <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:0 12px 10px">
+                  <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+                    <button style="display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:1px solid var(--border-soft);background:var(--surface);border-radius:9px;padding:8px 10px;margin-bottom:6px" style-hover="border-color:var(--accent);background:var(--subtle)">
+                      <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-family:var(--mono);font-size:11px;color:var(--accent)">{{ it.k }}</span><span style="display:block;font-size:12.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span></span>
+                      <span style="display:inline-flex;align-items:center;gap:5px;height:20px;padding-inline:7px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;{{ it.chip }};flex:0 0 auto"><span style="width:5px;height:5px;border-radius:50%;background:{{ it.dot }}"></span>{{ it.st }}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}" aria-label="{{ t.goTo }}"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="padding:11px 14px"><button onClick="{{ scrollToGraph }}" style="width:100%;height:36px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--border-strong);background:var(--subtle);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--sunken)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M5 8v2a2 2 0 002 2h10a2 2 0 002-2V8M12 12v4"></path></svg>{{ t.openGraph }}</button></div>
+        </div>
+      </aside>
+
+      <!-- ===== (b) DEPENDENCY / IMPACT GRAPH ===== -->
+      <section aria-label="{{ t.graphTitle }}" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+        <!-- controls -->
+        <div style="padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <h2 style="margin:0;font-size:14px;font-weight:600">{{ t.graphTitle }}</h2>
+          <div style="display:flex;gap:4px;padding:4px;background:var(--sunken);border-radius:9px;margin-inline-start:auto">
+            <button onClick="{{ showGraph }}" aria-pressed="{{ isGraphStr }}" style="display:flex;align-items:center;gap:6px;height:30px;padding-inline:11px;border:0;border-radius:7px;font-size:12px;font-weight:600;{{ graphTabStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M5 8v2a2 2 0 002 2h10a2 2 0 002-2V8M12 12v4"></path></svg>{{ t.graph }}</button>
+            <button onClick="{{ showList }}" aria-pressed="{{ isListStr }}" style="display:flex;align-items:center;gap:6px;height:30px;padding-inline:11px;border:0;border-radius:7px;font-size:12px;font-weight:600;{{ listTabStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>{{ t.listFallback }}</button>
+          </div>
+        </div>
+
+        <!-- toolbar: depth + highlights -->
+        <div style="padding:11px 16px;border-bottom:1px solid var(--border-soft);background:var(--subtle);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:9px"><span style="font-size:12px;font-weight:600;color:var(--text-2)">{{ t.depth }}</span><div style="display:flex;align-items:center;border:1px solid var(--border-strong);border-radius:8px;overflow:hidden"><sc-for list="{{ depthBtns }}" as="d" hint-placeholder-count="3"><button onClick="{{ d.go }}" aria-pressed="{{ d.sel }}" style="width:30px;height:28px;border:0;border-inline-end:1px solid var(--border-soft);background:{{ d.bg }};color:{{ d.fg }};font-size:12.5px;font-weight:700;font-feature-settings:'tnum'">{{ d.n }}</button></sc-for></div><span style="font-size:11px;color:var(--text-3)">{{ t.depthHint }}</span></div>
+          <div style="width:1px;height:22px;background:var(--border)"></div>
+          <div style="display:flex;align-items:center;gap:9px">
+            <button onClick="{{ toggleBlocked }}" aria-pressed="{{ blockedStr }}" style="display:inline-flex;align-items:center;gap:7px;height:30px;padding-inline:11px;border:1px solid {{ blockedBd }};background:{{ blockedBg }};color:{{ blockedFg }};border-radius:8px;font-size:12px;font-weight:600"><span style="width:9px;height:9px;border-radius:3px;background:var(--st-danger-dot)"></span>{{ t.blockedWork }}</button>
+            <button onClick="{{ toggleCross }}" aria-pressed="{{ crossStr }}" style="display:inline-flex;align-items:center;gap:7px;height:30px;padding-inline:11px;border:1px solid {{ crossBd }};background:{{ crossBg }};color:{{ crossFg }};border-radius:8px;font-size:12px;font-weight:600"><span style="width:9px;height:9px;border-radius:3px;background:var(--st-warn-dot)"></span>{{ t.crossStream }}</button>
+          </div>
+        </div>
+
+        <!-- GRAPH -->
+        <sc-if value="{{ isGraph }}" hint-placeholder-val="{{ true }}">
+          <div role="application" aria-label="{{ t.graphAria }}" onKeyDown="{{ onGraphKey }}" tabindex="0" style="position:relative;overflow:auto;outline-offset:-2px">
+            <div style="position:relative;width:{{ canvasW }}px;height:{{ canvasH }}px;margin:0 auto">
+              <!-- edges -->
+              <svg width="{{ canvasW }}" height="{{ canvasH }}" style="position:absolute;inset:0;transform:{{ svgFlip }};transform-origin:center;pointer-events:none" aria-hidden="true">
+                <sc-for list="{{ edges }}" as="e" hint-placeholder-count="8"><path d="{{ e.d }}" fill="none" stroke="{{ e.color }}" stroke-width="{{ e.w }}" stroke-dasharray="{{ e.dash }}" style="{{ e.anim }}" opacity="{{ e.op }}"></path></sc-for>
+              </svg>
+              <!-- depth tier labels -->
+              <sc-for list="{{ tierLabels }}" as="tl" hint-placeholder-count="5"><div style="position:absolute;top:8px;inset-inline-start:{{ tl.x }}px;width:{{ nodeW }}px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)">{{ tl.label }}</div></sc-for>
+              <!-- nodes -->
+              <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="9">
+                <button onClick="{{ n.focus }}" id="{{ n.domId }}" aria-label="{{ n.aria }}" aria-current="{{ n.currentStr }}" style="position:absolute;inset-inline-start:{{ n.x }}px;top:{{ n.y }}px;width:{{ nodeW }}px;height:{{ nodeH }}px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-start;gap:5px;padding:9px 11px;border:{{ n.borderW }} solid {{ n.bd }};background:{{ n.bg }};border-radius:10px;text-align:start;overflow:hidden;box-shadow:{{ n.shadow }};opacity:{{ n.op }};transition:opacity .15s,border-color .15s" style-hover="border-color:var(--accent)">
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:2px;background:{{ n.typeColor }};flex:0 0 auto"></span><span style="font-family:var(--mono);font-size:10px;color:{{ n.kColor }}">{{ n.k }}</span><sc-if value="{{ n.blocked }}" hint-placeholder-val="{{ false }}"><span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:700;color:var(--st-danger-fg);background:var(--st-danger-bg);border-radius:4px;padding:0 4px"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>{{ t.blocked }}</span></sc-if></span>
+                  <span style="font-size:11.5px;font-weight:600;line-height:1.3;color:var(--text);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ n.title }}</span>
+                  <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-flex;align-items:center;gap:4px;height:16px;padding-inline:5px;border-radius:4px;font-size:9.5px;font-weight:600;{{ n.chip }}"><span style="width:4px;height:4px;border-radius:50%;background:{{ n.stDot }}"></span>{{ n.st }}</span><sc-if value="{{ n.crossStream }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:600;color:var(--st-warn-fg);background:var(--st-warn-bg);border-radius:4px;padding:1px 5px">{{ n.stream }}</span></sc-if></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <!-- focused node detail bar + legend -->
+          <div style="padding:11px 16px;border-top:1px solid var(--border-soft);background:var(--subtle);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span style="color:var(--text-3)">{{ t.focused }}</span><span style="font-family:var(--mono);color:var(--accent);font-weight:600">{{ focusKey }}</span><span style="color:var(--text-2)">{{ focusTitle }}</span></div>
+            <div style="display:flex;align-items:center;gap:14px;margin-inline-start:auto;flex-wrap:wrap"><sc-for list="{{ legend }}" as="l" hint-placeholder-count="4"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2)"><span style="width:9px;height:9px;border-radius:2px;background:{{ l.color }}"></span>{{ l.label }}</span></sc-for></div>
+          </div>
+          <div style="padding:8px 16px 12px;font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>{{ t.keyboardHint }}</div>
+        </sc-if>
+
+        <!-- LIST / BREADCRUMB FALLBACK -->
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:16px">
+            <!-- focus path breadcrumb -->
+            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:11px 13px;background:var(--subtle);border:1px solid var(--border-soft);border-radius:9px;margin-bottom:16px">
+              <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-inline-end:4px">{{ t.path }}</span>
+              <sc-for list="{{ pathCrumbs }}" as="c" hint-placeholder-count="3"><span style="font-family:var(--mono);font-size:11.5px;color:{{ c.color }};font-weight:{{ c.fw }}">{{ c.k }}</span><sc-if value="{{ c.sep }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></sc-if></sc-for>
+            </div>
+            <!-- nested list by depth -->
+            <div role="tree" aria-label="{{ t.graphAria }}" style="display:flex;flex-direction:column;gap:3px">
+              <sc-for list="{{ listRows }}" as="r" hint-placeholder-count="9">
+                <div role="treeitem" aria-level="{{ r.level }}" tabindex="0" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid {{ r.bd }};border-radius:10px;background:{{ r.bg }};margin-inline-start:{{ r.indent }}px;position:relative" style-hover="border-color:var(--accent)" style-focus="border-color:var(--accent)">
+                  <sc-if value="{{ r.hasConnector }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset-inline-start:-13px;top:50%;width:13px;height:1.5px;background:var(--edge)"></span></sc-if>
+                  <span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:{{ r.relColor }};flex:0 0 auto;width:78px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ r.relArrow }}"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>{{ r.rel }}</span>
+                  <span style="width:8px;height:8px;border-radius:2px;background:{{ r.typeColor }};flex:0 0 auto"></span>
+                  <span style="font-family:var(--mono);font-size:11px;color:var(--accent);flex:0 0 auto">{{ r.k }}</span>
+                  <span style="flex:1 1 auto;min-width:0;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</span>
+                  <sc-if value="{{ r.blocked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--st-danger-fg);background:var(--st-danger-bg);border-radius:5px;padding:1px 6px;flex:0 0 auto"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>{{ t.blocked }}</span></sc-if>
+                  <sc-if value="{{ r.crossStream }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:600;color:var(--st-warn-fg);background:var(--st-warn-bg);border-radius:5px;padding:1px 6px;flex:0 0 auto">{{ r.stream }}</span></sc-if>
+                  <span style="display:inline-flex;align-items:center;gap:5px;height:20px;padding-inline:7px;border-radius:6px;font-size:11px;font-weight:600;{{ r.chip }};flex:0 0 auto"><span style="width:5px;height:5px;border-radius:50%;background:{{ r.stDot }}"></span>{{ r.st }}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}" aria-label="{{ t.goTo }}"><path d="M9 6l6 6-6 6"></path></svg>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:900},&quot;depth&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:1,&quot;max&quot;:3,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = {
+    dir:'ltr', theme:'light',
+    view:'graph', depth: this.props.depth || 2,
+    highlightBlocked:false, highlightCross:false,
+    focus:'TOP-2026-014',
+    openGroups:{ decision:true, adr:true, action:true, risk:true, meeting:false, depends:true, blocks:true },
+    liveMsg:''
+  };
+  set(k,v){ this.setState({ [k]:v }); }
+  sem(s){ return { chip:`background:var(--st-${s}-bg);color:var(--st-${s}-fg)`, dot:`var(--st-${s}-dot)` }; }
+
+  // node model: id -> {type, en, ar, status(sem), stream, blocked, cross}
+  TYPE_COLOR = { topic:'var(--accent)', decision:'var(--st-success-dot)', adr:'var(--st-info-dot)', action:'var(--st-warn-dot)', risk:'var(--st-danger-dot)', meeting:'var(--st-sched-dot)' };
+  N = {
+    'TOP-2026-014':{ type:'topic', en:'Adopt Keycloak as standard IdP', ar:'اعتماد Keycloak كموفّر هوية', sem:'sched', stLabel:['Scheduled','مجدول'], stream:'Identity' },
+    'TOP-2026-022':{ type:'topic', en:'API pagination standard', ar:'معيار ترقيم الواجهات', sem:'info', stLabel:['Accepted','مقبول'], stream:'Platform' },
+    'TOP-2026-009':{ type:'topic', en:'Payments tokenization', ar:'ترميز المدفوعات', sem:'info', stLabel:['Accepted','مقبول'], stream:'Payments', cross:true, blocked:true },
+    'DECN-2026-008':{ type:'decision', en:'Approve Keycloak, conditionally', ar:'الموافقة على Keycloak بشروط', sem:'success', stLabel:['Approved','موافق'], stream:'Identity' },
+    'ADR-2026-003':{ type:'adr', en:'Keycloak as standard IdP', ar:'Keycloak كموفّر هوية', sem:'info', stLabel:['Accepted','مقبول'], stream:'Identity' },
+    'ACT-2026-040':{ type:'action', en:'Produce migration ADR', ar:'إعداد سجل الترحيل', sem:'warn', stLabel:['In Progress','قيد التنفيذ'], stream:'Identity' },
+    'ACT-2026-041':{ type:'action', en:'Document rollback plan', ar:'توثيق خطة التراجع', sem:'neutral', stLabel:['Not started','لم يبدأ'], stream:'Identity' },
+    'RSK-2026-006':{ type:'risk', en:'Dual-running auth migration', ar:'التشغيل المزدوج للمصادقة', sem:'warn', stLabel:['Mitigating','قيد المعالجة'], stream:'Identity' },
+    'MTG-2026-019':{ type:'meeting', en:'Weekly Architecture Committee', ar:'لجنة الهندسة الأسبوعية', sem:'sched', stLabel:['Scheduled','مجدول'], stream:'—' },
+    'SVC-Gateway':{ type:'action', en:'API Gateway integration', ar:'تكامل بوابة الواجهات', sem:'neutral', stLabel:['Pending','معلّق'], stream:'Platform', cross:true, blocked:true }
+  };
+  // directed edges from focus graph. rel: relation key, dir: up(upstream/dependency)/down(downstream/impact)/related
+  EDGES = [
+    { from:'TOP-2026-022', to:'TOP-2026-014', rel:'depends', dir:'up' },
+    { from:'TOP-2026-014', to:'DECN-2026-008', rel:'decision', dir:'down' },
+    { from:'TOP-2026-014', to:'MTG-2026-019', rel:'meeting', dir:'related' },
+    { from:'TOP-2026-014', to:'RSK-2026-006', rel:'risk', dir:'related' },
+    { from:'DECN-2026-008', to:'ADR-2026-003', rel:'adr', dir:'down' },
+    { from:'DECN-2026-008', to:'ACT-2026-040', rel:'action', dir:'down' },
+    { from:'DECN-2026-008', to:'ACT-2026-041', rel:'action', dir:'down' },
+    { from:'TOP-2026-014', to:'TOP-2026-009', rel:'blocks', dir:'down' },
+    { from:'ADR-2026-003', to:'SVC-Gateway', rel:'impacts', dir:'down' },
+    { from:'TOP-2026-009', to:'SVC-Gateway', rel:'impacts', dir:'down' }
+  ];
+
+  // BFS depth tiers from focus, both directions
+  buildTiers(focus, depth){
+    const tier = { [focus]:0 }; const order=[focus]; let frontier=[focus];
+    for(let d=1; d<=depth; d++){ const next=[];
+      frontier.forEach(id=>{ this.EDGES.forEach(e=>{
+        if(e.from===id && !(e.to in tier)){ tier[e.to]=d; next.push(e.to); order.push(e.to); }
+        if(e.to===id && !(e.from in tier)){ tier[e.from]=-d; next.push(e.from); order.push(e.from); }
+      }); });
+      frontier=next;
+    }
+    return { tier, order };
+  }
+
+  toggleGroup(k){ this.setState(s=>({ openGroups:{...s.openGroups,[k]:!s.openGroups[k]} })); }
+  setFocus(id){ const L=this.state.dir==='rtl'; const n=this.N[id]; this.setState({ focus:id, liveMsg:(L?`التركيز على ${id}`:`Focused ${id}`) }); }
+  onGraphKey(e){
+    const order=this._navOrder||[]; if(!order.length) return;
+    const i=order.indexOf(this.state.focus);
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){ e.preventDefault(); const ni=order[(i+1)%order.length]; this.setFocus(ni); this._focusDom(ni); }
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){ e.preventDefault(); const ni=order[(i-1+order.length)%order.length]; this.setFocus(ni); this._focusDom(ni); }
+  }
+  _focusDom(id){ setTimeout(()=>{ const el=document.getElementById('gnode-'+id.replace(/[^A-Za-z0-9]/g,'')); if(el) el.focus(); },30); }
+
+  renderVals(){
+    const { dir, theme, view, depth, highlightBlocked, highlightCross, focus, openGroups, liveMsg } = this.state;
+    const isRtl=dir==='rtl'; const L=(en,ar)=>isRtl?ar:en;
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow)'; const segOff='background:transparent;color:var(--text-2)';
+
+    const t = {
+      tracePage:L('Traceability','التتبّع'), backlog:L('Backlog','قائمة المواضيع'), traceability:L('Traceability','التتبّع'),
+      title:L('Traceability & dependencies','التتبّع والاعتماديات'), subtitle:L('Adopt Keycloak as the standard IdP','اعتماد Keycloak كموفّر هوية'),
+      relTitle:L('Relationships','العلاقات'), relSub:L('Grouped by type · both directions','مجمّعة حسب النوع · بالاتجاهين'), goTo:L('Go to','الانتقال'),
+      openGraph:L('Open dependency graph','فتح مخطط الاعتماديات'),
+      graphTitle:L('Dependency & impact','الاعتماديات والأثر'), graph:L('Graph','مخطط'), listFallback:L('List','قائمة'),
+      depth:L('Depth','العمق'), depthHint:L('hops from focus','قفزات من المركز'),
+      blockedWork:L('Blocked work','عمل محجوب'), crossStream:L('Cross-stream','عبر المسارات'),
+      graphAria:L('Dependency graph for TOP-2026-014','مخطط اعتماديات TOP-2026-014'),
+      blocked:L('Blocked','محجوب'), focused:L('Focused','المركز'),
+      keyboardHint:L('Arrow keys move focus between linked artifacts · Enter opens','الأسهم تنقل التركيز بين العناصر · Enter يفتح'),
+      path:L('Path','المسار'), upstream:L('Upstream','سابق'), downstream:L('Downstream','لاحق'), related:L('Related','مرتبط')
+    };
+
+    // ---- (a) relationships panel ----
+    const groupDefs = [
+      { key:'depends', label:L('Depends on','يعتمد على'), dir:L('Upstream','سابق'), up:true, icon:'M19 12H5M11 6l-6 6 6 6', items:['TOP-2026-022'] },
+      { key:'decision', label:L('Decision','القرار'), dir:L('Downstream','لاحق'), icon:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z', items:['DECN-2026-008'] },
+      { key:'adr', label:'ADR', dir:L('Downstream','لاحق'), icon:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7', items:['ADR-2026-003'] },
+      { key:'action', label:L('Actions','الإجراءات'), dir:L('Downstream','لاحق'), icon:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11', items:['ACT-2026-040','ACT-2026-041'] },
+      { key:'risk', label:L('Risk','المخاطر'), dir:L('Related','مرتبط'), rel:true, icon:'M12 4l9 16H3L12 4zM12 10v4M12 18h.01', items:['RSK-2026-006'] },
+      { key:'blocks', label:L('Blocks','يحجب'), dir:L('Downstream','لاحق'), icon:'M5 12h14', items:['TOP-2026-009'] },
+      { key:'meeting', label:L('Meeting','الاجتماع'), dir:L('Related','مرتبط'), rel:true, icon:'M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z', items:['MTG-2026-019'] }
+    ];
+    let relTotal=0; groupDefs.forEach(g=>relTotal+=g.items.length);
+    const relGroups = groupDefs.map(g=>{ const open=!!openGroups[g.key];
+      return { label:g.label, dir:g.dir, count:g.items.length, open, openStr:open?'true':'false', caret:open?'rotate(180deg)':'none',
+        toggle:()=>this.toggleGroup(g.key),
+        dirColor:g.up?'var(--st-warn-fg)':(g.rel?'var(--st-neutral-fg)':'var(--st-info-fg)'), dirArrow:g.up?'none':'rotate(180deg)',
+        iconBg:g.up?'var(--st-warn-bg)':(g.rel?'var(--st-neutral-bg)':'var(--st-info-bg)'), iconFg:g.up?'var(--st-warn-fg)':(g.rel?'var(--st-neutral-fg)':'var(--st-info-fg)'), icon:g.icon,
+        items:g.items.map(id=>{ const n=this.N[id]; const sm=this.sem(n.sem); return { k:id, title:n[isRtl?'ar':'en'], st:L(n.stLabel[0],n.stLabel[1]), chip:sm.chip, dot:sm.dot }; }) }; });
+
+    // ---- (b) graph layout ----
+    const { tier, order } = this.buildTiers(focus, depth);
+    const ids = order;
+    this._navOrder = ids;
+    // group by tier value
+    const tierVals = [...new Set(ids.map(id=>tier[id]))].sort((a,b)=>a-b);
+    const nodeW=152, nodeH=94, gapX=70, gapY=18, padX=24, padTop=30, padBottom=16;
+    const colOf = {}; tierVals.forEach((tv,i)=>colOf[tv]=i);
+    const cols = tierVals.length;
+    // assign positions
+    const byCol = {}; tierVals.forEach(tv=>byCol[tv]=ids.filter(id=>tier[id]===tv));
+    const maxRows = Math.max(...tierVals.map(tv=>byCol[tv].length));
+    const canvasW = padX*2 + cols*nodeW + (cols-1)*gapX;
+    const canvasH = padTop + padBottom + maxRows*nodeH + (maxRows-1)*gapY;
+    const pos={};
+    tierVals.forEach(tv=>{ const colIdx=colOf[tv]; const x=padX+colIdx*(nodeW+gapX); const list=byCol[tv]; const colH=list.length*nodeH+(list.length-1)*gapY; const y0=padTop+(canvasH-padTop-padBottom-colH)/2;
+      list.forEach((id,ri)=>{ pos[id]={ x, y:y0+ri*(nodeH+gapY), col:colIdx }; }); });
+
+    const tierLabelText=(tv)=> tv===0?L('Focus','المركز'):(tv<0?(L('Upstream','سابق')+' '+Math.abs(tv)):(L('Downstream','لاحق')+' '+tv));
+    const tierLabels = tierVals.map(tv=>({ x:padX+colOf[tv]*(nodeW+gapX), label:tierLabelText(tv) }));
+
+    // visible edges (both endpoints placed)
+    const relColorMap = { depends:'var(--st-warn-dot)', blocks:'var(--st-danger-dot)', impacts:'var(--st-danger-dot)', decision:'var(--st-success-dot)', adr:'var(--st-info-dot)', action:'var(--st-warn-dot)', risk:'var(--st-neutral-dot)', meeting:'var(--st-sched-dot)' };
+    const anyHi = highlightBlocked || highlightCross;
+    const edges = this.EDGES.filter(e=>pos[e.from]&&pos[e.to]).map(e=>{
+      const a=pos[e.from], b=pos[e.to];
+      const x1=a.x+nodeW, y1=a.y+nodeH/2, x2=b.x, y2=b.y+nodeH/2;
+      // if same col direction reversed (upstream), connect right-to-left
+      let sx,sy,ex,ey;
+      if(b.col>a.col){ sx=a.x+nodeW; ex=b.x; } else if(b.col<a.col){ sx=a.x; ex=b.x+nodeW; } else { sx=a.x+nodeW; ex=b.x+nodeW; }
+      sy=a.y+nodeH/2; ey=b.y+nodeH/2;
+      const mx=(sx+ex)/2;
+      const d=`M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ey}, ${ex} ${ey}`;
+      const isBlockedEdge = (e.rel==='blocks'||e.rel==='impacts') && (this.N[e.to].blocked||this.N[e.from].blocked);
+      const isCrossEdge = this.N[e.from].stream!==this.N[e.to].stream && this.N[e.to].stream!=='—' && this.N[e.from].stream!=='—';
+      let color=relColorMap[e.rel]||'var(--edge)'; let w='1.6'; let dash='0'; let op='0.5'; let anim='';
+      if(highlightBlocked && isBlockedEdge){ color='var(--st-danger-dot)'; w='2.4'; dash='6 5'; op='1'; anim='animation:acmpDash .6s linear infinite'; }
+      else if(highlightCross && isCrossEdge){ color='var(--st-warn-dot)'; w='2.4'; dash='6 5'; op='1'; anim='animation:acmpDash .6s linear infinite'; }
+      else if(anyHi){ op='0.18'; }
+      else if(!anyHi){ op='0.6'; }
+      return { d, color, w, dash, op, anim };
+    });
+
+    const svgFlip = isRtl ? 'scaleX(-1)' : 'none';
+    const nodes = ids.map(id=>{ const n=this.N[id]; const p=pos[id]; const isFocus=id===focus; const sm=this.sem(n.sem);
+      const dimByBlocked = highlightBlocked && !n.blocked && !isFocus;
+      const dimByCross = highlightCross && !n.cross && !isFocus;
+      const dim = dimByBlocked || dimByCross;
+      return { domId:'gnode-'+id.replace(/[^A-Za-z0-9]/g,''), k:id, title:n[isRtl?'ar':'en'], x:p.x, y:p.y,
+        focus:()=>this.setFocus(id), currentStr:isFocus?'true':'false',
+        aria:`${id}, ${n[isRtl?'ar':'en']}, ${L(n.stLabel[0],n.stLabel[1])}${n.blocked?', '+t.blocked:''}${isFocus?', '+t.focused:''}`,
+        bd:isFocus?'var(--accent)':(n.blocked&&highlightBlocked?'var(--st-danger-dot)':(n.cross&&highlightCross?'var(--st-warn-dot)':'var(--border)')), borderW:isFocus?'2px':'1px',
+        bg:isFocus?'var(--primary-tint)':'var(--surface)', shadow:isFocus?'var(--shadow-lg)':'var(--shadow)', op:dim?'0.3':'1',
+        typeColor:this.TYPE_COLOR[n.type], kColor:isFocus?'var(--accent)':'var(--text-2)',
+        st:L(n.stLabel[0],n.stLabel[1]), chip:sm.chip, stDot:sm.dot,
+        blocked:!!n.blocked, crossStream:!!n.cross, stream:n.stream };
+    });
+
+    const fN=this.N[focus];
+    const legend = [
+      { label:L('Topic','موضوع'), color:'var(--accent)' },
+      { label:L('Decision','قرار'), color:'var(--st-success-dot)' },
+      { label:L('Action','إجراء'), color:'var(--st-warn-dot)' },
+      { label:L('Risk','مخاطر'), color:'var(--st-danger-dot)' }
+    ];
+
+    // ---- list fallback rows (depth-ordered, indented by tier distance) ----
+    const relArrowOf=(d)=> d==='up'?'none':(d==='related'?'rotate(90deg)':'rotate(180deg)');
+    const relColorOf=(d)=> d==='up'?'var(--st-warn-fg)':(d==='related'?'var(--st-neutral-fg)':'var(--st-info-fg)');
+    const relTextOf=(rel,d)=>{ const m={ depends:L('Depends','يعتمد'), blocks:L('Blocks','يحجب'), decision:L('Decision','قرار'), adr:'ADR', action:L('Action','إجراء'), risk:L('Risk','مخاطر'), meeting:L('Meeting','اجتماع'), impacts:L('Impacts','يؤثر') }; return m[rel]||rel; };
+    // build list as traversal from focus
+    const listRows=[]; const seen={};
+    const walk=(id, level)=>{ if(level>depth) return;
+      this.EDGES.forEach(e=>{ let other=null, d=null;
+        if(e.from===id){ other=e.to; d=e.dir; } else if(e.to===id){ other=e.from; d=(e.dir==='up'?'down':(e.dir==='down'?'up':'related')); }
+        if(other && !seen[id+'>'+other]){ seen[id+'>'+other]=true; const n=this.N[other]; if(!n) return; const sm=this.sem(n.sem);
+          listRows.push({ level:level+1, indent:level*22, hasConnector:level>0,
+            rel:relTextOf(e.rel,d), relArrow:relArrowOf(d), relColor:relColorOf(d),
+            k:other, title:n[isRtl?'ar':'en'], typeColor:this.TYPE_COLOR[n.type],
+            st:L(n.stLabel[0],n.stLabel[1]), chip:sm.chip, stDot:sm.dot,
+            blocked: highlightBlocked? !!n.blocked : (!!n.blocked&&false), crossStream: highlightCross? !!n.cross : false,
+            stream:n.stream,
+            bd: (highlightBlocked&&n.blocked)?'var(--st-danger-dot)':((highlightCross&&n.cross)?'var(--st-warn-dot)':'var(--border-soft)'),
+            bg: (highlightBlocked&&n.blocked)?'var(--st-danger-bg)':((highlightCross&&n.cross)?'var(--st-warn-bg)':'var(--surface)') });
+          if(level+1<depth) walk(other, level+1);
+        }
+      });
+    };
+    // always show blocked/cross badges in list regardless of highlight for clarity
+    walk(focus,0);
+    listRows.forEach(r=>{ const n=this.N[r.k]; r.blocked=!!n.blocked; r.crossStream=!!n.cross; });
+
+    const pathCrumbs = [
+      { k:focus, color:'var(--accent)', fw:'700', sep:true },
+      { k:fN.stream==='—'?'—':fN.stream, color:'var(--text-3)', fw:'500', sep:false }
+    ];
+
+    const depthBtns=[1,2,3].map(n=>({ n, go:()=>this.set('depth',n), sel:depth===n?'true':'false', bg:depth===n?'var(--primary)':'var(--surface)', fg:depth===n?'#fff':'var(--text-2)' }));
+
+    return {
+      dir, theme, font, chev, liveMsg,
+      langBtn:isRtl?'English':'العربية', toggleDir:()=>this.set('dir',isRtl?'ltr':'rtl'),
+      theme, toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      t, relGroups, relTotal, scrollToGraph:()=>this.set('view','graph'),
+      isGraph:view==='graph', isList:view==='list', isGraphStr:view==='graph'?'true':'false', isListStr:view==='list'?'true':'false',
+      showGraph:()=>this.set('view','graph'), showList:()=>this.set('view','list'),
+      graphTabStyle:view==='graph'?segOn:segOff, listTabStyle:view==='list'?segOn:segOff,
+      depthBtns,
+      toggleBlocked:()=>this.set('highlightBlocked',!highlightBlocked), blockedStr:highlightBlocked?'true':'false',
+      blockedBd:highlightBlocked?'var(--st-danger-dot)':'var(--border-strong)', blockedBg:highlightBlocked?'var(--st-danger-bg)':'var(--surface)', blockedFg:highlightBlocked?'var(--st-danger-fg)':'var(--text-2)',
+      toggleCross:()=>this.set('highlightCross',!highlightCross), crossStr:highlightCross?'true':'false',
+      crossBd:highlightCross?'var(--st-warn-dot)':'var(--border-strong)', crossBg:highlightCross?'var(--st-warn-bg)':'var(--surface)', crossFg:highlightCross?'var(--st-warn-fg)':'var(--text-2)',
+      canvasW, canvasH, nodeW, nodeH, svgFlip, edges, nodes, tierLabels,
+      onGraphKey:(e)=>this.onGraphKey(e),
+      focusKey:focus, focusTitle:fN[isRtl?'ar':'en'], legend,
+      listRows, pathCrumbs
+    };
+  }
+}
+</script>
+</body>
+</html>

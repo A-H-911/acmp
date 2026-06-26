@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input{font:inherit}
+  [data-acmp-theme]{
+    --r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:12px;--mono:'IBM Plex Mono',monospace;
+  }
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);
+    --shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);
+    --shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpShimmer{0%,100%{opacity:.5}50%{opacity:1}}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+  <!-- DOC TOP BAR -->
+  <header style="position:sticky;top:0;z-index:50;height:60px;display:flex;align-items:center;gap:14px;padding-inline:24px;background:color-mix(in srgb,var(--header) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:11px;min-width:0">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+      <div style="line-height:1.15;min-width:0"><div style="font-size:15px;font-weight:700">Navigation &amp; Information Architecture</div><div style="font-size:11.5px;color:var(--text-3)">ACMP · role-filtered · bilingual</div></div>
+    </div>
+    <div style="flex:1 1 auto"></div>
+
+    <div style="position:relative">
+      <button onClick="{{ toggleRoleMenu }}" aria-haspopup="true" aria-expanded="{{ roleMenuOpenStr }}" style="height:40px;padding-inline:8px 12px;display:flex;align-items:center;gap:9px;border:1px solid var(--border-strong);background:var(--surface);border-radius:9px;min-width:210px" style-hover="background:var(--subtle)">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto">{{ role.i }}</span>
+        <span style="line-height:1.15;text-align:start;flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;font-weight:600">{{ role.label }}</span><span style="display:block;font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ role.sub }}</span></span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{ roleMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="menu" style="position:absolute;top:46px;inset-inline-end:0;width:280px;background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow-lg);padding:6px;z-index:60">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);padding:8px 10px 5px">Roles are read-only from Keycloak</div>
+          <sc-for list="{{ roleList }}" as="r" hint-placeholder-count="8">
+            <button onClick="{{ r.go }}" role="menuitemradio" aria-checked="{{ r.sel }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:0;border-radius:8px;padding:8px 10px;background:{{ r.bg }}" style-hover="background:var(--subtle)">
+              <span style="width:26px;height:26px;border-radius:50%;background:{{ r.avBg }};color:{{ r.avFg }};display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex:0 0 auto">{{ r.i }}</span>
+              <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;font-weight:600;color:{{ r.fg }}">{{ r.label }}</span><span style="display:block;font-size:11px;color:var(--text-3)">{{ r.sub }}</span></span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ r.check }}"><path d="M5 12l5 5 9-10"></path></svg>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;padding:4px;background:var(--sunken);border-radius:9px">
+      <button onClick="{{ setLtr }}" aria-pressed="{{ isLtr }}" style="height:30px;padding-inline:12px;border:0;border-radius:7px;font-size:12.5px;{{ segLtr }}">LTR</button>
+      <button onClick="{{ setRtl }}" aria-pressed="{{ isRtl }}" style="height:30px;padding-inline:12px;border:0;border-radius:7px;font-size:12.5px;{{ segRtl }}">عربي · RTL</button>
+    </div>
+    <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:9px" style-hover="background:var(--subtle)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+  </header>
+
+  <main style="max-width:1240px;margin:0 auto;padding:30px 28px 110px">
+
+    <!-- ===== HERO: LIVE ROLE-FILTERED SHELL ===== -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <h2 style="margin:0;font-size:19px;font-weight:700">Live application shell</h2>
+        <p style="margin:4px 0 0;font-size:13.5px;color:var(--text-2)">The left navigation re-filters to each role. Switch roles or direction above — the protected route below re-gates in real time.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 12px"><span style="width:8px;height:8px;border-radius:50%;background:{{ heroDot }}"></span><span>{{ heroCaption }}</span></div>
+    </div>
+
+    <!-- device frame -->
+    <div style="border:1px solid var(--border-strong);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-lg);overflow:hidden">
+      <!-- product top bar -->
+      <div style="height:54px;display:flex;align-items:center;gap:14px;padding-inline:14px 16px;background:var(--header);border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:9px;min-width:180px">
+          <div style="width:28px;height:28px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="16" height="16" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+          <span style="font-size:14px;font-weight:700;letter-spacing:.3px">ACMP</span>
+        </div>
+        <div style="flex:1 1 auto;max-width:440px;position:relative;display:flex;align-items:center">
+          <span style="position:absolute;inset-inline-start:11px;color:var(--text-3);display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span>
+          <input aria-label="{{ t.search }}" placeholder="{{ t.search }}" style="width:100%;height:36px;padding-inline:36px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13px" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)">
+        </div>
+        <div style="flex:1 1 0"></div>
+        <button onClick="{{ toggleDir }}" style="height:34px;padding-inline:11px;display:flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:600" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+        <button aria-label="{{ t.notif }}" style="width:34px;height:34px;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"></path></svg><span style="position:absolute;top:-3px;inset-inline-end:-3px;width:8px;height:8px;border-radius:50%;background:var(--st-danger-dot);border:2px solid var(--header)"></span></button>
+        <sc-if value="{{ showLimited }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding-inline:9px;border-radius:7px;font-size:11px;font-weight:700;background:var(--st-warn-bg);color:var(--st-warn-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ limitedIndicator }}</span></sc-if>
+        <div style="position:relative;padding-inline-start:4px">
+          <button onClick="{{ toggleProfile }}" aria-haspopup="true" aria-expanded="{{ profileOpenStr }}" style="display:flex;align-items:center;gap:8px;height:38px;padding-inline:5px;border:1px solid {{ profileBtnBorder }};background:{{ profileBtnBg }};border-radius:9px" style-hover="background:var(--subtle)">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto">{{ role.i }}</span>
+            <span style="line-height:1.1;text-align:start"><span style="display:block;font-size:12px;font-weight:600">{{ role.person }}</span><span style="display:block;font-size:10.5px;color:var(--text-3)">{{ role.label }}</span></span>
+          </button>
+          <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;inset:0;z-index:60" onClick="{{ closeProfile }}"></div>
+            <div role="menu" aria-label="{{ role.person }}" style="position:absolute;top:46px;inset-inline-end:0;width:236px;background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow-lg);z-index:70;overflow:hidden;padding:6px">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 10px">
+                <span style="width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex:0 0 auto">{{ role.i }}</span>
+                <span style="line-height:1.3;min-width:0;text-align:start"><span style="display:block;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ role.person }}</span><span style="display:block;font-size:11.5px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ role.label }}</span></span>
+              </div>
+              <div style="height:1px;background:var(--border);margin:2px 0 4px"></div>
+              <button onClick="{{ closeProfile }}" role="menuitem" style="display:flex;align-items:center;gap:11px;width:100%;min-height:44px;padding:0 10px;border:0;background:transparent;border-radius:9px;font-size:13px;font-weight:500;color:var(--text-2);text-align:start" style-hover="background:var(--subtle);color:var(--text)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
+                <span style="flex:1 1 auto">{{ t.logout }}</span>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- product body -->
+      <sc-if value="{{ isInsider }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;min-height:520px">
+        <!-- LEFT NAV (role-filtered) -->
+        <nav aria-label="Primary" style="flex:0 0 244px;background:var(--surface);border-inline-end:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:3px;overflow-y:auto">
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--st-success-dot)"></span><span style="font-size:11.5px;color:var(--text-2)">{{ t.viewingAs }} <b style="color:var(--text);font-weight:600">{{ role.label }}</b></span></div>
+          <sc-for list="{{ nav }}" as="grp" hint-placeholder-count="6">
+            <sc-if value="{{ grp.label }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:12px 10px 5px">{{ grp.label }}</div></sc-if>
+            <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="4">
+              <button onClick="{{ it.go }}" aria-current="{{ it.current }}" style="{{ it.style }}" style-hover="{{ it.hover }}">
+                <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+                <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+                <sc-if value="{{ it.count }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:10px;padding:1px 7px;flex:0 0 auto">{{ it.count }}</span></sc-if>
+                <sc-if value="{{ it.viewOnly }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto" aria-label="Read-only"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></sc-if>
+              </button>
+            </sc-for>
+          </sc-for>
+          <div style="flex:1 1 auto"></div>
+          <div style="padding:10px 11px;border:1px solid var(--border);border-radius:9px;background:var(--subtle);font-size:11px;color:var(--text-2);line-height:1.5;display:flex;gap:8px;align-items:flex-start"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg><span>{{ t.readonlyNote }}</span></div>
+        </nav>
+
+        <!-- MAIN: protected route /topics/TOP-2026-014 -->
+        <div style="flex:1 1 auto;min-width:0;background:var(--bg-app);overflow:hidden">
+          <sc-if value="{{ canViewTopic }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:20px 24px">
+              <!-- breadcrumb + deep link -->
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+                <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-3)"><span>{{ t.home }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span>{{ t.backlog }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">TOP-2026-014</span></nav>
+                <div style="display:flex;align-items:center;gap:7px;height:28px;padding-inline:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:11.5px;color:var(--text-2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"></path></svg><span dir="ltr">acmp.gov/topics/TOP-2026-014</span><span style="width:1px;height:14px;background:var(--border)"></span><button aria-label="Copy link" style="border:0;background:transparent;color:var(--accent);display:flex;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 012-2h10"></path></svg></button></div>
+              </div>
+
+              <!-- artifact header with Related affordance -->
+              <div style="position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+                  <div style="min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+                      <span style="font-family:var(--mono);font-size:12px;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 8px">TOP-2026-014</span>
+                      <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--st-sched-bg);color:var(--st-sched-fg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-sched-dot)"></span>{{ t.scheduled }}</span>
+                      <sc-if value="{{ readonly }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--st-neutral-bg);color:var(--st-neutral-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ t.readonly }}</span></sc-if>
+                    </div>
+                    <h3 style="margin:0;font-size:17px;font-weight:700;line-height:1.3">{{ t.topicTitle }}</h3>
+                    <div style="margin-top:4px;font-size:13.5px;color:var(--text-2)" dir="{{ otherDir }}">{{ t.topicAlt }}</div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex:0 0 auto">
+                    <button onClick="{{ toggleRel }}" aria-haspopup="true" aria-expanded="{{ relOpenStr }}" style="height:36px;padding-inline:13px;display:flex;align-items:center;gap:8px;border:1px solid var(--accent);background:var(--primary-tint);color:var(--accent);border-radius:9px;font-weight:600;font-size:13px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M18 8.5v7M8 8l8 8"></path></svg>{{ t.related }}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button>
+                  </div>
+                </div>
+                <!-- tabs -->
+                <div style="display:flex;gap:2px;margin-top:14px;border-top:1px solid var(--border-soft);padding-top:10px;overflow-x:auto;overflow-y:hidden">
+                  <sc-for list="{{ topicTabs }}" as="tb" hint-placeholder-count="6"><span style="padding:5px 12px 7px;font-size:12.5px;font-weight:{{ tb.fw }};color:{{ tb.color }};border-bottom:2px solid {{ tb.bd }};white-space:nowrap">{{ tb.label }}</span></sc-for>
+                </div>
+
+                <!-- RELATED popover -->
+                <sc-if value="{{ relOpen }}" hint-placeholder-val="{{ false }}">
+                  <div role="menu" style="position:absolute;top:54px;inset-inline-end:18px;width:312px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);z-index:30;overflow:hidden">
+                    <div style="padding:11px 14px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;font-weight:600">{{ t.relTitle }}</span><span style="font-size:11px;color:var(--text-3)">{{ t.bothDirections }}</span></div>
+                    <div style="max-height:260px;overflow-y:auto;padding:6px 0">
+                      <sc-for list="{{ relItems }}" as="r" hint-placeholder-count="5">
+                        <button role="menuitem" style="display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:0;background:transparent;padding:8px 14px" style-hover="background:var(--subtle)">
+                          <span style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:{{ r.dirColor }};flex:0 0 auto;width:74px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ r.arrow }}"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>{{ r.dir }}</span>
+                          <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-family:var(--mono);font-size:10.5px;color:var(--accent)">{{ r.k }}</span><span style="display:block;font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</span></span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg>
+                        </button>
+                      </sc-for>
+                    </div>
+                    <button style="width:100%;border:0;border-top:1px solid var(--border-soft);background:var(--surface);color:var(--accent);font-weight:600;font-size:12.5px;padding:10px;display:flex;align-items:center;justify-content:center;gap:7px" style-hover="background:var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M5 8v2a2 2 0 002 2h10a2 2 0 002-2V8M12 12v4"></path></svg>{{ t.openGraph }}</button>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="margin-top:14px;display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><span>{{ capabilityNote }}</span></div>
+            </div>
+          </sc-if>
+
+          <!-- PERMISSION DENIED (role-gated) -->
+          <sc-if value="{{ denied }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;min-height:520px;display:flex;align-items:center;justify-content:center;padding:40px 24px;text-align:center">
+              <div style="max-width:400px">
+                <div style="width:56px;height:56px;margin:0 auto 18px;border-radius:14px;background:var(--subtle);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></div>
+                <h3 style="margin:0 0 8px;font-size:18px;font-weight:700">{{ t.deniedTitle }}</h3>
+                <p style="margin:0 0 6px;font-size:13.5px;color:var(--text-2);line-height:1.6">{{ deniedBody }}</p>
+                <div style="display:inline-flex;align-items:center;gap:7px;margin:6px 0 18px;font-size:12.5px;color:var(--text-3);font-family:var(--mono)" dir="ltr"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"></path></svg>403 · /topics/TOP-2026-014</div>
+                <div style="display:flex;gap:9px;justify-content:center"><button style="height:36px;padding-inline:15px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px">{{ t.backHome }}</button><button style="height:36px;padding-inline:15px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px">{{ t.requestAccess }}</button></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===== SUBMITTER SHELL ===== -->
+      <sc-if value="{{ isSubmitter }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;min-height:520px">
+          <nav aria-label="Primary" style="flex:0 0 244px;background:var(--surface);border-inline-end:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 10px"><span style="width:7px;height:7px;border-radius:50%;background:var(--st-warn-dot)"></span><span style="font-size:11.5px;color:var(--text-2)">{{ t.viewingAs }} <b style="color:var(--text);font-weight:600">{{ rt.submitterRole }}</b></span></div>
+            <button onClick="{{ openSubForm }}" style="display:flex;align-items:center;gap:10px;width:100%;height:38px;padding-inline:11px;border:1px solid var(--accent);border-radius:8px;position:relative;background:var(--primary-tint);color:var(--accent);font-weight:600;font-size:13px;text-align:start;margin-bottom:2px" style-hover="filter:brightness(1.03)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M12 5v14M5 12h14"></path></svg><span style="flex:1 1 auto">{{ rt.navSubmit }}</span></button>
+            <button onClick="{{ closeSubForm }}" aria-current="page" style="display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;position:relative;background:var(--primary-tint);color:var(--accent);font-weight:600;font-size:13.5px;text-align:start"><span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent)"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M22 12h-6l-2 3h-4l-2-3H2M5.5 5.5L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.5-6.5A2 2 0 0017 4H7a2 2 0 00-1.7 1z"></path></svg><span style="flex:1 1 auto">{{ rt.navMine }}</span><span style="font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:10px;padding:1px 7px">5</span></button>
+            <div style="flex:1 1 auto"></div>
+            <div style="padding:10px 11px;border:1px solid var(--border);border-radius:9px;background:var(--subtle);font-size:11px;color:var(--text-2);line-height:1.5;display:flex;gap:8px;align-items:flex-start"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--st-warn-dot)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg><span>{{ rt.subNote }}</span></div>
+          </nav>
+          <div style="flex:1 1 auto;min-width:0;background:var(--bg-app);overflow-y:auto">
+            <sc-if value="{{ subListView }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:20px 24px">
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+                <div><h3 style="margin:0;font-size:17px;font-weight:700">{{ rt.subTitle }}</h3><div style="margin-top:3px;font-size:12.5px;color:var(--text-3)">{{ rt.subSub }}</div></div>
+                <button onClick="{{ openSubForm }}" style="height:34px;padding-inline:13px;display:flex;align-items:center;gap:7px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--primary-hover)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>{{ rt.newSubmission }}</button>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+                <sc-for list="{{ subRows }}" as="r" hint-placeholder-count="5">
+                  <div style="border-bottom:{{ r.bb }} solid var(--border-soft)">
+                    <button style="display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:0;background:transparent;padding:12px 16px" style-hover="background:var(--subtle)">
+                      <span style="font-family:var(--mono);font-size:11.5px;color:var(--accent);flex:0 0 auto">{{ r.k }}</span>
+                      <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</span><sc-if value="{{ r.linked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;font-size:11px;color:var(--text-3)">{{ r.linkedLabel }} <span style="font-family:var(--mono);color:var(--accent)">{{ r.linked }}</span></span></sc-if></span>
+                      <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;flex:0 0 auto;{{ r.chip }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.dot }}"></span>{{ r.status }}</span>
+                      <span style="font-size:11.5px;color:var(--text-3);flex:0 0 auto;width:96px;text-align:end" dir="{{ otherDir }}">{{ r.date }}</span>
+                    </button>
+                    <sc-if value="{{ r.isReturned }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin:0 16px 14px;padding:12px 14px;background:var(--st-warn-bg);border:1px solid color-mix(in srgb,var(--st-warn-fg) 24%,transparent);border-radius:10px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--st-warn-fg)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l-4-4 4-4M5 10h11a4 4 0 010 8h-3"></path></svg><span style="font-size:12.5px;font-weight:700;color:var(--st-warn-fg)">{{ rt.returnedLabel }}</span><span style="font-size:11px;color:var(--st-warn-fg);opacity:.8">· {{ rt.returnedFrom }}</span></div>
+                        <p style="margin:0 0 10px;font-size:12.5px;color:var(--st-warn-fg);line-height:1.6">{{ rt.returnedMsg }}</p>
+                        <button style="height:30px;padding-inline:12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--st-warn-fg);background:var(--surface);color:var(--st-warn-fg);border-radius:8px;font-weight:600;font-size:12px" style-hover="background:var(--st-warn-bg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>{{ rt.editResubmit }}</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+            <sc-if value="{{ subFormView }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px 24px;max-width:680px">
+                <button onClick="{{ closeSubForm }}" style="display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--text-2);font-size:12.5px;font-weight:600;padding:0;margin-bottom:12px" style-hover="color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chevBack }}"><path d="M15 18l-6-6 6-6"></path></svg>{{ rt.formBack }}</button>
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px"><div><h3 style="margin:0;font-size:17px;font-weight:700">{{ rt.formTitle }}</h3><div style="margin-top:3px;font-size:12.5px;color:var(--text-3)">{{ rt.formSub }}</div></div><span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--st-success-fg);font-weight:600;flex:0 0 auto;margin-top:3px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ rt.formAutosave }}</span></div>
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:15px">
+                  <sc-for list="{{ subFormFields }}" as="f" hint-placeholder-count="3">
+                    <div>
+                      <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">{{ f.label }}</label>
+                      <sc-if value="{{ f.isArea }}" hint-placeholder-val="{{ false }}"><textarea rows="3" style="width:100%;padding:9px 11px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:8px;outline:none;font-size:13px;resize:vertical" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)">{{ f.value }}</textarea></sc-if>
+                      <sc-if value="{{ f.isField }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;height:38px;padding-inline:11px;border:1px solid var(--border-strong);background:var(--surface);border-radius:8px;font-size:13px;color:var(--text)" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><span style="flex:1 1 auto">{{ f.value }}</span><sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></sc-if></div></sc-if>
+                    </div>
+                  </sc-for>
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:7px">{{ rt.formStreams }}</label>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap"><sc-for list="{{ subStreams }}" as="s" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding-inline:10px;border-radius:8px;font-size:12px;font-weight:500;background:var(--primary-tint);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 26%,transparent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ s }}</span></sc-for></div>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:7px">{{ rt.formUrgency }}</label>
+                    <div style="display:inline-flex;padding:3px;background:var(--sunken);border-radius:9px;gap:3px"><sc-for list="{{ subUrgencies }}" as="u" hint-placeholder-count="3"><button style="height:30px;padding-inline:14px;border:0;border-radius:7px;font-size:12.5px;font-weight:600;{{ u.style }}">{{ u.label }}</button></sc-for></div>
+                  </div>
+                  <button style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border:1px dashed var(--border-strong);background:transparent;color:var(--text-2);border-radius:9px;font-weight:600;font-size:12.5px" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>{{ rt.formAttach }}</button>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:16px"><button onClick="{{ closeSubForm }}" style="height:38px;padding-inline:15px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)">{{ rt.formCancel }}</button><button style="height:38px;padding-inline:16px;display:flex;align-items:center;gap:8px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--primary-hover)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>{{ rt.formSubmit }}</button></div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== GUEST / PRESENTER SHELL ===== -->
+      <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}">
+        <div style="min-height:520px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:11px;padding:11px 18px;background:var(--st-warn-bg);border-bottom:1px solid color-mix(in srgb,var(--st-warn-fg) 22%,transparent)">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--st-warn-fg)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+            <span style="font-size:12.5px;font-weight:600;color:var(--st-warn-fg)">{{ rt.presenterBanner }}</span>
+            <span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--st-warn-fg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ rt.guestExpiry }}</span>
+          </div>
+          <div style="flex:1 1 auto;padding:22px 24px;background:var(--bg-app)">
+            <div style="max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--st-neutral-bg);color:var(--st-neutral-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ rt.presenterChip }}</span>
+                  <span style="font-family:var(--mono);font-size:12px;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 8px">TOP-2026-022</span>
+                </div>
+                <h3 style="margin:0;font-size:18px;font-weight:700;line-height:1.3">{{ rt.gTitle }}</h3>
+                <div style="margin-top:4px;font-size:13px;color:var(--text-2)" dir="{{ otherDir }}">{{ rt.gTitleAlt }}</div>
+                <div style="margin-top:13px;padding-top:13px;border-top:1px solid var(--border-soft)">
+                  <div style="font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:6px">{{ rt.summaryLabel }}</div>
+                  <p style="margin:0;font-size:13.5px;color:var(--text-2);line-height:1.65">{{ rt.gSummary }}</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);flex-wrap:wrap">
+                <div style="width:40px;height:40px;border-radius:10px;background:var(--st-sched-bg);color:var(--st-sched-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg></div>
+                <div style="flex:1 1 auto;min-width:0"><div style="font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">{{ rt.slotLabel }}</div><div style="font-size:14px;font-weight:600;margin-top:2px">{{ rt.meetingName }}</div><div style="font-size:12px;color:var(--text-2);font-family:var(--mono);margin-top:1px">{{ rt.slotDetail }}</div></div>
+                <div style="display:inline-flex;align-items:center;gap:7px;height:32px;padding-inline:12px;border-radius:8px;background:var(--primary-tint);color:var(--accent);font-weight:700;font-size:13px;flex:0 0 auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ rt.timeBox }}</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+                <div style="padding:12px 16px;border-bottom:1px solid var(--border-soft);font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">{{ rt.attachedLabel }}</div>
+                <button style="display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:0;border-bottom:1px solid var(--border-soft);background:transparent;padding:12px 16px" style-hover="background:var(--subtle)">
+                  <span style="width:34px;height:34px;border-radius:8px;background:var(--st-danger-bg);color:var(--st-danger-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"></path></svg></span>
+                  <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rt.deck }}</span><span style="display:block;font-size:11.5px;color:var(--text-3)">{{ rt.deckMeta }}</span></span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--accent);flex:0 0 auto">{{ rt.open }}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></span>
+                </button>
+                <button style="display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:0;background:transparent;padding:12px 16px" style-hover="background:var(--subtle)">
+                  <span style="width:34px;height:34px;border-radius:8px;background:var(--st-info-bg);color:var(--st-info-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"></path></svg></span>
+                  <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rt.diagram }}</span><span style="display:block;font-size:11.5px;color:var(--text-3)">{{ rt.diagramMeta }}</span></span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--accent);flex:0 0 auto">{{ rt.open }}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ===== ROLE ACCESS MATRIX ===== -->
+    <section style="margin-top:54px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">01</span><h2 style="margin:0;font-size:19px;font-weight:700">Role access matrix</h2></div>
+      <p style="margin:0 0 14px;font-size:13.5px;color:var(--text-2);max-width:680px">Nav order and grouping are identical for everyone — items appear, hide, or drop to read-only by role. Least-privilege by default; capabilities (Owner / Assignee / Presenter) overlay per artifact.</p>
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2)"><span style="width:12px;height:12px;border-radius:50%;background:var(--accent)"></span>Full — can act</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2)"><span style="width:12px;height:12px;border-radius:50%;border:2px solid var(--text-3);box-sizing:border-box"></span>Read-only</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2)"><span style="width:12px;height:2px;border-radius:2px;background:var(--border-strong)"></span>Hidden</span>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);overflow-x:auto">
+        <div style="min-width:760px">
+          <div style="display:grid;grid-template-columns:184px repeat(8,1fr);background:var(--header);border-bottom:1px solid var(--border)">
+            <span style="padding:11px 14px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)">Area</span>
+            <sc-for list="{{ roleCols }}" as="rc" hint-placeholder-count="8"><span style="padding:11px 6px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.2px;color:var(--text-3)">{{ rc }}</span></sc-for>
+          </div>
+          <sc-for list="{{ matrix }}" as="row" hint-placeholder-count="14">
+            <div style="display:grid;grid-template-columns:184px repeat(8,1fr);border-bottom:1px solid var(--border-soft)" style-hover="background:var(--subtle)">
+              <span style="padding:11px 14px;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ row.d }}"></path></svg>{{ row.label }}</span>
+              <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="8"><span style="display:flex;align-items:center;justify-content:center" title="{{ c.title }}"><span aria-label="{{ c.title }}" style="{{ c.style }}"></span></span></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BREADCRUMBS & DEEP LINKING ===== -->
+    <section style="margin-top:46px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">02</span><h2 style="margin:0;font-size:19px;font-weight:700">Breadcrumbs &amp; deep-linking</h2></div>
+      <p style="margin:0 0 16px;font-size:13.5px;color:var(--text-2);max-width:680px">Every artifact and every tab is addressable. Breadcrumbs reflect the canonical path and mirror in RTL; deep links restore the exact record, tab, and filter state. Single artifact, many entry points.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ deepLinks }}" as="d" hint-placeholder-count="3">
+            <div>
+              <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-3);flex-wrap:wrap;margin-bottom:7px"><sc-for list="{{ d.crumbs }}" as="c" hint-placeholder-count="3"><span style="color:{{ c.color }};font-family:{{ c.font }}">{{ c.label }}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }};opacity:{{ c.sep }}"><path d="M9 6l6 6-6 6"></path></svg></sc-for></nav>
+              <div style="display:flex;align-items:center;gap:8px;height:32px;padding-inline:11px;background:var(--subtle);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:11.5px;color:var(--text-2)" dir="ltr"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"></path></svg><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.url }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:12px">Principles</div>
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <sc-for list="{{ principles }}" as="p" hint-placeholder-count="4"><div style="display:flex;gap:11px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--st-success-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><path d="M5 12l5 5 9-10"></path></svg><div><div style="font-size:13px;font-weight:600">{{ p.t }}</div><div style="font-size:12px;color:var(--text-2);line-height:1.5">{{ p.d }}</div></div></div></sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROTECTED ROUTE STATES ===== -->
+    <section style="margin-top:46px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">03</span><h2 style="margin:0;font-size:19px;font-weight:700">Protected route states</h2></div>
+      <p style="margin:0 0 16px;font-size:13.5px;color:var(--text-2);max-width:680px">Representative route <span style="font-family:var(--mono);font-size:12.5px">/admin/users</span>. Every protected content area designs all four — skeletons over spinners, plain-language recoverable errors, and a calm, attributed permission-denied.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <!-- empty -->
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border-soft);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">Empty</div>
+          <div style="padding:26px 18px;text-align:center"><div style="width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M11 11a4 4 0 100-8 4 4 0 000 8z"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:5px">{{ t.emptyT }}</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5;margin-bottom:12px">{{ t.emptyB }}</div><button style="height:32px;padding-inline:13px;border:0;background:var(--primary);color:#fff;border-radius:8px;font-size:12px;font-weight:600">{{ t.inviteUser }}</button></div>
+        </div>
+        <!-- loading -->
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border-soft);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">Loading</div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:13px;animation:acmpShimmer 1.4s ease-in-out infinite"><div style="display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--sunken)"></span><span style="flex:1;height:10px;border-radius:5px;background:var(--sunken)"></span></div><div style="display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--sunken)"></span><span style="flex:1;height:10px;border-radius:5px;background:var(--sunken)"></span></div><div style="display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--sunken)"></span><span style="flex:1;height:10px;border-radius:5px;background:var(--sunken)"></span></div><div style="text-align:center;font-size:11px;color:var(--text-3)">{{ t.loadingB }}</div></div>
+        </div>
+        <!-- error -->
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border-soft);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">Error</div>
+          <div style="padding:26px 18px;text-align:center"><div style="width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--st-danger-bg);color:var(--st-danger-fg);display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:5px">{{ t.errorT }}</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5;margin-bottom:12px">{{ t.errorB }}</div><button style="height:32px;padding-inline:13px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:8px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"></path></svg>{{ t.retry }}</button></div>
+        </div>
+        <!-- permission -->
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border-soft);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">Permission denied</div>
+          <div style="padding:26px 18px;text-align:center"><div style="width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:5px">{{ t.permT }}</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5;margin-bottom:12px">{{ t.permB }}</div><button style="height:32px;padding-inline:13px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:8px;font-size:12px;font-weight:600">{{ t.requestAccess }}</button></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900},&quot;defaultRole&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;coordinator&quot;,&quot;options&quot;:[&quot;chairman&quot;,&quot;coordinator&quot;,&quot;member&quot;,&quot;reviewer&quot;,&quot;auditor&quot;,&quot;administrator&quot;,&quot;submitter&quot;,&quot;guest&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;defaultDir&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ltr&quot;,&quot;options&quot;:[&quot;ltr&quot;,&quot;rtl&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { role: this.props.defaultRole || 'coordinator', dir: this.props.defaultDir || 'ltr', theme:'light', roleMenuOpen:false, relOpen:false, subView:'list' };
+
+  ICN = {
+    home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',
+    backlog:'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
+    agenda:'M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
+    decisions:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4',
+    actions:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11',
+    adrs:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7',
+    risks:'M12 4l9 16H3L12 4zM12 10v4M12 17h.01',
+    deps:'M6 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 22a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM6 7v3a3 3 0 003 3h6a3 3 0 003-3V7M12 13v4',
+    research:'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM10 13a2 2 0 104 0 2 2 0 00-4 0zM13.5 15.5L15 17',
+    wiki:'M12 6c-1.5-1-4-1.5-6-1.5V18c2 0 4.5.5 6 1.5 1.5-1 4-1.5 6-1.5V4.5c-2 0-4.5.5-6 1.5zM12 6v13',
+    diagrams:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    reports:'M4 20V10M10 20V4M16 20v-8M3 20h18',
+    audit:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+    admin:'M4 6h16M4 12h16M4 18h16M9 4v4M16 10v4M11 16v4',
+    submit:'M12 5v14M5 12h14',
+    session:'M15 10l4.6-3.5a1 1 0 011.4 1v9a1 1 0 01-1.4 1L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z'
+  };
+
+  ROLES = {
+    chairman:{ label:'Chairman', sub:'VP · final authority', person:'S. M.', i:'SM' },
+    coordinator:{ label:'Secretary of the Committee', sub:'Committee lead · power user', person:'Khalid A.', i:'KA' },
+    member:{ label:'Member', sub:'Director / SME · votes', person:'Omar H.', i:'OH' },
+    reviewer:{ label:'Reviewer', sub:'Reviews submissions & ADRs', person:'Noura P.', i:'NP' },
+    auditor:{ label:'Auditor', sub:'Read-only + audit trail', person:'Audit Office', i:'AU' },
+    administrator:{ label:'Administrator', sub:'Users · templates · config', person:'IT Admin', i:'AD' },
+    submitter:{ label:'Submitter', sub:'Stream requester · limited', person:'Faisal N.', i:'FN' },
+    guest:{ label:'Guest / Presenter', sub:'Time-boxed session', person:'Guest', i:'GP' }
+  };
+  ROLE_ORDER = ['chairman','coordinator','member','reviewer','auditor','administrator','submitter','guest'];
+  ROLE_SHORT = { chairman:'Chair', coordinator:'Secretary', member:'Member', reviewer:'Review', auditor:'Audit', administrator:'Admin', submitter:'Submit', guest:'Guest' };
+
+  // access: full / view / none
+  ACCESS = {
+    home:        { chairman:'full', coordinator:'full', member:'full', reviewer:'full', auditor:'full', administrator:'full', submitter:'full', guest:'full' },
+    submit:      { coordinator:'full', member:'full', submitter:'full' },
+    session:     { guest:'full' },
+    backlog:     { chairman:'view', coordinator:'full', member:'full', reviewer:'view', auditor:'view', submitter:'view' },
+    agenda:      { chairman:'full', coordinator:'full', member:'view', reviewer:'view', auditor:'view', guest:'view' },
+    decisions:   { chairman:'full', coordinator:'full', member:'view', reviewer:'view', auditor:'view' },
+    actions:     { chairman:'view', coordinator:'full', member:'full', reviewer:'view', auditor:'view', submitter:'view' },
+    adrs:        { chairman:'full', coordinator:'full', member:'view', reviewer:'full', auditor:'view' },
+    risks:       { chairman:'view', coordinator:'full', member:'view', reviewer:'view', auditor:'view' },
+    deps:        { chairman:'view', coordinator:'full', member:'view', reviewer:'view', auditor:'view' },
+    research:    { chairman:'view', coordinator:'full', member:'full', reviewer:'view', auditor:'view' },
+    wiki:        { chairman:'view', coordinator:'full', member:'full', reviewer:'view', auditor:'view' },
+    diagrams:    { chairman:'view', coordinator:'view', member:'view', reviewer:'view', auditor:'view', guest:'view' },
+    reports:     { chairman:'full', coordinator:'full', member:'view', reviewer:'view', auditor:'view', administrator:'view' },
+    audit:       { chairman:'view', auditor:'full', administrator:'full' },
+    admin:       { administrator:'full' }
+  };
+  AREA = {
+    home:{ label:'Home', d:'home' }, submit:{ label:'Submit Topic', d:'submit', cta:true }, session:{ label:'My Session', d:'session', cta:true },
+    backlog:{ label:'Backlog', d:'backlog', count:'15' }, agenda:{ label:'Agenda & Meetings', d:'agenda' }, decisions:{ label:'Decisions', d:'decisions' }, actions:{ label:'Actions', d:'actions', count:'3' },
+    adrs:{ label:'ADRs & Invariants', d:'adrs' }, risks:{ label:'Risks', d:'risks' }, deps:{ label:'Dependencies', d:'deps' },
+    research:{ label:'Research', d:'research' }, wiki:{ label:'Knowledge / Wiki', d:'wiki' }, diagrams:{ label:'Diagrams', d:'diagrams' },
+    reports:{ label:'Reports', d:'reports' }, audit:{ label:'Audit Trail', d:'audit' }, admin:{ label:'Administration', d:'admin' }
+  };
+  LABEL_FOR = { backlog:{ submitter:'My Submissions' }, actions:{ submitter:'My Actions' }, reports:{ administrator:'Reports' } };
+  GROUPS = [
+    { label:null, items:['session','submit'] },
+    { label:'Committee', items:['home','backlog','agenda','decisions','actions'] },
+    { label:'Governance', items:['adrs','risks','deps'] },
+    { label:'Knowledge', items:['research','wiki','diagrams'] },
+    { label:'Insights', items:['reports'] },
+    { label:'System', items:['audit','admin'] }
+  ];
+  MATRIX_AREAS = ['home','backlog','agenda','decisions','actions','adrs','risks','deps','research','wiki','diagrams','reports','audit','admin'];
+
+  lvl(area, role){ const a=this.ACCESS[area]; return (a&&a[role])||'none'; }
+  set(k,v){ this.setState({ [k]:v }); }
+
+  renderVals(){
+    const { role, dir, theme, roleMenuOpen, relOpen, subView, profileOpen } = this.state;
+    const isRtl = dir==='rtl';
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+    const chevBack = isRtl ? 'scaleX(-1)' : 'none';
+    const roleObj = this.ROLES[role];
+
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600';
+    const segOff='background:transparent;color:var(--text-2);font-weight:500';
+
+    // active nav item: backlog if visible else home
+    const backlogVisible = this.lvl('backlog',role)!=='none';
+    const activeKey = backlogVisible ? 'backlog' : 'home';
+
+    // build nav groups
+    const nav = this.GROUPS.map(g=>{
+      const items = g.items.filter(k=>this.lvl(k,role)!=='none').map(k=>{
+        const area=this.AREA[k]; const level=this.lvl(k,role); const active=(k===activeKey);
+        const cta=!!area.cta; const viewOnly=(level==='view'&&!cta);
+        const labelOverride=(this.LABEL_FOR[k]&&this.LABEL_FOR[k][role])||area.label;
+        let style, hover;
+        if(cta){
+          style='display:flex;align-items:center;gap:10px;width:100%;height:38px;padding-inline:11px;border:1px solid var(--accent);border-radius:8px;position:relative;background:var(--primary-tint);color:var(--accent);font-weight:600;font-size:13px;text-align:start;margin-bottom:2px';
+          hover='background:var(--primary-tint);filter:brightness(1.03)';
+        } else if(active){
+          style='display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;position:relative;background:var(--primary-tint);color:var(--accent);font-weight:600;font-size:13.5px;text-align:start';
+          hover='background:var(--primary-tint)';
+        } else {
+          style='display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;position:relative;background:transparent;color:var(--text-2);font-weight:500;font-size:13.5px;text-align:start';
+          hover='background:var(--subtle);color:var(--text)';
+        }
+        return { key:k, label:labelOverride, d:this.ICN[area.d], count:area.count||null, active, current:active?'page':null, barOp:active?'1':'0', cta, viewOnly, style, hover, go:()=>{} };
+      });
+      return { label: items.length?g.label:null, items, _n:items.length };
+    }).filter(g=>g._n>0);
+
+    const visibleCount = this.MATRIX_AREAS.filter(k=>this.lvl(k,role)!=='none').length;
+
+    // role menu list
+    const roleList = this.ROLE_ORDER.map(k=>{
+      const r=this.ROLES[k]; const sel=k===role;
+      return { label:r.label, sub:r.sub, i:r.i, sel:sel?'true':'false', check:sel?'1':'0',
+        bg:sel?'var(--primary-tint)':'transparent', fg:sel?'var(--accent)':'var(--text)',
+        avBg:sel?'var(--primary)':'var(--sunken)', avFg:sel?'#fff':'var(--text-2)', go:()=>this.setState({role:k,roleMenuOpen:false}) };
+    });
+
+    // gating for the hero protected route /topics/TOP-2026-014
+    const denied = (this.lvl('backlog',role)==='none') || role==='submitter' || role==='guest';
+    const canViewTopic = !denied;
+    const readonly = ['chairman','reviewer','auditor'].includes(role);
+    const capMapEn = {
+      coordinator:'As Secretary of the Committee you have full control: edit, schedule, record decisions, and manage actions on this topic.',
+      member:'As a Member you can contribute, comment, and vote on this topic; owner actions are limited to topics you own.',
+      chairman:'As Chairman you have read access here and final approval authority on its decision and ADR.',
+      reviewer:'As Reviewer you have read access to assess the submission and its resulting ADR.',
+      auditor:'As Auditor you have full read access and can follow the complete audit trail.'
+    };
+    const capMapAr = {
+      coordinator:'بصفتك أمين سر اللجنة، لديك تحكّم كامل: التعديل والجدولة وتسجيل القرارات وإدارة الإجراءات على هذا الموضوع.',
+      member:'بصفتك عضوًا، يمكنك المساهمة والتعليق والتصويت؛ وتقتصر صلاحيات المالك على المواضيع التي تملكها.',
+      chairman:'بصفتك رئيسًا، لديك صلاحية قراءة هنا وسلطة الاعتماد النهائي على القرار وسجلّ القرار.',
+      reviewer:'بصفتك مراجعًا، لديك صلاحية قراءة لتقييم الطلب وسجلّ القرار الناتج عنه.',
+      auditor:'بصفتك مدقّقًا، لديك صلاحية قراءة كاملة ويمكنك تتبّع سجل التدقيق بالكامل.'
+    };
+    const capMap = isRtl ? capMapAr : capMapEn;
+    const deniedBodyEn = {
+      administrator:'Your role (Administrator) manages users and configuration, not committee content. Contact the Secretary of the Committee (Khalid A.) if you need topic access.',
+      submitter:'Your role (Submitter) can only see topics you submitted. TOP-2026-014 belongs to another stream. Contact the Secretary of the Committee (Khalid A.).',
+      guest:'Your guest session is scoped to the topic you are presenting. TOP-2026-014 is outside your session. Contact the Secretary of the Committee (Khalid A.).'
+    };
+    const deniedBodyAr = {
+      administrator:'دورك (مسؤول النظام) يدير المستخدمين والإعدادات، لا محتوى اللجنة. تواصل مع أمين سر اللجنة (خالد ع.) إن احتجت صلاحية الوصول للموضوع.',
+      submitter:'دورك (مقدّم الطلب) يرى فقط المواضيع التي قدّمتها. الموضوع TOP-2026-014 يخصّ مسارًا آخر. تواصل مع أمين سر اللجنة (خالد ع.).',
+      guest:'جلستك كضيف مقصورة على الموضوع الذي تقدّمه. الموضوع TOP-2026-014 خارج نطاق جلستك. تواصل مع أمين سر اللجنة (خالد ع.).'
+    };
+    const deniedBodyMap = isRtl ? deniedBodyAr : deniedBodyEn;
+
+    const topicTabs = ['Overview','Discussion','Decisions','Actions','Risks','History'].map((label,i)=>({
+      label, fw:i===0?'600':'500', color:i===0?'var(--text)':'var(--text-2)', bd:i===0?'var(--accent)':'transparent'
+    }));
+
+    const relItems = [
+      { dir:'Down', dirColor:'var(--st-info-fg)', arrow:'rotate(180deg)', k:'DECN-2026-008', title:'Approve Keycloak, conditionally' },
+      { dir:'Down', dirColor:'var(--st-info-fg)', arrow:'rotate(180deg)', k:'ADR-2026-003', title:'Keycloak as standard IdP' },
+      { dir:'Down', dirColor:'var(--st-info-fg)', arrow:'rotate(180deg)', k:'ACT-2026-040', title:'Produce migration ADR' },
+      { dir:'Related', dirColor:'var(--st-neutral-fg)', arrow:'rotate(90deg)', k:'RSK-2026-006', title:'Dual-running auth migration' },
+      { dir:'Up', dirColor:'var(--st-warn-fg)', arrow:'none', k:'TOP-2026-022', title:'API pagination standard' }
+    ];
+
+    // matrix
+    const roleCols = this.ROLE_ORDER.map(k=>this.ROLE_SHORT[k]);
+    const cellStyle = { full:'width:12px;height:12px;border-radius:50%;background:var(--accent)', view:'width:12px;height:12px;border-radius:50%;border:2px solid var(--text-3);box-sizing:border-box', none:'width:12px;height:2px;border-radius:2px;background:var(--border-strong)' };
+    const cellTitle = { full:'Full access', view:'Read-only', none:'Hidden' };
+    const matrix = this.MATRIX_AREAS.map(k=>({
+      label:this.AREA[k].label, d:this.ICN[this.AREA[k].d],
+      cells:this.ROLE_ORDER.map(rk=>{ const l=this.lvl(k,rk); return { style:cellStyle[l], title:this.ROLE_SHORT[rk]+' · '+cellTitle[l] }; })
+    }));
+
+    // deep links
+    const mono='var(--mono)';
+    const cr=(label,last)=>({ label, color:last?'var(--text-2)':'var(--text-3)', font: /^[A-Z]{3,4}-/.test(label)?mono:'inherit', sep:last?'0':'1' });
+    const deepLinks = [
+      { crumbs:[cr('Home'),cr('Backlog'),cr('TOP-2026-014',true)], url:'acmp.gov/topics/TOP-2026-014?tab=decisions' },
+      { crumbs:[cr('Home'),cr('Meetings'),cr('MTG-2026-019',true)], url:'acmp.gov/meetings/MTG-2026-019/minutes' },
+      { crumbs:[cr('Home'),cr('ADRs'),cr('ADR-2026-003',true)], url:'acmp.gov/adrs/ADR-2026-003' }
+    ];
+    const principles = [
+      { t:'Shallow & stable', d:'Two levels deep at most; nav order never changes between roles.' },
+      { t:'Deep-linkable', d:'Every artifact, tab, and saved filter has a restorable URL.' },
+      { t:'Traceability-first', d:'A Related / Go to affordance on every artifact, in both directions.' },
+      { t:'Least privilege', d:'Roles come from Keycloak claims (read-only); items hide or drop to view.' }
+    ];
+
+    // ===== SUBMITTER & GUEST dedicated role demonstrations =====
+    const isSubmitter = role==='submitter';
+    const isGuest = role==='guest';
+    const isInsider = !isSubmitter && !isGuest;
+    const showLimited = isSubmitter || isGuest;
+    const limitedIndicator = isSubmitter ? (isRtl?'مُقدِّم طلب — وصول محدود':'Submitter — limited access')
+                                         : (isRtl?'مُقدِّم عرض — قراءة فقط':'Presenter — read-only');
+    const heroDot = isInsider ? 'var(--st-success-dot)' : 'var(--st-warn-dot)';
+    const heroCaption = isSubmitter ? (isRtl?'مُقدِّم — مقصور على طلباته':'Submitter — limited to own submissions')
+                      : isGuest ? (isRtl?'ضيف — جلسة عرض لموضوع واحد':'Guest — single-topic presenter session')
+                      : (isRtl ? (visibleCount+' من 14 منطقة ظاهرة') : (visibleCount+' of 14 areas visible'));
+
+    const _chip=(s)=>'background:var(--st-'+s+'-bg);color:var(--st-'+s+'-fg)';
+    const _dot=(s)=>'var(--st-'+s+'-dot)';
+    const subStatusMap = {
+      submitted:{en:'Submitted',ar:'مُقدَّم',s:'neutral'}, triage:{en:'Triage',ar:'فرز',s:'info'},
+      accepted:{en:'Accepted',ar:'مقبول',s:'success'}, returned:{en:'Returned',ar:'مُعاد',s:'warn'}, rejected:{en:'Rejected',ar:'مرفوض',s:'danger'}
+    };
+    const subRowsRaw = [
+      { k:'SUB-2026-031', en:'Standardize internal API pagination', ar:'توحيد ترقيم الواجهات الداخلية', st:'triage', dEn:'22 Jun 2026', dAr:'٢٢ يونيو ٢٠٢٦' },
+      { k:'SUB-2026-028', en:'Adopt OpenTelemetry for distributed tracing', ar:'اعتماد OpenTelemetry للتتبّع الموزّع', st:'accepted', dEn:'14 Jun 2026', dAr:'١٤ يونيو ٢٠٢٦', linked:'TOP-2026-019' },
+      { k:'SUB-2026-022', en:'Mandate WCAG 2.2 AA for citizen portals', ar:'إلزام WCAG 2.2 AA لبوابات المواطنين', st:'returned', dEn:'9 Jun 2026', dAr:'٩ يونيو ٢٠٢٦', returned:true },
+      { k:'SUB-2026-018', en:'Consolidate the logging stack on Seq', ar:'توحيد حزمة السجلّات على Seq', st:'submitted', dEn:'2 Jun 2026', dAr:'٢ يونيو ٢٠٢٦' },
+      { k:'SUB-2026-012', en:'Retire the legacy SOAP gateway', ar:'إيقاف بوابة SOAP القديمة', st:'rejected', dEn:'21 May 2026', dAr:'٢١ مايو ٢٠٢٦' }
+    ];
+    const subRows = subRowsRaw.map(r=>{ const sm=subStatusMap[r.st]; return {
+      k:r.k, title:isRtl?r.ar:r.en, status:isRtl?sm.ar:sm.en, chip:_chip(sm.s), dot:_dot(sm.s),
+      date:isRtl?r.dAr:r.dEn, linked:r.linked||null, linkedLabel:r.linked?(isRtl?'أصبح':'Became'):null,
+      isReturned:!!r.returned, bb: r.returned?'0':'1px' };
+    });
+
+    // submission form (compact, for the Submitter demonstration)
+    const subFormFields = [
+      { label:isRtl?'نوع الموضوع':'Topic type', value:isRtl?'معيار / حوكمة':'Standard / governance', isField:true, isSelect:true, isArea:false },
+      { label:isRtl?'العنوان':'Title', value:isRtl?'توحيد ترقيم الواجهات الداخلية':'Standardize internal API pagination', isField:true, isSelect:false, isArea:false },
+      { label:isRtl?'المبرّر':'Justification', value:isRtl?'تستخدم المسارات أنماط ترقيم متعارضة، ما يعقّد التكامل والتوثيق عبر الفرق.':'Streams use conflicting pagination patterns, complicating integration and documentation across teams.', isField:false, isSelect:false, isArea:true }
+    ];
+    const subStreams = isRtl ? ['الهوية','المنصة','المدفوعات'] : ['Identity','Platform','Payments'];
+    const _uOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow)'; const _uOff='background:transparent;color:var(--text-2)';
+    const subUrgencies = [
+      { label:isRtl?'منخفضة':'Low', style:_uOff }, { label:isRtl?'متوسطة':'Medium', style:_uOn }, { label:isRtl?'عالية':'High', style:_uOff }
+    ];
+
+    const rt = isRtl ? {
+      submitterRole:'مُقدِّم طلب', navSubmit:'تقديم موضوع', navMine:'طلباتي',
+      subNote:'يرى مُقدِّمو الطلبات المواضيع التي قدّموها فقط — دون مناطق اللجنة أو الحوكمة أو الإدارة.',
+      subTitle:'طلباتي', subSub:'٥ طلبات · يمكنك تعديل العناصر المُعادة', newSubmission:'طلب جديد',
+      returnedLabel:'أُعيد للتوضيح', returnedFrom:'خالد ع. · أمين سر اللجنة',
+      returnedMsg:'يرجى تحديد البوابات الموجّهة للمواطنين ضمن النطاق وإرفاق تدقيق الوصول الحالي، ثم أعد التقديم.',
+      editResubmit:'تعديل وإعادة التقديم',
+      presenterBanner:'وصول مُقدِّم عرض — للقراءة فقط، وينتهي بعد الاجتماع.', guestExpiry:'ينتهي ١٨ فبراير ٢٠٢٦، ١١:٠٠',
+      presenterChip:'مُقدِّم عرض · قراءة فقط', presenterName:'د. سامي ت. · خبير خارجي (مدعو)',
+      gTitle:'توحيد ترقيم الواجهات البرمجية عبر الخدمات العامة', gTitleAlt:'Standardize API pagination across public services',
+      gSummary:'مقترح لإلزام الترقيم المعتمد على المؤشر لكل الواجهات العامة، بدلًا من أنظمة الإزاحة غير المتّسقة. يُعرض على اللجنة للمراجعة تمهيدًا لقرار التوحيد.',
+      slotLabel:'فترة الأجندة', meetingName:'لجنة الهندسة الأسبوعية', slotDetail:'MTG-2026-019 · البند ٣ من ٦', timeBox:'١٠:٤٠–١٠:٥٥ · ١٥ دقيقة',
+      summaryLabel:'ملخّص الموضوع', attachedLabel:'مواد فترتك',
+      deck:'ترقيم الواجهات — مقترح.pdf', deckMeta:'عرض تقديمي · ١٤ شريحة',
+      diagram:'تسلسل الترقيم (المؤشر مقابل الإزاحة)', diagramMeta:'مخطط · SVG', open:'فتح',
+      formTitle:'تقديم موضوع', formSub:'يدخل طلبك قائمة الفرز لدى أمين سر اللجنة', formStreams:'المسارات المتأثرة', formUrgency:'الأولوية', formAttach:'إرفاق ملف أو مخطط', formCancel:'إلغاء', formSubmit:'تقديم الطلب', formBack:'طلباتي', formAutosave:'حُفظت المسودة تلقائيًا'
+    } : {
+      submitterRole:'Submitter', navSubmit:'Submit a topic', navMine:'My submissions',
+      subNote:'Submitters see only the topics they personally submitted — no committee, governance, or administration areas.',
+      subTitle:'My submissions', subSub:'5 requests · you can edit returned items', newSubmission:'New submission',
+      returnedLabel:'Returned for clarification', returnedFrom:'Khalid A. · Secretary of the Committee',
+      returnedMsg:'Please specify which citizen-facing portals are in scope and attach the current accessibility audit, then re-submit.',
+      formTitle:'Submit a topic', formSub:'Your request enters the Secretary of the Committee’s triage queue', formStreams:'Affected streams', formUrgency:'Urgency', formAttach:'Attach a file or diagram', formCancel:'Cancel', formSubmit:'Submit request', formBack:'My submissions', formAutosave:'Draft autosaved',
+      editResubmit:'Edit & resubmit',
+      presenterBanner:'Presenter access — read-only, and expires after the meeting.', guestExpiry:'Expires 18 Feb 2026, 11:00',
+      presenterChip:'Presenter · Read-only', presenterName:'Dr. Sami T. · External SME (Invited)',
+      gTitle:'Standardize API pagination across public services', gTitleAlt:'توحيد ترقيم الواجهات البرمجية عبر الخدمات العامة',
+      gSummary:'A proposal to mandate cursor-based pagination for all public-facing APIs, replacing inconsistent offset schemes. Presented to the committee for review ahead of a standardization decision.',
+      slotLabel:'Agenda slot', meetingName:'Weekly Architecture Committee', slotDetail:'MTG-2026-019 · Item 3 of 6', timeBox:'10:40–10:55 · 15 min',
+      summaryLabel:'Topic summary', attachedLabel:'Materials for your slot',
+      deck:'API pagination — proposal.pdf', deckMeta:'Presentation · 14 slides',
+      diagram:'Pagination sequence (cursor vs offset)', diagramMeta:'Diagram · SVG', open:'Open'
+    };
+
+    const t = isRtl ? {
+      search:'بحث…', notif:'الإشعارات', logout:'تسجيل الخروج', viewingAs:'العرض بصفة', readonlyNote:'الأدوار من Keycloak (قراءة فقط). الصلاحيات تُدار هنا.',
+      home:'الرئيسية', backlog:'قائمة المواضيع', scheduled:'مجدول', readonly:'قراءة فقط',
+      topicTitle:'اعتماد Keycloak كموفّر هوية موحّد عبر المسارات', topicAlt:'Adopt Keycloak as the standard IdP across streams',
+      related:'العلاقات', relTitle:'الانتقال إلى', bothDirections:'بالاتجاهين', openGraph:'فتح مخطط العلاقات',
+      deniedTitle:'لا تملك صلاحية الوصول', backHome:'العودة للرئيسية', requestAccess:'طلب صلاحية',
+      emptyT:'لا مستخدمون بعد', emptyB:'ادعُ أول عضو لبدء إدارة الأدوار.', inviteUser:'دعوة مستخدم',
+      loadingB:'جارٍ تحميل المستخدمين…', errorT:'تعذّر التحميل', errorB:'خطأ في الشبكة. لم تُفقد أي بيانات.', retry:'إعادة المحاولة',
+      permT:'لا صلاحية وصول', permB:'دورك لا يسمح بإدارة المستخدمين. تواصل مع المسؤول.'
+    } : {
+      search:'Search…', notif:'Notifications', logout:'Log out', viewingAs:'Viewing as', readonlyNote:'Roles are read-only from Keycloak. Assignments are managed here.',
+      home:'Home', backlog:'Backlog', scheduled:'Scheduled', readonly:'Read-only',
+      topicTitle:'Adopt Keycloak as the standard IdP across streams', topicAlt:'اعتماد Keycloak كموفّر هوية موحّد عبر المسارات',
+      related:'Related', relTitle:'Go to', bothDirections:'Both directions', openGraph:'Open relationship graph',
+      deniedTitle:'You don\u2019t have access', backHome:'Back to Home', requestAccess:'Request access',
+      emptyT:'No users yet', emptyB:'Invite your first member to start managing roles.', inviteUser:'Invite user',
+      loadingB:'Loading users…', errorT:'Couldn\u2019t load', errorB:'Network error. No data was lost.', retry:'Retry',
+      permT:'No access', permB:'Your role can\u2019t manage users. Contact your administrator.'
+    };
+
+    return {
+      dir, theme, font, chev, chevBack, otherDir: isRtl?'ltr':'rtl',
+      profileOpen, profileOpenStr: profileOpen?'true':'false',
+      profileBtnBg: profileOpen?'var(--subtle)':'var(--surface)', profileBtnBorder: profileOpen?'var(--border-strong)':'var(--border)',
+      toggleProfile:()=>this.set('profileOpen', !profileOpen), closeProfile:()=>this.set('profileOpen', false),
+      role:roleObj, roleMenuOpen, roleMenuOpenStr:roleMenuOpen?'true':'false', toggleRoleMenu:()=>this.set('roleMenuOpen',!roleMenuOpen),
+      roleList, nav, visibleCount, t,
+      langBtn: isRtl?'English':'العربية', toggleDir:()=>this.set('dir', isRtl?'ltr':'rtl'),
+      isLtr:isRtl?'false':'true', isRtl:isRtl?'true':'false', segLtr:isRtl?segOff:segOn, segRtl:isRtl?segOn:segOff,
+      setLtr:()=>this.set('dir','ltr'), setRtl:()=>this.set('dir','rtl'),
+      theme, toggleTheme:()=>this.set('theme', theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      canViewTopic, denied, readonly, capabilityNote: capMap[role]||'', deniedBody: deniedBodyMap[role]||'',
+      topicTabs, relOpen, relOpenStr:relOpen?'true':'false', toggleRel:()=>this.set('relOpen',!relOpen), relItems,
+      roleCols, matrix, deepLinks, principles,
+      isSubmitter, isGuest, isInsider, showLimited, limitedIndicator, heroDot, heroCaption, rt, subRows,
+      subListView: subView==='list', subFormView: subView==='form',
+      openSubForm:()=>this.set('subView','form'), closeSubForm:()=>this.set('subView','list'),
+      subFormFields, subStreams, subUrgencies
+    };
+  }
+}
+</script>
+</body>
+</html>

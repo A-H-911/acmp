@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 40" width="168" height="40" role="img" aria-label="ACMP — Architecture Committee Management Platform">
+  <rect width="40" height="40" rx="10" fill="#1f5fa8"></rect>
+  <g transform="translate(4,4)" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M16 5.5L7 25"></path>
+    <path d="M16 5.5L25 25"></path>
+    <path d="M10.2 18L21.8 18"></path>
+    <path d="M5.5 25.5L26.5 25.5"></path>
+  </g>
+  <text x="52" y="26.5" font-family="&#39;IBM Plex Sans&#39;, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="2" fill="#e7ebf0">ACMP</text>
+</svg>
