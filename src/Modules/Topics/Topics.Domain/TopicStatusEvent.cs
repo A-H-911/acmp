@@ -14,17 +14,17 @@ public sealed class TopicStatusEvent : BaseEntity
     public TopicStatus FromStatus { get; private set; }
     public TopicStatus ToStatus { get; private set; }
     public string? Reason { get; private set; }
-    public Guid ActorId { get; private set; }
+    public string ActorSub { get; private set; } = string.Empty;
     public string ActorName { get; private set; } = string.Empty;
     public DateTimeOffset OccurredAt { get; private set; }
 
     internal TopicStatusEvent(TopicStatus from, TopicStatus to, string? reason,
-        Guid actorId, string actorName, DateTimeOffset occurredAt)
+        string actorSub, string actorName, DateTimeOffset occurredAt)
     {
         FromStatus = from;
         ToStatus = to;
         Reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
-        ActorId = actorId;
+        ActorSub = actorSub.Trim();
         ActorName = actorName.Trim();
         OccurredAt = occurredAt;
     }

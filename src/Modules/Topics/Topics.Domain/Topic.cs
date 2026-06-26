@@ -7,9 +7,11 @@ namespace Acmp.Modules.Topics.Domain;
 
 // The governed Topic aggregate — the heart of the core loop (intake → backlog → agenda → decision).
 // One state machine (docs/12 §1); "TopicRequest" is just its pre-Accepted projection. Identity to other
-// modules is by id only (OwnerId = CommitteeMember.PublicId, MeetingId) — never an EF navigation, so the
-// modular-monolith boundary holds (ADR-0001). Implements the shared ABAC contracts so the platform
-// authorization handlers can scope writes by stream and by per-topic ownership (docs/10 §E).
+// modules is by stable key only: actor/author/submitter = the Keycloak subject (matches the audit log
+// and ABAC resolvers); Owner = the assigned CommitteeMember.PublicId + a name snapshot for display.
+// Never an EF navigation to another module, so the modular-monolith boundary holds (ADR-0001).
+// Implements the shared ABAC contracts so the platform authorization handlers can scope writes by
+// stream and by per-topic ownership (docs/10 §E).
 public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource
 {
     private readonly List<string> _streams = new();
@@ -31,9 +33,10 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public TopicSource Source { get; private set; }
     public TopicStatus Status { get; private set; }
     public int Priority { get; private set; }
-    public Guid SubmittedById { get; private set; }
+    public string SubmittedBySub { get; private set; } = string.Empty;
     public string SubmittedByName { get; private set; } = string.Empty;
-    public Guid? OwnerId { get; private set; }
+    public Guid? OwnerId { get; private set; }            // CommitteeMember.PublicId
+    public string? OwnerName { get; private set; }        // display snapshot
     public DateTimeOffset? RevisitOn { get; private set; }
 
     public IReadOnlyCollection<string> Systems => _systems.AsReadOnly();
@@ -47,10 +50,10 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     Guid ITopicScopedResource.TopicId => PublicId;
 
     // Factory — creates a Draft. Drafts may be incomplete (the form autosaves as the user types);
-    // completeness is enforced at Submit (AC-030). Identity/attribution of the submitter is fixed here.
+    // completeness is enforced at Submit (AC-030). Submitter attribution is fixed here.
     public static Topic Draft(string key, string title, string description, string justification,
         TopicType type, TopicUrgency urgency, TopicSource source,
-        Guid submittedById, string submittedByName,
+        string submittedBySub, string submittedByName,
         IEnumerable<string> streams, IEnumerable<string> systems, IEnumerable<string> tags)
     {
         var topic = new Topic
@@ -64,7 +67,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
             Source = source,
             Scope = TopicScope.SingleStream,
             Status = TopicStatus.Draft,
-            SubmittedById = submittedById,
+            SubmittedBySub = submittedBySub.Trim(),
             SubmittedByName = submittedByName.Trim(),
         };
         topic.ReplaceStrings(topic._streams, streams);
@@ -84,103 +87,104 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         if (string.IsNullOrWhiteSpace(Description)) throw new InvalidOperationException("Description is required to submit.");
         if (_streams.Count == 0) throw new InvalidOperationException("At least one affected stream is required to submit.");
         Scope = DeriveScope();
-        Transition(TopicStatus.Submitted, null, SubmittedById, SubmittedByName, now);
+        Transition(TopicStatus.Submitted, null, SubmittedBySub, SubmittedByName, now);
         Raise(new TopicSubmittedEvent(PublicId, Key, now));
     }
 
     // W2: Secretary picks the submission up for triage.
-    public void BeginTriage(Guid actorId, string actorName, DateTimeOffset now)
+    public void BeginTriage(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Submitted, TopicStatus.Reopened);
-        Transition(TopicStatus.Triage, null, actorId, actorName, now);
+        Transition(TopicStatus.Triage, null, actorSub, actorName, now);
         Raise(new TopicTriagedEvent(PublicId, Key, now));
     }
 
-    // W2: accept into the backlog and assign an Owner.
-    public void Accept(Guid ownerId, Guid actorId, string actorName, DateTimeOffset now)
+    // W2: accept into the backlog and assign an Owner (CommitteeMember.PublicId + name snapshot).
+    public void Accept(Guid ownerId, string ownerName, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Triage);
         if (ownerId == Guid.Empty) throw new InvalidOperationException("An owner must be assigned on accept.");
         OwnerId = ownerId;
-        Transition(TopicStatus.Accepted, null, actorId, actorName, now);
+        OwnerName = ownerName.Trim();
+        Transition(TopicStatus.Accepted, null, actorSub, actorName, now);
         Raise(new TopicAcceptedEvent(PublicId, Key, ownerId, now));
     }
 
     // W20: reject with a mandatory rationale (AC-031). The history row is immutable (AC-032, AC-033).
-    public void Reject(string reason, Guid actorId, string actorName, DateTimeOffset now)
+    public void Reject(string reason, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Submitted, TopicStatus.Triage);
         RequireReason(reason, "A rejection reason is required.");
-        Transition(TopicStatus.Rejected, reason, actorId, actorName, now);
+        Transition(TopicStatus.Rejected, reason, actorSub, actorName, now);
         Raise(new TopicRejectedEvent(PublicId, Key, reason.Trim(), now));
     }
 
     // W20: defer with a mandatory reason and an optional revisit date.
-    public void Defer(string reason, DateTimeOffset? revisitOn, Guid actorId, string actorName, DateTimeOffset now)
+    public void Defer(string reason, DateTimeOffset? revisitOn, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Triage, TopicStatus.Accepted, TopicStatus.Scheduled, TopicStatus.InCommittee);
         RequireReason(reason, "A defer reason is required.");
         RevisitOn = revisitOn;
-        Transition(TopicStatus.Deferred, reason, actorId, actorName, now);
+        Transition(TopicStatus.Deferred, reason, actorSub, actorName, now);
         Raise(new TopicDeferredEvent(PublicId, Key, reason.Trim(), revisitOn, now));
     }
 
-    public void Reactivate(Guid actorId, string actorName, DateTimeOffset now)
+    public void Reactivate(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Deferred);
-        Transition(TopicStatus.Triage, null, actorId, actorName, now);
+        Transition(TopicStatus.Triage, null, actorSub, actorName, now);
         Raise(new TopicTriagedEvent(PublicId, Key, now));
     }
 
     // W4: mark prepared once the Owner has completed preparation materials (AC-035).
-    public void MarkPrepared(Guid actorId, string actorName, DateTimeOffset now)
+    public void MarkPrepared(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Accepted);
-        Transition(TopicStatus.Prepared, null, actorId, actorName, now);
+        Transition(TopicStatus.Prepared, null, actorSub, actorName, now);
         Raise(new TopicPreparedEvent(PublicId, Key, now));
     }
 
-    public void Reopen(string justification, Guid actorId, string actorName, DateTimeOffset now)
+    public void Reopen(string justification, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Rejected, TopicStatus.Closed);
         RequireReason(justification, "A reopen justification is required.");
-        Transition(TopicStatus.Reopened, justification, actorId, actorName, now);
+        Transition(TopicStatus.Reopened, justification, actorSub, actorName, now);
         Raise(new TopicReopenedEvent(PublicId, Key, justification.Trim(), now));
     }
 
     // W5/W6 (caller lands in P6): place onto a published agenda.
-    public void Schedule(Guid meetingId, Guid actorId, string actorName, DateTimeOffset now)
+    public void Schedule(Guid meetingId, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Prepared);
         if (meetingId == Guid.Empty) throw new InvalidOperationException("A meeting is required to schedule.");
-        Transition(TopicStatus.Scheduled, null, actorId, actorName, now);
+        Transition(TopicStatus.Scheduled, null, actorSub, actorName, now);
         Raise(new TopicScheduledEvent(PublicId, Key, meetingId, now));
     }
 
-    public void EnterCommittee(Guid actorId, string actorName, DateTimeOffset now)
+    public void EnterCommittee(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Scheduled);
-        Transition(TopicStatus.InCommittee, null, actorId, actorName, now);
+        Transition(TopicStatus.InCommittee, null, actorSub, actorName, now);
     }
 
-    public void Decide(Guid actorId, string actorName, DateTimeOffset now)
+    public void Decide(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.InCommittee);
-        Transition(TopicStatus.Decided, null, actorId, actorName, now);
+        Transition(TopicStatus.Decided, null, actorSub, actorName, now);
         Raise(new TopicDecidedEvent(PublicId, Key, now));
     }
 
-    public void Close(Guid actorId, string actorName, DateTimeOffset now)
+    public void Close(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Decided);
-        Transition(TopicStatus.Closed, null, actorId, actorName, now);
+        Transition(TopicStatus.Closed, null, actorSub, actorName, now);
         Raise(new TopicClosedEvent(PublicId, Key, now));
     }
 
-    public void Convert(Guid actorId, string actorName, DateTimeOffset now)
+    public void Convert(string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Decided);
-        Transition(TopicStatus.Converted, null, actorId, actorName, now);
+        Transition(TopicStatus.Converted, null, actorSub, actorName, now);
         Raise(new TopicConvertedEvent(PublicId, Key, now));
     }
 
@@ -219,26 +223,26 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         Raise(new TopicPriorityChangedEvent(PublicId, Key, priority, now));
     }
 
-    public void AddComment(string body, Guid authorId, string authorName, DateTimeOffset now)
+    public void AddComment(string body, string authorSub, string authorName, DateTimeOffset now)
     {
         if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("A comment cannot be empty.");
-        _comments.Add(new TopicComment(body, authorId, authorName, now));
+        _comments.Add(new TopicComment(body, authorSub, authorName, now));
     }
 
     public TopicAttachment AddAttachment(string fileName, string contentType, long sizeBytes,
-        string storageKey, Guid uploadedById, string uploadedByName, DateTimeOffset now)
+        string storageKey, string uploadedBySub, string uploadedByName, DateTimeOffset now)
     {
         EnsureMutable();
-        var attachment = new TopicAttachment(fileName, contentType, sizeBytes, storageKey, uploadedById, uploadedByName, now);
+        var attachment = new TopicAttachment(fileName, contentType, sizeBytes, storageKey, uploadedBySub, uploadedByName, now);
         _attachments.Add(attachment);
         return attachment;
     }
 
     // ---- helpers ----
 
-    private void Transition(TopicStatus to, string? reason, Guid actorId, string actorName, DateTimeOffset now)
+    private void Transition(TopicStatus to, string? reason, string actorSub, string actorName, DateTimeOffset now)
     {
-        _history.Add(new TopicStatusEvent(Status, to, reason, actorId, actorName, now));
+        _history.Add(new TopicStatusEvent(Status, to, reason, actorSub, actorName, now));
         Status = to;
     }
 

@@ -9,8 +9,9 @@ namespace Acmp.Domain.Tests.Topics;
 public class TopicTests
 {
     private static readonly DateTimeOffset Now = new(2026, 2, 15, 9, 0, 0, TimeSpan.Zero);
-    private static readonly Guid Submitter = Guid.NewGuid();
-    private static readonly Guid Secretary = Guid.NewGuid();
+    private const string Submitter = "kc-omar";
+    private const string Secretary = "kc-khalid";
+    private const string OwnerName = "Omar H.";
     private static readonly Guid Owner = Guid.NewGuid();
 
     private static Topic NewDraft(params string[] streams) => Topic.Draft(
@@ -30,7 +31,7 @@ public class TopicTests
     {
         var t = Submitted();
         t.BeginTriage(Secretary, "Khalid A.", Now);
-        t.Accept(Owner, Secretary, "Khalid A.", Now);
+        t.Accept(Owner, OwnerName, Secretary, "Khalid A.", Now);
         return t;
     }
 
@@ -42,7 +43,7 @@ public class TopicTests
             new[] { "platform", "platform", " " }, new[] { "Sys" }, new[] { "tag" });
 
         t.Status.Should().Be(TopicStatus.Draft);
-        t.SubmittedById.Should().Be(Submitter);
+        t.SubmittedBySub.Should().Be(Submitter);
         t.AffectedStreams.Should().BeEquivalentTo("platform");
     }
 
@@ -88,10 +89,10 @@ public class TopicTests
         var t = Submitted();
         t.BeginTriage(Secretary, "Khalid A.", Now);
 
-        var noOwner = () => t.Accept(Guid.Empty, Secretary, "Khalid A.", Now);
+        var noOwner = () => t.Accept(Guid.Empty, OwnerName, Secretary, "Khalid A.", Now);
         noOwner.Should().Throw<InvalidOperationException>().WithMessage("*owner*");
 
-        t.Accept(Owner, Secretary, "Khalid A.", Now);
+        t.Accept(Owner, OwnerName, Secretary, "Khalid A.", Now);
         t.Status.Should().Be(TopicStatus.Accepted);
         t.OwnerId.Should().Be(Owner);
         t.DomainEvents.OfType<TopicAcceptedEvent>().Should().ContainSingle();
@@ -142,11 +143,11 @@ public class TopicTests
     public void MarkPrepared_only_from_accepted()
     {
         var accepted = Accepted();
-        accepted.MarkPrepared(Owner, "Omar H.", Now);
+        accepted.MarkPrepared(Submitter, "Omar H.", Now);
         accepted.Status.Should().Be(TopicStatus.Prepared);
 
         var draft = NewDraft();
-        var act = () => draft.MarkPrepared(Owner, "Omar H.", Now);
+        var act = () => draft.MarkPrepared(Submitter, "Omar H.", Now);
         act.Should().Throw<InvalidOperationException>();
     }
 
@@ -155,7 +156,7 @@ public class TopicTests
     {
         var t = NewDraft(); // Draft
 
-        var act = () => t.Accept(Owner, Secretary, "Khalid A.", Now); // cannot accept a Draft
+        var act = () => t.Accept(Owner, OwnerName, Secretary, "Khalid A.", Now); // cannot accept a Draft
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*Draft*");
     }
@@ -178,7 +179,7 @@ public class TopicTests
     public void Decided_topic_is_immutable_to_metadata_edits()
     {
         var t = Accepted();
-        t.MarkPrepared(Owner, "Omar H.", Now);
+        t.MarkPrepared(Submitter, "Omar H.", Now);
         t.Schedule(Guid.NewGuid(), Secretary, "Khalid A.", Now);
         t.EnterCommittee(Secretary, "Khalid A.", Now);
         t.Decide(Secretary, "Khalid A.", Now);

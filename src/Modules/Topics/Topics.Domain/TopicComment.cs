@@ -9,14 +9,14 @@ public sealed class TopicComment : BaseEntity
     private TopicComment() { }
 
     public string Body { get; private set; } = string.Empty;
-    public Guid AuthorId { get; private set; }
+    public string AuthorSub { get; private set; } = string.Empty;
     public string AuthorName { get; private set; } = string.Empty;
     public DateTimeOffset PostedAt { get; private set; }
 
-    internal TopicComment(string body, Guid authorId, string authorName, DateTimeOffset postedAt)
+    internal TopicComment(string body, string authorSub, string authorName, DateTimeOffset postedAt)
     {
         Body = body.Trim();
-        AuthorId = authorId;
+        AuthorSub = authorSub.Trim();
         AuthorName = authorName.Trim();
         PostedAt = postedAt;
     }

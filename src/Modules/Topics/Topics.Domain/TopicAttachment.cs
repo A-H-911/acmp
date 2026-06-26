@@ -13,18 +13,18 @@ public sealed class TopicAttachment : BaseEntity
     public string ContentType { get; private set; } = string.Empty;
     public long SizeBytes { get; private set; }
     public string StorageKey { get; private set; } = string.Empty;
-    public Guid UploadedById { get; private set; }
+    public string UploadedBySub { get; private set; } = string.Empty;
     public string UploadedByName { get; private set; } = string.Empty;
     public DateTimeOffset UploadedAt { get; private set; }
 
     internal TopicAttachment(string fileName, string contentType, long sizeBytes, string storageKey,
-        Guid uploadedById, string uploadedByName, DateTimeOffset uploadedAt)
+        string uploadedBySub, string uploadedByName, DateTimeOffset uploadedAt)
     {
         FileName = fileName.Trim();
         ContentType = contentType.Trim();
         SizeBytes = sizeBytes;
         StorageKey = storageKey.Trim();
-        UploadedById = uploadedById;
+        UploadedBySub = uploadedBySub.Trim();
         UploadedByName = uploadedByName.Trim();
         UploadedAt = uploadedAt;
     }
