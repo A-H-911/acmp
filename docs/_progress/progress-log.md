@@ -46,8 +46,14 @@ build clean. With this, all three design screens (backlog 3 live views, submit, 
 accept with owner, illegal-move announce, return-with-reason), i18n parity 278, oxlint, `tsc -b` + build.
 - **AA contrast** — kanban text is `--text-2`/`--text` on `--surface`/card (pass); the lone `--text-3` is the
   disabled "current" move item (WCAG-exempt, and 4.74 anyway). **RTL-safety** confirmed (logical-CSS audit).
-- **Pending — live kanban pass** (real drag/M-move → accept/return against the API, AR/RTL): the transition
-  paths are unit-tested with mocks. Recommended before merge.
+- **Live kanban pass — done (2026-06-26, Playwright on the rebuilt `web`, real Keycloak PKCE, AR/RTL).**
+  Verified live: the board renders with correct bucketing (فرز/Triage = 2, others 0), the keyboard **"M"**
+  opens the move popover (current bucket disabled, others enabled — AC-043 live), and picking **مقبول/Accepted**
+  routes to the **AcceptDialog** ("قبول TOP-2026-002…") with the owner picker. **Finding (dev-data gap, not a
+  bug):** the accept can't be completed end-to-end because the member directory is empty in the dev DB
+  (`GET /api/members` → 200 `[]`), so the owner picker has no candidates — the dialog correctly requires an
+  owner. The transition POSTs (accept/reject/defer) are unit-tested (`Kanban.test`) and server-tested (P5a);
+  exercising a live accept needs a provisioned committee member (Membership). Recorded for the next live run.
 
 **Acceptance audit (this entry).** **Met (newly): AC-043** (keyboard DnD alternative on the backlog — the "M"
 move popover, unit-tested). **AC-009** advances (owner assignment via the accept dialog is wired to the
