@@ -14,6 +14,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P5 — Topic & Backlog Management
 
+### 2026-06-26 — P5b PR3: Topic detail (read + discussion + history) wired to GET /api/topics/{key}
+
+**Scope.** Third P5b slice — the **Topic detail** screen. Branch `feat/P5b-detail`. Web **87 tests green**
+(was 79; +8 TopicDetail incl. its axe case), i18n parity 249, oxlint + build clean.
+
+**Done.**
+- `api/topics.ts` — `useTopicDetail(key)` (`retry:false` so an unknown key surfaces "not found" immediately)
+  + `useAddTopicComment` (POST `/{id}/comments`; body field is `reason`, BL-033).
+- `features/topics/TopicDetail.tsx` — header (key chip, status chip, urgent chip, title, owner, created date
+  via `Intl`/Gregorian); tabs **Overview / Discussion / History**; Overview (description, justification,
+  affected streams/systems, attachments when present); **Discussion** (comment list + compose → live POST by
+  the DTO's Guid id); **History** (status-event timeline, localized `from → to` + reason + actor·time); the
+  **empty Relationships sidebar**. The `topics/:key` route now resolves to it (replacing the interim placeholder).
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; in the file header comment).**
+- **Single-language title** — the design's alt-language line is dropped (P5a).
+- **Relationships sidebar is EMPTY in P5** — topic→decision/ADR/action/risk links land later; the aside shows
+  its header + an honest empty state, no fabricated links.
+- **Add-to-agenda** (needs a Meeting → P6) and **Edit** (AC-034 edit flow → a focused follow-up) are disabled
+  affordances; the read view + comment posting are this slice's live behavior.
+- **Attachments surfaced in Overview** when present (real topic data; the design's static overview omitted them).
+- **No new ADR** (UI on the settled stack).
+
+**Verification.** Web **87/87** (Vitest+RTL: read, urgent chip, tab switch, comment POST by id, history
+timeline, 404 not-found, loading + **axe WCAG 2.2 AA**), i18n parity 249, oxlint, `tsc -b` + build.
+- **AA contrast verified offline** both themes — fixed three `--text-3`-on-`--bg-app` spots (`.dt-section-label`,
+  `.dt-tl-meta`, `.sub-file-meta` = 4.02 < AA, the exact CHANGE-003 value) → `--text-2`.
+- **RTL-safety** confirmed (logical-properties-only audit).
+- **Pending — live detail pass** (real `GET /{key}` + comment POST, AR/RTL + dark): the detail read/comment
+  path is unit-tested with mocks, not yet run end-to-end. Recommended before merge.
+
+**Acceptance audit (this entry).** **No verdict flips** — read + comment-display surface. **AC-009/034** (owner
+is shown; live per-topic **edit**/lock) stay Partial — the edit flow is a deliberate follow-up slice. The
+History tab surfaces the read side of AC-032's immutable status/rejection events. BL-033 comment posting is now
+live in the UI.
+
+**Next.** Live detail pass, then **PR4** — Kanban + all DnD incl. AC-043 (the last P5b slice).
+
+---
+
 ### 2026-06-26 — P5b PR2: Submit topic form (W1) wired to POST /api/topics
 
 **Scope.** Second P5b slice — the **Submit topic** screen matching the design's submit screen. Branch

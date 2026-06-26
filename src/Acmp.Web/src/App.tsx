@@ -9,6 +9,7 @@ import PlaceholderPage from './pages/PlaceholderPage';
 import AdministrationPage from './pages/AdministrationPage';
 import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
+import { TopicDetail } from './features/topics/TopicDetail';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -28,8 +29,7 @@ export const appRoutes = createRoutesFromElements(
         <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
         <Route path="topics/new" element={<SubmitTopic />} />
         <Route path="backlog" element={<Backlog />} />
-        {/* Topic detail screen lands in P5b PR3; interim placeholder keeps backlog row links from 404ing. */}
-        <Route path="topics/:key" element={<PlaceholderPage titleKey="nav.backlog" />} />
+        <Route path="topics/:key" element={<TopicDetail />} />
         <Route path="meetings" element={<PlaceholderPage titleKey="nav.agenda" />} />
         <Route path="decisions" element={<PlaceholderPage titleKey="nav.decisions" />} />
         <Route path="actions" element={<PlaceholderPage titleKey="nav.actions" />} />
