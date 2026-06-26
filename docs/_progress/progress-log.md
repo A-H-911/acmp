@@ -54,10 +54,19 @@ behavior, +1 axe), prod build + oxlint clean, i18n parity **175 keys**.
   DnD lands in one coherent slice; PR1 is the pure read path.
 - **No new ADR** (UI on the settled stack).
 
-**Verification.** Automated gate green: web **72/72** (Vitest+RTL behavior + **axe WCAG 2.2 AA** on the live
-table), i18n parity (175), oxlint, `tsc -b` + vite build. **Live in-browser visual/RTL/light-dark pass against
-`ACMP Backlog & Topic.dc.html` is pending** (the running `web` container still serves the pre-P5b image); it
-is the confirmatory design-fidelity step before merge.
+**Verification.** Automated gate green: web **72/72** (Vitest+RTL behavior + **axe WCAG 2.2 AA** structure/ARIA
+on the live table), i18n parity (175), oxlint, `tsc -b` + vite build, **remote CI green (PR #11)**.
+- **AA contrast (the gap the jsdom axe gate skips) verified offline** for every backlog text/background combo
+  in **both light and dark** — all clear 4.5:1 (lowest 5.35: `.bk-count` text-2 on the page bg; it would have
+  failed at ~3.9 with `--text-3`, confirming the `--text-3`→`--text-2` fix was necessary).
+- **RTL-safety confirmed deterministically** — `topics.css` uses logical properties only (zero physical
+  left/right/margin/padding), so mirroring is guaranteed by construction (same approach as the shared components).
+- **Still pending — authenticated live browser pass** (visual fidelity vs the `.dc.html` + the first real-API
+  run of the read path): the `web` container was rebuilt to P5b (`localhost:8088`), but driving it needs the
+  `acmp-admin` realm password (set in a prior session, not committed; an admin-API reset was correctly blocked
+  as a shared-auth change). Blocked on that credential/authorization. The wire-contract risk is low — `GetBacklog`
+  maps `t.Type.ToString()` (exact enum name → the `topics.type.*` keys) and `PagedResult` serializes camelCase —
+  but it is unverified at runtime.
 
 **Acceptance audit (this entry).** **No verdict flips** — PR1 is a read-only surface; the headline ACs land
 in later slices. AC-057 gains a UI test ref (badge now rendered in the backlog, unit-tested; stays Partial
