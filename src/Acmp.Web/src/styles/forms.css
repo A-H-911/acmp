@@ -66,6 +66,46 @@
 .option[aria-selected='true'] { color: var(--accent); font-weight: 600; }
 .option-label { flex: 1 1 auto; min-inline-size: 0; }
 
+/* ============================ Multi-select ============================ */
+.tokens-field {
+  min-block-size: 42px; inline-size: 100%; border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: var(--surface); cursor: text;
+}
+.tokens-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.token { display: inline-flex; align-items: center; gap: 6px; block-size: 26px; padding-inline: 10px; border-radius: 7px; background: var(--primary-tint); color: var(--accent); font-size: 12.5px; font-weight: 600; }
+.token-remove { border: 0; background: transparent; color: var(--accent); display: flex; padding: 0; cursor: pointer; }
+.tokens-input { flex: 1 1 80px; min-inline-size: 80px; block-size: 28px; border: 0; background: transparent; color: var(--text); outline: none; font: inherit; font-size: 13px; }
+.ms-option .ms-check {
+  inline-size: 16px; block-size: 16px; border-radius: 4px; flex: 0 0 auto;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.ms-option .ms-check svg { opacity: 0; }
+.ms-option[aria-selected='true'] .ms-check { background: var(--primary); border-color: var(--primary); }
+.ms-option[aria-selected='true'] .ms-check svg { opacity: 1; }
+
+/* ============================ Date picker ============================ */
+.datepicker { inline-size: 300px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.datepicker-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: 12px; }
+.datepicker-nav {
+  inline-size: 28px; block-size: 28px; border: 0; background: transparent; color: var(--text-2);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.datepicker-nav:hover { background: var(--subtle); }
+.datepicker-title { font-size: 13.5px; font-weight: 600; }
+.datepicker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.datepicker-dow { text-align: center; font-size: 10.5px; color: var(--text-3); font-weight: 600; padding-block-end: 4px; }
+.datepicker-day {
+  block-size: 30px; display: flex; align-items: center; justify-content: center; font-size: 12.5px;
+  border: 0; border-radius: 7px; background: transparent; color: var(--text); cursor: pointer; font-feature-settings: 'tnum';
+}
+.datepicker-day:hover { background: var(--subtle); }
+.datepicker-day[aria-selected='true'] { background: var(--primary); color: #fff; font-weight: 600; }
+.datepicker-day.is-today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.datepicker-prev svg { transform: scaleX(-1); }
+[dir="rtl"] .datepicker-prev svg { transform: none; }
+[dir="rtl"] .datepicker-next svg { transform: scaleX(-1); }
+
 /* ============================ Checkbox & radio ============================ */
 .choice { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer; }
 .choice input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
