@@ -85,7 +85,8 @@
 .bk-count {
   margin-inline-start: auto;
   font-size: 12px;
-  color: var(--text-3);
+  /* --text-2 not --text-3: small body text must clear AA 4.5:1 (CHANGE-003 precedent). */
+  color: var(--text-2);
   white-space: nowrap;
 }
 
@@ -150,7 +151,8 @@
   font-size: 12.5px;
 }
 .bk-muted {
-  color: var(--text-3);
+  /* --text-2 not --text-3: "Unassigned" is real text and must clear AA 4.5:1 (CHANGE-003 precedent). */
+  color: var(--text-2);
   font-size: 12.5px;
 }
 .bk-age {
