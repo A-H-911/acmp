@@ -82,7 +82,7 @@
     "moveUp": "تحريك {{name}} للأعلى",
     "moveDown": "تحريك {{name}} للأسفل"
   },
-  "dev": { "role": "دور المعاينة (للتطوير فقط)", "roleShort": "الدور" },
+  "dev": { "role": "دور المعاينة (للتطوير فقط)", "roleShort": "الدور", "rolesHeader": "الأدوار للقراءة فقط من Keycloak" },
   "dashboard": {
     "title": "لوحة معلومات اللجنة",
     "welcome": "مرحبًا، {{name}}.",

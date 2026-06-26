@@ -82,7 +82,7 @@
     "moveUp": "Move {{name}} up",
     "moveDown": "Move {{name}} down"
   },
-  "dev": { "role": "Preview role (dev only)", "roleShort": "Role" },
+  "dev": { "role": "Preview role (dev only)", "roleShort": "Role", "rolesHeader": "Roles are read-only from Keycloak" },
   "dashboard": {
     "title": "Committee dashboard",
     "welcome": "Welcome, {{name}}.",

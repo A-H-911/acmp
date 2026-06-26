@@ -100,7 +100,7 @@ a { color: inherit; }
 .topbar-spacer { flex: 1 1 0; }
 
 .search {
-  flex: 1 1 auto; max-inline-size: 560px; position: relative;
+  flex: 1 1 auto; max-inline-size: 560px; min-inline-size: 0; position: relative;
   display: flex; align-items: center;
 }
 .search-icon {
@@ -186,6 +186,44 @@ a { color: inherit; }
 }
 .profile-item:hover { background: var(--subtle); color: var(--text); }
 .profile-item-label { flex: 1 1 auto; }
+
+/* DEV role switcher — matches the design's role menu (Navigation & IA). Dev-only. */
+.role-menu { position: relative; display: flex; }
+.role-menu-trigger {
+  display: flex; align-items: center; gap: 9px;
+  block-size: 40px; min-inline-size: 210px; padding-inline: 8px 12px;
+  border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  background: var(--surface); color: inherit; font: inherit; cursor: pointer; text-align: start;
+}
+.role-menu-trigger:hover { background: var(--subtle); }
+.role-avatar {
+  inline-size: 28px; block-size: 28px; border-radius: var(--r-full); flex: 0 0 auto;
+  background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.role-menu-id { flex: 1 1 auto; min-inline-size: 0; line-height: 1.15; }
+.role-menu-label { display: block; font-size: 13px; font-weight: 600; }
+.role-menu-sub { display: block; font-size: 11px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role-menu-caret { color: var(--text-3); flex: 0 0 auto; }
+.role-menu-panel {
+  position: absolute; inset-block-start: 46px; inset-inline-end: 0; z-index: 70;
+  inline-size: 280px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 11px; box-shadow: var(--shadow-lg);
+}
+.role-menu-head {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--text-3); padding: 8px 10px 5px;
+}
+.role-menu-item {
+  display: flex; align-items: center; gap: 10px; inline-size: 100%;
+  border: 0; border-radius: var(--r-md); padding: 8px 10px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: start;
+}
+.role-menu-item:hover { background: var(--subtle); }
+.role-menu-item[aria-checked='true'] { background: var(--primary-tint); }
+.role-menu-item .role-avatar { inline-size: 26px; block-size: 26px; font-size: 10.5px; }
+.role-menu-item-label { flex: 1 1 auto; min-inline-size: 0; font-size: 13px; font-weight: 600; }
+.role-menu-check { color: var(--accent); flex: 0 0 auto; }
 
 .app-body { display: flex; flex: 1; min-block-size: 0; }
 
