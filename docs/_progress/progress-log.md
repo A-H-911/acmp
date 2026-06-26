@@ -12,6 +12,42 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## CHANGE-004 — Keycloak access-token `sub` claim (JIT provisioning fix)
+
+### 2026-06-26 — Fixed: `acmp-web` access token had no `sub`, silently breaking JIT provisioning + subject identity
+
+**Symptom.** The committee member directory was empty and `POST /api/members/me` (JIT, ADR-0004) threw
+`UnauthorizedAccessException("Authentication required")` for every caller — `ICurrentUser.UserId` resolved
+empty. Surfaced during the P5b PR4 live kanban pass: the accept owner-picker had no candidates.
+
+**Root cause.** `acmp-web`'s `defaultClientScopes` was `["openid","profile","email","roles"]`. `"openid"` is
+the OIDC request scope, not a client scope; and **`"basic"` was missing**. In Keycloak 24+ the `sub` (and
+`auth_time`) claim lives in the built-in **`basic`** client scope — so without it the access token carried
+`preferred_username`/roles/`aud` but **no `sub`** → `ICurrentUser.UserId` (`NameIdentifier ?? sub`) was empty
+→ the JIT guard threw. Topics handlers only *appeared* healthy: they display the `name` claim, so their
+subject/actor id was silently empty too — a latent identity bug across every subject-dependent path
+(JIT, subject-scoped ABAC, actor attribution).
+
+**Fix (two parts, no new ADR — config-bug fix; ADR-0004/0015 stand).**
+1. **Keycloak realm** (`deploy/keycloak/realm-export.json`, the bundled-realm SoT, ADR-0015): `acmp-web`
+   `defaultClientScopes` → `["basic","profile","email","roles"]`. Fresh `docker compose up` now emits `sub`.
+   Applied to the **running dev realm** via the Keycloak admin API (added the `basic` default client scope)
+   for immediate verification.
+2. **SPA wiring** (`AuthProvider`): the documented "SPA calls `POST /me` on login" was never implemented, so
+   JIT never ran. `OidcBridge` now calls `POST /api/members/me` once per authenticated session (idempotent
+   provision-or-sync). No `CurrentUserService`/handler change — they were correct once `sub` is present.
+
+**Live verification (real Keycloak PKCE, AR/RTL).** Re-login → token now carries `sub` (`hasSub: true`);
+`POST /api/members/me` → **200**, provisioning "ACMP Administrator" (Secretary); `GET /api/members` → **1**.
+End-to-end the kanban accept then worked: keyboard **M-move → AcceptDialog → owner "ACMP Administrator" →
+POST /accept → 204**; TOP-2026-002 → status **Accepted**, owner assigned, re-bucketed to Accepted —
+**grant-on-accept (AC-009) proven live through the UI**.
+
+**Impact.** Unblocks live JIT provisioning (makes AC-002's JIT actually function end-to-end), subject-scoped
+ABAC, and `sub`-based actor attribution — not just the kanban accept. Web 94/94, build/oxlint clean.
+
+---
+
 ## P5 — Topic & Backlog Management
 
 ### 2026-06-26 — P5b PR4: Backlog kanban + accessible DnD (triage transitions) — final P5b slice
