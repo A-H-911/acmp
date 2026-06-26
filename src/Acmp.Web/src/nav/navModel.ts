@@ -26,7 +26,7 @@ export interface NavArea {
 
 /** Canonical route per area (docs/14 §3 sitemap). */
 export const AREAS: Record<AreaKey, NavArea> = {
-  session: { key: 'session', labelKey: 'nav.session', path: '/session', icon: 'calendar', cta: true },
+  session: { key: 'session', labelKey: 'nav.session', path: '/session', icon: 'session', cta: true },
   submit: { key: 'submit', labelKey: 'nav.submit', path: '/topics/new', icon: 'plus', cta: true },
   home: { key: 'home', labelKey: 'nav.home', path: '/dashboard', icon: 'home' },
   backlog: { key: 'backlog', labelKey: 'nav.backlog', path: '/backlog', icon: 'backlog' },
