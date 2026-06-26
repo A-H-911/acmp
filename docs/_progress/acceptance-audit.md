@@ -87,9 +87,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > P5b PR1 update (2026-06-26): Backlog read path (table + list views) wired to `GET /api/topics`. Read-only
 > surface — **no verdict flips**. **AC-057** aging badge is now rendered in the backlog UI (`Backlog.test`),
 > stays Partial pending the live browser pass + the SLA-breach notification (Notifications phase). Web 72/72
-> (incl. live **axe WCAG 2.2 AA** on the table), i18n parity 175, oxlint + build clean. **Live
-> visual/RTL/light-dark pass against the local `ACMP Backlog & Topic.dc.html` is the confirmatory
-> design-fidelity step (pending).** AC-043 (keyboard DnD on backlog) re-slotted to P5b PR4 (all DnD in one
+> (incl. live **axe WCAG 2.2 AA** on the table), i18n parity 175, oxlint + build clean. **Live authenticated
+> browser pass done** (Playwright, real Keycloak PKCE): `GET /api/topics` 200, wire contract confirmed live
+> (enum→label, streams, null-owner, age); EN-light faithful to the design; AR+dark RTL-mirrored with full i18n;
+> AA contrast computed offline (all combos pass, both themes). Found a pre-existing app-wide auth-bootstrap race
+> (hard-reload of a data route → transient 401 until retry) — shared-infra follow-up, not P5b. AC-043 (keyboard
+> DnD on backlog) re-slotted to P5b PR4 (all DnD in one
 > slice); AC-039/047/048 → PR2 (submit form); AC-009/034 live edit/owner → PR3. See progress-log P5b PR1 entry.
 
 | AC | Section | Verdict | Test ref | Notes |

@@ -61,12 +61,22 @@ on the live table), i18n parity (175), oxlint, `tsc -b` + vite build, **remote C
   failed at ~3.9 with `--text-3`, confirming the `--text-3`→`--text-2` fix was necessary).
 - **RTL-safety confirmed deterministically** — `topics.css` uses logical properties only (zero physical
   left/right/margin/padding), so mirroring is guaranteed by construction (same approach as the shared components).
-- **Still pending — authenticated live browser pass** (visual fidelity vs the `.dc.html` + the first real-API
-  run of the read path): the `web` container was rebuilt to P5b (`localhost:8088`), but driving it needs the
-  `acmp-admin` realm password (set in a prior session, not committed; an admin-API reset was correctly blocked
-  as a shared-auth change). Blocked on that credential/authorization. The wire-contract risk is low — `GetBacklog`
-  maps `t.Type.ToString()` (exact enum name → the `topics.type.*` keys) and `PagedResult` serializes camelCase —
-  but it is unverified at runtime.
+- **Authenticated live browser pass — done (2026-06-26, Playwright on the rebuilt `web` @ `localhost:8088`,
+  authenticated as `acmp-admin` via real Keycloak PKCE).** `GET /api/topics` → **200**; TOP-2026-001 renders
+  with the wire contract confirmed live: `GovernanceStandardization`→"Governance", `Submitted`, `Critical`
+  (urgent marker), streams `identity`/`platform` tags, null owner→"Unassigned", `ageDays 0`→"0d", "Showing 1
+  of 1". **EN-light** faithful to the design (breadcrumb, header, 5-view switcher, disabled Export/Saved-views,
+  greyed Stream/Owner filters, 8-col table with Age sorted). **AR + dark**: full RTL mirroring (sidebar→inline-end,
+  columns reversed, controls mirrored), dark theme, complete Arabic i18n; user-content title + stream codes
+  correctly stay LTR. Confirms AC-040 RTL on a new surface and AC-057 aging badge end-to-end.
+- **Finding (pre-existing, app-wide — not P5b-specific): hard-load/refresh/deep-link to a data route races the
+  auth bootstrap.** A direct `GET` of `/backlog` (page reload) fired the query before the auth layer rewired the
+  token getter → transient **401** → error state until **Retry** (then 200). Affects any data route on
+  refresh/bookmark (the SPA's normal in-app nav keeps the token wired, so click-through works first try). Root
+  fix belongs in the auth/query bootstrap (gate queries until the token getter is set, or expose `accessToken`
+  and `enabled`-gate) — a shared-infra follow-up, deliberately **not** folded into this UI slice.
+- **Minor nit:** the count reads "1 topics" — plural suffixes were avoided to keep EN/AR i18n key parity
+  (Arabic has 6 plural categories); reword to a count-free phrasing later if desired.
 
 **Acceptance audit (this entry).** **No verdict flips** — PR1 is a read-only surface; the headline ACs land
 in later slices. AC-057 gains a UI test ref (badge now rendered in the backlog, unit-tested; stays Partial
