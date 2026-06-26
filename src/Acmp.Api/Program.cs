@@ -3,6 +3,8 @@ using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
 using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
+using Acmp.Modules.Topics.Application;
+using Acmp.Modules.Topics.Infrastructure;
 using Acmp.Shared;
 using Acmp.Shared.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -21,6 +23,7 @@ builder.Host.UseSerilog((context, services, config) => config
 // Shared kernel (clock, current-user, file store, MediatR behaviors) + modules.
 builder.Services.AddSharedKernel(builder.Configuration);
 builder.Services.AddMembershipModule(builder.Configuration);
+builder.Services.AddTopicsModule(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
@@ -29,7 +32,12 @@ builder.Services.AddAcmpAuthorization(builder.Configuration);
 // One MediatR registration over the shared + module application assemblies.
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(SharedKernelExtensions).Assembly,
-    MembershipApplicationExtensions.Assembly));
+    MembershipApplicationExtensions.Assembly,
+    TopicsApplicationExtensions.Assembly));
+
+// Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
 // Problem Details error model (no leaking stack traces).
 builder.Services.AddProblemDetails();
@@ -67,6 +75,7 @@ app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false 
 app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.Contains("ready") });
 
 app.MapMembershipEndpoints();
+app.MapTopicEndpoints();
 
 // Apply EF migrations on startup, retrying while SQL Server finishes accepting connections.
 await MigrationRunner.MigrateAsync(app);

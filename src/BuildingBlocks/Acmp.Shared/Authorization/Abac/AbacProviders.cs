@@ -22,3 +22,14 @@ public interface IDelegationResolver
 {
     Task<bool> HasActiveDelegationAsync(string userId, string capability, CancellationToken ct = default);
 }
+
+// Grants/revokes a per-topic capability (Owner/Assignee/Presenter, docs/10 §D). Implemented in
+// Membership.Infrastructure (it owns the TopicCapabilityGrant table); called cross-module by Topics on
+// accept ("grant-on-accept", W2) so the owner's per-topic relationship is resolvable by the ABAC
+// CapabilityHandler. Modules never write each other's tables — this in-process port is the seam (ADR-0001).
+public interface ITopicCapabilityWriter
+{
+    // ownerMemberId is a CommitteeMember.PublicId; Membership resolves it to the member's subject and
+    // stores the grant so the ABAC CapabilityHandler (which keys on subject) can resolve it later.
+    Task GrantAsync(Guid topicId, Guid ownerMemberId, TopicCapabilityType capability, CancellationToken ct = default);
+}

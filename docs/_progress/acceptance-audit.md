@@ -77,6 +77,13 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > both directions/themes, all surfaces incl. Login); **AC-040** RTL-mirror confirmed; **AC-041**
 > stays Partial (automated visual-regression suite → P17).
 
+> P5a update (2026-06-26): Topics backend (domain → application → infrastructure → API), live-verified on
+> the real Docker stack (all 7 services healthy, both migrations applied on SQL Server, authenticated PKCE
+> round-trip POST/GET `/api/topics` → TOP-2026-001, JSON columns + owned tables confirmed in SQL). **Met:**
+> AC-031. **Partial** (mechanism built + tested; live-HTTP or consuming phase named): AC-009, AC-030,
+> AC-032, AC-033, AC-034, AC-035, AC-049, AC-050, AC-057. The Topics UI (P5b) and the Notifications/Hangfire
+> + immutable-audit (BL-066) phases carry the remaining end-to-end demonstrations. See progress-log P5a entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -87,7 +94,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-006 | RBAC | Partial | PermissionMatrixTests + MembershipApiTests | Auditor 403 on mutate (matrix + HTTP); audit-on-deny → BL-066; feature endpoints P5+ |
 | AC-007 | RBAC | Partial | PermissionMatrixTests | SoD-5 proven: Administrator denied on every committee-content policy; live vote/decision API 403 → P7/P9 |
 | AC-008 | RBAC | Met | MembershipApiTests (No_token_returns_401) | RequireAuthorization + JwtBearer → 401 without a token |
-| AC-009 | ABAC | Partial | AbacHandlerTests + PermissionMatrixTests | Owner-widens-AiO proven on stub resource; live Topic edit 403 → P5 |
+| AC-009 | ABAC | Partial | AbacHandlerTests + TopicApiTests (grant-on-accept) | Grant-on-accept + ABAC owner check proven live on accept; per-topic edit 403 → P5b |
 | AC-010 | ABAC | Partial | AbacHandlerTests + MembershipResolverTests | Stream scope handler + resolver proven; live action-on-out-of-scope-topic 403 → P5/P8 |
 | AC-011 | ABAC | Partial | AbacHandlerTests | Capability scoped to the specific topic proven; presenter meeting-window enforcement → P6 |
 | AC-012 | SoD-1 | Partial | SegregationOfDutiesTests | Verifier≠owner predicate proven; Action.Verify enforcement → P8 |
@@ -108,12 +115,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-027 | Decisions | Pending | — | Issued decision immutable |
 | AC-028 | Decisions | Pending | — | Supersession back-link |
 | AC-029 | Decisions | Pending | — | Downstream link required to issue |
-| AC-030 | Topic lifecycle | Pending | — | Required-field validation, localized |
-| AC-031 | Topic lifecycle | Pending | — | Reject needs rationale |
-| AC-032 | Topic lifecycle | Pending | — | Reject → immutable event + notify |
-| AC-033 | Topic lifecycle | Pending | — | Rejection event immutable |
-| AC-034 | Topic lifecycle | Pending | — | Post-accept edit locked to Secretary |
-| AC-035 | Topic lifecycle | Pending | — | Prepared transition + audit |
+| AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests | Required-field validation + HTTP 400 + no record; localized messages → BL-016 |
+| AC-031 | Topic lifecycle | Met | TopicApplicationTests + TopicApiTests (reject no-reason → 400) | Mandatory rejection rationale enforced |
+| AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests | Immutable rejection history event persisted; submitter notify → Notifications phase |
+| AC-033 | Topic lifecycle | Partial | TopicTests | Rejection event append-only (no mutation surface); DB-enforced immutability + hash-chain → BL-066 |
+| AC-034 | Topic lifecycle | Partial | TopicTests + UpdateTopic handler | Content locked post-accept; metadata-only Secretary edit; live 403 path → P17 |
+| AC-035 | Topic lifecycle | Partial | TopicTests + PrepareTopic handler | Accepted→Prepared transition + TopicPrepared audit proven |
 | AC-036 | MoM | Pending | — | Published MoM → versioned supersede |
 | AC-037 | MoM | Pending | — | Change-request → back to Draft |
 | AC-038 | MoM | Pending | — | Approve → Published + notify |
@@ -127,15 +134,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
 | AC-047 | Unsaved-work | Pending | — | Route-change guard |
 | AC-048 | Unsaved-work | Pending | — | beforeunload dialog |
-| AC-049 | File upload | Pending | — | Size/MIME rejection, localized |
-| AC-050 | File upload | Pending | — | Valid upload → MinIO + audit |
+| AC-049 | File upload | Partial | TopicAttachmentTests (validator) | Size/MIME rejection (400, names the constraint); localized message → BL-016 |
+| AC-050 | File upload | Partial | TopicAttachmentTests (handler) | Upload → IFileStore + SQL metadata + DocumentAttached audit (substituted store); live MinIO → P5b |
 | AC-051 | Notifications | Pending | — | Agenda publish → in-app ≤5s |
 | AC-052 | Notifications | Pending | — | Vote-open notification deep link |
 | AC-053 | Notifications | Pending | — | In-app only, no email/Webex |
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |
-| AC-057 | Aging | Pending | — | SLA aging badge + notify |
+| AC-057 | Aging | Partial | TopicApplicationTests + TopicHandlerTests (live SlaBreached) | Aging badge computed + live-verified; SLA-breach notification → Notifications phase |
 | AC-058 | Membership | Met | CommitteeMemberTests + MembershipFeatureTests | Deactivate → Disabled; name/email/role/attribution intact |
 | AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |
 | AC-060 | Search & Trace | Pending | — | Global search grouped results |
@@ -146,8 +153,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 9 Met (AC-001/002/008/040/042/045/046/058/059) · 12 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016 + AC-041) · 45 Pending. (Through P4 + CHANGE-001 live bring-up + SSO login.)
+**Summary:** 66 ACs · 10 Met (AC-001/002/008/031/040/042/045/046/058/059) · 20 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/049/050/057 + AC-041) · 36 Pending.
+(Through P5a backend + live SQL round-trip.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

@@ -18,6 +18,7 @@ public static class SharedKernelExtensions
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
+        services.AddScoped<IResourceAuthorizer, ResourceAuthorizer>();
         services.AddSingleton<IClock, SystemClock>();
 
         // P4 interim audit sink (structured log -> Seq). Replaced by the durable AuditEvent store (BL-066).

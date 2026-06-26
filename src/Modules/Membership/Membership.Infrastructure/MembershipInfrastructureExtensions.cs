@@ -24,6 +24,7 @@ public static class MembershipInfrastructureExtensions
         // ABAC ports the shared-kernel authorization handlers depend on (docs/10 §D/§E).
         services.AddScoped<IUserStreamProvider, UserStreamProvider>();
         services.AddScoped<ITopicCapabilityResolver, TopicCapabilityResolver>();
+        services.AddScoped<ITopicCapabilityWriter, TopicCapabilityWriter>();
         services.AddScoped<IDelegationResolver, DelegationResolver>();
 
         services.AddMembershipApplication();
