@@ -118,6 +118,26 @@ export function SubmitTopic() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasContent, leaving]);
 
+  // Scroll-spy: keep the section nav's active item synced to the fieldset in view as the user scrolls or
+  // fills the form (the design's nav shows active + "done" progress; the static mock can't drive it). Guarded
+  // so jsdom (no IntersectionObserver) is a no-op. IntersectionObserver, not a scroll handler (web perf rule).
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const els = STEPS.map((s) => document.getElementById(`sec-${s}`)).filter((el): el is HTMLElement => !!el);
+    if (els.length === 0) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const top = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (top) setActiveStep(top.target.id.replace('sec-', ''));
+      },
+      { rootMargin: '-90px 0px -55% 0px' },
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
   // AC-047: in-app route-change guard (data router). Reads refs so the condition is always current.
   const blocker = useBlocker(
     useCallback(
@@ -195,7 +215,7 @@ export function SubmitTopic() {
         items={[{ label: t('topics.backlog'), href: AREAS.backlog.path }, { label: t('topics.newTopic'), current: true }]}
       />
 
-      <div className="bk-head">
+      <div className="bk-head sub-head">
         <div>
           <h1 className="page-title">{t('submit.title')}</h1>
           <div className="bk-head-sub">{t('submit.subtitle')}</div>
@@ -208,18 +228,23 @@ export function SubmitTopic() {
 
       <div className="sub-layout">
         <nav className="sub-nav" aria-label={t('submit.sectionsLabel')}>
-          {STEPS.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              className={`sub-nav-item ${activeStep === s ? 'active' : ''}`}
-              aria-current={activeStep === s ? 'step' : undefined}
-              onClick={() => goSection(s)}
-            >
-              <span className="sub-nav-num" aria-hidden="true">{i + 1}</span>
-              {t(`submit.sec.${s}`)}
-            </button>
-          ))}
+          {STEPS.map((s, i) => {
+            const done = i < STEPS.indexOf(activeStep);
+            return (
+              <button
+                key={s}
+                type="button"
+                className={`sub-nav-item ${activeStep === s ? 'active' : ''}`}
+                aria-current={activeStep === s ? 'step' : undefined}
+                onClick={() => goSection(s)}
+              >
+                <span className={`sub-nav-num ${done ? 'done' : ''}`} aria-hidden="true">
+                  {done ? <Icon name="check" size={11} /> : i + 1}
+                </span>
+                {t(`submit.sec.${s}`)}
+              </button>
+            );
+          })}
         </nav>
 
         <form
