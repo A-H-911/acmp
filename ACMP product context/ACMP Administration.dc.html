@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input,textarea,select{font:inherit}
+  [data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpShimmer{0%,100%{opacity:.5}50%{opacity:1}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  .hrow{background:var(--header);border-bottom:1px solid var(--border)}
+  .hcell{height:42px;display:flex;align-items:center;gap:5px;padding-inline:14px;border:0;background:transparent;font:inherit;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);text-align:start}
+  .row{border:0;border-bottom:1px solid var(--border-soft);background:var(--surface);text-align:start;width:100%}
+  .cell{padding-inline:14px;display:flex;align-items:center;min-width:0}
+  .gUsers{display:grid;grid-template-columns:minmax(210px,1.4fr) 158px minmax(196px,1.2fr) 104px 116px;align-items:center}
+  .gTpl{display:grid;grid-template-columns:minmax(220px,1.5fr) 150px 82px 116px 146px 64px;align-items:center}
+  .gMatrix{display:grid;grid-template-columns:minmax(190px,1fr) 116px 116px 116px;align-items:center}
+  .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  .ttl{font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sub2{font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .av{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto}
+  .mchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding-inline:8px;border-radius:6px;font-size:11px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border)}
+  .fbtn{height:34px;padding-inline:12px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:500}
+  .navi{display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;font-size:13.5px;text-align:start;position:relative;background:transparent;color:var(--text-2);font-weight:500}
+  .seg{height:26px;padding-inline:9px;border:0;border-radius:6px;font-size:11px;font-weight:600}
+  .sw{width:38px;height:22px;border-radius:11px;position:relative;border:0;cursor:pointer;transition:background .15s;flex:0 0 auto}
+  .knob{position:absolute;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:inset-inline-start .15s}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:16px 17px}
+  .flabel{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)}
+  .lock{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-3)}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+  <!-- ============ TOP BAR ============ -->
+  <header style="position:sticky;top:0;z-index:40;height:56px;display:flex;align-items:center;gap:14px;padding-inline:16px 18px;background:var(--header);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:9px;min-width:180px"><div style="width:30px;height:30px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div><span style="font-size:14px;font-weight:700;letter-spacing:.3px">ACMP</span></div>
+    <div style="flex:1 1 auto;max-width:440px;position:relative;display:flex;align-items:center"><span style="position:absolute;inset-inline-start:11px;color:var(--text-3);display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span><input aria-label="{{ t.search }}" placeholder="{{ t.search }}" style="width:100%;height:36px;padding-inline:36px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13px" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"></div>
+    <div style="flex:1 1 0"></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onClick="{{ toggleLang }}" aria-label="Toggle language" class="fbtn" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+      <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle);color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+      <div style="display:flex;align-items:center;gap:8px;padding-inline-start:6px"><span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">AD</span><span style="line-height:1.1"><span style="display:block;font-size:12px;font-weight:600">{{ t.adminName }}</span><span style="display:block;font-size:10.5px;color:var(--text-3)">{{ t.administrator }}</span></span></div>
+    </div>
+  </header>
+
+  <div style="display:flex;min-height:calc(100vh - 56px)">
+    <!-- ============ LEFT NAV ============ -->
+    <nav aria-label="Primary" style="flex:0 0 244px;background:var(--surface);border-inline-end:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:3px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:8px 10px 4px">{{ t.grpCommittee }}</div>
+      <sc-for list="{{ navCommittee }}" as="it" hint-placeholder-count="3"><button class="navi" style="{{ it.style }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg><span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></button></sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpGov }}</div>
+      <sc-for list="{{ navGov }}" as="it" hint-placeholder-count="3"><button class="navi" style="{{ it.style }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg><span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></button></sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpKnowledge }}</div>
+      <sc-for list="{{ navKnowledge }}" as="it" hint-placeholder-count="3"><button class="navi" style="{{ it.style }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg><span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></button></sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpInsights }}</div>
+      <sc-for list="{{ navInsights }}" as="it" hint-placeholder-count="1"><button class="navi" style="{{ it.style }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg><span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></button></sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpSystem }}</div>
+      <sc-for list="{{ navAudit }}" as="it" hint-placeholder-count="1"><button class="navi" style="{{ it.style }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg><span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span></button></sc-for>
+      <button aria-current="page" class="navi" style="background:var(--primary-tint);color:var(--accent);font-weight:600"><span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent)"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M4 6h16M4 12h16M4 18h16M9 4v4M16 10v4M11 16v4"></path></svg><span style="flex:1 1 auto">{{ t.administration }}</span></button>
+    </nav>
+
+    <!-- ============ MAIN ============ -->
+    <main style="flex:1 1 auto;min-width:0;overflow-x:hidden">
+      <div style="padding:24px 28px 60px;max-width:1280px;margin:0 auto">
+
+        <!-- header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+          <div>
+            <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.2px">{{ t.administration }}</h1>
+            <div style="margin-top:5px;font-size:13px;color:var(--text-2)">{{ sec.subtitle }}</div>
+          </div>
+          <sc-if value="{{ sec.primary }}" hint-placeholder-val="{{ false }}"><button style="height:38px;padding-inline:15px;display:flex;align-items:center;gap:8px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;box-shadow:var(--shadow)" style-hover="background:var(--primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ sec.primaryIcon }}"></path></svg>{{ sec.primary }}</button></sc-if>
+        </div>
+
+        <!-- sub-tabs -->
+        <div style="display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden">
+          <sc-for list="{{ subTabs }}" as="tb" hint-placeholder-count="4"><button onClick="{{ tb.go }}" aria-current="{{ tb.current }}" style="height:40px;padding-inline:14px;border:0;background:transparent;font-size:13.5px;font-weight:600;color:{{ tb.fg }};border-bottom:2px solid {{ tb.bd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px;white-space:nowrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tb.d }}"></path></svg>{{ tb.label }}</button></sc-for>
+        </div>
+
+        <!-- ===== STATE: LOADING ===== -->
+        <sc-if value="{{ dsLoading }}" hint-placeholder-val="{{ false }}">
+          <div class="card"><div style="padding:14px"><sc-for list="{{ skel }}" as="s" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:13px;padding:13px 6px;animation:acmpShimmer 1.4s ease-in-out infinite"><span style="width:32px;height:32px;border-radius:50%;background:var(--sunken);flex:0 0 auto"></span><span style="flex:1 1 auto"><span style="display:block;height:10px;width:32%;background:var(--sunken);border-radius:5px;margin-bottom:8px"></span><span style="display:block;height:9px;width:60%;background:var(--sunken);border-radius:5px"></span></span><span style="width:80px;height:22px;background:var(--sunken);border-radius:6px;flex:0 0 auto"></span></div></sc-for></div></div>
+        </sc-if>
+
+        <!-- ===== STATE: EMPTY ===== -->
+        <sc-if value="{{ dsEmpty }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="padding:60px 24px;text-align:center"><div style="width:52px;height:52px;margin:0 auto 16px;border-radius:13px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M11 11a4 4 0 100-8 4 4 0 000 8z"></path></svg></div><h3 style="margin:0 0 7px;font-size:17px;font-weight:700">{{ sec.emptyT }}</h3><p style="margin:0 auto 18px;font-size:13.5px;color:var(--text-2);max-width:380px;line-height:1.6">{{ sec.emptyB }}</p><button style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px">{{ sec.primary }}</button></div>
+        </sc-if>
+
+        <!-- ===== STATE: ERROR ===== -->
+        <sc-if value="{{ dsError }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="padding:54px 24px;text-align:center"><div style="width:52px;height:52px;margin:0 auto 16px;border-radius:13px;background:var(--st-danger-bg);color:var(--st-danger-fg);display:flex;align-items:center;justify-content:center"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0zM12 9v4M12 17h.01"></path></svg></div><h3 style="margin:0 0 7px;font-size:17px;font-weight:700">{{ t.errorT }}</h3><p style="margin:0 auto 8px;font-size:13.5px;color:var(--text-2);max-width:400px;line-height:1.6">{{ t.errorB }}</p><div style="font-family:var(--mono);font-size:11.5px;color:var(--text-3);margin-bottom:18px" dir="ltr">{{ sec.errorReq }}</div><button style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"></path></svg>{{ t.retry }}</button></div>
+        </sc-if>
+
+        <!-- ===== STATE: PERMISSION DENIED ===== -->
+        <sc-if value="{{ dsPermission }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="padding:64px 24px;text-align:center"><div style="width:56px;height:56px;margin:0 auto 18px;border-radius:14px;background:var(--subtle);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></div><h3 style="margin:0 0 8px;font-size:18px;font-weight:700">{{ t.permT }}</h3><p style="margin:0 auto 6px;font-size:13.5px;color:var(--text-2);max-width:420px;line-height:1.6">{{ t.permB }}</p><div style="display:inline-flex;align-items:center;gap:7px;margin:6px 0 18px;font-size:12px;color:var(--text-3);font-family:var(--mono)" dir="ltr">403 · /admin</div><div style="display:flex;gap:9px;justify-content:center"><button style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px">{{ t.backHome }}</button><button style="height:36px;padding-inline:16px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px">{{ t.requestAccess }}</button></div></div>
+        </sc-if>
+
+        <!-- ===== LIVE ===== -->
+        <sc-if value="{{ dsLive }}" hint-placeholder-val="{{ true }}">
+
+          <!-- (1) USERS & MEMBERSHIP -->
+          <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:flex-start;gap:10px;background:var(--st-info-bg);border:1px solid var(--st-info-dot);border-radius:10px;padding:11px 14px;margin-bottom:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--st-info-fg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><div style="font-size:12.5px;color:var(--st-info-fg);line-height:1.55"><b>{{ t.kcTitle }}</b> — {{ t.kcNote }}</div></div>
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+              <sc-for list="{{ userFilters }}" as="f" hint-placeholder-count="3"><button class="fbtn" style-hover="background:var(--subtle)">{{ f }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button></sc-for>
+              <div style="margin-inline-start:auto;display:flex;align-items:center;gap:9px">{{ stateSwitcher }}<span style="font-size:12px;color:var(--text-3)">{{ t.showingUsers }}</span></div>
+            </div>
+            <div class="card">
+              <div class="gUsers hrow"><span class="hcell">{{ t.cUser }}</span><span class="hcell">{{ t.cRole }}</span><span class="hcell">{{ t.cMembership }}</span><span class="hcell">{{ t.cAssign }}</span><span class="hcell">{{ t.cStatus }}</span></div>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="8">
+                <div class="gUsers row" style="min-height:62px">
+                  <span class="cell" style="gap:11px;padding-block:10px"><span class="av">{{ u.initials }}</span><span style="min-width:0"><span style="display:block;font-size:13.5px;font-weight:600;color:var(--text)">{{ u.name }}</span><span class="sub2" dir="ltr" style="text-align:start">{{ u.email }}</span></span></span>
+                  <span class="cell"><span style="display:inline-flex;flex-direction:column;gap:3px"><span style="font-size:13px;font-weight:600;color:var(--text)">{{ u.role }}</span><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ t.fromKc }}</span></span></span>
+                  <span class="cell" style="padding-block:10px"><span style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><sc-for list="{{ u.committees }}" as="c" hint-placeholder-count="1"><span class="mchip">{{ c }}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></sc-for><sc-if value="{{ u.observer }}" hint-placeholder-val="{{ false }}"><span class="mchip" style="font-style:italic">{{ t.observer }}</span></sc-if><button aria-label="{{ t.addCommittee }}" style="width:22px;height:22px;border:1px dashed var(--border-strong);background:transparent;color:var(--text-3);border-radius:6px;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--accent);color:var(--accent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button></span><span style="display:flex;align-items:center;gap:8px"><button onClick="{{ u.toggleVote }}" role="switch" aria-checked="{{ u.voteAria }}" aria-label="{{ t.votingEligible }}" class="sw" style="background:{{ u.voteBg }}"><span class="knob" style="inset-inline-start:{{ u.voteX }}"></span></button><span style="font-size:11.5px;font-weight:500;color:{{ u.voteLabelColor }}">{{ t.votingEligible }}</span></span></span></span>
+                  <span class="cell"><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);font-feature-settings:'tnum'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11"></path></svg>{{ u.assign }}</span></span>
+                  <span class="cell"><span class="chip" style="{{ u.statusChip }}"><span class="dot" style="background:{{ u.statusDot }}"></span>{{ u.status }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (2) TEMPLATES -->
+          <sc-if value="{{ isTemplates }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+              <sc-for list="{{ tplFilters }}" as="f" hint-placeholder-count="2"><button class="fbtn" style-hover="background:var(--subtle)">{{ f }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button></sc-for>
+              <div style="margin-inline-start:auto;display:flex;align-items:center;gap:9px">{{ stateSwitcher }}<span style="font-size:12px;color:var(--text-3)">{{ t.showingTpl }}</span></div>
+            </div>
+            <div class="card">
+              <div class="gTpl hrow"><span class="hcell">{{ t.cName }}</span><span class="hcell">{{ t.cType }}</span><span class="hcell">{{ t.cVersion }}</span><span class="hcell">{{ t.cStatus }}</span><span class="hcell">{{ t.cUpdated }}</span><span class="hcell"></span></div>
+              <sc-for list="{{ templates }}" as="tp" hint-placeholder-count="7">
+                <div class="gTpl row" style="min-height:50px">
+                  <span class="cell" style="gap:10px"><span style="width:28px;height:28px;border-radius:7px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-2);flex:0 0 auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM9 13h6M9 17h4"></path></svg></span><span class="ttl">{{ tp.name }}</span></span>
+                  <span class="cell"><span style="font-size:12.5px;color:var(--text-2)">{{ tp.type }}</span></span>
+                  <span class="cell"><span class="key" style="font-size:11.5px;color:var(--text-2)">{{ tp.version }}</span></span>
+                  <span class="cell"><span class="chip" style="{{ tp.chip }}"><span class="dot" style="background:{{ tp.dot }}"></span>{{ tp.status }}</span></span>
+                  <span class="cell"><span style="font-size:12.5px;color:var(--text-2);font-feature-settings:'tnum'">{{ tp.updated }}</span></span>
+                  <span class="cell"><button aria-label="{{ t.edit }}" style="width:30px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:7px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle);color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg></button></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (3) SYSTEM HEALTH -->
+          <sc-if value="{{ isHealth }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:{{ overallBg }};border:1px solid {{ overallBd }};border-radius:11px;padding:13px 16px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:11px"><span style="width:36px;height:36px;border-radius:9px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:{{ overallFg }};flex:0 0 auto"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span><div><div style="font-size:14.5px;font-weight:700;color:{{ overallFg }}">{{ overallTitle }}</div><div style="font-size:12px;color:var(--text-2)">{{ t.lastRefresh }}</div></div></div>
+              <button style="height:34px;padding-inline:13px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:8px;font-weight:600;font-size:12.5px" style-hover="background:var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"></path></svg>{{ t.refresh }}</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+              <sc-for list="{{ healthTiles }}" as="h" hint-placeholder-count="6">
+                <div class="tile" style="opacity:{{ h.op }}">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:13px"><div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:34px;height:34px;border-radius:9px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-2);flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ h.d }}"></path></svg></span><span style="font-size:13.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis">{{ h.name }}</span></div><span class="chip" style="{{ h.chip }};flex:0 0 auto"><span class="dot" style="background:{{ h.dot }}"></span>{{ h.statusLabel }}</span></div>
+                  <div style="font-size:13px;color:var(--text);font-weight:500;margin-bottom:4px;font-feature-settings:'tnum'">{{ h.metric }}</div>
+                  <div style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4l2.5 1.5"></path></svg>{{ h.checked }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (4) NOTIFICATION SETTINGS -->
+          <sc-if value="{{ isNotif }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px">
+              <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="3">
+                <div class="tile" style="opacity:{{ ch.op }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:9px;background:{{ ch.iconBg }};display:flex;align-items:center;justify-content:center;color:{{ ch.iconFg }};flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ ch.d }}"></path></svg></span><span style="font-size:14px;font-weight:600">{{ ch.name }}</span></div><span class="chip" style="{{ ch.chip }}">{{ ch.badge }}</span></div>
+                  <p style="margin:0 0 12px;font-size:12px;color:var(--text-2);line-height:1.5">{{ ch.desc }}</p>
+                  <div style="display:flex;align-items:center;gap:9px"><span aria-disabled="{{ ch.disabledAria }}" class="sw" style="background:{{ ch.swBg }};cursor:{{ ch.cursor }}"><span class="knob" style="inset-inline-start:{{ ch.swX }}"></span></span><span style="font-size:12px;font-weight:600;color:{{ ch.swLabelColor }}">{{ ch.swLabel }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+            <h2 style="margin:0 0 4px;font-size:15px;font-weight:700">{{ t.matrixTitle }}</h2>
+            <p style="margin:0 0 13px;font-size:12.5px;color:var(--text-2)">{{ t.matrixSub }}</p>
+            <div class="card">
+              <div class="gMatrix hrow"><span class="hcell">{{ t.cEvent }}</span><span class="hcell" style="justify-content:center">{{ t.cInApp }}</span><span class="hcell" style="justify-content:center;opacity:.6">{{ t.cEmail }}</span><span class="hcell" style="justify-content:center;opacity:.6">{{ t.cWebex }}</span></div>
+              <sc-for list="{{ events }}" as="e" hint-placeholder-count="8">
+                <div class="gMatrix row" style="min-height:46px">
+                  <span class="cell"><span style="font-size:13px;color:var(--text)">{{ e.label }}</span></span>
+                  <span class="cell" style="justify-content:center"><button onClick="{{ e.toggle }}" role="switch" aria-checked="{{ e.onAria }}" aria-label="{{ e.label }}" class="sw" style="background:{{ e.bg }}"><span class="knob" style="inset-inline-start:{{ e.x }}"></span></button></span>
+                  <span class="cell" style="justify-content:center"><span style="font-size:11px;font-weight:600;color:var(--text-3);background:var(--subtle);border-radius:6px;padding:2px 8px">{{ t.planned }}</span></span>
+                  <span class="cell" style="justify-content:center"><span style="font-size:11px;font-weight:600;color:var(--text-3);background:var(--subtle);border-radius:6px;padding:2px 8px">{{ t.planned }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+        </sc-if>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;defaultSection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;users&quot;,&quot;options&quot;:[&quot;users&quot;,&quot;templates&quot;,&quot;health&quot;,&quot;notif&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;,&quot;permission&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { sub: this.props.defaultSection || 'users', lang:'en', theme:'light', dataState: this.props.dataState || 'live', voting:{}, events:{} };
+  set(k,v){ this.setState({ [k]:v }); }
+
+  ICN = {
+    home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10', backlog:'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
+    agenda:'M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
+    decisions:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4', adrs:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7',
+    risks:'M12 4l9 16H3L12 4zM12 10v4M12 17h.01', actions:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11',
+    deps:'M6 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 22a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM6 7v3a3 3 0 003 3h6a3 3 0 003-3V7M12 13v4',
+    research:'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM10 13a2 2 0 104 0 2 2 0 00-4 0zM13.5 15.5L15 17',
+    wiki:'M12 6c-1.5-1-4-1.5-6-1.5V18c2 0 4.5.5 6 1.5 1.5-1 4-1.5 6-1.5V4.5c-2 0-4.5.5-6 1.5zM12 6v13',
+    diagrams:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    reports:'M4 20V10M10 20V4M16 20v-8M3 20h18',
+    audit:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'
+  };
+
+  chip(s){ return `background:var(--st-${s}-bg);color:var(--st-${s}-fg)`; }
+  dot(s){ return `var(--st-${s}-dot)`; }
+
+  renderVals(){
+    const { sub, lang, theme, dataState, voting, events } = this.state;
+    const isRtl = lang==='ar'; const L=(en,ar)=>isRtl?ar:en;
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const knobX=(on)=>on?'18px':'2px';
+
+    const t = {
+      search:L('Search users, templates…','ابحث في المستخدمين والقوالب…'),
+      adminName:L('IT Admin','مسؤول النظام'), administrator:L('Administrator','مسؤول النظام'),
+      grpCommittee:L('Committee','اللجنة'), grpGov:L('Governance','الحوكمة'), grpKnowledge:L('Knowledge','المعرفة'), grpInsights:L('Insights','التحليلات'), grpSystem:L('System','النظام'), grpAdmin:L('Administration','الإدارة'),
+      administration:L('Administration','الإدارة'),
+      errorT:L('Couldn\u2019t load','تعذّر التحميل'), errorB:L('A network error interrupted the request. No data was lost — please retry.','حدث خطأ في الشبكة أثناء الطلب. لم تُفقد أي بيانات — يُرجى إعادة المحاولة.'),
+      retry:L('Retry','إعادة المحاولة'),
+      permT:L('You don\u2019t have access','لا تملك صلاحية الوصول'), permB:L('Administration is limited to the Administrator role. Your role can\u2019t manage users, templates, or system settings. Contact your system administrator.','الإدارة مقصورة على دور مسؤول النظام. دورك لا يسمح بإدارة المستخدمين أو القوالب أو إعدادات النظام. تواصل مع مسؤول النظام.'),
+      backHome:L('Back to Home','العودة للرئيسية'), requestAccess:L('Request access','طلب صلاحية'),
+      // users
+      kcTitle:L('Roles are read-only','الأدوار للقراءة فقط'), kcNote:L('committee roles are sourced from Keycloak claims. ACMP does not create accounts or edit roles — there is no self-registration. Membership and voting eligibility are managed here.','تُستمدّ أدوار اللجنة من مطالبات Keycloak. لا يُنشئ ACMP حسابات ولا يعدّل الأدوار — لا يوجد تسجيل ذاتي. تُدار العضوية وأهلية التصويت من هنا.'),
+      cUser:L('Name / email','الاسم / البريد'), cRole:L('Committee role','دور اللجنة'), cMembership:L('Committee membership','عضوية اللجنة'), cAssign:L('Assignments','الإسنادات'), cStatus:L('Status','الحالة'),
+      fromKc:L('from Keycloak','من Keycloak'), votingEligible:L('Voting-eligible','مؤهّل للتصويت'), observer:L('Observer','مراقب'), addCommittee:L('Add committee','إضافة لجنة'),
+      showingUsers:L('Showing 8 users','عرض 8 مستخدمين'),
+      // templates
+      cName:L('Template','القالب'), cType:L('Type','النوع'), cVersion:L('Version','الإصدار'), cUpdated:L('Last updated','آخر تحديث'), edit:L('Edit','تحرير'), showingTpl:L('Showing 7 templates','عرض 7 قوالب'),
+      // health
+      lastRefresh:L('Last refreshed 30 seconds ago','آخر تحديث قبل 30 ثانية'), refresh:L('Refresh','تحديث'),
+      // notif
+      matrixTitle:L('Default notifications by event type','الإشعارات الافتراضية حسب نوع الحدث'), matrixSub:L('In-app is the only delivery channel in v1. Email and Webex are planned for Phase 2.','الإشعارات داخل التطبيق هي قناة التوصيل الوحيدة في الإصدار الأول. البريد وWebex مخطّطان للمرحلة الثانية.'),
+      cEvent:L('Event type','نوع الحدث'), cInApp:L('In-app','داخل التطبيق'), cEmail:L('Email','البريد'), cWebex:L('Webex','Webex'), planned:L('Planned','مخطّط')
+    };
+
+    // nav (context, inert)
+    const inert='background:transparent;color:var(--text-2);font-weight:500;opacity:.55;cursor:default';
+    const navCommittee=[ {label:L('Home','الرئيسية'),d:this.ICN.home,style:inert}, {label:L('Backlog','قائمة المواضيع'),d:this.ICN.backlog,style:inert}, {label:L('Agenda & Meetings','الأجندة والاجتماعات'),d:this.ICN.agenda,style:inert}, {label:L('Decisions','القرارات'),d:this.ICN.decisions,style:inert}, {label:L('Actions','الإجراءات'),d:this.ICN.actions,style:inert} ];
+    const navGov=[ {label:L('ADRs & Invariants','سجلات القرار والثوابت'),d:this.ICN.adrs,style:inert}, {label:L('Risks','المخاطر'),d:this.ICN.risks,style:inert}, {label:L('Dependencies','الاعتماديات'),d:this.ICN.deps,style:inert} ];
+    const navKnowledge=[ {label:L('Research','البحث'),d:this.ICN.research,style:inert}, {label:L('Knowledge / Wiki','المعرفة / ويكي'),d:this.ICN.wiki,style:inert}, {label:L('Diagrams','المخططات'),d:this.ICN.diagrams,style:inert} ];
+    const navInsights=[ {label:L('Reports','التقارير'),d:this.ICN.reports,style:inert} ];
+    const navAudit=[ {label:L('Audit Trail','سجل التدقيق'),d:this.ICN.audit,style:inert} ];
+
+    // sub-tabs
+    const TABS=[ ['users',L('Users & Membership','المستخدمون والعضوية'),'M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M11 11a4 4 0 100-8 4 4 0 000 8zM21 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8'],
+      ['templates',L('Templates','القوالب'),'M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM9 13h6M9 17h4'],
+      ['health',L('System Health','صحّة النظام'),'M22 12h-4l-3 9L9 3l-3 9H2'],
+      ['notif',L('Notification Settings','إعدادات الإشعارات'),'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0'] ];
+    const subTabs=TABS.map(([k,label,d])=>({ label,d,go:()=>this.set('sub',k), current:sub===k?'page':null, fg:sub===k?'var(--text)':'var(--text-2)', bd:sub===k?'var(--accent)':'transparent' }));
+
+    const isUsers=sub==='users', isTemplates=sub==='templates', isHealth=sub==='health', isNotif=sub==='notif';
+
+    // section header config
+    const SEC={
+      users:{ subtitle:L('Users, roles, and committee membership','المستخدمون والأدوار وعضوية اللجنة'), primary:L('Provision via Keycloak','تزويد عبر Keycloak'), primaryIcon:'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1', emptyT:L('No users match','لا مستخدمين مطابقين'), emptyB:L('No users match the current filters. Users are provisioned in Keycloak.','لا مستخدمين يطابقون المرشّحات. يُزوَّد المستخدمون في Keycloak.'), errorReq:'GET /api/admin/users — 503 · req 4b2a-…-e91' },
+      templates:{ subtitle:L('Standardized templates for topics, ADRs, minutes, decisions, and research','قوالب موحّدة للمواضيع والسجلات والمحاضر والقرارات والأبحاث'), primary:L('New template','قالب جديد'), primaryIcon:'M12 5v14M5 12h14', emptyT:L('No templates','لا قوالب'), emptyB:L('No templates match the current filters.','لا قوالب تطابق المرشّحات الحالية.'), errorReq:'GET /api/admin/templates — 503 · req 6c1f-…-a72' },
+      health:{ subtitle:L('Live status of core services and integrations','الحالة المباشرة للخدمات والتكاملات الأساسية'), primary:null, emptyT:L('No services','لا خدمات'), emptyB:L('No services are registered.','لا خدمات مُسجّلة.'), errorReq:'GET /api/admin/health — 503 · req 2e8d-…-c44' },
+      notif:{ subtitle:L('Delivery channels and per-event default notifications','قنوات التوصيل والإشعارات الافتراضية لكل حدث'), primary:L('Save changes','حفظ التغييرات'), primaryIcon:'M5 12l5 5L20 7', emptyT:L('Nothing here','لا شيء هنا'), emptyB:L('No notification settings to show.','لا إعدادات إشعارات لعرضها.'), errorReq:'GET /api/admin/notifications — 503 · req 8f3b-…-d05' }
+    };
+    const sec=SEC[sub];
+
+    // ---------- USERS ----------
+    const usersRaw=[
+      { id:'u1', initials:'KA', name:{en:'Khalid A.',ar:'خالد ع.'}, email:'khalid.a@acmp.gov', role:{en:'Secretary of the Committee',ar:'أمين سر اللجنة'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:true, assign:12, st:'active' },
+      { id:'u2', initials:'SM', name:{en:'Sara M.',ar:'سارة م.'}, email:'sara.m@acmp.gov', role:{en:'Chairman',ar:'رئيس'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:true, assign:5, st:'active' },
+      { id:'u3', initials:'OH', name:{en:'Omar H.',ar:'عمر هـ.'}, email:'omar.h@acmp.gov', role:{en:'Member',ar:'عضو'}, committees:[{en:'Architecture',ar:'الهندسة'},{en:'Identity',ar:'الهوية'}], vote:true, assign:8, st:'active' },
+      { id:'u4', initials:'NP', name:{en:'Noura P.',ar:'نورة ب.'}, email:'noura.p@acmp.gov', role:{en:'Reviewer',ar:'مراجع'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:false, assign:6, st:'active' },
+      { id:'u5', initials:'FN', name:{en:'Faisal N.',ar:'فيصل ن.'}, email:'faisal.n@acmp.gov', role:{en:'Member',ar:'عضو'}, committees:[{en:'Platform',ar:'المنصة'}], vote:true, assign:4, st:'active' },
+      { id:'u6', initials:'AO', name:{en:'Audit Office',ar:'مكتب التدقيق'}, email:'audit@acmp.gov', role:{en:'Auditor',ar:'مدقّق'}, committees:[], vote:false, assign:0, st:'active' },
+      { id:'u7', initials:'LK', name:{en:'Lina K.',ar:'لينا ك.'}, email:'lina.k@acmp.gov', role:{en:'Submitter',ar:'مقدّم'}, committees:[{en:'Platform',ar:'المنصة'}], vote:false, assign:2, st:'invited' },
+      { id:'u8', initials:'IT', name:{en:'IT Admin',ar:'مسؤول النظام'}, email:'it.admin@acmp.gov', role:{en:'Administrator',ar:'مسؤول'}, committees:[], vote:false, assign:0, st:'active' }
+    ];
+    const uStatus={ active:{l:L('Active','نشط'),s:'success'}, invited:{l:L('Invited','مدعو'),s:'info'}, disabled:{l:L('Disabled','معطّل'),s:'neutral'} };
+    const users=usersRaw.map(u=>{ const on = (u.id in voting)?voting[u.id]:u.vote; const s=uStatus[u.st]; return {
+      initials:u.initials, name:u.name[lang], email:u.email, role:u.role[lang],
+      committees:u.committees.map(c=>c[lang]), observer:u.committees.length===0,
+      voteAria:on?'true':'false', voteBg:on?'var(--accent)':'var(--border-strong)', voteX:knobX(on), voteLabelColor:on?'var(--text)':'var(--text-3)',
+      toggleVote:()=>this.setState(st=>({ voting:{...st.voting, [u.id]: !((u.id in st.voting)?st.voting[u.id]:u.vote)} })),
+      assign:String(u.assign), status:s.l, statusChip:this.chip(s.s), statusDot:this.dot(s.s) }; });
+
+    // ---------- TEMPLATES ----------
+    const tplRaw=[
+      { name:{en:'Standard Topic Submission',ar:'نموذج تقديم موضوع قياسي'}, type:{en:'Topic type',ar:'نوع الموضوع'}, v:'v3', st:'active', up:{en:'12 Feb 2026',ar:'١٢ فبراير ٢٠٢٦'} },
+      { name:{en:'Architecture Decision Record (MADR)',ar:'سجل قرار معماري (MADR)'}, type:{en:'ADR',ar:'سجل قرار'}, v:'v2', st:'active', up:{en:'8 Feb 2026',ar:'٨ فبراير ٢٠٢٦'} },
+      { name:{en:'Minutes of Meeting',ar:'محضر اجتماع'}, type:{en:'MoM',ar:'محضر'}, v:'v4', st:'active', up:{en:'18 Feb 2026',ar:'١٨ فبراير ٢٠٢٦'} },
+      { name:{en:'Decision Record',ar:'سجل قرار'}, type:{en:'Decision',ar:'قرار'}, v:'v2', st:'active', up:{en:'5 Feb 2026',ar:'٥ فبراير ٢٠٢٦'} },
+      { name:{en:'Research Brief',ar:'موجز بحثي'}, type:{en:'Research',ar:'بحث'}, v:'v1', st:'draft', up:{en:'22 Feb 2026',ar:'٢٢ فبراير ٢٠٢٦'} },
+      { name:{en:'Risk Assessment Note',ar:'مذكّرة تقييم مخاطر'}, type:{en:'Topic type',ar:'نوع الموضوع'}, v:'v1', st:'archived', up:{en:'14 Nov 2025',ar:'١٤ نوفمبر ٢٠٢٥'} },
+      { name:{en:'Invariant Definition',ar:'تعريف ثابت'}, type:{en:'ADR',ar:'سجل قرار'}, v:'v1', st:'draft', up:{en:'20 Feb 2026',ar:'٢٠ فبراير ٢٠٢٦'} }
+    ];
+    const tStatus={ active:{l:L('Active','نشط'),s:'success'}, draft:{l:L('Draft','مسودة'),s:'neutral'}, archived:{l:L('Archived','مؤرشف'),s:'warn'} };
+    const templates=tplRaw.map(tp=>{ const s=tStatus[tp.st]; return { name:tp.name[lang], type:tp.type[lang], version:tp.v, status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), updated:tp.up[lang] }; });
+
+    // ---------- HEALTH ----------
+    const hRaw=[
+      { name:{en:'Application (API)',ar:'التطبيق (API)'}, st:'op', d:'M3 5h18v6H3zM3 13h18v6H3zM7 8h.01M7 16h.01', metric:{en:'p95 142 ms · uptime 99.98%',ar:'p95 ‎142 مل.ث · جهوزية 99.98%'}, checked:{en:'checked 30s ago',ar:'فُحص قبل 30 ث'} },
+      { name:{en:'SQL Server',ar:'SQL Server'}, st:'op', d:'M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6', metric:{en:'query 8 ms · uptime 99.99%',ar:'استعلام 8 مل.ث · جهوزية 99.99%'}, checked:{en:'checked 30s ago',ar:'فُحص قبل 30 ث'} },
+      { name:{en:'MinIO object storage',ar:'تخزين MinIO'}, st:'op', d:'M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8', metric:{en:'24 ms · uptime 99.95%',ar:'24 مل.ث · جهوزية 99.95%'}, checked:{en:'checked 30s ago',ar:'فُحص قبل 30 ث'} },
+      { name:{en:'Seq logging',ar:'تسجيل Seq'}, st:'degraded', d:'M4 6h16M4 10h16M4 14h10M4 18h7', metric:{en:'ingest lag 45 s',ar:'تأخّر الاستيعاب 45 ث'}, checked:{en:'checked 1m ago',ar:'فُحص قبل دقيقة'} },
+      { name:{en:'Background jobs (Hangfire)',ar:'المهام الخلفية (Hangfire)'}, st:'op', d:'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2', metric:{en:'0 failed · 12 queued',ar:'0 فاشلة · 12 في الطابور'}, checked:{en:'checked 30s ago',ar:'فُحص قبل 30 ث'} },
+      { name:{en:'Webex / Tarseem',ar:'Webex / ترسيم'}, st:'na', d:'M15 10l5-3v10l-5-3M3 7a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z', metric:{en:'Phase 2 — not configured',ar:'المرحلة الثانية — غير مُهيّأ'}, checked:{en:'—',ar:'—'} }
+    ];
+    const hStatus={ op:{l:L('Operational','تعمل'),s:'success'}, degraded:{l:L('Degraded','متدهور'),s:'warn'}, na:{l:L('Not configured','غير مُهيّأ'),s:'neutral'} };
+    const healthTiles=hRaw.map(h=>{ const s=hStatus[h.st]; return { name:h.name[lang], d:h.d, statusLabel:s.l, chip:this.chip(s.s), dot:this.dot(s.s), metric:h.metric[lang], checked:h.checked[lang], op:h.st==='na'?'.62':'1' }; });
+    const anyDegraded=hRaw.some(h=>h.st==='degraded');
+    const overallTitle=anyDegraded?L('1 system degraded — core services operational','نظام واحد متدهور — الخدمات الأساسية تعمل'):L('All core systems operational','كل الأنظمة الأساسية تعمل');
+    const overallFg=anyDegraded?'var(--st-warn-fg)':'var(--st-success-fg)';
+    const overallBg=anyDegraded?'var(--st-warn-bg)':'var(--st-success-bg)';
+    const overallBd=anyDegraded?'var(--st-warn-dot)':'var(--st-success-dot)';
+
+    // ---------- NOTIFICATION SETTINGS ----------
+    const channels=[
+      { key:'inapp', name:L('In-app','داخل التطبيق'), d:'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0', badge:L('Active','نشط'), chip:this.chip('success'), desc:L('The only delivery channel in v1. Always on — every committee event reaches the recipient in-app.','قناة التوصيل الوحيدة في الإصدار الأول. مُفعّلة دائمًا — كل حدث لجنة يصل المستلم داخل التطبيق.'), on:true, locked:true, iconBg:'var(--st-success-bg)', iconFg:'var(--st-success-fg)' },
+      { key:'email', name:L('Email','البريد الإلكتروني'), d:'M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 7l9 6 9-6', badge:L('Phase 2 · Planned','المرحلة 2 · مخطّط'), chip:this.chip('neutral'), desc:L('Planned for Phase 2. SMTP delivery of digests and high-priority events. Not active in v1.','مخطّط للمرحلة الثانية. توصيل عبر SMTP للملخّصات والأحداث عالية الأولوية. غير مُفعّل في الإصدار الأول.'), on:false, locked:true, iconBg:'var(--subtle)', iconFg:'var(--text-3)' },
+      { key:'webex', name:L('Webex / Tarseem','Webex / ترسيم'), d:'M15 10l5-3v10l-5-3M3 7a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z', badge:L('Phase 2 · Planned','المرحلة 2 · مخطّط'), chip:this.chip('neutral'), desc:L('Planned for Phase 2. Meeting and vote reminders pushed to Webex spaces. Not active in v1.','مخطّط للمرحلة الثانية. تذكيرات الاجتماعات والتصويت تُرسل إلى مساحات Webex. غير مُفعّل في الإصدار الأول.'), on:false, locked:true, iconBg:'var(--subtle)', iconFg:'var(--text-3)' }
+    ].map(c=>({ name:c.name, d:c.d, badge:c.badge, chip:c.chip, desc:c.desc, op:c.on?'1':'.72', iconBg:c.iconBg, iconFg:c.iconFg,
+      swBg:c.on?'var(--accent)':'var(--border-strong)', swX:knobX(c.on), cursor:'not-allowed', disabledAria:'true',
+      swLabel:c.on?L('On','مُفعّل'):L('Off','مُعطّل'), swLabelColor:c.on?'var(--text)':'var(--text-3)' }));
+
+    const evRaw=[
+      { id:'e1', label:{en:'Topic submitted',ar:'تقديم موضوع'}, on:true }, { id:'e2', label:{en:'Topic returned for rework',ar:'إعادة موضوع للعمل'}, on:true },
+      { id:'e3', label:{en:'Agenda published',ar:'نشر الأجندة'}, on:true }, { id:'e4', label:{en:'Meeting scheduled',ar:'جدولة اجتماع'}, on:true },
+      { id:'e5', label:{en:'Minutes ready for review',ar:'جاهزية المحضر للمراجعة'}, on:true }, { id:'e6', label:{en:'Decision approved',ar:'اعتماد قرار'}, on:true },
+      { id:'e7', label:{en:'Vote opened',ar:'فتح تصويت'}, on:true }, { id:'e8', label:{en:'Action assigned to you',ar:'إسناد إجراء إليك'}, on:true },
+      { id:'e9', label:{en:'Action overdue',ar:'تأخّر إجراء'}, on:true }, { id:'e10', label:{en:'Risk assigned to you',ar:'إسناد مخاطرة إليك'}, on:true },
+      { id:'e11', label:{en:'ADR published',ar:'نشر سجل قرار'}, on:false }
+    ];
+    const evList=evRaw.map(e=>{ const on=(e.id in events)?events[e.id]:e.on; return { label:e.label[lang], onAria:on?'true':'false', bg:on?'var(--accent)':'var(--border-strong)', x:knobX(on),
+      toggle:()=>this.setState(st=>({ events:{...st.events, [e.id]: !((e.id in st.events)?st.events[e.id]:e.on)} })) }; });
+
+    return {
+      dir:isRtl?'rtl':'ltr', theme, font, t, sec, subTabs,
+      langBtn:isRtl?'English':'العربية', toggleLang:()=>this.set('lang',isRtl?'en':'ar'),
+      toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      navCommittee, navGov, navKnowledge, navInsights, navAudit,
+      isUsers, isTemplates, isHealth, isNotif,
+      dsLive:dataState==='live', dsLoading:dataState==='loading', dsEmpty:dataState==='empty', dsError:dataState==='error', dsPermission:dataState==='permission',
+      skel:[0,0,0,0,0,0], stateSwitcher:'',
+      userFilters:[L('Role','الدور'),L('Status','الحالة'),L('Membership','العضوية')], tplFilters:[L('Type','النوع'),L('Status','الحالة')],
+      users, templates, healthTiles, channels, events:evList,
+      overallTitle, overallFg, overallBg, overallBd
+    };
+  }
+}
+</script>
+</body>
+</html>

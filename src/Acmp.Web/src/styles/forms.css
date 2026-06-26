@@ -1,0 +1,143 @@
+/*
+ * Form controls — Design System §06 (inputs/selects) + §06 choices.
+ * Labels are always visible and associated; required is marked; validation is
+ * inline and screen-reader announced. All logical properties → RTL-correct.
+ * Built on tokens; light + dark come for free.
+ */
+
+/* ============================ Field scaffold ============================ */
+.field { display: block; }
+.field + .field { margin-block-start: var(--sp-4); }
+.field-label { display: block; font-size: 12.5px; font-weight: 600; margin-block-end: 6px; }
+.field-req { color: var(--st-danger-fg); margin-inline-start: 2px; }
+.field-help { font-size: 11.5px; color: var(--text-3); margin-block-start: 5px; }
+.field-error {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--st-danger-fg); margin-block-start: 5px;
+}
+.field-error svg { flex: 0 0 auto; }
+
+/* ============================ Text inputs ============================ */
+.input, .textarea {
+  inline-size: 100%; min-inline-size: 0; block-size: 38px;
+  padding-inline: var(--sp-3); border: 1px solid var(--border-strong);
+  border-radius: var(--control-radius); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13.5px; outline: none;
+}
+.textarea { block-size: auto; min-block-size: 84px; padding-block: 9px; line-height: 1.5; resize: vertical; }
+.input:focus, .textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+/* Invalid: heavier danger border + tinted fill, announced via the field's role="alert". */
+.input[aria-invalid='true'], .textarea[aria-invalid='true'] {
+  border-width: 1.5px; border-color: var(--st-danger-dot); background: var(--st-danger-bg);
+}
+.input[aria-invalid='true']:focus, .textarea[aria-invalid='true']:focus { box-shadow: 0 0 0 3px var(--st-danger-bg); }
+/* Read-only system values (e.g. record keys) — calm, monospace, immutable. */
+.input[readonly] { border-color: var(--border); background: var(--subtle); color: var(--text-2); font-family: var(--mono); }
+
+/* ============================ Select trigger ============================ */
+/* A button that opens a Menu; the chevron sits at the inline-end edge. */
+.select-trigger {
+  inline-size: 100%; block-size: 38px; padding-inline: var(--sp-3);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+  border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13.5px; cursor: pointer;
+}
+.select-trigger:hover:not(:disabled) { background: var(--subtle); }
+.select-trigger:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.select-trigger[aria-invalid='true'] { border-width: 1.5px; border-color: var(--st-danger-dot); background: var(--st-danger-bg); }
+.select-trigger:disabled { cursor: not-allowed; color: var(--text-3); }
+.select-caret { color: var(--text-3); flex: 0 0 auto; }
+.select-placeholder { color: var(--text-3); }
+
+/* Select listbox popover (anchored to the full-width trigger). */
+.select { position: relative; }
+.select-backdrop { position: fixed; inset: 0; z-index: 60; }
+.select-panel {
+  position: absolute; inset-block-start: 42px; inset-inline: 0; z-index: 70; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 11px; box-shadow: var(--shadow-lg);
+}
+.option-list { max-block-size: 280px; overflow-y: auto; }
+.option {
+  display: flex; align-items: center; gap: 9px; inline-size: 100%; padding: 9px 12px;
+  border: 0; border-radius: 7px; background: transparent; color: var(--text);
+  font: inherit; font-size: 13px; text-align: start; cursor: pointer;
+}
+.option:hover, .option.option-active { background: var(--subtle); }
+.option[aria-selected='true'] { color: var(--accent); font-weight: 600; }
+.option-label { flex: 1 1 auto; min-inline-size: 0; }
+
+/* ============================ Multi-select ============================ */
+.tokens-field {
+  min-block-size: 42px; inline-size: 100%; border: 1px solid var(--border-strong); border-radius: var(--control-radius);
+  padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: var(--surface); cursor: text;
+}
+.tokens-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.token { display: inline-flex; align-items: center; gap: 6px; block-size: 26px; padding-inline: 10px; border-radius: 7px; background: var(--primary-tint); color: var(--accent); font-size: 12.5px; font-weight: 600; }
+.token-remove { border: 0; background: transparent; color: var(--accent); display: flex; padding: 0; cursor: pointer; }
+.tokens-input { flex: 1 1 80px; min-inline-size: 80px; block-size: 28px; border: 0; background: transparent; color: var(--text); outline: none; font: inherit; font-size: 13px; }
+.ms-option .ms-check {
+  inline-size: 16px; block-size: 16px; border-radius: 4px; flex: 0 0 auto;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.ms-option .ms-check svg { opacity: 0; }
+.ms-option[aria-selected='true'] .ms-check { background: var(--primary); border-color: var(--primary); }
+.ms-option[aria-selected='true'] .ms-check svg { opacity: 1; }
+
+/* ============================ Date picker ============================ */
+.datepicker { inline-size: 300px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.datepicker-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: 12px; }
+.datepicker-nav {
+  inline-size: 28px; block-size: 28px; border: 0; background: transparent; color: var(--text-2);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.datepicker-nav:hover { background: var(--subtle); }
+.datepicker-title { font-size: 13.5px; font-weight: 600; }
+.datepicker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.datepicker-dow { text-align: center; font-size: 10.5px; color: var(--text-3); font-weight: 600; padding-block-end: 4px; }
+.datepicker-day {
+  block-size: 30px; display: flex; align-items: center; justify-content: center; font-size: 12.5px;
+  border: 0; border-radius: 7px; background: transparent; color: var(--text); cursor: pointer; font-feature-settings: 'tnum';
+}
+.datepicker-day:hover { background: var(--subtle); }
+.datepicker-day[aria-selected='true'] { background: var(--primary); color: #fff; font-weight: 600; }
+.datepicker-day.is-today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.datepicker-prev svg { transform: scaleX(-1); }
+[dir="rtl"] .datepicker-prev svg { transform: none; }
+[dir="rtl"] .datepicker-next svg { transform: scaleX(-1); }
+
+/* ============================ Checkbox & radio ============================ */
+.choice { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer; }
+.choice input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
+.choice-box {
+  inline-size: 18px; block-size: 18px; border-radius: 5px; flex: 0 0 auto;
+  border: 1.5px solid var(--border-strong); background: var(--surface); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.choice-box svg { opacity: 0; }
+.choice input:checked + .choice-box { background: var(--primary); border-color: var(--primary); }
+.choice input:checked + .choice-box svg { opacity: 1; }
+.choice-box.radio { border-radius: var(--r-full); }
+.choice input:checked + .choice-box.radio { background: var(--surface); border-color: var(--accent); }
+.choice-radio-dot { inline-size: 9px; block-size: 9px; border-radius: var(--r-full); background: var(--accent); opacity: 0; }
+.choice input:checked + .choice-box.radio .choice-radio-dot { opacity: 1; }
+.choice input:focus-visible + .choice-box { outline: 2px solid var(--focus); outline-offset: 2px; }
+.choice input:disabled + .choice-box { opacity: .5; }
+
+/* ============================ Toggle (switch) ============================ */
+.toggle { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: 13px; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
+.toggle-track {
+  position: relative; inline-size: 36px; block-size: 20px; border-radius: 11px;
+  background: var(--border-strong); flex: 0 0 auto; transition: background var(--dur-fast) var(--ease);
+}
+.toggle input:checked + .toggle-track { background: var(--primary); }
+.toggle-knob {
+  position: absolute; inset-block-start: 2px; inset-inline-start: 2px;
+  inline-size: 16px; block-size: 16px; border-radius: var(--r-full); background: #fff;
+  transition: inset-inline-start var(--dur-fast) var(--ease);
+}
+.toggle input:checked + .toggle-track .toggle-knob { inset-inline-start: 18px; }
+.toggle input:focus-visible + .toggle-track { outline: 2px solid var(--focus); outline-offset: 2px; }
+.toggle input:disabled + .toggle-track { opacity: .5; }
+@media (prefers-reduced-motion: reduce) { .toggle-track, .toggle-knob { transition: none; } }

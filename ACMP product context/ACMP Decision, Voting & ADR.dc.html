@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input,textarea{font:inherit}
+  [data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpPulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .acmp-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+  <div aria-live="polite" class="acmp-sr">{{ liveMsg }}</div>
+
+  <!-- TOP BAR -->
+  <header style="position:sticky;top:0;z-index:40;height:56px;display:flex;align-items:center;gap:14px;padding-inline:20px;background:color-mix(in srgb,var(--header) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div><span style="font-size:15px;font-weight:700;letter-spacing:.3px">ACMP</span></div>
+    <div style="display:flex;gap:5px;padding:4px;background:var(--sunken);border-radius:9px">
+      <sc-for list="{{ screenTabs }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.go }}" aria-pressed="{{ s.sel }}" style="display:flex;align-items:center;gap:7px;height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;{{ s.style }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg>{{ s.label }}</button></sc-for>
+    </div>
+    <div style="flex:1 1 auto"></div>
+    <button onClick="{{ toggleDir }}" style="height:36px;padding-inline:11px;display:flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:600" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+    <button onClick="{{ toggleTheme }}" aria-label="Theme" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+  </header>
+
+  <main style="max-width:1240px;margin:0 auto;padding:22px 26px 90px">
+
+    <!-- ============ VOTING PANEL ============ -->
+    <sc-if value="{{ isVoting }}" hint-placeholder-val="{{ true }}">
+      <nav aria-label="Breadcrumb" style="font-size:12.5px;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:7px"><span>{{ t.meeting }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">TOP-2026-014</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="color:var(--text-2)">{{ t.vote }}</span></nav>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px"><h1 style="margin:0;font-size:21px;font-weight:700">{{ t.voteTitle }}</h1><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:10px;border-radius:7px;font-size:12px;font-weight:700;{{ vStateChip }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ vStateDot }};{{ vStatePulse }}"></span>{{ vStateLabel }}</span></div>
+        <div style="display:flex;gap:5px;padding:4px;background:var(--sunken);border-radius:9px"><span style="font-size:10px;font-weight:700;color:var(--text-3);padding-inline:6px;align-self:center;text-transform:uppercase;letter-spacing:.4px">{{ t.state }}</span><sc-for list="{{ voteStateTabs }}" as="v" hint-placeholder-count="3"><button onClick="{{ v.go }}" aria-pressed="{{ v.sel }}" style="height:28px;padding-inline:10px;border:0;border-radius:6px;font-size:11.5px;font-weight:600;{{ v.style }}">{{ v.label }}</button></sc-for></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-2);margin-bottom:18px"><span style="font-family:var(--mono);color:var(--accent)">VOTE-2026-014</span><span style="width:3px;height:3px;border-radius:50%;background:var(--text-3)"></span><span>{{ t.linkedTopic }}</span><span style="display:inline-flex;align-items:center;gap:5px;color:var(--st-neutral-fg);background:var(--st-neutral-bg);border-radius:6px;padding:2px 8px;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>{{ t.attributedVote }}</span></div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start">
+        <!-- left: motion + voters -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- motion -->
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">{{ t.motion }}</div>
+            <p style="margin:0 0 14px;font-size:16px;font-weight:600;line-height:1.45">{{ t.motionText }}</p>
+            <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--text-2)"><span style="display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"></path></svg>{{ t.calledBy }} <b style="color:var(--text);font-weight:600">{{ t.coordinator }}</b></span><span style="display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg>{{ t.voteType }}</span></div>
+          </section>
+
+          <!-- voters -->
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:13px 18px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;justify-content:space-between"><h2 style="margin:0;font-size:13.5px;font-weight:600">{{ t.eligibleVoters }} <span style="color:var(--text-3);font-weight:500">· {{ voterCount }}</span></h2><span style="font-size:11.5px;color:var(--text-3)">{{ t.castSummary }}</span></div>
+            <div>
+              <sc-for list="{{ voters }}" as="v" hint-placeholder-count="6">
+                <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border-soft)">
+                  <span style="width:34px;height:34px;border-radius:50%;background:{{ v.avBg }};color:{{ v.avFg }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:0 0 auto">{{ v.i }}</span>
+                  <div style="flex:1 1 auto;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span><span style="font-size:11.5px;color:var(--text-3)">{{ v.role }}</span><sc-if value="{{ v.isChair }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;color:var(--accent);background:var(--primary-tint);border-radius:5px;padding:1px 6px">{{ t.chair }}</span></sc-if></div>
+                    <sc-if value="{{ v.comment }}" hint-placeholder-val="{{ false }}"><div style="margin-top:6px;font-size:12.5px;color:var(--text-2);line-height:1.5;background:var(--subtle);border:1px solid var(--border-soft);border-radius:8px;border-start-start-radius:2px;padding:7px 11px">{{ v.comment }}</div></sc-if>
+                  </div>
+                  <div style="flex:0 0 auto">
+                    <sc-if value="{{ v.voted }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding-inline:11px;border-radius:8px;font-size:12.5px;font-weight:700;{{ v.voteChip }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="{{ v.voteIcon }}"></path></svg>{{ v.voteLabel }}</span></sc-if>
+                    <sc-if value="{{ v.pending }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding-inline:11px;border-radius:8px;font-size:12px;font-weight:600;background:var(--subtle);color:var(--text-3);border:1px dashed var(--border-strong)"><span style="width:6px;height:6px;border-radius:50%;background:var(--text-3);animation:acmpPulse 1.6s ease-in-out infinite"></span>{{ t.awaiting }}</span></sc-if>
+                    <sc-if value="{{ v.recused }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding-inline:11px;border-radius:8px;font-size:12px;font-weight:700;background:var(--st-warn-bg);color:var(--st-warn-fg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>{{ v.recusedLabel }}</span></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+
+        <!-- right: tally + your ballot + chairman -->
+        <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:74px">
+          <!-- tally -->
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:13px 16px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;justify-content:space-between"><h2 style="margin:0;font-size:13px;font-weight:600">{{ t.liveTally }}</h2><sc-if value="{{ vOpen }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--st-danger-fg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-danger-dot);animation:acmpPulse 1.6s ease-in-out infinite"></span>{{ t.liveLabel }}</span></sc-if></div>
+            <div style="padding:16px">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ tally }}" as="x" hint-placeholder-count="3"><div><div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;margin-bottom:5px"><span style="display:inline-flex;align-items:center;gap:7px;color:var(--text-2)"><span style="width:9px;height:9px;border-radius:3px;background:{{ x.color }}"></span>{{ x.label }}</span><span style="font-weight:700;font-feature-settings:'tnum';color:var(--text)">{{ x.count }}</span></div><div style="height:9px;border-radius:5px;background:var(--sunken);overflow:hidden"><span style="display:block;height:100%;width:{{ x.pct }};background:{{ x.color }};transition:width .3s"></span></div></div></sc-for>
+              </div>
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-soft)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--text-2)">{{ t.quorum }}</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:{{ quorum.fg }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ quorum.icon }}"></path></svg>{{ quorum.label }}</span></div>
+                <div style="display:flex;gap:3px"><sc-for list="{{ quorumPips }}" as="pip" hint-placeholder-count="6"><span style="flex:1;height:6px;border-radius:3px;background:{{ pip.bg }};box-shadow:{{ pip.shadow }}"></span></sc-for></div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:7px">{{ quorum.detail }}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- your ballot (open) -->
+          <sc-if value="{{ vOpen }}" hint-placeholder-val="{{ true }}">
+            <section style="background:var(--surface);border:1px solid var(--accent);border-radius:12px;box-shadow:var(--shadow)">
+              <div style="padding:13px 16px;border-bottom:1px solid var(--border-soft)"><h2 style="margin:0;font-size:13px;font-weight:600">{{ t.yourBallot }}</h2><div style="font-size:11px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>{{ t.ballotAttributed }}</div></div>
+              <div style="padding:14px 16px">
+                <div role="radiogroup" aria-label="{{ t.yourBallot }}" style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ ballotOptions }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" role="radio" aria-checked="{{ o.sel }}" style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1.5px solid {{ o.bd }};background:{{ o.bg }};border-radius:9px;text-align:start;width:100%" style-hover="border-color:{{ o.dot }}"><span style="width:18px;height:18px;border-radius:50%;border:2px solid {{ o.ringColor }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><span style="width:9px;height:9px;border-radius:50%;background:{{ o.dot }};opacity:{{ o.fill }}"></span></span><span style="flex:1 1 auto;font-size:13.5px;font-weight:600;color:{{ o.fg }}">{{ o.label }}</span></button></sc-for>
+                </div>
+                <textarea placeholder="{{ t.commentPh }}" rows="2" style="width:100%;margin-top:11px;padding:9px 11px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:12.5px;line-height:1.5;resize:vertical" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"></textarea>
+                <button onClick="{{ openConfirm }}" disabled="{{ castDisabled }}" style="width:100%;height:40px;margin-top:11px;border:0;background:{{ castBg }};color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:{{ castOp }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7 21h10a2 2 0 002-2V7l-5-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>{{ t.castVote }}</button>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft)"><button style="flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding-inline:11px;border:1px solid var(--border-strong);background:var(--surface);color:var(--st-warn-fg);border-radius:8px;font-size:12px;font-weight:600" style-hover="background:var(--st-warn-bg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>{{ t.recuseAction }}</button><span style="font-size:10.5px;color:var(--text-3);line-height:1.4">{{ t.recuseNote }}</span></div>
+                <div style="font-size:10.5px;color:var(--text-3);text-align:center;margin-top:8px">{{ t.castNote }}</div>
+              </div>
+            </section>
+          </sc-if>
+
+          <!-- chairman approval -->
+          <sc-if value="{{ vClosed }}" hint-placeholder-val="{{ false }}">
+            <section style="background:var(--st-success-bg);border:1px solid var(--st-success-dot);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+              <div style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:34px;height:34px;border-radius:9px;background:var(--st-success-dot);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg></span><div><div style="font-size:13.5px;font-weight:700;color:var(--st-success-fg)">{{ t.voteClosedLocked }}</div><div style="font-size:11.5px;color:var(--st-success-fg);opacity:.85">{{ t.closedAt }}</div></div></div>
+                <div style="background:var(--surface);border:1px solid var(--st-success-dot);border-radius:9px;padding:11px 13px"><div style="font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);margin-bottom:5px">{{ t.chairApproval }}</div><div style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">SM</span><div><div style="font-size:13px;font-weight:600">{{ t.chairApproved }}</div><div style="font-size:11px;color:var(--text-3)">S. M. · 18 Feb 2026 · 10:35</div></div></div></div>
+                <button style="width:100%;height:36px;margin-top:11px;border:1px solid var(--st-success-dot);background:transparent;color:var(--st-success-fg);border-radius:9px;font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4"></path></svg>{{ t.viewDecision }}</button>
+              </div>
+            </section>
+            <!-- chairman override (only visible to chair, shown as secondary) -->
+            <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:13px 16px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">{{ t.chairControls }}</div>
+              <button style="width:100%;height:34px;border:1px solid var(--st-warn-dot);background:var(--st-warn-bg);color:var(--st-warn-fg);border-radius:8px;font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3L12 4zM12 10v4M12 18h.01"></path></svg>{{ t.recordOverride }}</button>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:7px;line-height:1.5">{{ t.overrideNote }}</div>
+            </section>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- confirm dialog -->
+      <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="dialog" aria-modal="true" aria-label="{{ t.confirmTitle }}" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(10,14,18,.55);padding:20px">
+          <div style="width:400px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:22px">
+            <div style="display:flex;gap:13px;margin-bottom:16px"><span style="width:42px;height:42px;border-radius:11px;background:var(--primary-tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7 21h10a2 2 0 002-2V7l-5-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></span><div><h3 style="margin:0 0 5px;font-size:16px;font-weight:700">{{ t.confirmTitle }}</h3><p style="margin:0;font-size:13px;color:var(--text-2);line-height:1.55">{{ t.confirmBody }}</p></div></div>
+            <div style="background:var(--subtle);border:1px solid var(--border-soft);border-radius:10px;padding:13px;margin-bottom:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--text-3)">{{ t.youAreVoting }}</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--st-success-fg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ t.approve }}</span></div><div style="font-size:11.5px;color:var(--text-3)">{{ t.recordedAs }} <b style="color:var(--text-2)">{{ t.coordinator }}</b></div></div>
+            <div style="display:flex;justify-content:flex-end;gap:9px"><button onClick="{{ closeConfirm }}" style="height:38px;padding-inline:16px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)">{{ t.cancel }}</button><button onClick="{{ submitVote }}" style="height:38px;padding-inline:18px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:700;font-size:13px">{{ t.confirmCast }}</button></div>
+          </div>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ============ DECISION RECORD ============ -->
+    <sc-if value="{{ isDecision }}" hint-placeholder-val="{{ false }}">
+      <nav aria-label="Breadcrumb" style="font-size:12.5px;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:7px"><span>{{ t.decisions }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">DECN-2026-008</span></nav>
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:8px">
+        <div style="min-width:0;flex:1 1 420px">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:12.5px;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 9px">DECN-2026-008</span><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:10px;border-radius:7px;font-size:12px;font-weight:700;{{ decn.outcomeChip }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ decn.outcomeIcon }}"></path></svg>{{ decn.outcomeLabel }}</span><sc-if value="{{ decn.superseded }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:10px;border-radius:7px;font-size:12px;font-weight:700;background:var(--st-neutral-bg);color:var(--st-neutral-fg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9M3 4v4h4"></path></svg>{{ t.supersededBadge }}</span></sc-if></div>
+          <h1 style="margin:0;font-size:21px;font-weight:700;line-height:1.3">{{ t.decnTitle }}</h1>
+          <div style="margin-top:9px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-2)"><span style="display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M8 8l8 8"></path></svg>{{ t.fromTopic }} <span style="font-family:var(--mono);color:var(--accent)">TOP-2026-014</span></span><span style="display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7 21h10a2 2 0 002-2V7l-5-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>VOTE-2026-014</span></div>
+        </div>
+        <div style="display:flex;gap:9px;flex:0 0 auto">
+          <sc-if value="{{ decn.active }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ decn.hasAdr }}" hint-placeholder-val="{{ false }}"><button style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7"></path></svg>ADR-2026-003</button></sc-if>
+            <sc-if value="{{ decn.noAdr }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openConvert }}" style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:7px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;box-shadow:var(--shadow)" style-hover="background:var(--primary-hover)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h4"></path></svg>{{ t.convertAdr }}</button></sc-if>
+            <button onClick="{{ openSupersede }}" style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9M3 4v4h4"></path></svg>{{ t.supersede }}</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- superseded banner -->
+      <sc-if value="{{ decn.superseded }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:11px;background:var(--st-neutral-bg);border:1px solid var(--border-strong);border-radius:11px;padding:12px 16px;margin:10px 0 6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--st-neutral-fg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M3 12a9 9 0 109-9M3 4v4h4"></path></svg><div style="flex:1 1 auto"><span style="font-size:13px;font-weight:600;color:var(--st-neutral-fg)">{{ t.supersededBy }} </span><button style="border:0;background:transparent;font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;padding:0" style-hover="text-decoration:underline">DECN-2026-015</button><span style="font-size:12.5px;color:var(--st-neutral-fg)"> · {{ t.supersededReason }}</span></div></div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start;margin-top:14px">
+        <!-- decision body -->
+        <article style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;opacity:{{ decn.bodyOpacity }}">
+          <div style="padding:22px 26px;display:flex;flex-direction:column;gap:22px">
+            <div><h3 style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)">{{ t.decisionStatement }}</h3><p style="margin:0;font-size:15px;line-height:1.6;font-weight:500;color:var(--text)">{{ t.decnStatement }}</p></div>
+            <div><h3 style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)">{{ t.rationale }}</h3><p style="margin:0;font-size:14px;line-height:1.65;color:var(--text)">{{ t.rationaleBody }}</p></div>
+            <div><h3 style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)">{{ t.conditions }}</h3><div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ conditions }}" as="c" hint-placeholder-count="3"><div style="display:flex;gap:10px;align-items:flex-start"><span style="width:20px;height:20px;border-radius:6px;background:var(--st-warn-bg);color:var(--st-warn-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span><span style="font-size:13.5px;line-height:1.55;color:var(--text)">{{ c }}</span></div></sc-for></div></div>
+            <div><h3 style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)">{{ t.alternatives }}</h3><div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ alternatives }}" as="a" hint-placeholder-count="2"><div style="border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:13px;font-weight:600">{{ a.name }}</span><span style="font-size:11px;font-weight:600;color:var(--st-danger-fg);background:var(--st-danger-bg);border-radius:5px;padding:1px 7px">{{ t.notChosen }}</span></div><div style="font-size:12.5px;color:var(--text-2);line-height:1.55">{{ a.why }}</div></div></sc-for></div></div>
+          </div>
+        </article>
+
+        <!-- decision meta sidebar -->
+        <aside style="display:flex;flex-direction:column;gap:16px;position:sticky;top:74px">
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--subtle);font-size:12.5px;font-weight:600">{{ t.recordDetail }}</div>
+            <div style="padding:6px 15px 12px"><sc-for list="{{ decnMeta }}" as="m" hint-placeholder-count="5"><div style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><div style="font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);margin-bottom:3px">{{ m.label }}</div><div style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);font-weight:500">{{ m.value }}</div></div></sc-for></div>
+          </section>
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--subtle);font-size:12.5px;font-weight:600">{{ t.affectedSystems }}</div>
+            <div style="padding:12px 15px;display:flex;flex-wrap:wrap;gap:7px"><sc-for list="{{ affectedSystems }}" as="s" hint-placeholder-count="3"><span style="font-size:12px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:7px;padding:4px 10px">{{ s }}</span></sc-for></div>
+          </section>
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>{{ t.immutableHistory }}</div>
+            <div style="padding:8px 15px 12px"><sc-for list="{{ decnHistory }}" as="h" hint-placeholder-count="4"><div style="display:flex;gap:11px;padding:7px 0"><div style="display:flex;flex-direction:column;align-items:center;flex:0 0 auto"><span style="width:9px;height:9px;border-radius:50%;background:{{ h.dot }};box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--border-soft)"></span><span style="flex:1;width:2px;background:var(--border-soft);margin-top:3px"></span></div><div style="flex:1 1 auto;min-width:0;padding-bottom:4px"><div style="font-size:12.5px;color:var(--text);line-height:1.4">{{ h.text }}</div><div style="font-size:10.5px;color:var(--text-3);margin-top:1px">{{ h.who }} · {{ h.time }}</div></div></div></sc-for></div>
+          </section>
+        </aside>
+      </div>
+
+      <!-- convert to ADR dialog -->
+      <sc-if value="{{ convertOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="dialog" aria-modal="true" aria-label="{{ t.convertTitle }}" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(10,14,18,.55);padding:20px">
+          <div style="width:440px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden">
+            <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px"><span style="width:40px;height:40px;border-radius:10px;background:var(--primary-tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h4"></path></svg></span><div><h3 style="margin:0;font-size:16px;font-weight:700">{{ t.convertTitle }}</h3><p style="margin:2px 0 0;font-size:12.5px;color:var(--text-2)">{{ t.convertSub }}</p></div></div>
+            <div style="padding:18px 20px;font-size:13px;color:var(--text-2);line-height:1.6">{{ t.convertBody }}<div style="margin-top:13px;display:flex;align-items:center;gap:9px;padding:11px 13px;background:var(--subtle);border-radius:9px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">ADR-2026-004</span><span style="font-size:12px;color:var(--text-3)">{{ t.willBeCreated }}</span></div></div>
+            <div style="padding:14px 20px;background:var(--subtle);border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px"><button onClick="{{ closeConvert }}" style="height:36px;padding-inline:15px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--sunken)">{{ t.cancel }}</button><button onClick="{{ closeConvert }}" style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:700;font-size:13px">{{ t.createAdr }}</button></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- supersede dialog -->
+      <sc-if value="{{ supersedeOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="dialog" aria-modal="true" aria-label="{{ t.supersedeTitle }}" style="position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(10,14,18,.55);padding:20px">
+          <div style="width:460px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden">
+            <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px"><span style="width:40px;height:40px;border-radius:10px;background:var(--st-warn-bg);color:var(--st-warn-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9M3 4v4h4"></path></svg></span><div><h3 style="margin:0;font-size:16px;font-weight:700">{{ t.supersedeTitle }}</h3><p style="margin:2px 0 0;font-size:12.5px;color:var(--text-2)">{{ t.supersedeSub }}</p></div></div>
+            <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:11px;padding:12px;background:var(--subtle);border-radius:10px"><span style="font-family:var(--mono);font-size:12px;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 8px">DECN-2026-008</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M5 12h14M13 6l6 6-6 6"></path></svg><span style="font-size:12.5px;color:var(--text-2)">{{ t.newDecision }}</span></div>
+              <div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">{{ t.supersedeReason2 }} <span style="color:var(--st-danger-fg)">*</span></label><textarea rows="3" placeholder="{{ t.supersedeReasonPh }}" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13px;line-height:1.5;resize:vertical" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"></textarea></div>
+              <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:var(--st-warn-bg);border-radius:9px;font-size:12px;color:var(--st-warn-fg);line-height:1.5"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><path d="M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"></path></svg>{{ t.supersedeWarn }}</div>
+            </div>
+            <div style="padding:14px 20px;background:var(--subtle);border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px"><button onClick="{{ closeSupersede }}" style="height:36px;padding-inline:15px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--sunken)">{{ t.cancel }}</button><button onClick="{{ closeSupersede }}" style="height:36px;padding-inline:16px;border:0;background:var(--st-warn-dot);color:#fff;border-radius:9px;font-weight:700;font-size:13px">{{ t.confirmSupersede }}</button></div>
+          </div>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ============ ADR DETAIL (MADR) ============ -->
+    <sc-if value="{{ isAdr }}" hint-placeholder-val="{{ false }}">
+      <nav aria-label="Breadcrumb" style="font-size:12.5px;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:7px"><span>{{ t.adrs }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">ADR-2026-003</span></nav>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:8px">
+        <h1 style="margin:0;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">{{ t.adrLabel }}</h1>
+        <div style="display:flex;gap:5px;padding:4px;background:var(--sunken);border-radius:9px"><span style="font-size:10px;font-weight:700;color:var(--text-3);padding-inline:6px;align-self:center;text-transform:uppercase;letter-spacing:.4px">{{ t.status }}</span><sc-for list="{{ adrStateTabs }}" as="a" hint-placeholder-count="3"><button onClick="{{ a.go }}" aria-pressed="{{ a.sel }}" style="height:28px;padding-inline:10px;border:0;border-radius:6px;font-size:11.5px;font-weight:600;{{ a.style }}">{{ a.label }}</button></sc-for></div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:13px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="min-width:0;flex:1 1 360px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:13px;color:var(--text-2)">ADR-2026-003</span><span style="display:inline-flex;align-items:center;gap:6px;height:25px;padding-inline:10px;border-radius:7px;font-size:12.5px;font-weight:700;{{ adr.chip }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ adr.dot }}"></span>{{ adr.statusLabel }}</span></div>
+          <h2 style="margin:8px 0 0;font-size:21px;font-weight:700;line-height:1.3">{{ t.adrTitle }}</h2>
+        </div>
+        <button style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px;flex:0 0 auto" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>{{ t.exportMd }}</button>
+      </div>
+
+      <!-- supersede links banner -->
+      <sc-if value="{{ adr.hasLinks }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+          <sc-if value="{{ adr.supersedes }}" hint-placeholder-val="{{ false }}"><div style="display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 13px"><span style="width:26px;height:26px;border-radius:7px;background:var(--st-neutral-bg);color:var(--st-neutral-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span><div><div style="font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)">{{ t.supersedesLabel }}</div><button style="border:0;background:transparent;font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;padding:0" style-hover="text-decoration:underline">ADR-2025-018 · {{ t.legacyAuth }}</button></div></div></sc-if>
+          <sc-if value="{{ adr.supersededBy }}" hint-placeholder-val="{{ false }}"><div style="display:inline-flex;align-items:center;gap:9px;background:var(--st-neutral-bg);border:1px solid var(--border-strong);border-radius:10px;padding:9px 13px"><span style="width:26px;height:26px;border-radius:7px;background:var(--surface);color:var(--st-neutral-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span><div><div style="font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--st-neutral-fg)">{{ t.supersededByLabel }}</div><button style="border:0;background:transparent;font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;padding:0" style-hover="text-decoration:underline">ADR-2026-012 · {{ t.newIdp }}</button></div></div></sc-if>
+        </div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start">
+        <!-- MADR body -->
+        <article style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;opacity:{{ adr.bodyOpacity }}">
+          <div style="padding:24px 28px;max-width:720px">
+            <sc-for list="{{ madrSections }}" as="s" hint-placeholder-count="6">
+              <section style="margin-bottom:24px">
+                <h3 style="margin:0 0 10px;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:9px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ s.icon }}"></path></svg>{{ s.heading }}</h3>
+                <sc-if value="{{ s.isText }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:14px;line-height:1.7;color:var(--text)">{{ s.body }}</p></sc-if>
+                <sc-if value="{{ s.isOptions }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:9px"><sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3"><div style="border:1px solid {{ o.bd }};border-radius:10px;overflow:hidden"><div style="display:flex;align-items:center;gap:9px;padding:10px 13px;background:{{ o.headBg }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ o.iconColor }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ o.icon }}"></path></svg><span style="font-size:13.5px;font-weight:600;flex:1 1 auto">{{ o.name }}</span><span style="font-size:11px;font-weight:700;color:{{ o.tagFg }};background:{{ o.tagBg }};border-radius:5px;padding:2px 8px">{{ o.tag }}</span></div><div style="padding:10px 13px;font-size:12.5px;color:var(--text-2);line-height:1.6">{{ o.body }}</div></div></sc-for></div></sc-if>
+                <sc-if value="{{ s.isConsequence }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--st-success-fg);margin-bottom:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ t.positive }}</div><div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ s.positive }}" as="p" hint-placeholder-count="2"><div style="font-size:12.5px;color:var(--text-2);line-height:1.5;padding-inline-start:13px;position:relative"><span style="position:absolute;inset-inline-start:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--st-success-dot)"></span>{{ p }}</div></sc-for></div></div><div><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--st-warn-fg);margin-bottom:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"></path></svg>{{ t.negative }}</div><div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ s.negative }}" as="n" hint-placeholder-count="2"><div style="font-size:12.5px;color:var(--text-2);line-height:1.5;padding-inline-start:13px;position:relative"><span style="position:absolute;inset-inline-start:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--st-warn-dot)"></span>{{ n }}</div></sc-for></div></div></div></sc-if>
+              </section>
+            </sc-for>
+          </div>
+        </article>
+
+        <!-- ADR meta -->
+        <aside style="display:flex;flex-direction:column;gap:16px;position:sticky;top:74px">
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--subtle);font-size:12.5px;font-weight:600">{{ t.metadata }}</div>
+            <div style="padding:6px 15px 12px"><sc-for list="{{ adrMeta }}" as="m" hint-placeholder-count="5"><div style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><div style="font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);margin-bottom:3px">{{ m.label }}</div><div style="font-size:13px;color:var(--text);font-weight:500">{{ m.value }}</div></div></sc-for></div>
+          </section>
+          <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M18 8.5v7M8 8l8 8"></path></svg>{{ t.traceability }}</div>
+            <div style="padding:8px 10px"><sc-for list="{{ adrLinks }}" as="l" hint-placeholder-count="3"><button style="display:flex;align-items:center;gap:9px;width:100%;text-align:start;border:0;background:transparent;border-radius:8px;padding:8px 9px" style-hover="background:var(--subtle)"><span style="font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--text-3);width:62px;flex:0 0 auto">{{ l.rel }}</span><span style="flex:1 1 auto;min-width:0"><span style="display:block;font-family:var(--mono);font-size:11px;color:var(--accent)">{{ l.k }}</span><span style="display:block;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.title }}</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></button></sc-for></div>
+          </section>
+        </aside>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;voting&quot;,&quot;options&quot;:[&quot;voting&quot;,&quot;decision&quot;,&quot;adr&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;voteState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;open&quot;,&quot;options&quot;:[&quot;open&quot;,&quot;closed&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;decisionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;adrState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;accepted&quot;,&quot;options&quot;:[&quot;proposed&quot;,&quot;accepted&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: this.props.defaultScreen || 'voting',
+    dir:'ltr', theme:'light',
+    voteState: this.props.voteState || 'open',
+    decnState: this.props.decisionState || 'active',
+    adrState: this.props.adrState || 'accepted',
+    ballot:null, ballotComment:'', confirmOpen:false,
+    convertOpen:false, supersedeOpen:false, liveMsg:''
+  };
+  set(k,v){ this.setState({ [k]:v }); }
+  sem(s){ return { chip:`background:var(--st-${s}-bg);color:var(--st-${s}-fg)`, dot:`var(--st-${s}-dot)` }; }
+  ICN_APPROVE='M5 12l5 5 9-10'; ICN_REJECT='M18 6L6 18M6 6l12 12'; ICN_ABSTAIN='M5 12h14';
+
+  renderVals(){
+    const { screen, dir, theme, voteState, decnState, adrState, ballot, ballotComment, confirmOpen, convertOpen, supersedeOpen, liveMsg } = this.state;
+    const isRtl = dir==='rtl'; const L=(en,ar)=>isRtl?ar:en;
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow)'; const segOff='background:transparent;color:var(--text-2)';
+    const cG='var(--st-success-dot)',cD='var(--st-danger-dot)',cN='var(--st-neutral-dot)',cI='var(--st-info-dot)',cW='var(--st-warn-dot)',cS='var(--st-sched-dot)';
+
+    const t = {
+      meeting:L('Meeting','الاجتماع'), vote:L('Vote','التصويت'), state:L('State','الحالة'),
+      voteTitle:L('Vote — Keycloak adoption','تصويت — اعتماد Keycloak'),
+      linkedTopic:L('Linked to TOP-2026-014','مرتبط بـ TOP-2026-014'), attributedVote:L('Attributed (not anonymous)','منسوب (غير سرّي)'),
+      motion:L('Motion','المقترح'), motionText:L('Approve adoption of Keycloak as the standard identity provider across all delivery streams, conditionally.','الموافقة على اعتماد Keycloak كموفّر هوية معياري عبر جميع المسارات، بشروط.'),
+      calledBy:L('Called by','بدأه'), coordinator:L('Khalid A. (Secretary of the Committee)','خالد ع. (أمين سر اللجنة)'), voteType:L('Open · majority of present','مفتوح · أغلبية الحاضرين'),
+      eligibleVoters:L('Eligible voters','الناخبون المؤهّلون'), castSummary:L('attributed — visible to all','منسوب — مرئي للجميع'),
+      chair:L('Chair','الرئيس'), awaiting:L('Awaiting','بانتظار'),
+      liveTally:L('Live tally','الفرز المباشر'), liveLabel:L('Live','مباشر'),
+      quorum:L('Quorum','النصاب'), yourBallot:L('Your ballot','بطاقتك'), ballotAttributed:L('Recorded under your name','يُسجّل باسمك'),
+      commentPh:L('Add a comment with your vote (optional)…','أضف تعليقًا مع صوتك (اختياري)…'),
+      castVote:L('Cast vote','الإدلاء بالصوت'), castNote:L('You can change your vote until voting closes.','يمكنك تغيير صوتك حتى إغلاق التصويت.'),
+      approve:L('Approve','موافقة'), reject:L('Reject','رفض'), abstain:L('Abstain','امتناع'),
+      recused:L('Recused','متنحٍّ'), recuseAction:L('Recuse — conflict of interest','التنحّي — تضارب مصالح'), recuseNote:L('Recusal is recorded by name and removes you from the quorum base.','يُسجّل التنحّي بالاسم ويخرجك من أساس النصاب.'),
+      voteClosedLocked:L('Vote closed & locked','أُغلق التصويت وقُفل'), closedAt:L('Closed 18 Feb 2026 · 10:34','أُغلق 18 فبراير 2026 · 10:34'),
+      chairApproval:L('Chairman approval','اعتماد الرئيس'), chairApproved:L('Approved by S. M.','اعتمده س. م.'), viewDecision:L('View decision record','عرض سجل القرار'),
+      chairControls:L('Chairman controls','صلاحيات الرئيس'), recordOverride:L('Record override','تسجيل تجاوز'), overrideNote:L('An override is recorded by name with a mandatory rationale and is fully audit-logged.','يُسجّل التجاوز بالاسم مع مبرّر إلزامي وتوثيق كامل.'),
+      confirmTitle:L('Confirm your vote','تأكيد صوتك'), confirmBody:L('Voting is attributed. Your name and choice will be visible to the committee and recorded in the audit log.','التصويت منسوب. سيظهر اسمك وخيارك للجنة ويُسجّل في سجل التدقيق.'),
+      youAreVoting:L('You are voting','أنت تصوّت'), recordedAs:L('Recorded as','يُسجّل باسم'), cancel:L('Cancel','إلغاء'), confirmCast:L('Confirm & cast','تأكيد وإدلاء'),
+      decisions:L('Decisions','القرارات'), decnTitle:L('Adopt Keycloak as the standard IdP, conditionally','اعتماد Keycloak كموفّر هوية معياري، بشروط'),
+      fromTopic:L('From','من'), supersededBadge:L('Superseded','مُستبدَل'),
+      supersededBy:L('Superseded by','استُبدل بـ'), supersededReason:L('replaced after federated-IdP pivot','استُبدل بعد التحوّل لاتحاد الهويّات'),
+      convertAdr:L('Convert to ADR','تحويل إلى سجل قرار'), supersede:L('Supersede','استبدال'),
+      decisionStatement:L('Decision','القرار'), decnStatement:L('The committee adopts Keycloak as the single standard identity provider across all delivery streams, conditional on the items below.','تعتمد اللجنة Keycloak كموفّر هوية معياري وحيد عبر جميع المسارات، بشرط البنود أدناه.'),
+      rationale:L('Rationale','المبرّر'), rationaleBody:L('A single IdP removes fragmented authentication, standardizes SSO/MFA and token policy, lowers audit cost, and is a prerequisite for cross-stream service integration. Keycloak scored highest on the evaluation matrix and is open-source with no per-seat licensing.','موفّر هوية موحّد يزيل تجزئة المصادقة، ويوحّد الدخول الموحّد والتحقق المتعدّد وسياسة الرموز، ويقلّل كلفة التدقيق، وهو شرط مسبق لتكامل الخدمات. حصل Keycloak على أعلى تقييم وهو مفتوح المصدر دون ترخيص لكل مستخدم.'),
+      conditions:L('Conditions','الشروط'), alternatives:L('Alternatives considered','البدائل المدروسة'), notChosen:L('Not chosen','لم يُختر'),
+      recordDetail:L('Record detail','تفاصيل السجل'), affectedSystems:L('Affected systems','الأنظمة المتأثرة'),
+      immutableHistory:L('Immutable history','سجل غير قابل للتعديل'),
+      convertTitle:L('Convert to ADR','تحويل إلى سجل قرار'), convertSub:L('Create an Architecture Decision Record','إنشاء سجل قرار معماري'),
+      convertBody:L('This creates a linked ADR pre-filled from this decision (context, options, and outcome). The decision and ADR stay traceable in both directions.','يُنشئ سجل قرار مرتبطًا ومعبّأ مسبقًا من هذا القرار. يبقى القرار والسجل قابلين للتتبّع بالاتجاهين.'),
+      willBeCreated:L('will be created','سيُنشأ'), createAdr:L('Create ADR','إنشاء السجل'),
+      supersedeTitle:L('Supersede this decision','استبدال هذا القرار'), supersedeSub:L('Records a new decision that replaces this one','يسجّل قرارًا جديدًا يحلّ محلّ هذا'),
+      newDecision:L('New decision','قرار جديد'), supersedeReason2:L('Reason for superseding','سبب الاستبدال'), supersedeReasonPh:L('Explain why this decision is being replaced…','اشرح سبب استبدال هذا القرار…'),
+      supersedeWarn:L('The original decision is never deleted. It is marked Superseded and kept in the immutable history.','لا يُحذف القرار الأصلي أبدًا. يُوسم كمُستبدَل ويُحفظ في السجل غير القابل للتعديل.'),
+      confirmSupersede:L('Supersede decision','استبدال القرار'),
+      adrs:L('ADRs','سجلات القرار'), status:L('Status','الحالة'), adrLabel:L('Architecture Decision Record','سجل قرار معماري'),
+      adrTitle:L('Keycloak as the standard identity provider','Keycloak كموفّر هوية معياري'), exportMd:L('Export .md','تصدير .md'),
+      supersedesLabel:L('Supersedes','يحلّ محلّ'), legacyAuth:L('Per-stream internal auth','مصادقة داخلية لكل مسار'),
+      supersededByLabel:L('Superseded by','استُبدل بـ'), newIdp:L('Federated IdP mesh','شبكة هويّات اتحادية'),
+      metadata:L('Metadata','البيانات الوصفية'), traceability:L('Traceability','التتبّع'),
+      positive:L('Positive','إيجابيات'), negative:L('Negative','سلبيات')
+    };
+
+    const screenTabs = [
+      ['voting',t.vote,'M9 12l2 2 4-4M7 21h10a2 2 0 002-2V7l-5-4H7a2 2 0 00-2 2v14a2 2 0 002 2z'],
+      ['decision',L('Decision','القرار'),'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4'],
+      ['adr','ADR','M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h4']
+    ].map(([k,label,d])=>({ go:()=>this.set('screen',k), sel:screen===k?'true':'false', label, d, style:screen===k?segOn:segOff }));
+
+    // ===== VOTING =====
+    const vOpen = voteState==='open'; const vClosed = voteState==='closed';
+    const voteStateTabs=[['open',L('Open','مفتوح')],['closed',L('Closed','مغلق')]].map(([k,label])=>({ go:()=>this.set('voteState',k), sel:voteState===k?'true':'false', label, style:voteState===k?segOn+';font-weight:600':segOff+';font-weight:600' }));
+    const vStateChip = vOpen?'background:var(--st-danger-bg);color:var(--st-danger-fg)':'background:var(--st-success-bg);color:var(--st-success-fg)';
+    const vStateDot = vOpen?cD:cG; const vStatePulse = vOpen?'animation:acmpPulse 1.6s ease-in-out infinite':''; const vStateLabel = vOpen?L('Voting open','التصويت مفتوح'):L('Closed & locked','مغلق ومقفل');
+
+    const voteMeta = { SM:{en:'S. M.',ar:'س. م.',role:L('Chairman','الرئيس'),chair:true}, KA:{en:'Khalid A.',ar:'خالد ع.',role:L('Secretary of the Committee','أمين سر اللجنة')}, OH:{en:'Omar H.',ar:'عمر ح.',role:L('Member · Identity','عضو · الهوية')}, NP:{en:'Noura P.',ar:'نورة ب.',role:L('Member · Platform','عضو · المنصّة')}, LK:{en:'Lina K.',ar:'لينا ك.',role:L('Member · Payments','عضو · المدفوعات')}, YR:{en:'Yousef R.',ar:'يوسف ر.',role:L('Member · Health','عضو · الصحة')}, FH:{en:'Fahad S.',ar:'فهد س.',role:L('Member · Vendor liaison','عضو · ارتباط المورّد')} };
+    const recusedSet = { FH:true };
+    const closedVotes = { SM:'approve', KA:'approve', OH:'approve', NP:'approve', LK:'abstain', YR:'approve' };
+    const openVotes = { SM:'approve', OH:'approve', NP:'approve', LK:'abstain' };
+    const comments = { OH:L('Strongly support — prerequisite for our SSO work.','أؤيد بشدة — شرط مسبق لعملنا.'), LK:L('Abstaining pending the payments tokenization review.','أمتنع بانتظار مراجعة ترميز المدفوعات.'), SM:L('Approving conditional on the rollback plan.','موافقة مشروطة بخطة التراجع.'), FH:L('Recused — conflict of interest: advises the proposed vendor. Excluded from the quorum base.','تنحٍّ — تضارب مصالح: يقدّم الاستشارة للمورّد المقترح. مُستبعَد من أساس النصاب.') };
+    const voteVisual = { approve:{chip:this.sem('success').chip, icon:this.ICN_APPROVE, label:t.approve}, reject:{chip:this.sem('danger').chip, icon:this.ICN_REJECT, label:t.reject}, abstain:{chip:this.sem('neutral').chip, icon:this.ICN_ABSTAIN, label:t.abstain} };
+    const votesNow = vClosed ? closedVotes : openVotes;
+    const voters = Object.keys(voteMeta).map(i=>{ const p=voteMeta[i]; const recused=!!recusedSet[i]; const v=recused?null:votesNow[i]; const voted=!!v;
+      return { i, name:p[isRtl?'ar':'en'], role:p.role, isChair:!!p.chair, voted, recused, pending:!voted&&!recused,
+        voteChip:voted?voteVisual[v].chip:'', voteIcon:voted?voteVisual[v].icon:'', voteLabel:voted?voteVisual[v].label:'',
+        avBg:voted?'var(--primary)':'var(--sunken)', avFg:voted?'#fff':'var(--text-3)',
+        recusedLabel:t.recused,
+        comment:((voted||recused)&&comments[i])?comments[i]:null }; });
+    const recusedCount = Object.keys(recusedSet).length;
+    const voterCount = Object.keys(voteMeta).length - recusedCount;
+    const counts = { approve:0, reject:0, abstain:0 }; Object.values(votesNow).forEach(v=>counts[v]++);
+    const castTotal = Object.keys(votesNow).length;
+    const tally = [
+      { label:t.approve, count:counts.approve, color:cG },
+      { label:t.reject, count:counts.reject, color:cD },
+      { label:t.abstain, count:counts.abstain, color:cN }
+    ].map(x=>({ ...x, pct:(x.count/voterCount*100)+'%' }));
+
+    // quorum pips
+    const needed=5; const present=castTotal;
+    const quorumMet=present>=needed;
+    const pips=[]; for(let i=0;i<voterCount;i++){ const filled=i<present; pips.push({ bg: filled?(quorumMet?'var(--st-success-dot)':'var(--st-warn-dot)'):'var(--sunken)', shadow: i===needed-1?'0 0 0 1.5px var(--st-success-fg)':'none' }); }
+    const quorum = { fg:quorumMet?'var(--st-success-fg)':'var(--st-warn-fg)', icon:quorumMet?'M5 12l5 5 9-10':'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', label:quorumMet?L('Quorum met','اكتمل النصاب'):L('Quorum pending','النصاب قيد الاكتمال'), detail:L(present+' of '+voterCount+' voted · '+needed+' required · 1 recused','صوّت '+present+' من '+voterCount+' · المطلوب '+needed+' · متنحٍّ واحد') };
+
+    const ballotOptions = [
+      ['approve',t.approve,cG], ['reject',t.reject,cD], ['abstain',t.abstain,cN]
+    ].map(([k,label,dot])=>{ const sel=ballot===k; return { go:()=>this.set('ballot',k), sel:sel?'true':'false', label, dot, fill:sel?'1':'0', ringColor:sel?dot:'var(--border-strong)', bd:sel?dot:'var(--border)', bg:sel?'color-mix(in srgb,'+dot+' 8%,var(--surface))':'var(--surface)', fg:sel?'var(--text)':'var(--text-2)' }; });
+    const castDisabled = ballot?null:'true'; const castBg = ballot?'var(--primary)':'var(--text-3)'; const castOp = ballot?'1':'0.5';
+
+    // ===== DECISION =====
+    const decnSuperseded = decnState==='superseded'; const decnActive = !decnSuperseded;
+    const hasAdr = false; // demo: not yet converted
+    const decnOutcomeVisual = this.sem('success');
+    const decn = {
+      superseded:decnSuperseded, active:decnActive, hasAdr, noAdr:!hasAdr,
+      outcomeChip:decnSuperseded?'background:var(--st-neutral-bg);color:var(--st-neutral-fg)':decnOutcomeVisual.chip,
+      outcomeIcon:'M5 12l5 5 9-10', outcomeLabel:L('Conditionally Approved','موافقة مشروطة'),
+      bodyOpacity:decnSuperseded?'0.62':'1'
+    };
+    const conditions = [
+      L('A migration ADR is produced and accepted before any cutover.','إعداد وقبول سجل قرار للترحيل قبل أي تحويل.'),
+      L('A documented rollback plan is in place.','وجود خطة تراجع موثّقة.'),
+      L('A dual-running security review is completed.','إتمام مراجعة أمنية للتشغيل المزدوج.')
+    ];
+    const alternatives = [
+      { name:L('Build an in-house IdP','بناء موفّر هوية داخلي'), why:L('Higher long-term maintenance and security burden; duplicates mature open-source capability.','عبء صيانة وأمن أعلى على المدى الطويل؛ يكرّر قدرة مفتوحة المصدر ناضجة.') },
+      { name:L('Commercial SaaS IdP','موفّر هوية تجاري سحابي'), why:L('Per-seat licensing cost and data-residency constraints for government workloads.','كلفة ترخيص لكل مستخدم وقيود إقامة البيانات للأحمال الحكومية.') }
+    ];
+    const decnMeta = [
+      { label:L('Outcome','النتيجة'), value:L('Conditionally Approved','موافقة مشروطة') },
+      { label:L('Approving authority','الجهة المعتمِدة'), value:L('S. M. (Chairman)','س. م. (الرئيس)') },
+      { label:L('Effective date','تاريخ السريان'), value:L('18 Feb 2026','18 فبراير 2026') },
+      { label:L('Vote result','نتيجة التصويت'), value:L('5 approve · 1 abstain','5 موافق · 1 ممتنع') },
+      { label:L('Decided in','اتُّخذ في'), value:'MTG-2026-019' }
+    ];
+    const affectedSystems = [L('Internal Auth Service','خدمة المصادقة الداخلية'),L('API Gateway','بوابة الواجهات'),L('Mobile Apps','تطبيقات الجوال'),L('Notifications','الإشعارات')];
+    const decnHistory = [
+      { dot:cG, text:L('Decision recorded from VOTE-2026-014','سُجّل القرار من VOTE-2026-014'), who:L('Khalid A.','خالد ع.'), time:'18 Feb · 10:34' },
+      { dot:cG, text:L('Approved & sealed by Chairman','اعتمده وختمه الرئيس'), who:L('S. M.','س. م.'), time:'18 Feb · 10:35' },
+      { dot:cI, text:L('Action ACT-2026-040 created','أُنشئ الإجراء ACT-2026-040'), who:L('Khalid A.','خالد ع.'), time:'18 Feb · 10:51' }
+    ];
+    if(decnSuperseded){ decnHistory.push({ dot:cN, text:L('Superseded by DECN-2026-015','استُبدل بـ DECN-2026-015'), who:L('S. M.','س. م.'), time:'12 Mar · 11:20' }); }
+
+    // ===== ADR =====
+    const adrVisualMap = { proposed:this.sem('info'), accepted:this.sem('success'), superseded:this.sem('neutral') };
+    const adrLabelMap = { proposed:L('Proposed','مقترح'), accepted:L('Accepted','مقبول'), superseded:L('Superseded','مُستبدَل') };
+    const adrStateTabs=[['proposed',L('Proposed','مقترح')],['accepted',L('Accepted','مقبول')],['superseded',L('Superseded','مُستبدَل')]].map(([k,label])=>({ go:()=>this.set('adrState',k), sel:adrState===k?'true':'false', label, style:adrState===k?segOn+';font-weight:600':segOff+';font-weight:600' }));
+    const adrSup = adrState==='superseded';
+    const adr = {
+      chip:adrVisualMap[adrState].chip, dot:adrVisualMap[adrState].dot, statusLabel:adrLabelMap[adrState],
+      hasLinks:true, supersedes:true, supersededBy:adrSup, bodyOpacity:adrSup?'0.62':'1'
+    };
+    const madrSections = [
+      { heading:L('Context & problem statement','السياق وتعريف المشكلة'), icon:'M12 8v4M12 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', isText:true, body:L('Each delivery stream maintains its own authentication implementation, producing fragmented SSO, inconsistent MFA, duplicated audit surfaces, and slow onboarding. We need one standard identity provider across all streams.','يحتفظ كل مسار بتطبيق مصادقة خاص، ما ينتج دخولًا موحّدًا مجزّأً وتحققًا متعدّدًا غير متّسق وأسطح تدقيق مكرّرة. نحتاج موفّر هوية معياريًا واحدًا.') },
+      { heading:L('Decision drivers','محرّكات القرار'), icon:'M13 2L3 14h9l-1 8 10-12h-9l1-8z', isText:true, body:L('Security consolidation, audit cost reduction, cross-stream integration readiness, open-source preference, and data-residency compliance for government workloads.','توحيد الأمن، خفض كلفة التدقيق، جاهزية التكامل بين المسارات، تفضيل المصدر المفتوح، والامتثال لإقامة البيانات.') },
+      { heading:L('Considered options','الخيارات المدروسة'), icon:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11', isOptions:true, options:[
+        { name:'Keycloak', tag:L('Chosen','مُختار'), tagFg:'var(--st-success-fg)', tagBg:'var(--st-success-bg)', bd:'var(--st-success-dot)', headBg:'var(--st-success-bg)', icon:'M5 12l5 5 9-10', iconColor:'var(--st-success-dot)', body:L('Mature open-source IdP; full SSO/MFA/OIDC; self-hosted for data residency; no per-seat cost.','موفّر هوية مفتوح المصدر ناضج؛ دخول موحّد وتحقق متعدّد كامل؛ مستضاف ذاتيًا؛ دون كلفة لكل مستخدم.') },
+        { name:L('In-house IdP','موفّر داخلي'), tag:L('Rejected','مرفوض'), tagFg:'var(--st-danger-fg)', tagBg:'var(--st-danger-bg)', bd:'var(--border-soft)', headBg:'var(--subtle)', icon:'M18 6L6 18M6 6l12 12', iconColor:'var(--st-danger-dot)', body:L('High long-term maintenance and security burden; reinvents mature capability.','عبء صيانة وأمن مرتفع؛ يعيد اختراع قدرة ناضجة.') },
+        { name:L('Commercial SaaS','تجاري سحابي'), tag:L('Rejected','مرفوض'), tagFg:'var(--st-danger-fg)', tagBg:'var(--st-danger-bg)', bd:'var(--border-soft)', headBg:'var(--subtle)', icon:'M18 6L6 18M6 6l12 12', iconColor:'var(--st-danger-dot)', body:L('Per-seat licensing and data-residency constraints unsuitable for government workloads.','ترخيص لكل مستخدم وقيود إقامة بيانات غير مناسبة.') }
+      ] },
+      { heading:L('Decision outcome','نتيجة القرار'), icon:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z', isText:true, body:L('Chosen option: Keycloak, because it satisfies all decision drivers at the lowest total cost and is self-hostable for data-residency compliance. Adoption is conditional on a migration ADR, rollback plan, and dual-running security review.','الخيار المُختار: Keycloak، لأنه يحقق كل المحرّكات بأقل كلفة ويمكن استضافته ذاتيًا. الاعتماد مشروط بسجل قرار للترحيل وخطة تراجع ومراجعة أمنية.') },
+      { heading:L('Consequences','النتائج المترتبة'), icon:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11', isConsequence:true, positive:[L('Unified SSO/MFA and one audit surface.','دخول موحّد وتحقق متعدّد وسطح تدقيق واحد.'),L('Unblocks cross-stream service integration.','يفكّ حجب التكامل بين المسارات.')], negative:[L('Migration effort and dual-running window risk.','جهد الترحيل ومخاطر نافذة التشغيل المزدوج.'),L('Team upskilling on Keycloak operations.','رفع كفاءة الفريق على تشغيل Keycloak.')] }
+    ];
+    const adrMeta = [
+      { label:L('Status','الحالة'), value:adrLabelMap[adrState] },
+      { label:L('Date','التاريخ'), value:L('18 Feb 2026','18 فبراير 2026') },
+      { label:L('Deciders','المقرّرون'), value:L('Architecture Committee','لجنة الهندسة') },
+      { label:L('Authority','الجهة'), value:L('S. M. (Chairman)','س. م. (الرئيس)') },
+      { label:L('Tags','الوسوم'), value:L('Identity · Platform','الهوية · المنصّة') }
+    ];
+    const adrLinks = [
+      { rel:L('From decision','من قرار'), k:'DECN-2026-008', title:L('Keycloak adoption','اعتماد Keycloak') },
+      { rel:L('From topic','من موضوع'), k:'TOP-2026-014', title:L('Adopt Keycloak as IdP','اعتماد Keycloak') },
+      { rel:L('Action','إجراء'), k:'ACT-2026-040', title:L('Produce migration ADR','إعداد سجل الترحيل') }
+    ];
+
+    return {
+      dir, theme, font, chev, liveMsg,
+      isVoting:screen==='voting', isDecision:screen==='decision', isAdr:screen==='adr',
+      screenTabs,
+      langBtn:isRtl?'English':'العربية', toggleDir:()=>this.set('dir',isRtl?'ltr':'rtl'),
+      theme, toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      t,
+      // voting
+      vOpen, vClosed, voteStateTabs, vStateChip, vStateDot, vStatePulse, vStateLabel,
+      voters, voterCount, tally, quorum, quorumPips:pips,
+      ballotOptions, ballotComment, castDisabled, castBg, castOp,
+      openConfirm:()=>this.set('confirmOpen',true), closeConfirm:()=>this.set('confirmOpen',false), confirmOpen,
+      submitVote:()=>this.setState({confirmOpen:false, voteState:'closed', liveMsg:L('Your vote was cast and recorded.','تم تسجيل صوتك.')}),
+      // decision
+      decn, conditions, alternatives, decnMeta, affectedSystems, decnHistory,
+      convertOpen, openConvert:()=>this.set('convertOpen',true), closeConvert:()=>this.set('convertOpen',false),
+      supersedeOpen, openSupersede:()=>this.set('supersedeOpen',true), closeSupersede:()=>this.set('supersedeOpen',false),
+      // adr
+      adrStateTabs, adr, madrSections, adrMeta, adrLinks
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -62,14 +62,16 @@ Send this as the **first message** to the running Claude Code session:
 What to expect:
 1. It reads the canon (`README` / `docs` / `adr` / guardrails) and reports its understanding + a PH-0 plan.
 2. You confirm or correct.
-3. It runs **PH-0 validation** and scaffolds the repo (solution, modular monolith, React app shell, `docker-compose` with sqlserver/seq/minio, one reference module), keeping a **progress log** and **acceptance audit**.
+3. It runs **PH-0 validation** and scaffolds the repo (solution, modular monolith, React app shell, `docker-compose` with keycloak/sqlserver/seq/minio — Keycloak self-hosted with a realm bootstrap under `deploy/keycloak/` per ADR-0015, one reference module), keeping a **progress log** and **acceptance audit**.
 4. Then proceed phase-by-phase via `execution-handoff/phase-prompts.md` — **core loop first** (Topics → Meetings → Decisions → Actions).
 
 ---
 
 ## Stage 4 — Hand off Package 2 (Claude Design UI)
 
-Best brought in when Claude Code reaches the **frontend foundation (P3)** — backend-first still applies. Two routes; **Route B always works** with no setup.
+> **Updated approach (2026-06-25):** the design reference is now the **local `.dc.html` files** in the `/ACMP product context/` folder at the repo root — the agent reads them **directly** with its file tools. The claude_design MCP route below is **superseded** for this build (keep only as an optional fallback).
+
+Best brought in when Claude Code reaches the **frontend foundation (P3)** — backend-first still applies.
 
 ### Route A — Claude Design MCP (one paste once connected)
 
@@ -170,10 +172,7 @@ Work top-to-bottom through `execution-handoff/phase-prompts.md` (P1–P19). Each
 
 ## Non-negotiables (carried from the package)
 
-- Self-contained (CON-001): app-owned Hangfire on ACMP's SQL, self-hosted Seq + MinIO, in-app notifications v1 — **no** dependency on org Hangfire/ELK/Seq/notification platform.
+- Self-contained (CON-001): app-owned Hangfire on ACMP's SQL, self-hosted Seq + MinIO, **self-hosted Keycloak (ACMP-owned realm) + SQL Server bundled (ADR-0015)**, in-app notifications v1 — **no** dependency on org Hangfire/ELK/Seq/notification platform; **zero external runtime services** (Webex Phase 2 is the only external dependency).
 - Audit immutability + hash-chain; votes/decisions/ADRs/published-minutes are superseded, never edited.
 - Always-attributed voting with quorum + abstentions + chairman approval + conflict-of-interest recusal.
-- Keycloak OIDC; roles from claims; no self-registration.
-- Bilingual EN/AR, full RTL, Gregorian dates, WCAG 2.2 AA.
-- Tarseem = Phase 2 (JSON spec is source of truth); Keystone = optional; AI extraction = Phase 3.
-- Any change to a settled decision requires a new ADR.
+- Self-hosted 

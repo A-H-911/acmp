@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input,textarea,select{font:inherit}
+  [data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpShimmer{0%,100%{opacity:.5}50%{opacity:1}}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  .hrow{background:var(--header);border-bottom:1px solid var(--border)}
+  .hcell{height:42px;display:flex;align-items:center;gap:5px;padding-inline:12px;border:0;background:transparent;font:inherit;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3);text-align:start}
+  .row{border:0;border-bottom:1px solid var(--border-soft);min-height:46px;background:var(--surface);text-align:start;width:100%;cursor:pointer}
+  .cell{padding-inline:12px;display:flex;align-items:center;min-width:0}
+  .gAct{display:grid;grid-template-columns:108px minmax(190px,1fr) 122px 138px 118px 130px 124px;align-items:center}
+  .gRsk{display:grid;grid-template-columns:104px minmax(180px,1fr) 80px 78px 120px 130px 112px 96px;align-items:center}
+  .gDep{display:grid;grid-template-columns:minmax(140px,1fr) 132px minmax(140px,1fr) 92px 124px 112px;align-items:center}
+  .gAdr{display:grid;grid-template-columns:124px minmax(220px,1fr) 140px minmax(160px,1.1fr);align-items:center}
+  .gInv{display:grid;grid-template-columns:92px minmax(220px,1fr) 126px 120px 110px 86px;align-items:center}
+  .gAudit{display:grid;grid-template-columns:152px minmax(150px,1fr) 130px 132px minmax(170px,1.3fr);align-items:center}
+  .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  .ttl{font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sub2{font-size:12.5px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .av{width:23px;height:23px;border-radius:50%;background:var(--sunken);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:0 0 auto}
+  .badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding-inline:7px;border-radius:5px;font-size:10.5px;font-weight:700;white-space:nowrap}
+  .pbar{flex:1 1 auto;height:6px;border-radius:4px;background:var(--sunken);overflow:hidden}
+  .heat{display:grid;grid-template-columns:repeat(3,7px);grid-template-rows:repeat(3,7px);gap:2px;flex:0 0 auto}
+  .hc{width:7px;height:7px;border-radius:1.5px}
+  .fbtn{height:34px;padding-inline:12px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:500}
+  .navi{display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;font-size:13.5px;text-align:start;position:relative;background:transparent;color:var(--text-2);font-weight:500}
+  .seg{height:26px;padding-inline:9px;border:0;border-radius:6px;font-size:11px;font-weight:600}
+  .fact{display:flex;flex-direction:column;gap:3px}
+  .flabel{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)}
+  .fval{font-size:13.5px;font-weight:600;color:var(--text)}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+  <div aria-live="polite" class="sr">{{ liveMsg }}</div>
+
+  <!-- ============ TOP BAR ============ -->
+  <header style="position:sticky;top:0;z-index:40;height:56px;display:flex;align-items:center;gap:14px;padding-inline:16px 18px;background:var(--header);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:9px;min-width:180px">
+      <div style="width:30px;height:30px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+      <span style="font-size:14px;font-weight:700;letter-spacing:.3px">ACMP</span>
+    </div>
+    <div style="flex:1 1 auto;max-width:440px;position:relative;display:flex;align-items:center">
+      <span style="position:absolute;inset-inline-start:11px;color:var(--text-3);display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span>
+      <input aria-label="{{ t.search }}" placeholder="{{ t.search }}" style="width:100%;height:36px;padding-inline:36px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13px" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)">
+    </div>
+    <div style="flex:1 1 0"></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onClick="{{ toggleLang }}" aria-label="Toggle language" class="fbtn" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+      <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle);color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+      <div style="display:flex;align-items:center;gap:8px;padding-inline-start:6px"><span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{{ idI }}</span><span style="line-height:1.1"><span style="display:block;font-size:12px;font-weight:600">{{ idName }}</span><span style="display:block;font-size:10.5px;color:var(--text-3)">{{ idRole }}</span></span></div>
+    </div>
+  </header>
+
+  <div style="display:flex;min-height:calc(100vh - 56px)">
+    <!-- ============ LEFT NAV ============ -->
+    <nav aria-label="Primary" style="flex:0 0 244px;background:var(--surface);border-inline-end:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:3px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:8px 10px 4px">{{ t.grpCommittee }}</div>
+      <sc-for list="{{ navCommittee }}" as="it" hint-placeholder-count="5">
+        <button onClick="{{ it.go }}" aria-current="{{ it.current }}" class="navi" style="{{ it.style }}" style-hover="{{ it.hover }}">
+          <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+          <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+          <sc-if value="{{ it.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:10px;padding:1px 7px">{{ it.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpGov }}</div>
+      <sc-for list="{{ navGov }}" as="it" hint-placeholder-count="3">
+        <button onClick="{{ it.go }}" aria-current="{{ it.current }}" class="navi" style="{{ it.style }}" style-hover="{{ it.hover }}">
+          <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+          <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+          <sc-if value="{{ it.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:10px;padding:1px 7px">{{ it.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpKnowledge }}</div>
+      <sc-for list="{{ navKnowledge }}" as="it" hint-placeholder-count="3">
+        <button onClick="{{ it.go }}" aria-current="{{ it.current }}" class="navi" style="{{ it.style }}" style-hover="{{ it.hover }}">
+          <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+          <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+        </button>
+      </sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpInsights }}</div>
+      <sc-for list="{{ navInsights }}" as="it" hint-placeholder-count="1">
+        <button onClick="{{ it.go }}" aria-current="{{ it.current }}" class="navi" style="{{ it.style }}" style-hover="{{ it.hover }}">
+          <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+          <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+        </button>
+      </sc-for>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 4px">{{ t.grpSystem }}</div>
+      <sc-for list="{{ navSystem }}" as="it" hint-placeholder-count="2">
+        <button onClick="{{ it.go }}" aria-current="{{ it.current }}" class="navi" style="{{ it.style }}" style-hover="{{ it.hover }}">
+          <span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent);opacity:{{ it.barOp }}"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ it.d }}"></path></svg>
+          <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+
+    <!-- ============ MAIN ============ -->
+    <main style="flex:1 1 auto;min-width:0;overflow-x:hidden">
+
+      <!-- ===== LIST VIEW ===== -->
+      <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:24px 28px 60px;max-width:1320px;margin:0 auto">
+          <!-- header -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+            <div>
+              <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.2px">{{ head.title }}</h1>
+              <div style="margin-top:5px;font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="font-feature-settings:'tnum'">{{ head.count }}</span><sc-if value="{{ head.alert }}" hint-placeholder-val="{{ false }}"><span style="width:3px;height:3px;border-radius:50%;background:var(--text-3)"></span><span style="display:inline-flex;align-items:center;gap:5px;color:{{ head.alertColor }};font-weight:600"><span class="dot" style="background:{{ head.alertDot }}"></span>{{ head.alert }}</span></sc-if></div>
+            </div>
+            <div style="display:flex;gap:9px;flex:0 0 auto">
+              <sc-if value="{{ head.secondary }}" hint-placeholder-val="{{ false }}"><button style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M5 8v2a2 2 0 002 2h10a2 2 0 002-2V8M12 12v4"></path></svg>{{ head.secondary }}</button></sc-if>
+              <button style="height:38px;padding-inline:15px;display:flex;align-items:center;gap:8px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;box-shadow:var(--shadow)" style-hover="background:var(--primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>{{ head.primary }}</button>
+            </div>
+          </div>
+
+          <!-- ADR/Invariant tabs -->
+          <sc-if value="{{ isAdrs }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:4px;margin-bottom:15px;border-bottom:1px solid var(--border)">
+              <button onClick="{{ adrTabAdrsGo }}" aria-pressed="{{ adrTabAdrsSel }}" style="height:38px;padding-inline:4px;margin-inline-end:18px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabAdrsFg }};border-bottom:2px solid {{ adrTabAdrsBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7"></path></svg>{{ t.tabAdrs }}<span style="font-size:11.5px;font-weight:700;color:var(--text-3);background:var(--subtle);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ adrCount }}</span></button>
+              <button onClick="{{ adrTabInvGo }}" aria-pressed="{{ adrTabInvSel }}" style="height:38px;padding-inline:4px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabInvFg }};border-bottom:2px solid {{ adrTabInvBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 7v6M9 9.5h6"></path></svg>{{ t.tabInv }}<span style="font-size:11.5px;font-weight:700;color:var(--text-3);background:var(--subtle);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ invCount }}</span></button>
+            </div>
+          </sc-if>
+
+          <!-- filter bar -->
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+            <button style="height:34px;padding-inline:11px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:8px;font-size:12.5px;font-weight:600" style-hover="background:var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--st-warn-dot)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.2 1 5.9L12 16.8 6.8 19.5l1-5.9L3.5 9.4l5.9-.9L12 3z"></path></svg>{{ savedView }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button>
+            <span style="width:1px;height:22px;background:var(--border)"></span>
+            <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3"><button onClick="{{ f.go }}" aria-pressed="{{ f.on }}" class="fbtn" style="border-color:{{ f.bd }};background:{{ f.bg }};color:{{ f.fg }}" style-hover="background:var(--subtle)"><sc-if value="{{ f.icon }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ f.icon }}"></path></svg></sc-if>{{ f.label }}<sc-if value="{{ f.toggle }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;opacity:.7">{{ f.state }}</span></sc-if><sc-if value="{{ f.chev }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></sc-if></button></sc-for>
+            <div style="margin-inline-start:auto;display:flex;align-items:center;gap:9px">
+              <div style="display:flex;gap:3px;padding:3px;background:var(--sunken);border-radius:8px"><span style="font-size:10px;font-weight:700;color:var(--text-3);padding-inline:6px;align-self:center;text-transform:uppercase;letter-spacing:.4px">{{ t.dataLabel }}</span><sc-for list="{{ stateTabs }}" as="s" hint-placeholder-count="4"><button onClick="{{ s.go }}" aria-pressed="{{ s.sel }}" class="seg" style="{{ s.style }}">{{ s.label }}</button></sc-for></div>
+              <span style="font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18M6 8h12M9 12h6M11 16h2"></path></svg>{{ showing }}</span>
+            </div>
+          </div>
+
+          <!-- LOADING -->
+          <sc-if value="{{ dsLoading }}" hint-placeholder-val="{{ false }}">
+            <div class="card">
+              <div class="{{ gridClass }} hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="7"><span class="hcell"><span style="height:9px;width:54px;background:var(--sunken);border-radius:5px"></span></span></sc-for></div>
+              <sc-for list="{{ skelRows }}" as="r" hint-placeholder-count="8"><div class="{{ gridClass }}" style="border-bottom:1px solid var(--border-soft);min-height:46px;animation:acmpShimmer 1.4s ease-in-out infinite"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="7"><span class="cell"><span style="display:block;height:10px;width:{{ r.w }};background:var(--sunken);border-radius:5px"></span></span></sc-for></div></sc-for>
+            </div>
+          </sc-if>
+
+          <!-- EMPTY -->
+          <sc-if value="{{ dsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding:60px 24px;text-align:center">
+              <div style="width:52px;height:52px;margin:0 auto 16px;border-radius:13px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M3 12h.01M3 7h.01M3 17h.01"></path></svg></div>
+              <h3 style="margin:0 0 7px;font-size:17px;font-weight:700">{{ t.emptyT }}</h3>
+              <p style="margin:0 auto 18px;font-size:13.5px;color:var(--text-2);max-width:380px;line-height:1.6">{{ emptyB }}</p>
+              <div style="display:flex;gap:9px;justify-content:center"><button onClick="{{ clearFilters }}" style="height:36px;padding-inline:16px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px">{{ t.clearFilters }}</button><button style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px">{{ head.primary }}</button></div>
+            </div>
+          </sc-if>
+
+          <!-- ERROR -->
+          <sc-if value="{{ dsError }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding:54px 24px;text-align:center">
+              <div style="width:52px;height:52px;margin:0 auto 16px;border-radius:13px;background:var(--st-danger-bg);color:var(--st-danger-fg);display:flex;align-items:center;justify-content:center"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0zM12 9v4M12 17h.01"></path></svg></div>
+              <h3 style="margin:0 0 7px;font-size:17px;font-weight:700">{{ t.errorT }}</h3>
+              <p style="margin:0 auto 8px;font-size:13.5px;color:var(--text-2);max-width:400px;line-height:1.6">{{ t.errorB }}</p>
+              <div style="font-family:var(--mono);font-size:11.5px;color:var(--text-3);margin-bottom:18px" dir="ltr">{{ errorReq }}</div>
+              <div style="display:flex;gap:9px;justify-content:center"><button style="height:36px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"></path></svg>{{ t.retry }}</button><button style="height:36px;padding-inline:16px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px">{{ t.contact }}</button></div>
+            </div>
+          </sc-if>
+
+          <!-- LIVE -->
+          <sc-if value="{{ dsLive }}" hint-placeholder-val="{{ true }}">
+
+            <!-- ACTIONS TABLE -->
+            <sc-if value="{{ isActions }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gAct hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="7"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+                  <button onClick="{{ r.open }}" class="gAct row" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell"><span class="ttl">{{ r.title }}</span></span>
+                    <span class="cell"><span class="key" style="font-size:11px">{{ r.linked }}</span></span>
+                    <span class="cell" style="gap:8px"><span class="av">{{ r.ownerI }}</span><span class="sub2">{{ r.ownerN }}</span></span>
+                    <span class="cell" style="gap:6px"><sc-if value="{{ r.overdue }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--st-danger-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></sc-if><span style="font-size:12.5px;font-weight:{{ r.dueWeight }};color:{{ r.dueColor }};font-feature-settings:'tnum'">{{ r.due }}</span></span>
+                    <span class="cell" style="gap:8px"><span class="pbar"><span style="display:block;height:100%;width:{{ r.pct }};background:{{ r.pctColor }}"></span></span><span style="font-size:11.5px;font-weight:600;color:var(--text-2);font-feature-settings:'tnum';flex:0 0 auto">{{ r.pct }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- RISKS TABLE -->
+            <sc-if value="{{ isRisks }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gRsk hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="8"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="7">
+                  <button onClick="{{ r.open }}" class="gRsk row" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell"><span class="ttl">{{ r.title }}</span></span>
+                    <span class="cell"><span style="font-size:12px;font-weight:600;color:{{ r.probColor }}">{{ r.prob }}</span></span>
+                    <span class="cell"><span style="font-size:12px;font-weight:600;color:{{ r.impactColor }}">{{ r.impact }}</span></span>
+                    <span class="cell" style="gap:8px"><span class="heat"><sc-for list="{{ r.heatCells }}" as="hc" hint-placeholder-count="9"><span class="hc" style="background:{{ hc }}"></span></sc-for></span><span class="chip" style="{{ r.expChip }};height:20px"><span class="dot" style="background:{{ r.expDot }}"></span>{{ r.exposure }}</span></span>
+                    <span class="cell" style="gap:8px"><span class="av">{{ r.ownerI }}</span><span class="sub2">{{ r.ownerN }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                    <span class="cell"><span class="key" style="font-size:11px">{{ r.linked }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- DEPENDENCIES TABLE -->
+            <sc-if value="{{ isDeps }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gDep hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="6"><span class="hcell">{{ c.label }}</span></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+                  <button onClick="{{ r.open }}" class="gDep row" style-hover="background:var(--subtle)">
+                    <span class="cell" style="gap:7px"><span class="key" style="font-size:11.5px">{{ r.from }}</span></span>
+                    <span class="cell"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:{{ r.relColor }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ r.relArrow }}"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>{{ r.relation }}</span></span>
+                    <span class="cell"><span class="key" style="font-size:11.5px">{{ r.to }}</span></span>
+                    <span class="cell"><sc-if value="{{ r.blocked }}" hint-placeholder-val="{{ false }}"><span class="badge" style="background:var(--st-danger-bg);color:var(--st-danger-fg)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M6 6l12 12"></path></svg>{{ t.blocked }}</span></sc-if></span>
+                    <span class="cell"><sc-if value="{{ r.cross }}" hint-placeholder-val="{{ false }}"><span class="badge" style="background:var(--st-warn-bg);color:var(--st-warn-fg)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 7l4-4M4 7l4 4M20 17H4M20 17l-4-4M20 17l-4 4"></path></svg>{{ t.crossStream }}</span></sc-if></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- ADR TABLE -->
+            <sc-if value="{{ isAdrTab }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gAdr hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="7">
+                  <button onClick="{{ r.open }}" class="gAdr row" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell"><span class="ttl">{{ r.title }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                    <span class="cell"><sc-if value="{{ r.relLabel }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ r.relIcon }}"></path></svg>{{ r.relLabel }} <span class="key" style="font-size:11px">{{ r.relKey }}</span></span></sc-if><sc-if value="{{ r.relNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--text-3)">—</span></sc-if></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- INVARIANTS TABLE -->
+            <sc-if value="{{ isInvTab }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gInv hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="6"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="7">
+                  <button onClick="{{ r.open }}" class="gInv row" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell"><span class="ttl" style="white-space:normal;line-height:1.4;font-weight:500">{{ r.title }}</span></span>
+                    <span class="cell"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2)"><span class="dot" style="background:{{ r.catDot }};width:7px;height:7px"></span>{{ r.category }}</span></span>
+                    <span class="cell"><span class="sub2" style="font-size:12px">{{ r.scope }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                    <span class="cell"><span class="badge" style="background:{{ r.vBg }};color:{{ r.vFg }}">{{ r.violations }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ===== DETAIL DRILL-IN ===== -->
+      <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px 28px 60px;max-width:1080px;margin:0 auto">
+          <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-3);margin-bottom:14px"><button onClick="{{ closeDetail }}" style="border:0;background:transparent;color:var(--text-3);padding:0;cursor:pointer;font-size:12.5px" style-hover="color:var(--accent)">{{ head.title }}</button><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">{{ det.k }}</span></nav>
+
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
+            <div style="min-width:0">
+              <!-- detail header -->
+              <div class="card" style="padding:18px 20px;margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:12px;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 8px">{{ det.k }}</span><span class="chip" style="{{ det.chip }}"><span class="dot" style="background:{{ det.dot }}"></span>{{ det.status }}</span><sc-if value="{{ det.overdueBadge }}" hint-placeholder-val="{{ false }}"><span class="badge" style="background:var(--st-danger-bg);color:var(--st-danger-fg)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4"></path></svg>{{ t.overdueWord }}</span></sc-if></div>
+                <h1 style="margin:0;font-size:18px;font-weight:700;line-height:1.35">{{ det.title }}</h1>
+                <sc-if value="{{ det.sub }}" hint-placeholder-val="{{ false }}"><div style="margin-top:5px;font-size:13.5px;color:var(--text-2)" dir="{{ otherDir }}">{{ det.sub }}</div></sc-if>
+              </div>
+
+              <!-- facts -->
+              <div class="card" style="padding:18px 20px;margin-bottom:16px">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px 16px"><sc-for list="{{ det.facts }}" as="f" hint-placeholder-count="6"><div class="fact"><span class="flabel">{{ f.label }}</span><span class="fval" style="color:{{ f.color }}">{{ f.value }}</span></div></sc-for></div>
+                <sc-if value="{{ det.hasProgress }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border-soft)"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:7px"><span>{{ t.progress }}</span><span style="font-weight:700;color:var(--text);font-feature-settings:'tnum'">{{ det.pct }}</span></div><div class="pbar" style="height:8px"><span style="display:block;height:100%;width:{{ det.pct }};background:{{ det.pctColor }}"></span></div></div>
+                </sc-if>
+                <sc-if value="{{ det.hasHeat }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:18px">
+                    <div><div class="flabel" style="margin-bottom:8px">{{ t.exposureMatrix }}</div><div style="display:flex;align-items:flex-end;gap:8px"><div style="display:flex;flex-direction:column;gap:3px"><sc-for list="{{ det.matrix }}" as="mr" hint-placeholder-count="3"><div style="display:flex;gap:3px"><sc-for list="{{ mr }}" as="mc" hint-placeholder-count="3"><span style="width:26px;height:20px;border-radius:4px;background:{{ mc.bg }};border:1.5px solid {{ mc.bd }}"></span></sc-for></div></sc-for></div></div></div>
+                    <div style="font-size:12.5px;color:var(--text-2);line-height:1.7"><div>{{ t.probLabel }}: <b style="color:var(--text)">{{ det.probWord }}</b></div><div>{{ t.impactLabel }}: <b style="color:var(--text)">{{ det.impactWord }}</b></div><div>{{ t.exposureLabel }}: <b style="color:{{ det.expWordColor }}">{{ det.expWord }}</b></div></div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <!-- description -->
+              <div class="card" style="padding:18px 20px">
+                <div class="flabel" style="margin-bottom:9px">{{ det.descLabel }}</div>
+                <p style="margin:0;font-size:13.5px;color:var(--text-2);line-height:1.7">{{ det.desc }}</p>
+              </div>
+            </div>
+
+            <!-- related panel -->
+            <aside aria-label="{{ t.related }}" class="card" style="position:sticky;top:74px">
+              <div style="padding:13px 15px;border-bottom:1px solid var(--border);background:var(--subtle)"><div style="display:flex;align-items:center;gap:8px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M18 8.5v7M8 8l8 8"></path></svg><h2 style="margin:0;font-size:13.5px;font-weight:600">{{ t.related }}</h2></div><div style="font-size:11px;color:var(--text-3);margin-top:2px">{{ t.relatedSub }}</div></div>
+              <div style="padding:8px">
+                <sc-for list="{{ det.related }}" as="rl" hint-placeholder-count="3">
+                  <button style="display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:1px solid var(--border-soft);background:var(--surface);border-radius:9px;padding:9px 10px;margin-bottom:6px" style-hover="border-color:var(--accent);background:var(--subtle)">
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:{{ rl.dirColor }};flex:0 0 auto;width:46px">{{ rl.dir }}</span>
+                    <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-family:var(--mono);font-size:10.5px;color:var(--accent)">{{ rl.k }}</span><span style="display:block;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rl.title }}</span></span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ det.graphLink }}" hint-placeholder-val="{{ false }}"><button style="width:100%;height:34px;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--border);background:var(--subtle);color:var(--text);border-radius:8px;font-weight:600;font-size:12.5px" style-hover="background:var(--sunken)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M5 8v2a2 2 0 002 2h10a2 2 0 002-2V8M12 12v4"></path></svg>{{ t.openGraph }}</button></sc-if>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== AUDIT TRAIL (Auditor role) ===== -->
+      <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px 28px 60px;max-width:1320px;margin:0 auto">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+            <div>
+              <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.2px">{{ auditTitle }}</h1>
+              <div style="margin-top:5px;font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="font-feature-settings:'tnum'">{{ auditCount }}</span><span style="width:3px;height:3px;border-radius:50%;background:var(--text-3)"></span><span style="display:inline-flex;align-items:center;gap:6px;color:var(--st-warn-fg);font-weight:600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ auditReadonly }}</span></div>
+            </div>
+            <button class="ghostbtn" style="height:38px;padding-inline:14px;display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>{{ auditExport }}</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+            <sc-for list="{{ auditFilters }}" as="f" hint-placeholder-count="4"><button class="fbtn" style-hover="background:var(--subtle)">{{ f }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button></sc-for>
+          </div>
+          <div class="card">
+            <div class="gAudit hrow"><span class="hcell">{{ colWhen }}</span><span class="hcell">{{ colActor }}</span><span class="hcell">{{ colAction }}</span><span class="hcell">{{ colArtifact }}</span><span class="hcell">{{ colDetail }}</span></div>
+            <sc-for list="{{ auditRows }}" as="r" hint-placeholder-count="8">
+              <div class="gAudit" style="border-bottom:1px solid var(--border-soft);min-height:48px" style-hover="background:var(--subtle)">
+                <span class="cell"><span style="font-family:var(--mono);font-size:11.5px;color:var(--text-2)" dir="ltr">{{ r.ts }}</span></span>
+                <span class="cell" style="gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:{{ r.actorBg }};color:{{ r.actorFg }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:0 0 auto">{{ r.actorI }}</span><span class="sub2">{{ r.actorName }}</span></span>
+                <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.verb }}</span></span>
+                <span class="cell"><span class="key" style="font-size:11.5px">{{ r.artifact }}</span></span>
+                <span class="cell"><span style="font-size:12.5px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.detail }}</span></span>
+              </div>
+            </sc-for>
+            <div style="padding:11px 16px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-3);background:var(--subtle);border-top:1px solid var(--border-soft)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ auditReadonly }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;actions&quot;,&quot;options&quot;:[&quot;actions&quot;,&quot;risks&quot;,&quot;deps&quot;,&quot;adrs&quot;,&quot;audit&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { screen: this.props.defaultScreen || 'actions', lang:'en', theme:'light', dataState: this.props.dataState || 'live', adrTab:'adrs', detail:null, overdueOnly:false, blockedOnly:false, liveMsg:'' };
+  set(k,v){ this.setState({ [k]:v }); }
+  go(screen){ this.setState({ screen, detail:null, adrTab:'adrs', overdueOnly:false, blockedOnly:false }); }
+
+  ICN = {
+    home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',
+    backlog:'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
+    agenda:'M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
+    decisions:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4',
+    actions:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11',
+    adrs:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7',
+    risks:'M12 4l9 16H3L12 4zM12 10v4M12 17h.01',
+    deps:'M6 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 22a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM6 7v3a3 3 0 003 3h6a3 3 0 003-3V7M12 13v4',
+    research:'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM10 13a2 2 0 104 0 2 2 0 00-4 0zM13.5 15.5L15 17',
+    wiki:'M12 6c-1.5-1-4-1.5-6-1.5V18c2 0 4.5.5 6 1.5 1.5-1 4-1.5 6-1.5V4.5c-2 0-4.5.5-6 1.5zM12 6v13',
+    diagrams:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    reports:'M4 20V10M10 20V4M16 20v-8M3 20h18',
+    audit:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+    admin:'M4 6h16M4 12h16M4 18h16M9 4v4M16 10v4M11 16v4'
+  };
+  OWN = { omar:{i:'OH',en:'Omar H.',ar:'عمر هـ.'}, noura:{i:'NP',en:'Noura P.',ar:'نورة ب.'}, khalid:{i:'KA',en:'Khalid A.',ar:'خالد ع.'}, sara:{i:'SM',en:'Sara M.',ar:'سارة م.'}, faisal:{i:'FN',en:'Faisal N.',ar:'فيصل ن.'} };
+
+  chip(s){ return `background:var(--st-${s}-bg);color:var(--st-${s}-fg)`; }
+  dot(s){ return `var(--st-${s}-dot)`; }
+  lvlSem(v){ return v==='High'||v==='عالٍ' ? 'danger' : (v==='Medium'||v==='متوسط' ? 'warn' : 'success'); }
+
+  renderVals(){
+    const { screen, lang, theme, dataState, adrTab, detail, overdueOnly, blockedOnly } = this.state;
+    const isRtl = lang==='ar'; const L=(en,ar)=>isRtl?ar:en;
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl?'scaleX(-1)':'none';
+    const own = (k)=>({ ownerI:this.OWN[k].i, ownerN:this.OWN[k][lang] });
+
+    const t = {
+      search:L('Search topics, decisions, ADRs, actions…','ابحث في المواضيع والقرارات والسجلات والإجراءات…'),
+      person:L('Khalid A.','خالد ع.'), coordinator:L('Secretary of the Committee','أمين سر اللجنة'),
+      grpCommittee:L('Committee','اللجنة'), grpGov:L('Governance','الحوكمة'), grpKnowledge:L('Knowledge','المعرفة'), grpInsights:L('Insights','التحليلات'), grpSystem:L('System','النظام'),
+      dataLabel:L('Data','البيانات'), clearFilters:L('Clear filters','مسح المرشّحات'),
+      emptyT:L('Nothing to show','لا شيء لعرضه'), errorT:L('Couldn\u2019t load','تعذّر التحميل'),
+      errorB:L('A network error interrupted the request. No data was lost — please retry.','حدث خطأ في الشبكة أثناء الطلب. لم تُفقد أي بيانات — يُرجى إعادة المحاولة.'),
+      retry:L('Retry','إعادة المحاولة'), contact:L('Contact support','تواصل مع الدعم'),
+      blocked:L('Blocked','محجوب'), crossStream:L('Cross-stream','عابر للمسارات'),
+      tabAdrs:L('ADRs','سجلات القرار'), tabInv:L('Architecture Invariants','الثوابت المعمارية'),
+      related:L('Related','العلاقات'), relatedSub:L('Traceability — both directions','التتبّع — بالاتجاهين'),
+      openGraph:L('Open dependency graph','فتح مخطط الاعتماديات'), progress:L('Progress','التقدّم'),
+      overdueWord:L('Overdue','متأخر'), exposureMatrix:L('Probability × Impact','الاحتمال × الأثر'),
+      probLabel:L('Probability','الاحتمال'), impactLabel:L('Impact','الأثر'), exposureLabel:L('Exposure','التعرّض'),
+      down:L('Down','لاحق'), up:L('Up','سابق'), rel:L('Rel','مرتبط')
+    };
+
+    // ---------- NAV ----------
+    const mkNav = (key,label,d,badge,active,interactive)=>{
+      const base='background:transparent;color:var(--text-2);font-weight:500';
+      const on='background:var(--primary-tint);color:var(--accent);font-weight:600';
+      return { key,label,d,badge:badge||null, current:active?'page':null, barOp:active?'1':'0',
+        style: active?on:(interactive?base:base+';opacity:.55;cursor:default'),
+        hover: active?'background:var(--primary-tint)':(interactive?'background:var(--subtle);color:var(--text)':'background:transparent'),
+        go: interactive?()=>this.go(key):()=>{} };
+    };
+    const navCommittee = [
+      mkNav('home', L('Home','الرئيسية'), this.ICN.home, null, false, false),
+      mkNav('backlog', L('Backlog','قائمة المواضيع'), this.ICN.backlog, '15', false, false),
+      mkNav('agenda', L('Agenda & Meetings','الأجندة والاجتماعات'), this.ICN.agenda, null, false, false),
+      mkNav('decisions', L('Decisions','القرارات'), this.ICN.decisions, null, false, false),
+      mkNav('actions', L('Actions','الإجراءات'), this.ICN.actions, '8', screen==='actions', true)
+    ];
+    const navGov = [
+      mkNav('adrs', L('ADRs & Invariants','سجلات القرار والثوابت'), this.ICN.adrs, null, screen==='adrs', true),
+      mkNav('risks', L('Risks','المخاطر'), this.ICN.risks, '7', screen==='risks', true),
+      mkNav('deps', L('Dependencies','الاعتماديات'), this.ICN.deps, null, screen==='deps', true)
+    ];
+    const navKnowledge = [
+      mkNav('research', L('Research','البحث'), this.ICN.research, null, false, false),
+      mkNav('wiki', L('Knowledge / Wiki','المعرفة / ويكي'), this.ICN.wiki, null, false, false),
+      mkNav('diagrams', L('Diagrams','المخططات'), this.ICN.diagrams, null, false, false)
+    ];
+    const navInsights = [ mkNav('reports', L('Reports','التقارير'), this.ICN.reports, null, false, false) ];
+    const navSystem = [
+      mkNav('audit', L('Audit Trail','سجل التدقيق'), this.ICN.audit, null, screen==='audit', true),
+      mkNav('admin', L('Administration','الإدارة'), this.ICN.admin, null, false, false)
+    ];
+
+    // ---------- STATE TABS ----------
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow)';
+    const segOff='background:transparent;color:var(--text-2)';
+    const stateTabs = [['live',L('Live','مباشر')],['loading',L('Loading','تحميل')],['empty',L('Empty','فارغ')],['error',L('Error','خطأ')]].map(([k,label])=>({
+      go:()=>this.set('dataState',k), sel:dataState===k?'true':'false', label, style:(dataState===k?segOn:segOff) }));
+    const skelRows=[['62%'],['80%'],['54%'],['72%'],['48%'],['66%'],['58%'],['76%']].map(([w])=>({w}));
+
+    // ---------- DATA ----------
+    const actionsRaw = [
+      { k:'ACT-2026-040', title:{en:'Produce Keycloak migration ADR',ar:'إعداد سجل قرار ترحيل Keycloak'}, linked:'ADR-2026-003', o:'omar', due:{en:'7 Jul 2026',ar:'٧ يوليو ٢٠٢٦'}, overdue:false, pct:40, st:'inprog' },
+      { k:'ACT-2026-033', title:{en:'Risk review: dual-running auth',ar:'مراجعة مخاطر التشغيل المزدوج'}, linked:'RSK-2026-006', o:'noura', due:{en:'23 Jun 2026',ar:'٢٣ يونيو ٢٠٢٦'}, overdue:true, pct:20, st:'blocked' },
+      { k:'ACT-2026-037', title:{en:'Draft API pagination standard',ar:'صياغة معيار ترقيم الواجهات'}, linked:'TOP-2026-022', o:'khalid', due:{en:'29 Jun 2026',ar:'٢٩ يونيو ٢٠٢٦'}, overdue:false, pct:70, st:'inprog' },
+      { k:'ACT-2026-031', title:{en:'Define rollback plan for cutover',ar:'تحديد خطة التراجع للتبديل'}, linked:'DECN-2026-008', o:'sara', due:{en:'20 Jun 2026',ar:'٢٠ يونيو ٢٠٢٦'}, overdue:true, pct:10, st:'open' },
+      { k:'ACT-2026-028', title:{en:'Security review sign-off',ar:'اعتماد المراجعة الأمنية'}, linked:'RSK-2026-004', o:'faisal', due:{en:'12 Jun 2026',ar:'١٢ يونيو ٢٠٢٦'}, overdue:false, pct:100, st:'verified' },
+      { k:'ACT-2026-025', title:{en:'Publish IdP onboarding guide',ar:'نشر دليل تهيئة موفّر الهوية'}, linked:'ADR-2026-003', o:'omar', due:{en:'5 Jun 2026',ar:'٥ يونيو ٢٠٢٦'}, overdue:false, pct:100, st:'completed' },
+      { k:'ACT-2026-022', title:{en:'Inventory per-stream auth',ar:'حصر المصادقة لكل مسار'}, linked:'TOP-2026-014', o:'khalid', due:{en:'2 Jun 2026',ar:'٢ يونيو ٢٠٢٦'}, overdue:false, pct:100, st:'verified' },
+      { k:'ACT-2026-044', title:{en:'Schedule cross-stream dependency review',ar:'جدولة مراجعة الاعتماديات العابرة'}, linked:'TOP-2026-009', o:'noura', due:{en:'3 Jul 2026',ar:'٣ يوليو ٢٠٢٦'}, overdue:false, pct:0, st:'open' }
+    ];
+    const actStatus = { open:{l:L('Open','مفتوح'),s:'neutral'}, inprog:{l:L('In Progress','قيد التنفيذ'),s:'info'}, blocked:{l:L('Blocked','محجوب'),s:'danger'}, completed:{l:L('Completed','مكتمل'),s:'success'}, verified:{l:L('Verified','مُتحقَّق'),s:'sched'} };
+    const pctColor=(p)=>p>=100?'var(--st-success-dot)':(p>=50?'var(--accent)':(p>=25?'var(--st-warn-dot)':'var(--st-danger-dot)'));
+
+    const risksRaw = [
+      { k:'RSK-2026-006', title:{en:'Dual-running of internal auth and Keycloak',ar:'التشغيل المزدوج للمصادقة الداخلية وKeycloak'}, prob:'High', impact:'High', exp:'Critical', o:'noura', st:'mitigating', linked:'TOP-2026-014' },
+      { k:'RSK-2026-004', title:{en:'Token policy gaps during migration',ar:'ثغرات سياسة الرموز أثناء الترحيل'}, prob:'Medium', impact:'High', exp:'High', o:'faisal', st:'mitigating', linked:'ADR-2026-003' },
+      { k:'RSK-2026-009', title:{en:'Vendor lock-in to a single IdP',ar:'الارتباط بمزوّد هوية واحد'}, prob:'Low', impact:'High', exp:'Medium', o:'sara', st:'open', linked:'DECN-2026-008' },
+      { k:'RSK-2026-002', title:{en:'Audit log retention non-compliance',ar:'عدم امتثال الاحتفاظ بسجلات التدقيق'}, prob:'Medium', impact:'Medium', exp:'Medium', o:'khalid', st:'mitigating', linked:'—' },
+      { k:'RSK-2026-011', title:{en:'Session migration downtime',ar:'توقّف أثناء ترحيل الجلسات'}, prob:'High', impact:'Medium', exp:'High', o:'omar', st:'open', linked:'TOP-2026-022' },
+      { k:'RSK-2025-018', title:{en:'Legacy LDAP dependency',ar:'اعتمادية LDAP القديمة'}, prob:'Low', impact:'Medium', exp:'Low', o:'faisal', st:'closed', linked:'—' },
+      { k:'RSK-2025-014', title:{en:'MFA rollout user friction',ar:'احتكاك المستخدمين مع التحقّق الثنائي'}, prob:'Low', impact:'Low', exp:'Low', o:'noura', st:'closed', linked:'—' }
+    ];
+    const lvlL = { High:L('High','عالٍ'), Medium:L('Medium','متوسط'), Low:L('Low','منخفض'), Critical:L('Critical','حرج') };
+    const lvlColor=(v)=>v==='High'||v==='Critical'?'var(--st-danger-fg)':(v==='Medium'?'var(--st-warn-fg)':'var(--text-2)');
+    const expSem=(e)=>e==='Critical'||e==='High'?'danger':(e==='Medium'?'warn':'success');
+    const riskStatus={ open:{l:L('Open','مفتوح'),s:'danger'}, mitigating:{l:L('Mitigating','قيد المعالجة'),s:'warn'}, closed:{l:L('Closed','مغلق'),s:'neutral'} };
+    const lvlIdx={ Low:0, Medium:1, High:2 };
+    const heatCellsFor=(prob,impact,exp)=>{ const x=lvlIdx[prob], yTop=2-lvlIdx[impact]; const col=this.dot(expSem(exp)); const cells=[]; for(let r=0;r<3;r++){ for(let c=0;c<3;c++){ cells.push((c===x&&r===yTop)?col:'var(--sunken)'); } } return cells; };
+
+    const depsRaw = [
+      { from:'TOP-2026-014', rel:'depends', to:'TOP-2026-022', blocked:false, cross:true, st:'active' },
+      { from:'TOP-2026-009', rel:'blockedby', to:'TOP-2026-014', blocked:true, cross:true, st:'active' },
+      { from:'ADR-2026-003', rel:'depends', to:'DECN-2026-008', blocked:false, cross:false, st:'resolved' },
+      { from:'ACT-2026-040', rel:'blocks', to:'TOP-2026-014', blocked:true, cross:false, st:'active' },
+      { from:'TOP-2026-022', rel:'relates', to:'ADR-2026-003', blocked:false, cross:true, st:'active' },
+      { from:'RSK-2026-006', rel:'relates', to:'TOP-2026-014', blocked:false, cross:false, st:'active' },
+      { from:'SVC-Gateway', rel:'blockedby', to:'ACT-2026-040', blocked:true, cross:true, st:'active' },
+      { from:'TOP-2026-027', rel:'depends', to:'TOP-2026-009', blocked:false, cross:false, st:'resolved' }
+    ];
+    const relMeta={ depends:{l:L('Depends on','يعتمد على'),c:'var(--st-info-fg)',up:true}, blockedby:{l:L('Blocked by','محجوب بـ'),c:'var(--st-danger-fg)',up:true}, blocks:{l:L('Blocks','يحجب'),c:'var(--st-danger-fg)',up:false}, relates:{l:L('Relates to','مرتبط بـ'),c:'var(--st-neutral-fg)',up:false} };
+    const depStatus={ active:{l:L('Active','نشط'),s:'info'}, resolved:{l:L('Resolved','محلول'),s:'success'} };
+
+    const adrsRaw = [
+      { k:'ADR-2026-003', title:{en:'Keycloak as the standard IdP',ar:'Keycloak كموفّر هوية معياري'}, st:'proposed', rel:null },
+      { k:'ADR-2026-001', title:{en:'API pagination & filtering standard',ar:'معيار ترقيم وتصفية الواجهات'}, st:'accepted', rel:{type:'supersedes',k:'ADR-2025-019'} },
+      { k:'ADR-2025-019', title:{en:'Cursor pagination (interim)',ar:'الترقيم بالمؤشّر (مؤقت)'}, st:'superseded', rel:{type:'supersededby',k:'ADR-2026-001'} },
+      { k:'ADR-2026-002', title:{en:'Event schema versioning',ar:'إصدارات مخطّط الأحداث'}, st:'accepted', rel:null },
+      { k:'ADR-2025-018', title:{en:'Per-stream internal authentication',ar:'المصادقة الداخلية لكل مسار'}, st:'deprecated', rel:{type:'supersededby',k:'ADR-2026-003'} },
+      { k:'ADR-2026-004', title:{en:'Service mesh adoption',ar:'تبنّي شبكة الخدمات'}, st:'draft', rel:null },
+      { k:'ADR-2025-015', title:{en:'Centralized logging pipeline',ar:'خط أنابيب التسجيل المركزي'}, st:'accepted', rel:null }
+    ];
+    const adrStatus={ draft:{l:L('Draft','مسودة'),s:'neutral'}, proposed:{l:L('Proposed','مقترح'),s:'info'}, accepted:{l:L('Accepted','مقبول'),s:'success'}, superseded:{l:L('Superseded','مُستبدَل'),s:'warn'}, deprecated:{l:L('Deprecated','مهجور'),s:'danger'} };
+
+    const invRaw = [
+      { k:'INV-001', title:{en:'All inter-service calls authenticate via the standard IdP',ar:'كل الاستدعاءات بين الخدمات تُصادَق عبر موفّر الهوية المعياري'}, cat:'security', scope:{en:'All streams',ar:'كل المسارات'}, st:'active', v:2 },
+      { k:'INV-002', title:{en:'No PII in logs or traces',ar:'لا بيانات شخصية في السجلات أو التتبّع'}, cat:'data', scope:{en:'All streams',ar:'كل المسارات'}, st:'active', v:0 },
+      { k:'INV-003', title:{en:'Public APIs expose cursor-based pagination',ar:'واجهات API العامة توفّر ترقيمًا بالمؤشّر'}, cat:'integration', scope:{en:'Platform',ar:'المنصة'}, st:'active', v:1 },
+      { k:'INV-004', title:{en:'All services emit health & readiness endpoints',ar:'كل الخدمات توفّر نقاط فحص الصحة والجاهزية'}, cat:'observability', scope:{en:'All streams',ar:'كل المسارات'}, st:'active', v:0 },
+      { k:'INV-005', title:{en:'Breaking API changes require a new version',ar:'التغييرات الكاسرة تتطلّب إصدارًا جديدًا'}, cat:'integration', scope:{en:'All streams',ar:'كل المسارات'}, st:'active', v:0 },
+      { k:'INV-006', title:{en:'Stateful services define a documented rollback',ar:'الخدمات ذات الحالة تُعرّف خطة تراجع موثّقة'}, cat:'resilience', scope:{en:'Platform',ar:'المنصة'}, st:'active', v:1 },
+      { k:'INV-007', title:{en:'Secrets are sourced from the vault, never in config',ar:'الأسرار من الخزنة، لا في الإعدادات'}, cat:'security', scope:{en:'All streams',ar:'كل المسارات'}, st:'draft', v:0 }
+    ];
+    const catMeta={ security:{l:L('Security','الأمن'),dot:'var(--st-danger-dot)'}, data:{l:L('Data','البيانات'),dot:'var(--st-info-dot)'}, integration:{l:L('Integration','التكامل'),dot:'var(--st-sched-dot)'}, observability:{l:L('Observability','المراقبة'),dot:'var(--st-success-dot)'}, resilience:{l:L('Resilience','الجاهزية'),dot:'var(--st-warn-dot)'} };
+    const invStatus={ active:{l:L('Active','نشط'),s:'success'}, draft:{l:L('Draft','مسودة'),s:'neutral'}, retired:{l:L('Retired','متقاعد'),s:'neutral'} };
+
+    // ---------- HEADERS / FILTERS / COLS PER SCREEN ----------
+    const sortCol = (label)=>({ label, sort:()=>{}, cursor:'pointer', color:'var(--text-3)', sortOp:'.3', sortDir:'none' });
+    const plainCol = (label)=>({ label, sort:()=>{}, cursor:'default', color:'var(--text-3)', sortOp:'0', sortDir:'none' });
+    const mkFilter=(label,icon,toggle,on,go,stateTxt)=>({ label, icon:icon||null, toggle:toggle||false, on:on?'true':'false', go:go||(()=>{}), chev: toggle?false:true, state:stateTxt||'',
+      bd:on?'var(--accent)':'var(--border)', bg:on?'var(--primary-tint)':'var(--surface)', fg:on?'var(--accent)':'var(--text-2)' });
+
+    let head={}, cols=[], rows=[], gridClass='gAct', emptyB='', errorReq='', savedView='', filters=[];
+    const isActions=screen==='actions', isRisks=screen==='risks', isDeps=screen==='deps', isAdrs=screen==='adrs';
+    const isAdrTab = isAdrs && adrTab==='adrs';
+    const isInvTab = isAdrs && adrTab==='invariants';
+
+    if(isActions){
+      gridClass='gAct'; savedView=L('My open actions','إجراءاتي المفتوحة'); errorReq='GET /api/actions — 503 · req 7a1c-…-d04';
+      let data=actionsRaw.slice(); if(overdueOnly) data=data.filter(a=>a.overdue);
+      const overdueCount=actionsRaw.filter(a=>a.overdue).length;
+      head={ title:L('Actions','الإجراءات'), count:L(`${actionsRaw.length} actions`,`${actionsRaw.length} إجراء`), alert:L(`${overdueCount} overdue`,`${overdueCount} متأخّر`), alertColor:'var(--st-danger-fg)', alertDot:'var(--st-danger-dot)', primary:L('New action','إجراء جديد') };
+      cols=[sortCol(L('ID','المعرّف')),sortCol(L('Action','الإجراء')),plainCol(L('Linked','مرتبط')),sortCol(L('Owner','المالك')),sortCol(L('Due','الاستحقاق')),sortCol(L('Progress','التقدّم')),sortCol(L('Status','الحالة'))];
+      filters=[ mkFilter(L('Status','الحالة')), mkFilter(L('Owner','المالك')), mkFilter(L('Overdue','المتأخرة'),'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z',true,overdueOnly,()=>this.set('overdueOnly',!overdueOnly),overdueOnly?'ON':'') ];
+      emptyB=L('No actions match the current filters. Clear them to see all 8 actions.','لا إجراءات تطابق المرشّحات الحالية. امسحها لعرض كل الإجراءات.');
+      rows=data.map(a=>{ const s=actStatus[a.st]; return { k:a.k, title:a.title[lang], linked:a.linked, ...own(a.o), due:a.due[lang], overdue:a.overdue, dueColor:a.overdue?'var(--st-danger-fg)':'var(--text-2)', dueWeight:a.overdue?'700':'500', pct:a.pct+'%', pctColor:pctColor(a.pct), status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), open:()=>this.openDetail('actions',a.k) }; });
+      showingN=data.length;
+    } else if(isRisks){
+      gridClass='gRsk'; savedView=L('Open risks by exposure','المخاطر المفتوحة حسب التعرّض'); errorReq='GET /api/risks — 503 · req 3f8b-…-c12';
+      const crit=risksRaw.filter(r=>r.exp==='Critical').length;
+      head={ title:L('Risk register','سجل المخاطر'), count:L(`${risksRaw.length} risks`,`${risksRaw.length} مخاطرة`), alert:L(`${crit} critical`,`${crit} حرجة`), alertColor:'var(--st-danger-fg)', alertDot:'var(--st-danger-dot)', primary:L('New risk','مخاطرة جديدة') };
+      cols=[sortCol(L('ID','المعرّف')),sortCol(L('Risk','المخاطرة')),sortCol(L('Prob.','الاحتمال')),sortCol(L('Impact','الأثر')),sortCol(L('Exposure','التعرّض')),sortCol(L('Owner','المالك')),sortCol(L('Status','الحالة')),plainCol(L('Linked','مرتبط'))];
+      filters=[ mkFilter(L('Status','الحالة')), mkFilter(L('Owner','المالك')), mkFilter(L('Exposure','التعرّض')) ];
+      emptyB=L('No risks match the current filters.','لا مخاطر تطابق المرشّحات الحالية.');
+      rows=risksRaw.map(r=>{ const s=riskStatus[r.st]; const es=expSem(r.exp); return { k:r.k, title:r.title[lang], prob:lvlL[r.prob], probColor:lvlColor(r.prob), impact:lvlL[r.impact], impactColor:lvlColor(r.impact), exposure:lvlL[r.exp], expChip:this.chip(es), expDot:this.dot(es), heatCells:heatCellsFor(r.prob,r.impact,r.exp), ...own(r.o), status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), linked:r.linked, open:()=>this.openDetail('risks',r.k) }; });
+      showingN=risksRaw.length;
+    } else if(isDeps){
+      gridClass='gDep'; savedView=L('All dependencies','كل الاعتماديات'); errorReq='GET /api/dependencies — 503 · req 9d2e-…-b77';
+      let data=depsRaw.slice(); if(blockedOnly) data=data.filter(d=>d.blocked);
+      const blk=depsRaw.filter(d=>d.blocked).length;
+      head={ title:L('Dependencies','الاعتماديات'), count:L(`${depsRaw.length} links`,`${depsRaw.length} رابط`), alert:L(`${blk} blocked`,`${blk} محجوب`), alertColor:'var(--st-danger-fg)', alertDot:'var(--st-danger-dot)', primary:L('New dependency','اعتمادية جديدة'), secondary:L('Open graph','فتح المخطط') };
+      cols=[plainCol(L('From','من')),plainCol(L('Relation','العلاقة')),plainCol(L('To','إلى')),plainCol(L('Blocked','محجوب')),plainCol(L('Cross-stream','عابر')),plainCol(L('Status','الحالة'))];
+      filters=[ mkFilter(L('Relation','العلاقة')), mkFilter(L('Blocked work','الأعمال المحجوبة'),'M12 3a9 9 0 100 18 9 9 0 000-18zM6 6l12 12',true,blockedOnly,()=>this.set('blockedOnly',!blockedOnly),blockedOnly?'ON':''), mkFilter(L('Cross-stream','عابر للمسارات')) ];
+      emptyB=L('No dependencies match the current filters.','لا اعتماديات تطابق المرشّحات الحالية.');
+      rows=data.map((d,i)=>{ const m=relMeta[d.rel]; const s=depStatus[d.st]; return { from:d.from, to:d.to, relation:m.l, relColor:m.c, relArrow: m.up?(isRtl?'scaleX(1)':'scaleX(-1)'):(isRtl?'scaleX(-1)':'none'), blocked:d.blocked, cross:d.cross, status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), open:()=>this.openDetail('deps','D'+i) }; });
+      showingN=data.length;
+    } else { // adrs
+      savedView = adrTab==='adrs'?L('All ADRs','كل السجلات'):L('Active invariants','الثوابت النشطة');
+      errorReq='GET /api/adrs — 503 · req 5e6a-…-f31';
+      head={ title:L('ADRs & Invariants','سجلات القرار والثوابت'), count: adrTab==='adrs'?L(`${adrsRaw.length} records`,`${adrsRaw.length} سجل`):L(`${invRaw.length} invariants`,`${invRaw.length} ثابت`), alert: adrTab==='invariants'?L('4 violations open','٤ مخالفات مفتوحة'):'', alertColor:'var(--st-danger-fg)', alertDot:'var(--st-danger-dot)', primary: adrTab==='adrs'?L('New ADR','سجل قرار جديد'):L('New invariant','ثابت جديد') };
+      if(isAdrTab){
+        gridClass='gAdr';
+        cols=[sortCol(L('ID','المعرّف')),sortCol(L('Title','العنوان')),sortCol(L('Status','الحالة')),plainCol(L('Supersedes / superseded-by','يستبدل / مُستبدَل بـ'))];
+        filters=[ mkFilter(L('Status','الحالة')), mkFilter(L('Category','الفئة')) ];
+        emptyB=L('No ADRs match the current filters.','لا سجلات تطابق المرشّحات الحالية.');
+        rows=adrsRaw.map(a=>{ const s=adrStatus[a.st]; const r=a.rel; return { k:a.k, title:a.title[lang], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), relLabel: r?(r.type==='supersedes'?L('Supersedes','يستبدل'):L('Superseded by','مُستبدَل بـ')):null, relKey:r?r.k:'', relIcon: r&&r.type==='supersedes'?'M5 12h14M13 6l6 6-6 6':'M19 12H5M11 18l-6-6 6-6', relNone:!r, open:()=>this.openDetail('adrs',a.k) }; });
+        showingN=adrsRaw.length;
+      } else {
+        gridClass='gInv';
+        cols=[sortCol(L('ID','المعرّف')),sortCol(L('Statement','النص')),sortCol(L('Category','الفئة')),plainCol(L('Scope','النطاق')),sortCol(L('Status','الحالة')),sortCol(L('Viol.','مخالفات'))];
+        filters=[ mkFilter(L('Status','الحالة')), mkFilter(L('Category','الفئة')) ];
+        emptyB=L('No invariants match the current filters.','لا ثوابت تطابق المرشّحات الحالية.');
+        rows=invRaw.map(iv=>{ const s=invStatus[iv.st]; const c=catMeta[iv.cat]; const has=iv.v>0; return { k:iv.k, title:iv.title[lang], category:c.l, catDot:c.dot, scope:iv.scope[lang], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), violations:String(iv.v), vBg:has?'var(--st-danger-bg)':'var(--st-success-bg)', vFg:has?'var(--st-danger-fg)':'var(--st-success-fg)', open:()=>this.openDetail('inv',iv.k) }; });
+        showingN=invRaw.length;
+      }
+    }
+    const showing = L(`Showing ${showingN}`,`عرض ${showingN}`);
+
+    // ---------- DETAIL ----------
+    let det=null, showDetail=false;
+    if(detail){ det=this.buildDetail(detail, {actionsRaw,actStatus,risksRaw,riskStatus,depsRaw,relMeta,depStatus,adrsRaw,adrStatus,invRaw,invStatus,catMeta,lvlL,expSem,lvlIdx}, lang, L, t, isRtl); showDetail=!!det; }
+
+    // ---------- AUDIT TRAIL (Auditor role) ----------
+    const isAudit = screen==='audit';
+    const auditActorMeta = { khalid:{i:'KA',c:'var(--st-info-fg)',bg:'var(--st-info-bg)'}, sara:{i:'SM',c:'var(--st-sched-fg)',bg:'var(--st-sched-bg)'}, system:{i:'⚙',c:'var(--st-neutral-fg)',bg:'var(--st-neutral-bg)'}, noura:{i:'NP',c:'var(--st-success-fg)',bg:'var(--st-success-bg)'}, omar:{i:'OH',c:'var(--st-warn-fg)',bg:'var(--st-warn-bg)'} };
+    const auditVerbMeta = { create:{l:L('Created','إنشاء'),s:'success'}, update:{l:L('Updated','تعديل'),s:'info'}, approve:{l:L('Approved','اعتماد'),s:'success'}, vote:{l:L('Vote cast','إدلاء بصوت'),s:'sched'}, lock:{l:L('Locked','قفل'),s:'neutral'}, supersede:{l:L('Superseded','استبدال'),s:'warn'}, role:{l:L('Role change','تغيير دور'),s:'danger'} };
+    const auditRaw = [
+      { ts:{en:'24 Jun 2026 · 14:22:07',ar:'24 يونيو 2026 · 14:22:07'}, actor:'sara', actorName:L('Sara M. · Chairman','سارة م. · الرئيس'), verb:'approve', artifact:'DECN-2026-008', detail:L('Approved decision; recorded by name','اعتمد القرار؛ مسجّل بالاسم') },
+      { ts:{en:'24 Jun 2026 · 14:21:55',ar:'24 يونيو 2026 · 14:21:55'}, actor:'system', actorName:L('System','النظام'), verb:'lock', artifact:'MTG-2026-018', detail:L('Minutes sealed (v1.3) — immutable','ختم المحضر (ن 1.3) — غير قابل للتعديل') },
+      { ts:{en:'24 Jun 2026 · 14:19:02',ar:'24 يونيو 2026 · 14:19:02'}, actor:'omar', actorName:L('Omar H. · Member','عمر ح. · عضو'), verb:'vote', artifact:'VOTE-2026-014', detail:L('Cast “Approve” · attributed','أدلى بـ“موافقة” · منسوب') },
+      { ts:{en:'24 Jun 2026 · 13:58:41',ar:'24 يونيو 2026 · 13:58:41'}, actor:'khalid', actorName:L('Khalid A. · Secretary of the Committee','خالد ع. · أمين سر اللجنة'), verb:'update', artifact:'TOP-2026-014', detail:L('Scheduled onto MTG-2026-019 agenda','جدول على أجندة MTG-2026-019') },
+      { ts:{en:'24 Jun 2026 · 11:30:18',ar:'24 يونيو 2026 · 11:30:18'}, actor:'system', actorName:L('System · Keycloak','النظام · Keycloak'), verb:'role', artifact:'USR-0421', detail:L('Role claim synced: Member → Reviewer','مزامنة الدور: عضو → مراجع') },
+      { ts:{en:'23 Jun 2026 · 17:04:55',ar:'23 يونيو 2026 · 17:04:55'}, actor:'noura', actorName:L('Noura P. · Reviewer','نورة ب. · مراجع'), verb:'supersede', artifact:'ADR-2025-019', detail:L('Superseded by ADR-2026-001','استُبدِل بـ ADR-2026-001') },
+      { ts:{en:'23 Jun 2026 · 16:48:30',ar:'23 يونيو 2026 · 16:48:30'}, actor:'khalid', actorName:L('Khalid A. · Secretary of the Committee','خالد ع. · أمين سر اللجنة'), verb:'create', artifact:'RSK-2026-006', detail:L('Logged risk; owner assigned','سجّل مخاطرة؛ عيّن مالكًا') },
+      { ts:{en:'23 Jun 2026 · 09:12:07',ar:'23 يونيو 2026 · 09:12:07'}, actor:'omar', actorName:L('Omar H. · Member','عمر ح. · عضو'), verb:'create', artifact:'TOP-2026-031', detail:L('Submitted research topic','قدّم موضوع بحث') }
+    ];
+    const auditRows = auditRaw.map(a=>{ const am=auditActorMeta[a.actor]||auditActorMeta.system; const vm=auditVerbMeta[a.verb]; return { ts:a.ts[lang], actorI:am.i, actorBg:am.bg, actorFg:am.c, actorName:a.actorName, verb:vm.l, chip:this.chip(vm.s), dot:this.dot(vm.s), artifact:a.artifact, detail:a.detail }; });
+    const auditFilters=[ L('Actor','الفاعل'), L('Action','الإجراء'), L('Artifact type','نوع العنصر'), L('Date range','النطاق الزمني') ];
+    const idAudit = { i:'AU', name:L('Audit Office','مكتب التدقيق'), role:L('Auditor','مدقّق') };
+    const idCoord = { i:'KA', name:t.person, role:t.coordinator };
+    const idCur = isAudit ? idAudit : idCoord;
+
+    return {
+      dir:isRtl?'rtl':'ltr', otherDir:isRtl?'ltr':'rtl', theme, font, chev, t,
+      langBtn:isRtl?'English':'العربية', toggleLang:()=>this.set('lang',isRtl?'en':'ar'),
+      toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      navCommittee, navGov, navKnowledge, navInsights, navSystem, stateTabs, skelRows, head, cols, rows, gridClass, filters, savedView, showing, emptyB, errorReq,
+      isActions, isRisks, isDeps, isAdrs, isAdrTab, isInvTab, isAudit,
+      auditRows, auditFilters,
+      idI:idCur.i, idName:idCur.name, idRole:idCur.role, idIsAuditor:isAudit,
+      auditTitle:L('Audit Trail','سجل التدقيق'), auditCount:L(auditRaw.length+' recent events',''+auditRaw.length+' حدث أخير'),
+      auditReadonly:L('Read-only — append-only, immutable record','للقراءة فقط — سجل إلحاقي غير قابل للتعديل'),
+      auditExport:L('Export log','تصدير السجل'),
+      colWhen:L('Timestamp','الطابع الزمني'), colActor:L('Actor','الفاعل'), colAction:L('Action','الإجراء'), colArtifact:L('Artifact','العنصر'), colDetail:L('Detail','التفاصيل'),
+      adrCount:String(adrsRaw.length), invCount:String(invRaw.length),
+      adrTabAdrsGo:()=>this.set('adrTab','adrs'), adrTabInvGo:()=>this.set('adrTab','invariants'),
+      adrTabAdrsSel:adrTab==='adrs'?'true':'false', adrTabInvSel:adrTab==='invariants'?'true':'false',
+      adrTabAdrsFg:adrTab==='adrs'?'var(--text)':'var(--text-2)', adrTabAdrsBd:adrTab==='adrs'?'var(--accent)':'transparent',
+      adrTabInvFg:adrTab==='invariants'?'var(--text)':'var(--text-2)', adrTabInvBd:adrTab==='invariants'?'var(--accent)':'transparent',
+      dsLive:dataState==='live', dsLoading:dataState==='loading', dsEmpty:dataState==='empty', dsError:dataState==='error',
+      showList:!showDetail && !isAudit, showDetail, det, closeDetail:()=>this.set('detail',null),
+      clearFilters:()=>this.setState({overdueOnly:false, blockedOnly:false, dataState:'live'}),
+      liveMsg:this.state.liveMsg
+    };
+  }
+
+  openDetail(kind,id){ this.setState({ detail:{kind,id} }); }
+
+  buildDetail(sel, D, lang, L, t, isRtl){
+    const k=sel.id; const own=(o)=>this.OWN[o][lang];
+    const rel=(dir,k,title)=>({ dir: dir==='up'?t.up:(dir==='down'?t.down:t.rel), dirColor: dir==='up'?'var(--st-warn-fg)':(dir==='down'?'var(--st-info-fg)':'var(--st-neutral-fg)'), k, title });
+    if(sel.kind==='actions'){
+      const a=D.actionsRaw.find(x=>x.k===k); if(!a) return null; const s=D.actStatus[a.st];
+      return { k:a.k, title:a.title[lang], sub:a.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:a.overdue,
+        facts:[ {label:L('Owner','المالك'),value:own(a.o)}, {label:L('Due date','تاريخ الاستحقاق'),value:a.due[lang],color:a.overdue?'var(--st-danger-fg)':'var(--text)'}, {label:L('Linked artifact','العنصر المرتبط'),value:a.linked}, {label:L('Status','الحالة'),value:s.l}, {label:L('Created','أُنشئ'),value:L('14 Feb 2026','١٤ فبراير ٢٠٢٦')}, {label:L('Action ID','معرّف الإجراء'),value:a.k} ],
+        hasProgress:true, pct:a.pct+'%', pctColor: a.pct>=100?'var(--st-success-dot)':(a.pct>=50?'var(--accent)':'var(--st-warn-dot)'),
+        descLabel:L('Description','الوصف'), desc:L('This action tracks a concrete, owned task arising from a committee decision. Progress and verification are recorded here, and the action closes only after the assigned reviewer verifies completion.','يتتبّع هذا الإجراء مهمة محدّدة ذات مالك ناتجة عن قرار اللجنة. يُسجَّل التقدّم والتحقّق هنا، ولا يُغلق الإجراء إلا بعد تحقّق المراجع المكلّف من الإكمال.'),
+        related:[ rel('up',a.linked,L('Source decision / artifact','القرار / العنصر المصدر')), rel('rel','MTG-2026-018',L('Raised in meeting','أُثير في اجتماع')) ], graphLink:false };
+    }
+    if(sel.kind==='risks'){
+      const r=D.risksRaw.find(x=>x.k===k); if(!r) return null; const s=D.riskStatus[r.st]; const es=D.expSem(r.exp);
+      const x=D.lvlIdx[r.prob], yTop=2-D.lvlIdx[r.impact]; const expColor=this.dot(es);
+      const matrix=[]; for(let row=0;row<3;row++){ const cells=[]; for(let col=0;col<3;col++){ const on=(col===x&&row===yTop); cells.push({ bg:on?`var(--st-${es}-bg)`:'var(--surface)', bd:on?expColor:'var(--border)' }); } matrix.push(cells); }
+      return { k:r.k, title:r.title[lang], sub:r.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
+        facts:[ {label:t.probLabel,value:D.lvlL[r.prob]}, {label:t.impactLabel,value:D.lvlL[r.impact]}, {label:t.exposureLabel,value:D.lvlL[r.exp],color:`var(--st-${es}-fg)`}, {label:L('Owner','المالك'),value:own(r.o)}, {label:L('Status','الحالة'),value:s.l}, {label:L('Linked','مرتبط'),value:r.linked} ],
+        hasHeat:true, matrix, probWord:D.lvlL[r.prob], impactWord:D.lvlL[r.impact], expWord:D.lvlL[r.exp], expWordColor:`var(--st-${es}-fg)`,
+        descLabel:L('Mitigation plan','خطة المعالجة'), desc:L('Exposure is derived from probability × impact. The mitigation owner maintains the plan and status; closing a risk requires a documented residual-risk acceptance by the chairman.','يُشتقّ التعرّض من الاحتمال × الأثر. يحافظ مالك المعالجة على الخطة والحالة؛ ويتطلّب إغلاق المخاطرة قبولًا موثّقًا للمخاطر المتبقّية من الرئيس.'),
+        related:[ rel('rel',r.linked,L('Linked artifact','العنصر المرتبط')), rel('down','ACT-2026-033',L('Mitigation action','إجراء المعالجة')) ], graphLink:false };
+    }
+    if(sel.kind==='deps'){
+      const i=parseInt(k.slice(1),10); const d=D.depsRaw[i]; if(!d) return null; const m=D.relMeta[d.rel]; const s=D.depStatus[d.st];
+      return { k:d.from+' → '+d.to, title:L(`${d.from} ${m.l} ${d.to}`,`${d.from} ${m.l} ${d.to}`), sub:'', status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
+        facts:[ {label:L('From','من'),value:d.from}, {label:L('Relation','العلاقة'),value:m.l}, {label:L('To','إلى'),value:d.to}, {label:L('Blocked','محجوب'),value:d.blocked?L('Yes','نعم'):L('No','لا'),color:d.blocked?'var(--st-danger-fg)':'var(--text)'}, {label:L('Cross-stream','عابر للمسارات'),value:d.cross?L('Yes','نعم'):L('No','لا'),color:d.cross?'var(--st-warn-fg)':'var(--text)'}, {label:L('Status','الحالة'),value:s.l} ],
+        descLabel:L('Impact','الأثر'), desc: d.blocked?L('This dependency is currently blocking downstream work. Resolving the upstream item or re-sequencing is required before the blocked work can proceed.','تحجب هذه الاعتمادية حاليًا أعمالًا لاحقة. يلزم حلّ العنصر السابق أو إعادة الترتيب قبل أن تتقدّم الأعمال المحجوبة.'):L('This dependency is tracked for traceability and sequencing. It is not currently blocking any work.','تُتتبّع هذه الاعتمادية لأغراض التتبّع والترتيب، وهي لا تحجب أي عمل حاليًا.'),
+        related:[ rel('up',d.from,L('From artifact','العنصر المصدر')), rel('down',d.to,L('To artifact','العنصر الهدف')) ], graphLink:true };
+    }
+    if(sel.kind==='adrs'){
+      const a=D.adrsRaw.find(x=>x.k===k); if(!a) return null; const s=D.adrStatus[a.st]; const r=a.rel;
+      const related=[ rel('up','TOP-2026-014',L('Originating topic','الموضوع المنشئ')) ];
+      if(r) related.push(rel(r.type==='supersedes'?'down':'up', r.k, r.type==='supersedes'?L('Supersedes','يستبدل'):L('Superseded by','مُستبدَل بـ')));
+      return { k:a.k, title:a.title[lang], sub:a.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
+        facts:[ {label:L('Status','الحالة'),value:s.l}, {label:L('Format','الصيغة'),value:'MADR'}, {label:L('Version','الإصدار'),value:'v1'}, {label:L('Decided','تاريخ القرار'),value:L('18 Feb 2026','١٨ فبراير ٢٠٢٦')}, {label:L('Authority','الجهة'),value:L('Architecture Committee','لجنة الهندسة')}, {label:L('ADR ID','معرّف السجل'),value:a.k} ],
+        descLabel:L('Context & decision','السياق والقرار'), desc:L('Architecture Decision Records follow the MADR layout: context, considered options, decision outcome, and consequences. Status transitions are immutable and audit-logged; a superseding ADR links both directions.','تتبع سجلات القرار المعماري صيغة MADR: السياق، والخيارات المدروسة، ونتيجة القرار، والعواقب. انتقالات الحالة غير قابلة للتغيير ومسجّلة للتدقيق؛ ويرتبط السجل المُستبدِل بالاتجاهين.'),
+        related, graphLink:false };
+    }
+    if(sel.kind==='inv'){
+      const iv=D.invRaw.find(x=>x.k===k); if(!iv) return null; const s=D.invStatus[iv.st]; const c=D.catMeta[iv.cat]; const has=iv.v>0;
+      return { k:iv.k, title:iv.title[lang], sub:iv.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
+        facts:[ {label:L('Category','الفئة'),value:c.l}, {label:L('Scope','النطاق'),value:iv.scope[lang]}, {label:L('Status','الحالة'),value:s.l}, {label:L('Violations','المخالفات'),value:String(iv.v),color:has?'var(--st-danger-fg)':'var(--st-success-fg)'}, {label:L('Owner','المالك'),value:own('khalid')}, {label:L('Invariant ID','معرّف الثابت'),value:iv.k} ],
+        descLabel:L('Statement & rationale','النص والمبرّر'), desc:L('Architecture Invariants are always-true constraints the committee enforces across the estate. Violations are surfaced from automated checks and committee review; an open violation count above zero flags governance attention.','الثوابت المعمارية قيود صحيحة دائمًا تفرضها اللجنة عبر المنظومة. تظهر المخالفات من الفحوص الآلية ومراجعة اللجنة؛ وأي عدد مخالفات مفتوحة أكبر من صفر يستدعي انتباه الحوكمة.'),
+        related: has?[ rel('down','SVC-Gateway',L('Violating service','خدمة مخالِفة')), rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ]:[ rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ], graphLink:false };
+    }
+    return null;
+  }
+}
+var showingN=0;
+</script>
+</body>
+</html>

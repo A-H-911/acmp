@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input,textarea,select{font:inherit}
+  [data-acmp-theme]{
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;
+    --r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:12px;--r-full:9999px;
+    --dur-fast:120ms;--dur:180ms;--dur-slow:280ms;--ease:cubic-bezier(.2,.6,.2,1);
+    --mono:'IBM Plex Mono',monospace;
+  }
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);
+    --shadow-lg:0 10px 30px rgba(16,24,40,.12);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);
+    --shadow-lg:0 14px 40px rgba(0,0,0,.5);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  @keyframes acmpSpin{to{transform:rotate(360deg)}}
+  @keyframes acmpShimmer{0%,100%{opacity:.5}50%{opacity:1}}
+  .acmp-doc a{color:inherit;text-decoration:none}
+  .acmp-doc ::-webkit-scrollbar{width:9px;height:9px}
+</style>
+</helmet>
+<div class="acmp-doc" dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5;{{ rootVars }}">
+
+  <!-- TOP BAR -->
+  <header style="position:sticky;top:0;z-index:40;height:60px;display:flex;align-items:center;gap:16px;padding-inline:24px;background:color-mix(in srgb,var(--header) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:11px">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+      <div style="line-height:1.15"><div style="font-size:15px;font-weight:700;letter-spacing:.3px">ACMP Design System</div><div style="font-size:11.5px;color:var(--text-3)">Single source of truth · v1.0</div></div>
+    </div>
+    <div style="flex:1 1 auto"></div>
+    <div style="display:flex;align-items:center;gap:6px;padding:4px;background:var(--sunken);border-radius:9px">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text-3);padding-inline:8px">DIR</span>
+      <button onClick="{{ setLtr }}" aria-pressed="{{ isLtr }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;{{ segLtr }}">LTR</button>
+      <button onClick="{{ setRtl }}" aria-pressed="{{ isRtl }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;{{ segRtl }}">RTL · عربي</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;padding:4px;background:var(--sunken);border-radius:9px">
+      <button onClick="{{ setLight }}" aria-pressed="{{ isLight }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;display:flex;align-items:center;gap:6px;{{ segLight }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5"></path></svg>Light</button>
+      <button onClick="{{ setDark }}" aria-pressed="{{ isDark }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;display:flex;align-items:center;gap:6px;{{ segDark }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"></path></svg>Dark</button>
+    </div>
+  </header>
+
+  <div style="display:flex;align-items:flex-start">
+    <!-- SIDE NAV -->
+    <nav aria-label="Sections" style="position:sticky;top:60px;flex:0 0 224px;height:calc(100vh - 60px);overflow-y:auto;padding:20px 14px;border-inline-end:1px solid var(--border);background:var(--surface)">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:6px 10px">Foundations</div>
+      <a href="#color" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Color &amp; status map</a>
+      <a href="#type" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Typography (EN/AR)</a>
+      <a href="#scale" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Spacing · radius · elevation</a>
+      <a href="#motion" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Motion</a>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 6px">Components</div>
+      <a href="#buttons" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Buttons</a>
+      <a href="#inputs" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Inputs &amp; selects</a>
+      <a href="#pickers" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Multi-select &amp; date</a>
+      <a href="#chips" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Chips &amp; badges</a>
+      <a href="#tables" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Tables</a>
+      <a href="#cards" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Cards &amp; tabs</a>
+      <a href="#nav" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Nav &amp; breadcrumbs</a>
+      <a href="#overlays" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Dialogs &amp; toasts</a>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 6px">Domain</div>
+      <a href="#rel" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Relationship panel</a>
+      <a href="#kanban" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Kanban · calendar · timeline</a>
+      <a href="#voting" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Voting panel</a>
+      <a href="#editor" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Rich-text editor</a>
+      <a href="#states" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">States</a>
+    </nav>
+
+    <!-- MAIN -->
+    <main style="flex:1 1 auto;min-width:0;padding:34px 40px 120px;max-width:1100px">
+
+      <!-- INTRO -->
+      <div style="margin-bottom:38px">
+        <h1 style="margin:0 0 8px;font-size:28px;font-weight:700;letter-spacing:-.4px">Component library</h1>
+        <p style="margin:0;font-size:15px;line-height:1.65;color:var(--text-2);max-width:680px">The canonical building blocks for ACMP. Every token and component is defined once here and consumed by all screens. Each is built on design tokens, ships with light and dark themes, mirrors fully in Arabic (RTL), and meets WCAG&nbsp;2.2&nbsp;AA — visible focus, AA contrast, labelled controls, and ≥36px targets. Use the toggles above to inspect any state.</p>
+      </div>
+
+      <!-- ============ COLOR ============ -->
+      <section id="color" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">01</span><h2 style="margin:0;font-size:19px;font-weight:700">Color &amp; semantic status map</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Neutrals carry the calm, government tone; a single institutional accent marks interaction. Six semantic roles map every status model to a color — always paired with a label and a dot so meaning never relies on color alone.</p>
+
+        <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Surfaces &amp; text</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin-bottom:24px">
+          <sc-for list="{{ swatches }}" as="s" hint-placeholder-count="8">
+            <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface)">
+              <div style="height:48px;background:{{ s.val }};border-bottom:1px solid var(--border-soft)"></div>
+              <div style="padding:8px 10px"><div style="font-size:12px;font-weight:600">{{ s.name }}</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3)">{{ s.tok }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Status model → semantic role</div>
+        <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)">
+          <div style="display:grid;grid-template-columns:150px 1fr;gap:0;background:var(--header);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">
+            <span style="padding:11px 16px">Model</span><span style="padding:11px 16px">Statuses (semantic chip)</span>
+          </div>
+          <sc-for list="{{ statusMap }}" as="m" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:150px 1fr;border-bottom:1px solid var(--border-soft)">
+              <span style="padding:13px 16px;font-size:13px;font-weight:600">{{ m.model }}</span>
+              <span style="padding:11px 16px;display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ m.items }}" as="c" hint-placeholder-count="3">
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:9px;border-radius:6px;font-size:12px;font-weight:600;{{ c.chip }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.dot }}"></span>{{ c.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+          <div style="border:1px solid var(--st-success-dot);background:var(--st-success-bg);border-radius:10px;padding:12px 14px"><div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--st-success-fg);margin-bottom:3px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>Do</div><div style="font-size:12.5px;color:var(--st-success-fg);line-height:1.5">Pair every status color with its text label and dot. Keep semantic roles consistent across all models.</div></div>
+          <div style="border:1px solid var(--st-danger-dot);background:var(--st-danger-bg);border-radius:10px;padding:12px 14px"><div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--st-danger-fg);margin-bottom:3px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>Don't</div><div style="font-size:12.5px;color:var(--st-danger-fg);line-height:1.5">Don't invent new hues per screen or signal status with color alone — it fails AA and color-blind users.</div></div>
+        </div>
+      </section>
+
+      <!-- ============ TYPOGRAPHY ============ -->
+      <section id="type" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">02</span><h2 style="margin:0;font-size:19px;font-weight:700">Typography</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px"><b>IBM Plex Sans</b> for Latin, <b>IBM Plex Sans Arabic</b> for Arabic (correct shaping &amp; joining), <b>IBM Plex Mono</b> reserved for record IDs and code. One scale serves both directions.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:20px 22px;box-shadow:var(--shadow)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Latin · IBM Plex Sans</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div><div style="font-size:28px;font-weight:700;letter-spacing:-.4px;line-height:1.2">Architecture Committee</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Display · 28 / 700</div></div>
+              <div><div style="font-size:19px;font-weight:700">Decision record</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Title · 19 / 700</div></div>
+              <div><div style="font-size:15px;font-weight:600">Section heading</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Heading · 15 / 600</div></div>
+              <div><div style="font-size:14px">Body text for descriptions and notes.</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Body · 14 / 400</div></div>
+              <div><div style="font-size:12.5px;color:var(--text-2)">Secondary &amp; meta information</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Small · 12.5 / 400</div></div>
+              <div><div style="font-family:var(--mono);font-size:13px">TOP-2026-014</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px">Mono · IDs &amp; keys</div></div>
+            </div>
+          </div>
+          <div dir="rtl" style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:20px 22px;box-shadow:var(--shadow);font-family:'IBM Plex Sans Arabic',sans-serif">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;color:var(--text-3);margin-bottom:14px">عربي · IBM Plex Sans Arabic</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div><div style="font-size:28px;font-weight:700;line-height:1.3">لجنة الهندسة المعمارية</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">عرض · 28 / 700</div></div>
+              <div><div style="font-size:19px;font-weight:700">سجلّ القرار</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">عنوان · 19 / 700</div></div>
+              <div><div style="font-size:15px;font-weight:600">عنوان القسم</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">15 / 600</div></div>
+              <div><div style="font-size:14px;line-height:1.7">نصّ المحتوى للأوصاف والملاحظات داخل النظام.</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">14 / 400</div></div>
+              <div><div style="font-size:12.5px;color:var(--text-2)">المعلومات الثانوية والوصفية</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">12.5 / 400</div></div>
+              <div><div style="font-family:var(--mono);font-size:13px;direction:ltr;text-align:right">TOP-2026-014</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:3px;direction:ltr;text-align:right">أرقام لاتينية · تواريخ ميلادية</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCALE ============ -->
+      <section id="scale" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">03</span><h2 style="margin:0;font-size:19px;font-weight:700">Spacing · radius · elevation</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">A 4px base spacing rhythm, a small radius set, and two elevation levels keep the system dense and calm — flat by default, shadow only for floating surfaces.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Spacing</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ spacing }}" as="sp" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:12px"><span style="height:14px;width:{{ sp.w }};background:var(--accent);border-radius:3px"></span><span style="font-family:var(--mono);font-size:11.5px;color:var(--text-2)">{{ sp.label }}</span></div></sc-for>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Radius</div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px">
+              <sc-for list="{{ radii }}" as="r" hint-placeholder-count="5"><div style="text-align:center"><div style="width:54px;height:42px;background:var(--primary-tint);border:1.5px solid var(--accent);border-start-start-radius:{{ r.v }};border-start-end-radius:{{ r.v }}"></div><div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:5px">{{ r.label }}</div></div></sc-for>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">Elevation</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="height:38px;border:1px solid var(--border);border-radius:9px;background:var(--surface);display:flex;align-items:center;padding-inline:12px;font-size:12px;color:var(--text-2)">flat · border only</div>
+              <div style="height:38px;border-radius:9px;background:var(--surface);box-shadow:var(--shadow);display:flex;align-items:center;padding-inline:12px;font-size:12px;color:var(--text-2)">--shadow · cards</div>
+              <div style="height:38px;border-radius:9px;background:var(--surface);box-shadow:var(--shadow-lg);display:flex;align-items:center;padding-inline:12px;font-size:12px;color:var(--text-2)">--shadow-lg · overlays</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MOTION ============ -->
+      <section id="motion" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">04</span><h2 style="margin:0;font-size:19px;font-weight:700">Motion</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Motion is restrained and functional: brief, eased transitions that confirm state. Nothing decorative. Respect <span style="font-family:var(--mono);font-size:12.5px">prefers-reduced-motion</span>.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:13px 16px;box-shadow:var(--shadow)"><div style="font-family:var(--mono);font-size:12.5px;font-weight:600">--dur-fast · 120ms</div><div style="font-size:11.5px;color:var(--text-3)">hovers, chips, focus</div></div>
+          <div style="border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:13px 16px;box-shadow:var(--shadow)"><div style="font-family:var(--mono);font-size:12.5px;font-weight:600">--dur · 180ms</div><div style="font-size:11.5px;color:var(--text-3)">menus, tabs, toasts</div></div>
+          <div style="border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:13px 16px;box-shadow:var(--shadow)"><div style="font-family:var(--mono);font-size:12.5px;font-weight:600">--dur-slow · 280ms</div><div style="font-size:11.5px;color:var(--text-3)">dialogs, drawers</div></div>
+          <div style="border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:13px 16px;box-shadow:var(--shadow)"><div style="font-family:var(--mono);font-size:12.5px;font-weight:600">--ease</div><div style="font-size:11.5px;color:var(--text-3)">cubic-bezier(.2,.6,.2,1)</div></div>
+        </div>
+      </section>
+
+      <!-- ============ BUTTONS ============ -->
+      <section id="buttons" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">05</span><h2 style="margin:0;font-size:19px;font-weight:700">Buttons</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">One primary action per view. Secondary and ghost for supporting actions; danger only for destructive, confirmed actions.</p>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--bg-app);padding:22px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--primary);color:var(--primary-fg);font-weight:600;font-size:13.5px;box-shadow:var(--shadow)" style-hover="background:var(--primary-hover)">Primary</button>
+            <button style="height:38px;padding-inline:16px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px" style-hover="background:var(--subtle)">Secondary</button>
+            <button style="height:38px;padding-inline:14px;border:0;border-radius:9px;background:transparent;color:var(--accent);font-weight:600;font-size:13.5px" style-hover="background:var(--primary-tint)">Ghost</button>
+            <button style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--st-danger-dot);color:#fff;font-weight:600;font-size:13.5px" style-hover="filter:brightness(.94)">Delete</button>
+            <button aria-label="More" style="width:38px;height:38px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--text-2);display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.4"></circle><circle cx="12" cy="12" r="1.4"></circle><circle cx="19" cy="12" r="1.4"></circle></svg></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button style="height:32px;padding-inline:12px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;font-size:12.5px">Small</button>
+            <button style="height:44px;padding-inline:20px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:600;font-size:14.5px">Large</button>
+            <button style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--primary);color:#fff;font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>With icon</button>
+            <button disabled style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--sunken);color:var(--text-3);font-weight:600;font-size:13.5px;cursor:not-allowed">Disabled</button>
+            <button style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--primary);color:#fff;font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px;opacity:.85"><span style="width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:acmpSpin .7s linear infinite"></span>Saving…</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+          <div style="border:1px solid var(--st-success-dot);background:var(--st-success-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-success-fg);line-height:1.5"><b>Do</b> · keep one primary per view; label by the action verb (“Publish agenda”).</div>
+          <div style="border:1px solid var(--st-danger-dot);background:var(--st-danger-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-danger-fg);line-height:1.5"><b>Don't</b> · stack multiple filled primaries or use danger styling for routine saves.</div>
+        </div>
+      </section>
+
+      <!-- ============ INPUTS ============ -->
+      <section id="inputs" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">06</span><h2 style="margin:0;font-size:19px;font-weight:700">Inputs &amp; selects</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Labels are always visible and associated. Required fields are marked; validation is inline, specific, and screen-reader announced.</p>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:22px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:6px">Topic title <span style="color:var(--st-danger-fg)">*</span></label>
+            <input value="Adopt Keycloak as standard IdP" style="width:100%;height:38px;padding-inline:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13.5px" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)">
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">Shown in EN and AR. Keep under 90 characters.</div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:6px">Urgency</label>
+            <button style="width:100%;height:38px;padding-inline:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;display:flex;align-items:center;justify-content:space-between;font-size:13.5px" style-hover="background:var(--subtle)"><span style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:var(--st-danger-dot)"></span>Urgent</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button>
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">Single select · keyboard navigable.</div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:6px">Effective date <span style="color:var(--st-danger-fg)">*</span></label>
+            <input value="" placeholder="Required" aria-invalid="true" style="width:100%;height:38px;padding-inline:12px;border:1.5px solid var(--st-danger-dot);background:var(--st-danger-bg);color:var(--text);border-radius:9px;outline:none;font-size:13.5px" style-focus="border-color:var(--st-danger-dot);box-shadow:0 0 0 3px var(--st-danger-bg)">
+            <div role="alert" style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--st-danger-fg);margin-top:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>Effective date is required before publishing.</div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--text-3)">Record key (read-only)</label>
+            <input value="TOP-2026-014" readonly style="width:100%;height:38px;padding-inline:12px;border:1px solid var(--border);background:var(--subtle);color:var(--text-2);border-radius:9px;outline:none;font-size:13.5px;font-family:var(--mono)">
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">Assigned by the system · immutable.</div>
+          </div>
+          <div style="grid-column:1 / -1;display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--border-soft)">
+            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer"><span style="width:18px;height:18px;border-radius:5px;background:var(--primary);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>Notify members</label>
+            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-strong)"></span>Pin to dashboard</label>
+            <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer"><span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center"><span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span></span>Architecture decision</label>
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px"><span style="width:36px;height:20px;border-radius:11px;background:var(--primary);position:relative"><span style="position:absolute;top:2px;inset-inline-end:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></span>Autosave on</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PICKERS ============ -->
+      <section id="pickers" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">07</span><h2 style="margin:0;font-size:19px;font-weight:700">Multi-select &amp; date picker</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Multi-select shows chosen values as removable tokens. The date picker is Gregorian with localized formatting; numerals stay Latin for auditability.</p>
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:20px;box-shadow:var(--shadow)">
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:8px">Affected systems</label>
+            <div style="min-height:42px;border:1px solid var(--border-strong);border-radius:9px;padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center" style-focus-within="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)">
+              <sc-for list="{{ tokens }}" as="tk" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding-inline:10px;border-radius:7px;background:var(--primary-tint);color:var(--accent);font-size:12.5px;font-weight:600">{{ tk }}<button aria-label="Remove" style="border:0;background:transparent;color:var(--accent);display:flex;padding:0;margin-inline-start:1px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg></button></span></sc-for>
+              <input placeholder="Add system…" style="flex:1 1 80px;min-width:80px;height:28px;border:0;background:transparent;color:var(--text);outline:none;font-size:13px">
+            </div>
+            <div style="margin-top:8px;border:1px solid var(--border);border-radius:9px;background:var(--surface);box-shadow:var(--shadow-lg);overflow:hidden">
+              <sc-for list="{{ options }}" as="op" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border-soft)" style-hover="background:var(--subtle)"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ op.bd }};background:{{ op.bg }};display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ op.mk }}"><path d="M5 12l5 5 9-10"></path></svg></span>{{ op.label }}</div></sc-for>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:16px;box-shadow:var(--shadow)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><button aria-label="Previous month" style="width:28px;height:28px;border:0;background:transparent;color:var(--text-2);border-radius:6px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chevBack }}"><path d="M15 6l-6 6 6 6"></path></svg></button><div style="font-size:13.5px;font-weight:600">February 2026</div><button aria-label="Next month" style="width:28px;height:28px;border:0;background:transparent;color:var(--text-2);border-radius:6px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></button></div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:10.5px;color:var(--text-3);font-weight:600;margin-bottom:4px"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+              <sc-for list="{{ calDays }}" as="d" hint-placeholder-count="35"><div style="height:30px;display:flex;align-items:center;justify-content:center;font-size:12.5px;border-radius:7px;{{ d.style }}">{{ d.n }}</div></sc-for>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CHIPS ============ -->
+      <section id="chips" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">08</span><h2 style="margin:0;font-size:19px;font-weight:700">Chips &amp; badges</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Status, urgency, and aging share one chip anatomy: dot + label, optional leading icon. Aging escalates by threshold (≤13d none · 14–30d warn · &gt;30d danger).</p>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:18px">
+          <div><div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Status</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ statusChips }}" as="c" hint-placeholder-count="6"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:9px;border-radius:6px;font-size:12px;font-weight:600;{{ c.chip }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.dot }}"></span>{{ c.label }}</span></sc-for></div></div>
+          <div><div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Urgency</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:9px;border-radius:6px;font-size:12px;font-weight:600;background:var(--st-danger-bg);color:var(--st-danger-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3L12 4zM12 11v3M12 17h.01"></path></svg>Urgent</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-neutral-dot)"></span>Normal</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-3)"><span style="width:6px;height:6px;border-radius:50%;background:var(--border-strong)"></span>Low</span></div></div>
+          <div><div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Aging</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:12.5px;font-weight:600;color:var(--text-2);font-feature-settings:'tnum'">9d</span><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:9px;border-radius:6px;font-size:12px;font-weight:600;background:var(--st-warn-bg);color:var(--st-warn-fg)">18d · aging</span><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:9px;border-radius:6px;font-size:12px;font-weight:600;background:var(--st-danger-bg);color:var(--st-danger-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>34d · stale</span></div></div>
+          <div><div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Stream tags &amp; counts</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 9px">Identity</span><span style="font-size:11.5px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:2px 9px">Payments</span><span style="min-width:18px;height:18px;padding:0 6px;border-radius:9px;background:var(--st-danger-dot);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">3</span><span style="min-width:18px;height:18px;padding:0 6px;border-radius:9px;background:var(--sunken);color:var(--text-2);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">15</span></div></div>
+        </div>
+      </section>
+
+      <!-- ============ TABLES ============ -->
+      <section id="tables" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">09</span><h2 style="margin:0;font-size:19px;font-weight:700">Tables</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Dense and scannable: sortable headers, multi-facet filters, row selection with bulk actions, sticky header. Stays readable in RTL and dark mode; degrades to prioritized columns on tablet.</p>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden;box-shadow:var(--shadow)">
+          <div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+            <button style="height:30px;padding-inline:11px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:7px;font-size:12px;font-weight:500" style-hover="background:var(--subtle)">Status<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button>
+            <button style="height:30px;padding-inline:11px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:7px;font-size:12px;font-weight:500" style-hover="background:var(--subtle)">Stream<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></button>
+            <span style="font-size:12px;color:var(--text-3);margin-inline-start:auto">3 columns sortable</span>
+          </div>
+          <div role="table">
+            <div role="row" style="display:grid;grid-template-columns:40px 110px 1fr 130px 110px;align-items:center;background:var(--header);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)">
+              <span style="display:flex;justify-content:center;height:40px;align-items:center"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border-strong)"></span></span>
+              <span style="padding-inline:6px">Key</span>
+              <span style="padding-inline:6px;display:flex;align-items:center;gap:5px;color:var(--accent)">Topic<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></span>
+              <span style="padding-inline:6px">Status</span><span style="padding-inline:6px">Age</span>
+            </div>
+            <sc-for list="{{ demoRows }}" as="r" hint-placeholder-count="4">
+              <div role="row" style="display:grid;grid-template-columns:40px 110px 1fr 130px 110px;align-items:center;border-bottom:1px solid var(--border-soft);min-height:44px;background:{{ r.bg }}" style-hover="background:var(--subtle)">
+                <span style="display:flex;justify-content:center"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ r.bd }};background:{{ r.cbg }};display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ r.mk }}"><path d="M5 12l5 5 9-10"></path></svg></span></span>
+                <span style="padding-inline:6px;font-family:var(--mono);font-size:12px;color:var(--accent)">{{ r.k }}</span>
+                <span style="padding-inline:6px;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</span>
+                <span style="padding-inline:6px"><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;{{ r.chip }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                <span style="padding-inline:6px;font-size:12.5px;font-weight:600;color:{{ r.ageColor }};font-feature-settings:'tnum'">{{ r.age }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+          <div style="border:1px solid var(--st-success-dot);background:var(--st-success-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-success-fg);line-height:1.5"><b>Do</b> · right-align numbers, keep row height ≥44px, offer saved views for repeated filters.</div>
+          <div style="border:1px solid var(--st-danger-dot);background:var(--st-danger-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-danger-fg);line-height:1.5"><b>Don't</b> · hide primary actions behind hover only, or wrap long titles into 3+ lines.</div>
+        </div>
+      </section>
+
+      <!-- ============ CARDS & TABS ============ -->
+      <section id="cards" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">10</span><h2 style="margin:0;font-size:19px;font-weight:700">Cards &amp; tabs</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><h3 style="margin:0;font-size:14.5px;font-weight:600">Stat card</h3><button style="border:0;background:transparent;color:var(--accent);font-size:12.5px;font-weight:600">View all</button></div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:700;letter-spacing:-1px">15</span><span style="font-size:13px;color:var(--text-2)">active topics</span></div></div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden"><div style="padding:13px 16px;background:var(--subtle);border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Header card</div><div style="padding:16px;font-size:13px;color:var(--text-2);line-height:1.6">Use a tinted header band when a card needs a clear title region or a status accent.</div></div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:20px;box-shadow:var(--shadow)">
+          <div role="tablist" style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px">
+            <sc-for list="{{ demoTabs }}" as="tb" hint-placeholder-count="3"><button onClick="{{ tb.go }}" role="tab" aria-selected="{{ tb.sel }}" style="{{ tb.style }}">{{ tb.label }}</button></sc-for>
+          </div>
+          <div style="font-size:13.5px;color:var(--text-2);line-height:1.6">{{ tabBody }}</div>
+          <div style="display:flex;gap:6px;margin-top:18px;padding:4px;background:var(--sunken);border-radius:9px;width:fit-content">
+            <span style="height:30px;padding-inline:14px;display:flex;align-items:center;border-radius:7px;font-size:12.5px;font-weight:600;background:var(--surface);box-shadow:var(--shadow)">List</span>
+            <span style="height:30px;padding-inline:14px;display:flex;align-items:center;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--text-2)">Table</span>
+            <span style="height:30px;padding-inline:14px;display:flex;align-items:center;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--text-2)">Kanban</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:8px">Underline tabs for content sections · segmented control for view modes.</div>
+        </div>
+      </section>
+
+      <!-- ============ NAV & BREADCRUMBS ============ -->
+      <section id="nav" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">11</span><h2 style="margin:0;font-size:19px;font-weight:700">Navigation &amp; breadcrumbs</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Nav items carry an active accent bar (inline-start, mirrors in RTL) and <span style="font-family:var(--mono);font-size:12.5px">aria-current</span>. Breadcrumb chevrons flip direction automatically.</p>
+        <div style="display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px;box-shadow:var(--shadow)">
+            <button aria-current="page" style="display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;position:relative;background:var(--primary-tint);color:var(--accent);font-weight:600;font-size:13.5px;text-align:start"><span style="position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:var(--accent)"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"></path></svg>Backlog<span style="margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:10px;padding:1px 7px">15</span></button>
+            <button style="display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;background:transparent;color:var(--text-2);font-weight:500;font-size:13.5px;text-align:start" style-hover="background:var(--subtle);color:var(--text)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg>Agenda &amp; Meetings</button>
+            <button style="display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;background:transparent;color:var(--text-2);font-weight:500;font-size:13.5px;text-align:start" style-hover="background:var(--subtle);color:var(--text)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z"></path></svg>Decisions</button>
+          </div>
+          <div>
+            <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Breadcrumb</div>
+              <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-3)"><span>Home</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span>Backlog</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">TOP-2026-014</span></nav>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow)">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Pagination</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:12.5px"><button style="width:30px;height:30px;border:1px solid var(--border);background:var(--surface);border-radius:7px;color:var(--text-2);display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chevBack }}"><path d="M15 6l-6 6 6 6"></path></svg></button><span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:var(--primary);color:#fff;font-weight:600">1</span><span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--text-2)">2</span><span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--text-2)">3</span><button style="width:30px;height:30px;border:1px solid var(--border);background:var(--surface);border-radius:7px;color:var(--text-2);display:flex;align-items:center;justify-content:center" style-hover="background:var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ OVERLAYS ============ -->
+      <section id="overlays" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">12</span><h2 style="margin:0;font-size:19px;font-weight:700">Dialogs &amp; toasts</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Dialogs confirm consequential actions (focus-trapped, Esc to close). Toasts confirm completed actions via an <span style="font-family:var(--mono);font-size:12.5px">aria-live</span> region and auto-dismiss; never use them for errors that need action.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--bg-app);padding:22px;display:flex;align-items:center;justify-content:center"><button onClick="{{ openDialog }}" style="height:38px;padding-inline:16px;border:0;border-radius:9px;background:var(--primary);color:#fff;font-weight:600;font-size:13.5px;box-shadow:var(--shadow)">Open dialog</button></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:flex-start;gap:11px;background:var(--surface);border:1px solid var(--border);border-inline-start:3px solid var(--st-success-dot);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--st-success-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><div style="flex:1 1 auto"><div style="font-size:13px;font-weight:600">Agenda published</div><div style="font-size:12px;color:var(--text-3)">Members notified · MTG-2026-019</div></div></div>
+            <div style="display:flex;align-items:flex-start;gap:11px;background:var(--surface);border:1px solid var(--border);border-inline-start:3px solid var(--st-danger-dot);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--st-danger-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg><div style="flex:1 1 auto"><div style="font-size:13px;font-weight:600">Save failed</div><div style="font-size:12px;color:var(--text-3)">Network error · changes kept locally</div></div><button style="border:0;background:transparent;color:var(--accent);font-size:12.5px;font-weight:600">Retry</button></div>
+            <div style="display:flex;align-items:flex-start;gap:11px;background:var(--surface);border:1px solid var(--border);border-inline-start:3px solid var(--st-info-dot);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--st-info-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><div style="flex:1 1 auto"><div style="font-size:13px;font-weight:600">Draft autosaved</div><div style="font-size:12px;color:var(--text-3)">Just now</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ RELATIONSHIP PANEL ============ -->
+      <section id="rel" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">13</span><h2 style="margin:0;font-size:19px;font-weight:700">Relationship panel</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">The traceability primitive on every artifact. Groups relations by type, labels direction (upstream / downstream), and links out — shallow by default, with a graph view on demand.</p>
+        <div style="max-width:360px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid var(--border);background:var(--subtle);display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 6H15M18 8.5v7M8 8l8 8"></path></svg><h3 style="margin:0;font-size:14px;font-weight:600">Relationships</h3></div>
+          <div style="padding:8px 0">
+            <sc-for list="{{ relGroups }}" as="g" hint-placeholder-count="3">
+              <div style="padding:8px 16px 10px">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">{{ g.label }}</span><span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:{{ g.dirColor }};background:{{ g.dirBg }};border-radius:5px;padding:1px 6px">{{ g.dir }}</span></div>
+                <button style="display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:1px solid var(--border-soft);background:var(--surface);border-radius:9px;padding:8px 10px" style-hover="border-color:var(--accent);background:var(--subtle)"><span style="flex:1 1 auto;min-width:0"><span style="display:block;font-family:var(--mono);font-size:11px;color:var(--accent)">{{ g.k }}</span><span style="display:block;font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ g.title }}</span></span><span style="display:inline-flex;align-items:center;gap:5px;height:20px;padding-inline:7px;border-radius:6px;font-size:11px;font-weight:600;{{ g.chip }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ g.dot }}"></span>{{ g.st }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ KANBAN / CALENDAR / TIMELINE ============ -->
+      <section id="kanban" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">14</span><h2 style="margin:0;font-size:19px;font-weight:700">Kanban · calendar · timeline</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Drag-and-drop always ships with a keyboard alternative (move menu) and screen-reader announcements. Calendar and timeline are RTL-aware.</p>
+        <div style="display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Kanban card</div>
+            <div style="border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:13px;box-shadow:var(--shadow)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-family:var(--mono);font-size:11.5px;color:var(--text-3)">TOP-2026-014</span><button aria-label="Move" style="border:0;background:transparent;color:var(--text-3);padding:2px;border-radius:5px" style-hover="background:var(--subtle);color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="1.2"></circle><circle cx="16" cy="6" r="1.2"></circle><circle cx="8" cy="12" r="1.2"></circle><circle cx="16" cy="12" r="1.2"></circle><circle cx="8" cy="18" r="1.2"></circle><circle cx="16" cy="18" r="1.2"></circle></svg></button></div>
+              <div style="font-size:13.5px;font-weight:600;line-height:1.4;margin-bottom:10px">Adopt Keycloak as standard IdP</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"><span style="font-size:11px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:5px;padding:1px 7px">Identity</span><span style="font-size:11px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:5px;padding:1px 7px">Platform</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--st-danger-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3L12 4z"></path></svg>Urgent</span><span style="display:flex;align-items:center;gap:7px"><span style="font-size:11.5px;color:var(--text-3);font-feature-settings:'tnum'">9d</span><span style="width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">OH</span></span></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Calendar cells</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                  <div style="aspect-ratio:1;border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:7px;font-size:12px"><div style="font-weight:600">16</div></div>
+                  <div style="aspect-ratio:1;border:1.5px solid var(--accent);border-radius:9px;background:var(--primary-tint);padding:7px;font-size:12px"><div style="font-weight:700;color:var(--accent)">18</div><div style="margin-top:3px;display:flex;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:var(--st-sched-dot)"></span><span style="width:5px;height:5px;border-radius:50%;background:var(--st-warn-dot)"></span></div></div>
+                  <div style="aspect-ratio:1;border:1px solid var(--border);border-radius:9px;background:var(--sunken);padding:7px;font-size:12px;color:var(--text-3)"><div style="font-weight:600">20</div></div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Timeline items</div>
+                <div style="padding-inline-start:4px">
+                  <div style="display:flex;gap:12px;padding-bottom:14px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:11px;height:11px;border-radius:50%;background:var(--st-info-dot);box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--border)"></span><span style="flex:1;width:2px;background:var(--border);margin-top:2px"></span></div><div><div style="font-size:13px">Accepted into backlog</div><div style="font-size:11.5px;color:var(--text-3);margin-top:1px">Khalid A. · 15 Feb</div></div></div>
+                  <div style="display:flex;gap:12px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:11px;height:11px;border-radius:50%;background:var(--st-sched-dot);box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--border)"></span></div><div><div style="font-size:13px">Scheduled to MTG-2026-019</div><div style="font-size:11.5px;color:var(--text-3);margin-top:1px">Khalid A. · 16 Feb</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VOTING ============ -->
+      <section id="voting" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">15</span><h2 style="margin:0;font-size:19px;font-weight:700">Voting panel</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Auditability over convenience: votes are explicit, confirmed, and <b>always attributed</b>. Live tally, quorum indicator, abstentions, and a recorded chairman approval. Never a drag interaction.</p>
+        <div style="max-width:560px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><div style="display:flex;align-items:center;gap:10px"><span style="font-family:var(--mono);font-size:12px;color:var(--text-2)">DECN-2026-008</span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--st-info-bg);color:var(--st-info-fg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-info-dot)"></span>Vote open</span></div><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--st-success-fg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>Quorum met · 6 / 6</span></div>
+          <div style="padding:16px 18px">
+            <div style="font-size:14px;font-weight:600;margin-bottom:14px">Approve Keycloak adoption, conditionally?</div>
+            <div style="display:flex;gap:10px;margin-bottom:18px">
+              <button onClick="{{ voteApprove }}" aria-pressed="{{ approveSel }}" style="flex:1;height:42px;border-radius:9px;font-weight:600;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;{{ approveStyle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>Approve</button>
+              <button onClick="{{ voteReject }}" aria-pressed="{{ rejectSel }}" style="flex:1;height:42px;border-radius:9px;font-weight:600;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;{{ rejectStyle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>Reject</button>
+              <button onClick="{{ voteAbstain }}" aria-pressed="{{ abstainSel }}" style="flex:1;height:42px;border-radius:9px;font-weight:600;font-size:13.5px;{{ abstainStyle }}">Abstain</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;color:var(--st-success-fg)">Approve</span><span style="color:var(--text-2)">5</span></div><div style="height:8px;border-radius:5px;background:var(--sunken);overflow:hidden"><span style="display:block;height:100%;width:83%;background:var(--st-success-dot)"></span></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;color:var(--text-2)">Abstain</span><span style="color:var(--text-2)">1</span></div><div style="height:8px;border-radius:5px;background:var(--sunken);overflow:hidden"><span style="display:block;height:100%;width:17%;background:var(--st-neutral-dot)"></span></div></div>
+            </div>
+            <div style="border-top:1px solid var(--border-soft);padding-top:12px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Attributed votes</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ voters }}" as="v" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:var(--sunken);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700">{{ v.i }}</span><span style="flex:1;font-size:13px">{{ v.name }}</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:{{ v.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.color }}"></span>{{ v.vote }}</span></div></sc-for>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:9px;background:var(--st-success-bg)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--st-success-fg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4"></path></svg><span style="font-size:12.5px;color:var(--st-success-fg);font-weight:600">Chairman approval recorded — S. M., 18 Feb 2026 10:35</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ EDITOR ============ -->
+      <section id="editor" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">16</span><h2 style="margin:0;font-size:19px;font-weight:700">Rich-text editor</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">For minutes, rationale, and notes. Bilingual with a per-block direction control; autosave with an unsaved-changes guard; locks to read-only once minutes are published.</p>
+        <div style="border:1px solid var(--border-strong);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:3px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--subtle);flex-wrap:wrap">
+            <sc-for list="{{ editorBtns }}" as="b" hint-placeholder-count="6"><button aria-label="{{ b.label }}" style="width:32px;height:32px;border:0;background:transparent;color:var(--text-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:{{ b.fw }};font-size:13.5px;font-style:{{ b.fs }}" style-hover="background:var(--sunken);color:var(--text)"><sc-if value="{{ b.d }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ b.d }}"></path></svg></sc-if><sc-if value="{{ b.txt }}" hint-placeholder-val="{{ false }}">{{ b.txt }}</sc-if></button></sc-for>
+            <span style="width:1px;height:20px;background:var(--border);margin-inline:4px"></span>
+            <button style="height:32px;padding-inline:10px;border:0;background:transparent;color:var(--text-2);border-radius:6px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px" style-hover="background:var(--sunken);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M4 12h8M4 18h12M20 8V4M20 4l-2 2M20 4l2 2"></path></svg>RTL</button>
+            <span style="margin-inline-start:auto;font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>Autosaved</span>
+          </div>
+          <div style="padding:16px 18px;min-height:120px;font-size:14px;line-height:1.7">
+            <div style="font-weight:600;margin-bottom:6px">Discussion summary</div>
+            <p style="margin:0 0 8px">The committee reviewed the Keycloak adoption proposal. <b>Identity</b> and <b>Platform</b> streams support standardization; concerns were raised about the dual-running window.</p>
+            <p dir="rtl" style="margin:0;font-family:'IBM Plex Sans Arabic',sans-serif">راجعت اللجنة مقترح اعتماد Keycloak، وأبدت مسارات الهوية والمنصّة دعمها للتوحيد مع ملاحظات حول فترة التشغيل المزدوج.</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+          <div style="border:1px solid var(--st-success-dot);background:var(--st-success-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-success-fg);line-height:1.5"><b>Do</b> · keep formatting minimal (headings, bold, lists, links); autosave and show a clear locked state once published.</div>
+          <div style="border:1px solid var(--st-danger-dot);background:var(--st-danger-bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--st-danger-fg);line-height:1.5"><b>Don't</b> · allow editing published, immutable minutes, or mix fonts/colors that break the audit record.</div>
+        </div>
+      </section>
+
+      <!-- ============ STATES ============ -->
+      <section id="states" style="margin-bottom:20px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">17</span><h2 style="margin:0;font-size:19px;font-weight:700">States</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">Every content area designs all four. Skeletons (not spinners) for loading; plain-language, actionable errors; calm permission-denied.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow);text-align:center"><div style="width:40px;height:40px;margin:0 auto 12px;border-radius:10px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6M9 13h3"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:4px">Empty</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5">No topics yet. <span style="color:var(--accent);font-weight:600">Submit the first.</span></div></div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow)"><div style="display:flex;flex-direction:column;gap:9px;animation:acmpShimmer 1.4s ease-in-out infinite"><span style="height:11px;width:70%;background:var(--sunken);border-radius:5px"></span><span style="height:11px;width:90%;background:var(--sunken);border-radius:5px"></span><span style="height:11px;width:55%;background:var(--sunken);border-radius:5px"></span><span style="height:11px;width:80%;background:var(--sunken);border-radius:5px"></span></div><div style="font-size:11.5px;color:var(--text-3);margin-top:12px;text-align:center">Loading skeleton</div></div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow);text-align:center"><div style="width:40px;height:40px;margin:0 auto 12px;border-radius:10px;background:var(--st-danger-bg);display:flex;align-items:center;justify-content:center;color:var(--st-danger-fg)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:4px">Error</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5">Couldn't load. <span style="color:var(--accent);font-weight:600">Retry</span></div></div>
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:18px;box-shadow:var(--shadow);text-align:center"><div style="width:40px;height:40px;margin:0 auto 12px;border-radius:10px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg></div><div style="font-size:12.5px;font-weight:600;margin-bottom:4px">No access</div><div style="font-size:11.5px;color:var(--text-3);line-height:1.5">Contact your administrator.</div></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- DIALOG -->
+  <sc-if value="{{ dialogOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDialog }}" style="position:fixed;inset:0;z-index:60;background:rgba(10,14,20,.5);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px)">
+      <div role="dialog" aria-modal="true" aria-label="Confirm publish" style="width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden">
+        <div style="padding:20px 22px 0"><div style="width:40px;height:40px;border-radius:10px;background:var(--st-warn-bg);color:var(--st-warn-fg);display:flex;align-items:center;justify-content:center;margin-bottom:14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3L12 4zM12 11v3M12 17h.01"></path></svg></div><h3 style="margin:0 0 6px;font-size:17px;font-weight:700">Publish agenda?</h3><p style="margin:0;font-size:13.5px;color:var(--text-2);line-height:1.6">Members will be notified and the agenda for <span style="font-family:var(--mono);font-size:12.5px">MTG-2026-019</span> will be locked for editing. This action is recorded in the audit trail.</p></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding:20px 22px"><button onClick="{{ closeDialog }}" style="height:38px;padding-inline:16px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13.5px" style-hover="background:var(--subtle)">Cancel</button><button onClick="{{ closeDialog }}" style="height:38px;padding-inline:16px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13.5px" style-hover="background:var(--primary-hover)">Publish &amp; notify</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { theme:'light', dir:'ltr', tab:'a', dialogOpen:false, vote:null };
+
+  set(k,v){ this.setState({ [k]:v }); }
+
+  sem(s){ return { chip:`background:var(--st-${s}-bg);color:var(--st-${s}-fg)`, dot:`var(--st-${s}-dot)` }; }
+
+  renderVals(){
+    const { theme, dir, tab, dialogOpen, vote } = this.state;
+    const isRtl = dir==='rtl';
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+    const chevBack = isRtl ? 'scaleX(1)' : 'scaleX(-1)';
+
+    const segOn = 'background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600';
+    const segOff = 'background:transparent;color:var(--text-2);font-weight:500';
+
+    const swatches = [
+      { name:'App canvas', tok:'--bg-app', val:'var(--bg-app)' },
+      { name:'Surface', tok:'--surface', val:'var(--surface)' },
+      { name:'Subtle', tok:'--subtle', val:'var(--subtle)' },
+      { name:'Sunken', tok:'--sunken', val:'var(--sunken)' },
+      { name:'Border', tok:'--border', val:'var(--border)' },
+      { name:'Text', tok:'--text', val:'var(--text)' },
+      { name:'Primary', tok:'--primary', val:'var(--primary)' },
+      { name:'Accent', tok:'--accent', val:'var(--accent)' }
+    ];
+
+    const chip = (s,label)=>({ ...{ chip:this.sem(s).chip, dot:this.sem(s).dot }, label });
+    const statusMap = [
+      { model:'Topic / Backlog', items:[chip('neutral','Triage'),chip('info','Accepted'),chip('sched','Scheduled'),chip('warn','Returned'),chip('danger','Rejected')] },
+      { model:'Action', items:[chip('neutral','Not started'),chip('warn','In progress'),chip('success','Completed'),chip('danger','Overdue')] },
+      { model:'Risk', items:[chip('neutral','Open'),chip('warn','Mitigating'),chip('success','Closed')] },
+      { model:'Decision', items:[chip('neutral','Pending'),chip('success','Approved'),chip('danger','Rejected')] },
+      { model:'ADR', items:[chip('info','Proposed'),chip('success','Accepted'),chip('warn','Deprecated'),chip('neutral','Superseded')] },
+      { model:'Vote', items:[chip('info','Open'),chip('success','Passed'),chip('danger','Failed'),chip('warn','No quorum')] }
+    ];
+    const statusChips = [chip('neutral','Triage'),chip('info','Accepted'),chip('sched','Scheduled'),chip('warn','Mitigating'),chip('success','Approved'),chip('danger','Rejected')];
+
+    const spacing = [
+      { label:'sp-1 · 4', w:'4px' },{ label:'sp-2 · 8', w:'8px' },{ label:'sp-3 · 12', w:'12px' },
+      { label:'sp-4 · 16', w:'16px' },{ label:'sp-6 · 24', w:'24px' },{ label:'sp-8 · 32', w:'32px' }
+    ];
+    const radii = [
+      { label:'sm 6', v:'6px' },{ label:'md 8', v:'8px' },{ label:'lg 10', v:'10px' },{ label:'xl 12', v:'12px' },{ label:'full', v:'9999px' }
+    ];
+
+    const tokens = ['Internal Auth','API Gateway','Mobile Apps'];
+    const options = [
+      { label:'Internal Auth', mk:'1', bg:'var(--primary)', bd:'var(--primary)' },
+      { label:'API Gateway', mk:'1', bg:'var(--primary)', bd:'var(--primary)' },
+      { label:'Notifications Service', mk:'0', bg:'transparent', bd:'var(--border-strong)' },
+      { label:'Reporting Service', mk:'0', bg:'transparent', bd:'var(--border-strong)' }
+    ];
+
+    // calendar Feb 2026: starts Sunday; 1 Feb 2026 is a Sunday
+    const calDays = [];
+    for(let i=1;i<=28;i++){
+      let style='color:var(--text)';
+      if(i===18){ style='background:var(--primary);color:#fff;font-weight:700'; }
+      else if(i===24){ style='border:1.5px solid var(--accent);color:var(--accent);font-weight:600'; }
+      else if(i%7===0||((i+6)%7===0)){ style='color:var(--text-3)'; }
+      calDays.push({ n:String(i), style });
+    }
+
+    const ageColor=(a)=> a>30?'var(--st-danger-fg)':(a>13?'var(--st-warn-fg)':'var(--text-2)');
+    const demoRowsRaw = [
+      { k:'TOP-2026-014', title:'Adopt Keycloak as standard IdP', s:'sched', status:'Scheduled', age:9, sel:true },
+      { k:'TOP-2026-022', title:'Standardize API pagination', s:'info', status:'Accepted', age:18, sel:false },
+      { k:'TOP-2026-031', title:'Spike: event streaming', s:'neutral', status:'Triage', age:4, sel:false },
+      { k:'TOP-2026-027', title:'Deprecate legacy SOAP gateway', s:'warn', status:'Returned', age:34, sel:false }
+    ];
+    const demoRows = demoRowsRaw.map(r=>({
+      k:r.k, title:r.title, status:r.status, chip:this.sem(r.s).chip, dot:this.sem(r.s).dot,
+      age:r.age+'d', ageColor:ageColor(r.age),
+      bg:r.sel?'var(--primary-tint)':'var(--surface)', bd:r.sel?'var(--primary)':'var(--border-strong)',
+      cbg:r.sel?'var(--primary)':'transparent', mk:r.sel?'1':'0'
+    }));
+
+    const demoTabs = [['a','Description'],['b','Discussion'],['c','History']].map(([key,label])=>{
+      const sel=tab===key;
+      const style='padding:10px 14px;border:0;background:transparent;font-size:13.5px;font-weight:'+(sel?'600':'500')+';color:'+(sel?'var(--text)':'var(--text-2)')+';border-bottom:2px solid '+(sel?'var(--accent)':'transparent')+';margin-bottom:-1px';
+      return { go:()=>this.set('tab',key), sel:sel?'true':'false', style, label };
+    });
+    const tabBody = tab==='a'
+      ? 'Consolidate identity onto Keycloak as the single standard IdP across all delivery streams, replacing per-stream internal auth.'
+      : tab==='b' ? 'Noura P., S. M. and Omar H. discussed the rollback plan and the dual-running security review before cutover.'
+      : 'Created 15 Feb · Accepted 15 Feb · Scheduled 16 Feb · Decision recorded 18 Feb.';
+
+    const relGroups = [
+      { label:'Decision', dir:'Downstream', dirColor:'var(--st-info-fg)', dirBg:'var(--st-info-bg)', k:'DECN-2026-008', title:'Approve Keycloak, conditionally', ...this.sem('success'), st:'Approved' },
+      { label:'Risk', dir:'Related', dirColor:'var(--st-neutral-fg)', dirBg:'var(--st-neutral-bg)', k:'RSK-2026-006', title:'Dual-running auth migration', ...this.sem('warn'), st:'Mitigating' },
+      { label:'Depends on', dir:'Upstream', dirColor:'var(--st-warn-fg)', dirBg:'var(--st-warn-bg)', k:'TOP-2026-022', title:'API pagination standard', ...this.sem('info'), st:'Accepted' }
+    ];
+
+    const voters = [
+      { i:'SM', name:'S. M. (Chairman)', vote:'Approve', color:'var(--st-success-fg)' },
+      { i:'OH', name:'Omar H. (Identity)', vote:'Approve', color:'var(--st-success-fg)' },
+      { i:'NP', name:'Noura P. (Platform)', vote:'Abstain', color:'var(--st-neutral-fg)' }
+    ];
+
+    const voteBtn = (key, onColorBg, onColorFg, onBd) => {
+      const sel = vote===key;
+      return sel
+        ? `background:${onColorBg};color:${onColorFg};border:1.5px solid ${onBd}`
+        : 'background:var(--surface);color:var(--text-2);border:1.5px solid var(--border-strong)';
+    };
+
+    const editorBtns = [
+      { label:'Bold', txt:'B', fw:'700', fs:'normal', d:null },
+      { label:'Italic', txt:'I', fw:'400', fs:'italic', d:null },
+      { label:'Heading', txt:'H', fw:'700', fs:'normal', d:null },
+      { label:'Bulleted list', txt:null, fw:'400', fs:'normal', d:'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01' },
+      { label:'Numbered list', txt:null, fw:'400', fs:'normal', d:'M10 6h11M10 12h11M10 18h11M4 6h1v4M4 10h2' },
+      { label:'Link', txt:null, fw:'400', fs:'normal', d:'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1' }
+    ];
+
+    return {
+      theme, dir, font, chev, chevBack, rootVars:'',
+      isLtr:isRtl?'false':'true', isRtl:isRtl?'true':'false', isLight:theme==='light'?'true':'false', isDark:theme==='dark'?'true':'false',
+      segLtr: isRtl?segOff:segOn, segRtl: isRtl?segOn:segOff, segLight: theme==='light'?segOn:segOff, segDark: theme==='dark'?segOn:segOff,
+      setLtr:()=>this.set('dir','ltr'), setRtl:()=>this.set('dir','rtl'), setLight:()=>this.set('theme','light'), setDark:()=>this.set('theme','dark'),
+      swatches, statusMap, statusChips, spacing, radii, tokens, options, calDays,
+      demoRows, demoTabs, tabBody, relGroups, voters, editorBtns,
+      dialogOpen, openDialog:()=>this.set('dialogOpen',true), closeDialog:()=>this.set('dialogOpen',false),
+      voteApprove:()=>this.set('vote','a'), voteReject:()=>this.set('vote','r'), voteAbstain:()=>this.set('vote','x'),
+      approveSel: vote==='a'?'true':'false', rejectSel: vote==='r'?'true':'false', abstainSel: vote==='x'?'true':'false',
+      approveStyle: voteBtn('a','var(--st-success-bg)','var(--st-success-fg)','var(--st-success-dot)'),
+      rejectStyle: voteBtn('r','var(--st-danger-bg)','var(--st-danger-fg)','var(--st-danger-dot)'),
+      abstainStyle: voteBtn('x','var(--st-neutral-bg)','var(--st-neutral-fg)','var(--st-neutral-dot)')
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a4f8a'/%3E%3Cg stroke='%23fff' stroke-width='2.9' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M16 6L9 24.5'/%3E%3Cpath d='M16 6L23 24.5'/%3E%3Cpath d='M11 18.2L21 18.2'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--ring:rgba(26,79,138,.12);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);
+    --shadow-lg:0 18px 50px rgba(16,24,40,.16);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--ring:rgba(109,176,238,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);
+    --shadow-lg:0 22px 60px rgba(0,0,0,.55);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px;border-radius:4px}
+  .ctl{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:9px}
+  .ctlw{height:40px;padding-inline:13px;display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:9px;font-size:12.5px;font-weight:600}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);display:flex;flex-direction:column">
+
+  <header style="height:64px;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding-inline:24px;flex:0 0 auto">
+    <button onClick="{{ toggleLang }}" class="ctlw" aria-label="{{ s.langAria }}" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+    <button onClick="{{ toggleTheme }}" class="ctl" aria-label="{{ s.themeAria }}" style-hover="background:var(--subtle);color:var(--text)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+  </header>
+
+  <main style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 96px">
+    <div style="width:100%;max-width:416px">
+
+      <!-- STATUS SLOT (above the card) -->
+      <sc-if value="{{ showStatus }}" hint-placeholder-val="{{ true }}">
+        <div role="status" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;margin-bottom:16px;border-radius:11px;background:{{ statusBg }};color:{{ statusFg }};border:1px solid {{ statusBd }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><path d="{{ statusIcon }}"></path></svg>
+          <span style="font-size:13px;font-weight:500;line-height:1.5">{{ statusMsg }}</span>
+        </div>
+      </sc-if>
+
+      <!-- CARD -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:40px 36px 32px;text-align:center">
+        <div style="width:60px;height:60px;margin:0 auto 20px;filter:drop-shadow(var(--shadow))">
+          <svg width="60" height="60" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="var(--primary)"></rect><g transform="translate(4,4)" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></g></svg>
+        </div>
+        <h1 style="margin:0;font-size:27px;font-weight:700;letter-spacing:{{ wordSpace }}">ACMP</h1>
+        <div style="margin-top:5px;font-size:13.5px;font-weight:500;color:var(--text-2);line-height:1.5">{{ s.appName }}</div>
+        <div style="height:1px;background:var(--border-soft);margin:22px 0"></div>
+        <p style="margin:0 0 20px;font-size:14.5px;color:var(--text-2)">{{ s.subtitle }}</p>
+        <button style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;gap:9px;border:0;background:var(--primary);color:#fff;border-radius:11px;font-size:14.5px;font-weight:600;box-shadow:var(--shadow)" style-hover="background:var(--primary-hover)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>
+          {{ s.login }}
+        </button>
+        <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:16px;font-size:11.5px;color:var(--text-3);line-height:1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>
+          <span>{{ s.secure }}</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;font-size:12px;color:var(--text-3)">{{ s.invite }}</div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:720},&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;en&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;ar&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;status&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;signed_out&quot;,&quot;options&quot;:[&quot;none&quot;,&quot;signed_out&quot;,&quot;expired&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { lang: this.props.lang || 'en', theme: this.props.theme || 'light', status: this.props.status || 'signed_out' };
+  set(k,v){ this.setState({ [k]:v }); }
+
+  renderVals(){
+    const lang = this.state.lang, theme = this.state.theme;
+    const status = this.props.status || this.state.status || 'signed_out';
+    const isRtl = lang==='ar';
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+
+    const S = isRtl ? {
+      appName:'منصة إدارة لجنة الهندسة المعمارية',
+      subtitle:'سجّل الدخول للمتابعة',
+      login:'تسجيل الدخول',
+      secure:'ستتابع إلى خدمة الهوية الآمنة لتسجيل الدخول.',
+      invite:'الوصول بالدعوة فقط · تتولّى خدمة الهوية المركزية المصادقة.',
+      langAria:'تبديل اللغة', themeAria:'تبديل السمة',
+      signedOut:'تم تسجيل خروجك.',
+      expired:'انتهت الجلسة — يُرجى تسجيل الدخول مجددًا.'
+    } : {
+      appName:'Architecture Committee Management Platform',
+      subtitle:'Sign in to continue',
+      login:'Log in',
+      secure:'You\u2019ll continue to the secure identity service to sign in.',
+      invite:'Access is by invitation only · authentication is handled by the central identity service.',
+      langAria:'Toggle language', themeAria:'Toggle theme',
+      signedOut:'You\u2019ve been signed out.',
+      expired:'Your session expired — please sign in again.'
+    };
+
+    const statusMap = {
+      signed_out:{ msg:S.signedOut, tone:'info', icon:'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9' },
+      expired:{ msg:S.expired, tone:'warn', icon:'M12 8v5M12 16h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z' }
+    };
+    const st = statusMap[status] || null;
+
+    return {
+      dir: isRtl?'rtl':'ltr', theme, font, chev, s:S,
+      wordSpace: isRtl ? '0' : '3px',
+      langBtn: isRtl ? 'English' : 'العربية',
+      toggleLang:()=>this.set('lang', isRtl?'en':'ar'),
+      toggleTheme:()=>this.set('theme', theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      showStatus: !!st, statusMsg: st?st.msg:'', statusIcon: st?st.icon:'',
+      statusBg: st? (st.tone==='warn'?'var(--st-warn-bg)':'var(--st-info-bg)') : 'transparent',
+      statusFg: st? (st.tone==='warn'?'var(--st-warn-fg)':'var(--st-info-fg)') : 'var(--text)',
+      statusBd: st? (st.tone==='warn'?'color-mix(in srgb,var(--st-warn-fg) 24%,transparent)':'color-mix(in srgb,var(--st-info-fg) 22%,transparent)') : 'transparent'
+    };
+  }
+}
+</script>
+</body>
+</html>

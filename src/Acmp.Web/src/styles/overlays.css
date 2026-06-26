@@ -1,0 +1,69 @@
+/*
+ * Overlay components — Design System §11 (menu) + §12 (dialog, toast).
+ * Portalled where needed; token-driven; logical properties → RTL-correct.
+ */
+
+/* ============================ Menu ============================ */
+.menu { position: relative; display: inline-flex; }
+.menu-backdrop { position: fixed; inset: 0; z-index: 60; }
+.menu-panel {
+  position: absolute; inset-block-start: 46px; z-index: 70; min-inline-size: 200px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 13px; box-shadow: var(--shadow-lg);
+}
+.menu-panel-end { inset-inline-end: 0; }
+.menu-panel-start { inset-inline-start: 0; }
+.menu-item {
+  display: flex; align-items: center; gap: 11px; inline-size: 100%; min-block-size: 40px;
+  padding-inline: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--text-2);
+  font: inherit; font-size: 13px; font-weight: 500; text-align: start; cursor: pointer;
+}
+.menu-item:hover { background: var(--subtle); color: var(--text); }
+.menu-item[aria-checked='true'] { background: var(--primary-tint); color: var(--accent); }
+.menu-sep { block-size: 1px; background: var(--border); margin-block: 4px; }
+.menu-head {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--text-3); padding: 8px 10px 5px;
+}
+
+/* ============================ Dialog ============================ */
+.dialog-overlay {
+  position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-6); background: rgba(10, 14, 20, .5); backdrop-filter: blur(2px);
+}
+.dialog {
+  inline-size: 100%; max-inline-size: 440px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.dialog-body { padding: 20px 22px 0; }
+.dialog-icon {
+  inline-size: 40px; block-size: 40px; border-radius: var(--r-lg); margin-block-end: 14px;
+  display: flex; align-items: center; justify-content: center; background: var(--subtle); color: var(--text-3);
+}
+.dialog-icon-warn { background: var(--st-warn-bg); color: var(--st-warn-fg); }
+.dialog-icon-danger { background: var(--st-danger-bg); color: var(--st-danger-fg); }
+.dialog-title { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+.dialog-desc { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+.dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 22px; }
+
+/* ============================ Toast ============================ */
+.toast-region {
+  position: fixed; inset-block-start: var(--sp-4); inset-inline-end: var(--sp-4); z-index: 90;
+  display: flex; flex-direction: column; gap: 10px; max-inline-size: 360px;
+}
+.toast {
+  display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--st-neutral-dot); border-radius: 10px; box-shadow: var(--shadow);
+}
+.toast-success { border-inline-start-color: var(--st-success-dot); }
+.toast-danger { border-inline-start-color: var(--st-danger-dot); }
+.toast-info { border-inline-start-color: var(--st-info-dot); }
+.toast-icon { flex: 0 0 auto; margin-block-start: 1px; }
+.toast-success .toast-icon { color: var(--st-success-dot); }
+.toast-danger .toast-icon { color: var(--st-danger-dot); }
+.toast-info .toast-icon { color: var(--st-info-dot); }
+.toast-text { flex: 1 1 auto; min-inline-size: 0; }
+.toast-title { font-size: 13px; font-weight: 600; }
+.toast-desc { font-size: 12px; color: var(--text-3); }
+.toast-close { border: 0; background: transparent; color: var(--text-3); cursor: pointer; display: flex; padding: 0; flex: 0 0 auto; }
+.toast-close:hover { color: var(--text); }
