@@ -72,6 +72,8 @@ export function MultiSelect({ options, value, onChange, placeholder, id, ariaLab
           ref={inputRef}
           id={id}
           className="tokens-input"
+          // combobox role: aria-expanded/aria-haspopup are only valid on a combobox, not a bare textbox.
+          role="combobox"
           aria-label={ariaLabel}
           aria-describedby={aria['aria-describedby']}
           aria-expanded={open}

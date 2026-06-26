@@ -119,5 +119,84 @@
     "emptyTitle": "No members yet",
     "emptyBody": "Members appear here after they first sign in through Keycloak."
   },
+  "topics": {
+    "home": "Home",
+    "backlog": "Backlog",
+    "count": "{{total}} topics in the backlog",
+    "export": "Export",
+    "newTopic": "New topic",
+    "comingSoon": "Coming soon",
+    "viewLabel": "Backlog view",
+    "view": { "list": "List", "table": "Table", "kanban": "Kanban", "calendar": "Calendar", "timeline": "Timeline" },
+    "savedViews": "Saved views",
+    "searchLabel": "Filter topics",
+    "searchPlaceholder": "Filter topics…",
+    "filtersLabel": "Backlog filters",
+    "removeFilter": "Remove {{label}}",
+    "noMatches": "No matches",
+    "filter": {
+      "status": "Status",
+      "type": "Type",
+      "stream": "Stream",
+      "owner": "Owner",
+      "urgency": "Urgency",
+      "anyType": "Any type",
+      "anyUrgency": "Any urgency",
+      "anyStream": "Any stream",
+      "anyOwner": "Any owner"
+    },
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Backlog pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Backlog topics",
+    "col": {
+      "key": "Key",
+      "topic": "Topic",
+      "type": "Type",
+      "streams": "Streams",
+      "owner": "Owner",
+      "status": "Status",
+      "age": "Age",
+      "urgency": "Urgency"
+    },
+    "urgent": "Urgent",
+    "unassigned": "Unassigned",
+    "age": "{{days}}d",
+    "ageLabel": "{{days}} days old",
+    "slaBreached": "Past its review SLA",
+    "empty": {
+      "title": "No topics match these filters",
+      "body": "No backlog items match the current filters. Clear the filters or submit a new topic to get started."
+    },
+    "clearFilters": "Clear filters",
+    "error": {
+      "title": "Couldn’t load the backlog",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "shell": { "title": "View coming soon", "body": "This backlog view isn’t available yet." },
+    "type": {
+      "ResearchDiscovery": "Research",
+      "ArchitectureDecision": "Arch. Decision",
+      "EnhancementInnovation": "Enhancement",
+      "GovernanceStandardization": "Governance"
+    },
+    "urgency": { "Normal": "Normal", "Urgent": "Urgent", "Critical": "Critical" },
+    "status": {
+      "Draft": "Draft",
+      "Submitted": "Submitted",
+      "Triage": "Triage",
+      "Accepted": "Accepted",
+      "Prepared": "Prepared",
+      "Scheduled": "Scheduled",
+      "InCommittee": "In committee",
+      "Decided": "Decided",
+      "Closed": "Closed",
+      "Rejected": "Rejected",
+      "Deferred": "Deferred",
+      "Reopened": "Reopened",
+      "Converted": "Converted"
+    }
+  },
   "notFound": { "body": "We couldn't find that page." }
 }
