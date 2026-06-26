@@ -100,8 +100,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > → live pass). AC-030 gains client-side localized validation; AC-049/050 gain the submit upload UI (live MinIO
 > → live pass). Web 79/79 (incl. axe AA), i18n parity 226, build/oxlint clean; submit-screen AA contrast
 > verified offline (three light-mode text-3 spots fixed → text-2). The PR1 auth-bootstrap 401 was fixed in #12
-> (token getter wired during render), already on main. Live authenticated pass (real submit + MinIO) recommended
-> before merge. See progress-log P5b PR2 entry.
+> (token getter wired during render), already on main. **Live authenticated pass done** (Playwright, real
+> Keycloak PKCE): `POST /api/topics` → 201 (TOP-2026-002) and `POST /{id}/attachments` → 201 on **real MinIO**
+> (AC-050 → Met); submit form confirmed in AR/RTL with full i18n. See progress-log P5b PR2 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
@@ -154,7 +155,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-047 | Unsaved-work | Met | SubmitTopic.test (guard dialog on dirty nav) | useBlocker (data router) → confirm Dialog on in-app route change while the submit form is dirty; Keep editing / Leave |
 | AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
 | AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
-| AC-050 | File upload | Partial | TopicAttachmentTests (handler) + SubmitTopic.tsx (multipart upload wired) | Upload → IFileStore + SQL metadata + DocumentAttached audit (substituted store); submit UI stages files and POSTs multipart to the new topic; live MinIO → live pass |
+| AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
 | AC-051 | Notifications | Pending | — | Agenda publish → in-app ≤5s |
 | AC-052 | Notifications | Pending | — | Vote-open notification deep link |
 | AC-053 | Notifications | Pending | — | In-app only, no email/Webex |
@@ -172,9 +173,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 12 Met (AC-001/002/008/031/039/040/042/045/046/047/058/059) · 21 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/050/057 + AC-041) · 33 Pending.
-(Through P5b PR2 — submit topic form. PR2 flipped AC-039 + AC-047 to Met and AC-048 to Partial.)
+**Summary:** 66 ACs · 13 Met (AC-001/002/008/031/039/040/042/045/046/047/050/058/059) · 20 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/057 + AC-041) · 33 Pending.
+(Through P5b PR2 — submit topic form + live pass. PR2 flipped AC-039/047 → Met, AC-050 → Met (live MinIO), AC-048 → Partial.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

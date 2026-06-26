@@ -52,9 +52,14 @@ vite build.
   light-mode `--text-3` real-text spots that fell below 4.5:1 (`.sub-drop-hint`/`.sub-foot-note` on `--subtle`
   = 4.37; selected `.sub-card-desc` on `--primary-tint` = 4.15) → `--text-2` (CHANGE-003 precedent).
 - **RTL-safety** confirmed (logical-properties-only audit of `topics.css`).
-- **Pending — live authenticated pass** (real POST + MinIO attachment upload for AC-049/050, AR/RTL + dark
-  visual): tests mock `useSubmitTopic`/`uploadTopicAttachment`, so the real submit + upload path is not yet
-  run end-to-end. Recommended before merge (creates a real topic in the dev DB).
+- **Live authenticated pass — done (2026-06-26, Playwright on the rebuilt `web`, real Keycloak PKCE).** Filled
+  the form (type=ArchitectureDecision, title/description/justification, stream `platform`, a staged PDF) and
+  submitted: `POST /api/topics` → **201** (TOP-2026-002); `POST /api/topics/{id}/attachments` → **201** —
+  the multipart upload to **real MinIO** succeeded (closes the deferred "live MinIO → P5b", AC-049/050), and
+  the `{id}` used for the attachment confirms the submit-returns-`{id,key}` → use-`id` flow. Redirected to the
+  new topic; the guard correctly did not fire on the programmatic post-submit navigation. The submit form was
+  also confirmed rendering in **AR/RTL** with full i18n (section nav, type/urgency cards, token inputs, drop
+  zone, autosave indicator).
 
 **Acceptance audit (this entry).** **Met (newly):** **AC-039** (locale switch preserves form data — unit-tested),
 **AC-047** (in-app route-change guard via useBlocker — unit-tested). **Partial (newly):** **AC-048**
