@@ -14,6 +14,52 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P5 — Topic & Backlog Management
 
+### 2026-06-26 — P5b PR4: Backlog kanban + accessible DnD (triage transitions) — final P5b slice
+
+**Scope.** Last P5b slice — the **kanban view** with accessible drag-and-drop, replacing the "coming soon"
+shell. Branch `feat/P5b-kanban`. Web **94 tests green** (was 87; +7 kanban/meta), i18n parity 278, oxlint +
+build clean. With this, all three design screens (backlog 3 live views, submit, detail) are built.
+
+**Done.**
+- `topicMeta.ts` — pure, unit-tested **bucket model**: `bucketOf(status)` (canonical status → 5 display
+  buckets, P5a decision) and `moveAction(from,to)` (classifies a move as accept/return/illegal/none).
+- `api/topics.ts` — `useAcceptTopic` (POST `/accept`, owner) + `useReturnTopic` (POST `/reject` or `/defer`,
+  reason + optional revisit).
+- `features/topics/Kanban.tsx` — 5-column board grouping the backlog page by bucket; **native HTML5 drag**
+  (pointer) + a **keyboard "M" move popover** (AC-043) + an **aria-live** region announcing every move; cards
+  link to detail. Wired into the backlog view switcher (kanban is now a live view; calendar/timeline stay shells).
+- **Transition dialogs** (the only P5-legal cross-bucket moves): **AcceptDialog** (owner `Select` from the
+  member directory → POST `/accept`) and **ReturnDialog** (defer/reject radio + required reason + native date
+  for the defer revisit → POST `/reject`|`/defer`). Illegal drops (→scheduled/→done/etc.) are **rejected with
+  an announced reason**, never a silent no-op.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; in the file header comment).**
+- **No input-free cross-bucket move exists in P5**, so every legal move opens a dialog and **two columns reject
+  all drops** (scheduling needs a Meeting → P6; there's no decide/close/un-accept endpoint). This is the
+  design-conflict flagged at P5b kickoff, made concrete.
+- **Native drag + "M" popover** (matches the design) rather than `@dnd-kit` multi-container; the popover is the
+  keyboard-accessible path (AC-043).
+- **Native `<input type="date">`** for the defer revisit (vs the heavy custom DatePicker) — simpler, accessible.
+- **No new ADR** (UI on the settled stack).
+
+**Verification.** Web **94/94** (Vitest+RTL: bucket/move mapping, column grouping, M-popover → accept-dialog →
+accept with owner, illegal-move announce, return-with-reason), i18n parity 278, oxlint, `tsc -b` + build.
+- **AA contrast** — kanban text is `--text-2`/`--text` on `--surface`/card (pass); the lone `--text-3` is the
+  disabled "current" move item (WCAG-exempt, and 4.74 anyway). **RTL-safety** confirmed (logical-CSS audit).
+- **Pending — live kanban pass** (real drag/M-move → accept/return against the API, AR/RTL): the transition
+  paths are unit-tested with mocks. Recommended before merge.
+
+**Acceptance audit (this entry).** **Met (newly): AC-043** (keyboard DnD alternative on the backlog — the "M"
+move popover, unit-tested). **AC-009** advances (owner assignment via the accept dialog is wired to the
+grant-on-accept endpoint; live grant/403 → live pass). AC-031 (mandatory rejection reason) is now collected in
+the UI. AC-044 (keyboard DnD on the agenda) stays Pending → P6.
+
+**Next.** Live kanban pass (optional), then **P5b is complete** — all three screens shipped. Remaining topic
+work (per-topic live **edit**/lock for AC-034, calendar/timeline once P6 meeting data exists, saved-views/export)
+is tracked for later phases.
+
+---
+
 ### 2026-06-26 — P5b PR3: Topic detail (read + discussion + history) wired to GET /api/topics/{key}
 
 **Scope.** Third P5b slice — the **Topic detail** screen. Branch `feat/P5b-detail`. Web **87 tests green**

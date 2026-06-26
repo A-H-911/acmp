@@ -259,6 +259,37 @@
       "fileSize": "Each file must be {{max}} MB or smaller."
     }
   },
+  "kanban": {
+    "hint": "Drag a card to another column, or focus a card and press M to move it by keyboard.",
+    "moveHint": "Press M to move.",
+    "moveTitle": "Move topic to…",
+    "current": "current",
+    "cancel": "Cancel",
+    "moved": "{{key}} moved to {{bucket}}.",
+    "illegal": "Can’t move to {{bucket}} in this phase — scheduling needs a meeting (coming in a later phase).",
+    "actionError": "That action couldn’t be completed. Try again.",
+    "bucket": { "triage": "Triage", "accepted": "Accepted", "scheduled": "Scheduled", "returned": "Returned", "done": "Done" },
+    "accept": {
+      "title": "Accept {{key}} into the backlog",
+      "body": "Accepting assigns an owner and moves the topic into the active backlog.",
+      "owner": "Owner",
+      "ownerPh": "Choose an owner…",
+      "ownerRequired": "Select an owner to accept.",
+      "confirm": "Accept"
+    },
+    "return": {
+      "title": "Return {{key}}",
+      "body": "Send this topic back with a reason. Defer keeps it for a later revisit; reject closes it.",
+      "mode": "Action",
+      "defer": "Defer",
+      "reject": "Reject",
+      "reason": "Reason",
+      "reasonPh": "Why is this being returned…",
+      "reasonRequired": "A reason is required.",
+      "revisit": "Revisit on",
+      "confirm": "Return topic"
+    }
+  },
   "detail": {
     "notFoundTitle": "Topic not found",
     "notFoundBody": "This topic doesn’t exist or may have been removed.",

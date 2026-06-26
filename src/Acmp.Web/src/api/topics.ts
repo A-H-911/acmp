@@ -171,6 +171,32 @@ export function useTopicDetail(key: string | undefined) {
   });
 }
 
+// Triage transitions surfaced by the kanban board (W2/W20). Each invalidates the backlog so the moved
+// card re-buckets. Accept needs an owner; reject/defer need a reason (defer also an optional revisit date).
+export function useAcceptTopic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, ownerId, ownerName }: { topicId: string; ownerId: string; ownerName: string }) =>
+      api<void>(`/topics/${topicId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerId, ownerName }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
+  });
+}
+
+export function useReturnTopic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, mode, reason, revisitOn }: { topicId: string; mode: 'reject' | 'defer'; reason: string; revisitOn?: string | null }) =>
+      mode === 'reject'
+        ? api<void>(`/topics/${topicId}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason }) })
+        : api<void>(`/topics/${topicId}/defer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason, revisitOn: revisitOn ?? null }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
+  });
+}
+
 /** Post a discussion comment (BL-033). Body field is `reason` (the endpoint's ReasonBody). */
 export function useAddTopicComment(key: string | undefined) {
   const qc = useQueryClient();
