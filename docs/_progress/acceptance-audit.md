@@ -112,6 +112,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (three text-3-on-bg-app spots = 4.02 fixed → text-2). Live detail pass (real GET + comment POST, AR/RTL)
 > recommended. See progress-log P5b PR3 entry.
 
+> P5b PR4 update (2026-06-26): Backlog kanban + accessible DnD (final P5b slice). **Met (newly): AC-043** —
+> the keyboard "M" move popover is the accessible alternative to drag (unit-tested). The board groups topics
+> into 5 buckets over canonical status; the only P5-legal cross-bucket moves open dialogs (accept needs an
+> owner; reject/defer need a reason) and two columns reject all drops (scheduling → P6). AC-009 advances
+> (owner assignment wired to grant-on-accept; live grant/403 → live pass); AC-031's mandatory reason is now
+> collected in the UI. Web 94/94 (incl. axe AA), i18n parity 278, build/oxlint clean. Live kanban pass
+> recommended. **P5b screens complete** (backlog 3 live views, submit, detail). See progress-log P5b PR4 entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -156,7 +164,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-040 | Localization | Met | i18n/direction.test.ts + axe render | dir=rtl mirrored layout — sidebar→inline-end, Arabic font, logical CSS; verified live (P3) |
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
-| AC-043 | Accessibility | Pending | — | Keyboard DnD alt (backlog) |
+| AC-043 | Accessibility | Met | Kanban.test (M-move popover) + topicMeta.test | Backlog kanban: focus a card, press **M** → accessible move popover (keyboard alternative to drag); legal moves open accept/return dialogs, illegal moves are announced |
 | AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
@@ -181,9 +189,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 13 Met (AC-001/002/008/031/039/040/042/045/046/047/050/058/059) · 20 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/057 + AC-041) · 33 Pending.
-(Through P5b PR2 — submit topic form + live pass. PR2 flipped AC-039/047 → Met, AC-050 → Met (live MinIO), AC-048 → Partial.)
+**Summary:** 66 ACs · 14 Met (AC-001/002/008/031/039/040/042/043/045/046/047/050/058/059) · 20 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/057 + AC-041) · 32 Pending.
+(Through P5b PR4 — backlog kanban + accessible DnD. PR4 flipped AC-043 → Met.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

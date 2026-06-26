@@ -36,6 +36,7 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
 import { statusTone, initials } from './topicMeta';
+import { Kanban } from './Kanban';
 import './topics.css';
 
 const VIEWS: { id: string; icon: IconName }[] = [
@@ -45,7 +46,7 @@ const VIEWS: { id: string; icon: IconName }[] = [
   { id: 'calendar', icon: 'calendar' },
   { id: 'timeline', icon: 'viewTimeline' },
 ];
-const LIVE_VIEWS = new Set(['table', 'list']);
+const LIVE_VIEWS = new Set(['table', 'list', 'kanban']);
 const TYPE_VALUES = ['ResearchDiscovery', 'ArchitectureDecision', 'EnhancementInnovation', 'GovernanceStandardization'];
 const URGENCY_VALUES = ['Normal', 'Urgent', 'Critical'];
 const STATUS_VALUES = ['Draft', 'Submitted', 'Triage', 'Accepted', 'Prepared', 'Scheduled', 'InCommittee', 'Decided', 'Deferred', 'Reopened', 'Rejected', 'Closed', 'Converted'];
@@ -217,17 +218,21 @@ export function Backlog() {
         <>
           {view === 'table' ? (
             <TopicsTable rows={data!.items} sort={{ by: sortCol, dir: sortDir }} onSort={onSort} />
-          ) : (
+          ) : view === 'list' ? (
             <TopicsList rows={data!.items} />
+          ) : (
+            <Kanban rows={data!.items} />
           )}
-          <div className="bk-foot">
-            <Pagination
-              page={page}
-              pageCount={data!.totalPages}
-              onPageChange={setPage}
-              labels={{ nav: t('topics.pageNav'), previous: t('topics.prevPage'), next: t('topics.nextPage') }}
-            />
-          </div>
+          {view !== 'kanban' && (
+            <div className="bk-foot">
+              <Pagination
+                page={page}
+                pageCount={data!.totalPages}
+                onPageChange={setPage}
+                labels={{ nav: t('topics.pageNav'), previous: t('topics.prevPage'), next: t('topics.nextPage') }}
+              />
+            </div>
+          )}
         </>
       )}
     </section>
