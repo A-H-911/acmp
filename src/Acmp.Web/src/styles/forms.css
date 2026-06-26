@@ -49,6 +49,23 @@
 .select-caret { color: var(--text-3); flex: 0 0 auto; }
 .select-placeholder { color: var(--text-3); }
 
+/* Select listbox popover (anchored to the full-width trigger). */
+.select { position: relative; }
+.select-backdrop { position: fixed; inset: 0; z-index: 60; }
+.select-panel {
+  position: absolute; inset-block-start: 42px; inset-inline: 0; z-index: 70; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 11px; box-shadow: var(--shadow-lg);
+}
+.option-list { max-block-size: 280px; overflow-y: auto; }
+.option {
+  display: flex; align-items: center; gap: 9px; inline-size: 100%; padding: 9px 12px;
+  border: 0; border-radius: 7px; background: transparent; color: var(--text);
+  font: inherit; font-size: 13px; text-align: start; cursor: pointer;
+}
+.option:hover, .option.option-active { background: var(--subtle); }
+.option[aria-selected='true'] { color: var(--accent); font-weight: 600; }
+.option-label { flex: 1 1 auto; min-inline-size: 0; }
+
 /* ============================ Checkbox & radio ============================ */
 .choice { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer; }
 .choice input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }

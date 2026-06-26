@@ -68,3 +68,23 @@
 .pagination-prev svg { transform: scaleX(-1); }
 [dir="rtl"] .pagination-prev svg { transform: none; }
 [dir="rtl"] .pagination-next svg { transform: scaleX(-1); }
+
+/* ============================ Table ============================ */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow); }
+.table-toolbar { display: flex; align-items: center; gap: var(--sp-2); padding: 11px 14px; border-block-end: 1px solid var(--border); flex-wrap: wrap; }
+.table { inline-size: 100%; border-collapse: collapse; }
+.table-head { background: var(--header); }
+.table-head th { border-block-end: 1px solid var(--border); }
+.table-hcell {
+  block-size: 42px; padding-inline: var(--sp-4); vertical-align: middle;
+  font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3);
+}
+.table-sort {
+  display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent;
+  color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer;
+}
+.table-sort.active { color: var(--accent); }
+.table-row { border-block-end: 1px solid var(--border-soft); }
+.table-row:last-child { border-block-end: 0; }
+.table-row:hover { background: var(--subtle); }
+.table-cell { padding: var(--sp-3) var(--sp-4); font-size: 13.5px; vertical-align: middle; }
