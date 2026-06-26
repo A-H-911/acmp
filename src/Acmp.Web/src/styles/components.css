@@ -5,22 +5,40 @@
  */
 
 /* ============================ Buttons ============================ */
+/* Design System §05: variant × size, icon-only, loading, disabled. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
   block-size: 38px; padding-inline: var(--sp-4); border-radius: var(--control-radius);
   border: 1px solid transparent; font: inherit; font-size: 13.5px; font-weight: 600;
   cursor: pointer; text-decoration: none; white-space: nowrap;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), filter var(--dur-fast) var(--ease);
 }
-.btn:disabled { opacity: .55; cursor: not-allowed; }
+/* Disabled = calm sunken fill (design), not a translucent ghost. */
+.btn:disabled { background: var(--sunken); color: var(--text-3); border-color: transparent; box-shadow: none; cursor: not-allowed; }
 .btn-primary { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow); }
 .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
 .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
 .btn-secondary:hover:not(:disabled) { background: var(--subtle); }
-.btn-ghost { background: transparent; color: var(--accent); }
+/* Ghost uses the design's tighter 14px inline padding. */
+.btn-ghost { background: transparent; color: var(--accent); padding-inline: 14px; }
 .btn-ghost:hover:not(:disabled) { background: var(--primary-tint); }
 .btn-danger { background: var(--st-danger-dot); color: #fff; }
 .btn-danger:hover:not(:disabled) { filter: brightness(.94); }
+/* Sizes — sm 32/12.5/r8 · md (default) · lg 44/14.5/r10. */
+.btn-sm { block-size: 32px; padding-inline: var(--sp-3); border-radius: var(--r-md); font-size: 12.5px; }
+.btn-lg { block-size: 44px; padding-inline: var(--sp-5); border-radius: var(--r-lg); font-size: 14.5px; }
+/* Icon-only — square, centered. */
+.btn-icon { inline-size: 38px; padding-inline: 0; }
+.btn-icon.btn-sm { inline-size: 32px; }
+.btn-icon.btn-lg { inline-size: 44px; }
+/* Loading spinner — currentColor so it tracks every variant. */
+.btn-spinner {
+  inline-size: 14px; block-size: 14px; border-radius: 50%; flex: 0 0 auto;
+  border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-block-start-color: currentColor;
+  animation: btn-spin .7s linear infinite;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn-spinner { animation-duration: 1.6s; } }
 
 /* ============================ Status chip ============================ */
 /* Status = label + colored dot. Never color alone (WCAG 1.4.1). */

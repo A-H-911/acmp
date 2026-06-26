@@ -18,6 +18,8 @@ import './i18n';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/components.css';
+import './styles/forms.css';
+import './styles/controls.css';
 import App from './App.tsx';
 import { AuthProvider } from './auth/AuthProvider';
 import { queryClient } from './api/queryClient';
