@@ -20,6 +20,24 @@ authorization-code + PKCE, roles from realm-role/group claims, **no self-registr
   > `presenter` and fail. Presenter is a per-topic relationship (docs/10 §D), not a global role.
 - An initial admin user **`acmp-admin`** (`Administrator` + `Secretary`) with **no committed
   password** — it imports with an `UPDATE_PASSWORD` required action (guardrail 7: no secrets in source).
+- `acmp-web` **default client scopes** include **`basic`** — in Keycloak 24+ the `sub` (and `auth_time`)
+  claim ships in the built-in `basic` scope. Without it the access token has **no `sub`**, so
+  `ICurrentUser.UserId` is empty and JIT provisioning + subject-scoped ABAC silently break (CHANGE-004).
+
+## Realm config changes & reconciliation (OQ-041)
+
+Keycloak imports the realm **only on first start** (it never re-imports an existing realm). So a change
+committed to `realm-export.json` reaches **fresh deploys and volume resets automatically**, but **not** a
+deployment whose `kcdata` volume already holds the realm.
+
+To apply critical realm-config to existing realms too, a one-shot **`keycloak-config`** Compose service runs
+after Keycloak is healthy and reconciles config idempotently via `kcadm` (`deploy/keycloak/reconcile.sh`),
+**without touching users/passwords**. It runs on every `docker compose up` and exits 0; re-runs are no-ops.
+
+- **Add new critical config** by adding an `ensure_*` step to `reconcile.sh` (e.g. `ensure_default_scope`).
+- It reuses the Keycloak image (`bash` + `kcadm`, no `curl`/`jq`) — **no new runtime dependency** (CON-001).
+- **Not** `import --override` on boot: that would reset the bootstrap admin password / required-actions on
+  every restart. Reconciliation is surgical instead. (See OQ-041 in `docs/42`.)
 
 ## User provisioning (manual — Q3 / ADR-0015)
 

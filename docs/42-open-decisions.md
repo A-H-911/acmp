@@ -55,7 +55,7 @@ Each item has a recommended default that unblocks the build. If the org provides
 |---|---|---|---|---|---|
 | OQ-001 | **Guest vs. Presenter split**: Should `Guest` and `Presenter` be two distinct global roles or a single role with a `canPresent` attribute? | (a) Single role: `Guest/Presenter` with a boolean flag per meeting/topic. (b) Two separate roles: `Guest` (view-only, no presentation) + `Presenter` (can present, elevated during meeting). | **Default: (a) single `Guest/Presenter` role** with a relationship attribute (`isPresenter`) on the topic/meeting invitation. Avoids role proliferation; relationship-based ABAC handles the distinction. | Tech Lead | PH-2 |
 | OQ-002 | **Reviewer-may-vote**: Can a user with the `Reviewer` global role cast a vote on a topic they are reviewing? | (a) Yes — Reviewer is in the eligible-voter pool. (b) No — Reviewer role is review-only; voting is for Members, Chairman, and Secretary. | **Default: (b) No**. Reviewers annotate but do not vote; vote eligibility is configured per vote by Secretary from the Member/Chairman/Secretary pool. Prevents role-boundary ambiguity. | Secretary / Chairman | PH-1 |
-| OQ-003 | **MFA and session/idle timeout**: What MFA policy and session idle-timeout should Keycloak enforce for ACMP users? | (a) MFA required for all users. (b) MFA required for Chairman and Secretary only. (c) MFA optional (user choice). Idle timeout: 30 min / 60 min / 8 hours. | **Default: (b) MFA required for Chairman + Secretary; optional for others. Idle timeout: 60 minutes.** Adjust in Keycloak realm settings — no ACMP code change. | Security Reviewer / Keycloak Admin | PH-0 |
+| OQ-003 | **MFA and session/idle timeout**: What MFA policy and session idle-timeout should Keycloak enforce for ACMP users? | (a) MFA required for all users. (b) MFA required for Chairman and Secretary only. (c) MFA optional (user choice). Idle timeout: 30 min / 60 min / 8 hours. | **Default: (b) MFA required for Chairman + Secretary; optional for others. Idle timeout: 60 minutes.** Adjust in ACMP's **own** Keycloak realm settings (self-hosted — ADR-0015) — no ACMP code change. | Security Reviewer / Keycloak Admin | PH-0 |
 
 ---
 
@@ -149,53 +149,23 @@ Each item has a recommended default that unblocks the build. If the org provides
 
 ---
 
+### Self-Hosted Keycloak & Bundled Dependencies (ADR-0015)
+
+Opened by **ADR-0015** (ACMP self-hosts Keycloak with an ACMP-owned realm; SQL Server is also bundled; v1 has zero external runtime services).
+
+| OQ-ID | Question | Options | Recommendation | Owner | Needed-by |
+|---|---|---|---|---|---|
+| OQ-038 | **Keycloak datastore**: Where does the self-hosted Keycloak keep its own operational store? (Application data stays SQL-Server-only per ADR-0003 — this concerns only Keycloak's internal store.) | (a) Dedicated Postgres-for-Keycloak container in the Compose stack. (b) Keycloak runs on the bundled SQL Server instance. | **Default: (a) dedicated Postgres-for-Keycloak container**; confirm via a **PH-0 spike**. App data stays SQL-only (ADR-0003); the spike decides only where Keycloak's own store lives. Backup/restore must cover whichever store is chosen. | Tech Lead | PH-0 spike |
+| OQ-039 | **Future upstream federation/brokering**: Should ACMP's self-hosted Keycloak later broker/federate to an organizational IdP if one appears? | (a) No upstream federation in v1; keep the realm broker-capable for the future. (b) Plan upstream brokering now. | **Default: (a) no upstream federation in v1**; keep the ACMP realm broker-capable so a future org IdP can be added without rework. Deferred — login is an ACMP-specific credential until/unless an org IdP exists. | Tech Lead / Secretary | Deferred |
+| OQ-040 | **Bundled SQL Server production edition / licensing**: Which SQL Server edition does the bundled production instance run? | (a) Express (free; 10 GB/DB limit, memory caps — verify columnstore + FTS availability). (b) Standard (licensed). | **Default: evaluate at deploy phase P18** — start with Express but **verify columnstore + Full-Text Search are available and that the 10 GB/DB + memory caps fit the ≤20-user footprint**; escalate to Standard (licensed) if limits bind. Confirm licensing with secretary / IT. | Tech Lead / Secretary / IT | P18 (deploy) |
+| OQ-041 | **Realm config drift — applying realm-config changes to an existing deployment**: Keycloak imports the bundled `realm-export.json` only on FIRST run (it never re-imports an existing realm), so committed realm-config changes don't reach a deployment whose Keycloak DB volume already exists. How are such changes applied? | (a) Idempotent reconcile sidecar: a one-shot `keycloak-config` Compose service runs `kcadm` after Keycloak is healthy to ensure critical config (e.g. the `basic` client scope → `sub`), without touching users. (b) Manual: apply via the admin console / scripted import during a maintenance window. (c) `import --override` on every boot. | **Default: (a) idempotent reconcile sidecar (implemented, CHANGE-004).** Re-applies critical client-scope assignments on every deploy, idempotently and WITHOUT wiping runtime user state. **(c) is rejected** — override-on-boot resets the bootstrap admin password / required-actions every restart. Fresh deploys still get everything from `realm-export.json`; the sidecar covers existing realms. Extend the sidecar's `ensure_*` steps as more critical realm config is added. | Tech Lead | Resolved (CHANGE-004) |
+
+---
+
 ## Summary: Decisions Blocking Each Phase
 
 ### PH-0 Blockers (must resolve before PH-1 coding starts)
 - OQ-030 (CI system)
 - OQ-031 (container registry)
 - OQ-032 (NuGet/npm mirror)
-- OQ-024 (TLS policy — for network security review)
-- OQ-003 (MFA + session timeout — for Keycloak realm configuration)
-- OQ-034 (Arabic FTS spike — determines PH-2 search strategy)
-- OQ-020 (standby VM warm vs. cold — for infrastructure provisioning)
-
-### PH-1 Build-Start Blockers (default applied if no org answer)
-- OQ-002 (Reviewer-may-vote default: No)
-- OQ-004 (TopicRequest merged default: Merged)
-- OQ-006 (Source attribute enum — need Secretary validation of proposed list)
-- OQ-008 (Meeting cadence — affects SLA and carry-over logic)
-- OQ-010 (Meeting type enum)
-- OQ-012 (SPA serving default: ASP.NET Core)
-- OQ-013 (OIDC client library default: oidc-client-ts)
-- OQ-014 (SQL clustered-key default: BIGINT IDENTITY)
-- OQ-015 (Ballot storage default: normalized table)
-- OQ-016 (Notification polling default: 30s poll)
-- OQ-017 (Relationship types default: fixed enum)
-- OQ-021 (Mobile breakpoint default: tablet + desktop only)
-- OQ-022 (Chart library default: Recharts with RTL spike)
-- OQ-025 (Dual-control default: audit log + alert)
-- OQ-026 (Malware scan default: MIME type whitelist)
-- OQ-027 (SAST/DAST tooling)
-- OQ-028 (CSP default: domain allowlist)
-
-### PH-2 Blockers
-- OQ-001 (Guest vs. Presenter)
-- OQ-007 / OQ-036 (Invariant categories)
-- OQ-011 (Transcript as ArtifactType)
-- OQ-018 (Impact analysis node cap)
-- OQ-023 (PDF export library)
-
-### PH-3 Blockers
-- OQ-033 (KPI thresholds)
-- OQ-037 (AI LLM endpoint)
-
----
-
-## Traceability
-
-- Resolved decisions (Section A) → `README.md §A` (canonical source) and `adr/ADR-0001` through `ADR-0012`.
-- OQ-### items → `docs/41-raid.md` (ASM-### for assumptions underlying defaults; RISK-### for risk of wrong choice).
-- OQ-### "needed-by-phase" → `docs/36-roadmap.md` (phase exit criteria require blocking OQs to be resolved).
-- OQ-### → `docs/37-implementation-backlog.md` (BL-### items that cannot start until their blocking OQ is resolved).
-- Resolution of any OQ-### creates a new entry in Section A of this document and updates the relevant docs/ADR.
+- OQ-024 (

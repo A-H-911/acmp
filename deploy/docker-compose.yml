@@ -110,6 +110,26 @@ services:
       retries: 24
       start_period: 60s
 
+  # One-shot idempotent realm reconciliation (OQ-041 / CHANGE-004). Keycloak imports the bundled realm
+  # ONLY on first run, so committed realm-config changes never reach an existing Keycloak DB volume. This
+  # job re-applies the critical client-scope assignments (e.g. `basic` → `sub` in the access token) on every
+  # deploy, idempotently and WITHOUT touching users/passwords (unlike a destructive `import --override`).
+  # Reuses the keycloak image (bash + kcadm, no curl/jq) — no new runtime dependency (CON-001). Exits 0.
+  keycloak-config:
+    image: quay.io/keycloak/keycloak:26.0
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    entrypoint: ["bash", "/opt/keycloak/reconcile.sh"]
+    environment:
+      KC_URL: "http://keycloak:8080"
+      ACMP_REALM: "acmp"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
+    restart: "no"
+
   api:
     build:
       context: ..
