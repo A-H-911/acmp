@@ -316,6 +316,8 @@
   padding: var(--sp-2) var(--sp-3);
 }
 .sub-save-saved { color: var(--st-success-fg); }
+/* Submit header sits closer to the form than the backlog header (design = 18px gap). */
+.bk-head.sub-head { margin-block-end: 18px; }
 
 .sub-layout {
   display: grid;
@@ -366,6 +368,8 @@
   border: 1.5px solid var(--border-strong);
 }
 .sub-nav-item.active .sub-nav-num { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+/* Scrolled-past sections show a check (design's "done" step). */
+.sub-nav-num.done { background: var(--st-success-dot); color: #fff; border-color: var(--st-success-dot); }
 
 .sub-form {
   background: var(--surface);
