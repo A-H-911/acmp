@@ -42,7 +42,10 @@
   gap: 2px;
   margin-block-end: var(--sp-4);
   border-block-end: 1px solid var(--border);
+  /* overflow-x:auto alone makes overflow-y compute to auto → a stray vertical
+     scrollbar from the tabs' 2px underline. Pin overflow-y to hidden. */
   overflow-x: auto;
+  overflow-y: hidden;
 }
 .adm-tab {
   height: 40px;
