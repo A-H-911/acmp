@@ -53,7 +53,9 @@ a { color: inherit; }
 .topbar-brand { display: flex; align-items: center; gap: var(--sp-3); min-inline-size: 160px; }
 .brand-id { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-word { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
-.brand-sub { font-size: 11px; color: var(--text-3); }
+/* --text-2 (not the design's --text-3): at 11px on the header surface, text-3 is 4.49:1
+   — just under WCAG AA 4.5:1. AA wins (same bump as the other small chrome labels). */
+.brand-sub { font-size: 11px; color: var(--text-2); }
 /* Brand mark — one source SVG (public/favicon.svg) reused in the header, login, and favicon. */
 .brand-mark { display: block; flex: 0 0 auto; border-radius: 8px; box-shadow: var(--shadow); }
 

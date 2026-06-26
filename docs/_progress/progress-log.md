@@ -63,9 +63,16 @@ parity **103 keys**; prod bundle confirmed to exclude the dev role switcher. Bac
 - **Authority split** for design inter-file conflicts: shell chrome/nav-container metrics →
   `ACMP.dc.html` (Q4); nav-item anatomy → `Navigation & IA`; primitives → `Design System`.
 
-**Remaining (confirmatory).** Live-browser **axe (WCAG 2.2 AA) + RTL/dark** visual pass across
-shell/Login/Admin (AC-040/041/045/046). The deterministic gates + source-verified token contrast
-(byte-match) + P3's prior live-axe on the shell hold; the live re-render is the confirmatory step.
+**Live visual pass — done (2026-06-26).** Playwright across the shell + Admin in **EN-light and
+AR-RTL-dark** (dev stub): **live in-browser axe (WCAG 2.2 AA) clean in both** — after fixing one
+real gap the jsdom axe can't compute: `.brand-sub` was `--text-3` on the `--header` surface =
+**4.49:1** (just under AA 4.5); bumped to `--text-2` (same call CHANGE-002 made for the other small
+chrome labels). RTL fully mirrors (sidebar→inline-end, active accent rail, underline tabs, search),
+dark surfaces legible, the **primary plinth mark** renders in the header. Screenshots captured
+(`acmp-{dashboard,admin}-{en-light,ar-rtl-dark}.png`). (Login's visual needs the real IdP flow —
+the dev stub auto-authenticates so `/login` redirects; Login stays source-verified + axe-clean. The
+populated Admin table is covered by unit + axe tests; the dev-only run has no backend so the API
+fails → the composed ErrorState shows.)
 
 **Next.** Push branch → PR → monitor remote CI to green → review GO → squash-merge. Then P5.
 
