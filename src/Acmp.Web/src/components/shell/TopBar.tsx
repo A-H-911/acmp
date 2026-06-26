@@ -54,7 +54,7 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar-brand">
-        <img className="brand-mark" src="/favicon.svg" alt="" width={30} height={30} />
+        <img className="brand-mark" src="/acmp-mark.svg" alt="" width={30} height={30} />
         <span className="brand-id">
           <span className="brand-word">{t('app.name')}</span>
           <span className="brand-sub">{t('app.committee')}</span>

@@ -50,7 +50,7 @@ export function LoginPage() {
         )}
 
         <div className="card card-pad login-card">
-          <img className="brand-mark login-mark" src="/favicon.svg" alt="" width={60} height={60} />
+          <img className="brand-mark login-mark" src="/acmp-mark.svg" alt="" width={60} height={60} />
           <h1 className="login-title">{t('app.name')}</h1>
           <div className="login-appname">{t('app.tagline')}</div>
           <hr className="login-divider" />
