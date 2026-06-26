@@ -468,7 +468,8 @@
 .sub-file-ic { inline-size: 30px; block-size: 30px; border-radius: var(--r-md); background: var(--primary-tint); color: var(--accent); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .sub-file-main { flex: 1 1 auto; min-inline-size: 0; }
 .sub-file-name { display: block; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sub-file-meta { display: block; font-size: 11px; color: var(--text-3); }
+/* text-2 not text-3: attachment meta must clear AA on both --surface (submit) and --bg-app (detail). */
+.sub-file-meta { display: block; font-size: 11px; color: var(--text-2); }
 .sub-file-rm { inline-size: 30px; block-size: 30px; border: 0; background: transparent; color: var(--text-3); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; }
 .sub-file-rm:hover { background: var(--subtle); color: var(--st-danger-fg); }
 
@@ -486,3 +487,143 @@
 .sub-foot-note { font-size: 12px; color: var(--text-2); display: inline-flex; align-items: center; gap: var(--sp-2); }
 .sub-foot-err { margin-inline-start: auto; }
 .sub-foot-actions { display: flex; gap: var(--sp-2); margin-inline-start: auto; }
+
+/* ============ Topic detail ============ */
+.dt-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  margin-block-end: 18px;
+}
+.dt-head-main { min-inline-size: 0; flex: 1 1 420px; }
+.dt-chips { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-block-end: var(--sp-2); }
+.dt-key {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px 9px;
+}
+.dt-urgent {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 23px;
+  padding-inline: 9px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+}
+.dt-title { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.3; }
+.dt-meta {
+  margin-block-start: var(--sp-3);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.dt-owner { display: inline-flex; align-items: center; gap: 7px; }
+.dt-owner b { color: var(--text); font-weight: 600; }
+.dt-owner .bk-avatar { background: var(--primary); color: var(--primary-fg); inline-size: 22px; block-size: 22px; }
+.dt-created { display: inline-flex; align-items: center; gap: 6px; }
+.dt-actions { display: flex; gap: var(--sp-2); flex: 0 0 auto; }
+
+.dt-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--sp-5);
+  align-items: start;
+}
+@media (max-width: 860px) { .dt-grid { grid-template-columns: 1fr; } }
+.dt-main { min-inline-size: 0; }
+
+.dt-overview { display: flex; flex-direction: column; gap: var(--sp-5); margin-block-start: var(--sp-5); }
+.dt-section-label {
+  margin: 0 0 var(--sp-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  /* text-2 not text-3: this label sits on --bg-app where text-3 is 4.02:1 (< AA). */
+  color: var(--text-2);
+}
+.dt-body { margin: 0; font-size: 14px; line-height: 1.65; color: var(--text); white-space: pre-wrap; }
+.dt-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+@media (max-width: 560px) { .dt-two { grid-template-columns: 1fr; } }
+
+/* discussion */
+.dt-discussion { margin-block-start: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+.dt-comments { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.dt-comment { display: flex; gap: var(--sp-3); }
+.dt-comment .bk-avatar { inline-size: 32px; block-size: 32px; font-size: 11.5px; }
+.dt-comment-main { flex: 1 1 auto; min-inline-size: 0; }
+.dt-comment-head { display: flex; align-items: center; gap: var(--sp-2); margin-block-end: 4px; font-size: 13px; }
+.dt-comment-body {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  border-start-start-radius: 2px;
+  padding: 10px 13px;
+  white-space: pre-wrap;
+}
+.dt-compose { display: flex; flex-direction: column; gap: var(--sp-2); }
+.dt-compose-foot { display: flex; justify-content: flex-end; }
+
+/* history timeline */
+.dt-timeline { list-style: none; margin: var(--sp-5) 0 0; padding: 0; }
+.dt-tl-item { display: flex; gap: var(--sp-4); padding-block-end: 18px; position: relative; }
+.dt-tl-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  inset-block: 14px 0;
+  inset-inline-start: 5px;
+  inline-size: 2px;
+  background: var(--border);
+}
+.dt-tl-dot {
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: var(--r-full);
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+  z-index: 1;
+  box-shadow: 0 0 0 3px var(--bg-app);
+  background: var(--st-neutral-dot);
+}
+.dt-tl-dot.tone-neutral { background: var(--st-neutral-dot); }
+.dt-tl-dot.tone-info { background: var(--st-info-dot); }
+.dt-tl-dot.tone-scheduled { background: var(--st-sched-dot); }
+.dt-tl-dot.tone-warn { background: var(--st-warn-dot); }
+.dt-tl-dot.tone-success { background: var(--st-success-dot); }
+.dt-tl-dot.tone-danger { background: var(--st-danger-dot); }
+.dt-tl-text { font-size: 13.5px; color: var(--text); }
+.dt-tl-reason { color: var(--text-2); }
+/* text-2 not text-3: timeline meta sits on --bg-app where text-3 is 4.02:1 (< AA). */
+.dt-tl-meta { font-size: 11.5px; color: var(--text-2); margin-block-start: 2px; }
+
+/* relationships sidebar */
+.dt-rel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: sticky;
+  inset-block-start: 74px;
+}
+.dt-rel-head { padding: 14px 16px; border-block-end: 1px solid var(--border); background: var(--subtle); }
+.dt-rel-title { display: flex; align-items: center; gap: var(--sp-2); color: var(--accent); }
+.dt-rel-title h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--text); }
+.dt-rel-sub { font-size: 11.5px; color: var(--text-2); margin-block-start: 3px; }
+.dt-rel-body { padding: var(--sp-2); }

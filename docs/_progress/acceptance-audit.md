@@ -104,6 +104,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > Keycloak PKCE): `POST /api/topics` → 201 (TOP-2026-002) and `POST /{id}/attachments` → 201 on **real MinIO**
 > (AC-050 → Met); submit form confirmed in AR/RTL with full i18n. See progress-log P5b PR2 entry.
 
+> P5b PR3 update (2026-06-26): Topic detail (read + Overview/Discussion/History + empty relationships sidebar)
+> wired to GET /api/topics/{key}; comment POST by Guid id (BL-033). **No verdict flips** — read + comment-display
+> surface. **AC-009/034** stay Partial: the owner is shown but the live per-topic **edit**/lock flow is a
+> deliberate follow-up slice. The History tab surfaces the read side of AC-032's immutable status/rejection
+> events. Web 87/87 (incl. axe AA), i18n parity 249, build/oxlint clean; detail AA contrast verified offline
+> (three text-3-on-bg-app spots = 4.02 fixed → text-2). Live detail pass (real GET + comment POST, AR/RTL)
+> recommended. See progress-log P5b PR3 entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

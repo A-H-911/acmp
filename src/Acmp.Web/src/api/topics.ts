@@ -112,3 +112,75 @@ export function uploadTopicAttachment(topicId: string, file: File): Promise<unkn
   form.append('file', file);
   return api<unknown>(`/topics/${topicId}/attachments`, { method: 'POST', body: form });
 }
+
+// Topic detail (GET /api/topics/{key}). Read by key; comment/edit mutations are by Guid id.
+export interface TopicHistoryEntry {
+  from: string;
+  to: string;
+  reason: string | null;
+  actorName: string;
+  occurredAt: string;
+}
+export interface TopicComment {
+  id: string;
+  body: string;
+  authorName: string;
+  postedAt: string;
+}
+export interface TopicAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedByName: string;
+  uploadedAt: string;
+}
+export interface TopicDetail {
+  id: string;
+  key: string;
+  title: string;
+  description: string;
+  justification: string;
+  type: string;
+  status: string;
+  urgency: string;
+  scope: string;
+  source: string;
+  streams: string[];
+  systems: string[];
+  tags: string[];
+  ownerId: string | null;
+  ownerName: string | null;
+  submittedByName: string;
+  priority: number;
+  ageDays: number;
+  slaBreached: boolean;
+  createdAt: string;
+  revisitOn: string | null;
+  history: TopicHistoryEntry[];
+  comments: TopicComment[];
+  attachments: TopicAttachment[];
+}
+
+export function useTopicDetail(key: string | undefined) {
+  return useQuery({
+    queryKey: ['topics', 'detail', key],
+    queryFn: () => api<TopicDetail>(`/topics/${key}`),
+    enabled: !!key,
+    retry: false, // a 404 (unknown key) shouldn't retry — surface "not found" immediately
+  });
+}
+
+/** Post a discussion comment (BL-033). Body field is `reason` (the endpoint's ReasonBody). */
+export function useAddTopicComment(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, body }: { topicId: string; body: string }) =>
+      api<{ id: string }>(`/topics/${topicId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: body }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'detail', key] }),
+  });
+}

@@ -259,5 +259,32 @@
       "fileSize": "Each file must be {{max}} MB or smaller."
     }
   },
+  "detail": {
+    "notFoundTitle": "Topic not found",
+    "notFoundBody": "This topic doesn’t exist or may have been removed.",
+    "addAgenda": "Add to agenda",
+    "edit": "Edit",
+    "owner": "Owner",
+    "created": "Created {{date}}",
+    "tab": { "overview": "Overview", "discussion": "Discussion", "history": "History" },
+    "sec": {
+      "description": "Description",
+      "justification": "Justification",
+      "streams": "Affected streams",
+      "systems": "Affected systems",
+      "attachments": "Attachments"
+    },
+    "commentLabel": "Add a comment",
+    "commentPlaceholder": "Add a comment…",
+    "post": "Post comment",
+    "noComments": "No comments yet. Start the discussion.",
+    "noHistory": "No history yet.",
+    "rel": {
+      "title": "Relationships",
+      "sub": "Traceability — both directions",
+      "emptyTitle": "No linked items yet",
+      "emptyBody": "Decisions, ADRs, actions, and risks will appear here as they’re linked to this topic in later phases."
+    }
+  },
   "notFound": { "body": "We couldn't find that page." }
 }
