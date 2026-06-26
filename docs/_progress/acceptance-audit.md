@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-06-25
+updated: 2026-06-26
 ---
 
 # ACMP Acceptance Audit
@@ -58,6 +58,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > banners, AR tagline fix): their **live axe (WCAG 2.2 AA) + RTL/dark re-verification is pending a
 > browser pass** and is the confirmatory step before re-asserting those verdicts. See progress-log
 > CHANGE-002 entry.
+>
+> CHANGE-003 update (2026-06-26): local-design source of truth + full shared component
+> library (Design System §05–§12) + screen composition. **No AC verdict changes** — this is
+> visual/composition reconciliation against the local `.dc.html` files plus new reusable
+> primitives, not new features. Deterministic gates green (web 54/54, prod build 131 kB gz,
+> i18n parity 103); design targets source-verified against the local files; Breadcrumb XSS
+> hardening added. Touches the a11y/RTL surfaces behind **AC-040/041/045/046** (shell/nav
+> metrics, Admin/Login composition, primary logo mark): their **live axe (WCAG 2.2 AA) +
+> RTL/dark re-verification remains the confirmatory step** (component a11y semantics are now
+> unit-tested; token contrast is a byte-match to the design). See progress-log CHANGE-003.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|

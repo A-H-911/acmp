@@ -2,13 +2,72 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-06-25
+updated: 2026-06-26
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## CHANGE-003 — Local-design source of truth + shared component library + screen composition
+
+### 2026-06-26 — Re-did the UI for fidelity against the LOCAL `/ACMP product context/*.dc.html`
+
+**Why.** The design source of truth moved from the claude_design MCP to the **local
+`.dc.html` files** at the repo root. Re-verified the built UI against those files directly
+(file tools, not MCP) and built out the full shared component library so every screen
+composes from it rather than re-styling per screen (instruction #3 / guardrail 14).
+
+**Approach.** Devil's-advocate review first (verified claims by direct inspection, not
+transcripts): tokens were a **byte-for-byte value match** to `ACMP Design System.dc.html`
+(CHANGE-002 held); the design folder is **structurally excluded** from every gate (frontend
+job is scoped to `src/Acmp.Web`, scripts scan only their targets, backend is `acmp.sln`);
+demo scaffolding (`greetMap`/`isCoord`/`defaultRole`/Tweaks panel) was never ported. So the
+real work was the **shared library + screen composition**, not a token rebuild.
+
+**Done (8 ordered commits on `chore/ui-fidelity-local-design`).**
+- **Reference folder vendored** (`3deae68`) — committed `/ACMP product context/` as read-only,
+  in-repo, reproducible source of truth (inert: never imported/served/built/linted) (Q1).
+- **Shared component library** (`98749c4`,`c5393ad`,`f9ef21c`,`026df88`) — the full Design
+  System §05–§12 set, token-driven, RTL/dark, a11y, each with tests, **strings via props
+  (zero i18n-parity impact)**: Button (variant×size, icon-only, loading), Field+Input+Textarea,
+  Checkbox/Radio/Toggle, Tabs, Segmented, Tag/Badge, Breadcrumb, Pagination, Menu, Dialog,
+  Toast, Select, Table, MultiSelect, DatePicker (+ existing Card/StatusChip/states/SortableList).
+- **Security fix** (in `c5393ad`) — Breadcrumb `href` scheme allowlist (XSS hardening; flagged
+  by the automated commit-review): only relative/#/http(s)/mailto link; `javascript:`/`data:`/
+  malformed fall through to text. Regression test added.
+- **Shell + nav metrics** (`0ae7093`, Q4 = `ACMP.dc.html` authority) — header 60→58px, gap 18,
+  pad 16/18, **solid `var(--header)` (dropped the Design-System-doc translucent blur)**; sidebar
+  244→248px, padding 20/14, offset pinned to the 58px header (resolved the design file's own
+  58-vs-60 self-inconsistency). **Q3:** `DevRoleSwitcher` now dynamically imported behind
+  `import.meta.env.DEV` → tree-shaken out of the prod bundle (verified: no DevRoleSwitcher chunk).
+- **Admin screen composition** (`bf1b82b`) — `UsersMembership` now composes shared Tabs/Table/
+  Button/Tag/StatusChip/Icon (was bespoke `.adm-*` table+tabs+provision + hand-rolled inline
+  SVGs); `administration.css` trimmed to domain directory cells only. **Behavior unchanged — all
+  8 existing behavior-focused tests pass untouched.** Login already composed Button/Card/states.
+- **Logo fix** (`51e970f`) — header + login use the **primary 4-stroke 'plinth' mark**
+  (`public/acmp-mark.svg`); `favicon.svg` (simplified) stays the browser-tab icon, per
+  `Logo.dc.html` (16px favicon vs 24px+ UI header).
+
+**Verification (deterministic, green).** `tsc -b` + `vite build` clean (**131 kB gz JS** <300 kB
+budget, CSS 17.8 kB gz); **web 54/54 tests** (37 prior + 17 new component/security tests); i18n
+parity **103 keys**; prod bundle confirmed to exclude the dev role switcher. Backend untouched.
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **No new ADR** — visual/composition reconciliation to the approved design; no architecture change.
+- **Q2 = full library** (operator chose full over atoms-only) — built all §05–§12 primitives; the
+  §07 pickers (MultiSelect/DatePicker) have no consumer until P5's topic form but are built + tested.
+- **Authority split** for design inter-file conflicts: shell chrome/nav-container metrics →
+  `ACMP.dc.html` (Q4); nav-item anatomy → `Navigation & IA`; primitives → `Design System`.
+
+**Remaining (confirmatory).** Live-browser **axe (WCAG 2.2 AA) + RTL/dark** visual pass across
+shell/Login/Admin (AC-040/041/045/046). The deterministic gates + source-verified token contrast
+(byte-match) + P3's prior live-axe on the shell hold; the live re-render is the confirmatory step.
+
+**Next.** Push branch → PR → monitor remote CI to green → review GO → squash-merge. Then P5.
 
 ---
 
