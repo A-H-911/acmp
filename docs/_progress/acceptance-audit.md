@@ -92,8 +92,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (enum→label, streams, null-owner, age); EN-light faithful to the design; AR+dark RTL-mirrored with full i18n;
 > AA contrast computed offline (all combos pass, both themes). Found a pre-existing app-wide auth-bootstrap race
 > (hard-reload of a data route → transient 401 until retry) — shared-infra follow-up, not P5b. AC-043 (keyboard
-> DnD on backlog) re-slotted to P5b PR4 (all DnD in one
-> slice); AC-039/047/048 → PR2 (submit form); AC-009/034 live edit/owner → PR3. See progress-log P5b PR1 entry.
+> DnD on backlog) re-slotted to P5b PR4 (all DnD in one slice). See progress-log P5b PR1 entry.
+
+> P5b PR2 update (2026-06-26): Submit topic form (W1) wired to POST /api/topics. **Met (newly): AC-039**
+> (locale switch preserves form data) and **AC-047** (in-app route-change guard via useBlocker, after migrating
+> to a data router). **Partial (newly): AC-048** (beforeunload wired; native dialog not unit-testable in jsdom
+> → live pass). AC-030 gains client-side localized validation; AC-049/050 gain the submit upload UI (live MinIO
+> → live pass). Web 79/79 (incl. axe AA), i18n parity 226, build/oxlint clean; submit-screen AA contrast
+> verified offline (three light-mode text-3 spots fixed → text-2). The PR1 auth-bootstrap 401 was fixed in #12
+> (token getter wired during render), already on main. **Live authenticated pass done** (Playwright, real
+> Keycloak PKCE): `POST /api/topics` → 201 (TOP-2026-002) and `POST /{id}/attachments` → 201 on **real MinIO**
+> (AC-050 → Met); submit form confirmed in AR/RTL with full i18n. See progress-log P5b PR2 entry.
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
@@ -126,7 +135,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-027 | Decisions | Pending | — | Issued decision immutable |
 | AC-028 | Decisions | Pending | — | Supersession back-link |
 | AC-029 | Decisions | Pending | — | Downstream link required to issue |
-| AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests | Required-field validation + HTTP 400 + no record; localized messages → BL-016 |
+| AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests + SubmitTopic.test (client validation) | Server validation + HTTP 400 + no record; submit form now shows localized client-side required-field errors; server-side localized messages → BL-016 |
 | AC-031 | Topic lifecycle | Met | TopicApplicationTests + TopicApiTests (reject no-reason → 400) | Mandatory rejection rationale enforced |
 | AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests | Immutable rejection history event persisted; submitter notify → Notifications phase |
 | AC-033 | Topic lifecycle | Partial | TopicTests | Rejection event append-only (no mutation surface); DB-enforced immutability + hash-chain → BL-066 |
@@ -135,7 +144,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-036 | MoM | Pending | — | Published MoM → versioned supersede |
 | AC-037 | MoM | Pending | — | Change-request → back to Draft |
 | AC-038 | MoM | Pending | — | Approve → Published + notify |
-| AC-039 | Localization | Pending | — | Locale switch preserves form data |
+| AC-039 | Localization | Met | SubmitTopic.test (locale-switch preserves value) | Submit form state survives an EN↔AR switch (React state, form not keyed on language) |
 | AC-040 | Localization | Met | i18n/direction.test.ts + axe render | dir=rtl mirrored layout — sidebar→inline-end, Arabic font, logical CSS; verified live (P3) |
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
@@ -143,10 +152,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
-| AC-047 | Unsaved-work | Pending | — | Route-change guard |
-| AC-048 | Unsaved-work | Pending | — | beforeunload dialog |
-| AC-049 | File upload | Partial | TopicAttachmentTests (validator) | Size/MIME rejection (400, names the constraint); localized message → BL-016 |
-| AC-050 | File upload | Partial | TopicAttachmentTests (handler) | Upload → IFileStore + SQL metadata + DocumentAttached audit (substituted store); live MinIO → P5b |
+| AC-047 | Unsaved-work | Met | SubmitTopic.test (guard dialog on dirty nav) | useBlocker (data router) → confirm Dialog on in-app route change while the submit form is dirty; Keep editing / Leave |
+| AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
+| AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
+| AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
 | AC-051 | Notifications | Pending | — | Agenda publish → in-app ≤5s |
 | AC-052 | Notifications | Pending | — | Vote-open notification deep link |
 | AC-053 | Notifications | Pending | — | In-app only, no email/Webex |
@@ -164,9 +173,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 10 Met (AC-001/002/008/031/040/042/045/046/058/059) · 20 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/049/050/057 + AC-041) · 36 Pending.
-(Through P5b PR1 — backlog read path; P5a backend + live SQL round-trip. No verdict change in PR1.)
+**Summary:** 66 ACs · 13 Met (AC-001/002/008/031/039/040/042/045/046/047/050/058/059) · 20 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/057 + AC-041) · 33 Pending.
+(Through P5b PR2 — submit topic form + live pass. PR2 flipped AC-039/047 → Met, AC-050 → Met (live MinIO), AC-048 → Partial.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

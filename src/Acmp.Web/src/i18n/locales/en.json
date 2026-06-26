@@ -198,5 +198,66 @@
       "Converted": "Converted"
     }
   },
+  "submit": {
+    "title": "Submit a topic",
+    "subtitle": "Provide enough context for the committee to triage and schedule.",
+    "sectionsLabel": "Form sections",
+    "saved": "Draft saved",
+    "saving": "Saving…",
+    "autosaveNote": "Draft saves automatically on this device as you type.",
+    "saveDraft": "Save draft",
+    "submit": "Submit for triage",
+    "submitError": "Couldn’t submit the topic. Check the form and try again.",
+    "fType": "Topic type",
+    "fTitle": "Title",
+    "fTitleHelp": "Be specific — this appears in the backlog and agenda.",
+    "fTitlePh": "e.g. Adopt Keycloak as the standard IdP",
+    "fDescription": "Description",
+    "fDescriptionPh": "Describe the proposed change and its scope…",
+    "fJustification": "Why now",
+    "fJustificationPh": "Risks of inaction, dependencies, deadlines…",
+    "fStreams": "Affected streams",
+    "fStreamsPh": "Type a stream and press Enter…",
+    "fSystems": "Affected systems",
+    "fSystemsPh": "Type a system and press Enter…",
+    "dropFiles": "Choose files to upload",
+    "dropHint": "PDF, PNG, SVG, DOCX · up to 50 MB",
+    "guardTitle": "Leave without submitting?",
+    "guardBody": "This topic hasn’t been submitted to the committee. Your draft is saved on this device, so you can finish it later.",
+    "keepEditing": "Keep editing",
+    "leave": "Leave",
+    "sec": {
+      "type": "Type & title",
+      "typeHelp": "Classify the request and give it a clear, specific title.",
+      "justification": "Justification",
+      "justificationHelp": "Explain the problem and why the committee should act.",
+      "scope": "Affected scope",
+      "scopeHelp": "Tag the streams and systems this topic touches.",
+      "attachments": "Attachments & diagrams",
+      "attachmentsHelp": "Add evaluations, diagrams, or supporting documents.",
+      "urgency": "Urgency",
+      "urgencyHelp": "Helps the Secretary prioritize triage."
+    },
+    "typeDesc": {
+      "ResearchDiscovery": "A spike or investigation",
+      "ArchitectureDecision": "A technical decision needing committee approval",
+      "EnhancementInnovation": "An improvement or new capability",
+      "GovernanceStandardization": "A standard, policy, or invariant"
+    },
+    "urgencyDesc": {
+      "Normal": "Standard committee timeline",
+      "Urgent": "Blocks delivery or has a hard deadline",
+      "Critical": "Severe or time-critical risk"
+    },
+    "err": {
+      "type": "Select a topic type.",
+      "title": "Title is required.",
+      "titleLong": "Title must be 120 characters or fewer.",
+      "description": "Description is required.",
+      "justification": "Justification is required.",
+      "streams": "Add at least one affected stream.",
+      "fileSize": "Each file must be {{max}} MB or smaller."
+    }
+  },
   "notFound": { "body": "We couldn't find that page." }
 }

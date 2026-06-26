@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 // Self-hosted fonts (bundled by Vite, not a CDN) — works air-gapped (CON-001).
@@ -21,17 +21,17 @@ import './styles/components.css';
 import './styles/forms.css';
 import './styles/controls.css';
 import './styles/overlays.css';
-import App from './App.tsx';
+import { appRoutes } from './App.tsx';
 import { AuthProvider } from './auth/AuthProvider';
 import { queryClient } from './api/queryClient';
+
+const router = createBrowserRouter(appRoutes);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <RouterProvider router={router} />
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

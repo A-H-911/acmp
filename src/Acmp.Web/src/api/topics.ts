@@ -4,7 +4,7 @@
  * server); the UI localizes them. Read is by key (GET /{key}); every mutation is
  * by Guid id (/{id}/…) — so summaries/detail both carry `id` for write calls.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
 
 export interface TopicSummary {
@@ -71,4 +71,44 @@ export function useBacklog(params: BacklogParams) {
     // Keep the previous page visible while the next filter/page resolves (no flash back to skeleton).
     placeholderData: (prev) => prev,
   });
+}
+
+// W1 submit (POST /api/topics). Enums travel as string names; Source is defaulted client-side
+// (CommitteeMember) and Scope is derived server-side — neither has a picker on the form (P5a decision).
+export interface SubmitTopicInput {
+  title: string;
+  description: string;
+  justification: string;
+  type: string;
+  urgency: string;
+  source: string;
+  streams: string[];
+  systems: string[];
+  tags: string[];
+}
+
+export interface SubmitTopicResult {
+  id: string;
+  key: string;
+}
+
+export function useSubmitTopic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: SubmitTopicInput) =>
+      api<SubmitTopicResult>('/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
+  });
+}
+
+/** Upload one staged file to a created topic (AC-049/050). Multipart — no Content-Type header so the
+ *  browser sets the boundary; the field name is `file` to match the IFormFile parameter. */
+export function uploadTopicAttachment(topicId: string, file: File): Promise<unknown> {
+  const form = new FormData();
+  form.append('file', file);
+  return api<unknown>(`/topics/${topicId}/attachments`, { method: 'POST', body: form });
 }
