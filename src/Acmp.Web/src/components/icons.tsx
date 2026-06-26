@@ -10,7 +10,8 @@ export type IconName =
   | 'home' | 'backlog' | 'calendar' | 'session' | 'decision' | 'action' | 'adr' | 'risk'
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
-  | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login';
+  | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
+  | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -47,6 +48,10 @@ const PATHS: Record<IconName, ReactNode> = {
   logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></>,
   check: <path d="M20 6L9 17l-5-5" />,
   login: <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />,
+  x: <path d="M18 6L6 18M6 6l12 12" />,
+  checkCircle: <><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></>,
+  infoCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
+  warnTriangle: <><path d="M12 4l9 16H3L12 4z" /><path d="M12 11v3M12 17h.01" /></>,
 };
 
 interface IconProps {

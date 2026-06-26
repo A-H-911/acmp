@@ -6,6 +6,7 @@ import { Field, Input } from './Field';
 import { Checkbox, Toggle } from './Choice';
 import { Tabs } from './Tabs';
 import { Badge, Tag } from './Chip';
+import { Breadcrumb } from './Breadcrumb';
 
 describe('Button', () => {
   it('loading disables the button and marks it busy', () => {
@@ -84,5 +85,23 @@ describe('Chip', () => {
     );
     expect(screen.getByText('Identity')).toBeInTheDocument();
     expect(screen.getByLabelText('3 unread')).toHaveTextContent('3');
+  });
+});
+
+describe('Breadcrumb', () => {
+  it('drops unsafe href schemes (renders as text, never a javascript: link)', () => {
+    render(
+      <Breadcrumb
+        ariaLabel="Breadcrumb"
+        items={[
+          { label: 'Home', href: '/' },
+          // eslint-disable-next-line no-script-url
+          { label: 'Evil', href: 'javascript:alert(1)' },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(screen.queryByRole('link', { name: 'Evil' })).toBeNull();
+    expect(screen.getByText('Evil')).toBeInTheDocument();
   });
 });
