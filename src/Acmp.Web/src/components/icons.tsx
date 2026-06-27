@@ -12,7 +12,8 @@ export type IconName =
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
   | 'plus' | 'minus' | 'chevron' | 'chevronDown' | 'chevronUp' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
   | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle' | 'clock' | 'user' | 'send'
-  | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel';
+  | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel'
+  | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -67,6 +68,13 @@ const PATHS: Record<IconName, ReactNode> = {
   download: <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />,
   upload: <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />,
   funnel: <path d="M5 4h14M7 4v6l-3 8h16l-3-8V4" />,
+  // Administration sub-tab glyphs (paths lifted from ACMP Administration.dc.html for fidelity).
+  usersGroup: <path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M11 11a4 4 0 100-8 4 4 0 000 8zM21 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8" />,
+  template: <path d="M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM9 13h6M9 17h4" />,
+  activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  stream: <path d="M3 12h4l3 8 4-16 3 8h4" />,
+  shieldUser: <path d="M12 2l8 4.5v9L12 22l-8-4.5v-9L12 2zM12 7a3 3 0 100 6 3 3 0 000-6zM7.5 18a4.5 4.5 0 019 0" />,
+  cog: <path d="M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />,
 };
 
 interface IconProps {

@@ -228,6 +228,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > tablet) covered by the same token/logical-CSS mechanism; automated pixel-diff VR → P17. See progress-log
 > "P3 foundation refresh".
 
+> P4 UI refresh (2026-06-27): rebuilt Administration → Users & Membership to the updated
+> `ACMP Administration.dc.html` — 7-tab strip (Users active, six later-phase placeholders disabled), richer
+> directory (committee `.adm-mchip` chips with `×` + inert dashed `+add` + read-only voting switch, assignments
+> check + honest `—`, per-row view button) and a new **read-only user-detail** panel (in-place, API-backed data
+> only — no invite). **Removed** the "Provision via Keycloak" button + the invite panel (conflicts ADR-0015,
+> manual Keycloak provisioning → **OQ-042**). **No verdict flips** — visual/fidelity + a read-only view.
+> **AC-059** stays **Met** (directory + detail unit-tested + axe-clean). Touches **AC-040/045/046** (the admin
+> screens render RTL-mirrored + axe-clean in the component tests) and **AC-041** (stays Partial → automated VR
+> P17). Web 189/189 (incl. directory + detail axe AA cases), i18n parity 427, tsc + vite build + oxlint clean,
+> administration.css grep = zero physical properties. Live authenticated VR (8 combos vs the `.dc.html`) is the
+> recommended confirmatory step — blocked on the operator setting the `acmp-admin` dev password. See progress-log
+> "P4 UI refresh".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

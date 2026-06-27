@@ -1,7 +1,8 @@
 /*
- * Administration → Users & Membership. Composes shared Table / Tabs / Button / Tag / Icon;
- * only the domain-specific directory cells are styled here. Layout uses CSS logical properties
- * so it mirrors cleanly under [dir="rtl"] with no per-direction overrides.
+ * Administration → Users & Membership. Composes shared Table / Tabs / StatusChip / Icon / states;
+ * only the domain-specific directory cells + the read-only user-detail panel are styled here.
+ * Layout uses CSS logical properties so it mirrors cleanly under [dir="rtl"] with no per-direction
+ * overrides (the two chevron flips below are the deliberate exceptions — direction-bearing glyphs).
  */
 
 .adm-head {
@@ -10,10 +11,10 @@
   justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
-  margin-block-end: var(--sp-3);
+  margin-block-end: 14px;
 }
 .adm-head-sub {
-  margin-block-start: var(--sp-1);
+  margin-block-start: 5px;
   font-size: 13px;
   color: var(--text-2);
 }
@@ -26,8 +27,8 @@
   background: var(--st-info-bg);
   border: 1px solid var(--st-info-dot);
   border-radius: var(--r-lg);
-  padding: var(--sp-3) var(--sp-4);
-  margin-block-end: var(--sp-4);
+  padding: 11px 14px;
+  margin-block-end: 14px;
   font-size: 12.5px;
   line-height: 1.55;
   color: var(--st-info-fg);
@@ -41,14 +42,14 @@
 .adm-filters {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 9px;
   flex-wrap: wrap;
-  margin-block-end: var(--sp-4);
+  margin-block-end: 14px;
 }
 .adm-filter {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-1);
+  gap: 6px;
   height: 34px;
   padding-inline: var(--sp-3);
   border: 1px solid var(--border);
@@ -73,7 +74,7 @@
 .adm-user {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: 11px;
   min-inline-size: 0;
 }
 .adm-avatar {
@@ -102,6 +103,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: start;
 }
 .adm-role {
   display: inline-flex;
@@ -116,7 +118,7 @@
 .adm-lock {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-1);
+  gap: 5px;
   font-size: 11px;
   color: var(--text-3);
 }
@@ -128,12 +130,47 @@
 }
 .adm-chips {
   display: flex;
-  gap: var(--sp-1);
+  gap: 5px;
   flex-wrap: wrap;
   align-items: center;
 }
+/* Committee / stream chip — matches the design's `.mchip` (read display this phase). */
+.adm-mchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  block-size: 22px;
+  padding-inline: 8px;
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.adm-mchip svg {
+  color: var(--text-3);
+}
 .adm-observer {
   font-style: italic;
+}
+/* Add-committee — editing affordance, inert this phase (stream assignment → BL-024). */
+.adm-add {
+  inline-size: 22px;
+  block-size: 22px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-3);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.adm-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 .adm-vote {
   display: inline-flex;
@@ -142,8 +179,14 @@
   font-size: 11.5px;
   font-weight: 500;
 }
-/* Read-only voting-eligibility switch — reflects Keycloak-sourced membership; editing
-   eligibility lands with Voting (P9), so it is a disabled presentational control. */
+.adm-vote-on {
+  color: var(--text);
+}
+.adm-vote-off {
+  color: var(--text-3);
+}
+/* Read-only voting-eligibility switch — editing eligibility lands with Voting (P9), so it is a
+   disabled presentational control. */
 .adm-switch {
   position: relative;
   inline-size: 38px;
@@ -173,9 +216,143 @@
 .adm-assign {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-1);
+  gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-2);
+  color: var(--text);
   font-feature-settings: 'tnum';
+}
+.adm-assign svg {
+  color: var(--text-3);
+}
+.adm-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  inline-size: 100%;
+}
+/* View user detail — opens the read-only detail panel. */
+.adm-view {
+  margin-inline-start: auto;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-3);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.adm-view:hover {
+  background: var(--subtle);
+  color: var(--text);
+}
+/* Forward chevron points toward the inline-end; mirror it in RTL. */
+[dir='rtl'] .adm-view svg {
+  transform: scaleX(-1);
+}
+
+/* ---- Read-only user detail (no invite, per ADR-0015) ---- */
+.adm-detail-back {
+  margin-block-end: 14px;
+}
+.adm-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.adm-back:hover {
+  color: var(--text);
+}
+/* Back chevron points toward the inline-start (LTR: flip the forward glyph; RTL: as-authored). */
+.adm-back svg {
+  transform: scaleX(-1);
+}
+[dir='rtl'] .adm-back svg {
+  transform: none;
+}
+.adm-detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-block-end: 16px;
+}
+.adm-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px 20px 16px;
+}
+.adm-avatar-lg {
+  inline-size: 46px;
+  block-size: 46px;
+  font-size: 15px;
+}
+.adm-detail-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+.adm-detail-role {
+  margin-inline-start: auto;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: end;
+}
+.adm-detail-facts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 20px;
+  padding: 0 20px 18px;
+}
+.adm-fact-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-block-end: 4px;
+}
+.adm-fact-value {
+  font-size: 13px;
+  color: var(--text);
+}
+.adm-detail-section-head {
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 13px;
+  font-weight: 600;
+}
+.adm-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border-soft);
+  font-size: 13px;
+  color: var(--text);
+}
+.adm-detail-row:last-child {
+  border-block-end: 0;
+}
+.adm-detail-empty {
+  padding: 16px 18px;
+  font-size: 13px;
+  color: var(--text-2);
 }

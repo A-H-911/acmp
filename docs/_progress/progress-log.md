@@ -12,6 +12,88 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P4 UI refresh — rebuild Administration → Users & Membership vs the updated `ACMP Administration.dc.html`
+
+### 2026-06-27 — Users & Membership rebuilt to the updated design (rich directory + read-only user detail); unplanned affordances removed
+
+**Why.** The Administration design grew a lot since P4 shipped — it now defines a 7-tab admin area, four
+explicit data-states, and a much richer Users & Membership row (committee chips with remove/add, a voting
+switch, an assignments count, and a per-row view button into a user-detail panel). The built screen was a
+simplified subset. This slice reconciles the **Users & Membership** screen (the P4-scoped one) + its states to
+the updated local `/ACMP product context/ACMP Administration.dc.html` (read directly), composing the corrected
+P3 shared components. Branch `feat/P4-users-membership-refresh` off `main`.
+
+**Scope decisions (agreed with the operator before building).** Match the design **but build nothing whose
+behavior isn't planned** — render planned-but-unwired affordances as inert, and **remove what conflicts with a
+settled ADR**:
+- **7-tab strip** rendered per design (Users active; Templates/System Health/Streams/Roles/Job Monitor/
+  Notification Settings are **disabled placeholders** for their later phases — Templates BL-120/121, Streams
+  BL-024, Job Monitor BL-006/AC-056, Notification Settings BL-082/BL-124, Roles = static Keycloak mirror;
+  *System Health screen is not yet ticketed — capability = BL-009 health checks*). No-reference-yet, flagged.
+- **Membership editing affordances** (committee `×` remove, dashed `+` add, voting-eligibility switch) rendered
+  to match the design but **inert/disabled** — the directory stays read-only (`GET /api/members`). Stream
+  assignment lands with **BL-024**; voting eligibility with **Voting (P9)**. Same precedent as the existing
+  disabled switch.
+- **User detail (D1, partial):** the per-row view button now opens an **in-place, read-only** user-detail panel
+  (no routing — mirrors the design's `sub` state) rendering **only API-backed data** (avatar, name, email,
+  role + read-only Keycloak note, status, voting-eligible, committee/stream memberships). The design's facts
+  that the member API doesn't return (Keycloak ID, last sign-in, provisioned date) are **omitted** until the
+  directory exposes them.
+- **Removed (not planned / conflicts ADR-0015):** the header **"Provision via Keycloak"** button and the whole
+  **invite panel**. In-app account creation/invitation contradicts ADR-0015 (manual Keycloak provisioning, no
+  self-registration). Recorded as **OQ-042** (docs/42) — the future detail slice resolves it (deep-link to the
+  Keycloak console vs a new ADR vs drop the panel). The dead `admin.provision` i18n key was removed (both locales).
+
+**Done.**
+- `UsersMembership.tsx` rebuilt: 7-tab strip (shared `Tabs`, icon+label, only Users enabled); KC read-only
+  banner (pad/margin reconciled to the design 11/14 + mb14); inert filter row (gaps reconciled 9/6); rich table
+  — user (avatar/name/email), role + lock note, **membership** (`.adm-mchip` committee chips with `×` glyph +
+  inert dashed `+add` + disabled voting switch with on/off label colors), assignments (check + honest `—`, no
+  count on the API yet), status (`status-chip-sm` + the **view** button). New read-only `UserDetail` sub-view.
+- `icons.tsx`: added the six Administration tab glyphs (`usersGroup`/`template`/`activity`/`stream`/`shieldUser`/
+  `cog`) with paths lifted verbatim from the design file.
+- `administration.css` rewritten — added `.adm-mchip`(+`×`), `.adm-add`, `.adm-view`, `.adm-vote-on/-off`,
+  `.adm-status`, and the full read-only detail panel; **logical-properties only** (grep-verified zero physical
+  left/right/margin/padding), the two `[dir='rtl'] … scaleX(-1)` chevron flips being the deliberate
+  direction-bearing exceptions.
+- `controls.css`: `.tab` gains `inline-flex`/gap so the design's icon+label tabs sit correctly (additive — safe
+  for the existing text-only tab consumers).
+- i18n: 7 tab labels (added streams/roles/jobs), `addCommittee`, `viewUser`, and a `detail.*` namespace
+  (back/memberships/roleReadonly/votingEligible/yes/no/noMemberships) — EN+AR, **parity 427** (removed
+  `provision`). Real Arabic.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file header).**
+- The membership chips source from `member.streams` (the single-committee model has no separate committee field);
+  observer = no streams (unchanged from the prior build).
+- The state screens reuse the **shared canonical** `LoadingState`/`ErrorState`/`EmptyState` (app-wide P3 pattern,
+  `ACMP System States.dc.html` authority) rather than forking the admin file's richer state cards for one screen;
+  **permission-denied stays at the route layer** (the Administration route is admin-gated) — a genuine behavior
+  difference, not drift. Recorded.
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **189/189** (was 184; +5 admin — 7-tab/only-users-enabled,
+no-provision/invite, inert add-committee, view→read-only-detail round-trip, **+ axe WCAG 2.2 AA on the directory
+AND the detail**), i18n parity **427**, `tsc -b` clean, vite build clean (JS **174.84 kB gz** < 300; CSS 23.02
+kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx` fast-refresh warning), `administration.css`
+grep = zero physical properties (RTL-safe by construction). **Not yet run:** the live authenticated browser VR
+(rebuild `acmp-web` → Keycloak PKCE login → capture EN-light/dark + AR-RTL-light/dark at tablet+desktop vs the
+`.dc.html`). It is blocked solely on the operator setting a dev password for `acmp-admin` (the realm imports it
+with `UPDATE_PASSWORD`, no committed secret — guardrail 7), the same standing caveat the P3/P6 UI passes carried;
+automated pixel-diff VR remains **P17**.
+
+**Acceptance audit (this entry).** **No verdict flips.** **AC-059** stays **Met** and gains the read-only
+user-detail surface (directory + detail both unit-tested + axe-clean). The Administration screen adds a surface
+to the localization/a11y ACs — **AC-040/045/046** render RTL-mirrored (logical CSS + the two intentional chevron
+flips) and axe-clean in the component tests; **AC-041** stays **Partial** (automated VR → P17). No feature AC
+changes — this is visual/fidelity reconciliation + a read-only view.
+
+**Next.** Push `feat/P4-users-membership-refresh` → PR → green CI → **await operator GO + live VR** to
+squash-merge. The operator runs the authenticated VR (set the `acmp-admin` dev password, rebuild `acmp-web`,
+capture the 8 combos). Future Administration slices build the remaining sub-tabs (Templates/Streams/Jobs/Notif/
+Health) and resolve **OQ-042** (invite/provision vs ADR-0015) before any invite UI is built.
+
+---
+
 ## P3 foundation refresh — reconcile token/component/shell/nav layer to the updated design references
 
 ### 2026-06-27 — Foundation fidelity pass vs updated `.dc.html` (Design System / ACMP shell / Navigation & IA)

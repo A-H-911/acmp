@@ -96,11 +96,13 @@
   "admin": {
     "title": "الإدارة",
     "subtitle": "المستخدمون والأدوار وعضوية اللجنة",
-    "provision": "تزويد عبر Keycloak",
     "tabs": {
       "users": "المستخدمون والعضوية",
       "templates": "القوالب",
       "health": "صحّة النظام",
+      "streams": "المسارات",
+      "roles": "الأدوار",
+      "jobs": "مراقب المهام",
       "notifications": "إعدادات الإشعارات"
     },
     "kc": {
@@ -120,9 +122,20 @@
     "fromKeycloak": "من Keycloak",
     "votingEligible": "مؤهّل للتصويت",
     "observer": "مراقب",
+    "addCommittee": "إضافة لجنة",
+    "viewUser": "عرض تفاصيل المستخدم",
     "status": { "active": "نشط", "invited": "مدعو", "disabled": "معطّل" },
     "emptyTitle": "لا أعضاء بعد",
-    "emptyBody": "يظهر الأعضاء هنا بعد أول تسجيل دخول عبر Keycloak."
+    "emptyBody": "يظهر الأعضاء هنا بعد أول تسجيل دخول عبر Keycloak.",
+    "detail": {
+      "back": "العودة للمستخدمين",
+      "memberships": "عضويات اللجان والمسارات",
+      "roleReadonly": "الدور للقراءة فقط — يُدار في Keycloak",
+      "votingEligible": "مؤهّل للتصويت",
+      "yes": "نعم",
+      "no": "لا",
+      "noMemberships": "لا عضويات لجان أو مسارات."
+    }
   },
   "topics": {
     "home": "الرئيسية",
