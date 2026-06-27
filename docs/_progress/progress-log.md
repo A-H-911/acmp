@@ -14,6 +14,58 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6 live authenticated browser pass (rebuilt stack, real Keycloak PKCE, AR/RTL) + 2 pre-existing findings
+
+**Scope.** Live pass over the P6 surfaces on the rebuilt `api`+`web` images (all 7 services healthy), driven
+in Chrome via Playwright as `acmp-admin` through the **real Keycloak authorization-code + PKCE (S256)** flow,
+in **Arabic / RTL**.
+
+**Verified live (green).**
+- **Real SQL migrations applied** — `[INF] Database migrations applied.`; the `meetings` + `notifications`
+  schemas materialized on SQL Server (closes the deferred "live migration apply" note for P6a/P6b).
+- **Login** — PKCE/S256 round-trip → `/dashboard` authenticated (token `sub`, `preferred_username=acmp-admin`).
+- **Meetings list (P6c)** — renders AR/RTL with the full shell; honest empty state; the **"Schedule meeting"**
+  action.
+- **Schedule flow (P6 follow-up)** — the dialog renders AR/RTL (title/chair/start/end/location/join, required
+  markers, placeholders); the **chair `Select` sourced `/api/members`** (showed the provisioned admin); submit
+  → `POST /api/meetings` **201** → **MTG-2026-001** → navigated to the agenda builder. End to end.
+- **Agenda builder (P6c)** — AR/RTL: breadcrumb, the **Agenda/Meeting tabs (P6d)**, the title + **Draft chip**,
+  **Gregorian AR date via Intl**, the **time-budget bar** (0/90 min), the Prepared-pool + agenda **empty
+  states**, and **Publish & Notify correctly disabled** at 0 items.
+- **Meeting tab (P6d)** — the lifecycle **gate** shows "not started — publish & start first" for a Draft agenda.
+- **Notification center (P6e)** — the bell + panel render AR/RTL; the empty state is correct for the current
+  user (see finding 2).
+- **Notification fan-out (P6b)** — scheduling **did** create a real `MeetingScheduled` notification row in
+  `notifications.notifications` (confirmed by direct SQL) — the cross-module fan-out works on the live stack.
+
+**Finding 1 (pre-existing infra, app-wide — not P6): CSP blocks the inlined fonts.** Every page logs
+`font-src 'self'` CSP violations for the build's `data:` base64 IBM Plex fonts (Vite inlines them under its
+asset-inline limit) → the deployed app **falls back to system fonts** instead of IBM Plex Sans / Sans Arabic.
+One-line fix: `font-src 'self' data:` in `deploy/nginx/default.conf.template`. Layout/RTL/behaviour are
+unaffected.
+
+**Finding 2 (pre-existing identity/JIT — P4, CHANGE-004 lineage — not P6): JIT provisioning 500 on emailless
+duplicate.** `acmp-admin`'s Keycloak user carries **no email**; JIT (`POST /api/members/me`) provisions a
+member with an empty email. The realm was recreated at some point (admin `sub` changed `a65c…`→`a69d…`) while
+the SQL volume kept the old member row, so this session's JIT tried to **insert** a second emailless member and
+hit `Cannot insert duplicate key … 'IX_committee_members_Email' … value is ()` → **500**. Net effect: the
+current login is **not** a committee member, so the fan-out notified the stale member (`a65c…`) and the live
+user's (`a69d…`) center is (correctly) empty — the P6 scoping is right; the bug is upstream. **Real defect to
+fix in Membership:** either require an email from Keycloak, or make `IX_committee_members_Email` a **filtered**
+unique index (`WHERE Email <> ''`/`IS NOT NULL`) and have JIT match-or-update by `KeycloakUserId` so a changed
+`sub` reconciles instead of duplicating.
+
+**Net.** P6 is **functionally validated live** end to end through the schedule → agenda → (gate) flow in
+AR/RTL, and the notification fan-out is proven at the data layer; the only unproven UI step (the notification
+*appearing* in the recipient's center) is blocked solely by finding 2, a pre-existing P4 identity-data bug. No
+P6 code change resulted from this pass. **Recommended follow-ups (separate from the P6 PR):** fix finding 2
+(JIT/email index) and finding 1 (CSP fonts); then the recipient-center demo will pass.
+
+**Next.** Push `feat/P6-meetings` → PR → green CI → review → squash-merge (the two findings can be tracked as
+their own fixes — finding 2 in particular gates a clean live notification demo).
+
+---
+
 ### 2026-06-27 — P6 follow-up: /api/meetings + /api/notifications WebApplicationFactory integration tests
 
 **Scope.** The optional HTTP-contract integration tests for the P6 endpoints, through the real pipeline
