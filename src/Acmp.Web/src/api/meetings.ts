@@ -46,6 +46,25 @@ export interface Agenda {
   items: AgendaItem[];
 }
 
+/** A roster line as the server records it once a member is marked (P6d). The live
+ *  workspace seeds this lazily from /api/members on the first mark. */
+export interface AttendanceEntry {
+  userId: string;
+  name: string;
+  role: string;
+  status: string;
+  isVotingEligible: boolean;
+  joinedAt: string | null;
+}
+
+/** A discussion note captured against an agenda topic during the live meeting (P6d). */
+export interface Discussion {
+  topicId: string;
+  body: string;
+  authorName: string;
+  capturedAt: string;
+}
+
 export interface MeetingDetail {
   id: string;
   key: string;
@@ -61,9 +80,8 @@ export interface MeetingDetail {
   startedAt: string | null;
   heldAt: string | null;
   agenda: Agenda | null;
-  // attendance/discussions belong to the live-meeting phase (P6d) — read but unused here.
-  attendance: unknown[];
-  discussions: unknown[];
+  attendance: AttendanceEntry[];
+  discussions: Discussion[];
 }
 
 export function useMeetings() {
@@ -171,5 +189,69 @@ export function useAssignPresenter(key: string | undefined) {
 export function usePublishAgenda(key: string | undefined) {
   return useAgendaMutation(key, ({ meetingId }: { meetingId: string }) =>
     api<Agenda>(`/meetings/${meetingId}/agenda/publish`, { method: 'POST' }),
+  );
+}
+
+/* ── Live-meeting workspace (P6d) ─────────────────────────────────────────────
+ * Lifecycle + capture mutations. Unlike the agenda mutations these return NoContent
+ * (the SPA re-reads the detail), and they only invalidate the meeting detail — they
+ * don't touch the Prepared pool. */
+function useMeetingMutation<TVars>(key: string | undefined, fn: (vars: TVars) => Promise<void>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meetings', 'detail', key] }),
+  });
+}
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
+/** Begin the meeting (Scheduled→InProgress). The server enforces W7: the agenda must be
+ *  Published first, else it returns a problem the caller surfaces. */
+export function useStartMeeting(key: string | undefined) {
+  return useMeetingMutation(key, ({ meetingId }: { meetingId: string }) =>
+    api<void>(`/meetings/${meetingId}/start`, { method: 'POST' }),
+  );
+}
+
+/** End the meeting (InProgress→Held). Minutes capture is a later phase. */
+export function useEndMeeting(key: string | undefined) {
+  return useMeetingMutation(key, ({ meetingId }: { meetingId: string }) =>
+    api<void>(`/meetings/${meetingId}/end`, { method: 'POST' }),
+  );
+}
+
+export interface MarkAttendanceInput {
+  meetingId: string;
+  userId: string;
+  name: string;
+  role: string; // Chair | Secretary | Member | Reviewer | Presenter | Guest
+  status: string; // Invited | Present | Absent | Excused | Late
+  isVotingEligible: boolean;
+}
+
+export function useMarkAttendance(key: string | undefined) {
+  return useMeetingMutation(key, ({ meetingId, ...body }: MarkAttendanceInput) =>
+    api<void>(`/meetings/${meetingId}/attendance`, { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }),
+  );
+}
+
+/** Capture a discussion note against an agenda topic. The server rejects an empty body,
+ *  so the caller must skip the call when the textarea is blank. */
+export function useCaptureDiscussion(key: string | undefined) {
+  return useMeetingMutation(key, ({ meetingId, topicId, body }: { meetingId: string; topicId: string; body: string }) =>
+    api<void>(`/meetings/${meetingId}/discussion`, { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ topicId, body }) }),
+  );
+}
+
+export function useRecordActualTime(key: string | undefined) {
+  return useMeetingMutation(
+    key,
+    ({ meetingId, topicId, actualMinutes, outcome }: { meetingId: string; topicId: string; actualMinutes: number; outcome?: string }) =>
+      api<void>(`/meetings/${meetingId}/agenda/items/${topicId}/actual-time`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ actualMinutes, outcome }),
+      }),
   );
 }

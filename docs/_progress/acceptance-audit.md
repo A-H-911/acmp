@@ -178,6 +178,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (committee/chair pickers; committeeId not exposed). Live browser pass (real API, AR/RTL+dark, live axe)
 > recommended — needs a scheduled meeting. AC-051/053 stay Partial → P6e. See progress-log P6c entry.
 
+> P6d update (2026-06-27): live meeting workspace UI (the design's meeting tab) — agenda spine, attendance
+> (present/absent → POST /attendance), discussion notes (→ POST /discussion), actual-time + outcome (→ POST
+> /actual-time), the start/end lifecycle, and the in-page Tabs hosting both the agenda builder (P6c) and the
+> workspace under `/meetings/:key`. Record-decision/create-action/call-vote are disabled stubs (P7/P8/P9); MoM
+> is P7. **No verdict flips** — this is the UI for the W7–W9 workflows whose ACs are already covered by the P6a
+> backend; the new screens add a surface to the localization/a11y ACs (AC-040/045/046 render RTL + axe-clean in
+> the component tests; AC-041 stays Partial → VR P17). Web 168/168 (incl. a workspace axe AA case), parity 389,
+> tsc + build + oxlint clean, CSS RTL-safe. Live browser pass (real conduct-meeting round-trip, AR/RTL+dark)
+> recommended — needs a scheduled+published meeting. AC-051/053 stay Partial → P6e. See progress-log P6d entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

@@ -373,6 +373,63 @@
       "movedUp": "تم تحريك {{key}} للأعلى.",
       "movedDown": "تم تحريك {{key}} للأسفل.",
       "removed": "تمت إزالة {{key}} من جدول الأعمال."
+    },
+    "meeting": "الاجتماع",
+    "live": "مباشر",
+    "elapsed": "الوقت المنقضي",
+    "pause": "إيقاف مؤقت",
+    "endToMinutes": "الإنهاء ← المحضر",
+    "start": "بدء الاجتماع",
+    "ready": {
+      "title": "نُشر جدول الأعمال — جاهز للبدء",
+      "body": "بدء الاجتماع يفتح مساحة العمل المباشرة للحضور وملاحظات النقاش والتوقيت."
+    },
+    "notReady": {
+      "title": "لم يبدأ بعد",
+      "body": "انشر جدول الأعمال أولاً، ثم ابدأ الاجتماع لفتح مساحة العمل المباشرة."
+    },
+    "concluded": {
+      "title": "انتهى الاجتماع",
+      "body": "انتهى الاجتماع. سيأتي تدوين المحضر في مرحلة لاحقة."
+    },
+    "agendaSpine": "جدول الأعمال",
+    "running": "جارٍ",
+    "itemTime": "وقت العنصر",
+    "itemTimeValue": "{{actual}} / {{total}} دقيقة",
+    "discussionNotes": "ملاحظات النقاش",
+    "notePlaceholder": "دوِّن نقاش هذا العنصر…",
+    "saveNote": "حفظ الملاحظة",
+    "saved": "تم الحفظ",
+    "actualTime": "الوقت الفعلي",
+    "actualMinutes": "الدقائق الفعلية",
+    "minutesUnit": "دقيقة",
+    "outcomeLabel": "النتيجة",
+    "outcomePick": "حدّد النتيجة",
+    "outcome": {
+      "Discussed": "نوقش",
+      "Deferred": "مؤجّل",
+      "CarriedOver": "مُرحّل"
+    },
+    "recordTime": "تسجيل الوقت",
+    "recordDecision": "تسجيل قرار",
+    "createAction": "إنشاء إجراء",
+    "callVote": "الدعوة للتصويت",
+    "attendance": "الحضور",
+    "present": "حاضر",
+    "absent": "غائب",
+    "attendanceToggle": "تبديل حضور {{name}}",
+    "attendanceSummary": "{{present}} من {{total}} حاضرون",
+    "quorum": {
+      "met": "اكتمل النصاب",
+      "notMet": "لا نصاب"
+    },
+    "attendanceRole": {
+      "Chair": "رئيس",
+      "Secretary": "أمين السر",
+      "Member": "عضو",
+      "Reviewer": "مُراجع",
+      "Presenter": "مُقدِّم",
+      "Guest": "ضيف"
     }
   },
   "notFound": { "body": "تعذّر العثور على تلك الصفحة." }

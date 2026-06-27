@@ -11,7 +11,7 @@ import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
 import { TopicDetail } from './features/topics/TopicDetail';
 import { MeetingsList } from './features/meetings/MeetingsList';
-import { AgendaBuilder } from './features/meetings/AgendaBuilder';
+import { MeetingPage } from './features/meetings/MeetingPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -33,7 +33,7 @@ export const appRoutes = createRoutesFromElements(
         <Route path="backlog" element={<Backlog />} />
         <Route path="topics/:key" element={<TopicDetail />} />
         <Route path="meetings" element={<MeetingsList />} />
-        <Route path="meetings/:key" element={<AgendaBuilder />} />
+        <Route path="meetings/:key" element={<MeetingPage />} />
         <Route path="decisions" element={<PlaceholderPage titleKey="nav.decisions" />} />
         <Route path="actions" element={<PlaceholderPage titleKey="nav.actions" />} />
         <Route path="adrs" element={<PlaceholderPage titleKey="nav.adrs" />} />

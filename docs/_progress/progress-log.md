@@ -14,6 +14,71 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6d UI: live meeting workspace (the design's meeting tab) — agenda spine, attendance, discussion, actual-time
+
+**Scope.** The **live meeting workspace** — the `isMeeting` block of the local design
+`/ACMP product context/ACMP Agenda & Meeting.dc.html` — wired to the P6a conduct-meeting API (W7–W9), and
+the **tab integration** that hosts both P6c's agenda builder and this workspace under one
+`/meetings/:key` route. The MoM/minutes screen (the design's `isMinutes` block) stays **P7**. Branch
+`feat/P6-meetings`. Web **168 tests green** (was 151; +17 — 9 workspace, 8 page; the 11 P6c agenda tests stay
+green through the breadcrumb refactor), i18n parity **389**, `tsc -b` + vite build + oxlint clean, CSS RTL-safe.
+
+**Done.**
+- `MeetingPage.tsx` (route `/meetings/:key`, replacing the direct agenda route) — owns the page breadcrumb +
+  a shared in-page **`Tabs`** switcher (Agenda builder | Meeting) + the **lifecycle gate**: a Scheduled
+  meeting with a Published agenda shows **Start meeting** (`POST /start`, W7 — server-enforced); a Draft
+  agenda shows a calm "publish & start first" prompt; Held/Closed shows a concluded prompt (minutes = P7).
+  Default tab follows status (InProgress → Meeting). Renders `<AgendaBuilder/>` or `<MeetingWorkspace/>`.
+- `MeetingWorkspace.tsx` — the design screen: header (title + **Live** pulse chip + an **Elapsed** timer
+  ticking from `startedAt` via a 1s interval with cleanup + **End → Minutes** = `POST /end`); a 3-column grid:
+  **agenda spine** (click-to-select, done-check from `outcome`, `aria-current` on the running item),
+  **active-item workspace** (key/urgent/title + `actual/timebox` time; a **discussion notes** textarea →
+  `POST /discussion` on explicit Save/onBlur, empty/unchanged bodies never sent; an **actual-time** control —
+  minutes input + outcome `Select` → `POST /…/actual-time`; the **Record decision / Create action / Call
+  vote** buttons are disabled stubs → P7/P8/P9), and an **attendance** aside (roster = active `/api/members`
+  merged with `meeting.attendance` by `publicId`; a present/absent toggle → `POST /attendance`; a client-side
+  quorum *display* heuristic).
+- `api/meetings.ts` — typed `attendance: AttendanceEntry[]` + `discussions: Discussion[]`; added
+  `useStartMeeting`/`useEndMeeting`/`useMarkAttendance`/`useCaptureDiscussion`/`useRecordActualTime` (each by
+  meeting id, invalidating the detail). Enums (`AttendanceRole`/`AttendanceStatus`/`AgendaItemOutcome`) travel
+  as string names; committee role → AttendanceRole is mapped client-side (Chairman→Chair, …, else Guest).
+- `AgendaBuilder.tsx` — its internal breadcrumb moved up to `MeetingPage` (no duplicate); all 11 P6c tests
+  stay green. `meetings.css` extended (logical-properties-only). Full EN+AR `meetings.*` additions (parity 389).
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file headers).**
+- **In-page shared `Tabs`** instead of the design's top-bar tab switcher; the breadcrumb drops the design's
+  third "Agenda builder" segment (the active tab conveys it).
+- **Pause / RTE toolbar / "Autosaved" pill / "Captured on this item" / inline quick-create are mock chrome** →
+  omitted or disabled. Discussion save is **explicit** (Save note + onBlur) → `POST /discussion`; a "Saved"
+  indicator follows a successful save (there's no separate autosave endpoint).
+- **Record decision / Create action / Call vote** are disabled stubs → P7/P8/P9.
+- **"End → Minutes"** ends the meeting (`POST /end`) and navigates to `/meetings` — the Minutes screen is P7,
+  so no minutes UI is built here (chosen over a tab-flip to avoid an already-InProgress-meeting landing bug).
+- **Quorum is a client-side display heuristic** (majority of voting-eligible present), never gates an action —
+  the authoritative quorum gate is Voting (P9).
+- **Attendance roster** sourced from `/api/members` (active), seeded server-side on first mark; `member.publicId`
+  is the attendance `userId` (matches the MeetingsDbContext "attendee = CommitteeMember.PublicId" rule).
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **168/168** (Vitest+RTL behaviour: tab switch, start-meeting gate +
+call, live workspace render, spine selection, discussion save asserting the capture call + single-POST dedup,
+actual-time + outcome record, attendance present/absent toggle, the disabled stubs, **+ axe WCAG 2.2 AA** on the
+workspace), i18n parity 389, `tsc -b`, vite build (140 modules), oxlint (only the pre-existing untouched
+`Toast.tsx` warning), `meetings.css` grep = zero physical properties (RTL-safe). **Not yet run:** the live
+authenticated browser pass (real start → attendance/discussion/actual-time → end, AR/RTL + dark, live axe) —
+recommended, and it needs a scheduled+published meeting (pairs with the deferred schedule flow / a seeded meeting).
+
+**Acceptance audit (this entry).** **No verdict flips** — P6d is the UI for the W7–W9 workflows whose ACs are
+already covered by the P6a backend; the meeting screens add a new surface to the localization/a11y ACs
+(AC-040/045/046 render RTL-mirrored + axe-clean in the component tests; AC-041 stays Partial → VR P17).
+AC-051/053 still Partial → P6e.
+
+**Next.** **P6e** — wire `NotificationCenter.tsx` to the live `/api/notifications` feed (bell badge + list +
+mark-read), flipping AC-051/053 toward Met. Then the deferred meeting-schedule flow, the optional `/api/meetings`
++ `/api/notifications` WebApplicationFactory integration tests, and the `feat/P6-meetings` PR.
+
+---
+
 ### 2026-06-27 — P6c UI: Agenda builder (the design's agenda tab) wired to the Meetings API + a meetings list
 
 **Scope.** The **Agenda Builder** screen — the `isAgenda` block of the local design

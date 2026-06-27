@@ -373,6 +373,63 @@
       "movedUp": "{{key}} moved up.",
       "movedDown": "{{key}} moved down.",
       "removed": "{{key}} removed from the agenda."
+    },
+    "meeting": "Meeting",
+    "live": "Live",
+    "elapsed": "Elapsed",
+    "pause": "Pause",
+    "endToMinutes": "End → Minutes",
+    "start": "Start meeting",
+    "ready": {
+      "title": "Agenda published — ready to start",
+      "body": "Starting the meeting opens the live workspace for attendance, discussion notes, and timing."
+    },
+    "notReady": {
+      "title": "Not started yet",
+      "body": "Publish the agenda first, then start the meeting to open the live workspace."
+    },
+    "concluded": {
+      "title": "Meeting concluded",
+      "body": "The meeting has ended. Minutes capture arrives in a later phase."
+    },
+    "agendaSpine": "Agenda",
+    "running": "Running",
+    "itemTime": "Item time",
+    "itemTimeValue": "{{actual}} / {{total}} min",
+    "discussionNotes": "Discussion notes",
+    "notePlaceholder": "Capture the discussion for this item…",
+    "saveNote": "Save note",
+    "saved": "Saved",
+    "actualTime": "Actual time",
+    "actualMinutes": "Actual minutes",
+    "minutesUnit": "min",
+    "outcomeLabel": "Outcome",
+    "outcomePick": "Set outcome",
+    "outcome": {
+      "Discussed": "Discussed",
+      "Deferred": "Deferred",
+      "CarriedOver": "Carried over"
+    },
+    "recordTime": "Record time",
+    "recordDecision": "Record decision",
+    "createAction": "Create action",
+    "callVote": "Call vote",
+    "attendance": "Attendance",
+    "present": "Present",
+    "absent": "Absent",
+    "attendanceToggle": "Toggle attendance for {{name}}",
+    "attendanceSummary": "{{present}} of {{total}} present",
+    "quorum": {
+      "met": "Quorum met",
+      "notMet": "No quorum"
+    },
+    "attendanceRole": {
+      "Chair": "Chair",
+      "Secretary": "Secretary",
+      "Member": "Member",
+      "Reviewer": "Reviewer",
+      "Presenter": "Presenter",
+      "Guest": "Guest"
     }
   },
   "notFound": { "body": "We couldn't find that page." }

@@ -1,8 +1,12 @@
 /*
  * Agenda builder (P6c) — THE design screen ("ACMP Agenda & Meeting.dc.html", the
- * isAgenda block). Composes the shared library (Breadcrumb, Button, Dialog, StatusChip,
+ * isAgenda block). Composes the shared library (Button, Dialog, StatusChip,
  * Select, states). Read by key (GET /api/meetings/{key}); every agenda mutation is by the
  * meeting's Guid id and returns the updated AgendaDto (the query is invalidated to re-render).
+ *
+ * P6d: the page breadcrumb + the Agenda/Meeting tab switcher are now owned by MeetingPage
+ * (this renders inside the "Agenda builder" tab), so this component no longer renders its
+ * own breadcrumb — that prevents a duplicate trail.
  *
  * Design↔behavior reconciliations (visual SoT = design; behavior SoT = the package):
  *  - LEFT column is labeled "Scheduled topics" in the design but is sourced from the
@@ -40,8 +44,6 @@ import {
 import { useMembers } from '../../api/members';
 import type { TopicSummary } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
-import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { Select } from '../../components/ui/Select';
@@ -92,7 +94,6 @@ export function AgendaBuilder() {
     const notFound = meetingQuery.error instanceof ApiError && meetingQuery.error.status === 404;
     return (
       <section className="page">
-        <Breadcrumb ariaLabel={t('meetings.title')} items={[{ label: t('meetings.title'), href: AREAS.agenda.path }, { label: key ?? '', current: true }]} />
         {notFound ? (
           <EmptyState icon="calendar" title={t('meetings.notFound.title')} body={t('meetings.notFound.body')} />
         ) : (
@@ -173,15 +174,6 @@ export function AgendaBuilder() {
   return (
     <section className="page mt-builder">
       <div className="visually-hidden" aria-live="polite">{announce}</div>
-
-      <Breadcrumb
-        ariaLabel={t('meetings.agendaBuilder')}
-        items={[
-          { label: t('meetings.title'), href: AREAS.agenda.path },
-          { label: meeting.key },
-          { label: t('meetings.agendaBuilder'), current: true },
-        ]}
-      />
 
       <div className="mt-builder-head">
         <div>
