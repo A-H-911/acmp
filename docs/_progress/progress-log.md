@@ -14,6 +14,47 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6 follow-up: /api/meetings + /api/notifications WebApplicationFactory integration tests
+
+**Scope.** The optional HTTP-contract integration tests for the P6 endpoints, through the real pipeline
+(MediatR + FluentValidation + policy authorization + Problem Details), proving the cross-module wiring
+(Meetings → Membership directory → Notifications) end to end over HTTP. Branch `feat/P6-meetings`. Backend
+**406 green** (was 397; +9 Api), all gates clean (`dotnet format`, build).
+
+**Done.**
+- **`AcmpWebApplicationFactory`** now swaps the **Meetings + Notifications** DbContexts to private InMemory
+  stores too (it already swapped Membership + Topics) — so the whole P6 surface runs against InMemory with the
+  header-driven `TestAuthHandler` standing in for Keycloak.
+- **`MeetingsApiTests`** (5): schedule without a token → **401** (AC-008); a **Member is 403** on schedule and
+  on agenda-publish (docs/10 Meeting.Schedule / Agenda.Publish); **schedule → list → detail (Draft agenda) →
+  unknown-key 404**; **add item → publish → agenda `Published` v1**.
+- **`NotificationsApiTests`** (4): notifications without a token → **401**; **AC-051 end to end** — a Secretary
+  schedules + builds + publishes an agenda, and a seeded committee **Member then sees the `AgendaPublished`
+  notification** in their feed with the meeting title in the body and the `/meetings/{key}` deep link;
+  **mark-read is scoped to the caller** (the owner gets 204 and the unread count drops; a **different user gets
+  404** on the same id — the IDOR guard over HTTP) and an unknown id → **404**.
+
+**Decisions / notes.**
+- The publish path needs each agenda item to have a presenter (the domain guard) — the test items carry one.
+- The cross-module seams resolve against InMemory exactly as in production (the publish fan-out goes
+  Meetings → `ICommitteeDirectory` (Membership) → `INotificationChannel` (Notifications)); the test proves no
+  module reaches another's tables — it all flows through the Acmp.Shared contracts.
+- **No new ADR**; tests only.
+
+**Verification (deterministic, green).** Backend **406/406** (Domain 42 · Architecture 16 · Application 319 ·
+**Api 29**), `dotnet format --verify-no-changes` + build clean. The two new files were BOM-normalized to the
+format gate.
+
+**Acceptance audit (this entry).** **No verdict flips** — these tests *strengthen* already-recorded verdicts
+with HTTP evidence: **AC-051** now has a full publish→recipient-feed round-trip over HTTP; **AC-053** gains the
+HTTP scoping/IDOR proof; **AC-008** gains 401 coverage on the meetings + notifications surfaces.
+
+**Next.** **Push `feat/P6-meetings` → PR → green CI → review → squash-merge**, then the **live authenticated
+browser pass** across the P6 surfaces (schedule → agenda → publish/notify → start → conduct → end; AR/RTL +
+dark + live axe).
+
+---
+
 ### 2026-06-27 — P6 follow-up: meeting-schedule flow (un-defers the new-meeting form) + server-implicit committee
 
 **Scope.** Build the previously-deferred **schedule-a-meeting** flow and remove its only blocker: the SPA
