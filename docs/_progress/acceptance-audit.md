@@ -142,6 +142,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > GHSA-4625-4j76-fww9 has no patched release — accepted: internal-only OTLP egress, DoD permits moderate).
 > See progress-log P5-review remediation.
 
+> P6a update (2026-06-27): Meetings module backend (domain → application → infrastructure → API) — agenda
+> building, meeting scheduling/lifecycle, attendance, discussion, actual-time (W5–W9), plus the cross-module
+> `ITopicScheduler` seam (Prepared→Scheduled on publish, Scheduled→InCommittee on start; idempotent,
+> implemented in Topics.Infrastructure — Meetings never reads Topics' tables, ADR-0001). Backend 388/388
+> (Domain 42 · Architecture 12 · Application 314 · Api 20); ArchUnit enforces Meetings⟂Topics⟂Membership.
+> **AC-044 Pending→Partial** — the backend reorder (`MoveAgendaItem` ±1 + `Agenda.MoveItem`, the path
+> keyboard move-up/-down drives) is built + tested; the keyboard-accessible **agenda reorder UI** lands in
+> P6c (same backend-then-UI split as AC-043). **AC-051/053 stay Pending → P6b** (in-app Notifications backend:
+> `InAppNotificationChannel` + `GET /api/notifications` + the publish/schedule fan-out via a new
+> `ICommitteeDirectory`). **AC-011** (presenter meeting-window enforcement) stays Partial → its UI/runtime
+> path. Live SQL migration apply + an authenticated `/api/meetings` round-trip are the optional P6 tail.
+> See progress-log P6a entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -187,7 +200,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
 | AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The AC's literal **priority-ordinal move-up/down with a persisted ordinal** (BL-039 within-column reorder, BL-041) is **not yet built** — deliberately deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
-| AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
+| AC-044 | Accessibility | Partial | MeetingHandlerTests (move ±1) + Agenda domain tests | Backend reorder shipped (the `MoveAgendaItem` ±1 command + `Agenda.MoveItem` — the path pointer drag *and* keyboard move-up/-down both drive). The **keyboard-accessible agenda reorder UI** itself lands in P6c (same backend-then-UI split as AC-043). From Pending (P6a, 2026-06-27). |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
 | AC-047 | Unsaved-work | Met | SubmitTopic.test (guard dialog on dirty nav) | useBlocker (data router) → confirm Dialog on in-app route change while the submit form is dirty; Keep editing / Leave |

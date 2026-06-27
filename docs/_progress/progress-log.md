@@ -12,6 +12,80 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 — Agenda & meeting management
+
+### 2026-06-27 — P6a backend complete: Meetings module (domain → application → infrastructure → API) + cross-module scheduler seam
+
+**Scope.** The backend half of P6 — agenda building, meeting scheduling/lifecycle, attendance, discussion
+notes, and actual-time tracking (workflows W5–W9) — built as a new `Meetings` module on the established
+modular-monolith pattern. The UI (P6c/P6d) and in-app Notifications floor (P6b) follow. Branch
+`feat/P6-meetings` (2 commits); **388 tests green** (Domain 42 · **Architecture 12** · Application 314 ·
+Api 20), 0 skipped — module boundaries intact. Solution builds.
+
+**Done.**
+- **Domain** (commit `befb496`). `Meeting` aggregate — full lifecycle (docs §5): Scheduled → InProgress →
+  Completed, with Cancel; **owns Attendance + Discussion** child collections; `StartMeeting` requires a
+  Published agenda (W7). `Agenda` aggregate — Draft → Published (versioned on re-publish); **owns
+  `AgendaItem`** (timebox bounds, presenter snapshot, urgent flag). `Agenda.MoveItem(topicId, ±1)` is the
+  **AC-044** reorder primitive (pointer drag and keyboard move-up/-down both send a ±1 delta). Lifecycle
+  events raised. **Cross-module identity is by id + display snapshots only** (topic key/title/urgent,
+  presenter id+name) — Meetings never reads another module's tables (ADR-0001). 42 domain unit tests.
+- **Application** (commit `eeb9edf`; MediatR slices, FluentValidation, `IAuditSink` on every governance
+  transition, `IAuthorizedRequest` RBAC per command): ScheduleMeeting (W5, creates the Meeting + an empty
+  Draft Agenda), CancelMeeting; the agenda builder micro-commands (add/remove/**move ±1**/timebox/presenter,
+  W6); PublishAgenda (W6 — versions the agenda then advances each placed topic Prepared → Scheduled via the
+  seam below); StartMeeting/EndMeeting (W7), MarkAttendance (W8), CaptureDiscussion (W9), RecordActualTime;
+  plus GetMeetings / GetMeetingDetail reads. Builder edits are not individually audited — the governance
+  event is `AgendaPublished`; `MeetingScheduled` + `AgendaPublished` are the two notification hooks for P6b.
+- **Cross-module seam** (ADR-0001). New `ITopicScheduler` contract in `Acmp.Shared/Contracts/Topics`,
+  **implemented in `Topics.Infrastructure`** (`TopicScheduler`) against the Topics DbContext — mirrors how
+  Membership implements the grant-on-accept writer for Topics. Both methods are **idempotent** (a topic not
+  in the expected source state is left untouched): `ScheduleAsync` (Prepared → Scheduled on agenda publish)
+  and `EnterCommitteeAsync` (Scheduled → InCommittee on meeting start). So a re-publish or mid-loop retry
+  never throws. Meetings advances topic lifecycle without ever touching Topics' tables.
+- **Infrastructure.** `MeetingsDbContext` (schema `meetings`) — attendance/discussion/agenda-items as owned
+  child tables; enums as int. Forward-only migration `Meetings_P6_Initial`; `MeetingKeyGenerator` (gap-free
+  `MTG-YYYY-###` / `AGN-YYYY-###`). Wired into `Program.cs` (module registration + MediatR assembly) and
+  `MigrationRunner` (third context).
+- **API.** `MeetingsEndpoints` — schedule/cancel, agenda build/reorder/timebox/presenter, publish,
+  start/end, attendance, discussion, actual-time, + meetings list/detail; **policy-gated per docs/10**
+  (Meeting.Schedule, Agenda.Publish, Attendance.Record, Minutes.Capture). 20 API/handler tests.
+- **ArchUnit.** Boundary tests extended to enforce Meetings module isolation (8 → 12 tests, all green).
+
+**Decisions / drift (no silent drift, guardrail 11). Settled, do not re-derive:**
+- **No new ADR** — new module on the settled architecture; no architecture change.
+- **MoM / minutes screen is P7**, out of P6 scope (the meeting workspace stubs record-decision / create-action
+  / call-vote → P7–P9).
+- **Notification scope floor = AC-051 + AC-053 only** for P6b; preferences, digests, reminder-Hangfire jobs,
+  and the Webex channel are deferred (ADR-0005 / docs/16). The ≤5s constraint (AC-051) is met by a synchronous
+  in-app write.
+- **StartMeeting requires a Published agenda** (W7) — enforced in the domain.
+- **Attendance roster is seeded client-side via `MarkAttendance`** (name/role from the SPA, which sources
+  `/api/members`); Meetings stores attendance display snapshots, it never reads Membership.
+- **The agenda builder's "Prepared topics" pool comes from the Topics API**, not Meetings — the builder passes
+  topic id + display snapshots into `AddAgendaItem`.
+
+**Verification (deterministic, green).** Backend **388/388** (Domain 42 · Architecture 12 · Application 314 ·
+Api 20), 0 skipped — cross-module isolation (Meetings ⟂ Topics ⟂ Membership) enforced by ArchUnit. Handler
+tests run against a real InMemory context with a faked `ITopicScheduler`. **Not yet run:** live SQL-Server
+migration apply + an authenticated `/api/meetings` round-trip (WebApplicationFactory integration tests are
+the optional P6 tail); the InMemory handler tests don't exercise the owned-table persistence on real SQL.
+
+**Acceptance audit (this entry).** **AC-044 Pending → Partial** — the backend reorder is built and tested
+(the `MoveAgendaItem` ±1 command + `Agenda.MoveItem`, the path a keyboard move-up/-down drives); the
+**keyboard-accessible agenda reorder UI** itself lands in P6c (mirrors the AC-043 backend-then-UI split).
+**AC-051 / AC-053 stay Pending → P6b** (the in-app Notifications backend: the channel + the publish/schedule
+fan-out). No other verdicts flip — P6a is a server surface.
+
+**Next.** **P6b** — in-app Notifications backend (the AC-051/053 floor): a Notifications module + an
+`InAppNotificationChannel : INotificationChannel`, `GET /api/notifications` + mark-read, and an
+`ICommitteeDirectory` (Shared contract, implemented in Membership) to resolve "all committee members"; fire
+`AgendaPublished` (from PublishAgendaHandler) and `MeetingScheduled` (from ScheduleMeetingHandler) — the
+hooks are already noted in those handlers. Then P6c/P6d (agenda builder + live meeting workspace UI), P6e
+(wire the NotificationCenter shell to the live feed), and the optional `/api/meetings` integration tests.
+
+---
+
 ## P5 review remediation — design-fidelity fixes + AC-043 correction
 
 ### 2026-06-27 — Fixed every finding from the pre-advance P5 audit (all severities)
