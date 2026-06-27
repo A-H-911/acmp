@@ -1,8 +1,10 @@
 # ADR-0004: Keycloak (OIDC) as Identity Provider
 
-- Status: Accepted
+- Status: Accepted — OIDC identity protocol in force; the *federation / external-org-Keycloak* aspect is **superseded by ADR-0015** (ACMP self-hosts Keycloak)
 - Date: 2026-06-24
 - Deciders: Architecture Committee (secretary-confirmed)
+
+> **Amendment (2026-06-25, ADR-0015):** ASM-001 proved false — the organization has no Keycloak. ACMP now **self-hosts Keycloak** as a bundled container with an **ACMP-owned realm**, instead of federating to an org instance. Everything below about the **OIDC protocol** (authorization-code + PKCE), **roles from group/realm-role claims**, **no self-registration**, and **ABAC for per-topic capabilities** remains in force — only *who runs Keycloak and defines the realm* changed (ACMP, not the org). See ADR-0015.
 
 ## Context and Problem Statement
 

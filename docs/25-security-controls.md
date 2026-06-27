@@ -10,7 +10,7 @@
 
 1. **Deny-by-default, defence-in-depth.** Authorization, transport, and validation enforced at every boundary (`24` §2), not just the edge.
 2. **Right-size to L2, not L3.** This is a small, internal, on-prem, low-traffic, high-sensitivity system. We meet **L2** in full. We explicitly **do not** adopt L3-only burdens that buy little here: HSM/key-vault hardware, full anti-automation/bot-defence tiers, exhaustive memory-safety proofs, or client-side cert pinning. Each such omission is noted inline as **[L3-skip]** with the reason. Insider-risk controls (SoD, immutability, audit) are nonetheless implemented at L3-grade because they are the actual threat.
-3. **The IdP owns authN strength.** ACMP federates to Keycloak (ADR-0004); MFA, password policy, and account lockout are configured **at Keycloak**, not re-implemented. ACMP validates tokens and enforces authZ.
+3. **The IdP owns authN strength.** ACMP self-hosts Keycloak (ADR-0015); MFA, password policy, and account lockout are configured in ACMP's **own** Keycloak realm, not re-implemented in ACMP app code. ACMP validates tokens and enforces authZ.
 4. **Insider-first.** Where prevention can't stop a privileged insider (P3), add **detection** (Seq anomaly alerting) and **non-repudiation** (append-only, attributed, optionally hash-chained audit).
 5. **No immutability bypass for any role** — including Administrator and Chairman (`10-permission-role-matrix.md` §E.5).
 
@@ -21,7 +21,7 @@
 | Control-ID | Control | Threat addressed | ASVS / Top 10 | Phase |
 |---|---|---|---|---|
 | **C-AUTH-01** | Browser↔IdP login via **OIDC Authorization-Code flow with PKCE** (public SPA client); no implicit flow, no ROPC. Tokens never in URL. | T-01, AB-7 | V10, V9 · A07 | P1 |
-| **C-AUTH-02** | **MFA enforced at Keycloak** for all human accounts; password policy, brute-force/lockout, and credential storage are the IdP's responsibility (ACMP holds no passwords). **No public self-registration** (ADR-0004) — invitation/provisioned onboarding only. | T-01, AB-3 | V6 · A07 | P1 |
+| **C-AUTH-02** | **MFA enforced at ACMP's self-hosted Keycloak realm** (ADR-0015) for all human accounts; password policy, brute-force/lockout, and credential storage are the IdP's responsibility (ACMP holds no passwords). **No public self-registration** (ADR-0004) — invitation/provisioned onboarding only. | T-01, AB-3 | V6 · A07 | P1 |
 | **C-AUTH-03** | **Validate the OIDC JWT on every API request** (signature via Keycloak JWKS, issuer, audience, expiry, `nbf`). Missing/invalid → **401**; insufficient role/scope → **403**. **No unauthenticated endpoint** except `/health` and the OIDC callback (NFR-020). **Actor identity = validated `sub` claim**, never a client-supplied id. | T-01, T-02, T-11, AB-7 | V9, V6, V4 · A07 | P1 |
 | **C-AUTH-04** | **Roles sourced only from Keycloak group/realm-role claims**, mapped to canonical roles (ADR-0004); the SPA cannot self-assert roles. Token claims are the single source of role truth, re-checked server-side per request. | T-07, AB-3 | V8, V9 | P1 |
 | **C-AUTH-05** | **Segregation-of-duties guards (SoD-1…SoD-5)** enforced as hard authZ checks (`10` §E.4): action **verifier ≠ owner/assignee** (SoD-1); MoM approver ≠ sole author, warn+audit (SoD-2); vote **cast ≠ count ≠ chairman override**, co-attested tally (SoD-3); decision recorder ≠ sole owner/presenter + COI exclusion (SoD-4); **Administrator excluded from all committee-content authority** (SoD-5). | T-04, T-05, T-07, T-11, AB-1, AB-2, AB-3, AB-7 | V8 | P1 |

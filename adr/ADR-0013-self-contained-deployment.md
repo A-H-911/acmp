@@ -1,8 +1,10 @@
 # ADR-0013: Self-Contained On-Premises Deployment (CON-001)
 
-- Status: Accepted
+- Status: Accepted — **amended by ADR-0015** (2026-06-25): all runtime dependencies are now bundled; the "two external exceptions" carve-out is withdrawn
 - Date: 2026-06-24
 - Deciders: Architecture Committee (secretary-confirmed)
+
+> **Amendment (2026-06-25, ADR-0015):** the self-contained model is **strengthened to zero external runtime services in v1**. Keycloak and SQL Server — previously the two allowed *external* exceptions — are now **bundled in ACMP's own Docker Compose stack**. Webex remains the only external host, as a deferred Phase-2 SaaS adapter. Lines below that describe SQL Server / Keycloak as "external / federated / not bundled" are superseded by ADR-0015.
 
 ## Context and Problem Statement
 
@@ -14,7 +16,7 @@ The organization operates a shared runtime infrastructure: Hangfire (background 
 - Scale: ≤20 users, low traffic, on-prem VM. Kubernetes, service mesh, and horizontal auto-scaling are unjustified operational complexity at this scale.
 - Availability target: 24×7 / 99.9% — achievable via a single redundant VM with nightly backups and Docker Compose restart policies, without a full HA cluster.
 - Docker Compose is the right abstraction for a single-VM deployment of 4–6 containers; it provides reproducibility, environment isolation, and declarative service definition without orchestration overhead.
-- Two deliberate exceptions are explicitly allowed: SQL Server (the org-mandated datastore, running as ACMP's own instance) and Keycloak (SSO identity provider, federated per brief mandate). Webex is a Phase-2 external SaaS integration, not shared runtime infra.
+- *(Amended by ADR-0015.)* Originally, SQL Server and Keycloak were the two runtime dependencies allowed to run *outside* the Compose stack. As of ADR-0015 **both are bundled in the Compose stack** — v1 has **zero external runtime services**. Webex remains a Phase-2 external SaaS integration, not shared runtime infra.
 
 ## Considered Options
 
@@ -26,24 +28,24 @@ The organization operates a shared runtime infrastructure: Hangfire (background 
 
 ## Decision Outcome
 
-Chosen option: "On-prem VM + Docker Compose; all ACMP infrastructure bundled as its own containers", because CON-001 is a hard constraint, Docker Compose is the correct orchestration tier for this scale, and bundling every runtime dependency (except SQL Server and Keycloak) in the Docker Compose stack makes the platform self-contained, reproducible, and operationally simple.
+Chosen option: "On-prem VM + Docker Compose; all ACMP infrastructure bundled as its own containers", because CON-001 is a hard constraint, Docker Compose is the correct orchestration tier for this scale, and bundling every runtime dependency (**including SQL Server and Keycloak, per ADR-0015**) in the Docker Compose stack makes the platform self-contained, reproducible, and operationally simple.
 
 ### Consequences
 
 - Good: ACMP is deployable on any VM that can run Docker without org infrastructure dependencies; upgrades of shared org infrastructure do not affect ACMP; the deployment is fully reproducible from the `docker-compose.yml` + env files; availability target is achievable with Docker Compose restart policies and VM-level redundancy; no K8s operational expertise needed.
-- Bad / trade-off: SQL Server and Keycloak are external to the Docker Compose stack (they run on the VM or a nearby server but are not bundled in the ACMP compose file) — ACMP has a startup dependency on both. If Keycloak is down, ACMP login fails (mitigated: JWT validation is local; existing sessions continue). If SQL Server is down, ACMP is fully unavailable — SQL Server's own HA (mirroring, AlwaysOn) is the mitigation, not ACMP's architecture.
+- Bad / trade-off: *(Amended by ADR-0015 — SQL Server and Keycloak are now **bundled** in the Compose stack, not external.)* ACMP has a startup dependency on both; Compose `depends_on` + health checks order startup. If Keycloak is down, ACMP login fails (mitigated: JWT validation is local; existing sessions continue). If SQL Server is down, ACMP is fully unavailable — addressed by ACMP's own nightly backup + warm-standby (now ACMP's operational responsibility, since both are bundled).
 
 ## Validation
 
 - Deployment test: fresh VM with Docker installed, `docker compose up`, all services start and pass health checks within 2 minutes.
-- Self-contained check: `docker compose` file contains no references to org-shared services (linted); any external hostname must be Keycloak, SQL Server, or Webex (Phase 2 only).
+- Self-contained check: `docker compose` file contains no references to org-shared services (linted); per ADR-0015 the **only** allowed external hostname is Webex (Phase 2). Keycloak and SQL Server are in-stack.
 - Backup/restore test: nightly backup script tested on staging — restore from backup produces a working ACMP instance within the defined RTO.
 - Health check endpoints: each container exposes `/health` or equivalent; Docker Compose `healthcheck` stanzas confirm readiness before dependent containers start.
 
 ## Links / Notes
 
-- Docker Compose service inventory (v1): `acmp-app` (.NET), `acmp-sqlserver` (SQL Server), `acmp-seq` (Serilog/OpenTelemetry backend), `acmp-minio` (object storage). Phase 2 adds: `acmp-tarseem` (render sidecar).
+- Docker Compose service inventory (v1, per ADR-0015): `acmp-app` (.NET), `acmp-web`, `acmp-keycloak` (identity — bundled), `acmp-sqlserver` (SQL Server — bundled), `acmp-seq` (Serilog/OpenTelemetry backend), `acmp-minio` (object storage), and Keycloak's datastore (per OQ-038). Phase 2 adds: `acmp-tarseem` (render sidecar).
 - Availability: 99.9% ≈ 8.7 hours downtime/year — achievable via VM-level redundancy (hot standby or snapshot restore), nightly SQL backups, and Docker Compose restart-always policies.
 - Secrets management: environment variables injected via Docker secrets or `.env` files (never committed to source); documented in `docs/33-containerization-and-deployment.md`.
 - CON-001 is a governing constraint for all ADRs in this package; violations require explicit secretary approval and a new ADR.
-- Related: ADR-0001 (modular monolith → single deployable), ADR-0003 (SQL Server — app-owned instance), ADR-0004 (Keycloak — federated, not bundled), ADR-0014 (Hangfire + Seq + MinIO bundled).
+- Related: ADR-0001 (modular monolith → single deployable), ADR-0003 (SQL Server — app-owned instance, **bundled** per ADR-0015), ADR-0004 + **ADR-0015** (Keycloak — **self-hosted, bundled**), ADR-0014 (Hangfire + Seq + MinIO bundled).

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a4f8a'/%3E%3Cg stroke='%23fff' stroke-width='2.9' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M16 6L9 24.5'/%3E%3Cpath d='M16 6L23 24.5'/%3E%3Cpath d='M11 18.2L21 18.2'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  button{font:inherit;cursor:pointer}
+  input,textarea{font:inherit}
+  [data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+  [data-acmp-theme="light"]{
+    --bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;
+    --border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;
+    --text:#1a232f;--text-2:#56616f;--text-3:#6b7480;
+    --primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#ffffff;--accent:#1a5fae;--primary-tint:#e9f1f9;
+    --focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);--scrim:rgba(16,24,40,.42);
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 18px 50px rgba(16,24,40,.22);
+    --st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;
+    --st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;
+    --st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;
+    --st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;
+    --st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f;
+  }
+  [data-acmp-theme="dark"]{
+    --bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;
+    --border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;
+    --text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;
+    --primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#ffffff;--accent:#6db0ee;--primary-tint:#15273a;
+    --focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);--scrim:rgba(0,0,0,.6);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 22px 60px rgba(0,0,0,.6);
+    --st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;
+    --st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;
+    --st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;
+    --st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;
+    --st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;
+    --st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f;
+  }
+  *:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+  ::selection{background:var(--ring)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  .flabel{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-3)}
+  .navi{display:flex;align-items:center;gap:11px;width:100%;height:40px;padding-inline:11px;border:0;border-radius:8px;font-size:13.5px;text-align:start;position:relative;background:transparent;color:var(--text-2);font-weight:500}
+  .seg{height:28px;padding-inline:11px;border:0;border-radius:7px;font-size:12px;font-weight:600}
+  .fbtn{height:34px;padding-inline:12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px;font-size:12.5px;font-weight:500}
+  .pillbtn{height:38px;padding-inline:15px;display:inline-flex;align-items:center;gap:8px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:600;font-size:13px;box-shadow:var(--shadow)}
+  .ghostbtn{height:38px;padding-inline:14px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font-weight:600;font-size:13px}
+  .lab{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text)}
+  .field{width:100%;min-height:40px;padding:9px 12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;outline:none;font-size:13.5px;display:flex;align-items:center;gap:8px}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fld2{grid-column:1/-1}
+  .selrow{display:flex;align-items:center;width:100%}
+  .pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding-inline:10px;border-radius:8px;font-size:12px;font-weight:500;background:var(--primary-tint);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 26%,transparent)}
+  .seln{display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;border-radius:8px;padding:8px 10px;text-align:start;cursor:pointer}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+  <header style="position:sticky;top:0;z-index:40;height:56px;display:flex;align-items:center;gap:14px;padding-inline:16px 18px;background:var(--header);border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:9px;min-width:180px">
+      <div style="width:30px;height:30px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+      <span style="font-size:14px;font-weight:700;letter-spacing:.3px">ACMP</span>
+    </div>
+    <div style="flex:1 1 0"></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onClick="{{ toggleLang }}" aria-label="Toggle language" class="fbtn" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9S14.5 18.6 12 21"></path></svg>{{ langBtn }}</button>
+      <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px" style-hover="background:var(--subtle);color:var(--text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+      <div style="display:flex;align-items:center;gap:8px;padding-inline-start:6px"><span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">KA</span><span style="line-height:1.1"><span style="display:block;font-size:12px;font-weight:600">{{ t.person }}</span><span style="display:block;font-size:10.5px;color:var(--text-3)">{{ t.role }}</span></span></div>
+    </div>
+  </header>
+
+  <main style="padding:18px 24px 80px;max-width:1080px;margin:0 auto">
+    <div style="margin-bottom:6px"><h1 style="margin:0;font-size:20px;font-weight:700">{{ t.docTitle }}</h1><p style="margin:4px 0 0;font-size:13px;color:var(--text-2)">{{ t.docSub }}</p></div>
+
+    <!-- screen switch -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0 18px">
+      <div style="display:flex;gap:3px;padding:3px;background:var(--sunken);border-radius:9px"><sc-for list="{{ tabs }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.go }}" aria-pressed="{{ s.sel }}" class="seg" style="{{ s.style }}">{{ s.label }}</button></sc-for></div>
+    </div>
+
+    <!-- ============ CREATE FORMS ============ -->
+    <sc-if value="{{ isForms }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start">
+        <!-- entity picker -->
+        <div class="card" style="padding:8px;position:sticky;top:72px">
+          <div class="flabel" style="padding:8px 10px 4px">{{ t.createWhat }}</div>
+          <sc-for list="{{ entityList }}" as="e" hint-placeholder-count="8">
+            <button onClick="{{ e.go }}" aria-current="{{ e.cur }}" class="seln" style="{{ e.style }}" style-hover="{{ e.hover }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="{{ e.d }}"></path></svg><span style="flex:1 1 auto;font-size:13px;font-weight:500">{{ e.label }}</span></button>
+          </sc-for>
+        </div>
+
+        <!-- form -->
+        <div>
+          <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-3);margin-bottom:10px"><span>{{ form.area }}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="color:var(--text-2)">{{ form.title }}</span></nav>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px"><div><h2 style="margin:0;font-size:19px;font-weight:700">{{ form.title }}</h2><div style="margin-top:4px;font-size:13px;color:var(--text-2)">{{ form.sub }}</div></div><span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--st-success-fg);font-weight:600;margin-top:4px;flex:0 0 auto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ t.autosaved }}</span></div>
+
+          <div class="card" style="padding:20px 22px">
+            <div class="fgrid">
+              <sc-for list="{{ form.fields }}" as="f" hint-placeholder-count="6">
+                <div class="{{ f.cls }}">
+                  <label class="lab">{{ f.label }}<sc-if value="{{ f.req }}" hint-placeholder-val="{{ false }}"><span style="color:var(--st-danger-fg)"> *</span></sc-if></label>
+                  <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ false }}"><div class="field" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><span style="flex:1 1 auto;color:{{ f.valColor }}">{{ f.value }}</span></div></sc-if>
+                  <sc-if value="{{ f.isArea }}" hint-placeholder-val="{{ false }}"><div class="field" style="min-height:78px;align-items:flex-start" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><span style="flex:1 1 auto;color:{{ f.valColor }};line-height:1.6">{{ f.value }}</span></div></sc-if>
+                  <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}"><div class="field" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><span style="flex:1 1 auto;color:{{ f.valColor }}">{{ f.value }}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M6 9l6 6 6-6"></path></svg></div></sc-if>
+                  <sc-if value="{{ f.isDate }}" hint-placeholder-val="{{ false }}"><div class="field" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg><span style="flex:1 1 auto">{{ f.value }}</span></div></sc-if>
+                  <sc-if value="{{ f.isSeg }}" hint-placeholder-val="{{ false }}"><div style="display:inline-flex;padding:3px;background:var(--sunken);border-radius:9px;width:100%"><sc-for list="{{ f.opts }}" as="o" hint-placeholder-count="3"><button class="seg" style="flex:1 1 0;{{ o.style }}">{{ o.label }}</button></sc-for></div></sc-if>
+                  <sc-if value="{{ f.isChips }}" hint-placeholder-val="{{ false }}"><div class="field" style="flex-wrap:wrap;gap:6px"><sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="3"><span class="pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ c }}</span></sc-for><span style="font-size:12px;color:var(--text-3)">{{ f.chipsAdd }}</span></div></sc-if>
+                  <sc-if value="{{ f.hint }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:flex-start;gap:7px;margin-top:7px;font-size:11.5px;color:{{ f.hintFg }};line-height:1.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><span>{{ f.hint }}</span></div></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:16px">
+            <span style="font-size:11.5px;color:var(--text-3);display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"></path></svg>{{ t.guardNote }}</span>
+            <div style="display:flex;gap:9px"><button class="ghostbtn" style-hover="background:var(--subtle)">{{ t.cancel }}</button><button onClick="{{ openConfirm }}" class="pillbtn" style-hover="background:var(--primary-hover)">{{ form.primary }}</button></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============ DIALOGS ============ -->
+    <sc-if value="{{ isDialogs }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0 0 18px;font-size:13px;color:var(--text-2);max-width:640px">{{ t.dlgIntro }}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <sc-for list="{{ dialogs }}" as="d" hint-placeholder-count="4">
+          <div>
+            <div class="flabel" style="margin-bottom:9px">{{ d.kind }}</div>
+            <div style="border-radius:14px;background:var(--scrim);padding:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)">
+              <div style="width:100%;max-width:380px;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden">
+                <div style="padding:18px 20px 0;display:flex;gap:13px">
+                  <span style="width:38px;height:38px;border-radius:10px;background:{{ d.iconBg }};color:{{ d.iconFg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ d.icon }}"></path></svg></span>
+                  <div style="flex:1 1 auto;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700">{{ d.title }}</h3><p style="margin:6px 0 0;font-size:13px;color:var(--text-2);line-height:1.55">{{ d.body }}</p></div>
+                </div>
+                <sc-if value="{{ d.hasGroups }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:14px 20px 4px">
+                    <sc-for list="{{ d.groups }}" as="g" hint-placeholder-count="4"><label style="display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ g.bd }};background:{{ g.bg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ g.ck }}"><path d="M5 12l5 5 9-10"></path></svg></span><span style="flex:1 1 auto;font-size:13px;color:var(--text)">{{ g.label }}</span><span style="font-size:11.5px;color:var(--text-3)">{{ g.count }}</span></label></sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ d.hasConfirmInput }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:12px 20px 0"><div style="font-size:11.5px;color:var(--text-2);margin-bottom:6px">{{ d.confirmLabel }}</div><div class="field" style="border-color:var(--st-danger-dot)"><span style="flex:1 1 auto;font-family:var(--mono);font-size:12.5px;color:var(--text-3)">{{ d.confirmPh }}</span></div></div>
+                </sc-if>
+                <div style="display:flex;justify-content:flex-end;gap:9px;padding:16px 20px">
+                  <button class="ghostbtn" style="height:36px" style-hover="background:var(--subtle)">{{ d.cancel }}</button>
+                  <button style="height:36px;padding-inline:15px;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:9px;font-weight:600;font-size:13px;background:{{ d.confirmBg }};color:#fff"><sc-if value="{{ d.confirmIcon }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ d.confirmIcon }}"></path></svg></sc-if>{{ d.confirm }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ COMPONENTS (placeholders the hero screens deferred) ============ -->
+    <sc-if value="{{ isComponents }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0 0 18px;font-size:13px;color:var(--text-2);max-width:640px">{{ t.cmpIntro }}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <!-- presenter picker -->
+        <div>
+          <div class="flabel" style="margin-bottom:9px">{{ t.cmpPresenter }}</div>
+          <div class="card" style="overflow:hidden">
+            <div style="padding:12px 14px;border-bottom:1px solid var(--border-soft)"><div style="font-size:12.5px;font-weight:600;margin-bottom:8px">{{ t.assignPresenter }}</div><div style="position:relative;display:flex;align-items:center"><span style="position:absolute;inset-inline-start:9px;color:var(--text-3)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></span><input aria-label="{{ t.searchMembers }}" placeholder="{{ t.searchMembers }}" style="width:100%;height:34px;padding-inline:31px 10px;border:1px solid var(--border);background:var(--subtle);color:var(--text);border-radius:8px;outline:none;font-size:12.5px" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"></div></div>
+            <div style="padding:6px">
+              <sc-for list="{{ members }}" as="m" hint-placeholder-count="4"><button class="seln" style="{{ m.style }}" style-hover="background:var(--subtle)"><span style="width:30px;height:30px;border-radius:50%;background:{{ m.avBg }};color:{{ m.avFg }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto">{{ m.i }}</span><span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;font-weight:500;color:var(--text)">{{ m.name }}</span><span style="display:block;font-size:11px;color:var(--text-3)">{{ m.role }}</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;opacity:{{ m.ck }}"><path d="M5 12l5 5 9-10"></path></svg></button></sc-for>
+            </div>
+          </div>
+        </div>
+        <!-- MoM RTE toolbar -->
+        <div>
+          <div class="flabel" style="margin-bottom:9px">{{ t.cmpRte }}</div>
+          <div class="card" style="overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border-soft);background:var(--header);flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:1px">
+                <sc-for list="{{ rteTools }}" as="b" hint-placeholder-count="8"><button aria-label="{{ b.label }}" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--text-2);border-radius:6px;font-size:13px;font-weight:{{ b.fw }};font-style:{{ b.fs }}" style-hover="background:var(--subtle);color:var(--text)"><sc-if value="{{ b.glyph }}" hint-placeholder-val="{{ false }}"><span style="text-decoration:{{ b.deco }}">{{ b.glyph }}</span></sc-if><sc-if value="{{ b.icon }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ b.icon }}"></path></svg></sc-if></button><sc-if value="{{ b.divider }}" hint-placeholder-val="{{ false }}"><span style="width:1px;height:18px;background:var(--border);margin-inline:4px"></span></sc-if></sc-for>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--st-success-fg);font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ t.savedAgo }}</span>
+            </div>
+            <div style="padding:16px 18px;min-height:160px">
+              <div style="font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--text-3);margin-bottom:7px">{{ t.rteSection }}</div>
+              <p style="margin:0 0 10px;font-size:13.5px;color:var(--text-2);line-height:1.65">{{ t.rteBody }}</p>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--primary-tint);border:1px solid color-mix(in srgb,var(--accent) 24%,transparent);border-radius:8px"><span class="key">DECN-2026-008</span><span style="font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.rteChip }}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <!-- immutability confirm dialog (form action) -->
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:90;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:24px" onClick="{{ closeConfirm }}">
+      <div role="dialog" aria-modal="true" style="width:100%;max-width:400px;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden">
+        <div style="padding:20px 22px 0;display:flex;gap:13px"><span style="width:40px;height:40px;border-radius:11px;background:var(--st-warn-bg);color:var(--st-warn-fg);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg></span><div><h3 style="margin:0;font-size:16px;font-weight:700">{{ t.immT }}</h3><p style="margin:6px 0 0;font-size:13px;color:var(--text-2);line-height:1.55">{{ t.immB }}</p></div></div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding:18px 22px"><button onClick="{{ closeConfirm }}" class="ghostbtn" style="height:36px" style-hover="background:var(--subtle)">{{ t.back }}</button><button onClick="{{ closeConfirm }}" class="pillbtn" style="height:36px" style-hover="background:var(--primary-hover)">{{ t.confirmRecord }}</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:860},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;forms&quot;,&quot;options&quot;:[&quot;forms&quot;,&quot;dialogs&quot;,&quot;components&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;entity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;decision&quot;,&quot;options&quot;:[&quot;decision&quot;,&quot;adr&quot;,&quot;invariant&quot;,&quot;action&quot;,&quot;risk&quot;,&quot;vote&quot;,&quot;dependency&quot;,&quot;mission&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { screen: this.props.screen || 'forms', entity: this.props.entity || 'decision', lang:'en', theme:'light', confirmOpen:false };
+  set(k,v){ this.setState({ [k]:v }); }
+
+  ICN = {
+    decision:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4',
+    adr:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7',
+    invariant:'M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM9 12l2 2 4-4',
+    action:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11',
+    risk:'M12 4l9 16H3L12 4zM12 10v4M12 17h.01',
+    vote:'M9 11l3 3L20 6M4 12v6a2 2 0 002 2h12',
+    dependency:'M6 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 22a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM6 7v3a3 3 0 003 3h6a3 3 0 003-3V7M12 13v4',
+    mission:'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM10 13a2 2 0 104 0 2 2 0 00-4 0zM13.5 15.5L15 17'
+  };
+
+  renderVals(){
+    const { screen, entity, lang, theme, confirmOpen } = this.state;
+    const isRtl = lang==='ar'; const L=(en,ar)=>isRtl?ar:en;
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl?'scaleX(-1)':'none';
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow)'; const segOff='background:transparent;color:var(--text-2)';
+    const ph='var(--text-3)', val='var(--text)';
+
+    const t = {
+      person:L('Khalid A.','خالد ع.'), role:L('Secretary of the Committee','أمين سر اللجنة'),
+      docTitle:L('Create flows & dialogs','مسارات الإنشاء والحوارات'),
+      docSub:L('The create/edit forms, confirmation dialogs, and deferred components used across ACMP.','نماذج الإنشاء/التحرير وحوارات التأكيد والمكوّنات المؤجَّلة عبر ACMP.'),
+      createWhat:L('Create','إنشاء'),
+      autosaved:L('Draft autosaved','حُفظت المسودة تلقائيًا'),
+      guardNote:L('Unsaved changes are kept if you leave','تُحفظ التغييرات غير المؤكدة عند المغادرة'),
+      cancel:L('Cancel','إلغاء'),
+      dlgIntro:L('Confirmation and destructive dialogs follow one pattern: an icon tile keyed to severity, a plain-language consequence, and a right-aligned cancel + primary pair. Destructive primaries are red; immutability warnings are amber.','تتبع حوارات التأكيد والإجراءات الحسّاسة نمطًا واحدًا: أيقونة مرمّزة بالخطورة، وعاقبة بلغة واضحة، وزر إلغاء وزر رئيسي محاذيان لليمين. الإجراءات الحسّاسة بالأحمر، وتحذيرات عدم القابلية للتعديل بالكهرماني.'),
+      cmpIntro:L('Elements the hero screens left as placeholders, now specified: the agenda presenter picker and the minutes rich-text toolbar with autosave.','عناصر تركتها الشاشات الرئيسية كعناصر نائبة، وقد حُدّدت الآن: منتقي مقدّم البند ومحرّر المحضر الغني مع الحفظ التلقائي.'),
+      cmpPresenter:L('Agenda presenter picker','منتقي مقدّم البند'),
+      assignPresenter:L('Assign presenter','تعيين مقدّم'), searchMembers:L('Search members…','ابحث في الأعضاء…'),
+      cmpRte:L('Minutes editor — toolbar + autosave','محرّر المحضر — الشريط والحفظ التلقائي'),
+      savedAgo:L('Saved 3s ago','حُفظ قبل 3 ث'), rteSection:L('Decisions','القرارات'),
+      rteBody:L('The committee approved the adoption of Keycloak as the standard identity provider, conditional on a documented rollback plan being produced before any cutover.','وافقت اللجنة على اعتماد Keycloak كموفّر هوية معياري، بشرط إعداد خطة تراجع موثّقة قبل أي تبديل.'),
+      rteChip:L('Approve Keycloak adoption, conditionally','الموافقة على تبنّي Keycloak مشروطًا'),
+      immT:L('Decisions are immutable','القرارات غير قابلة للتعديل'),
+      immB:L('Once recorded, this decision cannot be edited — only superseded by a new decision. Review the rationale and conditions before confirming.','بعد التسجيل لا يمكن تعديل هذا القرار — يُستبدل فقط بقرار جديد. راجع المبرّر والشروط قبل التأكيد.'),
+      back:L('Go back','رجوع'), confirmRecord:L('Record decision','تسجيل القرار')
+    };
+
+    // ----- tabs -----
+    const tabs=[['forms',L('Create forms','نماذج الإنشاء')],['dialogs',L('Dialogs','الحوارات')],['components',L('Components','المكوّنات')]].map(([k,label])=>({ go:()=>this.set('screen',k), sel:screen===k?'true':'false', label, style:screen===k?segOn:segOff }));
+
+    // ----- entity list -----
+    const entityMeta = {
+      decision:{ label:L('Decision','قرار'), area:L('Decisions & ADRs','القرارات وسجلات القرار') },
+      adr:{ label:L('ADR','سجل قرار'), area:L('Governance','الحوكمة') },
+      invariant:{ label:L('Invariant','ثابت معماري'), area:L('Governance','الحوكمة') },
+      action:{ label:L('Action','إجراء'), area:L('Actions','الإجراءات') },
+      risk:{ label:L('Risk','مخاطرة'), area:L('Risks','المخاطر') },
+      vote:{ label:L('Vote session','جلسة تصويت'), area:L('Decisions & ADRs','القرارات وسجلات القرار') },
+      dependency:{ label:L('Dependency','اعتمادية'), area:L('Dependencies','الاعتماديات') },
+      mission:{ label:L('Research mission','مهمة بحثية'), area:L('Research','البحث') }
+    };
+    const order=['decision','adr','invariant','action','risk','vote','dependency','mission'];
+    const entityList=order.map(k=>{ const sel=k===entity; return { label:entityMeta[k].label, d:this.ICN[k], cur:sel?'page':null,
+      style:sel?'background:var(--primary-tint);color:var(--accent)':'background:transparent;color:var(--text-2)',
+      hover:sel?'background:var(--primary-tint)':'background:var(--subtle);color:var(--text)', go:()=>this.set('entity',k) }; });
+
+    // ----- field helpers -----
+    const F=(type,label,value,opts={})=>({ type, label, value, full:opts.full, req:opts.req, hint:opts.hint, hintFg:opts.hintFg||'var(--text-3)', placeholder:opts.ph, chips:opts.chips, chipsAdd:opts.chipsAdd, opts:opts.opts });
+    const seg=(labels,selIdx)=>labels.map((label,i)=>({ label, style:i===selIdx?segOn:segOff }));
+
+    const forms = {
+      decision:{ title:L('Record a decision','تسجيل قرار'), sub:L('Capture the committee\u2019s outcome on a topic.','سجّل نتيجة اللجنة على موضوع.'), primary:L('Record decision','تسجيل القرار'), fields:[
+        F('select',L('Linked topic','الموضوع المرتبط'),'TOP-2026-014 — '+L('Adopt Keycloak as standard IdP','اعتماد Keycloak'),{full:true,req:true}),
+        F('select',L('Outcome','النتيجة'),L('Approved, conditionally','موافقة مشروطة'),{req:true}),
+        F('select',L('Approving authority','جهة الاعتماد'),L('Sara M. — Chairman','سارة م. — الرئيس'),{req:true}),
+        F('area',L('Rationale','المبرّر'),L('A single IdP reduces per-stream auth maintenance and standardizes token handling…','يخفّض موفّر الهوية الواحد صيانة المصادقة لكل مسار ويوحّد معالجة الرموز…'),{full:true,req:true}),
+        F('area',L('Conditions','الشروط'),L('A documented rollback plan must be produced before any cutover.','يجب إعداد خطة تراجع موثّقة قبل أي تبديل.'),{full:true}),
+        F('date',L('Effective date','تاريخ السريان'),L('18 Feb 2026','18 فبراير 2026'),{req:true}),
+        F('text',L('Affected systems','الأنظمة المتأثرة'),L('Identity, Platform, Payments','الهوية، المنصة، المدفوعات'),{})
+      ], hint:{ on:'rationale' } },
+      adr:{ title:L('Create an ADR','إنشاء سجل قرار'), sub:L('MADR-lite architecture decision record.','سجل قرار معماري بصيغة MADR المبسّطة.'), primary:L('Save ADR','حفظ السجل'), fields:[
+        F('text',L('Title','العنوان'),L('Keycloak as the standard IdP','Keycloak كموفّر هوية معياري'),{full:true,req:true}),
+        F('select',L('Status','الحالة'),L('Proposed','مقترح'),{req:true}),
+        F('select',L('Linked decision','القرار المرتبط'),'DECN-2026-008',{}),
+        F('area',L('Context','السياق'),L('Streams currently issue incompatible token lifetimes and maintain separate auth stacks…','تصدر المسارات حاليًا أعمار رموز غير متوافقة وتدير حزم مصادقة منفصلة…'),{full:true,req:true}),
+        F('area',L('Decision','القرار'),L('Adopt Keycloak, realm-per-stream, as the standard identity provider.','اعتماد Keycloak، نطاق لكل مسار، كموفّر هوية معياري.'),{full:true,req:true}),
+        F('area',L('Consequences','التبعات'),L('Positive: unified session handling. Negative: a dual-running migration window per stream.','إيجابي: توحيد إدارة الجلسات. سلبي: نافذة ترحيل مزدوجة لكل مسار.'),{full:true})
+      ]},
+      invariant:{ title:L('Create an invariant','إنشاء ثابت معماري'), sub:L('A standing rule systems must never violate.','قاعدة دائمة يجب ألا تخالفها الأنظمة.'), primary:L('Save invariant','حفظ الثابت'), fields:[
+        F('select',L('Category','الفئة'),L('Security','الأمن'),{req:true}),
+        F('select',L('Scope','النطاق'),L('All committee-governed services','كل الخدمات الخاضعة للحوكمة'),{req:true}),
+        F('area',L('Statement','النص'),L('Every committee-governed service must authenticate through the standard identity provider; no service may implement its own credential store.','يجب أن تُصادَق كل خدمة خاضعة للحوكمة عبر موفّر الهوية المعياري؛ ولا يجوز لأي خدمة بناء مخزن اعتماد خاص.'),{full:true,req:true}),
+        F('area',L('Rationale','المبرّر'),L('Centralized identity is auditable and revocable; scattered credential stores are the top breach vector.','الهوية المركزية قابلة للتدقيق والإلغاء؛ ومخازن الاعتماد المبعثرة أبرز ناقل اختراق.'),{full:true}),
+        F('select',L('Owner','المالك'),L('Khalid A. — Secretary','خالد ع. — أمين السر'),{})
+      ]},
+      action:{ title:L('Create an action','إنشاء إجراء'), sub:L('A tracked follow-up item.','بند متابعة متعقَّب.'), primary:L('Create action','إنشاء الإجراء'), fields:[
+        F('text',L('Title','العنوان'),L('Produce Keycloak migration ADR','إعداد سجل قرار ترحيل Keycloak'),{full:true,req:true}),
+        F('select',L('Linked to','مرتبط بـ'),'DECN-2026-008',{}),
+        F('select',L('Owner','المالك'),L('Omar H. — Member','عمر ح. — عضو'),{req:true}),
+        F('date',L('Due date','تاريخ الاستحقاق'),L('2 Mar 2026','2 مارس 2026'),{req:true}),
+        F('seg',L('Priority','الأولوية'),seg([L('Low','منخفضة'),L('Medium','متوسطة'),L('High','عالية')],2),{}),
+        F('area',L('Description','الوصف'),L('Draft the migration ADR covering realm strategy, rollback, and the dual-running window.','صياغة سجل قرار الترحيل شاملًا استراتيجية النطاقات والتراجع ونافذة التشغيل المزدوج.'),{full:true})
+      ]},
+      risk:{ title:L('Create a risk','إنشاء مخاطرة'), sub:L('Register a risk for tracking and mitigation.','سجّل مخاطرة للتعقّب والمعالجة.'), primary:L('Create risk','إنشاء المخاطرة'), fields:[
+        F('text',L('Title','العنوان'),L('Dual-running auth migration','ترحيل المصادقة المزدوج'),{full:true,req:true}),
+        F('select',L('Likelihood','الاحتمال'),L('Medium','متوسط'),{req:true}),
+        F('select',L('Impact','الأثر'),L('High','مرتفع'),{req:true}),
+        F('select',L('Owner','المالك'),L('Noura P. — Member','نورة ب. — عضو'),{req:true}),
+        F('select',L('Linked topic','الموضوع المرتبط'),'TOP-2026-014',{}),
+        F('area',L('Mitigation plan','خطة المعالجة'),L('Stage the cutover stream-by-stream with a tested rollback at each step.','نفّذ التبديل مسارًا تلو الآخر مع تراجع مختبَر في كل خطوة.'),{full:true})
+      ]},
+      vote:{ title:L('Configure a vote session','تهيئة جلسة تصويت'), sub:L('Voting is always attributed — anonymity is out of scope.','التصويت مُسنَد دائمًا — عدم الكشف خارج النطاق.'), primary:L('Open vote','فتح التصويت'), fields:[
+        F('select',L('Linked topic','الموضوع المرتبط'),'TOP-2026-014',{full:true,req:true}),
+        F('chips',L('Eligible voters','الناخبون المؤهّلون'),'',{full:true,req:true,chips:[L('Sara M.','سارة م.'),L('Omar H.','عمر ح.'),L('Noura P.','نورة ب.'),L('Lina K.','لينا ك.')],chipsAdd:L('+ add voter','+ إضافة ناخب')}),
+        F('chips',L('Ballot options','خيارات الاقتراع'),'',{full:true,chips:[L('Approve','موافقة'),L('Reject','رفض'),L('Abstain','امتناع')],chipsAdd:''}),
+        F('select',L('Quorum','النصاب'),L('5 of 7 eligible','5 من 7 مؤهّلين'),{req:true}),
+        F('date',L('Closes','يُغلق'),L('18 Feb 2026 · 11:00','18 فبراير 2026 · 11:00'),{}),
+        F('area',L('Conflict-of-interest note','ملاحظة تضارب المصالح'),L('Recusals are recorded by name and removed from the quorum base.','تُسجَّل حالات التنحّي بالاسم وتُستبعَد من أساس النصاب.'),{full:true,hint:L('Each ballot shows a recuse control to the voter.','يعرض كل اقتراع زرّ تنحٍّ للناخب.')})
+      ]},
+      dependency:{ title:L('Create a dependency','إنشاء اعتمادية'), sub:L('A typed link between two artifacts.','رابط مُصنَّف بين عنصرين.'), primary:L('Create dependency','إنشاء الاعتمادية'), fields:[
+        F('select',L('From entity','من العنصر'),'TOP-2026-014',{req:true}),
+        F('select',L('Relationship','العلاقة'),L('DependsOn','يعتمد على'),{req:true}),
+        F('select',L('To entity','إلى العنصر'),'TOP-2026-022',{full:true,req:true}),
+        F('area',L('Notes','ملاحظات'),L('Pagination standard must land before the gateway migration can proceed.','يجب اعتماد معيار الترقيم قبل المضي في ترحيل البوابة.'),{full:true})
+      ]},
+      mission:{ title:L('Create a research mission','إنشاء مهمة بحثية'), sub:L('Link a Keystone discovery package (optional).','اربط حزمة استكشاف Keystone (اختياري).'), primary:L('Create mission','إنشاء المهمة'), fields:[
+        F('text',L('Title','العنوان'),L('Evaluate a unified identity provider','تقييم موفّر هوية موحّد'),{full:true,req:true}),
+        F('select',L('Linked topic','الموضوع المرتبط'),'TOP-2026-014',{req:true}),
+        F('select',L('Status','الحالة'),L('In discovery','قيد الاستكشاف'),{}),
+        F('text',L('Keystone package','حزمة Keystone'),L('keystone://disc/idp-eval (optional)','keystone://disc/idp-eval (اختياري)'),{full:true,hint:L('Keystone is optional — this module works standalone.','Keystone اختياري — تعمل هذه الوحدة باستقلالية.')}),
+        F('area',L('Description','الوصف'),L('Assess whether one IdP can serve all committee-governed services with acceptable migration cost.','قيّم ما إذا كان موفّر هوية واحد يخدم كل الخدمات الخاضعة للحوكمة بتكلفة ترحيل مقبولة.'),{full:true})
+      ]}
+    };
+    const fm = forms[entity] || forms.decision;
+    const form = { area: entityMeta[entity].area, title: fm.title, sub: fm.sub, primary: fm.primary, fields: fm.fields.map((f,i)=>({
+      cls: f.full?'fld2':'fld', label:f.label, req:f.req,
+      isText:f.type==='text', isArea:f.type==='area', isSelect:f.type==='select', isDate:f.type==='date', isSeg:f.type==='seg', isChips:f.type==='chips',
+      value:f.value, valColor: f.value?val:ph, opts:f.opts, chips:f.chips, chipsAdd:f.chipsAdd,
+      hint:f.hint||null, hintFg:f.hintFg
+    })) };
+
+    // ----- dialogs -----
+    const grp=(label,count,on)=>({ label, count, bg:on?'var(--primary)':'transparent', bd:on?'var(--primary)':'var(--border-strong)', ck:on?'1':'0' });
+    const dialogs=[
+      { kind:L('Confirmation','تأكيد'), icon:'M5 12l5 5 9-10', iconBg:'var(--st-info-bg)', iconFg:'var(--st-info-fg)',
+        title:L('Publish this agenda?','نشر هذه الأجندة؟'), body:L('Members will be able to see the ordered agenda. You can still edit time-boxes after publishing.','سيتمكن الأعضاء من رؤية الأجندة المرتبة. يمكنك تعديل المهل بعد النشر.'),
+        cancel:L('Cancel','إلغاء'), confirm:L('Publish','نشر'), confirmBg:'var(--primary)' },
+      { kind:L('Publish + notify groups','نشر + إشعار المجموعات'), icon:'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0', iconBg:'var(--st-info-bg)', iconFg:'var(--st-info-fg)',
+        title:L('Publish & notify','نشر وإشعار'), body:L('Send an in-app notification to the selected groups. In-app is the only v1 channel.','أرسل إشعارًا داخل التطبيق للمجموعات المحددة. القناة الوحيدة في الإصدار الأول داخل التطبيق.'),
+        hasGroups:true, groups:[ grp(L('Committee members','أعضاء اللجنة'),'8',true), grp(L('Presenters','المقدّمون'),'3',true), grp(L('Reviewers','المراجعون'),'2',false), grp(L('Observers','المراقبون'),'5',false) ],
+        cancel:L('Cancel','إلغاء'), confirm:L('Publish & notify','نشر وإشعار'), confirmBg:'var(--primary)', confirmIcon:'M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z' },
+      { kind:L('Destructive','حسّاس'), icon:'M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6', iconBg:'var(--st-danger-bg)', iconFg:'var(--st-danger-fg)',
+        title:L('Cancel this meeting?','إلغاء هذا الاجتماع؟'), body:L('Scheduled topics return to the backlog and attendees are notified. This cannot be undone.','تعود المواضيع المجدولة إلى القائمة ويُبلَّغ الحضور. لا يمكن التراجع.'),
+        cancel:L('Keep meeting','الإبقاء على الاجتماع'), confirm:L('Cancel meeting','إلغاء الاجتماع'), confirmBg:'var(--st-danger-dot)', confirmIcon:'M18 6L6 18M6 6l12 12' },
+      { kind:L('Destructive — typed confirm','حسّاس — تأكيد كتابي'), icon:'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', iconBg:'var(--st-danger-bg)', iconFg:'var(--st-danger-fg)',
+        title:L('Deactivate user?','تعطيل المستخدم؟'), body:L('The user loses access immediately. Their authored records are retained for audit.','يفقد المستخدم الوصول فورًا. تُحفظ سجلاته المؤلَّفة للتدقيق.'),
+        hasConfirmInput:true, confirmLabel:L('Type the user\u2019s email to confirm','اكتب بريد المستخدم للتأكيد'), confirmPh:'omar.h@acmp.gov',
+        cancel:L('Cancel','إلغاء'), confirm:L('Deactivate','تعطيل'), confirmBg:'var(--st-danger-dot)' }
+    ];
+
+    // ----- components: presenter picker -----
+    const mem=(i,name,role,avSem,sel)=>({ i, name, role, avBg:`var(--st-${avSem}-bg)`, avFg:`var(--st-${avSem}-fg)`, ck:sel?'1':'0',
+      style: sel?'background:var(--primary-tint)':'background:transparent' });
+    const members=[ mem('OH',L('Omar H.','عمر ح.'),L('Member · Identity','عضو · الهوية'),'info',true), mem('NP',L('Noura P.','نورة ب.'),L('Member · Platform','عضو · المنصة'),'sched',false), mem('LK',L('Lina K.','لينا ك.'),L('Member · Payments','عضو · المدفوعات'),'success',false), mem('KA',L('Khalid A.','خالد ع.'),L('Secretary','أمين السر'),'warn',false) ];
+
+    // ----- RTE toolbar -----
+    const tb=(o)=>({ label:o.label, glyph:o.glyph||null, icon:o.icon||null, fw:o.fw||'600', fs:o.fs||'normal', deco:o.deco||'none', divider:o.divider||false });
+    const rteTools=[
+      tb({label:L('Bold','عريض'),glyph:'B',fw:'800'}),
+      tb({label:L('Italic','مائل'),glyph:'I',fs:'italic',fw:'600'}),
+      tb({label:L('Underline','تسطير'),glyph:'U',deco:'underline'}),
+      tb({label:L('Heading','عنوان'),glyph:'H',fw:'800',divider:true}),
+      tb({label:L('Bulleted list','قائمة نقطية'),icon:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'}),
+      tb({label:L('Numbered list','قائمة مرقّمة'),icon:'M10 6h11M10 12h11M10 18h11M4 6h1v4M4 10h2'}),
+      tb({label:L('Link artifact','ربط عنصر'),icon:'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1',divider:true}),
+      tb({label:L('Insert decision chip','إدراج بطاقة قرار'),icon:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z'})
+    ];
+
+    return {
+      dir:isRtl?'rtl':'ltr', theme, font, chev, t,
+      langBtn:isRtl?'English':'العربية', toggleLang:()=>this.set('lang',isRtl?'en':'ar'),
+      toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
+      tabs, isForms:screen==='forms', isDialogs:screen==='dialogs', isComponents:screen==='components',
+      entityList, form,
+      confirmOpen, openConfirm:()=>this.set('confirmOpen',true), closeConfirm:()=>this.set('confirmOpen',false),
+      dialogs, members, rteTools
+    };
+  }
+}
+</script>
+</body>
+</html>

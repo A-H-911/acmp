@@ -52,4 +52,13 @@ git pull --ff-only
 ## Roles
 
 - **Execution agent (Claude Code):** creates the branch, commits, pushes, opens the PR, and reports CI status. It **must not merge** to `main` until the human's phase Review returns **GO** and CI is green.
-- **Human (Secretary / Tech Lead):** runs the phase Review and m
+- **Human (Secretary / Tech Lead):** runs the phase Review and merges (or authorizes the agent to merge) when GO + green.
+
+## Tooling
+
+- Requires the **GitHub CLI `gh` authenticated** (`gh auth status`) **or** a connected GitHub integration. If neither is available, the agent **pushes the branch** and the human **opens/merges the PR** in the GitHub web UI; the agent then syncs `main`.
+- **Branch protection on `main`** (GitHub → Settings → Branches): require a PR before merge, require the CI status checks to pass, and disallow direct pushes. (`docs/32`)
+
+## Scope
+
+Applies to **every** phase `P1–P19` (`execution-handoff/phase-prompts.md`) and to every change-slice (e.g. `execution-handoff/CHANGE-001-keycloak-ownership.md`). The **Standard Footer** in `phase-prompts.md` and **guardrail #13** in `agent-guardrails.md` enforce it.

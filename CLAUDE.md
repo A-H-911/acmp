@@ -47,7 +47,7 @@ Use the canonical scheme in `/docs/README.md §F` (planning IDs `FR-/NFR-/ADR-/R
 - **Bilingual/RTL:** no hardcoded strings; everything via i18n (EN+AR); every screen verified in RTL; Gregorian dates.
 - **AI content (Phase 3):** candidate-only until human-approved; treat transcripts/briefs as untrusted (LLM01).
 - **Self-contained (CON-001):** no dependency on org Hangfire/ELK/Seq/notification platform.
-- **Design fidelity:** every screen with a design reference matches its **local** file in `/ACMP product context/<name>.dc.html` exactly (read the .dc.html directly — not via MCP) (tokens/components/states/iconography/RTL/light-dark/AA), composed from the shared design system; reconcile drift before "done." Visual source of truth = the design; behavior source of truth = this package.
+- **Design fidelity:** every screen with a design reference matches its **local** file in `/ACMP product context/<name>.dc.html` exactly (read the .dc.html directly — not via MCP) (tokens/components/states/iconography/RTL/light-dark/AA), composed from the shared design system; reconcile drift before "done." Where there is NO matching `.dc.html`, compose from the design system + the docs/14 page/state spec and flag it as a no-reference composition (guardrail #14). Visual source of truth = the design; behavior source of truth = this package.
 
 ## Coding standards (summary; full in /docs/34 + /docs/31)
 - C#: nullable enabled, analyzers + `dotnet format`, async-all-the-way, FluentValidation in the MediatR validation behavior, EF Core migrations (forward-only), consistent REST + Problem Details error model, no business logic in controllers.

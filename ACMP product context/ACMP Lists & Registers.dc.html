@@ -62,6 +62,8 @@
   .gDep{display:grid;grid-template-columns:minmax(140px,1fr) 132px minmax(140px,1fr) 92px 124px 112px;align-items:center}
   .gAdr{display:grid;grid-template-columns:124px minmax(220px,1fr) 140px minmax(160px,1.1fr);align-items:center}
   .gInv{display:grid;grid-template-columns:92px minmax(220px,1fr) 126px 120px 110px 86px;align-items:center}
+  .gDec{display:grid;grid-template-columns:128px minmax(200px,1fr) 150px 116px 122px 116px;align-items:center}
+  .gVio{display:grid;grid-template-columns:124px minmax(200px,1fr) 108px 124px 104px minmax(110px,.7fr);align-items:center}
   .gAudit{display:grid;grid-template-columns:152px minmax(150px,1fr) 130px 132px minmax(170px,1.3fr);align-items:center}
   .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
   .ttl{font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -171,7 +173,8 @@
           <sc-if value="{{ isAdrs }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;gap:4px;margin-bottom:15px;border-bottom:1px solid var(--border)">
               <button onClick="{{ adrTabAdrsGo }}" aria-pressed="{{ adrTabAdrsSel }}" style="height:38px;padding-inline:4px;margin-inline-end:18px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabAdrsFg }};border-bottom:2px solid {{ adrTabAdrsBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7"></path></svg>{{ t.tabAdrs }}<span style="font-size:11.5px;font-weight:700;color:var(--text-3);background:var(--subtle);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ adrCount }}</span></button>
-              <button onClick="{{ adrTabInvGo }}" aria-pressed="{{ adrTabInvSel }}" style="height:38px;padding-inline:4px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabInvFg }};border-bottom:2px solid {{ adrTabInvBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 7v6M9 9.5h6"></path></svg>{{ t.tabInv }}<span style="font-size:11.5px;font-weight:700;color:var(--text-3);background:var(--subtle);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ invCount }}</span></button>
+              <button onClick="{{ adrTabInvGo }}" aria-pressed="{{ adrTabInvSel }}" style="height:38px;padding-inline:4px;margin-inline-end:18px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabInvFg }};border-bottom:2px solid {{ adrTabInvBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 7v6M9 9.5h6"></path></svg>{{ t.tabInv }}<span style="font-size:11.5px;font-weight:700;color:var(--text-3);background:var(--subtle);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ invCount }}</span></button>
+              <button onClick="{{ adrTabVioGo }}" aria-pressed="{{ adrTabVioSel }}" style="height:38px;padding-inline:4px;border:0;background:transparent;font-size:14px;font-weight:600;color:{{ adrTabVioFg }};border-bottom:2px solid {{ adrTabVioBd }};margin-bottom:-1px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3L12 4zM12 10v4M12 17h.01"></path></svg>{{ t.tabVio }}<span style="font-size:11.5px;font-weight:700;color:#fff;background:var(--st-danger-dot);border-radius:8px;padding:1px 7px;font-feature-settings:'tnum'">{{ vioCount }}</span></button>
             </div>
           </sc-if>
 
@@ -231,6 +234,40 @@
                     <span class="cell" style="gap:6px"><sc-if value="{{ r.overdue }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--st-danger-dot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></sc-if><span style="font-size:12.5px;font-weight:{{ r.dueWeight }};color:{{ r.dueColor }};font-feature-settings:'tnum'">{{ r.due }}</span></span>
                     <span class="cell" style="gap:8px"><span class="pbar"><span style="display:block;height:100%;width:{{ r.pct }};background:{{ r.pctColor }}"></span></span><span style="font-size:11.5px;font-weight:600;color:var(--text-2);font-feature-settings:'tnum';flex:0 0 auto">{{ r.pct }}</span></span>
                     <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.status }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- DECISIONS TABLE -->
+            <sc-if value="{{ isDecisions }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gDec hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="6"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                  <button onClick="{{ r.open }}" class="gDec row" style="opacity:{{ r.dimOp }}" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell" style="flex-direction:column;align-items:flex-start;gap:2px"><span class="ttl">{{ r.title }}</span><span class="key" style="font-size:10.5px;color:var(--text-3)">{{ r.topic }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.outcome }}</span></span>
+                    <span class="cell"><span style="font-size:12.5px;color:var(--text-2);font-feature-settings:'tnum'">{{ r.eff }}</span></span>
+                    <span class="cell" style="gap:8px"><span class="av">{{ r.chairI }}</span><span class="sub2">{{ r.chairN }}</span></span>
+                    <span class="cell"><span class="key" style="font-size:11.5px;color:var(--text-2)">{{ r.vote }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- VIOLATIONS TABLE -->
+            <sc-if value="{{ isViolations }}" hint-placeholder-val="{{ false }}">
+              <div class="card">
+                <div class="gVio hrow"><sc-for list="{{ cols }}" as="c" hint-placeholder-count="6"><button onClick="{{ c.sort }}" class="hcell" style="cursor:{{ c.cursor }};color:{{ c.color }}">{{ c.label }}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ c.sortOp }};transform:{{ c.sortDir }}"><path d="M12 5v14M7 10l5-5 5 5"></path></svg></button></sc-for></div>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+                  <button onClick="{{ r.open }}" class="gVio row" style-hover="background:var(--subtle)">
+                    <span class="cell key">{{ r.k }}</span>
+                    <span class="cell"><span class="ttl">{{ r.title }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.chip }}"><span class="dot" style="background:{{ r.dot }}"></span>{{ r.sev }}</span></span>
+                    <span class="cell"><span class="chip" style="{{ r.stChip }}"><span class="dot" style="background:{{ r.stDot }}"></span>{{ r.status }}</span></span>
+                    <span class="cell"><span class="key" style="font-size:11px">{{ r.inv }}</span></span>
+                    <span class="cell"><span class="sub2">{{ r.stream }}</span></span>
                   </button>
                 </sc-for>
               </div>
@@ -394,7 +431,7 @@
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;actions&quot;,&quot;options&quot;:[&quot;actions&quot;,&quot;risks&quot;,&quot;deps&quot;,&quot;adrs&quot;,&quot;audit&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;actions&quot;,&quot;options&quot;:[&quot;actions&quot;,&quot;risks&quot;,&quot;deps&quot;,&quot;adrs&quot;,&quot;decisions&quot;,&quot;audit&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   state = { screen: this.props.defaultScreen || 'actions', lang:'en', theme:'light', dataState: this.props.dataState || 'live', adrTab:'adrs', detail:null, overdueOnly:false, blockedOnly:false, liveMsg:'' };
   set(k,v){ this.setState({ [k]:v }); }
@@ -438,7 +475,7 @@ class Component extends DCLogic {
       errorB:L('A network error interrupted the request. No data was lost — please retry.','حدث خطأ في الشبكة أثناء الطلب. لم تُفقد أي بيانات — يُرجى إعادة المحاولة.'),
       retry:L('Retry','إعادة المحاولة'), contact:L('Contact support','تواصل مع الدعم'),
       blocked:L('Blocked','محجوب'), crossStream:L('Cross-stream','عابر للمسارات'),
-      tabAdrs:L('ADRs','سجلات القرار'), tabInv:L('Architecture Invariants','الثوابت المعمارية'),
+      tabAdrs:L('ADRs','سجلات القرار'), tabInv:L('Architecture Invariants','الثوابت المعمارية'), tabVio:L('Violations','المخالفات'),
       related:L('Related','العلاقات'), relatedSub:L('Traceability — both directions','التتبّع — بالاتجاهين'),
       openGraph:L('Open dependency graph','فتح مخطط الاعتماديات'), progress:L('Progress','التقدّم'),
       overdueWord:L('Overdue','متأخر'), exposureMatrix:L('Probability × Impact','الاحتمال × الأثر'),
@@ -459,7 +496,7 @@ class Component extends DCLogic {
       mkNav('home', L('Home','الرئيسية'), this.ICN.home, null, false, false),
       mkNav('backlog', L('Backlog','قائمة المواضيع'), this.ICN.backlog, '15', false, false),
       mkNav('agenda', L('Agenda & Meetings','الأجندة والاجتماعات'), this.ICN.agenda, null, false, false),
-      mkNav('decisions', L('Decisions','القرارات'), this.ICN.decisions, null, false, false),
+      mkNav('decisions', L('Decisions','القرارات'), this.ICN.decisions, null, screen==='decisions', true),
       mkNav('actions', L('Actions','الإجراءات'), this.ICN.actions, '8', screen==='actions', true)
     ];
     const navGov = [
@@ -558,9 +595,10 @@ class Component extends DCLogic {
       bd:on?'var(--accent)':'var(--border)', bg:on?'var(--primary-tint)':'var(--surface)', fg:on?'var(--accent)':'var(--text-2)' });
 
     let head={}, cols=[], rows=[], gridClass='gAct', emptyB='', errorReq='', savedView='', filters=[];
-    const isActions=screen==='actions', isRisks=screen==='risks', isDeps=screen==='deps', isAdrs=screen==='adrs';
+    const isActions=screen==='actions', isRisks=screen==='risks', isDeps=screen==='deps', isAdrs=screen==='adrs', isDecisions=screen==='decisions';
     const isAdrTab = isAdrs && adrTab==='adrs';
     const isInvTab = isAdrs && adrTab==='invariants';
+    const isViolations = isAdrs && adrTab==='violations';
 
     if(isActions){
       gridClass='gAct'; savedView=L('My open actions','إجراءاتي المفتوحة'); errorReq='GET /api/actions — 503 · req 7a1c-…-d04';
@@ -591,7 +629,7 @@ class Component extends DCLogic {
       emptyB=L('No dependencies match the current filters.','لا اعتماديات تطابق المرشّحات الحالية.');
       rows=data.map((d,i)=>{ const m=relMeta[d.rel]; const s=depStatus[d.st]; return { from:d.from, to:d.to, relation:m.l, relColor:m.c, relArrow: m.up?(isRtl?'scaleX(1)':'scaleX(-1)'):(isRtl?'scaleX(-1)':'none'), blocked:d.blocked, cross:d.cross, status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), open:()=>this.openDetail('deps','D'+i) }; });
       showingN=data.length;
-    } else { // adrs
+    } else if(isAdrs){ // adrs
       savedView = adrTab==='adrs'?L('All ADRs','كل السجلات'):L('Active invariants','الثوابت النشطة');
       errorReq='GET /api/adrs — 503 · req 5e6a-…-f31';
       head={ title:L('ADRs & Invariants','سجلات القرار والثوابت'), count: adrTab==='adrs'?L(`${adrsRaw.length} records`,`${adrsRaw.length} سجل`):L(`${invRaw.length} invariants`,`${invRaw.length} ثابت`), alert: adrTab==='invariants'?L('4 violations open','٤ مخالفات مفتوحة'):'', alertColor:'var(--st-danger-fg)', alertDot:'var(--st-danger-dot)', primary: adrTab==='adrs'?L('New ADR','سجل قرار جديد'):L('New invariant','ثابت جديد') };
@@ -611,11 +649,51 @@ class Component extends DCLogic {
         showingN=invRaw.length;
       }
     }
-    const showing = L(`Showing ${showingN}`,`عرض ${showingN}`);
+    let showingFinal = showingN;
+
+    const decisionsRaw = [
+      { k:'DECN-2026-008', title:{en:'Approve Keycloak adoption, conditionally',ar:'الموافقة على اعتماد Keycloak بشروط'}, topic:'TOP-2026-014', out:'condapproved', eff:{en:'18 Feb 2026',ar:'١٨ فبراير ٢٠٢٦'}, vote:'5–1 · 1 abstain', superseded:false },
+      { k:'DECN-2026-007', title:{en:'Adopt standard API pagination & error model',ar:'اعتماد نموذج موحّد للترقيم والأخطاء'}, topic:'TOP-2026-022', out:'approved', eff:{en:'4 Feb 2026',ar:'٤ فبراير ٢٠٢٦'}, vote:'6–0', superseded:false },
+      { k:'DECN-2026-005', title:{en:'Interim auth bridging approach',ar:'نهج الجسر المؤقت للمصادقة'}, topic:'TOP-2026-009', out:'superseded', eff:{en:'21 Jan 2026',ar:'٢١ يناير ٢٠٢٦'}, vote:'5–1', superseded:true, supersededBy:'DECN-2026-008' },
+      { k:'DECN-2026-004', title:{en:'Defer event-streaming spike pending research',ar:'تأجيل دراسة بثّ الأحداث بانتظار البحث'}, topic:'TOP-2026-031', out:'deferred', eff:{en:'21 Jan 2026',ar:'٢١ يناير ٢٠٢٦'}, vote:'4–2', superseded:false },
+      { k:'DECN-2026-002', title:{en:'Reject premature multi-region rollout',ar:'رفض التوسّع المبكر متعدد المناطق'}, topic:'TOP-2026-003', out:'rejected', eff:{en:'14 Jan 2026',ar:'١٤ يناير ٢٠٢٦'}, vote:'1–5', superseded:false }
+    ];
+    const decOutcome = { approved:{l:L('Approved','موافَق عليه'),s:'success'}, condapproved:{l:L('Conditionally approved','موافقة مشروطة'),s:'sched'}, rejected:{l:L('Rejected','مرفوض'),s:'danger'}, deferred:{l:L('Deferred','مؤجّل'),s:'warn'}, superseded:{l:L('Superseded','مُستبدَل'),s:'neutral'} };
+    const violationsRaw = [
+      { k:'VIO-2026-011', desc:{en:'Payments service stores tokens outside the vault',ar:'خدمة المدفوعات تخزّن الرموز خارج الخزنة'}, sev:'critical', st:'open', inv:'AIV-003', stream:{en:'Payments',ar:'المدفوعات'} },
+      { k:'VIO-2026-009', desc:{en:'Health portal bypasses the standard IdP',ar:'بوابة الصحة تتجاوز موفّر الهوية الموحّد'}, sev:'high', st:'ack', inv:'AIV-001', stream:{en:'Health',ar:'الصحة'} },
+      { k:'VIO-2026-007', desc:{en:'Notifications API lacks the pagination envelope',ar:'واجهة الإشعارات تفتقر غلاف الترقيم'}, sev:'medium', st:'open', inv:'AIV-005', stream:{en:'Notifications',ar:'الإشعارات'} },
+      { k:'VIO-2026-004', desc:{en:'Permits stream uses a deprecated TLS profile',ar:'مسار التصاريح يستخدم ملف TLS مهمَلًا'}, sev:'high', st:'resolved', inv:'AIV-002', stream:{en:'Permits',ar:'التصاريح'} },
+      { k:'VIO-2026-002', desc:{en:'Identity service logs PII at debug level',ar:'خدمة الهوية تسجّل بيانات شخصية بمستوى التصحيح'}, sev:'medium', st:'waived', inv:'AIV-004', stream:{en:'Identity',ar:'الهوية'} }
+    ];
+    const vioSev = { critical:{l:L('Critical','حرجة'),s:'danger'}, high:{l:L('High','عالية'),s:'warn'}, medium:{l:L('Medium','متوسطة'),s:'sched'}, low:{l:L('Low','منخفضة'),s:'neutral'} };
+    const vioStatus = { open:{l:L('Open','مفتوحة'),s:'danger'}, ack:{l:L('Acknowledged','مُقَرّة'),s:'warn'}, resolved:{l:L('Resolved','محلولة'),s:'success'}, waived:{l:L('Waived','مُعفاة'),s:'neutral'} };
+
+    let showingN2=0;
+    if(isDecisions){
+      gridClass='gDec'; savedView=L('All decisions','كل القرارات'); errorReq='GET /api/decisions — 503 · req 5c2a-…-e91';
+      emptyB=L('No decisions recorded yet. Decisions are issued from a meeting once a vote closes.','لا قرارات مسجّلة بعد. تُصدَر القرارات من اجتماع بعد إغلاق التصويت.');
+      const supN=decisionsRaw.filter(d=>d.superseded).length;
+      head={ title:L('Decision register','سجل القرارات'), count:L(decisionsRaw.length+' decisions',decisionsRaw.length+' قرار'), alert:L(supN+' superseded',supN+' مُستبدَل'), alertColor:'var(--text-3)' };
+      cols=[sortCol(L('ID','المعرّف')),sortCol(L('Decision','القرار')),sortCol(L('Outcome','النتيجة')),sortCol(L('Effective','يسري من')),plainCol(L('Authority','السلطة')),plainCol(L('Vote','التصويت'))];
+      filters=[ mkFilter(L('Outcome','النتيجة')), mkFilter(L('Stream','المسار')), mkFilter(L('Date range','النطاق الزمني')) ];
+      rows=decisionsRaw.map(d=>{ const o=decOutcome[d.out]; return { k:d.k, title:d.title[lang], topic:d.topic, chip:this.chip(o.s), dot:this.dot(o.s), outcome:o.l, eff:d.eff[lang], chairI:'SM', chairN:L('S. M.','س. م.'), vote:d.vote, dimOp:d.superseded?'.6':'1', open:()=>this.openDetail('decision',d.k) }; });
+      showingN2=decisionsRaw.length; showingFinal=decisionsRaw.length;
+    } else if(isViolations){
+      gridClass='gVio'; savedView=L('Open violations','المخالفات المفتوحة'); errorReq='GET /api/governance/violations — 503 · req 8b3d-…-a02';
+      emptyB=L('No violations recorded. Invariants are currently upheld across all streams.','لا مخالفات مسجّلة. الثوابت مُحترمة حاليًا عبر جميع المسارات.');
+      const crit=violationsRaw.filter(v=>v.sev==='critical').length;
+      head={ title:L('Invariant violations','مخالفات الثوابت'), count:L(violationsRaw.length+' violations',violationsRaw.length+' مخالفة'), alert:L(crit+' critical',crit+' حرجة'), alertColor:'var(--st-danger-fg)' };
+      cols=[sortCol(L('ID','المعرّف')),sortCol(L('Description','الوصف')),sortCol(L('Severity','الخطورة')),sortCol(L('Status','الحالة')),plainCol(L('Invariant','الثابت')),plainCol(L('Stream','المسار'))];
+      filters=[ mkFilter(L('Severity','الخطورة')), mkFilter(L('Status','الحالة')), mkFilter(L('Invariant','الثابت')) ];
+      rows=violationsRaw.map(v=>{ const sv=vioSev[v.sev], st=vioStatus[v.st]; return { k:v.k, title:v.desc[lang], chip:this.chip(sv.s), dot:this.dot(sv.s), sev:sv.l, stChip:this.chip(st.s), stDot:this.dot(st.s), status:st.l, inv:v.inv, stream:v.stream[lang], open:()=>this.openDetail('violation',v.k) }; });
+      showingN2=violationsRaw.length; showingFinal=violationsRaw.length;
+    }
+    const showing = L('Showing '+showingFinal, 'عرض '+showingFinal);
 
     // ---------- DETAIL ----------
     let det=null, showDetail=false;
-    if(detail){ det=this.buildDetail(detail, {actionsRaw,actStatus,risksRaw,riskStatus,depsRaw,relMeta,depStatus,adrsRaw,adrStatus,invRaw,invStatus,catMeta,lvlL,expSem,lvlIdx}, lang, L, t, isRtl); showDetail=!!det; }
+    if(detail){ det=this.buildDetail(detail, {actionsRaw,actStatus,risksRaw,riskStatus,depsRaw,relMeta,depStatus,adrsRaw,adrStatus,invRaw,invStatus,catMeta,lvlL,expSem,lvlIdx,decisionsRaw,decOutcome,violationsRaw,vioSev,vioStatus}, lang, L, t, isRtl); showDetail=!!det; }
 
     // ---------- AUDIT TRAIL (Auditor role) ----------
     const isAudit = screen==='audit';
@@ -643,7 +721,10 @@ class Component extends DCLogic {
       toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
       themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
       navCommittee, navGov, navKnowledge, navInsights, navSystem, stateTabs, skelRows, head, cols, rows, gridClass, filters, savedView, showing, emptyB, errorReq,
-      isActions, isRisks, isDeps, isAdrs, isAdrTab, isInvTab, isAudit,
+      isActions, isRisks, isDeps, isAdrs, isAdrTab, isInvTab, isAudit, isDecisions, isViolations,
+      adrTabVioGo:()=>this.set('adrTab','violations'), adrTabVioSel:adrTab==='violations'?'true':'false',
+      adrTabVioFg:adrTab==='violations'?'var(--text)':'var(--text-2)', adrTabVioBd:adrTab==='violations'?'var(--accent)':'transparent',
+      vioCount:String(5),
       auditRows, auditFilters,
       idI:idCur.i, idName:idCur.name, idRole:idCur.role, idIsAuditor:isAudit,
       auditTitle:L('Audit Trail','سجل التدقيق'), auditCount:L(auditRaw.length+' recent events',''+auditRaw.length+' حدث أخير'),
@@ -707,6 +788,24 @@ class Component extends DCLogic {
         facts:[ {label:L('Category','الفئة'),value:c.l}, {label:L('Scope','النطاق'),value:iv.scope[lang]}, {label:L('Status','الحالة'),value:s.l}, {label:L('Violations','المخالفات'),value:String(iv.v),color:has?'var(--st-danger-fg)':'var(--st-success-fg)'}, {label:L('Owner','المالك'),value:own('khalid')}, {label:L('Invariant ID','معرّف الثابت'),value:iv.k} ],
         descLabel:L('Statement & rationale','النص والمبرّر'), desc:L('Architecture Invariants are always-true constraints the committee enforces across the estate. Violations are surfaced from automated checks and committee review; an open violation count above zero flags governance attention.','الثوابت المعمارية قيود صحيحة دائمًا تفرضها اللجنة عبر المنظومة. تظهر المخالفات من الفحوص الآلية ومراجعة اللجنة؛ وأي عدد مخالفات مفتوحة أكبر من صفر يستدعي انتباه الحوكمة.'),
         related: has?[ rel('down','SVC-Gateway',L('Violating service','خدمة مخالِفة')), rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ]:[ rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ], graphLink:false };
+    }
+    if(sel.kind==='decision'){
+      const d=D.decisionsRaw.find(x=>x.k===k); if(!d) return null; const o=D.decOutcome[d.out];
+      const related=[ rel('up',d.topic,L('Originating topic','الموضوع المنشئ')), rel('rel','MTG-2026-019',L('Decided in meeting','تقرّر في اجتماع')) ];
+      if(d.out==='condapproved'||d.out==='approved') related.push(rel('down','ADR-2026-003',L('Resulting ADR','سجل القرار الناتج')));
+      if(d.superseded&&d.supersededBy) related.push(rel('down',d.supersededBy,L('Superseded by','مُستبدَل بـ')));
+      return { k:d.k, title:d.title[lang], sub:d.title[isRtl?'en':'ar'], status:o.l, chip:this.chip(o.s), dot:this.dot(o.s), overdueBadge:false,
+        facts:[ {label:L('Outcome','النتيجة'),value:o.l,color:`var(--st-${o.s}-fg)`}, {label:L('Topic','الموضوع'),value:d.topic}, {label:L('Effective','يسري من'),value:d.eff[lang]}, {label:L('Authority','السلطة'),value:L('S. M. (Chairman)','س. م. (الرئيس)')}, {label:L('Vote','التصويت'),value:d.vote}, {label:L('Decision ID','معرّف القرار'),value:d.k} ],
+        descLabel:L('Rationale','المبرّر'), desc:L('Committee decisions are issued from a closed vote and approved by the chairman by name. Once issued, a decision is immutable: corrections are made by issuing a superseding decision that links both directions, preserving the audit trail.','تُصدَر قرارات اللجنة من تصويت مغلق ويعتمدها الرئيس بالاسم. وبعد إصدارها تصبح غير قابلة للتغيير؛ وتتم التصحيحات بإصدار قرار بديل يربط بالاتجاهين، ممّا يحفظ أثر التدقيق.'),
+        immutable:!d.superseded, supersededNote:d.superseded?L('This decision was superseded by '+d.supersededBy+' and is retained read-only.','استُبدِل هذا القرار بـ '+d.supersededBy+' ويُحتفظ به للقراءة فقط.'):'',
+        related, graphLink:false };
+    }
+    if(sel.kind==='violation'){
+      const v=D.violationsRaw.find(x=>x.k===k); if(!v) return null; const sv=D.vioSev[v.sev]; const st=D.vioStatus[v.st];
+      return { k:v.k, title:v.desc[lang], sub:v.desc[isRtl?'en':'ar'], status:st.l, chip:this.chip(st.s), dot:this.dot(st.s), overdueBadge:false,
+        facts:[ {label:L('Severity','الخطورة'),value:sv.l,color:`var(--st-${sv.s}-fg)`}, {label:L('Status','الحالة'),value:st.l}, {label:L('Invariant','الثابت'),value:v.inv}, {label:L('Stream','المسار'),value:v.stream[lang]}, {label:L('Discovered','اكتُشف'),value:L('Automated check','فحص آلي')}, {label:L('Violation ID','معرّف المخالفة'),value:v.k} ],
+        descLabel:L('Detail & remediation','التفصيل والمعالجة'), desc:L('A violation records where a system breaches a standing architecture invariant. It is surfaced from automated checks or committee review, triaged by severity, and tracked to resolution or a recorded waiver with rationale.','تسجّل المخالفة موضع إخلال نظام بثابت معماري قائم. تُظهر من الفحوص الآلية أو مراجعة اللجنة، وتُصنّف حسب الخطورة، وتُتابع حتّى الحل أو إعفاء موثّق بمبرّر.'),
+        related:[ rel('up',v.inv,L('Violated invariant','الثابت المخالَف')), rel('rel','SVC-Gateway',L('Discovering service','الخدمة المكتشِفة')) ], graphLink:false };
     }
     return null;
   }

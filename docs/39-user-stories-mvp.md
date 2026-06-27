@@ -16,7 +16,7 @@
 
 | US-ID | User Story | FR-IDs | Priority | Size |
 |---|---|---|---|---|
-| US-001 | As any user, I want to log in via the organization's Keycloak SSO (OIDC), so that I do not need a separate ACMP password and access is governed by my existing identity. | FR-001 | M | M |
+| US-001 | As any user, I want to log in via ACMP's self-hosted Keycloak SSO (OIDC) (ADR-0015), so that I do not need a separate ACMP password and access is governed by my Keycloak identity. | FR-001 | M | M |
 | US-002 | As any user, I want my ACMP role (Chairman, Secretary, Member, etc.) to be derived automatically from my Keycloak group/realm-role claims, so that the platform enforces the correct permissions without manual role assignment in ACMP. | FR-002, FR-018 | M | M |
 | US-003 | As any user, I want my session to expire after a configurable idle period and to be prompted to re-authenticate, so that unattended sessions do not remain open. | FR-001, FR-013 | M | S |
 | US-004 | As any user, I want to see only the navigation items and action buttons my role is authorized to use, so that I am not confused by options I cannot execute. | FR-024 | M | M |

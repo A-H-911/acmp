@@ -349,7 +349,7 @@ class Component extends DCLogic {
     ];
 
     // ---- reports ----
-    const viewTabs = [['executive',L('Executive','تنفيذي')],['committee',L('Committee','اللجنة')],['stream',L('Stream','المسارات')],['audit',L('Audit','التدقيق')]].map(([k,label])=>({
+    const viewTabs = [['executive',L('Executive','تنفيذي')],['committee',L('Committee','اللجنة')],['stream',L('Stream','المسارات')],['decisions',L('Decision history','سجل القرارات')],['actions',L('Action trends','اتجاهات الإجراءات')],['audit',L('Audit','التدقيق')]].map(([k,label])=>({
       go:()=>this.set('reportView',k), sel:reportView===k?'true':'false', label, style:reportView===k?segOn:segOff }));
     const stateTabs = [['loaded',L('Live','مباشر')],['loading',L('Loading','تحميل')],['empty',L('Empty','فارغ')]].map(([k,label])=>({
       go:()=>this.set('dataState',k), sel:dataState===k?'true':'false', label, style:dataState===k?segOn:segOff }));
@@ -357,6 +357,8 @@ class Component extends DCLogic {
       executive:L('Executive overview · committee-wide health','نظرة تنفيذية · صحة اللجنة'),
       committee:L('Committee operations · backlog, aging, attendance','عمليات اللجنة · القائمة والعمر والحضور'),
       stream:L('Per-stream breakdown across delivery teams','تفصيل حسب مسارات التسليم'),
+      decisions:L('Decision history · outcomes and approvals over time','سجل القرارات · النتائج والاعتمادات عبر الزمن'),
+      actions:L('Action trends · created, closed, and overdue over time','اتجاهات الإجراءات · المُنشأة والمُغلقة والمتأخرة عبر الزمن'),
       audit:L('Audit & compliance · attribution and immutability','التدقيق والامتثال · الإسناد وعدم القابلية للتعديل')
     };
     const filters = [
@@ -400,6 +402,18 @@ class Component extends DCLogic {
         { title:L('Risk by stream','المخاطر حسب المسار'), sub:L('open risks · colored by max severity','مخاطر مفتوحة'), kpi:'9', kpiSub:L('open risks','مخاطر مفتوحة'), isBars:true, bars: bars([[L('Identity','الهوية'),3,100,cD],[L('Notifications','الإشعارات'),2,67,cW],[L('Payments','المدفوعات'),2,67,cW],[L('Health','الصحة'),1,33,cG],[L('Permits','التصاريح'),1,33,cG]]) },
         { title:L('Cross-stream dependencies','الاعتماديات بين المسارات'), sub:L('blocked items by stream','بنود محجوبة لكل مسار'), kpi:'4', kpiSub:L('blocked across streams','محجوبة عبر المسارات'), isBars:true, bars: bars([[L('Identity','الهوية'),2,100,cD],[L('Payments','المدفوعات'),1,50,cW],[L('Notifications','الإشعارات'),1,50,cW],[L('Health','الصحة'),0,4,cN],[L('Permits','التصاريح'),0,4,cN]]) },
         { title:L('Throughput by stream','الإنتاجية حسب المسار'), sub:L('closed this quarter','أُغلق هذا الربع'), isStat:true, stats: stat([['11',L('Identity','الهوية')],['9',L('Payments','المدفوعات')],['7',L('Permits','التصاريح')],['10',L('Health','الصحة')]]) }
+      ],
+      decisions: [
+        { title:L('Decisions per quarter','القرارات لكل ربع'), sub:L('issued & superseded over time','الصادرة والمُستبدَلة عبر الزمن'), kpi:'11', kpiSub:L('issued this quarter','صدرت هذا الربع'), delta:'+3', deltaColor:'var(--st-success-fg)', deltaBg:'var(--st-success-bg)', isColumns:true, cols: cols([['Q1',6],['Q2',8],['Q3',7],['Q4',11]],11) },
+        { title:L('Outcome mix','مزيج النتائج'), sub:L('11 decisions · this quarter','11 قرارًا · هذا الربع'), ...decisionStack },
+        { title:L('Approval turnaround','زمن الاعتماد'), sub:L('days from vote close to chairman sign-off','أيام من إغلاق التصويت إلى اعتماد الرئيس'), kpi:'1.4', kpiSub:L('days median','أيام (الوسيط)'), delta:'-0.6', deltaColor:'var(--st-success-fg)', deltaBg:'var(--st-success-bg)', isBars:true, bars: bars([[L('Same day','نفس اليوم'),4,57,cG],[L('1–2 days','١–٢ يوم'),2,29,cA],[L('3+ days','٣+ أيام'),1,14,cN]]) },
+        { title:L('Supersede activity','نشاط الاستبدال'), sub:L('decisions revised by a superseding record','قرارات نُقّحت بقرار بديل'), isStat:true, stats: stat([['1',L('Superseded','مُستبدَلة'),'var(--st-warn-fg)'],['10',L('Active','نشطة'),'var(--st-success-fg)'],['0',L('Disputed','متنازَع عليها')],['100%',L('Traceable','قابلة للتتبّع'),'var(--st-success-fg)']]) }
+      ],
+      actions: [
+        { title:L('Created vs closed','المُنشأة مقابل المُغلقة'), sub:L('actions per week','إجراءات أسبوعيًا'), kpi:'+5', kpiSub:L('net closed this month','صافي المُغلق هذا الشهر'), delta:'+5', deltaColor:'var(--st-success-fg)', deltaBg:'var(--st-success-bg)', isColumns:true, cols: cols([['W1',7],['W2',9],['W3',6],['W4',11],['W5',8],['W6',12]],12) },
+        { title:L('Open actions by status','الإجراءات المفتوحة حسب الحالة'), sub:L('current snapshot','لمحة حالية'), isBars:true, bars: bars([[L('Open','مفتوح'),5,42,cN],[L('In progress','قيد التنفيذ'),4,33,cA],[L('Blocked','محجوب'),1,8,cD],[L('Verified','مُتحقَّق'),2,17,cG]]) },
+        { title:L('Overdue trend','اتجاه التأخّر'), sub:L('overdue actions per week','إجراءات متأخرة أسبوعيًا'), kpi:'3', kpiSub:L('overdue now','متأخرة الآن'), delta:'-2', deltaColor:'var(--st-success-fg)', deltaBg:'var(--st-success-bg)', isColumns:true, cols: cols([['W1',6],['W2',5],['W3',5],['W4',4],['W5',4],['W6',3]],6) },
+        { title:L('Verification rate','معدّل التحقّق'), sub:L('closed actions verified by a reviewer','إجراءات مُغلقة تحقّق منها مراجع'), isStat:true, stats: stat([['92%',L('Verified','مُتحقَّق'),'var(--st-success-fg)'],['37',L('Closed','مُغلقة')],['3',L('Awaiting verify','بانتظار التحقّق'),'var(--st-warn-fg)'],['1.8',L('Avg days to verify','متوسط أيام التحقّق')]]) }
       ],
       audit: [
         { title:L('Chairman approval coverage','تغطية اعتماد الرئيس'), sub:L('decisions requiring sign-off','قرارات تتطلب اعتمادًا'), kpi:'100%', kpiSub:L('8 of 8 recorded','8 من 8 موثّقة'), delta:L('compliant','ملتزم'), deltaColor:'var(--st-success-fg)', deltaBg:'var(--st-success-bg)', isStat:true, stats: stat([['8',L('Decisions approved','قرارات معتمدة'),'var(--st-success-fg)'],['0',L('Missing sign-off','بدون اعتماد')],['3',L('Overrides recorded','تجاوزات موثّقة')],['100%',L('Attributed','منسوبة'),'var(--st-success-fg)']]) },

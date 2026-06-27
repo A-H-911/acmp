@@ -12,7 +12,7 @@ Primary user: the **Secretary** (you are building for them) plus the **Chairman*
 - **Authorization** on every operation (role policy + ABAC), least privilege, segregation of duties.
 - **Audit immutability:** every state change audited; votes/decisions/ADRs/published-minutes immutable (superseded, not edited); hash-chain votes/decisions/audit.
 - **Always-attributed voting** with eligible voters, quorum, abstentions, and recorded chairman approval/override.
-- **Self-contained** deployment (CON-001): app-owned Hangfire on ACMP SQL, self-hosted Seq + MinIO, in-app notifications; Keycloak OIDC for identity (roles via claims); SQL Server only.
+- **Self-contained** deployment (CON-001): app-owned Hangfire on ACMP SQL, self-hosted Seq + MinIO, in-app notifications; **self-hosted Keycloak (ADR-0015)** OIDC for identity (ACMP-owned realm; roles via claims); SQL Server only (also bundled) → zero external runtime services (Webex Phase 2 is the only external dependency).
 - **Traceability** wired as you build (typed relationships; live traceability matrix).
 - Non-functionals per `/docs/08` (right-sized: ≤20 users, 24×7/99.9% via simple redundancy + nightly backups, WCAG 2.2 AA, OWASP ASVS 5.0 L2).
 

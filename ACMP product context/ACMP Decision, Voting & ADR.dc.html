@@ -82,6 +82,13 @@
       <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-2);margin-bottom:18px"><span style="font-family:var(--mono);color:var(--accent)">VOTE-2026-014</span><span style="width:3px;height:3px;border-radius:50%;background:var(--text-3)"></span><span>{{ t.linkedTopic }}</span><span style="display:inline-flex;align-items:center;gap:5px;color:var(--st-neutral-fg);background:var(--st-neutral-bg);border-radius:6px;padding:2px 8px;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>{{ t.attributedVote }}</span></div>
 
       <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start">
+        <sc-if value="{{ voteBanner }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-column:1 / -1;display:flex;align-items:flex-start;gap:12px;background:{{ voteBanner.bg }};border:1px solid {{ voteBanner.bd }};border-radius:12px;padding:14px 16px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ voteBanner.fg }}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><path d="{{ voteBanner.icon }}"></path></svg>
+            <div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;color:{{ voteBanner.fg }}">{{ voteBanner.title }}</div><div style="font-size:12.5px;color:var(--text-2);line-height:1.5;margin-top:3px">{{ voteBanner.msg }}</div></div>
+            <sc-if value="{{ voteBanner.cta }}" hint-placeholder-val="{{ false }}"><button style="flex:0 0 auto;height:34px;padding-inline:13px;border:1px solid {{ voteBanner.bd }};background:var(--surface);color:{{ voteBanner.fg }};border-radius:8px;font-size:12.5px;font-weight:600" style-hover="background:var(--subtle)">{{ voteBanner.cta }}</button></sc-if>
+          </div>
+        </sc-if>
         <!-- left: motion + voters -->
         <div style="display:flex;flex-direction:column;gap:16px">
           <!-- motion -->
@@ -131,7 +138,7 @@
           </section>
 
           <!-- your ballot (open) -->
-          <sc-if value="{{ vOpen }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ vBallotOpen }}" hint-placeholder-val="{{ true }}">
             <section style="background:var(--surface);border:1px solid var(--accent);border-radius:12px;box-shadow:var(--shadow)">
               <div style="padding:13px 16px;border-bottom:1px solid var(--border-soft)"><h2 style="margin:0;font-size:13px;font-weight:600">{{ t.yourBallot }}</h2><div style="font-size:11px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>{{ t.ballotAttributed }}</div></div>
               <div style="padding:14px 16px">
@@ -142,6 +149,36 @@
                 <button onClick="{{ openConfirm }}" disabled="{{ castDisabled }}" style="width:100%;height:40px;margin-top:11px;border:0;background:{{ castBg }};color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:{{ castOp }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7 21h10a2 2 0 002-2V7l-5-4H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>{{ t.castVote }}</button>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft)"><button style="flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding-inline:11px;border:1px solid var(--border-strong);background:var(--surface);color:var(--st-warn-fg);border-radius:8px;font-size:12px;font-weight:600" style-hover="background:var(--st-warn-bg)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M5.6 5.6l12.8 12.8"></path></svg>{{ t.recuseAction }}</button><span style="font-size:10.5px;color:var(--text-3);line-height:1.4">{{ t.recuseNote }}</span></div>
                 <div style="font-size:10.5px;color:var(--text-3);text-align:center;margin-top:8px">{{ t.castNote }}</div>
+              </div>
+            </section>
+          </sc-if>
+
+          <!-- ballot: not yet open -->
+          <sc-if value="{{ vNotOpen }}" hint-placeholder-val="{{ false }}">
+            <section style="background:var(--surface);border:1px dashed var(--border-strong);border-radius:12px;box-shadow:var(--shadow);padding:18px 16px;text-align:center">
+              <span style="width:40px;height:40px;border-radius:11px;background:var(--st-info-bg);color:var(--st-info-fg);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+              <div style="font-size:13.5px;font-weight:600;margin-bottom:4px">{{ t.notOpenTitle }}</div>
+              <div style="font-size:12px;color:var(--text-3);line-height:1.5;margin-bottom:13px">{{ t.notOpenSub }}</div>
+              <button style="width:100%;height:40px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:var(--primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>{{ t.openVoting }}</button>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:8px">{{ t.openVotingNote }}</div>
+            </section>
+          </sc-if>
+
+          <!-- ballot: ineligible -->
+          <sc-if value="{{ vIneligible }}" hint-placeholder-val="{{ false }}">
+            <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:16px;display:flex;align-items:flex-start;gap:11px">
+              <span style="width:32px;height:32px;border-radius:9px;background:var(--subtle);color:var(--text-3);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></span>
+              <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">{{ t.viewOnlyTitle }}</div><div style="font-size:12px;color:var(--text-2);line-height:1.5">{{ t.viewOnlySub }}</div></div>
+            </section>
+          </sc-if>
+
+          <!-- ballot: already voted (double-vote blocked) -->
+          <sc-if value="{{ vDoubleErr }}" hint-placeholder-val="{{ false }}">
+            <section style="background:var(--surface);border:1px solid var(--st-warn-dot);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+              <div style="padding:12px 16px;background:var(--st-warn-bg);border-bottom:1px solid var(--st-warn-dot);display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--st-warn-fg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"></path></svg><span style="font-size:13px;font-weight:700;color:var(--st-warn-fg)">{{ t.alreadyVotedTitle }}</span></div>
+              <div style="padding:14px 16px">
+                <div style="font-size:12px;color:var(--text-2);line-height:1.5;margin-bottom:11px">{{ t.alreadyVotedSub }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--subtle);border-radius:9px"><span style="font-size:12px;color:var(--text-3)">{{ t.yourRecordedVote }}</span><span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding-inline:10px;border-radius:8px;font-size:12px;font-weight:700;background:var(--st-success-bg);color:var(--st-success-fg)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ t.approve }}</span></div>
               </div>
             </section>
           </sc-if>
@@ -312,7 +349,7 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;voting&quot;,&quot;options&quot;:[&quot;voting&quot;,&quot;decision&quot;,&quot;adr&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;voteState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;open&quot;,&quot;options&quot;:[&quot;open&quot;,&quot;closed&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;decisionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;adrState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;accepted&quot;,&quot;options&quot;:[&quot;proposed&quot;,&quot;accepted&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900},&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;voting&quot;,&quot;options&quot;:[&quot;voting&quot;,&quot;decision&quot;,&quot;adr&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;voteState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;open&quot;,&quot;options&quot;:[&quot;open&quot;,&quot;closed&quot;,&quot;not_open&quot;,&quot;quorum_failed&quot;,&quot;ineligible&quot;,&quot;double_error&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;decisionState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;active&quot;,&quot;options&quot;:[&quot;active&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;adrState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;accepted&quot;,&quot;options&quot;:[&quot;proposed&quot;,&quot;accepted&quot;,&quot;superseded&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   state = {
     screen: this.props.defaultScreen || 'voting',
@@ -347,6 +384,9 @@ class Component extends DCLogic {
       quorum:L('Quorum','النصاب'), yourBallot:L('Your ballot','بطاقتك'), ballotAttributed:L('Recorded under your name','يُسجّل باسمك'),
       commentPh:L('Add a comment with your vote (optional)…','أضف تعليقًا مع صوتك (اختياري)…'),
       castVote:L('Cast vote','الإدلاء بالصوت'), castNote:L('You can change your vote until voting closes.','يمكنك تغيير صوتك حتى إغلاق التصويت.'),
+      notOpenTitle:L('Voting not yet open','التصويت لم يُفتح بعد'), notOpenSub:L('The ballot is configured. The chair opens voting when the item is reached.','البطاقة مُعدّة. يفتح الرئيس التصويت عند الوصول للبند.'), openVoting:L('Open voting','فتح التصويت'), openVotingNote:L('Chair / Secretary only','الرئيس / أمين السر فقط'),
+      viewOnlyTitle:L('View-only','للعرض فقط'), viewOnlySub:L('You are not an eligible voter for this committee. You can follow the live tally and result.','لست ناخبًا مؤهّلًا لهذه اللجنة. يمكنك متابعة الحصيلة والنتيجة مباشرةً.'),
+      alreadyVotedTitle:L('Already voted','تم التصويت مسبقًا'), alreadyVotedSub:L('Your ballot was recorded and votes are immutable; a second submission was blocked.','سُجّل صوتك والأصوات غير قابلة للتغيير؛ ومُنع إرسال ثانٍ.'), yourRecordedVote:L('Your recorded vote','صوتك المُسجّل'),
       approve:L('Approve','موافقة'), reject:L('Reject','رفض'), abstain:L('Abstain','امتناع'),
       recused:L('Recused','متنحٍّ'), recuseAction:L('Recuse — conflict of interest','التنحّي — تضارب مصالح'), recuseNote:L('Recusal is recorded by name and removes you from the quorum base.','يُسجّل التنحّي بالاسم ويخرجك من أساس النصاب.'),
       voteClosedLocked:L('Vote closed & locked','أُغلق التصويت وقُفل'), closedAt:L('Closed 18 Feb 2026 · 10:34','أُغلق 18 فبراير 2026 · 10:34'),
@@ -385,8 +425,9 @@ class Component extends DCLogic {
     ].map(([k,label,d])=>({ go:()=>this.set('screen',k), sel:screen===k?'true':'false', label, d, style:screen===k?segOn:segOff }));
 
     // ===== VOTING =====
-    const vOpen = voteState==='open'; const vClosed = voteState==='closed';
-    const voteStateTabs=[['open',L('Open','مفتوح')],['closed',L('Closed','مغلق')]].map(([k,label])=>({ go:()=>this.set('voteState',k), sel:voteState===k?'true':'false', label, style:voteState===k?segOn+';font-weight:600':segOff+';font-weight:600' }));
+    const vOpen = voteState==='open' || voteState==='ineligible' || voteState==='double_error'; const vClosed = voteState==='closed';
+    const vBallotOpen = voteState==='open';
+    const voteStateTabs=[['open',L('Open','مفتوح')],['closed',L('Closed','مغلق')],['not_open',L('Not open','غير مفتوح')],['quorum_failed',L('Quorum failed','فشل النصاب')],['ineligible',L('Ineligible','غير مؤهّل')],['double_error',L('Double-vote','تصويت مكرر')]].map(([k,label])=>({ go:()=>this.set('voteState',k), sel:voteState===k?'true':'false', label, style:voteState===k?'background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600':'background:transparent;color:var(--text-2)' }));
     const vStateChip = vOpen?'background:var(--st-danger-bg);color:var(--st-danger-fg)':'background:var(--st-success-bg);color:var(--st-success-fg)';
     const vStateDot = vOpen?cD:cG; const vStatePulse = vOpen?'animation:acmpPulse 1.6s ease-in-out infinite':''; const vStateLabel = vOpen?L('Voting open','التصويت مفتوح'):L('Closed & locked','مغلق ومقفل');
 
@@ -396,7 +437,9 @@ class Component extends DCLogic {
     const openVotes = { SM:'approve', OH:'approve', NP:'approve', LK:'abstain' };
     const comments = { OH:L('Strongly support — prerequisite for our SSO work.','أؤيد بشدة — شرط مسبق لعملنا.'), LK:L('Abstaining pending the payments tokenization review.','أمتنع بانتظار مراجعة ترميز المدفوعات.'), SM:L('Approving conditional on the rollback plan.','موافقة مشروطة بخطة التراجع.'), FH:L('Recused — conflict of interest: advises the proposed vendor. Excluded from the quorum base.','تنحٍّ — تضارب مصالح: يقدّم الاستشارة للمورّد المقترح. مُستبعَد من أساس النصاب.') };
     const voteVisual = { approve:{chip:this.sem('success').chip, icon:this.ICN_APPROVE, label:t.approve}, reject:{chip:this.sem('danger').chip, icon:this.ICN_REJECT, label:t.reject}, abstain:{chip:this.sem('neutral').chip, icon:this.ICN_ABSTAIN, label:t.abstain} };
-    const votesNow = vClosed ? closedVotes : openVotes;
+    const vNotOpen=voteState==='not_open', vQuorumFail=voteState==='quorum_failed', vIneligible=voteState==='ineligible', vDoubleErr=voteState==='double_error';
+    const quorumFailVotes = { SM:'approve', OH:'approve', LK:'abstain', YR:'reject' };
+    const votesNow = vClosed ? closedVotes : (vQuorumFail ? quorumFailVotes : openVotes);
     const voters = Object.keys(voteMeta).map(i=>{ const p=voteMeta[i]; const recused=!!recusedSet[i]; const v=recused?null:votesNow[i]; const voted=!!v;
       return { i, name:p[isRtl?'ar':'en'], role:p.role, isChair:!!p.chair, voted, recused, pending:!voted&&!recused,
         voteChip:voted?voteVisual[v].chip:'', voteIcon:voted?voteVisual[v].icon:'', voteLabel:voted?voteVisual[v].label:'',
@@ -416,8 +459,17 @@ class Component extends DCLogic {
     // quorum pips
     const needed=5; const present=castTotal;
     const quorumMet=present>=needed;
-    const pips=[]; for(let i=0;i<voterCount;i++){ const filled=i<present; pips.push({ bg: filled?(quorumMet?'var(--st-success-dot)':'var(--st-warn-dot)'):'var(--sunken)', shadow: i===needed-1?'0 0 0 1.5px var(--st-success-fg)':'none' }); }
-    const quorum = { fg:quorumMet?'var(--st-success-fg)':'var(--st-warn-fg)', icon:quorumMet?'M5 12l5 5 9-10':'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', label:quorumMet?L('Quorum met','اكتمل النصاب'):L('Quorum pending','النصاب قيد الاكتمال'), detail:L(present+' of '+voterCount+' voted · '+needed+' required · 1 recused','صوّت '+present+' من '+voterCount+' · المطلوب '+needed+' · متنحٍّ واحد') };
+    const quorumFailed=vQuorumFail;
+    const pips=[]; for(let i=0;i<voterCount;i++){ const filled=i<present; pips.push({ bg: filled?(quorumFailed?'var(--st-danger-dot)':(quorumMet?'var(--st-success-dot)':'var(--st-warn-dot)')):'var(--sunken)', shadow: i===needed-1?'0 0 0 1.5px var(--st-success-fg)':'none' }); }
+    const quorum = { fg:quorumFailed?'var(--st-danger-fg)':(quorumMet?'var(--st-success-fg)':'var(--st-warn-fg)'), icon:(quorumMet&&!quorumFailed)?'M5 12l5 5 9-10':'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', label:quorumFailed?L('Quorum NOT met','لم يكتمل النصاب'):(quorumMet?L('Quorum met','اكتمل النصاب'):L('Quorum pending','النصاب قيد الاكتمال')), detail:L(present+' of '+voterCount+' voted · '+needed+' required'+(quorumFailed?'':' · 1 recused'),'صوّت '+present+' من '+voterCount+' · المطلوب '+needed) };
+
+    // edge-state banner
+    const _tone={ info:{bg:'var(--st-info-bg)',fg:'var(--st-info-fg)',dot:'var(--st-info-dot)',bd:'var(--st-info-dot)'}, danger:{bg:'var(--st-danger-bg)',fg:'var(--st-danger-fg)',dot:'var(--st-danger-dot)',bd:'var(--st-danger-dot)'}, warn:{bg:'var(--st-warn-bg)',fg:'var(--st-warn-fg)',dot:'var(--st-warn-dot)',bd:'var(--st-warn-dot)'}, neutral:{bg:'var(--subtle)',fg:'var(--text-2)',dot:'var(--text-3)',bd:'var(--border-strong)'} };
+    let voteBanner=null;
+    if(vNotOpen) voteBanner={ ..._tone.info, icon:'M12 8v5M12 16h.01M12 3a9 9 0 100 18 9 9 0 000-18z', title:L('Voting not yet open','التصويت لم يُفتح بعد'), msg:L('The ballot is configured and eligible voters are set, but the chair has not opened voting. No ballots can be cast until it is opened.','البطاقة مُعدّة والناخبون المؤهّلون محدّدون، لكن الرئيس لم يفتح التصويت بعد. لا يمكن الإدلاء حتّى يُفتح.') };
+    if(vQuorumFail) voteBanner={ ..._tone.danger, icon:'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', title:L('Quorum not met — no decision recorded','لم يكتمل النصاب — لم يُسجّل قرار'), msg:L('Only 4 of the 5 required members voted before close. Per the committee rules no outcome can be recorded; the chair must re-open or extend voting.','صوّت 4 فقط من أصل 5 مطلوبين قبل الإغلاق. وفقًا لقواعد اللجنة لا يمكن تسجيل نتيجة؛ على الرئيس إعادة فتح التصويت أو تمديده.'), cta:L('Re-open / extend voting','إعادة فتح / تمديد التصويت') };
+    if(vIneligible) voteBanner={ ..._tone.neutral, icon:'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z', title:L('You are not an eligible voter','لست ناخبًا مؤهّلًا'), msg:L('Your role can view this open vote and its live tally, but only the committee’s eligible members may cast a ballot.','يمكن لدورك عرض هذا التصويت المفتوح وحصيلته المباشرة، لكن أعضاء اللجنة المؤهّلين وحدهم يدلون بأصواتهم.') };
+    if(vDoubleErr) voteBanner={ ..._tone.warn, icon:'M12 9v4M12 17h.01M10.3 4l-8 14a2 2 0 001.7 3h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z', title:L('You have already voted','لقد صوّتَ بالفعل'), msg:L('Your ballot was recorded earlier and votes are immutable. A second submission was blocked to preserve an attributed, one-member-one-vote record.','سُجّل صوتك سابقًا والأصوات غير قابلة للتغيير. وقد مُنِع إرسال ثانٍ للحفاظ على سجل منسوب بصوت واحد لكل عضو.') };
 
     const ballotOptions = [
       ['approve',t.approve,cG], ['reject',t.reject,cD], ['abstain',t.abstain,cN]
@@ -500,7 +552,7 @@ class Component extends DCLogic {
       themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
       t,
       // voting
-      vOpen, vClosed, voteStateTabs, vStateChip, vStateDot, vStatePulse, vStateLabel,
+      vOpen, vClosed, vBallotOpen, vNotOpen, vQuorumFail, vIneligible, vDoubleErr, voteBanner, voteStateTabs, vStateChip, vStateDot, vStatePulse, vStateLabel,
       voters, voterCount, tally, quorum, quorumPips:pips,
       ballotOptions, ballotComment, castDisabled, castBg, castOp,
       openConfirm:()=>this.set('confirmOpen',true), closeConfirm:()=>this.set('confirmOpen',false), confirmOpen,
