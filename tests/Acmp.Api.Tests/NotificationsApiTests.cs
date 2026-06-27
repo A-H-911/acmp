@@ -68,7 +68,11 @@ public class NotificationsApiTests
     public async Task Publishing_an_agenda_notifies_committee_members()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        await factory.SeedMembersAsync(("kc-omar", "Omar H.", CommitteeRole.Member));
+        // Seed TWO members so the fan-out exercises the multi-recipient path (a single recipient hid the
+        // owned-LocalizedString sharing bug that 500'd the 2nd notification).
+        await factory.SeedMembersAsync(
+            ("kc-omar", "Omar H.", CommitteeRole.Member),
+            ("kc-lena", "Lena K.", CommitteeRole.Member));
 
         var key = await PublishAgendaAsync(factory);
 
@@ -87,7 +91,11 @@ public class NotificationsApiTests
     public async Task Mark_read_is_scoped_to_the_caller()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        await factory.SeedMembersAsync(("kc-omar", "Omar H.", CommitteeRole.Member));
+        // Seed TWO members so the fan-out exercises the multi-recipient path (a single recipient hid the
+        // owned-LocalizedString sharing bug that 500'd the 2nd notification).
+        await factory.SeedMembersAsync(
+            ("kc-omar", "Omar H.", CommitteeRole.Member),
+            ("kc-lena", "Lena K.", CommitteeRole.Member));
         await PublishAgendaAsync(factory);
 
         var omar = Client(factory, "Member", sub: "kc-omar");

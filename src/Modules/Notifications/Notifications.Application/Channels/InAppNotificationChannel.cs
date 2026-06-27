@@ -2,6 +2,7 @@
 using Acmp.Modules.Notifications.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Notifications;
+using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Notifications.Application.Channels;
 
@@ -17,8 +18,14 @@ public sealed class InAppNotificationChannel : INotificationChannel
 
     public async Task PublishAsync(NotificationMessage message, CancellationToken ct = default)
     {
+        // Copy the bilingual values into FRESH LocalizedString instances. A single NotificationMessage is
+        // fanned out to many recipients (one PublishAsync each, sharing the same scoped DbContext), and EF
+        // can't track the same OWNED LocalizedString instance under two Notification principals — reusing it
+        // throws "Notification.Body#LocalizedString.NotificationId is part of a key and cannot be modified".
+        var title = new LocalizedString(message.Title.En, message.Title.Ar);
+        var body = new LocalizedString(message.Body.En, message.Body.Ar);
         var notification = Notification.Create(
-            message.RecipientUserId, message.Title, message.Body, message.Category, message.DeepLink);
+            message.RecipientUserId, title, body, message.Category, message.DeepLink);
 
         _db.Notifications.Add(notification);
         await _db.SaveChangesAsync(ct);

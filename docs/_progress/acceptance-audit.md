@@ -206,6 +206,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (command change carried through Domain/Application/Api), web 182/182 (incl. a dialog axe AA case), parity 412,
 > dotnet format + tsc + build + oxlint clean. Live schedule round-trip recommended. See progress-log P6 follow-up.
 
+> P6 live + hardening (2026-06-27): the full P6 loop was driven live (rebuilt stack, real Keycloak PKCE, AR/RTL)
+> and 3 findings fixed — CSP `font-src 'self' data:`; a **filtered** unique email index so JIT provisions
+> emailless Keycloak users (was a 500); and a **real P6b fan-out bug** (the shared owned-`LocalizedString`
+> instance 500'd the notification for the 2nd+ recipient — broke notifications for any committee with ≥2
+> members), fixed in `InAppNotificationChannel` with a unit + 2-member integration regression. **AC-051/052-shape/
+> AC-053 are now LIVE-verified end to end:** scheduling MTG-2026-003 → the current member's notification center
+> shows the bilingual item + a "1 unread" bell badge → clicking marks-read (badge clears) and follows the deep
+> link. AC-051/053 stay **Met** (now with live proof); **AC-052** stays **Partial** (the deep-link *navigation*
+> is proven live; the vote-open *trigger* is P9). Backend 407/407. See progress-log "P6 hardening".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

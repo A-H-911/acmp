@@ -21,7 +21,10 @@ public sealed class CommitteeMemberConfiguration : IEntityTypeConfiguration<Comm
         b.Property(x => x.CreatedBy).IsRequired().HasMaxLength(128);
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.HasIndex(x => x.KeycloakUserId).IsUnique();
-        b.HasIndex(x => x.Email).IsUnique();
+        // Email uniqueness applies only to real emails: Keycloak users may have no email (e.g. the
+        // bootstrap admin), so JIT provisions an empty email — a plain unique index would 409 the second
+        // emailless member. KeycloakUserId is the stable identity; email is unique only WHERE present.
+        b.HasIndex(x => x.Email).IsUnique().HasFilter("[Email] <> ''");
         b.Ignore(x => x.IsActive); // derived from Status
         b.Ignore(x => x.DomainEvents);
 

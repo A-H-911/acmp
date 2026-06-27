@@ -56,6 +56,24 @@ public class NotificationHandlerTests
         saved.CreatedAt.Should().Be(T0); // stamped by the module DbContext from IClock
     }
 
+    [Fact] // Regression: one NotificationMessage (sharing LocalizedString instances) fanned out to many
+           // recipients must not trip EF owned-entity tracking. The agenda/meeting fan-out builds the
+           // bilingual content once and reuses it per recipient — pre-fix the 2nd save threw
+           // "Notification.Body#LocalizedString.NotificationId is part of a key and cannot be modified".
+    public async Task Channel_fans_one_shared_message_out_to_multiple_recipients()
+    {
+        var clock = Clock(T0);
+        await using var db = NewDb(User("kc-a"), clock);
+        var channel = new InAppNotificationChannel(db);
+        var title = LocalizedString.Create("Agenda published", "تم نشر جدول الأعمال");
+        var body = LocalizedString.Create("Body", "النص");
+
+        foreach (var recipient in new[] { "kc-a", "kc-b", "kc-c" })
+            await channel.PublishAsync(new NotificationMessage(recipient, title, body, "AgendaPublished", "/x"), default);
+
+        (await db.Notifications.CountAsync()).Should().Be(3);
+    }
+
     [Fact]
     public async Task GetNotifications_returns_only_the_current_users_items_with_unread_count()
     {

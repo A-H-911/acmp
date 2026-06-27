@@ -14,6 +14,48 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6 hardening: fixed the 3 live-pass findings + re-verified the full notification loop live (AR/RTL)
+
+**Scope.** Fixed the findings surfaced by the live pass below — two pre-existing (CSP fonts, JIT email-dup) and
+**one real P6b defect** uncovered while re-verifying — then drove the complete notification loop live to green.
+Backend **407 green** (+1 regression), all gates clean.
+
+**Fixes.**
+- **Finding 1 — CSP fonts (infra).** `deploy/nginx/default.conf.template` → `font-src 'self' data:` (the build
+  inlines IBM Plex as `data:` fonts). Verified live: zero font-CSP console errors after rebuild; the configured
+  CSP header now carries `font-src 'self' data:`.
+- **Finding 2 — JIT 500 on emailless duplicate (Membership/P4).** `IX_committee_members_Email` is now a
+  **filtered unique index** (`HasFilter("[Email] <> ''")`, migration `Membership_FilteredEmailUniqueIndex`) —
+  email uniqueness applies only to real emails, so JIT can provision multiple emailless members (Keycloak users
+  without an email). `KeycloakUserId` remains the stable unique identity. Verified live: `POST /api/members/me`
+  now **200** (was 500), the current login is provisioned, and the directory returns both members.
+- **Finding 3 — NEW, real P6b bug: notification fan-out 500 for ≥2 recipients.** The agenda/meeting fan-out
+  builds the bilingual `LocalizedString` **once** and reuses that instance per recipient; EF can't track the
+  same OWNED instance under two `Notification` principals → the 2nd save threw *"Notification.Body#
+  LocalizedString.NotificationId is part of a key and cannot be modified"*. **`InAppNotificationChannel` now
+  copies the values into fresh `LocalizedString` instances per notification.** This bug **broke notifications
+  for any committee with ≥2 members** and was missed because the unit fan-out test used a fake channel and the
+  integration test seeded a single recipient. **Regression coverage added:** a unit test that fans one shared
+  message to 3 recipients through the real channel, and the `/api/notifications` integration test now seeds
+  **two** members. (Application 319 → 320; Api 29 retained with the 2-member seed.)
+
+**Live re-verification (green, AR/RTL).** After rebuilding `api`+`web`: scheduled **MTG-2026-003** →
+`POST /api/meetings` 201 (no 500) → the fan-out reached both committee members → the **notification center**
+showed the current user's item — title **"تم جدولة اجتماع"**, body **"تمت جدولة \"Payments Tokenization
+Review\" بتاريخ 2026-07-15"** (bilingual + Gregorian date + Intl timestamp), the **bell badge read "1 unread"**
+— and **clicking it marked it read (badge cleared) and navigated to the deep link** (`/meetings/MTG-2026-003`).
+The full AC-051 / AC-052-shape / AC-053 + P6e loop is now proven end to end on the live stack.
+
+**Notes.** A harmless dev-data artifact remains — two "ACMP Administrator" committee members (the stale `a65c…`
+from a prior realm + the live `a69d…`), both emailless; production users will have emails so this is dev-only.
+
+**Verification.** Backend **407/407** (Domain 42 · Architecture 16 · Application 320 · Api 29), `dotnet format`
++ build clean. Live: JIT 200, schedule 201, fan-out to 2 members, notification rendered + read + deep-linked.
+
+**Next.** Push `feat/P6-meetings` → PR → green CI → review → squash-merge.
+
+---
+
 ### 2026-06-27 — P6 live authenticated browser pass (rebuilt stack, real Keycloak PKCE, AR/RTL) + 2 pre-existing findings
 
 **Scope.** Live pass over the P6 surfaces on the rebuilt `api`+`web` images (all 7 services healthy), driven
