@@ -24,6 +24,12 @@ vi.mock('../api/topics', () => ({ useBacklog: vi.fn() }));
 import { useBacklog } from '../api/topics';
 const mockUseBacklog = useBacklog as unknown as Mock;
 
+// TopBar reads the notification feed for the bell badge (renderWithAuth has no QueryClientProvider).
+vi.mock('../api/notifications', () => ({
+  useNotifications: vi.fn(() => ({ data: { items: [], unreadCount: 2 } })),
+  useMarkNotificationRead: vi.fn(() => ({ mutate: vi.fn() })),
+}));
+
 const TOPICS: TopicSummary[] = [
   {
     id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', type: 'ArchitectureDecision',

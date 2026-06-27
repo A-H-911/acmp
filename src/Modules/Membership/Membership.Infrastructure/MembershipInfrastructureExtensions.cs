@@ -1,8 +1,10 @@
 ﻿using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Application.Abstractions;
 using Acmp.Modules.Membership.Infrastructure.Authorization;
+using Acmp.Modules.Membership.Infrastructure.Directory;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Shared.Authorization.Abac;
+using Acmp.Shared.Contracts.Membership;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,9 @@ public static class MembershipInfrastructureExtensions
         services.AddScoped<ITopicCapabilityResolver, TopicCapabilityResolver>();
         services.AddScoped<ITopicCapabilityWriter, TopicCapabilityWriter>();
         services.AddScoped<IDelegationResolver, DelegationResolver>();
+
+        // Cross-module roster lookup consumed by the Meetings notification fan-out (ADR-0001).
+        services.AddScoped<ICommitteeDirectory, CommitteeDirectory>();
 
         services.AddMembershipApplication();
         return services;

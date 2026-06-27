@@ -1,6 +1,8 @@
-﻿using Acmp.Modules.Membership.Domain;
+﻿using Acmp.Modules.Meetings.Infrastructure.Persistence;
+using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
+using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +33,14 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<TopicsDbContext>>();
             services.RemoveAll<TopicsDbContext>();
             services.AddDbContext<TopicsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-topics"));
+
+            services.RemoveAll<DbContextOptions<MeetingsDbContext>>();
+            services.RemoveAll<MeetingsDbContext>();
+            services.AddDbContext<MeetingsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-meetings"));
+
+            services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
+            services.RemoveAll<NotificationsDbContext>();
+            services.AddDbContext<NotificationsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-notifications"));
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });

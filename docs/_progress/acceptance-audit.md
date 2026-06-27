@@ -142,6 +142,80 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > GHSA-4625-4j76-fww9 has no patched release — accepted: internal-only OTLP egress, DoD permits moderate).
 > See progress-log P5-review remediation.
 
+> P6a update (2026-06-27): Meetings module backend (domain → application → infrastructure → API) — agenda
+> building, meeting scheduling/lifecycle, attendance, discussion, actual-time (W5–W9), plus the cross-module
+> `ITopicScheduler` seam (Prepared→Scheduled on publish, Scheduled→InCommittee on start; idempotent,
+> implemented in Topics.Infrastructure — Meetings never reads Topics' tables, ADR-0001). Backend 388/388
+> (Domain 42 · Architecture 12 · Application 314 · Api 20); ArchUnit enforces Meetings⟂Topics⟂Membership.
+> **AC-044 Pending→Partial** — the backend reorder (`MoveAgendaItem` ±1 + `Agenda.MoveItem`, the path
+> keyboard move-up/-down drives) is built + tested; the keyboard-accessible **agenda reorder UI** lands in
+> P6c (same backend-then-UI split as AC-043). **AC-051/053 stay Pending → P6b** (in-app Notifications backend:
+> `InAppNotificationChannel` + `GET /api/notifications` + the publish/schedule fan-out via a new
+> `ICommitteeDirectory`). **AC-011** (presenter meeting-window enforcement) stays Partial → its UI/runtime
+> path. Live SQL migration apply + an authenticated `/api/meetings` round-trip are the optional P6 tail.
+> See progress-log P6a entry.
+
+> P6b update (2026-06-27): in-app Notifications module (the AC-051/053 floor) + the publish/schedule fan-out.
+> New `Notifications` module (`Notification` entity + `InAppNotificationChannel` = the v1 `INotificationChannel`,
+> synchronous write; `GET /api/notifications` + mark-read scoped to the current user with an IDOR guard) and the
+> cross-module `ICommitteeDirectory` seam (Shared contract, implemented in Membership, active members only —
+> AC-058). `ScheduleMeeting`/`PublishAgenda` now fan out one bilingual notification per active member; the
+> `AgendaPublished` body carries the meeting date + agenda title and a deep link to the agenda view (AC-051
+> content contract). Backend 397/397 (Domain 42 · Architecture 16 · Application 319 · Api 20); ArchUnit enforces
+> Notifications isolation + a no-assembly-edge Meetings→Notifications seam. **AC-051 / AC-053 Pending → Partial**
+> (mechanism + content + channel-exclusivity unit-proven; live HTTP + the notification-center render → P6e).
+> **AC-052** stays Pending (the deep-link mechanism exists; the vote-open notification is raised in P9).
+> See progress-log P6b entry.
+
+> P6c update (2026-06-27): Agenda builder UI (the design's agenda tab) wired to the Meetings API + a read-only
+> meetings list. `api/meetings.ts` (read-by-key / mutate-by-id hooks), `features/meetings/AgendaBuilder.tsx`
+> (pool from Prepared topics, drop-zone agenda, timebox stepper, presenter Select from /api/members, time-budget
+> bar, publish dialog) and `MeetingsList.tsx`, composed from the shared library, logical-CSS RTL-safe, full
+> EN+AR `meetings.*` namespace (parity 344). **AC-044 Partial → Met** — the keyboard-accessible reorder
+> (move-up/-down → ±1, disabled at ends, aria-live announce) is shipped + unit-tested, jsdom axe clean. Web
+> 151/151 (incl. 2 axe AA cases on the new screens), tsc + build + oxlint clean. The design's Preview button /
+> notify-group toggles / RTE are mock chrome (disabled/honest-static); scheduling a NEW meeting is deferred
+> (committee/chair pickers; committeeId not exposed). Live browser pass (real API, AR/RTL+dark, live axe)
+> recommended — needs a scheduled meeting. AC-051/053 stay Partial → P6e. See progress-log P6c entry.
+
+> P6d update (2026-06-27): live meeting workspace UI (the design's meeting tab) — agenda spine, attendance
+> (present/absent → POST /attendance), discussion notes (→ POST /discussion), actual-time + outcome (→ POST
+> /actual-time), the start/end lifecycle, and the in-page Tabs hosting both the agenda builder (P6c) and the
+> workspace under `/meetings/:key`. Record-decision/create-action/call-vote are disabled stubs (P7/P8/P9); MoM
+> is P7. **No verdict flips** — this is the UI for the W7–W9 workflows whose ACs are already covered by the P6a
+> backend; the new screens add a surface to the localization/a11y ACs (AC-040/045/046 render RTL + axe-clean in
+> the component tests; AC-041 stays Partial → VR P17). Web 168/168 (incl. a workspace axe AA case), parity 389,
+> tsc + build + oxlint clean, CSS RTL-safe. Live browser pass (real conduct-meeting round-trip, AR/RTL+dark)
+> recommended — needs a scheduled+published meeting. AC-051/053 stay Partial → P6e. See progress-log P6d entry.
+
+> P6e update (2026-06-27): notification center wired to the live `/api/notifications` feed + the unread bell
+> badge. `api/notifications.ts` (feed + mark-read, 30s poll), `NotificationCenter.tsx` (live list, unread
+> styling, click → mark-read + close + deep-link navigation, calm empty state preserved), `TopBar.tsx` (badge
+> only when unread>0). **AC-051 Partial → Met** (end-to-end: P6b fan-out → the center renders the date/title/
+> deep-link item + badge, deep link navigates) and **AC-053 Partial → Met** (single in-app channel, no email/
+> Webex). **AC-052 Pending → Partial** (the deep-link navigation mechanism is proven; the vote-open trigger is
+> P9). Web 177/177 (incl. a panel axe AA case), parity 393, tsc + build + oxlint clean, CSS RTL-safe. No
+> `.dc.html` reference exists for the live list (planning doc docs/14 p.79 only) — composed from the shell's
+> notif-* styles. Live cross-session browser pass recommended. See progress-log P6e entry.
+
+> P6 follow-up (2026-06-27): the deferred meeting-schedule flow is built (ScheduleMeetingDialog +
+> useScheduleMeeting; MeetingsList "Schedule meeting" action), and its blocker removed — the committee is now
+> implicit server-side (`Meeting.SingleCommitteeId`; `CommitteeId` dropped from ScheduleMeetingCommand, a
+> never-read field, no ADR). Chair picked from /api/members (defaults to Chairman). **No verdict flips** —
+> meeting scheduling (W5) has no dedicated AC; this makes the P6 loop reachable end to end. Backend 397/397
+> (command change carried through Domain/Application/Api), web 182/182 (incl. a dialog axe AA case), parity 412,
+> dotnet format + tsc + build + oxlint clean. Live schedule round-trip recommended. See progress-log P6 follow-up.
+
+> P6 live + hardening (2026-06-27): the full P6 loop was driven live (rebuilt stack, real Keycloak PKCE, AR/RTL)
+> and 3 findings fixed — CSP `font-src 'self' data:`; a **filtered** unique email index so JIT provisions
+> emailless Keycloak users (was a 500); and a **real P6b fan-out bug** (the shared owned-`LocalizedString`
+> instance 500'd the notification for the 2nd+ recipient — broke notifications for any committee with ≥2
+> members), fixed in `InAppNotificationChannel` with a unit + 2-member integration regression. **AC-051/052-shape/
+> AC-053 are now LIVE-verified end to end:** scheduling MTG-2026-003 → the current member's notification center
+> shows the bilingual item + a "1 unread" bell badge → clicking marks-read (badge clears) and follows the deep
+> link. AC-051/053 stay **Met** (now with live proof); **AC-052** stays **Partial** (the deep-link *navigation*
+> is proven live; the vote-open *trigger* is P9). Backend 407/407. See progress-log "P6 hardening".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -187,16 +261,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
 | AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The AC's literal **priority-ordinal move-up/down with a persisted ordinal** (BL-039 within-column reorder, BL-041) is **not yet built** — deliberately deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
-| AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
+| AC-044 | Accessibility | Met | AgendaBuilder.test (move ±1 + aria-live announce, axe AA) + MeetingHandlerTests (move ±1) | Keyboard-accessible agenda reorder shipped: the move up/down buttons send a single ±1 `move` (disabled at the ends) with a synchronous `aria-live` announce; native drag is progressive enhancement on top. Unit-tested + jsdom axe clean; live browser axe/RTL pass recommended. From Partial (P6c, 2026-06-27). |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
 | AC-047 | Unsaved-work | Met | SubmitTopic.test (guard dialog on dirty nav) | useBlocker (data router) → confirm Dialog on in-app route change while the submit form is dirty; Keep editing / Leave |
 | AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
 | AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
 | AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
-| AC-051 | Notifications | Pending | — | Agenda publish → in-app ≤5s |
-| AC-052 | Notifications | Pending | — | Vote-open notification deep link |
-| AC-053 | Notifications | Pending | — | In-app only, no email/Webex |
+| AC-051 | Notifications | Met | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests + NotificationCenter.test (live list + deep-link nav) + TopBar.test (badge) | End to end: PublishAgenda fans out one in-app notification per active member (synchronous ≤5s write) carrying the meeting date + agenda title + a `/meetings/{key}` deep link; the notification center renders it (unread badge + list) and clicking follows the deep link. Live cross-session browser pass recommended (standing caveat). From Partial (P6e, 2026-06-27). |
+| AC-052 | Notifications | Partial | NotificationCenter.test (deep-link click → navigate) | The notification deep-link **navigation** mechanism is built + tested (clicking a notification with a deepLink routes to its target — no extra steps). The **vote-open** notification itself is raised in P9 (Voting). From Pending (P6e, 2026-06-27). |
+| AC-053 | Notifications | Met | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) + NotificationCenter.test | Exactly one channel is registered and rendered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven on both server (fan-out) and client (center). From Partial (P6e, 2026-06-27). |
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |

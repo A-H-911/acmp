@@ -78,7 +78,8 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                     b.HasAlternateKey("PublicId");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] <> ''");
 
                     b.HasIndex("KeycloakUserId")
                         .IsUnique();

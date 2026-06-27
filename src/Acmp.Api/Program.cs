@@ -1,8 +1,12 @@
 ﻿using Acmp.Api.Endpoints;
 using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
+using Acmp.Modules.Meetings.Application;
+using Acmp.Modules.Meetings.Infrastructure;
 using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
+using Acmp.Modules.Notifications.Application;
+using Acmp.Modules.Notifications.Infrastructure;
 using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Infrastructure;
 using Acmp.Shared;
@@ -24,6 +28,8 @@ builder.Host.UseSerilog((context, services, config) => config
 builder.Services.AddSharedKernel(builder.Configuration);
 builder.Services.AddMembershipModule(builder.Configuration);
 builder.Services.AddTopicsModule(builder.Configuration);
+builder.Services.AddMeetingsModule(builder.Configuration);
+builder.Services.AddNotificationsModule(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
@@ -33,7 +39,9 @@ builder.Services.AddAcmpAuthorization(builder.Configuration);
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(SharedKernelExtensions).Assembly,
     MembershipApplicationExtensions.Assembly,
-    TopicsApplicationExtensions.Assembly));
+    TopicsApplicationExtensions.Assembly,
+    MeetingsApplicationExtensions.Assembly,
+    NotificationsApplicationExtensions.Assembly));
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -76,6 +84,8 @@ app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.
 
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
+app.MapMeetingEndpoints();
+app.MapNotificationEndpoints();
 
 // Apply EF migrations on startup, retrying while SQL Server finishes accepting connections.
 await MigrationRunner.MigrateAsync(app);

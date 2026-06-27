@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
+using Acmp.Shared.Contracts.Topics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,10 @@ public static class TopicsInfrastructureExtensions
 
         services.AddScoped<ITopicsDbContext>(sp => sp.GetRequiredService<TopicsDbContext>());
         services.AddScoped<ITopicKeyGenerator, TopicKeyGenerator>();
+
+        // Cross-module seam consumed by the Meetings module (ADR-0001): advance a topic's lifecycle on
+        // agenda publish (Prepared→Scheduled) and meeting start (Scheduled→InCommittee).
+        services.AddScoped<ITopicScheduler, TopicScheduler>();
 
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 

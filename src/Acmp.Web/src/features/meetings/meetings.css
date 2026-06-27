@@ -1,0 +1,947 @@
+/*
+ * Meetings (P6c) — agenda builder + list. Composes shared components; only screen-specific
+ * layout/cell styling lives here. Logical properties throughout so the screens mirror under
+ * [dir="rtl"] with no per-direction overrides (guardrail 9).
+ */
+
+/* ---- shared bits ---- */
+.mt-key {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.mt-muted {
+  color: var(--text-3);
+  font-weight: 500;
+}
+.mt-col-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* ---- meetings list ---- */
+.mt-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--sp-4); flex-wrap: wrap; margin-block-end: var(--sp-4);
+}
+.mt-head-sub {
+  margin-block: var(--sp-1) 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+/* Schedule-meeting dialog form */
+.mt-schedule-form { display: flex; flex-direction: column; gap: var(--sp-4); }
+.mt-schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.mt-schedule-error { margin: 0; font-size: 12.5px; color: var(--st-danger-fg); }
+.mt-title-link {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.mt-title-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.mt-when,
+.mt-chair,
+.mt-items {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* ---- builder header ---- */
+.mt-builder-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-4);
+}
+.mt-builder-titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+}
+.mt-builder-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-builder-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mt-builder-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* ---- time budget bar ---- */
+.mt-budget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  margin-block-end: var(--sp-4);
+  box-shadow: var(--shadow);
+}
+.mt-budget.over {
+  border-color: var(--st-danger-dot);
+}
+.mt-budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-2);
+}
+.mt-budget-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.mt-budget-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.mt-budget-figures {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-budget-figures b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.mt-budget-track {
+  block-size: 10px;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+  overflow: hidden;
+}
+.mt-budget-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--st-success-dot);
+  transition: inline-size 0.3s ease;
+}
+.mt-budget-fill.over {
+  background: var(--st-danger-dot);
+}
+
+/* ---- two-column grid ---- */
+.mt-grid {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .mt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- pool column ---- */
+.mt-pool {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: sticky;
+  inset-block-start: 74px;
+}
+.mt-pool-head {
+  padding: var(--sp-3);
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+}
+.mt-pool-titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mt-pool-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding-inline: 7px;
+}
+.mt-pool-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block-start: var(--sp-2);
+}
+.mt-pool-search > svg {
+  position: absolute;
+  inset-inline-start: 9px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.mt-pool-search input {
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 30px var(--sp-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: 12.5px;
+}
+.mt-pool-search input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-pool-list {
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-block-size: 520px;
+  overflow-y: auto;
+}
+.mt-pool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  background: var(--surface);
+  cursor: grab;
+}
+.mt-pool-card:hover {
+  border-color: var(--border-strong);
+  background: var(--subtle);
+}
+.mt-pool-grip {
+  color: var(--text-3);
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+}
+.mt-pool-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-pool-keyrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-block-end: var(--sp-1);
+}
+.mt-pool-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-block-end: var(--sp-2);
+}
+.mt-pool-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 11px;
+}
+
+/* ---- urgent markers ---- */
+.mt-urgent-ic {
+  display: inline-flex;
+  color: var(--st-danger-dot);
+}
+.mt-urgent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--st-danger-fg);
+  background: var(--st-danger-bg);
+  border-radius: var(--r-sm);
+  padding-inline: 6px;
+  padding-block: 1px;
+}
+
+/* ---- agenda drop zone ---- */
+.mt-agenda {
+  background: var(--subtle);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  min-block-size: 300px;
+}
+.mt-agenda-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-1) var(--sp-2) var(--sp-3);
+}
+.mt-drag-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.mt-agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* ---- agenda item card ---- */
+.mt-item {
+  display: flex;
+  gap: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow);
+}
+.mt-item:hover {
+  border-color: var(--border-strong);
+}
+.mt-item-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.mt-item-index {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: var(--r-md);
+  background: var(--primary-tint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mt-item-grip {
+  color: var(--text-3);
+  cursor: grab;
+}
+.mt-item-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-item-keyrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+  flex-wrap: wrap;
+}
+.mt-item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-block-end: var(--sp-3);
+}
+.mt-item-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.mt-timebox,
+.mt-presenter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mt-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.mt-step {
+  inline-size: 24px;
+  block-size: 26px;
+  border: 0;
+  background: var(--subtle);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mt-step:hover {
+  background: var(--sunken);
+}
+.mt-step-val {
+  min-inline-size: 42px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mt-presenter-pick {
+  min-inline-size: 150px;
+}
+.mt-item-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.mt-tool {
+  inline-size: 28px;
+  block-size: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mt-tool:hover:not(:disabled) {
+  background: var(--subtle);
+}
+.mt-tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mt-tool-danger:hover:not(:disabled) {
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+  border-color: var(--st-danger-bg);
+}
+
+/* ---- publish dialog body ---- */
+.mt-publish-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.mt-publish-figure {
+  color: var(--text);
+}
+.mt-publish-notify {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* ============================================================================
+ * Live meeting workspace (P6d) — the isMeeting design block. Logical props only.
+ * ========================================================================== */
+
+/* ---- workspace header ---- */
+.mt-ws-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-4);
+}
+.mt-ws-titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.mt-ws-titlerow .page-title {
+  margin: 0;
+  font-size: 21px;
+}
+.mt-ws-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.mt-ws-elapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+}
+.mt-ws-elapsed-label {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.mt-ws-elapsed-val {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--st-danger-fg);
+}
+.mt-ws-divider {
+  inline-size: 1px;
+  block-size: 34px;
+  background: var(--border);
+}
+
+/* Pulsing Live dot (motion gated for reduced-motion users). */
+@media (prefers-reduced-motion: no-preference) {
+  .mt-live .status-chip-dot {
+    animation: mtPulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes mtPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ---- 3-column grid ---- */
+.mt-ws-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 270px;
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .mt-ws-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- agenda spine (left) ---- */
+.mt-spine {
+  position: sticky;
+  inset-block-start: 74px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mt-spine-head {
+  padding: var(--sp-3);
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.mt-spine-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mt-spine-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  inline-size: 100%;
+  text-align: start;
+  border: 0;
+  border-radius: var(--r-md);
+  padding: 10px 11px;
+  background: transparent;
+  color: var(--text);
+}
+.mt-spine-item:hover {
+  background: var(--subtle);
+}
+.mt-spine-item.active {
+  background: var(--primary-tint);
+}
+.mt-spine-num {
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--sunken);
+  color: var(--text-2);
+}
+.mt-spine-item.active .mt-spine-num {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+.mt-spine-num.done {
+  background: var(--st-success-bg);
+  color: var(--st-success-fg);
+}
+.mt-spine-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-spine-title {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.mt-spine-item.active .mt-spine-title {
+  font-weight: 600;
+}
+.mt-spine-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 3px;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.mt-spine-running {
+  color: var(--st-danger-fg);
+  font-weight: 600;
+}
+
+/* ---- active item (center) ---- */
+.mt-active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-inline-size: 0;
+}
+.mt-active-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mt-active-head {
+  padding: var(--sp-4);
+  border-block-end: 1px solid var(--border-soft);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.mt-active-headmain {
+  min-inline-size: 0;
+}
+.mt-active-keyrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+  flex-wrap: wrap;
+}
+.mt-active-index {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: var(--r-md);
+  background: var(--primary);
+  color: var(--primary-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.mt-active-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.mt-active-time {
+  text-align: end;
+  flex: 0 0 auto;
+}
+.mt-active-time-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.mt-active-time-val {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--st-warn-fg);
+}
+.mt-active-body {
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* ---- discussion note ---- */
+.mt-note-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-2);
+  color: var(--text-3);
+}
+.mt-note-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.mt-note-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-inline-start: auto;
+  font-size: 11px;
+  color: var(--st-success-fg);
+}
+.mt-note-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--st-success-dot);
+}
+.mt-note-input {
+  inline-size: 100%;
+  min-block-size: 96px;
+  padding: 12px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.mt-note-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: var(--sp-2);
+}
+
+/* ---- actual-time control ---- */
+.mt-time {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-block-start: var(--sp-3);
+  border-block-start: 1px solid var(--border-soft);
+}
+.mt-time-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mt-time-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mt-time-input {
+  inline-size: 72px;
+  block-size: 34px;
+  padding-inline: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.mt-time-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-time-unit {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.mt-time-outcome {
+  min-inline-size: 160px;
+}
+
+/* ---- stub action row ---- */
+.mt-stub-row {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* ---- attendance (right) ---- */
+.mt-att {
+  position: sticky;
+  inset-block-start: 74px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mt-att-head {
+  padding: var(--sp-3);
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+}
+.mt-att-headrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.mt-att-summary {
+  margin-block-start: 3px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.mt-att-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mt-att-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px 8px;
+  border-radius: var(--r-md);
+}
+.mt-att-row:hover {
+  background: var(--subtle);
+}
+.mt-avatar {
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 50%;
+  background: var(--primary-tint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.mt-att-id {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-att-name {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mt-att-role {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.mt-att-toggle {
+  block-size: 26px;
+  padding-inline: 9px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+.mt-att-toggle:hover:not(:disabled) {
+  background: var(--subtle);
+}
+.mt-att-toggle.present {
+  border-color: var(--st-success-dot);
+  background: var(--st-success-bg);
+  color: var(--st-success-fg);
+}
+.mt-att-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- lifecycle gate prompt (Meeting tab, not running) ---- */
+.mt-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding: var(--sp-8) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+.mt-gate-icon {
+  inline-size: 46px;
+  block-size: 46px;
+  border-radius: var(--r-lg);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  margin-block-end: var(--sp-2);
+}
+.mt-gate-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.mt-gate-body {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  max-inline-size: 30rem;
+  line-height: 1.6;
+}
+.mt-gate-action {
+  margin-block-start: var(--sp-3);
+}

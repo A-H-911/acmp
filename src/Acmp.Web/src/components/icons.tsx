@@ -10,8 +10,8 @@ export type IconName =
   | 'home' | 'backlog' | 'calendar' | 'session' | 'decision' | 'action' | 'adr' | 'risk'
   | 'deps' | 'research' | 'wiki' | 'diagram' | 'reports' | 'audit' | 'admin'
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
-  | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
-  | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle'
+  | 'plus' | 'minus' | 'chevron' | 'chevronDown' | 'chevronUp' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
+  | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle' | 'clock' | 'user' | 'send'
   | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel';
 
 const PATHS: Record<IconName, ReactNode> = {
@@ -41,8 +41,10 @@ const PATHS: Record<IconName, ReactNode> = {
   alertCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></>,
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
+  minus: <path d="M5 12h14" />,
   chevron: <path d="M9 18l6-6-6-6" />,
   chevronDown: <path d="M6 9l6 6 6-6" />,
+  chevronUp: <path d="M5 15l7-7 7 7" />,
   grip: <><circle cx="9" cy="6" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="18" r="1" /><circle cx="15" cy="6" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="18" r="1" /></>,
   arrowUp: <path d="M12 19V5M5 12l7-7 7 7" />,
   arrowDown: <path d="M12 5v14M5 12l7 7 7-7" />,
@@ -53,6 +55,10 @@ const PATHS: Record<IconName, ReactNode> = {
   checkCircle: <><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></>,
   infoCircle: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
   warnTriangle: <><path d="M12 4l9 16H3L12 4z" /><path d="M12 11v3M12 17h.01" /></>,
+  // Agenda-builder glyphs (paths lifted from the local .dc.html for fidelity).
+  clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  user: <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />,
+  send: <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
   // Backlog view-switcher + toolbar glyphs (paths lifted from the design file).
   viewList: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
   viewTable: <path d="M3 9h18M3 15h18M9 3v18M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />,

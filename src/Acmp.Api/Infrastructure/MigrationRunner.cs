@@ -1,4 +1,6 @@
-﻿using Acmp.Modules.Membership.Infrastructure.Persistence;
+﻿using Acmp.Modules.Meetings.Infrastructure.Persistence;
+using Acmp.Modules.Membership.Infrastructure.Persistence;
+using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +17,8 @@ public static class MigrationRunner
         {
             scope.ServiceProvider.GetRequiredService<MembershipDbContext>(),
             scope.ServiceProvider.GetRequiredService<TopicsDbContext>(),
+            scope.ServiceProvider.GetRequiredService<MeetingsDbContext>(),
+            scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),
         };
 
         // Non-relational providers (the in-memory store used by integration tests) have no migrations.

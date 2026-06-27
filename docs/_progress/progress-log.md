@@ -12,6 +12,528 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 — Agenda & meeting management
+
+### 2026-06-27 — P6 hardening: fixed the 3 live-pass findings + re-verified the full notification loop live (AR/RTL)
+
+**Scope.** Fixed the findings surfaced by the live pass below — two pre-existing (CSP fonts, JIT email-dup) and
+**one real P6b defect** uncovered while re-verifying — then drove the complete notification loop live to green.
+Backend **407 green** (+1 regression), all gates clean.
+
+**Fixes.**
+- **Finding 1 — CSP fonts (infra).** `deploy/nginx/default.conf.template` → `font-src 'self' data:` (the build
+  inlines IBM Plex as `data:` fonts). Verified live: zero font-CSP console errors after rebuild; the configured
+  CSP header now carries `font-src 'self' data:`.
+- **Finding 2 — JIT 500 on emailless duplicate (Membership/P4).** `IX_committee_members_Email` is now a
+  **filtered unique index** (`HasFilter("[Email] <> ''")`, migration `Membership_FilteredEmailUniqueIndex`) —
+  email uniqueness applies only to real emails, so JIT can provision multiple emailless members (Keycloak users
+  without an email). `KeycloakUserId` remains the stable unique identity. Verified live: `POST /api/members/me`
+  now **200** (was 500), the current login is provisioned, and the directory returns both members.
+- **Finding 3 — NEW, real P6b bug: notification fan-out 500 for ≥2 recipients.** The agenda/meeting fan-out
+  builds the bilingual `LocalizedString` **once** and reuses that instance per recipient; EF can't track the
+  same OWNED instance under two `Notification` principals → the 2nd save threw *"Notification.Body#
+  LocalizedString.NotificationId is part of a key and cannot be modified"*. **`InAppNotificationChannel` now
+  copies the values into fresh `LocalizedString` instances per notification.** This bug **broke notifications
+  for any committee with ≥2 members** and was missed because the unit fan-out test used a fake channel and the
+  integration test seeded a single recipient. **Regression coverage added:** a unit test that fans one shared
+  message to 3 recipients through the real channel, and the `/api/notifications` integration test now seeds
+  **two** members. (Application 319 → 320; Api 29 retained with the 2-member seed.)
+
+**Live re-verification (green, AR/RTL).** After rebuilding `api`+`web`: scheduled **MTG-2026-003** →
+`POST /api/meetings` 201 (no 500) → the fan-out reached both committee members → the **notification center**
+showed the current user's item — title **"تم جدولة اجتماع"**, body **"تمت جدولة \"Payments Tokenization
+Review\" بتاريخ 2026-07-15"** (bilingual + Gregorian date + Intl timestamp), the **bell badge read "1 unread"**
+— and **clicking it marked it read (badge cleared) and navigated to the deep link** (`/meetings/MTG-2026-003`).
+The full AC-051 / AC-052-shape / AC-053 + P6e loop is now proven end to end on the live stack.
+
+**Notes.** A harmless dev-data artifact remains — two "ACMP Administrator" committee members (the stale `a65c…`
+from a prior realm + the live `a69d…`), both emailless; production users will have emails so this is dev-only.
+
+**Verification.** Backend **407/407** (Domain 42 · Architecture 16 · Application 320 · Api 29), `dotnet format`
++ build clean. Live: JIT 200, schedule 201, fan-out to 2 members, notification rendered + read + deep-linked.
+
+**Next.** Push `feat/P6-meetings` → PR → green CI → review → squash-merge.
+
+---
+
+### 2026-06-27 — P6 live authenticated browser pass (rebuilt stack, real Keycloak PKCE, AR/RTL) + 2 pre-existing findings
+
+**Scope.** Live pass over the P6 surfaces on the rebuilt `api`+`web` images (all 7 services healthy), driven
+in Chrome via Playwright as `acmp-admin` through the **real Keycloak authorization-code + PKCE (S256)** flow,
+in **Arabic / RTL**.
+
+**Verified live (green).**
+- **Real SQL migrations applied** — `[INF] Database migrations applied.`; the `meetings` + `notifications`
+  schemas materialized on SQL Server (closes the deferred "live migration apply" note for P6a/P6b).
+- **Login** — PKCE/S256 round-trip → `/dashboard` authenticated (token `sub`, `preferred_username=acmp-admin`).
+- **Meetings list (P6c)** — renders AR/RTL with the full shell; honest empty state; the **"Schedule meeting"**
+  action.
+- **Schedule flow (P6 follow-up)** — the dialog renders AR/RTL (title/chair/start/end/location/join, required
+  markers, placeholders); the **chair `Select` sourced `/api/members`** (showed the provisioned admin); submit
+  → `POST /api/meetings` **201** → **MTG-2026-001** → navigated to the agenda builder. End to end.
+- **Agenda builder (P6c)** — AR/RTL: breadcrumb, the **Agenda/Meeting tabs (P6d)**, the title + **Draft chip**,
+  **Gregorian AR date via Intl**, the **time-budget bar** (0/90 min), the Prepared-pool + agenda **empty
+  states**, and **Publish & Notify correctly disabled** at 0 items.
+- **Meeting tab (P6d)** — the lifecycle **gate** shows "not started — publish & start first" for a Draft agenda.
+- **Notification center (P6e)** — the bell + panel render AR/RTL; the empty state is correct for the current
+  user (see finding 2).
+- **Notification fan-out (P6b)** — scheduling **did** create a real `MeetingScheduled` notification row in
+  `notifications.notifications` (confirmed by direct SQL) — the cross-module fan-out works on the live stack.
+
+**Finding 1 (pre-existing infra, app-wide — not P6): CSP blocks the inlined fonts.** Every page logs
+`font-src 'self'` CSP violations for the build's `data:` base64 IBM Plex fonts (Vite inlines them under its
+asset-inline limit) → the deployed app **falls back to system fonts** instead of IBM Plex Sans / Sans Arabic.
+One-line fix: `font-src 'self' data:` in `deploy/nginx/default.conf.template`. Layout/RTL/behaviour are
+unaffected.
+
+**Finding 2 (pre-existing identity/JIT — P4, CHANGE-004 lineage — not P6): JIT provisioning 500 on emailless
+duplicate.** `acmp-admin`'s Keycloak user carries **no email**; JIT (`POST /api/members/me`) provisions a
+member with an empty email. The realm was recreated at some point (admin `sub` changed `a65c…`→`a69d…`) while
+the SQL volume kept the old member row, so this session's JIT tried to **insert** a second emailless member and
+hit `Cannot insert duplicate key … 'IX_committee_members_Email' … value is ()` → **500**. Net effect: the
+current login is **not** a committee member, so the fan-out notified the stale member (`a65c…`) and the live
+user's (`a69d…`) center is (correctly) empty — the P6 scoping is right; the bug is upstream. **Real defect to
+fix in Membership:** either require an email from Keycloak, or make `IX_committee_members_Email` a **filtered**
+unique index (`WHERE Email <> ''`/`IS NOT NULL`) and have JIT match-or-update by `KeycloakUserId` so a changed
+`sub` reconciles instead of duplicating.
+
+**Net.** P6 is **functionally validated live** end to end through the schedule → agenda → (gate) flow in
+AR/RTL, and the notification fan-out is proven at the data layer; the only unproven UI step (the notification
+*appearing* in the recipient's center) is blocked solely by finding 2, a pre-existing P4 identity-data bug. No
+P6 code change resulted from this pass. **Recommended follow-ups (separate from the P6 PR):** fix finding 2
+(JIT/email index) and finding 1 (CSP fonts); then the recipient-center demo will pass.
+
+**Next.** Push `feat/P6-meetings` → PR → green CI → review → squash-merge (the two findings can be tracked as
+their own fixes — finding 2 in particular gates a clean live notification demo).
+
+---
+
+### 2026-06-27 — P6 follow-up: /api/meetings + /api/notifications WebApplicationFactory integration tests
+
+**Scope.** The optional HTTP-contract integration tests for the P6 endpoints, through the real pipeline
+(MediatR + FluentValidation + policy authorization + Problem Details), proving the cross-module wiring
+(Meetings → Membership directory → Notifications) end to end over HTTP. Branch `feat/P6-meetings`. Backend
+**406 green** (was 397; +9 Api), all gates clean (`dotnet format`, build).
+
+**Done.**
+- **`AcmpWebApplicationFactory`** now swaps the **Meetings + Notifications** DbContexts to private InMemory
+  stores too (it already swapped Membership + Topics) — so the whole P6 surface runs against InMemory with the
+  header-driven `TestAuthHandler` standing in for Keycloak.
+- **`MeetingsApiTests`** (5): schedule without a token → **401** (AC-008); a **Member is 403** on schedule and
+  on agenda-publish (docs/10 Meeting.Schedule / Agenda.Publish); **schedule → list → detail (Draft agenda) →
+  unknown-key 404**; **add item → publish → agenda `Published` v1**.
+- **`NotificationsApiTests`** (4): notifications without a token → **401**; **AC-051 end to end** — a Secretary
+  schedules + builds + publishes an agenda, and a seeded committee **Member then sees the `AgendaPublished`
+  notification** in their feed with the meeting title in the body and the `/meetings/{key}` deep link;
+  **mark-read is scoped to the caller** (the owner gets 204 and the unread count drops; a **different user gets
+  404** on the same id — the IDOR guard over HTTP) and an unknown id → **404**.
+
+**Decisions / notes.**
+- The publish path needs each agenda item to have a presenter (the domain guard) — the test items carry one.
+- The cross-module seams resolve against InMemory exactly as in production (the publish fan-out goes
+  Meetings → `ICommitteeDirectory` (Membership) → `INotificationChannel` (Notifications)); the test proves no
+  module reaches another's tables — it all flows through the Acmp.Shared contracts.
+- **No new ADR**; tests only.
+
+**Verification (deterministic, green).** Backend **406/406** (Domain 42 · Architecture 16 · Application 319 ·
+**Api 29**), `dotnet format --verify-no-changes` + build clean. The two new files were BOM-normalized to the
+format gate.
+
+**Acceptance audit (this entry).** **No verdict flips** — these tests *strengthen* already-recorded verdicts
+with HTTP evidence: **AC-051** now has a full publish→recipient-feed round-trip over HTTP; **AC-053** gains the
+HTTP scoping/IDOR proof; **AC-008** gains 401 coverage on the meetings + notifications surfaces.
+
+**Next.** **Push `feat/P6-meetings` → PR → green CI → review → squash-merge**, then the **live authenticated
+browser pass** across the P6 surfaces (schedule → agenda → publish/notify → start → conduct → end; AR/RTL +
+dark + live axe).
+
+---
+
+### 2026-06-27 — P6 follow-up: meeting-schedule flow (un-defers the new-meeting form) + server-implicit committee
+
+**Scope.** Build the previously-deferred **schedule-a-meeting** flow and remove its only blocker: the SPA
+no longer needs a `committeeId`. Branch `feat/P6-meetings`. Backend **397 green** (unchanged count), web
+**182 green** (was 177; +5 ScheduleMeetingDialog), i18n parity **412**, all gates clean (`dotnet format`,
+`tsc -b`, vite build, oxlint, CSS RTL-safe).
+
+**Done.**
+- **Backend — committee is now implicit (CON-001).** `CommitteeId` is removed from `ScheduleMeetingCommand`;
+  the handler anchors every meeting to a new well-known `Meeting.SingleCommitteeId` constant. The field was
+  **stored but never read for any logic** (there is no Committee aggregate), so this is a refinement, not an
+  architecture change — **no ADR**. The endpoint binds the command directly, so the API request body simply
+  drops `committeeId`. Domain `Meeting.Schedule` keeps its `committeeId` parameter (the constant is passed in);
+  the handler test's `ScheduleCmd()` + the unused test field were updated. 397 backend tests stay green.
+- **Frontend.** `api/meetings.ts` → `useScheduleMeeting()` (`POST /api/meetings` → 201 + the new
+  `MeetingSummary`, invalidates the list). `features/meetings/ScheduleMeetingDialog.tsx` — a shared-`Dialog`
+  form (title, **chair** `Select` from `/api/members` defaulting to the Chairman, start/end `datetime-local`,
+  optional location/join URL) with client validation (title required, chair required, end-after-start) and
+  bilingual error messages; on success it opens the new meeting's agenda builder (`/meetings/{key}`).
+  `MeetingsList.tsx` gains a **"Schedule meeting"** header action (the deferred-note is replaced).
+  `datetime-local` values are converted to ISO 8601 for the API.
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **Committee is server-implicit** — the cleaner modelling for a single-committee system than threading a
+  magic GUID through the SPA. `Meeting.SingleCommitteeId` is the single anchor; a second committee would need
+  an ADR + a real `Committee` entity (noted at the constant).
+- **Chair picker** sources `/api/members` (active), defaults to the **Chairman** role; `chairUserId` = the
+  member's `publicId` (the value the meeting stores), `chairName` = a display snapshot.
+- The design has **no schedule screen** — this composes shared components (Dialog/Field/Select/Button); the
+  meetings list itself was already flagged as no-reference scaffolding.
+
+**Verification (deterministic, green).** Backend **397/397** (the command change carried through Domain/
+Application/Api). Web **182/182** (Vitest+RTL: schedule with the defaulted Chairman → asserts the POST payload
++ navigation to the new meeting; title-required + end-after-start validation block submit; AR chrome; **+ axe
+WCAG 2.2 AA**), i18n parity 412, `dotnet format --verify-no-changes` + `tsc -b` + vite build + oxlint clean,
+new meetings CSS grep = zero physical properties. **Not yet run:** the live authenticated round-trip
+(schedule → 201 → land on the agenda builder, AR/RTL + dark) — recommended.
+
+**Acceptance audit (this entry).** **No verdict flips** — meeting scheduling (W5) has no dedicated `AC-###`;
+this un-defers the flow noted across P6c/P6d/P6e and makes the P6 surfaces reachable end to end (schedule →
+build agenda → publish/notify → start → conduct → end).
+
+**Next.** P6 UI is now complete and self-reachable. Remaining before the PR: optional `/api/meetings` +
+`/api/notifications` WebApplicationFactory integration tests, then **push `feat/P6-meetings` → PR → green CI →
+review → squash-merge**, and the **live authenticated browser pass** across the P6 surfaces (AR/RTL + dark + live axe).
+
+---
+
+### 2026-06-27 — P6e UI: notification center wired to the live feed + bell badge (closes the AC-051/053 loop)
+
+**Scope.** Wire the app-shell **NotificationCenter** (the bell popover, a P3 empty shell) to the live
+`/api/notifications` feed from the P6b backend, and add the **unread bell badge** — the recipient-facing half
+of the AC-051/AC-053 floor. Branch `feat/P6-meetings`. Web **177 tests green** (was 168; +9 — 7
+NotificationCenter, +2 TopBar badge), i18n parity **393**, `tsc -b` + vite build + oxlint clean, CSS RTL-safe.
+
+**Done.**
+- `api/notifications.ts` — `useNotifications()` (`GET /api/notifications` → `{ items, unreadCount }`, a 30s
+  background poll + refetch-on-focus) and `useMarkNotificationRead()` (`POST /api/notifications/{id}/read`,
+  invalidates the feed). Title/body arrive **bilingual** from the server (ADR-0005); the UI picks the locale.
+- `NotificationCenter.tsx` — renders the live list (unread-styled rows via the existing `.notif-item.unread`,
+  an unread-count header, loading/error/empty states; the calm "all caught up" empty state is preserved).
+  Each row is a button: clicking **marks it read** (if unread), closes the popover, and **follows its deep
+  link** (`/meetings/{key}`) — the AC-051 deep-link + AC-052 navigation shape. Still a non-modal click-away
+  region (Escape + outside-click dismiss).
+- `TopBar.tsx` — an **unread badge** on the bell (count, capped "9+"), shown **only when `unreadCount > 0`**
+  (honours the CHANGE-002 "no always-on dot over an empty inbox" rule); the bell's `aria-label` announces the
+  unread count.
+- `components.css` — `.notif-list`/`.notif-item` (button reset)/`.notif-dot`/`.notif-item-*`/`.notif-status`/
+  `.notif-unread-count`/`.notif-badge`, all logical-properties-only (RTL-safe, grep-verified). Full EN+AR
+  `notif.*` additions (titleUnread / unreadCount / loading / error; parity 393).
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **No `.dc.html` reference exists** for the live notification list (the panel is specified in the planning
+  doc docs/14 p.79, not in `/ACMP product context/`). It composes the shell's existing `notif-*` styles +
+  the design-system tokens — recorded in the file header. (See the "no-reference surfaces" note below.)
+- **No "mark all read"** — the backend exposes only per-id read, and clicking an item marks it; a bulk
+  endpoint isn't warranted at committee scale (YAGNI). **No push channel** — a 30s poll + refetch-on-focus
+  keeps the badge fresh for ≤20 users (`ponytail`: add SSE/WebSocket only if the latency matters).
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **177/177** (Vitest+RTL: live list render, unread styling,
+click → mark-read + close + deep-link navigation, the already-read/no-deep-link path is a no-op, empty state,
+AR content, **+ axe WCAG 2.2 AA** on the panel; TopBar badge shows only when unread>0). The shared `a11y.test`
++ `TopBar.test` now mock `api/notifications` (the test harness has no QueryClientProvider). i18n parity 393,
+`tsc -b`, vite build, oxlint (only the pre-existing untouched `Toast.tsx` warning), notif CSS grep = zero
+physical properties. **Not yet run:** the live cross-session browser pass (user A publishes an agenda → user B
+sees the badge + the item appear within the poll window, clicks → deep link), AR/RTL + dark — recommended, and
+it needs two provisioned members + a scheduled/published meeting.
+
+**Acceptance audit (this entry).** **AC-051 Partial → Met** — the full path is now built and unit-tested end
+to end: the P6b synchronous fan-out creates one bilingual notification per active member carrying the meeting
+date + agenda title + deep link; the center renders it (unread badge + list) and the deep link navigates.
+**AC-053 Partial → Met** — exactly one channel (in-app) is registered and rendered; no email/Webex is attempted.
+**AC-052** stays **Partial** — the deep-link *navigation* mechanism is now proven (clicking a notification with
+a deepLink routes to its target), but the *vote-open* notification itself is raised in **P9 (Voting)**. Live
+browser confirmation is the recommended closing step for AC-051 (same standing caveat the other Met UI ACs carry).
+
+**Next.** P6 UI is functionally complete (agenda builder · meeting workspace · notification center). Remaining
+before the PR: the **deferred meeting-schedule flow** (committee/chair pickers — needs `committeeId` exposed),
+optional `/api/meetings` + `/api/notifications` **WebApplicationFactory integration tests**, then **push
+`feat/P6-meetings` → PR → green CI → review → squash-merge**, and the **live authenticated browser pass** across
+the P6 surfaces (AR/RTL + dark + live axe).
+
+---
+
+### 2026-06-27 — P6d UI: live meeting workspace (the design's meeting tab) — agenda spine, attendance, discussion, actual-time
+
+**Scope.** The **live meeting workspace** — the `isMeeting` block of the local design
+`/ACMP product context/ACMP Agenda & Meeting.dc.html` — wired to the P6a conduct-meeting API (W7–W9), and
+the **tab integration** that hosts both P6c's agenda builder and this workspace under one
+`/meetings/:key` route. The MoM/minutes screen (the design's `isMinutes` block) stays **P7**. Branch
+`feat/P6-meetings`. Web **168 tests green** (was 151; +17 — 9 workspace, 8 page; the 11 P6c agenda tests stay
+green through the breadcrumb refactor), i18n parity **389**, `tsc -b` + vite build + oxlint clean, CSS RTL-safe.
+
+**Done.**
+- `MeetingPage.tsx` (route `/meetings/:key`, replacing the direct agenda route) — owns the page breadcrumb +
+  a shared in-page **`Tabs`** switcher (Agenda builder | Meeting) + the **lifecycle gate**: a Scheduled
+  meeting with a Published agenda shows **Start meeting** (`POST /start`, W7 — server-enforced); a Draft
+  agenda shows a calm "publish & start first" prompt; Held/Closed shows a concluded prompt (minutes = P7).
+  Default tab follows status (InProgress → Meeting). Renders `<AgendaBuilder/>` or `<MeetingWorkspace/>`.
+- `MeetingWorkspace.tsx` — the design screen: header (title + **Live** pulse chip + an **Elapsed** timer
+  ticking from `startedAt` via a 1s interval with cleanup + **End → Minutes** = `POST /end`); a 3-column grid:
+  **agenda spine** (click-to-select, done-check from `outcome`, `aria-current` on the running item),
+  **active-item workspace** (key/urgent/title + `actual/timebox` time; a **discussion notes** textarea →
+  `POST /discussion` on explicit Save/onBlur, empty/unchanged bodies never sent; an **actual-time** control —
+  minutes input + outcome `Select` → `POST /…/actual-time`; the **Record decision / Create action / Call
+  vote** buttons are disabled stubs → P7/P8/P9), and an **attendance** aside (roster = active `/api/members`
+  merged with `meeting.attendance` by `publicId`; a present/absent toggle → `POST /attendance`; a client-side
+  quorum *display* heuristic).
+- `api/meetings.ts` — typed `attendance: AttendanceEntry[]` + `discussions: Discussion[]`; added
+  `useStartMeeting`/`useEndMeeting`/`useMarkAttendance`/`useCaptureDiscussion`/`useRecordActualTime` (each by
+  meeting id, invalidating the detail). Enums (`AttendanceRole`/`AttendanceStatus`/`AgendaItemOutcome`) travel
+  as string names; committee role → AttendanceRole is mapped client-side (Chairman→Chair, …, else Guest).
+- `AgendaBuilder.tsx` — its internal breadcrumb moved up to `MeetingPage` (no duplicate); all 11 P6c tests
+  stay green. `meetings.css` extended (logical-properties-only). Full EN+AR `meetings.*` additions (parity 389).
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file headers).**
+- **In-page shared `Tabs`** instead of the design's top-bar tab switcher; the breadcrumb drops the design's
+  third "Agenda builder" segment (the active tab conveys it).
+- **Pause / RTE toolbar / "Autosaved" pill / "Captured on this item" / inline quick-create are mock chrome** →
+  omitted or disabled. Discussion save is **explicit** (Save note + onBlur) → `POST /discussion`; a "Saved"
+  indicator follows a successful save (there's no separate autosave endpoint).
+- **Record decision / Create action / Call vote** are disabled stubs → P7/P8/P9.
+- **"End → Minutes"** ends the meeting (`POST /end`) and navigates to `/meetings` — the Minutes screen is P7,
+  so no minutes UI is built here (chosen over a tab-flip to avoid an already-InProgress-meeting landing bug).
+- **Quorum is a client-side display heuristic** (majority of voting-eligible present), never gates an action —
+  the authoritative quorum gate is Voting (P9).
+- **Attendance roster** sourced from `/api/members` (active), seeded server-side on first mark; `member.publicId`
+  is the attendance `userId` (matches the MeetingsDbContext "attendee = CommitteeMember.PublicId" rule).
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **168/168** (Vitest+RTL behaviour: tab switch, start-meeting gate +
+call, live workspace render, spine selection, discussion save asserting the capture call + single-POST dedup,
+actual-time + outcome record, attendance present/absent toggle, the disabled stubs, **+ axe WCAG 2.2 AA** on the
+workspace), i18n parity 389, `tsc -b`, vite build (140 modules), oxlint (only the pre-existing untouched
+`Toast.tsx` warning), `meetings.css` grep = zero physical properties (RTL-safe). **Not yet run:** the live
+authenticated browser pass (real start → attendance/discussion/actual-time → end, AR/RTL + dark, live axe) —
+recommended, and it needs a scheduled+published meeting (pairs with the deferred schedule flow / a seeded meeting).
+
+**Acceptance audit (this entry).** **No verdict flips** — P6d is the UI for the W7–W9 workflows whose ACs are
+already covered by the P6a backend; the meeting screens add a new surface to the localization/a11y ACs
+(AC-040/045/046 render RTL-mirrored + axe-clean in the component tests; AC-041 stays Partial → VR P17).
+AC-051/053 still Partial → P6e.
+
+**Next.** **P6e** — wire `NotificationCenter.tsx` to the live `/api/notifications` feed (bell badge + list +
+mark-read), flipping AC-051/053 toward Met. Then the deferred meeting-schedule flow, the optional `/api/meetings`
++ `/api/notifications` WebApplicationFactory integration tests, and the `feat/P6-meetings` PR.
+
+---
+
+### 2026-06-27 — P6c UI: Agenda builder (the design's agenda tab) wired to the Meetings API + a meetings list
+
+**Scope.** The **Agenda Builder** screen — the `isAgenda` block of the local design
+`/ACMP product context/ACMP Agenda & Meeting.dc.html` — composed from the shared component library and
+wired to the P6a Meetings API, plus a read-only **Meetings list** to reach it. The live meeting workspace
+(the design's `isMeeting` tab) is **P6d**. Branch `feat/P6-meetings`. Web **151 tests green** (was 94; +57
+across the suite — 17 new meetings tests incl. 2 axe cases), i18n parity **344**, `tsc -b` + vite build +
+oxlint clean.
+
+**Done.**
+- `api/meetings.ts` — typed hooks mirroring `api/topics.ts` (read-by-key, mutate-by-id, query invalidation):
+  `useMeetings`, `useMeetingDetail(key)`, `usePreparedTopics` (the pool), and the agenda mutations
+  (`useAddAgendaItem`/`useRemoveAgendaItem`/`useMoveAgendaItem`/`useSetTimebox`/`useAssignPresenter`/
+  `usePublishAgenda`) DRY'd through a shared `useAgendaMutation` that invalidates the meeting detail + the
+  Prepared pool on success.
+- `features/meetings/AgendaBuilder.tsx` (route `/meetings/:key`) — the design screen: breadcrumb; header
+  (title + Draft/Published `StatusChip` + when/length); a **time-budget bar** (server-summed used minutes vs
+  the meeting's scheduled duration, over/under-coloured via `--st-*`, a `role="progressbar"`); a two-column
+  grid — **left** the Prepared-topics pool (count, search, draggable Add cards, empty state) and **right** the
+  agenda items (drop zone, empty state, per-item: index, key, urgent pill, title, a **timebox −/+ stepper**, a
+  **presenter `Select`**, **move up/down**, **remove**); and the **publish confirm dialog** (items + minutes →
+  `usePublishAgenda`). Four states (loading/error/not-found/live) driven by the query.
+- **AC-044 keyboard reorder.** The move up/down buttons are the accessible reorder path (each sends a single
+  ±1 `move`), disabled at the ends, with a synchronous **`aria-live`** announce; native HTML5 drag is
+  progressive enhancement on top. Unit-tested (asserts the ±1 mutation + the announce).
+- `features/meetings/MeetingsList.tsx` (route `/meetings`, replacing the placeholder) — composed list of
+  scheduled meetings linking to each builder; honest empty state.
+- `features/meetings/meetings.css` — **logical-properties-only**, token-driven (RTL-safe by construction,
+  grep-verified: zero physical left/right/margin/padding).
+- i18n: full `meetings.*` EN+AR namespace (real Arabic, parity 344); 5 new icons lifted from the design;
+  routes wired in `App.tsx`.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file header comment).**
+- **Pool labeled "Scheduled topics" (design) but sourced from the PREPARED backlog** (`GET /api/topics?status=
+  Prepared`) — topics only become Scheduled when the agenda is published; items already placed are deduped out
+  of the pool (they'd otherwise show in both columns pre-publish).
+- **±1 reorder only** (the AC-044 contract): the buttons/keyboard carry the behavior; an in-agenda pointer drag
+  fires a single ±1 nudge toward the drop target, never N chained moves; a free-position drag would need an
+  absolute-index `move` variant on the backend.
+- **"Preview" button + the dialog's "notify groups" checkboxes + the RTE toolbar are mock chrome** — Preview is
+  rendered disabled; the publish dialog shows one honest "all committee members will be notified" line (the
+  backend notifies everyone unconditionally — P6b).
+- **Presenter** is an accessible shared `Select` sourced from `GET /api/members` (replaces the design's
+  avatar-cycle). A member's `publicId` **is** the `presenterUserId` the agenda stores (confirmed against the
+  MeetingsDbContext "presenter = CommitteeMember.PublicId" rule — not an assumption).
+- **Scheduling a NEW meeting is deferred** — it needs committee + chair pickers and `committeeId` isn't exposed
+  to the SPA yet; the design shows no schedule screen. The list's empty state is honest about it.
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **151/151** (Vitest+RTL behaviour: add-from-pool, move ±1 +
+announce, timebox step, remove, publish dialog → publish, loading/empty/not-found, **+ axe WCAG 2.2 AA** on
+both new screens), i18n parity 344, `tsc -b`, vite build (138 modules), oxlint (only the pre-existing
+untouched `Toast.tsx` fast-refresh warning). **RTL-safety** confirmed deterministically (logical-CSS grep).
+**Not yet run:** the live authenticated browser pass (real `GET /api/meetings/{key}` + the agenda mutations,
+AR/RTL + dark, live axe) — recommended, and it needs a scheduled meeting (so it pairs with the deferred
+schedule flow or a seeded meeting).
+
+**Acceptance audit (this entry).** **AC-044 Partial → Met** — the keyboard-accessible agenda reorder
+(move-up/-down → ±1, disabled at ends, `aria-live` announce) is shipped and unit-tested, with the jsdom axe
+case clean; the live browser axe/RTL pass is the confirmatory step. AC-040/045/046 gain a new surface (the
+meetings screens render RTL-mirrored + axe-clean in the component tests); AC-041 stays Partial (automated VR →
+P17). AC-051/053 stay Partial → P6e.
+
+**Next.** **P6d** — the live meeting workspace (the design's `isMeeting` tab: agenda spine, attendance,
+discussion notes, actual-time; stub record-decision/create-action/call-vote → P7–P9). **P6e** — wire
+`NotificationCenter.tsx` to the live feed. Then the deferred meeting-schedule flow, the optional
+`/api/meetings` + `/api/notifications` integration tests, and the `feat/P6-meetings` PR.
+
+---
+
+### 2026-06-27 — P6b backend: in-app Notifications module + the agenda-publish / meeting-schedule fan-out (AC-051/053 floor)
+
+**Scope.** The in-app notification floor for P6 (AC-051 + AC-053 only — preferences/digests/reminder-Hangfire/
+Webex stay deferred). A new `Notifications` module (the v1 `INotificationChannel`), plus the cross-module
+`ICommitteeDirectory` seam so the Meetings publish/schedule handlers fan out to the committee roster without
+reading Membership's tables. Branch `feat/P6-meetings`; **397 tests green** (Domain 42 · **Architecture 16** ·
+Application 319 · Api 20), up from 388. Solution + `dotnet format` clean.
+
+**Done.**
+- **Notifications module** (Domain → Application → Infrastructure, mirroring the established module pattern):
+  - `Notification : AuditableEntity` — bilingual `LocalizedString` Title/Body, Category, optional DeepLink,
+    IsRead/ReadAt; `Create(...)` + idempotent `MarkRead(now)`. Referenced externally by PublicId (inbox items
+    have no human-readable display key).
+  - `InAppNotificationChannel : INotificationChannel` — the single registered channel (ADR-0005, AC-053): a
+    **synchronous** write of one row per `PublishAsync` (≤5s for a ≤20-user committee — no queue/Hangfire).
+  - Reads scoped to `ICurrentUser`: `GetNotifications` (the signed-in user's own feed, newest-first, bounded
+    to 50, with an unread count) and `MarkNotificationRead` (filters by PublicId **AND** RecipientUserId — the
+    IDOR guard, guardrail 4 — and 404s on a miss so a stranger's id leaks nothing).
+  - `NotificationsDbContext` (schema `notifications`, owned bilingual columns, `RecipientUserId,IsRead` index);
+    migration `Notifications_P6_Initial`; wired into `Program.cs` + `MigrationRunner` (the 4th context).
+  - `GET /api/notifications` + `POST /api/notifications/{id}/read` — authentication-only (the per-user scope in
+    the handlers *is* the authorization; no role policy).
+- **Cross-module seam** `ICommitteeDirectory` (`Acmp.Shared/Contracts/Membership`) → `GetActiveMembersAsync`
+  returning `(UserId, FullName)`. Implemented in **Membership.Infrastructure** (`CommitteeDirectory`, reads
+  active members only — AC-058 disabled members get nothing), registered alongside the ABAC ports. Same shape
+  as `ITopicScheduler`.
+- **Fan-out wiring.** `ScheduleMeetingHandler` (→ `MeetingScheduled`) and `PublishAgendaHandler` (→
+  `AgendaPublished`) now inject `ICommitteeDirectory` + `INotificationChannel` (both Shared) and deliver one
+  bilingual notification per active member after the governance write + audit. **AC-051 content contract:** the
+  `AgendaPublished` body carries the **meeting date + agenda title** and the message carries a **deep link**
+  (`/meetings/{key}`) to the agenda view. `PublishAgendaHandler` now also loads the Meeting for that content.
+- **ArchUnit.** Notifications added to the parameterized Clean-Architecture rules + a new
+  `Notifications_should_not_depend_on_other_modules` leaf fact; the Meetings isolation fact now also forbids any
+  Notifications-assembly edge — proving Meetings→Notifications composes purely through the Shared interface
+  (12 → 16 facts).
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **No new ADR** — new module + cross-module contract on the settled architecture; ADR-0005's `INotificationChannel`
+  contract is now first-implemented.
+- **Content is bilingual `LocalizedString`** built in the Meetings handler (guardrail 9), with the user-content
+  meeting title embedded verbatim into both languages and the date as an invariant Gregorian `yyyy-MM-dd`. The
+  SPA's notification-center *labels* (and any per-locale date reformat) land with the UI in P6e.
+- **MeetingScheduled has no AC content contract** (phase-scope only) — a sensible bilingual heads-up, not
+  over-specified; the AC-051 three-field contract applies to `AgendaPublished`.
+- **ponytail ceilings (commented at the code):** a **re-publish re-notifies** every member (notifications aren't
+  deduped — intentional: a changed agenda is worth re-announcing); the schedule/publish write and the
+  notification write are **separate DbContexts / not one transaction** (acceptable at committee scale — the
+  governance record + audit are the source of truth; a failed fan-out doesn't roll back the meeting).
+
+**Verification (deterministic, green).** Backend **397/397** (Domain 42 · Architecture 16 · Application 319 ·
+Api 20), 0 skipped — cross-module isolation (Meetings ⟂ Topics ⟂ Membership ⟂ Notifications) enforced by
+ArchUnit. New tests: 4 NotificationHandlerTests (channel write, current-user-scoped feed + unread count,
+mark-read, **IDOR — user B cannot mark user A's item read**) + the **AC-051 fan-out content assertion** in
+MeetingHandlerTests (2 members → 2 messages, each `AgendaPublished`, deep link `/meetings/MTG-2026-001`, body
+contains the meeting title + date in EN *and* AR). `dotnet build` + `dotnet format --verify-no-changes` clean.
+**Not yet run:** live SQL-Server apply of `Notifications_P6_Initial` + an authenticated `/api/notifications`
+round-trip — covered when P6e wires the live notification center (and the optional `/api/meetings` integration tests).
+
+**Acceptance audit (this entry).** **AC-051 / AC-053 Pending → Partial.** The in-app channel, the
+publish-time fan-out to every active member, the three-field content contract, and channel-exclusivity (a single
+registered `INotificationChannel`, no email/Webex attempted) are all built and unit-proven. They stay Partial
+until the live HTTP round-trip + the notification-center UI render (P6e) demonstrate "appears in the recipient's
+notification center within 5s" end-to-end. AC-052 (vote-open deep link) stays Pending → P9 (the deep-link
+*mechanism* exists; the vote notification is raised in the Voting phase).
+
+**Next.** **P6c / P6d** — the agenda builder + live meeting workspace UI (match the local
+`/ACMP product context/ACMP Agenda & Meeting.dc.html`, compose the shared library, EN+AR+RTL, axe AA; AC-044's
+keyboard-accessible agenda reorder lands here). **P6e** — wire `NotificationCenter.tsx` to the live feed (bell
+badge + list + mark-read), flipping AC-051/053 toward Met. Then the optional `/api/meetings` +
+`/api/notifications` WebApplicationFactory integration tests, and the `feat/P6-meetings` PR.
+
+---
+
+### 2026-06-27 — P6a backend complete: Meetings module (domain → application → infrastructure → API) + cross-module scheduler seam
+
+**Scope.** The backend half of P6 — agenda building, meeting scheduling/lifecycle, attendance, discussion
+notes, and actual-time tracking (workflows W5–W9) — built as a new `Meetings` module on the established
+modular-monolith pattern. The UI (P6c/P6d) and in-app Notifications floor (P6b) follow. Branch
+`feat/P6-meetings` (2 commits); **388 tests green** (Domain 42 · **Architecture 12** · Application 314 ·
+Api 20), 0 skipped — module boundaries intact. Solution builds.
+
+**Done.**
+- **Domain** (commit `befb496`). `Meeting` aggregate — full lifecycle (docs §5): Scheduled → InProgress →
+  Completed, with Cancel; **owns Attendance + Discussion** child collections; `StartMeeting` requires a
+  Published agenda (W7). `Agenda` aggregate — Draft → Published (versioned on re-publish); **owns
+  `AgendaItem`** (timebox bounds, presenter snapshot, urgent flag). `Agenda.MoveItem(topicId, ±1)` is the
+  **AC-044** reorder primitive (pointer drag and keyboard move-up/-down both send a ±1 delta). Lifecycle
+  events raised. **Cross-module identity is by id + display snapshots only** (topic key/title/urgent,
+  presenter id+name) — Meetings never reads another module's tables (ADR-0001). 42 domain unit tests.
+- **Application** (commit `eeb9edf`; MediatR slices, FluentValidation, `IAuditSink` on every governance
+  transition, `IAuthorizedRequest` RBAC per command): ScheduleMeeting (W5, creates the Meeting + an empty
+  Draft Agenda), CancelMeeting; the agenda builder micro-commands (add/remove/**move ±1**/timebox/presenter,
+  W6); PublishAgenda (W6 — versions the agenda then advances each placed topic Prepared → Scheduled via the
+  seam below); StartMeeting/EndMeeting (W7), MarkAttendance (W8), CaptureDiscussion (W9), RecordActualTime;
+  plus GetMeetings / GetMeetingDetail reads. Builder edits are not individually audited — the governance
+  event is `AgendaPublished`; `MeetingScheduled` + `AgendaPublished` are the two notification hooks for P6b.
+- **Cross-module seam** (ADR-0001). New `ITopicScheduler` contract in `Acmp.Shared/Contracts/Topics`,
+  **implemented in `Topics.Infrastructure`** (`TopicScheduler`) against the Topics DbContext — mirrors how
+  Membership implements the grant-on-accept writer for Topics. Both methods are **idempotent** (a topic not
+  in the expected source state is left untouched): `ScheduleAsync` (Prepared → Scheduled on agenda publish)
+  and `EnterCommitteeAsync` (Scheduled → InCommittee on meeting start). So a re-publish or mid-loop retry
+  never throws. Meetings advances topic lifecycle without ever touching Topics' tables.
+- **Infrastructure.** `MeetingsDbContext` (schema `meetings`) — attendance/discussion/agenda-items as owned
+  child tables; enums as int. Forward-only migration `Meetings_P6_Initial`; `MeetingKeyGenerator` (gap-free
+  `MTG-YYYY-###` / `AGN-YYYY-###`). Wired into `Program.cs` (module registration + MediatR assembly) and
+  `MigrationRunner` (third context).
+- **API.** `MeetingsEndpoints` — schedule/cancel, agenda build/reorder/timebox/presenter, publish,
+  start/end, attendance, discussion, actual-time, + meetings list/detail; **policy-gated per docs/10**
+  (Meeting.Schedule, Agenda.Publish, Attendance.Record, Minutes.Capture). 20 API/handler tests.
+- **ArchUnit.** Boundary tests extended to enforce Meetings module isolation (8 → 12 tests, all green).
+
+**Decisions / drift (no silent drift, guardrail 11). Settled, do not re-derive:**
+- **No new ADR** — new module on the settled architecture; no architecture change.
+- **MoM / minutes screen is P7**, out of P6 scope (the meeting workspace stubs record-decision / create-action
+  / call-vote → P7–P9).
+- **Notification scope floor = AC-051 + AC-053 only** for P6b; preferences, digests, reminder-Hangfire jobs,
+  and the Webex channel are deferred (ADR-0005 / docs/16). The ≤5s constraint (AC-051) is met by a synchronous
+  in-app write.
+- **StartMeeting requires a Published agenda** (W7) — enforced in the domain.
+- **Attendance roster is seeded client-side via `MarkAttendance`** (name/role from the SPA, which sources
+  `/api/members`); Meetings stores attendance display snapshots, it never reads Membership.
+- **The agenda builder's "Prepared topics" pool comes from the Topics API**, not Meetings — the builder passes
+  topic id + display snapshots into `AddAgendaItem`.
+
+**Verification (deterministic, green).** Backend **388/388** (Domain 42 · Architecture 12 · Application 314 ·
+Api 20), 0 skipped — cross-module isolation (Meetings ⟂ Topics ⟂ Membership) enforced by ArchUnit. Handler
+tests run against a real InMemory context with a faked `ITopicScheduler`. **Not yet run:** live SQL-Server
+migration apply + an authenticated `/api/meetings` round-trip (WebApplicationFactory integration tests are
+the optional P6 tail); the InMemory handler tests don't exercise the owned-table persistence on real SQL.
+
+**Acceptance audit (this entry).** **AC-044 Pending → Partial** — the backend reorder is built and tested
+(the `MoveAgendaItem` ±1 command + `Agenda.MoveItem`, the path a keyboard move-up/-down drives); the
+**keyboard-accessible agenda reorder UI** itself lands in P6c (mirrors the AC-043 backend-then-UI split).
+**AC-051 / AC-053 stay Pending → P6b** (the in-app Notifications backend: the channel + the publish/schedule
+fan-out). No other verdicts flip — P6a is a server surface.
+
+**Next.** **P6b** — in-app Notifications backend (the AC-051/053 floor): a Notifications module + an
+`InAppNotificationChannel : INotificationChannel`, `GET /api/notifications` + mark-read, and an
+`ICommitteeDirectory` (Shared contract, implemented in Membership) to resolve "all committee members"; fire
+`AgendaPublished` (from PublishAgendaHandler) and `MeetingScheduled` (from ScheduleMeetingHandler) — the
+hooks are already noted in those handlers. Then P6c/P6d (agenda builder + live meeting workspace UI), P6e
+(wire the NotificationCenter shell to the live feed), and the optional `/api/meetings` integration tests.
+
+---
+
 ## P5 review remediation — design-fidelity fixes + AC-043 correction
 
 ### 2026-06-27 — Fixed every finding from the pre-advance P5 audit (all severities)
