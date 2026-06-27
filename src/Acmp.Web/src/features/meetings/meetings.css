@@ -7,9 +7,10 @@
 /* ---- shared bits ---- */
 .mt-key {
   font-family: var(--mono);
-  font-size: 12px;
+  /* Design ref: 10.5px / weight 400 on the agenda + workspace screens. */
+  font-size: 10.5px;
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 400;
 }
 .mt-muted {
   color: var(--text-3);
@@ -89,8 +90,8 @@
 .mt-budget {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--sp-3) var(--sp-4);
+  border-radius: 11px;
+  padding: 14px 16px;
   margin-block-end: var(--sp-4);
   box-shadow: var(--shadow);
 }
@@ -122,20 +123,46 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+.mt-budget-remain {
+  font-weight: 600;
+}
+.mt-budget-remain.success {
+  color: var(--st-success-fg);
+}
+.mt-budget-remain.warn {
+  color: var(--st-warn-fg);
+}
+.mt-budget-remain.danger {
+  color: var(--st-danger-fg);
+}
 .mt-budget-track {
   block-size: 10px;
   border-radius: var(--r-sm);
   background: var(--sunken);
   overflow: hidden;
+  display: flex;
 }
 .mt-budget-fill {
-  display: block;
   block-size: 100%;
   background: var(--st-success-dot);
   transition: inline-size 0.3s ease;
 }
+.mt-budget-fill.tight {
+  background: var(--st-warn-dot);
+}
 .mt-budget-fill.over {
   background: var(--st-danger-dot);
+}
+/* Remaining capacity shown as a hatched buffer segment (design ref). */
+.mt-budget-buffer {
+  block-size: 100%;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--border-strong),
+    var(--border-strong) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 /* ---- two-column grid ---- */
@@ -155,14 +182,14 @@
 .mt-pool {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow);
   overflow: hidden;
   position: sticky;
   inset-block-start: 74px;
 }
 .mt-pool-head {
-  padding: var(--sp-3);
+  padding: 13px 15px;
   border-block-end: 1px solid var(--border);
   background: var(--subtle);
 }
@@ -222,7 +249,7 @@
   gap: var(--sp-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  padding: var(--sp-3);
+  padding: 11px 12px;
   background: var(--surface);
   cursor: grab;
 }
@@ -258,6 +285,22 @@
   gap: var(--sp-2);
   font-size: 11px;
 }
+/* Pool "Add" = the design's bespoke accent-tint pill (24px), not a standard
+   secondary button. Composes the shared <Button> for a11y/structure, restyled. */
+.btn.mt-pool-add {
+  block-size: 24px;
+  padding-inline: 9px;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  background: var(--primary-tint);
+  color: var(--accent);
+  font-size: 11px;
+  gap: 5px;
+}
+.btn.mt-pool-add:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
 
 /* ---- urgent markers ---- */
 .mt-urgent-ic {
@@ -279,9 +322,9 @@
 
 /* ---- agenda drop zone ---- */
 .mt-agenda {
-  background: var(--subtle);
+  background: transparent;
   border: 1.5px dashed var(--border-strong);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   padding: var(--sp-3);
   min-block-size: 300px;
 }
@@ -313,8 +356,8 @@
   gap: var(--sp-3);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--sp-3);
+  border-radius: 11px;
+  padding: 13px 14px;
   box-shadow: var(--shadow);
 }
 .mt-item:hover {
@@ -546,12 +589,12 @@
   inset-block-start: 74px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
 .mt-spine-head {
-  padding: var(--sp-3);
+  padding: 12px 14px;
   border-block-end: 1px solid var(--border);
   background: var(--subtle);
   font-size: 12.5px;
@@ -602,8 +645,8 @@
   color: var(--primary-fg);
 }
 .mt-spine-num.done {
-  background: var(--st-success-bg);
-  color: var(--st-success-fg);
+  background: var(--st-success-dot);
+  color: #fff;
 }
 .mt-spine-body {
   flex: 1 1 auto;
@@ -617,6 +660,10 @@
 }
 .mt-spine-item.active .mt-spine-title {
   font-weight: 600;
+  color: var(--accent);
+}
+.mt-spine-item.done .mt-spine-title {
+  color: var(--text-3);
 }
 .mt-spine-meta {
   display: flex;
@@ -641,12 +688,12 @@
 .mt-active-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
 .mt-active-head {
-  padding: var(--sp-4);
+  padding: 16px 18px;
   border-block-end: 1px solid var(--border-soft);
   display: flex;
   align-items: flex-start;
@@ -697,7 +744,7 @@
   color: var(--st-warn-fg);
 }
 .mt-active-body {
-  padding: var(--sp-4);
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
@@ -812,12 +859,12 @@
   inset-block-start: 74px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
 .mt-att-head {
-  padding: var(--sp-3);
+  padding: 13px 15px;
   border-block-end: 1px solid var(--border);
   background: var(--subtle);
 }
@@ -851,17 +898,34 @@
   background: var(--subtle);
 }
 .mt-avatar {
+  position: relative;
   inline-size: 30px;
   block-size: 30px;
   border-radius: 50%;
-  background: var(--primary-tint);
-  color: var(--accent);
+  background: var(--sunken);
+  color: var(--text-3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
   flex: 0 0 auto;
+}
+.mt-avatar.present {
+  background: var(--primary);
+  color: #fff;
+}
+/* Present indicator dot (design ref). Color is not the only present signal —
+   the toggle button label + avatar fill also carry it (WCAG 1.4.1). */
+.mt-avatar-dot {
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline-end: -1px;
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 50%;
+  background: var(--st-success-dot);
+  border: 2px solid var(--surface);
 }
 .mt-att-id {
   flex: 1 1 auto;

@@ -279,27 +279,32 @@ export function AgendaBuilder() {
   );
 }
 
+const TIGHT_BUFFER_MIN = 10;
+
 function BudgetBar({ used, total, remaining, over, usedPct }: { used: number; total: number; remaining: number; over: boolean; usedPct: number }) {
   const { t } = useTranslation();
-  const tone: StatusTone = over ? 'danger' : remaining === 0 ? 'success' : 'info';
-  const label = over
-    ? t('meetings.budget.over', { count: Math.abs(remaining) })
-    : remaining === 0
-      ? t('meetings.budget.onBudget')
-      : t('meetings.budget.remaining', { count: remaining });
+  const buffer = Math.max(0, remaining);
+  const tight = !over && buffer <= TIGHT_BUFFER_MIN && buffer > 0;
+  // Three-tier model matching the design: Fits (success) · Tight fit (warn) · Over (danger).
+  const tone: StatusTone = over ? 'danger' : tight ? 'warn' : 'success';
+  const chipLabel = over ? t('meetings.budget.over', { count: -remaining }) : tight ? t('meetings.budget.tight') : t('meetings.budget.fits');
+  const remainLabel = over ? t('meetings.budget.overRemain', { count: -remaining }) : t('meetings.budget.buffer', { count: buffer });
+  const bufferPct = total > 0 ? Math.max(0, Math.round((buffer / total) * 100)) : 0;
+  const fillClass = over ? 'over' : tight ? 'tight' : '';
   return (
     <div className={`mt-budget ${over ? 'over' : ''}`}>
       <div className="mt-budget-row">
         <div className="mt-budget-label">
           <span className="mt-budget-title">{t('meetings.budget.title')}</span>
-          <StatusChip tone={tone} label={label} />
+          <StatusChip tone={tone} label={chipLabel} />
         </div>
         <div className="mt-budget-figures">
-          <b>{used}</b> / {t('meetings.minutes', { count: total })}
+          <b>{used}</b> / {t('meetings.minutes', { count: total })} · <span className={`mt-budget-remain ${tone}`}>{remainLabel}</span>
         </div>
       </div>
       <div className="mt-budget-track" role="progressbar" aria-valuenow={used} aria-valuemin={0} aria-valuemax={total} aria-label={t('meetings.budget.title')}>
-        <span className={`mt-budget-fill ${over ? 'over' : ''}`} style={{ inlineSize: `${usedPct}%` }} />
+        <span className={`mt-budget-fill ${fillClass}`} style={{ inlineSize: `${usedPct}%` }} />
+        {bufferPct > 0 && <span className="mt-budget-buffer" style={{ inlineSize: `${bufferPct}%` }} />}
       </div>
     </div>
   );
@@ -324,7 +329,7 @@ function PoolColumn({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="mt-pool" aria-label={t('meetings.scheduledTopics')}>
+    <section className="mt-pool" aria-label={t('meetings.backlogPool')}>
       <div className="mt-pool-head">
         <div className="mt-pool-titlerow">
           <h2 className="mt-col-title">{t('meetings.scheduledTopics')}</h2>
@@ -375,7 +380,7 @@ function PoolColumn({
                   <div className="mt-pool-title">{tp.title}</div>
                   <div className="mt-pool-foot">
                     <span className="mt-muted">{t(`topics.type.${tp.type}`, { defaultValue: tp.type })}</span>
-                    <Button size="sm" variant="secondary" onClick={() => onAdd(tp)} aria-label={t('meetings.addTopic', { key: tp.key })}>
+                    <Button size="sm" variant="secondary" className="mt-pool-add" onClick={() => onAdd(tp)} aria-label={t('meetings.addTopic', { key: tp.key })}>
                       <Icon name="plus" size={12} aria-hidden /> {t('meetings.add')}
                     </Button>
                   </div>

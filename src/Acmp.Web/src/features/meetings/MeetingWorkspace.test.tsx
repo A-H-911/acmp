@@ -93,7 +93,7 @@ describe('MeetingWorkspace (P6d)', () => {
     // Attendance roster from active members.
     expect(screen.getByText('Sara K')).toBeInTheDocument();
     expect(screen.getByText('Omar R')).toBeInTheDocument();
-    expect(screen.getByText('1 of 2 present')).toBeInTheDocument();
+    expect(screen.getByText('1 of 2 present · 2 needed')).toBeInTheDocument();
   });
 
   it('selects an agenda-spine item to make it the active item', async () => {

@@ -109,8 +109,9 @@ describe('AgendaBuilder (P6c)', () => {
     expect(screen.getByRole('heading', { name: 'Q2 Architecture Review' })).toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();
     expect(screen.getByText('Time budget')).toBeInTheDocument();
-    // Budget: 35 used of 90 → 55 remaining.
-    expect(screen.getByText('55 min remaining')).toBeInTheDocument();
+    // Budget: 35 used of 90 → 55 buffer, comfortably "Fits".
+    expect(screen.getByText('55 min buffer')).toBeInTheDocument();
+    expect(screen.getByText('Fits')).toBeInTheDocument();
     expect(screen.getByText('Adopt OpenTelemetry')).toBeInTheDocument(); // pool (Prepared)
     expect(screen.getByText('Adopt Keycloak')).toBeInTheDocument(); // agenda item
   });

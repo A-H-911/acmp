@@ -362,21 +362,24 @@
     "publishNotify": "النشر والإشعار",
     "budget": {
       "title": "ميزانية الوقت",
-      "over": "تجاوز بمقدار {{count}} دقيقة",
-      "onBudget": "ضمن الميزانية",
-      "remaining": "يتبقّى {{count}} دقيقة"
+      "fits": "مناسب",
+      "tight": "ضيّق",
+      "over": "تجاوز بـ {{count}} دقيقة",
+      "buffer": "{{count}} دقيقة احتياطي",
+      "overRemain": "{{count}} دقيقة زائدة"
     },
-    "scheduledTopics": "المواضيع المجدولة",
-    "searchTopics": "ابحث في المواضيع",
+    "backlogPool": "مجمّع المواضيع",
+    "scheduledTopics": "جاهزة للجدولة",
+    "searchTopics": "بحث في المواضيع…",
     "urgent": "عاجل",
     "add": "إضافة",
     "addTopic": "أضف {{key}} إلى جدول الأعمال",
     "poolEmpty": { "title": "لا شيء للجدولة", "body": "ستظهر هنا المواضيع المُعدّة لجدول الأعمال جاهزةً للإضافة." },
     "agendaItems": "عناصر جدول الأعمال",
     "agendaOrder": "ترتيب جدول الأعمال",
-    "dragHint": "اسحب لإعادة الترتيب",
+    "dragHint": "اسحب لإعادة الترتيب · مفاتيح ↑↓",
     "agendaEmpty": { "title": "لا عناصر بعد", "body": "أضف المواضيع المُعدّة من اليمين، أو اسحبها إلى هنا لبناء جدول الأعمال." },
-    "timebox": "المهلة الزمنية",
+    "timebox": "الوقت",
     "decTime": "إنقاص مهلة {{key}}",
     "incTime": "زيادة مهلة {{key}}",
     "presenter": "المُقدِّم",
@@ -388,8 +391,8 @@
     "cancel": "إلغاء",
     "publish": {
       "title": "نشر جدول الأعمال",
-      "sub": "ثبّت الترتيب وأشعِر اللجنة.",
-      "itemsTotal": "العناصر في جدول الأعمال",
+      "sub": "تثبيت الترتيب وإشعار الحضور.",
+      "itemsTotal": "البنود وإجمالي الوقت",
       "confirm": "النشر والإشعار",
       "notifyAll": "سيتم إشعار جميع أعضاء اللجنة."
     },
@@ -443,7 +446,7 @@
     "present": "حاضر",
     "absent": "غائب",
     "attendanceToggle": "تبديل حضور {{name}}",
-    "attendanceSummary": "{{present}} من {{total}} حاضرون",
+    "attendanceSummary": "{{present}} من {{total}} حاضرون · المطلوب {{needed}}",
     "quorum": {
       "met": "اكتمل النصاب",
       "notMet": "لا نصاب"
