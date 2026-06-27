@@ -31,7 +31,7 @@ Hard constraints from `../README.md` §A and CON-001 (self-contained). These are
 
 | ID | Constraint | Source |
 |---|---|---|
-| CON-001 | **Self-contained**: no org Hangfire / ELK / Seq / notification platform. ACMP bundles its own. Allowed exceptions: own SQL Server instance; federate identity to Keycloak; Webex via pluggable adapter. | README CON-001 |
+| CON-001 | **Self-contained**: no org Hangfire / ELK / Seq / notification platform. ACMP bundles its own — all runtime dependencies bundled (incl. self-hosted Keycloak + SQL Server) per ADR-0015; the only external dependency is Webex (Phase 2, via pluggable adapter). | README CON-001 |
 | C-ARCH | Modular monolith, single deployable. Microservices rejected for v1. | ADR-0001 |
 | C-STACK | .NET 8 (LTS) / ASP.NET Core / REST / Clean Architecture + vertical slices (MediatR) / EF Core. | ADR-0002 |
 | C-DB | **SQL Server only** (transactional + reporting via columnstore + FTS). No second datastore in v1. | ADR-0003 |
@@ -47,7 +47,7 @@ Hard constraints from `../README.md` §A and CON-001 (self-contained). These are
 
 ## 3. System Context — C4 Level 1 (arc42 §3)
 
-ACMP sits between committee **actors** (canonical roles, `../README.md` §C) and a small set of **external systems**. Only **Keycloak** is a hard runtime dependency in v1; everything else is either app-owned (SQL, Seq, MinIO) or a deferred/pluggable integration (Webex, Tarseem, Keystone, SMTP).
+ACMP sits between committee **actors** (canonical roles, `../README.md` §C) and a small set of **external systems**. Per ADR-0015, all runtime dependencies are bundled — **self-hosted Keycloak (ACMP-owned realm)**, SQL, Seq, and MinIO are app-owned, so v1 has **zero external runtime services**; the only external dependency is a deferred/pluggable integration (Webex Phase 2; Tarseem, Keystone, SMTP later).
 
 ```mermaid
 flowchart TB
@@ -127,7 +127,7 @@ flowchart TB
         bak["Nightly SQL + MinIO backups<br/>restore target for DR<br/>(RTO ≤8h, RPO ≤4h — NFR-056/057)"]
     end
 
-    kc["Keycloak (OIDC)<br/>existing/own deployment"]
+    kc["Keycloak (OIDC)<br/>self-hosted, bundled (ADR-0015)"]
 
     user -->|HTTPS| nginx
     api -->|OIDC / JWKS| kc

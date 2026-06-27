@@ -29,4 +29,4 @@ self-contained / CON-001 · Keycloak roles-via-claims · in-app notifications on
 - A few design-point values remain `[unverified]` by design (chart lib RTL, PDF lib, notification polling interval, Arabic FTS word-breaker quality, exact ASVS chapter IDs) — each has a recommended default and is listed as an `OQ-###` in `docs/42` for confirmation during PH-0/PH-1.
 - The roadmap (`docs/36`) is authoritative for phase placement where a summary doc paraphrases it.
 
-**Verdict:** structurally sound, internally consistent with the confirmed decisions, and ready for handoff to Claude Design and Cl
+**Verdict:** structurally sound, internally consistent with the confirmed decisions, and ready for handoff to Claude Design and Claude Code.

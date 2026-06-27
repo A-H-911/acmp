@@ -43,7 +43,7 @@ The following is the environment the Architecture Committee *governs*. ACMP does
 | Pipelines | DevSecOps pipelines (org-standard) |
 | Embedded services | Embedded web server inside mobile app; external-partner lifecycle |
 
-**Implication for ACMP (CON-001 — self-contained, MANDATORY):** ACMP is **self-hosted and does NOT depend on the org's shared runtime infrastructure** — no org Hangfire, no org ELK/Seq, no org notification platform. It bundles its own background processing, observability, and notification channels. Two deliberate exceptions: it uses **SQL Server** (app-owned instance, the mandated datastore) and **federates identity to Keycloak via OIDC** (SSO only). ACMP's footprint must stay small — it is **low-traffic, internal, high-sensitivity**.
+**Implication for ACMP (CON-001 — self-contained, MANDATORY):** ACMP is **self-hosted and does NOT depend on the org's shared runtime infrastructure** — no org Hangfire, no org ELK/Seq, no org notification platform. It bundles its own background processing, observability, and notification channels. Per **ADR-0015**, all runtime dependencies are bundled — including **self-hosted Keycloak** (ACMP-owned realm, OIDC SSO) and **SQL Server** (app-owned instance, the mandated datastore) — so v1 has **zero external runtime services**; the only external dependency is **Webex** (Phase 2). ACMP's footprint must stay small — it is **low-traffic, internal, high-sensitivity**.
 
 ---
 

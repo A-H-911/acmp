@@ -133,4 +133,7 @@ Use for mockups:
 - **Action:** `ACT-2026-040` — "Produce Keycloak migration ADR" — Owner: SME, Due in 2 weeks, In Progress 40%.
 - **Risk:** `RSK-2026-006` — "Dual-running of internal auth + Keycloak during migration" — Probability: Medium, Impact: High, Status: Mitigating.
 - **ADR:** `ADR-2026-003` — "Keycloak as standard IdP" — Status: Proposed.
-Members: Chairman (VP), Secretary, 3 Technical Directors, iOS SME, Android SME. Streams: Health,
+Members: Chairman (VP), Secretary, 3 Technical Directors, iOS SME, Android SME. Streams: Health, Permits, Payments, Identity, Notifications.
+
+---
+**Pair with:** `claude-design-prompts.md` (the 10 layered prompts). **Source of truth for IA/pages:** `/docs/14-information-architecture-sitemap.md`.

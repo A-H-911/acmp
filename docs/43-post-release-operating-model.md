@@ -31,7 +31,7 @@
 |---|---|---|---|
 | T1 — User support | Login issues, navigation questions, role access, bilingual UI questions | Secretary | 1 business day |
 | T2 — Application defects | Functional bugs, incorrect data, notification failures, search issues | Tech Lead + Backend Engineer | Sev-1: 4h; Sev-2: 1 business day; Sev-3: next sprint |
-| T3 — Infrastructure/platform | Docker Compose failures, SQL Server, MinIO, Seq, Keycloak federation issues | Tech Lead (+ org infra team for host VM) | Sev-1: 2h; Sev-2: 4h |
+| T3 — Infrastructure/platform | Docker Compose failures, SQL Server, MinIO, Seq, self-hosted Keycloak (ACMP-owned — ADR-0015) issues | Tech Lead (+ org infra team for host VM only) | Sev-1: 2h; Sev-2: 4h |
 
 **Severity definitions:**
 - **Sev-1:** Platform inaccessible or data corruption/immutability breach detected; governance loop blocked.

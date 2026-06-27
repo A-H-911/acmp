@@ -2,7 +2,7 @@
 
 **Purpose:** Define Docker image design, Compose topology, config externalisation, health/readiness, EF migration strategy, backup/restore, warm-standby availability, and the numbered deployment runbook for ACMP on-prem.
 
-> Constraints: on-prem VM + Docker Compose (no K8s, no service mesh — C-DEPLOY); self-contained (CON-001); ≤20 users; 99.9% availability via redundancy + nightly backup, not clustering (C-SCALE); SQL Server + MinIO + Seq + Hangfire + Keycloak federation; Tarseem sidecar Phase 2.
+> Constraints: on-prem VM + Docker Compose (no K8s, no service mesh — C-DEPLOY); self-contained (CON-001); ≤20 users; 99.9% availability via redundancy + nightly backup, not clustering (C-SCALE); SQL Server + MinIO + Seq + Hangfire + self-hosted Keycloak (ACMP-owned realm, bundled — ADR-0015); Tarseem sidecar Phase 2.
 
 ---
 
@@ -91,6 +91,7 @@ volumes:
   seqdata:
   miniodata:
   minio-config:
+  kcdata:          # self-hosted Keycloak datastore (ADR-0015; final store per OQ-038)
 
 services:
 
@@ -127,7 +128,7 @@ services:
       ACMP_ConnectionStrings__Default: "Server=sqlserver,1433;Database=acmp;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True"
       ACMP_Seq__ServerUrl: "http://seq:5341"
       ACMP_Minio__Endpoint: "minio:9000"
-      ACMP_Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"
+      ACMP_Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"   # in-stack: e.g. http://keycloak:8080/realms/acmp (ADR-0015)
     networks:
       - acmp-net
     depends_on:
@@ -137,6 +138,8 @@ services:
         condition: service_healthy
       seq:
         condition: service_started
+      keycloak:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
       interval: 15s
@@ -194,6 +197,28 @@ services:
       timeout: 10s
       retries: 3
 
+  # Self-hosted, bundled IdP — ACMP-owned realm (ADR-0015). Imports the realm bootstrap
+  # from ./deploy/keycloak/ on first start; datastore (this volume vs a dedicated
+  # Postgres-for-Keycloak) is decided by the PH-0 spike — OQ-038.
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    restart: unless-stopped
+    command: ["start", "--import-realm"]
+    volumes:
+      - ./deploy/keycloak:/opt/keycloak/data/import:ro
+      - kcdata:/opt/keycloak/data
+    environment:
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    networks:
+      - acmp-net
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q 200"]
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
   # Phase 2 only — comment out for PH-1
   # tarseem:
   #   image: registry.internal/tarseem:1.0.0
@@ -219,8 +244,9 @@ secrets:
 | `seqdata` | Named volume | Seq log data; persisted on host |
 | `miniodata` | Named volume | MinIO object data; persisted on host |
 | `minio-config` | Named volume | MinIO config |
+| `kcdata` | Named volume | Self-hosted Keycloak data (ADR-0015); final datastore decided by OQ-038. Covered by backup/restore. |
 
-**Security note:** No service except `acmp-web` binds to the host network. Seq and MinIO admin consoles are accessible only via SSH tunnel or a restricted internal VLAN — never exposed to the public interface.
+**Security note:** No service except `acmp-web` binds to the host network. Seq, MinIO, and the self-hosted Keycloak admin consoles are accessible only via SSH tunnel or a restricted internal VLAN — never exposed to the public interface.
 
 ---
 
@@ -432,14 +458,14 @@ sqlserver, seq, minio      Docker images pre-pulled (from registry)
 2. Clone repo to `/opt/acmp/`; checkout `main`.
 3. Configure secrets: create `deploy/secrets/` (chmod 700); populate `db_password.txt`, `minio_secret_key.txt`, `keycloak_client_secret.txt`.
 4. Copy TLS certificates to `deploy/nginx/certs/` (cert + key).
-5. Configure `deploy/env/acmp-api.env` from `acmp-api.env.example`; set `KEYCLOAK_AUTHORITY`, `IMAGE_TAG`.
+5. Configure `deploy/env/acmp-api.env` from `acmp-api.env.example`; set `KEYCLOAK_AUTHORITY` (points at the in-stack `keycloak` service — ADR-0015), `IMAGE_TAG`.
 6. Pull images: `docker compose pull`.
-7. Start infrastructure first: `docker compose up -d sqlserver seq minio`.
+7. Start infrastructure first: `docker compose up -d keycloak sqlserver seq minio`. Keycloak is a bundled in-stack service (ADR-0015): on first start it imports the ACMP realm from the realm bootstrap under `deploy/keycloak/` and uses its own datastore (per OQ-038).
 8. Wait for healthy: `docker compose ps` until all show `healthy` (up to 90 s).
 9. Create MinIO buckets: `docker compose run --rm acmp-api dotnet Acmp.Api.dll --migrate-only` (or a dedicated setup command [unverified: exact CLI flag]).
 10. Start full stack: `docker compose up -d`.
 11. Run smoke test: `curl https://localhost/healthz` → 200; `curl https://localhost/readyz` → 200.
-12. Seed initial Administrator user via Keycloak admin console; assign `Administrator` realm role.
+12. Seed initial Administrator user via the self-hosted Keycloak admin console (ADR-0015); assign `Administrator` realm role.
 13. Verify login: open browser → ACMP URL → redirected to Keycloak → log in → land on dashboard.
 14. Run backup test: trigger nightly-backup Hangfire job manually from dashboard; verify `.bak` file created.
 15. Provision standby VM: copy `deploy/` dir; pull images; confirm network reachability.

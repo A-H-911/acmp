@@ -220,7 +220,7 @@ Each decision below follows this structure:
 
 **Problem:** ACMP needs authentication and authorization for ≤20 internal users. Users must be provisioned (no self-registration). Roles must flow from the identity provider.
 
-**Constraints:** The org is migrating to Keycloak; ACMP must federate to it (resolved decision, ADR-0004). No building an IdP.
+**Constraints:** ACMP self-hosts Keycloak (ADR-0015); still no building an IdP — run the proven engine. (Supersedes the earlier "org is migrating to Keycloak; ACMP federates to it" framing of ADR-0004; OIDC + PKCE + claims-based roles + no self-registration remain in force.)
 
 **Options:**
 
@@ -232,9 +232,9 @@ Each decision below follows this structure:
 
 **Recommendation: Integrate Keycloak (ADR-0004 — settled).**
 
-**Why-here:** Keycloak is already the org's chosen IdP. ACMP consumes it via OIDC (auth-code + PKCE). Committee roles are supplied via Keycloak group/realm-role claims, mapped to ACMP's canonical roles at the middleware layer. This eliminates user-management overhead from ACMP.
+**Why-here:** ACMP self-hosts Keycloak as a bundled container with an ACMP-owned realm (ADR-0015). ACMP consumes it via OIDC (auth-code + PKCE). Committee roles are supplied via Keycloak group/realm-role claims, mapped to ACMP's canonical roles at the middleware layer. This avoids building an IdP while keeping identity fully self-contained.
 
-**Risks:** Keycloak availability is a dependency (if Keycloak is down, ACMP login fails). **Mitigated by:** internal Keycloak is high-availability by the org's own SLA; ACMP caches JWTs for active sessions; graceful error on Keycloak outage.
+**Risks:** Keycloak is now in ACMP's own availability/ops scope (ADR-0015 — upgrades, patching, key rotation, realm/user-store backup are ACMP's). **Mitigated by:** Keycloak is bundled in ACMP's Compose stack and covered by ACMP's own backup + warm-standby + health checks; ACMP caches JWTs for active sessions; graceful error on Keycloak outage.
 
 **Validation:** Login via Keycloak OIDC works. Role claims map correctly to ACMP canonical roles. Token expiry and refresh work correctly. No bypass path to access ACMP without a valid Keycloak session.
 
@@ -403,7 +403,7 @@ Each decision below follows this structure:
 | **Wiki / Knowledge** | Build (thin) + Embed TipTap | Knowledge module + TipTap OSS editor | Outline needs PostgreSQL (stack mismatch); thin module sufficient | TipTap Pro features absent; OSS core sufficient |
 | **Diagrams** | Integrate | Tarseem render sidecar (ADR-0006, Phase 2) | Arabic-first; 11 diagram families; JSON spec as source | Early maturity; mitigated by spec-as-source |
 | **Research / Discovery** | Build + Integrate (optional) | Research module standalone + optional Keystone import (ADR-0007) | Research module fully standalone; Keystone is additive capability | Keystone schema drift; mitigated by ingest-time validation |
-| **Identity / SSO** | Integrate | Keycloak OIDC (ADR-0004) | Org is adopting Keycloak; roles via claims; no self-registration | Keycloak availability; mitigated by JWT caching |
+| **Identity / SSO** | Integrate (self-hosted) | Self-hosted Keycloak OIDC (ADR-0015; ADR-0004) | ACMP self-hosts Keycloak (ACMP-owned realm); roles via claims; no self-registration | Keycloak now in ACMP's own ops/availability scope; mitigated by bundled backup + warm standby + JWT caching |
 | **Notifications** | Build (v1 in-app) + Integrate Phase 2 | In-app notification center + Webex adapter Phase 2 (ADR-0005) | No email available in v1; org notification platform off-limits | Users may miss in-app only; Webex Phase 2 adds push | 
 | **Search** | Build (SQL FTS) | SQL Server Full-Text Search (ADR-0011) | Sufficient for ≤20 users; no evidence of need for OpenSearch yet | Arabic FTS quality; OQ raised |
 | **Reporting / Dashboards** | Build | SQL columnstore + EF Core read models + React dashboard | Sufficient at this scale; no BI tool needed | Slow analytical queries; mitigated by columnstore |

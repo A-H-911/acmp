@@ -79,4 +79,16 @@ Do NOT start the infra work until I confirm.
 ```
 Review the Keycloak-ownership change-slice before I advance to P5. Do NOT write feature code — audit only and report a verdict.
 1. Stack: a clean `docker compose up` brings up api, web, keycloak, sqlserver, seq, minio HEALTHY; show the service list + health states.
-2. Realm: the ACMP realm imported from deploy/keycloak/ has the OIDC client (authz-code + PKCE) and all 8 roles as realm roles + groups (Chairman, Secretary, Member, Reviewer, Auditor, Administrator, Submitter, Guest/Presenter) + an
+2. Realm: the ACMP realm imported from deploy/keycloak/ has the OIDC client (authz-code + PKCE) and all 8 roles as realm roles + groups (Chairman, Secretary, Member, Reviewer, Auditor, Administrator, Submitter, Guest/Presenter) + an initial admin; a login round-trip lands a user with correctly mapped roles.
+3. Self-contained: the compose file + config reference NO external runtime hostname (only Webex, Phase 2); KEYCLOAK_AUTHORITY points at the in-stack keycloak; ACMP application data is still SQL-Server-only (ADR-0003); Keycloak's own store follows the OQ-038 decision and is recorded.
+4. Resilience: Keycloak's datastore + realm are covered by backup/restore and have health checks (now in the 99.9% scope).
+5. Traceability: ADR-0015 honored; OQ-038 result recorded; OQ-039/OQ-040 noted; progress-log + acceptance-audit updated; the permission-matrix tests still pass (identity contract unchanged).
+6. Output a table (item → verdict → evidence/gap) and a GO / NO-GO with the specific gaps. Don't fix anything yet — just report.
+```
+
+## 7. Verification checklist
+
+- `grep -ri "federate\|two .*exception\|not own an idp\|external.*keycloak"` across the package returns only **historical** mentions inside ADR-0004/0013 bodies (under their amendment banners) — no live guidance says "federate to org Keycloak."
+- `docker compose` service list everywhere reads **api / web / keycloak / sqlserver / seq / minio**.
+- ADR index shows ADR-0015 Accepted; ADR-0004 "federation aspect superseded"; ADR-0013 "amended".
+- `docs/42` contains OQ-038/039/040; `docs/41` ASM-001 marked resolved-false and RISK-001 closed.

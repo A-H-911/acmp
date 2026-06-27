@@ -175,4 +175,9 @@ Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM)
 1. **Architecture governance, not project management.** Every feature must serve committee governance/traceability; reject generic PM creep.
 2. **Modular monolith first.** No distributed architecture without a demonstrated, measured need.
 3. **SQL Server is enough.** No second datastore without evidence.
-4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, a
+4. **Self-contained, but don't reinvent solved problems.** The platform is **self-hosted and does not depend on the org's runtime infrastructure** (no shared Hangfire / ELK / Seq / notification platform — see CON-001). It builds its own background processing, observability, and notification channels using standard open-source libraries; it integrates **Tarseem** (diagrams) and **optionally Keystone** (research/discovery — not required), and self-hosts identity via **Keycloak (OIDC)** (ADR-0015 — bundled container, ACMP-owned realm).
+5. **Human-reviewed automation.** AI-extracted transcript content is *candidate* until a human approves it.
+6. **Auditable & immutable where it matters.** Votes and issued decisions cannot be silently changed.
+7. **Bilingual and RTL are first-class**, not bolted on.
+8. **Progressive delivery.** Prove the core committee loop (intake→decision→action) before expanding.
+9. **Explicit domain concepts over generic abstraction

@@ -97,4 +97,14 @@ Chosen option: "<Option X>", because <justification tied to decision drivers>.
 - Good: <positive outcome>
 - Good: <positive outcome>
 - Bad / trade-off: <negative or trade-off>
-- 
+- Bad / trade-off: <negative or trade-off>
+
+## Validation
+
+<How will you verify this decision is working as intended? Tests, metrics, review gates.>
+
+## Links / Notes
+
+- <Related ADR or document>
+- <External reference URL>
+```

@@ -334,6 +334,7 @@ deploy/
 ├── nginx/
 │   ├── nginx.conf                      ← nginx config (TLS, proxy_pass, security headers)
 │   └── certs/                          ← .gitignored; cert + key mounted on VM
+├── keycloak/                           ← Self-hosted Keycloak realm bootstrap (ADR-0015): realm-export.json (ACMP realm, OIDC client, 8 roles+groups, bootstrap admin)
 ├── env/
 │   ├── acmp-api.env.example            ← Documented template (committed)
 │   └── acmp-api.env                    ← Actual values (.gitignored)
