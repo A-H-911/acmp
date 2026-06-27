@@ -90,7 +90,9 @@ changes — this is visual/fidelity reconciliation + a read-only view.
 **Next.** Push `feat/P4-users-membership-refresh` → PR → green CI → **await operator GO + live VR** to
 squash-merge. The operator runs the authenticated VR (set the `acmp-admin` dev password, rebuild `acmp-web`,
 capture the 8 combos). Future Administration slices build the remaining sub-tabs (Templates/Streams/Jobs/Notif/
-Health) and resolve **OQ-042** (invite/provision vs ADR-0015) before any invite UI is built.
+Health). **OQ-042 (invite/provision vs ADR-0015) is RESOLVED (2026-06-27): adopt (b)** — any future
+"Provision via Keycloak" affordance is a **deep-link** to the Keycloak admin console only (no in-app account
+creation/invite form); option (c) needs a new ADR. (docs/42.)
 
 ---
 
