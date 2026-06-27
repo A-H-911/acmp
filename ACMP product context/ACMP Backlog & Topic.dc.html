@@ -356,6 +356,33 @@
             </div>
           </sc-if>
 
+          <sc-if value="{{ dtAttach }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="border:1.5px dashed var(--border-strong);border-radius:11px;padding:20px;text-align:center;background:var(--subtle);margin-bottom:6px"><div style="width:38px;height:38px;margin:0 auto 9px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-3)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg></div><div style="font-size:13px;font-weight:600;color:var(--text)">{{ t.dropFiles }}</div><div style="font-size:11.5px;color:var(--text-3);margin-top:3px">{{ t.dropHint }}</div></div>
+              <sc-for list="{{ topicFiles }}" as="f" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+                  <span style="width:34px;height:34px;border-radius:8px;background:var(--subtle);display:flex;align-items:center;justify-content:center;color:var(--text-2);flex:0 0 auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ f.ic }}"></path></svg></span>
+                  <div style="flex:1 1 auto;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" dir="ltr">{{ f.name }}</div><div style="font-size:11.5px;color:var(--text-3)">{{ f.meta }}</div></div>
+                  <sc-if value="{{ f.scanClean }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--st-success-fg);flex:0 0 auto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18z"></path></svg>{{ scanCleanL }}</span></sc-if>
+                  <sc-if value="{{ f.scanning }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-3);flex:0 0 auto"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-warn-dot);animation:acmpPulse 1.6s ease-in-out infinite"></span>{{ scanningL }}</span></sc-if>
+                  <button aria-label="{{ download }}" style="width:30px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);border-radius:7px;display:flex;align-items:center;justify-content:center;flex:0 0 auto" style-hover="background:var(--subtle);color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg></button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ dtVotes }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ topicVotes }}" as="v" hint-placeholder-count="1">
+                <div style="border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:15px 17px">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px"><div style="min-width:0"><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:3px">{{ v.k }}</div><div style="font-size:14px;font-weight:600;color:var(--text)">{{ v.title }}</div><div style="font-size:11.5px;color:var(--text-3);margin-top:3px">{{ v.when }}</div></div><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding-inline:10px;border-radius:7px;font-size:12px;font-weight:700;flex:0 0 auto;{{ v.chip }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.dot }}"></span>{{ v.outcome }}</span></div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:11px;border-top:1px solid var(--border-soft)"><span style="font-size:13px;font-weight:600;color:var(--text);font-feature-settings:'tnum'">{{ v.tally }}</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-3)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ votesEmpty }}</span></div>
+                  <button style="width:100%;height:34px;margin-top:11px;border:1px solid var(--border-strong);background:var(--subtle);color:var(--text);border-radius:8px;font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:7px" style-hover="background:var(--sunken)">{{ viewBallot }}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
           <sc-if value="{{ dtHistory }}" hint-placeholder-val="{{ false }}">
             <div style="position:relative"><sc-for list="{{ history }}" as="h" hint-placeholder-count="4"><div style="display:flex;gap:14px;padding-bottom:18px"><div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center"><span style="width:11px;height:11px;border-radius:50%;background:{{ h.dot }};box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--border);z-index:1"></span><span style="flex:1 1 auto;width:2px;background:var(--border);margin-top:2px"></span></div><div style="flex:1 1 auto"><div style="font-size:13.5px;color:var(--text)">{{ h.text }}</div><div style="font-size:11.5px;color:var(--text-3);margin-top:2px">{{ h.who }} · {{ h.time }}</div></div></div></sc-for></div>
           </sc-if>
@@ -584,7 +611,7 @@ class Component extends DCLogic {
     ].map(([k,label,desc,dot])=>{ const sel=urgency===k; return { go:()=>this.set('urgency',k), sel:sel?'true':'false', label, desc, dot, bd:sel?dot:'var(--border)', bg:sel?'color-mix(in srgb,'+dot+' 8%,var(--surface))':'var(--surface)', ring:sel?'color-mix(in srgb,'+dot+' 25%,transparent)':'transparent', titleColor:'var(--text)' }; });
 
     // ---- detail ----
-    const detailTabs = [['overview',L('Overview','نظرة عامة'),null],['comments',L('Discussion','النقاش'),'3'],['history',L('History','السجل'),null]].map(([k,label,count])=>{ const active=detailTab===k;
+    const detailTabs = [['overview',L('Overview','نظرة عامة'),null],['comments',L('Discussion','النقاش'),'3'],['attachments',L('Attachments','المرفقات'),'3'],['votes',L('Votes','التصويتات'),'1'],['history',L('History','السجل'),null]].map(([k,label,count])=>{ const active=detailTab===k;
       return { go:()=>this.set('detailTab',k), sel:active?'true':'false', label, count, fw:active?'600':'500', color:active?'var(--text)':'var(--text-2)', bd:active?'var(--accent)':'transparent' }; });
     const detailSystems = [L('Internal Auth Service','خدمة المصادقة الداخلية'),L('API Gateway','بوابة الواجهات'),L('Mobile Apps','تطبيقات الجوال')];
     const comments = [
@@ -627,7 +654,17 @@ class Component extends DCLogic {
       titleVal:t.detailTitle, titleCount:t.detailTitle.length, descVal:'', justVal:'',
       saveLabel, saveColor, saveIcon,
       guardOpen, closeGuard:()=>this.set('guardOpen',false), confirmLeave:()=>this.setState({guardOpen:false,screen:'backlog'}),
-      detailTabs, dtOverview:detailTab==='overview', dtComments:detailTab==='comments', dtHistory:detailTab==='history',
+      detailTabs, dtOverview:detailTab==='overview', dtComments:detailTab==='comments', dtHistory:detailTab==='history', dtAttach:detailTab==='attachments', dtVotes:detailTab==='votes',
+      topicFiles:[
+        { name:'idp-evaluation-matrix.pdf', meta:L('PDF · 412 KB · Omar H. · 18 Feb','PDF · 412 ك.ب · عمر هـ. · 18 فبراير'), ic:'M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z', scan:'clean' },
+        { name:'keycloak-context.svg', meta:L('SVG · 88 KB · Noura P. · 16 Feb','SVG · 88 ك.ب · نورة ب. · 16 فبراير'), ic:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', scan:'clean' },
+        { name:'security-review-draft.docx', meta:L('DOCX · 1.2 MB · Fahad S. · just now','DOCX · 1.2 م.ب · فهد س. · الآن'), ic:'M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z', scan:'scanning' }
+      ].map(f=>({ ...f, scanClean:f.scan==='clean', scanning:f.scan==='scanning' })),
+      topicVotes:[
+        { k:'VOTE-2026-014', title:L('Approve Keycloak adoption, conditionally','الموافقة على اعتماد Keycloak بشروط'), when:L('Meeting MTG-2026-018 · 18 Feb','اجتماع MTG-2026-018 · 18 فبراير'), tally:'5–1 · 1 abstain', outcome:L('Carried','نجح'), chip:'background:var(--st-success-bg);color:var(--st-success-fg)', dot:'var(--st-success-dot)' }
+      ],
+      attachTitle:L('Attachments & diagrams','المرفقات والمخططات'), votesTitle:L('Votes on this topic','التصويتات على هذا الموضوع'),
+      scanCleanL:L('Virus scan passed','خلا من الفيروسات'), scanningL:L('Scanning…','جارٍ الفحص…'), download:L('Download','تنزيل'), votesEmpty:L('Outcome recorded · immutable','النتيجة مسجّلة · غير قابلة للتعديل'), viewBallot:L('View ballot','عرض الاقتراع'),
       detailSystems, comments, history, relGroups
     };
   }

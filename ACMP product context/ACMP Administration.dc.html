@@ -58,6 +58,9 @@
   .cell{padding-inline:14px;display:flex;align-items:center;min-width:0}
   .gUsers{display:grid;grid-template-columns:minmax(210px,1.4fr) 158px minmax(196px,1.2fr) 104px 116px;align-items:center}
   .gTpl{display:grid;grid-template-columns:minmax(220px,1.5fr) 150px 82px 116px 146px 64px;align-items:center}
+  .gStream{display:grid;grid-template-columns:minmax(170px,1.3fr) minmax(140px,1fr) 96px 110px 116px;align-items:center}
+  .gJob{display:grid;grid-template-columns:minmax(180px,1.4fr) 120px 128px 96px 96px 92px;align-items:center}
+  .gRole{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.6fr) minmax(150px,1fr);align-items:center}
   .gMatrix{display:grid;grid-template-columns:minmax(190px,1fr) 116px 116px 116px;align-items:center}
   .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
   .ttl{font-size:13.5px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -162,7 +165,7 @@
                   <span class="cell"><span style="display:inline-flex;flex-direction:column;gap:3px"><span style="font-size:13px;font-weight:600;color:var(--text)">{{ u.role }}</span><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ t.fromKc }}</span></span></span>
                   <span class="cell" style="padding-block:10px"><span style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><sc-for list="{{ u.committees }}" as="c" hint-placeholder-count="1"><span class="mchip">{{ c }}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></sc-for><sc-if value="{{ u.observer }}" hint-placeholder-val="{{ false }}"><span class="mchip" style="font-style:italic">{{ t.observer }}</span></sc-if><button aria-label="{{ t.addCommittee }}" style="width:22px;height:22px;border:1px dashed var(--border-strong);background:transparent;color:var(--text-3);border-radius:6px;display:flex;align-items:center;justify-content:center" style-hover="border-color:var(--accent);color:var(--accent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button></span><span style="display:flex;align-items:center;gap:8px"><button onClick="{{ u.toggleVote }}" role="switch" aria-checked="{{ u.voteAria }}" aria-label="{{ t.votingEligible }}" class="sw" style="background:{{ u.voteBg }}"><span class="knob" style="inset-inline-start:{{ u.voteX }}"></span></button><span style="font-size:11.5px;font-weight:500;color:{{ u.voteLabelColor }}">{{ t.votingEligible }}</span></span></span></span>
                   <span class="cell"><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);font-feature-settings:'tnum'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11"></path></svg>{{ u.assign }}</span></span>
-                  <span class="cell"><span class="chip" style="{{ u.statusChip }}"><span class="dot" style="background:{{ u.statusDot }}"></span>{{ u.status }}</span></span>
+                  <span class="cell"><span class="chip" style="{{ u.statusChip }}"><span class="dot" style="background:{{ u.statusDot }}"></span>{{ u.status }}</span><button onClick="{{ openUserDetail }}" aria-label="{{ t.viewUser }}" style="margin-inline-start:auto;width:28px;height:28px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);border-radius:7px;display:flex;align-items:center;justify-content:center;flex:0 0 auto" style-hover="background:var(--subtle);color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 18l6-6-6-6"></path></svg></button></span>
                 </div>
               </sc-for>
             </div>
@@ -232,13 +235,93 @@
             </div>
           </sc-if>
 
+          <!-- (5) STREAMS -->
+          <sc-if value="{{ isStreams }}" hint-placeholder-val="{{ false }}">
+            <div class="card">
+              <div class="gStream hrow"><span class="hcell">{{ t2.cStream }}</span><span class="hcell">{{ t2.cOwner }}</span><span class="hcell">{{ t2.cMembers }}</span><span class="hcell">{{ t2.cTopics }}</span><span class="hcell">{{ t2.cStatus }}</span></div>
+              <sc-for list="{{ streams }}" as="s" hint-placeholder-count="6">
+                <div class="gStream row" style="min-height:52px">
+                  <span class="cell" style="gap:10px"><span style="width:9px;height:9px;border-radius:3px;background:var(--accent);flex:0 0 auto"></span><span class="ttl">{{ s.name }}</span></span>
+                  <span class="cell"><span style="font-size:12.5px;color:var(--text-2)">{{ s.owner }}</span></span>
+                  <span class="cell"><span style="font-size:13px;font-weight:600;color:var(--text);font-feature-settings:'tnum'">{{ s.members }}</span></span>
+                  <span class="cell"><span style="font-size:13px;font-weight:600;color:var(--text);font-feature-settings:'tnum'">{{ s.topics }}</span></span>
+                  <span class="cell"><span class="chip" style="{{ s.chip }}"><span class="dot" style="background:{{ s.dot }}"></span>{{ s.status }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (6) JOB MONITOR -->
+          <sc-if value="{{ isJobs }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
+              <sc-for list="{{ jobStats }}" as="j" hint-placeholder-count="5">
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 15px"><div style="font-size:24px;font-weight:700;color:{{ j.color }};font-feature-settings:'tnum';line-height:1">{{ j.value }}</div><div style="font-size:12px;color:var(--text-2);margin-top:5px">{{ j.label }}</div></div>
+              </sc-for>
+            </div>
+            <div class="card">
+              <div class="gJob hrow"><span class="hcell">{{ t2.cJob }}</span><span class="hcell">{{ t2.cQueue }}</span><span class="hcell">{{ t2.cStatus }}</span><span class="hcell">{{ t2.cWhen }}</span><span class="hcell">{{ t2.cDur }}</span><span class="hcell">{{ t2.cRetries }}</span></div>
+              <sc-for list="{{ jobs }}" as="j" hint-placeholder-count="6">
+                <div class="gJob row" style="min-height:50px">
+                  <span class="cell"><span class="key" style="color:var(--text);font-size:12.5px">{{ j.name }}</span></span>
+                  <span class="cell"><span style="font-size:11.5px;color:var(--text-2);background:var(--subtle);border-radius:6px;padding:2px 8px">{{ j.queue }}</span></span>
+                  <span class="cell"><span class="chip" style="{{ j.chip }}"><span class="dot" style="background:{{ j.dot }}"></span>{{ j.status }}</span></span>
+                  <span class="cell"><span style="font-size:12px;color:var(--text-2)">{{ j.when }}</span></span>
+                  <span class="cell"><span style="font-size:12px;color:var(--text-2);font-feature-settings:'tnum'">{{ j.dur }}</span></span>
+                  <span class="cell"><sc-if value="{{ j.canRetry }}" hint-placeholder-val="{{ false }}"><button style="height:28px;padding-inline:10px;display:flex;align-items:center;gap:5px;border:1px solid var(--st-danger-dot);background:var(--st-danger-bg);color:var(--st-danger-fg);border-radius:7px;font-size:11.5px;font-weight:600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"></path></svg>{{ t2.retry }} {{ j.retries }}</button></sc-if><sc-if value="{{ j.canRetry }}" hint-placeholder-val="{{ true }}"></sc-if><span style="font-size:12px;color:var(--text-3)">{{ j.retries }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (7) ROLES REFERENCE -->
+          <sc-if value="{{ isRoles }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:flex-start;gap:10px;background:var(--st-info-bg);border:1px solid var(--st-info-dot);border-radius:10px;padding:11px 14px;margin-bottom:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--st-info-fg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg><div style="font-size:12.5px;color:var(--st-info-fg);line-height:1.55">{{ t2.kcRef }}</div></div>
+            <div class="card">
+              <div class="gRole hrow"><span class="hcell">{{ t2.cRole }}</span><span class="hcell">{{ t2.cWho }}</span><span class="hcell">{{ t2.cCaps }}</span></div>
+              <sc-for list="{{ roles }}" as="r" hint-placeholder-count="8">
+                <div class="gRole row" style="min-height:54px">
+                  <span class="cell"><span style="display:inline-flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:7px;background:var(--primary-tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 22l-8-4.5v-9L12 2zM12 7a3 3 0 100 6 3 3 0 000-6zM7.5 18a4.5 4.5 0 019 0"></path></svg></span><span style="font-size:13px;font-weight:600;color:var(--text)">{{ r.role }}</span></span></span>
+                  <span class="cell"><span style="font-size:12.5px;color:var(--text-2);line-height:1.5">{{ r.who }}</span></span>
+                  <span class="cell"><span style="font-size:12px;color:var(--text-2)">{{ r.caps }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- (8) USER DETAIL + INVITE -->
+          <sc-if value="{{ isUserDetail }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start">
+              <div style="grid-column:1 / -1;margin-bottom:2px"><button onClick="{{ backToUsers }}" style="display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--text-2);font-size:12.5px;font-weight:600;padding:0" style-hover="color:var(--text)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M15 18l-6-6 6-6"></path></svg>{{ t2.backToUsers }}</button></div>
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px">
+                  <div style="display:flex;align-items:center;gap:13px;margin-bottom:16px"><span class="av" style="width:46px;height:46px;font-size:15px">{{ ud.initials }}</span><div><div style="font-size:17px;font-weight:700">{{ ud.name }}</div><div class="sub2" dir="ltr" style="text-align:start">{{ ud.email }}</div></div><span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:7px"><span style="display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px"><span style="font-size:13px;font-weight:600">{{ ud.role }}</span><span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 018 0v3"></path></svg>{{ t2.fromKc2 }}</span></span></span></div>
+                  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px 20px">
+                    <sc-for list="{{ ud.facts }}" as="f" hint-placeholder-count="4"><div><div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:3px">{{ f.label }}</div><div style="font-size:13px;color:var(--text)">{{ f.value }}</div></div></sc-for>
+                  </div>
+                </section>
+                <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+                  <div style="padding:13px 18px;border-bottom:1px solid var(--border);background:var(--subtle);font-size:13px;font-weight:600">{{ t2.memberships }}</div>
+                  <sc-for list="{{ ud.memberships }}" as="m" hint-placeholder-count="2"><div style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border-soft)"><span style="font-size:13px;color:var(--text)">{{ m.name }}</span><span class="mchip">{{ m.role }}</span></div></sc-for>
+                </section>
+              </div>
+              <section style="background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden">
+                <div style="padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="width:30px;height:30px;border-radius:8px;background:var(--primary-tint);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6"></path></svg></span><span style="font-size:13.5px;font-weight:600">{{ t2.inviteTitle }}</span></div>
+                <div style="padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+                  <sc-for list="{{ inviteFields }}" as="f" hint-placeholder-count="2"><div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">{{ f.label }}</label><div style="display:flex;align-items:center;height:38px;padding-inline:11px;border:1px solid var(--border-strong);background:var(--surface);border-radius:8px;font-size:13px;color:var(--text-3)" tabindex="0" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)"><span dir="ltr" style="text-align:start">{{ f.value }}</span></div></div></sc-for>
+                  <div style="display:flex;align-items:flex-start;gap:9px;background:var(--st-info-bg);border:1px solid var(--st-info-dot);border-radius:9px;padding:10px 12px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--st-info-fg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><span style="font-size:11.5px;color:var(--st-info-fg);line-height:1.5">{{ t2.inviteNote }}</span></div>
+                  <button style="height:40px;border:0;background:var(--primary);color:#fff;border-radius:9px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:var(--primary-hover)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>{{ t2.sendInvite }}</button>
+                </div>
+              </section>
+            </div>
+          </sc-if>
+
         </sc-if>
       </div>
     </main>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;defaultSection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;users&quot;,&quot;options&quot;:[&quot;users&quot;,&quot;templates&quot;,&quot;health&quot;,&quot;notif&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;,&quot;permission&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;defaultSection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;users&quot;,&quot;options&quot;:[&quot;users&quot;,&quot;templates&quot;,&quot;health&quot;,&quot;streams&quot;,&quot;roles&quot;,&quot;jobs&quot;,&quot;notif&quot;,&quot;userdetail&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;live&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;,&quot;permission&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   state = { sub: this.props.defaultSection || 'users', lang:'en', theme:'light', dataState: this.props.dataState || 'live', voting:{}, events:{} };
   set(k,v){ this.setState({ [k]:v }); }
@@ -262,6 +345,7 @@ class Component extends DCLogic {
   renderVals(){
     const { sub, lang, theme, dataState, voting, events } = this.state;
     const isRtl = lang==='ar'; const L=(en,ar)=>isRtl?ar:en;
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
     const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
     const knobX=(on)=>on?'18px':'2px';
 
@@ -278,7 +362,7 @@ class Component extends DCLogic {
       kcTitle:L('Roles are read-only','الأدوار للقراءة فقط'), kcNote:L('committee roles are sourced from Keycloak claims. ACMP does not create accounts or edit roles — there is no self-registration. Membership and voting eligibility are managed here.','تُستمدّ أدوار اللجنة من مطالبات Keycloak. لا يُنشئ ACMP حسابات ولا يعدّل الأدوار — لا يوجد تسجيل ذاتي. تُدار العضوية وأهلية التصويت من هنا.'),
       cUser:L('Name / email','الاسم / البريد'), cRole:L('Committee role','دور اللجنة'), cMembership:L('Committee membership','عضوية اللجنة'), cAssign:L('Assignments','الإسنادات'), cStatus:L('Status','الحالة'),
       fromKc:L('from Keycloak','من Keycloak'), votingEligible:L('Voting-eligible','مؤهّل للتصويت'), observer:L('Observer','مراقب'), addCommittee:L('Add committee','إضافة لجنة'),
-      showingUsers:L('Showing 8 users','عرض 8 مستخدمين'),
+      showingUsers:L('Showing 8 users','عرض 8 مستخدمين'), viewUser:L('View user detail','عرض تفاصيل المستخدم'),
       // templates
       cName:L('Template','القالب'), cType:L('Type','النوع'), cVersion:L('Version','الإصدار'), cUpdated:L('Last updated','آخر تحديث'), edit:L('Edit','تحرير'), showingTpl:L('Showing 7 templates','عرض 7 قوالب'),
       // health
@@ -300,17 +384,24 @@ class Component extends DCLogic {
     const TABS=[ ['users',L('Users & Membership','المستخدمون والعضوية'),'M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M11 11a4 4 0 100-8 4 4 0 000 8zM21 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8'],
       ['templates',L('Templates','القوالب'),'M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM9 13h6M9 17h4'],
       ['health',L('System Health','صحّة النظام'),'M22 12h-4l-3 9L9 3l-3 9H2'],
+      ['streams',L('Streams','المسارات'),'M3 12h4l3 8 4-16 3 8h4'],
+      ['roles',L('Roles','الأدوار'),'M12 2l8 4.5v9L12 22l-8-4.5v-9L12 2zM12 7a3 3 0 100 6 3 3 0 000-6zM7.5 18a4.5 4.5 0 019 0'],
+      ['jobs',L('Job Monitor','مراقب المهام'),'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2'],
       ['notif',L('Notification Settings','إعدادات الإشعارات'),'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0'] ];
     const subTabs=TABS.map(([k,label,d])=>({ label,d,go:()=>this.set('sub',k), current:sub===k?'page':null, fg:sub===k?'var(--text)':'var(--text-2)', bd:sub===k?'var(--accent)':'transparent' }));
 
-    const isUsers=sub==='users', isTemplates=sub==='templates', isHealth=sub==='health', isNotif=sub==='notif';
+    const isUsers=sub==='users', isTemplates=sub==='templates', isHealth=sub==='health', isNotif=sub==='notif', isStreams=sub==='streams', isJobs=sub==='jobs', isRoles=sub==='roles', isUserDetail=sub==='userdetail';
 
     // section header config
     const SEC={
       users:{ subtitle:L('Users, roles, and committee membership','المستخدمون والأدوار وعضوية اللجنة'), primary:L('Provision via Keycloak','تزويد عبر Keycloak'), primaryIcon:'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1', emptyT:L('No users match','لا مستخدمين مطابقين'), emptyB:L('No users match the current filters. Users are provisioned in Keycloak.','لا مستخدمين يطابقون المرشّحات. يُزوَّد المستخدمون في Keycloak.'), errorReq:'GET /api/admin/users — 503 · req 4b2a-…-e91' },
       templates:{ subtitle:L('Standardized templates for topics, ADRs, minutes, decisions, and research','قوالب موحّدة للمواضيع والسجلات والمحاضر والقرارات والأبحاث'), primary:L('New template','قالب جديد'), primaryIcon:'M12 5v14M5 12h14', emptyT:L('No templates','لا قوالب'), emptyB:L('No templates match the current filters.','لا قوالب تطابق المرشّحات الحالية.'), errorReq:'GET /api/admin/templates — 503 · req 6c1f-…-a72' },
       health:{ subtitle:L('Live status of core services and integrations','الحالة المباشرة للخدمات والتكاملات الأساسية'), primary:null, emptyT:L('No services','لا خدمات'), emptyB:L('No services are registered.','لا خدمات مُسجّلة.'), errorReq:'GET /api/admin/health — 503 · req 2e8d-…-c44' },
-      notif:{ subtitle:L('Delivery channels and per-event default notifications','قنوات التوصيل والإشعارات الافتراضية لكل حدث'), primary:L('Save changes','حفظ التغييرات'), primaryIcon:'M5 12l5 5L20 7', emptyT:L('Nothing here','لا شيء هنا'), emptyB:L('No notification settings to show.','لا إعدادات إشعارات لعرضها.'), errorReq:'GET /api/admin/notifications — 503 · req 8f3b-…-d05' }
+      notif:{ subtitle:L('Delivery channels and per-event default notifications','قنوات التوصيل والإشعارات الافتراضية لكل حدث'), primary:L('Save changes','حفظ التغييرات'), primaryIcon:'M5 12l5 5L20 7', emptyT:L('Nothing here','لا شيء هنا'), emptyB:L('No notification settings to show.','لا إعدادات إشعارات لعرضها.'), errorReq:'GET /api/admin/notifications — 503 · req 8f3b-…-d05' },
+      streams:{ subtitle:L('Delivery streams and their committee owners','مسارات التسليم وملّاكها في اللجنة'), primary:L('Add stream','إضافة مسار'), primaryIcon:'M12 5v14M5 12h14', emptyT:L('No streams','لا مسارات'), emptyB:L('No streams are configured yet.','لا مسارات مُهيأة بعد.'), errorReq:'GET /api/admin/streams — 503 · req 3a9c-…-b21' },
+      roles:{ subtitle:L('Read-only reference — roles & capabilities are defined in Keycloak','مرجع للقراءة — الأدوار والصلاحيات تُعرّف في Keycloak'), primary:null, emptyT:L('No roles','لا أدوار'), emptyB:L('No roles are defined.','لا أدوار مُعرّفة.'), errorReq:'GET /api/admin/roles — 503 · req 7d4e-…-f12' },
+      jobs:{ subtitle:L('Background job queues, schedules, and recent runs (Hangfire)','طوابير المهام الخلفية والجداول والتشغيلات الأخيرة (Hangfire)'), primary:L('Open dashboard','فتح اللوحة'), primaryIcon:'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1', emptyT:L('No jobs','لا مهام'), emptyB:L('No background jobs have run.','لم تُشغّل مهام خلفية.'), errorReq:'GET /api/admin/jobs — 503 · req 9e2f-…-a55' },
+      userdetail:{ subtitle:L('User profile, role (read-only), and committee / stream assignments','ملف المستخدم، الدور (للقراءة)، وتعيينات اللجان / المسارات'), primary:L('Invite user','دعوة مستخدم'), primaryIcon:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6', emptyT:'', emptyB:'', errorReq:'GET /api/admin/users/u3 — 503 · req 1c7b-…-e88' }
     };
     const sec=SEC[sub];
 
@@ -383,13 +474,71 @@ class Component extends DCLogic {
     const evList=evRaw.map(e=>{ const on=(e.id in events)?events[e.id]:e.on; return { label:e.label[lang], onAria:on?'true':'false', bg:on?'var(--accent)':'var(--border-strong)', x:knobX(on),
       toggle:()=>this.setState(st=>({ events:{...st.events, [e.id]: !((e.id in st.events)?st.events[e.id]:e.on)} })) }; });
 
+    // ---------- STREAMS ----------
+    const streamsRaw=[
+      { name:{en:'Identity',ar:'الهوية'}, owner:{en:'Omar H.',ar:'عمر هـ.'}, members:6, topics:8, st:'active' },
+      { name:{en:'Platform',ar:'المنصة'}, owner:{en:'Faisal N.',ar:'فيصل ن.'}, members:5, topics:5, st:'active' },
+      { name:{en:'Payments',ar:'المدفوعات'}, owner:{en:'Lina K.',ar:'لينا ك.'}, members:4, topics:6, st:'active' },
+      { name:{en:'Health',ar:'الصحة'}, owner:{en:'Yousef R.',ar:'يوسف ر.'}, members:4, topics:3, st:'active' },
+      { name:{en:'Permits',ar:'التصاريح'}, owner:{en:'Sara M.',ar:'سارة م.'}, members:3, topics:2, st:'paused' },
+      { name:{en:'Notifications',ar:'الإشعارات'}, owner:{en:'Noura P.',ar:'نورة ب.'}, members:3, topics:4, st:'active' }
+    ];
+    const stStatus={ active:{l:L('Active','نشط'),s:'success'}, paused:{l:L('Paused','موقوف'),s:'warn'} };
+    const streams=streamsRaw.map(s=>{ const ss=stStatus[s.st]; return { name:s.name[lang], owner:s.owner[lang], members:String(s.members), topics:String(s.topics), status:ss.l, chip:this.chip(ss.s), dot:this.dot(ss.s) }; });
+
+    // ---------- JOBS (Hangfire) ----------
+    const jobStats=[
+      { label:L('Succeeded','نجحت'), value:'1,284', color:'var(--st-success-fg)', bg:'var(--st-success-bg)' },
+      { label:L('Processing','قيد التنفيذ'), value:'2', color:'var(--st-info-fg)', bg:'var(--st-info-bg)' },
+      { label:L('Scheduled','مجدولة'), value:'9', color:'var(--st-sched-fg)', bg:'var(--st-sched-bg)' },
+      { label:L('Enqueued','في الطابور'), value:'12', color:'var(--text-2)', bg:'var(--subtle)' },
+      { label:L('Failed','فاشلة'), value:'1', color:'var(--st-danger-fg)', bg:'var(--st-danger-bg)' }
+    ];
+    const jobsRaw=[
+      { name:'DigestEmailJob', queue:'default', st:'failed', when:{en:'2m ago',ar:'قبل دقيقتين'}, dur:'—', retries:'2/3' },
+      { name:'AgingTopicSweep', queue:'default', st:'processing', when:{en:'now',ar:'الآن'}, dur:'4s', retries:'—' },
+      { name:'MinutesPdfRender', queue:'render', st:'succeeded', when:{en:'5m ago',ar:'قبل ٥ د'}, dur:'1.2s', retries:'—' },
+      { name:'DiagramRenderJob', queue:'render', st:'succeeded', when:{en:'8m ago',ar:'قبل ٨ د'}, dur:'0.8s', retries:'—' },
+      { name:'NotificationFanout', queue:'default', st:'scheduled', when:{en:'in 3m',ar:'بعد ٣ د'}, dur:'—', retries:'—' },
+      { name:'AuditLogArchive', queue:'maintenance', st:'succeeded', when:{en:'1h ago',ar:'قبل ساعة'}, dur:'12s', retries:'—' }
+    ];
+    const jStatus={ succeeded:{l:L('Succeeded','نجحت'),s:'success'}, processing:{l:L('Processing','قيد التنفيذ'),s:'info'}, scheduled:{l:L('Scheduled','مجدولة'),s:'sched'}, failed:{l:L('Failed','فاشلة'),s:'danger'} };
+    const jobs=jobsRaw.map(j=>{ const s=jStatus[j.st]; return { name:j.name, queue:j.queue, status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), when:j.when[lang], dur:j.dur, retries:j.retries, canRetry:j.st==='failed' }; });
+
+    // ---------- ROLES REFERENCE ----------
+    const rolesRaw=[
+      { role:{en:'Chairman',ar:'رئيس'}, who:{en:'Chairs meetings; approves decisions & minutes',ar:'يرأس الاجتماعات؛ يعتمد القرارات والمحاضر'}, caps:{en:'Approve · Override · Vote',ar:'اعتماد · تجاوز · تصويت'} },
+      { role:{en:'Secretary of the Committee',ar:'أمين سر اللجنة'}, who:{en:'Runs the workflow end to end',ar:'يدير سير العمل من البداية للنهاية'}, caps:{en:'Edit · Schedule · Record',ar:'تعديل · جدولة · تسجيل'} },
+      { role:{en:'Member',ar:'عضو'}, who:{en:'Committee voting member',ar:'عضو مصوّت في اللجنة'}, caps:{en:'Vote · Comment',ar:'تصويت · تعليق'} },
+      { role:{en:'Reviewer',ar:'مراجع'}, who:{en:'Reviews submissions & ADRs',ar:'يراجع الطلبات وسجلات القرار'}, caps:{en:'Review · Comment',ar:'مراجعة · تعليق'} },
+      { role:{en:'Auditor',ar:'مدقّق'}, who:{en:'Read-only oversight + audit log',ar:'إشراف للقراءة + سجل تدقيق'}, caps:{en:'Read · Export',ar:'قراءة · تصدير'} },
+      { role:{en:'Administrator',ar:'مسؤول'}, who:{en:'Users, templates, configuration',ar:'المستخدمون والقوالب والإعداد'}, caps:{en:'Manage system',ar:'إدارة النظام'} },
+      { role:{en:'Submitter',ar:'مقدّم'}, who:{en:'Submits topics; limited access',ar:'يقدّم المواضيع؛ وصول محدود'}, caps:{en:'Submit · View own',ar:'تقديم · عرض الخاص'} },
+      { role:{en:'Guest / Presenter',ar:'ضيف / مقدّم عرض'}, who:{en:'Time-boxed single-topic access',ar:'وصول مؤقّت لموضوع واحد'}, caps:{en:'View invited topic',ar:'عرض الموضوع المدعو'} }
+    ];
+    const roles=rolesRaw.map(r=>({ role:r.role[lang], who:r.who[lang], caps:r.caps[lang] }));
+
+    // ---------- USER DETAIL ----------
+    const ud={ initials:'OH', name:L('Omar H.','عمر هـ.'), email:'omar.h@acmp.gov', role:L('Member','عضو'), status:L('Active','نشط'),
+      facts:[ {label:L('Keycloak ID','معرّف Keycloak'),value:'kc-0a4f-…-9b2'}, {label:L('Last sign-in','آخر دخول'),value:L('24 Jun 2026 · 09:12','٢٤ يونيو ٢٠٢٦ · ٠٩:١٢')}, {label:L('Provisioned','زُوِّد'),value:L('14 Jan 2026','١٤ يناير ٢٠٢٦')}, {label:L('Voting eligible','مؤهّل للتصويت'),value:L('Yes','نعم')} ],
+      memberships:[ {name:L('Architecture Committee','لجنة الهندسة'), role:L('Member','عضو')}, {name:L('Identity stream','مسار الهوية'), role:L('Lead','قائد')} ] };
+    const inviteFields=[ {label:L('Email address','البريد الإلكتروني'), value:'name@acmp.gov', mono:true}, {label:L('Full name','الاسم الكامل'), value:L('New member','عضو جديد'), mono:false} ];
+
+    const t2={ cStream:L('Stream','المسار'), cOwner:L('Owner','المالك'), cMembers:L('Members','الأعضاء'), cTopics:L('Active topics','مواضيع نشطة'), cStatus:L('Status','الحالة'),
+      cJob:L('Job','المهمة'), cQueue:L('Queue','الطابور'), cWhen:L('When','الوقت'), cDur:L('Duration','المدة'), cRetries:L('Retries','المحاولات'), retry:L('Retry','إعادة'),
+      cRole:L('Role','الدور'), cWho:L('Responsibilities','المسؤوليات'), cCaps:L('Key capabilities','الصلاحيات الأساسية'), kcRef:L('Mirrored from Keycloak realm roles','منعكس من أدوار نطاق Keycloak'),
+      memberships:L('Committee & stream memberships','عضويات اللجان والمسارات'), inviteTitle:L('Invite a new user','دعوة مستخدم جديد'), inviteNote:L('An invitation provisions the account in Keycloak; the role is assigned there and synced read-only.','تُنشئ الدعوة الحساب في Keycloak؛ ويُسنَد الدور هناك ويُزامَن للقراءة فقط.'), sendInvite:L('Send invitation','إرسال الدعوة'), backToUsers:L('Back to users','العودة للمستخدمين'), voteEligible:L('Voting eligible','مؤهّل للتصويت'), fromKc2:L('Role is read-only — managed in Keycloak','الدور للقراءة فقط — يُدار في Keycloak') };
+
+
     return {
       dir:isRtl?'rtl':'ltr', theme, font, t, sec, subTabs,
       langBtn:isRtl?'English':'العربية', toggleLang:()=>this.set('lang',isRtl?'en':'ar'),
       toggleTheme:()=>this.set('theme',theme==='light'?'dark':'light'),
       themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z',
       navCommittee, navGov, navKnowledge, navInsights, navAudit,
-      isUsers, isTemplates, isHealth, isNotif,
+      isUsers, isTemplates, isHealth, isNotif, isStreams, isJobs, isRoles, isUserDetail, chev,
+      streams, jobs, jobStats, roles, ud, inviteFields, t2,
+      openUserDetail:()=>this.set('sub','userdetail'), backToUsers:()=>this.set('sub','users'),
       dsLive:dataState==='live', dsLoading:dataState==='loading', dsEmpty:dataState==='empty', dsError:dataState==='error', dsPermission:dataState==='permission',
       skel:[0,0,0,0,0,0], stateSwitcher:'',
       userFilters:[L('Role','الدور'),L('Status','الحالة'),L('Membership','العضوية')], tplFilters:[L('Type','النوع'),L('Status','الحالة')],
