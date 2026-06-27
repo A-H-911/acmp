@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Application.Abstractions;
+﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Shared.Application.Abstractions;

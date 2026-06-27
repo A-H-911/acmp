@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Application.Abstractions;
+﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Meetings.Infrastructure.Persistence;

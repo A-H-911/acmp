@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
@@ -7,6 +7,8 @@ using Acmp.Modules.Meetings.Application.Features.ScheduleMeeting;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +54,30 @@ public class MeetingHandlerTests
         return c;
     }
 
+    // Active committee roster the notification fan-out delivers to (defaults to two members).
+    private static ICommitteeDirectory Dir(params string[] subs)
+    {
+        var members = (subs.Length == 0 ? new[] { "kc-a", "kc-b" } : subs)
+            .Select(s => new CommitteeRecipient(s, s)).ToList();
+        var d = Substitute.For<ICommitteeDirectory>();
+        d.GetActiveMembersAsync(Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyCollection<CommitteeRecipient>)members);
+        return d;
+    }
+
+    // Captures every message the handlers fan out, so we can assert the AC-051 content contract.
+    private sealed class RecordingChannel : INotificationChannel
+    {
+        public List<NotificationMessage> Sent { get; } = new();
+        public Task PublishAsync(NotificationMessage message, CancellationToken ct = default)
+        {
+            Sent.Add(message);
+            return Task.CompletedTask;
+        }
+    }
+
+    private static INotificationChannel NoNotify() => Substitute.For<INotificationChannel>();
+
     private static ScheduleMeetingCommand ScheduleCmd() => new(
         "Weekly Architecture Committee", Committee, Chair, "S. M.", Now, Now.AddMinutes(90), null, null);
 
@@ -59,7 +85,7 @@ public class MeetingHandlerTests
     private static async Task<(MeetingsDbContext Db, Guid MeetingId)> ScheduledMeetingAsync(ICurrentUser user, IClock clock)
     {
         var db = NewDb(user, clock);
-        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
             .Handle(ScheduleCmd(), CancellationToken.None);
         return (db, summary.Id);
     }
@@ -70,7 +96,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
             .Handle(ScheduleCmd(), CancellationToken.None);
 
         summary.Key.Should().Be("MTG-2026-001");
@@ -114,12 +140,34 @@ public class MeetingHandlerTests
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, topic, "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
         var scheduler = new FakeScheduler();
 
-        var agenda = await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>())
+        var agenda = await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
             .Handle(new PublishAgendaCommand(meetingId), default);
 
         agenda.Status.Should().Be("Published");
         agenda.Version.Should().Be(1);
         scheduler.Scheduled.Should().ContainSingle().Which.Should().Be(topic);
+    }
+
+    [Fact] // AC-051: publishing fans out one in-app notification per active committee member, each
+           // carrying the meeting date, the agenda title, and a deep link to the agenda view.
+    public async Task Publish_notifies_every_committee_member_with_date_title_and_deeplink()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        await using var _ = db;
+        await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
+        var channel = new RecordingChannel();
+
+        await new PublishAgendaHandler(db, new FakeScheduler(), user, clock, Substitute.For<IAuditSink>(), Dir("kc-a", "kc-b"), channel)
+            .Handle(new PublishAgendaCommand(meetingId), default);
+
+        channel.Sent.Should().HaveCount(2);
+        channel.Sent.Select(m => m.RecipientUserId).Should().BeEquivalentTo(new[] { "kc-a", "kc-b" });
+        channel.Sent.Should().OnlyContain(m =>
+            m.Category == "AgendaPublished" &&
+            m.DeepLink == "/meetings/MTG-2026-001" &&
+            m.Body.En.Contains("Weekly Architecture Committee") && m.Body.En.Contains("2026-02-18") &&
+            m.Body.Ar.Contains("Weekly Architecture Committee") && m.Body.Ar.Contains("2026-02-18"));
     }
 
     [Fact]
@@ -131,7 +179,7 @@ public class MeetingHandlerTests
         var topic = Guid.NewGuid();
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, topic, "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
         var scheduler = new FakeScheduler();
-        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new PublishAgendaCommand(meetingId), default);
+        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify()).Handle(new PublishAgendaCommand(meetingId), default);
 
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
 
@@ -150,7 +198,7 @@ public class MeetingHandlerTests
         var scheduler = new FakeScheduler();
         // A meeting can only start once its agenda is published (W7), which needs ≥1 item.
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
-        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new PublishAgendaCommand(meetingId), default);
+        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify()).Handle(new PublishAgendaCommand(meetingId), default);
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
         var member = Guid.NewGuid();
 
@@ -170,7 +218,7 @@ public class MeetingHandlerTests
         var topic = Guid.NewGuid();
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, topic, "TOP-2026-001", "A", false, 20, Presenter, "Omar H."), default);
         var scheduler = new FakeScheduler();
-        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new PublishAgendaCommand(meetingId), default);
+        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify()).Handle(new PublishAgendaCommand(meetingId), default);
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
 
         await new CaptureDiscussionHandler(db, clock, user).Handle(new CaptureDiscussionCommand(meetingId, topic, "Consensus on direction."), default);

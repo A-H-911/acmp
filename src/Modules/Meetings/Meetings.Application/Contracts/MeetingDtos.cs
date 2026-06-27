@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Meetings.Application.Contracts;
+﻿namespace Acmp.Modules.Meetings.Application.Contracts;
 
 // Read models returned to the SPA. Enums project as their string names (stable wire contract, localized
 // in the UI). Chair/presenter/attendee names are display snapshots stored on the aggregate — Meetings

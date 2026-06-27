@@ -47,6 +47,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Meetings.Appli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Meetings.Infrastructure", "src\Modules\Meetings\Meetings.Infrastructure\Acmp.Modules.Meetings.Infrastructure.csproj", "{7EDBC87C-8916-49DC-A12D-4589A1E293C0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notifications", "Notifications", "{AE1ADAC5-5B75-4289-BAB2-853C560FE196}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Notifications.Domain", "src\Modules\Notifications\Notifications.Domain\Acmp.Modules.Notifications.Domain.csproj", "{4C509B82-A017-468A-9F73-32F6D9BDBB10}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Notifications.Application", "src\Modules\Notifications\Notifications.Application\Acmp.Modules.Notifications.Application.csproj", "{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Notifications.Infrastructure", "src\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj", "{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +124,18 @@ Global
 		{7EDBC87C-8916-49DC-A12D-4589A1E293C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EDBC87C-8916-49DC-A12D-4589A1E293C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EDBC87C-8916-49DC-A12D-4589A1E293C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C509B82-A017-468A-9F73-32F6D9BDBB10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C509B82-A017-468A-9F73-32F6D9BDBB10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C509B82-A017-468A-9F73-32F6D9BDBB10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C509B82-A017-468A-9F73-32F6D9BDBB10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{116B21B8-2E5B-403D-AF2A-B7C5A3699ACB} = {ACEAF987-769F-4821-877C-AB0580F265DB}
@@ -137,5 +157,9 @@ Global
 		{D8F99133-E31E-49A8-B5D7-B44A8F9E2377} = {32623C58-DEB3-4BF3-AF49-9D5A2891E9A2}
 		{9BEADA1C-BD79-4BFF-9E12-C41B77993482} = {32623C58-DEB3-4BF3-AF49-9D5A2891E9A2}
 		{7EDBC87C-8916-49DC-A12D-4589A1E293C0} = {32623C58-DEB3-4BF3-AF49-9D5A2891E9A2}
+		{AE1ADAC5-5B75-4289-BAB2-853C560FE196} = {F7D11363-72BC-4081-96DA-6DD9C65235F2}
+		{4C509B82-A017-468A-9F73-32F6D9BDBB10} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
+		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
+		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
 	EndGlobalSection
 EndGlobal

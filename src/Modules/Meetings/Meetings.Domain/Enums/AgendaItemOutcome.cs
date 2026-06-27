@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Meetings.Domain.Enums;
+﻿namespace Acmp.Modules.Meetings.Domain.Enums;
 
 // Per-item outcome recorded as the committee works through the agenda (docs/11 §C AgendaItem).
 public enum AgendaItemOutcome

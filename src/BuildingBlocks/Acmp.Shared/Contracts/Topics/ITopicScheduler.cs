@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Contracts.Topics;
+﻿namespace Acmp.Shared.Contracts.Topics;
 
 // Cross-module seam (ADR-0001): the Meetings module asks the Topics module to advance a topic's
 // lifecycle without ever reading Topics' tables. Implemented in Topics.Infrastructure against the

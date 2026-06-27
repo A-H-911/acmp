@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Domain;
+﻿using Acmp.Modules.Meetings.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

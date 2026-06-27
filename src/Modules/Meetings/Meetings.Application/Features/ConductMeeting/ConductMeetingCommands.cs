@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Application.Abstractions;
+﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;

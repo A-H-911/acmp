@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Application.Abstractions;
+﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Persistence;

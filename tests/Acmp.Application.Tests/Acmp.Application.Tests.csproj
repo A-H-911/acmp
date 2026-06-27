@@ -35,6 +35,8 @@
     <ProjectReference Include="..\..\src\Modules\Topics\Topics.Infrastructure\Acmp.Modules.Topics.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Meetings\Meetings.Application\Acmp.Modules.Meetings.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Meetings\Meetings.Infrastructure\Acmp.Modules.Meetings.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Application\Acmp.Modules.Notifications.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
   </ItemGroup>
 

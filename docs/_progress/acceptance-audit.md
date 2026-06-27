@@ -155,6 +155,18 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > path. Live SQL migration apply + an authenticated `/api/meetings` round-trip are the optional P6 tail.
 > See progress-log P6a entry.
 
+> P6b update (2026-06-27): in-app Notifications module (the AC-051/053 floor) + the publish/schedule fan-out.
+> New `Notifications` module (`Notification` entity + `InAppNotificationChannel` = the v1 `INotificationChannel`,
+> synchronous write; `GET /api/notifications` + mark-read scoped to the current user with an IDOR guard) and the
+> cross-module `ICommitteeDirectory` seam (Shared contract, implemented in Membership, active members only —
+> AC-058). `ScheduleMeeting`/`PublishAgenda` now fan out one bilingual notification per active member; the
+> `AgendaPublished` body carries the meeting date + agenda title and a deep link to the agenda view (AC-051
+> content contract). Backend 397/397 (Domain 42 · Architecture 16 · Application 319 · Api 20); ArchUnit enforces
+> Notifications isolation + a no-assembly-edge Meetings→Notifications seam. **AC-051 / AC-053 Pending → Partial**
+> (mechanism + content + channel-exclusivity unit-proven; live HTTP + the notification-center render → P6e).
+> **AC-052** stays Pending (the deep-link mechanism exists; the vote-open notification is raised in P9).
+> See progress-log P6b entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -207,9 +219,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
 | AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
 | AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
-| AC-051 | Notifications | Pending | — | Agenda publish → in-app ≤5s |
-| AC-052 | Notifications | Pending | — | Vote-open notification deep link |
-| AC-053 | Notifications | Pending | — | In-app only, no email/Webex |
+| AC-051 | Notifications | Partial | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests | PublishAgenda fans out one in-app notification per active committee member (synchronous write, ≤5s at committee scale); body carries the meeting date + agenda title; message carries a deep link to `/meetings/{key}`. Live HTTP + the notification-center render ("appears within 5s") → P6e. From Pending (P6b, 2026-06-27). |
+| AC-052 | Notifications | Pending | — | Vote-open deep link — the DeepLink mechanism exists (NotificationMessage + the SPA navigation shape); the vote-open notification itself is raised in P9 (Voting) |
+| AC-053 | Notifications | Partial | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) | Exactly one channel is registered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven; live end-to-end → P6e. From Pending (P6b, 2026-06-27). |
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |

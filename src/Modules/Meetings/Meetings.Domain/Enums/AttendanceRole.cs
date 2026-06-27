@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Meetings.Domain.Enums;
+﻿namespace Acmp.Modules.Meetings.Domain.Enums;
 
 // The capacity a participant attends in (docs/11 §C Attendance). A per-meeting snapshot — Meetings
 // never reads Membership tables; the role is supplied when the roster is seeded (ADR-0001).

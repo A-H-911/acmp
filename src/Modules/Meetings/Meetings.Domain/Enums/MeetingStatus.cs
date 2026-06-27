@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Meetings.Domain.Enums;
+﻿namespace Acmp.Modules.Meetings.Domain.Enums;
 
 // Meeting state machine (README §E, docs/12 §5). Scheduled → InProgress → Held; Cancelled is a side
 // exit from Scheduled. Held and Cancelled are terminal: a held meeting's factual record (attendance,

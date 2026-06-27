@@ -16,9 +16,11 @@ public class ModuleBoundaryTests
     private static readonly Assembly TopicsApp = typeof(Acmp.Modules.Topics.Application.TopicsApplicationExtensions).Assembly;
     private static readonly Assembly MeetingsDomain = typeof(Acmp.Modules.Meetings.Domain.Meeting).Assembly;
     private static readonly Assembly MeetingsApp = typeof(Acmp.Modules.Meetings.Application.MeetingsApplicationExtensions).Assembly;
+    private static readonly Assembly NotificationsDomain = typeof(Acmp.Modules.Notifications.Domain.Notification).Assembly;
+    private static readonly Assembly NotificationsApp = typeof(Acmp.Modules.Notifications.Application.NotificationsApplicationExtensions).Assembly;
 
-    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain } };
-    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp } };
+    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain } };
+    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp } };
 
     [Theory]
     [MemberData(nameof(Domains))]
@@ -39,7 +41,8 @@ public class ModuleBoundaryTests
             .Should().NotHaveDependencyOnAny(
                 "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
                 "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
-                "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure")
+                "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
+                "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -52,7 +55,7 @@ public class ModuleBoundaryTests
         var result = Types.InAssembly(application)
             .Should().NotHaveDependencyOnAny(
                 "Acmp.Modules.Membership.Infrastructure", "Acmp.Modules.Topics.Infrastructure",
-                "Acmp.Modules.Meetings.Infrastructure")
+                "Acmp.Modules.Meetings.Infrastructure", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -86,13 +89,28 @@ public class ModuleBoundaryTests
         result.IsSuccessful.Should().BeTrue(Describe(result));
     }
 
-    [Fact] // Meetings talks to Topics only through the Acmp.Shared ITopicScheduler contract (ADR-0001).
+    [Fact] // Meetings reaches Topics (ITopicScheduler), Membership (ICommitteeDirectory), and the
+           // notification channel only through Acmp.Shared contracts — never another module's assemblies.
     public void Meetings_should_not_depend_on_other_modules()
     {
         var result = Types.InAssemblies(new[] { MeetingsDomain, MeetingsApp })
             .Should().NotHaveDependencyOnAny(
                 "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
-                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure")
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(Describe(result));
+    }
+
+    [Fact] // Notifications is a leaf — it depends on nothing but Acmp.Shared (the channel + the message contract).
+    public void Notifications_should_not_depend_on_other_modules()
+    {
+        var result = Types.InAssemblies(new[] { NotificationsDomain, NotificationsApp })
+            .Should().NotHaveDependencyOnAny(
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
+                "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));

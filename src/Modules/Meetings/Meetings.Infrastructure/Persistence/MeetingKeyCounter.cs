@@ -1,4 +1,4 @@
-namespace Acmp.Modules.Meetings.Infrastructure.Persistence;
+﻿namespace Acmp.Modules.Meetings.Infrastructure.Persistence;
 
 // Per-prefix, per-year allocation counter for human-readable keys (MTG-/AGN-YYYY-###, README §F).
 // Infrastructure concern only — not a domain entity. One row per (Prefix, Year); Next is the next
