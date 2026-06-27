@@ -68,6 +68,10 @@
   },
   "notif": {
     "title": "Notifications",
+    "titleUnread": "Notifications, {{count}} unread",
+    "unreadCount": "{{count}} unread",
+    "loading": "Loading notifications…",
+    "error": "Couldn't load notifications.",
     "emptyTitle": "You're all caught up",
     "emptyBody": "New notifications about your topics, meetings, and actions will appear here."
   },

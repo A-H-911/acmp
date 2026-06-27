@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
 import { useTheme } from '../../theme/useTheme';
+import { useNotifications } from '../../api/notifications';
 import { Icon } from '../icons';
 import { NotificationCenter } from './NotificationCenter';
 
@@ -24,6 +25,8 @@ export function TopBar() {
   const { theme, toggle } = useTheme();
   const { displayName, initials, roles, signOut } = useAuth();
   const navigate = useNavigate();
+  const { data: notifs } = useNotifications();
+  const unread = notifs?.unreadCount ?? 0;
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -105,11 +108,14 @@ export function TopBar() {
           type="button"
           className="icon-btn"
           style={{ position: 'relative' }}
-          aria-label={t('notif.title')}
+          aria-label={unread > 0 ? t('notif.titleUnread', { count: unread }) : t('notif.title')}
           aria-expanded={notifOpen}
           onClick={() => setNotifOpen((o) => !o)}
         >
           <Icon name="bell" size={16} />
+          {unread > 0 && (
+            <span className="notif-badge" aria-hidden="true">{unread > 9 ? '9+' : unread}</span>
+          )}
         </button>
         <NotificationCenter open={notifOpen} onClose={() => setNotifOpen(false)} />
       </div>

@@ -188,6 +188,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > tsc + build + oxlint clean, CSS RTL-safe. Live browser pass (real conduct-meeting round-trip, AR/RTL+dark)
 > recommended — needs a scheduled+published meeting. AC-051/053 stay Partial → P6e. See progress-log P6d entry.
 
+> P6e update (2026-06-27): notification center wired to the live `/api/notifications` feed + the unread bell
+> badge. `api/notifications.ts` (feed + mark-read, 30s poll), `NotificationCenter.tsx` (live list, unread
+> styling, click → mark-read + close + deep-link navigation, calm empty state preserved), `TopBar.tsx` (badge
+> only when unread>0). **AC-051 Partial → Met** (end-to-end: P6b fan-out → the center renders the date/title/
+> deep-link item + badge, deep link navigates) and **AC-053 Partial → Met** (single in-app channel, no email/
+> Webex). **AC-052 Pending → Partial** (the deep-link navigation mechanism is proven; the vote-open trigger is
+> P9). Web 177/177 (incl. a panel axe AA case), parity 393, tsc + build + oxlint clean, CSS RTL-safe. No
+> `.dc.html` reference exists for the live list (planning doc docs/14 p.79 only) — composed from the shell's
+> notif-* styles. Live cross-session browser pass recommended. See progress-log P6e entry.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -240,9 +250,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
 | AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
 | AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
-| AC-051 | Notifications | Partial | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests | PublishAgenda fans out one in-app notification per active committee member (synchronous write, ≤5s at committee scale); body carries the meeting date + agenda title; message carries a deep link to `/meetings/{key}`. Live HTTP + the notification-center render ("appears within 5s") → P6e. From Pending (P6b, 2026-06-27). |
-| AC-052 | Notifications | Pending | — | Vote-open deep link — the DeepLink mechanism exists (NotificationMessage + the SPA navigation shape); the vote-open notification itself is raised in P9 (Voting) |
-| AC-053 | Notifications | Partial | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) | Exactly one channel is registered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven; live end-to-end → P6e. From Pending (P6b, 2026-06-27). |
+| AC-051 | Notifications | Met | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests + NotificationCenter.test (live list + deep-link nav) + TopBar.test (badge) | End to end: PublishAgenda fans out one in-app notification per active member (synchronous ≤5s write) carrying the meeting date + agenda title + a `/meetings/{key}` deep link; the notification center renders it (unread badge + list) and clicking follows the deep link. Live cross-session browser pass recommended (standing caveat). From Partial (P6e, 2026-06-27). |
+| AC-052 | Notifications | Partial | NotificationCenter.test (deep-link click → navigate) | The notification deep-link **navigation** mechanism is built + tested (clicking a notification with a deepLink routes to its target — no extra steps). The **vote-open** notification itself is raised in P9 (Voting). From Pending (P6e, 2026-06-27). |
+| AC-053 | Notifications | Met | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) + NotificationCenter.test | Exactly one channel is registered and rendered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven on both server (fan-out) and client (center). From Partial (P6e, 2026-06-27). |
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
 | AC-055 | Background jobs | Pending | — | Overdue escalation |
 | AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |

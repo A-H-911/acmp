@@ -14,6 +14,63 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6e UI: notification center wired to the live feed + bell badge (closes the AC-051/053 loop)
+
+**Scope.** Wire the app-shell **NotificationCenter** (the bell popover, a P3 empty shell) to the live
+`/api/notifications` feed from the P6b backend, and add the **unread bell badge** — the recipient-facing half
+of the AC-051/AC-053 floor. Branch `feat/P6-meetings`. Web **177 tests green** (was 168; +9 — 7
+NotificationCenter, +2 TopBar badge), i18n parity **393**, `tsc -b` + vite build + oxlint clean, CSS RTL-safe.
+
+**Done.**
+- `api/notifications.ts` — `useNotifications()` (`GET /api/notifications` → `{ items, unreadCount }`, a 30s
+  background poll + refetch-on-focus) and `useMarkNotificationRead()` (`POST /api/notifications/{id}/read`,
+  invalidates the feed). Title/body arrive **bilingual** from the server (ADR-0005); the UI picks the locale.
+- `NotificationCenter.tsx` — renders the live list (unread-styled rows via the existing `.notif-item.unread`,
+  an unread-count header, loading/error/empty states; the calm "all caught up" empty state is preserved).
+  Each row is a button: clicking **marks it read** (if unread), closes the popover, and **follows its deep
+  link** (`/meetings/{key}`) — the AC-051 deep-link + AC-052 navigation shape. Still a non-modal click-away
+  region (Escape + outside-click dismiss).
+- `TopBar.tsx` — an **unread badge** on the bell (count, capped "9+"), shown **only when `unreadCount > 0`**
+  (honours the CHANGE-002 "no always-on dot over an empty inbox" rule); the bell's `aria-label` announces the
+  unread count.
+- `components.css` — `.notif-list`/`.notif-item` (button reset)/`.notif-dot`/`.notif-item-*`/`.notif-status`/
+  `.notif-unread-count`/`.notif-badge`, all logical-properties-only (RTL-safe, grep-verified). Full EN+AR
+  `notif.*` additions (titleUnread / unreadCount / loading / error; parity 393).
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **No `.dc.html` reference exists** for the live notification list (the panel is specified in the planning
+  doc docs/14 p.79, not in `/ACMP product context/`). It composes the shell's existing `notif-*` styles +
+  the design-system tokens — recorded in the file header. (See the "no-reference surfaces" note below.)
+- **No "mark all read"** — the backend exposes only per-id read, and clicking an item marks it; a bulk
+  endpoint isn't warranted at committee scale (YAGNI). **No push channel** — a 30s poll + refetch-on-focus
+  keeps the badge fresh for ≤20 users (`ponytail`: add SSE/WebSocket only if the latency matters).
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **177/177** (Vitest+RTL: live list render, unread styling,
+click → mark-read + close + deep-link navigation, the already-read/no-deep-link path is a no-op, empty state,
+AR content, **+ axe WCAG 2.2 AA** on the panel; TopBar badge shows only when unread>0). The shared `a11y.test`
++ `TopBar.test` now mock `api/notifications` (the test harness has no QueryClientProvider). i18n parity 393,
+`tsc -b`, vite build, oxlint (only the pre-existing untouched `Toast.tsx` warning), notif CSS grep = zero
+physical properties. **Not yet run:** the live cross-session browser pass (user A publishes an agenda → user B
+sees the badge + the item appear within the poll window, clicks → deep link), AR/RTL + dark — recommended, and
+it needs two provisioned members + a scheduled/published meeting.
+
+**Acceptance audit (this entry).** **AC-051 Partial → Met** — the full path is now built and unit-tested end
+to end: the P6b synchronous fan-out creates one bilingual notification per active member carrying the meeting
+date + agenda title + deep link; the center renders it (unread badge + list) and the deep link navigates.
+**AC-053 Partial → Met** — exactly one channel (in-app) is registered and rendered; no email/Webex is attempted.
+**AC-052** stays **Partial** — the deep-link *navigation* mechanism is now proven (clicking a notification with
+a deepLink routes to its target), but the *vote-open* notification itself is raised in **P9 (Voting)**. Live
+browser confirmation is the recommended closing step for AC-051 (same standing caveat the other Met UI ACs carry).
+
+**Next.** P6 UI is functionally complete (agenda builder · meeting workspace · notification center). Remaining
+before the PR: the **deferred meeting-schedule flow** (committee/chair pickers — needs `committeeId` exposed),
+optional `/api/meetings` + `/api/notifications` **WebApplicationFactory integration tests**, then **push
+`feat/P6-meetings` → PR → green CI → review → squash-merge**, and the **live authenticated browser pass** across
+the P6 surfaces (AR/RTL + dark + live axe).
+
+---
+
 ### 2026-06-27 — P6d UI: live meeting workspace (the design's meeting tab) — agenda spine, attendance, discussion, actual-time
 
 **Scope.** The **live meeting workspace** — the `isMeeting` block of the local design

@@ -1,11 +1,39 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, type Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import i18n from '../../i18n';
 import { TopBar } from './TopBar';
 import { renderWithAuth, makeAuth } from '../../test/render';
 
-afterEach(async () => { await i18n.changeLanguage('en'); });
+// TopBar reads the unread count for the bell badge; mock the feed (renderWithAuth has no
+// QueryClientProvider). NotificationCenter's hooks are mocked too (it mounts when the panel opens).
+vi.mock('../../api/notifications', () => ({
+  useNotifications: vi.fn(() => ({ data: { items: [], unreadCount: 0 } })),
+  useMarkNotificationRead: vi.fn(() => ({ mutate: vi.fn() })),
+}));
+import { useNotifications } from '../../api/notifications';
+const mockNotifs = useNotifications as unknown as Mock;
+
+afterEach(async () => {
+  await i18n.changeLanguage('en');
+  mockNotifs.mockReturnValue({ data: { items: [], unreadCount: 0 } });
+});
+
+describe('TopBar notification bell', () => {
+  it('shows the unread badge with the count only when there are unread notifications', () => {
+    mockNotifs.mockReturnValue({ data: { items: [], unreadCount: 3 } });
+    renderWithAuth(<TopBar />);
+    expect(screen.getByLabelText(/3 unread/i)).toBeTruthy();
+    expect(screen.getByText('3')).toBeTruthy();
+  });
+
+  it('shows no badge when the inbox is fully read', () => {
+    mockNotifs.mockReturnValue({ data: { items: [], unreadCount: 0 } });
+    renderWithAuth(<TopBar />);
+    expect(screen.getByLabelText('Notifications')).toBeTruthy();
+    expect(screen.queryByText('3')).toBeNull();
+  });
+});
 
 describe('TopBar profile menu', () => {
   it('hides Log out until the menu opens, then activates sign-out by keyboard', async () => {
