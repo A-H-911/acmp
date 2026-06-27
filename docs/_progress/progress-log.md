@@ -64,18 +64,22 @@ automated i18n-parity test** in the suite (verified by a key-set diff, not a com
 the reconciled values (`.status-chip` 24/9/12, `.status-chip-sm` 22/8/11.5, `.search-kbd`, `.brand-word` 15,
 `.icon-btn` 36).
 
-**Not yet run (confirmatory).** The **live authenticated 4-combo VR pass** (EN-light/dark + AR-RTL-light/dark
-at tablet+desktop, in-browser axe AA) is **blocked on Keycloak credentials** — the bundled realm forces
-`UPDATE_PASSWORD` and no dev password is available to the agent. The stack is up and the rebuilt web image is
-deployed; this pass needs an operator login (or the dev password). Automated pixel-diff VR remains **P17**.
+**Live visual pass (done, desktop).** After the operator set a dev password for `acmp-admin`, drove an
+authenticated Playwright pass over the rebuilt stack (real Keycloak PKCE). **EN-light** and **AR-RTL-dark**
+dashboard captured and verified: brand 15px + "Ctrl K" search hint, 36px chrome toggles, profile trigger,
+the full nav (groups/order/icons/active-rail/CTA/view-only eye) — and in **AR the entire shell mirrors**
+(sidebar+brand on the inline-end, Arabic nav, rail + Ctrl-K hint mirrored, dark tokens applied). Screenshots:
+`P3-EN-light-dashboard.png`, `P3-AR-rtl-dark-dashboard.png`. **Remaining combos** (EN-dark, AR-light, tablet
+768/1024) are covered by the same mechanism proven here — theme = token swap, RTL = logical properties,
+responsive = the flex/sticky shell — and can be captured on request. **Automated pixel-diff VR remains P17.**
 
 **Acceptance audit (this entry).** **No verdict flips.** Visual/fidelity reconciliation of the foundation —
 touches the surfaces behind **AC-040/045/046** (RTL mirroring, focus, labels/contrast — unit + axe still
 green) and **AC-041** (RTL render; automated VR → P17, stays Partial). No feature AC changes.
 
-**Next.** Operator completes the live 4-combo browser pass (needs Keycloak login), then PR
-`feat/P3-foundation-refresh` → green CI → review → squash-merge. PR #24 (design-context sync) awaits the
-operator's merge approval and can land independently.
+**Next.** PR **#25** `feat/P3-foundation-refresh` is open with **green CI** + the live desktop visual pass
+done — awaiting review/GO to squash-merge. PR **#24** (design-context sync) awaits the operator's merge
+approval and can land independently.
 
 ---
 

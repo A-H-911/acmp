@@ -223,8 +223,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > badge 16/−3, tabs pad-inline 14, dead `.topbar-user` removed. **No verdict flips** — visual/fidelity only.
 > Touches **AC-040/045/046** (RTL/focus/labels — unit + axe still green) and **AC-041** (stays Partial →
 > automated VR P17). Web 184/184, tsc+build clean (JS 173.98 kB gz), oxlint clean; live bundle verified to
-> carry the reconciled CSS. Live authenticated 4-combo VR pass pending operator Keycloak login. See
-> progress-log "P3 foundation refresh".
+> carry the reconciled CSS. Live authenticated pass done on desktop (EN-light + AR-RTL-dark, real Keycloak
+> PKCE) — shell/nav/chrome verified incl. full RTL mirroring + dark tokens; remaining combos (EN-dark/AR-light/
+> tablet) covered by the same token/logical-CSS mechanism; automated pixel-diff VR → P17. See progress-log
+> "P3 foundation refresh".
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
