@@ -28,10 +28,12 @@
 }
 .tab {
   /* Design System §10 tab padding: 14px inline. */
+  display: inline-flex; align-items: center; gap: var(--sp-2);
   block-size: 40px; padding-inline: 14px; border: 0; background: transparent;
   font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-2);
   border-block-end: 2px solid transparent; margin-block-end: -1px; white-space: nowrap; cursor: pointer;
 }
+.tab svg { flex: 0 0 auto; }
 .tab:hover:not(:disabled) { color: var(--text); }
 .tab[aria-selected='true'] { color: var(--text); border-block-end-color: var(--accent); }
 .tab:disabled { color: var(--text-3); cursor: not-allowed; }

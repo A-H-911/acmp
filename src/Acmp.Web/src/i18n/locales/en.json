@@ -96,11 +96,13 @@
   "admin": {
     "title": "Administration",
     "subtitle": "Users, roles, and committee membership",
-    "provision": "Provision via Keycloak",
     "tabs": {
       "users": "Users & Membership",
       "templates": "Templates",
       "health": "System Health",
+      "streams": "Streams",
+      "roles": "Roles",
+      "jobs": "Job Monitor",
       "notifications": "Notification Settings"
     },
     "kc": {
@@ -120,9 +122,20 @@
     "fromKeycloak": "from Keycloak",
     "votingEligible": "Voting-eligible",
     "observer": "Observer",
+    "addCommittee": "Add committee",
+    "viewUser": "View user detail",
     "status": { "active": "Active", "invited": "Invited", "disabled": "Disabled" },
     "emptyTitle": "No members yet",
-    "emptyBody": "Members appear here after they first sign in through Keycloak."
+    "emptyBody": "Members appear here after they first sign in through Keycloak.",
+    "detail": {
+      "back": "Back to users",
+      "memberships": "Committee & stream memberships",
+      "roleReadonly": "Role is read-only — managed in Keycloak",
+      "votingEligible": "Voting eligible",
+      "yes": "Yes",
+      "no": "No",
+      "noMemberships": "No committee or stream memberships."
+    }
   },
   "topics": {
     "home": "Home",
