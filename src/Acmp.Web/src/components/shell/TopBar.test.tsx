@@ -35,6 +35,18 @@ describe('TopBar notification bell', () => {
   });
 });
 
+describe('TopBar global search', () => {
+  it('renders the keyboard hint and focuses search on Ctrl+K', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(<TopBar />);
+    expect(screen.getByText('Ctrl K')).toBeTruthy();
+    const input = screen.getByRole('searchbox');
+    expect(input).not.toHaveFocus();
+    await user.keyboard('{Control>}k{/Control}');
+    expect(input).toHaveFocus();
+  });
+});
+
 describe('TopBar profile menu', () => {
   it('hides Log out until the menu opens, then activates sign-out by keyboard', async () => {
     const user = userEvent.setup();

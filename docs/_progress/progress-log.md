@@ -12,6 +12,69 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P3 foundation refresh — reconcile token/component/shell/nav layer to the updated design references
+
+### 2026-06-27 — Foundation fidelity pass vs updated `.dc.html` (Design System / ACMP shell / Navigation & IA)
+
+**Why.** The design-context references were re-synced (PR #24); the P3 foundation is the base every later
+screen inherits, so it must match the *updated* references first. Branch `feat/P3-foundation-refresh` off
+`main`. Visual SoT = the local `/ACMP product context/ACMP Design System.dc.html`, `ACMP.dc.html`,
+`ACMP Navigation & IA.dc.html` (read directly).
+
+**Finding (headline): the foundation was already ~95% faithful.** Tokens match the DS **verbatim** (spacing/
+radius/motion/surface/border/text/primary/accent/focus/shadow/status — byte-identical); Dialog (440/r14/
+overlay rgba(10,14,20,.5)+blur2), Toast (3px tone/r10), Menu (r13/item40), Segmented (30h, active surface+
+shadow), Pagination (30sq + RTL flip), Table (11px head/42 hcell/12 pad), Tags/Badge, Button (38/9/16/13.5;
+sm32/lg44), Card (r12), nav model (groups/order/icons/access/active-rail/CTA/view-only) all already matched.
+So this was a **targeted reconciliation**, not a rebuild (ponytail: smallest correct diff).
+
+**Drifts fixed (against the updated DS).**
+- **StatusChip** was 22/8/11.5 (a prior P5 over-correction); DS §08 standalone chip = **24/9/12**. Restored
+  default to 24/9/12 and added a `size="sm"` variant (22/8/11.5) for dense **table rows** (DS §09) — the
+  Backlog table opts into `sm`, everywhere else uses the standard size.
+- **TopBar global search** was missing the DS **"Ctrl K"** keyboard affordance. Added the hint chip
+  (`.search-kbd`, inset-inline-end) **and wired Ctrl/⌘+K to focus the search input** (real, not decorative).
+  i18n key `common.searchShortcut` (EN+AR parity).
+- **TopBar metrics → DS app-shell:** `.brand-word` 14→**15**px; `.icon-btn` 34→**36**px; `.chip-btn` (lang)
+  34→**36**px.
+- **Notification popover** aligned to the other shell popovers + DS: radius `--r-lg`→**13px**, top 48→**46**,
+  border `--border-strong`→`--border`; bell **badge** 15→**16**px, offset −2→**−3**.
+- **Tabs** inline padding `--sp-4`(16)→**14**px (DS §10).
+- Removed dead `.topbar-user` CSS rule (only `-name`/`-role` are used).
+
+**Decisions / reconciled inter-file deltas (no silent drift, guardrail 14).**
+- **Sidebar width 248px** kept — `ACMP.dc.html` app shell (the actual shell authority) specifies 248; the
+  Navigation & IA file shows 244 and the DS doc's own nav shows 224. The code already documents 248 as the
+  app-shell choice; not churned.
+- **Theme selector kept** as `:root` + `[data-theme="dark"]` (design uses `[data-acmp-theme]`). Token **values
+  are identical**, so renaming the attribute touches every selector + theme.ts for zero visual gain — kept.
+- **Domain components in the DS but OUT of P3 scope** (relationship panel, kanban/calendar/timeline, voting
+  panel, rich-text editor) were NOT built here — they land in their owning phases (P10/P5+P12/P9/P7) per
+  guardrail #14.
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **184/184** (was 182; +2 — StatusChip size variant, TopBar
+Ctrl+K focus + hint render; i18n-parity + axe cases stay green), `tsc -b` + vite build clean (JS **173.98 kB
+gz** < 300 budget; CSS 22.64 kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx` fast-refresh
+warning). **Live bundle verified:** rebuilt `acmp-web` image and confirmed the served `index-*.css` carries
+the reconciled values (`.status-chip` 24/9/12, `.status-chip-sm` 22/8/11.5, `.search-kbd`, `.brand-word` 15,
+`.icon-btn` 36).
+
+**Not yet run (confirmatory).** The **live authenticated 4-combo VR pass** (EN-light/dark + AR-RTL-light/dark
+at tablet+desktop, in-browser axe AA) is **blocked on Keycloak credentials** — the bundled realm forces
+`UPDATE_PASSWORD` and no dev password is available to the agent. The stack is up and the rebuilt web image is
+deployed; this pass needs an operator login (or the dev password). Automated pixel-diff VR remains **P17**.
+
+**Acceptance audit (this entry).** **No verdict flips.** Visual/fidelity reconciliation of the foundation —
+touches the surfaces behind **AC-040/045/046** (RTL mirroring, focus, labels/contrast — unit + axe still
+green) and **AC-041** (RTL render; automated VR → P17, stays Partial). No feature AC changes.
+
+**Next.** Operator completes the live 4-combo browser pass (needs Keycloak login), then PR
+`feat/P3-foundation-refresh` → green CI → review → squash-merge. PR #24 (design-context sync) awaits the
+operator's merge approval and can land independently.
+
+---
+
 ## P6 — Agenda & meeting management
 
 ### 2026-06-27 — P6 hardening: fixed the 3 live-pass findings + re-verified the full notification loop live (AR/RTL)

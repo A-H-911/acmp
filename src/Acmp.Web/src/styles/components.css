@@ -44,10 +44,12 @@
 /* Status = label + colored dot. Never color alone (WCAG 1.4.1). */
 .status-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  /* Design System §08: 22px / pad-inline 8 / 11.5px (was 24/9/12 — off vs DS). */
-  block-size: 22px; padding-inline: 8px; border-radius: var(--r-sm);
-  font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  /* Design System §08 standalone chip: 24px / pad-inline 9 / 12px / r6. */
+  block-size: 24px; padding-inline: 9px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
 }
+/* Dense variant for table rows — Design System §09 (22 / 8 / 11.5). */
+.status-chip-sm { block-size: 22px; padding-inline: 8px; font-size: 11.5px; }
 .status-chip-dot { inline-size: 6px; block-size: 6px; border-radius: var(--r-full); flex: 0 0 auto; }
 .status-chip.neutral { background: var(--st-neutral-bg); color: var(--st-neutral-fg); }
 .status-chip.neutral .status-chip-dot { background: var(--st-neutral-dot); }
@@ -100,10 +102,11 @@
 
 /* ============================ Notification center ============================ */
 .notif-panel {
-  position: absolute; inset-block-start: 48px; inset-inline-end: var(--sp-4); z-index: 40;
+  /* Design System / app-shell popover: top 46, r13, --border (matches profile/menu panels). */
+  position: absolute; inset-block-start: 46px; inset-inline-end: var(--sp-4); z-index: 40;
   inline-size: 388px; max-block-size: 70vh; overflow-y: auto;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 13px; box-shadow: var(--shadow-lg);
 }
 .notif-panel-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -132,8 +135,8 @@
   border-radius: 9px; padding-inline: 7px; padding-block: 1px;
 }
 .notif-badge {
-  position: absolute; inset-block-start: -2px; inset-inline-end: -2px; min-inline-size: 15px;
-  block-size: 15px; padding-inline: 3px; border-radius: 8px; border: 2px solid var(--header);
+  position: absolute; inset-block-start: -3px; inset-inline-end: -3px; min-inline-size: 16px;
+  block-size: 16px; padding-inline: 3px; border-radius: 8px; border: 2px solid var(--header);
   background: var(--st-danger-dot); color: #fff; font-size: 9px; font-weight: 700;
   line-height: 11px; display: flex; align-items: center; justify-content: center;
 }

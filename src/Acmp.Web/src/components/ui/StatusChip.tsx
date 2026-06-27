@@ -9,11 +9,13 @@ export type StatusTone = 'neutral' | 'info' | 'scheduled' | 'warn' | 'success' |
 interface StatusChipProps {
   tone: StatusTone;
   label: string;
+  /** 'md' (default, 24px — Design System §08) or 'sm' (22px, dense table rows — §09). */
+  size?: 'md' | 'sm';
 }
 
-export function StatusChip({ tone, label }: StatusChipProps) {
+export function StatusChip({ tone, label, size = 'md' }: StatusChipProps) {
   return (
-    <span className={`status-chip ${tone}`}>
+    <span className={`status-chip ${tone}${size === 'sm' ? ' status-chip-sm' : ''}`}>
       <span className="status-chip-dot" aria-hidden="true" />
       {label}
     </span>

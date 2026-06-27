@@ -334,7 +334,7 @@ function TopicsTable({ rows, sort, onSort }: { rows: TopicSummary[]; sort: { by:
       cell: (r) => <span className="bk-streams">{r.streams.map((s) => <Tag key={s}>{s}</Tag>)}</span>,
     },
     { id: 'owner', header: t('topics.col.owner'), width: '140px', cell: (r) => <Owner id={r.ownerId} name={r.ownerName} /> },
-    { id: 'status', header: t('topics.col.status'), width: '104px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`topics.status.${r.status}`)} /> },
+    { id: 'status', header: t('topics.col.status'), width: '104px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`topics.status.${r.status}`)} size="sm" /> },
     { id: 'age', header: t('topics.col.age'), width: '96px', sortable: true, cell: (r) => <Age days={r.ageDays} breached={r.slaBreached} /> },
     {
       id: 'urgency',

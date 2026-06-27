@@ -216,6 +216,16 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > link. AC-051/053 stay **Met** (now with live proof); **AC-052** stays **Partial** (the deep-link *navigation*
 > is proven live; the vote-open *trigger* is P9). Backend 407/407. See progress-log "P6 hardening".
 
+> P3 foundation refresh (2026-06-27): reconciled the token/component/shell/nav foundation to the *updated*
+> design references (Design System / ACMP shell / Navigation & IA). Tokens already matched verbatim; targeted
+> drift fixes — StatusChip restored to DS §08 24/9/12 (+ `sm` 22/8/11.5 for table rows), TopBar "Ctrl K" search
+> hint + real Ctrl/⌘+K focus, brand-word 15 / icon-btn 36 / chip-btn 36, notification popover r13/top46 +
+> badge 16/−3, tabs pad-inline 14, dead `.topbar-user` removed. **No verdict flips** — visual/fidelity only.
+> Touches **AC-040/045/046** (RTL/focus/labels — unit + axe still green) and **AC-041** (stays Partial →
+> automated VR P17). Web 184/184, tsc+build clean (JS 173.98 kB gz), oxlint clean; live bundle verified to
+> carry the reconciled CSS. Live authenticated 4-combo VR pass pending operator Keycloak login. See
+> progress-log "P3 foundation refresh".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

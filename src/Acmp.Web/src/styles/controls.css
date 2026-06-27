@@ -27,7 +27,8 @@
   overflow-x: auto; overflow-y: hidden;
 }
 .tab {
-  block-size: 40px; padding-inline: var(--sp-4); border: 0; background: transparent;
+  /* Design System §10 tab padding: 14px inline. */
+  block-size: 40px; padding-inline: 14px; border: 0; background: transparent;
   font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-2);
   border-block-end: 2px solid transparent; margin-block-end: -1px; white-space: nowrap; cursor: pointer;
 }
