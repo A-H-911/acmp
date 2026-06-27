@@ -47,6 +47,28 @@
 }
 .segmented-item[aria-pressed='true'] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
 
+/* ============================ Filter chip ============================ */
+/* Filter-bar dropdown pill (DS filter pattern). Inactive: bordered surface; active
+   (has a selection): accent border + primary-tint. Count badge mirrors the design. */
+.fchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  block-size: 34px; padding-inline: 12px;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text-2);
+  font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+}
+.fchip:hover:not(:disabled) { background: var(--subtle); }
+.fchip.active { border-color: var(--accent); background: var(--primary-tint); color: var(--accent); }
+.fchip:disabled { color: var(--text-3); cursor: not-allowed; }
+.fchip svg { flex: 0 0 auto; }
+.fchip-count {
+  font-size: 10.5px; font-weight: 700; line-height: 1;
+  /* --primary (not --accent) so white text clears AA in BOTH themes: dark-mode --accent is light
+     (#6db0ee) and would drop white to ~2.3:1; --primary stays mid-blue (≥6.4:1 with --primary-fg). */
+  background: var(--primary); color: var(--primary-fg); border-radius: 8px; padding: 2px 6px;
+  font-feature-settings: 'tnum';
+}
+
 /* ============================ Breadcrumb ============================ */
 .breadcrumb { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: 13px; color: var(--text-3); }
 .breadcrumb-sep { color: var(--text-3); display: inline-flex; flex: 0 0 auto; }

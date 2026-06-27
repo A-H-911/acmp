@@ -13,10 +13,10 @@
  *    static overview omitted them.
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useAddTopicComment, type TopicDetail as Topic } from '../../api/topics';
+import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, type TopicDetail as Topic } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
 import { Breadcrumb } from '../../components/ui/Breadcrumb';
@@ -31,7 +31,7 @@ import { statusTone, initials } from './topicMeta';
 import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
-const TABS = ['overview', 'discussion', 'history'] as const;
+const TABS = ['overview', 'comments', 'attachments', 'votes', 'history'] as const;
 
 function useDateFmt() {
   const { i18n } = useTranslation();
@@ -65,9 +65,13 @@ export function TopicDetail() {
   const tabs = TABS.map((id) => ({
     id,
     label:
-      id === 'discussion' ? (
+      id === 'comments' ? (
         <>
-          {t('detail.tab.discussion')} <Badge count={topic.comments.length} />
+          {t('detail.tab.comments')} <Badge count={topic.comments.length} />
+        </>
+      ) : id === 'attachments' && topic.attachments.length > 0 ? (
+        <>
+          {t('detail.tab.attachments')} <Badge count={topic.attachments.length} />
         </>
       ) : (
         t(`detail.tab.${id}`)
@@ -87,7 +91,9 @@ export function TopicDetail() {
         <div className="dt-main">
           <Tabs items={tabs} value={tab} onValueChange={setTab} ariaLabel={topic.key} />
           {tab === 'overview' && <Overview topic={topic} />}
-          {tab === 'discussion' && <Discussion topic={topic} />}
+          {tab === 'comments' && <Discussion topic={topic} />}
+          {tab === 'attachments' && <Attachments topic={topic} />}
+          {tab === 'votes' && <Votes />}
           {tab === 'history' && <History topic={topic} />}
         </div>
         <RelationshipsSidebar />
@@ -150,7 +156,6 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 
 function Overview({ topic }: { topic: Topic }) {
   const { t } = useTranslation();
-  const fmt = useDateFmt();
   return (
     <div className="dt-overview">
       <Section label={t('detail.sec.description')}><p className="dt-body">{topic.description}</p></Section>
@@ -163,21 +168,65 @@ function Overview({ topic }: { topic: Topic }) {
           <div className="bk-streams">{topic.systems.length ? topic.systems.map((s) => <Tag key={s}>{s}</Tag>) : <span className="bk-muted">—</span>}</div>
         </Section>
       </div>
-      {topic.attachments.length > 0 && (
-        <Section label={t('detail.sec.attachments')}>
-          <ul className="sub-files">
-            {topic.attachments.map((a) => (
-              <li key={a.id} className="sub-file">
-                <span className="sub-file-ic" aria-hidden="true"><Icon name="doc" size={15} /></span>
-                <span className="sub-file-main">
-                  <span className="sub-file-name">{a.fileName}</span>
-                  <span className="sub-file-meta">{a.uploadedByName} · {fmt(a.uploadedAt)}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+    </div>
+  );
+}
+
+function Attachments({ topic }: { topic: Topic }) {
+  const { t } = useTranslation();
+  const fmt = useDateFmt();
+  const upload = useUploadTopicAttachment(topic.key);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [over, setOver] = useState(false);
+
+  const onFiles = (list: FileList | null) => {
+    if (!list) return;
+    for (const f of Array.from(list)) upload.mutate({ topicId: topic.id, file: f });
+  };
+
+  return (
+    <div className="dt-attach">
+      <div
+        className={`sub-drop ${over ? 'over' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
+      >
+        <input ref={inputRef} type="file" multiple aria-label={t('submit.dropFiles')} className="visually-hidden" onChange={(e) => onFiles(e.target.files)} />
+        <div className="sub-drop-ic" aria-hidden="true"><Icon name="upload" size={19} /></div>
+        <button type="button" className="sub-drop-btn" onClick={() => inputRef.current?.click()} disabled={upload.isPending}>
+          {t('submit.dropFiles')}
+        </button>
+        <div className="sub-drop-hint">{t('submit.dropHint')}</div>
+      </div>
+      {topic.attachments.length === 0 ? (
+        <p className="bk-muted dt-attach-empty">{t('detail.attach.empty')}</p>
+      ) : (
+        <ul className="sub-files dt-attach-list">
+          {topic.attachments.map((a) => (
+            <li key={a.id} className="sub-file">
+              <span className="sub-file-ic" aria-hidden="true"><Icon name="doc" size={15} /></span>
+              <span className="sub-file-main">
+                <span className="sub-file-name" dir="ltr">{a.fileName}</span>
+                <span className="sub-file-meta">{a.uploadedByName} · {fmt(a.uploadedAt)}</span>
+              </span>
+              {/* Download needs a presigned-URL endpoint not exposed in this DTO yet → inert, flagged. */}
+              <button type="button" className="dt-attach-dl" aria-label={t('detail.attach.download')} disabled title={t('topics.comingSoon')}>
+                <Icon name="download" size={14} aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
+    </div>
+  );
+}
+
+function Votes() {
+  const { t } = useTranslation();
+  return (
+    <div className="dt-votes">
+      <EmptyState icon="decision" title={t('detail.votes.emptyTitle')} body={t('detail.votes.emptyBody')} />
     </div>
   );
 }

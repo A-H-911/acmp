@@ -113,6 +113,16 @@ export function uploadTopicAttachment(topicId: string, file: File): Promise<unkn
   return api<unknown>(`/topics/${topicId}/attachments`, { method: 'POST', body: form });
 }
 
+/** Upload a file to an EXISTING topic from the detail screen's Attachments tab; invalidates the
+ *  detail query so the new attachment appears. (Submit-time upload uses uploadTopicAttachment directly.) */
+export function useUploadTopicAttachment(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, file }: { topicId: string; file: File }) => uploadTopicAttachment(topicId, file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'detail', key] }),
+  });
+}
+
 // Topic detail (GET /api/topics/{key}). Read by key; comment/edit mutations are by Guid id.
 export interface TopicHistoryEntry {
   from: string;
