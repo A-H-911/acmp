@@ -12,6 +12,78 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P5 UI refresh — rebuild Topics & Backlog vs the updated `ACMP Backlog & Topic.dc.html`
+
+### 2026-06-27 — Backlog (5 views incl. live calendar/timeline), filter chips, submit RTE bar, 5-tab topic detail
+
+**Why.** The `ACMP Backlog & Topic.dc.html` reference grew since P5b shipped: the filter bar is now dropdown
+**chip-buttons**, the **calendar** and **timeline** are first-class live views (were "coming soon" shells), the
+submit description gains a formatting toolbar, and the topic-detail tab bar is now **5 tabs** (Overview ·
+Discussion · Attachments · Votes · History). This slice reconciles the built P5 screens to the updated local
+reference (read directly), composing the corrected P3/P5 shared components. Branch
+`feat/P5-backlog-topic-refresh` off `main`. Visual SoT = the `.dc.html`; behavior SoT = the planning package.
+
+**Decisions (agreed at GO; match the design, build nothing whose data isn't planned):**
+- **D1 — Calendar & Timeline = faithful chrome + honest empty.** Both render the design's frame (calendar: month
+  nav + locale weekday header + day-cell grid + today ring + legend; timeline: Topic column + 6 week columns + a
+  row per real topic) but place **no markers/bars** — the Topics API exposes no scheduled-meeting date, due/target
+  date, or planned spans (those arrive with meeting scheduling, **P6**). An honest inline note states this rather
+  than fabricating events. No backend change. (guardrail #14, behavior SoT.)
+- **D2 — Topic-detail Votes tab = added with an honest empty state** ("voting arrives in P9"), so the 5-tab bar
+  matches the design; the real vote cards land with the Voting module (P9).
+- **D3 — Submit Affected-streams = kept as free-text tokens** (flagged): no committed stream registry in the web
+  yet (BL-024 owns streams); the design's preset stream chips wait for that source.
+- Proceeded on (no objection): keep **title-link** row navigation (a `<button>` can't legally wrap a grid row of
+  interactive cells — the a11y-correct call, flagged); render the submit **RTE toolbar inert** (`aria-hidden`,
+  stores plain text); keep the **single stored title** (no translated title in the data — the design's alt-language
+  line is dropped, flagged); **split Attachments into its own detail tab** and wire post-create upload; restyle the
+  **relationships** aside to the design header but keep it an honest empty state (no edge data until P7–P11).
+
+**Done.**
+- **New shared `FilterChip`** (`components/ui/FilterChip.tsx`, composes `Menu`) — the design's filter pill (label +
+  count badge + chevron; active = accent/primary-tint). Single mode (radio + "Any …" clear) and multi mode
+  (toggle, stays open, "Clear" row). Styles in `controls.css` (`.fchip*`). The Backlog filter bar now uses five
+  chips (Status multi; Type/Urgency single; **Stream/Owner disabled** — no option source yet); dropped the design's
+  mock "Data: live/loading/empty/error" preview toggle (real state comes from the query).
+- **Backlog** (`Backlog.tsx`): saved-view restyled to the design's **accent chip** ("Triage queue", inert — no
+  saved-view backend); the **coming-soon shell removed**; calendar/timeline now render live components; table/list/
+  kanban unchanged (already faithful post P5-review).
+- **`Calendar.tsx` / `Timeline.tsx`** (new) — the D1 faithful-chrome views; Gregorian, Intl-localized, logical-CSS
+  RTL-safe (calendar prev/next use the same deliberate `scaleX(-1)` chevron flip as pagination).
+- **Submit** (`SubmitTopic.tsx`): inert RTE toolbar (`aria-hidden`) wrapping the description textarea (`.sub-rte*`),
+  visual parity with the design; we still store plain text.
+- **Topic detail** (`TopicDetail.tsx`): 5 tabs — Overview, Discussion (id `comments`), **Attachments** (own tab:
+  dropzone wired to `useUploadTopicAttachment` post-create + file list; download inert pending a presigned-URL
+  endpoint), **Votes** (empty → P9), History. Attachments moved out of Overview. New `useUploadTopicAttachment`
+  hook in `api/topics.ts`.
+- **State components:** reused the **shared canonical** `ErrorState`/`EmptyState`/`LoadingState` rather than forking
+  the reference's richer per-screen error card (the design's mono request-id line) — the app-wide P3/P4 precedent;
+  a deliberate reconciliation, recorded.
+- **i18n** (EN+AR, real Arabic): `topics.savedView`, `topics.calendar.*`, `topics.timeline.*`, `detail.tab`
+  (comments/attachments/votes), `detail.attach.*`, `detail.votes.*`; removed the dead `topics.savedViews`/
+  `topics.shell`. **Parity 438.**
+
+**Verification (deterministic, green).** Web **197/197** (was 189; +8 — 3 Backlog [live calendar chrome, live
+timeline chrome, Status-chip filter], 2 TopicDetail [Attachments tab + upload, Votes empty], 4 FilterChip
+[single/multi/disabled + axe]; existing axe cases stay green), i18n parity **438**, `tsc -b` clean, vite build
+clean (**JS 176.12 kB gz** < 300; CSS 23.58 kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx`
+fast-refresh warning), `topics.css` + `controls.css` grep = zero physical properties (RTL-safe; the calendar
+prev-chevron `scaleX(-1)` is the deliberate direction-bearing exception). **Not yet run:** the live authenticated
+browser VR (8 combos — EN/AR × light/dark × tablet/desktop — across all 5 backlog views + submit + detail vs the
+`.dc.html`); blocked on the operator setting the `acmp-admin` dev password (standing caveat); automated pixel-diff
+VR remains **P17**.
+
+**Acceptance audit (this entry). No verdict flips** — visual/fidelity reconciliation + honest-empty new views.
+Touches **AC-040/045/046** (the new chips/calendar/timeline/tabs render RTL-mirrored + axe-clean in the component
+tests) and **AC-041** (stays Partial → automated VR P17). **AC-057** aging badge unchanged. No feature AC changes;
+Calendar/Timeline carry no AC of their own (views over Topics). **No new ADR** (UI on the settled stack).
+
+**Next.** Push `feat/P5-backlog-topic-refresh` → PR → green CI → **await operator GO + live VR** to squash-merge.
+The deferred faithful data for Calendar/Timeline (real scheduled/due markers) lands with P6 meeting scheduling;
+the detail Votes cards with P9; the submit stream chips with BL-024.
+
+---
+
 ## P4 UI refresh — rebuild Administration → Users & Membership vs the updated `ACMP Administration.dc.html`
 
 ### 2026-06-27 — Users & Membership rebuilt to the updated design (rich directory + read-only user detail); unplanned affordances removed

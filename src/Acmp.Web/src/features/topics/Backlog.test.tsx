@@ -86,12 +86,33 @@ describe('Backlog (P5b)', () => {
     expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
   });
 
-  it('renders an honest coming-soon shell for the calendar view (no P5 data)', async () => {
+  it('renders the live calendar view chrome with an honest empty note (D1)', async () => {
     result({ data: paged(TOPICS) });
     const user = userEvent.setup();
     renderWithAuth(<Backlog />, { roles: ['secretary'] });
     await user.click(screen.getByRole('button', { name: /calendar/i }));
-    expect(screen.getByText('View coming soon')).toBeInTheDocument();
+    // Faithful chrome (month nav) + honest note that markers arrive with P6 scheduling.
+    expect(screen.getByRole('button', { name: 'Previous month' })).toBeInTheDocument();
+    expect(screen.getByText(/scheduled and due-date markers/i)).toBeInTheDocument();
+  });
+
+  it('renders the live timeline view chrome with topic rows and an honest note (D1)', async () => {
+    result({ data: paged(TOPICS) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+    await user.click(screen.getByRole('button', { name: /timeline/i }));
+    expect(screen.getByText('Adopt Keycloak as the standard IdP')).toBeInTheDocument();
+    expect(screen.getByText(/planned timelines appear/i)).toBeInTheDocument();
+  });
+
+  it('filters by status through the Status chip (multi-select)', async () => {
+    result({ data: paged(TOPICS) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+    // The Status filter chip (a menu trigger) — distinct from the sortable "Status" column header.
+    await user.click(screen.getByRole('button', { name: 'Status', expanded: false }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Triage' }));
+    expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ statuses: ['Triage'] });
   });
 
   it('disables the Stream and Owner filters this slice', () => {
@@ -127,7 +148,7 @@ describe('Backlog (P5b)', () => {
     result({ data: paged(TOPICS) });
     const user = userEvent.setup();
     renderWithAuth(<Backlog />, { roles: ['secretary'] });
-    const ageHeader = screen.getByRole('button', { name: /age/i });
+    const ageHeader = screen.getByRole('button', { name: 'Age' });
     await user.click(ageHeader);
     // The hook is re-invoked with the new sort params; assert it was called with sortBy 'age'.
     const lastCall = mockBacklog.mock.calls.at(-1)?.[0];

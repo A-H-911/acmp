@@ -146,7 +146,7 @@
     "comingSoon": "Coming soon",
     "viewLabel": "Backlog view",
     "view": { "list": "List", "table": "Table", "kanban": "Kanban", "calendar": "Calendar", "timeline": "Timeline" },
-    "savedViews": "Saved views",
+    "savedView": "Triage queue",
     "searchLabel": "Filter topics",
     "searchPlaceholder": "Filter topics…",
     "filtersLabel": "Backlog filters",
@@ -192,7 +192,8 @@
       "title": "Couldn’t load the backlog",
       "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
     },
-    "shell": { "title": "View coming soon", "body": "This backlog view isn’t available yet." },
+    "calendar": { "prev": "Previous month", "next": "Next month", "scheduled": "Scheduled", "due": "Due date", "note": "Scheduled and due-date markers appear once topics are scheduled to meetings (P6)." },
+    "timeline": { "week": "Wk {{n}}", "note": "Planned timelines appear once topics are scheduled to meetings (P6)." },
     "type": {
       "ResearchDiscovery": "Research",
       "ArchitectureDecision": "Arch. Decision",
@@ -315,7 +316,7 @@
     "edit": "Edit",
     "owner": "Owner",
     "created": "Created {{date}}",
-    "tab": { "overview": "Overview", "discussion": "Discussion", "history": "History" },
+    "tab": { "overview": "Overview", "comments": "Discussion", "attachments": "Attachments", "votes": "Votes", "history": "History" },
     "sec": {
       "description": "Description",
       "justification": "Justification",
@@ -328,6 +329,8 @@
     "post": "Post comment",
     "noComments": "No comments yet. Start the discussion.",
     "noHistory": "No history yet.",
+    "attach": { "empty": "No attachments yet. Drop files to add them.", "download": "Download" },
+    "votes": { "emptyTitle": "No votes yet", "emptyBody": "Votes appear here once the committee votes on this topic (Voting, P9)." },
     "rel": {
       "title": "Relationships",
       "sub": "Traceability — both directions",

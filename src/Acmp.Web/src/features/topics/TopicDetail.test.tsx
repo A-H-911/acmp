@@ -9,12 +9,14 @@ import { makeAuth } from '../../test/render';
 import { ApiError } from '../../api/apiClient';
 import type { TopicDetail as Topic } from '../../api/topics';
 
-vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn() }));
-import { useTopicDetail, useAddTopicComment } from '../../api/topics';
+vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn() }));
+import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
 const mockAddComment = useAddTopicComment as unknown as Mock;
+const mockUpload = useUploadTopicAttachment as unknown as Mock;
 let mutate: Mock;
+let uploadMutate: Mock;
 
 const TOPIC: Topic = {
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
@@ -51,6 +53,9 @@ describe('TopicDetail (P5b)', () => {
     mockDetail.mockReset();
     mutate = vi.fn();
     mockAddComment.mockReturnValue({ mutate, isPending: false });
+    mockUpload.mockReset();
+    uploadMutate = vi.fn();
+    mockUpload.mockReturnValue({ mutate: uploadMutate, isPending: false });
   });
 
   it('renders the header and overview from the detail DTO', () => {
@@ -89,6 +94,25 @@ describe('TopicDetail (P5b)', () => {
       { topicId: 'g1', body: 'Agree — link the rollback ADR.' },
       expect.anything(),
     );
+  });
+
+  it('moves attachments to their own tab and uploads a dropped file to the topic id', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    expect(screen.getByText('eval.pdf')).toBeInTheDocument(); // existing attachment listed in the tab
+    const file = new File(['x'], 'design.pdf', { type: 'application/pdf' });
+    await user.upload(screen.getByLabelText(/Drop files/i), file);
+    expect(uploadMutate).toHaveBeenCalledWith({ topicId: 'g1', file });
+  });
+
+  it('renders the Votes tab as an honest empty state (Voting → P9)', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Votes/ }));
+    expect(screen.getByText('No votes yet')).toBeInTheDocument();
   });
 
   it('switches to History and renders the status timeline', async () => {

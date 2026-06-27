@@ -26,8 +26,7 @@ import { useBacklog, type BacklogParams, type TopicSummary } from '../../api/top
 import { AREAS } from '../../nav/navModel';
 import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Segmented } from '../../components/ui/Segmented';
-import { Select } from '../../components/ui/Select';
-import { MultiSelect } from '../../components/ui/MultiSelect';
+import { FilterChip } from '../../components/ui/FilterChip';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -37,6 +36,8 @@ import { ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
 import { statusTone, initials } from './topicMeta';
 import { Kanban } from './Kanban';
+import { Calendar } from './Calendar';
+import { Timeline } from './Timeline';
 import './topics.css';
 
 const VIEWS: { id: string; icon: IconName }[] = [
@@ -46,7 +47,6 @@ const VIEWS: { id: string; icon: IconName }[] = [
   { id: 'calendar', icon: 'calendar' },
   { id: 'timeline', icon: 'viewTimeline' },
 ];
-const LIVE_VIEWS = new Set(['table', 'list', 'kanban']);
 const TYPE_VALUES = ['ResearchDiscovery', 'ArchitectureDecision', 'EnhancementInnovation', 'GovernanceStandardization'];
 const URGENCY_VALUES = ['Normal', 'Urgent', 'Critical'];
 const STATUS_VALUES = ['Draft', 'Submitted', 'Triage', 'Accepted', 'Prepared', 'Scheduled', 'InCommittee', 'Decided', 'Deferred', 'Reopened', 'Rejected', 'Closed', 'Converted'];
@@ -143,9 +143,10 @@ export function Backlog() {
             ),
           }))}
         />
-        <Button variant="secondary" disabled title={t('topics.comingSoon')}>
-          <Icon name="funnel" size={14} aria-hidden /> {t('topics.savedViews')}
-        </Button>
+        <button type="button" className="bk-saved" disabled title={t('topics.comingSoon')}>
+          <Icon name="funnel" size={14} aria-hidden /> {t('topics.savedView')}
+          <Icon name="chevronDown" size={13} aria-hidden />
+        </button>
       </div>
 
       <div className="bk-filters" role="search" aria-label={t('topics.filtersLabel')}>
@@ -160,41 +161,30 @@ export function Backlog() {
           />
         </span>
         <span className="bk-divider" aria-hidden="true" />
-        <div className="bk-filter">
-          <MultiSelect
-            ariaLabel={t('topics.filter.status')}
-            placeholder={t('topics.filter.status')}
-            options={STATUS_VALUES.map((v) => ({ value: v, label: t(`topics.status.${v}`) }))}
-            value={filters.statuses}
-            onChange={(statuses) => patch({ statuses })}
-            removeLabel={(label) => t('topics.removeFilter', { label })}
-            emptyLabel={t('topics.noMatches')}
-          />
-        </div>
-        <div className="bk-filter">
-          <Select
-            ariaLabel={t('topics.filter.type')}
-            placeholder={t('topics.filter.anyType')}
-            value={filters.type}
-            onChange={(type) => patch({ type })}
-            options={[{ value: '', label: t('topics.filter.anyType') }, ...TYPE_VALUES.map((v) => ({ value: v, label: t(`topics.type.${v}`) }))]}
-          />
-        </div>
-        <div className="bk-filter">
-          <Select ariaLabel={t('topics.filter.stream')} placeholder={t('topics.filter.anyStream')} disabled options={[]} onChange={() => {}} />
-        </div>
-        <div className="bk-filter">
-          <Select ariaLabel={t('topics.filter.owner')} placeholder={t('topics.filter.anyOwner')} disabled options={[]} onChange={() => {}} />
-        </div>
-        <div className="bk-filter">
-          <Select
-            ariaLabel={t('topics.filter.urgency')}
-            placeholder={t('topics.filter.anyUrgency')}
-            value={filters.urgency}
-            onChange={(urgency) => patch({ urgency })}
-            options={[{ value: '', label: t('topics.filter.anyUrgency') }, ...URGENCY_VALUES.map((v) => ({ value: v, label: t(`topics.urgency.${v}`) }))]}
-          />
-        </div>
+        <FilterChip
+          multiple
+          label={t('topics.filter.status')}
+          options={STATUS_VALUES.map((v) => ({ value: v, label: t(`topics.status.${v}`) }))}
+          values={filters.statuses}
+          onChange={(statuses) => patch({ statuses })}
+          clearLabel={t('topics.clearFilters')}
+        />
+        <FilterChip
+          label={t('topics.filter.type')}
+          anyLabel={t('topics.filter.anyType')}
+          options={TYPE_VALUES.map((v) => ({ value: v, label: t(`topics.type.${v}`) }))}
+          value={filters.type}
+          onChange={(type) => patch({ type })}
+        />
+        <FilterChip label={t('topics.filter.stream')} anyLabel={t('topics.filter.anyStream')} options={[]} value="" onChange={() => {}} disabled />
+        <FilterChip label={t('topics.filter.owner')} anyLabel={t('topics.filter.anyOwner')} options={[]} value="" onChange={() => {}} disabled />
+        <FilterChip
+          label={t('topics.filter.urgency')}
+          anyLabel={t('topics.filter.anyUrgency')}
+          options={URGENCY_VALUES.map((v) => ({ value: v, label: t(`topics.urgency.${v}`) }))}
+          value={filters.urgency}
+          onChange={(urgency) => patch({ urgency })}
+        />
         {data && (
           <span className="bk-count"><Icon name="backlog" size={13} aria-hidden /> {t('topics.showing', { shown, total })}</span>
         )}
@@ -204,8 +194,10 @@ export function Backlog() {
         <BacklogSkeleton />
       ) : isError ? (
         <ErrorState title={t('topics.error.title')} body={t('topics.error.body')} onRetry={() => refetch()} />
-      ) : !LIVE_VIEWS.has(view) ? (
-        <ViewShell view={view} />
+      ) : view === 'calendar' ? (
+        <Calendar />
+      ) : view === 'timeline' ? (
+        <Timeline rows={data?.items ?? []} />
       ) : total === 0 ? (
         <div>
           <EmptyState icon="search" title={t('topics.empty.title')} body={t('topics.empty.body')} />
@@ -236,20 +228,6 @@ export function Backlog() {
         </>
       )}
     </section>
-  );
-}
-
-function ViewShell({ view }: { view: string }) {
-  const { t } = useTranslation();
-  const icon = VIEWS.find((v) => v.id === view)?.icon ?? 'doc';
-  return (
-    <div className="bk-shell" role="status">
-      <div className="bk-shell-icon">
-        <Icon name={icon} size={25} aria-hidden />
-      </div>
-      <h3 className="bk-shell-title">{t('topics.shell.title')}</h3>
-      <p className="bk-shell-body">{t('topics.shell.body')}</p>
-    </div>
   );
 }
 

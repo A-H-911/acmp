@@ -241,6 +241,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > recommended confirmatory step — blocked on the operator setting the `acmp-admin` dev password. See progress-log
 > "P4 UI refresh".
 
+> P5 UI refresh (2026-06-27): rebuilt Topics & Backlog to the updated `ACMP Backlog & Topic.dc.html` — new shared
+> `FilterChip` dropdowns (Status multi; Type/Urgency single; Stream/Owner disabled — no option source yet), the
+> accent saved-view chip, and the previously "coming soon" **calendar** and **timeline** now render as first-class
+> live views with **faithful chrome + an honest empty body** (no scheduled/due/span data in the Topics API → P6;
+> D1). Submit gains an inert RTE toolbar; Topic detail is now **5 tabs** (Overview · Discussion · **Attachments**
+> own tab + post-create upload · **Votes** empty → P9 · History). **No verdict flips** — visual/fidelity + honest-
+> empty new views. Touches **AC-040/045/046** (new chips/calendar/timeline/tabs render RTL-mirrored + axe-clean in
+> the component tests) and **AC-041** (stays Partial → automated VR P17); **AC-057** aging badge unchanged.
+> Web 197/197 (incl. FilterChip + new-view + new-tab axe/behavior cases), i18n parity 438, tsc + vite build +
+> oxlint clean, topics.css + controls.css grep = zero physical properties. Live authenticated VR (8 combos vs the
+> `.dc.html`) is the recommended confirmatory step — blocked on the operator setting the `acmp-admin` dev password.
+> See progress-log "P5 UI refresh".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
