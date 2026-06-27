@@ -68,10 +68,18 @@ timeline chrome, Status-chip filter], 2 TopicDetail [Attachments tab + upload, V
 [single/multi/disabled + axe]; existing axe cases stay green), i18n parity **438**, `tsc -b` clean, vite build
 clean (**JS 176.12 kB gz** < 300; CSS 23.58 kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx`
 fast-refresh warning), `topics.css` + `controls.css` grep = zero physical properties (RTL-safe; the calendar
-prev-chevron `scaleX(-1)` is the deliberate direction-bearing exception). **Not yet run:** the live authenticated
-browser VR (8 combos — EN/AR × light/dark × tablet/desktop — across all 5 backlog views + submit + detail vs the
-`.dc.html`); blocked on the operator setting the `acmp-admin` dev password (standing caveat); automated pixel-diff
-VR remains **P17**.
+prev-chevron `scaleX(-1)` is the deliberate direction-bearing exception).
+
+**Live authenticated VR — DONE (2026-06-27).** After the operator set the `acmp-admin` dev password (KC required
+action cleared) and `acmp-web` was rebuilt, drove Playwright through the **real Keycloak PKCE** flow over the live
+stack and visually verified every new surface: backlog filter chips + accent saved-view chip, **live calendar**
+(month grid + weekday header + today ring + legend + honest P6 note), **live timeline**, submit **inert RTE
+toolbar**, and topic detail **5 tabs** (Overview · Discussion · Attachments + post-create upload · Votes empty ·
+History) + the empty relationships aside — in **EN-light** and **AR-dark**, plus **tablet 768** (zero horizontal
+overflow, `scrollWidth == clientWidth`). AR confirms full RTL mirroring (sidebar inline-end, chips/table mirrored,
+calendar prev/next chevrons flipped, Arabic weekday header) and dark tokens. The live drive (login → backlog →
+all 5 views → submit → detail tabs) doubles as the E2E smoke pass. Screenshots: `P5-{EN-light,AR-dark}-*` (12).
+Automated pixel-diff VR remains **P17**.
 
 **Acceptance audit (this entry). No verdict flips** — visual/fidelity reconciliation + honest-empty new views.
 Touches **AC-040/045/046** (the new chips/calendar/timeline/tabs render RTL-mirrored + axe-clean in the component

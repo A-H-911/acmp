@@ -250,9 +250,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > empty new views. Touches **AC-040/045/046** (new chips/calendar/timeline/tabs render RTL-mirrored + axe-clean in
 > the component tests) and **AC-041** (stays Partial → automated VR P17); **AC-057** aging badge unchanged.
 > Web 197/197 (incl. FilterChip + new-view + new-tab axe/behavior cases), i18n parity 438, tsc + vite build +
-> oxlint clean, topics.css + controls.css grep = zero physical properties. Live authenticated VR (8 combos vs the
-> `.dc.html`) is the recommended confirmatory step — blocked on the operator setting the `acmp-admin` dev password.
-> See progress-log "P5 UI refresh".
+> oxlint clean, topics.css + controls.css grep = zero physical properties. **Live authenticated VR DONE**
+> (2026-06-27): real Keycloak PKCE pass over the rebuilt stack visually verified all 5 new surfaces (filter chips,
+> calendar, timeline, submit RTE, detail 5 tabs) in EN-light + AR-dark + tablet-768 (no overflow; full RTL mirror
+> + dark tokens); doubles as the E2E smoke pass. Automated pixel-diff VR → P17. See progress-log "P5 UI refresh".
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
