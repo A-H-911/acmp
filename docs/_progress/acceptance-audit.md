@@ -198,6 +198,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > `.dc.html` reference exists for the live list (planning doc docs/14 p.79 only) — composed from the shell's
 > notif-* styles. Live cross-session browser pass recommended. See progress-log P6e entry.
 
+> P6 follow-up (2026-06-27): the deferred meeting-schedule flow is built (ScheduleMeetingDialog +
+> useScheduleMeeting; MeetingsList "Schedule meeting" action), and its blocker removed — the committee is now
+> implicit server-side (`Meeting.SingleCommitteeId`; `CommitteeId` dropped from ScheduleMeetingCommand, a
+> never-read field, no ADR). Chair picked from /api/members (defaults to Chairman). **No verdict flips** —
+> meeting scheduling (W5) has no dedicated AC; this makes the P6 loop reachable end to end. Backend 397/397
+> (command change carried through Domain/Application/Api), web 182/182 (incl. a dialog axe AA case), parity 412,
+> dotnet format + tsc + build + oxlint clean. Live schedule round-trip recommended. See progress-log P6 follow-up.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |

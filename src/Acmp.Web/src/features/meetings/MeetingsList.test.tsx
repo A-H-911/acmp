@@ -5,7 +5,13 @@ import { MeetingsList } from './MeetingsList';
 import { renderWithAuth } from '../../test/render';
 import type { MeetingSummary } from '../../api/meetings';
 
-vi.mock('../../api/meetings', () => ({ useMeetings: vi.fn() }));
+// MeetingsList mounts ScheduleMeetingDialog (which calls useScheduleMeeting + useMembers
+// unconditionally, even while closed), so both must be stubbed here.
+vi.mock('../../api/meetings', () => ({
+  useMeetings: vi.fn(),
+  useScheduleMeeting: vi.fn(() => ({ mutate: vi.fn(), isPending: false, isError: false })),
+}));
+vi.mock('../../api/members', () => ({ useMembers: vi.fn(() => ({ data: [], isLoading: false, isError: false })) }));
 import { useMeetings } from '../../api/meetings';
 
 const mockMeetings = useMeetings as unknown as Mock;

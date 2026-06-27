@@ -23,7 +23,6 @@ namespace Acmp.Application.Tests.Meetings;
 public class MeetingHandlerTests
 {
     private static readonly DateTimeOffset Now = new(2026, 2, 18, 10, 0, 0, TimeSpan.Zero);
-    private static readonly Guid Committee = Guid.NewGuid();
     private static readonly Guid Chair = Guid.NewGuid();
     private static readonly Guid Presenter = Guid.NewGuid();
 
@@ -79,7 +78,7 @@ public class MeetingHandlerTests
     private static INotificationChannel NoNotify() => Substitute.For<INotificationChannel>();
 
     private static ScheduleMeetingCommand ScheduleCmd() => new(
-        "Weekly Architecture Committee", Committee, Chair, "S. M.", Now, Now.AddMinutes(90), null, null);
+        "Weekly Architecture Committee", Chair, "S. M.", Now, Now.AddMinutes(90), null, null);
 
     // Schedules a meeting and returns (db, meetingId).
     private static async Task<(MeetingsDbContext Db, Guid MeetingId)> ScheduledMeetingAsync(ICurrentUser user, IClock clock)

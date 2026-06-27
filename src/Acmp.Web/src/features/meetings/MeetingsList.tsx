@@ -1,23 +1,27 @@
 /*
- * Meetings list (P6c) — read-only index of meetings, each row links to its agenda
- * builder. The design package has NO list screen (it opens straight to a meeting),
- * so this is behavior-necessary scaffolding: composed from the shared library
- * (Breadcrumb, Table, StatusChip, states) and kept deliberately plain.
+ * Meetings list (P6c) — index of meetings, each row links to its agenda builder, with a
+ * "Schedule meeting" action. The design package has NO list screen (it opens straight to a
+ * meeting), so this is behavior-necessary scaffolding: composed from the shared library
+ * (Breadcrumb, Table, StatusChip, Button, Dialog, states) and kept deliberately plain.
  *
- * Deferred (honest notes, guardrail 11):
- *  - Scheduling a NEW meeting is not built here: it needs committee + chair pickers
- *    from Membership, and committeeId isn't exposed to the SPA yet. The "New meeting"
- *    affordance is therefore omitted rather than faked.
+ * Notes (guardrail 11):
+ *  - Scheduling now works: the committee is implicit server-side (single committee, CON-001),
+ *    so the form (ScheduleMeetingDialog) only needs a title, a chair (from /api/members), the
+ *    time window, and optional location/join URL.
  *  - Meeting/topic titles are user content in a single language; only chrome is i18n'd.
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMeetings, type MeetingSummary } from '../../api/meetings';
 import { Breadcrumb } from '../../components/ui/Breadcrumb';
+import { Button } from '../../components/ui/Button';
 import { Table, type Column } from '../../components/ui/Table';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
+import { Icon } from '../../components/icons';
+import { ScheduleMeetingDialog } from './ScheduleMeetingDialog';
 import './meetings.css';
 
 function meetingTone(status: string): StatusTone {
@@ -47,6 +51,7 @@ export function MeetingsList() {
   const { t } = useTranslation();
   const fmt = useDateFmt();
   const { data, isLoading, isError, refetch } = useMeetings();
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   const columns: Column<MeetingSummary>[] = [
     { id: 'key', header: t('meetings.col.key'), width: '128px', cell: (m) => <span className="mt-key">{m.key}</span> },
@@ -71,8 +76,13 @@ export function MeetingsList() {
       <Breadcrumb ariaLabel={t('meetings.title')} items={[{ label: t('meetings.title'), current: true }]} />
 
       <div className="mt-head">
-        <h1 className="page-title">{t('meetings.title')}</h1>
-        <p className="mt-head-sub">{t('meetings.listSub')}</p>
+        <div>
+          <h1 className="page-title">{t('meetings.title')}</h1>
+          <p className="mt-head-sub">{t('meetings.listSub')}</p>
+        </div>
+        <Button onClick={() => setScheduleOpen(true)}>
+          <Icon name="plus" size={15} aria-hidden /> {t('meetings.schedule.action')}
+        </Button>
       </div>
 
       {isLoading ? (
@@ -84,6 +94,8 @@ export function MeetingsList() {
       ) : (
         <Table caption={t('meetings.tableCaption')} columns={columns} rows={data} getRowKey={(m) => m.id} />
       )}
+
+      <ScheduleMeetingDialog open={scheduleOpen} onClose={() => setScheduleOpen(false)} />
     </section>
   );
 }

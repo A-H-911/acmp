@@ -91,6 +91,31 @@ export function useMeetings() {
   });
 }
 
+export interface ScheduleMeetingInput {
+  title: string;
+  chairUserId: string;
+  chairName: string;
+  scheduledStart: string; // ISO 8601
+  scheduledEnd: string; // ISO 8601
+  location?: string;
+  joinUrl?: string;
+}
+
+/** W5: schedule a meeting (POST /api/meetings → 201 + the new MeetingSummary). The committee is
+ *  implicit server-side (single committee, CON-001), so the caller never sends a committee id. */
+export function useScheduleMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ScheduleMeetingInput) =>
+      api<MeetingSummary>('/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meetings', 'list'] }),
+  });
+}
+
 export function useMeetingDetail(key: string | undefined) {
   return useQuery({
     queryKey: ['meetings', 'detail', key],

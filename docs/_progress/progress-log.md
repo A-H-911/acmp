@@ -14,6 +14,54 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6 follow-up: meeting-schedule flow (un-defers the new-meeting form) + server-implicit committee
+
+**Scope.** Build the previously-deferred **schedule-a-meeting** flow and remove its only blocker: the SPA
+no longer needs a `committeeId`. Branch `feat/P6-meetings`. Backend **397 green** (unchanged count), web
+**182 green** (was 177; +5 ScheduleMeetingDialog), i18n parity **412**, all gates clean (`dotnet format`,
+`tsc -b`, vite build, oxlint, CSS RTL-safe).
+
+**Done.**
+- **Backend — committee is now implicit (CON-001).** `CommitteeId` is removed from `ScheduleMeetingCommand`;
+  the handler anchors every meeting to a new well-known `Meeting.SingleCommitteeId` constant. The field was
+  **stored but never read for any logic** (there is no Committee aggregate), so this is a refinement, not an
+  architecture change — **no ADR**. The endpoint binds the command directly, so the API request body simply
+  drops `committeeId`. Domain `Meeting.Schedule` keeps its `committeeId` parameter (the constant is passed in);
+  the handler test's `ScheduleCmd()` + the unused test field were updated. 397 backend tests stay green.
+- **Frontend.** `api/meetings.ts` → `useScheduleMeeting()` (`POST /api/meetings` → 201 + the new
+  `MeetingSummary`, invalidates the list). `features/meetings/ScheduleMeetingDialog.tsx` — a shared-`Dialog`
+  form (title, **chair** `Select` from `/api/members` defaulting to the Chairman, start/end `datetime-local`,
+  optional location/join URL) with client validation (title required, chair required, end-after-start) and
+  bilingual error messages; on success it opens the new meeting's agenda builder (`/meetings/{key}`).
+  `MeetingsList.tsx` gains a **"Schedule meeting"** header action (the deferred-note is replaced).
+  `datetime-local` values are converted to ISO 8601 for the API.
+
+**Decisions / drift (no silent drift, guardrail 11).**
+- **Committee is server-implicit** — the cleaner modelling for a single-committee system than threading a
+  magic GUID through the SPA. `Meeting.SingleCommitteeId` is the single anchor; a second committee would need
+  an ADR + a real `Committee` entity (noted at the constant).
+- **Chair picker** sources `/api/members` (active), defaults to the **Chairman** role; `chairUserId` = the
+  member's `publicId` (the value the meeting stores), `chairName` = a display snapshot.
+- The design has **no schedule screen** — this composes shared components (Dialog/Field/Select/Button); the
+  meetings list itself was already flagged as no-reference scaffolding.
+
+**Verification (deterministic, green).** Backend **397/397** (the command change carried through Domain/
+Application/Api). Web **182/182** (Vitest+RTL: schedule with the defaulted Chairman → asserts the POST payload
++ navigation to the new meeting; title-required + end-after-start validation block submit; AR chrome; **+ axe
+WCAG 2.2 AA**), i18n parity 412, `dotnet format --verify-no-changes` + `tsc -b` + vite build + oxlint clean,
+new meetings CSS grep = zero physical properties. **Not yet run:** the live authenticated round-trip
+(schedule → 201 → land on the agenda builder, AR/RTL + dark) — recommended.
+
+**Acceptance audit (this entry).** **No verdict flips** — meeting scheduling (W5) has no dedicated `AC-###`;
+this un-defers the flow noted across P6c/P6d/P6e and makes the P6 surfaces reachable end to end (schedule →
+build agenda → publish/notify → start → conduct → end).
+
+**Next.** P6 UI is now complete and self-reachable. Remaining before the PR: optional `/api/meetings` +
+`/api/notifications` WebApplicationFactory integration tests, then **push `feat/P6-meetings` → PR → green CI →
+review → squash-merge**, and the **live authenticated browser pass** across the P6 surfaces (AR/RTL + dark + live axe).
+
+---
+
 ### 2026-06-27 — P6e UI: notification center wired to the live feed + bell badge (closes the AC-051/053 loop)
 
 **Scope.** Wire the app-shell **NotificationCenter** (the bell popover, a P3 empty shell) to the live

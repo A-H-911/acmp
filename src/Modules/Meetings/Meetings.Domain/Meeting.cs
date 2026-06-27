@@ -11,6 +11,11 @@ namespace Acmp.Modules.Meetings.Domain;
 // display snapshots (chair name, attendee names) — Meetings never reads Membership/Topics tables.
 public sealed class Meeting : AuditableEntity
 {
+    // ACMP serves exactly ONE Architecture Committee (CON-001) — there is no Committee aggregate. Every
+    // meeting is anchored to this well-known id; the column exists for forward-compatibility but is never
+    // used to filter (a second committee would require an ADR + a real Committee entity).
+    public static readonly Guid SingleCommitteeId = new("0e3d0a9c-6b2e-4c7a-9f1d-2a6f5b8c0d11");
+
     private readonly List<Attendance> _attendees = new();
     private readonly List<Discussion> _discussions = new();
 

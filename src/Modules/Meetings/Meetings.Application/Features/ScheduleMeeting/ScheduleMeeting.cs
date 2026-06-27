@@ -14,10 +14,10 @@ namespace Acmp.Modules.Meetings.Application.Features.ScheduleMeeting;
 // a target). RBAC = Meeting.Schedule (Chairman/Secretary). After the meeting is persisted, every active
 // committee member gets an in-app notification (the publish-and-schedule notification floor, P6b) via
 // the Shared INotificationChannel — Meetings depends only on the contract, never on the Notifications
-// module (ADR-0001). CommitteeId is supplied by the caller (single committee, CON-001).
+// module (ADR-0001). The committee is implicit (single committee, CON-001) — the handler anchors every
+// meeting to Meeting.SingleCommitteeId, so the caller never supplies a committee id.
 public sealed record ScheduleMeetingCommand(
     string Title,
-    Guid CommitteeId,
     Guid ChairUserId,
     string ChairName,
     DateTimeOffset ScheduledStart,
@@ -69,7 +69,7 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
         var (sub, _) = CurrentActor.Of(_user);
 
         var meetingKey = await _keys.NextMeetingKeyAsync(now.Year, ct);
-        var meeting = Meeting.Schedule(meetingKey, request.Title, request.CommitteeId,
+        var meeting = Meeting.Schedule(meetingKey, request.Title, Meeting.SingleCommitteeId,
             request.ChairUserId, request.ChairName, request.ScheduledStart, request.ScheduledEnd,
             request.Location, request.JoinUrl, now);
 
