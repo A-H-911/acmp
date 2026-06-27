@@ -228,7 +228,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-008 | RBAC | Met | MembershipApiTests (No_token_returns_401) | RequireAuthorization + JwtBearer → 401 without a token |
 | AC-009 | ABAC | Partial | AbacHandlerTests + TopicApiTests (grant-on-accept) | Grant-on-accept + ABAC owner check proven live on accept; per-topic edit 403 → P5b |
 | AC-010 | ABAC | Partial | AbacHandlerTests + MembershipResolverTests | Stream scope handler + resolver proven; live action-on-out-of-scope-topic 403 → P5/P8 |
-| AC-011 | ABAC | Partial | AbacHandlerTests | Capability scoped to the specific topic proven; presenter meeting-window enforcement → P6 |
+| AC-011 | ABAC | Partial | AbacHandlerTests | Capability scoped to the specific topic proven; presenter meeting-window runtime enforcement → P9 (live vote/meeting-window path) |
 | AC-012 | SoD-1 | Partial | SegregationOfDutiesTests | Verifier≠owner predicate proven; Action.Verify enforcement → P8 |
 | AC-013 | SoD-1 | Partial | SegregationOfDutiesTests | Independent-verifier predicate proven; positive path at Action.Verify → P8 |
 | AC-014 | SoD-2 | Pending | — | MoM approver = sole author → MoM module (P7) |

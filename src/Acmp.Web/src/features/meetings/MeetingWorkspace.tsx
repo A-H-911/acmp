@@ -114,7 +114,8 @@ export function MeetingWorkspace() {
   // authoritative quorum gate is the Voting phase (P9) — don't gate any action on this.
   const votingEligible = activeMembers.filter((m) => m.isVotingEligible);
   const presentVoting = roster.filter((r) => r.present && r.member.isVotingEligible).length;
-  const quorumMet = votingEligible.length > 0 && presentVoting >= Math.floor(votingEligible.length / 2) + 1;
+  const quorumNeeded = votingEligible.length > 0 ? Math.floor(votingEligible.length / 2) + 1 : 0;
+  const quorumMet = votingEligible.length > 0 && presentVoting >= quorumNeeded;
 
   const onEnd = () => endMeeting.mutate({ meetingId: meeting.id }, { onSuccess: () => navigate(AREAS.agenda.path) });
 
@@ -180,6 +181,7 @@ export function MeetingWorkspace() {
           roster={roster}
           presentCount={presentCount}
           total={roster.length}
+          needed={quorumNeeded}
           quorumMet={quorumMet}
           marking={markAttendance.isPending}
           onToggle={onToggleAttendance}
@@ -210,7 +212,7 @@ function AgendaSpine({
             <li key={item.topicId}>
               <button
                 type="button"
-                className={`mt-spine-item ${active ? 'active' : ''}`}
+                className={`mt-spine-item ${active ? 'active' : ''} ${done ? 'done' : ''}`}
                 aria-current={active ? 'true' : undefined}
                 onClick={() => onSelect(item.topicId)}
               >
@@ -397,6 +399,7 @@ function AttendancePanel({
   roster,
   presentCount,
   total,
+  needed,
   quorumMet,
   marking,
   onToggle,
@@ -404,6 +407,7 @@ function AttendancePanel({
   roster: { member: Member; present: boolean }[];
   presentCount: number;
   total: number;
+  needed: number;
   quorumMet: boolean;
   marking: boolean;
   onToggle: (member: Member, present: boolean) => void;
@@ -416,12 +420,15 @@ function AttendancePanel({
           <h2 className="mt-col-title">{t('meetings.attendance')}</h2>
           <StatusChip tone={quorumMet ? 'success' : 'neutral'} label={t(quorumMet ? 'meetings.quorum.met' : 'meetings.quorum.notMet')} />
         </div>
-        <div className="mt-att-summary">{t('meetings.attendanceSummary', { present: presentCount, total })}</div>
+        <div className="mt-att-summary">{t('meetings.attendanceSummary', { present: presentCount, total, needed })}</div>
       </div>
       <ul className="mt-att-list">
         {roster.map(({ member, present }) => (
           <li key={member.publicId} className="mt-att-row">
-            <span className="mt-avatar" aria-hidden="true">{initialsOf(member.fullName)}</span>
+            <span className={`mt-avatar ${present ? 'present' : ''}`} aria-hidden="true">
+              {initialsOf(member.fullName)}
+              {present && <span className="mt-avatar-dot" />}
+            </span>
             <span className="mt-att-id">
               <span className="mt-att-name">{member.fullName}</span>
               <span className="mt-att-role">{t(`meetings.attendanceRole.${toAttendanceRole(member.role)}`)}</span>

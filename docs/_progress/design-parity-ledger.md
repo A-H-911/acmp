@@ -19,6 +19,40 @@ Administration). Other design files become targets as P5+ lands.
 
 ---
 
+## Agenda builder + Meeting workspace (Agenda & Meeting `.dc.html`) — P6 review, fixed 2026-06-27
+
+Reference rendered + computed-style inspected (EN-light, AR-RTL-dark) against the implementation
+(`features/meetings/*` + `meetings.css`). Color tokens already matched exactly; the divergences were
+structural (radius/size/state/copy). All rows below reconciled to **FIX→MATCH**.
+
+| # | Element | Reference | Impl before | Impl after | Visual |
+|---|---|---|---|---|---|
+| 1 | Pool "Add" button | 24px accent-tint pill (`--accent` border, `--primary-tint` bg, 7px) | shared `btn-sm` secondary (32px) | `.mt-pool-add` restyle on shared `<Button>` (24px accent pill) | FIX→MATCH |
+| 2 | Time-budget bar | green/amber/red fill + **hatched buffer** segment; "Fits/Tight fit/Over by N" | green→red only, no buffer, no tight tier | 3-tier fill + buffer span + Fits/Tight/Over copy | FIX→MATCH |
+| 3 | Agenda-spine done item | solid `--st-success-dot` + #fff check; done title `--text-3`; active title `--accent` | light `--st-success-bg`; titles unstyled | solid dot + #fff; `.active`→accent, `.done`→muted | FIX→MATCH |
+| 4 | Attendance avatar | present `--primary`+#fff + green dot; absent `--sunken` | static `--primary-tint`, no dot | present/absent variance + `.mt-avatar-dot` | FIX→MATCH |
+| 5 | Attendance summary | "N of M present · K needed" | dropped "· K needed" | quorum-needed threaded back in (EN+AR) | FIX→MATCH |
+| 6 | Drop-zone idle bg | `transparent` | `var(--subtle)` | `transparent` | FIX→MATCH |
+| 7 | Card radius | containers 12px · item/budget 11px | every card `--r-lg` (10px) | containers `--r-xl`(12) · item/budget 11px | FIX→MATCH |
+| 8 | `.mt-key` (topic ref) | 10.5px / weight 400 | 12px / 500 | 10.5px / 400 | FIX→MATCH |
+| 9 | Card paddings | budget 14×16 · item 13×14 · heads 12-13×14-15 | snapped to `--sp` grid (12/16) | explicit ref px | FIX→MATCH |
+| 10 | Copy (EN+AR) | "Ready to schedule" · aria "Backlog pool" · "Search topics…" · "Drag to reorder · ↑↓ keys" · "Time-box" · "Items & total time" · "…notify attendees" | paraphrased | aligned verbatim to reference | FIX→MATCH |
+
+**Intended (not drift), kept:** StatusChip 22/8/11.5 (DS §08 canonical, overrides the dc's 23/9/12);
+RTE→textarea, Pause/Preview + Decision/Action/Vote disabled stubs (P7-P9), notify-group checkboxes→
+single honest line, presenter-cycle→Select, mm:ss→minutes, mock→real data; move/step/tool buttons
+24-28px (reference is also sub-44px — faithful). Meetings list + ScheduleMeetingDialog have no design
+reference (behavior scaffolding).
+
+**Verified:** web 182/182 · meetings/notif 46/46 · tsc + oxlint clean · i18n parity 415 keys ·
+reference render computed-value confirmed · **live browser pass done** — populated agenda-builder +
+live meeting-workspace rendered against stubbed `/api` fixtures (Playwright route interception, dev-auth
+context) in EN-light + AR-RTL-dark; all 10 rows visually confirmed to MATCH (buffer hatch + "Fits",
+"Ready to schedule", accent "Add" pill, solid-green done spine, accent active title, present/absent
+avatars + dot, "N of M present · K needed", rounded cards, RTL fully mirrored). No standing caveat.
+
+---
+
 ## Topbar role control (Navigation & IA — `toggleRoleMenu`) — POC, fixed 2026-06-26
 
 Reference: 210px bordered trigger (avatar + 2-line + chevron) → 280px `role="menu"` with a

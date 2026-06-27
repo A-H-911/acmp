@@ -362,21 +362,24 @@
     "publishNotify": "Publish & notify",
     "budget": {
       "title": "Time budget",
-      "over": "{{count}} min over",
-      "onBudget": "On budget",
-      "remaining": "{{count}} min remaining"
+      "fits": "Fits",
+      "tight": "Tight fit",
+      "over": "Over by {{count}} min",
+      "buffer": "{{count}} min buffer",
+      "overRemain": "{{count}} min over"
     },
-    "scheduledTopics": "Scheduled topics",
-    "searchTopics": "Search topics",
+    "backlogPool": "Backlog pool",
+    "scheduledTopics": "Ready to schedule",
+    "searchTopics": "Search topics…",
     "urgent": "Urgent",
     "add": "Add",
     "addTopic": "Add {{key}} to the agenda",
     "poolEmpty": { "title": "Nothing to schedule", "body": "Topics prepared for an agenda will appear here, ready to add." },
     "agendaItems": "Agenda items",
     "agendaOrder": "Agenda order",
-    "dragHint": "Drag to reorder",
+    "dragHint": "Drag to reorder · ↑↓ keys",
     "agendaEmpty": { "title": "No items yet", "body": "Add prepared topics from the left, or drag them here to build the agenda." },
-    "timebox": "Timebox",
+    "timebox": "Time-box",
     "decTime": "Decrease timebox for {{key}}",
     "incTime": "Increase timebox for {{key}}",
     "presenter": "Presenter",
@@ -388,8 +391,8 @@
     "cancel": "Cancel",
     "publish": {
       "title": "Publish agenda",
-      "sub": "Lock the order and notify the committee.",
-      "itemsTotal": "Items on the agenda",
+      "sub": "Lock the order and notify attendees.",
+      "itemsTotal": "Items & total time",
       "confirm": "Publish & notify",
       "notifyAll": "All committee members will be notified."
     },
@@ -443,7 +446,7 @@
     "present": "Present",
     "absent": "Absent",
     "attendanceToggle": "Toggle attendance for {{name}}",
-    "attendanceSummary": "{{present}} of {{total}} present",
+    "attendanceSummary": "{{present}} of {{total}} present · {{needed}} needed",
     "quorum": {
       "met": "Quorum met",
       "notMet": "No quorum"
