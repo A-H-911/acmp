@@ -281,18 +281,25 @@ export function SubmitTopic() {
             </div>
             {errors.type && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{errors.type}</p>}
             <div className="sub-mt">
-              <Field label={t('submit.fTitle')} required error={errors.title} help={t('submit.fTitleHelp')}>
+              <Field label={t('submit.fTitle')} required error={errors.title}>
                 {(p) => (
-                  <Input
-                    {...p}
-                    value={form.title}
-                    maxLength={MAX_TITLE}
-                    placeholder={t('submit.fTitlePh')}
-                    onChange={(e) => update({ title: e.target.value })}
-                  />
+                  <>
+                    <Input
+                      {...p}
+                      aria-describedby={[p['aria-describedby'], 'sub-title-hint'].filter(Boolean).join(' ') || undefined}
+                      value={form.title}
+                      maxLength={MAX_TITLE}
+                      placeholder={t('submit.fTitlePh')}
+                      onChange={(e) => update({ title: e.target.value })}
+                    />
+                    {/* hint (start) + char counter (end) on one justified row, per the design */}
+                    <div className="sub-title-foot">
+                      <span className="sub-hint" id="sub-title-hint">{t('submit.fTitleHelp')}</span>
+                      <span className="sub-count">{form.title.length}/{MAX_TITLE}</span>
+                    </div>
+                  </>
                 )}
               </Field>
-              <div className="sub-count">{form.title.length}/{MAX_TITLE}</div>
             </div>
           </fieldset>
 
@@ -394,7 +401,7 @@ export function SubmitTopic() {
                 <button
                   key={u}
                   type="button"
-                  className={`sub-card sub-urg ${form.urgency === u ? 'selected' : ''}`}
+                  className={`sub-card sub-urg urg-${u.toLowerCase()} ${form.urgency === u ? 'selected' : ''}`}
                   aria-pressed={form.urgency === u}
                   onClick={() => update({ urgency: u })}
                 >
@@ -502,7 +509,7 @@ function FileDrop({ onFiles, label, hint }: { onFiles: (l: FileList | null) => v
       onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
     >
       <input ref={ref} type="file" multiple aria-label={label} className="visually-hidden" onChange={(e) => onFiles(e.target.files)} />
-      <div className="sub-drop-ic" aria-hidden="true"><Icon name="download" size={19} /></div>
+      <div className="sub-drop-ic" aria-hidden="true"><Icon name="upload" size={19} /></div>
       <button type="button" className="sub-drop-btn" onClick={() => ref.current?.click()}>{label}</button>
       <div className="sub-drop-hint">{hint}</div>
     </div>

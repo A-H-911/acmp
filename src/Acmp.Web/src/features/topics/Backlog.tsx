@@ -33,7 +33,7 @@ import { Pagination } from '../../components/ui/Pagination';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { Tag } from '../../components/ui/Chip';
 import { Button } from '../../components/ui/Button';
-import { LoadingState, ErrorState, EmptyState } from '../../components/states';
+import { ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
 import { statusTone, initials } from './topicMeta';
 import { Kanban } from './Kanban';
@@ -196,19 +196,19 @@ export function Backlog() {
           />
         </div>
         {data && (
-          <span className="bk-count">{t('topics.showing', { shown, total })}</span>
+          <span className="bk-count"><Icon name="backlog" size={13} aria-hidden /> {t('topics.showing', { shown, total })}</span>
         )}
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <BacklogSkeleton />
       ) : isError ? (
         <ErrorState title={t('topics.error.title')} body={t('topics.error.body')} onRetry={() => refetch()} />
       ) : !LIVE_VIEWS.has(view) ? (
         <ViewShell view={view} />
       ) : total === 0 ? (
         <div>
-          <EmptyState title={t('topics.empty.title')} body={t('topics.empty.body')} />
+          <EmptyState icon="search" title={t('topics.empty.title')} body={t('topics.empty.body')} />
           <div className="bk-empty-actions">
             <Button variant="secondary" onClick={clearFilters}>{t('topics.clearFilters')}</Button>
             <Link className="btn btn-primary" to={AREAS.submit.path}>{t('topics.newTopic')}</Link>
@@ -253,6 +253,32 @@ function ViewShell({ view }: { view: string }) {
   );
 }
 
+// Table-shaped loading skeleton (matches the design's skeleton header + shimmer rows on the grid).
+function BacklogSkeleton() {
+  const { t } = useTranslation();
+  const rowWidths = ['62%', '80%', '54%', '72%', '48%', '66%', '58%', '76%'];
+  return (
+    <div className="table-wrap" role="status" aria-busy="true">
+      <span className="visually-hidden">{t('common.loading')}</span>
+      <div className="bk-skel-head" aria-hidden="true">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <span key={i} className="skeleton bk-skel-bar" style={{ inlineSize: 54 }} />
+        ))}
+      </div>
+      {rowWidths.map((w, i) => (
+        <div key={i} className="bk-skel-row" aria-hidden="true">
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: 70 }} />
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: w }} />
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: 60 }} />
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: 50 }} />
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
+          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function UrgentMark() {
   const { t } = useTranslation();
   return (
@@ -288,7 +314,7 @@ function Age({ days, breached }: { days: number; breached: boolean }) {
 function TopicsTable({ rows, sort, onSort }: { rows: TopicSummary[]; sort: { by: string; dir: SortDir }; onSort: (id: string) => void }) {
   const { t } = useTranslation();
   const columns: Column<TopicSummary>[] = [
-    { id: 'key', header: t('topics.col.key'), width: '110px', cell: (r) => <span className="bk-key">{r.key}</span> },
+    { id: 'key', header: t('topics.col.key'), width: '112px', cell: (r) => <span className="bk-key">{r.key}</span> },
     {
       id: 'topic',
       header: t('topics.col.topic'),
@@ -300,20 +326,20 @@ function TopicsTable({ rows, sort, onSort }: { rows: TopicSummary[]; sort: { by:
         </span>
       ),
     },
-    { id: 'type', header: t('topics.col.type'), width: '130px', cell: (r) => t(`topics.type.${r.type}`) },
+    { id: 'type', header: t('topics.col.type'), width: '124px', cell: (r) => <span className="bk-type">{t(`topics.type.${r.type}`)}</span> },
     {
       id: 'streams',
       header: t('topics.col.streams'),
       width: '150px',
       cell: (r) => <span className="bk-streams">{r.streams.map((s) => <Tag key={s}>{s}</Tag>)}</span>,
     },
-    { id: 'owner', header: t('topics.col.owner'), width: '150px', cell: (r) => <Owner id={r.ownerId} name={r.ownerName} /> },
-    { id: 'status', header: t('topics.col.status'), width: '130px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`topics.status.${r.status}`)} /> },
+    { id: 'owner', header: t('topics.col.owner'), width: '140px', cell: (r) => <Owner id={r.ownerId} name={r.ownerName} /> },
+    { id: 'status', header: t('topics.col.status'), width: '104px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`topics.status.${r.status}`)} /> },
     { id: 'age', header: t('topics.col.age'), width: '96px', sortable: true, cell: (r) => <Age days={r.ageDays} breached={r.slaBreached} /> },
     {
       id: 'urgency',
       header: t('topics.col.urgency'),
-      width: '96px',
+      width: '84px',
       sortable: true,
       cell: (r) => <span className={`bk-urg ${r.urgency.toLowerCase()}`}>{t(`topics.urgency.${r.urgency}`)}</span>,
     },

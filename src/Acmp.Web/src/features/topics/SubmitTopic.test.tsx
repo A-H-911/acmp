@@ -49,7 +49,9 @@ describe('SubmitTopic (P5b)', () => {
     mockUpload.mockResolvedValue(undefined);
   });
   afterEach(() => {
-    mockUseSubmit.mockReset();
+    // Keep a valid mutation return between tests: a bare mockReset() leaves useSubmitTopic()
+    // returning undefined, which a trailing re-render reads as `.isPending` → a swallowed
+    // ErrorBoundary throw in the run log. beforeEach reassigns the return for each test.
     mockUpload.mockReset();
     void i18n.changeLanguage('en');
   });

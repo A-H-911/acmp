@@ -2,13 +2,64 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-06-26
+updated: 2026-06-27
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## P5 review remediation — design-fidelity fixes + AC-043 correction
+
+### 2026-06-27 — Fixed every finding from the pre-advance P5 audit (all severities)
+
+**Why.** A pre-advance P5 review (Topics & Backlog) flagged 3 MAJOR design-fidelity defects, a batch of MINOR
+drifts, one acceptance over-claim, and a few process items. This slice fixes all of them. Branch
+`fix/P5-review-remediation`. Visual SoT = the local `/ACMP product context/ACMP Backlog & Topic.dc.html`
+(read directly); inter-file primitive conflicts resolved by the Design System file (the documented authority).
+
+**Design fidelity.**
+- **MAJOR — detail affected-streams chips** now render in the **info** tone (blue `st-info`), matching the
+  design (systems stay neutral). Added a `tone` prop to the shared `Tag`.
+- **MAJOR — urgency selection cards** are color-coded by their **semantic urgency** (normal=info, urgent/
+  critical=danger) with a soft dot ring, not the generic accent/primary-tint (type cards keep accent).
+- **MAJOR — shared `.status-chip`** corrected to Design System §08 (**22px / pad-inline 8 / 11.5px**; was
+  24/9/12) — benefits every screen; **shared table cell padding 16→12px** to match the reference.
+- **MINOR** — backlog table column widths (key 112 / type 124 / owner 140 / status 104 / urgency 84); type &
+  age cells 12.5px; search input 34h/210w; submit fieldset 22px inline padding; **table-shaped loading
+  skeleton** (replacing the generic one); empty-state **search** icon; dropzone **upload** icon (was a
+  download/down-arrow); one-row title hint+counter (hint kept associated via `aria-describedby`); detail
+  discussion-count **badge** (was inline "(3)"); compose **avatar**; history timeline dot 11px + double ring.
+- **Copy** — backlog count → "{{total}} active topics"; autosave → "Saved · just now"; dropzone → "Drop
+  files here or click to upload" (EN+AR, parity preserved at 278).
+- **Left unchanged (Design-System authority):** shared button (38/9/13.5), input (38/12/9), segmented
+  (30/14/7) already match the DS file; the backlog screen's slightly tighter values are an inter-file delta —
+  forking the primitives would regress the DS and other screens (guardrail 11/14 reconciliation, recorded).
+
+**Acceptance correction (no silent over-claim, guardrail 11). AC-043 Met→Partial.** The kanban "M" move
+popover is a keyboard alternative for **status-bucket** moves, not the AC's literal **priority-ordinal
+move-up/down with a persisted ordinal**. Priority reordering (BL-039 within-column reorder, BL-041 ordinal +
+keyboard alt) is **deferred** to a focused follow-up; the `SortableList` primitive exists but is not yet
+wired into the backlog. Audit table + summary updated.
+
+**Process.**
+- Fixed the SubmitTopic test's swallowed `isPending` render error (`afterEach` no longer `mockReset()`s the
+  mutation mock → no undefined return on a trailing re-render). Run log is now clean of that throw.
+- **OpenTelemetry 1.10.0 → 1.12.0** (latest). The **NU1902 moderate advisory GHSA-4625-4j76-fww9 has no
+  patched release** (1.12.0 is still flagged) — **accepted**: the OTLP exporter is **internal-only egress** to
+  the bundled Seq sidecar (CON-001), and the DoD blocks only high/critical. Revisit when upstream ships a fix.
+- **Recommended, not done (flagged, not silently dropped):** the live 4-theme × 2-width render pass and
+  re-enabling axe `color-contrast` in the component tests remain confirmatory follow-ups (carried from the
+  audit; jsdom can't compute contrast).
+
+**Verification (deterministic, green).** Web **94/94** (22 files); backend **358/358** (Domain 23 ·
+Application 307 · **Architecture 8** · Api 20), 0 skipped — **module boundaries intact**; i18n parity **278**;
+`tsc -b` + vite build clean (164 kB gz JS < 300 kB budget). No new ADR (UI + dependency bump on the settled stack).
+
+**Next.** Optional live visual pass, then **P6 — Agenda & Meetings**.
 
 ---
 
