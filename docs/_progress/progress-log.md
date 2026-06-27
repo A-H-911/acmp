@@ -14,6 +14,76 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ## P6 — Agenda & meeting management
 
+### 2026-06-27 — P6c UI: Agenda builder (the design's agenda tab) wired to the Meetings API + a meetings list
+
+**Scope.** The **Agenda Builder** screen — the `isAgenda` block of the local design
+`/ACMP product context/ACMP Agenda & Meeting.dc.html` — composed from the shared component library and
+wired to the P6a Meetings API, plus a read-only **Meetings list** to reach it. The live meeting workspace
+(the design's `isMeeting` tab) is **P6d**. Branch `feat/P6-meetings`. Web **151 tests green** (was 94; +57
+across the suite — 17 new meetings tests incl. 2 axe cases), i18n parity **344**, `tsc -b` + vite build +
+oxlint clean.
+
+**Done.**
+- `api/meetings.ts` — typed hooks mirroring `api/topics.ts` (read-by-key, mutate-by-id, query invalidation):
+  `useMeetings`, `useMeetingDetail(key)`, `usePreparedTopics` (the pool), and the agenda mutations
+  (`useAddAgendaItem`/`useRemoveAgendaItem`/`useMoveAgendaItem`/`useSetTimebox`/`useAssignPresenter`/
+  `usePublishAgenda`) DRY'd through a shared `useAgendaMutation` that invalidates the meeting detail + the
+  Prepared pool on success.
+- `features/meetings/AgendaBuilder.tsx` (route `/meetings/:key`) — the design screen: breadcrumb; header
+  (title + Draft/Published `StatusChip` + when/length); a **time-budget bar** (server-summed used minutes vs
+  the meeting's scheduled duration, over/under-coloured via `--st-*`, a `role="progressbar"`); a two-column
+  grid — **left** the Prepared-topics pool (count, search, draggable Add cards, empty state) and **right** the
+  agenda items (drop zone, empty state, per-item: index, key, urgent pill, title, a **timebox −/+ stepper**, a
+  **presenter `Select`**, **move up/down**, **remove**); and the **publish confirm dialog** (items + minutes →
+  `usePublishAgenda`). Four states (loading/error/not-found/live) driven by the query.
+- **AC-044 keyboard reorder.** The move up/down buttons are the accessible reorder path (each sends a single
+  ±1 `move`), disabled at the ends, with a synchronous **`aria-live`** announce; native HTML5 drag is
+  progressive enhancement on top. Unit-tested (asserts the ±1 mutation + the announce).
+- `features/meetings/MeetingsList.tsx` (route `/meetings`, replacing the placeholder) — composed list of
+  scheduled meetings linking to each builder; honest empty state.
+- `features/meetings/meetings.css` — **logical-properties-only**, token-driven (RTL-safe by construction,
+  grep-verified: zero physical left/right/margin/padding).
+- i18n: full `meetings.*` EN+AR namespace (real Arabic, parity 344); 5 new icons lifted from the design;
+  routes wired in `App.tsx`.
+
+**Decisions / drift (design = visual SoT; package = behavior SoT; recorded in the file header comment).**
+- **Pool labeled "Scheduled topics" (design) but sourced from the PREPARED backlog** (`GET /api/topics?status=
+  Prepared`) — topics only become Scheduled when the agenda is published; items already placed are deduped out
+  of the pool (they'd otherwise show in both columns pre-publish).
+- **±1 reorder only** (the AC-044 contract): the buttons/keyboard carry the behavior; an in-agenda pointer drag
+  fires a single ±1 nudge toward the drop target, never N chained moves; a free-position drag would need an
+  absolute-index `move` variant on the backend.
+- **"Preview" button + the dialog's "notify groups" checkboxes + the RTE toolbar are mock chrome** — Preview is
+  rendered disabled; the publish dialog shows one honest "all committee members will be notified" line (the
+  backend notifies everyone unconditionally — P6b).
+- **Presenter** is an accessible shared `Select` sourced from `GET /api/members` (replaces the design's
+  avatar-cycle). A member's `publicId` **is** the `presenterUserId` the agenda stores (confirmed against the
+  MeetingsDbContext "presenter = CommitteeMember.PublicId" rule — not an assumption).
+- **Scheduling a NEW meeting is deferred** — it needs committee + chair pickers and `committeeId` isn't exposed
+  to the SPA yet; the design shows no schedule screen. The list's empty state is honest about it.
+- **No new ADR** (UI on the settled stack).
+
+**Verification (deterministic, green).** Web **151/151** (Vitest+RTL behaviour: add-from-pool, move ±1 +
+announce, timebox step, remove, publish dialog → publish, loading/empty/not-found, **+ axe WCAG 2.2 AA** on
+both new screens), i18n parity 344, `tsc -b`, vite build (138 modules), oxlint (only the pre-existing
+untouched `Toast.tsx` fast-refresh warning). **RTL-safety** confirmed deterministically (logical-CSS grep).
+**Not yet run:** the live authenticated browser pass (real `GET /api/meetings/{key}` + the agenda mutations,
+AR/RTL + dark, live axe) — recommended, and it needs a scheduled meeting (so it pairs with the deferred
+schedule flow or a seeded meeting).
+
+**Acceptance audit (this entry).** **AC-044 Partial → Met** — the keyboard-accessible agenda reorder
+(move-up/-down → ±1, disabled at ends, `aria-live` announce) is shipped and unit-tested, with the jsdom axe
+case clean; the live browser axe/RTL pass is the confirmatory step. AC-040/045/046 gain a new surface (the
+meetings screens render RTL-mirrored + axe-clean in the component tests); AC-041 stays Partial (automated VR →
+P17). AC-051/053 stay Partial → P6e.
+
+**Next.** **P6d** — the live meeting workspace (the design's `isMeeting` tab: agenda spine, attendance,
+discussion notes, actual-time; stub record-decision/create-action/call-vote → P7–P9). **P6e** — wire
+`NotificationCenter.tsx` to the live feed. Then the deferred meeting-schedule flow, the optional
+`/api/meetings` + `/api/notifications` integration tests, and the `feat/P6-meetings` PR.
+
+---
+
 ### 2026-06-27 — P6b backend: in-app Notifications module + the agenda-publish / meeting-schedule fan-out (AC-051/053 floor)
 
 **Scope.** The in-app notification floor for P6 (AC-051 + AC-053 only — preferences/digests/reminder-Hangfire/

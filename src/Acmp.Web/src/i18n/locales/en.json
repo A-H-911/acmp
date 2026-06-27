@@ -317,5 +317,63 @@
       "emptyBody": "Decisions, ADRs, actions, and risks will appear here as they’re linked to this topic in later phases."
     }
   },
+  "meetings": {
+    "title": "Meetings",
+    "listSub": "Schedule, build the agenda, and publish to the committee.",
+    "tableCaption": "Scheduled and past committee meetings",
+    "col": { "key": "Reference", "title": "Meeting", "when": "When", "chair": "Chair", "items": "Items", "status": "Status", "agenda": "Agenda" },
+    "itemCount": "{{count}} items",
+    "minutes": "{{count}} min",
+    "lengthMin": "{{count}} min",
+    "minShort": "{{count}}m",
+    "status": { "Scheduled": "Scheduled", "InProgress": "In progress", "Held": "Held", "Closed": "Closed", "Cancelled": "Cancelled" },
+    "agendaStatus": { "Draft": "Draft", "Published": "Published" },
+    "empty": { "title": "No meetings scheduled yet", "body": "Meetings will appear here once they're scheduled." },
+    "error": { "title": "Couldn't load meetings", "body": "There was a problem loading meetings. Please try again." },
+    "notFound": { "title": "Meeting not found", "body": "We couldn't find a meeting with that reference." },
+    "agendaBuilder": "Agenda builder",
+    "comingSoon": "This control will be built in a later phase.",
+    "preview": "Preview",
+    "publishNotify": "Publish & notify",
+    "budget": {
+      "title": "Time budget",
+      "over": "{{count}} min over",
+      "onBudget": "On budget",
+      "remaining": "{{count}} min remaining"
+    },
+    "scheduledTopics": "Scheduled topics",
+    "searchTopics": "Search topics",
+    "urgent": "Urgent",
+    "add": "Add",
+    "addTopic": "Add {{key}} to the agenda",
+    "poolEmpty": { "title": "Nothing to schedule", "body": "Topics prepared for an agenda will appear here, ready to add." },
+    "agendaItems": "Agenda items",
+    "agendaOrder": "Agenda order",
+    "dragHint": "Drag to reorder",
+    "agendaEmpty": { "title": "No items yet", "body": "Add prepared topics from the left, or drag them here to build the agenda." },
+    "timebox": "Timebox",
+    "decTime": "Decrease timebox for {{key}}",
+    "incTime": "Increase timebox for {{key}}",
+    "presenter": "Presenter",
+    "presenterPick": "Assign",
+    "presenterFor": "Presenter for {{key}}",
+    "moveUp": "Move {{key}} up",
+    "moveDown": "Move {{key}} down",
+    "removeItem": "Remove {{key}} from the agenda",
+    "cancel": "Cancel",
+    "publish": {
+      "title": "Publish agenda",
+      "sub": "Lock the order and notify the committee.",
+      "itemsTotal": "Items on the agenda",
+      "confirm": "Publish & notify",
+      "notifyAll": "All committee members will be notified."
+    },
+    "announce": {
+      "added": "{{key}} added to the agenda.",
+      "movedUp": "{{key}} moved up.",
+      "movedDown": "{{key}} moved down.",
+      "removed": "{{key}} removed from the agenda."
+    }
+  },
   "notFound": { "body": "We couldn't find that page." }
 }

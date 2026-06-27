@@ -1,0 +1,456 @@
+/*
+ * Meetings (P6c) — agenda builder + list. Composes shared components; only screen-specific
+ * layout/cell styling lives here. Logical properties throughout so the screens mirror under
+ * [dir="rtl"] with no per-direction overrides (guardrail 9).
+ */
+
+/* ---- shared bits ---- */
+.mt-key {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.mt-muted {
+  color: var(--text-3);
+  font-weight: 500;
+}
+.mt-col-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* ---- meetings list ---- */
+.mt-head {
+  margin-block-end: var(--sp-4);
+}
+.mt-head-sub {
+  margin-block: var(--sp-1) 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-title-link {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.mt-title-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.mt-when,
+.mt-chair,
+.mt-items {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* ---- builder header ---- */
+.mt-builder-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-4);
+}
+.mt-builder-titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+}
+.mt-builder-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-builder-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mt-builder-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* ---- time budget bar ---- */
+.mt-budget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  margin-block-end: var(--sp-4);
+  box-shadow: var(--shadow);
+}
+.mt-budget.over {
+  border-color: var(--st-danger-dot);
+}
+.mt-budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-2);
+}
+.mt-budget-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.mt-budget-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.mt-budget-figures {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-budget-figures b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.mt-budget-track {
+  block-size: 10px;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+  overflow: hidden;
+}
+.mt-budget-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--st-success-dot);
+  transition: inline-size 0.3s ease;
+}
+.mt-budget-fill.over {
+  background: var(--st-danger-dot);
+}
+
+/* ---- two-column grid ---- */
+.mt-grid {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .mt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- pool column ---- */
+.mt-pool {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: sticky;
+  inset-block-start: 74px;
+}
+.mt-pool-head {
+  padding: var(--sp-3);
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+}
+.mt-pool-titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mt-pool-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding-inline: 7px;
+}
+.mt-pool-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block-start: var(--sp-2);
+}
+.mt-pool-search > svg {
+  position: absolute;
+  inset-inline-start: 9px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.mt-pool-search input {
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 30px var(--sp-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: 12.5px;
+}
+.mt-pool-search input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-pool-list {
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-block-size: 520px;
+  overflow-y: auto;
+}
+.mt-pool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  background: var(--surface);
+  cursor: grab;
+}
+.mt-pool-card:hover {
+  border-color: var(--border-strong);
+  background: var(--subtle);
+}
+.mt-pool-grip {
+  color: var(--text-3);
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+}
+.mt-pool-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-pool-keyrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-block-end: var(--sp-1);
+}
+.mt-pool-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-block-end: var(--sp-2);
+}
+.mt-pool-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 11px;
+}
+
+/* ---- urgent markers ---- */
+.mt-urgent-ic {
+  display: inline-flex;
+  color: var(--st-danger-dot);
+}
+.mt-urgent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--st-danger-fg);
+  background: var(--st-danger-bg);
+  border-radius: var(--r-sm);
+  padding-inline: 6px;
+  padding-block: 1px;
+}
+
+/* ---- agenda drop zone ---- */
+.mt-agenda {
+  background: var(--subtle);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  min-block-size: 300px;
+}
+.mt-agenda-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-1) var(--sp-2) var(--sp-3);
+}
+.mt-drag-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.mt-agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* ---- agenda item card ---- */
+.mt-item {
+  display: flex;
+  gap: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow);
+}
+.mt-item:hover {
+  border-color: var(--border-strong);
+}
+.mt-item-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.mt-item-index {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: var(--r-md);
+  background: var(--primary-tint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mt-item-grip {
+  color: var(--text-3);
+  cursor: grab;
+}
+.mt-item-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-item-keyrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-1);
+  flex-wrap: wrap;
+}
+.mt-item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-block-end: var(--sp-3);
+}
+.mt-item-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.mt-timebox,
+.mt-presenter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mt-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.mt-step {
+  inline-size: 24px;
+  block-size: 26px;
+  border: 0;
+  background: var(--subtle);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mt-step:hover {
+  background: var(--sunken);
+}
+.mt-step-val {
+  min-inline-size: 42px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mt-presenter-pick {
+  min-inline-size: 150px;
+}
+.mt-item-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.mt-tool {
+  inline-size: 28px;
+  block-size: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mt-tool:hover:not(:disabled) {
+  background: var(--subtle);
+}
+.mt-tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mt-tool-danger:hover:not(:disabled) {
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+  border-color: var(--st-danger-bg);
+}
+
+/* ---- publish dialog body ---- */
+.mt-publish-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.mt-publish-figure {
+  color: var(--text);
+}
+.mt-publish-notify {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
