@@ -30,8 +30,11 @@ So this was a **targeted reconciliation**, not a rebuild (ponytail: smallest cor
 
 **Drifts fixed (against the updated DS).**
 - **StatusChip** was 22/8/11.5 (a prior P5 over-correction); DS §08 standalone chip = **24/9/12**. Restored
-  default to 24/9/12 and added a `size="sm"` variant (22/8/11.5) for dense **table rows** (DS §09) — the
-  Backlog table opts into `sm`, everywhere else uses the standard size.
+  default to 24/9/12 and added a `size="sm"` variant (22/8/11.5) for dense **table rows** (DS §09). **All six
+  consumers were audited and sized per context:** the dense **table cells** (Backlog table, Users & Membership
+  admin table, Meetings-list status+agenda cells) use `sm` (22); **standalone/header/card** chips (Topic-detail
+  header, Backlog list view, Agenda-builder status + budget label, Meeting workspace Live + quorum) use the
+  24/9/12 default — so the change lifts standalone chips 22→24 toward the DS and leaves dense rows at 22.
 - **TopBar global search** was missing the DS **"Ctrl K"** keyboard affordance. Added the hint chip
   (`.search-kbd`, inset-inline-end) **and wired Ctrl/⌘+K to focus the search input** (real, not decorative).
   i18n key `common.searchShortcut` (EN+AR parity).
@@ -54,9 +57,10 @@ So this was a **targeted reconciliation**, not a rebuild (ponytail: smallest cor
 - **No new ADR** (UI on the settled stack).
 
 **Verification (deterministic, green).** Web **184/184** (was 182; +2 — StatusChip size variant, TopBar
-Ctrl+K focus + hint render; i18n-parity + axe cases stay green), `tsc -b` + vite build clean (JS **173.98 kB
-gz** < 300 budget; CSS 22.64 kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx` fast-refresh
-warning). **Live bundle verified:** rebuilt `acmp-web` image and confirmed the served `index-*.css` carries
+Ctrl+K focus + hint render; axe cases stay green), `tsc -b` + vite build clean (JS **173.98 kB gz** < 300
+budget; CSS 22.64 kB gz), oxlint clean (only the pre-existing untouched `Toast.tsx` fast-refresh warning).
+**i18n parity 416/416** (no missing/extra) — maintained by the symmetric EN+AR edit; note there is **no
+automated i18n-parity test** in the suite (verified by a key-set diff, not a committed gate). **Live bundle verified:** rebuilt `acmp-web` image and confirmed the served `index-*.css` carries
 the reconciled values (`.status-chip` 24/9/12, `.status-chip-sm` 22/8/11.5, `.search-kbd`, `.brand-word` 15,
 `.icon-btn` 36).
 

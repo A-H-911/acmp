@@ -67,8 +67,8 @@ export function MeetingsList() {
     { id: 'when', header: t('meetings.col.when'), width: '200px', cell: (m) => <span className="mt-when">{fmt(m.scheduledStart)}</span> },
     { id: 'chair', header: t('meetings.col.chair'), width: '150px', cell: (m) => <span className="mt-chair">{m.chairName}</span> },
     { id: 'items', header: t('meetings.col.items'), width: '90px', cell: (m) => <span className="mt-items">{t('meetings.itemCount', { count: m.itemCount })}</span> },
-    { id: 'status', header: t('meetings.col.status'), width: '120px', cell: (m) => <StatusChip tone={meetingTone(m.status)} label={t(`meetings.status.${m.status}`, { defaultValue: m.status })} /> },
-    { id: 'agenda', header: t('meetings.col.agenda'), width: '120px', cell: (m) => <StatusChip tone={agendaTone(m.agendaStatus)} label={t(`meetings.agendaStatus.${m.agendaStatus}`, { defaultValue: m.agendaStatus })} /> },
+    { id: 'status', header: t('meetings.col.status'), width: '120px', cell: (m) => <StatusChip tone={meetingTone(m.status)} label={t(`meetings.status.${m.status}`, { defaultValue: m.status })} size="sm" /> },
+    { id: 'agenda', header: t('meetings.col.agenda'), width: '120px', cell: (m) => <StatusChip tone={agendaTone(m.agendaStatus)} label={t(`meetings.agendaStatus.${m.agendaStatus}`, { defaultValue: m.agendaStatus })} size="sm" /> },
   ];
 
   return (
