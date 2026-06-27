@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-06-26
+updated: 2026-06-27
 ---
 
 # ACMP Acceptance Audit
@@ -128,6 +128,20 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > proven live through the UI** (stays Partial pending the per-topic edit-403 path). Also makes **AC-002**'s
 > live JIT actually function (was test-proven only). See progress-log CHANGE-004.
 
+> P5-review remediation (2026-06-27): acted on the pre-advance P5 audit — fixed all flagged design-fidelity
+> defects (detail affected-streams → info-toned chips; urgency cards color-coded by semantic urgency + dot ring;
+> shared status-chip corrected to the Design-System 22/8/11.5; shared table cell padding 16→12px; backlog table
+> column widths + type/age cell sizes; search input dims; submit fieldset padding; table-shaped loading skeleton;
+> empty-state search icon; dropzone **upload** icon + "Drop files…" copy + one-row title hint/counter;
+> topic-detail discussion-count badge + compose avatar; history timeline dot ring; copy: backlog count +
+> autosave indicator) and corrected the one over-claim: **AC-043 Met→Partial** (the kanban "M" popover is a
+> keyboard alternative for *status* moves, not the AC's priority-ordinal reorder — BL-039/BL-041 deferred).
+> Shared primitives already matching the Design System (button 38/9, input 38, segmented 30) were left
+> unchanged (forking them would regress the DS + other screens). Gates: web 94/94, backend 358/358 (ArchUnit
+> 8/8), i18n parity 278, build clean. OpenTelemetry bumped 1.10→1.12 (latest; the NU1902 moderate advisory
+> GHSA-4625-4j76-fww9 has no patched release — accepted: internal-only OTLP egress, DoD permits moderate).
+> See progress-log P5-review remediation.
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
@@ -172,7 +186,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-040 | Localization | Met | i18n/direction.test.ts + axe render | dir=rtl mirrored layout — sidebar→inline-end, Arabic font, logical CSS; verified live (P3) |
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
-| AC-043 | Accessibility | Met | Kanban.test (M-move popover) + topicMeta.test | Backlog kanban: focus a card, press **M** → accessible move popover (keyboard alternative to drag); legal moves open accept/return dialogs, illegal moves are announced |
+| AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The AC's literal **priority-ordinal move-up/down with a persisted ordinal** (BL-039 within-column reorder, BL-041) is **not yet built** — deliberately deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
 | AC-044 | Accessibility | Pending | — | Keyboard DnD alt (agenda) |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
@@ -197,9 +211,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 14 Met (AC-001/002/008/031/039/040/042/043/045/046/047/050/058/059) · 20 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/048/049/057 + AC-041) · 32 Pending.
-(Through P5b PR4 — backlog kanban + accessible DnD. PR4 flipped AC-043 → Met.)
+**Summary:** 66 ACs · 13 Met (AC-001/002/008/031/039/040/042/045/046/047/050/058/059) · 21 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/043/048/049/057 + AC-041) · 32 Pending.
+(Through P5b PR4 + the 2026-06-27 P5-review remediation, which corrected AC-043 Met→Partial — the kanban
+keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and

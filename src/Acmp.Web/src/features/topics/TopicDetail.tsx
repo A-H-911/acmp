@@ -13,7 +13,7 @@
  *    static overview omitted them.
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTopicDetail, useAddTopicComment, type TopicDetail as Topic } from '../../api/topics';
@@ -22,12 +22,13 @@ import { AREAS } from '../../nav/navModel';
 import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
-import { Tag } from '../../components/ui/Chip';
+import { Tag, Badge } from '../../components/ui/Chip';
 import { Button } from '../../components/ui/Button';
 import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials } from './topicMeta';
+import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
 const TABS = ['overview', 'discussion', 'history'] as const;
@@ -63,7 +64,14 @@ export function TopicDetail() {
   const topic = data;
   const tabs = TABS.map((id) => ({
     id,
-    label: id === 'discussion' ? `${t('detail.tab.discussion')} (${topic.comments.length})` : t(`detail.tab.${id}`),
+    label:
+      id === 'discussion' ? (
+        <>
+          {t('detail.tab.discussion')} <Badge count={topic.comments.length} />
+        </>
+      ) : (
+        t(`detail.tab.${id}`)
+      ),
   }));
 
   return (
@@ -149,7 +157,7 @@ function Overview({ topic }: { topic: Topic }) {
       <Section label={t('detail.sec.justification')}><p className="dt-body">{topic.justification}</p></Section>
       <div className="dt-two">
         <Section label={t('detail.sec.streams')}>
-          <div className="bk-streams">{topic.streams.length ? topic.streams.map((s) => <Tag key={s}>{s}</Tag>) : <span className="bk-muted">—</span>}</div>
+          <div className="bk-streams">{topic.streams.length ? topic.streams.map((s) => <Tag key={s} tone="info">{s}</Tag>) : <span className="bk-muted">—</span>}</div>
         </Section>
         <Section label={t('detail.sec.systems')}>
           <div className="bk-streams">{topic.systems.length ? topic.systems.map((s) => <Tag key={s}>{s}</Tag>) : <span className="bk-muted">—</span>}</div>
@@ -178,6 +186,7 @@ function Discussion({ topic }: { topic: Topic }) {
   const { t } = useTranslation();
   const fmt = useDateFmt();
   const [body, setBody] = useState('');
+  const me = useContext(AcmpAuthContext)?.initials ?? '';
   const addComment = useAddTopicComment(topic.key);
   const post = () => {
     const text = body.trim();
@@ -201,16 +210,19 @@ function Discussion({ topic }: { topic: Topic }) {
           ))}
         </ul>
       )}
-      <div className="dt-compose">
-        <Textarea
-          rows={3}
-          aria-label={t('detail.commentLabel')}
-          placeholder={t('detail.commentPlaceholder')}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
-        <div className="dt-compose-foot">
-          <Button onClick={post} disabled={!body.trim()} loading={addComment.isPending}>{t('detail.post')}</Button>
+      <div className="dt-compose-row">
+        <span className="bk-avatar dt-compose-av" aria-hidden="true">{me}</span>
+        <div className="dt-compose">
+          <Textarea
+            rows={3}
+            aria-label={t('detail.commentLabel')}
+            placeholder={t('detail.commentPlaceholder')}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <div className="dt-compose-foot">
+            <Button onClick={post} disabled={!body.trim()} loading={addComment.isPending}>{t('detail.post')}</Button>
+          </div>
         </div>
       </div>
     </div>

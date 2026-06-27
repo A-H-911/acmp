@@ -10,6 +10,8 @@
   background: var(--subtle); border: 1px solid var(--border); border-radius: var(--r-sm);
   padding: 2px 9px;
 }
+/* Info tone — affected-stream chips on the topic-detail overview (design: blue st-info chips). */
+.tag-info { color: var(--st-info-fg); background: var(--st-info-bg); border-color: transparent; font-weight: 600; }
 .badge {
   min-inline-size: 18px; block-size: 18px; padding-inline: 6px; border-radius: 10px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -76,7 +78,8 @@
 .table-head { background: var(--header); }
 .table-head th { border-block-end: 1px solid var(--border); }
 .table-hcell {
-  block-size: 42px; padding-inline: var(--sp-4); vertical-align: middle;
+  /* Reference cells use 12px inline padding (was --sp-4=16px). */
+  block-size: 42px; padding-inline: var(--sp-3); vertical-align: middle;
   font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3);
 }
 .table-sort {
@@ -87,4 +90,4 @@
 .table-row { border-block-end: 1px solid var(--border-soft); }
 .table-row:last-child { border-block-end: 0; }
 .table-row:hover { background: var(--subtle); }
-.table-cell { padding: var(--sp-3) var(--sp-4); font-size: 13.5px; vertical-align: middle; }
+.table-cell { padding: var(--sp-3); font-size: 13.5px; vertical-align: middle; }

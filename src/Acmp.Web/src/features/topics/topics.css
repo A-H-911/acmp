@@ -59,9 +59,9 @@
   pointer-events: none;
 }
 .bk-search input {
-  height: 36px;
-  inline-size: 220px;
-  padding-inline: 32px var(--sp-3);
+  height: 34px;
+  inline-size: 210px;
+  padding-inline: 34px var(--sp-3);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -84,11 +84,29 @@
 }
 .bk-count {
   margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   /* --text-2 not --text-3: small body text must clear AA 4.5:1 (CHANGE-003 precedent). */
   color: var(--text-2);
   white-space: nowrap;
 }
+.bk-count > svg { color: var(--text-3); flex: 0 0 auto; }
+
+/* ---- loading skeleton (table-shaped, matching the design's skeleton rows) ---- */
+.bk-skel-head,
+.bk-skel-row {
+  display: grid;
+  grid-template-columns: 112px minmax(220px, 1fr) 124px 150px 140px 104px;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-inline: var(--sp-3);
+}
+.bk-skel-head { block-size: 42px; background: var(--header); border-block-end: 1px solid var(--border); }
+.bk-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
+.bk-skel-row:last-child { border-block-end: 0; }
+.bk-skel-bar { block-size: 10px; }
 
 /* ---- shared cell bits (table + list) ---- */
 .bk-key {
@@ -159,6 +177,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-2);
   font-feature-settings: 'tnum';
@@ -166,6 +185,8 @@
 .bk-age.breached {
   color: var(--st-danger-fg);
 }
+/* Type cell — design uses 12.5px text-2 (table-cell default is 13.5px). */
+.bk-type { font-size: 12.5px; color: var(--text-2); }
 .bk-urg {
   font-weight: 600;
   font-size: 12.5px;
@@ -384,14 +405,17 @@
   /* No block-start padding here: a native <legend> renders at the fieldset's top edge and ignores
      fieldset padding-top, so the heading would sit flush against the card. The 20px top breathing room
      lives on the legend instead (below). */
-  padding: 0 var(--sp-6) var(--sp-5);
+  padding: 0 22px var(--sp-5);
   border-block-end: 1px solid var(--border-soft);
 }
 .sub-fieldset-last { border-block-end: 0; }
 .sub-legend { padding: var(--sp-5) 0 0; font-size: 14px; font-weight: 600; margin-block-end: 3px; }
 .sub-sub { margin: 0 0 var(--sp-4); font-size: 12.5px; color: var(--text-3); }
 .sub-mt { margin-block-start: var(--sp-4); position: relative; }
-.sub-count { text-align: end; font-size: 11.5px; color: var(--text-3); margin-block-start: 4px; font-feature-settings: 'tnum'; }
+/* Title footer — hint (start) + char counter (end) on one justified row (design). */
+.sub-title-foot { display: flex; justify-content: space-between; gap: var(--sp-3); margin-block-start: 6px; }
+.sub-title-foot .sub-hint, .sub-title-foot .sub-count { font-size: 11.5px; color: var(--text-3); }
+.sub-title-foot .sub-count { font-feature-settings: 'tnum'; flex: 0 0 auto; }
 
 .sub-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
 .sub-cards-3 { grid-template-columns: repeat(3, 1fr); }
@@ -429,6 +453,16 @@
 .sub-urg-dot.urg-critical { background: var(--st-danger-dot); }
 .sub-urg .sub-card-title,
 .sub-urg .sub-card-desc { display: block; }
+/* Selected urgency card is color-coded by its semantic urgency (design), not the generic
+   accent/primary-tint used by type cards; the dot gains a soft colored ring. */
+.sub-urg.urg-normal.selected { border-color: var(--st-info-dot); background: color-mix(in srgb, var(--st-info-dot) 8%, var(--surface)); }
+.sub-urg.urg-urgent.selected,
+.sub-urg.urg-critical.selected { border-color: var(--st-danger-dot); background: color-mix(in srgb, var(--st-danger-dot) 8%, var(--surface)); }
+.sub-urg.urg-normal.selected .sub-urg-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-info-dot) 25%, transparent); }
+.sub-urg.urg-urgent.selected .sub-urg-dot,
+.sub-urg.urg-critical.selected .sub-urg-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-danger-dot) 25%, transparent); }
+/* Urgency card title stays neutral (design); only type cards turn accent when selected. */
+.sub-urg.selected .sub-card-title { color: var(--text); }
 
 .sub-drop {
   border: 1.5px dashed var(--border-strong);
@@ -577,7 +611,9 @@
   padding: 10px 13px;
   white-space: pre-wrap;
 }
-.dt-compose { display: flex; flex-direction: column; gap: var(--sp-2); }
+.dt-compose-row { display: flex; gap: var(--sp-3); margin-block-start: var(--sp-1); }
+.dt-compose-av { background: var(--primary); color: var(--primary-fg); inline-size: 32px; block-size: 32px; font-size: 11.5px; flex: 0 0 auto; }
+.dt-compose { display: flex; flex-direction: column; gap: var(--sp-2); flex: 1 1 auto; min-inline-size: 0; }
 .dt-compose-foot { display: flex; justify-content: flex-end; }
 
 /* history timeline */
@@ -592,13 +628,14 @@
   background: var(--border);
 }
 .dt-tl-dot {
-  inline-size: 12px;
-  block-size: 12px;
+  inline-size: 11px;
+  block-size: 11px;
   border-radius: var(--r-full);
   flex: 0 0 auto;
   margin-block-start: 2px;
   z-index: 1;
-  box-shadow: 0 0 0 3px var(--bg-app);
+  /* Design: double halo — surface ring + border ring — so dots read above the connector line. */
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--border);
   background: var(--st-neutral-dot);
 }
 .dt-tl-dot.tone-neutral { background: var(--st-neutral-dot); }

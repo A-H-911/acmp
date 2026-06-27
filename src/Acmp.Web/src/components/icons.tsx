@@ -12,7 +12,7 @@ export type IconName =
   | 'search' | 'bell' | 'globe' | 'sun' | 'moon' | 'eye' | 'doc' | 'alertCircle' | 'lock'
   | 'plus' | 'chevron' | 'chevronDown' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
   | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle'
-  | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'funnel';
+  | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -59,6 +59,7 @@ const PATHS: Record<IconName, ReactNode> = {
   viewKanban: <path d="M4 4h5v16H4zM10 4h5v10h-5zM16 4h4v13h-4z" />,
   viewTimeline: <path d="M3 12h4l3-8 4 16 3-8h4" />,
   download: <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />,
+  upload: <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />,
   funnel: <path d="M5 4h14M7 4v6l-3 8h16l-3-8V4" />,
 };
 

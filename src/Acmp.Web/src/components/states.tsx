@@ -5,7 +5,7 @@
  */
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Icon } from './icons';
+import { Icon, type IconName } from './icons';
 import { Button } from './ui/Button';
 
 interface StateProps {
@@ -27,9 +27,9 @@ function StateShell({ title, body, icon, action, tone = 'default' }: StateProps)
   );
 }
 
-export function EmptyState({ title, body }: { title?: string; body?: string }) {
+export function EmptyState({ title, body, icon }: { title?: string; body?: string; icon?: IconName }) {
   const { t } = useTranslation();
-  return <StateShell icon={<Icon name="doc" size={20} />} title={title ?? t('state.emptyTitle')} body={body ?? t('state.emptyBody')} />;
+  return <StateShell icon={<Icon name={icon ?? 'doc'} size={20} />} title={title ?? t('state.emptyTitle')} body={body ?? t('state.emptyBody')} />;
 }
 
 export function LoadingState({ label }: { label?: string }) {
