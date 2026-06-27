@@ -63,7 +63,9 @@
 .fchip svg { flex: 0 0 auto; }
 .fchip-count {
   font-size: 10.5px; font-weight: 700; line-height: 1;
-  background: var(--accent); color: #fff; border-radius: 8px; padding: 2px 6px;
+  /* --primary (not --accent) so white text clears AA in BOTH themes: dark-mode --accent is light
+     (#6db0ee) and would drop white to ~2.3:1; --primary stays mid-blue (≥6.4:1 with --primary-fg). */
+  background: var(--primary); color: var(--primary-fg); border-radius: 8px; padding: 2px 6px;
   font-feature-settings: 'tnum';
 }
 
