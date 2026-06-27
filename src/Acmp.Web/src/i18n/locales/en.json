@@ -3,6 +3,7 @@
   "common": {
     "search": "Search",
     "searchPlaceholder": "Search topics, decisions, ADRs, actions…",
+    "searchShortcut": "Ctrl K",
     "switchTo": "Switch to {{lang}}",
     "english": "English",
     "arabic": "العربية",

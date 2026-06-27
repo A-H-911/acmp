@@ -141,7 +141,7 @@ function Directory({ members, isArabic }: { members: Member[]; isArabic: boolean
       id: 'status',
       header: t('admin.col.status'),
       width: '15%',
-      cell: (m) => <StatusChip tone={STATUS_TONE[m.status] ?? 'neutral'} label={t(`admin.status.${m.status.toLowerCase()}`)} />,
+      cell: (m) => <StatusChip tone={STATUS_TONE[m.status] ?? 'neutral'} label={t(`admin.status.${m.status.toLowerCase()}`)} size="sm" />,
     },
   ];
 

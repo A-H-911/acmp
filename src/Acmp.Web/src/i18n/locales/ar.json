@@ -3,6 +3,7 @@
   "common": {
     "search": "بحث",
     "searchPlaceholder": "ابحث في المواضيع والقرارات والسجلات والإجراءات…",
+    "searchShortcut": "Ctrl K",
     "switchTo": "التبديل إلى {{lang}}",
     "english": "English",
     "arabic": "العربية",

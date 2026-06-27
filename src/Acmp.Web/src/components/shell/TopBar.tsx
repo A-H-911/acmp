@@ -5,7 +5,7 @@
  * and a Log out item (OIDC end-session against the self-hosted Keycloak realm,
  * ADR-0015). Present on every page.
  */
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
@@ -30,6 +30,7 @@ export function TopBar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const otherLang = i18n.language === 'ar' ? 'en' : 'ar';
   const roleLabel = roles[0] ? t(`role.${roles[0]}`) : '';
@@ -41,6 +42,18 @@ export function TopBar() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [profileOpen]);
+
+  // Ctrl/⌘+K focuses global search — makes the keyboard hint real, not decorative.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +80,7 @@ export function TopBar() {
       <form className="search" role="search" onSubmit={onSearch}>
         <span className="search-icon"><Icon name="search" size={16} /></span>
         <input
+          ref={searchRef}
           className="search-input"
           type="search"
           aria-label={t('common.searchPlaceholder')}
@@ -74,6 +88,7 @@ export function TopBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <span className="search-kbd" aria-hidden="true">{t('common.searchShortcut')}</span>
       </form>
 
       <div className="topbar-spacer" />

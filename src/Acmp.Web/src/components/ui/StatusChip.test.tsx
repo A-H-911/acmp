@@ -11,4 +11,11 @@ describe('StatusChip', () => {
     // A dot accompanies the label so status doesn't rely on color alone.
     expect(container.querySelector('.status-chip-dot')).toBeInTheDocument();
   });
+
+  it('defaults to the standard size and opts into the dense (sm) variant', () => {
+    const { container, rerender } = render(<StatusChip tone="info" label="Accepted" />);
+    expect(container.querySelector('.status-chip')).not.toHaveClass('status-chip-sm');
+    rerender(<StatusChip tone="info" label="Accepted" size="sm" />);
+    expect(container.querySelector('.status-chip')).toHaveClass('status-chip-sm');
+  });
 });
