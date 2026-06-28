@@ -11,6 +11,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
 import type { PagedResult, TopicSummary } from './topics';
 
+/** Meeting type + mode (wire = enum names; localized in the UI). */
+export type MeetingType = 'Regular' | 'Extraordinary';
+export type MeetingMode = 'InPerson' | 'Hybrid' | 'Remote';
+
 export interface MeetingSummary {
   id: string;
   key: string;
@@ -18,6 +22,8 @@ export interface MeetingSummary {
   scheduledStart: string;
   scheduledEnd: string;
   status: string;
+  type: string;
+  mode: string;
   chairName: string;
   itemCount: number;
   agendaStatus: string;
@@ -73,6 +79,8 @@ export interface MeetingDetail {
   scheduledStart: string;
   scheduledEnd: string;
   status: string;
+  type: string;
+  mode: string;
   location: string | null;
   joinUrl: string | null;
   chairUserId: string;
@@ -97,6 +105,8 @@ export interface ScheduleMeetingInput {
   chairName: string;
   scheduledStart: string; // ISO 8601
   scheduledEnd: string; // ISO 8601
+  type: MeetingType;
+  mode: MeetingMode;
   location?: string;
   joinUrl?: string;
 }

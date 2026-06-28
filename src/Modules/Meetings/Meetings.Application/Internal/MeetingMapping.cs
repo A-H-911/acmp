@@ -24,6 +24,6 @@ internal static class MeetingMapping
 
     public static MeetingSummaryDto ToSummary(Meeting meeting, Agenda? agenda) => new(
         meeting.PublicId, meeting.Key, meeting.Title, meeting.ScheduledStart, meeting.ScheduledEnd,
-        meeting.Status.ToString(), meeting.ChairName,
+        meeting.Status.ToString(), meeting.Type.ToString(), meeting.Mode.ToString(), meeting.ChairName,
         agenda?.Items.Count ?? 0, (agenda?.Status ?? AgendaStatus.Draft).ToString());
 }

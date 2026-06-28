@@ -27,6 +27,8 @@ public sealed class Meeting : AuditableEntity
     public DateTimeOffset ScheduledStart { get; private set; }
     public DateTimeOffset ScheduledEnd { get; private set; }
     public MeetingStatus Status { get; private set; }
+    public MeetingType Type { get; private set; }
+    public MeetingMode Mode { get; private set; }
     public string? Location { get; private set; }
     public string? JoinUrl { get; private set; }
     public Guid ChairUserId { get; private set; }             // CommitteeMember.PublicId
@@ -47,6 +49,7 @@ public sealed class Meeting : AuditableEntity
     public static Meeting Schedule(string key, string title, Guid committeeId,
         Guid chairUserId, string chairName,
         DateTimeOffset scheduledStart, DateTimeOffset scheduledEnd,
+        MeetingType type, MeetingMode mode,
         string? location, string? joinUrl, DateTimeOffset now)
     {
         if (string.IsNullOrWhiteSpace(title)) throw new InvalidOperationException("A meeting title is required.");
@@ -62,6 +65,8 @@ public sealed class Meeting : AuditableEntity
             ChairName = chairName.Trim(),
             ScheduledStart = scheduledStart,
             ScheduledEnd = scheduledEnd,
+            Type = type,
+            Mode = mode,
             Location = Clean(location),
             JoinUrl = Clean(joinUrl),
             Status = MeetingStatus.Scheduled,

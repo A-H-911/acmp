@@ -5,13 +5,10 @@ import { MeetingsList } from './MeetingsList';
 import { renderWithAuth } from '../../test/render';
 import type { MeetingSummary } from '../../api/meetings';
 
-// MeetingsList mounts ScheduleMeetingDialog (which calls useScheduleMeeting + useMembers
-// unconditionally, even while closed), so both must be stubbed here.
+// The list links/navigates to the full-page Schedule screen (/meetings/new); no dialog mounts here.
 vi.mock('../../api/meetings', () => ({
   useMeetings: vi.fn(),
-  useScheduleMeeting: vi.fn(() => ({ mutate: vi.fn(), isPending: false, isError: false })),
 }));
-vi.mock('../../api/members', () => ({ useMembers: vi.fn(() => ({ data: [], isLoading: false, isError: false })) }));
 import { useMeetings } from '../../api/meetings';
 
 const mockMeetings = useMeetings as unknown as Mock;
@@ -23,11 +20,13 @@ function result(over: Partial<ReturnType<typeof useMeetings>>) {
 const MEETINGS: MeetingSummary[] = [
   {
     id: 'm1', key: 'MTG-2026-019', title: 'Q2 Architecture Review', scheduledStart: '2026-06-30T09:00:00Z',
-    scheduledEnd: '2026-06-30T10:30:00Z', status: 'Scheduled', chairName: 'Sara K', itemCount: 4, agendaStatus: 'Draft',
+    scheduledEnd: '2026-06-30T10:30:00Z', status: 'Scheduled', type: 'Regular', mode: 'InPerson',
+    chairName: 'Sara K', itemCount: 4, agendaStatus: 'Draft',
   },
   {
     id: 'm2', key: 'MTG-2026-012', title: 'Identity strategy session', scheduledStart: '2026-05-12T09:00:00Z',
-    scheduledEnd: '2026-05-12T10:00:00Z', status: 'Held', chairName: 'Sara K', itemCount: 3, agendaStatus: 'Published',
+    scheduledEnd: '2026-05-12T10:00:00Z', status: 'Held', type: 'Extraordinary', mode: 'Remote',
+    chairName: 'Sara K', itemCount: 3, agendaStatus: 'Published',
   },
 ];
 

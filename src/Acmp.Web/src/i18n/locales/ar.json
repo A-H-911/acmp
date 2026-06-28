@@ -355,12 +355,23 @@
       "startLabel": "يبدأ",
       "endLabel": "ينتهي",
       "windowInvalid": "يجب أن يكون وقت الانتهاء بعد وقت البدء.",
+      "typeLabel": "النوع",
+      "modeLabel": "النمط",
       "locationLabel": "المكان",
       "locationPlaceholder": "مثال: قاعة الاجتماعات أ أو عبر الإنترنت",
       "joinLabel": "رابط الانضمام",
       "joinPlaceholder": "https://…",
       "confirm": "جدولة",
       "failed": "تعذّرت جدولة الاجتماع. حاول مرة أخرى."
+    },
+    "meetingType": {
+      "Regular": "عادي",
+      "Extraordinary": "استثنائي"
+    },
+    "meetingMode": {
+      "InPerson": "حضوري",
+      "Hybrid": "مختلط",
+      "Remote": "عن بُعد"
     },
     "tableCaption": "اجتماعات اللجنة المجدولة والسابقة",
     "col": { "key": "المرجع", "title": "الاجتماع", "when": "الموعد", "chair": "الرئيس", "items": "العناصر", "status": "الحالة", "agenda": "جدول الأعمال" },

@@ -32,10 +32,14 @@
   font-size: 13px;
   color: var(--text-2);
 }
-/* Schedule-meeting dialog form */
+/* Schedule-meeting form (full page — design isCreate, max-width 680 card). */
 .mt-schedule-form { display: flex; flex-direction: column; gap: var(--sp-4); }
-.mt-schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.mt-schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .mt-schedule-error { margin: 0; font-size: 12.5px; color: var(--st-danger-fg); }
+.mt-schedule-page { max-inline-size: 680px; }
+.mt-schedule-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; }
+.mt-schedule-actions { display: flex; justify-content: flex-end; gap: 9px; margin-block-start: 16px; }
+@media (max-width: 560px) { .mt-schedule-row { grid-template-columns: 1fr; } }
 .mt-title-link {
   color: var(--text);
   font-weight: 600;

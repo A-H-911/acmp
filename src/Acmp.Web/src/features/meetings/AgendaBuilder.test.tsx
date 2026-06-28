@@ -43,7 +43,7 @@ let addSpy: Mock, removeSpy: Mock, moveSpy: Mock, timeboxSpy: Mock, presenterSpy
 const MEETING: MeetingDetail = {
   id: 'm1', key: 'MTG-2026-019', title: 'Q2 Architecture Review', committeeId: 'c1',
   scheduledStart: '2026-06-30T09:00:00Z', scheduledEnd: '2026-06-30T10:30:00Z', // 90 min
-  status: 'Scheduled', location: null, joinUrl: null, chairUserId: 'u1', chairName: 'Sara K', startedAt: null, heldAt: null,
+  status: 'Scheduled', type: 'Regular', mode: 'InPerson', location: null, joinUrl: null, chairUserId: 'u1', chairName: 'Sara K', startedAt: null, heldAt: null,
   agenda: {
     id: 'a1', key: 'AGD-2026-019', status: 'Draft', version: 1, totalTimeboxMinutes: 35, publishedAt: null,
     items: [

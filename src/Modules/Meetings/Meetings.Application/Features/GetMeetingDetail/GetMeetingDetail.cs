@@ -31,6 +31,7 @@ public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQu
         return new MeetingDetailDto(
             meeting.PublicId, meeting.Key, meeting.Title, meeting.CommitteeId,
             meeting.ScheduledStart, meeting.ScheduledEnd, meeting.Status.ToString(),
+            meeting.Type.ToString(), meeting.Mode.ToString(),
             meeting.Location, meeting.JoinUrl, meeting.ChairUserId, meeting.ChairName,
             meeting.StartedAt, meeting.HeldAt,
             agenda is null ? null : MeetingMapping.ToDto(agenda),
