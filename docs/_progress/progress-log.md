@@ -12,6 +12,40 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 agenda viewer (read-only) — design "Agenda preview" card (`ACMP Meetings.dc.html`, isOverview)
+
+### 2026-06-28 — Read-only agenda viewer ported to the isOverview preview-card anatomy + head status-chip fix
+
+**Why.** The read-only agenda (rendered when an agenda is Published/Locked/Closed or the meeting has started)
+reused the editable builder rows with controls stripped — anatomy-divergent. Replaced with a dedicated viewer
+matching the design's "Agenda preview" card (`ACMP Meetings.dc.html` isOverview, ~L263): one card
+(`overflow:hidden`, 12px radius), flat rows split by `--border-soft`, a 22px round number, title-over-presenter,
+and a mono timebox. Literal-px throughout (verified by computed-style gate, not just pixel-diff). The dead
+`readOnly` path threaded through `AgendaItemRow` + its `.mt-item-readonly` / `.mt-grid-readonly` CSS were
+deleted (one read-only impl, not two).
+
+**Bug fixed.** The meeting-detail head status chip was a binary `Published ? success/Published : warn/Draft`
+check, not `readOnly`-gated — so Locked/Closed agendas (both render the viewer) mislabelled as **"Draft"/warn**.
+Extracted the 4-tone `agendaTone` helper (#31) to a shared `agendaStatus.ts` and reused it in the head and the
+meetings list. Verified live: a Locked agenda now reads "Locked"/info.
+
+**Decisions (operator GO, 2026-06-28).**
+- **Budget bar kept** in the viewer — the design's read-only alternative is a readiness sidebar needing data we
+  don't have; the bar sits above the preview card and still flags an over-run agenda. Card fidelity untouched.
+- **Topic key re-added** on the row's secondary line (`KEY · presenter`, mono) — deliberate deviation from the
+  design preview row (no key) for traceability: a Locked/Closed agenda is an official record, so the canonical
+  TOP-YYYY-### must stay visible (CLAUDE.md). Urgent/icons stay dropped per design.
+
+**Verified.** computed-style px all match design literals; EN + AR (RTL mirror) + tablet (no overflow);
+`AgendaBuilder.test.tsx` 16 tests (added: preview anatomy + key; Locked head-chip regression); axe-clean
+viewer; i18n parity 475; build 178kB gz; oxlint 0. **No AC verdict change** — the viewer is design-fidelity and
+the head-chip fix corrects status display; no `AC-###` flips.
+
+**Next.** Minutes + Recording tabs (refs: `ACMP Agenda & Meeting.dc.html` isMinutes; `ACMP Meetings.dc.html`
+isRecording); then rest of PR-B (notifications full-page, meetings list/calendar).
+
+---
+
 ## P6 meeting workspace — design-fidelity reconciliation (`ACMP Agenda & Meeting.dc.html`, isMeeting)
 
 ### 2026-06-28 — Notes editor, action row, captured card to design anatomy + deferred concern

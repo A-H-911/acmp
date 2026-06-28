@@ -1089,18 +1089,100 @@
 .mt-lifecycle-cancelled .mt-lifecycle-icon,
 .mt-lifecycle-cancelled .mt-lifecycle-title { color: var(--st-neutral-fg); }
 
-/* Agenda viewer (read-only) — single column (no pool), static item controls. */
-.mt-grid-readonly { grid-template-columns: 1fr; }
-.mt-item-controls-readonly {
-  display: flex;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
-  color: var(--text-2);
-  font-size: 12px;
+/* Agenda viewer (read-only) — design "Agenda preview" card (ACMP Meetings.dc.html isOverview ~L263).
+   One card, flat rows split by border-soft, 22px round number, title-over-presenter, mono timebox.
+   Literal px from the mock; tokens only where they already equal the design value. */
+.mt-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl); /* design literal: .card = 12px */
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
-.mt-item-controls-readonly .mt-timebox,
-.mt-item-controls-readonly .mt-presenter {
-  display: inline-flex;
+.mt-preview-head {
+  display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  justify-content: space-between;
+  padding: 13px 16px; /* design literal */
+  border-bottom: 1px solid var(--border-soft);
+}
+.mt-preview-title {
+  margin: 0;
+  font-size: 14px; /* design literal */
+  font-weight: 700;
+}
+.mt-preview-meta {
+  font-size: 11.5px; /* design literal */
+  color: var(--text-3);
+}
+.mt-preview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mt-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* design literal */
+  padding: 12px 16px; /* design literal */
+  border-bottom: 1px solid var(--border-soft);
+}
+.mt-preview-num {
+  inline-size: 22px; /* design literal */
+  block-size: 22px;
+  border-radius: 50%;
+  background: var(--subtle);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px; /* design literal */
+  font-weight: 700;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+.mt-preview-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-preview-itemtitle {
+  display: block;
+  font-size: 13px; /* design literal */
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Secondary line: topic key (re-added for traceability) · presenter. Design row is just the
+   presenter; the key is our deliberate deviation (see AgendaPreview comment). */
+.mt-preview-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-inline-size: 0;
+}
+.mt-preview-key {
+  font-family: var(--mono);
+  font-size: 11.5px; /* design literal (matches presenter line size) */
+  color: var(--text-2);
+  flex: 0 0 auto;
+}
+.mt-preview-dot {
+  color: var(--text-3);
+  flex: 0 0 auto;
+}
+.mt-preview-presenter {
+  font-size: 11.5px; /* design literal */
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-inline-size: 0;
+}
+.mt-preview-box {
+  font-family: var(--mono);
+  font-size: 11.5px; /* design literal */
+  color: var(--text-2);
+  flex: 0 0 auto;
 }
