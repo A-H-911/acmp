@@ -2,6 +2,7 @@
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Modules.Meetings.Domain;
+using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -22,6 +23,8 @@ public sealed record ScheduleMeetingCommand(
     string ChairName,
     DateTimeOffset ScheduledStart,
     DateTimeOffset ScheduledEnd,
+    MeetingType Type,
+    MeetingMode Mode,
     string? Location,
     string? JoinUrl) : IRequest<MeetingSummaryDto>, IAuthorizedRequest
 {
@@ -35,6 +38,8 @@ public sealed class ScheduleMeetingValidator : AbstractValidator<ScheduleMeeting
         RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
         RuleFor(x => x.ChairUserId).NotEmpty().WithMessage("A chair must be assigned.");
         RuleFor(x => x.ChairName).NotEmpty();
+        RuleFor(x => x.Type).IsInEnum();
+        RuleFor(x => x.Mode).IsInEnum();
         RuleFor(x => x.ScheduledEnd).GreaterThan(x => x.ScheduledStart)
             .WithMessage("Meeting end must be after its start.");
     }
@@ -71,7 +76,7 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
         var meetingKey = await _keys.NextMeetingKeyAsync(now.Year, ct);
         var meeting = Meeting.Schedule(meetingKey, request.Title, Meeting.SingleCommitteeId,
             request.ChairUserId, request.ChairName, request.ScheduledStart, request.ScheduledEnd,
-            request.Location, request.JoinUrl, now);
+            request.Type, request.Mode, request.Location, request.JoinUrl, now);
 
         var agendaKey = await _keys.NextAgendaKeyAsync(now.Year, ct);
         var agenda = Agenda.Draft(agendaKey, meeting.PublicId);

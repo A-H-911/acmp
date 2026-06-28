@@ -355,12 +355,23 @@
       "startLabel": "Starts",
       "endLabel": "Ends",
       "windowInvalid": "The end time must be after the start time.",
+      "typeLabel": "Type",
+      "modeLabel": "Mode",
       "locationLabel": "Location",
       "locationPlaceholder": "e.g. Boardroom A or online",
       "joinLabel": "Join URL",
       "joinPlaceholder": "https://…",
       "confirm": "Schedule",
       "failed": "Couldn't schedule the meeting. Please try again."
+    },
+    "meetingType": {
+      "Regular": "Regular",
+      "Extraordinary": "Extraordinary"
+    },
+    "meetingMode": {
+      "InPerson": "In person",
+      "Hybrid": "Hybrid",
+      "Remote": "Remote"
     },
     "tableCaption": "Scheduled and past committee meetings",
     "col": { "key": "Reference", "title": "Meeting", "when": "When", "chair": "Chair", "items": "Items", "status": "Status", "agenda": "Agenda" },

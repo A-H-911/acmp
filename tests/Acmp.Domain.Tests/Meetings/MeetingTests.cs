@@ -13,7 +13,7 @@ public class MeetingTests
 
     private static Meeting Scheduled() => Meeting.Schedule(
         "MTG-2026-019", "Weekly Architecture Committee", Committee, Chair, "S. M.",
-        Now, Now.AddMinutes(90), location: null, joinUrl: null, Now);
+        Now, Now.AddMinutes(90), MeetingType.Regular, MeetingMode.InPerson, location: null, joinUrl: null, Now);
 
     [Fact]
     public void Schedule_starts_Scheduled_and_raises_event()
@@ -28,13 +28,13 @@ public class MeetingTests
     [Fact]
     public void Schedule_requires_end_after_start_a_title_and_a_chair()
     {
-        var badWindow = () => Meeting.Schedule("MTG-2026-020", "T", Committee, Chair, "S. M.", Now, Now, null, null, Now);
+        var badWindow = () => Meeting.Schedule("MTG-2026-020", "T", Committee, Chair, "S. M.", Now, Now, MeetingType.Regular, MeetingMode.InPerson, null, null, Now);
         badWindow.Should().Throw<InvalidOperationException>().WithMessage("*end*");
 
-        var noTitle = () => Meeting.Schedule("MTG-2026-020", "  ", Committee, Chair, "S. M.", Now, Now.AddMinutes(60), null, null, Now);
+        var noTitle = () => Meeting.Schedule("MTG-2026-020", "  ", Committee, Chair, "S. M.", Now, Now.AddMinutes(60), MeetingType.Regular, MeetingMode.InPerson, null, null, Now);
         noTitle.Should().Throw<InvalidOperationException>().WithMessage("*title*");
 
-        var noChair = () => Meeting.Schedule("MTG-2026-020", "T", Committee, Guid.Empty, "S. M.", Now, Now.AddMinutes(60), null, null, Now);
+        var noChair = () => Meeting.Schedule("MTG-2026-020", "T", Committee, Guid.Empty, "S. M.", Now, Now.AddMinutes(60), MeetingType.Regular, MeetingMode.InPerson, null, null, Now);
         noChair.Should().Throw<InvalidOperationException>().WithMessage("*chair*");
     }
 

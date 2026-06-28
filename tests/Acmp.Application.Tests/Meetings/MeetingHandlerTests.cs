@@ -78,7 +78,8 @@ public class MeetingHandlerTests
     private static INotificationChannel NoNotify() => Substitute.For<INotificationChannel>();
 
     private static ScheduleMeetingCommand ScheduleCmd() => new(
-        "Weekly Architecture Committee", Chair, "S. M.", Now, Now.AddMinutes(90), null, null);
+        "Weekly Architecture Committee", Chair, "S. M.", Now, Now.AddMinutes(90),
+        MeetingType.Regular, MeetingMode.InPerson, null, null);
 
     // Schedules a meeting and returns (db, meetingId).
     private static async Task<(MeetingsDbContext Db, Guid MeetingId)> ScheduledMeetingAsync(ICurrentUser user, IClock clock)

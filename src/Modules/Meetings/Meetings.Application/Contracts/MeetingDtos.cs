@@ -11,6 +11,8 @@ public sealed record MeetingSummaryDto(
     DateTimeOffset ScheduledStart,
     DateTimeOffset ScheduledEnd,
     string Status,
+    string Type,
+    string Mode,
     string ChairName,
     int ItemCount,
     string AgendaStatus);
@@ -58,6 +60,8 @@ public sealed record MeetingDetailDto(
     DateTimeOffset ScheduledStart,
     DateTimeOffset ScheduledEnd,
     string Status,
+    string Type,
+    string Mode,
     string? Location,
     string? JoinUrl,
     Guid ChairUserId,

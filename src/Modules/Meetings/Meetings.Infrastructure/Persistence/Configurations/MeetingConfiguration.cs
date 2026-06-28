@@ -22,6 +22,8 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         b.Property(x => x.ScheduledStart).IsRequired();
         b.Property(x => x.ScheduledEnd).IsRequired();
         b.Property(x => x.Status).HasConversion<int>().IsRequired();
+        b.Property(x => x.Type).HasConversion<int>().IsRequired();
+        b.Property(x => x.Mode).HasConversion<int>().IsRequired();
         b.Property(x => x.Location).HasMaxLength(512);
         b.Property(x => x.JoinUrl).HasMaxLength(1024);
         b.Property(x => x.ChairUserId);

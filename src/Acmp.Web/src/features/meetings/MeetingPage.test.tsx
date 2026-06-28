@@ -29,7 +29,7 @@ function meeting(over: Partial<MeetingDetail> = {}): MeetingDetail {
   return {
     id: 'm1', key: 'MTG-2026-019', title: 'Q2 Architecture Review', committeeId: 'c1',
     scheduledStart: '2026-06-30T09:00:00Z', scheduledEnd: '2026-06-30T10:30:00Z',
-    status: 'Scheduled', location: null, joinUrl: null, chairUserId: 'u1', chairName: 'Sara K',
+    status: 'Scheduled', type: 'Regular', mode: 'InPerson', location: null, joinUrl: null, chairUserId: 'u1', chairName: 'Sara K',
     startedAt: null, heldAt: null,
     agenda: publishedAgenda,
     attendance: [], discussions: [],

@@ -11,8 +11,7 @@
  *  - Meeting/topic titles are user content in a single language; only chrome is i18n'd.
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMeetings, type MeetingSummary } from '../../api/meetings';
 import { Breadcrumb } from '../../components/ui/Breadcrumb';
@@ -21,7 +20,6 @@ import { Table, type Column } from '../../components/ui/Table';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
-import { ScheduleMeetingDialog } from './ScheduleMeetingDialog';
 import './meetings.css';
 
 function meetingTone(status: string): StatusTone {
@@ -49,9 +47,9 @@ function useDateFmt() {
 
 export function MeetingsList() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const fmt = useDateFmt();
   const { data, isLoading, isError, refetch } = useMeetings();
-  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   const columns: Column<MeetingSummary>[] = [
     { id: 'key', header: t('meetings.col.key'), width: '128px', cell: (m) => <span className="mt-key">{m.key}</span> },
@@ -80,7 +78,7 @@ export function MeetingsList() {
           <h1 className="page-title">{t('meetings.title')}</h1>
           <p className="mt-head-sub">{t('meetings.listSub')}</p>
         </div>
-        <Button onClick={() => setScheduleOpen(true)}>
+        <Button onClick={() => navigate('/meetings/new')}>
           <Icon name="plus" size={15} aria-hidden /> {t('meetings.schedule.action')}
         </Button>
       </div>
@@ -94,8 +92,6 @@ export function MeetingsList() {
       ) : (
         <Table caption={t('meetings.tableCaption')} columns={columns} rows={data} getRowKey={(m) => m.id} />
       )}
-
-      <ScheduleMeetingDialog open={scheduleOpen} onClose={() => setScheduleOpen(false)} />
     </section>
   );
 }

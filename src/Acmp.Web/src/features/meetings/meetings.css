@@ -32,10 +32,14 @@
   font-size: 13px;
   color: var(--text-2);
 }
-/* Schedule-meeting dialog form */
+/* Schedule-meeting form (full page — design isCreate, max-width 680 card). */
 .mt-schedule-form { display: flex; flex-direction: column; gap: var(--sp-4); }
-.mt-schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.mt-schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .mt-schedule-error { margin: 0; font-size: 12.5px; color: var(--st-danger-fg); }
+.mt-schedule-page { max-inline-size: 680px; }
+.mt-schedule-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; }
+.mt-schedule-actions { display: flex; justify-content: flex-end; gap: 9px; margin-block-start: 16px; }
+@media (max-width: 560px) { .mt-schedule-row { grid-template-columns: 1fr; } }
 .mt-title-link {
   color: var(--text);
   font-weight: 600;
@@ -1047,11 +1051,6 @@
    ACMP Meetings.dc.html lifecycle banner (line 258): gap 11 · pad 13/15 · radius 11 · margin-end 16 ·
    border = color-mix(st-fg 22%) · title 13.5/600 st-fg · body 12.5 text-2. notReady=warn,
    inProgress=info, concluded=success, cancelled=neutral. */
-/* Breadcrumb → state banner / tabs gap (design Meetings overview: breadcrumb mb 12px).
-   Scoped to the meeting detail page so other pages keep their own rhythm. */
-.mt-detail .breadcrumb {
-  margin-block-end: 12px;
-}
 .mt-lifecycle {
   display: flex;
   align-items: flex-start;
