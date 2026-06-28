@@ -122,4 +122,28 @@ public class NotificationsApiTests
         var response = await Client(factory, "Member", sub: "kc-omar").PostAsync($"/api/notifications/{Guid.NewGuid()}/read", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact] // full-page center (#79): GET pages the feed, and POST /read-all clears the caller's unread
+    public async Task Get_supports_paging_and_read_all_clears_unread()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(
+            ("kc-omar", "Omar H.", CommitteeRole.Member),
+            ("kc-lena", "Lena K.", CommitteeRole.Member));
+        await PublishAgendaAsync(factory);
+        await PublishAgendaAsync(factory); // two publishes → two notifications for Omar
+
+        var omar = Client(factory, "Member", sub: "kc-omar");
+
+        // pageSize=1 returns a single item even though more exist; the unread total is the full count
+        // (the page does not cap the badge), so paging is observable.
+        var page1 = await (await omar.GetAsync("/api/notifications?page=1&pageSize=1")).Content.ReadFromJsonAsync<NotificationList>();
+        page1!.Items.Should().HaveCount(1);
+        page1.UnreadCount.Should().BeGreaterThan(1);
+
+        // mark all read → the caller's unread count drops to zero.
+        (await omar.PostAsync("/api/notifications/read-all", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        var after = await (await omar.GetAsync("/api/notifications")).Content.ReadFromJsonAsync<NotificationList>();
+        after!.UnreadCount.Should().Be(0);
+    }
 }

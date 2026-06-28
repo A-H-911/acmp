@@ -14,13 +14,19 @@ public static class NotificationsEndpoints
     {
         var group = app.MapGroup("/api/notifications").WithTags("Notifications").RequireAuthorization();
 
-        group.MapGet("/", async (ISender sender, CancellationToken ct) =>
-            Results.Ok(await sender.Send(new GetNotificationsQuery(), ct)));
+        group.MapGet("/", async (int? page, int? pageSize, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new GetNotificationsQuery(page ?? 1, pageSize ?? 20), ct)));
 
         group.MapPost("/{id:guid}/read", async (Guid id, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new MarkNotificationReadCommand(id), ct);
             return Results.NoContent();
+        });
+
+        group.MapPost("/read-all", async (ISender sender, CancellationToken ct) =>
+        {
+            var marked = await sender.Send(new MarkAllNotificationsReadCommand(), ct);
+            return Results.Ok(new { marked });
         });
 
         return app;

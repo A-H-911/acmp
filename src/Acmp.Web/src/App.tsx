@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage';
+import NotificationsPage from './pages/NotificationsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import AdministrationPage from './pages/AdministrationPage';
 import { Backlog } from './features/topics/Backlog';
@@ -29,6 +30,7 @@ export const appRoutes = createRoutesFromElements(
       <Route path="/" element={<AppShell />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
         <Route path="topics/new" element={<SubmitTopic />} />
         <Route path="backlog" element={<Backlog />} />
