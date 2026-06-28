@@ -68,13 +68,13 @@
 .mt-builder-titlerow {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  margin-block-end: var(--sp-1);
+  gap: 9px; /* design literal */
+  margin-block-end: 5px; /* design literal */
 }
 .mt-builder-meta {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  gap: 12px; /* design literal */
   flex-wrap: wrap;
   font-size: 13px;
   color: var(--text-2);
@@ -87,7 +87,7 @@
 .mt-builder-actions {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 9px; /* design literal */
 }
 
 /* ---- time budget bar ---- */
@@ -108,12 +108,12 @@
   justify-content: space-between;
   gap: var(--sp-3);
   flex-wrap: wrap;
-  margin-block-end: var(--sp-2);
+  margin-block-end: 9px; /* design literal */
 }
 .mt-budget-label {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 9px; /* design literal */
 }
 .mt-budget-title {
   font-size: 13px;
@@ -173,7 +173,7 @@
 .mt-grid {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
-  gap: var(--sp-4);
+  gap: 18px; /* design literal */
   align-items: start;
 }
 @media (max-width: 900px) {
@@ -208,14 +208,14 @@
   color: var(--text-2);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  border-radius: 9px; /* design literal */
   padding-inline: 7px;
 }
 .mt-pool-search {
   position: relative;
   display: flex;
   align-items: center;
-  margin-block-start: var(--sp-2);
+  margin-block-start: 10px; /* design literal */
 }
 .mt-pool-search > svg {
   position: absolute;
@@ -226,7 +226,7 @@
 .mt-pool-search input {
   inline-size: 100%;
   block-size: 32px;
-  padding-inline: 30px var(--sp-3);
+  padding-inline: 31px 10px; /* design literal */
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -240,7 +240,7 @@
   box-shadow: 0 0 0 3px var(--ring);
 }
 .mt-pool-list {
-  padding: var(--sp-2);
+  padding: 10px; /* design literal */
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -250,9 +250,9 @@
 .mt-pool-card {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-2);
+  gap: 9px; /* design literal */
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  border-radius: 10px; /* design literal */
   padding: 11px 12px;
   background: var(--surface);
   cursor: grab;
@@ -280,7 +280,7 @@
   font-size: 12.5px;
   font-weight: 500;
   line-height: 1.4;
-  margin-block-end: var(--sp-2);
+  margin-block-end: 7px; /* design literal */
 }
 .mt-pool-foot {
   display: flex;
@@ -337,7 +337,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--sp-1) var(--sp-2) var(--sp-3);
+  padding: 4px 6px 12px; /* design literal */
 }
 .mt-drag-hint {
   display: inline-flex;
@@ -352,7 +352,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: 9px; /* design literal */
 }
 
 /* ---- agenda item card ---- */
@@ -400,14 +400,14 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin-block-end: var(--sp-1);
+  margin-block-end: 5px; /* design literal */
   flex-wrap: wrap;
 }
 .mt-item-title {
   font-size: 13.5px;
   font-weight: 600;
   line-height: 1.4;
-  margin-block-end: var(--sp-3);
+  margin-block-end: 11px; /* design literal */
 }
 .mt-item-controls {
   display: flex;
@@ -427,7 +427,7 @@
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
+  border-radius: 7px; /* design literal */
   overflow: hidden;
 }
 .mt-step {
