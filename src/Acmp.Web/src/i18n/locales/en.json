@@ -374,6 +374,7 @@
     "error": { "title": "Couldn't load meetings", "body": "There was a problem loading meetings. Please try again." },
     "notFound": { "title": "Meeting not found", "body": "We couldn't find a meeting with that reference." },
     "agendaBuilder": "Agenda builder",
+    "tab": { "agenda": "Agenda", "meeting": "Meeting", "minutes": "Minutes", "recording": "Recording" },
     "comingSoon": "This control will be built in a later phase.",
     "preview": "Preview",
     "publishNotify": "Publish & notify",
@@ -396,12 +397,14 @@
     "agendaOrder": "Agenda order",
     "dragHint": "Drag to reorder · ↑↓ keys",
     "agendaEmpty": { "title": "No items yet", "body": "Add prepared topics from the left, or drag them here to build the agenda." },
+    "agendaEmptyView": { "body": "This meeting has no agenda items." },
     "timebox": "Time-box",
     "decTime": "Decrease timebox for {{key}}",
     "incTime": "Increase timebox for {{key}}",
     "presenter": "Presenter",
     "presenterPick": "Assign",
     "presenterFor": "Presenter for {{key}}",
+    "presenterUnset": "No presenter assigned",
     "moveUp": "Move {{key}} up",
     "moveDown": "Move {{key}} down",
     "removeItem": "Remove {{key}} from the agenda",
@@ -437,14 +440,43 @@
       "title": "Meeting concluded",
       "body": "The meeting has ended. Minutes capture arrives in a later phase."
     },
+    "cancelled": {
+      "title": "Meeting cancelled",
+      "body": "This meeting was cancelled. Its topics were returned to the backlog for rescheduling."
+    },
+    "banner": {
+      "notReady": { "title": "Agenda not published", "body": "This meeting can't start until its agenda is built and published." },
+      "inProgress": { "title": "Meeting in progress", "body": "Live notes and attendance are being captured. Minutes are drafted when the meeting concludes." },
+      "concluded": { "title": "Meeting concluded", "body": "A minutes draft will be available for review once the Minutes module ships." },
+      "cancelled": { "title": "Meeting cancelled", "body": "This session was cancelled and its scheduled topics returned to the backlog." }
+    },
+    "minutesTab": {
+      "title": "Minutes arrive in a later phase",
+      "body": "Minutes capture, review, and approval are built in the Minutes & Decisions phase (P7)."
+    },
+    "recordingTab": {
+      "title": "Recording is a later-phase integration",
+      "body": "Webex recording and transcript retrieval arrive with the Webex integration (Phase 2)."
+    },
     "agendaSpine": "Agenda",
     "running": "Running",
     "itemTime": "Item time",
     "itemTimeValue": "{{actual}} / {{total}} min",
     "discussionNotes": "Discussion notes",
     "notePlaceholder": "Capture the discussion for this item…",
-    "saveNote": "Save note",
-    "saved": "Saved",
+    "autosaved": "Autosaved",
+    "editor": {
+      "toolbar": "Formatting",
+      "bold": "Bold",
+      "italic": "Italic",
+      "bulletList": "Bulleted list",
+      "numberedList": "Numbered list",
+      "link": "Link"
+    },
+    "captured": {
+      "title": "Captured on this item",
+      "empty": "Nothing has been captured on this item yet."
+    },
     "actualTime": "Actual time",
     "actualMinutes": "Actual minutes",
     "minutesUnit": "min",

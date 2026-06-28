@@ -12,6 +12,31 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 meeting workspace — design-fidelity reconciliation (`ACMP Agenda & Meeting.dc.html`, isMeeting)
+
+### 2026-06-28 — Notes editor, action row, captured card to design anatomy + deferred concern
+
+**Why.** A prior "pixel-exact" pass fixed spacing but missed *anatomy*: the discussion notes were a bare
+textarea (no toolbar), an extra Actual-time control was injected, the "Captured on this item" card was
+omitted, and the urgent pill carried an extra icon. Reconciled the workspace to the reference anatomy
+(operator-confirmed decisions): notes editor = bordered box with a markdown toolbar (B/I/•/№/link inserting
+marks into the plain-text body) + autosave-on-blur + "Autosaved" indicator (no Save button); the action row
+is the 3 capture-button stubs (P7/P8/P9); the "Captured on this item" card renders an honest empty state;
+the urgent pill is text-only. Breadcrumb→banner gap set to the design's 12px. Shared `Select` fixed to
+`focus({ preventScroll: true })` so opening a low dropdown no longer scrolls the page and hides content above.
+
+**DEFERRED CONCERN (operator decision, 2026-06-28).** The **actual-time / outcome recording control** is
+**removed from the meeting-workspace UI** for now. The **backend is kept** — the `RecordActualTime` command,
+endpoint, and `useRecordActualTime` mutation hook all remain wired; only the UI control was removed. Re-add a
+design-faithful control in a later slice (likely near the item-time header, not the capture-button row). The
+page-width enlargement that had been added to fit the old inline control was **reverted** so the meeting
+detail keeps the same `72rem` page cap as every other screen (coherent widths).
+
+**Next.** Agenda builder/viewer pixel pass; Minutes/Recording tabs; then PR-B (list/calendar, full-page
+Schedule + Type/Mode backend, notifications full-page). Nothing committed pending operator GO.
+
+---
+
 ## P5 UI refresh — rebuild Topics & Backlog vs the updated `ACMP Backlog & Topic.dc.html`
 
 ### 2026-06-27 — Backlog (5 views incl. live calendar/timeline), filter chips, submit RTE bar, 5-tab topic detail

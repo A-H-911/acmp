@@ -315,7 +315,8 @@
   font-weight: 700;
   color: var(--st-danger-fg);
   background: var(--st-danger-bg);
-  border-radius: var(--r-sm);
+  /* Design literal: 5px (not --r-sm/6). */
+  border-radius: 5px;
   padding-inline: 6px;
   padding-block: 1px;
 }
@@ -519,7 +520,13 @@
 .mt-ws-titlerow {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  /* Design literal: title↔LIVE badge gap is 10px (not --sp-2/8). */
+  gap: 10px;
+}
+/* Design isMeeting active item: the topic key is 11px here (shared .mt-key is 10.5
+   on the agenda/list screens — scope the workspace bump, don't touch the global). */
+.mt-ws .mt-key {
+  font-size: 11px;
 }
 .mt-ws-titlerow .page-title {
   margin: 0;
@@ -574,7 +581,8 @@
 .mt-ws-grid {
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr) 270px;
-  gap: var(--sp-4);
+  /* Design literal: 3-column gap is 18px (not --sp-4/16). */
+  gap: 18px;
   align-items: start;
 }
 @media (max-width: 1080px) {
@@ -606,16 +614,18 @@
   padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* Design: spine items abut (no inter-item gap). */
+  gap: 0;
 }
 .mt-spine-item {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-2);
+  /* Design literals: gap 10px, radius 9px (not --sp-2/8, --r-md/8). */
+  gap: 10px;
   inline-size: 100%;
   text-align: start;
   border: 0;
-  border-radius: var(--r-md);
+  border-radius: 9px;
   padding: 10px 11px;
   background: transparent;
   color: var(--text);
@@ -629,7 +639,8 @@
 .mt-spine-num {
   inline-size: 24px;
   block-size: 24px;
-  border-radius: var(--r-md);
+  /* Design literal: 7px (not --r-md/8). */
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -707,7 +718,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin-block-end: var(--sp-1);
+  /* Design literal: 5px (not --sp-1/4). */
+  margin-block-end: 5px;
   flex-wrap: wrap;
 }
 .mt-active-index {
@@ -747,7 +759,9 @@
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  /* Design rhythm: 13px between the editor block and the action row (mock uses
+     margin-top:13 on the buttons). The actual-time control we insert reuses it. */
+  gap: 13px;
 }
 
 /* ---- discussion note ---- */
@@ -755,7 +769,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin-block-end: var(--sp-2);
+  /* Design literal: 9px (not --sp-2/8). */
+  margin-block-end: 9px;
   color: var(--text-3);
 }
 .mt-note-label {
@@ -778,79 +793,90 @@
   border-radius: 50%;
   background: var(--st-success-dot);
 }
-.mt-note-input {
+/* Notes editor = bordered box (toolbar strip + content area), design isMeeting editor.
+   Radius 10, focus-within ring; toolbar pad 5/7 border-soft on subtle; tools 28×28 r6. */
+.mt-editor {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.mt-editor:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 7px;
+  border-block-end: 1px solid var(--border-soft);
+  background: var(--subtle);
+}
+.mt-editor-tool {
+  inline-size: 28px;
+  block-size: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.mt-editor-tool:hover {
+  background: var(--sunken);
+  color: var(--text);
+}
+.mt-editor-input {
+  display: block;
   inline-size: 100%;
   min-block-size: 96px;
   padding: 12px 13px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
+  border: 0;
   background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 13.5px;
-  line-height: 1.6;
+  line-height: 1.7;
+  outline: none;
   resize: vertical;
 }
-.mt-note-input:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
-}
-.mt-note-actions {
+
+/* (Actual-time / outcome recording control removed from the workspace UI — deferred concern;
+   the backend command + mutation hook remain. See progress-log.) */
+
+/* ---- action row: the 3 capture buttons (design block) ---- */
+.mt-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-block-start: var(--sp-2);
+  align-items: center;
+  /* Design literal: 9px gap between the capture buttons. */
+  gap: 9px;
+  flex-wrap: wrap;
 }
 
-/* ---- actual-time control ---- */
-.mt-time {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-  padding-block-start: var(--sp-3);
-  border-block-start: 1px solid var(--border-soft);
-}
-.mt-time-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-2);
-}
-.mt-time-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.mt-time-input {
-  inline-size: 72px;
-  block-size: 34px;
-  padding-inline: 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
+/* ---- "Captured on this item" card (design block, empty until P7/P8) ---- */
+.mt-captured {
   background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
 }
-.mt-time-input:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
-}
-.mt-time-unit {
+.mt-captured-title {
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   color: var(--text-3);
+  margin-block-end: 12px;
 }
-.mt-time-outcome {
-  min-inline-size: 160px;
-}
-
-/* ---- stub action row ---- */
-.mt-stub-row {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
+.mt-captured-empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-3);
 }
 
 /* ---- attendance (right) ---- */
@@ -867,6 +893,10 @@
   padding: 13px 15px;
   border-block-end: 1px solid var(--border);
   background: var(--subtle);
+}
+/* Design isMeeting attendance heading is 13px (shared .mt-col-title is 13.5 — scope it). */
+.mt-att .mt-col-title {
+  font-size: 13px;
 }
 .mt-att-headrow {
   display: flex;
@@ -885,14 +915,16 @@
   padding: var(--sp-2);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  /* Design: rows abut (no inter-row gap). */
+  gap: 0;
 }
 .mt-att-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  /* Design literals: gap 10px, radius 9px (not --sp-2/8, --r-md/8). */
+  gap: 10px;
   padding: 7px 8px;
-  border-radius: var(--r-md);
+  border-radius: 9px;
 }
 .mt-att-row:hover {
   background: var(--subtle);
@@ -947,7 +979,8 @@
 .mt-att-toggle {
   block-size: 26px;
   padding-inline: 9px;
-  border-radius: var(--r-md);
+  /* Design literal: 7px (not --r-md/8). */
+  border-radius: 7px;
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--text-2);
@@ -1008,4 +1041,67 @@
 }
 .mt-gate-action {
   margin-block-start: var(--sp-3);
+}
+
+/* Lifecycle banner (P6 meeting-detail IA) — the "state views" above the tabs, EXACT to the
+   ACMP Meetings.dc.html lifecycle banner (line 258): gap 11 · pad 13/15 · radius 11 · margin-end 16 ·
+   border = color-mix(st-fg 22%) · title 13.5/600 st-fg · body 12.5 text-2. notReady=warn,
+   inProgress=info, concluded=success, cancelled=neutral. */
+/* Breadcrumb → state banner / tabs gap (design Meetings overview: breadcrumb mb 12px).
+   Scoped to the meeting detail page so other pages keep their own rhythm. */
+.mt-detail .breadcrumb {
+  margin-block-end: 12px;
+}
+.mt-lifecycle {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  margin-block-end: 16px;
+}
+.mt-lifecycle-icon {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+  display: inline-flex;
+}
+.mt-lifecycle-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.mt-lifecycle-body {
+  margin-block: 2px 0;
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.mt-lifecycle-notReady { background: var(--st-warn-bg); border-color: color-mix(in srgb, var(--st-warn-fg) 22%, transparent); }
+.mt-lifecycle-notReady .mt-lifecycle-icon,
+.mt-lifecycle-notReady .mt-lifecycle-title { color: var(--st-warn-fg); }
+.mt-lifecycle-inProgress { background: var(--st-info-bg); border-color: color-mix(in srgb, var(--st-info-fg) 22%, transparent); }
+.mt-lifecycle-inProgress .mt-lifecycle-icon,
+.mt-lifecycle-inProgress .mt-lifecycle-title { color: var(--st-info-fg); }
+.mt-lifecycle-concluded { background: var(--st-success-bg); border-color: color-mix(in srgb, var(--st-success-fg) 22%, transparent); }
+.mt-lifecycle-concluded .mt-lifecycle-icon,
+.mt-lifecycle-concluded .mt-lifecycle-title { color: var(--st-success-fg); }
+.mt-lifecycle-cancelled { background: var(--st-neutral-bg); border-color: color-mix(in srgb, var(--st-neutral-fg) 22%, transparent); }
+.mt-lifecycle-cancelled .mt-lifecycle-icon,
+.mt-lifecycle-cancelled .mt-lifecycle-title { color: var(--st-neutral-fg); }
+
+/* Agenda viewer (read-only) — single column (no pool), static item controls. */
+.mt-grid-readonly { grid-template-columns: 1fr; }
+.mt-item-controls-readonly {
+  display: flex;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  color: var(--text-2);
+  font-size: 12px;
+}
+.mt-item-controls-readonly .mt-timebox,
+.mt-item-controls-readonly .mt-presenter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
 }

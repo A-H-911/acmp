@@ -14,7 +14,6 @@ vi.mock('../../api/meetings', () => ({
   useEndMeeting: vi.fn(),
   useMarkAttendance: vi.fn(),
   useCaptureDiscussion: vi.fn(),
-  useRecordActualTime: vi.fn(),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
 
@@ -23,14 +22,13 @@ import {
   useEndMeeting,
   useMarkAttendance,
   useCaptureDiscussion,
-  useRecordActualTime,
 } from '../../api/meetings';
 import { useMembers } from '../../api/members';
 
 const mockDetail = useMeetingDetail as unknown as Mock;
 const mockMembers = useMembers as unknown as Mock;
 
-let endSpy: Mock, markSpy: Mock, captureSpy: Mock, recordSpy: Mock;
+let endSpy: Mock, markSpy: Mock, captureSpy: Mock;
 
 const MEETING: MeetingDetail = {
   id: 'm1', key: 'MTG-2026-019', title: 'Q2 Architecture Review', committeeId: 'c1',
@@ -75,11 +73,9 @@ describe('MeetingWorkspace (P6d)', () => {
     endSpy = vi.fn();
     markSpy = vi.fn();
     captureSpy = vi.fn();
-    recordSpy = vi.fn();
     (useEndMeeting as unknown as Mock).mockReturnValue({ mutate: endSpy, isPending: false });
     (useMarkAttendance as unknown as Mock).mockReturnValue({ mutate: markSpy, isPending: false });
     (useCaptureDiscussion as unknown as Mock).mockReturnValue({ mutate: captureSpy, isPending: false });
-    (useRecordActualTime as unknown as Mock).mockReturnValue({ mutate: recordSpy, isPending: false });
   });
 
   it('renders the live header, elapsed timer, agenda spine, active item, and attendance', () => {
@@ -104,26 +100,23 @@ describe('MeetingWorkspace (P6d)', () => {
     expect(screen.getByRole('heading', { name: 'Event streaming spike' })).toBeInTheDocument();
   });
 
-  it('saves a discussion note for the active topic (topicId + body)', async () => {
+  it('autosaves a discussion note on blur (topicId + body)', async () => {
     const user = userEvent.setup();
     setup();
     await user.type(screen.getByLabelText('Discussion notes'), 'Agreed to pilot Keycloak.');
-    await user.click(screen.getByRole('button', { name: 'Save note' }));
-    // Save-button click blurs the textarea first; the savedBody guard must dedupe to one POST.
+    await user.tab(); // blur the textarea → autosave (no explicit Save button)
     expect(captureSpy).toHaveBeenCalledTimes(1);
     expect(captureSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', body: 'Agreed to pilot Keycloak.' });
   });
 
-  it('records actual time and an outcome for the active topic', async () => {
+  it('toolbar Bold wraps the selection in markdown marks', async () => {
     const user = userEvent.setup();
     setup();
-    const minutes = screen.getByLabelText('Actual minutes');
-    await user.clear(minutes);
-    await user.type(minutes, '12');
-    await user.click(screen.getByRole('button', { name: 'Outcome' }));
-    await user.click(screen.getByRole('option', { name: 'Discussed' }));
-    await user.click(screen.getByRole('button', { name: 'Record time' }));
-    expect(recordSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', actualMinutes: 12, outcome: 'Discussed' });
+    const ta = screen.getByLabelText('Discussion notes') as HTMLTextAreaElement;
+    await user.type(ta, 'pilot');
+    ta.setSelectionRange(0, 5);
+    await user.click(screen.getByRole('button', { name: 'Bold' }));
+    expect(ta).toHaveValue('**pilot**');
   });
 
   it('toggles a present member to absent', async () => {
