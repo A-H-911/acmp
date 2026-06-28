@@ -36,8 +36,20 @@ function meetingTone(status: string): StatusTone {
   }
 }
 
+// Agenda lifecycle → semantic tone (no list screen in the design package, so this follows the
+// design's tone language: published = success, not-yet-published = warn, locked = informational,
+// closed = done/archived). Draft stays warn to match the lifecycle banner's "agenda not published".
 function agendaTone(status: string): StatusTone {
-  return status === 'Published' ? 'success' : 'warn';
+  switch (status) {
+    case 'Published':
+      return 'success';
+    case 'Locked':
+      return 'info';
+    case 'Closed':
+      return 'neutral';
+    default:
+      return 'warn'; // Draft / unknown — needs attention (not yet published)
+  }
 }
 
 function useDateFmt() {

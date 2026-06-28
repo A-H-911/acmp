@@ -44,6 +44,18 @@ describe('MeetingsList (P6c)', () => {
     expect(screen.getByText('Published')).toBeInTheDocument();
   });
 
+  it('maps each agenda lifecycle state to its semantic chip tone', () => {
+    const rows: MeetingSummary[] = (['Draft', 'Published', 'Locked', 'Closed'] as const).map((agendaStatus, i) => ({
+      ...MEETINGS[0], id: `t${i}`, key: `MTG-2026-10${i}`, agendaStatus,
+    }));
+    result({ data: rows });
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+    expect(screen.getByText('Draft').closest('.status-chip')).toHaveClass('warn');
+    expect(screen.getByText('Published').closest('.status-chip')).toHaveClass('success');
+    expect(screen.getByText('Locked').closest('.status-chip')).toHaveClass('info');
+    expect(screen.getByText('Closed').closest('.status-chip')).toHaveClass('neutral');
+  });
+
   it('links each meeting to its agenda builder route', () => {
     result({ data: MEETINGS });
     renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
