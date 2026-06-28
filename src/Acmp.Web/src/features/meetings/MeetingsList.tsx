@@ -20,6 +20,7 @@ import { Table, type Column } from '../../components/ui/Table';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
+import { agendaTone } from './agendaStatus';
 import './meetings.css';
 
 function meetingTone(status: string): StatusTone {
@@ -33,22 +34,6 @@ function meetingTone(status: string): StatusTone {
       return 'warn';
     default:
       return 'scheduled'; // Scheduled / draft-ish
-  }
-}
-
-// Agenda lifecycle → semantic tone (no list screen in the design package, so this follows the
-// design's tone language: published = success, not-yet-published = warn, locked = informational,
-// closed = done/archived). Draft stays warn to match the lifecycle banner's "agenda not published".
-function agendaTone(status: string): StatusTone {
-  switch (status) {
-    case 'Published':
-      return 'success';
-    case 'Locked':
-      return 'info';
-    case 'Closed':
-      return 'neutral';
-    default:
-      return 'warn'; // Draft / unknown — needs attention (not yet published)
   }
 }
 

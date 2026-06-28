@@ -236,6 +236,18 @@ describe('AgendaBuilder — read-only viewer', () => {
     expect(screen.getByText('Event streaming spike')).toBeInTheDocument();
   });
 
+  it('renders the design "Agenda preview" card: header meta, topic key (traceability), and presenter fallback', () => {
+    setupViewer();
+    // Card header = title + "N items · M min" meta (design isOverview ~L263).
+    expect(screen.getByRole('heading', { name: 'Agenda' })).toBeInTheDocument();
+    expect(screen.getByText('2 items · 35 min')).toBeInTheDocument();
+    // Topic key kept on the secondary line — deliberate deviation from the design preview row
+    // for traceability of the (becoming-official) record.
+    expect(screen.getByText('TOP-2026-014')).toBeInTheDocument();
+    // Glanceable row: presenter falls back when unset (both items here).
+    expect(screen.getAllByText('No presenter assigned')).toHaveLength(2);
+  });
+
   it('hides every edit affordance: pool, add, move, remove, timebox steppers, presenter picker, publish', () => {
     setupViewer();
     // Pool (and its Add buttons) gone — the Prepared topic is not shown.
@@ -250,6 +262,16 @@ describe('AgendaBuilder — read-only viewer', () => {
     // Presenter picker (a combobox) and the Publish action gone.
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Publish & notify' })).not.toBeInTheDocument();
+  });
+
+  it('shows the real agenda status in the head (Locked → info, never "Draft")', () => {
+    // Regression: the head chip was a binary Published/Draft check, so a Locked (or Closed)
+    // agenda — both of which render the viewer — mislabelled as "Draft"/warn. Now reuses the
+    // shared 4-tone agendaTone helper (#31).
+    detailResult({ data: { ...MEETING, status: 'InProgress', agenda: { ...MEETING.agenda!, status: 'Locked' } } });
+    setupViewer();
+    expect(screen.getByText('Locked').closest('.status-chip')).toHaveClass('info');
+    expect(screen.queryByText('Draft')).not.toBeInTheDocument();
   });
 
   it('is axe-clean in viewer mode', async () => {

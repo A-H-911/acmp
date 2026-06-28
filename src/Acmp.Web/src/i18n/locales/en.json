@@ -406,6 +406,7 @@
     "poolEmpty": { "title": "Nothing to schedule", "body": "Topics prepared for an agenda will appear here, ready to add." },
     "agendaItems": "Agenda items",
     "agendaOrder": "Agenda order",
+    "agendaView": "Agenda",
     "dragHint": "Drag to reorder · ↑↓ keys",
     "agendaEmpty": { "title": "No items yet", "body": "Add prepared topics from the left, or drag them here to build the agenda." },
     "agendaEmptyView": { "body": "This meeting has no agenda items." },
