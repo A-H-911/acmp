@@ -199,3 +199,65 @@ describe('AgendaBuilder (P6c)', () => {
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
 });
+
+// The viewer (read-only) mode renders once the agenda is published or the meeting has
+// started/concluded/cancelled — MeetingPage passes readOnly. This is the fix for the bug where a
+// started meeting still exposed an editable agenda builder. Asserts every edit affordance is gone.
+describe('AgendaBuilder — read-only viewer', () => {
+  beforeEach(() => {
+    [mockDetail, mockPrepared, mockMembers].forEach((m) => m.mockReset());
+    // The mutation hooks still run (they're unconditional) — return inert handles.
+    (useAddAgendaItem as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useRemoveAgendaItem as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useMoveAgendaItem as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useSetTimebox as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useAssignPresenter as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (usePublishAgenda as unknown as Mock).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    mockPrepared.mockReturnValue({ data: PREPARED, isLoading: false });
+    mockMembers.mockReturnValue({ data: MEMBERS });
+    detailResult({ data: { ...MEETING, agenda: { ...MEETING.agenda!, status: 'Published' } } });
+  });
+
+  function setupViewer() {
+    render(
+      <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
+        <MemoryRouter initialEntries={['/meetings/MTG-2026-019']}>
+          <Routes>
+            <Route path="/meetings/:key" element={<AgendaBuilder readOnly />} />
+          </Routes>
+        </MemoryRouter>
+      </AcmpAuthContext.Provider>,
+    );
+  }
+
+  it('still lists the agenda items', () => {
+    setupViewer();
+    expect(screen.getByText('Adopt Keycloak')).toBeInTheDocument();
+    expect(screen.getByText('Event streaming spike')).toBeInTheDocument();
+  });
+
+  it('hides every edit affordance: pool, add, move, remove, timebox steppers, presenter picker, publish', () => {
+    setupViewer();
+    // Pool (and its Add buttons) gone — the Prepared topic is not shown.
+    expect(screen.queryByText('Adopt OpenTelemetry')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Add .* to the agenda/ })).not.toBeInTheDocument();
+    // Reorder / remove / timebox controls gone.
+    expect(screen.queryByRole('button', { name: /Move .* up/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Move .* down/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Remove .* from the agenda/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Increase timebox/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Decrease timebox/ })).not.toBeInTheDocument();
+    // Presenter picker (a combobox) and the Publish action gone.
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Publish & notify' })).not.toBeInTheDocument();
+  });
+
+  it('is axe-clean in viewer mode', async () => {
+    setupViewer();
+    const results = await axe.run(document.body, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false } },
+    });
+    expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+});

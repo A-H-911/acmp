@@ -26,6 +26,13 @@
  *    ALL committee members unconditionally, so we show one honest static line instead.
  *  - Meeting/topic titles are single-language user content; only chrome is i18n'd. Dates are
  *    Gregorian, localized via Intl (guardrail 9).
+ *
+ * `readOnly` (P6 meeting-detail IA): the agenda is editable ONLY while the meeting is Scheduled
+ * AND its agenda is still Draft. Once published/locked or the meeting starts/concludes/cancels,
+ * MeetingPage renders this in VIEWER mode — the pool, drag, steppers, presenter picker, move and
+ * remove controls and the Publish action all disappear; items render read-only. This is the fix
+ * for the bug where a started meeting still showed an editable builder (the backend rejected the
+ * edits, but the UI invited them).
  */
 import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -60,7 +67,7 @@ function minutesBetween(startIso: string, endIso: string): number {
   return Math.max(0, Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000));
 }
 
-export function AgendaBuilder() {
+export function AgendaBuilder({ readOnly = false }: { readOnly?: boolean } = {}) {
   const { key } = useParams();
   const { t, i18n } = useTranslation();
   const meetingQuery = useMeetingDetail(key);
@@ -186,44 +193,50 @@ export function AgendaBuilder() {
             <span><Icon name="clock" size={14} aria-hidden /> {t('meetings.lengthMin', { count: total })}</span>
           </div>
         </div>
-        <div className="mt-builder-actions">
-          <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
-            <Icon name="download" size={15} aria-hidden /> {t('meetings.preview')}
-          </Button>
-          <Button onClick={() => setPublishOpen(true)} disabled={published || items.length === 0}>
-            <Icon name="send" size={15} aria-hidden /> {t('meetings.publishNotify')}
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="mt-builder-actions">
+            <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
+              <Icon name="download" size={15} aria-hidden /> {t('meetings.preview')}
+            </Button>
+            <Button onClick={() => setPublishOpen(true)} disabled={published || items.length === 0}>
+              <Icon name="send" size={15} aria-hidden /> {t('meetings.publishNotify')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <BudgetBar used={used} total={total} remaining={remaining} over={over} usedPct={usedPct} />
 
-      <div className="mt-grid">
-        <PoolColumn
-          pool={pool}
-          count={pool.length}
-          search={search}
-          onSearch={setSearch}
-          onAdd={onAdd}
-          loading={preparedQuery.isLoading}
-          dragRef={dragPool}
-        />
+      <div className={readOnly ? 'mt-grid mt-grid-readonly' : 'mt-grid'}>
+        {!readOnly && (
+          <PoolColumn
+            pool={pool}
+            count={pool.length}
+            search={search}
+            onSearch={setSearch}
+            onAdd={onAdd}
+            loading={preparedQuery.isLoading}
+            dragRef={dragPool}
+          />
+        )}
 
         <section
           className="mt-agenda"
           aria-label={t('meetings.agendaItems')}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={onAgendaDrop}
+          onDragOver={readOnly ? undefined : (e) => e.preventDefault()}
+          onDrop={readOnly ? undefined : onAgendaDrop}
         >
           <div className="mt-agenda-head">
             <h2 className="mt-col-title">
               {t('meetings.agendaOrder')} <span className="mt-muted">· {t('meetings.itemCount', { count: items.length })}</span>
             </h2>
-            <span className="mt-drag-hint"><Icon name="grip" size={13} aria-hidden /> {t('meetings.dragHint')}</span>
+            {!readOnly && (
+              <span className="mt-drag-hint"><Icon name="grip" size={13} aria-hidden /> {t('meetings.dragHint')}</span>
+            )}
           </div>
 
           {items.length === 0 ? (
-            <EmptyState icon="viewKanban" title={t('meetings.agendaEmpty.title')} body={t('meetings.agendaEmpty.body')} />
+            <EmptyState icon="viewKanban" title={t('meetings.agendaEmpty.title')} body={t(readOnly ? 'meetings.agendaEmptyView.body' : 'meetings.agendaEmpty.body')} />
           ) : (
             <ol className="mt-agenda-list">
               {items.map((item, i) => (
@@ -233,6 +246,7 @@ export function AgendaBuilder() {
                   index={i + 1}
                   isFirst={i === 0}
                   isLast={i === items.length - 1}
+                  readOnly={readOnly}
                   presenterOptions={presenterOptions}
                   onMove={onMove}
                   onTimebox={onTimebox}
@@ -399,6 +413,7 @@ function AgendaItemRow({
   index,
   isFirst,
   isLast,
+  readOnly,
   presenterOptions,
   onMove,
   onTimebox,
@@ -411,6 +426,7 @@ function AgendaItemRow({
   index: number;
   isFirst: boolean;
   isLast: boolean;
+  readOnly: boolean;
   presenterOptions: { value: string; label: string }[];
   onMove: (item: AgendaItem, delta: 1 | -1) => void;
   onTimebox: (item: AgendaItem, dir: 1 | -1) => void;
@@ -422,23 +438,23 @@ function AgendaItemRow({
   const { t } = useTranslation();
   return (
     <li
-      className="mt-item"
-      draggable
-      onDragStart={() => {
+      className={readOnly ? 'mt-item mt-item-readonly' : 'mt-item'}
+      draggable={!readOnly}
+      onDragStart={readOnly ? undefined : () => {
         dragRef.current = item;
       }}
-      onDragEnd={() => {
+      onDragEnd={readOnly ? undefined : () => {
         dragRef.current = null;
       }}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
+      onDragOver={readOnly ? undefined : (e) => e.preventDefault()}
+      onDrop={readOnly ? undefined : (e) => {
         e.stopPropagation();
         onItemDrop(item);
       }}
     >
       <div className="mt-item-rail">
         <span className="mt-item-index" aria-hidden="true">{index}</span>
-        <Icon name="grip" size={16} className="mt-item-grip" aria-hidden />
+        {!readOnly && <Icon name="grip" size={16} className="mt-item-grip" aria-hidden />}
       </div>
 
       <div className="mt-item-body">
@@ -451,45 +467,58 @@ function AgendaItemRow({
           )}
         </div>
         <div className="mt-item-title">{item.topicTitle}</div>
-        <div className="mt-item-controls">
-          <span className="mt-timebox">
-            <Icon name="clock" size={14} aria-hidden /> {t('meetings.timebox')}
-            <span className="mt-stepper">
-              <button type="button" className="mt-step" onClick={() => onTimebox(item, -1)} aria-label={t('meetings.decTime', { key: item.topicKey })}>
-                <Icon name="minus" size={13} aria-hidden />
-              </button>
-              <span className="mt-step-val">{t('meetings.minShort', { count: item.timeboxMinutes })}</span>
-              <button type="button" className="mt-step" onClick={() => onTimebox(item, 1)} aria-label={t('meetings.incTime', { key: item.topicKey })}>
-                <Icon name="plus" size={13} aria-hidden />
-              </button>
+        {readOnly ? (
+          <div className="mt-item-controls mt-item-controls-readonly">
+            <span className="mt-timebox">
+              <Icon name="clock" size={14} aria-hidden /> {t('meetings.minShort', { count: item.timeboxMinutes })}
             </span>
-          </span>
-          <span className="mt-presenter">
-            <Icon name="user" size={14} aria-hidden /> {t('meetings.presenter')}
-            <span className="mt-presenter-pick">
-              <Select
-                ariaLabel={t('meetings.presenterFor', { key: item.topicKey })}
-                placeholder={t('meetings.presenterPick')}
-                value={item.presenterUserId ?? ''}
-                onChange={(v) => onPresenter(item, v)}
-                options={presenterOptions}
-              />
+            <span className="mt-presenter">
+              <Icon name="user" size={14} aria-hidden /> {item.presenterName ?? t('meetings.presenterUnset')}
             </span>
-          </span>
-        </div>
+          </div>
+        ) : (
+          <div className="mt-item-controls">
+            <span className="mt-timebox">
+              <Icon name="clock" size={14} aria-hidden /> {t('meetings.timebox')}
+              <span className="mt-stepper">
+                <button type="button" className="mt-step" onClick={() => onTimebox(item, -1)} aria-label={t('meetings.decTime', { key: item.topicKey })}>
+                  <Icon name="minus" size={13} aria-hidden />
+                </button>
+                <span className="mt-step-val">{t('meetings.minShort', { count: item.timeboxMinutes })}</span>
+                <button type="button" className="mt-step" onClick={() => onTimebox(item, 1)} aria-label={t('meetings.incTime', { key: item.topicKey })}>
+                  <Icon name="plus" size={13} aria-hidden />
+                </button>
+              </span>
+            </span>
+            <span className="mt-presenter">
+              <Icon name="user" size={14} aria-hidden /> {t('meetings.presenter')}
+              <span className="mt-presenter-pick">
+                <Select
+                  ariaLabel={t('meetings.presenterFor', { key: item.topicKey })}
+                  placeholder={t('meetings.presenterPick')}
+                  value={item.presenterUserId ?? ''}
+                  onChange={(v) => onPresenter(item, v)}
+                  options={presenterOptions}
+                />
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="mt-item-tools">
-        <button type="button" className="mt-tool" onClick={() => onMove(item, -1)} disabled={isFirst} aria-label={t('meetings.moveUp', { key: item.topicKey })}>
-          <Icon name="chevronUp" size={13} aria-hidden />
-        </button>
-        <button type="button" className="mt-tool" onClick={() => onMove(item, 1)} disabled={isLast} aria-label={t('meetings.moveDown', { key: item.topicKey })}>
-          <Icon name="chevronDown" size={13} aria-hidden />
-        </button>
-        <button type="button" className="mt-tool mt-tool-danger" onClick={() => onRemove(item)} aria-label={t('meetings.removeItem', { key: item.topicKey })}>
-          <Icon name="x" size={13} aria-hidden />
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="mt-item-tools">
+          <button type="button" className="mt-tool" onClick={() => onMove(item, -1)} disabled={isFirst} aria-label={t('meetings.moveUp', { key: item.topicKey })}>
+            <Icon name="chevronUp" size={13} aria-hidden />
+          </button>
+          <button type="button" className="mt-tool" onClick={() => onMove(item, 1)} disabled={isLast} aria-label={t('meetings.moveDown', { key: item.topicKey })}>
+            <Icon name="chevronDown" size={13} aria-hidden />
+          </button>
+          <button type="button" className="mt-tool mt-tool-danger" onClick={() => onRemove(item)} aria-label={t('meetings.removeItem', { key: item.topicKey })}>
+            <Icon name="x" size={13} aria-hidden />
+          </button>
+        </div>
+      )}
     </li>
   );
 }

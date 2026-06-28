@@ -8,22 +8,24 @@
  *  - The page breadcrumb + the Agenda/Meeting tab switcher live in MeetingPage (the design
  *    puts the tabs in the top bar; we use a shared in-page Tabs control). This component only
  *    renders the live workspace header + 3-column grid.
- *  - The design's Pause button is mock chrome → rendered disabled (coming soon). The RTE
- *    toolbar + "Autosaved" pill are mock chrome → a plain <textarea> with an explicit
- *    "Save note" action (+ onBlur) that POSTs /discussion; a simple "Saved" indicator shows
- *    after a successful save. Empty bodies are never sent (the server rejects them).
+ *  - The design's Pause button is mock chrome → rendered disabled (coming soon).
+ *  - Discussion notes: the design editor (toolbar + content box) is rendered; the toolbar
+ *    buttons insert markdown into the plain-text body (no backend change). Autosave-on-blur
+ *    POSTs /discussion and shows the "Autosaved" indicator (no explicit Save button).
  *  - "End → Minutes" ends the meeting (POST /end); the Minutes screen itself is P7, so on
  *    success we navigate back to the meetings list (no minutes UI here).
  *  - Record decision / Create action / Call vote are disabled stubs → P7 / P8 / P9.
- *  - The inline quick-create + "Captured on this item" list belong to Decisions/Actions
- *    (P7/P8) → omitted.
+ *  - "Captured on this item" renders with an honest empty state; it populates once
+ *    Decisions/Actions ship (P7/P8). The inline quick-create is omitted.
+ *  - Actual-time / outcome recording: UI DEFERRED (operator decision) — the backend command
+ *    + useRecordActualTime hook remain for when the control is re-added. See progress-log.
  *  - Attendance roster = active members (GET /api/members) merged with meeting.attendance by
  *    member.publicId (the attendance userId). Quorum is a client-side DISPLAY heuristic only;
  *    the authoritative quorum gate is the Voting phase (P9).
  *  - Elapsed timer is derived from startedAt via a 1s interval. Meeting/topic titles are
  *    single-language user content; only chrome is i18n'd (guardrail 9).
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -31,20 +33,16 @@ import {
   useEndMeeting,
   useMarkAttendance,
   useCaptureDiscussion,
-  useRecordActualTime,
   type AgendaItem,
   type Discussion,
 } from '../../api/meetings';
 import { useMembers, type Member } from '../../api/members';
 import { AREAS } from '../../nav/navModel';
 import { Button } from '../../components/ui/Button';
-import { Select } from '../../components/ui/Select';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import './meetings.css';
-
-const OUTCOMES = ['Discussed', 'Deferred', 'CarriedOver'] as const;
 
 /** Map a committee role onto the meeting's AttendanceRole vocabulary. */
 function toAttendanceRole(role: string): 'Chair' | 'Secretary' | 'Member' | 'Reviewer' | 'Guest' {
@@ -85,7 +83,6 @@ export function MeetingWorkspace() {
   const endMeeting = useEndMeeting(key);
   const markAttendance = useMarkAttendance(key);
   const captureDiscussion = useCaptureDiscussion(key);
-  const recordTime = useRecordActualTime(key);
 
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   // ponytail: a real wall-clock tick is genuine external sync, not derived state — keep the interval.
@@ -164,12 +161,7 @@ export function MeetingWorkspace() {
             item={activeItem}
             index={items.findIndex((i) => i.topicId === activeItem.topicId) + 1}
             discussion={meeting.discussions.find((d) => d.topicId === activeItem.topicId)}
-            savingNote={captureDiscussion.isPending}
-            savingTime={recordTime.isPending}
             onSaveNote={(body) => captureDiscussion.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, body })}
-            onRecordTime={(actualMinutes, outcome) =>
-              recordTime.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, actualMinutes, outcome })
-            }
           />
         ) : (
           <section className="mt-active" aria-label={t('meetings.agendaSpine')}>
@@ -239,18 +231,12 @@ function ActiveItem({
   item,
   index,
   discussion,
-  savingNote,
-  savingTime,
   onSaveNote,
-  onRecordTime,
 }: {
   item: AgendaItem;
   index: number;
   discussion: Discussion | undefined;
-  savingNote: boolean;
-  savingTime: boolean;
   onSaveNote: (body: string) => void;
-  onRecordTime: (actualMinutes: number, outcome?: string) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -261,11 +247,7 @@ function ActiveItem({
             <div className="mt-active-keyrow">
               <span className="mt-active-index" aria-hidden="true">{index}</span>
               <span className="mt-key">{item.topicKey}</span>
-              {item.urgent && (
-                <span className="mt-urgent-pill">
-                  <Icon name="warnTriangle" size={10} aria-hidden /> {t('meetings.urgent')}
-                </span>
-              )}
+              {item.urgent && <span className="mt-urgent-pill">{t('meetings.urgent')}</span>}
             </div>
             <h2 className="mt-active-title">{item.topicTitle}</h2>
           </div>
@@ -278,9 +260,10 @@ function ActiveItem({
         </div>
 
         <div className="mt-active-body">
-          <DiscussionNote initialBody={discussion?.body ?? ''} saving={savingNote} onSave={onSaveNote} />
-          <ActualTimeControl actualMinutes={item.actualMinutes} outcome={item.outcome} saving={savingTime} onRecord={onRecordTime} />
-          <div className="mt-stub-row">
+          <DiscussionNote initialBody={discussion?.body ?? ''} onSave={onSaveNote} />
+          {/* Design action row = the 3 capture buttons. (Actual-time/outcome recording is a
+              deferred concern — UI removed; the backend command + hook remain. See progress-log.) */}
+          <div className="mt-actions">
             <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
               <Icon name="decision" size={14} aria-hidden /> {t('meetings.recordDecision')}
             </Button>
@@ -293,30 +276,92 @@ function ActiveItem({
           </div>
         </div>
       </div>
+
+      <CapturedOnItem />
     </section>
   );
 }
 
-function DiscussionNote({
-  initialBody,
-  saving,
-  onSave,
-}: {
-  initialBody: string;
-  saving: boolean;
-  onSave: (body: string) => void;
-}) {
+/** "Captured on this item" card (design block). Decisions/Actions land here once those
+ *  modules ship (P7/P8); until then it renders an honest empty state to match the layout. */
+function CapturedOnItem() {
   const { t } = useTranslation();
+  return (
+    <div className="mt-captured">
+      <div className="mt-captured-title">{t('meetings.captured.title')}</div>
+      <p className="mt-captured-empty">{t('meetings.captured.empty')}</p>
+    </div>
+  );
+}
+
+/** Markdown formatting buttons for the notes editor toolbar (design rteTools).
+ *  Plain-text body is stored as-is; these just insert markdown marks (no backend change). */
+type EditorTool = {
+  id: 'bold' | 'italic' | 'bulletList' | 'numberedList' | 'link';
+  kind: 'text' | 'icon';
+  glyph?: string;
+  weight?: number;
+  italic?: boolean;
+  path?: string;
+  wrap?: string;
+  prefix?: string;
+  link?: boolean;
+};
+const EDITOR_TOOLS: EditorTool[] = [
+  { id: 'bold', kind: 'text', glyph: 'B', weight: 700, wrap: '**' },
+  { id: 'italic', kind: 'text', glyph: 'I', italic: true, wrap: '*' },
+  { id: 'bulletList', kind: 'icon', path: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01', prefix: '- ' },
+  { id: 'numberedList', kind: 'icon', path: 'M10 6h10M10 12h10M10 18h10M4 5l1 2M4 11l1 2', prefix: '1. ' },
+  { id: 'link', kind: 'icon', path: 'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1', link: true },
+];
+
+function DiscussionNote({ initialBody, onSave }: { initialBody: string; onSave: (body: string) => void }) {
+  const { t } = useTranslation();
+  const ref = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState(initialBody);
-  const [savedBody, setSavedBody] = useState<string | null>(null);
+  const [saved, setSaved] = useState(initialBody.trim().length > 0);
   const trimmed = body.trim();
-  // Skip if empty (server rejects) or unchanged from the loaded/last-saved value.
-  const dirty = trimmed.length > 0 && trimmed !== initialBody.trim() && trimmed !== savedBody;
+  // Autosave on blur. Skip if empty (server rejects) or unchanged from the loaded value.
+  const dirty = trimmed.length > 0 && trimmed !== initialBody.trim();
 
   const save = () => {
     if (!dirty) return;
     onSave(trimmed);
-    setSavedBody(trimmed);
+    setSaved(true);
+  };
+
+  // Apply a text transform around the current selection, then restore focus + caret.
+  const apply = (fn: (v: string, s: number, e: number) => { text: string; start: number; end: number }) => {
+    const ta = ref.current;
+    if (!ta) return;
+    const { text, start, end } = fn(ta.value, ta.selectionStart, ta.selectionEnd);
+    setBody(text);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start, end);
+    });
+  };
+  const surround = (mark: string) =>
+    apply((v, s, e) => {
+      const sel = v.slice(s, e);
+      return { text: v.slice(0, s) + mark + sel + mark + v.slice(e), start: s + mark.length, end: s + mark.length + sel.length };
+    });
+  const linePrefix = (prefix: string) =>
+    apply((v, s, e) => {
+      const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+      return { text: v.slice(0, lineStart) + prefix + v.slice(lineStart), start: s + prefix.length, end: e + prefix.length };
+    });
+  const insertLink = () =>
+    apply((v, s, e) => {
+      const sel = v.slice(s, e) || 'text';
+      const ins = `[${sel}](url)`;
+      return { text: v.slice(0, s) + ins + v.slice(e), start: s + 1, end: s + 1 + sel.length };
+    });
+
+  const onTool = (tool: EditorTool) => {
+    if (tool.link) return insertLink();
+    if (tool.prefix) return linePrefix(tool.prefix);
+    if (tool.wrap) return surround(tool.wrap);
   };
 
   return (
@@ -324,73 +369,46 @@ function DiscussionNote({
       <div className="mt-note-head">
         <Icon name="doc" size={15} aria-hidden />
         <span className="mt-note-label">{t('meetings.discussionNotes')}</span>
-        {savedBody !== null && (
+        {saved && (
           <span className="mt-note-saved">
             <span className="mt-note-dot" aria-hidden="true" />
-            {t('meetings.saved')}
+            {t('meetings.autosaved')}
           </span>
         )}
       </div>
-      <textarea
-        className="mt-note-input"
-        aria-label={t('meetings.discussionNotes')}
-        placeholder={t('meetings.notePlaceholder')}
-        rows={5}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        onBlur={save}
-      />
-      <div className="mt-note-actions">
-        <Button size="sm" onClick={save} disabled={!dirty} loading={saving}>
-          {t('meetings.saveNote')}
-        </Button>
+      <div className="mt-editor">
+        <div className="mt-editor-toolbar" role="toolbar" aria-label={t('meetings.editor.toolbar')}>
+          {EDITOR_TOOLS.map((tool) => (
+            <button
+              key={tool.id}
+              type="button"
+              className="mt-editor-tool"
+              aria-label={t(`meetings.editor.${tool.id}`)}
+              style={tool.kind === 'text' ? { fontWeight: tool.weight ?? 400, fontStyle: tool.italic ? 'italic' : 'normal' } : undefined}
+              onMouseDown={(ev) => ev.preventDefault()}
+              onClick={() => onTool(tool)}
+            >
+              {tool.kind === 'text' ? (
+                tool.glyph
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d={tool.path} />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+        <textarea
+          ref={ref}
+          className="mt-editor-input"
+          aria-label={t('meetings.discussionNotes')}
+          placeholder={t('meetings.notePlaceholder')}
+          rows={4}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          onBlur={save}
+        />
       </div>
-    </div>
-  );
-}
-
-function ActualTimeControl({
-  actualMinutes,
-  outcome,
-  saving,
-  onRecord,
-}: {
-  actualMinutes: number;
-  outcome: string;
-  saving: boolean;
-  onRecord: (actualMinutes: number, outcome?: string) => void;
-}) {
-  const { t } = useTranslation();
-  const [minutes, setMinutes] = useState(actualMinutes);
-  const [out, setOut] = useState(outcome === 'Pending' ? '' : outcome);
-  const options = OUTCOMES.map((o) => ({ value: o, label: t(`meetings.outcome.${o}`) }));
-
-  return (
-    <div className="mt-time">
-      <span className="mt-time-label">{t('meetings.actualTime')}</span>
-      <span className="mt-time-field">
-        <input
-          type="number"
-          min={0}
-          className="mt-time-input"
-          aria-label={t('meetings.actualMinutes')}
-          value={minutes}
-          onChange={(e) => setMinutes(Math.max(0, Number(e.target.value) || 0))}
-        />
-        <span className="mt-time-unit">{t('meetings.minutesUnit')}</span>
-      </span>
-      <span className="mt-time-outcome">
-        <Select
-          ariaLabel={t('meetings.outcomeLabel')}
-          placeholder={t('meetings.outcomePick')}
-          value={out}
-          onChange={setOut}
-          options={options}
-        />
-      </span>
-      <Button size="sm" onClick={() => onRecord(minutes, out || undefined)} loading={saving}>
-        {t('meetings.recordTime')}
-      </Button>
     </div>
   );
 }

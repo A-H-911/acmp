@@ -33,7 +33,10 @@ export function Select({ options, value, onChange, placeholder, id, disabled, ar
 
   useEffect(() => {
     if (!open) return;
-    panelRef.current?.focus();
+    // preventScroll: focusing the panel must not scroll the page — when the trigger sits
+    // low on a tall page the panel extends below the fold, and a scrolling focus() yanks
+    // the content above out of view. Keyboard handling still works with focus held here.
+    panelRef.current?.focus({ preventScroll: true });
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
         setOpen(false);
