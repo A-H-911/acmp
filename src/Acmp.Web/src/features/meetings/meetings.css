@@ -1006,25 +1006,29 @@
   cursor: not-allowed;
 }
 
-/* ---- lifecycle gate prompt (Meeting tab, not running) ---- */
+/* ---- empty / gate card (Meeting lifecycle prompts + Minutes/Recording placeholders) ----
+   Anatomy + literal px from the design's recording empty-state card (ACMP Meetings.dc.html
+   isRecording, recNoTranscript ~L307): centered card, 48px rounded subtle icon (no border),
+   16px/700 title, 13px text-2 body capped at 380px. The Recording tab is the one consumer with a
+   design reference (its recReady video/transcript path stays deferred to the Webex adapter, Phase 2);
+   the Meeting/Minutes gates are no-reference compositions that reuse the same empty-card spec. */
 .mt-gate {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: var(--sp-2);
-  padding: var(--sp-8) var(--sp-4);
+  padding: 40px 24px; /* design literal */
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl); /* design literal: .card = 12px */
   box-shadow: var(--shadow);
 }
 .mt-gate-icon {
-  inline-size: 46px;
-  block-size: 46px;
-  border-radius: var(--r-lg);
+  inline-size: 48px; /* design literal */
+  block-size: 48px;
+  border-radius: 13px; /* design literal */
   background: var(--subtle);
-  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1033,14 +1037,14 @@
 }
 .mt-gate-title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px; /* design literal */
+  font-weight: 700;
 }
 .mt-gate-body {
   margin: 0;
-  font-size: 13px;
-  color: var(--text-3);
-  max-inline-size: 30rem;
+  font-size: 13px; /* design literal */
+  color: var(--text-2);
+  max-inline-size: 380px; /* design literal */
   line-height: 1.6;
 }
 .mt-gate-action {

@@ -12,6 +12,37 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 Recording tab — design-faithful empty card (`ACMP Meetings.dc.html`, isRecording)
+
+### 2026-06-28 — Recording placeholder styled to the design recording empty-card anatomy
+
+**Why.** Remaining-work item: style the Recording tab to its design ref. The full `isRecording` `recReady`
+path (video player + searchable transcript) needs the **Webex adapter (Phase 2)** — no backend exists, and
+fabricating a player/transcript would be dishonest. The design's *empty* recording states (`recNoTranscript` /
+`recPending`, ~L301-308) are, however, **true now** (Webex isn't integrated → there genuinely is no recording),
+so those are buildable design-faithfully today.
+
+**What.** Aligned the shared meeting empty card (`.mt-gate`) to the design's recording empty-card literals
+(recNoTranscript ~L307): centered card (12px radius), 48px rounded subtle icon (no border), 16px/700 title,
+13px text-2 body capped at 380px, padding 40/24. The Recording tab is the one consumer with a design reference;
+the Meeting lifecycle prompts + the Minutes placeholder are no-reference compositions that reuse the same
+empty-card spec, so they improved in lockstep (verified no regression). **CSS-only** — no component or i18n
+change; the existing Recording copy is already honest ("Webex recording and transcript retrieval arrive with
+the Webex integration (Phase 2)").
+
+**Deferred (unchanged).** `recReady` video + transcript → Webex adapter (Phase 2). Minutes full MoM document
+(RTE, sections, decisions/actions, lock + SHA-256 hash-chain) → **P7**; building it now would fake
+decisions/approval/audit data and violate the audit non-negotiables, so Minutes stays an honest placeholder.
+
+**Verified.** computed-style px all match design literals (pad 40/24 · radius 12 · icon 48/13/no-border ·
+title 16/700 · body 13/max-380); Recording + Minutes tabs screenshotted EN; `meetings` suite 50 tests pass;
+build 178kB gz; oxlint 0. **No AC verdict change** (design-fidelity placeholder; no feature backend added).
+
+**Next.** Rest of PR-B (notifications full-page, meetings list/calendar); Minutes + recording-ready land with
+their backends (P7 / Webex Phase 2).
+
+---
+
 ## P6 agenda viewer (read-only) — design "Agenda preview" card (`ACMP Meetings.dc.html`, isOverview)
 
 ### 2026-06-28 — Read-only agenda viewer ported to the isOverview preview-card anatomy + head status-chip fix
