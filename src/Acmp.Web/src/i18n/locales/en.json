@@ -380,7 +380,7 @@
     "lengthMin": "{{count}} min",
     "minShort": "{{count}}m",
     "status": { "Scheduled": "Scheduled", "InProgress": "In progress", "Held": "Held", "Closed": "Closed", "Cancelled": "Cancelled" },
-    "agendaStatus": { "Draft": "Draft", "Published": "Published" },
+    "agendaStatus": { "Draft": "Draft", "Published": "Published", "Locked": "Locked", "Closed": "Closed" },
     "empty": { "title": "No meetings scheduled yet", "body": "Meetings will appear here once they're scheduled." },
     "error": { "title": "Couldn't load meetings", "body": "There was a problem loading meetings. Please try again." },
     "notFound": { "title": "Meeting not found", "body": "We couldn't find a meeting with that reference." },
