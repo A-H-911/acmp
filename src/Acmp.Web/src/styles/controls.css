@@ -70,7 +70,9 @@
 }
 
 /* ============================ Breadcrumb ============================ */
-.breadcrumb { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: 13px; color: var(--text-3); }
+/* Design rule (all screens): a breadcrumb always sits 12px above the content beneath it.
+   Owned here on the shared component so every page gets the gap — do not re-add per page. */
+.breadcrumb { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: 13px; color: var(--text-3); margin-block-end: var(--sp-3); }
 .breadcrumb-sep { color: var(--text-3); display: inline-flex; flex: 0 0 auto; }
 .breadcrumb-current { color: var(--text-2); }
 .breadcrumb a { color: inherit; }
