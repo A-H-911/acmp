@@ -1051,11 +1051,6 @@
    ACMP Meetings.dc.html lifecycle banner (line 258): gap 11 · pad 13/15 · radius 11 · margin-end 16 ·
    border = color-mix(st-fg 22%) · title 13.5/600 st-fg · body 12.5 text-2. notReady=warn,
    inProgress=info, concluded=success, cancelled=neutral. */
-/* Breadcrumb → state banner / tabs gap (design Meetings overview: breadcrumb mb 12px).
-   Scoped to the meeting detail page so other pages keep their own rhythm. */
-.mt-detail .breadcrumb {
-  margin-block-end: 12px;
-}
 .mt-lifecycle {
   display: flex;
   align-items: flex-start;
