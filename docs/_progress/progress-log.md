@@ -12,6 +12,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 (PR-B) Notification Center — full page (`/notifications`, IA #79)
+
+### 2026-06-28 — Full-page notification inbox: paging backend + page, mark-all, unread/all filter
+
+**Why.** PR-B remaining item: the in-app notification center had only a bell popover; IA page #79
+(`/notifications`) is the user's full inbox. No `.dc.html` exists for it → **no-reference composition**
+(guardrail 14): design-system page chrome (breadcrumb + page-title) over the shell's notification row
+anatomy (`.notif-*`, shared with the popover, kept DRY).
+
+**Backend (Notifications module).**
+- `GetNotificationsQuery` now takes `Page`/`PageSize` (clamped ≤ 50); `NotificationListDto` gains
+  `Total` + `HasMore`; `UnreadCount` stays the full unread total (the badge), not just the page.
+- New `MarkAllNotificationsReadCommand` (+ handler) flips all of the caller's unread and returns the
+  count. Like `MarkRead`, read-status is personal inbox state, not a governance change → **no AuditEvent**
+  (mirrors the existing handler).
+- Endpoints: `GET /api/notifications?page&pageSize`, new `POST /api/notifications/read-all`.
+
+**Frontend.**
+- `api/notifications.ts`: `useInfiniteNotifications` (infinite query, server `hasMore`), `useMarkAllNotificationsRead`;
+  the popover keeps `useNotifications` (recent page-1 of 8) + a new "See all" footer link → `/notifications`.
+- New page `NotificationsPage` (`/notifications`): list (reused row anatomy in a bordered card),
+  Unread/All segmented filter, Mark-all-read, "Load more" paging, and the loading/empty/all-read states.
+
+**Decisions (operator GO).**
+- **Mark-all-read = real backend command** (one call, one round-trip) — not a client loop.
+- **Filter = client-side Unread/All toggle only** over loaded pages — no server filter (categories are
+  few; YAGNI). Trimmed the docs/14 "type" filter; flagged.
+- **Paging = real** (server page/pageSize + `hasMore`) surfaced as an accessible **"Load more" button**
+  rather than a scroll observer (simpler, keyboard-friendly). Flagged vs the spec's "infinite scroll".
+
+**Verified.** Backend: 12 notification tests pass (paging + mark-all + IDOR scope). Frontend: 14 tests
+(NotificationsPage 7 + NotificationCenter 7), axe-clean. Live end-to-end: page renders EN + AR(RTL),
+Mark-all clears unread rows/dots + the bell badge through the new endpoint. build 178kB gz; oxlint 0;
+i18n parity 482; `dotnet format` clean. **AC-051/053** remain Met (already demonstrated); this adds the
+#79 surface — no verdict change.
+
+**Next.** Meetings list/calendar (rest of PR-B); then PR-C+ test-hardening.
+
+---
+
 ## P6 Recording tab — design-faithful empty card (`ACMP Meetings.dc.html`, isRecording)
 
 ### 2026-06-28 — Recording placeholder styled to the design recording empty-card anatomy

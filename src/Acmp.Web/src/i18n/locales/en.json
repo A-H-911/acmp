@@ -74,7 +74,14 @@
     "loading": "Loading notifications…",
     "error": "Couldn't load notifications.",
     "emptyTitle": "You're all caught up",
-    "emptyBody": "New notifications about your topics, meetings, and actions will appear here."
+    "emptyBody": "New notifications about your topics, meetings, and actions will appear here.",
+    "all": "All",
+    "unread": "Unread",
+    "markAll": "Mark all read",
+    "loadMore": "Load more",
+    "seeAll": "See all notifications",
+    "noUnreadTitle": "No unread notifications",
+    "noUnreadBody": "You've read everything. Switch to All to see your full history."
   },
   "state": {
     "emptyTitle": "Nothing here yet",

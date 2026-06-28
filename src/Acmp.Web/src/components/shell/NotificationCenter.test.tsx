@@ -5,7 +5,7 @@ import axe from 'axe-core';
 import i18n from '../../i18n';
 import { NotificationCenter } from './NotificationCenter';
 import { renderWithAuth } from '../../test/render';
-import type { NotificationItem } from '../../api/notifications';
+import type { NotificationItem, NotificationList } from '../../api/notifications';
 
 const navigate = vi.fn();
 vi.mock('react-router-dom', async (orig) => ({
@@ -34,8 +34,13 @@ const ITEMS: NotificationItem[] = [
   },
 ];
 
-function feed(over: Partial<ReturnType<typeof useNotifications>>) {
-  mockNotifs.mockReturnValue({ data: undefined, isLoading: false, isError: false, ...over });
+function feed(over: { data?: Partial<NotificationList>; isLoading?: boolean; isError?: boolean }) {
+  // The popover only reads items + unreadCount; fill the paging fields so the mock satisfies the
+  // NotificationList type without every call site repeating total/hasMore.
+  const data = over.data
+    ? { items: [], unreadCount: 0, total: 0, hasMore: false, ...over.data }
+    : undefined;
+  mockNotifs.mockReturnValue({ isLoading: false, isError: false, ...over, data });
 }
 
 describe('NotificationCenter (P6e)', () => {

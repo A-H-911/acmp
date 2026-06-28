@@ -14,4 +14,11 @@ public sealed record NotificationDto(
     bool IsRead,
     DateTimeOffset CreatedAt);
 
-public sealed record NotificationListDto(IReadOnlyList<NotificationDto> Items, int UnreadCount);
+// Items = the requested page (newest first). UnreadCount = the user's TOTAL unread across all pages
+// (drives the bell badge, not just this page). Total = all of the user's items; HasMore lets the SPA
+// page lazily (Load more) without a second count round-trip.
+public sealed record NotificationListDto(
+    IReadOnlyList<NotificationDto> Items,
+    int UnreadCount,
+    int Total,
+    bool HasMore);

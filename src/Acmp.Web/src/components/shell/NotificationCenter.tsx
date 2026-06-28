@@ -87,6 +87,19 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
           ))}
         </ul>
       )}
+
+      <div className="notif-panel-foot">
+        <button
+          type="button"
+          className="notif-seeall"
+          onClick={() => {
+            onClose();
+            navigate('/notifications');
+          }}
+        >
+          {t('notif.seeAll')}
+        </button>
+      </div>
     </div>
   );
 }

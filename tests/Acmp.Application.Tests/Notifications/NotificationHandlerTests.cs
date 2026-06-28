@@ -92,6 +92,49 @@ public class NotificationHandlerTests
         feed.Items.Should().BeInDescendingOrder(i => i.CreatedAt); // newest first
     }
 
+    [Fact] // Paging (#79 full-page center): page 1 returns the newest PageSize and flags HasMore; the
+           // last page clears it. UnreadCount + Total are always the full totals, not just the page.
+    public async Task GetNotifications_pages_newest_first_and_reports_total_and_hasMore()
+    {
+        var clock = Clock(T0);
+        await using var db = NewDb(User("kc-a"), clock);
+        var channel = new InAppNotificationChannel(db);
+        for (var i = 0; i < 3; i++)
+        {
+            clock.UtcNow.Returns(T0.AddMinutes(i));
+            await channel.PublishAsync(Msg("kc-a"), default);
+        }
+
+        var page1 = await new GetNotificationsHandler(db, User("kc-a")).Handle(new GetNotificationsQuery(Page: 1, PageSize: 2), default);
+        page1.Items.Should().HaveCount(2);
+        page1.Total.Should().Be(3);
+        page1.UnreadCount.Should().Be(3);
+        page1.HasMore.Should().BeTrue();
+        page1.Items.Should().BeInDescendingOrder(i => i.CreatedAt);
+
+        var page2 = await new GetNotificationsHandler(db, User("kc-a")).Handle(new GetNotificationsQuery(Page: 2, PageSize: 2), default);
+        page2.Items.Should().HaveCount(1);
+        page2.HasMore.Should().BeFalse();
+    }
+
+    [Fact] // Mark-all flips every unread item of the caller and returns the count; another user's items
+           // are untouched (scope = authorization, guardrail 4).
+    public async Task MarkAllRead_flips_only_the_callers_unread_and_returns_count()
+    {
+        var clock = Clock(T0);
+        await using var db = NewDb(User("kc-a"), clock);
+        var channel = new InAppNotificationChannel(db);
+        await channel.PublishAsync(Msg("kc-a"), default);
+        await channel.PublishAsync(Msg("kc-a"), default);
+        await channel.PublishAsync(Msg("kc-b"), default);
+
+        var marked = await new MarkAllNotificationsReadHandler(db, User("kc-a"), clock).Handle(new MarkAllNotificationsReadCommand(), default);
+
+        marked.Should().Be(2);
+        (await new GetNotificationsHandler(db, User("kc-a")).Handle(new GetNotificationsQuery(), default)).UnreadCount.Should().Be(0);
+        (await new GetNotificationsHandler(db, User("kc-b")).Handle(new GetNotificationsQuery(), default)).UnreadCount.Should().Be(1);
+    }
+
     [Fact]
     public async Task MarkRead_flips_the_item_to_read()
     {
