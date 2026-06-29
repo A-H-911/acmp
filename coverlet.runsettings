@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backend coverage basis (ADR-0016). Passed via the dotnet test "settings" flag with
+  collect "XPlat Code Coverage". Excludes only genuinely un-assertable plumbing so the
+  95% line target reflects real, testable code. DI registration extensions are NOT
+  excluded: they execute during the WebApplicationFactory boot, so they are covered
+  incidentally.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- EF Core migrations + their *.Designer.cs are generated, forward-only, and never
+               execute under the InMemory test provider. -->
+          <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+          <!-- Source-generated code (e.g. [GeneratedRegex]) and compiler/EF scaffolding. -->
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverage,DebuggerNonUserCodeAttribute</ExcludeByAttribute>
+          <!-- Program.cs is the composition root (host builder); exercised at boot, no branching to assert. -->
+          <Exclude>[Acmp.Api]Program</Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
