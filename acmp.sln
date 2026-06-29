@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Notifications.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Notifications.Infrastructure", "src\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj", "{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Integration.Tests", "tests\Acmp.Integration.Tests\Acmp.Integration.Tests.csproj", "{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -136,6 +138,10 @@ Global
 		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{116B21B8-2E5B-403D-AF2A-B7C5A3699ACB} = {ACEAF987-769F-4821-877C-AB0580F265DB}
@@ -161,5 +167,6 @@ Global
 		{4C509B82-A017-468A-9F73-32F6D9BDBB10} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
 		{12E55560-EE6C-4D89-8AD7-FFA5847D4AF4} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
 		{CFD9DDE6-EC48-4EA6-82A6-32F27C1D91E8} = {AE1ADAC5-5B75-4289-BAB2-853C560FE196}
+		{2EE6C7E7-4C8F-4F94-B966-564FEA83E23F} = {A72BA724-561E-455A-ACEB-006695114CE9}
 	EndGlobalSection
 EndGlobal

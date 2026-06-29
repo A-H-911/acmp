@@ -12,6 +12,52 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S5: Testcontainers SQL-Server DB-backstop suite (ADR-0016 §3)
+
+### 2026-06-29 — Prove the database-enforced invariants the EF InMemory provider silently accepts
+
+**Why.** The whole unit suite runs on EF Core InMemory, which is a `Dictionary` — it ignores unique
+indexes, FK behaviour and `WHERE`-filtered indexes entirely. So every `.IsUnique()`/FK backstop in the EF
+configuration was, until now, **unverified**: a duplicate write passes green in the unit suite and would
+500 in production. S5 closes that false-green gap on a real SQL Server (ADR-0016 §3).
+
+**What.** New test project `tests/Acmp.Integration.Tests` (added to `acmp.sln`, operator-confirmed), one
+shared `MsSqlContainer` collection-fixture (`Testcontainers.MsSql` 3.10.0) that applies all four module
+contexts' migrations into their schemas — which **is** the "migrations apply cleanly" proof. 11 failure-
+first tests, each contrasting SQL-rejects against InMemory-accepts where that contrast is the point:
+- **Top-level unique (with InMemory twin):** duplicate `Meeting.Key` — SQL throws `DbUpdateException`,
+  InMemory inserts both (the headline false-green proof, ADR-0016 validation line).
+- **Composite owned-collection indexes** `(MeetingEntityId,UserId)` attendance and `(AgendaEntityId,TopicId)`
+  agenda-item — the aggregate dedupes in memory AND EF eagerly loads owned collections, so a duplicate can
+  only arrive via a **non-aggregate write** (repair script / bulk insert). Proven with a raw `INSERT … SELECT`
+  that copies the seeded row with a fresh `PublicId` → SQL rejects the composite collision.
+- **Business-rule unique:** second `Agenda` for one meeting (unique `Agenda.MeetingId`) → rejected.
+- **Identity unique:** duplicate `CommitteeMember.KeycloakUserId` → rejected.
+- **Filtered unique** `Email WHERE [Email] <> ''`: two **real** duplicate emails rejected, but two
+  **empty-email** members allowed (the bootstrap-admin case) — a SQL-only filter InMemory can't model.
+- **FK `OnDelete(Restrict)` (with InMemory twin):** deleting a member referenced by a `Delegation` — SQL
+  blocks it, InMemory orphans the row and succeeds.
+
+**Decisions / findings.**
+- **In-solution (operator GO):** the suite lives in `acmp.sln`, so it runs in the existing `backend` CI job
+  (ubuntu-latest has Docker) — no new workflow. Local `dotnet test acmp.sln` now needs Docker running.
+- **Owned collections can't use a "load-without-Include" trick** — EF eagerly materializes `OwnsMany`
+  children with the owner, so the aggregate dedupe always fires; raw INSERT is the honest backstop path.
+- **DRIFT → OQ-043 (new):** `docs/16` says every mutable aggregate root carries `RowVersion ROWVERSION`
+  for optimistic concurrency (→ 409), but **no code has any `IsRowVersion`/`[Timestamp]`/concurrency token**
+  (zero matches across all `*.cs`). S5 cannot prove a backstop that does not exist; adding it is a
+  feature + migration, not a test slice. Flagged, not silently added (guardrail #11).
+
+**Result.** `dotnet build acmp.sln -c Release` 0 errors · `dotnet format --verify-no-changes` clean ·
+`dotnet test acmp.sln` **570 passed, 0 failed** (Domain 84, Architecture 16, Application 419, **Integration
+11 new**, Api 40). The duplicate-`Meeting.Key` insert goes **red on SQL, green on InMemory** — the contrast
+ADR-0016 §3 requires.
+
+**Next.** S6 — E2E `@playwright/test` against the real compose stack incl. Keycloak PKCE (covers the
+S4-deferred drag paths); then S7 flips CI coverage to fail-under-95 per-file, both stacks.
+
+---
+
 ## Test-Hardening Program — S4: frontend screen-state cleanup (ADR-0016)
 
 ### 2026-06-29 — Close the FE per-file gap to make every frontend file ≥95%
