@@ -12,6 +12,51 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S6a: E2E harness + real Keycloak PKCE auth round-trip (ADR-0016 §2)
+
+### 2026-06-30 — Stand up Playwright against the real compose stack; prove the genuine auth round-trip
+
+**Why.** ADR-0016 §2 requires E2E `@playwright/test` driving the **real** stack (web :8088 / api :8080 /
+Keycloak :8085) through the **genuine authorization-code + PKCE round-trip** — the one flow the unit and
+InMemory suites can never exercise. Its first task is to **verify the SPA auth-seed mechanism before
+writing specs**.
+
+**Auth-seed finding (the §2 first task).** The shipped realm (`deploy/keycloak/realm-export.json`) ships a
+single user `acmp-admin` with `requiredActions: ["UPDATE_PASSWORD"]`, and the `acmp-web` client has
+`directAccessGrantsEnabled: false`. So it **cannot** drive an unattended E2E login (forced password screen;
+no password-grant shortcut). Resolution: seed **deterministic per-role test users via the Keycloak admin
+REST API at global-setup** (fixed password, no required actions) — the **prod realm export is never
+touched**, so no fixed-password accounts ship.
+
+**What (S6a — the verifiable spine).** New Playwright harness under `src/Acmp.Web/`:
+- `playwright.config.ts` (baseURL :8088; does NOT own the 7-container lifecycle — CI / `e2e:up` does).
+- `e2e/global-setup.ts` — waits for realm + SPA health, then seeds `e2e-secretary/-chairman/-member`
+  (admin API, idempotent). `e2e/users.ts`, `e2e/login.ts` (drives the real Keycloak form).
+- `e2e/auth.spec.ts` — (1) unauthenticated deep-link → `/login`; (2) full PKCE round-trip → authenticated
+  dashboard.
+- `.github/workflows/e2e.yml` — separate workflow, `on: pull_request→main + workflow_dispatch` (ADR §2;
+  off the per-branch hot path), brings the stack up, seeds, runs, uploads traces, tears down.
+- `package.json`: `@playwright/test` + `e2e` / `e2e:up` / `e2e:down` scripts.
+- `vitest.config.ts`: added `include: ['src/**/*.{test,spec}.{ts,tsx}']` so vitest never collects the
+  Playwright specs in `e2e/` (they import `@playwright/test`).
+
+**Result (validated locally against the live stack).** `docker compose up --wait` → all 8 services healthy;
+global-setup seeded the 3 users; **both auth specs pass** (deep-link redirect + real PKCE sign-in to the
+dashboard). Cheap gates also green: `npm run build` clean, `npm test` **346 unit tests pass** (e2e excluded),
+Playwright discovers the specs. **GOTCHA (carry forward):** the compose `kcdata`/`mssql-data` volumes pin
+Postgres/SQL passwords at first-init — a stale volume from a prior run fails keycloak/SA auth; **`down -v`
+before `up`** to re-init with the current `.env.example` creds.
+
+**Scope note (operator-confirmed "focused spine").** S6a is the harness + auth round-trip. The remaining
+mandate specs — **core loop** (topic→agenda→meeting→minutes→notify), the **S4-deferred drag paths**
+(@dnd-kit + native HTML5), and an **RTL/axe** pass — are **S6b**: each needs reading + live-iterating its
+feature UI, so they ship as a focused follow-on rather than blind specs in this PR.
+
+**Next.** S6b — core-loop + drag + RTL/a11y specs on the same harness; then S7 flips CI coverage to
+fail-under-95 per-file, both stacks.
+
+---
+
 ## Test-Hardening Program — S5: Testcontainers SQL-Server DB-backstop suite (ADR-0016 §3)
 
 ### 2026-06-29 — Prove the database-enforced invariants the EF InMemory provider silently accepts

@@ -12,6 +12,9 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     css: false,
+    // Unit/component tests live under src/. The Playwright E2E suite in e2e/ has its
+    // own runner (playwright.config.ts) and must NOT be collected by vitest.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       // Basis: ADR-0016. ≥95% lines on real, assertable product code.
       provider: 'v8',
