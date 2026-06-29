@@ -12,6 +12,54 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S0: coverage tooling + basis (ADR-0016)
+
+### 2026-06-29 — Establish coverage measurement, exclusion basis, and slice plan
+
+**Why.** New standing mission: ≥95% line coverage on FE **and** BE, plus comprehensive adversarial
+E2E. Before writing any test, stand up real coverage tooling, agree an honest basis with the operator,
+and report measured baselines. No product behaviour changes in this slice.
+
+**Measured baselines @ `b7ab531`.**
+- **FE raw:** 82.94% lines (4270/5148, `all:true` + `include src/**` — honest denominator).
+- **BE raw:** 39.1% across 14 assemblies — but anchored almost entirely by EF migrations + generated
+  code + `Program`. Outside `*.Infrastructure` only ~436 lines were uncovered.
+- **Verified fact (not assumed):** the adversarial invariants are CODE-enforced and run under the
+  existing EF **InMemory** test stack — immutability is a domain guard (`Topic.cs:264`,
+  `Agenda.cs:83/133` throw), IDOR is handler/LINQ (`CurrentActor` + `ICurrentUser`), audit + hash-chain
+  are C#. Only DB-enforced backstops (`.IsUnique()` indexes, FK cascade, concurrency, migrations) need
+  real SQL → Testcontainers side-suite, not the path to 95%.
+
+**Decisions applied (ADR-0016, operator GO 2026-06-29).**
+- Basis = ≥95% **lines** on assertable code, **global + per-file** thresholds.
+- Hard-exclude (genuinely un-assertable plumbing only): BE = `**/Migrations/*.cs`, `[GeneratedCode]`/
+  `[CompilerGenerated]`/`[ExcludeFromCodeCoverage]`/`[DebuggerNonUserCode]`, `[Acmp.Api]Program`
+  (repo-root `coverlet.runsettings`). FE = `src/main.tsx`, `DevRoleSwitcher.tsx`, `src/test/**`,
+  `*.d.ts` (`vitest.config.ts` `coverage`). **`App.tsx` is NOT excluded** (route/dirty-form guards
+  must be tested). DI extensions NOT excluded (covered at boot).
+- E2E = `@playwright/test` against the real compose stack incl. genuine Keycloak PKCE, on
+  `pull_request`→`main` + `workflow_dispatch`. Testcontainers DB-backstop suite = included (full).
+- CI fail-under-95 gate wired only in the final slice (S7) so `main` never goes red mid-climb.
+
+**Changes.**
+- `src/Acmp.Web/vitest.config.ts` — added `coverage` (v8, `all:true`, include/exclude per basis,
+  text/json-summary/html reporters; thresholds deferred to S7).
+- `src/Acmp.Web/package.json` — `test:cov` script.
+- `coverlet.runsettings` (repo root) — BE exclusion basis.
+- `adr/ADR-0016-test-coverage-basis-and-e2e.md` — the decision record.
+
+**Baselines after exclusions (the honest gap).**
+- **FE: 83.74%** (225 tests, 32 files) → ~590 lines to 95% (data layer + auth the big levers).
+- **BE: 89.1%** (1864/2090; 410 tests) → ~122 lines to 95%, concentrated in the 0% handlers
+  (`UpdateTopic`, `Defer/Prepare/Prioritize/Reject`, `EndMeeting`, `CancelMeeting`) + a few validators
+  + endpoint gaps.
+
+**What's next.** S1 — BE adversarial invariants (the 0% handlers, failure-first: authz-denial,
+validation, 404, IDOR, immutability guard, AuditEvent, status-transition guards). Acceptance-audit
+entries begin at S1 (S0 is tooling, satisfies no AC). CI gate stays report-only until S7.
+
+---
+
 ## P6 (PR-B) Create-meeting screen UI fixes (`ACMP Meetings.dc.html` isCreate)
 
 ### 2026-06-29 — Schedule form: fix field rhythm/alignment, full-width Mode, design date + time control

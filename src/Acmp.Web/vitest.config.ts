@@ -12,5 +12,21 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     css: false,
+    coverage: {
+      // Basis: ADR-0016. ≥95% lines on real, assertable product code.
+      provider: 'v8',
+      all: true, // count files no test imports, so the denominator is honest
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/main.tsx', // app bootstrap (ReactDOM.createRoot) — no assertable logic
+        'src/components/shell/DevRoleSwitcher.tsx', // dev-only role switcher, not shipped behavior
+        'src/test/**', // test harness (renderWithAuth, setup)
+        'src/**/*.d.ts',
+        'src/vite-env.d.ts',
+      ],
+      reporter: ['text', 'json-summary', 'html'],
+      // Thresholds are wired in the final slice (S7) once both stacks are ≥95%,
+      // so CI never goes red while we are still climbing. Report-only until then.
+    },
   },
 })
