@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import axe from 'axe-core';
@@ -136,6 +136,110 @@ describe('SubmitTopic (P5b)', () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, big);
     expect(screen.getByText(/50 MB or smaller/)).toBeInTheDocument();
+  });
+
+  it('uploads attached files after the topic is created', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Arch\. Decision/ }));
+    await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
+    await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
+    await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
+    await user.type(screen.getByLabelText(/Affected streams/), 'identity{Enter}');
+    const file = new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' });
+    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file);
+    await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
+    await waitFor(() => expect(mockUpload).toHaveBeenCalledWith('g1', file)); // res.id from mutateAsync
+  });
+
+  it('starts from an empty form when the saved draft is corrupt', () => {
+    localStorage.setItem('acmp-topic-draft-v1', '{not valid json');
+    setup();
+    expect((screen.getByLabelText(/Title/) as HTMLInputElement).value).toBe(''); // loadDraft caught → EMPTY
+  });
+
+  it('autosaves the draft to localStorage after a pause', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText(/Title/), 'Autosaved title');
+    await waitFor(
+      () => expect(localStorage.getItem('acmp-topic-draft-v1')).toContain('Autosaved title'),
+      { timeout: 2000 },
+    );
+  });
+
+  it('warns before a hard reload while the form is dirty (beforeunload)', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText(/Title/), 'Dirty draft');
+    const evt = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(evt);
+    expect(evt.defaultPrevented).toBe(true); // guard prevented the unload
+  });
+
+  it('formats attachment sizes in KB and MB', async () => {
+    const user = userEvent.setup();
+    setup();
+    const kb = new File([new Uint8Array(1)], 'medium.pdf', { type: 'application/pdf' });
+    Object.defineProperty(kb, 'size', { value: 200 * 1024 });
+    const mb = new File([new Uint8Array(1)], 'large.pdf', { type: 'application/pdf' });
+    Object.defineProperty(mb, 'size', { value: 3 * 1024 * 1024 });
+    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, [kb, mb]);
+    expect(screen.getByText('200 KB')).toBeInTheDocument();
+    expect(screen.getByText('3.0 MB')).toBeInTheDocument();
+  });
+
+  it('saves a draft to localStorage and leaves when "Save draft" is clicked', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText(/Title/), 'Draft me later');
+    await user.click(screen.getByRole('button', { name: i18n.t('submit.saveDraft') }));
+    expect(localStorage.getItem('acmp-topic-draft-v1')).not.toBeNull();
+    expect(navigateSpy).toHaveBeenCalled();
+  });
+
+  it('jumps to a section via the step nav (marks it current)', async () => {
+    const user = userEvent.setup();
+    setup();
+    const nav = screen.getByRole('navigation', { name: i18n.t('submit.sectionsLabel') });
+    const steps = within(nav).getAllByRole('button');
+    await user.click(steps[1]); // a non-active step
+    expect(steps[1]).toHaveAttribute('aria-current', 'step');
+  });
+
+  it('surfaces a server error when the submission fails', async () => {
+    const user = userEvent.setup();
+    mutateAsync.mockRejectedValueOnce(new Error('network down'));
+    setup();
+    await user.click(screen.getByRole('button', { name: /Arch\. Decision/ }));
+    await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
+    await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
+    await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
+    await user.type(screen.getByLabelText(/Affected streams/), 'identity{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
+    expect(await screen.findByText(i18n.t('submit.submitError'))).toBeInTheDocument();
+  });
+
+  it('adds a valid attachment to the list and removes it', async () => {
+    const user = userEvent.setup();
+    setup();
+    const file = new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(input, file);
+    expect(screen.getByText('spec.pdf')).toBeInTheDocument(); // file list rendered
+    await user.click(screen.getByRole('button', { name: /spec\.pdf/ })); // remove control
+    expect(screen.queryByText('spec.pdf')).not.toBeInTheDocument();
+  });
+
+  it('removes the last stream token on Backspace when the input is empty', async () => {
+    const user = userEvent.setup();
+    setup();
+    const streams = screen.getByLabelText(/Affected streams/);
+    await user.type(streams, 'identity{Enter}');
+    expect(screen.getByText('identity')).toBeInTheDocument(); // token added
+    streams.focus();
+    await user.keyboard('{Backspace}'); // empty draft + Backspace removes the last token
+    expect(screen.queryByText('identity')).not.toBeInTheDocument();
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {

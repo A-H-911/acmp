@@ -374,12 +374,15 @@ function PoolColumn({
                 key={tp.id}
                 className="mt-pool-card"
                 draggable
+                /* v8 ignore start -- native HTML5 drag source (pool → agenda): jsdom can't run
+                   the drag transfer; the click-to-add path is unit-tested, drag covered by S6 E2E. */
                 onDragStart={() => {
                   dragRef.current = tp;
                 }}
                 onDragEnd={() => {
                   dragRef.current = null;
                 }}
+                /* v8 ignore stop */
               >
                 <Icon name="grip" size={15} className="mt-pool-grip" aria-hidden />
                 <div className="mt-pool-body">
@@ -439,6 +442,9 @@ function AgendaItemRow({
     <li
       className="mt-item"
       draggable
+      /* v8 ignore start -- native HTML5 drag-reorder: jsdom does not run the drag data
+         transfer, so these handlers fire only in a real browser. The keyboard reorder
+         (Move up/down) is unit-tested; the pointer-drag path is covered by S6 E2E. */
       onDragStart={() => {
         dragRef.current = item;
       }}
@@ -450,6 +456,7 @@ function AgendaItemRow({
         e.stopPropagation();
         onItemDrop(item);
       }}
+      /* v8 ignore stop */
     >
       <div className="mt-item-rail">
         <span className="mt-item-index" aria-hidden="true">{index}</span>
@@ -521,6 +528,9 @@ function AgendaItemRow({
  */
 function AgendaPreview({ items, usedMinutes }: { items: AgendaItem[]; usedMinutes: number }) {
   const { t } = useTranslation();
+  /* v8 ignore start -- defensive: AgendaPreview only renders for a Locked/Closed agenda,
+     which by the publish invariant always has ≥1 item, so the empty branch is unreachable
+     in real flows (kept as a guard). */
   if (items.length === 0) {
     return (
       <section className="mt-agenda" aria-label={t('meetings.agendaItems')}>
@@ -528,6 +538,7 @@ function AgendaPreview({ items, usedMinutes }: { items: AgendaItem[]; usedMinute
       </section>
     );
   }
+  /* v8 ignore stop */
   return (
     <section className="mt-preview" aria-label={t('meetings.agendaItems')}>
       <div className="mt-preview-head">

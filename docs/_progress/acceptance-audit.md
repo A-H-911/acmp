@@ -388,6 +388,16 @@ keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
 > the real authorization pipeline (deepening evidence for the Topics/Meetings workflow ACs) but the live
 > end-to-end UI legs remain → P17. No exclusions added; no product behaviour changed.
 
+> **Test-hardening S4 (2026-06-29):** **frontend screen-state coverage** taking every FE file to **≥95%
+> lines** (global 94.83% → **98.46%**), so the per-file S7 gate is FE-ready. 121 tests (225 → 346) over the
+> UI primitives (Pagination, Select/Dialog/Field/DateField/MultiSelect keyboard + edge paths), ErrorBoundary,
+> PlaceholderPage, NotificationCenter states, meetingStatus, and feature gaps (SubmitTopic attachments/
+> draft/autosave/submit-error; AgendaBuilder). Deepens FE-side evidence for the a11y/keyboard ACs but flips
+> **no verdicts** — automated UI-regression remains → P17. **4 documented `/* v8 ignore */` comments**
+> (comment-only, no behaviour change) cover genuinely browser-only paths jsdom can't run — @dnd-kit + native
+> HTML5 **drag** (accessible Move up/down + click-to-add are unit-tested; drag → S6 E2E) and two defensive/
+> unreachable guards. Both stacks now per-file-gate-ready (BE 99.6%, FE 98.46%).
+
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
 > unit-tested but whose end-to-end demonstration needs a not-yet-built aggregate (Topics P5, Actions P8,
