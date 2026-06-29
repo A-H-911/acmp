@@ -367,6 +367,16 @@ keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
 > leg lands (→ P17), so S1 deepens the *evidence* behind the existing `Partial`/`Met` rows (AC-031/032/034/
 > 035/043) without over-claiming. No business behaviour changed.
 
+> **Test-hardening S2 (2026-06-29):** **adversarial, failure-first frontend coverage** of the auth + data
+> layer (FE 83.74% → 94.83% lines; the whole S2 surface — `App.tsx`, `api/*`, `auth/*`, `LoginPage`,
+> `AuthCallbackPage` — at **100% lines**, ADR-0016). 88 tests run the *real* OIDC providers, route/role
+> guards, API client, and TanStack Query hooks against a stubbed `fetch` (the screen tests mock these away,
+> so this is their first real exercise). This deepens the **client-side** evidence for **AC-001** (Keycloak
+> claim→role mapping + auth-code/PKCE config now unit-tested) and the route/role gating noted in P3/P4
+> (`ProtectedRoute`/`RequireRole`/route tree — UI gating, not authorization). **No verdict flips:** the live
+> auth round-trip already carries AC-001 (P4/CHANGE-001); these are unit-level FE assertions and the
+> automated UI-regression leg remains → P17. No product behaviour changed. Screen-state FE remainder → S4.
+
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
 > unit-tested but whose end-to-end demonstration needs a not-yet-built aggregate (Topics P5, Actions P8,
