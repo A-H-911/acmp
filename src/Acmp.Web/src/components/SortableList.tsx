@@ -87,6 +87,10 @@ export function SortableList<T>({ items, getId, onReorder, renderItem, getLabel,
     onReorder(arrayMove(items, from, to));
   };
 
+  /* v8 ignore start -- @dnd-kit pointer-drag end: jsdom cannot dispatch the sensor's
+     pointer sequence, so this fires only in a real browser. The accessible keyboard
+     reorder (Move up/down buttons → `move`) is unit-tested; the drag path is covered
+     by the S6 Playwright E2E. */
   const onDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
@@ -94,6 +98,7 @@ export function SortableList<T>({ items, getId, onReorder, renderItem, getLabel,
     const to = items.findIndex((i) => getId(i) === over.id);
     if (from !== -1 && to !== -1) onReorder(arrayMove(items, from, to));
   };
+  /* v8 ignore stop */
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>

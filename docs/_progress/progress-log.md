@@ -12,6 +12,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S4: frontend screen-state cleanup (ADR-0016)
+
+### 2026-06-29 — Close the FE per-file gap to make every frontend file ≥95%
+
+**Why.** S2 took the FE auth/data surface to 100% but global FE sat at 94.83% with ~13 screen-state files
+at 8–94%. S4 closes them so every FE file clears the per-file ≥95% gate S7 will enforce (operator-confirmed
+"all 13").
+
+**What.** 121 new tests (225 → 346), no product behaviour changed except 4 documented coverage-ignore
+**comments** (no logic touched). New focused test files + targeted extensions:
+- **UI primitives** (`components/ui/coverage.test.tsx`): Pagination (paging/disabled/aria-current), Select
+  (ArrowDown/Home/End/Enter keyboard + Escape), Dialog (Tab/Shift+Tab focus-trap + Escape), Field (help
+  branch), DateField (open/Escape), MultiSelect (empty-filter + Escape) → all 100%.
+- **Components/pages**: `ErrorBoundary.test.tsx` (catch→safe fallback, no leak, retry-recovery),
+  `PlaceholderPage.test.tsx` (localized title + axe), `meetingStatus.test.ts` (every tone/section arm),
+  `NotificationCenter.coverage.test.tsx` (loading/error/see-all).
+- **Feature extensions**: SubmitTopic (attachment add/remove, token backspace, save-draft, section nav,
+  submit-error, autosave, beforeunload, corrupt-draft, KB/MB formatting) → 84.2% → 95.5%; AgendaBuilder
+  91.6% → 95.2%.
+
+**The one deviation — 4 documented `/* v8 ignore */` comments** (comment-only, zero behaviour change), each
+for a genuinely browser-only path that jsdom cannot exercise, with the accessible/fallback path unit-tested
+and the drag path deferred to the S6 Playwright E2E:
+- `SortableList` `onDragEnd` (@dnd-kit pointer drag) — Move up/down buttons are unit-tested.
+- `AgendaBuilder` native HTML5 drag handlers (agenda item + pool card) — click-to-add is unit-tested.
+- `AgendaBuilder` `AgendaPreview` empty branch — defensive/unreachable (a locked agenda always has ≥1 item).
+- `SubmitTopic` `saveDraftAndLeave` storage-failure catch — defensive (setItem throws only when storage is
+  disabled/full).
+(The IntersectionObserver scroll-spy effect is left naturally uncovered — jsdom has no IO and the effect
+self-guards — and the file still clears ≥95% without it.)
+
+**Result.** `npm run build` (tsc -b + vite) clean · `npm run lint` (oxlint) **0 errors** ·
+`node scripts/check-i18n.mjs` **OK (501 keys — no new strings)** · `npm run test:cov` **346 passed, 0
+failed**. **FE line coverage 94.83% → 98.46%; every frontend file is now ≥95%** (verified via the v8
+json-summary). Both stacks are now per-file-gate-ready (BE 99.6%, FE 98.46%).
+
+**Next.** S5 — Testcontainers SQL-Server DB-backstop suite (then S6 E2E @playwright/test, S7 flip the gate).
+
+---
+
 ## Test-Hardening Program — S3: backend Api endpoints + per-file BE sweep (ADR-0016)
 
 ### 2026-06-29 — Close the last backend gaps to make every file per-file-gate ready
