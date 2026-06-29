@@ -12,6 +12,57 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S2: frontend auth + data layer (ADR-0016)
+
+### 2026-06-29 — Failure-first coverage of the OIDC wiring, route guards, API client, and TanStack Query hooks
+
+**Why.** S2 begins the frontend climb to ≥95% by hardening the auth/data surface that was at ~0–60%.
+Key fact driving the approach: the existing screen tests **mock the API hooks away**
+(`vi.mock('../../api/...')`), so the real auth providers and the real query/mutation hooks had never
+executed in any test. S2 flips the boundary — it runs the **real** code against a stubbed `fetch` —
+so URL building, request bodies, retry rules, cache invalidation, claim→role mapping, and the route
+guards are actually asserted. Test the **bad before the good**: 401/4xx surfacing, fail-closed auth,
+no-retry on 4xx, role-gate denial, storage-unavailable, provision-retry-on-failure.
+
+**What.** 88 new tests (no product behaviour changed), in 12 files, matching the existing
+vitest + Testing-Library style. New harness `src/test/queryHarness.tsx` (coverage-excluded):
+`makeQueryWrapper` (fresh QueryClient, retries off) + `stubFetch`.
+- **Data layer** — `apiClient.test.ts` (bearer token, Accept-Language, 204→undefined, RFC-7807→typed
+  `ApiError`, non-JSON-error fallback, header merge), `queryClient.test.ts` (retry predicate: 4xx no-retry,
+  5xx/network one retry), `topics.test.ts` (`toQuery` repeated-status + all filters + empties omitted,
+  `enabled` gate, mutation URL/body/invalidation, multipart upload with no JSON Content-Type),
+  `meetings.test.ts` (all 15 hooks — agenda vs live-meeting invalidation scopes, failure surfacing),
+  `notifications.test.ts` (recent vs infinite, `getNextPageParam` hasMore true/false, mark-read/all),
+  `members.test.ts`.
+- **Auth + routing** — `AuthProvider.test.tsx` (fail-closed in prod, DEV stub + role switch, OidcBridge
+  claims→roles, provision POST `/members/me` once, retry-on-failure guard reset, expiry→authStatus,
+  sign-out), `authConfig.test.ts` (oidcEnabled true/false, auth-code+PKCE no secret, scope default,
+  URL strip), `authStatus.test.ts` (round-trip, clear-on-read, storage-throws caught),
+  `ProtectedRoute.test.tsx` (loading/error/unauth-redirect, extended), `App.test.tsx` (route tree:
+  member sees protected route in shell, admin role gate denied/allowed, 404),
+  `AuthCallbackPage.test.tsx` (loading/error/onward routing), `LoginPage.test.tsx` (signed-out/expired
+  status banners, extended).
+
+**Notes / honest scope.** (1) **No optimistic-update logic exists** in the `api/` layer (zero `onMutate`),
+so "optimistic rollback" tests would assert nothing — deliberately not written. (2) The unauthenticated
+→ `/login` redirect is asserted in `ProtectedRoute.test.tsx` (declarative `<Routes>`, where `<Navigate>`
+works); driving it through a data router in `App.test.tsx` hits a jsdom+undici `AbortSignal` brand-check
+bug on client-side navigation, so the App-level test sticks to non-redirecting outcomes. (3) Fixed a
+false-green in the first draft: storage-throw tests must swap the global `sessionStorage` object — spying
+on `Storage.prototype` does not intercept the test environment's storage.
+
+**Result.** `npm run build` (tsc -b + vite) clean · `npm run lint` (oxlint) clean (one pre-existing
+Toast warning only) · `node scripts/check-i18n.mjs` **OK (501 keys — no new strings)** · `npm run test:cov`
+**313 passed, 0 failed** (225 → 313). **FE line coverage 83.74% → 94.83%.** The S2 surface is at
+**100% lines** every file: `App.tsx`, all `api/*`, all `auth/*`, `LoginPage`, `AuthCallbackPage`
+(plus `Dashboard`/`Administration`/`NotFound` covered incidentally by the route-tree test). Global 94.83%
+is below 95% by design — the screen-state remainder (`components/ui`, `PlaceholderPage`, `ErrorBoundary`,
+`AppShell`, `Card`, etc.) is **S4**.
+
+**Next.** S3 — backend Api endpoints (then S4 closes FE screen-state to global ≥95%).
+
+---
+
 ## Test-Hardening Program — S1: backend adversarial invariants (ADR-0016)
 
 ### 2026-06-29 — Failure-first coverage of the 0%-covered Application handlers + validators
