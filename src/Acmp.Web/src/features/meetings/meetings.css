@@ -40,6 +40,17 @@
 .mt-schedule-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; }
 .mt-schedule-actions { display: flex; justify-content: flex-end; gap: 9px; margin-block-start: 16px; }
 @media (max-width: 560px) { .mt-schedule-row { grid-template-columns: 1fr; } }
+/* The card spaces every child with flex `gap:16`; the global `.field + .field` margin would
+   double that to 32 between stacked fields AND push the 2nd field in each row 16px down. Neutralize
+   it here so the rhythm is a uniform 16 and the two-column rows stay top-aligned (design gap:16). */
+.mt-schedule-card .field + .field { margin-block-start: 0; }
+/* Start–end time pair inside one Field (design's Time control). */
+.mt-time-row { display: flex; align-items: center; gap: 8px; }
+.mt-time-row .input { flex: 1 1 0; min-inline-size: 0; }
+.mt-time-sep { color: var(--text-3); flex: 0 0 auto; }
+/* Mode segmented fills its grid cell so it aligns with the Type select above it (design width:100%). */
+.mt-mode .segmented { display: flex; inline-size: 100%; }
+.mt-mode .segmented-item { flex: 1 1 0; justify-content: center; }
 .mt-title-link {
   color: var(--text);
   font-weight: 600;

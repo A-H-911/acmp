@@ -106,6 +106,13 @@
 [dir="rtl"] .datepicker-prev svg { transform: none; }
 [dir="rtl"] .datepicker-next svg { transform: scaleX(-1); }
 
+/* Date field: a select-trigger-styled box (calendar icon + value) that opens the DatePicker
+   in a popover. Replaces native datetime-local for a consistent, localized, RTL-correct control. */
+.datefield-trigger { justify-content: flex-start; gap: 8px; }
+.datefield-icon { color: var(--text-3); flex: 0 0 auto; }
+.datefield-value { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.datefield-pop { position: absolute; inset-block-start: 42px; inset-inline-start: 0; z-index: 70; }
+
 /* ============================ Checkbox & radio ============================ */
 .choice { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer; }
 .choice input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }

@@ -20,16 +20,18 @@ import { Button } from '../../components/ui/Button';
 import { Field, Input } from '../../components/ui/Field';
 import { Select } from '../../components/ui/Select';
 import { Segmented } from '../../components/ui/Segmented';
+import { DateField } from '../../components/ui/DateField';
 import { Icon } from '../../components/icons';
 import './meetings.css';
 
 const TYPES: MeetingType[] = ['Regular', 'Extraordinary'];
 const MODES: MeetingMode[] = ['InPerson', 'Hybrid', 'Remote'];
 
-/** A `datetime-local` value ("2026-06-30T09:00", local) → an ISO 8601 instant for the API. */
-function toIso(local: string): string | null {
-  if (!local) return null;
-  const d = new Date(local);
+/** A date (ISO yyyy-mm-dd) + a time (HH:mm), both local, → an ISO 8601 instant for the API.
+ *  The meeting is single-day (the design's Date + Start/End times), so start & end share the date. */
+function toIso(date: string, time: string): string | null {
+  if (!date || !time) return null;
+  const d = new Date(`${date}T${time}`);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
@@ -41,8 +43,9 @@ export function SchedulePage() {
 
   const [title, setTitle] = useState('');
   const [chairId, setChairId] = useState('');
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const [date, setDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [type, setType] = useState<MeetingType>('Regular');
   const [mode, setMode] = useState<MeetingMode>('InPerson');
   const [location, setLocation] = useState('');
@@ -53,10 +56,11 @@ export function SchedulePage() {
   const chairOptions = activeMembers.map((m) => ({ value: m.publicId, label: m.fullName }));
   const effectiveChairId = chairId || activeMembers.find((m) => m.role === 'Chairman')?.publicId || '';
 
-  const startIso = toIso(start);
-  const endIso = toIso(end);
+  const startIso = toIso(date, startTime);
+  const endIso = toIso(date, endTime);
   const titleError = submitted && !title.trim() ? t('meetings.schedule.titleRequired') : undefined;
   const chairError = submitted && !effectiveChairId ? t('meetings.schedule.chairRequired') : undefined;
+  const dateError = submitted && !date ? t('meetings.schedule.dateRequired') : undefined;
   const windowError =
     submitted && startIso && endIso && endIso <= startIso ? t('meetings.schedule.windowInvalid') : undefined;
 
@@ -65,7 +69,7 @@ export function SchedulePage() {
   const onSubmit = () => {
     setSubmitted(true);
     const chair = activeMembers.find((m) => m.publicId === effectiveChairId);
-    if (!title.trim() || !chair || !startIso || !endIso || endIso <= startIso) return;
+    if (!title.trim() || !chair || !date || !startIso || !endIso || endIso <= startIso) return;
 
     schedule.mutate(
       {
@@ -119,11 +123,37 @@ export function SchedulePage() {
           </Field>
 
           <div className="mt-schedule-row">
-            <Field label={t('meetings.schedule.startLabel')} required error={windowError}>
-              {(p) => <Input {...p} type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />}
+            <Field label={t('meetings.schedule.dateLabel')} required error={dateError}>
+              {(p) => (
+                <DateField
+                  {...p}
+                  ariaLabel={t('meetings.schedule.dateLabel')}
+                  value={date}
+                  onChange={setDate}
+                  placeholder={t('meetings.schedule.datePlaceholder')}
+                  labels={{ previousMonth: t('meetings.calendar.prevMonth'), nextMonth: t('meetings.calendar.nextMonth') }}
+                />
+              )}
             </Field>
-            <Field label={t('meetings.schedule.endLabel')} required>
-              {(p) => <Input {...p} type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />}
+            <Field label={t('meetings.schedule.timeLabel')} required error={windowError}>
+              {(p) => (
+                <div className="mt-time-row">
+                  <Input
+                    {...p}
+                    type="time"
+                    aria-label={t('meetings.schedule.startTimeLabel')}
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                  <span className="mt-time-sep" aria-hidden="true">–</span>
+                  <Input
+                    type="time"
+                    aria-label={t('meetings.schedule.endTimeLabel')}
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
+                </div>
+              )}
             </Field>
           </div>
 
@@ -141,12 +171,14 @@ export function SchedulePage() {
             </Field>
             <Field label={t('meetings.schedule.modeLabel')}>
               {() => (
-                <Segmented
-                  ariaLabel={t('meetings.schedule.modeLabel')}
-                  value={mode}
-                  onValueChange={(v) => setMode(v as MeetingMode)}
-                  items={MODES.map((x) => ({ id: x, label: t(`meetings.meetingMode.${x}`) }))}
-                />
+                <div className="mt-mode">
+                  <Segmented
+                    ariaLabel={t('meetings.schedule.modeLabel')}
+                    value={mode}
+                    onValueChange={(v) => setMode(v as MeetingMode)}
+                    items={MODES.map((x) => ({ id: x, label: t(`meetings.meetingMode.${x}`) }))}
+                  />
+                </div>
               )}
             </Field>
           </div>
