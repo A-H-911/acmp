@@ -348,6 +348,16 @@
   "meetings": {
     "title": "Meetings",
     "listSub": "Schedule, build the agenda, and publish to the committee.",
+    "listCount": "{{upcoming}} upcoming · {{past}} past",
+    "view": { "list": "List", "calendar": "Calendar" },
+    "viewToggle": "Switch meetings view",
+    "section": { "upcoming": "Upcoming", "past": "Past" },
+    "calendar": {
+      "label": "Meetings calendar",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "eventAria": "{{title}} — {{when}}"
+    },
     "schedule": {
       "action": "Schedule meeting",
       "title": "Schedule a meeting",
@@ -381,7 +391,9 @@
       "Remote": "Remote"
     },
     "tableCaption": "Scheduled and past committee meetings",
-    "col": { "key": "Reference", "title": "Meeting", "when": "When", "chair": "Chair", "items": "Items", "status": "Status", "agenda": "Agenda" },
+    "col": { "key": "Reference", "title": "Meeting", "when": "When", "type": "Type", "chair": "Chair", "items": "Items", "status": "Status", "agenda": "Agenda" },
+    "captionUpcoming": "Upcoming committee meetings",
+    "captionPast": "Past committee meetings",
     "itemCount": "{{count}} items",
     "minutes": "{{count}} min",
     "lengthMin": "{{count}} min",

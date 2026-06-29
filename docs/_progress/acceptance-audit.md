@@ -255,6 +255,22 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > calendar, timeline, submit RTE, detail 5 tabs) in EN-light + AR-dark + tablet-768 (no overflow; full RTL mirror
 > + dark tokens); doubles as the E2E smoke pass. Automated pixel-diff VR → P17. See progress-log "P5 UI refresh".
 
+> P6 Meetings list redesign (2026-06-29): rebuilt the meetings list to the design's `isList` screen
+> (`ACMP Meetings.dc.html`) — an **Upcoming/Past** split (two shared `Table`s, columns
+> ID·When·Title·Type·Status) with a **List⇄Calendar** toggle, plus a new `MeetingsCalendar` month grid
+> (Intl month/weekday labels, RTL-mirrored prev/next, status-toned event pills over real
+> `scheduledStart`, defaults to current month). The old single flat table was drift from this known
+> reference, not no-design scaffolding. Operator GO "Match design, keep agenda chip": **kept** an
+> Agenda-status chip column the design omits (deliberate deviation), **omitted** the mock's
+> filter chips + Saved-views (no backend — not faked). Frontend-only; no API change. **No verdict
+> flips** — a new view over existing meeting data, no dedicated AC. Adds a surface to
+> **AC-040/045/046** (both screens render EN/AR + axe-clean, 0 violations across the two meetings
+> specs; computed-px gate confirms every list + calendar literal matches the `.dc.html`) and
+> **AC-041** (RTL mirror live-confirmed EN/AR desktop + AR tablet; automated pixel-diff VR → P17).
+> Web 223/223 (incl. MeetingsCalendar + list-split/toggle axe + behaviour cases), i18n parity OK,
+> tsc + vite build (JS 180 kB gz) + oxlint clean, meetings.css zero physical properties. See
+> progress-log "Meetings list to design".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
