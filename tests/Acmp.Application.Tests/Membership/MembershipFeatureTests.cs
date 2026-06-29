@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Membership.Application.Features.DeactivateMember;
+﻿using Acmp.Modules.Membership.Application.Features.CreateDelegation;
+using Acmp.Modules.Membership.Application.Features.DeactivateMember;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
@@ -126,5 +127,42 @@ public class MembershipFeatureTests
         var act = () => new DeactivateMemberHandler(db, admin, Audit()).Handle(new DeactivateMemberCommand(Guid.NewGuid()), CancellationToken.None);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    // ---- CreateDelegationValidator (docs/10 §E.3 Auth.Delegate): bounded, identified, capability-named ----
+
+    private static CreateDelegationCommand ValidDelegation() => new(
+        Guid.NewGuid(), "Topic.Triage",
+        new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
+        new DateTimeOffset(2026, 7, 8, 0, 0, 0, TimeSpan.Zero));
+
+    [Fact]
+    public void Delegation_is_valid_with_a_target_capability_and_a_forward_window()
+    {
+        new CreateDelegationValidator().Validate(ValidDelegation()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Delegation_requires_a_target_member()
+    {
+        new CreateDelegationValidator().Validate(ValidDelegation() with { DelegateMemberPublicId = Guid.Empty })
+            .IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Delegation_requires_a_capability_within_length()
+    {
+        var v = new CreateDelegationValidator();
+        v.Validate(ValidDelegation() with { Capability = "" }).IsValid.Should().BeFalse();
+        v.Validate(ValidDelegation() with { Capability = new string('x', 129) }).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Delegation_window_must_end_after_it_begins()
+    {
+        var from = new DateTimeOffset(2026, 7, 8, 0, 0, 0, TimeSpan.Zero);
+        var v = new CreateDelegationValidator();
+        v.Validate(ValidDelegation() with { ValidFrom = from, ValidTo = from }).IsValid.Should().BeFalse();      // equal
+        v.Validate(ValidDelegation() with { ValidFrom = from, ValidTo = from.AddDays(-1) }).IsValid.Should().BeFalse(); // inverted
     }
 }

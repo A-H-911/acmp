@@ -1,6 +1,9 @@
 ﻿using Acmp.Modules.Topics.Application.Features.DeferTopic;
+using Acmp.Modules.Topics.Application.Features.PrepareTopic;
+using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
+using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Application.Internal;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
@@ -67,6 +70,61 @@ public class TopicApplicationTests
     {
         new DeferTopicValidator().Validate(new DeferTopicCommand(Guid.NewGuid(), "", null)).IsValid.Should().BeFalse();
         new DeferTopicValidator().Validate(new DeferTopicCommand(Guid.NewGuid(), "Awaiting budget", null)).IsValid.Should().BeTrue();
+    }
+
+    // ---- AC-043: backlog prioritization ordinal must be a non-negative, identified target ----
+
+    [Fact]
+    public void Prepare_requires_a_topic_id()
+    {
+        new PrepareTopicValidator().Validate(new PrepareTopicCommand(Guid.Empty)).IsValid.Should().BeFalse();
+        new PrepareTopicValidator().Validate(new PrepareTopicCommand(Guid.NewGuid())).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Prioritize_requires_a_topic_id()
+    {
+        new PrioritizeTopicValidator().Validate(new PrioritizeTopicCommand(Guid.Empty, 3)).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Prioritize_rejects_a_negative_ordinal()
+    {
+        new PrioritizeTopicValidator().Validate(new PrioritizeTopicCommand(Guid.NewGuid(), -1)).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Prioritize_accepts_a_zero_or_positive_ordinal_for_a_real_topic()
+    {
+        var v = new PrioritizeTopicValidator();
+        v.Validate(new PrioritizeTopicCommand(Guid.NewGuid(), 0)).IsValid.Should().BeTrue();
+        v.Validate(new PrioritizeTopicCommand(Guid.NewGuid(), 9)).IsValid.Should().BeTrue();
+    }
+
+    // ---- AC-034: edit command must identify the topic and carry a valid urgency ----
+
+    [Fact]
+    public void Update_requires_a_topic_id()
+    {
+        var cmd = new UpdateTopicCommand(Guid.Empty, "T", "D", "J", TopicUrgency.Normal,
+            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Update_rejects_an_out_of_range_urgency()
+    {
+        var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", (TopicUrgency)999,
+            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Update_is_valid_with_an_identified_topic_and_known_urgency()
+    {
+        var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", TopicUrgency.Critical,
+            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeTrue();
     }
 
     // ---- AC-057: SLA aging ----

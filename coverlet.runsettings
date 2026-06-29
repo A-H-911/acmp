@@ -13,8 +13,12 @@
         <Configuration>
           <Format>cobertura</Format>
           <!-- EF Core migrations + their *.Designer.cs are generated, forward-only, and never
-               execute under the InMemory test provider. -->
-          <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+               execute under the InMemory test provider.
+               *DbContextFactory.cs are IDesignTimeDbContextFactory — run only by `dotnet ef
+               migrations` at design time, never at runtime; same un-assertable class as Program.cs.
+               MinioFileStore is the Phase-2 S3 adapter, not wired into any v1 runtime flow (ADR-0016
+               §1: exclude with a Phase-2 note until the slice that touches it). -->
+          <ExcludeByFile>**/Migrations/*.cs,**/*DbContextFactory.cs,**/MinioFileStore.cs</ExcludeByFile>
           <!-- Source-generated code (e.g. [GeneratedRegex]) and compiler/EF scaffolding. -->
           <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverage,DebuggerNonUserCodeAttribute</ExcludeByAttribute>
           <!-- Program.cs is the composition root (host builder); exercised at boot, no branching to assert. -->
