@@ -12,6 +12,49 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S1: backend adversarial invariants (ADR-0016)
+
+### 2026-06-29 — Failure-first coverage of the 0%-covered Application handlers + validators
+
+**Why.** S0 stood up the coverage basis; S1 begins the climb to ≥95% BE by hardening the highest-risk,
+lowest-covered surface: the Application-layer governance handlers and validators that were at 0%. Test the
+**bad before the good** — authz-deny, 404, domain status/immutability guards, audit emission.
+
+**What.** 40 adversarial tests (no business behaviour changed), matching the existing InMemory
+`AcmpWebApplicationFactory` fixture style:
+- **Topics handlers** (`TopicHandlerTests.cs`): Update / Defer / Prepare / Prioritize / Reject — each with
+  404, per-resource authz-deny (real `IResourceAuthorizer`), domain status/immutability guard, and
+  `AuditEvent` assertion. UpdateTopic covers all three branches (submitter edits content / non-submitter →
+  `Topic.Edit` deny / post-Accept metadata-only under `Topic.Triage` with content locked).
+- **Topics validators** (`TopicApplicationTests.cs`): Prioritize, Update, Prepare.
+- **Meetings handlers** (`MeetingHandlerTests.cs`): EndMeeting (both 404 branches + `Hold`/`Close` guards +
+  audit), CancelMeeting (404 + wrong-status + blank-reason guard + audit), RemoveAgendaItem (404 +
+  unknown-item + locked-agenda + success/renumber). The role-gate on these commands is the MediatR
+  `AuthorizationBehavior` (`IAuthorizedRequest`), deliberately bypassed by direct-handler construction —
+  so authz-deny is the pipeline's test, **not** faked here; the handler layer asserts 404 + domain guards +
+  audit.
+- **Meetings validators** (new `MeetingValidatorTests.cs`): AssignPresenter, CaptureDiscussion,
+  MarkAttendance, CancelMeeting.
+- **Membership validator** (`MembershipFeatureTests.cs`): CreateDelegation (target, capability length,
+  forward window).
+
+**Coverage basis amendment (ADR-0016, operator-confirmed 2026-06-29).** Added `**/*DbContextFactory.cs`
+(design-time `IDesignTimeDbContextFactory` — run only by `dotnet ef migrations`, never at runtime; same
+un-assertable class as the already-excluded `Program.cs`) and `**/MinioFileStore.cs` (Phase-2 S3 adapter,
+already earmarked for exclusion in §1) to the coverlet `ExcludeByFile`. Rationale: S7 wires **per-file**
+thresholds — a 0% design-time factory would fail a per-file gate regardless of the global, and the only way
+to "cover" it is a theatre test. Excluding is the honest call (60 design-time + 6 Phase-2 lines leave the
+denominator).
+
+**Result.** `dotnet build` clean · `dotnet test` **458 passed, 0 failed** · `dotnet format
+--verify-no-changes` clean. **BE line coverage 89.1% → 97.6%** (1976/2024; Meetings.Application 100%,
+Topics.Application 97.7%, Membership.Application 98.6%). Acceptance-audit AC→test mapping begins this slice
+(AC-031/032/034/035/043 evidence deepened; no verdict flips — live HTTP/UI legs remain → P17 per G-TRACE).
+
+**Next.** S2 — FE auth + data layer toward ≥95% frontend.
+
+---
+
 ## Test-Hardening Program — S0: coverage tooling + basis (ADR-0016)
 
 ### 2026-06-29 — Establish coverage measurement, exclusion basis, and slice plan

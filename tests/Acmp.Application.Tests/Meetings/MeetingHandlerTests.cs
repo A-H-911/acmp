@@ -1,9 +1,11 @@
 ﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
 using Acmp.Modules.Meetings.Application.Features.PublishAgenda;
 using Acmp.Modules.Meetings.Application.Features.ScheduleMeeting;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
@@ -241,5 +243,196 @@ public class MeetingHandlerTests
         var list = await new GetMeetingsHandler(db).Handle(new GetMeetingsQuery(), default);
         list.Should().ContainSingle();
         list[0].ItemCount.Should().Be(1);
+    }
+
+    // ───────────────────────── S1 adversarial: conduct/cancel/agenda-edit (ADR-0016) ─────────────────────────
+    // The role-gate on these commands is the MediatR AuthorizationBehavior (IAuthorizedRequest), which the
+    // direct-handler construction here deliberately bypasses — so authz-denial belongs to the pipeline test,
+    // not this layer. What IS assertable at the handler: 404 lookups, domain status guards, and audit emission.
+
+    // A meeting walked to InProgress with a Locked, single-item agenda (the live-meeting starting point).
+    private static async Task<(MeetingsDbContext Db, Guid MeetingId, Guid TopicId)> StartedMeetingAsync(ICurrentUser user, IClock clock)
+    {
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        var topic = Guid.NewGuid();
+        await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, topic, "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
+        var scheduler = new FakeScheduler();
+        await new PublishAgendaHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify()).Handle(new PublishAgendaCommand(meetingId), default);
+        await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
+        return (db, meetingId, topic);
+    }
+
+    // ---- EndMeetingHandler (W7) ----
+
+    [Fact]
+    public async Task End_throws_not_found_when_the_meeting_is_missing()
+    {
+        var user = User(); var clock = Clock(Now);
+        await using var db = NewDb(user, clock);
+
+        var act = () => new EndMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new EndMeetingCommand(Guid.NewGuid()), default);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Meeting not found.");
+    }
+
+    [Fact]
+    public async Task End_throws_not_found_when_the_meeting_has_no_agenda()
+    {
+        var user = User(); var clock = Clock(Now);
+        await using var db = NewDb(user, clock);
+        // A meeting persisted directly (no sibling agenda) — exercises the second 404 branch.
+        var meeting = Meeting.Schedule("MTG-2026-009", "Orphan", Meeting.SingleCommitteeId, Chair, "S. M.",
+            Now, Now.AddMinutes(60), MeetingType.Regular, MeetingMode.InPerson, null, null, Now);
+        db.Meetings.Add(meeting);
+        await db.SaveChangesAsync();
+
+        var act = () => new EndMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new EndMeetingCommand(meeting.PublicId), default);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Agenda not found*");
+    }
+
+    [Fact]
+    public async Task End_on_a_meeting_that_never_started_trips_the_domain_guard()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);   // Scheduled, not InProgress
+        await using var _ = db;
+
+        var act = () => new EndMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new EndMeetingCommand(meetingId), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();        // Hold requires InProgress
+    }
+
+    [Fact]
+    public async Task End_holds_the_meeting_closes_the_agenda_and_audits()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId, _) = await StartedMeetingAsync(user, clock);
+        await using var _ = db;
+        var audit = Substitute.For<IAuditSink>();
+
+        await new EndMeetingHandler(db, clock, audit, user).Handle(new EndMeetingCommand(meetingId), default);
+
+        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        detail!.Status.Should().Be("Held");
+        detail.Agenda!.Status.Should().Be("Closed");
+        await audit.Received(1).EmitAsync("Meetings.MeetingHeld", user.UserId, Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    // ---- CancelMeetingHandler (W5) ----
+
+    [Fact]
+    public async Task Cancel_throws_not_found_when_the_meeting_is_missing()
+    {
+        var user = User(); var clock = Clock(Now);
+        await using var db = NewDb(user, clock);
+
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new CancelMeetingCommand(Guid.NewGuid(), "Quorum lost"), default);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task Cancel_on_an_in_progress_meeting_trips_the_domain_guard()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId, _) = await StartedMeetingAsync(user, clock);   // InProgress — Cancel allows Scheduled only
+        await using var _ = db;
+
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new CancelMeetingCommand(meetingId, "Too late"), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Cancel_with_a_blank_reason_trips_the_domain_guard()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        await using var _ = db;
+
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+            .Handle(new CancelMeetingCommand(meetingId, "   "), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Cancel_records_the_reason_and_audits()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        await using var _ = db;
+        var audit = Substitute.For<IAuditSink>();
+
+        await new CancelMeetingHandler(db, clock, audit, user)
+            .Handle(new CancelMeetingCommand(meetingId, "Quorum will not be met"), default);
+
+        var meeting = await db.Meetings.SingleAsync();
+        meeting.Status.Should().Be(MeetingStatus.Cancelled);
+        meeting.CancellationReason.Should().Be("Quorum will not be met");
+        await audit.Received(1).EmitAsync("Meetings.MeetingCancelled", user.UserId, Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    // ---- RemoveAgendaItemHandler (W6) ----
+
+    [Fact]
+    public async Task Remove_agenda_item_throws_not_found_when_the_agenda_is_missing()
+    {
+        var user = User(); var clock = Clock(Now);
+        await using var db = NewDb(user, clock);
+
+        var act = () => new RemoveAgendaItemHandler(db)
+            .Handle(new RemoveAgendaItemCommand(Guid.NewGuid(), Guid.NewGuid()), default);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Agenda not found*");
+    }
+
+    [Fact]
+    public async Task Remove_agenda_item_that_is_not_on_the_agenda_trips_the_domain_guard()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        await using var _ = db;
+        await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
+
+        var act = () => new RemoveAgendaItemHandler(db)
+            .Handle(new RemoveAgendaItemCommand(meetingId, Guid.NewGuid()), default);   // unknown topic
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Remove_agenda_item_on_a_locked_agenda_is_blocked()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId, topic) = await StartedMeetingAsync(user, clock);   // agenda Locked at start
+        await using var _ = db;
+
+        var act = () => new RemoveAgendaItemHandler(db)
+            .Handle(new RemoveAgendaItemCommand(meetingId, topic), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();            // RequireEditable
+    }
+
+    [Fact]
+    public async Task Remove_agenda_item_drops_it_and_renumbers_the_rest()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
+        await using var _ = db;
+        var keep = Guid.NewGuid(); var drop = Guid.NewGuid();
+        await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, drop, "TOP-2026-001", "Drop", false, 15, Presenter, "P"), default);
+        await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, keep, "TOP-2026-002", "Keep", false, 15, Presenter, "P"), default);
+
+        var agenda = await new RemoveAgendaItemHandler(db).Handle(new RemoveAgendaItemCommand(meetingId, drop), default);
+
+        agenda.Items.Should().ContainSingle().Which.TopicId.Should().Be(keep);
+        agenda.Items.Single().Order.Should().Be(1);                           // renumbered from the gap
     }
 }

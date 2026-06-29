@@ -316,11 +316,11 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-028 | Decisions | Pending | — | Supersession back-link |
 | AC-029 | Decisions | Pending | — | Downstream link required to issue |
 | AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests + SubmitTopic.test (client validation) | Server validation + HTTP 400 + no record; submit form now shows localized client-side required-field errors; server-side localized messages → BL-016 |
-| AC-031 | Topic lifecycle | Met | TopicApplicationTests + TopicApiTests (reject no-reason → 400) | Mandatory rejection rationale enforced |
-| AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests | Immutable rejection history event persisted; submitter notify → Notifications phase |
+| AC-031 | Topic lifecycle | Met | TopicApplicationTests (Reject/Defer require a reason) + TopicApiTests (reject no-reason → 400) + TopicHandlerTests (S1: reject-deny keeps Submitted; wrong-status domain guard) | Mandatory rejection rationale enforced; S1 adds adversarial handler coverage (authz-deny, status guard) |
+| AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: Reject_records_the_rationale_as_immutable_history_and_audits) | Immutable rejection history event (reason+actor+timestamp) + TopicRejected audit adversarially proven in S1; submitter notify → Notifications phase |
 | AC-033 | Topic lifecycle | Partial | TopicTests | Rejection event append-only (no mutation surface); DB-enforced immutability + hash-chain → BL-066 |
-| AC-034 | Topic lifecycle | Partial | TopicTests + UpdateTopic handler | Content locked post-accept; metadata-only Secretary edit; live 403 path → P17 |
-| AC-035 | Topic lifecycle | Partial | TopicTests + PrepareTopic handler | Accepted→Prepared transition + TopicPrepared audit proven |
+| AC-034 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: post-Accept 403 authz-deny + content-lock + metadata-only edit; pre-Accept non-submitter denied) + TopicApplicationTests (S1: UpdateTopicValidator) | Content locked post-accept + 403 (authz-deny) adversarially proven at handler in S1; live HTTP 403 UI → P17 |
+| AC-035 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: Prepare deny + wrong-status guard + Accepted→Prepared + TopicPrepared audit) + TopicApplicationTests (S1: PrepareTopicValidator) | Accepted→Prepared transition + TopicPrepared audit adversarially proven; live HTTP/UI → P17 |
 | AC-036 | MoM | Pending | — | Published MoM → versioned supersede |
 | AC-037 | MoM | Pending | — | Change-request → back to Draft |
 | AC-038 | MoM | Pending | — | Approve → Published + notify |
@@ -328,7 +328,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-040 | Localization | Met | i18n/direction.test.ts + axe render | dir=rtl mirrored layout — sidebar→inline-end, Arabic font, logical CSS; verified live (P3) |
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
-| AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The AC's literal **priority-ordinal move-up/down with a persisted ordinal** (BL-039 within-column reorder, BL-041) is **not yet built** — deliberately deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
+| AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test + TopicHandlerTests (S1: Prioritize sets ordinal / immutability guard / authz-deny) + TopicApplicationTests (S1: PrioritizeTopicValidator) | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The backend **priority-ordinal persist** (`SetPriority`) is now adversarially tested in S1 (ordinal set + audited, immutable-topic guard, `Backlog.Prioritize` authz-deny). The AC's literal **UI move-up/down wired to the persisted ordinal** (BL-039 within-column reorder, BL-041) is still **not yet built** — deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
 | AC-044 | Accessibility | Met | AgendaBuilder.test (move ±1 + aria-live announce, axe AA) + MeetingHandlerTests (move ±1) | Keyboard-accessible agenda reorder shipped: the move up/down buttons send a single ±1 `move` (disabled at the ends) with a synchronous `aria-live` announce; native drag is progressive enhancement on top. Unit-tested + jsdom axe clean; live browser axe/RTL pass recommended. From Partial (P6c, 2026-06-27). |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
@@ -357,6 +357,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/043/048/049/057 + AC-041) · 32 Pending.
 (Through P5b PR4 + the 2026-06-27 P5-review remediation, which corrected AC-043 Met→Partial — the kanban
 keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
+
+> **Test-hardening S1 (2026-06-29):** the AC→test mapping begins here. S1 adds **adversarial, failure-first
+> backend coverage** (BE 89.1% → 97.6% lines, ADR-0016) for the Topics triage/edit handlers
+> (Update/Defer/Prepare/Prioritize/Reject), the Meetings conduct/cancel/agenda-edit handlers
+> (End/Cancel/RemoveAgendaItem) + their validators, and the Membership delegation validator — each asserting
+> authz-deny, 404, domain status/immutability guards, and `AuditEvent` emission on real behaviour.
+> **No verdict flips this slice:** per the standing G-TRACE rule an AC is `Met` only once its live HTTP/UI
+> leg lands (→ P17), so S1 deepens the *evidence* behind the existing `Partial`/`Met` rows (AC-031/032/034/
+> 035/043) without over-claiming. No business behaviour changed.
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
