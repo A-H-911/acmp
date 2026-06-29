@@ -377,6 +377,17 @@ keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
 > auth round-trip already carries AC-001 (P4/CHANGE-001); these are unit-level FE assertions and the
 > automated UI-regression leg remains → P17. No product behaviour changed. Screen-state FE remainder → S4.
 
+> **Test-hardening S3 (2026-06-29):** **adversarial backend coverage** that takes every backend file to
+> **≥95% lines** (overall 97.6% → **99.6%**; Api assembly 94.7% → **100%**), so the per-file S7 gate can
+> flip. 101 failure-first tests (458 → 559): HTTP round-trips over the real pipeline for the Topics/Meetings
+> endpoints not previously exercised (defer/priority/update; agenda move/timebox/presenter; conduct
+> attendance/discussion/actual-time; cancel — with 403/400 cases), plus domain/application/shared unit tests
+> (Topic Close/Convert + events, TopicComment/TopicAttachment, MemberStreamAssignment/Delegation/
+> CommitteeMember, AssignStreamsValidator, GetBacklog filter/sort branches, Notification, CurrentUserService,
+> BaseEntity, LocalizedString, the ITopicScheduler seam). **No verdict flips** — the HTTP endpoint tests run
+> the real authorization pipeline (deepening evidence for the Topics/Meetings workflow ACs) but the live
+> end-to-end UI legs remain → P17. No exclusions added; no product behaviour changed.
+
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
 > unit-tested but whose end-to-end demonstration needs a not-yet-built aggregate (Topics P5, Actions P8,
