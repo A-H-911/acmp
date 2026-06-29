@@ -12,6 +12,49 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S3: backend Api endpoints + per-file BE sweep (ADR-0016)
+
+### 2026-06-29 — Close the last backend gaps to make every file per-file-gate ready
+
+**Why.** S1 took the Application layer to 97.6%, but S7 wires **per-file** ≥95% thresholds and no other
+backend slice was planned. So S3's literal scope (the Api endpoints) was widened (operator-confirmed:
+"B, one PR") to **finish the whole backend to per-file ≥95%** — Api endpoints **plus** the ~14
+domain/application/shared files still 50–94%. All were reachable code lacking tests; **zero new
+exclusions** were needed.
+
+**What.** 101 failure-first tests (458 → 559), no product behaviour changed. Authored largely by four
+parallel sub-agents into new, non-overlapping files; integrated + fixed centrally.
+- **Api endpoints (HTTP round-trips, `Acmp.Api.Tests`):** `TopicEndpointsCoverageTests` (defer / priority
+  PUT / update PUT, incl. a 400 and a 403) and `MeetingsEndpointsCoverageTests` (agenda move/timebox/
+  presenter on a Draft agenda; the conduct lifecycle schedule→publish→start→attendance→discussion→
+  actual-time→end; cancel + a 403). The uncovered lines were request-body records for endpoints no test
+  hit — Api assembly **94.7% → 100%** (all four endpoint files 100%).
+- **Topics domain:** `TopicLifecycleTests` (Close/Convert + their events, immutability guards, Reopen),
+  `TopicChildEntityTests` (TopicComment/TopicAttachment metadata).
+- **Membership:** `MemberStreamAndDelegationTests` (MemberStreamAssignment, Delegation.IsActiveAt
+  boundaries, CommitteeMember reactivate/sync), `AssignStreamsValidatorTests` (0% → 100%).
+- **Application + shared sweep:** `GetBacklogCoverageTests` (every filter + sort + paging branch),
+  `TopicDetailCommentMappingTests` (TopicCommentDto via detail), `NotificationCoverageTests`,
+  `CurrentUserServiceTests`, `SharedKernelTests` (BaseEntity domain-events, LocalizedString),
+  `TopicSchedulerAndPersistenceTests` (the cross-module `ITopicScheduler` idempotent no-op **and** success
+  paths, + a TopicAttachment EF round-trip through a fresh context to materialise its private ctor).
+
+**Notes.** `TopicScheduler` success path needed a *direct* unit test — the HTTP agenda tests use synthetic
+topicIds with no matching Topic, so the seam short-circuited (`Actor()` never ran). The private EF
+constructors of `TopicAttachment`/`MemberStreamAssignment` are only reachable via a real save-then-reload
+in a fresh `DbContext`; covered that way rather than excluding. Two sub-agents’ in-process state was lost
+when a process exited mid-run; their files were already on disk except `MeetingsEndpointsCoverageTests`,
+which was authored directly.
+
+**Result.** `dotnet build` clean · `dotnet test` **559 passed, 0 failed** · `dotnet format
+--verify-no-changes` clean. **BE line coverage 97.6% → 99.6%; every backend file is now ≥95%** (the
+per-file gate S7 will enforce). No AC verdicts flip (G-TRACE: live HTTP/UI legs → P17); the Api endpoint
+tests deepen evidence for the Topics/Meetings workflow ACs over the real pipeline.
+
+**Next.** S4 — FE screen-state cleanup to global ≥95% (then S5 Testcontainers, S6 E2E, S7 flip the gate).
+
+---
+
 ## Test-Hardening Program — S2: frontend auth + data layer (ADR-0016)
 
 ### 2026-06-29 — Failure-first coverage of the OIDC wiring, route guards, API client, and TanStack Query hooks
