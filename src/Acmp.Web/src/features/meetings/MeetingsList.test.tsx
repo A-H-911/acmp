@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
 import { MeetingsList } from './MeetingsList';
 import { renderWithAuth } from '../../test/render';
@@ -54,6 +55,38 @@ describe('MeetingsList (P6c)', () => {
     expect(screen.getByText('Published').closest('.status-chip')).toHaveClass('success');
     expect(screen.getByText('Locked').closest('.status-chip')).toHaveClass('info');
     expect(screen.getByText('Closed').closest('.status-chip')).toHaveClass('neutral');
+  });
+
+  it('splits meetings into Upcoming (active) and Past (concluded) sections', () => {
+    result({ data: MEETINGS });
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+    const upcoming = screen.getByRole('heading', { name: 'Upcoming' }).closest('.mt-section') as HTMLElement;
+    const past = screen.getByRole('heading', { name: 'Past' }).closest('.mt-section') as HTMLElement;
+    expect(within(upcoming).getByText('Q2 Architecture Review')).toBeInTheDocument();
+    expect(within(past).getByText('Identity strategy session')).toBeInTheDocument();
+    // a concluded meeting never appears under Upcoming
+    expect(within(upcoming).queryByText('Identity strategy session')).not.toBeInTheDocument();
+  });
+
+  it('shows the localized meeting type', () => {
+    result({ data: MEETINGS });
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+    expect(screen.getByText('Regular')).toBeInTheDocument();
+    expect(screen.getByText('Extraordinary')).toBeInTheDocument();
+  });
+
+  it('toggles between the list tables and the calendar view', async () => {
+    const user = userEvent.setup();
+    result({ data: MEETINGS });
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+    expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole('button', { name: 'Calendar' }));
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next month/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'List' }));
+    expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
   });
 
   it('links each meeting to its agenda builder route', () => {

@@ -12,6 +12,57 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 (PR-B) Meetings list redesign + calendar view (`ACMP Meetings.dc.html` isList)
+
+### 2026-06-29 — Meetings list to design: Upcoming/Past split + List⇄Calendar toggle + month grid
+
+**Why.** PR-B remaining item. The meetings list was a single flat table built when the design
+package was thought to have no list screen. `ACMP Meetings.dc.html` **does** carry a full `isList`
+screen (Upcoming/Past split, columns ID·When·Title·Type·Status, a List⇄Calendar view toggle, and a
+month grid). So the old list was drift from a known reference (guardrail 14), not justified
+scaffolding. Frontend-only — the backend already exposes `type`/`status`/`scheduledStart` on
+`MeetingSummary`; no API change.
+
+**What.**
+- `MeetingsList.tsx` rebuilt to the design: a **List ⇄ Calendar** segmented toggle (shared
+  `Segmented`), and in List view an **Upcoming / Past** split — two shared `Table`s (already a
+  bordered card via `.table-wrap`) under uppercase section labels, columns
+  **ID · When · Title · Type · Status · Agenda**. Head subtitle is now the live count
+  (`{{upcoming}} upcoming · {{past}} past`).
+- New `MeetingsCalendar.tsx` — the design's `listCalView` month grid: Intl month label + prev/next
+  chevrons (RTL-mirrored), 7 weekday headers, day cells with status-toned event pills that link to
+  the meeting. Computed over real `scheduledStart` (defaults to the current month; chevrons page
+  months) — not the mock's static Feb-2026 dummy data.
+- New `meetingStatus.ts` — shared `meetingTone` (list rows + calendar pills read the same colour)
+  and `isConcluded` (the Upcoming/Past partition: status-based — Held/Closed/Cancelled = Past — so a
+  mid-session or date-slipped meeting doesn't flip sections under the user).
+- i18n `meetings.{view,section,calendar,listCount,col.type,captionUpcoming,captionPast}` in EN+AR.
+
+**Decisions applied (operator GO: "Match design, keep agenda chip").**
+- **Kept** an Agenda-status chip column the design omits — it carries the PR #31 agenda lifecycle the
+  committee tracks from the list. Deliberate, operator-approved deviation (guardrail 14, reconciled).
+- **Omitted** the mock's filter chips + "Saved views" — static decoration with no backend; not faked
+  (same call as the agenda new-vs-link radio). Can be added client-side later over the loaded list.
+- Rows link via the **title** (one focusable link per row) instead of the mock's whole-row `<button>`,
+  which would be invalid markup inside a real `<table>` — behaviour/a11y-justified.
+
+**Verification.** Computed-px gate (Playwright `getComputedStyle`) — every list literal (section
+label 11/700/.4/uppercase, margins 6·8·2, toolbar mb14/gap9, section mb20) and every calendar literal
+(card pad 18 / radius 12, head mb14, month 15/700, navbtn 34/8, grid gap 6, cell min-h64 / radius 8 /
+pad 5·6, dow 11/700, event 9.5/600 / radius 4 / pad 2·5 / mt4) matches the `.dc.html` exactly.
+Screenshots EN/AR desktop + AR tablet: anatomy matches, RTL mirrors (nav + chevrons flip to the
+inline-start, weekday headers Sun→Sat reversed), no overflow at 768. Full web suite 223 green
+(15 in the two meetings specs), i18n parity OK, oxlint clean, `npm run build` green (JS 180 kB gz).
+
+**Acceptance.** No dedicated calendar AC — this is a new view over existing meeting data. It adds a
+surface to the localization/a11y ACs (**AC-040/041/045/046**): both screens render in EN/AR and are
+axe-clean (0 violations, both meetings specs), RTL confirmed live. No verdict flips.
+
+**Next.** PR-C+ cross-phase test-hardening. Optional later: client-side list filters; a "today"
+marker / >1-event-per-day affordance on the calendar if volume grows.
+
+---
+
 ## P6 (PR-B) Notification Center — full page (`/notifications`, IA #79)
 
 ### 2026-06-28 — Full-page notification inbox: paging backend + page, mark-all, unread/all filter

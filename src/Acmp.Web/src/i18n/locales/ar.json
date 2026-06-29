@@ -348,6 +348,16 @@
   "meetings": {
     "title": "الاجتماعات",
     "listSub": "جدوِل الاجتماع وابنِ جدول الأعمال وانشره للجنة.",
+    "listCount": "{{upcoming}} قادمة · {{past}} سابقة",
+    "view": { "list": "قائمة", "calendar": "تقويم" },
+    "viewToggle": "تبديل عرض الاجتماعات",
+    "section": { "upcoming": "القادمة", "past": "السابقة" },
+    "calendar": {
+      "label": "تقويم الاجتماعات",
+      "prevMonth": "الشهر السابق",
+      "nextMonth": "الشهر التالي",
+      "eventAria": "{{title}} — {{when}}"
+    },
     "schedule": {
       "action": "جدولة اجتماع",
       "title": "جدولة اجتماع",
@@ -381,7 +391,9 @@
       "Remote": "عن بُعد"
     },
     "tableCaption": "اجتماعات اللجنة المجدولة والسابقة",
-    "col": { "key": "المرجع", "title": "الاجتماع", "when": "الموعد", "chair": "الرئيس", "items": "العناصر", "status": "الحالة", "agenda": "جدول الأعمال" },
+    "col": { "key": "المرجع", "title": "الاجتماع", "when": "الموعد", "type": "النوع", "chair": "الرئيس", "items": "العناصر", "status": "الحالة", "agenda": "جدول الأعمال" },
+    "captionUpcoming": "اجتماعات اللجنة القادمة",
+    "captionPast": "اجتماعات اللجنة السابقة",
     "itemCount": "{{count}} عنصر",
     "minutes": "{{count}} دقيقة",
     "lengthMin": "{{count}} دقيقة",
