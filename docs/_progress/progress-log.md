@@ -12,6 +12,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P6 (PR-B) Create-meeting screen UI fixes (`ACMP Meetings.dc.html` isCreate)
+
+### 2026-06-29 — Schedule form: fix field rhythm/alignment, full-width Mode, design date + time control
+
+**Why.** Visual pass over the Create-meeting screen (`/meetings/new`) surfaced real UI defects:
+the whole form was misaligned and unevenly spaced, and the date inputs were browser-native
+`datetime-local` (rendered `mm/dd/yyyy` even under `dir="rtl"`).
+
+**Root cause (the big one).** The global `.field + .field { margin-block-start: 16px }` *double-counted*
+with the schedule card's flex `gap:16` — 32px between stacked fields — and, because each two-column
+`.mt-schedule-row` is a grid, it pushed the **second field in every row 16px down** (Ends below Starts,
+Mode below Type). Measured live: gaps `[32,16,16,16,32]`, rows offset by 16. Fixed with one scoped
+rule (`.mt-schedule-card .field + .field { margin-block-start: 0 }`) → uniform 16 and top-aligned rows.
+
+**Changes.**
+- **Spacing/alignment** fixed (above). Verified live: gaps now `[16,16,16,16,16]`, both rows
+  left.top == right.top.
+- **Mode** segmented now fills its grid cell (`width:100%`, items `flex:1`) so it aligns with the
+  Type select above it (was 242px floating in a 310px cell — design is `width:100%`).
+- **Date & time** (operator GO "Match design"): replaced the two native `datetime-local` with the
+  design's pattern — a new **`DateField`** (field-styled trigger + calendar icon that opens the
+  existing shared `DatePicker` in a popover, mirroring `Select`'s open/backdrop/Escape) plus two
+  native `<input type="time">` (start–end). The meeting is **single-day**: start & end share the
+  picked date → ISO on submit. `DateField` derives month/weekday labels from Intl (Gregorian,
+  localized, RTL-safe); native time inputs localize where `datetime-local` did not.
+- i18n EN+AR: `meetings.schedule.{dateLabel,datePlaceholder,dateRequired,timeLabel,startTimeLabel,
+  endTimeLabel}`; DatePicker nav reuses `meetings.calendar.{prevMonth,nextMonth}`.
+
+**Verification.** Live computed-px gate: uniform 16 rhythm, rows aligned, Mode 310==cell 310, date
+field height 38 == inputs. Screenshots EN + AR: form mirrors (Date on the inline-start side with its
+icon, Time pair, Mode full-width), DatePicker popover opens both directions (today ringed, chevrons
+mirrored). Web **225/225** (new: a `DateField` test + a date-required schedule test; SchedulePage
+tests rewired to the date/time controls), i18n parity OK, tsc + vite build (JS 180 kB gz) + oxlint
+clean. Frontend-only; same `ScheduleMeeting` payload (start/end ISO), no API change. **No verdict
+flips** — UI fix; touches AC-040/041/045/046 (renders EN/AR, axe-clean, RTL).
+
+**Next.** Merge, then PR-C+ test-hardening.
+
+---
+
 ## P6 (PR-B) Meetings list redesign + calendar view (`ACMP Meetings.dc.html` isList)
 
 ### 2026-06-29 — Meetings list to design: Upcoming/Past split + List⇄Calendar toggle + month grid

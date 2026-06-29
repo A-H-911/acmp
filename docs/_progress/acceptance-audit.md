@@ -271,6 +271,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > tsc + vite build (JS 180 kB gz) + oxlint clean, meetings.css zero physical properties. See
 > progress-log "Meetings list to design".
 
+> P6 Create-meeting UI fixes (2026-06-29): visual pass over `/meetings/new` (design `isCreate`) fixed
+> real defects — a global `.field + .field` margin double-counted the schedule card's flex gap (32px
+> rhythm) and pushed the 2nd field of every two-column row 16px down (Ends/Mode misaligned); the Mode
+> segmented didn't fill its cell. One scoped CSS reset → uniform 16 + top-aligned rows; Mode now
+> `width:100%`. Operator GO: replaced native `datetime-local` (rendered mm/dd/yyyy under RTL) with the
+> design's Date + Start/End times — a new shared **`DateField`** (trigger + calendar icon → `DatePicker`
+> popover, Intl labels) + native `<input type=time>`; meeting is single-day (start/end share the date).
+> Frontend-only, same `ScheduleMeeting` payload — **no verdict flips**. Touches **AC-040/045/046**
+> (form renders EN/AR + axe-clean; live computed-px gate: gaps 16, rows aligned, Mode 310==cell) and
+> **AC-041** (RTL mirror live-confirmed EN/AR incl. the date popover; pixel-diff VR → P17). Web 225/225
+> (new DateField + date-required tests), parity OK, tsc + build + oxlint clean. See progress-log
+> "Create-meeting screen UI fixes".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
