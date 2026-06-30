@@ -12,6 +12,59 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P7a — Decisions module backend (record / issue / supersede)
+
+### 2026-07-01 — Decisions bounded context: W12 (issue) + decision half of W21 (supersede) (branch `feat/P7a-decisions-backend`)
+
+**What.** New **Decisions** module (Domain / Application / Infrastructure), mirroring Topics/Meetings exactly
+(Clean Architecture per module, MediatR vertical slices, EF owned-types, per-year key counter, cross-module
+seams, in-app notification fan-out). Backend only — no `Acmp.Web` changes (frontend is a later slice).
+
+- **Domain.** `Decision` aggregate root (AuditableEntity + `RowVersion` + `PublicId`) with owned
+  `DecisionCondition` collection. Factory `Decision.Draft` (guards: topic + rationale required;
+  ConditionallyApproved ⇒ ≥1 condition); `Issue` (Draft→Issued, override-needs-justification guard, raises
+  `DecisionIssuedEvent` carrying the override flag); `Supersede` (Issued→Superseded, back-link + reason).
+  **Immutability (AC-027):** no public mutators for the aggregate's own state, re-issue/re-supersede throw —
+  there is intentionally no edit command. `DecisionOutcome` = the README §E committee outcomes (11 values);
+  `DecisionStatus` {Draft, Issued, Superseded}; `DecisionConditionStatus` {Open, Met, Waived}.
+- **Application.** `IDecisionsDbContext`; commands `RecordDecision` (policy `Decision.Record`,
+  Secretary/Chairman), `IssueDecision` (policy `Decision.ChairApprove`, Chairman), `SupersedeDecision`
+  (Chairman) — supersede drafts+issues the successor **before** flipping the prior (W21 ordering), one
+  transaction, audits both. Queries `GetDecisionByKey` (detail) + `GetDecisionsByTopic` (history, filtered by
+  Topic **PublicId** — never a TOP- key, which would breach ADR-0001). Validators check `LocalizedString.En/Ar`
+  themselves so empty bilingual text returns **400** (the positional ctor doesn't validate; `Create` would
+  500). Shared `DecisionIssuance` helper applies the post-issue side-effects for both issue and supersede.
+- **Cross-module seam.** New `ITopicDecisionRecorder` (Shared/Contracts/Topics) → `MarkDecidedAsync` advances
+  a topic InCommittee→Decided on issue, **idempotent** (no-op otherwise). Implemented as `TopicDecisionRecorder`
+  in Topics.Infrastructure (mirrors `TopicScheduler`); `Topic.Decide()` already existed, so no new transition.
+- **Notifications.** On issue, one in-app `DecisionIssued` notification per active member (bilingual,
+  deep-link `/decisions/{Key}`) via `ICommitteeDirectory` + `INotificationChannel`. The supersession
+  successor — a genuine issued decision — fires the same side-effects (idempotent seam + notification),
+  deliberately (ponytail note in `SupersedeDecision`).
+- **Infrastructure.** `DecisionsDbContext` (schema `decisions`), `DecisionConfiguration` (RowVersion, unique
+  `Key`, owned `decision_conditions` table, owned LocalizedString column-pairs — `rationale_*` NOT NULL, the
+  rest nullable, verified in the migration), `DecisionKeyGenerator` (DECN, own counter table), design-time
+  factory. Migration **`Decisions_Init`** generated. Wired into `Program.cs` (module + MediatR assembly +
+  `MapDecisionEndpoints`) and `MigrationRunner`; 3 projects added to `acmp.sln`.
+- **API.** `DecisionsEndpoints`: `POST /api/decisions` [Decision.Record]→201, `POST /{id}/issue`
+  [Decision.ChairApprove]→204, `POST /{id}/supersede` [Decision.ChairApprove]→201, `GET /{key}`,
+  `GET ?topic={guid}` (authenticated). Problem Details + existing GlobalExceptionHandler (409 on stale write).
+
+**Decisions applied.** Topic-history query is by Guid PublicId only (ADR-0001 — no cross-module key lookup, no
+snapshot field added to the locked model). AC-029 (downstream-link-required-to-issue) **DEFERRED to P8** —
+unbuildable until Actions exist; recorded as **OQ-045** and NOT enforced. AC-016 (SoD-3 co-attestation) records
+the override choice + justification + flag now, but the co-attestation gate stays Partial→P9 (vote-coupled).
+
+**Verification.** `dotnet build acmp.sln -c Release` → 0 errors (2 pre-existing NU1902 OpenTelemetry advisory
+warnings only). `dotnet test acmp.sln` → **617 passed, 0 failed** (Domain 92, Architecture 20, Application 433,
+Integration 14 incl. the DECN unique-key + migration-applies backstops via Testcontainers/Docker, API 58).
+`dotnet format --verify-no-changes` → clean. Architecture tests assert Decisions depends on no other module's
+Domain/Infra (Shared contracts only).
+
+**Next.** P7b (Decisions frontend) / P8 (Actions + the AC-029 link-gate retrofit per OQ-045).
+
+---
+
 ## Round-2 Reconcile — DV-04 (rich-text unification) to one shared editor
 
 ### 2026-07-01 — Unify the three divergent rich-text surfaces into one MarkdownEditor (branch `feat/dv-04-rich-text`)

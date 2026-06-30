@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Infrastructure.Persistence;
+﻿using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
@@ -37,6 +38,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<MeetingsDbContext>>();
             services.RemoveAll<MeetingsDbContext>();
             services.AddDbContext<MeetingsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-meetings"));
+
+            services.RemoveAll<DbContextOptions<DecisionsDbContext>>();
+            services.RemoveAll<DecisionsDbContext>();
+            services.AddDbContext<DecisionsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-decisions"));
 
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();

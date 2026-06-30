@@ -1,8 +1,11 @@
 ﻿using System.Data.Common;
+using Acmp.Modules.Decisions.Domain;
+using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
+using Acmp.Shared.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -125,6 +128,20 @@ public sealed class DbBackstopTests
         }
     }
 
+    [Fact] // (top-level unique) two decisions with the same human key — DECN-YYYY-### must be unique
+    public async Task DecisionKey_Duplicate_IsRejectedBySql()
+    {
+        var key = UniqueKey("DECN");
+        var rationale = LocalizedString.Create("Because", "لأن");
+        await using var db = _fx.NewDecisionsSql();
+        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, rationale, null, null,
+            Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
+        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, rationale, null, null,
+            Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
+
+        await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
+    }
+
     [Fact] // stable identity is unique — two local records for one Keycloak subject
     public async Task MemberKeycloakUserId_Duplicate_IsRejectedBySql()
     {
@@ -224,11 +241,13 @@ public sealed class DbBackstopTests
         await using var membership = _fx.NewMembershipSql();
         await using var topics = _fx.NewTopicsSql();
         await using var meetings = _fx.NewMeetingsSql();
+        await using var decisions = _fx.NewDecisionsSql();
         await using var notifications = _fx.NewNotificationsSql();
 
         (await membership.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await topics.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await meetings.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
+        (await decisions.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await notifications.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
 
         (await membership.Database.GetAppliedMigrationsAsync()).Should().NotBeEmpty();

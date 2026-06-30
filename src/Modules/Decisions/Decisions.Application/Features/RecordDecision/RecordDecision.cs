@@ -1,0 +1,88 @@
+﻿using Acmp.Modules.Decisions.Application.Abstractions;
+using Acmp.Modules.Decisions.Application.Contracts;
+using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
+using Acmp.Modules.Decisions.Domain.Enums;
+using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Authorization;
+using Acmp.Shared.Domain.ValueObjects;
+using FluentValidation;
+using MediatR;
+
+namespace Acmp.Modules.Decisions.Application.Features.RecordDecision;
+
+// W12 (record): the Secretary (or Chairman) drafts a decision against a topic. Creates a Draft — not yet
+// issued, so it is still mutable-by-replacement and carries no chair attribution. RBAC = Decision.Record.
+// AC-029 (a downstream Action/Risk link required before a decision can be ISSUED) is DEFERRED to P8
+// (OQ-045) — there is no Action artifact yet, so the gate is unbuildable and intentionally NOT enforced.
+public sealed record RecordDecisionCommand(
+    Guid TopicId,
+    Guid? MeetingId,
+    DecisionOutcome Outcome,
+    LocalizedString Rationale,
+    LocalizedString? Alternatives,
+    Guid? VoteId,
+    IReadOnlyList<DecisionConditionRequest> Conditions) : IRequest<DecisionSummaryDto>, IAuthorizedRequest
+{
+    public IReadOnlyCollection<string> AllowedRoles { get; } = new[] { AcmpRoles.Secretary, AcmpRoles.Chairman };
+}
+
+public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCommand>
+{
+    public RecordDecisionValidator()
+    {
+        RuleFor(x => x.TopicId).NotEmpty().WithMessage("A topic is required.");
+        RuleFor(x => x.Outcome).IsInEnum();
+
+        // LocalizedString's positional ctor does NOT validate (only Create does, and that throws an
+        // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/16 §1.5).
+        RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
+        RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
+        RuleFor(x => x.Rationale!.Ar).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (AR) is required.");
+
+        // ConditionallyApproved must carry ≥1 condition (matches the domain guard; caught earlier as 400).
+        RuleFor(x => x.Conditions)
+            .Must(c => c is { Count: > 0 })
+            .When(x => x.Outcome == DecisionOutcome.ConditionallyApproved)
+            .WithMessage("A conditionally-approved decision requires at least one condition.");
+    }
+}
+
+public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionCommand, DecisionSummaryDto>
+{
+    private readonly IDecisionsDbContext _db;
+    private readonly IDecisionKeyGenerator _keys;
+    private readonly ICurrentUser _user;
+    private readonly IClock _clock;
+    private readonly IAuditSink _audit;
+
+    public RecordDecisionHandler(IDecisionsDbContext db, IDecisionKeyGenerator keys,
+        ICurrentUser user, IClock clock, IAuditSink audit)
+    {
+        _db = db;
+        _keys = keys;
+        _user = user;
+        _clock = clock;
+        _audit = audit;
+    }
+
+    public async Task<DecisionSummaryDto> Handle(RecordDecisionCommand request, CancellationToken ct)
+    {
+        var now = _clock.UtcNow;
+        var (sub, _) = CurrentActor.Of(_user);
+
+        var key = await _keys.NextDecisionKeyAsync(now.Year, ct);
+        var conditions = (request.Conditions ?? Array.Empty<DecisionConditionRequest>())
+            .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
+
+        var decision = Decision.Draft(key, request.TopicId, request.MeetingId, request.Outcome,
+            request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
+
+        _db.Decisions.Add(decision);
+        await _db.SaveChangesAsync(ct);
+
+        await _audit.EmitAsync("Decisions.DecisionDrafted", sub, new { decision.PublicId, decision.Key }, ct);
+
+        return DecisionMapping.ToSummary(decision);
+    }
+}

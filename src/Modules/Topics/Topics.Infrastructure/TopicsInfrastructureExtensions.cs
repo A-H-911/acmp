@@ -25,6 +25,10 @@ public static class TopicsInfrastructureExtensions
         // agenda publish (Prepared→Scheduled) and meeting start (Scheduled→InCommittee).
         services.AddScoped<ITopicScheduler, TopicScheduler>();
 
+        // Cross-module seam consumed by the Decisions module (ADR-0001): advance a topic to Decided when a
+        // decision is issued (InCommittee→Decided); idempotent.
+        services.AddScoped<ITopicDecisionRecorder, TopicDecisionRecorder>();
+
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 
         services.AddTopicsApplication();
