@@ -13,7 +13,8 @@ export type IconName =
   | 'plus' | 'minus' | 'chevron' | 'chevronDown' | 'chevronUp' | 'grip' | 'arrowUp' | 'arrowDown' | 'inbox' | 'logout' | 'check' | 'login'
   | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle' | 'clock' | 'user' | 'send'
   | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel'
-  | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog';
+  | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog'
+  | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -75,6 +76,13 @@ const PATHS: Record<IconName, ReactNode> = {
   stream: <path d="M3 12h4l3 8 4-16 3 8h4" />,
   shieldUser: <path d="M12 2l8 4.5v9L12 22l-8-4.5v-9L12 2zM12 7a3 3 0 100 6 3 3 0 000-6zM7.5 18a4.5 4.5 0 019 0" />,
   cog: <path d="M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />,
+  // System Health + Notification channel glyphs (paths lifted from ACMP Administration.dc.html).
+  server: <path d="M3 5h18v6H3zM3 13h18v6H3zM7 8h.01M7 16h.01" />,
+  database: <path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6" />,
+  box: <path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8" />,
+  mail: <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 7l9 6 9-6" />,
+  video: <path d="M15 10l5-3v10l-5-3M3 7a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
+  refresh: <path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" />,
 };
 
 interface IconProps {

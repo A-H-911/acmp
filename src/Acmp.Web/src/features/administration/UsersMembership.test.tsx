@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
-import { UsersMembership } from './UsersMembership';
+import { UsersDirectory, UserDetail } from './UsersMembership';
 import { renderWithAuth } from '../../test/render';
 import type { Member } from '../../api/members';
 
@@ -27,12 +27,12 @@ const MEMBERS: Member[] = [
   },
 ];
 
-function renderDirectory() {
+function renderDirectory(onView = vi.fn()) {
   result({ data: MEMBERS });
-  renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+  renderWithAuth(<UsersDirectory onView={onView} />, { roles: ['administrator'] });
 }
 
-describe('UsersMembership (AC-059)', () => {
+describe('UsersDirectory (AC-059)', () => {
   beforeEach(() => mockUseMembers.mockReset());
 
   it('renders a directory row per member with role sourced from Keycloak', () => {
@@ -50,20 +50,11 @@ describe('UsersMembership (AC-059)', () => {
     expect(screen.getByText('Roles are read-only')).toBeInTheDocument();
   });
 
-  it('renders the seven Administration sub-tabs with only Users enabled (matches the design)', () => {
-    renderDirectory();
-    const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(7);
-    const users = screen.getByRole('tab', { name: /Users & Membership/ });
-    expect(users).toHaveAttribute('aria-selected', 'true');
-    // The other six are later-phase placeholders — present but disabled.
-    expect(tabs.filter((t) => (t as HTMLButtonElement).disabled)).toHaveLength(6);
-  });
-
-  it('does not render the provision/invite affordances (ADR-0015: manual Keycloak provisioning)', () => {
+  it('does not render the provision/invite affordances (ADR-0015 / OQ-042: manual Keycloak provisioning)', () => {
     renderDirectory();
     expect(screen.queryByRole('button', { name: /provision/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/Provision via Keycloak/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
   });
 
   it('marks a member with no streams as an observer', () => {
@@ -86,6 +77,12 @@ describe('UsersMembership (AC-059)', () => {
     switches.forEach((s) => expect(s).toHaveAttribute('aria-disabled', 'true'));
   });
 
+  it('keeps the assignments count an honest dash (no count API yet)', () => {
+    renderDirectory();
+    // One dash per member row in the assignments cell.
+    expect(screen.getAllByTitle(/Topic and action assignments/)).toHaveLength(2);
+  });
+
   it('renders the membership add-committee affordance as inert (stream editing → later phase)', () => {
     renderDirectory();
     const add = screen.getAllByRole('button', { name: 'Add committee' });
@@ -93,56 +90,62 @@ describe('UsersMembership (AC-059)', () => {
     add.forEach((b) => expect(b).toBeDisabled());
   });
 
-  it('opens a read-only user detail from the row view button (no invite)', async () => {
+  it('calls onView with the member when the row view button is clicked', async () => {
     const user = userEvent.setup();
-    renderDirectory();
+    const onView = vi.fn();
+    renderDirectory(onView);
     const view = screen.getAllByRole('button', { name: 'View user detail' });
     expect(view).toHaveLength(2);
-    await user.click(view[0]); // Khalid
-
-    expect(screen.getByText('Back to users')).toBeInTheDocument();
-    expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
-    expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
-    // Read-only: role source note, no invite/provision flow.
-    expect(screen.getByText(/Role is read-only/)).toBeInTheDocument();
-    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Back to users' }));
-    expect(screen.getByText('Roles are read-only')).toBeInTheDocument(); // back on the list
+    await user.click(view[0]);
+    expect(onView).toHaveBeenCalledWith(MEMBERS[0]);
   });
 
   it('shows the empty state when there are no members', () => {
     result({ data: [] });
-    renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+    renderWithAuth(<UsersDirectory onView={vi.fn()} />, { roles: ['administrator'] });
     expect(screen.getByText('No members yet')).toBeInTheDocument();
   });
 
   it('shows the loading state while fetching', () => {
     result({ isLoading: true });
-    renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+    renderWithAuth(<UsersDirectory onView={vi.fn()} />, { roles: ['administrator'] });
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('shows an error state with retry on failure', () => {
     result({ isError: true });
-    renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+    renderWithAuth(<UsersDirectory onView={vi.fn()} />, { roles: ['administrator'] });
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
-  it('is axe-clean on the directory and the detail (WCAG 2.2 AA structure/ARIA)', async () => {
-    const user = userEvent.setup();
+  it('is axe-clean on the directory (WCAG 2.2 AA structure/ARIA)', async () => {
     renderDirectory();
-    let results = await axe.run(document.body, {
+    const results = await axe.run(document.body, {
       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+});
 
-    await user.click(screen.getAllByRole('button', { name: 'View user detail' })[0]);
-    results = await axe.run(document.body, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      rules: { 'color-contrast': { enabled: false } },
-    });
-    expect(results.violations.map((v) => v.id)).toEqual([]);
+describe('UserDetail (read-only, no invite per ADR-0015)', () => {
+  it('renders the read-only detail with memberships and no invite flow', async () => {
+    const onBack = vi.fn();
+    renderWithAuth(<UserDetail member={MEMBERS[0]} isArabic={false} onBack={onBack} />, { roles: ['administrator'] });
+
+    expect(screen.getByText('Back to users')).toBeInTheDocument();
+    expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
+    expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
+    expect(screen.getByText(/Role is read-only/)).toBeInTheDocument();
+    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Back to users' }));
+    expect(onBack).toHaveBeenCalled();
+  });
+
+  it('shows an honest empty memberships note for an observer', () => {
+    renderWithAuth(<UserDetail member={MEMBERS[1]} isArabic={false} onBack={vi.fn()} />, { roles: ['administrator'] });
+    expect(screen.getByText('No committee or stream memberships.')).toBeInTheDocument();
   });
 });

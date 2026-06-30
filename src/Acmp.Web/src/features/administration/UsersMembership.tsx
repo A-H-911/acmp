@@ -1,47 +1,29 @@
 /*
- * Administration → Users & Membership (mirrors the "ACMP Administration" design file — the Users
- * sub-tab + the read-only user-detail drill-down). Composes the shared component library (Tabs,
- * Table, StatusChip, Icon, states); only the domain-specific directory cells carry local CSS.
+ * Administration → Users & Membership body (mirrors the "ACMP Administration" `users` + `userdetail`
+ * sections). The 7-tab strip and page header live in AdministrationPage; this file owns the directory
+ * and the read-only user-detail drill-down.
  *
  * Behavior (read-only this phase, per ADR-0004/0015 — identities + roles come from Keycloak):
- *  - The 7-tab strip matches the design; only Users & Membership is implemented. The other six
- *    (Templates, System Health, Streams, Roles, Job Monitor, Notification Settings) are disabled
- *    placeholders for their later phases (no-reference-yet here — flagged in the progress log).
- *  - Membership editing affordances (committee × remove, dashed + add, voting-eligibility switch)
- *    are rendered to match the design but are INERT/disabled: stream assignment lands with BL-024
- *    and voting eligibility with Voting (P9). The directory stays read-only (GET /api/members).
- *  - The row's view button opens an in-place, read-only user detail (no routing — mirrors the
- *    design's `sub` state). The design's invite / "Provision via Keycloak" panel is intentionally
- *    NOT built: it conflicts with ADR-0015 (manual Keycloak provisioning, no in-app account
- *    creation) — see OQ in the progress log.
+ *  - Membership editing affordances (committee × remove, dashed + add, voting-eligibility switch) are
+ *    rendered to match the design but are INERT/disabled: stream assignment lands with BL-024 and
+ *    voting eligibility with Voting (P9). The directory stays read-only (GET /api/members).
+ *  - The row's view button opens an in-place, read-only user detail (state lifted to the container).
+ *    The design's invite / "Provision via Keycloak" panel is intentionally NOT built: it conflicts
+ *    with ADR-0015 (manual Keycloak provisioning, no in-app account creation) — OQ-042, resolved.
  * Wired to GET /api/members (AC-059).
  */
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMembers, type Member } from '../../api/members';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
-import { Tabs } from '../../components/ui/Tabs';
 import { Table, type Column } from '../../components/ui/Table';
-import { Icon, type IconName } from '../../components/icons';
-import '../../styles/administration.css';
+import { Icon } from '../../components/icons';
 
 const STATUS_TONE: Record<string, StatusTone> = {
   Active: 'success',
   Invited: 'info',
   Disabled: 'neutral',
 };
-
-// The seven Administration sub-tabs, in design order. Only `users` is implemented this phase.
-const TABS: { id: string; icon: IconName }[] = [
-  { id: 'users', icon: 'usersGroup' },
-  { id: 'templates', icon: 'template' },
-  { id: 'health', icon: 'activity' },
-  { id: 'streams', icon: 'stream' },
-  { id: 'roles', icon: 'shieldUser' },
-  { id: 'jobs', icon: 'cog' },
-  { id: 'notifications', icon: 'bell' },
-];
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -52,60 +34,19 @@ function streamName(s: { nameEn: string; nameAr: string }, isArabic: boolean): s
   return isArabic ? s.nameAr : s.nameEn;
 }
 
-export function UsersMembership() {
+export function UsersDirectory({ onView }: { onView: (m: Member) => void }) {
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError, refetch } = useMembers();
   const isArabic = i18n.language === 'ar';
-  const [detail, setDetail] = useState<Member | null>(null);
 
-  const tabs = TABS.map(({ id, icon }) => ({
-    id,
-    disabled: id !== 'users',
-    label: (
-      <>
-        <Icon name={icon} size={16} aria-hidden />
-        {t(`admin.tabs.${id}`)}
-      </>
-    ),
-  }));
+  if (isLoading) return <LoadingState />;
+  if (isError) return <ErrorState onRetry={() => refetch()} />;
+  if (!data || data.length === 0) return <EmptyState title={t('admin.emptyTitle')} body={t('admin.emptyBody')} icon="usersGroup" />;
 
-  if (detail) {
-    return <UserDetail member={detail} isArabic={isArabic} onBack={() => setDetail(null)} />;
-  }
-
-  return (
-    <section className="page">
-      <div className="adm-head">
-        <div>
-          <h1 className="page-title">{t('admin.title')}</h1>
-          <div className="adm-head-sub">{t('admin.subtitle')}</div>
-        </div>
-      </div>
-
-      <Tabs items={tabs} value="users" onValueChange={() => {}} ariaLabel={t('admin.title')} />
-
-      {isLoading ? (
-        <LoadingState />
-      ) : isError ? (
-        <ErrorState onRetry={() => refetch()} />
-      ) : !data || data.length === 0 ? (
-        <EmptyState title={t('admin.emptyTitle')} body={t('admin.emptyBody')} icon="usersGroup" />
-      ) : (
-        <Directory members={data} isArabic={isArabic} onView={setDetail} />
-      )}
-    </section>
-  );
+  return <Directory members={data} isArabic={isArabic} onView={onView} />;
 }
 
-function Directory({
-  members,
-  isArabic,
-  onView,
-}: {
-  members: Member[];
-  isArabic: boolean;
-  onView: (m: Member) => void;
-}) {
+function Directory({ members, isArabic, onView }: { members: Member[]; isArabic: boolean; onView: (m: Member) => void }) {
   const { t } = useTranslation();
 
   const columns: Column<Member>[] = [
@@ -182,7 +123,7 @@ function Directory({
       id: 'assignments',
       header: t('admin.col.assignments'),
       width: '11%',
-      // No assignment count on the member API yet (topic/action modules) — honest dash + tooltip.
+      // No assignment count on the member API yet (topic/action modules → later phase) — honest dash + tooltip.
       cell: () => (
         <span className="adm-assign" title={t('admin.assignmentsHint')}>
           <Icon name="check" size={13} aria-hidden />—
@@ -229,11 +170,11 @@ function Directory({
 }
 
 /**
- * Read-only user detail (the design's user-detail panel, minus the invite section). Renders only
- * data the member API returns — Keycloak ID / last sign-in / provisioned date are omitted until the
+ * Read-only user detail (the design's user-detail panel, minus the invite section). Renders only data
+ * the member API returns — Keycloak ID / last sign-in / provisioned date are omitted until the
  * directory exposes them. No editing, no invite (ADR-0015).
  */
-function UserDetail({ member, isArabic, onBack }: { member: Member; isArabic: boolean; onBack: () => void }) {
+export function UserDetail({ member, isArabic, onBack }: { member: Member; isArabic: boolean; onBack: () => void }) {
   const { t } = useTranslation();
   return (
     <section className="page">

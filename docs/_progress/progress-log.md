@@ -12,6 +12,56 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Round-2 Reconcile — P4 (Administration) to the updated design + Usage Map
+
+### 2026-06-30 — Build the six non-Users admin tabs from `ACMP Administration.dc.html` (branch `feat/p4-admin-reconcile`)
+
+**Why.** P4 shipped only Users & Membership; the other six sub-tabs were disabled "no-reference-yet"
+placeholders. The design update added full `health / templates / streams / roles / jobs / notif` sections,
+so they can now be built honestly. **Usage Map is the phasing authority** and confirms the split: P4 = users +
+userdetail (Built); P14 = health + jobs; P15 = templates + streams + roles + notif. The design mockup marks
+**no** sub-tab disabled, so every tab is now navigable — content truthfulness is set by data availability, not
+by hiding the tab.
+
+**What.**
+- **NR-08 — System Health (built real).** New `GET /api/admin/health` (`AdminEndpoints`, `Policies.AdminConfig`)
+  aggregates the registered `HealthCheckService`; added a synthetic `api` liveness check so the "Application"
+  tile is truthful. FE `useSystemHealth` (30s poll) + `SystemHealth.tsx`: a **fixed 6-service catalog** overlays
+  real status + latency where a check exists and renders the rest as **"monitoring not configured"** — never an
+  invented status. Overall banner derives from monitored checks only. Removed the "no-reference" label.
+- **Roles (built canonical).** `RolesReference.tsx` — the 8 committee roles mirrored read-only from the Keycloak
+  realm / docs/10. Static reference content, EN/AR.
+- **Notification Settings (built canonical, read-only).** `NotificationSettings.tsx` — channel cards (in-app
+  Active; Email/Webex Phase-2 Planned, ADR-0005) + the per-event default matrix. Toggles are presentational
+  (no settings store until P15).
+- **Templates / Streams / Job Monitor (honest-empty).** `ComingDataTab.tsx` renders the design's empty state
+  with module-specific copy; their data is P14/P15. No fabricated rows.
+- **Restructure.** `AdministrationPage` is now the sub-tab container (owns `sub` + user-detail state, header,
+  7-tab strip); `UsersMembership` split into `UsersDirectory` + `UserDetail` bodies. Opening a user detail
+  replaces the tabbed view (design `userdetail` sub-state).
+- **DI-03 / OQ-042 — confirmed.** Invite / in-app "Provision via Keycloak" stays removed (ADR-0015); provision
+  is the sanctioned KC-console deep-link only (added when a console URL is configured — follow-up).
+- **Assignments "—" — confirmed.** No assignee/count API exists; the honest dash + hint stands (no change).
+
+**Recorded design deviations (op-approved — the design shows data we don't collect on-prem in v1).**
+- Health tiles omit **uptime% / p95** (not collected); status + **real latency** (`HealthReportEntry.Duration`)
+  + description are shown.
+- Unregistered services (MinIO/Seq/Hangfire/Webex) read **"monitoring not configured"** — running, not down.
+- Notification per-event toggles + channel switches are **read-only** (no persistence backend until P15).
+
+**Tests.** BE `AdminEndpointsTests` (admin 200 + `api` entry / Member 403 / anon 401). FE `AdministrationPage.test`
+(7 tabs navigable, per-tab bodies, detail-replaces-tabs), `SystemHealth.test` (loading/error/operational/degraded/
+down/unmonitored/refresh), `UsersMembership.test` (directory + detail), `systemHealth` hook test. Full suite green
+(371 FE tests); new files ≥95% lines (systemHealth.ts/icons.tsx/administration 100%). EN/AR parity 589/589.
+
+**VR.** Live VR remains blocked on the operator setting the `acmp-admin` Keycloak dev password (standing P4
+caveat) — captured via dev-stub VR (Vite DEV auth auto-admin), same method as P3.
+
+**Next.** P4 remainder is data-bound to P14/P15. Natural next slice: P6 round-2 (RD-08 meeting-page ownership,
+NV-08 meeting sub-tabs, DV-16 actual-time control, DV-04 rich-text unification).
+
+---
+
 ## Round-2 Reconcile — P3 (foundation) to the updated design + Usage Map
 
 ### 2026-06-30 — Close the P3 forensic findings against `ACMP Usage Map` + `ACMP Design System` (branch `chore/p3-round2-reconcile`)

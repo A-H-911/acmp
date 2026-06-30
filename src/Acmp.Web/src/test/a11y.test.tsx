@@ -11,7 +11,7 @@ import { renderWithAuth, makeAuth } from './render';
 import { LoginPage } from '../pages/LoginPage';
 import { TopBar } from '../components/shell/TopBar';
 import { SideNav } from '../components/shell/SideNav';
-import { UsersMembership } from '../features/administration/UsersMembership';
+import { UsersDirectory } from '../features/administration/UsersMembership';
 import { Backlog } from '../features/topics/Backlog';
 import type { Member } from '../api/members';
 import type { TopicSummary } from '../api/topics';
@@ -83,7 +83,7 @@ describe('Accessibility — axe-core (WCAG 2.2 AA structure/ARIA)', () => {
 
   it('Admin Users & Membership is axe-clean', async () => {
     mockUseMembers.mockReturnValue({ data: MEMBERS, isLoading: false, isError: false, refetch: vi.fn() });
-    const { container } = renderWithAuth(<UsersMembership />, { roles: ['administrator'] });
+    const { container } = renderWithAuth(<UsersDirectory onView={vi.fn()} />, { roles: ['administrator'] });
     expect(await violations(container)).toEqual([]);
   });
 
