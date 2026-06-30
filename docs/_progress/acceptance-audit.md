@@ -228,6 +228,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > tablet) covered by the same token/logical-CSS mechanism; automated pixel-diff VR → P17. See progress-log
 > "P3 foundation refresh".
 
+> P6b Notifications IA reconcile (2026-06-30): reconciled the bell popover + full inbox to the design
+> references (`ACMP.dc.html` L92–131 + L706–739) — `role="dialog"` popover with `{n} new` pill, Unread/All
+> tabs, loading skeleton, tone-icon · artifact-key · time · message rows + per-item mark-read, View-all
+> footer; inbox channel line + Unread/All underline tabs with counts + TYPE-label rows + Mark-read pills,
+> Load-more kept. **DV-02** (Load-more vs infinite) → **blessed**; **DV-05** (Unread/All) → **confirmed by
+> design**; **RD-09** → v1 in-app only, **no preferences page** built. Backend: `read-all` now emits a
+> `Notifications.AllRead` AuditEvent after persistence (reverses P6e's no-audit for the bulk sweep; single
+> mark-read stays un-audited) — **type = existing `Category`, key derived from `DeepLink`** (no migration,
+> no DTO change). **No verdict flips** — AC-051/053 stay **Met**, now exercised through the reconciled
+> components; AC-052 stays Partial (vote-open notification → P9). FE 397 green + per-file lines ≥95%; BE
+> Application 420 + Api 5 green (read-all both branches + user-scoped); EN/AR parity (0 drift); dev-stub VR
+> (EN-light + AR-RTL-dark) matches. See progress-log "P6b (Notifications IA)".
+
 > P4 UI refresh (2026-06-27): rebuilt Administration → Users & Membership to the updated
 > `ACMP Administration.dc.html` — 7-tab strip (Users active, six later-phase placeholders disabled), richer
 > directory (committee `.adm-mchip` chips with `×` + inert dashed `+add` + read-only voting switch, assignments

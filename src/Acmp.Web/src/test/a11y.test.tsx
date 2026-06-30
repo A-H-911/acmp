@@ -28,6 +28,7 @@ const mockUseBacklog = useBacklog as unknown as Mock;
 vi.mock('../api/notifications', () => ({
   useNotifications: vi.fn(() => ({ data: { items: [], unreadCount: 2 } })),
   useMarkNotificationRead: vi.fn(() => ({ mutate: vi.fn() })),
+  useMarkAllNotificationsRead: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 
 const TOPICS: TopicSummary[] = [

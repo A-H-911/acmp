@@ -12,6 +12,60 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Round-2 Reconcile — P6b (Notifications IA) to the updated design
+
+### 2026-06-30 — Reconcile the bell popover + full inbox to ACMP.dc.html (branch `feat/p6b-notifications-ia`)
+
+**Why.** Round-1's notification center predated the design (its own comment said "no .dc.html
+exists" — a `role="region"` popover with a plain title/body list, and an inbox with a segmented
+Unread/All control). The authority is now **ACMP.dc.html L92–131** (bell popover) and **L706–739**
+(`isNotifPage` full inbox). `ACMP System States.dc.html` `isNotif` is the **preferences page →
+NOT built in v1 (RD-09)**; no profile prefs link wired.
+
+**Scope = (B) full reconcile incl. backend** (operator, 2026-06-30). Most of "Option B" was already
+shipped by P6e (the `/api/notifications/read-all` endpoint + `MarkAllNotificationsReadHandler`, the
+`Category` field, IDOR-scoped queries). Per the operator's pre-authorisation — *type = existing
+`Category`, key derived from the `DeepLink`'s last segment, "derive over a new stored column"* — the
+only backend delta is the audit emit. **No migration, no DTO change.**
+
+**What.**
+- **Backend — audit on bulk read.** `MarkAllNotificationsReadHandler` now takes `IAuditSink` and emits
+  `Notifications.AllRead` (`{ marked }`) after `SaveChangesAsync`, only when something changed (the
+  `count==0` short-circuit returns before persistence → no audit noise). **This reverses P6e's
+  deliberate no-audit choice for read-all** (a one-click inbox sweep is worth a record, guardrail 5 /
+  docs/26); the single `MarkNotificationRead` stays un-audited (accepted asymmetry — revert if the
+  no-audit was intentional per ADR-0009). Stale comment updated.
+- **FE presentation helper** (`api/notifPresentation.ts`): `notifType(category)` → `{ labelKey, tone,
+  icon }` with a neutral `default` fallback (never a blank TYPE); `notifKey(deepLink)` → the runtime
+  key from the last path segment (query/hash/trailing-slash stripped; `null` link → no key chip).
+- **Bell popover** (`NotificationCenter.tsx`) → `role="dialog"` + click-away scrim; header `{n} new`
+  pill + **Mark all read**; **Unread/All** segmented tabs; loading **skeleton** (shared `.skeleton`
+  shimmer); rows = tone icon · artifact key (deep-link) · time · message · per-item **mark-read dot**;
+  footer **View all + chevron**. Kept the TopBar `.notif-badge` class (core-loop E2E asserts it).
+- **Inbox** (`NotificationsPage.tsx`) → header **Mark all read** + an in-app **channel** line;
+  **Unread/All underline tabs with counts** (Unread default); card rows = tone icon · **TYPE label +
+  key + time** · message · inline **Mark read** pill; check-circle empty card. Kept **Load-more**
+  (DV-02). Breadcrumb is shell-owned (`deriveBreadcrumbs` already maps `/notifications`) — not
+  re-added per LP-01.
+- **i18n**: added top-level `notif.{newCount,markRead,viewAll,channel,type.*}` to **both** en + ar by
+  hand (renamed `seeAll`→`viewAll`); EN/AR key parity verified (0 drift).
+
+**Decisions resolved.** DV-02 (Load-more vs infinite) → **blessed** (design list has no infinite
+scroll). DV-05 (Unread/All) → **confirmed by the design** (it ships the tabs). RD-09 → v1 in-app only,
+**no preferences page**.
+
+**Verification.** FE 397 tests green (new/updated notif tests incl. nested-deep-link key derivation); per-file coverage — notifPresentation
+100/100/100, NotificationCenter L100 B95.6, NotificationsPage L100 B100 (lines ≥95% gate met). BE
+Application 420 + Api 5 green; read-all both branches covered (marks-some emits one audit, marks-none
+emits none + user-scoped). Typecheck + oxlint clean. Dev-stub VR (vite + Playwright route-mock anchored
+to origin-root `/api/`): popover + inbox in **EN-light** and **AR-RTL-dark** match the design
+(RTL mirrors panel/breadcrumb/rows + chevrons; mono keys stay LTR). **GO.**
+
+**Next.** P6b done (PR opened off `main`, not self-merged — independent of unmerged #53). Next slice =
+**Decisions/Minutes** (the `MeetingMinutes` placeholder points there) + remaining round-2 targets.
+
+---
+
 ## Round-2 Reconcile — P6a (Meetings IA) to the updated design + Usage Map
 
 ### 2026-06-30 — Refactor the meeting page into a SHELL + nested content surfaces (branch `feat/p6a-meeting-ia`)

@@ -84,9 +84,20 @@
     "emptyBody": "New notifications about your topics, meetings, and actions will appear here.",
     "all": "All",
     "unread": "Unread",
+    "newCount": "{{count}} new",
     "markAll": "Mark all read",
+    "markRead": "Mark read",
     "loadMore": "Load more",
-    "seeAll": "See all notifications",
+    "viewAll": "View all",
+    "channel": "In-app",
+    "type": {
+      "agendaPublished": "Agenda",
+      "meetingScheduled": "Meeting",
+      "minutesReady": "Minutes",
+      "decisionApproved": "Decision",
+      "actionAssigned": "Action",
+      "default": "Update"
+    },
     "noUnreadTitle": "No unread notifications",
     "noUnreadBody": "You've read everything. Switch to All to see your full history."
   },

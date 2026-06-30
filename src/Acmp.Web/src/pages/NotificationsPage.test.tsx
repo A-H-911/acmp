@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
+import i18n from '../i18n';
 import NotificationsPage from './NotificationsPage';
 import { renderWithAuth } from '../test/render';
 import type { NotificationItem, NotificationList } from '../api/notifications';
@@ -46,25 +47,51 @@ function page(over: Partial<NotificationList> = {}, q: Record<string, unknown> =
   });
 }
 
-describe('NotificationsPage (#79)', () => {
+describe('NotificationsPage (#79 — ACMP.dc.html L706–739)', () => {
   beforeEach(() => {
     mockInfinite.mockReset();
     [navigate, markReadMutate, markAllMutate, fetchNextPage].forEach((m) => m.mockReset());
   });
+  afterEach(async () => { await i18n.changeLanguage('en'); });
 
-  it('lists the feed with a heading and the unread count on the Unread toggle', () => {
+  it('renders the loading state while the first page is fetching', () => {
+    mockInfinite.mockReturnValue({ data: undefined, isLoading: true, isError: false, refetch: vi.fn() });
+    const { container } = renderWithAuth(<NotificationsPage />);
+    expect(container.querySelector('.skeleton, .spinner, [role="status"]')).toBeTruthy();
+  });
+
+  it('renders the error state with a retry that refetches', async () => {
+    const refetch = vi.fn();
+    mockInfinite.mockReturnValue({ data: undefined, isLoading: false, isError: true, refetch });
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationsPage />);
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('renders Arabic body content when the locale is AR', async () => {
+    await i18n.changeLanguage('ar');
+    page({ items: [{ ...ITEMS[0], bodyAr: 'تم نشر جدول الأعمال للاجتماع.' }] });
+    renderWithAuth(<NotificationsPage />);
+    expect(screen.getByText('تم نشر جدول الأعمال للاجتماع.')).toBeInTheDocument();
+  });
+
+  it('shows the heading, the channel line, and the Unread tab count; lists the unread body', () => {
     page();
     renderWithAuth(<NotificationsPage />);
     expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
-    expect(screen.getByText('Agenda published')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Unread/ })).toHaveTextContent('1');
+    expect(screen.getByText('In-app')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Unread/ })).toHaveTextContent('1');
+    // Default = Unread → the unread body shows; the read item is hidden.
+    expect(screen.getByText('The agenda for MTG-2026-019 is published.')).toBeInTheDocument();
+    expect(screen.queryByText('A new meeting is scheduled.')).not.toBeInTheDocument();
   });
 
-  it('marks an unread item read and follows its deep link on click', async () => {
+  it('marks an unread item read and follows its deep link when the key is clicked', async () => {
     page();
     const user = userEvent.setup();
     renderWithAuth(<NotificationsPage />);
-    await user.click(screen.getByRole('button', { name: /agenda published/i }));
+    await user.click(screen.getByRole('button', { name: 'MTG-2026-019' }));
     expect(markReadMutate).toHaveBeenCalledWith('n1');
     expect(navigate).toHaveBeenCalledWith('/meetings/MTG-2026-019');
   });
@@ -82,27 +109,30 @@ describe('NotificationsPage (#79)', () => {
     expect(markAllMutate).toHaveBeenCalled();
   });
 
-  it('the Unread filter hides read items', async () => {
+  it('the All tab reveals read items and shows the total count', async () => {
     page();
     const user = userEvent.setup();
     renderWithAuth(<NotificationsPage />);
-    expect(screen.getByText('Meeting scheduled')).toBeInTheDocument(); // read item visible under All
-    await user.click(screen.getByRole('button', { name: /Unread/ }));
-    expect(screen.queryByText('Meeting scheduled')).not.toBeInTheDocument();
-    expect(screen.getByText('Agenda published')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /All/ })).toHaveTextContent('2');
+    await user.click(screen.getByRole('tab', { name: /All/ }));
+    expect(screen.getByText('A new meeting is scheduled.')).toBeInTheDocument();
   });
 
-  it('shows Load more when more pages exist and fetches the next page', async () => {
+  it('shows Load more under All when more pages exist and fetches the next page', async () => {
     page({ hasMore: true }, { hasNextPage: true });
     const user = userEvent.setup();
     renderWithAuth(<NotificationsPage />);
+    await user.click(screen.getByRole('tab', { name: /All/ }));
     await user.click(screen.getByRole('button', { name: 'Load more' }));
     expect(fetchNextPage).toHaveBeenCalled();
   });
 
-  it('shows the empty state when the inbox is empty', () => {
+  it('shows the no-unread empty state by default and the all-caught-up card under All', async () => {
     page({ items: [], unreadCount: 0, total: 0 });
+    const user = userEvent.setup();
     renderWithAuth(<NotificationsPage />);
+    expect(screen.getByText(/No unread notifications/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /All/ }));
     expect(screen.getByText(/all caught up/i)).toBeInTheDocument();
   });
 

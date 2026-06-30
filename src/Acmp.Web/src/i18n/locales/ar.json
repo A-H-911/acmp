@@ -84,9 +84,20 @@
     "emptyBody": "ستظهر هنا الإشعارات الجديدة حول مواضيعك واجتماعاتك وإجراءاتك.",
     "all": "الكل",
     "unread": "غير المقروءة",
+    "newCount": "{{count}} جديد",
     "markAll": "تعليم الكل كمقروء",
+    "markRead": "تعليم كمقروء",
     "loadMore": "تحميل المزيد",
-    "seeAll": "عرض كل الإشعارات",
+    "viewAll": "عرض الكل",
+    "channel": "داخل التطبيق",
+    "type": {
+      "agendaPublished": "جدول الأعمال",
+      "meetingScheduled": "اجتماع",
+      "minutesReady": "المحضر",
+      "decisionApproved": "قرار",
+      "actionAssigned": "إجراء",
+      "default": "تحديث"
+    },
     "noUnreadTitle": "لا إشعارات غير مقروءة",
     "noUnreadBody": "قرأت كل شيء. بدّل إلى الكل لعرض سجلك الكامل."
   },
