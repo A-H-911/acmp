@@ -1250,9 +1250,6 @@
   max-inline-size: 380px; /* design literal */
   line-height: 1.6;
 }
-.mt-gate-action {
-  margin-block-start: var(--sp-3);
-}
 
 /* Lifecycle banner (P6 meeting-detail IA) — the "state views" above the tabs, EXACT to the
    ACMP Meetings.dc.html lifecycle banner (line 258): gap 11 · pad 13/15 · radius 11 · margin-end 16 ·

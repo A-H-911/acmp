@@ -169,7 +169,9 @@ export function MeetingWorkspace() {
             discussion={meeting.discussions.find((d) => d.topicId === activeItem.topicId)}
             onSaveNote={(body) => captureDiscussion.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, body })}
             onRecordTime={(actualMinutes, outcome) =>
-              recordActualTime.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, actualMinutes, outcome })
+              // Omit outcome when unset: '' is not a valid AgendaItemOutcome, so the time-only path
+              // must send no outcome field (server keeps the item's current/Pending outcome).
+              recordActualTime.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, actualMinutes, outcome: outcome || undefined })
             }
             recording={recordActualTime.isPending}
           />
@@ -326,7 +328,7 @@ function ActualTimeControl({
             min={0}
             inputMode="numeric"
             className="mt-record-input"
-            aria-label={t('meetings.actualMinutes')}
+            aria-label={t('meetings.actualTime')}
             value={minutes}
             onChange={(e) => setMinutes(e.target.value)}
           />

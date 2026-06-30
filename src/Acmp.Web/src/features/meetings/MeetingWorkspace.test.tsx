@@ -152,19 +152,27 @@ describe('MeetingWorkspace (P6d)', () => {
   it('records actual time + outcome for the active item (DV-16)', async () => {
     const user = userEvent.setup();
     setup();
-    const minutes = screen.getByLabelText('Actual minutes');
-    await user.type(minutes, '18');
+    await user.type(screen.getByLabelText('Actual time'), '18');
     await user.click(screen.getByRole('button', { name: 'Outcome' }));
     await user.click(screen.getByRole('option', { name: 'Discussed' }));
     await user.click(screen.getByRole('button', { name: 'Record time' }));
     expect(recordSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', actualMinutes: 18, outcome: 'Discussed' });
   });
 
+  it('records time-only WITHOUT an outcome (omits the field, never sends "") (DV-16)', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText('Actual time'), '12');
+    await user.click(screen.getByRole('button', { name: 'Record time' }));
+    // outcome is omitted (undefined), not '' — '' is not a valid AgendaItemOutcome and would 400.
+    expect(recordSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', actualMinutes: 12, outcome: undefined });
+  });
+
   it('disables Record time until a valid minutes value is entered (DV-16)', async () => {
     const user = userEvent.setup();
     setup();
     expect(screen.getByRole('button', { name: 'Record time' })).toBeDisabled();
-    await user.type(screen.getByLabelText('Actual minutes'), '5');
+    await user.type(screen.getByLabelText('Actual time'), '5');
     expect(screen.getByRole('button', { name: 'Record time' })).toBeEnabled();
   });
 
