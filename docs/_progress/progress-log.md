@@ -12,6 +12,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S6b-2: native drag paths + failure-first E2E (ADR-0016 §2)
+
+### 2026-06-30 — Cover the S4-deferred drag paths and the adversarial denial/validation cases
+
+**Why.** S4 marked the pointer-drag paths `/* v8 ignore */` ("deferred to S6 E2E") because jsdom can't run
+native HTML5 drag. S6b-2 proves them on the real browser, and adds the failure-first cases the mandate
+names (authz denial + validation guards) that only the live stack can exercise honestly.
+
+**What (S6b-2, second of three small per-flow PRs).** `e2e/dnd-and-failures.spec.ts` (7 tests) + setup
+helpers in `e2e/scenario.ts`. Setup that isn't under test (prepared topics, meetings, agenda items) is built
+through the **API** with a real captured bearer; the UI is reserved for the drag/denial being asserted.
+- **Drag (the S4-deferred paths):** Kanban card → Accepted column (opens the AcceptDialog); Kanban card →
+  Scheduled column (the illegal move → announced rejection in the `aria-live` region, no dialog);
+  AgendaBuilder pool card → agenda region (adds the item); AgendaBuilder item-2 → item-1 (single ±1 reorder).
+- **Failure-first:** a member is denied scheduling (`Policies.MeetingSchedule` → **403** + the UI error);
+  the schedule form blocks empty submits (required-field errors, no request) and an inverted time window;
+  publish is **disabled** on an empty agenda and Start is **gated** until the agenda is published.
+
+**Decision A realised.** The operator's "sortable reorder" target maps onto the AgendaBuilder native
+handlers + Kanban card→column — `@dnd-kit SortableList` is mounted by no screen (only its own unit test), so
+it isn't E2E-able and is intentionally not covered here.
+
+**Drag mechanism (spiked).** The app's drag handlers store state in React refs/state on `dragstart` and read
+it on `drop` (no `dataTransfer` payload), so `e2e/scenario.ts → dragHtml5()` dispatches the DnD events
+directly (`dragstart`/`dragover`/`drop`/`dragend`) — more deterministic than geometry-based mouse
+simulation, and it fired every handler on the first run. (Centralised so it's a one-line swap to
+`locator.dragTo()` if ever needed.)
+
+**Gotcha (carry forward).** JIT member provisioning (`POST /members/me`) is async on login, so the very
+first API read of `/members` after a login can race it — force it with an explicit idempotent
+`page.request.post('/api/members/me')` before querying the directory (added in `secretarySession`). Caught
+only because the *first* secretary login in a fresh-stack run failed while later ones passed.
+
+**Gates.** FE `npm run build` clean · `npm test` 346/346 (vitest, e2e excluded) · `npm run lint` (only the
+pre-existing Toast.tsx warning). Live: **full e2e suite 10/10 green on a freshly reset stack** (auth ×2 +
+core-loop + 7 S6b-2) — the exact CI shape. **AC verdict flips still deferred** to the end of S6b. **Next:
+S6b-3** (RTL/Arabic + axe on a key screen), then S7 (flip the CI coverage gate to fail-under-95).
+
+---
+
 ## Test-Hardening Program — S6b-1: core-loop E2E (topic → agenda → meeting → conduct → notify) (ADR-0016 §2)
 
 ### 2026-06-30 — Drive the whole governance loop through the real UI on the live stack
