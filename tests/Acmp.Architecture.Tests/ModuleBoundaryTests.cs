@@ -18,9 +18,11 @@ public class ModuleBoundaryTests
     private static readonly Assembly MeetingsApp = typeof(Acmp.Modules.Meetings.Application.MeetingsApplicationExtensions).Assembly;
     private static readonly Assembly NotificationsDomain = typeof(Acmp.Modules.Notifications.Domain.Notification).Assembly;
     private static readonly Assembly NotificationsApp = typeof(Acmp.Modules.Notifications.Application.NotificationsApplicationExtensions).Assembly;
+    private static readonly Assembly DecisionsDomain = typeof(Acmp.Modules.Decisions.Domain.Decision).Assembly;
+    private static readonly Assembly DecisionsApp = typeof(Acmp.Modules.Decisions.Application.DecisionsApplicationExtensions).Assembly;
 
-    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain } };
-    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp } };
+    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain } };
+    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp } };
 
     [Theory]
     [MemberData(nameof(Domains))]
@@ -42,7 +44,8 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
                 "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
                 "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
-                "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
+                "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure",
+                "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -55,7 +58,8 @@ public class ModuleBoundaryTests
         var result = Types.InAssembly(application)
             .Should().NotHaveDependencyOnAny(
                 "Acmp.Modules.Membership.Infrastructure", "Acmp.Modules.Topics.Infrastructure",
-                "Acmp.Modules.Meetings.Infrastructure", "Acmp.Modules.Notifications.Infrastructure")
+                "Acmp.Modules.Meetings.Infrastructure", "Acmp.Modules.Notifications.Infrastructure",
+                "Acmp.Modules.Decisions.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -97,6 +101,21 @@ public class ModuleBoundaryTests
             .Should().NotHaveDependencyOnAny(
                 "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
                 "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(Describe(result));
+    }
+
+    [Fact] // Decisions reaches Topics (ITopicDecisionRecorder), Membership (ICommitteeDirectory), and the
+           // notification channel only through Acmp.Shared contracts — never another module's assemblies.
+    public void Decisions_should_not_depend_on_other_modules()
+    {
+        var result = Types.InAssemblies(new[] { DecisionsDomain, DecisionsApp })
+            .Should().NotHaveDependencyOnAny(
+                "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
                 "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 

@@ -1,6 +1,8 @@
 ﻿using Acmp.Api.Endpoints;
 using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
+using Acmp.Modules.Decisions.Application;
+using Acmp.Modules.Decisions.Infrastructure;
 using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Infrastructure;
 using Acmp.Modules.Membership.Application;
@@ -30,6 +32,7 @@ builder.Services.AddSharedKernel(builder.Configuration);
 builder.Services.AddMembershipModule(builder.Configuration);
 builder.Services.AddTopicsModule(builder.Configuration);
 builder.Services.AddMeetingsModule(builder.Configuration);
+builder.Services.AddDecisionsModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
@@ -42,6 +45,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     MembershipApplicationExtensions.Assembly,
     TopicsApplicationExtensions.Assembly,
     MeetingsApplicationExtensions.Assembly,
+    DecisionsApplicationExtensions.Assembly,
     NotificationsApplicationExtensions.Assembly));
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
@@ -88,6 +92,7 @@ app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
+app.MapDecisionEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
 

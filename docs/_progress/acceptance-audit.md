@@ -12,6 +12,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P7a update (2026-07-01): Decisions module backend (record / issue / supersede). **Partial** (domain +
+> application + API proven by tests; live HTTP/UI confirmation → P7b/P17 per G-TRACE): **AC-027** (issued
+> decision immutable — no-mutator + re-issue/re-supersede guards), **AC-028** (supersession back-link, both
+> readable, prior unchanged). **AC-029** (downstream-link-required-to-issue) stays **Pending → P8 (OQ-045)** —
+> the gate is unbuildable until the Actions module exists, so P7a does NOT enforce it; it must be retrofitted
+> onto the shipped IssueDecision path when Actions land. **AC-016** (SoD-3) gains the chair-override record
+> (choice + justification + `DecisionIssued` override flag) but the co-attestation GATE stays Partial→P9
+> (vote-coupled). See progress-log P7a entry.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >
@@ -336,7 +345,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-013 | SoD-1 | Partial | SegregationOfDutiesTests | Independent-verifier predicate proven; positive path at Action.Verify → P8 |
 | AC-014 | SoD-2 | Pending | — | MoM approver = sole author → MoM module (P7) |
 | AC-015 | SoD-3 | Partial | SegregationOfDutiesTests | Co-attestation predicate proven; Vote close + chair-approve enforcement → P9 |
-| AC-016 | SoD-3 | Partial | SegregationOfDutiesTests | Co-attestation predicate proven; override-with-co-attest record → P9 |
+| AC-016 | SoD-3 | Partial | SegregationOfDutiesTests + DecisionTests/DecisionHandlerTests (override choice + justification + flag recorded on issue) | Co-attestation predicate proven; P7a records the chair-override choice + justification + `DecisionIssued` override flag, but the SoD-3 co-attestation GATE is vote-coupled → stays Partial→P9 |
 | AC-017 | Audit | Pending | — | State change → audit entry |
 | AC-018 | Audit | Pending | — | Audit row immutable |
 | AC-019 | Audit | Pending | — | Hash-chain integrity check |
@@ -347,9 +356,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-024 | Voting | Pending | — | Quorum gate on close |
 | AC-025 | Voting | Pending | — | Immutable after close |
 | AC-026 | Voting | Pending | — | Forward-only lifecycle |
-| AC-027 | Decisions | Pending | — | Issued decision immutable |
-| AC-028 | Decisions | Pending | — | Supersession back-link |
-| AC-029 | Decisions | Pending | — | Downstream link required to issue |
+| AC-027 | Decisions | Partial | DecisionTests (no-mutator / re-issue + re-supersede throw) + DecisionHandlerTests + DecisionsApiTests (issue→Issued) | Domain immutability + issue path proven; live HTTP/UI confirmation → P7b/P17 (G-TRACE) |
+| AC-028 | Decisions | Partial | DecisionTests (Supersede back-link) + DecisionHandlerTests (successor Issued, prior Superseded, both readable, prior unchanged) + DecisionsApiTests (supersede 201 + prior back-link) | Both readable + prior unchanged proven; live HTTP/UI → P7b/P17 (G-TRACE) |
+| AC-029 | Decisions | Pending | — | Downstream-link-required-to-issue **DEFERRED → P8 (OQ-045)** — unbuildable until Actions exist; NOT enforced in P7a; retrofit onto the shipped IssueDecision path when Actions land |
 | AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests + SubmitTopic.test (client validation) | Server validation + HTTP 400 + no record; submit form now shows localized client-side required-field errors; server-side localized messages → BL-016 |
 | AC-031 | Topic lifecycle | Met | TopicApplicationTests (Reject/Defer require a reason) + TopicApiTests (reject no-reason → 400) + TopicHandlerTests (S1: reject-deny keeps Submitted; wrong-status domain guard) | Mandatory rejection rationale enforced; S1 adds adversarial handler coverage (authz-deny, status guard) |
 | AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: Reject_records_the_rationale_as_immutable_history_and_audits) | Immutable rejection history event (reason+actor+timestamp) + TopicRejected audit adversarially proven in S1; submitter notify → Notifications phase |
