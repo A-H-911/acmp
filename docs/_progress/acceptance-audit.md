@@ -241,7 +241,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > Load-more kept. **DV-02** (Load-more vs infinite) → **blessed**; **DV-05** (Unread/All) → **confirmed by
 > design**; **RD-09** → v1 in-app only, **no preferences page** built. Backend: `read-all` now emits a
 > `Notifications.AllRead` AuditEvent after persistence (reverses P6e's no-audit for the bulk sweep; single
-> mark-read stays un-audited) — **type = existing `Category`, key derived from `DeepLink`** (no migration,
+> mark-read stays un-audited — **signed off 2026-07-01 as OQ-044**, the asymmetry is intentional and clarifies
+> ADR-0009) — **type = existing `Category`, key derived from `DeepLink`** (no migration,
 > no DTO change). **No verdict flips** — AC-051/053 stay **Met**, now exercised through the reconciled
 > components; AC-052 stays Partial (vote-open notification → P9). FE 397 green + per-file lines ≥95%; BE
 > Application 420 + Api 5 green (read-all both branches + user-scoped); EN/AR parity (0 drift); dev-stub VR
