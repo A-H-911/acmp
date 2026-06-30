@@ -19,10 +19,13 @@ This folder contains the Architecture Decision Records (ADRs) for the Architectu
 | [ADR-0009](ADR-0009-audit-immutability.md) | Append-Only Audit Log with Immutability and Hash-Chain Integrity | Accepted | 2026-06-24 |
 | [ADR-0010](ADR-0010-voting-model.md) | Always-Attributed Voting Model | Accepted | 2026-06-24 |
 | [ADR-0011](ADR-0011-search-sqlserver-fts.md) | SQL Server Full-Text Search in v1; Self-Hosted OpenSearch if Outgrown | Accepted | 2026-06-24 |
-| [ADR-0012](ADR-0012-react-typescript-frontend.md) | React 18 + TypeScript + Vite Frontend | Accepted | 2026-06-24 |
+| [ADR-0012](ADR-0012-react-typescript-frontend.md) | React 18 + TypeScript + Vite Frontend | Accepted (React major amended by ADR-0017) | 2026-06-24 |
 | [ADR-0013](ADR-0013-self-contained-deployment.md) | Self-Contained On-Premises Deployment (CON-001) | Accepted (amended by ADR-0015) | 2026-06-24 |
 | [ADR-0014](ADR-0014-background-jobs-observability.md) | Background Jobs (Hangfire), Observability (Serilog + OpenTelemetry + Seq), Object Storage (MinIO) | Accepted | 2026-06-24 |
 | [ADR-0015](ADR-0015-self-hosted-keycloak-all-dependencies-owned.md) | ACMP Self-Hosts Keycloak and Bundles All Runtime Dependencies | Accepted | 2026-06-25 |
+| [ADR-0016](ADR-0016-test-coverage-basis-and-e2e.md) | Test Coverage Basis (≥95% lines, FE + BE), Exclusions, E2E Harness, and DB-Backstop Integration Tests | Accepted | 2026-06-29 |
+| [ADR-0017](ADR-0017-react-19-amends-0012.md) | Adopt React 19 (amends ADR-0012) | Accepted | 2026-06-25 |
+| [ADR-0018](ADR-0018-optimistic-concurrency-rowversion.md) | Optimistic Concurrency via RowVersion (implements docs/16 §1.5) | Accepted | 2026-06-30 |
 
 ---
 

@@ -12,6 +12,7 @@ public sealed class CommitteeMemberConfiguration : IEntityTypeConfiguration<Comm
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
         b.Property(x => x.KeycloakUserId).IsRequired().HasMaxLength(128);
         b.Property(x => x.FullName).IsRequired().HasMaxLength(256);
         b.Property(x => x.Email).IsRequired().HasMaxLength(256);

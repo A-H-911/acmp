@@ -38,7 +38,7 @@ structural (radius/size/state/copy). All rows below reconciled to **FIX→MATCH*
 | 9 | Card paddings | budget 14×16 · item 13×14 · heads 12-13×14-15 | snapped to `--sp` grid (12/16) | explicit ref px | FIX→MATCH |
 | 10 | Copy (EN+AR) | "Ready to schedule" · aria "Backlog pool" · "Search topics…" · "Drag to reorder · ↑↓ keys" · "Time-box" · "Items & total time" · "…notify attendees" | paraphrased | aligned verbatim to reference | FIX→MATCH |
 
-**Intended (not drift), kept:** StatusChip 22/8/11.5 (DS §08 canonical, overrides the dc's 23/9/12);
+**Intended (not drift), kept:** StatusChip DS §08 = 24/9/12 (md), §09 = 22/8/11.5 (sm) — DS-canon, overrides the dc's 23 (code tiebreaker: `StatusChip.tsx:12`, `styles/components.css:48,52`);
 RTE→textarea, Pause/Preview + Decision/Action/Vote disabled stubs (P7-P9), notify-group checkboxes→
 single honest line, presenter-cycle→Select, mm:ss→minutes, mock→real data; move/step/tool buttons
 24-28px (reference is also sub-44px — faithful). Meetings list + ScheduleMeetingDialog have no design

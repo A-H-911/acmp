@@ -15,6 +15,9 @@ public sealed class CommitteeMember : AuditableEntity
 
     private CommitteeMember() { }
 
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
+
     public string KeycloakUserId { get; private set; } = string.Empty;
     public string FullName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;

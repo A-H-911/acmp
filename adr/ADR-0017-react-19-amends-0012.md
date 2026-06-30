@@ -1,9 +1,10 @@
-# ADR-0015: Adopt React 19 (amends ADR-0012)
+# ADR-0017: Adopt React 19 (amends ADR-0012)
 
 - Status: Accepted
 - Date: 2026-06-25
 - Deciders: Architecture Committee execution (secretary to ratify)
 - Amends: ADR-0012 (React 18 + TypeScript + Vite frontend)
+- Note: Renumbered from ADR-0015 on 2026-06-30 to resolve a number collision with ADR-0015 (Self-Hosted Keycloak). The renumber is administrative only; the decision and its 2026-06-25 date are unchanged.
 
 ## Context and Problem Statement
 

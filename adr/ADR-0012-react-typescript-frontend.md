@@ -52,3 +52,4 @@ Chosen option: "React 18 + TypeScript + Vite + react-i18next + RTL logical CSS +
 - Design tokens (light/dark, spacing, typography, colour) defined in `design-handoff/`; implemented as CSS custom properties; no hard-coded hex values in component CSS.
 - Static build artifact (`dist/`) served by nginx or the ACMP ASP.NET Core app in production; no Node.js runtime in the production container.
 - Related: ADR-0001 (frontend is a separate module/project in the monorepo), ADR-0002 (REST API consumed by React frontend), ADR-0004 (Keycloak OIDC PKCE flow initiated from the SPA).
+- **Amended by [ADR-0017](ADR-0017-react-19-amends-0012.md): the React major version is 18 → 19.** Every other aspect of this ADR (TypeScript, Vite, `react-i18next` EN/AR, RTL via CSS logical properties + `dir`, light/dark tokens, `@dnd-kit`) remains in force.

@@ -2,13 +2,54 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-06-27
+updated: 2026-06-30
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## Doc-Integrity Slice — resolve rebuild-findings §8 (DI-01..DI-08 + guardrail #14)
+
+### 2026-06-30 — Doc/code integrity fixes (one PR, branch `chore/doc-integrity` off `main`)
+
+**Why.** The forensic rebuild review (`rebuild-findings.md` §8) flagged eight doc-integrity defects:
+an ADR number collision, OQ numbering gaps, a doc-vs-doc search-engine contradiction, a ledger mis-record,
+a doc-vs-doc SPA-serving disagreement, and a doc-vs-code drift (the documented RowVersion backstop didn't
+exist). Each is evidence-backed; fixed together so the planning package stops contradicting itself and the code.
+
+**What.**
+- **DI-01 (BLOCKER) — ADR-0015 collision.** Two files both claimed ADR-0015 (React-19 amendment + Self-Hosted
+  Keycloak). `git mv` renamed the React-19 ADR to **ADR-0017** (title + administrative renumber note; decision
+  date kept 2026-06-25). `adr/README.md` index repaired — it had stopped at 0015, so **both ADR-0016 (coverage)
+  and ADR-0017 (React-19)** were added (plus ADR-0018, below); ADR-0012's row + Links/Notes now point to
+  ADR-0017. ADR-0015 stays = Keycloak, 0016 = coverage. Numbers never reused.
+- **DI-04/05 — OQ numbering.** Added the missing **OQ-041** (prod CI runner, P18) to `docs/42` and re-sequenced
+  the Keycloak section to 038→039→040→041→042→043; OQ-041 added to the Deferred blocker list.
+- **DI-08 — OQ-034 search engine.** Corrected Meilisearch → **OpenSearch** (matches ADR-0011 / R-24 / README).
+- **DI-06 — ledger StatusChip.** `design-parity-ledger.md:41` corrected to DS §08 = 24/9/12 (md), §09 =
+  22/8/11.5 (sm); the dc showed 23 (code tiebreaker).
+- **DI-07 — OQ-012 SPA serving.** Noted the chosen **separate nginx `web` container** override of the doc's
+  default (b) ASP.NET static files.
+- **Guardrail #14.** Appended the USAGE MAP rule (`ACMP Usage Map.dc.html` is the per-phase/flow/component
+  index; blessed deviations update the design, leaving no unreconciled drift).
+- **DI-02 / OQ-043 — RowVersion (operator chose option A: implement).** Added `RowVersion` (SQL `rowversion`,
+  `IsRowVersion()`) to the built mutable aggregate roots **Topic, Meeting, Agenda, CommitteeMember**; one EF
+  migration per module (Topics/Meetings/Membership); `GlobalExceptionHandler` maps
+  `DbUpdateConcurrencyException → 409` (docs/15 §7.4). Recorded as **ADR-0018**; resolved OQ-043 → R-27 in
+  `docs/42` §A. `docs/16` §1.5 is now true in code. Append-only/child entities excluded (guardrail #12).
+
+**Tests.** Integration (Testcontainers, real SQL): a stale write throws `DbUpdateConcurrencyException` (SQL
+rejects; InMemory silently accepts — the false-green contrast). Unit: `GlobalExceptionHandlerTests` pins the
+exception→status mapping incl. the new 409 arm. Full backend suite green (579 tests); coverage gate
+**99.59% global, all files ≥95%**. `dotnet format --verify-no-changes` clean.
+
+**Follow-up (flagged, not in scope).** A 409 should eventually drive an SPA optimistic-conflict UX
+(refetch/merge) — a later front-end slice (noted in ADR-0018). CLAUDE.md / guardrail #1 still say "React 18"
+(pre-existing; ADR-0017/0012 govern) — separate cleanup, not a DI-### item.
 
 ---
 
@@ -2247,9 +2288,10 @@ and `NotificationCenter` was `role="dialog"` without focus management → change
 read-only markers; dark surfaces legible).
 
 **Decisions recorded (no silent drift, guardrail 11):**
-- **React 19 vs ADR-0012 (says 18).** P1 silently installed React 19. Surfaced and resolved via **ADR-0015**
+- **React 19 vs ADR-0012 (says 18).** P1 silently installed React 19. Surfaced and resolved via **ADR-0017**
   (amends ADR-0012, keeps 19) — a settled-ADR change needs an ADR, not just a log line (guardrail 1). ADR-0012
-  carries a forward-link note; adr/README index updated.
+  carries a forward-link note; adr/README index updated. (Originally filed as ADR-0015; renumbered to ADR-0017
+  on 2026-06-30 to resolve a collision with ADR-0015 = Self-Hosted Keycloak — see doc-integrity slice.)
 - **Self-hosted fonts (CON-001).** The design loads IBM Plex from Google Fonts CDN; replaced with `@fontsource`
   packages so production runs air-gapped. No new ADR — implements an existing constraint.
 - **OIDC dev-stub.** DEV-gated, never in prod bundle; recorded as the P3→P4 boundary (live Keycloak login +
