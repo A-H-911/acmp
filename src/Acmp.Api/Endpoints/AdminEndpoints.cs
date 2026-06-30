@@ -1,4 +1,4 @@
-using Acmp.Shared.Authorization;
+﻿using Acmp.Shared.Authorization;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Acmp.Api.Endpoints;
