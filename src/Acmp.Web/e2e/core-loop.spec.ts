@@ -48,7 +48,7 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
 
       let topic: { id: string; key: string } = { id: '', key: '' };
       await test.step('secretary submits a topic', async () => {
-        await page.goto('/topics/new');
+        await page.goto('/backlog/submit');
         await page.getByRole('button', { name: 'Arch. Decision' }).click();
         // getByRole uses the accessible name (the required "*" is aria-hidden), unlike getByLabel
         // which matches the <label> text "Title*".
@@ -148,7 +148,7 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
 
       await test.step('both recipients see the publish notification', async () => {
         for (const recipient of [memberPage, chairPage]) {
-          await recipient.goto('/dashboard');
+          await recipient.goto('/');
           await expect(recipient.locator('.notif-badge')).toBeVisible();
         }
       });

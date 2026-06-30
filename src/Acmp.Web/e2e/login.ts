@@ -20,7 +20,7 @@ export async function loginAs(page: Page, role: E2eRole): Promise<void> {
   await page.locator('#password').fill(E2E_PASSWORD);
   await page.locator('#kc-login').click();
 
-  // Back in the SPA, authenticated, landed on the dashboard.
-  await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
+  // Back in the SPA, authenticated, landed on Home ('/' — Usage Map §G).
+  await page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 30_000 });
   await expect(page.locator('.login-cta')).toHaveCount(0);
 }
