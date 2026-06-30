@@ -12,6 +12,38 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S7: flip the CI coverage gate to fail-under-95 (ADR-0016 §1)
+
+### 2026-06-30 — Wire the hard coverage gate (global + per-file ≥95% lines, FE + BE) — the last slice
+
+**Why.** The whole program kept `main` green while climbing to ≥95% (guardrail #13), so the hard fail-under
+gate is wired only now that both stacks are already there. ADR-0016 §1: ≥95% **lines** on assertable code,
+enforced **global + per-file** so a 0% file can't hide behind the average.
+
+**What (S7, final slice).**
+- **FE** — `vitest.config.ts`: added `coverage.thresholds: { lines: 95, perFile: true }` (lines only — the
+  basis is lines, not functions/branches). CI `frontend` job's test step now runs **`npm run test:cov`** so
+  the thresholds are evaluated; the job fails if any file drops below 95% lines.
+- **BE** — coverlet's own threshold is per-assembly only, so per-file needs a custom check.
+  `scripts/check-coverage.mjs` unions line-hits across every per-project cobertura report (a line counts as
+  covered if **any** test project hit it — the true merged coverage, no ReportGenerator needed) and fails if
+  any file or the global figure is <95% lines. The coverlet.runsettings exclusions are already applied at
+  collection time, so every file it sees is in-scope. CI `backend` job now collects coverage
+  (`--collect:"XPlat Code Coverage" --settings coverlet.runsettings`) and runs the gate (`+ setup-node`).
+
+**Proven both ways (locally).** Gate at 95 → **pass** (FE: all files ≥95% lines, EXIT 0; BE: 113 files,
+global **99.65%**, zero sub-95 files). Fail-path at 100 → **trips** (BE lists `Topic.cs` 96.47% and
+`Agenda.cs` 98.80%, exit 1) — the script's threshold is a CLI arg (default 95), so the deliberate-red proof
+is deterministic and repeatable, not a throwaway edit.
+
+**Gates.** FE `npm run build` clean · `npm test` 346/346 · `npm run lint` (only the pre-existing Toast.tsx
+warning) · `npm run test:cov` green with the new threshold. BE coverage 99.65% (every file ≥95%) via the new
+gate. **This completes the ADR-0016 test-hardening program (S0–S7).** Optional follow-ups remain: the
+end-of-S6b AC-verdict reconciliation, and OQ-043 (RowVersion optimistic concurrency) as its own feature
+slice.
+
+---
+
 ## Test-Hardening Program — S6b-3: RTL/Arabic + accessibility E2E (ADR-0016 §2)
 
 ### 2026-06-30 — Prove the live RTL flip and an automated axe sweep (last E2E slice)

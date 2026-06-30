@@ -14,14 +14,19 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Restore
         run: dotnet restore acmp.sln
       - name: Format check
         run: dotnet format acmp.sln --verify-no-changes --no-restore
       - name: Build
         run: dotnet build acmp.sln -c Release --no-restore
-      - name: Test
-        run: dotnet test acmp.sln -c Release --no-build
+      - name: Test + coverage
+        run: dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      - name: Coverage gate (ADR-0016 ≥95% lines, global + per-file)
+        run: node scripts/check-coverage.mjs .
       - name: Vulnerable packages (report)
         run: dotnet list acmp.sln package --vulnerable --include-transitive
 
@@ -55,8 +60,8 @@ jobs:
         run: npm ci
       - name: i18n parity (EN/AR)
         run: node ../../scripts/check-i18n.mjs
-      - name: Test
-        run: npm test
+      - name: Test + coverage gate (ADR-0016 ≥95% lines, global + per-file)
+        run: npm run test:cov
       - name: Build
         run: npm run build
       - name: Audit
