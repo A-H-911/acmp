@@ -21,7 +21,6 @@ import { useTranslation } from 'react-i18next';
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Field, Input, Textarea } from '../../components/ui/Field';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
@@ -218,11 +217,6 @@ export function SubmitTopic() {
 
   return (
     <section className="page">
-      <Breadcrumb
-        ariaLabel={t('topics.newTopic')}
-        items={[{ label: t('topics.backlog'), href: AREAS.backlog.path }, { label: t('topics.newTopic'), current: true }]}
-      />
-
       <div className="bk-head sub-head">
         <div>
           <h1 className="page-title">{t('submit.title')}</h1>

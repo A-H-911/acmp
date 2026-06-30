@@ -15,8 +15,9 @@ test.describe('auth — real Keycloak PKCE round-trip', () => {
 
   test('signs in via Keycloak and lands authenticated on the dashboard', async ({ page }) => {
     await loginAs(page, 'secretary');
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/$/);
     // Authenticated shell rendered (the app chrome only mounts behind ProtectedRoute).
-    await expect(page.getByRole('navigation')).toBeVisible();
+    // The shell has the primary nav + the breadcrumb nav, so target the primary one.
+    await expect(page.locator('nav.sidebar')).toBeVisible();
   });
 });

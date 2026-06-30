@@ -21,6 +21,12 @@
     --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;
     --r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:12px;--r-full:9999px;
     --dur-fast:120ms;--dur:180ms;--dur-slow:280ms;--ease:cubic-bezier(.2,.6,.2,1);
+    /* named off-scale literals — screens consume these, never hard-code px */
+    --control-radius:9px;--chip-radius:6px;
+    --chip-h-md:24px;--chip-px-md:9px;--chip-fs-md:12px;
+    --chip-h-sm:22px;--chip-px-sm:8px;--chip-fs-sm:11.5px;
+    --header-h:60px;--sidebar-w:244px;--row-min:44px;--field-gap:16px;--page-max:72rem;
+    --agenda-budget-h:8px;--agenda-card-pad:13px;--agenda-rail-w:280px;
     --mono:'IBM Plex Mono',monospace;
   }
   [data-acmp-theme="light"]{
@@ -90,6 +96,7 @@
       <a href="#color" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Color &amp; status map</a>
       <a href="#type" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Typography (EN/AR)</a>
       <a href="#scale" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Spacing · radius · elevation</a>
+      <a href="#tokens" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Named tokens &amp; system rules</a>
       <a href="#motion" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Motion</a>
       <div style="font-size:10.5px;font-weight:700;letter-spacing:.7px;color:var(--text-3);text-transform:uppercase;padding:14px 10px 6px">Components</div>
       <a href="#buttons" style="display:block;padding:7px 11px;border-radius:7px;font-size:13px;color:var(--text-2)">Buttons</a>
@@ -209,6 +216,37 @@
               <div style="height:38px;border-radius:9px;background:var(--surface);box-shadow:var(--shadow-lg);display:flex;align-items:center;padding-inline:12px;font-size:12px;color:var(--text-2)">--shadow-lg · overlays</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ============ NAMED TOKENS & SYSTEM RULES ============ -->
+      <section id="tokens" style="margin-bottom:46px;scroll-margin-top:76px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:12px;color:var(--accent)">03b</span><h2 style="margin:0;font-size:19px;font-weight:700">Named tokens &amp; system rules</h2></div>
+        <p style="margin:0 0 18px;font-size:13.5px;color:var(--text-2);max-width:660px">The design uses a few off-scale literals. They are published here as <b>named tokens</b> so screens consume the variable and never hard-code a pixel value — this is what kills the round-then-reconcile pixel drift. The scroll model, scrollbar, and breadcrumb are settled once, here.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden">
+            <div style="padding:11px 16px;background:var(--header);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">Off-scale tokens</div>
+            <sc-for list="{{ namedTokens }}" as="n" hint-placeholder-count="8"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border-soft)"><span style="font-family:var(--mono);font-size:11.5px;color:var(--accent)">{{ n.tok }}</span><span style="font-family:var(--mono);font-size:11.5px;color:var(--text-2)">{{ n.val }}</span><span style="font-size:11.5px;color:var(--text-3);flex:1 1 auto;text-align:end;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.use }}</span></div></sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);padding:14px 16px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">Canonical StatusChip</div>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><span style="display:inline-flex;align-items:center;gap:6px;height:var(--chip-h-md);padding-inline:var(--chip-px-md);border-radius:var(--chip-radius);font-size:var(--chip-fs-md);font-weight:600;background:var(--st-info-bg);color:var(--st-info-fg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-info-dot)"></span>Accepted</span><span style="font-family:var(--mono);font-size:10.5px;color:var(--text-3)">md · 24 / 9 / 12</span></div>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><span style="display:inline-flex;align-items:center;gap:6px;height:var(--chip-h-sm);padding-inline:var(--chip-px-sm);border-radius:var(--chip-radius);font-size:var(--chip-fs-sm);font-weight:600;background:var(--st-sched-bg);color:var(--st-sched-fg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--st-sched-dot)"></span>Scheduled</span><span style="font-family:var(--mono);font-size:10.5px;color:var(--text-3)">sm · 22 / 8 / 11.5</span></div>
+              </div>
+              <div style="margin-top:11px;font-size:11.5px;color:var(--text-2);line-height:1.5">md in tables &amp; detail headers, sm in dense rows. The old <span style="font-family:var(--mono)">23</span> is retired.</div>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);padding:14px 16px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Breadcrumb (lifted into shell)</div>
+              <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-3)"><span>Home</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span>Meetings</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="font-family:var(--mono);color:var(--text-2)">MTG-2026-019</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg><span style="color:var(--text-2)">Minutes</span></nav>
+              <div style="margin-top:9px;font-size:11.5px;color:var(--text-2);line-height:1.5">Rule: <span style="font-family:var(--mono);font-size:11.5px">Home › Area › Record › Sub-tab</span>. Rendered on <b>every</b> page (incl. dashboard), 12px gap below. Chevrons flip in RTL.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><div style="font-size:12.5px;font-weight:700;margin-bottom:4px">Scroll model</div><div style="font-size:12px;color:var(--text-2);line-height:1.55">The document scrolls. TopBar (<span style="font-family:var(--mono);font-size:11.5px">--header-h 60</span>) and SideNav (<span style="font-family:var(--mono);font-size:11.5px">--sidebar-w 244</span>) are sticky; there is no inner <span style="font-family:var(--mono);font-size:11.5px">app-main</span> overflow container. Page width caps at <span style="font-family:var(--mono);font-size:11.5px">--page-max 72rem</span>.</div></div>
+          <div style="border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><div style="font-size:12.5px;font-weight:700;margin-bottom:4px">Scrollbar &amp; rhythm</div><div style="font-size:12px;color:var(--text-2);line-height:1.55">One scrollbar treatment: 11px track, <span style="font-family:var(--mono);font-size:11.5px">--scroll</span> thumb, 7px radius, 3px transparent border. Logical properties only (RTL-safe). Stacked fields use <span style="font-family:var(--mono);font-size:11.5px">--field-gap 16</span>; grid rows rely on <span style="font-family:var(--mono);font-size:11.5px">gap</span>, never a doubled margin.</div></div>
         </div>
       </section>
 
@@ -664,6 +702,18 @@ class Component extends DCLogic {
 
     return {
       theme, dir, font, chev, chevBack, rootVars:'',
+      namedTokens: [
+        { tok:'--control-radius', val:'9px', use:'buttons · inputs · selects' },
+        { tok:'--chip-radius', val:'6px', use:'all status chips' },
+        { tok:'--chip-h-md / px / fs', val:'24 / 9 / 12', use:'tables · headers' },
+        { tok:'--chip-h-sm / px / fs', val:'22 / 8 / 11.5', use:'dense rows' },
+        { tok:'--header-h', val:'60px', use:'sticky top bar' },
+        { tok:'--sidebar-w', val:'244px', use:'side nav' },
+        { tok:'--row-min', val:'44px', use:'table / list rows' },
+        { tok:'--page-max', val:'72rem', use:'content width cap' },
+        { tok:'--agenda-budget-h', val:'8px', use:'agenda budget bar' },
+        { tok:'--agenda-card-pad', val:'13px', use:'agenda item card' }
+      ],
       isLtr:isRtl?'false':'true', isRtl:isRtl?'true':'false', isLight:theme==='light'?'true':'false', isDark:theme==='dark'?'true':'false',
       segLtr: isRtl?segOff:segOn, segRtl: isRtl?segOn:segOff, segLight: theme==='light'?segOn:segOff, segDark: theme==='dark'?segOn:segOff,
       setLtr:()=>this.set('dir','ltr'), setRtl:()=>this.set('dir','rtl'), setLight:()=>this.set('theme','light'), setDark:()=>this.set('theme','dark'),

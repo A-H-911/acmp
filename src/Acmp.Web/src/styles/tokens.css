@@ -12,9 +12,20 @@
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
   --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
   --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px; --r-full: 9999px;
-  /* Interactive controls (buttons, inputs, chips, tabs, menus) use an off-scale
-     9px in the design system — one named token keeps it consistent. */
-  --control-radius: 9px;
+  /* Named off-scale tokens (Design System §03b "Named tokens & system rules").
+     The design uses a few off-scale literals; publishing them as named tokens is
+     what kills the round-then-reconcile pixel drift — screens consume the
+     variable, never a raw px. Values are the DS canon (Usage Map decision 5). */
+  --control-radius: 9px;   /* buttons · inputs · selects */
+  --chip-radius: 6px;      /* all status chips */
+  --chip-h-md: 24px; --chip-px-md: 9px; --chip-fs-md: 12px;   /* tables · headers */
+  --chip-h-sm: 22px; --chip-px-sm: 8px; --chip-fs-sm: 11.5px; /* dense rows */
+  --header-h: 60px;        /* sticky top bar */
+  --sidebar-w: 244px;      /* side nav */
+  --row-min: 44px;         /* table / list rows */
+  --field-gap: 16px;       /* stacked form fields */
+  --page-max: 72rem;       /* content width cap */
+  --agenda-budget-h: 8px; --agenda-card-pad: 13px; --agenda-rail-w: 280px;
   --dur-fast: 120ms; --dur: 180ms; --dur-slow: 280ms;
   --ease: cubic-bezier(.2, .6, .2, 1);
 

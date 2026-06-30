@@ -16,7 +16,12 @@
     "retry": "Retry",
     "goToDashboard": "Go to dashboard",
     "skipToContent": "Skip to main content",
-    "comingSoon": "This area will be built in a later phase."
+    "breadcrumb": "Breadcrumb",
+    "reload": "Reload page",
+    "comingSoon": "This area will be built in a later phase.",
+    "phase2Lead": "Available in a later release.",
+    "phase2Title": "Coming in Phase 2",
+    "phase2Body": "This area is planned for Phase 2 and isn’t available yet."
   },
   "nav": {
     "primary": "Primary navigation",
@@ -62,8 +67,10 @@
     "subtitle": "Sign in to continue",
     "secure": "You’ll continue to the secure identity service to sign in.",
     "invite": "Access is by invitation only · authentication is handled by the central identity service.",
-    "completing": "Completing sign-in…",
-    "failedTitle": "Sign-in failed",
+    "completing": "Signing you in…",
+    "completingBody": "Completing the secure sign-in with the identity service and loading your committee profile.",
+    "secureHandoff": "Secure OIDC handoff · Keycloak",
+    "failedTitle": "Sign-in could not be completed",
     "signedOut": "You've been signed out.",
     "sessionExpired": "Your session expired. Please log in again."
   },
@@ -546,5 +553,6 @@
       "Guest": "Guest"
     }
   },
-  "notFound": { "body": "We couldn't find that page." }
+  "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard." },
+  "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." }
 }

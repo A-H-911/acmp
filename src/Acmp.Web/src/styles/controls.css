@@ -75,8 +75,12 @@
 .breadcrumb { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: 13px; color: var(--text-3); margin-block-end: var(--sp-3); }
 .breadcrumb-sep { color: var(--text-3); display: inline-flex; flex: 0 0 auto; }
 .breadcrumb-current { color: var(--text-2); }
+.breadcrumb-key { font-family: var(--mono); }
 .breadcrumb a { color: inherit; }
 .breadcrumb a:hover { color: var(--text-2); }
+/* Lifted into the shell layout (NV-07): the trail is width-capped to the page
+   content so it aligns with it, and renders on every page incl. dashboard/404. */
+.shell-crumbs { max-inline-size: var(--page-max); margin-inline: auto; }
 
 /* ============================ Pagination ============================ */
 .pagination { display: flex; align-items: center; gap: 4px; font-size: 12.5px; }

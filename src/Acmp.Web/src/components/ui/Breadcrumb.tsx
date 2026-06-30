@@ -6,6 +6,8 @@ export interface Crumb {
   label: ReactNode;
   href?: string;
   current?: boolean;
+  /** Render the label in the mono record-key style (e.g. TOP-2026-014). */
+  mono?: boolean;
 }
 
 /**
@@ -38,7 +40,10 @@ export function Breadcrumb({ items, ariaLabel }: { items: Crumb[]; ariaLabel: st
             {href ? (
               <a href={href}>{c.label}</a>
             ) : (
-              <span className="breadcrumb-current" aria-current={c.current ? 'page' : undefined}>
+              <span
+                className={c.mono ? 'breadcrumb-current breadcrumb-key' : 'breadcrumb-current'}
+                aria-current={c.current ? 'page' : undefined}
+              >
                 {c.label}
               </span>
             )}

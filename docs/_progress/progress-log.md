@@ -12,6 +12,66 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Round-2 Reconcile — P3 (foundation) to the updated design + Usage Map
+
+### 2026-06-30 — Close the P3 forensic findings against `ACMP Usage Map` + `ACMP Design System` (branch `chore/p3-round2-reconcile`)
+
+**Why.** The design update (`ACMP product context/CHANGELOG-design-update.md`) published the Usage Map as
+the authoritative per-phase/flow index and settled every open question from the forensic review §10. This
+slice reconciles the **P3 foundation** surface (tokens, shell, nav/IA, global states) to it. Operator chose
+**Option 1 (full §G route alignment)**.
+
+**Key finding up front — most of P3 was already correct.** The nav labels (`nav.agenda`="Agenda & Meetings",
+`nav.adrs`="ADRs & Invariants", `nav.wiki`="Knowledge / Wiki"), the nav groups (Committee/Governance/
+Knowledge/Insights/System), and the **StatusChip size** (md 24/9/12, sm 22/8/11.5, r6) already matched the
+now-locked design canon. So DV-01/AM-01/NV-01/02/03/04 needed **no visual change** — only tokenisation +
+route/label confirmation. DI-06 was already fixed in PR #50.
+
+**What.**
+- **LP-02 — named off-scale tokens.** Published the design's named tokens in `tokens.css`
+  (`--chip-radius`, `--chip-h/px/fs-md|sm`, `--header-h:60`, `--sidebar-w:244`, `--row-min`, `--field-gap`,
+  `--page-max`, `--agenda-budget-h/card-pad/rail-w`) and consumed them: StatusChip (no pixel change),
+  `.page` max-width, header height, sidebar width. Literals deleted in favour of the variable.
+- **AM-02 / DV-17 — header.** Header height **58 → 60** (`--header-h`); sidebar **248 → 244** (`--sidebar-w`),
+  resolving the old "58-vs-60 self-inconsistency" comment per Usage Map decision 11. Header stays solid
+  `--header` (DV-17 already resolved — no-op).
+- **LP-04 — scrollbar.** Added the one custom scrollbar (11px, `--scroll` thumb, 7px radius, 3px transparent
+  border + Firefox `scrollbar-width:thin`). Scroll model already correct (document scrolls, sticky chrome,
+  no inner overflow) — confirmed, no change.
+- **NV-07 / LP-01 — breadcrumb LIFTED into the shell.** New `nav/breadcrumbs.ts` derives the trail from the
+  URL (`Home › Area › Record › Sub-tab`; record key shown verbatim + mono, like the design), rendered once in
+  `AppShell` inside a `.shell-crumbs` width cap. **Removed the 7 per-page `<Breadcrumb>` renders.** Every page
+  now has a consistent breadcrumb incl. **dashboard, placeholders, and 404** (which had none) with the 12px
+  gap owned globally on `.breadcrumb`.
+- **NV-01..06 + §G routes (Option 1).** navModel + App.tsx routes aligned to Usage Map §G: `audit`
+  `/admin/audit`→`/audit` (System group); `submit` `/topics/new`→`/backlog/submit`; `wiki`
+  `/knowledge`→`/wiki`; `admin` `/admin`→`/admin/users` (index redirects); **Home now `/`** (kept `/dashboard`
+  as a redirect alias so deep links survive). SideNav exact-match updated `/dashboard`→`/`. Governance
+  group + "ADRs & Invariants" already host invariants (detail screens = P10). NV-06: nav reconciled now;
+  Diagrams placeholder shows a designed **"Phase 2"** state (new `phase2` prop), the rest keep the honest
+  placeholder until their phase (P7–P12) per Usage Map §C.
+- **NR-09 — callback / 404 / error reconciled to `ACMP System States`.** 404 = mono 64px faint "404" +
+  "Page not found" + design body + Go-to-dashboard/Search. Error boundary = danger icon box + "Something
+  went wrong" + body + Reload/Go-to-dashboard. Callback = secure-handoff spinner + "Signing you in…" + secure
+  line. New i18n keys (EN+AR): `common.{breadcrumb,reload,phase2*}`, `auth.{completingBody,secureHandoff}`,
+  `notFound.title`, `errorBoundary.{title,body}`.
+
+**Verification.** `npm run build` (tsc -b + vite) clean · `npm run lint` (only the pre-existing Toast
+warning) · `node scripts/check-i18n.mjs` **OK (511 keys)** · `npm run test:cov` **350 passed** (49 files;
++4: new `breadcrumbs.test.ts` ×6, PlaceholderPage phase2, ErrorBoundary/App/AuthCallback updated to the new
+behaviour) · **per-file coverage gate green** (changed files 100% lines: breadcrumbs.ts, AppShell, SideNav,
+NotFoundPage). **Live visual (vite dev, 1440×900):** dashboard now shows the **Home breadcrumb** (was
+absent); 404 matches System States; **AR-RTL-dark** mirrors the sidebar to the inline-end with the breadcrumb
++ dark theme + Arabic labels. Frontend-only — no API/backend change.
+
+**Acceptance.** Touches **AC-040/045/046** (EN/AR render, focus/labels, axe — unit + axe still green) and
+**AC-041** (stays **Partial** → automated pixel-diff VR is P17). No verdict flips.
+
+**Next.** Round-2 reconcile of P4–P6 surfaces (meetings ownership split RD-08, actual-time control DV-16,
+rich-text unification DV-04) per the same Usage Map decisions.
+
+---
+
 ## Doc-Integrity Slice — resolve rebuild-findings §8 (DI-01..DI-08 + guardrail #14)
 
 ### 2026-06-30 — Doc/code integrity fixes (one PR, branch `chore/doc-integrity` off `main`)

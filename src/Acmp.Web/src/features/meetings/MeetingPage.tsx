@@ -24,8 +24,6 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMeetingDetail, useStartMeeting } from '../../api/meetings';
 import { ApiError } from '../../api/apiClient';
-import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Tabs, type TabItem } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
@@ -65,10 +63,6 @@ export function MeetingPage() {
     const notFound = meetingQuery.error instanceof ApiError && meetingQuery.error.status === 404;
     return (
       <section className="page">
-        <Breadcrumb
-          ariaLabel={t('meetings.title')}
-          items={[{ label: t('meetings.title'), href: AREAS.agenda.path }, { label: key ?? '', current: true }]}
-        />
         {notFound ? (
           <EmptyState icon="calendar" title={t('meetings.notFound.title')} body={t('meetings.notFound.body')} />
         ) : (
@@ -97,11 +91,6 @@ export function MeetingPage() {
 
   return (
     <section className="page mt-detail">
-      <Breadcrumb
-        ariaLabel={t('meetings.title')}
-        items={[{ label: t('meetings.title'), href: AREAS.agenda.path }, { label: meeting.key, current: true }]}
-      />
-
       <LifecycleBanner phase={phase} />
 
       <Tabs items={tabs} value={activeTab} onValueChange={(id) => setTab(id as TabId)} ariaLabel={meeting.key} />

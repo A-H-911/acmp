@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from './ErrorBoundary';
 import i18n from '../i18n';
 
@@ -10,8 +11,21 @@ function Boom() {
   return <div>recovered content</div>;
 }
 
-// The boundary must catch a child render error, show a SAFE fallback (no technical detail leaked,
-// docs/14 p92), log to console for diagnostics only, and recover via the retry action.
+/** The boundary fallback uses routing (Go to dashboard), so it mounts under a router. */
+function renderBoundary() {
+  return render(
+    <MemoryRouter initialEntries={['/boom']}>
+      <Routes>
+        <Route path="/" element={<div>home page</div>} />
+        <Route path="*" element={<ErrorBoundary><Boom /></ErrorBoundary>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
+// The boundary must catch a child render error, show a SAFE fallback reconciled to
+// System States `error` (no technical detail leaked, docs/14 p92), log to console for
+// diagnostics only, and offer the reload + go-to-dashboard recovery actions.
 describe('ErrorBoundary', () => {
   afterEach(() => {
     shouldThrow = true;
@@ -20,12 +34,10 @@ describe('ErrorBoundary', () => {
 
   it('shows the safe fallback and logs diagnostics when a child throws', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(
-      <ErrorBoundary>
-        <Boom />
-      </ErrorBoundary>,
-    );
-    expect(screen.getByRole('button', { name: i18n.t('common.retry') })).toBeInTheDocument();
+    renderBoundary();
+    expect(screen.getByText(i18n.t('errorBoundary.title'))).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('common.reload') })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('common.goToDashboard') })).toBeInTheDocument();
     expect(screen.queryByText(/boom-internal-detail/)).not.toBeInTheDocument(); // no leak
     expect(spy).toHaveBeenCalled(); // componentDidCatch logged
   });
@@ -33,22 +45,19 @@ describe('ErrorBoundary', () => {
   it('renders children untouched when nothing throws', () => {
     shouldThrow = false;
     render(
-      <ErrorBoundary>
-        <div>ok content</div>
-      </ErrorBoundary>,
+      <MemoryRouter>
+        <ErrorBoundary>
+          <div>ok content</div>
+        </ErrorBoundary>
+      </MemoryRouter>,
     );
     expect(screen.getByText('ok content')).toBeInTheDocument();
   });
 
-  it('recovers via retry once the child stops throwing', async () => {
+  it('navigates home from the fallback "go to dashboard" action', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(
-      <ErrorBoundary>
-        <Boom />
-      </ErrorBoundary>,
-    );
-    shouldThrow = false; // the next render will succeed
-    await userEvent.click(screen.getByRole('button', { name: i18n.t('common.retry') }));
-    expect(screen.getByText('recovered content')).toBeInTheDocument();
+    renderBoundary();
+    await userEvent.click(screen.getByRole('button', { name: i18n.t('common.goToDashboard') }));
+    expect(screen.getByText('home page')).toBeInTheDocument();
   });
 });

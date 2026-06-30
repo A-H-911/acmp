@@ -64,7 +64,7 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
 
   test('Submit-Topic is axe-clean in both English and Arabic', async ({ page }) => {
     await loginAs(page, 'secretary');
-    await page.goto('/topics/new');
+    await page.goto('/backlog/submit');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(await axeViolations(page), 'Submit-Topic (EN) axe violations').toEqual([]);
 
