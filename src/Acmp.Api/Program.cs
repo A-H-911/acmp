@@ -12,6 +12,7 @@ using Acmp.Modules.Topics.Infrastructure;
 using Acmp.Shared;
 using Acmp.Shared.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -51,9 +52,11 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-// Health checks: liveness (self) + readiness (SQL Server).
+// Health checks: liveness (self) + readiness (SQL Server). The "api" check is trivially healthy when
+// the app is serving the request — it backs the Administration → System Health "Application" tile (NR-08).
 var connectionString = builder.Configuration.GetConnectionString("Acmp") ?? string.Empty;
 builder.Services.AddHealthChecks()
+    .AddCheck("api", () => HealthCheckResult.Healthy("Serving requests"), tags: new[] { "live" })
     .AddSqlServer(connectionString, name: "sqlserver", tags: new[] { "ready" });
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
@@ -86,6 +89,7 @@ app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
 app.MapNotificationEndpoints();
+app.MapAdminEndpoints();
 
 // Apply EF migrations on startup, retrying while SQL Server finishes accepting connections.
 await MigrationRunner.MigrateAsync(app);

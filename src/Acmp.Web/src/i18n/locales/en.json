@@ -109,7 +109,15 @@
   },
   "admin": {
     "title": "Administration",
-    "subtitle": "Users, roles, and committee membership",
+    "sub": {
+      "users": "Users, roles, and committee membership",
+      "templates": "Standardized templates for topics, ADRs, minutes, decisions, and research",
+      "health": "Live status of core services and integrations",
+      "streams": "Delivery streams and their committee owners",
+      "roles": "Read-only reference — roles & capabilities are defined in Keycloak",
+      "jobs": "Background job queues, schedules, and recent runs (Hangfire)",
+      "notifications": "Delivery channels and per-event default notifications"
+    },
     "tabs": {
       "users": "Users & Membership",
       "templates": "Templates",
@@ -149,6 +157,84 @@
       "yes": "Yes",
       "no": "No",
       "noMemberships": "No committee or stream memberships."
+    },
+    "health": {
+      "overall": {
+        "ok": "All core systems operational",
+        "degraded": "Service degraded — core services operational",
+        "down": "A core service is down"
+      },
+      "lastRefresh": "Auto-refreshes every 30 seconds",
+      "refresh": "Refresh",
+      "ms": "ms",
+      "checkedNow": "checked just now",
+      "notMonitored": "Monitoring not configured",
+      "service": {
+        "application": "Application (API)",
+        "sqlServer": "SQL Server",
+        "minio": "MinIO object storage",
+        "seq": "Seq logging",
+        "hangfire": "Background jobs (Hangfire)",
+        "webex": "Webex / Tarseem"
+      },
+      "status": {
+        "operational": "Operational",
+        "degraded": "Degraded",
+        "down": "Down",
+        "unmonitored": "Not monitored"
+      }
+    },
+    "roles": {
+      "kcRef": "Mirrored from Keycloak realm roles — read-only.",
+      "col": { "role": "Role", "who": "Responsibilities", "caps": "Key capabilities" },
+      "chairman": { "who": "Chairs meetings; approves decisions & minutes", "caps": "Approve · Override · Vote" },
+      "secretary": { "who": "Runs the workflow end to end", "caps": "Edit · Schedule · Record" },
+      "member": { "who": "Committee voting member", "caps": "Vote · Comment" },
+      "reviewer": { "who": "Reviews submissions & ADRs", "caps": "Review · Comment" },
+      "auditor": { "who": "Read-only oversight + audit log", "caps": "Read · Export" },
+      "administrator": { "who": "Users, templates, configuration", "caps": "Manage system" },
+      "submitter": { "who": "Submits topics; limited access", "caps": "Submit · View own" },
+      "guest": { "who": "Time-boxed single-topic access", "caps": "View invited topic" }
+    },
+    "notif": {
+      "matrixTitle": "Default notifications by event type",
+      "matrixSub": "In-app is the only delivery channel in v1. Email and Webex are planned for Phase 2.",
+      "on": "On",
+      "off": "Off",
+      "planned": "Planned",
+      "col": { "event": "Event type", "inApp": "In-app", "email": "Email", "webex": "Webex" },
+      "channel": {
+        "active": "Active",
+        "planned": "Phase 2 · Planned",
+        "inapp": { "name": "In-app", "desc": "The only delivery channel in v1. Always on — every committee event reaches the recipient in-app." },
+        "email": { "name": "Email", "desc": "Planned for Phase 2. SMTP delivery of digests and high-priority events. Not active in v1." },
+        "webex": { "name": "Webex / Tarseem", "desc": "Planned for Phase 2. Meeting and vote reminders pushed to Webex spaces. Not active in v1." }
+      },
+      "event": {
+        "topicSubmitted": "Topic submitted",
+        "topicReturned": "Topic returned for rework",
+        "agendaPublished": "Agenda published",
+        "meetingScheduled": "Meeting scheduled",
+        "minutesReady": "Minutes ready for review",
+        "decisionApproved": "Decision approved",
+        "voteOpened": "Vote opened",
+        "actionAssigned": "Action assigned to you",
+        "actionOverdue": "Action overdue",
+        "riskAssigned": "Risk assigned to you",
+        "adrPublished": "ADR published"
+      }
+    },
+    "templates": {
+      "emptyTitle": "No templates yet",
+      "emptyBody": "Topic, ADR, minutes, decision, and research templates are managed here in a later phase."
+    },
+    "streams": {
+      "emptyTitle": "No streams configured",
+      "emptyBody": "Delivery streams and their committee owners land with the stream registry (BL-024)."
+    },
+    "jobs": {
+      "emptyTitle": "No job data yet",
+      "emptyBody": "Background job queues and recent Hangfire runs appear here in a later phase."
     }
   },
   "topics": {
