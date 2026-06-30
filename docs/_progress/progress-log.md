@@ -12,6 +12,34 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S6b-3: RTL/Arabic + accessibility E2E (ADR-0016 §2)
+
+### 2026-06-30 — Prove the live RTL flip and an automated axe sweep (last E2E slice)
+
+**Why.** The mandate requires an RTL/Arabic + accessibility pass on key screens. Unit axe tests (S4)
+covered components in jsdom; S6b-3 proves the **whole live page** flips to `dir="rtl"` under Arabic and is
+axe-clean in both locales — the last E2E slice before S7.
+
+**What (S6b-3, last of three small per-flow PRs).** `e2e/rtl-a11y.spec.ts` (3 tests):
+- The app flips to **RTL Arabic** from the top-bar control: `<html>` goes `dir="ltr"` → `dir="rtl"`,
+  `lang="ar"`, and the toggle then offers the way back to English (i18n really switched).
+- **Backlog** is **axe-clean** (0 WCAG 2a/2aa violations) in **both English and Arabic/RTL**.
+- **Submit-Topic** is **axe-clean** in **both English and Arabic/RTL** (form-heavy a11y surface).
+
+**No new dependency.** Uses the already-installed `axe-core`. The app ships a strict CSP
+(`script-src 'self'`), which **blocks** `page.addScriptTag` (inline injection) — a good sign for the app —
+so the axe source is run via `page.evaluate(AXE_SOURCE)`, which executes through CDP and bypasses the page
+CSP. `color-contrast` is disabled in the axe run to match the S4 unit convention (contrast = a
+design-token/fidelity concern, out of this slice's scope; flagged, not silently dropped).
+
+**Gates.** FE `npm run build` clean · `npm test` 346/346 (vitest, e2e excluded) · `npm run lint` (only the
+pre-existing Toast.tsx warning). Live: **full e2e suite 13/13 green on a freshly reset stack** (auth ×2 +
+core-loop + 7 S6b-2 + 3 S6b-3) — the exact CI shape. **The E2E mandate (ADR-0016 §2) is now complete.**
+**Next: S7** — flip the CI coverage gate to fail-under-95 (per-file, both stacks); and the end-of-S6b AC
+verdict reconciliation now that the live HTTP/UI legs exist.
+
+---
+
 ## Test-Hardening Program — S6b-2: native drag paths + failure-first E2E (ADR-0016 §2)
 
 ### 2026-06-30 — Cover the S4-deferred drag paths and the adversarial denial/validation cases
