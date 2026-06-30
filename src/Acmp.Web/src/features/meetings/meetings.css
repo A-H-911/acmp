@@ -1001,8 +1001,59 @@
   resize: vertical;
 }
 
-/* (Actual-time / outcome recording control removed from the workspace UI — deferred concern;
-   the backend command + mutation hook remain. See progress-log.) */
+/* ---- DV-16: actual-time + outcome recorder (active item) ----
+   A labeled row under the notes editor: minutes input · outcome select · Record button. Sits in the
+   mt-active-body flex (13px rhythm); wraps on narrow widths. */
+.mt-record {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border-soft);
+}
+.mt-record-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-inline-size: 150px;
+}
+.mt-record-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.mt-record-minutes {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.mt-record-input {
+  inline-size: 84px;
+  block-size: 34px;
+  padding-inline: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.mt-record-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-record-unit {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.mt-record .mt-record-field:nth-child(2) {
+  flex: 1 1 160px;
+}
 
 /* ---- action row: the 3 capture buttons (design block) ---- */
 .mt-actions {
@@ -1199,9 +1250,6 @@
   max-inline-size: 380px; /* design literal */
   line-height: 1.6;
 }
-.mt-gate-action {
-  margin-block-start: var(--sp-3);
-}
 
 /* Lifecycle banner (P6 meeting-detail IA) — the "state views" above the tabs, EXACT to the
    ACMP Meetings.dc.html lifecycle banner (line 258): gap 11 · pad 13/15 · radius 11 · margin-end 16 ·
@@ -1341,4 +1389,178 @@
   font-size: 11.5px; /* design literal */
   color: var(--text-2);
   flex: 0 0 auto;
+}
+
+/* ============================================================================
+ * Meeting SHELL (P6a) — header card + deep-linkable tab strip wrapping the routed
+ * sub-pages (ACMP Meetings.dc.html isOverview header). Logical props throughout.
+ * ========================================================================== */
+.mt-shell-head {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  margin-block-end: var(--sp-3);
+}
+.mt-shell-toprow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.mt-shell-ident {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.mt-shell-title {
+  margin: 9px 0 0;
+  font-size: 20px;
+}
+.mt-shell-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mt-shell-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tab strip = routed NavLinks styled as an underline tab bar (semantically a <nav> of links, not
+   ARIA tabs, because each tab is a real URL). The active link carries the accent underline. */
+.mt-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-block-end: 1px solid var(--border);
+  margin-block-end: var(--sp-4);
+}
+.mt-tab {
+  padding: 9px 13px;
+  margin-block-end: -1px;
+  border-block-end: 2px solid transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mt-tab:hover {
+  color: var(--text);
+}
+.mt-tab.active {
+  color: var(--accent);
+  font-weight: 600;
+  border-block-end-color: var(--accent);
+}
+.mt-tab:focus-visible {
+  outline: none;
+  border-radius: var(--r-sm);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* ---- overview body: banner + grid[ agenda preview | readiness + quick-links ] ---- */
+.mt-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .mt-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mt-overview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.mt-readiness,
+.mt-quicklinks {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  padding: 15px 16px;
+}
+.mt-readiness .mt-col-title,
+.mt-quicklinks .mt-col-title {
+  margin-block-end: 11px;
+}
+.mt-readiness-list,
+.mt-quicklinks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.mt-readiness-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+}
+.mt-readiness-mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-3);
+}
+.mt-readiness-mark.met {
+  color: var(--st-success-dot);
+}
+.mt-readiness-mark.unmet {
+  color: var(--st-warn-fg);
+}
+.mt-readiness-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.mt-readiness-hint {
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.mt-quicklink {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.mt-quicklink:hover {
+  border-color: var(--border-strong);
+  background: var(--subtle);
+}
+.mt-quicklink:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.mt-quicklink > span {
+  flex: 1 1 auto;
+}
+.mt-quicklink-chevron {
+  color: var(--text-3);
+  flex: 0 0 auto;
+}
+[dir='rtl'] .mt-quicklink-chevron {
+  transform: scaleX(-1);
 }

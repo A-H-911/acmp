@@ -23,3 +23,15 @@ export function meetingTone(status: string | undefined): StatusTone {
 export function isConcluded(status: string): boolean {
   return status === 'Held' || status === 'Closed' || status === 'Cancelled';
 }
+
+// Lifecycle phase = the single derived state the meeting shell, overview banner, and conduct gate
+// all read (ACMP Meetings.dc.html lcMap). Folds meeting.status × agenda-published into one of five
+// phases so the primary action, banner, and gating never disagree about where a meeting is.
+export type MeetingPhase = 'notReady' | 'ready' | 'inProgress' | 'concluded' | 'cancelled';
+
+export function lifecyclePhase(meetingStatus: string, agendaPublished: boolean): MeetingPhase {
+  if (meetingStatus === 'Cancelled') return 'cancelled';
+  if (meetingStatus === 'Held' || meetingStatus === 'Closed') return 'concluded';
+  if (meetingStatus === 'InProgress') return 'inProgress';
+  return agendaPublished ? 'ready' : 'notReady';
+}

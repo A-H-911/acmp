@@ -284,6 +284,21 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (new DateField + date-required tests), parity OK, tsc + build + oxlint clean. See progress-log
 > "Create-meeting screen UI fixes".
 
+> P6a Meetings IA reconcile (2026-06-30): refactored the meeting detail into a **shell** (header card +
+> 6-tab deep-linkable `NavLink` strip + `<Outlet/>`) over nested routes — index `MeetingOverview`,
+> `/agenda` `AgendaBuilder`, `/attendance`+`/notes` `MeetingConduct` (→ `MeetingWorkspace` while
+> InProgress, else gate), `/minutes` (P7 placeholder), `/recording` (Webex Phase-2 defer). RD-08
+> ownership split applied; "remove duplicate denied" verified as a no-op (route-denial = the global
+> auth gate, single source). Closed **DV-16** (actual-time + outcome recorder re-added to the workspace,
+> wired to `useRecordActualTime`), **DV-21** (agenda pool label → "Prepared", EN+AR), **DV-03** (timer
+> `mm:ss`/`h:mm:ss` confirmed, VR `8:49:49`). Blessed deviation: Recording promoted to a 6th peer tab
+> (NV-08 + route map). Frontend-only, no backend change — **no verdict flips**. Touches
+> **AC-040/045/046** (Overview + workspace render EN/AR + axe-clean component tests) and **AC-041** (RTL
+> mirror confirmed via dev-stub VR EN-light + AR-RTL-dark; pixel-diff VR → P17). Live stack was down →
+> dev-stub VR (`npm run dev` + Playwright `/api/**` mocks). Web 384/384 (81 in the meetings feature:
+> new shell+conduct, MeetingOverview, MeetingMinutes, MeetingRecording, DV-16 workspace), per-file
+> lines ≥95% (global 98.62%), i18n parity 608, tsc + oxlint clean. See progress-log "P6a (Meetings IA)".
+
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
 | AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression now landed — auth.spec (S6a) asserts the unauthenticated deep-link→/login guard and the real Keycloak PKCE round-trip → authenticated dashboard, in CI on the live stack |
