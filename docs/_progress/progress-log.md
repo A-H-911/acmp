@@ -12,6 +12,44 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Round-2 Reconcile — DV-04 (rich-text unification) to one shared editor
+
+### 2026-07-01 — Unify the three divergent rich-text surfaces into one MarkdownEditor (branch `feat/dv-04-rich-text`)
+
+**Why.** Rebuild-findings §8 / AM-06: rich text was decided three different ways — Submit-topic had an
+**inert `aria-hidden` toolbar** (dead glyphs over a plain textarea), Meeting-notes had a **functional
+markdown** editor, and Minutes-of-Meeting was deferred — with no single decision on the model or what is
+stored. **DV-04 decision (operator, 2026-07-01): markdown stored as text, one shared editor.**
+
+**What.**
+- **New `components/ui/MarkdownEditor.tsx`** — a plain `<textarea>` + a small real formatting toolbar
+  (bold/italic/bulleted/numbered/link) that inserts markdown marks around the selection; the body is
+  **stored as markdown text** (no rich-text framework, no HTML, no sanitization surface — right-sized for
+  ≤20 users). Accepts either a standalone `ariaLabel` or field-provided `id`/`aria-*` so it drops into a
+  labelled `<Field>` or stands alone. Extracted verbatim from the working meeting-notes logic.
+- **MeetingWorkspace** `DiscussionNote` now renders `<MarkdownEditor>` (kept its header + autosave);
+  removed the duplicated `EDITOR_TOOLS` + selection-transform logic and the now-unused `useRef`.
+- **SubmitTopic** description field now renders `<MarkdownEditor>` (real markdown) in place of the inert
+  toolbar + `Textarea` — the formerly decorative toolbar is now functional.
+- **CSS** moved `.mt-editor*` → shared `.md-editor*` in `components.css` (globally loaded); removed the
+  old `.mt-editor*` (meetings.css) and the dead `.sub-rte*` (topics.css).
+- **i18n** moved `meetings.editor.*` → top-level shared `editor.*` (toolbar/bold/italic/bulletList/
+  numberedList/link), EN + AR; key parity verified (0 drift).
+
+**Scope note (honest defer).** "Stored as markdown" settles the editor + data model. **Rendering** stored
+markdown on read (Topic detail, meeting history) is left verbatim for now — adding a markdown→HTML
+renderer brings a dependency + an XSS-sanitization surface, out of scope for this unification slice and
+tracked as a follow-up. Closes the editor-consistency half of AM-06 / rebuild-findings §8.3.
+
+**Verification.** FE 402 tests green (new MarkdownEditor.test + unchanged consumer tests; the
+MeetingWorkspace Bold-wrap + SubmitTopic description tests pass through the shared component). Typecheck +
+oxlint clean; EN/AR parity 0 drift. Batched VR (P3–P6) follows per the operator plan.
+
+**Next.** Batched full VR across the P3–P6 reconciled surfaces (EN-light + AR-RTL-dark), then the audit-
+reversal sign-off (P6b read-all), then net-new P7 (Minutes & Decisions) on the settled markdown model.
+
+---
+
 ## Round-2 Reconcile — P6b (Notifications IA) to the updated design
 
 ### 2026-06-30 — Reconcile the bell popover + full inbox to ACMP.dc.html (branch `feat/p6b-notifications-ia`)

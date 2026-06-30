@@ -101,6 +101,14 @@
     "noUnreadTitle": "No unread notifications",
     "noUnreadBody": "You've read everything. Switch to All to see your full history."
   },
+  "editor": {
+    "toolbar": "Formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "bulletList": "Bulleted list",
+    "numberedList": "Numbered list",
+    "link": "Link"
+  },
   "state": {
     "emptyTitle": "Nothing here yet",
     "emptyBody": "Items will appear here once they are created.",
@@ -624,14 +632,6 @@
     "discussionNotes": "Discussion notes",
     "notePlaceholder": "Capture the discussion for this item…",
     "autosaved": "Autosaved",
-    "editor": {
-      "toolbar": "Formatting",
-      "bold": "Bold",
-      "italic": "Italic",
-      "bulletList": "Bulleted list",
-      "numberedList": "Numbered list",
-      "link": "Link"
-    },
     "captured": {
       "title": "Captured on this item",
       "empty": "Nothing has been captured on this item yet."
