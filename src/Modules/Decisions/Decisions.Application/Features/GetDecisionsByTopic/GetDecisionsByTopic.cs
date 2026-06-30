@@ -26,7 +26,7 @@ public sealed class GetDecisionsByTopicHandler : IRequestHandler<GetDecisionsByT
     {
         var decisions = await _db.Decisions.AsNoTracking()
             .Where(d => d.TopicId == request.TopicId)
-            .OrderByDescending(d => d.Id)
+            .OrderByDescending(d => d.CreatedAt).ThenByDescending(d => d.Id)
             .ToListAsync(ct);
 
         return decisions.Select(DecisionMapping.ToSummary).ToList();

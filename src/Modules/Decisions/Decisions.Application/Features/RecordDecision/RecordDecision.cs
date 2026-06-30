@@ -45,6 +45,15 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
             .Must(c => c is { Count: > 0 })
             .When(x => x.Outcome == DecisionOutcome.ConditionallyApproved)
             .WithMessage("A conditionally-approved decision requires at least one condition.");
+
+        // Each condition's bilingual text is validated here too — otherwise a null/empty Text would reach
+        // the domain ctor and throw (→ 409) instead of a clean field-level 400 (same reason as Rationale).
+        RuleForEach(x => x.Conditions).ChildRules(c =>
+        {
+            c.RuleFor(r => r.Text).NotNull().WithMessage("A condition requires text.");
+            c.RuleFor(r => r.Text!.En).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (EN) is required.");
+            c.RuleFor(r => r.Text!.Ar).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (AR) is required.");
+        });
     }
 }
 

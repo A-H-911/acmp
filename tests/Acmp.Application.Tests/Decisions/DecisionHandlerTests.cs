@@ -285,6 +285,24 @@ public class DecisionHandlerTests
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
+    [Fact] // a condition with null/empty bilingual text is a clean 400, not the domain 409
+    public void Record_validator_rejects_a_condition_with_blank_text()
+    {
+        var v = new RecordDecisionValidator();
+
+        var nullText = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
+            Rationale, null, null, new[] { new DecisionConditionRequest(null!, null) });
+        v.Validate(nullText).IsValid.Should().BeFalse();
+
+        var blankText = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
+            Rationale, null, null, new[] { new DecisionConditionRequest(new LocalizedString("", ""), null) });
+        v.Validate(blankText).IsValid.Should().BeFalse();
+
+        var ok = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
+            Rationale, null, null, new[] { new DecisionConditionRequest(LocalizedString.Create("Do X", "افعل"), null) });
+        v.Validate(ok).IsValid.Should().BeTrue();
+    }
+
     [Fact]
     public void Issue_validator_requires_justification_when_overriding()
     {

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Decisions.Infrastructure.Persistence;
 
 // Allocates the next DECN-YYYY-### key from a per-prefix, per-year counter row (README §F).
+// ponytail: the unique index on decisions.Key is the collision backstop; a counter row committed here
+// before a later handler SaveChanges fails can leave an ordinal gap — harmless and accepted at ≤20 users.
 public sealed class DecisionKeyGenerator : IDecisionKeyGenerator
 {
     private readonly DecisionsDbContext _db;

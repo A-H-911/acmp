@@ -59,7 +59,19 @@ the override choice + justification + flag now, but the co-attestation gate stay
 warnings only). `dotnet test acmp.sln` → **617 passed, 0 failed** (Domain 92, Architecture 20, Application 433,
 Integration 14 incl. the DECN unique-key + migration-applies backstops via Testcontainers/Docker, API 58).
 `dotnet format --verify-no-changes` → clean. Architecture tests assert Decisions depends on no other module's
-Domain/Infra (Shared contracts only).
+Domain/Infra (Shared contracts only). Full re-verified post-review: **620 passed, 0 failed**; CI per-file
+coverage gate green (134 files, global **99.61%**).
+
+**Post-review hardening (csharp-reviewer, 1 HIGH + 1 LOW acted on).** (1) **HIGH** — a `ConditionallyApproved`
+condition with null/empty bilingual `Text` reached the domain ctor and surfaced as a 409 instead of a clean
+400; added per-condition `RuleForEach(...).ChildRules` text validation to **both** `RecordDecisionValidator`
+and `SupersedeDecisionValidator` (+ a failing-first validator test). (2) **LOW** — `GetDecisionsByTopic`
+now orders `CreatedAt DESC, Id DESC` (explicit chronological intent + a deterministic tiebreaker for
+same-instant rows; ordering by `CreatedAt` alone was non-deterministic under a fixed test clock). (3) the
+two-DbContext Issue→Topic-Decided commit is **non-atomic by design** — the same accepted pattern as the
+existing `ITopicScheduler` seam (both contexts share one SQL connection; durable outbox is the documented
+upgrade path, CLAUDE.md). Decision-immutability/supersede ordering/authz/module-boundary/audit/IDOR and the
+past notification shared-instance bug were all reviewer-verified clean.
 
 **Next.** P7b (Decisions frontend) / P8 (Actions + the AC-029 link-gate retrofit per OQ-045).
 
