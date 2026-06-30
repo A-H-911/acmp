@@ -12,6 +12,74 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Round-2 Reconcile — P6a (Meetings IA) to the updated design + Usage Map
+
+### 2026-06-30 — Refactor the meeting page into a SHELL + nested content surfaces (branch `feat/p6a-meeting-ia`)
+
+**Why.** Round-1 put the whole meeting detail on one page with an in-page 4-tab state switcher
+(Agenda · Meeting · Minutes · Recording) and the lifecycle banner above the tabs. The Usage Map +
+`ACMP Meetings.dc.html` reconcile to a deep-linkable IA: **Meetings owns the shell** (header card +
+overview/recording + the single route-denial = the global auth gate, **RD-08**), **Agenda & Meeting
+owns the content** (agenda/conduct/minutes). **NV-08**: the conduct surface is a runtime composition
+of Attendance + Notes while InProgress, each deep-linkable.
+
+**What.**
+- **MeetingPage → meeting SHELL.** Header card (key chip + status chip + title + when·type·mode meta +
+  the lifecycle primary action) + a 6-tab deep-linkable `NavLink` strip + `<Outlet/>`. The shell
+  fetches the detail once for its header; each child route re-reads the same cached query
+  (react-query dedupes), so every route element is prop-free. Loading/error/404 owned by the shell.
+- **Nested routes** under `meetings/:key`: index → `MeetingOverview`; `/agenda` → `AgendaBuilder`;
+  `/attendance` + `/notes` → `MeetingConduct` (renders the full `MeetingWorkspace` while InProgress,
+  an honest lifecycle gate otherwise); `/minutes` → `MeetingMinutes` (P7 placeholder); `/recording` →
+  `MeetingRecording` (Webex Phase-2 honest-defer).
+- **New `MeetingOverview`** — the conditional lifecycle banner (moved off the top of the page) +
+  grid[ agenda-preview card (reuses the exported `AgendaPreview`, only when items > 0 — the empty
+  branch stays unreachable, so AgendaBuilder's `v8 ignore` on it remains honest) | readiness rows
+  (Agenda published / Topics scheduled / Quorum expected `needed of eligible`) + quick-links ].
+- **New thin route components** `MeetingMinutes` / `MeetingRecording`, plus a shared `MeetingGate`
+  extracted from the old MeetingPage (centered placeholder card, reused by the conduct gate too).
+- **`AgendaBuilder`** now derives `readOnly` from the fetched meeting status (was a prop passed by
+  MeetingPage) so it's a prop-free routed element; behavior identical.
+- **Lifecycle primary action (lcMap):** notReady→“Build agenda” (primary→/agenda) · ready→“Start
+  meeting” (primary→start mutation) · inProgress→“Open live notes” (primary→/notes) · concluded→
+  “Review minutes” (ghost→/minutes) · cancelled→“Reschedule” (ghost→/meetings/new).
+
+**Findings closed.**
+- **DV-16** — re-added the actual-time + outcome control to the workspace active item
+  (minutes input + outcome Select {Discussed/Deferred/CarriedOver} + “Record time”), wired to
+  `useRecordActualTime` (`POST …/agenda/items/{topicId}/actual-time`). Round-1 had deferred the UI;
+  the backend command + hook were already in place.
+- **DV-21** — agenda pool label “Scheduled topics”/“Ready to schedule” → **“Prepared”** (matches the
+  actual source: `GET /api/topics?status=Prepared`), EN + AR.
+- **DV-03** — elapsed timer confirmed `mm:ss` / `h:mm:ss` (`formatElapsed`); no change needed
+  (VR shows `8:49:49`).
+
+**Blessed deviation (guardrail 14).** The design reaches Recording via an overview quick-link; the IA
+promotes it to a 6th peer tab (Overview·Agenda·Attendance·Notes·Minutes·Recording) per NV-08 + the
+route map. Recorded here and in the acceptance audit.
+
+**RD-08 “remove the duplicate denied.”** Verified by grep — there is **no** `denied` artifact in the
+meetings feature; route-denial is the global `ProtectedRoute`/`RequireRole` (meetings routes carry no
+extra role gate), i.e. already a single source. Nothing to dedupe in code.
+
+**Quality.** FE suite green (384 tests; 81 in the meetings feature incl. the new MeetingPage shell +
+conduct, MeetingOverview, MeetingMinutes, MeetingRecording suites and the DV-16 workspace tests).
+Per-file **lines ≥95%** for every touched/added file (AgendaBuilder 95.21, MeetingWorkspace 96.32, the
+rest 100); global 98.62%. `tsc -b` clean; oxlint clean (only the pre-existing Toast warning). i18n
+parity OK (608 keys; new `tab.{overview,attendance,notes}` / shell-action / `overview.*` keys added to
+EN **and** AR). axe-clean component tests for MeetingOverview + MeetingWorkspace. No backend code
+changed (the `AgendaItemOutcome` enum was only read to source the DV-16 options).
+
+**VR.** Live Docker stack was **down** (`:8088` refused) → **dev-stub VR**: `npm run dev` (DEV auth, no
+Keycloak) + Playwright `/api/**` route-mocks. Captured Overview + conduct workspace in **EN-light** and
+**AR-RTL-dark** — header card, 6-tab strip, in-progress banner, agenda preview, readiness, quick-links,
+and the DV-16 control all render; AR fully mirrors (sidebar/tabs/banner/quick-link chevrons) in dark.
+
+**Next (P6b):** notifications IA (bell popover + full inbox, **no preferences page** in v1 per RD-09) +
+the DV confirmations slice.
+
+---
+
 ## Round-2 Reconcile — P4 (Administration) to the updated design + Usage Map
 
 ### 2026-06-30 — Build the six non-Users admin tabs from `ACMP Administration.dc.html` (branch `feat/p4-admin-reconcile`)

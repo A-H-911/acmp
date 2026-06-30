@@ -1,54 +1,54 @@
 /*
- * Meeting page (P6 meeting-detail IA) — the /meetings/:key route. Owns the page breadcrumb, a
- * lifecycle banner, and a 4-tab in-page switcher: Agenda · Meeting · Minutes · Recording.
+ * Meeting SHELL (P6a round-2 IA) — the /meetings/:key layout route. Owns the chrome every
+ * meeting sub-page shares: a header card (key chip + status chip + title + when·type·mode meta +
+ * the lifecycle primary action) and a 6-tab deep-linkable NavLink strip, then an <Outlet/> for the
+ * routed content.
  *
- * IA decision (operator GO, 2026-06): the conduct surface comes from "ACMP Agenda & Meeting.dc.html"
- * (Agenda builder/viewer + Meeting workspace + Minutes); Recording + the lifecycle "state views"
- * come from "ACMP Meetings.dc.html". The Meetings.dc.html "Overview" landing tab is intentionally
- * dropped — its lifecycle banner moves above the tabs; its readiness card + quick links are dropped.
+ * RD-08 ownership (ACMP Usage Map): Meetings owns the SHELL + the overview/recording surfaces and
+ * route-denial (the global auth gate — meetings routes carry no extra role gate, so there is a
+ * single denied state, not a duplicated one). Agenda & Meeting owns the CONTENT surfaces
+ * (agenda / conduct / minutes). The shell fetches the meeting once for its header; each child route
+ * re-reads the same cached detail (react-query dedupes), so route elements stay prop-free.
  *
- * State gating (the spec the tests pin) — meeting.status × agenda.status:
- *   Scheduled · Draft            → banner notReady · Agenda=builder(editable) · Meeting="publish first"
- *   Scheduled · Published/Locked → (ready, no banner) · Agenda=viewer · Meeting="Start"
- *   InProgress                   → banner inProgress · Agenda=viewer · Meeting=live workspace
- *   Held/Closed                  → banner concluded · Agenda=viewer · Meeting=concluded recap
- *   Cancelled                    → banner cancelled · Agenda=viewer · Meeting=cancelled note
- * The Agenda viewer (not builder) once published/started is the fix for the bug where a started
- * meeting still showed an editable agenda builder.
+ * NV-08: the conduct surface is a runtime composition of Attendance + Notes while the meeting is
+ * InProgress, each deep-linkable. Both /attendance and /notes render the same MeetingWorkspace; the
+ * tab strip just marks which one is active. MeetingConduct gates that composition on the lifecycle.
  *
- * Minutes = honest placeholder until the MoM module (P7). Recording = honest placeholder until the
- * Webex adapter (P13); both tabs render so the bar matches the design, flagged as deferred.
+ * Blessed deviation (guardrail 14): the design reaches Recording via an overview quick-link; the IA
+ * promotes it to a 6th peer tab (Overview·Agenda·Attendance·Notes·Minutes·Recording) per NV-08 +
+ * the route map. Recorded in the progress log / acceptance audit.
  */
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMeetingDetail, useStartMeeting } from '../../api/meetings';
 import { ApiError } from '../../api/apiClient';
-import { Tabs, type TabItem } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
+import { StatusChip } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
-import { AgendaBuilder } from './AgendaBuilder';
+import { MeetingGate } from './MeetingGate';
 import { MeetingWorkspace } from './MeetingWorkspace';
+import { meetingTone, lifecyclePhase } from './meetingStatus';
 import './meetings.css';
 
-type TabId = 'agenda' | 'meeting' | 'minutes' | 'recording';
-type Phase = 'notReady' | 'ready' | 'inProgress' | 'concluded' | 'cancelled';
+/** Mode → glyph: in-person reads as people, hybrid/remote as video. */
+const MODE_ICON: Record<string, IconName> = { InPerson: 'usersGroup', Hybrid: 'video', Remote: 'video' };
 
-/** Derive the lifecycle phase from meeting + agenda status (the single source the gating reads). */
-function lifecyclePhase(meetingStatus: string, agendaPublished: boolean): Phase {
-  if (meetingStatus === 'Cancelled') return 'cancelled';
-  if (meetingStatus === 'Held' || meetingStatus === 'Closed') return 'concluded';
-  if (meetingStatus === 'InProgress') return 'inProgress';
-  return agendaPublished ? 'ready' : 'notReady';
-}
+const TABS: { to: string; end?: boolean; labelKey: string }[] = [
+  { to: '.', end: true, labelKey: 'meetings.tab.overview' },
+  { to: 'agenda', labelKey: 'meetings.tab.agenda' },
+  { to: 'attendance', labelKey: 'meetings.tab.attendance' },
+  { to: 'notes', labelKey: 'meetings.tab.notes' },
+  { to: 'minutes', labelKey: 'meetings.tab.minutes' },
+  { to: 'recording', labelKey: 'meetings.tab.recording' },
+];
 
 export function MeetingPage() {
   const { key } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const meetingQuery = useMeetingDetail(key);
   const start = useStartMeeting(key);
-  const [tab, setTab] = useState<TabId | null>(null);
 
   const meeting = meetingQuery.data;
 
@@ -74,131 +74,127 @@ export function MeetingPage() {
 
   const agendaStatus = meeting.agenda?.status;
   const agendaPublished = agendaStatus === 'Published' || agendaStatus === 'Locked';
-  // Editable only while the meeting is Scheduled AND the agenda is still Draft.
-  const agendaEditable = meeting.status === 'Scheduled' && !agendaPublished;
   const phase = lifecyclePhase(meeting.status, agendaPublished);
-
-  // Default tab follows the phase until the user picks one (InProgress/concluded open on Meeting).
-  const defaultTab: TabId = phase === 'inProgress' || phase === 'concluded' ? 'meeting' : 'agenda';
-  const activeTab: TabId = tab ?? defaultTab;
-
-  const tabs: TabItem[] = [
-    { id: 'agenda', label: t('meetings.tab.agenda') },
-    { id: 'meeting', label: t('meetings.tab.meeting') },
-    { id: 'minutes', label: t('meetings.tab.minutes') },
-    { id: 'recording', label: t('meetings.tab.recording') },
-  ];
+  const when = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(meeting.scheduledStart));
 
   return (
-    <section className="page mt-detail">
-      <LifecycleBanner phase={phase} />
+    <section className="page mt-shell">
+      <header className="mt-shell-head">
+        <div className="mt-shell-toprow">
+          <div className="mt-shell-ident">
+            <span className="mt-key">{meeting.key}</span>
+            <StatusChip tone={meetingTone(meeting.status)} label={t(`meetings.status.${meeting.status}`, { defaultValue: meeting.status })} size="sm" />
+          </div>
+          <PrimaryAction
+            phase={phase}
+            starting={start.isPending}
+            onBuildAgenda={() => navigate('agenda')}
+            onStart={() => start.mutate({ meetingId: meeting.id })}
+            onOpenNotes={() => navigate('notes')}
+            onReviewMinutes={() => navigate('minutes')}
+            onReschedule={() => navigate('/meetings/new')}
+          />
+        </div>
+        <h1 className="page-title mt-shell-title">{meeting.title}</h1>
+        <div className="mt-shell-meta">
+          <span><Icon name="calendar" size={14} aria-hidden /> {when}</span>
+          <span><Icon name="template" size={14} aria-hidden /> {t(`meetings.meetingType.${meeting.type}`, { defaultValue: meeting.type })}</span>
+          <span><Icon name={MODE_ICON[meeting.mode] ?? 'session'} size={14} aria-hidden /> {t(`meetings.meetingMode.${meeting.mode}`, { defaultValue: meeting.mode })}</span>
+        </div>
+      </header>
 
-      <Tabs items={tabs} value={activeTab} onValueChange={(id) => setTab(id as TabId)} ariaLabel={meeting.key} />
+      <nav className="mt-tabs" aria-label={t('meetings.tabsLabel')}>
+        {TABS.map((tab) => (
+          <NavLink key={tab.to} to={tab.to} end={tab.end} className={({ isActive }) => `mt-tab ${isActive ? 'active' : ''}`}>
+            {t(tab.labelKey)}
+          </NavLink>
+        ))}
+      </nav>
 
-      {activeTab === 'agenda' && <AgendaBuilder readOnly={!agendaEditable} />}
-      {activeTab === 'meeting' && (
-        <MeetingTab
-          status={meeting.status}
-          agendaPublished={agendaPublished}
-          starting={start.isPending}
-          onStart={() => start.mutate({ meetingId: meeting.id }, { onSuccess: () => setTab('meeting') })}
-        />
-      )}
-      {activeTab === 'minutes' && (
-        <MeetingGate icon="doc" title={t('meetings.minutesTab.title')} body={t('meetings.minutesTab.body')} />
-      )}
-      {activeTab === 'recording' && (
-        <MeetingGate icon="session" title={t('meetings.recordingTab.title')} body={t('meetings.recordingTab.body')} />
-      )}
+      <Outlet />
     </section>
   );
 }
 
-const BANNER_ICON: Record<Exclude<Phase, 'ready'>, IconName> = {
-  notReady: 'warnTriangle',
-  inProgress: 'clock',
-  concluded: 'checkCircle',
-  cancelled: 'x',
-};
-
-/** Status-context banner above the tabs (the "state views" from ACMP Meetings.dc.html). */
-function LifecycleBanner({ phase }: { phase: Phase }) {
-  const { t } = useTranslation();
-  if (phase === 'ready') return null; // a scheduled+published meeting needs no banner (design).
-  return (
-    <div className={`mt-lifecycle mt-lifecycle-${phase}`} role="status">
-      <span className="mt-lifecycle-icon" aria-hidden="true">
-        <Icon name={BANNER_ICON[phase]} size={18} />
-      </span>
-      <div className="mt-lifecycle-text">
-        <p className="mt-lifecycle-title">{t(`meetings.banner.${phase}.title`)}</p>
-        <p className="mt-lifecycle-body">{t(`meetings.banner.${phase}.body`)}</p>
-      </div>
-    </div>
-  );
-}
-
-/** The Meeting tab content: live workspace when running, a lifecycle prompt otherwise. */
-function MeetingTab({
-  status,
-  agendaPublished,
+/** The lifecycle primary action in the header (ACMP Meetings.dc.html lcMap). Primary while there is
+ *  an active step (build / start / open notes); ghost once the meeting is concluded or cancelled. */
+function PrimaryAction({
+  phase,
   starting,
+  onBuildAgenda,
   onStart,
+  onOpenNotes,
+  onReviewMinutes,
+  onReschedule,
 }: {
-  status: string;
-  agendaPublished: boolean;
+  phase: ReturnType<typeof lifecyclePhase>;
   starting: boolean;
+  onBuildAgenda: () => void;
   onStart: () => void;
+  onOpenNotes: () => void;
+  onReviewMinutes: () => void;
+  onReschedule: () => void;
 }) {
   const { t } = useTranslation();
+  switch (phase) {
+    case 'notReady':
+      return (
+        <Button onClick={onBuildAgenda}>
+          <Icon name="backlog" size={15} aria-hidden /> {t('meetings.buildAgenda')}
+        </Button>
+      );
+    case 'ready':
+      return (
+        <Button onClick={onStart} loading={starting}>
+          <Icon name="send" size={15} aria-hidden /> {t('meetings.start')}
+        </Button>
+      );
+    case 'inProgress':
+      return (
+        <Button onClick={onOpenNotes}>
+          <Icon name="doc" size={15} aria-hidden /> {t('meetings.openNotes')}
+        </Button>
+      );
+    case 'concluded':
+      return (
+        <Button variant="secondary" onClick={onReviewMinutes}>
+          <Icon name="doc" size={15} aria-hidden /> {t('meetings.reviewMinutes')}
+        </Button>
+      );
+    case 'cancelled':
+      return (
+        <Button variant="secondary" onClick={onReschedule}>
+          <Icon name="calendar" size={15} aria-hidden /> {t('meetings.reschedule')}
+        </Button>
+      );
+  }
+}
 
-  if (status === 'InProgress') return <MeetingWorkspace />;
+/*
+ * Conduct route (/attendance + /notes) — Agenda & Meeting's live-conduct composition. While the
+ * meeting is InProgress both routes render the full MeetingWorkspace (attendance + notes in one
+ * 3-column screen); otherwise the lifecycle gate explains why the live workspace isn't open yet.
+ * Re-reads the cached detail; the shell owns loading/error so a null here just means "not ready".
+ */
+export function MeetingConduct() {
+  const { key } = useParams();
+  const { t } = useTranslation();
+  const { data: meeting } = useMeetingDetail(key);
+  if (!meeting) return null;
 
-  if (status === 'Cancelled') {
+  if (meeting.status === 'InProgress') return <MeetingWorkspace />;
+
+  if (meeting.status === 'Cancelled') {
     return <MeetingGate icon="x" title={t('meetings.cancelled.title')} body={t('meetings.cancelled.body')} />;
   }
-
-  if (status === 'Held' || status === 'Closed') {
+  if (meeting.status === 'Held' || meeting.status === 'Closed') {
     return <MeetingGate icon="checkCircle" title={t('meetings.concluded.title')} body={t('meetings.concluded.body')} />;
   }
-
-  if (agendaPublished) {
-    return (
-      <MeetingGate
-        icon="send"
-        title={t('meetings.ready.title')}
-        body={t('meetings.ready.body')}
-        action={
-          <Button onClick={onStart} loading={starting}>
-            {t('meetings.start')}
-          </Button>
-        }
-      />
-    );
-  }
-
-  return <MeetingGate icon="calendar" title={t('meetings.notReady.title')} body={t('meetings.notReady.body')} />;
-}
-
-function MeetingGate({
-  icon,
-  title,
-  body,
-  action,
-}: {
-  icon: IconName;
-  title: string;
-  body: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div className="mt-gate" role="status">
-      <div className="mt-gate-icon">
-        <Icon name={icon} size={22} aria-hidden />
-      </div>
-      <p className="mt-gate-title">{title}</p>
-      <p className="mt-gate-body">{body}</p>
-      {action && <div className="mt-gate-action">{action}</div>}
-    </div>
+  const agendaStatus = meeting.agenda?.status;
+  const ready = agendaStatus === 'Published' || agendaStatus === 'Locked';
+  return ready ? (
+    <MeetingGate icon="send" title={t('meetings.ready.title')} body={t('meetings.ready.body')} />
+  ) : (
+    <MeetingGate icon="calendar" title={t('meetings.notReady.title')} body={t('meetings.notReady.body')} />
   );
 }

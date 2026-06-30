@@ -201,8 +201,9 @@ describe('AgendaBuilder (P6c)', () => {
 });
 
 // The viewer (read-only) mode renders once the agenda is published or the meeting has
-// started/concluded/cancelled — MeetingPage passes readOnly. This is the fix for the bug where a
-// started meeting still exposed an editable agenda builder. Asserts every edit affordance is gone.
+// started/concluded/cancelled — AgendaBuilder derives this from the meeting status (beforeEach sets
+// Published). This is the fix for the bug where a started meeting still exposed an editable agenda
+// builder. Asserts every edit affordance is gone.
 describe('AgendaBuilder — read-only viewer', () => {
   beforeEach(() => {
     [mockDetail, mockPrepared, mockMembers].forEach((m) => m.mockReset());
@@ -223,7 +224,7 @@ describe('AgendaBuilder — read-only viewer', () => {
       <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
         <MemoryRouter initialEntries={['/meetings/MTG-2026-019']}>
           <Routes>
-            <Route path="/meetings/:key" element={<AgendaBuilder readOnly />} />
+            <Route path="/meetings/:key" element={<AgendaBuilder />} />
           </Routes>
         </MemoryRouter>
       </AcmpAuthContext.Provider>,

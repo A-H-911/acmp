@@ -9,10 +9,11 @@
  * own breadcrumb — that prevents a duplicate trail.
  *
  * Design↔behavior reconciliations (visual SoT = design; behavior SoT = the package):
- *  - LEFT column is labeled "Scheduled topics" in the design but is sourced from the
- *    PREPARED backlog (GET /api/topics?status=Prepared): topics only become Scheduled when
- *    the agenda is published. Label kept, source = Prepared. Pool items already on the
- *    agenda are filtered out (they'd otherwise appear in both columns pre-publish).
+ *  - LEFT column is labeled "Scheduled topics" in the design but is sourced from the PREPARED
+ *    backlog (GET /api/topics?status=Prepared): topics only become Scheduled when the agenda is
+ *    published. DV-21: the label now reads "Prepared" to match the actual source (the design's
+ *    "Scheduled topics" was misleading pre-publish). Pool items already on the agenda are filtered
+ *    out (they'd otherwise appear in both columns pre-publish).
  *  - Reorder API is ±1 only (delta ∈ {+1,-1}; AC-044). The move up/down buttons are the
  *    real reorder path (keyboard + pointer accessible) and announce via an aria-live region.
  *    Pointer drag FROM the pool = Add; pointer drag WITHIN the agenda nudges one step toward
@@ -27,12 +28,13 @@
  *  - Meeting/topic titles are single-language user content; only chrome is i18n'd. Dates are
  *    Gregorian, localized via Intl (guardrail 9).
  *
- * `readOnly` (P6 meeting-detail IA): the agenda is editable ONLY while the meeting is Scheduled
- * AND its agenda is still Draft. Once published/locked or the meeting starts/concludes/cancels,
- * MeetingPage renders this in VIEWER mode — the pool, drag, steppers, presenter picker, move and
+ * Read-only viewer (P6 meeting-detail IA): the agenda is editable ONLY while the meeting is
+ * Scheduled AND its agenda is still Draft. Once published/locked or the meeting starts/concludes/
+ * cancels, this renders in VIEWER mode — the pool, drag, steppers, presenter picker, move and
  * remove controls and the Publish action all disappear; items render read-only. This is the fix
  * for the bug where a started meeting still showed an editable builder (the backend rejected the
- * edits, but the UI invited them).
+ * edits, but the UI invited them). The mode is derived here from the fetched meeting (this is the
+ * routed /agenda element, so it takes no props).
  */
 import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -68,7 +70,7 @@ function minutesBetween(startIso: string, endIso: string): number {
   return Math.max(0, Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000));
 }
 
-export function AgendaBuilder({ readOnly = false }: { readOnly?: boolean } = {}) {
+export function AgendaBuilder() {
   const { key } = useParams();
   const { t, i18n } = useTranslation();
   const meetingQuery = useMeetingDetail(key);
@@ -115,6 +117,9 @@ export function AgendaBuilder({ readOnly = false }: { readOnly?: boolean } = {})
   const items = agenda?.items ?? [];
   const agendaStatus = agenda?.status ?? 'Draft';
   const published = agenda?.status === 'Published';
+  // Editable only while the meeting is Scheduled AND the agenda is still Draft; viewer otherwise.
+  const agendaPublished = agendaStatus === 'Published' || agendaStatus === 'Locked';
+  const readOnly = !(meeting.status === 'Scheduled' && !agendaPublished);
 
   // Budget: server-summed used minutes vs the meeting's scheduled duration.
   const total = minutesBetween(meeting.scheduledStart, meeting.scheduledEnd);
@@ -526,7 +531,7 @@ function AgendaItemRow({
  * secondary line because a Locked/Closed agenda is becoming an official, traceable record and the
  * canonical TOP-YYYY-### must stay visible (CLAUDE.md traceability). Urgent/icons stay dropped.
  */
-function AgendaPreview({ items, usedMinutes }: { items: AgendaItem[]; usedMinutes: number }) {
+export function AgendaPreview({ items, usedMinutes }: { items: AgendaItem[]; usedMinutes: number }) {
   const { t } = useTranslation();
   /* v8 ignore start -- defensive: AgendaPreview only renders for a Locked/Closed agenda,
      which by the publish invariant always has ≥1 item, so the empty branch is unreachable

@@ -17,8 +17,8 @@
  *  - Record decision / Create action / Call vote are disabled stubs → P7 / P8 / P9.
  *  - "Captured on this item" renders with an honest empty state; it populates once
  *    Decisions/Actions ship (P7/P8). The inline quick-create is omitted.
- *  - Actual-time / outcome recording: UI DEFERRED (operator decision) — the backend command
- *    + useRecordActualTime hook remain for when the control is re-added. See progress-log.
+ *  - Actual-time / outcome recording (DV-16): a minutes input + outcome select + "Record time"
+ *    button on the active item, wired to useRecordActualTime (POST …/actual-time).
  *  - Attendance roster = active members (GET /api/members) merged with meeting.attendance by
  *    member.publicId (the attendance userId). Quorum is a client-side DISPLAY heuristic only;
  *    the authoritative quorum gate is the Voting phase (P9).
@@ -33,16 +33,21 @@ import {
   useEndMeeting,
   useMarkAttendance,
   useCaptureDiscussion,
+  useRecordActualTime,
   type AgendaItem,
   type Discussion,
 } from '../../api/meetings';
 import { useMembers, type Member } from '../../api/members';
 import { AREAS } from '../../nav/navModel';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import './meetings.css';
+
+// Per-item outcomes a recorder can set (backend AgendaItemOutcome; Pending is the unset default).
+const OUTCOMES = ['Discussed', 'Deferred', 'CarriedOver'] as const;
 
 /** Map a committee role onto the meeting's AttendanceRole vocabulary. */
 function toAttendanceRole(role: string): 'Chair' | 'Secretary' | 'Member' | 'Reviewer' | 'Guest' {
@@ -83,6 +88,7 @@ export function MeetingWorkspace() {
   const endMeeting = useEndMeeting(key);
   const markAttendance = useMarkAttendance(key);
   const captureDiscussion = useCaptureDiscussion(key);
+  const recordActualTime = useRecordActualTime(key);
 
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   // ponytail: a real wall-clock tick is genuine external sync, not derived state — keep the interval.
@@ -162,6 +168,10 @@ export function MeetingWorkspace() {
             index={items.findIndex((i) => i.topicId === activeItem.topicId) + 1}
             discussion={meeting.discussions.find((d) => d.topicId === activeItem.topicId)}
             onSaveNote={(body) => captureDiscussion.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, body })}
+            onRecordTime={(actualMinutes, outcome) =>
+              recordActualTime.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, actualMinutes, outcome })
+            }
+            recording={recordActualTime.isPending}
           />
         ) : (
           <section className="mt-active" aria-label={t('meetings.agendaSpine')}>
@@ -232,11 +242,15 @@ function ActiveItem({
   index,
   discussion,
   onSaveNote,
+  onRecordTime,
+  recording,
 }: {
   item: AgendaItem;
   index: number;
   discussion: Discussion | undefined;
   onSaveNote: (body: string) => void;
+  onRecordTime: (actualMinutes: number, outcome: string) => void;
+  recording: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -261,8 +275,10 @@ function ActiveItem({
 
         <div className="mt-active-body">
           <DiscussionNote initialBody={discussion?.body ?? ''} onSave={onSaveNote} />
-          {/* Design action row = the 3 capture buttons. (Actual-time/outcome recording is a
-              deferred concern — UI removed; the backend command + hook remain. See progress-log.) */}
+          {/* DV-16: actual-time + outcome recording, wired to useRecordActualTime. Re-added after
+              round-1 deferred it; the backend command (POST …/actual-time) was already in place. */}
+          <ActualTimeControl item={item} onRecord={onRecordTime} busy={recording} />
+          {/* Design action row = the 3 capture buttons (Decisions/Actions/Voting → P7/P8/P9). */}
           <div className="mt-actions">
             <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
               <Icon name="decision" size={14} aria-hidden /> {t('meetings.recordDecision')}
@@ -279,6 +295,58 @@ function ActiveItem({
 
       <CapturedOnItem />
     </section>
+  );
+}
+
+/* DV-16 — actual-time + outcome recorder (POST …/agenda/items/{topicId}/actual-time). Local state
+ * only; remounts per item (ActiveItem is keyed by topicId), so it seeds from the item each time.
+ * Minutes is a bounded number input; outcome maps to AgendaItemOutcome (Pending = unset). */
+function ActualTimeControl({
+  item,
+  onRecord,
+  busy,
+}: {
+  item: AgendaItem;
+  onRecord: (actualMinutes: number, outcome: string) => void;
+  busy: boolean;
+}) {
+  const { t } = useTranslation();
+  const [minutes, setMinutes] = useState(item.actualMinutes > 0 ? String(item.actualMinutes) : '');
+  const [outcome, setOutcome] = useState((OUTCOMES as readonly string[]).includes(item.outcome) ? item.outcome : '');
+  const parsed = Number(minutes);
+  const valid = minutes.trim() !== '' && Number.isFinite(parsed) && parsed >= 0;
+
+  return (
+    <div className="mt-record">
+      <label className="mt-record-field">
+        <span className="mt-record-label">{t('meetings.actualTime')}</span>
+        <span className="mt-record-minutes">
+          <input
+            type="number"
+            min={0}
+            inputMode="numeric"
+            className="mt-record-input"
+            aria-label={t('meetings.actualMinutes')}
+            value={minutes}
+            onChange={(e) => setMinutes(e.target.value)}
+          />
+          <span className="mt-record-unit">{t('meetings.minutesUnit')}</span>
+        </span>
+      </label>
+      <label className="mt-record-field">
+        <span className="mt-record-label">{t('meetings.outcomeLabel')}</span>
+        <Select
+          ariaLabel={t('meetings.outcomeLabel')}
+          placeholder={t('meetings.outcomePick')}
+          value={outcome}
+          onChange={setOutcome}
+          options={OUTCOMES.map((o) => ({ value: o, label: t(`meetings.outcome.${o}`) }))}
+        />
+      </label>
+      <Button variant="secondary" disabled={!valid || busy} loading={busy} onClick={() => onRecord(parsed, outcome)}>
+        <Icon name="clock" size={14} aria-hidden /> {t('meetings.recordTime')}
+      </Button>
+    </div>
   );
 }
 

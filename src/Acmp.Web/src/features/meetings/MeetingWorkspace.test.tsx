@@ -14,6 +14,7 @@ vi.mock('../../api/meetings', () => ({
   useEndMeeting: vi.fn(),
   useMarkAttendance: vi.fn(),
   useCaptureDiscussion: vi.fn(),
+  useRecordActualTime: vi.fn(),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
 
@@ -22,13 +23,14 @@ import {
   useEndMeeting,
   useMarkAttendance,
   useCaptureDiscussion,
+  useRecordActualTime,
 } from '../../api/meetings';
 import { useMembers } from '../../api/members';
 
 const mockDetail = useMeetingDetail as unknown as Mock;
 const mockMembers = useMembers as unknown as Mock;
 
-let endSpy: Mock, markSpy: Mock, captureSpy: Mock;
+let endSpy: Mock, markSpy: Mock, captureSpy: Mock, recordSpy: Mock;
 
 const MEETING: MeetingDetail = {
   id: 'm1', key: 'MTG-2026-019', title: 'Q2 Architecture Review', committeeId: 'c1',
@@ -73,9 +75,11 @@ describe('MeetingWorkspace (P6d)', () => {
     endSpy = vi.fn();
     markSpy = vi.fn();
     captureSpy = vi.fn();
+    recordSpy = vi.fn();
     (useEndMeeting as unknown as Mock).mockReturnValue({ mutate: endSpy, isPending: false });
     (useMarkAttendance as unknown as Mock).mockReturnValue({ mutate: markSpy, isPending: false });
     (useCaptureDiscussion as unknown as Mock).mockReturnValue({ mutate: captureSpy, isPending: false });
+    (useRecordActualTime as unknown as Mock).mockReturnValue({ mutate: recordSpy, isPending: false });
   });
 
   it('renders the live header, elapsed timer, agenda spine, active item, and attendance', () => {
@@ -142,6 +146,26 @@ describe('MeetingWorkspace (P6d)', () => {
     setup();
     await user.click(screen.getByRole('button', { name: 'End → Minutes' }));
     expect(endSpy).toHaveBeenCalledWith({ meetingId: 'm1' }, expect.anything());
+  });
+
+  // DV-16: actual-time + outcome recorder on the active item.
+  it('records actual time + outcome for the active item (DV-16)', async () => {
+    const user = userEvent.setup();
+    setup();
+    const minutes = screen.getByLabelText('Actual minutes');
+    await user.type(minutes, '18');
+    await user.click(screen.getByRole('button', { name: 'Outcome' }));
+    await user.click(screen.getByRole('option', { name: 'Discussed' }));
+    await user.click(screen.getByRole('button', { name: 'Record time' }));
+    expect(recordSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', actualMinutes: 18, outcome: 'Discussed' });
+  });
+
+  it('disables Record time until a valid minutes value is entered (DV-16)', async () => {
+    const user = userEvent.setup();
+    setup();
+    expect(screen.getByRole('button', { name: 'Record time' })).toBeDisabled();
+    await user.type(screen.getByLabelText('Actual minutes'), '5');
+    expect(screen.getByRole('button', { name: 'Record time' })).toBeEnabled();
   });
 
   it('renders the P7/P8/P9 stub actions as disabled', () => {

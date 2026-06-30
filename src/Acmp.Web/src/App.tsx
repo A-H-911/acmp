@@ -12,7 +12,11 @@ import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
 import { TopicDetail } from './features/topics/TopicDetail';
 import { MeetingsList } from './features/meetings/MeetingsList';
-import { MeetingPage } from './features/meetings/MeetingPage';
+import { MeetingPage, MeetingConduct } from './features/meetings/MeetingPage';
+import { MeetingOverview } from './features/meetings/MeetingOverview';
+import { AgendaBuilder } from './features/meetings/AgendaBuilder';
+import { MeetingMinutes } from './features/meetings/MeetingMinutes';
+import { MeetingRecording } from './features/meetings/MeetingRecording';
 import { SchedulePage } from './features/meetings/SchedulePage';
 
 /*
@@ -38,7 +42,16 @@ export const appRoutes = createRoutesFromElements(
         <Route path="topics/:key" element={<TopicDetail />} />
         <Route path="meetings" element={<MeetingsList />} />
         <Route path="meetings/new" element={<SchedulePage />} />
-        <Route path="meetings/:key" element={<MeetingPage />} />
+        {/* Meeting shell (Meetings owns the chrome) + nested content surfaces (Agenda & Meeting owns
+            agenda/conduct/minutes). Both /attendance and /notes render the conduct composition. */}
+        <Route path="meetings/:key" element={<MeetingPage />}>
+          <Route index element={<MeetingOverview />} />
+          <Route path="agenda" element={<AgendaBuilder />} />
+          <Route path="attendance" element={<MeetingConduct />} />
+          <Route path="notes" element={<MeetingConduct />} />
+          <Route path="minutes" element={<MeetingMinutes />} />
+          <Route path="recording" element={<MeetingRecording />} />
+        </Route>
         <Route path="decisions" element={<PlaceholderPage titleKey="nav.decisions" />} />
         <Route path="actions" element={<PlaceholderPage titleKey="nav.actions" />} />
         <Route path="adrs" element={<PlaceholderPage titleKey="nav.adrs" />} />
