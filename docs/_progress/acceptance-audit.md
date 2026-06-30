@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-06-27
+updated: 2026-06-30
 ---
 
 # ACMP Acceptance Audit
@@ -286,7 +286,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 | AC | Section | Verdict | Test ref | Notes |
 |---|---|---|---|---|
-| AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression → P17 |
+| AC-001 | Auth & Identity | Met | manual (live UI: ACMP /login → Keycloak → /dashboard authenticated; + token roles Administrator,Secretary / aud acmp-api / GET /api/members 200) | Full SSO round-trip through the app UI verified (after CSP connect-src fix). Logout button added (TopBar) and verified end-to-end (dashboard → /login). Automated UI regression now landed — auth.spec (S6a) asserts the unauthenticated deep-link→/login guard and the real Keycloak PKCE round-trip → authenticated dashboard, in CI on the live stack |
 | AC-002 | Auth & Identity | Met | KeycloakRoleClaimMapperTests + MembershipFeatureTests + MembershipApiTests (/me) | Claim→Secretary mapped; JIT profile gets the role end-to-end |
 | AC-003 | Auth & Identity | Partial | KeycloakRoleClaimMapperTests + MembershipFeatureTests | No-claim → deny (fail-closed default) + AuthEvent to log sink; immutable store → BL-066 |
 | AC-004 | Auth & Identity | Pending | — | Idle timeout re-auth (ACMP-realm session policy, OQ-003 + form auto-save); needs live realm |
@@ -320,7 +320,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-032 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: Reject_records_the_rationale_as_immutable_history_and_audits) | Immutable rejection history event (reason+actor+timestamp) + TopicRejected audit adversarially proven in S1; submitter notify → Notifications phase |
 | AC-033 | Topic lifecycle | Partial | TopicTests | Rejection event append-only (no mutation surface); DB-enforced immutability + hash-chain → BL-066 |
 | AC-034 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: post-Accept 403 authz-deny + content-lock + metadata-only edit; pre-Accept non-submitter denied) + TopicApplicationTests (S1: UpdateTopicValidator) | Content locked post-accept + 403 (authz-deny) adversarially proven at handler in S1; live HTTP 403 UI → P17 |
-| AC-035 | Topic lifecycle | Partial | TopicTests + TopicHandlerTests (S1: Prepare deny + wrong-status guard + Accepted→Prepared + TopicPrepared audit) + TopicApplicationTests (S1: PrepareTopicValidator) | Accepted→Prepared transition + TopicPrepared audit adversarially proven; live HTTP/UI → P17 |
+| AC-035 | Topic lifecycle | Met | TopicTests + TopicHandlerTests (S1: Prepare deny + wrong-status guard + Accepted→Prepared + TopicPrepared audit) + TopicApplicationTests (S1: PrepareTopicValidator) + core-loop.spec (S6b-1: live UI accept → live-HTTP Accepted→Prepared → the prepared topic appears in the live agenda pool, is added + published) | Accepted→Prepared transition + TopicPrepared audit adversarially proven (S1); the live HTTP leg now lands end-to-end in the core-loop E2E and the prepared topic is visibly consumed by the live agenda builder (no standalone prepare UI by design). From Partial (S6b-1, 2026-06-30) |
 | AC-036 | MoM | Pending | — | Published MoM → versioned supersede |
 | AC-037 | MoM | Pending | — | Change-request → back to Draft |
 | AC-038 | MoM | Pending | — | Approve → Published + notify |
@@ -329,14 +329,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-041 | Localization | Partial | manual render (Playwright) | RTL render confirmed clean by hand; automated visual-regression suite → P17 |
 | AC-042 | Localization | Met | theme/theme.test.ts | Theme persisted via localStorage + applied as data-theme |
 | AC-043 | Accessibility | Partial | Kanban.test (M-move popover) + topicMeta.test + TopicHandlerTests (S1: Prioritize sets ordinal / immutability guard / authz-deny) + TopicApplicationTests (S1: PrioritizeTopicValidator) | Keyboard alternative for **status** moves shipped (the "M" move popover; legal moves open accept/return dialogs, illegal moves announced). The backend **priority-ordinal persist** (`SetPriority`) is now adversarially tested in S1 (ordinal set + audited, immutable-topic guard, `Backlog.Prioritize` authz-deny). The AC's literal **UI move-up/down wired to the persisted ordinal** (BL-039 within-column reorder, BL-041) is still **not yet built** — deferred to a follow-up slice. Corrected from Met (P5-review remediation, 2026-06-27). |
-| AC-044 | Accessibility | Met | AgendaBuilder.test (move ±1 + aria-live announce, axe AA) + MeetingHandlerTests (move ±1) | Keyboard-accessible agenda reorder shipped: the move up/down buttons send a single ±1 `move` (disabled at the ends) with a synchronous `aria-live` announce; native drag is progressive enhancement on top. Unit-tested + jsdom axe clean; live browser axe/RTL pass recommended. From Partial (P6c, 2026-06-27). |
+| AC-044 | Accessibility | Met | AgendaBuilder.test (move ±1 + aria-live announce, axe AA) + MeetingHandlerTests (move ±1) + dnd-and-failures.spec (S6b-2: native HTML5 agenda reorder ±1) + rtl-a11y.spec (S6b-3: live axe AA EN/AR) | Keyboard-accessible agenda reorder shipped: the move up/down buttons send a single ±1 `move` (disabled at the ends) with a synchronous `aria-live` announce; native drag is progressive enhancement on top. Unit-tested + jsdom axe clean; the recommended live browser pass now lands — the native drag-reorder is exercised on the real browser (S6b-2) and live axe AA is clean in EN/AR (S6b-3). From Partial (P6c, 2026-06-27). |
 | AC-045 | Accessibility | Met | axe (WCAG 2.2 AA) render | Global :focus-visible (2px solid --focus, offset) — axe-clean EN/AR×light/dark (P3) |
 | AC-046 | Accessibility | Met | axe (WCAG 2.2 AA) render | Labels/aria/contrast/reading order — axe 0 violations across EN/AR×light/dark; landmarks verified (P3) |
 | AC-047 | Unsaved-work | Met | SubmitTopic.test (guard dialog on dirty nav) | useBlocker (data router) → confirm Dialog on in-app route change while the submit form is dirty; Keep editing / Leave |
 | AC-048 | Unsaved-work | Partial | SubmitTopic.tsx (beforeunload wired) | beforeunload listener added when dirty (reload/close/hard-nav); the native browser dialog isn't unit-testable in jsdom → live pass |
 | AC-049 | File upload | Partial | TopicAttachmentTests (validator) + SubmitTopic.test (size reject) | Server size/MIME rejection (400); submit form adds a 50 MB client-side pre-check with a localized message; server-side localized message → BL-016 |
 | AC-050 | File upload | Met | TopicAttachmentTests (handler) + live (POST /{id}/attachments → 201 on real MinIO) | Submit UI stages a file and POSTs multipart to the new topic; live pass confirmed 201 against real MinIO (handler does IFileStore store + SQL metadata + DocumentAttached audit) |
-| AC-051 | Notifications | Met | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests + NotificationCenter.test (live list + deep-link nav) + TopBar.test (badge) | End to end: PublishAgenda fans out one in-app notification per active member (synchronous ≤5s write) carrying the meeting date + agenda title + a `/meetings/{key}` deep link; the notification center renders it (unread badge + list) and clicking follows the deep link. Live cross-session browser pass recommended (standing caveat). From Partial (P6e, 2026-06-27). |
+| AC-051 | Notifications | Met | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests + NotificationCenter.test (live list + deep-link nav) + TopBar.test (badge) | End to end: PublishAgenda fans out one in-app notification per active member (synchronous ≤5s write) carrying the meeting date + agenda title + a `/meetings/{key}` deep link; the notification center renders it (unread badge + list) and clicking follows the deep link. The standing cross-session caveat now lands — core-loop.spec (S6b-1) publishes an agenda and verifies the unread bell in TWO separate live browser contexts (member + chairman), confirming the ≥2-member fan-out end-to-end. From Partial (P6e, 2026-06-27). |
 | AC-052 | Notifications | Partial | NotificationCenter.test (deep-link click → navigate) | The notification deep-link **navigation** mechanism is built + tested (clicking a notification with a deepLink routes to its target — no extra steps). The **vote-open** notification itself is raised in P9 (Voting). From Pending (P6e, 2026-06-27). |
 | AC-053 | Notifications | Met | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) + NotificationCenter.test | Exactly one channel is registered and rendered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven on both server (fan-out) and client (center). From Partial (P6e, 2026-06-27). |
 | AC-054 | Background jobs | Pending | — | Due-date reminder |
@@ -353,10 +353,11 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-065 | Dashboards | Pending | — | Secretary dashboard |
 | AC-066 | Dashboards | Pending | — | Chairman dashboard |
 
-**Summary:** 66 ACs · 13 Met (AC-001/002/008/031/039/040/042/045/046/047/050/058/059) · 21 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/035/043/048/049/057 + AC-041) · 32 Pending.
+**Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
+(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.
 (Through P5b PR4 + the 2026-06-27 P5-review remediation, which corrected AC-043 Met→Partial — the kanban
-keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
+keyboard move covers status, not the priority-ordinal reorder the AC specifies — + the S6b-1 E2E
+reconciliation, 2026-06-30, which flipped **AC-035 Partial→Met** once its live HTTP leg landed.)
 
 > **Test-hardening S1 (2026-06-29):** the AC→test mapping begins here. S1 adds **adversarial, failure-first
 > backend coverage** (BE 89.1% → 97.6% lines, ADR-0016) for the Topics triage/edit handlers
@@ -397,6 +398,30 @@ keyboard move covers status, not the priority-ordinal reorder the AC specifies.)
 > (comment-only, no behaviour change) cover genuinely browser-only paths jsdom can't run — @dnd-kit + native
 > HTML5 **drag** (accessible Move up/down + click-to-add are unit-tested; drag → S6 E2E) and two defensive/
 > unreachable guards. Both stacks now per-file-gate-ready (BE 99.6%, FE 98.46%).
+
+> **Test-hardening S6b + S7 — E2E mandate complete + coverage gate live; AC reconciliation (2026-06-30):**
+> S6a stood up the Playwright harness against the real compose stack (genuine Keycloak PKCE). **S6b** added
+> the live functional E2E the InMemory/unit suites can never run — `core-loop.spec` (submit→accept→prepare→
+> schedule→build→publish→notify→start→conduct→end, with the notify fan-out verified across two browser
+> contexts), `dnd-and-failures.spec` (the S4-deferred native drag paths + failure-first authz/validation),
+> and `rtl-a11y.spec` (live `dir=rtl` flip + axe AA on Backlog/Submit-Topic in EN+AR). **S7** wired the hard
+> per-file ≥95%-lines coverage gate (FE+BE) into CI. **This is the slice where the long-standing "live HTTP/UI
+> leg → P17" caveats finally land, so G-TRACE flips are now justified — but conservatively:**
+> - **AC-035 Partial→Met** — the Accepted→Prepared transition's live HTTP leg now lands end-to-end in
+>   `core-loop.spec` (UI accept → live-HTTP prepare → the prepared topic visibly flows into the live agenda
+>   pool, is added + published). Per the project's own G-TRACE rule ("Met once the live HTTP/UI leg lands")
+>   this is the one clean flip.
+> - **Caveats closed, no verdict change** (evidence strengthened on already-`Met` rows): **AC-001** (auth.spec
+>   = the automated UI-regression that was "→ P17"); **AC-044** (the "recommended live browser axe/RTL pass" —
+>   native drag-reorder on a real browser + live axe AA); **AC-051** (the "standing cross-session browser
+>   pass" — publish fan-out verified in two live contexts).
+> - **Deliberately NOT flipped** (honest scope — these gaps are not what functional E2E closes): **AC-041**
+>   stays Partial — it needs an automated **pixel-diff visual-regression** suite (RTL *mirroring* correctness),
+>   which functional E2E does not provide; the new live `dir=rtl`+axe evidence strengthens it but is not VR.
+>   **AC-034/043/048/057** stay Partial — their gaps are **unbuilt UI** (topic-edit 403 UI, the priority-
+>   ordinal within-column reorder UI) or future-phase work (beforeunload native dialog; SLA-breach
+>   notification), not a missing test the E2E supplies. **No product behaviour changed in this slice** — it is
+>   docs-only AC reconciliation against evidence that already merged (PRs #44–#48).
 
 > P4 grading rule (G-TRACE): an auth AC is **Met** only when fully demonstrable against aggregates/stores
 > that exist in P4 (claim→role, 401, Membership directory + deactivation). ACs whose *mechanism* is built and
