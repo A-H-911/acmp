@@ -106,6 +106,8 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
       });
 
       await test.step('secretary builds the agenda and publishes (= notify)', async () => {
+        // P6a IA: the schedule lands on the meeting Overview; the agenda builder is its own route.
+        await page.goto(`/meetings/${meetingKey}/agenda`);
         await page.getByRole('button', { name: `Add ${topic.key} to the agenda` }).click();
         await expect(page.locator('.mt-agenda-list')).toContainText(topic.key);
 
@@ -124,8 +126,13 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
       });
 
       await test.step('secretary starts and conducts the meeting', async () => {
-        await page.getByRole('tab', { name: 'Meeting' }).click();
-        await page.getByRole('button', { name: 'Start meeting' }).click();
+        // Start is the shell header's lifecycle action once the agenda is published (phase=ready).
+        await Promise.all([
+          page.waitForResponse((r) => r.url().includes('/start') && r.request().method() === 'POST'),
+          page.getByRole('button', { name: 'Start meeting' }).click(),
+        ]);
+        // Conduct is its own route (Attendance + Notes composition); open the live workspace.
+        await page.goto(`/meetings/${meetingKey}/notes`);
         await expect(page.getByRole('timer')).toBeVisible();
 
         await page.getByRole('button', { name: `Toggle attendance for ${memberName}` }).click();
@@ -141,8 +148,7 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
       });
 
       await test.step('minutes is an honest placeholder gate (no fake minutes)', async () => {
-        await page.goto(`/meetings/${meetingKey}`);
-        await page.getByRole('tab', { name: 'Minutes' }).click();
+        await page.goto(`/meetings/${meetingKey}/minutes`);
         await expect(page.getByText('Minutes arrive in a later phase')).toBeVisible();
       });
 

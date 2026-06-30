@@ -70,7 +70,7 @@ test.describe('S6b-2 — native drag paths + failure-first', () => {
     const topic = await apiPreparedTopic(request, bearer, `S6b2 pool drag ${Date.now()}`, secretary);
     const meeting = await apiScheduleMeeting(request, bearer, `S6b2 Meeting ${Date.now()}`, secretary);
 
-    await page.goto(`/meetings/${meeting.key}`);
+    await page.goto(`/meetings/${meeting.key}/agenda`);
     const poolCard = page.locator('.mt-pool-card', { hasText: topic.key });
     await expect(poolCard).toBeVisible();
     const agenda = page.getByRole('region', { name: 'Agenda items' });
@@ -88,7 +88,7 @@ test.describe('S6b-2 — native drag paths + failure-first', () => {
     await apiAddAgendaItem(request, bearer, meeting.id, topicA, secretary);
     await apiAddAgendaItem(request, bearer, meeting.id, topicB, secretary);
 
-    await page.goto(`/meetings/${meeting.key}`);
+    await page.goto(`/meetings/${meeting.key}/agenda`);
     const list = page.locator('.mt-agenda-list');
     await expect(list.locator('.mt-item').first()).toContainText(topicA.key);
 
@@ -143,12 +143,13 @@ test.describe('S6b-2 — native drag paths + failure-first', () => {
     const { bearer, secretary } = await secretarySession(page);
     const meeting = await apiScheduleMeeting(request, bearer, `S6b2 Empty Mtg ${Date.now()}`, secretary);
 
-    await page.goto(`/meetings/${meeting.key}`);
-    // Agenda tab (default): empty agenda → Publish disabled.
+    // Agenda route: empty agenda → Publish disabled.
+    await page.goto(`/meetings/${meeting.key}/agenda`);
     await expect(page.getByRole('button', { name: 'Publish & notify' })).toBeDisabled();
 
-    // Meeting tab: not published → "Not started yet" gate, no Start control.
-    await page.getByRole('tab', { name: 'Meeting' }).click();
+    // Conduct route (Notes): not published → "Not started yet" gate, and the shell's lifecycle
+    // action is "Build agenda" (notReady), never "Start meeting" until the agenda is published.
+    await page.goto(`/meetings/${meeting.key}/notes`);
     await expect(page.getByText('Not started yet')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start meeting' })).toHaveCount(0);
   });
