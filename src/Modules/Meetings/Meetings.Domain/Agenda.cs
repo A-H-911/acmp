@@ -14,6 +14,9 @@ public sealed class Agenda : AuditableEntity
 
     private Agenda() { }
 
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
+
     public string Key { get; private set; } = string.Empty;  // AGN-YYYY-### (human-readable display key)
     public Guid MeetingId { get; private set; }
     public AgendaStatus Status { get; private set; }

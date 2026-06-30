@@ -14,6 +14,7 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
         b.Property(x => x.Key).IsRequired().HasMaxLength(32);
         b.HasIndex(x => x.Key).IsUnique();
 
@@ -88,6 +89,7 @@ public sealed class AgendaConfiguration : IEntityTypeConfiguration<Agenda>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
         b.Property(x => x.Key).IsRequired().HasMaxLength(32);
         b.HasIndex(x => x.Key).IsUnique();
         b.Property(x => x.MeetingId).IsRequired();
