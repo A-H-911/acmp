@@ -28,8 +28,13 @@ export default defineConfig({
         'src/vite-env.d.ts',
       ],
       reporter: ['text', 'json-summary', 'html'],
-      // Thresholds are wired in the final slice (S7) once both stacks are ≥95%,
-      // so CI never goes red while we are still climbing. Report-only until then.
+      // S7: hard gate. Basis = ADR-0016 ≥95% LINES on assertable product code, enforced
+      // global + per-file (perFile: true) so a 0% file can't hide behind the average.
+      // Lines only — functions/branches are not the basis. Evaluated when CI runs `test:cov`.
+      thresholds: {
+        lines: 95,
+        perFile: true,
+      },
     },
   },
 })
