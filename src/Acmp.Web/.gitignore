@@ -17,6 +17,11 @@ playwright-report
 test-results
 /playwright/.cache
 
+# Local visual-review (VR) artifacts — screenshots + the ad-hoc sweep driver.
+# Not part of the assertion suite; kept local so they never commit or run in CI.
+vr-out/
+e2e/vr-sweep.spec.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
