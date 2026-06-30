@@ -951,55 +951,7 @@
 }
 /* Notes editor = bordered box (toolbar strip + content area), design isMeeting editor.
    Radius 10, focus-within ring; toolbar pad 5/7 border-soft on subtle; tools 28×28 r6. */
-.mt-editor {
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.mt-editor:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
-}
-.mt-editor-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 5px 7px;
-  border-block-end: 1px solid var(--border-soft);
-  background: var(--subtle);
-}
-.mt-editor-tool {
-  inline-size: 28px;
-  block-size: 28px;
-  border: 0;
-  background: transparent;
-  color: var(--text-2);
-  border-radius: var(--r-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-.mt-editor-tool:hover {
-  background: var(--sunken);
-  color: var(--text);
-}
-.mt-editor-input {
-  display: block;
-  inline-size: 100%;
-  min-block-size: 96px;
-  padding: 12px 13px;
-  border: 0;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 13.5px;
-  line-height: 1.7;
-  outline: none;
-  resize: vertical;
-}
+/* Discussion-notes editor anatomy moved to the shared .md-editor (components.css, DV-04). */
 
 /* ---- DV-16: actual-time + outcome recorder (active item) ----
    A labeled row under the notes editor: minutes input · outcome select · Record button. Sits in the

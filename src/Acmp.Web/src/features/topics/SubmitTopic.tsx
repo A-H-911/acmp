@@ -22,6 +22,7 @@ import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
 import { Field, Input, Textarea } from '../../components/ui/Field';
+import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { Icon, type IconName } from '../../components/icons';
@@ -305,28 +306,13 @@ export function SubmitTopic() {
             <p className="sub-sub">{t('submit.sec.justificationHelp')}</p>
             <Field label={t('submit.fDescription')} required error={errors.description}>
               {(p) => (
-                <div className="sub-rte">
-                  {/* Inert formatting toolbar — visual parity with the design; we store plain text
-                      (rich text is out of scope). aria-hidden so SR users aren't offered dead controls. */}
-                  <div className="sub-rte-bar" aria-hidden="true">
-                    <span className="sub-rte-btn sub-rte-b">B</span>
-                    <span className="sub-rte-btn sub-rte-i">I</span>
-                    <span className="sub-rte-sep" />
-                    <span className="sub-rte-btn"><Icon name="viewList" size={15} /></span>
-                    <span className="sub-rte-btn"><Icon name="viewTimeline" size={15} /></span>
-                    <span className="sub-rte-sep" />
-                    <span className="sub-rte-btn"><Icon name="deps" size={15} /></span>
-                    <span className="sub-rte-btn"><Icon name="doc" size={15} /></span>
-                  </div>
-                  <Textarea
-                    {...p}
-                    className="sub-rte-area"
-                    rows={4}
-                    value={form.description}
-                    placeholder={t('submit.fDescriptionPh')}
-                    onChange={(e) => update({ description: e.target.value })}
-                  />
-                </div>
+                <MarkdownEditor
+                  {...p}
+                  rows={4}
+                  value={form.description}
+                  placeholder={t('submit.fDescriptionPh')}
+                  onChange={(description) => update({ description })}
+                />
               )}
             </Field>
             <Field label={t('submit.fJustification')} required error={errors.justification}>

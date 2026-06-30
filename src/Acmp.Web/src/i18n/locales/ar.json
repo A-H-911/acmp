@@ -101,6 +101,14 @@
     "noUnreadTitle": "لا إشعارات غير مقروءة",
     "noUnreadBody": "قرأت كل شيء. بدّل إلى الكل لعرض سجلك الكامل."
   },
+  "editor": {
+    "toolbar": "تنسيق",
+    "bold": "عريض",
+    "italic": "مائل",
+    "bulletList": "قائمة نقطية",
+    "numberedList": "قائمة مرقمة",
+    "link": "رابط"
+  },
   "state": {
     "emptyTitle": "لا يوجد شيء بعد",
     "emptyBody": "ستظهر العناصر هنا بمجرد إنشائها.",
@@ -624,14 +632,6 @@
     "discussionNotes": "ملاحظات النقاش",
     "notePlaceholder": "دوِّن نقاش هذا العنصر…",
     "autosaved": "حُفظ تلقائيًا",
-    "editor": {
-      "toolbar": "تنسيق",
-      "bold": "عريض",
-      "italic": "مائل",
-      "bulletList": "قائمة نقطية",
-      "numberedList": "قائمة مرقمة",
-      "link": "رابط"
-    },
     "captured": {
       "title": "ما سُجِّل على هذا البند",
       "empty": "لم يُسجَّل شيء على هذا البند بعد."

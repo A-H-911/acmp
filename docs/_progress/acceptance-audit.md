@@ -228,6 +228,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > tablet) covered by the same token/logical-CSS mechanism; automated pixel-diff VR → P17. See progress-log
 > "P3 foundation refresh".
 
+> DV-04 rich-text unification (2026-07-01): unified the three divergent rich-text surfaces (Submit-topic
+> inert toolbar, Meeting-notes functional markdown, Minutes deferred) into one shared `MarkdownEditor`
+> (markdown stored as text). Closes AM-06 / rebuild-findings §8.3. No AC verdict flips (editor mechanism +
+> data model, not an acceptance criterion); read-rendering of stored markdown deferred (no new dependency).
+> FE 402 green; EN/AR parity 0 drift. See progress-log "DV-04".
+
 > P6b Notifications IA reconcile (2026-06-30): reconciled the bell popover + full inbox to the design
 > references (`ACMP.dc.html` L92–131 + L706–739) — `role="dialog"` popover with `{n} new` pill, Unread/All
 > tabs, loading skeleton, tone-icon · artifact-key · time · message rows + per-item mark-read, View-all
