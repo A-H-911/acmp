@@ -12,6 +12,53 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Test-Hardening Program — S6b-1: core-loop E2E (topic → agenda → meeting → conduct → notify) (ADR-0016 §2)
+
+### 2026-06-30 — Drive the whole governance loop through the real UI on the live stack
+
+**Why.** ADR-0016 §2 names the core loop (topic → agenda → meeting → minutes → notify) as the headline
+E2E. S6a proved only the auth round-trip; S6b-1 proves the product spine end-to-end against the real
+8-service compose stack — the live HTTP+UI leg the InMemory/unit suites can never exercise.
+
+**What (S6b-1, first of three small per-flow PRs).**
+- `e2e/core-loop.spec.ts` — one failure-first spine: secretary submits a topic → accepts it (Kanban,
+  keyboard "M" move popover, owner = the member) → **[API] prepare** → schedules a meeting → builds the
+  agenda (add + assign presenter) → **publishes (= the notify fan-out)** → starts → conducts (marks
+  attendance + captures a discussion note) → ends → asserts the **minutes placeholder gate** → verifies the
+  notification bell for **both** recipients (member + chairman), satisfying the "≥2 members" mandate.
+- `e2e/apiHelpers.ts` — the two steps with no v1 UI: `captureBearer` (reads the `Authorization` header off a
+  live `/api` request — Keycloak direct-grant is off, so the PKCE session is the only token source) and
+  `prepareTopic` (Topic→Prepared is API-only; the secretary's bearer satisfies `Policies.TopicEdit`).
+
+**Honest reconciliations baked into the spec (the loop names screens that don't all ship in v1).**
+- **Minutes is a placeholder** (MoM = P7): the spec asserts the Minutes *gate* ("Minutes arrive in a later
+  phase"), never a faked minutes screen.
+- **Notify = the publish-agenda fan-out** to all committee members; both recipients' bells are checked.
+- **No DB seeder** → the stack boots empty. Members exist only after a login self-provisions them (an
+  *active* `CommitteeMember`), so the two recipients log in once (own contexts) **before** the fan-out.
+
+**What the live leg caught that unit tests didn't.** Publishing 500'd with the domain invariant *"Every
+agenda item needs a presenter before publishing"* (`Agenda.Publish`). The unit suite asserts that guard in
+isolation; only the live UI proves the **builder lets you satisfy it** before publish. The spec now assigns
+a presenter and asserts the publish response is 200 — exactly the false-green gap §2 targets.
+
+**Gotchas (carry forward).** (1) `getByLabel('Title', {exact})` fails on `Field`-wrapped inputs — the
+`<label>` text is `"Title*"` (required `*` is `aria-hidden` from the *name* but present in label *text*); use
+`getByRole('textbox', {name, exact})` (accessible name excludes the `*`). (2) Modals leave sibling chrome in
+the DOM — scope dialog actions with `page.getByRole('dialog').getBy…` (the Backlog "Owner" filter chip
+collided with the AcceptDialog owner Select). (3) The local stack is fast: the full 3-login loop runs in
+~4s, so genuine passes look "too fast" — confirm via `docker logs acmp-api-1` (Publish/Start/Mark/Capture/
+End commands) rather than wall-clock. (4) Run from `src/Acmp.Web`; `set -a; source ../../deploy/.env.example`
+before `npm run e2e` so global-setup gets the KC admin creds.
+
+**Gates.** FE `npm run build` clean · `npm test` 346/346 (vitest, e2e excluded) · `npm run lint` (only the
+pre-existing Toast.tsx warning). Live: full e2e suite **3/3 green** (auth ×2 + core-loop) against the booted
+stack. **AC verdict flips deferred** to the end of S6b (after the drag + RTL/axe slices land), consistent
+with S5/S6a ("no AC verdicts flipped" mid-slice). **Next: S6b-2** (native HTML5 drag — AgendaBuilder
+pool→agenda + within-agenda reorder, Kanban card→column — + failure-first authz/validation).
+
+---
+
 ## Test-Hardening Program — S6a: E2E harness + real Keycloak PKCE auth round-trip (ADR-0016 §2)
 
 ### 2026-06-30 — Stand up Playwright against the real compose stack; prove the genuine auth round-trip
