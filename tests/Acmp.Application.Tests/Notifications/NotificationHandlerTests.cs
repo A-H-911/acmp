@@ -118,7 +118,7 @@ public class NotificationHandlerTests
     }
 
     [Fact] // Mark-all flips every unread item of the caller and returns the count; another user's items
-           // are untouched (scope = authorization, guardrail 4).
+           // are untouched (scope = authorization, guardrail 4). A bulk clear emits one audit event.
     public async Task MarkAllRead_flips_only_the_callers_unread_and_returns_count()
     {
         var clock = Clock(T0);
@@ -127,12 +127,27 @@ public class NotificationHandlerTests
         await channel.PublishAsync(Msg("kc-a"), default);
         await channel.PublishAsync(Msg("kc-a"), default);
         await channel.PublishAsync(Msg("kc-b"), default);
+        var audit = Substitute.For<IAuditSink>();
 
-        var marked = await new MarkAllNotificationsReadHandler(db, User("kc-a"), clock).Handle(new MarkAllNotificationsReadCommand(), default);
+        var marked = await new MarkAllNotificationsReadHandler(db, User("kc-a"), clock, audit).Handle(new MarkAllNotificationsReadCommand(), default);
 
         marked.Should().Be(2);
         (await new GetNotificationsHandler(db, User("kc-a")).Handle(new GetNotificationsQuery(), default)).UnreadCount.Should().Be(0);
         (await new GetNotificationsHandler(db, User("kc-b")).Handle(new GetNotificationsQuery(), default)).UnreadCount.Should().Be(1);
+        await audit.Received(1).EmitAsync("Notifications.AllRead", "kc-a", Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // Nothing unread → the count==0 short-circuit returns before persistence, so no audit noise.
+    public async Task MarkAllRead_with_nothing_unread_returns_zero_and_emits_no_audit()
+    {
+        var clock = Clock(T0);
+        await using var db = NewDb(User("kc-a"), clock);
+        var audit = Substitute.For<IAuditSink>();
+
+        var marked = await new MarkAllNotificationsReadHandler(db, User("kc-a"), clock, audit).Handle(new MarkAllNotificationsReadCommand(), default);
+
+        marked.Should().Be(0);
+        await audit.DidNotReceive().EmitAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

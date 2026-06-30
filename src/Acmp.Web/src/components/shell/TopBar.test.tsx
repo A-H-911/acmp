@@ -10,6 +10,7 @@ import { renderWithAuth, makeAuth } from '../../test/render';
 vi.mock('../../api/notifications', () => ({
   useNotifications: vi.fn(() => ({ data: { items: [], unreadCount: 0 } })),
   useMarkNotificationRead: vi.fn(() => ({ mutate: vi.fn() })),
+  useMarkAllNotificationsRead: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 import { useNotifications } from '../../api/notifications';
 const mockNotifs = useNotifications as unknown as Mock;

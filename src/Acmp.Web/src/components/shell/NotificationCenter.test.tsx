@@ -14,9 +14,11 @@ vi.mock('react-router-dom', async (orig) => ({
 }));
 
 const markMutate = vi.fn();
+const markAllMutate = vi.fn();
 vi.mock('../../api/notifications', () => ({
   useNotifications: vi.fn(),
   useMarkNotificationRead: vi.fn(() => ({ mutate: markMutate })),
+  useMarkAllNotificationsRead: vi.fn(() => ({ mutate: markAllMutate, isPending: false })),
 }));
 import { useNotifications } from '../../api/notifications';
 const mockNotifs = useNotifications as unknown as Mock;
@@ -35,19 +37,18 @@ const ITEMS: NotificationItem[] = [
 ];
 
 function feed(over: { data?: Partial<NotificationList>; isLoading?: boolean; isError?: boolean }) {
-  // The popover only reads items + unreadCount; fill the paging fields so the mock satisfies the
-  // NotificationList type without every call site repeating total/hasMore.
   const data = over.data
     ? { items: [], unreadCount: 0, total: 0, hasMore: false, ...over.data }
     : undefined;
   mockNotifs.mockReturnValue({ isLoading: false, isError: false, ...over, data });
 }
 
-describe('NotificationCenter (P6e)', () => {
+describe('NotificationCenter (P6b — ACMP.dc.html L92–131)', () => {
   beforeEach(() => {
     mockNotifs.mockReset();
     navigate.mockReset();
     markMutate.mockReset();
+    markAllMutate.mockReset();
   });
   afterEach(async () => { await i18n.changeLanguage('en'); });
 
@@ -57,55 +58,84 @@ describe('NotificationCenter (P6e)', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('lists the live feed with the unread count and marks unread items visually', () => {
+  it('shows the unread count pill and lists unread rows by their artifact key', () => {
     feed({ data: { items: ITEMS, unreadCount: 1 } });
     renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
-    expect(screen.getByText('Agenda published')).toBeTruthy();
-    expect(screen.getByText('1 unread')).toBeTruthy();
-    // The unread item carries the `unread` class; the read one does not.
-    const unread = screen.getByRole('button', { name: /agenda published/i });
-    expect(unread.className).toContain('unread');
-    const read = screen.getByRole('button', { name: /meeting scheduled/i });
-    expect(read.className).not.toContain('unread');
+    // {n} new pill in the header.
+    expect(screen.getByText('1 new')).toBeTruthy();
+    // Default tab = Unread → only the unread row (its derived key) shows; the read one is hidden.
+    expect(screen.getByRole('button', { name: 'MTG-2026-019' })).toBeTruthy();
+    expect(screen.queryByText(/A new meeting is scheduled/i)).toBeNull();
   });
 
-  it('marks an unread item read, closes, and follows its deep link on click', async () => {
+  it('the All tab reveals read items too', async () => {
+    feed({ data: { items: ITEMS, unreadCount: 1 } });
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
+    await user.click(screen.getByRole('tab', { name: /All/ }));
+    expect(screen.getByText('A new meeting is scheduled.')).toBeTruthy();
+  });
+
+  it('marks read, closes, and follows the deep link when the key is clicked', async () => {
     const onClose = vi.fn();
     feed({ data: { items: ITEMS, unreadCount: 1 } });
     const user = userEvent.setup();
     renderWithAuth(<NotificationCenter open onClose={onClose} />);
 
-    await user.click(screen.getByRole('button', { name: /agenda published/i }));
+    await user.click(screen.getByRole('button', { name: 'MTG-2026-019' }));
 
     expect(markMutate).toHaveBeenCalledWith('n1');
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(navigate).toHaveBeenCalledWith('/meetings/MTG-2026-019');
   });
 
-  it('does not re-mark an already-read item and skips navigation when there is no deep link', async () => {
+  it('the per-row dot marks read without navigating or closing', async () => {
     const onClose = vi.fn();
-    feed({ data: { items: ITEMS, unreadCount: 0 } });
+    feed({ data: { items: ITEMS, unreadCount: 1 } });
     const user = userEvent.setup();
     renderWithAuth(<NotificationCenter open onClose={onClose} />);
 
-    await user.click(screen.getByRole('button', { name: /meeting scheduled/i }));
+    await user.click(screen.getByRole('button', { name: i18n.t('notif.markRead') }));
 
-    expect(markMutate).not.toHaveBeenCalled();
+    expect(markMutate).toHaveBeenCalledWith('n1');
     expect(navigate).not.toHaveBeenCalled();
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('keeps the calm empty state when the inbox is empty', () => {
+  it('mark-all fires the command and is disabled with zero unread', async () => {
+    feed({ data: { items: ITEMS, unreadCount: 1 } });
+    const user = userEvent.setup();
+    const { unmount } = renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: i18n.t('notif.markAll') }));
+    expect(markAllMutate).toHaveBeenCalled();
+    unmount();
+
+    feed({ data: { items: ITEMS, unreadCount: 0 } });
+    renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
+    expect(screen.getByRole('button', { name: i18n.t('notif.markAll') })).toBeDisabled();
+  });
+
+  it('keeps the calm empty state when there are no unread items', () => {
     feed({ data: { items: [], unreadCount: 0 } });
     renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
-    expect(screen.getByText(/all caught up/i)).toBeTruthy();
+    expect(screen.getByText(i18n.t('notif.noUnreadTitle'))).toBeTruthy();
   });
 
-  it('renders Arabic content when the locale is AR', async () => {
+  it('a scrim click and "View all" both close; View all navigates to the page', async () => {
+    const onClose = vi.fn();
+    feed({ data: { items: [], unreadCount: 0 } });
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationCenter open onClose={onClose} />);
+    await user.click(screen.getByRole('button', { name: i18n.t('notif.viewAll') }));
+    expect(onClose).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith('/notifications');
+  });
+
+  it('renders Arabic body content when the locale is AR', async () => {
     await i18n.changeLanguage('ar');
     feed({ data: { items: ITEMS, unreadCount: 1 } });
     renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
-    expect(screen.getByText('تم نشر جدول الأعمال')).toBeTruthy();
+    expect(screen.getByText('تم نشر جدول أعمال MTG-2026-019.')).toBeTruthy();
   });
 
   it('has no axe (WCAG 2.2 AA) violations', async () => {

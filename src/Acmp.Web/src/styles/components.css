@@ -115,89 +115,157 @@
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
 
 /* ============================ Notification center ============================ */
+/* Bell popover — ACMP.dc.html L92–131. role="dialog" + click-away scrim, flex column with a
+   scrolling list between a sticky header/tabs and a sticky "View all" footer. */
+.notif-scrim { position: fixed; inset: 0; z-index: 39; }
 .notif-panel {
-  /* Design System / app-shell popover: top 46, r13, --border (matches profile/menu panels). */
   position: absolute; inset-block-start: 46px; inset-inline-end: var(--sp-4); z-index: 40;
-  inline-size: 388px; max-block-size: 70vh; overflow-y: auto;
+  inline-size: 388px; max-block-size: 560px; display: flex; flex-direction: column; overflow: hidden;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 13px; box-shadow: var(--shadow-lg);
 }
 .notif-panel-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: var(--sp-3) var(--sp-4); border-block-end: 1px solid var(--border-soft);
-  font-size: 13px; font-weight: 600;
+  padding: var(--sp-3) var(--sp-4) 0;
 }
-.notif-list { list-style: none; margin: 0; padding: 0; }
-.notif-item {
-  display: flex; gap: var(--sp-3); inline-size: 100%; padding: var(--sp-3) var(--sp-4);
-  border: 0; border-block-end: 1px solid var(--border-soft); background: none;
-  text-align: start; color: inherit; cursor: pointer;
+.notif-panel-title { display: flex; align-items: center; gap: var(--sp-2); }
+.notif-panel-title h2 { margin: 0; font-size: 15px; font-weight: 700; }
+.notif-new-pill {
+  font-size: 11px; font-weight: 700; color: var(--st-danger-fg); background: var(--st-danger-bg);
+  border-radius: 9px; padding-inline: 8px; padding-block: 1px;
 }
-.notif-item:hover { background: var(--subtle); }
-.notif-item.unread { background: var(--primary-tint); }
-.notif-dot {
-  flex: 0 0 auto; inline-size: 7px; block-size: 7px; margin-block-start: 5px;
-  border-radius: 50%; background: var(--accent);
+.notif-markall-link {
+  border: 0; background: none; cursor: pointer; color: var(--accent);
+  font-size: 12px; font-weight: 600; padding: 4px 6px; border-radius: var(--r-sm);
 }
-.notif-item-body { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
-.notif-item-title { font-size: 13px; font-weight: 600; }
-.notif-item-text { font-size: 12px; color: var(--text-2); line-height: 1.45; }
-.notif-item-time { font-size: 11px; color: var(--text-3); margin-block-start: 2px; }
+.notif-markall-link:hover:not(:disabled) { background: var(--subtle); }
+.notif-markall-link:disabled { color: var(--text-3); cursor: default; }
+/* Segmented Unread/All tabs inside the popover. */
+.notif-tabs {
+  display: flex; gap: var(--sp-1); padding: 11px var(--sp-4) 12px;
+  border-block-end: 1px solid var(--border);
+}
+.notif-tabs button {
+  block-size: 28px; padding-inline: 13px; border: 0; border-radius: 7px; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; color: var(--text-2); background: none;
+}
+.notif-tabs button.is-active { background: var(--primary-tint); color: var(--accent); }
+.notif-tab-count { font-variant-numeric: tabular-nums; }
+.notif-scroll { flex: 1 1 auto; overflow-y: auto; min-block-size: 0; }
+
+/* Loading skeleton (shimmer via the shared .skeleton). */
+.notif-skeleton { padding: var(--sp-2) 6px; }
+.notif-skeleton-row { display: flex; gap: 11px; padding: 12px; align-items: flex-start; }
+.notif-skeleton-ico { inline-size: 30px; block-size: 30px; border-radius: 8px; flex: 0 0 auto; }
+.notif-skeleton-lines { flex: 1 1 auto; }
+.notif-skeleton-line { display: block; block-size: 9px; inline-size: 88%; margin-block-end: 8px; border-radius: 5px; }
+.notif-skeleton-line.short { inline-size: 42%; }
 .notif-status { padding: var(--sp-5) var(--sp-4); text-align: center; font-size: 12.5px; color: var(--text-3); }
-.notif-unread-count {
-  font-size: 11px; font-weight: 700; color: var(--primary-fg); background: var(--accent);
-  border-radius: 9px; padding-inline: 7px; padding-block: 1px;
+
+/* Shared row anatomy (popover + page): tone icon · meta (type/key · time) · message · mark-read. */
+.notif-list { list-style: none; margin: 0; padding: 5px 6px; }
+.notif-row {
+  display: flex; gap: 11px; padding: 11px 10px; align-items: flex-start;
+  border-radius: 9px; position: relative;
 }
+.notif-row:hover { background: var(--subtle); }
+.notif-row.unread { background: var(--primary-tint); }
+.notif-ico {
+  inline-size: 30px; block-size: 30px; border-radius: 8px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+}
+.notif-ico.lg { inline-size: 34px; block-size: 34px; border-radius: 9px; }
+.notif-ico.accent { background: var(--primary-tint); color: var(--accent); }
+.notif-ico.success { background: var(--st-success-bg); color: var(--st-success-fg); }
+.notif-ico.info { background: var(--st-info-bg); color: var(--st-info-fg); }
+.notif-ico.warn { background: var(--st-warn-bg); color: var(--st-warn-fg); }
+.notif-ico.neutral { background: var(--st-neutral-bg); color: var(--st-neutral-fg); }
+.notif-row-body { flex: 1 1 auto; min-inline-size: 0; }
+.notif-row-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-block-end: 2px; }
+.notif-type {
+  font-size: 11px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase;
+}
+.notif-type.accent { color: var(--accent); }
+.notif-type.success { color: var(--st-success-fg); }
+.notif-type.info { color: var(--st-info-fg); }
+.notif-type.warn { color: var(--st-warn-fg); }
+.notif-type.neutral { color: var(--text-3); }
+.notif-key {
+  font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--accent);
+  border: 0; background: none; padding: 0; cursor: pointer;
+}
+.notif-key:hover { text-decoration: underline; }
+.notif-row-time { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+.notif-row-msg {
+  display: block; inline-size: 100%; text-align: start; border: 0; background: none; cursor: pointer;
+  font-size: 12.5px; color: var(--text); line-height: 1.45; padding: 0;
+}
+.notif-dot { flex: 0 0 auto; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--accent); }
+/* Popover per-row mark-read = the dot as a button. */
+.notif-markdot {
+  inline-size: 18px; block-size: 18px; flex: 0 0 auto; border: 0; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-block-start: 3px;
+}
+.notif-markdot:hover { background: var(--sunken); }
 .notif-badge {
   position: absolute; inset-block-start: -3px; inset-inline-end: -3px; min-inline-size: 16px;
   block-size: 16px; padding-inline: 3px; border-radius: 8px; border: 2px solid var(--header);
   background: var(--st-danger-dot); color: #fff; font-size: 9px; font-weight: 700;
   line-height: 11px; display: flex; align-items: center; justify-content: center;
 }
-/* Empty inbox = a calm "all caught up" success state (design page 79). */
+/* Empty inbox = a calm "all caught up" success state. */
 .notif-empty {
   display: flex; flex-direction: column; align-items: center; text-align: center;
   gap: var(--sp-2); padding: var(--sp-6) var(--sp-4);
 }
-/* Bell popover footer: link to the full-page center (#79). */
-.notif-panel-foot {
-  border-block-start: 1px solid var(--border-soft);
-  padding: var(--sp-2);
-  position: sticky; inset-block-end: 0; background: var(--surface);
+/* Popover footer: "View all" → full-page center (#79). */
+.notif-viewall {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 7px;
+  border: 0; border-block-start: 1px solid var(--border); background: var(--surface); cursor: pointer;
+  padding: 12px; font-size: 12.5px; font-weight: 600; color: var(--accent);
 }
-.notif-seeall {
-  inline-size: 100%; border: 0; background: none; cursor: pointer;
-  padding: var(--sp-2); border-radius: var(--r-md);
-  font-size: 12.5px; font-weight: 600; color: var(--accent);
-}
-.notif-seeall:hover { background: var(--subtle); }
+.notif-viewall:hover { background: var(--subtle); }
 
-/* ---- Notification Center, full page (#79; no .dc.html → composed from the design system) ---- */
+/* ---- Notification Center, full page (#79) — ACMP.dc.html L706–739 ---- */
 .notif-page-head {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: flex-end; justify-content: space-between;
   gap: var(--sp-4); flex-wrap: wrap; margin-block-end: var(--sp-4);
 }
-.notif-page-actions { display: flex; align-items: center; gap: var(--sp-3); }
-.notif-seg {
-  display: flex; gap: 2px; padding: 3px; background: var(--sunken); border-radius: var(--r-md);
+.notif-channel {
+  margin: 5px 0 0; font-size: 13px; color: var(--text-2);
+  display: flex; align-items: center; gap: var(--sp-2);
 }
-.notif-seg button {
-  display: inline-flex; align-items: center; gap: var(--sp-2);
-  border: 0; background: none; cursor: pointer;
-  block-size: 28px; padding-inline: var(--sp-3); border-radius: var(--r-sm);
-  font-size: 12.5px; font-weight: 600; color: var(--text-2);
+.notif-channel svg { color: var(--text-3); }
+/* Underline tabs with counts. */
+.notif-underline-tabs {
+  display: flex; gap: 5px; margin-block-end: var(--sp-4); border-block-end: 1px solid var(--border);
 }
-.notif-seg button.is-active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
-.notif-seg-count {
-  font-size: 10.5px; font-weight: 700; color: var(--primary-fg); background: var(--accent);
-  border-radius: 8px; padding-inline: 5px; min-inline-size: 16px; text-align: center;
+.notif-underline-tabs button {
+  block-size: 36px; padding-inline: 4px; margin-inline-end: 14px; margin-block-end: -1px;
+  border: 0; border-block-end: 2px solid transparent; background: none; cursor: pointer;
+  font-size: 13.5px; font-weight: 600; color: var(--text-3);
 }
-/* The list becomes a bordered card on the page (vs the borderless popover). */
-.notif-page-list {
+.notif-underline-tabs button.is-active { color: var(--text); border-block-end-color: var(--accent); }
+.notif-underline-tabs .notif-tab-count { color: var(--text-3); font-variant-numeric: tabular-nums; }
+/* Rows become a bordered card on the page. */
+.notif-card {
+  list-style: none; margin: 0; padding: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow);
 }
-.notif-page-list .notif-item:last-child { border-block-end: 0; }
+.notif-card .notif-row { border-radius: 0; gap: 13px; padding: 14px 16px; border-block-end: 1px solid var(--border-soft); }
+.notif-card .notif-row:last-child { border-block-end: 0; }
+.notif-card .notif-row-msg { font-size: 13.5px; }
+.notif-card .notif-row-time { font-size: 11.5px; }
+/* Page per-row mark-read = a labelled pill button. */
+.notif-markread {
+  block-size: 28px; padding-inline: 10px; flex: 0 0 auto; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+  border-radius: 7px; font-size: 11.5px; font-weight: 600;
+}
+.notif-markread:hover { background: var(--subtle); color: var(--text); }
+.notif-markread .notif-dot { inline-size: 7px; block-size: 7px; }
 .notif-page-more { display: flex; justify-content: center; margin-block-start: var(--sp-4); }
 
 /* ============================ Sortable list (DnD) ============================ */
