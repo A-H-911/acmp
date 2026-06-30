@@ -28,12 +28,13 @@ export const appRoutes = createRoutesFromElements(
 
     <Route element={<ProtectedRoute />}>
       <Route path="/" element={<AppShell />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
+        <Route index element={<DashboardPage />} />
+        {/* Legacy alias — keep deep links to /dashboard working; Home is now '/' (Usage Map §G). */}
+        <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
-        <Route path="topics/new" element={<SubmitTopic />} />
         <Route path="backlog" element={<Backlog />} />
+        <Route path="backlog/submit" element={<SubmitTopic />} />
         <Route path="topics/:key" element={<TopicDetail />} />
         <Route path="meetings" element={<MeetingsList />} />
         <Route path="meetings/new" element={<SchedulePage />} />
@@ -44,15 +45,16 @@ export const appRoutes = createRoutesFromElements(
         <Route path="risks" element={<PlaceholderPage titleKey="nav.risks" />} />
         <Route path="dependencies" element={<PlaceholderPage titleKey="nav.deps" />} />
         <Route path="research" element={<PlaceholderPage titleKey="nav.research" />} />
-        <Route path="knowledge" element={<PlaceholderPage titleKey="nav.wiki" />} />
-        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" />} />
+        <Route path="wiki" element={<PlaceholderPage titleKey="nav.wiki" />} />
+        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
         <Route path="reports" element={<PlaceholderPage titleKey="nav.reports" />} />
         <Route path="search" element={<PlaceholderPage titleKey="common.search" />} />
 
         <Route path="admin" element={<RequireRole roles={['administrator']} />}>
-          <Route index element={<AdministrationPage />} />
+          <Route index element={<Navigate to="/admin/users" replace />} />
+          <Route path="users" element={<AdministrationPage />} />
         </Route>
-        <Route path="admin/audit" element={<RequireRole roles={['administrator', 'auditor', 'chairman']} />}>
+        <Route path="audit" element={<RequireRole roles={['administrator', 'auditor', 'chairman']} />}>
           <Route index element={<PlaceholderPage titleKey="nav.audit" />} />
         </Route>
 

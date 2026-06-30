@@ -19,8 +19,6 @@ import {
   useMarkAllNotificationsRead,
   type NotificationItem,
 } from '../api/notifications';
-import { AREAS } from '../nav/navModel';
-import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { Button } from '../components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '../components/states';
 import { Icon } from '../components/icons';
@@ -51,10 +49,6 @@ export default function NotificationsPage() {
 
   return (
     <section className="page notif-page">
-      <Breadcrumb
-        ariaLabel={t('notif.title')}
-        items={[{ label: t('nav.home'), href: AREAS.home.path }, { label: t('notif.title'), current: true }]}
-      />
 
       <div className="notif-page-head">
         <h1 className="page-title">{t('notif.title')}</h1>

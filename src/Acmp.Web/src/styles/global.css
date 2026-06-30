@@ -17,6 +17,17 @@ body {
 
 a { color: inherit; }
 
+/* One custom scrollbar, defined once (Design System §03b / Usage Map decision 11).
+   The document scrolls; chrome is sticky — there is no inner overflow container.
+   WebKit thumb is inset by a 3px transparent border via background-clip; Firefox
+   uses the standard thin scrollbar with the same thumb colour. */
+* { scrollbar-width: thin; scrollbar-color: var(--scroll) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb {
+  background: var(--scroll); border-radius: 7px;
+  border: 3px solid transparent; background-clip: padding-box;
+}
+
 /* One global focus treatment — visible, ≥3:1 against any surface (AC-045). */
 :focus-visible {
   outline: 2px solid var(--focus);
@@ -46,7 +57,7 @@ a { color: inherit; }
 .topbar {
   position: sticky; inset-block-start: 0; z-index: 40;
   display: flex; align-items: center; gap: 18px;
-  block-size: 58px; padding-inline: 16px 18px;
+  block-size: var(--header-h); padding-inline: 16px 18px;
   background: var(--header);
   border-block-end: 1px solid var(--border);
 }
@@ -238,10 +249,10 @@ a { color: inherit; }
 
 /* ============================ Sidebar nav ============================ */
 .sidebar {
-  /* ACMP.dc.html app shell (Q4 authority): 248px, padding 20/14. Sticky offset and
-     height use the 58px header (the design file's own 60px here is a 2px self-inconsistency). */
-  flex: 0 0 248px;
-  position: sticky; inset-block-start: 58px; block-size: calc(100vh - 58px); overflow-y: auto;
+  /* Width + header offset come from named tokens (Design System §03b; Usage Map
+     decision 11 locks header 60 / sidebar 244, resolving the old 58-vs-60 drift). */
+  flex: 0 0 var(--sidebar-w);
+  position: sticky; inset-block-start: var(--header-h); block-size: calc(100vh - var(--header-h)); overflow-y: auto;
   padding: 20px 14px;
   background: var(--surface); border-inline-end: 1px solid var(--border);
   display: flex; flex-direction: column; gap: 3px;
@@ -277,7 +288,7 @@ a { color: inherit; }
 }
 
 .app-main { flex: 1; min-inline-size: 0; padding: var(--sp-6) var(--sp-6) 110px; }
-.page { max-inline-size: 72rem; margin-inline: auto; }
+.page { max-inline-size: var(--page-max); margin-inline: auto; }
 .page-title { margin-block: 0 var(--sp-2); font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
 .page-lead { color: var(--text-2); margin-block-end: var(--sp-5); font-size: 13.5px; }
 

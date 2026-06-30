@@ -47,9 +47,10 @@ describe('appRoutes guards', () => {
   // the App-level integration sticks to non-redirecting outcomes.
 
   it('renders a protected route inside the shell for an authenticated member', async () => {
-    renderAt('/dashboard', makeAuth(['member']));
+    renderAt('/', makeAuth(['member']));
     expect(await screen.findByText(i18n.t('dashboard.title'))).toBeInTheDocument();
-    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    // The shell has the primary nav; the breadcrumb is a second <nav>, so query by name.
+    expect(screen.getByRole('navigation', { name: i18n.t('nav.primary') })).toBeInTheDocument();
   });
 
   it('denies the admin area to a non-admin (role gate)', async () => {
@@ -58,7 +59,7 @@ describe('appRoutes guards', () => {
   });
 
   it('lets an administrator into the admin area', async () => {
-    renderAt('/admin', makeAuth(['administrator']));
+    renderAt('/admin/users', makeAuth(['administrator']));
     // role gate did NOT block — the actual admin screen (its page heading) rendered in the shell.
     // ("Administration" also appears as a nav link, so query the heading specifically.)
     expect(await screen.findByRole('heading', { name: i18n.t('admin.title') })).toBeInTheDocument();

@@ -19,7 +19,7 @@ export function SideNav() {
   // exactly, or both items light up as active. Compute that set once.
   const allPaths = useMemo(() => groups.flatMap((g) => g.items.map((i) => i.path)), [groups]);
   const exactMatch = (path: string) =>
-    path === '/dashboard' || allPaths.some((p) => p !== path && p.startsWith(`${path}/`));
+    path === '/' || allPaths.some((p) => p !== path && p.startsWith(`${path}/`));
 
   return (
     <nav className="sidebar" aria-label={t('nav.primary')}>

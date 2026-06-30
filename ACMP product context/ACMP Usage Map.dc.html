@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;cursor:pointer}
+[data-acmp-theme]{--mono:'IBM Plex Mono',monospace}
+[data-acmp-theme="light"]{--bg-app:#e9edf1;--surface:#ffffff;--subtle:#f4f6f8;--sunken:#e6eaee;--header:#f8f9fb;--border:#dde2e8;--border-soft:#e9edf1;--border-strong:#c5ccd5;--text:#1a232f;--text-2:#56616f;--text-3:#6b7480;--primary:#1a4f8a;--primary-hover:#163f6e;--primary-fg:#fff;--accent:#1a5fae;--primary-tint:#e9f1f9;--focus:#1a5fae;--scroll:#c5ccd5;--ring:rgba(26,79,138,.12);--shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.08);--shadow-lg:0 10px 30px rgba(16,24,40,.12);--st-neutral-bg:#eceef1;--st-neutral-fg:#48505c;--st-neutral-dot:#7a8694;--st-info-bg:#e6effa;--st-info-fg:#15558f;--st-info-dot:#2f74c0;--st-sched-bg:#ecebfb;--st-sched-fg:#473ba0;--st-sched-dot:#6b5ce0;--st-warn-bg:#fbf0d6;--st-warn-fg:#83540a;--st-warn-dot:#cf8a1c;--st-success-bg:#dcefe1;--st-success-fg:#1d6a39;--st-success-dot:#2f9e54;--st-danger-bg:#fbe2e2;--st-danger-fg:#9f2530;--st-danger-dot:#d6453f}
+[data-acmp-theme="dark"]{--bg-app:#0d1116;--surface:#161c23;--subtle:#1b222a;--sunken:#0a0e12;--header:#141a20;--border:#2a333d;--border-soft:#222a33;--border-strong:#3a4651;--text:#e7ebf0;--text-2:#9eaab7;--text-3:#828d9c;--primary:#1f5fa8;--primary-hover:#2a6fbb;--primary-fg:#fff;--accent:#6db0ee;--primary-tint:#15273a;--focus:#6db0ee;--scroll:#3a4651;--ring:rgba(109,176,238,.16);--shadow:0 1px 2px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35);--shadow-lg:0 14px 40px rgba(0,0,0,.5);--st-neutral-bg:#232c35;--st-neutral-fg:#aeb9c5;--st-neutral-dot:#7d8a98;--st-info-bg:#13283f;--st-info-fg:#86baf0;--st-info-dot:#3f86cf;--st-sched-bg:#201d3d;--st-sched-fg:#a99ff4;--st-sched-dot:#7a6cef;--st-warn-bg:#33260f;--st-warn-fg:#e2af57;--st-warn-dot:#cf8a1c;--st-success-bg:#10301d;--st-success-fg:#6ec78a;--st-success-dot:#2f9e54;--st-danger-bg:#371618;--st-danger-fg:#f09a9a;--st-danger-dot:#d6453f}
+*:focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px}
+::selection{background:var(--ring)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:7px;border:3px solid transparent;background-clip:padding-box}
+.sec{margin-bottom:50px;scroll-margin-top:80px}
+.sechd{display:flex;align-items:baseline;gap:11px;margin-bottom:7px}
+.snum{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+.h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px}
+.lead{margin:0 0 18px;font-size:13.5px;color:var(--text-2);line-height:1.65;max-width:760px}
+.sub{margin:22px 0 11px;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sub::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.tbl{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);margin-bottom:8px}
+.scroller{overflow-x:auto}
+.tr{display:grid;align-items:stretch;border-bottom:1px solid var(--border-soft)}
+.tr:last-child{border-bottom:0}
+.th{background:var(--header);border-bottom:1px solid var(--border);position:sticky;top:0}
+.th .td{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);align-self:center}
+.tbl .tr:not(.th):hover{background:var(--subtle)}
+.td{padding:10px 13px;font-size:12.5px;line-height:1.5;color:var(--text);min-width:0;display:block}
+.td.mono{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.td.k{font-family:var(--mono);font-size:11px;color:var(--text-2)}
+.td.b{font-weight:600}
+.td.mut{color:var(--text-2)}
+.td.ac{color:var(--accent);font-weight:600}
+.td .sub2{display:block;margin-top:3px;font-size:11px;color:var(--text-3);font-family:'IBM Plex Sans','IBM Plex Sans Arabic',sans-serif;font-weight:400;letter-spacing:0;text-transform:none}
+.chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding-inline:8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap}
+.chip .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--text-2);background:var(--subtle);border:1px solid var(--border);border-radius:5px;padding:1px 7px;margin:2px 4px 2px 0;white-space:nowrap}
+.pill.on{color:var(--accent);background:var(--primary-tint);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+.card{border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);padding:16px 18px}
+.note{display:flex;gap:11px;border-radius:11px;padding:12px 15px;margin-bottom:10px;line-height:1.55;font-size:12.5px}
+.note svg{flex:0 0 auto;margin-top:1px}
+.kicker{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)}
+.decgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.dec{border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.dec .top{padding:13px 16px 12px;border-bottom:1px solid var(--border-soft)}
+.dec .tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--accent);background:var(--primary-tint);border-radius:5px;padding:2px 7px;margin-bottom:8px}
+.dec .q{font-size:13px;font-weight:700;line-height:1.4}
+.dec .a{padding:13px 16px;font-size:12.5px;color:var(--text-2);line-height:1.6;flex:1 1 auto}
+.dec .a b{color:var(--text);font-weight:600}
+.dec .refs{padding:9px 16px;border-top:1px solid var(--border-soft);background:var(--subtle);font-family:var(--mono);font-size:10px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:5px}
+.flow{border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);padding:15px 17px;margin-bottom:11px}
+.flow .ft{font-size:13.5px;font-weight:700;margin-bottom:2px}
+.flow .fs{font-size:12px;color:var(--text-3);margin-bottom:12px}
+.steps{display:flex;flex-wrap:wrap;align-items:stretch;gap:7px}
+.step{display:flex;flex-direction:column;gap:3px;border:1px solid var(--border);border-radius:9px;background:var(--subtle);padding:8px 11px;min-width:0}
+.step .sl{font-size:12px;font-weight:600;line-height:1.3}
+.step .sf{font-family:var(--mono);font-size:9.5px;color:var(--text-3)}
+.farrow{display:flex;align-items:center;color:var(--text-3);flex:0 0 auto}
+.navtree{border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.navgrp{padding:6px 0}
+.navgl{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-3);padding:11px 16px 5px}
+.navit{display:grid;grid-template-columns:30px 1.4fr 1.5fr 1fr;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--border-soft)}
+.navit .ni{color:var(--text-2);display:flex}
+.navit .nl{font-size:13px;font-weight:600}
+.navit .nr{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.navit .na{font-size:11px;color:var(--text-3)}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+</style>
+</helmet>
+<div dir="{{ dir }}" data-acmp-theme="{{ theme }}" style="font-family:{{ font }};min-height:100vh;background:var(--bg-app);color:var(--text);font-size:14px;line-height:1.5">
+
+<header style="position:sticky;top:0;z-index:40;height:60px;display:flex;align-items:center;gap:16px;padding-inline:22px;background:color-mix(in srgb,var(--header) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)">
+<div style="display:flex;align-items:center;gap:11px;min-width:0">
+<div style="width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--shadow)"><svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5.5L7 25"></path><path d="M16 5.5L25 25"></path><path d="M10.2 18L21.8 18"></path><path d="M5.5 25.5L26.5 25.5"></path></svg></div>
+<div style="line-height:1.15;min-width:0"><div style="font-size:15px;font-weight:700">{{ t.title }}</div><div style="font-size:11.5px;color:var(--text-3)">{{ t.sub }}</div></div>
+</div>
+<div style="flex:1 1 auto"></div>
+<div style="display:flex;align-items:center;gap:6px;padding:4px;background:var(--sunken);border-radius:9px">
+<button onClick="{{ setEn }}" aria-pressed="{{ isEnStr }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;{{ segEn }}">EN</button>
+<button onClick="{{ setAr }}" aria-pressed="{{ isArStr }}" style="height:30px;padding-inline:13px;border:0;border-radius:7px;font-size:12.5px;{{ segAr }}">عربي · AR</button>
+</div>
+<button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);border-radius:9px" style-hover="background:var(--subtle)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ themeIcon }}"></path></svg></button>
+</header>
+
+<div style="display:flex;align-items:flex-start">
+<nav aria-label="{{ t.sections }}" style="position:sticky;top:60px;flex:0 0 234px;height:calc(100vh - 60px);overflow-y:auto;padding:18px 12px;border-inline-end:1px solid var(--border);background:var(--surface)">
+<div class="kicker" style="padding:6px 11px 8px">{{ t.sections }}</div>
+<sc-for list="{{ toc }}" as="n" hint-placeholder-count="10">
+<a href="#{{ n.id }}" style="display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:7px;font-size:12.5px;color:var(--text-2);text-decoration:none" style-hover="background:var(--subtle);color:var(--text)"><span style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);width:14px;flex:0 0 auto">{{ n.k }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.label }}</span></a>
+</sc-for>
+<div style="margin-top:14px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--subtle);font-size:11px;color:var(--text-2);line-height:1.55">{{ t.tocNote }}</div>
+</nav>
+
+<main style="flex:1 1 auto;min-width:0;padding:32px 38px 130px;max-width:1180px">
+
+<div style="margin-bottom:30px">
+<div style="display:inline-flex;align-items:center;gap:8px;height:26px;padding-inline:11px;border-radius:7px;background:var(--primary-tint);color:var(--accent);font-size:11.5px;font-weight:700;margin-bottom:14px"><span style="width:7px;height:7px;border-radius:50%;background:var(--st-success-dot)"></span>{{ t.badge }}</div>
+<h1 style="margin:0 0 10px;font-size:29px;font-weight:700;letter-spacing:-.5px">{{ t.h1 }}</h1>
+<p style="margin:0;font-size:15px;color:var(--text-2);line-height:1.7;max-width:780px">{{ t.intro }}</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="4"><div style="border:1px solid var(--border);border-radius:11px;background:var(--surface);box-shadow:var(--shadow);padding:11px 16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.5px">{{ s.n }}</div><div style="font-size:11.5px;color:var(--text-3)">{{ s.l }}</div></div></sc-for>
+</div>
+</div>
+
+<sc-for list="{{ sections }}" as="s" hint-placeholder-count="9">
+<section id="{{ s.id }}" class="sec">
+<div class="sechd"><span class="snum">{{ s.num }}</span><h2 class="h2">{{ s.title }}</h2></div>
+<p class="lead">{{ s.lead }}</p>
+<sc-for list="{{ s.blocks }}" as="b" hint-placeholder-count="2">
+
+<sc-if value="{{ b.isSub }}" hint-placeholder-val="{{ false }}"><div class="sub">{{ b.title }}</div></sc-if>
+
+<sc-if value="{{ b.isTable }}" hint-placeholder-val="{{ false }}">
+<div class="tbl"><div class="scroller">
+<div style="min-width:{{ b.minw }}">
+<div class="tr th" style="grid-template-columns:{{ b.gtc }}"><sc-for list="{{ b.cols }}" as="c" hint-placeholder-count="4"><span class="td">{{ c }}</span></sc-for></div>
+<sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="6">
+<div class="tr" style="grid-template-columns:{{ b.gtc }}">
+<sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+<span class="td {{ cell.cls }}">
+<sc-if value="{{ cell.chip }}" hint-placeholder-val="{{ false }}"><span class="chip" style="{{ cell.chip }}"><span class="dot" style="background:{{ cell.dot }}"></span>{{ cell.v }}</span></sc-if>
+<sc-if value="{{ cell.plain }}" hint-placeholder-val="{{ true }}">{{ cell.v }}</sc-if>
+<sc-if value="{{ cell.pills }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ cell.pills }}" as="p" hint-placeholder-count="3"><span class="pill {{ p.on }}">{{ p.v }}</span></sc-for></sc-if>
+<sc-if value="{{ cell.sub }}" hint-placeholder-val="{{ false }}"><span class="sub2">{{ cell.sub }}</span></sc-if>
+</span>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ b.isLegend }}" hint-placeholder-val="{{ false }}"><div class="legend"><sc-for list="{{ b.items }}" as="g" hint-placeholder-count="6"><span class="chip" style="{{ g.chip }}"><span class="dot" style="background:{{ g.dot }}"></span>{{ g.v }}</span></sc-for></div></sc-if>
+
+<sc-if value="{{ b.isCards }}" hint-placeholder-val="{{ false }}">
+<div class="decgrid">
+<sc-for list="{{ b.items }}" as="d" hint-placeholder-count="4">
+<div class="dec"><div class="top"><div class="tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>{{ d.tag }}</div><div class="q">{{ d.q }}</div></div><div class="a">{{ d.a }}</div><div class="refs"><sc-for list="{{ d.refs }}" as="rf" hint-placeholder-count="3"><span>{{ rf }}</span></sc-for></div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ b.isFlows }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ b.items }}" as="f" hint-placeholder-count="3">
+<div class="flow"><div class="ft">{{ f.ft }}</div><div class="fs">{{ f.fs }}</div><div class="steps">
+<sc-for list="{{ f.steps }}" as="st" hint-placeholder-count="5"><div class="step"><span class="sl">{{ st.sl }}</span><span class="sf">{{ st.sf }}</span></div><sc-if value="{{ st.arrow }}" hint-placeholder-val="{{ true }}"><span class="farrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ chev }}"><path d="M9 6l6 6-6 6"></path></svg></span></sc-if></sc-for>
+</div></div>
+</sc-for>
+</sc-if>
+
+<sc-if value="{{ b.isNav }}" hint-placeholder-val="{{ false }}">
+<div class="navtree">
+<div class="navit th" style="background:var(--header)"><span class="td" style="padding:9px 16px"></span><span class="td" style="padding:9px 0">{{ b.colItem }}</span><span class="td" style="padding:9px 0">{{ b.colRoute }}</span><span class="td" style="padding:9px 0">{{ b.colAccess }}</span></div>
+<sc-for list="{{ b.groups }}" as="g" hint-placeholder-count="5">
+<div class="navgrp"><sc-if value="{{ g.label }}" hint-placeholder-val="{{ false }}"><div class="navgl">{{ g.label }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+<div class="navit"><span class="ni"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ it.d }}"></path></svg></span><span class="nl">{{ it.label }}</span><span class="nr">{{ it.route }}</span><span class="na">{{ it.access }}</span></div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ b.isNote }}" hint-placeholder-val="{{ false }}">
+<div class="note" style="background:{{ b.bg }};border:1px solid {{ b.bd }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ b.fg }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ b.icon }}"></path></svg><div style="color:{{ b.fg }}"><b style="font-weight:700">{{ b.title }}</b> {{ b.body }}</div></div>
+</sc-if>
+
+</sc-for>
+</section>
+</sc-for>
+
+<div style="margin-top:20px;padding-top:22px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text-3);line-height:1.6">{{ t.footer }}</div>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900},&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;en&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;ar&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { lang: this.props.lang || 'en', theme: this.props.theme || 'light' };
+  set(k,v){ this.setState({ [k]:v }); }
+
+  renderVals(){
+    const { lang, theme } = this.state;
+    const isRtl = lang==='ar';
+    const L=(en,ar)=>isRtl?ar:en;
+    const dir = isRtl?'rtl':'ltr';
+    const font = isRtl ? "'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif" : "'IBM Plex Sans',system-ui,sans-serif";
+    const chev = isRtl ? 'scaleX(-1)' : 'none';
+    const segOn='background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600';
+    const segOff='background:transparent;color:var(--text-2);font-weight:500';
+    const sem=s=>({chip:`background:var(--st-${s}-bg);color:var(--st-${s}-fg)`, dot:`var(--st-${s}-dot)`});
+
+    // cell builders
+    const C=(v,cls='',sub='')=>({v,cls,sub,plain:true,chip:'',pills:null});
+    const Cm=(v,sub='')=>({v,cls:'mono',sub,plain:true,chip:'',pills:null});
+    const Ck=(v,sub='')=>({v,cls:'k',sub,plain:true,chip:'',pills:null});
+    const Cb=(v,sub='')=>({v,cls:'b',sub,plain:true,chip:'',pills:null});
+    const Cmut=(v,sub='')=>({v,cls:'mut',sub,plain:true,chip:'',pills:null});
+    const Cc=(v,s)=>({v,cls:'',sub:'',plain:false,chip:sem(s).chip,dot:sem(s).dot,pills:null});
+    const Cp=(arr)=>({v:'',cls:'',sub:'',plain:false,chip:'',pills:arr.map(a=>({v:a.v||a, on:a.on?'on':''}))});
+    const row=(...cells)=>({cells});
+
+    const tbl=(gtc,minw,cols,rows)=>({isTable:true,gtc,minw,cols,rows});
+    const sub=(title)=>({isSub:true,title});
+    const note=(tone,title,body)=>{const m={ok:['success','M5 12l5 5 9-10'],warn:['warn','M12 4l9 16H3L12 4zM12 11v3M12 17h.01'],info:['info','M12 11v5M12 8h.01'],stop:['danger','M18 6L6 18M6 6l12 12']}; const [s,icon]=m[tone]; return {isNote:true,bg:`var(--st-${s}-bg)`,bd:`color-mix(in srgb,var(--st-${s}-fg) 22%,transparent)`,fg:`var(--st-${s}-fg)`,icon,title,body};};
+
+    // ===== A. FILE OWNERSHIP =====
+    const ownGtc='180px 1.5fr 150px';
+    const ownRows=[
+      row(Cb('ACMP.dc.html'), C(L('App shell — TopBar, global search box, notification bell popover, Home dashboard, breadcrumb host & route outlet.','الهيكل — الشريط العلوي، حقل البحث، منبثقة جرس الإشعارات، لوحة الرئيسية، مضيف مسار التنقل ومنفذ المسارات.')), Cmut(L('Shell + Home','الهيكل + الرئيسية'))),
+      row(Cb('ACMP Design System.dc.html'), C(L('Single source for tokens + the shared component library. Nothing else may define a token or a base component.','المصدر الوحيد للرموز ومكتبة المكوّنات المشتركة. لا يُعرّف أي رمز أو مكوّن أساسي في مكان آخر.')), Cmut(L('Tokens + library','الرموز + المكتبة'))),
+      row(Cb('ACMP Navigation & IA.dc.html'), C(L('Nav model, role access matrix, breadcrumb & deep-link rules, route gating, RTL mirroring.','نموذج التنقّل، مصفوفة صلاحيات الأدوار، قواعد مسار التنقّل والروابط العميقة، حَجب المسارات، الانعكاس لليمين.')), Cmut(L('Nav + gating','التنقّل + الحجب'))),
+      row(Cb('ACMP Sign In.dc.html'), C(L('/login Keycloak hand-off, signed-out, and expired re-auth. No self-registration.','تسليم الدخول إلى Keycloak، حالة الخروج، وإعادة المصادقة بعد الانتهاء. لا تسجيل ذاتي.')), Cmut(L('Auth entry','بوابة الدخول'))),
+      row(Cb('ACMP Logo.dc.html'), C(L('Brand mark asset and its construction.','علامة الهوية وبناؤها.')), Cmut(L('Brand','الهوية'))),
+      row(Cb('ACMP Backlog & Topic.dc.html'), C(L('Backlog (5 views), Submit topic, Topic detail (Overview · Discussion · Attachments · Votes · History).','قائمة المواضيع (٥ عروض)، تقديم موضوع، تفاصيل الموضوع (نظرة · نقاش · مرفقات · تصويتات · سجل).')), Cmut(L('Intake + backlog','الاستقبال + القائمة'))),
+      row(Cb('ACMP Agenda & Meeting.dc.html'), C(L('AUTHORITATIVE for: Agenda builder & read-only viewer, the live Conduct workspace (Attendance · Notes · actual-time/outcome), and Minutes / MoM.','المرجع لِـ: بنّاء الأجندة والعارض، ومساحة إدارة الاجتماع الحيّة (الحضور · الملاحظات · الوقت الفعلي)، والمحضر.')), Cmut(L('Agenda · conduct · minutes','الأجندة · الإدارة · المحضر'))),
+      row(Cb('ACMP Meetings.dc.html'), C(L('AUTHORITATIVE for: the meeting detail SHELL — Meetings list, Schedule, Overview (lifecycle) hosting the sub-tabs, Recording, and route-level permission-denied.','المرجع لِـ: هيكل صفحة الاجتماع — القائمة، الجدولة، النظرة العامة (دورة الحياة) المضيفة للتبويبات، التسجيل، وحالة منع الوصول على مستوى المسار.')), Cmut(L('List · shell · recording','القائمة · الهيكل · التسجيل'))),
+      row(Cb('ACMP Decision, Voting & ADR.dc.html'), C(L('Vote panel & flow, Decision detail (active / superseded), ADR detail (proposed / accepted / superseded). DETAIL, not registers.','لوحة التصويت، تفاصيل القرار (نشط / مُستبدَل)، تفاصيل سجلّ القرار المعماري. التفاصيل لا السجلّات.')), Cmut(L('Governance detail','تفاصيل الحوكمة'))),
+      row(Cb('ACMP Lists & Registers.dc.html'), C(L('REGISTERS (list views): Actions, Risks, Dependencies, ADR register, Decision register, Audit log. Detail lives in the owning file.','السجلّات (عروض القوائم): الإجراءات، المخاطر، التبعيات، سجل ADR، سجل القرارات، سجل التدقيق. التفاصيل في ملفها.')), Cmut(L('Registers','السجلّات'))),
+      row(Cb('ACMP Dashboards & Reports.dc.html'), C(L('Per-role dashboards and the Reports surface.','لوحات حسب الدور وواجهة التقارير.')), Cmut(L('Insights','الرؤى'))),
+      row(Cb('ACMP Research & Knowledge.dc.html'), C(L('Research missions and the Knowledge wiki (read + edit). Hosts the Diagrams nav entry.','مهام البحث وويكي المعرفة (قراءة وتحرير). يستضيف مدخل المخططات.')), Cmut(L('Knowledge','المعرفة'))),
+      row(Cb('ACMP Traceability & Dependencies.dc.html'), C(L('Deep relationship panel and the impact / dependency graph.','لوحة العلاقات المفصّلة ومخطط الأثر والتبعيات.')), Cmut(L('Traceability','التتبّع'))),
+      row(Cb('ACMP System States.dc.html'), C(L('Profile, the FULL notification inbox (/notifications), OIDC callback, 404, and the generic error page.','الملف الشخصي، صندوق الإشعارات الكامل، ردّ OIDC، صفحة ٤٠٤، وصفحة الخطأ العامة.')), Cmut(L('Global states','الحالات العامة'))),
+      row(Cb('ACMP Create Flows & Dialogs.dc.html'), C(L('Create forms + confirm dialogs for decision, adr, invariant, action, risk, vote, dependency, mission.','نماذج الإنشاء وحوارات التأكيد للقرار، ADR، الثابت، الإجراء، المخاطرة، التصويت، التبعية، المهمة.')), Cmut(L('Create + dialogs','الإنشاء + الحوارات'))),
+      row(Cb('ACMP Diagrams.dc.html'), C(L('Diagram gallery, viewer, and JSON spec. Tarseem render is Phase 2 (JSON spec is the source of truth).','معرض المخططات، العارض، ومواصفة JSON. عرض ترسيم في المرحلة الثانية (مواصفة JSON هي المصدر).')), Cmut(L('Diagrams · P2','المخططات · م٢'))),
+      row(Cb('ACMP Administration.dc.html'), C(L('Users, Templates, Health, Streams, Roles, Jobs, Notification settings (org-level), User detail. Roles are read-only from Keycloak.','المستخدمون، القوالب، الصحة، المسارات، الأدوار، المهام، إعدادات الإشعارات، تفاصيل المستخدم. الأدوار للقراءة فقط من Keycloak.')), Cmut(L('Administration','الإدارة'))),
+      row(Cb('ACMP Usage Map.dc.html'), C(L('THIS document — the governance index engineers consult per phase and per flow.','هذه الوثيقة — فهرس الحوكمة الذي يرجع إليه المهندسون لكل مرحلة وكل تدفّق.')), Cmut(L('Source of truth','مصدر الحقيقة'))),
+    ];
+
+    // ===== B. SCREEN & STATE INDEX =====
+    const scrGtc='150px 1.2fr 1.6fr 1.1fr';
+    const scr=(file,screen,states,route)=>row(Cmut(file),Cb(screen),Cp(states.map(s=>({v:s}))),Cm(route));
+    const scrRows=[
+      scr('Sign In','login',['none','signed_out','expired'],'/login'),
+      scr('System States','callback',['callback'],'/auth/callback'),
+      scr('ACMP','home',['live','loading','empty'],'/'),
+      scr('ACMP','search',['loaded','loading','no_results'],'/search'),
+      scr('ACMP','notifications · bell',['loaded','loading','empty'],'(popover)'),
+      scr('System States','notifications · inbox',['loaded','loading','empty'],'/notifications'),
+      scr('System States','profile',['profile'],'/profile'),
+      scr('Backlog & Topic','backlog',['table','list','kanban','calendar','timeline','loading','empty','error'],'/backlog'),
+      scr('Backlog & Topic','submit',['type','detail','review'],'/backlog/submit'),
+      scr('Backlog & Topic','topic',['overview','discussion','attachments','votes','history'],'/topics/:id'),
+      scr('Meetings','list',['live','loading','empty','error','denied'],'/meetings'),
+      scr('Meetings','create (schedule)',['create'],'/meetings/new'),
+      scr('Meetings','overview',['notready','scheduled','inprogress','concluded','cancelled'],'/meetings/:id'),
+      scr('Meetings','recording',['ready','pending','notranscript'],'/meetings/:id/recording'),
+      scr('Agenda & Meeting','agenda',['build','viewer'],'/meetings/:id/agenda'),
+      scr('Agenda & Meeting','meeting (conduct)',['attendance','notes'],'/meetings/:id/notes'),
+      scr('Agenda & Meeting','minutes (MoM)',['draft','review','published'],'/meetings/:id/minutes'),
+      scr('Decision, Voting & ADR','voting',['open','closed','not_open','quorum_failed','ineligible','double_error'],'/votes/:id'),
+      scr('Decision, Voting & ADR','decision',['active','superseded'],'/decisions/:id'),
+      scr('Decision, Voting & ADR','adr',['proposed','accepted','superseded'],'/adrs/:id'),
+      scr('Lists & Registers','actions',['live','loading','empty','error'],'/actions'),
+      scr('Lists & Registers','risks',['live','loading','empty','error'],'/risks'),
+      scr('Lists & Registers','deps',['live','loading','empty','error'],'/dependencies'),
+      scr('Lists & Registers','adrs · decisions',['adrs','invariants'],'/adrs · /decisions'),
+      scr('Lists & Registers','audit',['live','loading','empty'],'/audit'),
+      scr('Create Flows','forms · dialogs',['decision','adr','invariant','action','risk','vote','dependency','mission'],'/:entity/new'),
+      scr('Traceability','graph',['relationships','impact'],'/dependencies/graph'),
+      scr('Research & Knowledge','research · wiki · diagrams',['live','loading','empty'],'/research · /wiki'),
+      scr('Diagrams','gallery · viewer · spec',['rendered','pending','error'],'/diagrams/:id'),
+      scr('Dashboards & Reports','dashboard · report',['loaded','loading','empty'],'/reports'),
+      scr('Administration','users…notif',['live','loading','empty','error','permission'],'/admin/:section'),
+      scr('System States','error · 404',['error','404'],'* · 404'),
+    ];
+
+    // ===== C. PER-PHASE BUILD MAP =====
+    const phGtc='62px 1.4fr 1.5fr 96px';
+    const ph=(p,name,surfaces,status,stKind)=>row(Cb(p),C(name),Cmut(surfaces),Cc(status,stKind));
+    const phRows=[
+      ph('P3',L('Foundation fidelity','أساس النظام'),'Design System · ACMP shell · Navigation & IA · Sign In · Logo',L('Built','مبني'),'success'),
+      ph('P4',L('Administration — Users','الإدارة — المستخدمون'),'Administration: users, userdetail',L('Built','مبني'),'success'),
+      ph('P5',L('Topics & Backlog','المواضيع والقائمة'),'Backlog & Topic: backlog (5 views), submit, detail',L('Built','مبني'),'success'),
+      ph('P6',L('Meetings + Notifications','الاجتماعات والإشعارات'),'Meetings (list/create/overview/recording) · Agenda&Meeting (agenda/conduct) · System States (inbox/callback/404/error) · shell bell',L('Built','مبني'),'success'),
+      ph('P7',L('Minutes & Decision capture','المحضر وتسجيل القرار'),'Agenda&Meeting (minutes draft/review/published) · Decision detail · Create Flows (decision)',L('Planned','مخطّط'),'sched'),
+      ph('P8',L('Actions & Risks','الإجراءات والمخاطر'),'Lists & Registers (actions, risks) · Create Flows (action, risk)',L('Planned','مخطّط'),'sched'),
+      ph('P9',L('Voting & ADRs','التصويت وADR'),'Decision, Voting & ADR (voting/decision/adr) · Create Flows (vote, adr) · registers (adrs, decisions)',L('Planned','مخطّط'),'sched'),
+      ph('P10',L('Governance / Invariants','الحوكمة / الثوابت'),'Lists & Registers (adrTab=invariants) · Create Flows (invariant) · NEW Invariant detail & violations',L('Planned','مخطّط'),'sched'),
+      ph('P11',L('Dependencies & Traceability','التبعيات والتتبّع'),'Lists & Registers (deps) · Traceability & Dependencies (panel, graph) · Create Flows (dependency)',L('Planned','مخطّط'),'sched'),
+      ph('P12',L('Research & Knowledge','البحث والمعرفة'),'Research & Knowledge (research, wiki)',L('Planned','مخطّط'),'sched'),
+      ph('P13',L('Dashboards & Reports','اللوحات والتقارير'),'Dashboards & Reports (role dashboards, reports)',L('Planned','مخطّط'),'sched'),
+      ph('P14',L('Audit & History','التدقيق والسجل'),'Lists & Registers (audit) · per-page History tabs · Administration (health, jobs)',L('Planned','مخطّط'),'sched'),
+      ph('P15',L('Administration remainder','بقية الإدارة'),'Administration (templates, streams, roles, notification settings)',L('Planned','مخطّط'),'sched'),
+      ph('P16',L('Global search','البحث الشامل'),'ACMP shell search screen — grouped cross-artifact results',L('Planned','مخطّط'),'sched'),
+      ph('P17',L('Visual-regression & a11y','الانحدار البصري والوصول'),'Pixel-diff harness across all owning files (AC-041)',L('Planned','مخطّط'),'sched'),
+      ph('P18',L('Diagrams (Tarseem)','المخططات (ترسيم)'),'Diagrams (gallery/viewer/spec) — gated on Tarseem JSON · Phase 2',L('Phase 2','مرحلة ٢'),'neutral'),
+      ph('P19',L('Webex recording & notif','تسجيل Webex والإشعارات'),'Meetings recording recState=ready (player/transcript) · Webex notif channel · Phase 2',L('Phase 2','مرحلة ٢'),'neutral'),
+    ];
+
+    // ===== D. PER-FLOW MAP =====
+    const fstep=(sl,sf,arrow=true)=>({sl,sf,arrow});
+    const flows=[
+      {ft:L('Authentication','المصادقة'),fs:L('Keycloak OIDC · roles read-only from claims · no self-registration','Keycloak OIDC · الأدوار من المطالبات · لا تسجيل ذاتي'),steps:[fstep(L('Sign In','الدخول'),'Sign In · signed_out'),fstep('Keycloak','OIDC'),fstep(L('Callback','الردّ'),'System States · callback'),fstep(L('Home','الرئيسية'),'ACMP · home',false)]},
+      {ft:L('Topic lifecycle (the core loop)','دورة حياة الموضوع (الحلقة الأساسية)'),fs:L('Intake → triage → backlog → agenda → meeting → minutes → vote → decision → ADR','الاستقبال ← الفرز ← القائمة ← الأجندة ← الاجتماع ← المحضر ← التصويت ← القرار ← ADR'),steps:[fstep(L('Submit','تقديم'),'Backlog&Topic · submit'),fstep(L('Triage','فرز'),'Backlog · table'),fstep(L('Backlog','القائمة'),'Backlog · views'),fstep(L('Agenda','الأجندة'),'Agenda&Meeting · agenda'),fstep(L('Conduct','الإدارة'),'Agenda&Meeting · meeting'),fstep(L('Minutes','المحضر'),'Agenda&Meeting · minutes'),fstep(L('Vote','تصويت'),'Decision… · voting'),fstep(L('Decision','قرار'),'Decision… · decision'),fstep('ADR','Decision… · adr',false)]},
+      {ft:L('Meeting lifecycle','دورة حياة الاجتماع'),fs:L('Schedule → ready states → conduct → conclude → minutes → recording','الجدولة ← الجاهزية ← الإدارة ← الإنهاء ← المحضر ← التسجيل'),steps:[fstep(L('Schedule','جدولة'),'Meetings · create'),fstep('notready→scheduled','Meetings · overview'),fstep(L('In progress','جارٍ'),'overview · inprogress'),fstep(L('Concluded','منتهٍ'),'overview · concluded'),fstep(L('Minutes','المحضر'),'Agenda&Meeting · minutes'),fstep(L('Recording','التسجيل'),'Meetings · recording',false)]},
+      {ft:L('Governance — invariants','الحوكمة — الثوابت'),fs:L('Create → detail → violations register','إنشاء ← تفاصيل ← سجل المخالفات'),steps:[fstep(L('Create','إنشاء'),'Create Flows · invariant'),fstep(L('Detail','تفاصيل'),'Invariant detail'),fstep(L('Violations','المخالفات'),'/governance/violations',false)]},
+      {ft:L('Notifications','الإشعارات'),fs:L('v1 = in-app only · bell → inbox → deep-link · Load-more (no infinite scroll)','الإصدار ١ = داخل التطبيق فقط · جرس ← صندوق ← رابط مباشر · تحميل المزيد'),steps:[fstep(L('Bell','الجرس'),'ACMP · popover'),fstep(L('Inbox','الصندوق'),'System States · notif'),fstep(L('Artifact','السجل'),'deep-link',false)]},
+      {ft:L('Administration & provisioning','الإدارة والتزويد'),fs:L('Manage assignments in-app · provisioning = deep-link to Keycloak console only','إدارة التعيينات داخليًا · التزويد = رابط لوحة Keycloak فقط'),steps:[fstep(L('Users','المستخدمون'),'Administration · users'),fstep(L('User detail','تفاصيل'),'Administration · userdetail'),fstep('Keycloak',L('console deep-link','رابط اللوحة'),false)]},
+      {ft:L('Search','البحث'),fs:L('TopBar search / ⌘K → grouped results → artifact','بحث الشريط / ⌘K ← نتائج مجمّعة ← السجل'),steps:[fstep(L('Search box','حقل البحث'),'TopBar'),fstep(L('Results','النتائج'),'ACMP · search'),fstep(L('Artifact','السجل'),'detail route',false)]},
+    ];
+
+    // ===== E. COMPONENT INDEX =====
+    const cmpGtc='150px 1.3fr 1.2fr 130px';
+    const cmp=(name,anat,states,used)=>row(Cb(name),C(anat),Cp(states.map(s=>({v:s}))),Cmut(used));
+    const cmpRows=[
+      cmp('StatusChip',L('dot + label, optional leading icon','نقطة + تسمية، أيقونة اختيارية'),['md 24/9/12','sm 22/8/11.5','neutral','info','sched','warn','success','danger'],L('all screens','كل الشاشات')),
+      cmp('Button',L('label, optional icon; one primary per view','تسمية وأيقونة؛ زر رئيسي واحد'),['primary','secondary','ghost','danger','icon','sm/md/lg','hover','disabled','loading'],L('all','الكل')),
+      cmp('Input / Select',L('visible label, inline validation','تسمية ظاهرة وتحقّق مضمّن'),['default','focus','error','readonly','disabled'],L('forms','النماذج')),
+      cmp('Multi-select + Date',L('removable tokens; Gregorian, Latin numerals','رموز قابلة للإزالة؛ ميلادي بأرقام لاتينية'),['default','open','focus-within'],L('submit · create','التقديم · الإنشاء')),
+      cmp('FilterChip bar',L('enum dropdowns + saved views','قوائم تعداد + عروض محفوظة'),['idle','active','disabled (no source)'],L('all lists','كل القوائم')),
+      cmp('Table',L('sortable header, selection, sticky header, ≥44px rows','رأس قابل للفرز، تحديد، رأس ثابت، صفوف ≥٤٤'),['default','hover','selected','sorted','empty','loading'],L('registers','السجلّات')),
+      cmp('Tabs',L('underline (sections) · segmented (view modes)','تحته خط (أقسام) · مقطّع (أنماط العرض)'),['selected','rest','hover'],L('detail screens','شاشات التفاصيل')),
+      cmp('SideNav item',L('active inline-start bar, count badge, read-only eye, aria-current','شريط بدء نشط، عدّاد، عين القراءة، aria-current'),['active','rest','hover','view-only','cta'],L('shell','الهيكل')),
+      cmp('Breadcrumb',L('Home › Area › Record › Sub-tab; chevron flips in RTL','الرئيسية › منطقة › سجل › تبويب؛ السهم ينعكس'),['default'],L('every page','كل صفحة')),
+      cmp('Dialog / Toast',L('focus-trap, Esc; aria-live toasts auto-dismiss','حبس التركيز، Esc؛ تنبيهات حيّة تختفي'),['success','error','info','warn'],L('confirm flows','تأكيدات')),
+      cmp('Relationship panel',L('grouped by type, upstream/downstream, graph link','مجمّعة بالنوع، أعلى/أسفل، رابط مخطط'),['default','empty','graph'],L('every artifact','كل سجل')),
+      cmp('Kanban · Calendar · Timeline',L('DnD + keyboard move menu + SR announce','سحب + قائمة لوحة المفاتيح + إعلان قارئ الشاشة'),['default','dragging','empty (no data)'],L('backlog','القائمة')),
+      cmp('Voting panel',L('attributed votes, quorum, abstain, COI, chairman approval','تصويت منسوب، نصاب، امتناع، تضارب، اعتماد الرئيس'),['open','closed','no_quorum','ineligible'],L('voting · topic','التصويت'))
+,
+      cmp('Rich-text editor',L('Markdown source; toolbar B/I/H/list/link/RTL; locks when published','مصدر Markdown؛ شريط أدوات؛ يُقفل عند النشر'),['edit','autosaved','read','locked'],L('submit · notes · MoM','التقديم · الملاحظات · المحضر')),
+      cmp('Empty / Loading / Error / Denied',L('skeleton over spinner; plain-language errors','هيكل بدل المؤشر؛ أخطاء بلغة واضحة'),['empty','loading','error','permission'],L('every content area','كل منطقة محتوى')),
+    ];
+
+    // ===== F. DATA-BINDING NOTES =====
+    const dbGtc='1fr 1.4fr 110px';
+    const db=(el,data,gate)=>row(Cb(el),C(data),Cc(gate.v,gate.s));
+    const G=(v,s)=>({v,s});
+    const dbRows=[
+      db(L('Calendar view markers','علامات عرض التقويم'),L('topic.scheduledDate + meeting.date (single-day) → day chips','تاريخ الجدولة + تاريخ الاجتماع ← شارات اليوم'),G(L('needs API','يحتاج API'),'warn')),
+      db(L('Timeline bars','أشرطة الخط الزمني'),L('topic event series: created · accepted · scheduled · decided (+span)','سلسلة أحداث الموضوع: أُنشئ · قُبل · جُدول · تقرّر'),G(L('needs API','يحتاج API'),'warn')),
+      db(L('Backlog Stream filter','مرشّح المسار'),L('stream registry (BL-024) — currently disabled, no source','سجل المسارات — معطّل حاليًا'),G(L('needs BL-024','يحتاج BL-024'),'warn')),
+      db(L('Backlog Owner filter','مرشّح المالك'),'/api/members → owner option list',G(L('needs API','يحتاج API'),'warn')),
+      db(L('Votes tab','تبويب التصويتات'),L('vote records: voter, choice, quorum, COI recusal, chairman approval','سجلات التصويت: المصوّت، الاختيار، النصاب، التنحّي، الاعتماد'),G('P9','sched')),
+      db(L('Assignments column','عمود التعيينات'),L('assignee counts per user (honest “—” until count API)','عدد التعيينات لكل مستخدم'),G(L('needs API','يحتاج API'),'warn')),
+      db(L('Agenda readiness','جاهزية الأجندة'),L('per-topic flags: materials attached · presenter set · timebox set','أعلام لكل موضوع: مرفقات · مقدّم · وقت'),G(L('needs API','يحتاج API'),'warn')),
+      db(L('Aging chip','شارة التقادم'),L('now − createdAt → ≤13d none · 14–30d warn · >30d danger','الآن − الإنشاء ← عتبات التقادم'),G(L('client','عميل'),'success')),
+      db(L('Notification badge / inbox','عدّاد / صندوق الإشعارات'),L('unread count + paged list (Load-more cursor, not infinite)','عدد غير المقروء + قائمة مرقّمة'),G(L('built','مبني'),'success')),
+      db(L('Quorum indicator','مؤشّر النصاب'),L('eligible voter count + present count','عدد المؤهّلين + عدد الحاضرين'),G('P9','sched')),
+      db(L('Recording panel','لوحة التسجيل'),L('recState ready needs Webex player/transcript URL','الحالة “متاح” تحتاج Webex'),G(L('Phase 2','مرحلة ٢'),'neutral')),
+    ];
+
+    // ===== G. NAV / IA SPEC =====
+    const ICN={home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',submit:'M12 5v14M5 12h14',session:'M15 10l4.6-3.5a1 1 0 011.4 1v9a1 1 0 01-1.4 1L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z',backlog:'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',agenda:'M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',decisions:'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4zM9.5 12l2 2 3.5-4',actions:'M9 11l3 3L21 5M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h11',adrs:'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7',risks:'M12 4l9 16H3L12 4zM12 10v4M12 17h.01',deps:'M6 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 22a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM6 7v3a3 3 0 003 3h6a3 3 0 003-3V7M12 13v4',research:'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z',wiki:'M12 6c-1.5-1-4-1.5-6-1.5V18c2 0 4.5.5 6 1.5 1.5-1 4-1.5 6-1.5V4.5c-2 0-4.5.5-6 1.5zM12 6v13',diagrams:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',reports:'M4 20V10M10 20V4M16 20v-8M3 20h18',audit:'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',admin:'M4 6h16M4 12h16M4 18h16M9 4v4M16 10v4M11 16v4'};
+    const navI=(d,label,route,access)=>({d,label,route,access});
+    const navGroups=[
+      {label:null,items:[navI(ICN.session,L('My Session','جلستي'),'/session',L('Guest','ضيف')),navI(ICN.submit,L('Submit Topic','تقديم موضوع'),'/backlog/submit',L('Secretary · Member · Submitter','الأمين · العضو · المقدّم'))]},
+      {label:L('Committee','اللجنة'),items:[navI(ICN.home,L('Home','الرئيسية'),'/',L('All','الكل')),navI(ICN.backlog,L('Backlog','قائمة المواضيع'),'/backlog',L('Secretary/Member full · others view','الأمين/العضو كامل · غيرهم قراءة')),navI(ICN.agenda,L('Agenda & Meetings','الأجندة والاجتماعات'),'/meetings',L('Chair/Secretary full','الرئيس/الأمين كامل')),navI(ICN.decisions,L('Decisions','القرارات'),'/decisions',L('Chair/Secretary full','الرئيس/الأمين كامل')),navI(ICN.actions,L('Actions','الإجراءات'),'/actions',L('Secretary/Member full','الأمين/العضو كامل'))]},
+      {label:L('Governance','الحوكمة'),items:[navI(ICN.adrs,L('ADRs & Invariants','ADR والثوابت'),'/adrs',L('Chair/Secretary/Reviewer','الرئيس/الأمين/المراجع')),navI(ICN.risks,L('Risks','المخاطر'),'/risks',L('Secretary full · others view','الأمين كامل · غيرهم قراءة')),navI(ICN.deps,L('Dependencies','التبعيات'),'/dependencies',L('Secretary full · others view','الأمين كامل · غيرهم قراءة'))]},
+      {label:L('Knowledge','المعرفة'),items:[navI(ICN.research,L('Research','البحث'),'/research',L('Secretary/Member full','الأمين/العضو كامل')),navI(ICN.wiki,L('Knowledge / Wiki','المعرفة / ويكي'),'/wiki',L('Secretary/Member full','الأمين/العضو كامل')),navI(ICN.diagrams,L('Diagrams','المخططات'),'/diagrams',L('View · Phase 2','قراءة · مرحلة ٢'))]},
+      {label:L('Insights','الرؤى'),items:[navI(ICN.reports,L('Reports','التقارير'),'/reports',L('Chair/Secretary full','الرئيس/الأمين كامل'))]},
+      {label:L('System','النظام'),items:[navI(ICN.audit,L('Audit Trail','سجل التدقيق'),'/audit',L('Auditor/Admin · Chair view','المدقّق/المسؤول · الرئيس قراءة')),navI(ICN.admin,L('Administration','الإدارة'),'/admin/users',L('Administrator only','المسؤول فقط'))]},
+    ];
+
+    // ===== H. INTERACTION NOTES =====
+    const ixGtc='150px 1.7fr';
+    const ix=(area,body)=>row(Cb(area),C(body));
+    const ixRows=[
+      ix(L('Scroll model','نموذج التمرير'),L('The document scrolls; TopBar (60px) and SideNav (244px) are sticky — no inner app-main overflow container. Custom scrollbar: 11px, --scroll thumb, 7px radius, 3px transparent border.','المستند يتمرّر؛ الشريط العلوي (٦٠) والجانبي (٢٤٤) ثابتان — دون حاوية تمرير داخلية. شريط تمرير مخصّص ١١بكسل.')),
+      ix(L('Breadcrumb','مسار التنقّل'),L('Lifted into the shell layout — rendered on every page incl. dashboard & placeholders, 12px gap below. Pattern: Home › Area › Record key › Sub-tab. Chevrons flip in RTL.','مرفوع إلى الهيكل — يظهر في كل صفحة، فجوة ١٢ أسفله. النمط: الرئيسية › منطقة › سجل › تبويب. الأسهم تنعكس.')),
+      ix(L('Hover / focus','التمرير / التركيز'),L('Hover lifts surface to --subtle. Focus-visible = 2px --focus ring, 2px offset, on every interactive element. Inputs add a 3px --ring on focus.','التمرير يرفع السطح. التركيز = حلقة ٢بكسل بإزاحة ٢. الحقول تضيف حلقة ٣بكسل.')),
+      ix(L('Active / disabled','النشط / المعطّل'),L('Active nav: --primary-tint fill + 3px inline-start accent bar + aria-current=page. Disabled: --sunken bg, --text-3, cursor not-allowed, tooltip if a deferred control.','التنقّل النشط: تعبئة + شريط بدء ٣بكسل + aria-current. المعطّل: خلفية غائرة ونص باهت.')),
+      ix(L('Click / keyboard','النقر / لوحة المفاتيح'),L('Whole-row navigation via the title link (valid inside a real <table>). DnD always pairs with a keyboard “move” menu + SR announcements. Dialogs trap focus, Esc closes. ⌘K opens search.','التنقّل بالصف عبر رابط العنوان. السحب يقترن بقائمة نقل. الحوارات تحبس التركيز، Esc يغلق.')),
+      ix(L('Tabs & deep-links','التبويبات والروابط'),L('Section tabs underline-style and addressable (?tab=…); view-mode toggles are a segmented control. Every tab and saved filter restores from its URL.','تبويبات الأقسام قابلة للعنونة؛ مبدّلات العرض مقطّعة. كل تبويب ومرشّح يُستعاد من رابطه.')),
+      ix(L('Transitions','الانتقالات'),L('--dur-fast 120ms (hover/chip/focus) · --dur 180ms (menus/tabs/toasts) · --dur-slow 280ms (dialogs/drawers); --ease cubic-bezier(.2,.6,.2,1). Honour prefers-reduced-motion.','١٢٠م.ث للتمرير · ١٨٠م.ث للقوائم · ٢٨٠م.ث للحوارات؛ احترام تقليل الحركة.')),
+      ix(L('Elapsed timer','المؤقّت'),L('Live meeting timer renders mm:ss / h:mm:ss; timeboxes and durations render in whole minutes.','مؤقّت الاجتماع الحيّ بصيغة د:ث؛ صناديق الوقت بالدقائق الكاملة.')),
+    ];
+
+    // ===== DECISIONS =====
+    const dec=(tag,q,a,refs)=>({tag,q,a,refs});
+    const decisions=[
+      dec('BLOCKER · RD-08',L('Who owns the meeting page?','من يملك صفحة الاجتماع؟'),L('Meetings owns the detail SHELL (list · schedule · overview/lifecycle · recording · route-denied). Agenda & Meeting owns the CONTENT (agenda · conduct · minutes). The duplicate denied state is removed from Agenda & Meeting.','يملك Meetings الهيكل، ويملك Agenda&Meeting المحتوى. تُزال حالة المنع المكرّرة.'),['RD-08','AM-03','NR-05']),
+      dec('BLOCKER · NV-08',L('One meeting sub-tab IA','تبويبات الاجتماع'),L('Canonical, addressable sub-tabs: Agenda · Attendance · Notes · Minutes · Recording. The live “conduct” workspace is the runtime composition of Attendance + Notes while inprogress; each stays deep-linkable.','تبويبات معتمدة: الأجندة · الحضور · الملاحظات · المحضر · التسجيل.'),['NV-08','DV-15','AM-04']),
+      dec('RD-09',L('Notification surfaces','واجهات الإشعارات'),L('Two owned surfaces: the bell popover (ACMP shell) and the full inbox (System States, /notifications). v1 is in-app only with Load-more — no preferences page ships in v1; Webex channel is Phase 2.','واجهتان: منبثقة الجرس والصندوق الكامل. الإصدار ١ داخلي فقط دون صفحة تفضيلات.'),['RD-09','NR-01','NR-02','AM-09']),
+      dec('DV-01 · AM-01',L('Canonical StatusChip size','حجم شارة الحالة'),L('Locked to the DS canon (code is the tiebreaker): md = 24 height / 9 px-pad / 12 font; sm = 22 / 8 / 11.5; chip radius 6. The old “23” is retired. Published as named tokens.','مثبّت: md ٢٤/٩/١٢، sm ٢٢/٨/١١٫٥، نصف قطر ٦. القيمة ٢٣ مُلغاة.'),['DV-01','DI-06','LP-02']),
+      dec('DV-04 · HD-06',L('One rich-text model','نموذج النص الغني'),L('Markdown is the single model — stored as Markdown, rendered to safe HTML, identical across Submit · Meeting notes · MoM via one shared editor. Published minutes lock to read-only (immutable).','Markdown هو النموذج الموحّد عبر التقديم والملاحظات والمحضر. المحضر المنشور للقراءة فقط.'),['DV-04','HD-03','HD-06']),
+      dec('NV-02…06',L('Final nav grouping','تجميع التنقّل'),L('Groups: Committee · Governance · Knowledge · Insights · System. Decisions and ADRs&Invariants live under their groups; Audit sits under System + a per-page History tab. Unbuilt areas SHOW their real (existing) designs; only true Phase-2 surfaces show a designed “Phase 2” state — never a generic placeholder.','مجموعات ثابتة. التدقيق ضمن النظام + تبويب سجل. المناطق غير المبنية تُظهر تصاميمها الفعلية.'),['NV-02','NV-03','NV-04','NV-06']),
+      dec('Blessed',L('Build deviations absorbed','انحرافات معتمَدة'),L('Now part of the design: topic key on backlog/kanban/agenda rows; the Agenda-status chip column on the meetings list; Load-more not infinite scroll; presenter = accessible Select; whole-row title-link nav; single-day meeting with separate date + time; agenda publish = one “notifies attendees” line; agenda pool label = “Prepared”.','أصبحت جزءًا من التصميم: مفتاح الموضوع، عمود شارة الأجندة، تحميل المزيد، اختيار المقدّم، رابط العنوان، تاريخ ووقت منفصلان، سطر إشعار واحد، تسمية “مُجهّز”.'),['DV-06','DV-07','DV-08','DV-13','DV-14','DV-19','DV-21']),
+      dec('Curated out',L('Not-meant elements','عناصر غير مقصودة'),L('No self-registration and no in-app role assignment; the user menu states “roles are read-only from Keycloak”; provisioning is a deep-link to the Keycloak admin console only; the engineering-only dev role-switcher never appears in the design.','لا تسجيل ذاتي ولا إسناد أدوار داخلي؛ التزويد عبر لوحة Keycloak فقط؛ مبدّل الأدوار التطويري لا يظهر.'),['RD-01','RD-02','OQ-042']),
+      dec('DV-16',L('Actual-time / outcome','الوقت الفعلي / النتيجة'),L('A design-faithful actual-time + outcome control is re-added to the conduct workspace (backend RecordActualTime is already wired).','يُعاد ضبط الوقت الفعلي والنتيجة إلى مساحة الإدارة.'),['DV-16','DV-03']),
+      dec('AM-02 · LP-04',L('Scroll & header','التمرير والرأس'),L('Header height locked at 60px; sidebar 244px; the document scrolls with sticky chrome and one custom scrollbar treatment — defined once in the Design System.','ارتفاع الرأس ٦٠، الجانبي ٢٤٤؛ تمرير المستند مع شريط مخصّص مُعرّف مرة واحدة.'),['AM-02','LP-04','LP-01']),
+    ];
+
+    // ===== assemble sections =====
+    const sections=[
+      {id:'decisions',num:'00',title:L('Decisions — open questions resolved','القرارات — حسم الأسئلة المفتوحة'),lead:L('Every blocker and open question from the forensic review §10, settled. These bindings are authoritative; the per-file surfaces below conform to them.','كل عائق وسؤال من المراجعة §10، محسوم. هذه القرارات مرجعية.'),blocks:[{isCards:true,items:decisions}]},
+      {id:'a-ownership',num:'A',title:L('File ownership','ملكية الملفات'),lead:L('Each design file → the one area it authoritatively governs, after de-duplicating the Meetings/Agenda and notification overlaps. One owner per surface; no file may redefine another’s tokens or components.','كل ملف ← المنطقة التي يحكمها حصريًا بعد إزالة التداخل. مالك واحد لكل واجهة.'),blocks:[tbl(ownGtc,'720px',[L('File','الملف'),L('Authoritatively governs','يحكم حصريًا'),L('Area','المنطقة')],ownRows),note('ok',L('Resolved overlaps:','تداخلات محسومة:'),L('Meetings = shell, Agenda & Meeting = content · Registers (Lists) vs detail (Decision/Voting/ADR) is an intentional list↔detail split · bell (shell) vs inbox (System States) · Admin “Notification settings” is org config, distinct from the user inbox.','الاجتماعات = هيكل، الأجندة = محتوى · السجلّات مقابل التفاصيل مقصود.'))]},
+      {id:'b-screens',num:'B',title:L('Screen & state index','فهرس الشاشات والحالات'),lead:L('Every screen, its states (as the prop enums each file exposes), the owning file, and the canonical route. States are labelled states of ONE screen — never duplicate screens.','كل شاشة وحالاتها وملفها ومسارها المعتمد. الحالات حالاتٌ لشاشة واحدة.'),blocks:[tbl(scrGtc,'820px',[L('File','الملف'),L('Screen','الشاشة'),L('States','الحالات'),L('Route','المسار')],scrRows)]},
+      {id:'c-phases',num:'C',title:L('Per-phase build map','خريطة البناء لكل مرحلة'),lead:L('P3–P19 → the exact files, screens and states each phase implements. P3–P6 are as-built (forensic-verified); P7+ map to designs that already exist, so each phase builds from its governing file rather than inventing surfaces.','P3–P19 ← الملفات والشاشات لكل مرحلة. P3–P6 مبنية؛ ما بعدها يبني من تصاميم قائمة.'),blocks:[tbl(phGtc,'760px',[L('Phase','المرحلة'),L('Theme','المحور'),L('Files · screens · states','الملفات · الشاشات'),L('Status','الحالة')],phRows)]},
+      {id:'d-flows',num:'D',title:L('Per-flow map','خريطة التدفّقات'),lead:L('Each use-case as an ordered screen sequence with its owning file at every step, so engineers can wire a flow end-to-end without guessing.','كل حالة استخدام كتسلسل شاشات مرتّب مع ملفها في كل خطوة.'),blocks:[{isFlows:true,items:flows}]},
+      {id:'e-components',num:'E',title:L('Component index','فهرس المكوّنات'),lead:L('Each shared component from the Design System → its anatomy, variants & states, and where it is used. All states ship in light + dark and mirror in RTL.','كل مكوّن مشترك ← تشريحه وتنويعاته وحالاته وأماكن استخدامه.'),blocks:[{isLegend:true,items:[Cc(L('Neutral','محايد'),'neutral'),Cc(L('Info','معلومة'),'info'),Cc(L('Scheduled','مجدول'),'sched'),Cc(L('Warning','تحذير'),'warn'),Cc(L('Success','نجاح'),'success'),Cc(L('Danger','خطر'),'danger')].map(c=>({v:c.v,chip:c.chip,dot:c.dot}))},tbl(cmpGtc,'760px',[L('Component','المكوّن'),L('Anatomy','التشريح'),L('Variants & states','التنويعات والحالات'),L('Used in','يُستخدم في')],cmpRows)]},
+      {id:'f-data',num:'F',title:L('Data-binding notes','ملاحظات ربط البيانات'),lead:L('Each data-bound element → the exact data it needs, so the honest-empty surfaces can be filled. Where the API lags, the design ships populated + empty + loading states.','كل عنصر مرتبط ← البيانات التي يحتاجها. حيث يتأخّر الـAPI، تُسلّم حالات ممتلئة وفارغة وتحميل.'),blocks:[tbl(dbGtc,'640px',[L('Element','العنصر'),L('Binds to','يرتبط بـ'),L('Status','الحالة')],dbRows)]},
+      {id:'g-nav',num:'G',title:L('Navigation / IA spec','مواصفة التنقّل'),lead:L('The final nav: groups, order, icons, routes and per-role access. Order and grouping are identical for every role — items appear, hide, or drop to read-only. Breadcrumb rule: Home › Area › Record › Sub-tab.','التنقّل النهائي: مجموعات وترتيب وأيقونات ومسارات وصلاحيات. الترتيب ثابت للجميع.'),blocks:[{isNav:true,colItem:L('Item','العنصر'),colRoute:L('Route','المسار'),colAccess:L('Access','الصلاحية'),groups:navGroups}]},
+      {id:'h-interaction',num:'H',title:L('Interaction notes','ملاحظات التفاعل'),lead:L('The systemic behaviours every screen inherits — scroll, scrollbar, breadcrumb, the four interaction states, keyboard, and transitions. Defined once, applied everywhere.','السلوكيات النظامية التي ترثها كل شاشة — مُعرّفة مرة، مُطبّقة في كل مكان.'),blocks:[tbl(ixGtc,'620px',[L('Aspect','الجانب'),L('Behaviour','السلوك')],ixRows)]},
+    ];
+
+    const toc=[{id:'decisions',k:'00',label:L('Decisions','القرارات')},{id:'a-ownership',k:'A',label:L('File ownership','ملكية الملفات')},{id:'b-screens',k:'B',label:L('Screen & state index','فهرس الشاشات')},{id:'c-phases',k:'C',label:L('Per-phase build map','خريطة المراحل')},{id:'d-flows',k:'D',label:L('Per-flow map','خريطة التدفّقات')},{id:'e-components',k:'E',label:L('Component index','فهرس المكوّنات')},{id:'f-data',k:'F',label:L('Data-binding','ربط البيانات')},{id:'g-nav',k:'G',label:L('Navigation / IA','التنقّل')},{id:'h-interaction',k:'H',label:L('Interaction notes','التفاعل')}];
+
+    const stats=[{n:'18',l:L('design files','ملف تصميم')},{n:'32',l:L('screens indexed','شاشة مفهرسة')},{n:'P3–P19',l:L('build phases','مراحل البناء')},{n:'10',l:L('decisions locked','قرارات محسومة')}];
+
+    const t = isRtl ? {
+      title:'خريطة استخدام ACMP', sub:'مصدر الحقيقة · للمهندسين', sections:'الأقسام',
+      tocNote:'القرارات أعلاه مرجعية. الواجهات أدناه تتوافق معها.',
+      badge:'مصدر حقيقة موحّد ومتّسق', h1:'خريطة استخدام ACMP',
+      intro:'الفهرس الواحد الذي يرجع إليه المهندسون لكل مرحلة وكل تدفّق. يحسم تداخل الملكية، ويثبّت القرارات المفتوحة، ويربط كل شاشة وحالة ومكوّن وربط بيانات بملفها المالك — بالإنجليزية والعربية، مع دعم اليمين والوضعين الفاتح والداكن.',
+      footer:'خريطة استخدام ACMP · مشتقّة من مراجعة إعادة البناء §10 ومصفوفة الملفات. تتوافق مع ثوابت المعمارية: Keycloak OIDC، الأدوار للقراءة فقط، القرارات والمحاضر غير قابلة للتعديل (تُستبدَل لا تُحرّر)، الإشعارات داخلية في الإصدار ١، ثنائية اللغة WCAG 2.2 AA.'
+    } : {
+      title:'ACMP Usage Map', sub:'Source of truth · for engineers', sections:'Sections',
+      tocNote:'The decisions above are authoritative. The surfaces below conform to them.',
+      badge:'Single, internally-consistent source of truth', h1:'ACMP Usage Map',
+      intro:'The one index engineers consult per phase and per flow. It resolves the ownership overlaps, locks the open questions, and ties every screen, state, component and data-binding to its owning file — in English and Arabic, with full RTL and light / dark.',
+      footer:'ACMP Usage Map · derived from rebuild-findings §10 and the file→surface map. Conforms to the architecture invariants: Keycloak OIDC, roles read-only from claims, decisions / approved ADRs / published minutes are immutable (superseded, never edited), notifications v1 = in-app only, bilingual EN/AR, WCAG 2.2 AA, Gregorian dates.'
+    };
+
+    return {
+      dir, theme, font, chev, t, toc, stats, sections,
+      isEnStr:isRtl?'false':'true', isArStr:isRtl?'true':'false',
+      segEn:isRtl?segOff:segOn, segAr:isRtl?segOn:segOff,
+      setEn:()=>this.set('lang','en'), setAr:()=>this.set('lang','ar'),
+      toggleTheme:()=>this.set('theme', theme==='light'?'dark':'light'),
+      themeIcon: theme==='light' ? 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z' : 'M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5M12 8a4 4 0 100 8 4 4 0 000-8z'
+    };
+  }
+}
+</script>
+</body>
+</html>

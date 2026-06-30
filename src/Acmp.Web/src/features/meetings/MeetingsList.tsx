@@ -18,7 +18,6 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMeetings, type MeetingSummary } from '../../api/meetings';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Button } from '../../components/ui/Button';
 import { Segmented } from '../../components/ui/Segmented';
 import { Table, type Column } from '../../components/ui/Table';
@@ -72,8 +71,6 @@ export function MeetingsList() {
 
   return (
     <section className="page">
-      <Breadcrumb ariaLabel={t('meetings.title')} items={[{ label: t('meetings.title'), current: true }]} />
-
       <div className="mt-head">
         <div>
           <h1 className="page-title">{t('meetings.title')}</h1>

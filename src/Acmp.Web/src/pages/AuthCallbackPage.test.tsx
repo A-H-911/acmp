@@ -12,7 +12,7 @@ function renderCallback(auth: AcmpAuth) {
       <AcmpAuthContext.Provider value={auth}>
         <Routes>
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/dashboard" element={<div>dashboard</div>} />
+          <Route path="/" element={<div>home</div>} />
           <Route path="/login" element={<div>login</div>} />
         </Routes>
       </AcmpAuthContext.Provider>
@@ -24,12 +24,12 @@ describe('AuthCallbackPage', () => {
   it('shows a loading state while the code exchange is in flight', () => {
     renderCallback(makeAuth([], { isLoading: true, isAuthenticated: false }));
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.queryByText('dashboard')).not.toBeInTheDocument();
+    expect(screen.queryByText('home')).not.toBeInTheDocument();
   });
 
-  it('routes a resolved session onward to the dashboard', () => {
+  it('routes a resolved session onward to home', () => {
     renderCallback(makeAuth(['member']));
-    expect(screen.getByText('dashboard')).toBeInTheDocument();
+    expect(screen.getByText('home')).toBeInTheDocument();
   });
 
   it('sends a failed/unauthenticated callback back to login', () => {

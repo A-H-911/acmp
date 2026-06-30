@@ -1,18 +1,30 @@
 /*
- * OIDC callback handler (docs/14 page 2). react-oidc-context processes the
- * authorization code automatically; this page shows a loading state and routes
- * onward once the session resolves (or surfaces a token-exchange error).
+ * OIDC callback handler (reconciled to ACMP System States `callback`, docs/14
+ * page 2). react-oidc-context processes the authorization code automatically;
+ * this shows the secure-handoff spinner and routes onward once the session
+ * resolves (or surfaces a token-exchange error).
  */
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AcmpAuthContext';
-import { LoadingState, ErrorState } from '../components/states';
+import { ErrorState } from '../components/states';
 
 export function AuthCallbackPage() {
   const { t } = useTranslation();
   const { isLoading, isAuthenticated, error } = useAuth();
 
-  if (isLoading) return <LoadingState label={t('auth.completing')} />;
   if (error) return <ErrorState title={t('auth.failedTitle')} body={error} />;
-  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
+  if (isLoading) {
+    return (
+      <div className="page">
+        <div className="state" role="status" aria-live="polite" aria-busy="true">
+          <div className="spinner" aria-hidden />
+          <p className="state-title state-title-lg">{t('auth.completing')}</p>
+          <p className="state-body">{t('auth.completingBody')}</p>
+          <p className="state-note">{t('auth.secureHandoff')}</p>
+        </div>
+      </div>
+    );
+  }
+  return <Navigate to={isAuthenticated ? '/' : '/login'} replace />;
 }

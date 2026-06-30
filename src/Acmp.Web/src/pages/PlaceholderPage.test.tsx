@@ -15,6 +15,14 @@ describe('PlaceholderPage', () => {
     expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
   });
 
+  it('shows the designed Phase-2 state instead of the generic coming-soon when phase2', () => {
+    render(<PlaceholderPage titleKey="nav.diagrams" phase2 />);
+    expect(screen.getByRole('heading', { name: i18n.t('nav.diagrams') })).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('common.phase2Lead'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('common.phase2Title'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('common.comingSoon'))).not.toBeInTheDocument();
+  });
+
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {
     const { container } = render(<PlaceholderPage titleKey="nav.risks" />);
     const results = await axe.run(container, {

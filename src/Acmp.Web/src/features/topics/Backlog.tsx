@@ -24,7 +24,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBacklog, type BacklogParams, type TopicSummary } from '../../api/topics';
 import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Segmented } from '../../components/ui/Segmented';
 import { FilterChip } from '../../components/ui/FilterChip';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
@@ -109,11 +108,6 @@ export function Backlog() {
 
   return (
     <section className="page">
-      <Breadcrumb
-        ariaLabel={t('topics.backlog')}
-        items={[{ label: t('topics.home'), href: AREAS.home.path }, { label: t('topics.backlog'), current: true }]}
-      />
-
       <div className="bk-head">
         <div>
           <h1 className="page-title">{t('topics.backlog')}</h1>

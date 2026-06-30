@@ -27,8 +27,8 @@ export interface NavArea {
 /** Canonical route per area (docs/14 §3 sitemap). */
 export const AREAS: Record<AreaKey, NavArea> = {
   session: { key: 'session', labelKey: 'nav.session', path: '/session', icon: 'session', cta: true },
-  submit: { key: 'submit', labelKey: 'nav.submit', path: '/topics/new', icon: 'plus', cta: true },
-  home: { key: 'home', labelKey: 'nav.home', path: '/dashboard', icon: 'home' },
+  submit: { key: 'submit', labelKey: 'nav.submit', path: '/backlog/submit', icon: 'plus', cta: true },
+  home: { key: 'home', labelKey: 'nav.home', path: '/', icon: 'home' },
   backlog: { key: 'backlog', labelKey: 'nav.backlog', path: '/backlog', icon: 'backlog' },
   agenda: { key: 'agenda', labelKey: 'nav.agenda', path: '/meetings', icon: 'calendar' },
   decisions: { key: 'decisions', labelKey: 'nav.decisions', path: '/decisions', icon: 'decision' },
@@ -37,11 +37,11 @@ export const AREAS: Record<AreaKey, NavArea> = {
   risks: { key: 'risks', labelKey: 'nav.risks', path: '/risks', icon: 'risk' },
   deps: { key: 'deps', labelKey: 'nav.deps', path: '/dependencies', icon: 'deps' },
   research: { key: 'research', labelKey: 'nav.research', path: '/research', icon: 'research' },
-  wiki: { key: 'wiki', labelKey: 'nav.wiki', path: '/knowledge', icon: 'wiki' },
+  wiki: { key: 'wiki', labelKey: 'nav.wiki', path: '/wiki', icon: 'wiki' },
   diagrams: { key: 'diagrams', labelKey: 'nav.diagrams', path: '/diagrams', icon: 'diagram' },
   reports: { key: 'reports', labelKey: 'nav.reports', path: '/reports', icon: 'reports' },
-  audit: { key: 'audit', labelKey: 'nav.audit', path: '/admin/audit', icon: 'audit' },
-  admin: { key: 'admin', labelKey: 'nav.admin', path: '/admin', icon: 'admin' },
+  audit: { key: 'audit', labelKey: 'nav.audit', path: '/audit', icon: 'audit' },
+  admin: { key: 'admin', labelKey: 'nav.admin', path: '/admin/users', icon: 'admin' },
 };
 
 /** Access per area per role (design ACCESS map). Absent role ⇒ 'none'. */

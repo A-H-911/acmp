@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useScheduleMeeting, type MeetingType, type MeetingMode } from '../../api/meetings';
 import { useMembers } from '../../api/members';
 import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Button } from '../../components/ui/Button';
 import { Field, Input } from '../../components/ui/Field';
 import { Select } from '../../components/ui/Select';
@@ -89,10 +88,6 @@ export function SchedulePage() {
 
   return (
     <section className="page">
-      <Breadcrumb
-        ariaLabel={t('meetings.title')}
-        items={[{ label: t('meetings.title'), href: AREAS.agenda.path }, { label: t('meetings.schedule.title'), current: true }]}
-      />
 
       <div className="mt-head">
         <div>

@@ -18,8 +18,6 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, type TopicDetail as Topic } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
-import { AREAS } from '../../nav/navModel';
-import { Breadcrumb } from '../../components/ui/Breadcrumb';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { Tag, Badge } from '../../components/ui/Chip';
@@ -51,7 +49,6 @@ export function TopicDetail() {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
       <section className="page">
-        <Breadcrumb ariaLabel={t('topics.backlog')} items={[{ label: t('topics.backlog'), href: AREAS.backlog.path }, { label: key ?? '', current: true }]} />
         {notFound ? (
           <EmptyState title={t('detail.notFoundTitle')} body={t('detail.notFoundBody')} />
         ) : (
@@ -80,11 +77,6 @@ export function TopicDetail() {
 
   return (
     <section className="page">
-      <Breadcrumb
-        ariaLabel={topic.key}
-        items={[{ label: t('topics.backlog'), href: AREAS.backlog.path }, { label: topic.key, current: true }]}
-      />
-
       <DetailHeader topic={topic} />
 
       <div className="dt-grid">
