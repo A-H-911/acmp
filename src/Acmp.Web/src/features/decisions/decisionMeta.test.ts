@@ -8,7 +8,8 @@ describe('decisionMeta', () => {
     }
     expect(outcomeTone('Approved')).toBe('success');
     expect(outcomeTone('Rejected')).toBe('danger');
-    expect(outcomeTone('ConditionallyApproved')).toBe('warn');
+    // matches the one outcome visual the design ships (green)
+    expect(outcomeTone('ConditionallyApproved')).toBe('success');
   });
 
   it('lists all 11 README §E outcomes', () => {

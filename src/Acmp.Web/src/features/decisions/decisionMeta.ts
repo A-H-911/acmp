@@ -9,7 +9,9 @@ import type { DecisionOutcome, DecisionConditionStatus } from '../../api/decisio
 
 const OUTCOME_TONE: Record<DecisionOutcome, StatusTone> = {
   Approved: 'success',
-  ConditionallyApproved: 'warn',
+  // The design's isDecision ships exactly one outcome visual — Conditionally Approved → green/success —
+  // so we match that reference; the other 10 stay a no-reference composition.
+  ConditionallyApproved: 'success',
   Rejected: 'danger',
   MoreInfoRequired: 'info',
   FeedbackProvided: 'info',

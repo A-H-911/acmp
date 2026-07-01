@@ -38,8 +38,8 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
         // LocalizedString's positional ctor does NOT validate (only Create does, and that throws an
         // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/16 §1.5).
         RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
-        RuleFor(x => x.Title!.En).NotEmpty().When(x => x.Title is not null).WithMessage("Title (EN) is required.");
-        RuleFor(x => x.Title!.Ar).NotEmpty().When(x => x.Title is not null).WithMessage("Title (AR) is required.");
+        RuleFor(x => x.Title!.En).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (EN) is required (max 512).");
+        RuleFor(x => x.Title!.Ar).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (AR) is required (max 512).");
 
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
         RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");

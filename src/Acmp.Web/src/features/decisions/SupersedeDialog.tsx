@@ -121,7 +121,7 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
 
         <Field label={t('decisions.field.title')} required error={errors.title}>
           {(p) => (
-            <Input {...p} value={title} placeholder={t('decisions.field.titlePh')} onChange={(e) => setTitle(e.target.value)} />
+            <Input {...p} value={title} maxLength={512} placeholder={t('decisions.field.titlePh')} onChange={(e) => setTitle(e.target.value)} />
           )}
         </Field>
 

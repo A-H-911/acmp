@@ -277,6 +277,16 @@ public class DecisionHandlerTests
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
+    [Fact] // a title over the nvarchar(512) column bound is a clean 400, not a SaveChanges 500
+    public void Record_validator_rejects_a_title_over_512_chars()
+    {
+        var v = new RecordDecisionValidator();
+        var longTitle = new LocalizedString(new string('x', 513), new string('ي', 513));
+        var bad = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
+            longTitle, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
+        v.Validate(bad).IsValid.Should().BeFalse();
+    }
+
     [Fact]
     public void Record_validator_requires_a_condition_for_conditionally_approved()
     {
