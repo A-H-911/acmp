@@ -25,6 +25,7 @@ public sealed class Decision : AuditableEntity
     public Guid? MeetingId { get; private set; }               // Meeting.PublicId (a decision may be recorded outside a meeting)
     public DecisionOutcome Outcome { get; private set; }
     public DecisionStatus Status { get; private set; }
+    public LocalizedString Title { get; private set; } = null!; // short bilingual headline (design-faithful detail header)
     public LocalizedString Rationale { get; private set; } = null!;
     public LocalizedString? Alternatives { get; private set; }
     public Guid? VoteId { get; private set; }                  // P9 ballot — nullable placeholder for now
@@ -45,10 +46,11 @@ public sealed class Decision : AuditableEntity
     // W12: draft a decision. Drafts are editable only by being replaced (no field setters) until issued.
     // Domain guards: a topic + rationale are required; a ConditionallyApproved outcome needs ≥1 condition.
     public static Decision Draft(string key, Guid topicId, Guid? meetingId, DecisionOutcome outcome,
-        LocalizedString rationale, LocalizedString? alternatives, Guid? voteId,
+        LocalizedString title, LocalizedString rationale, LocalizedString? alternatives, Guid? voteId,
         IEnumerable<DecisionConditionInput> conditions, string actorSub, DateTimeOffset now)
     {
         if (topicId == Guid.Empty) throw new InvalidOperationException("A decision must reference a topic.");
+        if (title is null) throw new InvalidOperationException("A decision title is required.");
         if (rationale is null) throw new InvalidOperationException("A decision rationale is required.");
 
         var decision = new Decision
@@ -58,6 +60,7 @@ public sealed class Decision : AuditableEntity
             MeetingId = meetingId,
             Outcome = outcome,
             Status = DecisionStatus.Draft,
+            Title = title,
             Rationale = rationale,
             Alternatives = alternatives,
             VoteId = voteId,

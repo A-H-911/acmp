@@ -12,6 +12,71 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P7b — Decision detail UI + Decision.Title (branch `feat/P7b-decision-ui`)
+
+### 2026-07-01 — `isDecision` screen + supersede dialog, with an additive `Title` on the aggregate
+
+**What.**
+- **Decision.Title (additive model reopen).** Added a required bilingual `LocalizedString Title` to the
+  `Decision` aggregate (domain guard mirrors `Rationale`), threaded through `RecordDecision` /
+  `SupersedeDecision` (commands + validators: EN/AR non-empty → clean 400), `DecisionSummaryDto` /
+  `DecisionDetailDto`, `DecisionMapping`, the two endpoint bodies, and a new EF owned column-pair
+  `title_en`/`title_ar` (NOT NULL, maxlen 512). Migration **`Decisions_AddTitle`** (additive,
+  `defaultValue: ""` for any existing rows). Operator chose a design-faithful title over
+  outcome-as-headline; this intentionally reopened the merged P7a model with one forward-only migration.
+- **Decision detail screen** (`features/decisions/DecisionPage.tsx` + `decisions.css`, logical CSS only),
+  route `/decisions/:key`, reachable via the `DecisionIssued` notification deep-link. Header = DECN key chip +
+  outcome `StatusChip` (tone by outcome) + Superseded badge + `Title` (h1) + chair-only actions; body =
+  Rationale + Conditions checklist (tone by condition status) + Alternatives; sidebar = record detail
+  (outcome / approving authority / issued-at). Superseded state renders the neutral badge + banner + muted
+  body. Loading / not-found (404) / error states like `TopicDetail`. Breadcrumb owned by the shell
+  (`deriveBreadcrumbs` gains the `decisions/:key` leaf).
+- **Supersede dialog** (`SupersedeDialog.tsx`) wired to `POST /{id}/supersede`. Because the shipped command
+  drafts + auto-issues a FULL successor decision in one transaction, the dialog captures that successor body
+  (outcome / title / rationale / optional alternatives / conditions-when-conditional) **plus** the reason —
+  the shared `MarkdownEditor` is reused for rationale/alternatives. On success it invalidates the prior
+  detail and navigates to the successor key.
+- **api/decisions.ts** (`useDecision` read-by-key, `useSupersedeDecision` mutate-by-id + invalidation),
+  mirroring `api/meetings.ts`. New `decisions.*` i18n namespace (EN+AR, all 11 outcomes + both dialogs).
+
+**Decisions applied / blessed deviations (visual SoT = design; behavior SoT = package).**
+- **Supersede dialog extended** from the design's single reason field to the full successor body — blessed
+  deviation (design to be updated); the one-field mock can't drive the transactional supersede-creates-successor.
+- **Content entered in the current UI language only** (operator decision) — the text is stored in that
+  language's column and the other stays empty; reads fall back to the populated column. This relaxed the
+  P7a bilingual validators from "both languages required" to "at least one language required" (Title,
+  Rationale, Reason, Condition text, in both commands; backward-compatible — both-empty is still a 400).
+  Title keeps a per-language `MaximumLength(512)` so an over-long title is a clean 400, not a SaveChanges 500.
+  Matches how Topics store single-language text today; a true bilingual content-editing surface is future work.
+- **No-reference composition:** outcome→StatusChip tone map (design ships only one outcome visual) — flagged.
+- **Honest defers (no fabrication):** Convert-to-ADR = disabled stub (ADR module → P9/P11); the from-topic
+  link is omitted (the DTO carries the topic **Guid**, not a TOP- key — ADR-0001, no cross-module lookup);
+  the superseded banner shows the reason but not the successor's DECN- key (only its Guid is on the prior's
+  DTO — the supersede round-trip navigates to it directly); Alternatives render as stored text, not the
+  design's structured "Not chosen" cards (one `LocalizedString`, not modeled) — operator-confirmed; Vote
+  result, Effective date, Decided-in-meeting, Affected systems, and the immutable-history timeline are not
+  rendered (vote → P9; audit-query → BL-066/P14; relationships not modeled).
+- **Record/Issue UI is out of P7b scope** (operator-confirmed): the detail + supersede of an already-issued
+  decision only; the meeting-workspace "Record decision" stub stays a stub.
+
+**Verification.** BE: `dotnet build` 0 errors, `dotnet format --verify-no-changes` clean, `dotnet test acmp.sln`
+**620 passed / 0 failed** (Domain 92 · Arch 20 · Application 436 · Api 58 · Integration 14 incl. the DECN
+migration/backstop), per-file coverage gate **134 files, global 99.66%** (≥95%). FE: `tsc -b` + `vite build`
+clean, `oxlint` clean, i18n parity **670 keys** (0 drift), `vitest` **422 passed** with per-file lines ≥95%
+(decisions files: `api/decisions.ts` 100%, `DecisionPage.tsx`/`SupersedeDialog.tsx`/`decisionMeta.ts` 100%
+lines), new axe AA case clean. **Dev-stub VR done** (`npm run dev` + Playwright route-mocked
+`/api/decisions`, dev auth stub as Chairman): the Issued, supersede-dialog, and Superseded states were
+screenshotted in **EN-light + AR-RTL-dark** and reconciled against `isDecision` — faithful (key/outcome
+chips, rationale/conditions/alternatives, record-detail sidebar, superseded badge+banner, full RTL mirror +
+dark tokens); no drift. A live real-stack pass (Keycloak PKCE, an API-issued decision) is the optional P17 tail.
+
+**AC.** AC-027 / AC-028 stay **Partial** — the live UI read + supersede round-trip strengthen the evidence,
+but per G-TRACE the **Met** flip waits on the live HTTP/UI leg (→ P17). No verdict flips this slice.
+
+**Next.** P7c MinutesOfMeeting backend, then P7d Minutes UI (`ACMP Agenda & Meeting.dc.html` isMinutes).
+
+---
+
 ## P7a — Decisions module backend (record / issue / supersede)
 
 ### 2026-07-01 — Decisions bounded context: W12 (issue) + decision half of W21 (supersede) (branch `feat/P7a-decisions-backend`)

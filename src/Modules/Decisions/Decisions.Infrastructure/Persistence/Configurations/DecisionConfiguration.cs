@@ -35,6 +35,14 @@ public sealed class DecisionConfiguration : IEntityTypeConfiguration<Decision>
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.Ignore(x => x.DomainEvents);
 
+        // Required bilingual title (en/ar columns NOT NULL).
+        b.OwnsOne(x => x.Title, t =>
+        {
+            t.Property(p => p.En).HasColumnName("title_en").IsRequired().HasMaxLength(512);
+            t.Property(p => p.Ar).HasColumnName("title_ar").IsRequired().HasMaxLength(512);
+        });
+        b.Navigation(x => x.Title).IsRequired();
+
         // Required bilingual rationale (en/ar columns NOT NULL).
         b.OwnsOne(x => x.Rationale, t =>
         {

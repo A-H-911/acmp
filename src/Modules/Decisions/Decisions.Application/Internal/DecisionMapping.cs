@@ -10,11 +10,11 @@ internal static class DecisionMapping
         c.PublicId, c.Text, c.Status.ToString(), c.DueDate, c.LinkedActionId);
 
     public static DecisionSummaryDto ToSummary(Decision d) => new(
-        d.PublicId, d.Key, d.TopicId, d.MeetingId, d.Outcome.ToString(), d.Status.ToString(), d.IssuedAt);
+        d.PublicId, d.Key, d.TopicId, d.MeetingId, d.Outcome.ToString(), d.Status.ToString(), d.Title, d.IssuedAt);
 
     public static DecisionDetailDto ToDetail(Decision d) => new(
         d.PublicId, d.Key, d.TopicId, d.MeetingId, d.Outcome.ToString(), d.Status.ToString(),
-        d.Rationale, d.Alternatives, d.VoteId,
+        d.Title, d.Rationale, d.Alternatives, d.VoteId,
         d.ChairApprovedByUserId, d.ChairApprovedByName, d.ChairOverride, d.OverrideJustification,
         d.IssuedAt, d.SupersededByDecisionId, d.SupersessionReason,
         d.Conditions.Select(ToDto).ToList());

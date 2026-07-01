@@ -19,6 +19,7 @@ public sealed record RecordDecisionCommand(
     Guid TopicId,
     Guid? MeetingId,
     DecisionOutcome Outcome,
+    LocalizedString Title,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     Guid? VoteId,
@@ -36,9 +37,16 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
 
         // LocalizedString's positional ctor does NOT validate (only Create does, and that throws an
         // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/16 §1.5).
+        // Content is entered in ONE language (the operator's choice — the other column stays empty; reads
+        // fall back), so the rule is "at least one language present", not "both". The per-language max still
+        // guards the nvarchar(512) title column so an over-long title is a clean 400, not a SaveChanges 500.
+        RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
+        RuleFor(x => x.Title!).Must(DecisionText.HasEitherLanguage).When(x => x.Title is not null).WithMessage("A title is required in at least one language.");
+        RuleFor(x => x.Title!.En).MaximumLength(512).When(x => x.Title is not null);
+        RuleFor(x => x.Title!.Ar).MaximumLength(512).When(x => x.Title is not null);
+
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
-        RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
-        RuleFor(x => x.Rationale!.Ar).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (AR) is required.");
+        RuleFor(x => x.Rationale!).Must(DecisionText.HasEitherLanguage).When(x => x.Rationale is not null).WithMessage("A rationale is required in at least one language.");
 
         // ConditionallyApproved must carry ≥1 condition (matches the domain guard; caught earlier as 400).
         RuleFor(x => x.Conditions)
@@ -46,13 +54,12 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
             .When(x => x.Outcome == DecisionOutcome.ConditionallyApproved)
             .WithMessage("A conditionally-approved decision requires at least one condition.");
 
-        // Each condition's bilingual text is validated here too — otherwise a null/empty Text would reach
-        // the domain ctor and throw (→ 409) instead of a clean field-level 400 (same reason as Rationale).
+        // Each condition's text is validated here too — otherwise a null/empty Text would reach the domain
+        // ctor and throw (→ 409) instead of a clean field-level 400. At-least-one-language, like the rest.
         RuleForEach(x => x.Conditions).ChildRules(c =>
         {
             c.RuleFor(r => r.Text).NotNull().WithMessage("A condition requires text.");
-            c.RuleFor(r => r.Text!.En).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (EN) is required.");
-            c.RuleFor(r => r.Text!.Ar).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (AR) is required.");
+            c.RuleFor(r => r.Text!).Must(DecisionText.HasEitherLanguage).When(r => r.Text is not null).WithMessage("Condition text is required in at least one language.");
         });
     }
 }
@@ -85,7 +92,7 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
             .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
 
         var decision = Decision.Draft(key, request.TopicId, request.MeetingId, request.Outcome,
-            request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
+            request.Title, request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
 
         _db.Decisions.Add(decision);
         await _db.SaveChangesAsync(ct);

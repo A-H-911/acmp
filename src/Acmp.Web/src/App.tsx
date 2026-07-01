@@ -18,6 +18,7 @@ import { AgendaBuilder } from './features/meetings/AgendaBuilder';
 import { MeetingMinutes } from './features/meetings/MeetingMinutes';
 import { MeetingRecording } from './features/meetings/MeetingRecording';
 import { SchedulePage } from './features/meetings/SchedulePage';
+import { DecisionPage } from './features/decisions/DecisionPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -53,6 +54,7 @@ export const appRoutes = createRoutesFromElements(
           <Route path="recording" element={<MeetingRecording />} />
         </Route>
         <Route path="decisions" element={<PlaceholderPage titleKey="nav.decisions" />} />
+        <Route path="decisions/:key" element={<DecisionPage />} />
         <Route path="actions" element={<PlaceholderPage titleKey="nav.actions" />} />
         <Route path="adrs" element={<PlaceholderPage titleKey="nav.adrs" />} />
         <Route path="risks" element={<PlaceholderPage titleKey="nav.risks" />} />

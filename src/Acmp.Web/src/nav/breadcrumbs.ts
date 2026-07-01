@@ -41,6 +41,7 @@ function leafCrumb(segs: readonly string[], t: TFunction): Crumb | null {
   if (a === 'topics' && b) return { label: b, mono: true };
   if (a === 'meetings' && b === 'new') return { label: t('meetings.schedule.title') };
   if (a === 'meetings' && b) return { label: b, mono: true };
+  if (a === 'decisions' && b) return { label: b, mono: true };
   return null;
 }
 

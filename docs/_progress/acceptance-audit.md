@@ -21,6 +21,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (choice + justification + `DecisionIssued` override flag) but the co-attestation GATE stays Partial→P9
 > (vote-coupled). See progress-log P7a entry.
 >
+> P7b update (2026-07-01): Decision detail UI (`isDecision`) + supersede dialog + an additive bilingual
+> `Decision.Title` (new migration `Decisions_AddTitle`). Route `/decisions/:key` (deep-link target); read
+> by key, supersede by id (full successor body — blessed deviation). **AC-027 / AC-028 stay Partial** — the
+> live UI read + the supersede round-trip strengthen the evidence, but per G-TRACE the **Met** flip waits on
+> the live HTTP/UI leg (→ P17); no verdict flips. Backend 620 green (per-file gate 99.66%); FE 422 green
+> (decisions files 100% lines), i18n parity 670, axe AA clean. Honest defers unchanged (Convert-to-ADR stub;
+> from-topic/successor-key links omitted per ADR-0001; vote/audit-timeline → P9/P14). See progress-log P7b.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >
@@ -356,8 +364,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-024 | Voting | Pending | — | Quorum gate on close |
 | AC-025 | Voting | Pending | — | Immutable after close |
 | AC-026 | Voting | Pending | — | Forward-only lifecycle |
-| AC-027 | Decisions | Partial | DecisionTests (no-mutator / re-issue + re-supersede throw) + DecisionHandlerTests + DecisionsApiTests (issue→Issued) | Domain immutability + issue path proven; live HTTP/UI confirmation → P7b/P17 (G-TRACE) |
-| AC-028 | Decisions | Partial | DecisionTests (Supersede back-link) + DecisionHandlerTests (successor Issued, prior Superseded, both readable, prior unchanged) + DecisionsApiTests (supersede 201 + prior back-link) | Both readable + prior unchanged proven; live HTTP/UI → P7b/P17 (G-TRACE) |
+| AC-027 | Decisions | Partial | DecisionTests (no-mutator / re-issue + re-supersede throw) + DecisionHandlerTests + DecisionsApiTests (issue→Issued) + DecisionPage.test (read-only detail, no edit surface) | Domain immutability + issue path proven; P7b renders the read-only detail (no edit affordance); live HTTP/UI confirmation → P17 (G-TRACE) |
+| AC-028 | Decisions | Partial | DecisionTests (Supersede back-link) + DecisionHandlerTests (successor Issued, prior Superseded, both readable, prior unchanged) + DecisionsApiTests (supersede 201 + prior back-link) + DecisionPage.test (superseded badge/banner + supersede dialog → POST /supersede) | Both readable + prior unchanged proven; P7b adds the supersede dialog + superseded-state UI; live HTTP/UI → P17 (G-TRACE) |
 | AC-029 | Decisions | Pending | — | Downstream-link-required-to-issue **DEFERRED → P8 (OQ-045)** — unbuildable until Actions exist; NOT enforced in P7a; retrofit onto the shipped IssueDecision path when Actions land |
 | AC-030 | Topic lifecycle | Partial | SubmitTopicValidator tests + TopicApiTests + SubmitTopic.test (client validation) | Server validation + HTTP 400 + no record; submit form now shows localized client-side required-field errors; server-side localized messages → BL-016 |
 | AC-031 | Topic lifecycle | Met | TopicApplicationTests (Reject/Defer require a reason) + TopicApiTests (reject no-reason → 400) + TopicHandlerTests (S1: reject-deny keeps Submitted; wrong-status domain guard) | Mandatory rejection rationale enforced; S1 adds adversarial handler coverage (authz-deny, status guard) |

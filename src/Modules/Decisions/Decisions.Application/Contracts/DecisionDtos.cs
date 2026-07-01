@@ -20,6 +20,7 @@ public sealed record DecisionSummaryDto(
     Guid? MeetingId,
     string Outcome,
     string Status,
+    LocalizedString Title,
     DateTimeOffset? IssuedAt);
 
 public sealed record DecisionDetailDto(
@@ -29,6 +30,7 @@ public sealed record DecisionDetailDto(
     Guid? MeetingId,
     string Outcome,
     string Status,
+    LocalizedString Title,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     Guid? VoteId,
