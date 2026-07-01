@@ -142,6 +142,18 @@ public sealed class DbBackstopTests
         await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
     }
 
+    [Fact] // (composite unique) two minutes rows with the same (Key, Version) — a correction must bump the version
+    public async Task MinutesKeyVersion_Duplicate_IsRejectedBySql()
+    {
+        var key = UniqueKey("MIN");
+        var summary = LocalizedString.Create("Body", "نص");
+        await using var db = _fx.NewMeetingsSql();
+        db.Minutes.Add(MinutesOfMeeting.Draft(key, Guid.NewGuid(), "MTG-2026-001", "Meeting", summary, DateTimeOffset.UtcNow));
+        db.Minutes.Add(MinutesOfMeeting.Draft(key, Guid.NewGuid(), "MTG-2026-001", "Meeting", summary, DateTimeOffset.UtcNow));
+
+        await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
+    }
+
     [Fact] // stable identity is unique — two local records for one Keycloak subject
     public async Task MemberKeycloakUserId_Duplicate_IsRejectedBySql()
     {

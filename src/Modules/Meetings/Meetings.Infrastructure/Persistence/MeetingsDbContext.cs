@@ -20,6 +20,7 @@ public sealed class MeetingsDbContext : ModuleDbContext, IMeetingsDbContext
 
     public DbSet<Meeting> Meetings => Set<Meeting>();
     public DbSet<Agenda> Agendas => Set<Agenda>();
+    public DbSet<MinutesOfMeeting> Minutes => Set<MinutesOfMeeting>();
     internal DbSet<MeetingKeyCounter> KeyCounters => Set<MeetingKeyCounter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

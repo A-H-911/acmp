@@ -9,5 +9,6 @@ public interface IMeetingsDbContext
 {
     DbSet<Meeting> Meetings { get; }
     DbSet<Agenda> Agendas { get; }
+    DbSet<MinutesOfMeeting> Minutes { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

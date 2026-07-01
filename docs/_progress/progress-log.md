@@ -12,6 +12,74 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P7c — MinutesOfMeeting backend (branch `feat/P7c-minutes-backend`)
+
+### 2026-07-01 — MoM 5-state lifecycle in the Meetings module (W10; AC-014/036/037/038)
+
+**Module home.** MoM is a NEW aggregate root **inside the existing Meetings module** — NOT a new module.
+docs/11 §B lists `MinutesOfMeeting` under Meetings and §C names it "aggregate root within Meetings", so
+this is decided by canon (no OQ). It differs from P7a (Decisions genuinely IS its own bounded context);
+MoM references its `Meeting` in-module (loading it to guard status + snapshot key/title is an in-module
+read, not a cross-module reach — ADR-0001) and carries only ids/snapshots.
+
+**What (backend only — no `Acmp.Web`; the Minutes UI is P7d).**
+- **Domain.** `MinutesOfMeeting` aggregate (`AuditableEntity` + `RowVersion` + `PublicId`), 5-state
+  `MinutesStatus` (Draft→InReview→Approved→Published→Superseded), lifecycle events. Transitions: `Draft`
+  (v1), `Revise` (Draft-only body edit), `SubmitForReview`, `RequestChanges` (InReview→Draft), `Approve`
+  (records approver + the soft-SoD-2 sole-author flag), `Publish` (seals), `Supersede` (Approved|Published→
+  Superseded), and `PublishedCorrection` (the one-shot successor). No public state setters — the
+  immutability reflection test proves it (AC-036).
+- **Application.** 7 command slices + 2 reads (`DraftMinutes`/`ReviseMinutes`/`SubmitMinutesForReview`/
+  `RequestMinutesChanges`/`ApproveMinutes`/`PublishMinutes`/`SupersedeMinutes`; `GetMinutesByKey`
+  (version-aware, head by default) / `GetMinutesForMeeting` (version history newest-first)). FluentValidation
+  requires BOTH EN+AR (mirrored-content pattern). `MinutesNotifications` (publish fan-out + targeted
+  change-request notice); audit on every transition incl. the `MinutesApprovedBySoleAuthor` flag (AC-014).
+- **Infrastructure.** `MinutesOfMeetingConfiguration` (owned bilingual `Summary` nvarchar(max), unique
+  `(Key, Version)`, `MeetingId` index, RowVersion); `DbSet<MinutesOfMeeting>` on `MeetingsDbContext`; `MIN`
+  prefix added to the existing `MeetingKeyGenerator`/counter. Migration **`Meetings_Minutes`** (new table only).
+- **API.** `MinutesEndpoints` (draft/revise/submit = `Minutes.Capture`; request-changes/approve/publish/
+  supersede = `Minutes.Approve`; reads committee-wide). Domain guards → 409, not-found → 404, RowVersion → 409.
+
+**Decisions applied / blessed deviations (visual SoT = design; behavior SoT = package).**
+- **5-state vs the design's 3-toggle (BLESSED DEVIATION, first-hand).** Read `ACMP Agenda & Meeting.dc.html`
+  directly: `minutesState = draft/review/published` (3) with a single **"Publish & notify"** button, a
+  version-history sidebar, and a `denied` state. Our operator-locked 5-state adds a distinct persisted
+  `Approved` state (so the SoD-2 approval act and the publish/notify act are separable) + `Superseded`.
+  The design's one "Publish & notify" button collapses approve+publish; the backend exposes both as
+  distinct transitions (**notify-all fires on Publish only**). Design to be updated at P7d once blessed.
+- **Approve vs Publish are two transitions** (operator-confirmed at GO). AC-038's single-step
+  "approve → Published + notify" prose maps onto Approve (SoD-2 flag, no notify) **then** Publish
+  (immutable + fan-out).
+- **Version-preserving supersede** (unlike Decisions, which mint a new key): a correction keeps the SAME
+  `MIN-YYYY-###` key and bumps `Version` (unique `(Key, Version)`); the successor is published in one
+  transaction (`PublishedCorrection`) and the prior flips to `Superseded` with a back-link, never edited
+  (AC-036) — consistent with the decision supersede-creates-issued-successor blessed deviation.
+- **`Content:json (structured sections)` → a single bilingual markdown `Summary`** (`LocalizedString`,
+  mirrored EN===AR) — structured sections aren't exercised by any P7c AC and align with the one-editor
+  markdown-as-text decision (DV-04/AM-06). **Data-model deviation, flagged** (not silent — guardrail 11).
+- **AC-037's `InReview→Draft` edge** is implemented per AC (W10 + AC-037 mandate it) though doc 12 §6's
+  transition table omits the row — **doc-12 gap flagged**; its notification is targeted to the author
+  (`CreatedBy`), not the all-members fan-out.
+- **"Sole author" = `AuditableEntity.CreatedBy`** (docs/11 models no author field) — single-author via the
+  create stamp; multi-contributor tracking not modeled. Flagged.
+
+**Honest defers (not built):** crypto hash-chain of published minutes → P14; SoD-3 co-attestation → P9;
+anything needing the audit-query API → P14; MoM→Action linkage → P8 (Actions don't exist yet). Minutes UI
+(govern off `isMinutes` + `denied`) → P7d.
+
+**Verification.** BE `dotnet build` 0 errors; `dotnet format --verify-no-changes` clean; `dotnet test
+acmp.sln` **661 passed / 0 failed** (Domain 105 incl. 13 MoM · Arch 20 · Application 454 incl. 16 MoM · Api
+67 incl. 9 MoM · Integration 15 incl. the MoM `(Key,Version)` SQL backstop + migration-applies backstop);
+per-file coverage gate **150 files, global 99.63%** (≥95%).
+
+**AC.** AC-014 / AC-036 / AC-037 / AC-038 move **Pending → Partial** (domain + application + API proven by
+tests; live HTTP/UI + the Met flip land with P7d/P17 per G-TRACE).
+
+**Next.** P7d — Minutes UI (wire the `/meetings/:key/minutes` tab, `MeetingMinutes.tsx`, off
+`ACMP Agenda & Meeting.dc.html` `isMinutes` + `denied`; reuse the shared `MarkdownEditor`).
+
+---
+
 ## P7b follow-up — mirror decision content to both bilingual columns (branch `chore/p7b-mirror-content`)
 
 ### 2026-07-01 — reverse "entered language only" → MIRROR (en === ar)
