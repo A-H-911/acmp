@@ -12,6 +12,55 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P7d — Minutes UI (branch `feat/P7d-minutes-ui`)
+
+### 2026-07-01 — the `/meetings/:key/minutes` tab, governed by isMinutes + denied
+
+**What (frontend only; wires the P7c endpoints).**
+- **`api/minutes.ts`** — TanStack Query hooks over the P7c API: `useMinutesForMeeting` (version history),
+  `useMinutes` (version-aware detail, head by default), and the W10 mutations (draft/revise/submit/
+  request-changes/approve/publish/supersede). Content is MIRRORED (`mirror(v) → { en:v, ar:v }`) — the
+  editor yields one string sent to both columns (the locked FTS pattern). Every mutation invalidates the
+  meeting's version list + the detail.
+- **`MeetingMinutes.tsx`** — replaces the P6a placeholder in the existing meeting-shell tab. Renders by
+  MoM status × role: a not-started gate; a manager create-draft form; the Draft editor (shared
+  `MarkdownEditor`, Save draft = revise / Send for review = revise→submit); the InReview review card
+  (Approve & publish / Request changes); Approved (Publish & notify); Published (locked read-only doc +
+  approver footer + version history + disabled Export-PDF stub); Superseded (muted + reason banner); and
+  a read-only / no-access path for non-managers. `minutes.css` (logical properties + tokens, RTL-safe).
+- i18n `meetings.mom.*` namespace (EN+AR, all states/actions/denied). Tests: `api/minutes.test.ts`
+  (hook URLs/bodies/invalidation) + `MeetingMinutes.test.tsx` (every state, role-gating, the approve→
+  publish and revise→submit chains, supersede validation) + axe AA.
+
+**Decisions applied / blessed deviations (visual SoT = design; behavior SoT = package).**
+- **5-state vs the design's 3-toggle** — the design's single **"Approve & lock"** button is honoured as one
+  **"Approve & publish"** action that drives BOTH backend transitions (approve → publish; notify fires on
+  publish). The distinct Approved state still exists (a "Publish & notify" card handles a mid-state MoM).
+- **Numbered Decision/Actions section cards (design) → a single markdown document body** — the MoM is one
+  bilingual `Summary` (mirrored), rendered as text on read (no markdown→HTML dependency, DV-04). Decision
+  linking is later; Actions are P8. Flagged.
+- **SHA-256 hash footer → P14** (omitted); **Export PDF** = disabled stub; **denied** — meetings routes
+  carry no extra role gate (single global auth gate), so non-managers get the read-only published record or
+  the "no edit access" gate when nothing is published.
+- **i18n collision fix:** the new namespace is `meetings.mom.*`, NOT `meetings.minutes` — the latter is the
+  existing `"{{count}} min"` duration scalar (JSON last-key-wins would have shadowed it, breaking agenda
+  duration labels). Caught by the AgendaBuilder test; renamed.
+
+**Verification.** FE: `tsc -b` + `vite build` clean; `oxlint` clean (only the pre-existing Toast warning);
+`vitest` **440 passed** (incl. 19 new: `api/minutes` 8, `MeetingMinutes` 11) — an intermittent
+NotificationCenter axe/canvas `getContext` flake is pre-existing (jsdom), unrelated; per-file coverage gate
+green (`perFile: true`, lines ≥95%): `api/minutes.ts` 100%, `MeetingMinutes.tsx` ≥95%; i18n EN/AR parity
+holds; new axe AA case clean. Live real-stack VR vs `isMinutes` (EN-light + AR-RTL-dark) + the denied state
+is the optional P17 tail (mirrors P7b).
+
+**AC.** AC-014 / AC-036 / AC-037 / AC-038 stay **Partial** — the UI strengthens the evidence (the states +
+role-gated actions render and drive the right calls), but per G-TRACE the **Met** flip waits on the live
+real-stack pass (→ P17).
+
+**Next.** P8 — Actions module (unblocks MoM→action linkage + AC-029 retrofit, OQ-045).
+
+---
+
 ## P7c — MinutesOfMeeting backend (branch `feat/P7c-minutes-backend`)
 
 ### 2026-07-01 — MoM 5-state lifecycle in the Meetings module (W10; AC-014/036/037/038)

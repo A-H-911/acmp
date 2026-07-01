@@ -147,9 +147,10 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await expect(page).toHaveURL(/\/meetings$/);
       });
 
-      await test.step('minutes is an honest placeholder gate (no fake minutes)', async () => {
+      await test.step('minutes tab opens the real capture UI (P7d)', async () => {
+        // Held meeting + no minutes yet + a manager (the secretary) → the create-draft form (not a placeholder).
         await page.goto(`/meetings/${meetingKey}/minutes`);
-        await expect(page.getByText('Minutes arrive in a later phase')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Start minutes' })).toBeVisible();
       });
 
       await test.step('both recipients see the publish notification', async () => {
