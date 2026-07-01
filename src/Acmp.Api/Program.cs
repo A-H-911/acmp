@@ -138,7 +138,9 @@ if (backgroundJobsEnabled)
 {
     var reminderOptions = builder.Configuration.GetSection(ActionReminderOptions.SectionName)
         .Get<ActionReminderOptions>() ?? new ActionReminderOptions();
-    RecurringJob.AddOrUpdate<ISender>("action-reminders",
+    // Use the DI-resolved manager, NOT the static RecurringJob — the static one reads JobStorage.Current,
+    // which isn't initialized until the Hangfire hosted server starts (after this point), so it would throw.
+    app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("action-reminders",
         sender => sender.Send(new SweepActionRemindersCommand(), CancellationToken.None),
         reminderOptions.SweepCron);
 }
