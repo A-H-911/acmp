@@ -2,7 +2,7 @@
 
 - [P6a meeting-IA plan](p6a-meeting-ia-plan.md) — DONE & MERGED to main (PR #53, squash ef074a8); next is P6b notifications IA.
 - [P6b notifications-IA plan](p6b-notifications-ia-plan.md) — DONE & shipped (branch feat/p6b-notifications-ia, PR opened/unmerged). Popover+inbox reconciled to ACMP.dc.html; read-all audited; type=Category/key=derived (no migration). Next = Decisions/Minutes.
-- [P8 Actions plan](p8-actions-plan.md) — 4-slice GO-gated plan; **P8a backend DONE, PR #63 green (unmerged)**; next = P8b register UI. Locked forks + ASMs inside.
+- [P8 Actions plan](p8-actions-plan.md) — 4-slice GO-gated plan; **P8a backend + P8b register/detail UI DONE & MERGED to main (#63 `26dd245`, #64 `d1b09a6`)**; next = **P8b2** (create + lifecycle + verify UI). Read-first split, routed `/actions/:key`, server-side filtering. Locked forks + ASMs inside.
 - [P7 Minutes & Decisions plan](p7-minutes-decisions-plan.md) — **P7 COMPLETE: P7a/b/c/d ALL MERGED to main (#58/#59/#60/#61/#62; P7d squash `9de17e4`, merged 2026-07-01 via operator override).** main is green + deployable. Next slice = **P8 Actions** (plan-first, GO-gated). Locked: MoM homed IN Meetings module (not new); version-preserving supersede (same MIN key, Version++) unlike Decisions; Approve+Publish = two transitions (notify on Publish); SoD-2 soft (sole-author=CreatedBy); 5-state vs design 3-toggle=blessed; Content→single markdown Summary; bilingual MIRRORED (en===ar); FE i18n namespace=`meetings.mom` (NOT `meetings.minutes` = the "{{count}} min" scalar).
 
 - [Phase prompt Standard Footer](phase-prompt-standard-footer.md) — every pasted phase prompt also carries the phase-prompts.md DoD footer (tests, AC, authz, audit, EN/AR+RTL, progress docs, conventional commits, ADR).
