@@ -1,0 +1,271 @@
+/*
+ * Minutes tab (P7d) — governed by ACMP Agenda & Meeting.dc.html (isMinutes). Logical properties only
+ * (RTL-safe), design tokens only (no literals beyond the design's off-scale values). Layout: a status
+ * banner, then a 2-column grid (document + review/version sidebar) that stacks on narrow viewports.
+ */
+
+.mom {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* status banner */
+.mom-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding-block: 13px;
+  padding-inline: 18px;
+}
+.mom-banner-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mom-banner-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.mom-banner-note {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* layout */
+.mom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .mom-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* document */
+.mom-doc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding-block: 26px;
+  padding-inline: 32px;
+}
+.mom-doc-muted {
+  opacity: 0.72;
+}
+.mom-doc-head {
+  text-align: center;
+  padding-block-end: 18px;
+  border-block-end: 2px solid var(--text);
+  margin-block-end: 22px;
+}
+.mom-committee {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.mom-doc-title {
+  margin-block: 8px 4px;
+  font-size: 21px;
+  font-weight: 700;
+}
+.mom-doc-sub {
+  font-size: 13px;
+  color: var(--text-2);
+  font-family: var(--mono);
+}
+.mom-prose {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap; /* markdown stored as text; rendered verbatim (md→HTML deferred, DV-04) */
+  word-break: break-word;
+}
+
+/* editor */
+.mom-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mom-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* published footer */
+.mom-approved {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-block-start: 30px;
+  padding-block-start: 18px;
+  border-block-start: 1px solid var(--border);
+}
+.mom-approved-by {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mom-approved-lead {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.mom-approved-name {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* sidebar */
+.mom-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 74px;
+}
+.mom-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mom-card-h {
+  padding-block: 13px;
+  padding-inline: 15px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 13px;
+  font-weight: 600;
+}
+.mom-card-body {
+  padding-block: 14px;
+  padding-inline: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mom-card-note {
+  margin: 0 0 5px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+/* version history */
+.mom-versions {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mom-version {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-block: 9px;
+  padding-inline: 10px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+.mom-version-tag {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text);
+}
+.mom-version-status {
+  color: var(--text-2);
+}
+.mom-version-current {
+  margin-inline-start: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--primary-tint);
+  border-radius: 5px;
+  padding-inline: 6px;
+}
+
+/* supersede dialog */
+.mom-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+.mom-dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg, var(--shadow));
+  padding: 22px;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mom-dialog-h {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.mom-dialog-note {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.mom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-block-start: 6px;
+}
+.mom-input {
+  height: 38px;
+  padding-inline: 11px;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+}
+.mom-field-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--st-danger-fg, var(--danger, crimson));
+}
+.mom-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-block-start: 8px;
+}
