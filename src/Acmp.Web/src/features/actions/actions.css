@@ -211,6 +211,17 @@
 }
 .act-detail-title { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.35; }
 
+/* ---------- lifecycle button row (P8b2a — no-reference composition, shared design system) ---------- */
+.act-lifecycle {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-start: 16px;
+  padding-block-start: 15px;
+  border-block-start: 1px solid var(--border-soft);
+}
+.act-dlg-body { display: flex; flex-direction: column; gap: var(--field-gap); }
+
 .act-facts { padding: 18px 20px; margin-block-end: 16px; }
 .act-facts-grid {
   display: grid;

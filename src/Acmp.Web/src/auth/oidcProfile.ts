@@ -6,6 +6,8 @@
  * exact mapper against the real realm).
  */
 export interface OidcProfileLike {
+  /** The OIDC subject — the caller's stable Keycloak user id (matches an action's OwnerUserId). */
+  sub?: string;
   name?: string;
   preferred_username?: string;
   email?: string;

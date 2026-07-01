@@ -12,6 +12,54 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8b2a — Actions detail lifecycle + Verify UI (branch `feat/P8b2a-actions-lifecycle`)
+
+### 2026-07-01 — the action detail lifecycle buttons + independent Verify (W14; read→write, no backend change)
+
+**What (frontend, `Acmp.Web`).** Made the read-only action detail actionable: a lifecycle button row + transition
+dialogs on `/actions/:key`, wired to the P8a endpoints. No backend change this slice.
+- **`api/actions.ts`** — seven W14 mutation hooks by Guid `id` (the detail DTO carries `id`): `useStartAction`,
+  `useUnblockAction`, `useVerifyAction` (no body), `useBlockAction`/`useCancelAction` (mirrored bilingual
+  `reason`), `useUpdateActionProgress` (`progressPct`), `useCompleteAction` (optional mirrored `completionNote`).
+  Each POSTs `/api/actions/{id}/{op}` (204) and **invalidates the whole `['actions']` family** — detail + register
+  list + the global header counts — since a status change moves the overdue/total facets and the row chip.
+- **`actionMeta.ts`** — `ALLOWED_TRANSITIONS` maps each status to the transitions the `ActionItem` domain guards
+  permit (Open→start/progress/cancel · InProgress→block/progress/complete/cancel · Blocked→unblock/progress/cancel
+  · Completed→verify/cancel · Verified/Cancelled→none), so the UI never offers a button that would hit a 400/409.
+- **`ActionActions.tsx`** (new) — the gated button row + one transition dialog (reason/note/percent per op).
+  Gating (docs/10 rows 14–15): Chairman/Secretary manage any action; a Member manages only actions they **own**.
+  **Verify is separated (SoD-1, AC-012/013): the owner/completer never sees it** — a person may not verify their
+  own work. Uses the new `AcmpAuth.userId`.
+- **`AuthProvider` / `AcmpAuthContext` / `oidcProfile`** — exposed the signed-in user's Keycloak subject as
+  `AcmpAuth.userId` (read from `profile.sub`; `dev-user` in the DEV stub). **Frontend-only** — the id is already in
+  the caller's own ID token; this only enables owner-gating. (Operator's Fork C = yes.)
+- **`actions.css`** — `.act-lifecycle` row (logical props, top-border separator) + `.act-dlg-body`. i18n `actions.op.*`
+  + `actions.dlg.*` (labels/titles/bodies/errors) EN+AR **by hand** (parity ≠ completeness).
+
+**Decisions applied / flagged (visual SoT = the `.dc.html`; behaviour SoT = the package).**
+- **NO-REFERENCE COMPOSITION (guardrail #14, flagged):** the `ACMP Lists & Registers.dc.html` Actions drawer is a
+  **read** view — it draws no lifecycle buttons. The button row + dialogs are composed from the shared design system
+  (`Button` + the Confirmation/Destructive `Dialog` patterns in `ACMP Create Flows & Dialogs.dc.html`) for a later
+  design pass. Visual-verified (throwaway harness, real CSS) EN-light + AR-RTL-dark — button variants + full RTL
+  mirroring (row + dialog) correct.
+- **Operator forks (this session):** A = expose the member Keycloak id for the Owner select (→ P8b2b create).
+  B = **no standalone action — always from a context** (final): the register's "New action" is NOT a real flow (the
+  domain requires a source artifact; no standalone/Manual `ActionSourceType`), so contextual create lands in
+  **P8b2b** and the register's disabled "New action" stub is retired there. C = expose `userId` (done, above).
+- **Precise scope:** this slice exercises the **FE handling of a Verify 403 denial** and the client-side SoD-1
+  hide — not SoD *enforcement* (that's P8a, backend). The **Member create/verify** SoD path stays untested until
+  create ships (**P8b2b**). `AC-012/013` stay **Partial** (Met → P17 live real-stack).
+
+**Honest defers (later slices):** contextual create form + Owner member-select + retire the register "New action"
+stub → **P8b2b**; Hangfire reminders/escalation + Admin job dashboard (AC-054/055/056) → **P8c**; the IssueDecision
+downstream-link gate (AC-029, OQ-045) → **P8d**.
+
+**Verification.** FE `tsc -b` clean; `oxlint` clean; `vite build` clean; `vitest run --coverage` **491 passed / 0
+failed** (was 470), new/changed files **100% lines** (`actions.ts`, `features/actions/*`, `AuthProvider.tsx`);
+i18n parity **796 keys**; axe AA clean (ActionPage). Visual verify DONE (throwaway harness, deleted).
+
+---
+
 ## P8b — Actions register + detail UI (branch `feat/P8b-actions-ui`)
 
 ### 2026-07-01 — the `/actions` register + routed `/actions/:key` detail (read-only)

@@ -89,6 +89,46 @@
       "status": "Status",
       "created": "Created",
       "id": "Action ID"
+    },
+    "lifecycle": "Lifecycle actions",
+    "op": {
+      "start": "Start",
+      "block": "Block",
+      "unblock": "Unblock",
+      "progress": "Update progress",
+      "complete": "Complete",
+      "cancel": "Cancel action",
+      "verify": "Verify"
+    },
+    "dlg": {
+      "back": "Back",
+      "error": "The action could not be updated. Please try again.",
+      "reason": "Reason",
+      "reasonPh": "Explain why…",
+      "reasonErr": "A reason is required.",
+      "note": "Completion note",
+      "noteHelp": "Optional — note the evidence of completion.",
+      "notePh": "What was done (optional)…",
+      "progress": "Progress (%)",
+      "progressErr": "Enter a whole number from 0 to 100.",
+      "title": {
+        "start": "Start this action?",
+        "block": "Block this action",
+        "unblock": "Unblock this action?",
+        "progress": "Update progress",
+        "complete": "Mark this action complete?",
+        "cancel": "Cancel this action?",
+        "verify": "Verify this action?"
+      },
+      "body": {
+        "start": "Move this action to In Progress.",
+        "block": "Mark the action Blocked and record why it is stuck.",
+        "unblock": "Return this action to In Progress. The blocking reason is kept in its history.",
+        "progress": "Set how far along this action is, from 0 to 100 percent.",
+        "complete": "Mark the work done. You can add a short note of what was completed.",
+        "cancel": "Cancel this action. This cannot be undone — a re-open is a new action.",
+        "verify": "Confirm the completed work. You cannot verify an action you own — this is recorded and cannot be edited."
+      }
     }
   },
   "decisions": {

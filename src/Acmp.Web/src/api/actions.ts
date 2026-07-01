@@ -7,7 +7,7 @@
  * LocalizedString value objects ({ en, ar }); the SPA picks the locale on read.
  * IsOverdue is server-DERIVED against the request clock — the client never recomputes it.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
 import type { PagedResult } from './topics';
 
@@ -110,4 +110,53 @@ export function useAction(key: string | undefined) {
     enabled: !!key,
     retry: false, // a 404 (unknown key) shouldn't retry — surface "not found" immediately
   });
+}
+
+/*
+ * W14 lifecycle transitions (P8b2a). Each is a POST /api/actions/{id}/{op} by Guid id (the detail DTO
+ * carries `id`); the server returns 204. Bilingual reason/note are MIRRORED (en === ar) at the call site,
+ * like decisions/minutes. Every transition moves the row's status/overdue facets, so on success we
+ * invalidate the WHOLE `actions` family — detail, register list, AND the global header counts — not just
+ * the detail (a status change would otherwise leave the register + counts stale).
+ */
+function post(id: string, op: string, body?: unknown): Promise<void> {
+  return api<void>(`/actions/${id}/${op}`, {
+    method: 'POST',
+    ...(body !== undefined
+      ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      : {}),
+  });
+}
+
+/** Shared mutation factory: run a transition, then refetch everything actions-related. */
+function useActionTransition<TInput extends { id: string }>(run: (input: TInput) => Promise<void>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['actions'] }),
+  });
+}
+
+export function useStartAction() {
+  return useActionTransition(({ id }: { id: string }) => post(id, 'start'));
+}
+export function useUnblockAction() {
+  return useActionTransition(({ id }: { id: string }) => post(id, 'unblock'));
+}
+export function useVerifyAction() {
+  return useActionTransition(({ id }: { id: string }) => post(id, 'verify'));
+}
+export function useBlockAction() {
+  return useActionTransition(({ id, reason }: { id: string; reason: LocalizedText }) => post(id, 'block', { reason }));
+}
+export function useCancelAction() {
+  return useActionTransition(({ id, reason }: { id: string; reason: LocalizedText }) => post(id, 'cancel', { reason }));
+}
+export function useUpdateActionProgress() {
+  return useActionTransition(({ id, progressPct }: { id: string; progressPct: number }) => post(id, 'progress', { progressPct }));
+}
+export function useCompleteAction() {
+  return useActionTransition(({ id, completionNote }: { id: string; completionNote: LocalizedText | null }) =>
+    post(id, 'complete', { completionNote }),
+  );
 }
