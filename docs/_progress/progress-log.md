@@ -64,8 +64,11 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 migration/backstop), per-file coverage gate **134 files, global 99.66%** (≥95%). FE: `tsc -b` + `vite build`
 clean, `oxlint` clean, i18n parity **670 keys** (0 drift), `vitest` **422 passed** with per-file lines ≥95%
 (decisions files: `api/decisions.ts` 100%, `DecisionPage.tsx`/`SupersedeDialog.tsx`/`decisionMeta.ts` 100%
-lines), new axe AA case clean. No live browser pass yet (recommended tail: real Keycloak PKCE, an
-API-issued decision, AR/RTL + dark).
+lines), new axe AA case clean. **Dev-stub VR done** (`npm run dev` + Playwright route-mocked
+`/api/decisions`, dev auth stub as Chairman): the Issued, supersede-dialog, and Superseded states were
+screenshotted in **EN-light + AR-RTL-dark** and reconciled against `isDecision` — faithful (key/outcome
+chips, rationale/conditions/alternatives, record-detail sidebar, superseded badge+banner, full RTL mirror +
+dark tokens); no drift. A live real-stack pass (Keycloak PKCE, an API-issued decision) is the optional P17 tail.
 
 **AC.** AC-027 / AC-028 stay **Partial** — the live UI read + supersede round-trip strengthen the evidence,
 but per G-TRACE the **Met** flip waits on the live HTTP/UI leg (→ P17). No verdict flips this slice.
