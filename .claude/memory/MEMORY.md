@@ -1,0 +1,14 @@
+# Memory Index — ACMP
+
+- [P6a meeting-IA plan](p6a-meeting-ia-plan.md) — DONE & MERGED to main (PR #53, squash ef074a8); next is P6b notifications IA.
+- [P6b notifications-IA plan](p6b-notifications-ia-plan.md) — DONE & shipped (branch feat/p6b-notifications-ia, PR opened/unmerged). Popover+inbox reconciled to ACMP.dc.html; read-all audited; type=Category/key=derived (no migration). Next = Decisions/Minutes.
+- [P8 Actions plan](p8-actions-plan.md) — 4-slice GO-gated plan; **P8a backend DONE, PR #63 green (unmerged)**; next = P8b register UI. Locked forks + ASMs inside.
+- [P7 Minutes & Decisions plan](p7-minutes-decisions-plan.md) — **P7 COMPLETE: P7a/b/c/d ALL MERGED to main (#58/#59/#60/#61/#62; P7d squash `9de17e4`, merged 2026-07-01 via operator override).** main is green + deployable. Next slice = **P8 Actions** (plan-first, GO-gated). Locked: MoM homed IN Meetings module (not new); version-preserving supersede (same MIN key, Version++) unlike Decisions; Approve+Publish = two transitions (notify on Publish); SoD-2 soft (sole-author=CreatedBy); 5-state vs design 3-toggle=blessed; Content→single markdown Summary; bilingual MIRRORED (en===ar); FE i18n namespace=`meetings.mom` (NOT `meetings.minutes` = the "{{count}} min" scalar).
+
+- [Phase prompt Standard Footer](phase-prompt-standard-footer.md) — every pasted phase prompt also carries the phase-prompts.md DoD footer (tests, AC, authz, audit, EN/AR+RTL, progress docs, conventional commits, ADR).
+- [Exact design fidelity + visual loop](exact-design-fidelity-visual-loop.md) — "from <file>.dc.html" = pixel-exact to that file, verified by screenshot-compare; not nearest-token, not pixels-deferred.
+- [User prefers simple English](user-prefers-simple-english.md) — non-native speaker; explain choices in plain short sentences with a clear recommendation.
+- [Breadcrumb spacing rule](breadcrumb-spacing-rule.md) — every screen: 12px gap below the breadcrumb, owned globally on shared `.breadcrumb`; don't re-add per page.
+- [i18n parity ≠ completeness](i18n-parity-not-completeness.md) — check-i18n only checks EN/AR key parity; add every enum value to both locales by hand or the UI silently renders raw English.
+- [Web visual-verify cache busting](web-visual-verify-cache-busting.md) — live :8088 can serve a stale bundle after web edits; force-recreate the container + clear browser cache + `?cb=` and confirm the loaded JS hash before trusting screenshots.
+- [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — standing goal: ≥95% coverage FE+BE + adversarial E2E every flow/screen; no committed Playwright suite yet, vitest/coverlet need config — baseline first, GO-gated slices.
