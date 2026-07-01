@@ -5,9 +5,10 @@
  * rationale, optional alternatives, conditions when conditional) plus the reason. Extending the
  * one-field mock to the real body is a blessed deviation (design updated later).
  *
- * ponytail: content is entered in ONE language and mirrored to both LocalizedString columns
- * (en === ar), matching how Topics store single-language text today; a true bilingual
- * content-editing surface is future work. UI chrome stays fully EN/AR via i18n.
+ * Content is entered in ONE language — the CURRENT UI language — and stored in that column only; the
+ * other stays empty and reads fall back to the populated one (operator decision, matching how Topics
+ * store single-language text today). A true bilingual content-editing surface is future work. UI chrome
+ * stays fully EN/AR via i18n.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -31,13 +32,13 @@ interface Props {
   cacheKey: string | undefined;
 }
 
-/** Mirror single-language input into both bilingual columns (see file header). */
-const dup = (v: string): LocalizedText => ({ en: v.trim(), ar: v.trim() });
-
 export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cacheKey }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const supersede = useSupersedeDecision(cacheKey);
+
+  // Store the typed text in the CURRENT UI language column only; the other stays empty (reads fall back).
+  const loc = (v: string): LocalizedText => (i18n.language === 'ar' ? { en: '', ar: v.trim() } : { en: v.trim(), ar: '' });
 
   const [outcome, setOutcome] = useState<DecisionOutcome>('Approved');
   const [title, setTitle] = useState('');
@@ -68,11 +69,11 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
       const result = await supersede.mutateAsync({
         priorDecisionId,
         outcome,
-        title: dup(title),
-        rationale: dup(rationale),
-        alternatives: alternatives.trim() ? dup(alternatives) : null,
-        conditions: cleanConditions.map((c) => ({ text: dup(c), dueDate: null })),
-        reason: dup(reason),
+        title: loc(title),
+        rationale: loc(rationale),
+        alternatives: alternatives.trim() ? loc(alternatives) : null,
+        conditions: cleanConditions.map((c) => ({ text: loc(c), dueDate: null })),
+        reason: loc(reason),
       });
       onClose();
       navigate(`/decisions/${result.key}`);

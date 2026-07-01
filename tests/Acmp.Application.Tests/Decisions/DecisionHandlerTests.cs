@@ -277,6 +277,22 @@ public class DecisionHandlerTests
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
+    [Fact] // single-language entry is valid: content lands in one column, the other stays empty
+    public void Record_validator_accepts_single_language_content()
+    {
+        var v = new RecordDecisionValidator();
+        var enOnly = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
+            new LocalizedString("English title", ""), new LocalizedString("English rationale", ""),
+            null, null, Array.Empty<DecisionConditionRequest>());
+        v.Validate(enOnly).IsValid.Should().BeTrue();
+
+        var arOnly = enOnly with { Title = new LocalizedString("", "عنوان"), Rationale = new LocalizedString("", "مبرر") };
+        v.Validate(arOnly).IsValid.Should().BeTrue();
+
+        var neither = enOnly with { Rationale = new LocalizedString("", "") };
+        v.Validate(neither).IsValid.Should().BeFalse();
+    }
+
     [Fact] // a title over the nvarchar(512) column bound is a clean 400, not a SaveChanges 500
     public void Record_validator_rejects_a_title_over_512_chars()
     {

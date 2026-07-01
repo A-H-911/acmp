@@ -42,8 +42,12 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 **Decisions applied / blessed deviations (visual SoT = design; behavior SoT = package).**
 - **Supersede dialog extended** from the design's single reason field to the full successor body — blessed
   deviation (design to be updated); the one-field mock can't drive the transactional supersede-creates-successor.
-- **Content entered mono-lingually, mirrored to both LocalizedString columns** (`en === ar`) — matches how
-  Topics store single-language text today; a true bilingual content-editing surface is future work.
+- **Content entered in the current UI language only** (operator decision) — the text is stored in that
+  language's column and the other stays empty; reads fall back to the populated column. This relaxed the
+  P7a bilingual validators from "both languages required" to "at least one language required" (Title,
+  Rationale, Reason, Condition text, in both commands; backward-compatible — both-empty is still a 400).
+  Title keeps a per-language `MaximumLength(512)` so an over-long title is a clean 400, not a SaveChanges 500.
+  Matches how Topics store single-language text today; a true bilingual content-editing surface is future work.
 - **No-reference composition:** outcome→StatusChip tone map (design ships only one outcome visual) — flagged.
 - **Honest defers (no fabrication):** Convert-to-ADR = disabled stub (ADR module → P9/P11); the from-topic
   link is omitted (the DTO carries the topic **Guid**, not a TOP- key — ADR-0001, no cross-module lookup);

@@ -41,29 +41,29 @@ public sealed class SupersedeDecisionValidator : AbstractValidator<SupersedeDeci
         RuleFor(x => x.PriorDecisionId).NotEmpty();
         RuleFor(x => x.Outcome).IsInEnum();
 
+        // At-least-one-language on all bilingual content (single-language entry; the other column stays
+        // empty and reads fall back). Title keeps its per-language nvarchar(512) max for a clean 400.
         RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
-        RuleFor(x => x.Title!.En).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (EN) is required (max 512).");
-        RuleFor(x => x.Title!.Ar).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (AR) is required (max 512).");
+        RuleFor(x => x.Title!).Must(DecisionText.HasEitherLanguage).When(x => x.Title is not null).WithMessage("A title is required in at least one language.");
+        RuleFor(x => x.Title!.En).MaximumLength(512).When(x => x.Title is not null);
+        RuleFor(x => x.Title!.Ar).MaximumLength(512).When(x => x.Title is not null);
 
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
-        RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
-        RuleFor(x => x.Rationale!.Ar).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (AR) is required.");
+        RuleFor(x => x.Rationale!).Must(DecisionText.HasEitherLanguage).When(x => x.Rationale is not null).WithMessage("A rationale is required in at least one language.");
 
         RuleFor(x => x.Reason).NotNull().WithMessage("A supersession reason is required.");
-        RuleFor(x => x.Reason!.En).NotEmpty().When(x => x.Reason is not null).WithMessage("Supersession reason (EN) is required.");
-        RuleFor(x => x.Reason!.Ar).NotEmpty().When(x => x.Reason is not null).WithMessage("Supersession reason (AR) is required.");
+        RuleFor(x => x.Reason!).Must(DecisionText.HasEitherLanguage).When(x => x.Reason is not null).WithMessage("A supersession reason is required in at least one language.");
 
         RuleFor(x => x.Conditions)
             .Must(c => c is { Count: > 0 })
             .When(x => x.Outcome == DecisionOutcome.ConditionallyApproved)
             .WithMessage("A conditionally-approved decision requires at least one condition.");
 
-        // Each condition's bilingual text is validated here too (clean 400 instead of the domain 409).
+        // Each condition's text is validated here too (clean 400 instead of the domain 409).
         RuleForEach(x => x.Conditions).ChildRules(c =>
         {
             c.RuleFor(r => r.Text).NotNull().WithMessage("A condition requires text.");
-            c.RuleFor(r => r.Text!.En).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (EN) is required.");
-            c.RuleFor(r => r.Text!.Ar).NotEmpty().When(r => r.Text is not null).WithMessage("Condition text (AR) is required.");
+            c.RuleFor(r => r.Text!).Must(DecisionText.HasEitherLanguage).When(r => r.Text is not null).WithMessage("Condition text is required in at least one language.");
         });
     }
 }

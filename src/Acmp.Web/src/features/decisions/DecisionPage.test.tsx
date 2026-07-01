@@ -139,8 +139,9 @@ describe('DecisionPage (P7b)', () => {
     expect(mutateAsync).toHaveBeenCalledTimes(1);
     const arg = mutateAsync.mock.calls[0][0];
     expect(arg.priorDecisionId).toBe('p1');
-    expect(arg.title).toEqual({ en: 'Adopt federated IdP', ar: 'Adopt federated IdP' });
-    expect(arg.reason).toEqual({ en: 'Federated pivot', ar: 'Federated pivot' });
+    // English UI → the text lands in the EN column only; AR stays empty (reads fall back).
+    expect(arg.title).toEqual({ en: 'Adopt federated IdP', ar: '' });
+    expect(arg.reason).toEqual({ en: 'Federated pivot', ar: '' });
     expect(await screen.findByTestId('loc')).toHaveTextContent('/decisions/DECN-2026-015');
   });
 
@@ -154,7 +155,7 @@ describe('DecisionPage (P7b)', () => {
     await user.type(screen.getByLabelText(/Alternatives considered/), 'We weighed a SaaS IdP');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'pivot');
     await user.click(screen.getByRole('button', { name: 'Supersede decision' }));
-    expect(mutateAsync.mock.calls[0][0].alternatives).toEqual({ en: 'We weighed a SaaS IdP', ar: 'We weighed a SaaS IdP' });
+    expect(mutateAsync.mock.calls[0][0].alternatives).toEqual({ en: 'We weighed a SaaS IdP', ar: '' });
   });
 
   it('requires a condition when the successor is Conditionally Approved, then submits it', async () => {
@@ -184,7 +185,7 @@ describe('DecisionPage (P7b)', () => {
 
     expect(mutateAsync).toHaveBeenCalledTimes(1);
     expect(mutateAsync.mock.calls[0][0].conditions).toEqual([
-      { text: { en: 'A rollback plan exists', ar: 'A rollback plan exists' }, dueDate: null },
+      { text: { en: 'A rollback plan exists', ar: '' }, dueDate: null },
     ]);
   });
 
