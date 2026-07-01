@@ -7,6 +7,12 @@
 public interface ICommitteeDirectory
 {
     Task<IReadOnlyCollection<CommitteeRecipient>> GetActiveMembersAsync(CancellationToken ct = default);
+
+    // Active members holding a specific global role (role-name = Acmp.Shared.Authorization.AcmpRoles.*),
+    // for HEADLESS recipient resolution (e.g. the overdue-escalation sweep copying the Secretary/Chairman —
+    // no HTTP context, so the "who is the Secretary" answer must come from the roster). Empty when nobody
+    // currently holds the role; callers must tolerate no recipients.
+    Task<IReadOnlyCollection<CommitteeRecipient>> GetActiveMembersInRoleAsync(string role, CancellationToken ct = default);
 }
 
 // A notification recipient: the Keycloak subject (matches NotificationMessage.RecipientUserId and

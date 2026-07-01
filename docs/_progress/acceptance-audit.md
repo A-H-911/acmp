@@ -47,6 +47,20 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > transitions deferred → P8b2. FE 470 green (actions files 100% lines), i18n parity 764, axe AA clean,
 > tsc + vite build clean. See progress-log P8b entry.
 >
+> P8c-1 update (2026-07-01): Actions reminder/escalation Hangfire sweep (AC-054/055) — app-owned Hangfire on
+> ACMP's OWN SQL (own `HangFire` schema, ADR-0014/CON-001; storage bootstraps its own tables, not EF). The
+> recurring `SweepActionRemindersHandler` (all logic; Hangfire only cron-triggers it) turns derived-overdue
+> into in-app notifications per docs/29 §3.4: T-3 due reminder (one-shot) → owner; overdue owner notice at the
+> configured rhythm (system config `ActionReminders:OverdueMode`, default DailyWhileOverdue, de-duped by day) →
+> owner; one-shot escalation to the Secretary (>7d) and Chairman (>14d) via a new role-aware
+> `ICommitteeDirectory.GetActiveMembersInRoleAsync`. Idempotent via 4 nullable markers on `ActionItem`
+> (migration `Actions_ReminderMarkers`, forward-only); save-before-send (at-most-once, favour no-spam);
+> audited (`Actions.RemindersSent`, guardrail #5). **AC-054 / AC-055 Pending → Partial** (logic proven on a
+> fake clock + in-memory actions; the live Hangfire cron firing on the real stack → P17 per G-TRACE).
+> **AC-056 stays Pending → P8c-2** (the designed Administration → Job Monitor tab, operator fork B). Backend
+> 496 Application + 123 Domain + 24 Architecture + 74 Api green; per-file coverage gate 170 files @ 99.62%
+> (new files ≥95%); `dotnet format` clean. Backend-only slice — no FE/i18n change. See progress-log P8c-1.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >
@@ -409,9 +423,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-051 | Notifications | Met | MeetingHandlerTests (AgendaPublished fan-out: date+title+deep link, EN+AR) + NotificationHandlerTests + NotificationCenter.test (live list + deep-link nav) + TopBar.test (badge) | End to end: PublishAgenda fans out one in-app notification per active member (synchronous ≤5s write) carrying the meeting date + agenda title + a `/meetings/{key}` deep link; the notification center renders it (unread badge + list) and clicking follows the deep link. The standing cross-session caveat now lands — core-loop.spec (S6b-1) publishes an agenda and verifies the unread bell in TWO separate live browser contexts (member + chairman), confirming the ≥2-member fan-out end-to-end. From Partial (P6e, 2026-06-27). |
 | AC-052 | Notifications | Partial | NotificationCenter.test (deep-link click → navigate) | The notification deep-link **navigation** mechanism is built + tested (clicking a notification with a deepLink routes to its target — no extra steps). The **vote-open** notification itself is raised in P9 (Voting). From Pending (P6e, 2026-06-27). |
 | AC-053 | Notifications | Met | NotificationHandlerTests + DI (single INotificationChannel = InAppNotificationChannel) + NotificationCenter.test | Exactly one channel is registered and rendered (in-app); no email/Webex is attempted and the absence raises no error. Structurally guaranteed + unit-proven on both server (fan-out) and client (center). From Partial (P6e, 2026-06-27). |
-| AC-054 | Background jobs | Pending | — | Due-date reminder |
-| AC-055 | Background jobs | Pending | — | Overdue escalation |
-| AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin |
+| AC-054 | Background jobs | Partial | ActionReminderSweepTests (T-3 exact / due-today / outside-window / one-shot across runs) | P8c-1: the recurring `SweepActionRemindersHandler` sends the owner a one-shot "due soon" reminder inside the configured window (docs/29 §3.4, T-3 default); idempotent via `DueReminderSentAt`. Logic proven on a fake clock; the live Hangfire cron firing on the real stack → P17 (G-TRACE) |
+| AC-055 | Background jobs | Partial | ActionReminderSweepTests (overdue owner notice + Once/DailyWhileOverdue rhythm + day-7-vs-8 secretary escalation + day-15 chairman + no-active-secretary) + CommitteeDirectoryTests (role resolution) | P8c-1: overdue owner notice (rhythm = system config, default DailyWhileOverdue) + one-shot escalation to the Secretary (>7d) and Chairman (>14d) via the role-aware `ICommitteeDirectory`; audited, idempotent. Live scheduled firing → P17 (G-TRACE) |
+| AC-056 | Background jobs | Pending | — | Hangfire dashboard for Admin — the designed Administration → Job Monitor tab (operator fork B) → **P8c-2** |
 | AC-057 | Aging | Partial | TopicApplicationTests + TopicHandlerTests (live SlaBreached) + Backlog.test (badge rendered) | Aging badge computed + rendered in the backlog UI (slaBreached-driven, unit-tested); live browser pass + SLA-breach notification → Notifications phase |
 | AC-058 | Membership | Met | CommitteeMemberTests + MembershipFeatureTests | Deactivate → Disabled; name/email/role/attribution intact |
 | AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |

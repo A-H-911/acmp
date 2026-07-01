@@ -21,4 +21,19 @@ public sealed class CommitteeDirectory : ICommitteeDirectory
             .OrderBy(m => m.FullName)
             .Select(m => new CommitteeRecipient(m.KeycloakUserId, m.FullName))
             .ToListAsync(ct);
+
+    // Role is a claims-derived cache on CommitteeMember (refreshed each login), so this is "who currently
+    // holds the role, per the roster". The role-name maps 1:1 to CommitteeRole via nameof; an unknown name
+    // yields no recipients rather than throwing.
+    public async Task<IReadOnlyCollection<CommitteeRecipient>> GetActiveMembersInRoleAsync(string role, CancellationToken ct = default)
+    {
+        if (!Enum.TryParse<CommitteeRole>(role, ignoreCase: false, out var parsed))
+            return Array.Empty<CommitteeRecipient>();
+
+        return await _db.Members.AsNoTracking()
+            .Where(m => m.Status == MembershipStatus.Active && m.Role == parsed)
+            .OrderBy(m => m.FullName)
+            .Select(m => new CommitteeRecipient(m.KeycloakUserId, m.FullName))
+            .ToListAsync(ct);
+    }
 }

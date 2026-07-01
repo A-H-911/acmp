@@ -55,6 +55,19 @@ public sealed class ActionItem : AuditableEntity
     public string? VerifiedByName { get; private set; }
     public DateTimeOffset? VerifiedAt { get; private set; }
 
+    // Reminder/escalation bookkeeping (P8c, W22): the Hangfire sweep stamps these so it stays idempotent
+    // between runs — they are NOT lifecycle transitions (no domain event), just the "already told them"
+    // record. Nullable = not-yet-sent; OverdueNotifiedAt is refreshed each send under DailyWhileOverdue.
+    public DateTimeOffset? DueReminderSentAt { get; private set; }
+    public DateTimeOffset? OverdueNotifiedAt { get; private set; }
+    public DateTimeOffset? EscalatedToSecretaryAt { get; private set; }
+    public DateTimeOffset? EscalatedToChairmanAt { get; private set; }
+
+    public void MarkDueReminderSent(DateTimeOffset now) => DueReminderSentAt = now;
+    public void MarkOverdueNotified(DateTimeOffset now) => OverdueNotifiedAt = now;
+    public void MarkEscalatedToSecretary(DateTimeOffset now) => EscalatedToSecretaryAt = now;
+    public void MarkEscalatedToChairman(DateTimeOffset now) => EscalatedToChairmanAt = now;
+
     // Derived overdue overlay (docs/12 line 159): past due while work is still open. Never persisted.
     public bool IsOverdue(DateTimeOffset now) =>
         DueDate is { } due && due < now &&
