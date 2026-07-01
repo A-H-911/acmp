@@ -24,5 +24,9 @@ of jargon; the four-line shape above is what worked.
 **Why:** the operator twice said "I can not understand your questions, explain and simplify"; the
 four-line Design/Now/Question/Suggest shape was the one they could act on ("1: yes, 2: ...").
 
+**Always name the design file.** Whenever an explanation references "the design", also name the exact
+`.dc.html` reference file (e.g. the Actions register/detail = `ACMP Lists & Registers.dc.html`). The
+operator asked for this so they can open the right file to check. Never say "the design" bare.
+
 **How to apply:** prefer plain wording over terse caveman fragments when the goal is the operator
 understanding a choice. Code/commits stay normal. See [[exact-design-fidelity-visual-loop]].
