@@ -24,6 +24,73 @@
     "phase2Body": "هذا القسم مخطّط للمرحلة 2 وغير متاح بعد.",
     "cancel": "إلغاء"
   },
+  "actions": {
+    "title": "الإجراءات",
+    "count": "{{count}} إجراء",
+    "overdueCount": "{{count}} متأخّر",
+    "newAction": "إجراء جديد",
+    "newSoon": "إنشاء الإجراءات يأتي في شريحة لاحقة.",
+    "comingSoon": "قريبًا",
+    "savedView": "إجراءاتي المفتوحة",
+    "filtersLabel": "مرشّحات الإجراءات",
+    "on": "مُفعّل",
+    "showing": "عرض {{shown}} من {{total}}",
+    "pageNav": "صفحات الإجراءات",
+    "prevPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "tableCaption": "سجل الإجراءات",
+    "unassigned": "غير مُسنَد",
+    "overdue": "متأخّر",
+    "clearFilters": "مسح المرشّحات",
+    "filter": {
+      "status": "الحالة",
+      "owner": "المالك",
+      "anyOwner": "أي مالك",
+      "overdue": "المتأخرة"
+    },
+    "col": {
+      "key": "المعرّف",
+      "action": "الإجراء",
+      "linked": "مرتبط",
+      "owner": "المالك",
+      "due": "الاستحقاق",
+      "progress": "التقدّم",
+      "status": "الحالة"
+    },
+    "status": {
+      "Open": "مفتوح",
+      "InProgress": "قيد التنفيذ",
+      "Blocked": "محجوب",
+      "Completed": "مكتمل",
+      "Verified": "مُتحقَّق",
+      "Cancelled": "مُلغى"
+    },
+    "empty": {
+      "title": "لا إجراءات تطابق هذه المرشّحات",
+      "body": "لا إجراءات تطابق المرشّحات الحالية. امسحها لعرض السجل كاملًا."
+    },
+    "error": {
+      "title": "تعذّر تحميل الإجراءات",
+      "body": "الخدمة غير متاحة مؤقتًا. مرشّحاتك محفوظة — أعد المحاولة بعد لحظات."
+    },
+    "notFoundTitle": "الإجراء غير موجود",
+    "notFoundBody": "هذا الإجراء غير موجود أو تمت إزالته.",
+    "progress": "التقدّم",
+    "description": "الوصف",
+    "related": "مرتبط",
+    "relatedSourceDir": "مصدر",
+    "relatedSource": "القرار / العنصر المصدر",
+    "relatedMeetingDir": "اجتماع",
+    "relatedMeeting": "أُثير في اجتماع",
+    "fact": {
+      "owner": "المالك",
+      "due": "تاريخ الاستحقاق",
+      "linked": "العنصر المرتبط",
+      "status": "الحالة",
+      "created": "أُنشئ",
+      "id": "معرّف الإجراء"
+    }
+  },
   "decisions": {
     "notFoundTitle": "القرار غير موجود",
     "notFoundBody": "هذا القرار غير موجود أو تمت إزالته.",

@@ -38,6 +38,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > dashboard) stay Pending → P8c; AC-029 (decision downstream-link gate, OQ-045) stays Pending → P8d. Backend
 > 709 green (per-file coverage gate 168 files, global 99.62%). See progress-log P8a entry.
 >
+> P8b update (2026-07-01): Actions register + routed detail UI (`ACMP Lists & Registers.dc.html` `isActions`)
+> — read-only slice. GET /api/actions (paged, server-side status + overdue filters, due/progress/status sorts)
+> + GET /api/actions/{key}; global header counts via two count queries; 6-state status chips incl. Cancelled
+> (EN+AR by hand). **GO'd blessed deviation:** routed `/actions/:key` (not the design's in-page drawer) so
+> notifications deep-link — retired the `/actions` PlaceholderPage. **No verdict flips:** AC-012/013 unchanged
+> (SoD-1 verify UI + Member create/verify path → **P8b2**, live real-stack leg → P17). Create + lifecycle
+> transitions deferred → P8b2. FE 470 green (actions files 100% lines), i18n parity 764, axe AA clean,
+> tsc + vite build clean. See progress-log P8b entry.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >

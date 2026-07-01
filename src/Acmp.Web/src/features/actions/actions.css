@@ -1,0 +1,310 @@
+/*
+ * Actions register + detail (P8b) — composed to "ACMP Lists & Registers.dc.html"
+ * (isActions table + drill-in). Logical properties only (RTL-safe); tokens from the
+ * design system. Status chips reuse the shared StatusChip; only register cells and
+ * detail layout live here. Literal px match the reference file.
+ */
+
+/* ---------- register header ---------- */
+.act-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block-end: 16px;
+}
+.act-head-sub {
+  margin-block-start: 5px;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.act-head-count { font-feature-settings: 'tnum'; }
+.act-head-sep {
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.act-head-overdue {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--st-danger-fg);
+  font-weight: 600;
+}
+.act-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--st-danger-dot);
+  flex: 0 0 auto;
+}
+.act-head-actions { display: flex; gap: 9px; flex: 0 0 auto; }
+
+/* ---------- filter bar ---------- */
+.act-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-end: 14px;
+}
+.act-saved {
+  height: 34px;
+  padding-inline: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.act-saved:disabled { opacity: 0.65; cursor: default; }
+.act-divider {
+  inline-size: 1px;
+  block-size: 22px;
+  background: var(--border);
+}
+.act-toggle-on { font-size: 10px; font-weight: 700; opacity: 0.7; }
+.act-count {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---------- register cells ---------- */
+.act-key {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.act-title-link {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.act-title-link:hover { color: var(--accent); }
+.act-linked {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+.act-owner { display: inline-flex; align-items: center; gap: 8px; min-inline-size: 0; }
+.act-avatar {
+  inline-size: 23px;
+  block-size: 23px;
+  border-radius: 50%;
+  background: var(--sunken);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.act-owner-name {
+  font-size: 12.5px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.act-muted { color: var(--text-3); }
+.act-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  font-feature-settings: 'tnum';
+}
+.act-due.overdue { color: var(--st-danger-fg); font-weight: 700; }
+.act-due.overdue svg { stroke: var(--st-danger-dot); }
+.act-progress { display: inline-flex; align-items: center; gap: 8px; inline-size: 100%; }
+.act-pbar {
+  flex: 1 1 auto;
+  block-size: 6px;
+  border-radius: 4px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+.act-pbar-fill { display: block; block-size: 100%; }
+.act-pct {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  font-feature-settings: 'tnum';
+  flex: 0 0 auto;
+}
+.act-empty-actions { display: flex; gap: 9px; justify-content: center; margin-block-start: 18px; }
+.act-foot { margin-block-start: 14px; }
+
+/* ---------- loading skeleton (7-col grid, 8 rows) ---------- */
+.act-skel-head,
+.act-skel-row {
+  display: grid;
+  grid-template-columns: 108px minmax(190px, 1fr) 122px 138px 118px 130px 124px;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 12px;
+}
+.act-skel-head { block-size: 42px; border-block-end: 1px solid var(--border); background: var(--header); }
+.act-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
+.act-skel-bar { block-size: 10px; border-radius: 5px; }
+
+/* ---------- detail ---------- */
+.act-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}
+.act-detail-main { min-inline-size: 0; }
+.act-detail-head { padding: 18px 20px; margin-block-end: 16px; }
+.act-detail-chips {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-end: 9px;
+}
+.act-key-chip {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding-block: 2px;
+  padding-inline: 8px;
+}
+.act-overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  block-size: 20px;
+  padding-inline: 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+}
+.act-detail-title { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.35; }
+
+.act-facts { padding: 18px 20px; margin-block-end: 16px; }
+.act-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px 16px;
+}
+.act-fact { display: flex; flex-direction: column; gap: 3px; }
+.act-fact-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.act-fact-value { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.act-fact-value.danger { color: var(--st-danger-fg); }
+.act-facts-progress {
+  margin-block-start: 18px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border-soft);
+}
+.act-facts-progress-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-2);
+  margin-block-end: 7px;
+}
+.act-facts-pct { font-weight: 700; color: var(--text); font-feature-settings: 'tnum'; }
+.act-pbar-lg { block-size: 8px; }
+
+.act-desc { padding: 18px 20px; }
+.act-desc-body { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+
+/* ---------- related panel ---------- */
+.act-related { position: sticky; inset-block-start: 74px; }
+.act-related-head {
+  padding: 13px 15px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+.act-related-title { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.act-related-body { padding: 8px; }
+.act-related-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  border-radius: 9px;
+  padding: 9px 10px;
+  margin-block-end: 6px;
+  text-align: start;
+  text-decoration: none;
+  color: var(--text);
+}
+.act-related-item.link:hover { border-color: var(--accent); background: var(--subtle); }
+.act-related-dir {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--st-neutral-fg);
+  flex: 0 0 auto;
+  inline-size: 46px;
+}
+.act-related-dir.up { color: var(--st-warn-fg); }
+.act-related-main { flex: 1 1 auto; min-inline-size: 0; }
+.act-related-key {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.act-related-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.act-related-item svg { flex: 0 0 auto; color: var(--text-3); }
+
+@media (max-width: 860px) {
+  .act-detail-grid { grid-template-columns: 1fr; }
+  .act-related { position: static; }
+}

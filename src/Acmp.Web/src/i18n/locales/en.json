@@ -24,6 +24,73 @@
     "phase2Body": "This area is planned for Phase 2 and isn’t available yet.",
     "cancel": "Cancel"
   },
+  "actions": {
+    "title": "Actions",
+    "count": "{{count}} actions",
+    "overdueCount": "{{count}} overdue",
+    "newAction": "New action",
+    "newSoon": "Creating actions ships in a later slice.",
+    "comingSoon": "Coming soon",
+    "savedView": "My open actions",
+    "filtersLabel": "Actions filters",
+    "on": "ON",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Actions pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Actions register",
+    "unassigned": "Unassigned",
+    "overdue": "Overdue",
+    "clearFilters": "Clear filters",
+    "filter": {
+      "status": "Status",
+      "owner": "Owner",
+      "anyOwner": "Any owner",
+      "overdue": "Overdue"
+    },
+    "col": {
+      "key": "ID",
+      "action": "Action",
+      "linked": "Linked",
+      "owner": "Owner",
+      "due": "Due",
+      "progress": "Progress",
+      "status": "Status"
+    },
+    "status": {
+      "Open": "Open",
+      "InProgress": "In Progress",
+      "Blocked": "Blocked",
+      "Completed": "Completed",
+      "Verified": "Verified",
+      "Cancelled": "Cancelled"
+    },
+    "empty": {
+      "title": "No actions match these filters",
+      "body": "No actions match the current filters. Clear them to see the full register."
+    },
+    "error": {
+      "title": "Couldn’t load the actions",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "notFoundTitle": "Action not found",
+    "notFoundBody": "This action does not exist or has been removed.",
+    "progress": "Progress",
+    "description": "Description",
+    "related": "Related",
+    "relatedSourceDir": "SRC",
+    "relatedSource": "Source decision / artifact",
+    "relatedMeetingDir": "MTG",
+    "relatedMeeting": "Raised in meeting",
+    "fact": {
+      "owner": "Owner",
+      "due": "Due date",
+      "linked": "Linked artifact",
+      "status": "Status",
+      "created": "Created",
+      "id": "Action ID"
+    }
+  },
   "decisions": {
     "notFoundTitle": "Decision not found",
     "notFoundBody": "This decision does not exist or has been removed.",
