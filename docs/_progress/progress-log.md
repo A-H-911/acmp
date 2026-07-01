@@ -12,6 +12,53 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8c-1 — Actions reminder/escalation Hangfire sweep (branch `feat/P8c-actions-jobs`)
+
+### 2026-07-01 — app-owned Hangfire + the due-soon/overdue/escalation sweep (W22; AC-054/055)
+
+**What (backend).** Stood Hangfire up FRESH (it was wired nowhere) and added the recurring action
+reminder/escalation job. Design note: cadence + recipients are **doc-settled** (docs/29 §3.4), not invented —
+the only operator calls were the AC-056 dashboard flavour (**B = designed Job Monitor tab**, → P8c-2) and the
+overdue rhythm (**system config, default DailyWhileOverdue**).
+- **Hangfire** (`Hangfire.AspNetCore` + `Hangfire.SqlServer` 1.8.14) on ACMP's **own SQL**, its own `HangFire`
+  schema, storage bootstraps its own tables (NOT EF migrations) — ADR-0014 / CON-001, zero new service. Wired in
+  `Program.cs` (coverage-excluded) and **gated off under the "Testing" host** so the InMemory integration factory
+  never opens a real SQL connection. The recurring job body just sends a MediatR command — all logic is testable.
+- **`SweepActionRemindersHandler`** (`Actions.Application/Reminders`, `SweepActionRemindersCommand`): scans live
+  actions with a due date and, per docs/29 §3.4 — (1) **T-3 due reminder** (one-shot) to the owner; (2) **overdue**
+  owner notice at the configured rhythm; (3) **escalation** to the Secretary (>7d) and Chairman (>14d), one-shot
+  each. Headless (no `ICurrentUser`) → audit actor = `system:action-reminders`. All calendar-day math (UTC date
+  floor) so the T-3 / >7 / >14 boundaries don't drift with the run time.
+- **`ActionReminderOptions`** (appsettings `ActionReminders`, Options pattern): `DueReminderDaysBefore=3`,
+  `EscalateToSecretaryAfterDays=7`, `EscalateToChairmanAfterDays=14`, `OverdueMode=Once|DailyWhileOverdue`
+  (default DailyWhileOverdue), `SweepCron="0 6 * * *"`.
+- **Idempotency:** 4 nullable markers on `ActionItem` (`DueReminderSentAt` / `OverdueNotifiedAt` /
+  `EscalatedToSecretaryAt` / `EscalatedToChairmanAt`) + migration `Actions_ReminderMarkers` (forward-only). No
+  outbox exists in this repo (`INotificationChannel` writes synchronously), so the markers ARE the dedup.
+  DailyWhileOverdue = at most one owner notice per calendar day; Once = a single notice.
+- **Recipient resolution:** new `ICommitteeDirectory.GetActiveMembersInRoleAsync(role)` (Membership-owned; reads
+  the claims-derived `CommitteeMember.Role` cache) — Actions never reads Membership tables (ADR-0001, ArchUnit
+  still green). 3 new bilingual `ActionNotifications` (DueReminder/Overdue/Escalation, EN+AR by hand).
+
+**Decisions / flags.**
+- **Save-before-send (at-most-once).** Markers commit FIRST, then notifications send; a concurrent-edit 409 on
+  save aborts the run with nothing sent and Hangfire retries (markers keep the retry from double-sending). Favours
+  "no spam" over "never miss"; a rare in-app send failure after commit is not retried (flagged).
+- **Deferred (named, not silent):** `NotificationMessage` carries no urgency, so the catalog's Normal/High/Critical
+  tiers aren't reflected in the center's High+Critical filter → a Notifications-module concern. Due-reminder is
+  "opt-outable" in docs but no preference model exists (RD-09) → v1 sends unconditionally. Role cache is
+  login-refreshed → escalation targets whoever the Secretary/Chairman was at last login (ASM, fine for ≤20 users).
+  The live Hangfire cron firing on the real stack → P17.
+
+**Verification.** `dotnet build` clean; **Application 496 / Domain 123 / Architecture 24 / Api 74 green** (Api boots
+`Program` with Hangfire correctly gated off under Testing); per-file backend coverage gate **170 files @ 99.62%**
+(new files ≥95%); `dotnet format --verify-no-changes` clean; migration is forward-only. Backend-only — no FE/i18n
+change. Adversarial tests: T-3/T-4 boundary, due-today, one-shot idempotency, Once vs DailyWhileOverdue,
+day-7-not / day-8-escalate, day-15 chairman, no-active-secretary (no crash), terminal/no-due-date exclusions, and
+the save-before-send concurrency guarantee. **AC-054/055 → Partial; AC-056 → P8c-2.**
+
+---
+
 ## P8b2b — Actions contextual create + Owner picker (branch `feat/P8b2b-actions-create`)
 
 ### 2026-07-01 — create a follow-up action from a decision (W13; Fork A backend expose + create form)
