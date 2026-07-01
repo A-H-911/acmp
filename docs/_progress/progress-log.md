@@ -12,6 +12,34 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P7b follow-up — mirror decision content to both bilingual columns (branch `chore/p7b-mirror-content`)
+
+### 2026-07-01 — reverse "entered language only" → MIRROR (en === ar)
+
+**Why.** P7b shipped decision content stored in the entered UI language only (the other column empty, reads
+fell back). Operator changed the call: **mirror the typed text into both `LocalizedString` columns
+(`en === ar`)** so both are always populated — cleaner data and, notably, so SQL **Full-Text Search** indexes
+both the EN and AR columns (an AR query would miss an empty AR column under the entered-language model).
+
+**What.**
+- **FE.** `SupersedeDialog` writes `{ en: v, ar: v }` (was current-language-only); `DecisionPage` `pick`
+  reverts to a straight per-language read (no fallback needed — both columns match).
+- **BE.** The record/supersede validators go back to **both-EN-and-AR required** (Title, Rationale, Reason,
+  Condition text); `Title` keeps its per-language `MaximumLength(512)`. The `DecisionText.HasEitherLanguage`
+  helper (the at-least-one predicate) is deleted — no longer referenced. Both-empty is still a clean 400.
+- **Tests.** The "single-language is valid" validator test flips to "both languages required" (a field
+  missing one language → 400); FE assertions expect the mirrored `{ en, ar }` body.
+
+**Verification.** BE `dotnet build`/`format` clean, full `dotnet test` green + per-file coverage gate ≥95%;
+FE `tsc`/`vite build`/`oxlint` clean, i18n parity unchanged, `vitest` green (decisions files ≥95% lines).
+No schema change (columns already NOT NULL); no migration.
+
+**AC.** No verdict changes — data-model/validation reconciliation, not a feature. AC-027/028 stay Partial.
+
+**Next.** P7c MinutesOfMeeting backend.
+
+---
+
 ## P7b — Decision detail UI + Decision.Title (branch `feat/P7b-decision-ui`)
 
 ### 2026-07-01 — `isDecision` screen + supersede dialog, with an additive `Title` on the aggregate
