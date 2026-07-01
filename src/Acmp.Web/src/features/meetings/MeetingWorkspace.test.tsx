@@ -51,8 +51,8 @@ const MEETING: MeetingDetail = {
 };
 
 const MEMBERS: Member[] = [
-  { publicId: 'u1', fullName: 'Sara K', email: 'sara@example.com', role: 'Chairman', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
-  { publicId: 'u2', fullName: 'Omar R', email: 'omar@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'u1', keycloakUserId: 'kc-fixture', fullName: 'Sara K', email: 'sara@example.com', role: 'Chairman', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'u2', keycloakUserId: 'kc-fixture', fullName: 'Omar R', email: 'omar@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
 ];
 
 function setup(detail: MeetingDetail = MEETING) {

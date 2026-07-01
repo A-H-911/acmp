@@ -129,6 +129,28 @@
         "cancel": "Cancel this action. This cannot be undone — a re-open is a new action.",
         "verify": "Confirm the completed work. You cannot verify an action you own — this is recorded and cannot be edited."
       }
+    },
+    "priority": { "Low": "Low", "Normal": "Medium", "High": "High" },
+    "create": {
+      "action": "Create follow-up action",
+      "title": "Create an action",
+      "subtitle": "A tracked follow-up item.",
+      "confirm": "Create action",
+      "error": "The action could not be created. Please try again.",
+      "titleField": "Title",
+      "titlePh": "What needs to be done…",
+      "linked": "Linked to",
+      "linkedNote": "Source — set automatically",
+      "owner": "Owner",
+      "ownerPh": "Select an owner",
+      "due": "Due date",
+      "duePh": "Pick a date",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "priority": "Priority",
+      "description": "Description",
+      "descriptionPh": "Add any detail (optional)…",
+      "err": { "title": "A title is required.", "owner": "An owner is required.", "due": "A due date is required." }
     }
   },
   "decisions": {

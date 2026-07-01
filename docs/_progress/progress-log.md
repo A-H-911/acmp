@@ -12,6 +12,46 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8b2b — Actions contextual create + Owner picker (branch `feat/P8b2b-actions-create`)
+
+### 2026-07-01 — create a follow-up action from a decision (W13; Fork A backend expose + create form)
+
+**What.** Creating actions, always **from a source artifact** (operator call B — no standalone create). First
+context = the **Decision detail**.
+- **Backend (Fork A):** `MemberDto` + `GetMembersHandler` now expose `KeycloakUserId` (the OIDC subject), so a
+  committee UI can assign work by stable identity. Committee-wide readable like the rest of the directory —
+  mild info-exposure flagged, low-risk for a ≤20-user on-prem committee (operator-approved). + a `GetMembers`
+  unit test asserting the subject round-trips.
+- **`api/members.ts`** gains `keycloakUserId`; **`api/actions.ts`** gains `ActionPriority`/`ActionSourceType`
+  types + `useCreateAction` (POST `/api/actions` → 201 + the new `ActionSummary`; invalidates the actions family).
+- **`CreateActionDialog.tsx`** (new) — composed to `ACMP Create Flows & Dialogs.dc.html` `action` (a REAL design
+  ref, not no-reference): Title · Linked-to (locked to the source) · **Owner member-select** (keyed to
+  `keycloakUserId`, active members only) · Due date · Priority segmented (Low/Medium/High → wire `Low/Normal/High`,
+  default `Normal`) · Description. Title/description mirrored en===ar; on success routes to the new `/actions/:key`.
+- **`DecisionPage.tsx`** — a role-gated "Create follow-up action" button on active decisions opens the dialog with
+  the source pre-filled (`SourceType=Decision`, `SourceId=decn.id`, `SourceKey=decn.key`).
+- **`ActionsRegister.tsx`** — **retired the disabled "New action" stub** (header + empty-state); the register has no
+  create entry point (create is always contextual). `actions.css` + i18n `actions.create.*`/`actions.priority.*`
+  EN+AR by hand.
+
+**Decisions applied / flagged.**
+- **Priority label:** the enum's middle value is `Normal`; the UI labels it **"Medium"/"متوسطة"** to match the design
+  create form (wire value stays `Normal`).
+- **Linked-to is locked** (read-only source key), not the design's free select — because create is always from a
+  context (call B), the source is fixed, not chosen.
+- **Create button gating:** Chairman/Secretary/Member on an **active** decision (Member is allow-if-owner; the API
+  re-checks). Owner assignment happens in the dialog.
+- Exercises the previously-untested **Member create** path (create form → `useCreateAction`); SoD on create stays
+  API-enforced. AC-012/013 unchanged (verify leg; live real-stack → P17).
+
+**Verification.** Backend `dotnet build` clean; Membership app tests **27 pass** (incl. the new Fork-A test); Membership
+API tests **10 pass**. FE `tsc -b` clean; `oxlint` clean; `vite build` clean; `vitest run --coverage` **496 passed / 0
+failed** (was 491), new/changed files **100% lines** (`actions.ts`, `members.ts`, `DecisionPage.tsx`,
+`CreateActionDialog.tsx`); i18n parity **820 keys**. Visual-verified (throwaway harness, real CSS) EN-light +
+AR-RTL-dark — the create form + segmented Priority + locked source row compose to the ref and mirror fully.
+
+---
+
 ## P8b2a — Actions detail lifecycle + Verify UI (branch `feat/P8b2a-actions-lifecycle`)
 
 ### 2026-07-01 — the action detail lifecycle buttons + independent Verify (W14; read→write, no backend change)

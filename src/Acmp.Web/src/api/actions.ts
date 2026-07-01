@@ -20,6 +20,12 @@ export interface LocalizedText {
 /** ActionStatus (docs/12 §7) — wire = enum names, localized in the UI. 6 states incl. Cancelled. */
 export type ActionStatus = 'Open' | 'InProgress' | 'Blocked' | 'Completed' | 'Verified' | 'Cancelled';
 
+/** ActionPriority (docs/11) — wire = enum names. The middle value is `Normal` (UI labels it "Medium"). */
+export type ActionPriority = 'Low' | 'Normal' | 'High';
+
+/** The source artifact an action is raised from (W13). No standalone create — always from a context. */
+export type ActionSourceType = 'Topic' | 'Meeting' | 'Decision' | 'Condition' | 'Risk';
+
 export interface ActionSummary {
   id: string;
   key: string;
@@ -159,4 +165,35 @@ export function useCompleteAction() {
   return useActionTransition(({ id, completionNote }: { id: string; completionNote: LocalizedText | null }) =>
     post(id, 'complete', { completionNote }),
   );
+}
+
+/** W13 create input — an action is ALWAYS raised from a source artifact (no standalone create). */
+export interface CreateActionInput {
+  title: LocalizedText;
+  description: LocalizedText | null;
+  priority: ActionPriority;
+  ownerUserId: string;
+  ownerName: string;
+  dueDate: string | null; // ISO instant, or null
+  sourceType: ActionSourceType;
+  sourceId: string;
+  sourceKey: string | null;
+  meetingKey: string | null;
+}
+
+/**
+ * W13: create a follow-up action (POST /api/actions → 201 + the new ActionSummary, incl. its `key`).
+ * Invalidates the actions family so the register + global counts pick up the new row.
+ */
+export function useCreateAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateActionInput) =>
+      api<ActionSummary>('/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['actions'] }),
+  });
 }

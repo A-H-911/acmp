@@ -222,6 +222,44 @@
 }
 .act-dlg-body { display: flex; flex-direction: column; gap: var(--field-gap); }
 
+/* ---------- create form (P8b2b — composed to ACMP Create Flows & Dialogs.dc.html `action`) ---------- */
+.act-create-form { display: flex; flex-direction: column; gap: var(--field-gap); }
+.act-linked-locked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 40px;
+  padding-inline: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: var(--subtle);
+  color: var(--text-2);
+}
+.act-linked-locked .act-linked-key { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 500; }
+.act-linked-note { color: var(--text-3); font-size: 12px; margin-inline-start: auto; }
+.act-seg {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+}
+.act-seg-btn {
+  flex: 1 1 auto;
+  block-size: 30px;
+  padding-inline: 14px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.act-seg-btn.is-on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
 .act-facts { padding: 18px 20px; margin-block-end: 16px; }
 .act-facts-grid {
   display: grid;

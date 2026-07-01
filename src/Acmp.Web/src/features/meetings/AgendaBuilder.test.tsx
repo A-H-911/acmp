@@ -65,7 +65,7 @@ const PREPARED: PagedResult<TopicSummary> = {
 };
 
 const MEMBERS: Member[] = [
-  { publicId: 'u9', fullName: 'Lina M', email: 'lina@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'u9', keycloakUserId: 'kc-fixture', fullName: 'Lina M', email: 'lina@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
 ];
 
 function detailResult(over: Partial<ReturnType<typeof useMeetingDetail>>) {

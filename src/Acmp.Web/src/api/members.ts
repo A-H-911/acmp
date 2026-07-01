@@ -15,6 +15,8 @@ export interface StreamRef {
 
 export interface Member {
   publicId: string;
+  /** The member's Keycloak subject — used to assign work (e.g. an action's OwnerUserId). */
+  keycloakUserId: string;
   fullName: string;
   email: string;
   role: string;

@@ -126,11 +126,6 @@ describe('ActionsRegister (P8b)', () => {
     expect(lastParams()).toMatchObject({ sortBy: 'due', sortDir: 'asc' });
   });
 
-  it('offers a disabled New-action stub (create → P8b2)', () => {
-    setup();
-    expect(screen.getByRole('button', { name: /New action/ })).toBeDisabled();
-  });
-
   it('renders an empty state with no clear button until a filter is active', async () => {
     const user = userEvent.setup();
     withRows([], 0);

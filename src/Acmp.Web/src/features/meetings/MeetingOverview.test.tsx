@@ -30,9 +30,9 @@ const itemsAgenda: Agenda = {
 const draftAgenda: Agenda = { id: 'a1', key: 'AGD-2026-019', status: 'Draft', version: 1, totalTimeboxMinutes: 0, publishedAt: null, items: [] };
 
 const MEMBERS: Member[] = [
-  { publicId: 'u1', fullName: 'Sara K', email: 's@x.com', role: 'Chairman', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
-  { publicId: 'u2', fullName: 'Omar R', email: 'o@x.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
-  { publicId: 'u3', fullName: 'Lina M', email: 'l@x.com', role: 'Reviewer', status: 'Active', isActive: true, isVotingEligible: false, streams: [] },
+  { publicId: 'u1', keycloakUserId: 'kc-fixture', fullName: 'Sara K', email: 's@x.com', role: 'Chairman', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'u2', keycloakUserId: 'kc-fixture', fullName: 'Omar R', email: 'o@x.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'u3', keycloakUserId: 'kc-fixture', fullName: 'Lina M', email: 'l@x.com', role: 'Reviewer', status: 'Active', isActive: true, isVotingEligible: false, streams: [] },
 ];
 
 function meeting(over: Partial<MeetingDetail> = {}): MeetingDetail {

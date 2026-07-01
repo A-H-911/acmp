@@ -30,7 +30,7 @@ const ROWS: TopicSummary[] = [
 ];
 
 const MEMBERS: Member[] = [
-  { publicId: 'm1', fullName: 'Khalid A', email: 'k@acmp.gov', role: 'Secretary', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
+  { publicId: 'm1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'k@acmp.gov', role: 'Secretary', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
 ];
 
 function card(key: string) {

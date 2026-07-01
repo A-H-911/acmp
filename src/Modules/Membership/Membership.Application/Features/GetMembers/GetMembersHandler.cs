@@ -25,6 +25,7 @@ public sealed class GetMembersHandler : IRequestHandler<GetMembersQuery, IReadOn
             .Select(m => new
             {
                 m.PublicId,
+                m.KeycloakUserId,
                 m.FullName,
                 m.Email,
                 m.Role,
@@ -35,7 +36,7 @@ public sealed class GetMembersHandler : IRequestHandler<GetMembersQuery, IReadOn
             .ToListAsync(ct);
 
         return rows.Select(m => new MemberDto(
-            m.PublicId, m.FullName, m.Email, m.Role.ToString(), m.Status.ToString(),
+            m.PublicId, m.KeycloakUserId, m.FullName, m.Email, m.Role.ToString(), m.Status.ToString(),
             m.Status == Domain.Enums.MembershipStatus.Active, m.IsVotingEligible,
             m.StreamIds.Where(streams.ContainsKey).Select(id => streams[id]).ToList())).ToList();
     }

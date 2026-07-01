@@ -17,6 +17,11 @@ vi.mock('../../api/decisions', async (orig) => ({
 }));
 import { useDecision, useSupersedeDecision } from '../../api/decisions';
 
+// The (always-mounted) CreateActionDialog pulls the member directory + create mutation; stub them so this
+// suite needs no QueryClient. Its own behaviour is covered in CreateActionDialog.test.tsx.
+vi.mock('../../api/members', () => ({ useMembers: () => ({ data: [] }) }));
+vi.mock('../../api/actions', () => ({ useCreateAction: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
+
 const mockDecision = useDecision as unknown as Mock;
 const mockSupersede = useSupersedeDecision as unknown as Mock;
 let mutateAsync: Mock;
