@@ -21,7 +21,74 @@
     "comingSoon": "سيتم بناء هذا القسم في مرحلة لاحقة.",
     "phase2Lead": "متاح في إصدار لاحق.",
     "phase2Title": "قادم في المرحلة 2",
-    "phase2Body": "هذا القسم مخطّط للمرحلة 2 وغير متاح بعد."
+    "phase2Body": "هذا القسم مخطّط للمرحلة 2 وغير متاح بعد.",
+    "cancel": "إلغاء"
+  },
+  "decisions": {
+    "notFoundTitle": "القرار غير موجود",
+    "notFoundBody": "هذا القرار غير موجود أو تمت إزالته.",
+    "supersededBadge": "مُستبدَل",
+    "supersededLead": "تم استبدال هذا القرار",
+    "rationale": "المبرّر",
+    "conditions": "الشروط",
+    "alternatives": "البدائل المدروسة",
+    "recordDetail": "تفاصيل السجل",
+    "convertAdr": "تحويل إلى سجل قرار",
+    "convertAdrSoon": "متاح عند إطلاق وحدة سجلات القرار (المرحلة 9+).",
+    "meta": {
+      "outcome": "النتيجة",
+      "approvedBy": "الجهة المعتمِدة",
+      "issuedAt": "تاريخ الإصدار"
+    },
+    "outcome": {
+      "Approved": "موافقة",
+      "ConditionallyApproved": "موافقة مشروطة",
+      "Rejected": "مرفوض",
+      "MoreInfoRequired": "يتطلب مزيدًا من المعلومات",
+      "FeedbackProvided": "تم تقديم ملاحظات",
+      "EnhancementsRequired": "يتطلب تحسينات",
+      "DesignChangesRequired": "يتطلب تغييرات في التصميم",
+      "ResearchRequired": "يتطلب بحثًا",
+      "Deferred": "مؤجّل",
+      "Escalated": "مُصعّد",
+      "Converted": "محوّل"
+    },
+    "conditionStatus": {
+      "Open": "مفتوح",
+      "Met": "مُستوفى",
+      "Waived": "مُتنازَل عنه"
+    },
+    "field": {
+      "outcome": "النتيجة",
+      "title": "العنوان",
+      "titlePh": "عنوان مختصر لهذا القرار",
+      "rationale": "المبرّر",
+      "rationalePh": "سبب توصّل اللجنة إلى هذه النتيجة",
+      "alternatives": "البدائل المدروسة",
+      "alternativesPh": "الخيارات التي دُرست ولم تُختَر",
+      "conditions": "الشروط",
+      "conditionN": "الشرط {{n}}",
+      "conditionPh": "شرط يجب استيفاؤه",
+      "addCondition": "إضافة شرط",
+      "removeCondition": "إزالة الشرط {{n}}"
+    },
+    "supersede": {
+      "action": "استبدال",
+      "title": "استبدال هذا القرار",
+      "subtitle": "يسجّل قرارًا جديدًا يحلّ محلّ هذا",
+      "newDecision": "قرار جديد",
+      "reason": "سبب الاستبدال",
+      "reasonPh": "اشرح سبب استبدال هذا القرار…",
+      "warn": "لا يُحذف القرار الأصلي أبدًا. يُوسم كمُستبدَل ويُحفظ في السجل غير القابل للتعديل.",
+      "confirm": "استبدال القرار",
+      "error": "تعذّر استبدال القرار. يرجى المحاولة مرة أخرى.",
+      "err": {
+        "title": "العنوان مطلوب.",
+        "rationale": "المبرّر مطلوب.",
+        "reason": "السبب مطلوب.",
+        "conditions": "القرار المشروط يحتاج شرطًا واحدًا على الأقل."
+      }
+    }
   },
   "nav": {
     "primary": "التنقل الرئيسي",

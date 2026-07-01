@@ -25,6 +25,7 @@ namespace Acmp.Modules.Decisions.Application.Features.SupersedeDecision;
 public sealed record SupersedeDecisionCommand(
     Guid PriorDecisionId,
     DecisionOutcome Outcome,
+    LocalizedString Title,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     IReadOnlyList<DecisionConditionRequest> Conditions,
@@ -39,6 +40,10 @@ public sealed class SupersedeDecisionValidator : AbstractValidator<SupersedeDeci
     {
         RuleFor(x => x.PriorDecisionId).NotEmpty();
         RuleFor(x => x.Outcome).IsInEnum();
+
+        RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
+        RuleFor(x => x.Title!.En).NotEmpty().When(x => x.Title is not null).WithMessage("Title (EN) is required.");
+        RuleFor(x => x.Title!.Ar).NotEmpty().When(x => x.Title is not null).WithMessage("Title (AR) is required.");
 
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
         RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
@@ -102,7 +107,7 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
 
         // Successor inherits the prior's topic + meeting; it reaches Issued before the prior is superseded.
         var successor = Decision.Draft(key, prior.TopicId, prior.MeetingId, request.Outcome,
-            request.Rationale, request.Alternatives, voteId: null, conditions, sub, now);
+            request.Title, request.Rationale, request.Alternatives, voteId: null, conditions, sub, now);
         successor.Issue(sub, name, chairOverride: false, overrideJustification: null, now);
         _db.Decisions.Add(successor);
 

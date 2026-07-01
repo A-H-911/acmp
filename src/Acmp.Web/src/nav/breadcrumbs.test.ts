@@ -40,6 +40,10 @@ describe('deriveBreadcrumbs', () => {
 
     const meeting = deriveBreadcrumbs('/meetings/MTG-2026-001', t);
     expect(meeting[2]).toMatchObject({ label: 'MTG-2026-001', mono: true });
+
+    const decision = deriveBreadcrumbs('/decisions/DECN-2026-008', t);
+    expect(decision.map((c) => c.label)).toEqual([t('nav.home'), t('nav.decisions'), 'DECN-2026-008']);
+    expect(decision[2]).toMatchObject({ label: 'DECN-2026-008', mono: true, current: true });
   });
 
   it('handles the notifications inbox and unknown paths', () => {

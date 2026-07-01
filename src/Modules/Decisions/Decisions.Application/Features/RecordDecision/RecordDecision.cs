@@ -19,6 +19,7 @@ public sealed record RecordDecisionCommand(
     Guid TopicId,
     Guid? MeetingId,
     DecisionOutcome Outcome,
+    LocalizedString Title,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     Guid? VoteId,
@@ -36,6 +37,10 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
 
         // LocalizedString's positional ctor does NOT validate (only Create does, and that throws an
         // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/16 §1.5).
+        RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
+        RuleFor(x => x.Title!.En).NotEmpty().When(x => x.Title is not null).WithMessage("Title (EN) is required.");
+        RuleFor(x => x.Title!.Ar).NotEmpty().When(x => x.Title is not null).WithMessage("Title (AR) is required.");
+
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
         RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
         RuleFor(x => x.Rationale!.Ar).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (AR) is required.");
@@ -85,7 +90,7 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
             .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
 
         var decision = Decision.Draft(key, request.TopicId, request.MeetingId, request.Outcome,
-            request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
+            request.Title, request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
 
         _db.Decisions.Add(decision);
         await _db.SaveChangesAsync(ct);

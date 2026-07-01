@@ -21,7 +21,74 @@
     "comingSoon": "This area will be built in a later phase.",
     "phase2Lead": "Available in a later release.",
     "phase2Title": "Coming in Phase 2",
-    "phase2Body": "This area is planned for Phase 2 and isn’t available yet."
+    "phase2Body": "This area is planned for Phase 2 and isn’t available yet.",
+    "cancel": "Cancel"
+  },
+  "decisions": {
+    "notFoundTitle": "Decision not found",
+    "notFoundBody": "This decision does not exist or has been removed.",
+    "supersededBadge": "Superseded",
+    "supersededLead": "This decision has been superseded",
+    "rationale": "Rationale",
+    "conditions": "Conditions",
+    "alternatives": "Alternatives considered",
+    "recordDetail": "Record detail",
+    "convertAdr": "Convert to ADR",
+    "convertAdrSoon": "Available when the ADR module ships (Phase 9+).",
+    "meta": {
+      "outcome": "Outcome",
+      "approvedBy": "Approving authority",
+      "issuedAt": "Issued"
+    },
+    "outcome": {
+      "Approved": "Approved",
+      "ConditionallyApproved": "Conditionally Approved",
+      "Rejected": "Rejected",
+      "MoreInfoRequired": "More Info Required",
+      "FeedbackProvided": "Feedback Provided",
+      "EnhancementsRequired": "Enhancements Required",
+      "DesignChangesRequired": "Design Changes Required",
+      "ResearchRequired": "Research Required",
+      "Deferred": "Deferred",
+      "Escalated": "Escalated",
+      "Converted": "Converted"
+    },
+    "conditionStatus": {
+      "Open": "Open",
+      "Met": "Met",
+      "Waived": "Waived"
+    },
+    "field": {
+      "outcome": "Outcome",
+      "title": "Title",
+      "titlePh": "A short headline for this decision",
+      "rationale": "Rationale",
+      "rationalePh": "Why the committee reached this outcome",
+      "alternatives": "Alternatives considered",
+      "alternativesPh": "Options that were weighed and not chosen",
+      "conditions": "Conditions",
+      "conditionN": "Condition {{n}}",
+      "conditionPh": "A condition that must be met",
+      "addCondition": "Add condition",
+      "removeCondition": "Remove condition {{n}}"
+    },
+    "supersede": {
+      "action": "Supersede",
+      "title": "Supersede this decision",
+      "subtitle": "Records a new decision that replaces this one",
+      "newDecision": "New decision",
+      "reason": "Reason for superseding",
+      "reasonPh": "Explain why this decision is being replaced…",
+      "warn": "The original decision is never deleted. It is marked Superseded and kept in the immutable history.",
+      "confirm": "Supersede decision",
+      "error": "The decision could not be superseded. Please try again.",
+      "err": {
+        "title": "A title is required.",
+        "rationale": "A rationale is required.",
+        "reason": "A reason is required.",
+        "conditions": "A conditionally-approved decision needs at least one condition."
+      }
+    }
   },
   "nav": {
     "primary": "Primary navigation",

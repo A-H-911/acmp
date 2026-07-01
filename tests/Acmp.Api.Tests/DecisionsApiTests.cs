@@ -27,6 +27,7 @@ public class DecisionsApiTests
         topicId = topicId ?? Guid.NewGuid(),
         meetingId = (Guid?)null,
         outcome = "Approved",
+        title = Loc("Adopt Keycloak", "اعتماد كيكلوك"),
         rationale = Loc("Sound choice", "اختيار سليم"),
         alternatives = (object?)null,
         voteId = (Guid?)null,
@@ -129,6 +130,7 @@ public class DecisionsApiTests
         var supersede = await chair.PostAsJsonAsync($"/api/decisions/{prior.Id}/supersede", new
         {
             outcome = "Approved",
+            title = Loc("Adopt Keycloak (v2)", "اعتماد كيكلوك (٢)"),
             rationale = Loc("Corrected", "مصحح"),
             alternatives = (object?)null,
             conditions = Array.Empty<object>(),

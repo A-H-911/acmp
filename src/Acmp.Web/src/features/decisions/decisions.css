@@ -1,0 +1,287 @@
+/*
+ * Decision detail (P7b) — composed to "ACMP Decision, Voting & ADR" (isDecision).
+ * Logical properties only (RTL-safe); tokens from the design system. The outcome/status
+ * chips reuse the shared StatusChip; only detail-specific layout lives here.
+ */
+
+.dec-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-block-end: 8px;
+}
+.dec-head-main {
+  min-inline-size: 0;
+  flex: 1 1 420px;
+}
+.dec-head-chips {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-block-end: 8px;
+  flex-wrap: wrap;
+}
+.dec-key-chip {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding-block: 2px;
+  padding-inline: 9px;
+}
+.dec-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.dec-head-actions {
+  display: flex;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+.dec-head-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* superseded banner */
+.dec-superseded-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--st-neutral-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  padding-block: 12px;
+  padding-inline: 16px;
+  margin-block: 10px 6px;
+  color: var(--st-neutral-fg);
+}
+.dec-superseded-banner svg {
+  flex: 0 0 auto;
+}
+.dec-superseded-lead {
+  font-size: 13px;
+  font-weight: 600;
+}
+.dec-superseded-reason {
+  font-size: 12.5px;
+}
+
+/* body + sidebar grid */
+.dec-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+  margin-block-start: 14px;
+}
+@media (max-width: 900px) {
+  .dec-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dec-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  padding-block: 22px;
+  padding-inline: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.dec-body-muted {
+  opacity: 0.62;
+}
+.dec-section-h {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.dec-prose {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.dec-conditions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dec-condition {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.dec-condition-mark {
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.dec-condition-mark.warn {
+  background: var(--st-warn-bg);
+  color: var(--st-warn-fg);
+}
+.dec-condition-mark.success {
+  background: var(--st-success-bg);
+  color: var(--st-success-fg);
+}
+.dec-condition-mark.neutral {
+  background: var(--st-neutral-bg);
+  color: var(--st-neutral-fg);
+}
+.dec-condition-text {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/* record-detail sidebar */
+.dec-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dec-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.dec-card-h {
+  padding-block: 12px;
+  padding-inline: 15px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.dec-card-body {
+  padding-block: 6px 12px;
+  padding-inline: 15px;
+}
+.dec-meta-row {
+  padding-block: 9px;
+  border-block-end: 1px solid var(--border-soft);
+}
+.dec-meta-row:last-child {
+  border-block-end: 0;
+}
+.dec-meta-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-block-end: 3px;
+}
+.dec-meta-value {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* supersede dialog body */
+.dec-supersede-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: start;
+}
+.dec-supersede-flow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  background: var(--subtle);
+  border-radius: 10px;
+}
+.dec-supersede-flow-new {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.dec-supersede-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding-block: 11px;
+  padding-inline: 13px;
+  background: var(--st-warn-bg);
+  border-radius: 9px;
+  font-size: 12px;
+  color: var(--st-warn-fg);
+  line-height: 1.5;
+}
+.dec-supersede-warn svg {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+}
+
+.dec-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dec-condition-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dec-condition-row .input {
+  flex: 1 1 auto;
+}
+.dec-condition-rm {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.dec-condition-rm:hover {
+  background: var(--subtle);
+}
+.dec-condition-add {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
