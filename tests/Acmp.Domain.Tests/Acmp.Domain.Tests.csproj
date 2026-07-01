@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Modules\Topics\Topics.Domain\Acmp.Modules.Topics.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Meetings\Meetings.Domain\Acmp.Modules.Meetings.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Decisions\Decisions.Domain\Acmp.Modules.Decisions.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Actions\Actions.Domain\Acmp.Modules.Actions.Domain.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
   </ItemGroup>
 

@@ -29,6 +29,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > (decisions files 100% lines), i18n parity 670, axe AA clean. Honest defers unchanged (Convert-to-ADR stub;
 > from-topic/successor-key links omitted per ADR-0001; vote/audit-timeline → P9/P14). See progress-log P7b.
 >
+> P8a update (2026-07-01): Actions module backend (Domain/Application/Infrastructure/API) — the `ActionItem`
+> aggregate + W13/W14 lifecycle (create/start/block/unblock/progress/complete/verify/cancel), derived
+> overdue, targeted owner notifications, `ACT-YYYY-###` keys, migration `Actions_Init`. **SoD-1 enforcement**
+> (verifier ≠ owner/completer) is now wired to `VerifyActionHandler` with the audited denial → 403. **AC-012 /
+> AC-013 stay Partial** (domain + handler + HTTP-pipeline proven; the **Met** flip waits on the live real-stack
+> Keycloak-PKCE + SQL leg → P17 per G-TRACE). AC-054/055/056 (Hangfire reminders/escalation + Admin job
+> dashboard) stay Pending → P8c; AC-029 (decision downstream-link gate, OQ-045) stays Pending → P8d. Backend
+> 709 green (per-file coverage gate 168 files, global 99.62%). See progress-log P8a entry.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >
@@ -349,8 +358,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-009 | ABAC | Partial | AbacHandlerTests + TopicApiTests (grant-on-accept) | Grant-on-accept + ABAC owner check proven live on accept; per-topic edit 403 → P5b |
 | AC-010 | ABAC | Partial | AbacHandlerTests + MembershipResolverTests | Stream scope handler + resolver proven; live action-on-out-of-scope-topic 403 → P5/P8 |
 | AC-011 | ABAC | Partial | AbacHandlerTests | Capability scoped to the specific topic proven; presenter meeting-window runtime enforcement → P9 (live vote/meeting-window path) |
-| AC-012 | SoD-1 | Partial | SegregationOfDutiesTests | Verifier≠owner predicate proven; Action.Verify enforcement → P8 |
-| AC-013 | SoD-1 | Partial | SegregationOfDutiesTests | Independent-verifier predicate proven; positive path at Action.Verify → P8 |
+| AC-012 | SoD-1 | Partial | SegregationOfDutiesTests + ActionHandlerTests (owner-verify denied + `ActionVerifyDenied` audit, stays Completed) + ActionsApiTests (owner verify → 403, HTTP) | P8a: the SoD-1 gate is now enforced in `VerifyActionHandler` — the owner's verify attempt is audited then refused (403); live real-stack (Keycloak PKCE + SQL) UI leg → P17 |
+| AC-013 | SoD-1 | Partial | SegregationOfDutiesTests + ActionHandlerTests (independent verifier → Verified + `ActionVerified` audit) + ActionsApiTests (third-party verify → 204, Verified) | P8a: the positive verify path (verifier ≠ owner ≠ completer) transitions Completed→Verified, stamps the verifier, notifies the owner; live real-stack leg → P17 |
 | AC-014 | SoD-2 | Partial | MinutesHandlerTests (sole-author approval allowed + flagged; different approver clears the flag) + MinutesApiTests (sole-author publish → ApprovedBySoleAuthor) + MeetingMinutes.test (published record renders read-only) | P7c: soft SoD-2 flag + `ApprovedBySoleAuthor`; P7d: the minutes tab renders the approved/published record; live real-stack UI → P17 |
 | AC-015 | SoD-3 | Partial | SegregationOfDutiesTests | Co-attestation predicate proven; Vote close + chair-approve enforcement → P9 |
 | AC-016 | SoD-3 | Partial | SegregationOfDutiesTests + DecisionTests/DecisionHandlerTests (override choice + justification + flag recorded on issue) | Co-attestation predicate proven; P7a records the chair-override choice + justification + `DecisionIssued` override flag, but the SoD-3 co-attestation GATE is vote-coupled → stays Partial→P9 |

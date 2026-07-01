@@ -33,6 +33,9 @@
     <ProjectReference Include="..\..\src\Modules\Meetings\Meetings.Application\Acmp.Modules.Meetings.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Decisions\Decisions.Domain\Acmp.Modules.Decisions.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Decisions\Decisions.Application\Acmp.Modules.Decisions.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Actions\Actions.Domain\Acmp.Modules.Actions.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Actions\Actions.Application\Acmp.Modules.Actions.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Actions\Actions.Infrastructure\Acmp.Modules.Actions.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Domain\Acmp.Modules.Notifications.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Application\Acmp.Modules.Notifications.Application.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
