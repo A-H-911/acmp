@@ -6,4 +6,5 @@ public interface IMeetingKeyGenerator
 {
     Task<string> NextMeetingKeyAsync(int year, CancellationToken ct = default);
     Task<string> NextAgendaKeyAsync(int year, CancellationToken ct = default);
+    Task<string> NextMinutesKeyAsync(int year, CancellationToken ct = default);
 }

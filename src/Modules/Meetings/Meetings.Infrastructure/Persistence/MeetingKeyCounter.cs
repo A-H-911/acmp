@@ -6,7 +6,7 @@
 // scale, with a unique key index failing loud on the rare concurrent collision.
 internal sealed class MeetingKeyCounter
 {
-    public string Prefix { get; set; } = string.Empty;  // "MTG" or "AGN"
+    public string Prefix { get; set; } = string.Empty;  // "MTG", "AGN", or "MIN"
     public int Year { get; set; }
     public int Next { get; set; }
 }
