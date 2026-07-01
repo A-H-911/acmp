@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Membership.Application.Features.CreateDelegation;
 using Acmp.Modules.Membership.Application.Features.DeactivateMember;
+using Acmp.Modules.Membership.Application.Features.GetMembers;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
@@ -84,6 +85,23 @@ public class MembershipFeatureTests
         var members = await db.Members.ToListAsync();
         members.Should().ContainSingle();
         members[0].FullName.Should().Be("After");
+    }
+
+    // Fork A (P8b2b): the directory exposes the Keycloak subject so committee UIs can assign work to a
+    // member by their stable identity (the Actions "Owner" select sends it as OwnerUserId).
+    [Fact]
+    public async Task GetMembers_exposes_the_keycloak_subject_for_owner_assignment()
+    {
+        var user = CurrentUser("kc-9", "Dana", "dana@acmp.gov", "Member");
+        await using var db = NewDb(user);
+        await new ProvisionCurrentUserHandler(db, user, Clock(), Audit())
+            .Handle(new ProvisionCurrentUserCommand(), CancellationToken.None);
+
+        var members = await new GetMembersHandler(db).Handle(new GetMembersQuery(false), CancellationToken.None);
+
+        members.Should().ContainSingle();
+        members[0].KeycloakUserId.Should().Be("kc-9");
+        members[0].FullName.Should().Be("Dana");
     }
 
     [Fact]

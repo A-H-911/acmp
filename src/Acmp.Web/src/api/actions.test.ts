@@ -4,6 +4,7 @@ import {
   useActionsRegister, useActionsCounts, useAction,
   useStartAction, useUnblockAction, useVerifyAction,
   useBlockAction, useCancelAction, useUpdateActionProgress, useCompleteAction,
+  useCreateAction,
 } from './actions';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
@@ -121,5 +122,22 @@ describe('action lifecycle mutations', () => {
     await done.result.current.mutateAsync({ id: 'g1', completionNote: null });
     expect(urlOf(spy)).toBe('/api/actions/g1/complete');
     expect(lastBody(spy)).toEqual({ completionNote: null });
+  });
+
+  it('create POSTs the full body to /api/actions and invalidates the actions family', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { key: 'ACT-2026-050' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const inval = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useCreateAction(), { wrapper });
+    const out = await result.current.mutateAsync({
+      title: { en: 't', ar: 't' }, description: null, priority: 'Normal',
+      ownerUserId: 'kc-1', ownerName: 'One', dueDate: '2026-03-02T00:00:00Z',
+      sourceType: 'Decision', sourceId: 'g1', sourceKey: 'DECN-1', meetingKey: null,
+    });
+    expect(urlOf(spy)).toBe('/api/actions');
+    expect(methodOf(spy)).toBe('POST');
+    expect(lastBody(spy)).toMatchObject({ priority: 'Normal', ownerUserId: 'kc-1', sourceType: 'Decision', sourceId: 'g1' });
+    expect(out.key).toBe('ACT-2026-050');
+    expect(inval).toHaveBeenCalledWith({ queryKey: ['actions'] });
   });
 });

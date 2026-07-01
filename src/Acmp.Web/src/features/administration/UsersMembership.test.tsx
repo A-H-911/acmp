@@ -17,12 +17,12 @@ function result(over: Partial<ReturnType<typeof useMembers>>) {
 
 const MEMBERS: Member[] = [
   {
-    publicId: '1', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
+    publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
     streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهندسة' }],
   },
   {
-    publicId: '2', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',
+    publicId: '2', keycloakUserId: 'kc-fixture', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',
     status: 'Active', isActive: true, isVotingEligible: false, streams: [],
   },
 ];

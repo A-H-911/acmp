@@ -16,7 +16,8 @@
  *  - Owner filter is rendered (design parity) but disabled this slice — it needs a verified owner
  *    directory keyed to Keycloak subjects; follow-up.
  *  - Overdue is a server filter (?overdue=true), not the design's client toggle — correct under paging.
- *  - New action + Saved view are honest disabled stubs (create UI → P8b2; saved views not built).
+ *  - No create button: actions are always raised from a source page (P8b2b), never standalone. Saved
+ *    view is an honest disabled stub (not built).
  *  - Row navigation = a link on the Action title (accessible primary action), not a whole-row button.
  */
 import { useEffect, useState } from 'react';
@@ -98,12 +99,8 @@ export function ActionsRegister() {
             )}
           </div>
         </div>
-        <div className="act-head-actions">
-          {/* Create UI ships in P8b2 — honest disabled stub. */}
-          <Button disabled title={t('actions.newSoon')}>
-            <Icon name="plus" size={15} aria-hidden /> {t('actions.newAction')}
-          </Button>
-        </div>
+        {/* No create entry point here: an action is ALWAYS raised from a source artifact (a decision,
+            a meeting…), never standalone — so create lives on those pages, not the register (P8b2b). */}
       </div>
 
       <div className="act-bar" role="search" aria-label={t('actions.filtersLabel')}>
@@ -142,10 +139,11 @@ export function ActionsRegister() {
       ) : total === 0 ? (
         <div>
           <EmptyState icon="action" title={t('actions.empty.title')} body={t('actions.empty.body')} />
-          <div className="act-empty-actions">
-            {hasFilters && <Button variant="secondary" onClick={clearFilters}>{t('actions.clearFilters')}</Button>}
-            <Button disabled title={t('actions.newSoon')}>{t('actions.newAction')}</Button>
-          </div>
+          {hasFilters && (
+            <div className="act-empty-actions">
+              <Button variant="secondary" onClick={clearFilters}>{t('actions.clearFilters')}</Button>
+            </div>
+          )}
         </div>
       ) : (
         <>

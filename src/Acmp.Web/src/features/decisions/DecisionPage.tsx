@@ -26,6 +26,7 @@ import { Icon } from '../../components/icons';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { outcomeTone, conditionTone } from './decisionMeta';
 import { SupersedeDialog } from './SupersedeDialog';
+import { CreateActionDialog } from '../actions/CreateActionDialog';
 import './decisions.css';
 
 export function DecisionPage() {
@@ -34,6 +35,7 @@ export function DecisionPage() {
   const auth = useAuth();
   const { data, isLoading, isError, error, refetch } = useDecision(key);
   const [supersedeOpen, setSupersedeOpen] = useState(false);
+  const [createActionOpen, setCreateActionOpen] = useState(false);
 
   if (isLoading) return <section className="page"><LoadingState /></section>;
   if (isError || !data) {
@@ -56,6 +58,9 @@ export function DecisionPage() {
   const superseded = decn.status === 'Superseded';
   const isActive = decn.status === 'Issued';
   const canSupersede = isActive && hasRole(auth, 'chairman');
+  // W13: a follow-up action is raised from an active decision. Chairman/Secretary/Member may create; the
+  // API re-checks (Member is allow-if-owner). Owner assignment happens in the dialog.
+  const canCreateAction = isActive && hasRole(auth, 'chairman', 'secretary', 'member');
 
   const meta = [
     { label: t('decisions.meta.outcome'), value: t(`decisions.outcome.${decn.outcome}`) },
@@ -76,6 +81,12 @@ export function DecisionPage() {
         </div>
         {isActive && (
           <div className="dec-head-actions">
+            {canCreateAction && (
+              <Button variant="primary" onClick={() => setCreateActionOpen(true)}>
+                <Icon name="action" size={15} aria-hidden />
+                {t('actions.create.action')}
+              </Button>
+            )}
             <Button variant="secondary" disabled title={t('decisions.convertAdrSoon')}>
               <Icon name="adr" size={15} aria-hidden />
               {t('decisions.convertAdr')}
@@ -154,6 +165,13 @@ export function DecisionPage() {
           priorKey={decn.key}
           priorDecisionId={decn.id}
           cacheKey={key}
+        />
+      )}
+      {data.id && (
+        <CreateActionDialog
+          open={createActionOpen}
+          onClose={() => setCreateActionOpen(false)}
+          source={{ sourceType: 'Decision', sourceId: decn.id, sourceKey: decn.key }}
         />
       )}
     </section>
