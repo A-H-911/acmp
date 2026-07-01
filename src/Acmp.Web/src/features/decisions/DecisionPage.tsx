@@ -50,9 +50,8 @@ export function DecisionPage() {
   }
 
   const decn = data;
-  // Content is single-language (stored in the entered language only), so fall back to the populated
-  // column when the current UI language's column is empty.
-  const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en) || l.en || l.ar;
+  // Content is mirrored to both columns (en === ar), so a straight per-language pick is enough.
+  const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en);
   const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
   const superseded = decn.status === 'Superseded';
   const isActive = decn.status === 'Issued';

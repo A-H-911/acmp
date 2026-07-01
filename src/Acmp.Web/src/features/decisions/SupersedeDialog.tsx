@@ -5,10 +5,9 @@
  * rationale, optional alternatives, conditions when conditional) plus the reason. Extending the
  * one-field mock to the real body is a blessed deviation (design updated later).
  *
- * Content is entered in ONE language — the CURRENT UI language — and stored in that column only; the
- * other stays empty and reads fall back to the populated one (operator decision, matching how Topics
- * store single-language text today). A true bilingual content-editing surface is future work. UI chrome
- * stays fully EN/AR via i18n.
+ * Content is entered in one language and MIRRORED to both LocalizedString columns (en === ar) — the
+ * operator's choice, keeping both columns populated for Full-Text Search. A true bilingual content-editing
+ * surface is future work. UI chrome stays fully EN/AR via i18n.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -33,12 +32,12 @@ interface Props {
 }
 
 export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cacheKey }: Props) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const supersede = useSupersedeDecision(cacheKey);
 
-  // Store the typed text in the CURRENT UI language column only; the other stays empty (reads fall back).
-  const loc = (v: string): LocalizedText => (i18n.language === 'ar' ? { en: '', ar: v.trim() } : { en: v.trim(), ar: '' });
+  // Mirror the typed text into both bilingual columns (en === ar) — keeps both populated for FTS.
+  const loc = (v: string): LocalizedText => ({ en: v.trim(), ar: v.trim() });
 
   const [outcome, setOutcome] = useState<DecisionOutcome>('Approved');
   const [title, setTitle] = useState('');

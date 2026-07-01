@@ -277,20 +277,19 @@ public class DecisionHandlerTests
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
-    [Fact] // single-language entry is valid: content lands in one column, the other stays empty
-    public void Record_validator_accepts_single_language_content()
+    [Fact] // content is mirrored to both columns, so a field missing one language is rejected (clean 400)
+    public void Record_validator_requires_both_languages()
     {
         var v = new RecordDecisionValidator();
-        var enOnly = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
-            new LocalizedString("English title", ""), new LocalizedString("English rationale", ""),
-            null, null, Array.Empty<DecisionConditionRequest>());
-        v.Validate(enOnly).IsValid.Should().BeTrue();
+        var mirrored = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
+            Title, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
+        v.Validate(mirrored).IsValid.Should().BeTrue();
 
-        var arOnly = enOnly with { Title = new LocalizedString("", "عنوان"), Rationale = new LocalizedString("", "مبرر") };
-        v.Validate(arOnly).IsValid.Should().BeTrue();
+        var missingAr = mirrored with { Rationale = new LocalizedString("English only", "") };
+        v.Validate(missingAr).IsValid.Should().BeFalse();
 
-        var neither = enOnly with { Rationale = new LocalizedString("", "") };
-        v.Validate(neither).IsValid.Should().BeFalse();
+        var missingEn = mirrored with { Title = new LocalizedString("", "عربي فقط") };
+        v.Validate(missingEn).IsValid.Should().BeFalse();
     }
 
     [Fact] // a title over the nvarchar(512) column bound is a clean 400, not a SaveChanges 500
