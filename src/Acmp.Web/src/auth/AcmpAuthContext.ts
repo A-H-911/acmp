@@ -12,6 +12,10 @@ export interface AcmpAuth {
   isAuthenticated: boolean;
   error?: string;
   roles: CommitteeRole[];
+  /** The signed-in user's Keycloak subject — used to gate owner-only actions (e.g. hide Verify from
+   *  an action's own owner, SoD-1). Undefined when unauthenticated. Read from the ID token client-side;
+   *  the API is always the real gate. */
+  userId?: string;
   displayName: string;
   initials: string;
   signIn: () => void;

@@ -1,8 +1,12 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useActionsRegister, useActionsCounts, useAction } from './actions';
+import {
+  useActionsRegister, useActionsCounts, useAction,
+  useStartAction, useUnblockAction, useVerifyAction,
+  useBlockAction, useCancelAction, useUpdateActionProgress, useCompleteAction,
+} from './actions';
 import { ApiError } from './apiClient';
-import { makeQueryWrapper, stubFetch } from '../test/queryHarness';
+import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /* Real actions hooks vs a stubbed fetch — assert URL building, count fan-out, and retry rules. */
 afterEach(() => vi.unstubAllGlobals());
@@ -64,5 +68,58 @@ describe('useAction', () => {
     const { result } = renderHook(() => useAction('ACT-2026-999'), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect((result.current.error as ApiError).status).toBe(404);
+  });
+});
+
+describe('action lifecycle mutations', () => {
+  const methodOf = (spy: ReturnType<typeof stubFetch>) => (spy.mock.calls.at(-1)![1] as RequestInit).method;
+
+  it('start POSTs to /{id}/start with no body and invalidates the whole actions family', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const inval = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useStartAction(), { wrapper });
+    await result.current.mutateAsync({ id: 'g1' });
+    expect(urlOf(spy)).toBe('/api/actions/g1/start');
+    expect(methodOf(spy)).toBe('POST');
+    expect(lastBody(spy)).toBeUndefined();
+    expect(inval).toHaveBeenCalledWith({ queryKey: ['actions'] });
+  });
+
+  it('unblock and verify POST to their own no-body routes', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+    const unblock = renderHook(() => useUnblockAction(), { wrapper });
+    await unblock.result.current.mutateAsync({ id: 'g2' });
+    expect(urlOf(spy)).toBe('/api/actions/g2/unblock');
+    const verify = renderHook(() => useVerifyAction(), { wrapper });
+    await verify.result.current.mutateAsync({ id: 'g3' });
+    expect(urlOf(spy)).toBe('/api/actions/g3/verify');
+  });
+
+  it('block and cancel POST the mirrored bilingual reason body', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+    const block = renderHook(() => useBlockAction(), { wrapper });
+    await block.result.current.mutateAsync({ id: 'g1', reason: { en: 'stuck', ar: 'stuck' } });
+    expect(urlOf(spy)).toBe('/api/actions/g1/block');
+    expect(lastBody(spy)).toEqual({ reason: { en: 'stuck', ar: 'stuck' } });
+    const cancel = renderHook(() => useCancelAction(), { wrapper });
+    await cancel.result.current.mutateAsync({ id: 'g1', reason: { en: 'drop', ar: 'drop' } });
+    expect(urlOf(spy)).toBe('/api/actions/g1/cancel');
+    expect(lastBody(spy)).toEqual({ reason: { en: 'drop', ar: 'drop' } });
+  });
+
+  it('progress POSTs the numeric percent and complete POSTs the optional note', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+    const prog = renderHook(() => useUpdateActionProgress(), { wrapper });
+    await prog.result.current.mutateAsync({ id: 'g1', progressPct: 60 });
+    expect(urlOf(spy)).toBe('/api/actions/g1/progress');
+    expect(lastBody(spy)).toEqual({ progressPct: 60 });
+    const done = renderHook(() => useCompleteAction(), { wrapper });
+    await done.result.current.mutateAsync({ id: 'g1', completionNote: null });
+    expect(urlOf(spy)).toBe('/api/actions/g1/complete');
+    expect(lastBody(spy)).toEqual({ completionNote: null });
   });
 });

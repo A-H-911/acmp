@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { statusTone, progressColor, progressColorDetail, initials, ACTION_STATUSES } from './actionMeta';
+import { statusTone, progressColor, progressColorDetail, initials, ACTION_STATUSES, ALLOWED_TRANSITIONS } from './actionMeta';
 
 describe('actionMeta', () => {
   it('maps every ActionStatus to a chip tone (incl. Cancelled)', () => {
@@ -32,5 +32,20 @@ describe('actionMeta', () => {
     expect(initials('Noura Qassim')).toBe('NQ');
     expect(initials('Omar')).toBe('O');
     expect(initials('   ')).toBe('?');
+  });
+
+  it('permits exactly the transitions the ActionItem domain guards allow, per status', () => {
+    expect(ALLOWED_TRANSITIONS.Open).toEqual(['start', 'progress', 'cancel']);
+    expect(ALLOWED_TRANSITIONS.InProgress).toEqual(['block', 'progress', 'complete', 'cancel']);
+    expect(ALLOWED_TRANSITIONS.Blocked).toEqual(['unblock', 'progress', 'cancel']);
+    expect(ALLOWED_TRANSITIONS.Completed).toEqual(['verify', 'cancel']);
+    expect(ALLOWED_TRANSITIONS.Verified).toEqual([]);
+    expect(ALLOWED_TRANSITIONS.Cancelled).toEqual([]);
+  });
+
+  it('only ever offers verify from Completed (SoD-1 gate is layered on at render)', () => {
+    for (const [status, ops] of Object.entries(ALLOWED_TRANSITIONS)) {
+      if (ops.includes('verify')) expect(status).toBe('Completed');
+    }
   });
 });

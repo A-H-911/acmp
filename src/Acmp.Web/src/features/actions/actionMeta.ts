@@ -47,3 +47,25 @@ export function initials(name: string): string {
 
 /** ActionStatus values in lifecycle order — the register's Status filter options. */
 export const ACTION_STATUSES: ActionStatus[] = ['Open', 'InProgress', 'Blocked', 'Completed', 'Verified', 'Cancelled'];
+
+/** The W14 lifecycle transitions a user can trigger (docs/12 §7 — one POST endpoint each). */
+export type ActionTransition = 'start' | 'block' | 'unblock' | 'progress' | 'complete' | 'cancel' | 'verify';
+
+/**
+ * Which transitions each status permits — mirrors the ActionItem domain guards EXACTLY (RequireStatus):
+ *   Open        → Start · Update progress · Cancel
+ *   InProgress  → Block · Update progress · Complete · Cancel
+ *   Blocked     → Unblock · Update progress · Cancel
+ *   Completed   → Verify · Cancel
+ *   Verified/Cancelled → terminal (none)
+ * A wrong button would hit a domain 400/409, so the UI shows only what the state allows. Role/owner
+ * gating (docs/10 rows 14–15 + SoD-1 on `verify`) is layered on top at render time.
+ */
+export const ALLOWED_TRANSITIONS: Record<ActionStatus, ActionTransition[]> = {
+  Open: ['start', 'progress', 'cancel'],
+  InProgress: ['block', 'progress', 'complete', 'cancel'],
+  Blocked: ['unblock', 'progress', 'cancel'],
+  Completed: ['verify', 'cancel'],
+  Verified: [],
+  Cancelled: [],
+};

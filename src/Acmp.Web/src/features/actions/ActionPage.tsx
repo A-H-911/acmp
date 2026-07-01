@@ -21,6 +21,7 @@ import { StatusChip } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, progressColorDetail } from './actionMeta';
+import { ActionActions } from './ActionActions';
 import './actions.css';
 
 export function ActionPage() {
@@ -71,6 +72,7 @@ export function ActionPage() {
               )}
             </div>
             <h1 className="act-detail-title">{pick(act.title)}</h1>
+            <ActionActions action={act} />
           </header>
 
           <section className="card act-facts">

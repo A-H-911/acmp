@@ -7,9 +7,19 @@ import { ActionPage } from './ActionPage';
 import { ApiError } from '../../api/apiClient';
 import type { ActionDetail } from '../../api/actions';
 
-vi.mock('../../api/actions', async (orig) => ({
-  ...(await orig<typeof import('../../api/actions')>()),
-  useAction: vi.fn(),
+vi.mock('../../api/actions', async (orig) => {
+  const noopMut = () => ({ mutateAsync: vi.fn(), isPending: false });
+  return {
+    ...(await orig<typeof import('../../api/actions')>()),
+    useAction: vi.fn(),
+    useStartAction: noopMut, useUnblockAction: noopMut, useVerifyAction: noopMut,
+    useBlockAction: noopMut, useCancelAction: noopMut, useUpdateActionProgress: noopMut, useCompleteAction: noopMut,
+  };
+});
+// Auditor has no manage/verify rights → the lifecycle row renders nothing, keeping these read-only tests focused.
+vi.mock('../../auth/AcmpAuthContext', async (orig) => ({
+  ...(await orig<typeof import('../../auth/AcmpAuthContext')>()),
+  useAuth: () => ({ roles: ['auditor'], userId: 'kc-aud' }),
 }));
 import { useAction } from '../../api/actions';
 
