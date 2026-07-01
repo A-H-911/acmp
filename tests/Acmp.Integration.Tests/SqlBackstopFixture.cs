@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Decisions.Infrastructure.Persistence;
+﻿using Acmp.Modules.Actions.Infrastructure.Persistence;
+using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
@@ -35,6 +36,7 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
         await using (var db = NewTopicsSql()) await db.Database.MigrateAsync();
         await using (var db = NewMeetingsSql()) await db.Database.MigrateAsync();
         await using (var db = NewDecisionsSql()) await db.Database.MigrateAsync();
+        await using (var db = NewActionsSql()) await db.Database.MigrateAsync();
         await using (var db = NewNotificationsSql()) await db.Database.MigrateAsync();
     }
 
@@ -53,6 +55,9 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
 
     public DecisionsDbContext NewDecisionsSql() => new(
         SqlOptions<DecisionsDbContext>(DecisionsDbContext.Schema), Clock, CurrentUser);
+
+    public ActionsDbContext NewActionsSql() => new(
+        SqlOptions<ActionsDbContext>(ActionsDbContext.Schema), Clock, CurrentUser);
 
     public NotificationsDbContext NewNotificationsSql() => new(
         SqlOptions<NotificationsDbContext>(NotificationsDbContext.Schema), Clock, CurrentUser);

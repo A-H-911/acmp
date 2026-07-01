@@ -12,6 +12,87 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8a — Actions module backend (branch `feat/P8a-actions-backend`)
+
+### 2026-07-01 — Actions bounded context: lifecycle + SoD-1 verify (W13/W14; AC-012/013)
+
+**Module home.** A NEW **Actions** bounded context (Domain / Application / Infrastructure), mirroring the
+Decisions module exactly (Clean Architecture per module, MediatR vertical slices, EF owned-types, per-year
+key counter, cross-module value references, targeted in-app notifications). Backend only — no `Acmp.Web`
+(the Actions register UI is P8b). The C# aggregate is named **`ActionItem`**, not `Action`, to avoid an
+ambiguous-reference clash with the BCL `System.Action` delegate in every file that imports the namespace;
+the DbSet/table/key/DTOs stay "Actions"/`ACT-`.
+
+**What (backend).**
+- **Domain.** `ActionItem` aggregate (`AuditableEntity` + `RowVersion` + `PublicId`), 6-state
+  `ActionStatus` (Open→InProgress↔Blocked→Completed→Verified) + side `Cancelled`. Transitions: `Create`
+  (W13, Open + owner + source), `Start`, `Block`/`Unblock` (reason retained), `UpdateProgress` (0–100),
+  `Complete` (→100%, stamps the completer), `Verify` (Completed→Verified, write-once verifier stamp),
+  `Cancel` (any non-terminal→Cancelled). **Overdue is DERIVED** (`IsOverdue(now)`, DueDate < now while
+  Open/InProgress/Blocked) — never a stored status (docs/12 line 159). Lifecycle events on every transition.
+- **Application.** 8 command slices (Create/Start/Block/Unblock/UpdateProgress/Complete/Verify/Cancel — the
+  six simple transitions share the `ActionTransition` load→mutate→save→audit helper) + 2 reads
+  (`GetActionsRegister` paged/filtered with the derived-overdue + text filters in memory; `GetActionByKey`).
+  **SoD-1 (AC-012/013)** lives in `VerifyActionHandler`: `SegregationOfDuties.CanVerifyAction(actor, owner,
+  completedBy)` — a violation **audits the denied attempt then throws `ForbiddenAccessException` (403)**; the
+  P4 predicate is now wired to its enforcement point. FluentValidation requires bilingual reasons/notes
+  (mirrored EN+AR). Targeted (owner-only) notifications on create (assignment) + verify (closed), deep-linked
+  `/actions/{key}`; audit on every transition.
+- **Infrastructure.** `ActionsDbContext` (schema `actions`), `ActionConfiguration` (owned bilingual
+  Title/Description/BlockedReason/CompletionNote/CancelReason, RowVersion, unique `Key`, `OwnerUserId` index,
+  **`(SourceType, SourceId)` index for the P8d downstream-link query**); `ACT` key generator + counter;
+  migration **`Actions_Init`**. Wired into `Program.cs` (module + MediatR assembly + `MapActionEndpoints`),
+  `MigrationRunner`, and `acmp.sln`.
+- **API.** `ActionsEndpoints` (`/api/actions`): register + detail committee-wide reads; create + the six
+  transitions = `Action.Create`; verify = `Action.Verify` (SoD-1 in the handler). Domain guards → 409,
+  not-found → 404, SoD-1 → 403, RowVersion → 409.
+
+**Decisions applied / flagged (right-sized for ≤20 users; visual SoT = design, behavior SoT = package).**
+- **People fields are Keycloak subject strings + name snapshots** (Owner/CompletedBy/VerifiedBy), like
+  `Decision.ChairApprovedByUserId` — so the SoD-1 verifier≠owner/completer check is a direct comparison.
+  docs/11 types the owner as a member id; storing the sub for a self-contained SoD check is a **flagged
+  modeling choice** (a member-id + resolver is heavier than this on-prem tool needs).
+- **YAGNI deferrals (no AC + no design surface):** Assignees[] (Owner-only now), the append-only
+  `ProgressUpdate` history table (ProgressPct + optional CompletionNote + audit instead), and file
+  attachments — all flagged, none blocking an AC.
+- **"Raised in meeting (MTG-…)"** modeled as an optional `MeetingKey` snapshot (not silently dropped).
+- **`Complete` SETS `ProgressPct=100`** rather than requiring it first — a conscious divergence from docs/11's
+  "cannot mark Completed if not 100%" invariant (completing an action means it's done; avoids a clunky
+  two-step). Flagged.
+- **`SourceId` is trusted client input** (validated `NotEmpty` only — no cross-module existence check, ADR-0001).
+  P8d's AC-029 gate queries `(SourceType, SourceId)`, so a fabricated/typo'd source id yields an action that
+  satisfies no real decision's gate — acceptable for ≤20 trusted users; carried into the **P8d** plan so the
+  gate's correctness is not silently resting on unvalidated input.
+- **AC-029 exemption (operator GO):** the P8d gate will apply only to follow-up-bearing outcomes
+  (Approved/ConditionallyApproved/EnhancementsRequired/DesignChangesRequired/ResearchRequired) — not to
+  Rejected/Deferred/etc.
+- **ASM (record in RAID):** AC-029 will use the `ActionItem.SourceId` back-reference as the downstream-link
+  proxy **until the P10 typed-edge Traceability module (ADR-0008)** exists; reconcile then.
+
+**Honest defers (not built — later slices):** Hangfire due-soon reminders + overdue escalation + the
+Admin job dashboard (AC-054/055/056) → **P8c**; the `IssueDecision` downstream-link gate (AC-029, OQ-045)
+→ **P8d**; the Actions register + detail UI (`ACMP Lists & Registers.dc.html` `isActions`, routed
+`/actions/:key`) → **P8b**.
+
+**Verification.** BE `dotnet build acmp.sln` 0 errors (2 pre-existing NU1902 OpenTelemetry advisory
+warnings only); `dotnet format --verify-no-changes` clean; `dotnet test acmp.sln` **709 passed / 0 failed**
+(Domain 123 incl. 18 Action · Architecture 24 incl. the Actions-isolation boundary test · Application 472
+incl. ~15 Action handler/validator · Api 74 incl. 7 Actions HTTP · Integration 16 incl. the `ACT` unique-key
++ migration-applies backstops via Testcontainers/Docker). Per-file coverage gate **168 files, global 99.62%**
+(≥95%; every Actions file ≥95% lines). Architecture test asserts Actions depends on no other module's
+Domain/Infra (Shared contracts only).
+
+**AC.** **AC-012 / AC-013** (SoD-1 verifier ≠ owner) move to a **stronger Partial** — the domain transition,
+the audited denial + 403, and the positive `ActionVerified` path are now proven at domain + handler + HTTP
+pipeline; per the standing G-TRACE rule the **Met** flip waits on the live real-stack (Keycloak PKCE + real
+SQL) leg → **P17**. AC-054/055/056 stay Pending → P8c; AC-029 stays Pending → P8d.
+
+**Next.** P8b — Actions register + detail UI off `ACMP Lists & Registers.dc.html` (`isActions`), routed
+`/actions/:key` (blessed deviation from the drawer), wired to `/api/actions`; retires the `/actions`
+PlaceholderPage.
+
+---
+
 ## P7d — Minutes UI (branch `feat/P7d-minutes-ui`)
 
 ### 2026-07-01 — the `/meetings/:key/minutes` tab, governed by isMinutes + denied

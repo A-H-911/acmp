@@ -1,4 +1,6 @@
 ﻿using System.Data.Common;
+using Acmp.Modules.Actions.Domain;
+using Acmp.Modules.Actions.Domain.Enums;
 using Acmp.Modules.Decisions.Domain;
 using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Modules.Meetings.Domain;
@@ -142,6 +144,20 @@ public sealed class DbBackstopTests
         await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
     }
 
+    [Fact] // (top-level unique) two actions with the same human key — ACT-YYYY-### must be unique
+    public async Task ActionKey_Duplicate_IsRejectedBySql()
+    {
+        var key = UniqueKey("ACT");
+        var title = LocalizedString.Create("Do the thing", "افعل الشيء");
+        await using var db = _fx.NewActionsSql();
+        db.Actions.Add(ActionItem.Create(key, title, null, ActionPriority.Normal, "owner-a", "Owner A", null,
+            ActionSourceType.Decision, Guid.NewGuid(), "DECN-2026-001", null, DateTimeOffset.UtcNow));
+        db.Actions.Add(ActionItem.Create(key, title, null, ActionPriority.Normal, "owner-b", "Owner B", null,
+            ActionSourceType.Decision, Guid.NewGuid(), "DECN-2026-002", null, DateTimeOffset.UtcNow));
+
+        await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
+    }
+
     [Fact] // (composite unique) two minutes rows with the same (Key, Version) — a correction must bump the version
     public async Task MinutesKeyVersion_Duplicate_IsRejectedBySql()
     {
@@ -254,12 +270,14 @@ public sealed class DbBackstopTests
         await using var topics = _fx.NewTopicsSql();
         await using var meetings = _fx.NewMeetingsSql();
         await using var decisions = _fx.NewDecisionsSql();
+        await using var actions = _fx.NewActionsSql();
         await using var notifications = _fx.NewNotificationsSql();
 
         (await membership.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await topics.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await meetings.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await decisions.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
+        (await actions.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
         (await notifications.Database.GetPendingMigrationsAsync()).Should().BeEmpty();
 
         (await membership.Database.GetAppliedMigrationsAsync()).Should().NotBeEmpty();
