@@ -12,6 +12,60 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8b — Actions register + detail UI (branch `feat/P8b-actions-ui`)
+
+### 2026-07-01 — the `/actions` register + routed `/actions/:key` detail (read-only)
+
+**What (frontend, `Acmp.Web`).** The Actions register + detail screens, composed to
+`ACMP product context/ACMP Lists & Registers.dc.html` (`isActions` table + drill-in). Read-only slice —
+create + the lifecycle transitions land in **P8b2**.
+- **`api/actions.ts`** — `useActionsRegister(params)` (GET /api/actions, paged; server-side `status[]` +
+  `overdue` filters, `due`/`progress`/`status` sorts), `useAction(key)` (GET /api/actions/{key}, 404 = no
+  retry), and `useActionsCounts()` — two `pageSize=1` count queries for the GLOBAL, filter-independent
+  "N actions" + "N overdue" header (the paged list can't carry those facets).
+- **`ActionsRegister.tsx`** — header (count + overdue badge), filter bar (Status server filter · Owner
+  disabled stub · Overdue server toggle), the 7-column table (ID · Action · Linked · Owner · Due+clock ·
+  Progress bar · Status chip), and the four states (live / 8-row skeleton / empty / error). Reuses the shared
+  Table / FilterChip / StatusChip / states / Pagination. Retired the `/actions` PlaceholderPage.
+- **`ActionPage.tsx`** — routed detail: header (key chip + status + overdue badge), 6-fact grid, progress
+  bar, description, and a related panel (source ↑ display-only + a real `/meetings/:key` deep-link).
+- **`actionMeta.ts`** — status→tone (6 values incl. Cancelled), 4-way register + 3-way detail progress
+  colours, initials. **`actions.css`** — cells + detail layout at the reference's literal px, logical
+  properties only (RTL-safe). i18n `actions.*` EN+AR (every status value by hand — parity ≠ completeness).
+
+**Decisions applied / flagged (visual SoT = the `.dc.html`; behaviour SoT = the package).**
+- **GO'd blessed deviation:** detail is a **routed `/actions/:key`** page, not the design's in-page drawer,
+  so `ActionAssigned`/`ActionVerified` notifications deep-link. The design is to be updated to match.
+- **Header counts are GLOBAL** (filter-independent, as the design computes them) via `useActionsCounts`; the
+  "Showing X of Y" line is the paged/filtered count. Overdue is a **server** filter (`?overdue=true`), not
+  the design's client toggle — correct under paging.
+- **Only server-backed sorts exposed** (due/progress/status — `GetActionsRegister.Sort`); the design's
+  ID/Action/Owner sorts have no server sort, so those columns are not sortable (same call as the backlog).
+- **Owner filter rendered but disabled** — needs a verified owner directory keyed to Keycloak subjects;
+  follow-up. **`Priority`** is in the DTO but has no design column → omitted. **Other-language subtitle**
+  omitted on the detail (bilingual content mirrored → redundant), matching the decision detail.
+- **`SourceKey` nullable** → "Linked" and the related-source row render `—` / are omitted rather than a raw
+  Guid. **Related links are display-only** except the meeting deep-link; cross-artifact key→route resolution
+  → P10 traceability. **Cancelled** has no design visual → neutral tone (no-reference), flagged.
+- **New action + Saved view are honest disabled stubs** (create UI + saved views not built).
+
+**Honest defers (not built — later slices):** create form + owner lifecycle transitions (start/block/
+progress/complete) + independent **verify** UI (which also exercises the untested Member create/verify SoD-1
+path) → **P8b2**; Hangfire reminders/escalation + Admin job dashboard (AC-054/055/056) → **P8c**; the
+IssueDecision downstream-link gate (AC-029, OQ-045) → **P8d**.
+
+**Verification.** FE `tsc -b` clean; `oxlint` clean (1 pre-existing Toast warning); `vite build` clean;
+`vitest run --coverage` **470 passed / 0 failed**, new files **100% lines** (per-file ≥95% gate green,
+global 98.86%); i18n parity **764 keys**; axe AA clean on register + detail. **Visual verify DONE** via a
+throwaway dev-stub harness (real components + stubbed data, no auth/stack — the running `:8088` served the
+pre-P8b bundle with no seeded Actions data): register + detail screenshot in **EN-light + AR-RTL-dark**,
+both matching the `.dc.html` `isActions` reference — header/filters/7-col table, overdue red+clock, progress
+thresholds, status tones, full RTL mirroring (main↔related swap, chevron flip, right-to-left bar fill), dark
+tokens. **No drift.** (Minor: Arabic dates rendered Western digits in headless ICU; full Chrome/prod yields
+Arabic-Indic + month names — a harness artifact, not a code issue.)
+
+---
+
 ## P8a — Actions module backend (branch `feat/P8a-actions-backend`)
 
 ### 2026-07-01 — Actions bounded context: lifecycle + SoD-1 verify (W13/W14; AC-012/013)
