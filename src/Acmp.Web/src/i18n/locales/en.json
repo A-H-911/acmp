@@ -448,8 +448,36 @@
       "emptyBody": "Delivery streams and their committee owners land with the stream registry (BL-024)."
     },
     "jobs": {
-      "emptyTitle": "No job data yet",
-      "emptyBody": "Background job queues and recent Hangfire runs appear here in a later phase."
+      "stat": {
+        "succeeded": "Succeeded",
+        "processing": "Processing",
+        "scheduled": "Scheduled",
+        "enqueued": "Enqueued",
+        "failed": "Failed"
+      },
+      "col": {
+        "job": "Job",
+        "queue": "Queue",
+        "status": "Status",
+        "when": "When",
+        "duration": "Duration",
+        "retries": "Retries"
+      },
+      "status": {
+        "Succeeded": "Succeeded",
+        "Processing": "Processing",
+        "Scheduled": "Scheduled",
+        "Enqueued": "Enqueued",
+        "Failed": "Failed"
+      },
+      "unit": { "ms": "{{n}}ms", "s": "{{n}}s" },
+      "retry": "Retry",
+      "retryError": "Couldn't re-queue the job. Please try again.",
+      "none": "—",
+      "notConfiguredTitle": "Job monitoring not configured",
+      "notConfiguredBody": "Background jobs (Hangfire) aren't running on this instance, so there's nothing to monitor. This is expected on test or minimal deployments.",
+      "emptyTitle": "No jobs yet",
+      "emptyBody": "Background jobs appear here as the scheduler runs them."
     }
   },
   "topics": {

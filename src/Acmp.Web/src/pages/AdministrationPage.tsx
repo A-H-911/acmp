@@ -1,10 +1,10 @@
 /*
  * Administration area (admin-gated by route; mirrors "ACMP Administration.dc.html"). Owns the page
  * header + the 7-tab strip and renders the active tab's body. The design marks no tab disabled, so
- * every tab is navigable (Usage Map): Users is fully wired; System Health and Roles are live/canonical;
- * Notification Settings is canonical read-only; Templates / Streams / Job Monitor are honest-empty
- * because their module data lands in later phases (P14/P15). Opening a user's detail replaces the
- * tabbed view (the design's `userdetail` sub-state).
+ * every tab is navigable (Usage Map): Users is fully wired; System Health, Roles, and Job Monitor are
+ * live/canonical; Notification Settings is canonical read-only; Templates / Streams are honest-empty
+ * because their module data lands in later phases (P15). Opening a user's detail replaces the tabbed
+ * view (the design's `userdetail` sub-state).
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { UsersDirectory, UserDetail } from '../features/administration/UsersMemb
 import { SystemHealth } from '../features/administration/SystemHealth';
 import { RolesReference } from '../features/administration/RolesReference';
 import { NotificationSettings } from '../features/administration/NotificationSettings';
+import { JobMonitor } from '../features/administration/JobMonitor';
 import { ComingDataTab } from '../features/administration/ComingDataTab';
 import '../styles/administration.css';
 
@@ -65,7 +66,7 @@ export default function AdministrationPage() {
       {sub === 'notifications' && <NotificationSettings />}
       {sub === 'templates' && <ComingDataTab tab="templates" icon="template" />}
       {sub === 'streams' && <ComingDataTab tab="streams" icon="stream" />}
-      {sub === 'jobs' && <ComingDataTab tab="jobs" icon="cog" />}
+      {sub === 'jobs' && <JobMonitor />}
     </section>
   );
 }
