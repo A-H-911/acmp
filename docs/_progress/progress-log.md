@@ -12,6 +12,90 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P9a — Voting backend (branch `feat/P9a-voting-backend`)
+
+### 2026-07-02 — the Vote aggregate + SoD-3 gate (W11; AC-021/022/023/024/025/026 + AC-015/016 + AC-052)
+
+**Module home.** The **Vote** aggregate is built INSIDE the existing **Decisions** module (docs/11 §Vote:
+"Owning module: Decisions") — NOT a new bounded context, exactly like MinutesOfMeeting lives inside Meetings.
+Backend only — no `Acmp.Web` (the `/votes/:id` UI + wiring the meeting-workspace "Call vote" stub = P9b).
+
+**What (backend).**
+- **Domain.** `Vote` aggregate (`AuditableEntity` + `RowVersion` + `PublicId`), 4-state `VoteStatus`
+  (Configured→Open→Closed→Ratified, strictly forward-only). Owned `Ballot` collection (VoterUserId + name
+  snapshot + Choice + optional mirrored bilingual Comment + `Recused`), always attributed (ADR-0010). Owned
+  `QuorumRule` (MinPresent/MinCast) + serialized `Options` + frozen `VoteTally`. Transitions: `Configure`
+  (≥2 options, MinCast≥1, seeds one awaiting ballot per eligible voter = eligibility), `Open` (present-quorum
+  gate), `Cast` (first submission; second cast throws → AC-022), `ChangeBallot` (design's change-until-close),
+  `Recuse` (excluded from quorum base + tally), `Close` (cast-quorum gate → AC-024, freezes tally, records the
+  closer as `CounterUserId`), `Ratify` (Closed→Ratified, chair-coupled). **Immutable after Close** — no public
+  mutators, re-transitions throw (AC-025/026); crypto hash-chain deferred to P14 (ADR-0009), same as Decision/MoM.
+- **Live-attendance quorum (operator fork 1).** New Shared seam `IMeetingQuorumSource`
+  (`Contracts/Meetings`, ADR-0001) → `GetPresentEligibleCountAsync(meetingId)`; impl `MeetingQuorumSource` in
+  `Meetings.Infrastructure` counts Attendance rows with `IsVotingEligible` AND Status∈{Present,Late}.
+  `OpenVoteHandler` resolves the present count from the linked meeting and lets the domain compare to MinPresent;
+  **no MeetingId → present check skipped** (flagged). Cast-quorum (AC-024) stays local to the Vote.
+- **SoD-3 (operator fork 2 = Option A).** `Close` records the closer as `CounterUserId` (the counter of record —
+  no separate co-attester field). The gate is a retrofit onto `IssueDecisionHandler` (mirrors P8d's AC-029
+  retrofit): a vote-coupled decision's chair-issuer may NOT be the vote's counter →
+  `SegregationOfDuties.HasIndependentCoAttestation(chair, counter)` false → audited denial
+  (`Decisions.DecisionIssueDenied`) + `ForbiddenAccessException` (403); on success the vote is ratified in the
+  same transaction. `VoteId == null` skips the gate entirely (existing P7/P8 decision paths unchanged, verified).
+- **Application.** Command slices (Configure/Open/Cast/Change/Recuse/Close = `Vote.Manage` for
+  configure/open/close, `Vote.Cast` for cast/change/recuse) + reads (`GetVoteByKey`, `GetVotesForTopic` by
+  Topic PublicId). `VoteOpened` notification fans out to eligible voters via `ICommitteeDirectory` +
+  `INotificationChannel`, deep-link `/votes/{key}` (AC-021/AC-052). Audit on every transition.
+- **Infrastructure/API.** `VoteConfiguration` (owned `vote_ballots` child table + unique `(VoteEntityId,
+  VoterUserId)` one-ballot backstop; JSON `ValueConverter`+`ValueComparer` for Options/Tally; owned QuorumRule;
+  RowVersion; unique Key). `VOTE-YYYY-###` via the multi-prefix key generator (shares `decision_key_counters`).
+  Migration **`Votes_Init`** (forward-only). `VotesEndpoints` (`/api/votes`) wired in `Program.cs`.
+
+**Review + hardening (csharp-reviewer, 1 HIGH + 1 MEDIUM acted on, pre-commit).**
+- **HIGH — vote-coupling was unvalidated.** A caller could set `Decision.VoteId` to a nonexistent or
+  cross-topic vote; in `IssueDecisionHandler` a null lookup **silently skipped** the SoD-3 gate + ratify while
+  the decision still recorded as vote-coupled — defeating the very control P9a adds. Fixed: a claimed `VoteId`
+  must now resolve, match the decision's topic, and be Closed/Ratified — enforced at **issue** (mandatory,
+  before SoD-3) and at **record** (draft-time, exists + same-topic) so a dangling coupling is never persisted.
+  Non-existent → 409; wrong topic → 409; not-closed → 409 (this also fixes the MEDIUM: the pre-close case used
+  to throw a misleading "sole counter" 403 + false audit). +3 failing-first guard tests.
+- **LOW:** documented `VoteTally`'s reference-equality footgun (EF comparer bypasses it) and corrected the
+  `DecisionConfiguration`/`RecordDecision` comments (VoteId is an INTRA-module ref, app-validated, FK omitted
+  by choice; AC-029 is enforced at issue as of P8d). **Flagged not fixed (LOW):** `ConfigureVote`'s eligible-
+  voter list isn't cross-checked against `ICommitteeDirectory` — v1 trusts the Chairman/Secretary caller;
+  P9b sources voters from the roster.
+
+**Decisions applied / flagged.**
+- **Cast vs ChangeBallot:** `Cast` = first submission only (AC-022 rejects a 2nd cast, audited denial);
+  `ChangeBallot` = the design's "change your vote until close". Both under `Vote.Cast`.
+- **Abstain counts toward the cast-quorum** (it's a deliberate position, ADR-0010) — non-recused ballots with
+  any choice, incl. Abstain, count for MinCast; recused ballots don't. Flagged.
+- **No-MeetingId present-check skip** (a vote run outside a live meeting has no attendance to count).
+
+**Verification.** `dotnet build acmp.sln` 0 errors (2 pre-existing NU1902 OpenTelemetry advisories only);
+`dotnet format --verify-no-changes` clean; `dotnet test` green — **Domain 138 / Application 531 / Architecture
+24 / Api 99 / Integration 17** (Testcontainers ran: new `VOTE` unique-key + migration-applies backstops). New
+tests: `VoteTests` (15 — configure/open/cast/recuse/close guards, tally freeze, immutability, forward-only),
+`VoteHandlerTests` (25 — each command incl. authz-deny, double-vote audited denial, present-quorum via a mocked
+seam, VoteOpened fan-out, the SoD-3 AC-015/016 path, + the 3 coupling-guard tests), `VotesApiTests` (9 — HTTP
+round-trips incl. AC-024 close-without-quorum and AC-025 cast-after-close 409), `MeetingQuorumSourceTests`.
+Per-file **≥95% coverage gate green (global 99.71%)** — a follow-up added the `MeetingQuorumSource` direct test
++ Change/Recuse validator + not-found tests to lift 3 files the seam-mock/direct-handler tests had left <95%
+(the first CI run caught them; `node scripts/check-coverage.mjs` now runs locally pre-push). Backend-only — no
+FE/i18n change.
+
+**AC.** AC-021/022/023/024/025/026 **Pending → Partial** (domain + handler + HTTP proven; the **Met** flip
+waits on the live real-stack + `/votes/:id` UI leg → P9b/P17 per G-TRACE). AC-015/016 (SoD-3) strengthen from
+Partial — the co-attestation GATE is now enforced + tested end-to-end at the issue path (live → P17). AC-052
+(vote-open notification) strengthens — the `VoteOpened` trigger it was waiting for is now raised (live center
+render → P9b/P17).
+
+**Next.** P9b — the voting UI (`/votes/:key` off `ACMP Decision, Voting & ADR.dc.html` voting screens: ballot /
+eligible voters / live tally / quorum pips / COI recusal / chairman approval-override; states
+open/closed/not_open/quorum_failed/ineligible/double_error), wired to `/api/votes`, and the meeting-workspace
+"Call vote" stub.
+
+---
+
 ## P8d — AC-029 decision→action downstream-link gate (branch `feat/P8d-actions-decision-gate`)
 
 ### 2026-07-02 — the AC-029 gate retrofit (OQ-045 resolved; closes the Actions module)

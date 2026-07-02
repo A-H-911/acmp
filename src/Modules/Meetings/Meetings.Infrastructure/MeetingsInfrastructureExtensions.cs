@@ -1,6 +1,8 @@
 ﻿using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Application.Abstractions;
+using Acmp.Modules.Meetings.Infrastructure.Directory;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
+using Acmp.Shared.Contracts.Meetings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,9 @@ public static class MeetingsInfrastructureExtensions
 
         services.AddScoped<IMeetingsDbContext>(sp => sp.GetRequiredService<MeetingsDbContext>());
         services.AddScoped<IMeetingKeyGenerator, MeetingKeyGenerator>();
+
+        // Cross-module seam for the Decisions Vote present-quorum gate (ADR-0001, docs/12 §4).
+        services.AddScoped<IMeetingQuorumSource, MeetingQuorumSource>();
 
         services.AddMeetingsApplication();
         return services;

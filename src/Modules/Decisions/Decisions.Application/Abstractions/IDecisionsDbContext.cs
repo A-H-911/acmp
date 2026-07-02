@@ -8,5 +8,6 @@ namespace Acmp.Modules.Decisions.Application.Abstractions;
 public interface IDecisionsDbContext
 {
     DbSet<Decision> Decisions { get; }
+    DbSet<Vote> Votes { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
