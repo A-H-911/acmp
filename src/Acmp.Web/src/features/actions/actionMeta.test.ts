@@ -8,7 +8,7 @@ describe('actionMeta', () => {
     expect(statusTone('Blocked')).toBe('danger');
     expect(statusTone('Completed')).toBe('success');
     expect(statusTone('Verified')).toBe('scheduled');
-    expect(statusTone('Cancelled')).toBe('neutral');
+    expect(statusTone('Cancelled')).toBe('danger');
   });
 
   it('exposes the six statuses in lifecycle order for the filter', () => {

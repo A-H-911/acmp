@@ -21,6 +21,10 @@
   font-size: 13.5px;
   font-weight: 600;
 }
+/* F-17: the "Agenda order" column heading reads heavier than the pool heading (which stays 600). */
+.mt-col-title-strong {
+  font-weight: 700;
+}
 
 /* ---- meetings list ---- */
 .mt-head {
@@ -292,7 +296,7 @@
   color: var(--st-danger-fg);
 }
 .mt-budget-track {
-  block-size: 10px;
+  block-size: var(--agenda-budget-h);
   border-radius: var(--r-sm);
   background: var(--sunken);
   overflow: hidden;
@@ -324,7 +328,7 @@
 /* ---- two-column grid ---- */
 .mt-grid {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns: var(--agenda-rail-w) minmax(0, 1fr);
   gap: 18px; /* design literal */
   align-items: start;
 }
@@ -480,7 +484,7 @@
 /* ---- agenda drop zone ---- */
 .mt-agenda {
   background: transparent;
-  border: 1.5px dashed var(--border-strong);
+  border: 1.5px dashed var(--border);
   border-radius: var(--r-xl);
   padding: var(--sp-3);
   min-block-size: 300px;
@@ -514,7 +518,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 11px;
-  padding: 13px 14px;
+  padding: var(--agenda-card-pad) 14px;
   box-shadow: var(--shadow);
 }
 .mt-item:hover {
@@ -1151,14 +1155,38 @@
 .mt-att-toggle:hover:not(:disabled) {
   background: var(--subtle);
 }
+.mt-att-toggle.absent {
+  color: var(--text-3);
+}
 .mt-att-toggle.present {
-  border-color: var(--st-success-dot);
+  border-color: var(--st-success-bg);
   background: var(--st-success-bg);
   color: var(--st-success-fg);
 }
 .mt-att-toggle:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+/* F-18: quorum reads as a borderless inline dot + text (not a filled chip). */
+.mt-quorum {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--st-success-fg);
+}
+.mt-quorum-dot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  background: var(--st-success-dot);
+}
+.mt-quorum.not-met {
+  color: var(--text-2);
+}
+.mt-quorum.not-met .mt-quorum-dot {
+  background: var(--text-3);
 }
 
 /* ---- empty / gate card (Meeting lifecycle prompts + Minutes/Recording placeholders) ----

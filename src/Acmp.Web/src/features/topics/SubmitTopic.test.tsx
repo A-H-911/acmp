@@ -135,7 +135,7 @@ describe('SubmitTopic (P5b)', () => {
     Object.defineProperty(big, 'size', { value: 51 * 1024 * 1024 });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, big);
-    expect(screen.getByText(/50 MB or smaller/)).toBeInTheDocument();
+    expect(screen.getByText(/25 MB or smaller/)).toBeInTheDocument();
   });
 
   it('uploads attached files after the topic is created', async () => {

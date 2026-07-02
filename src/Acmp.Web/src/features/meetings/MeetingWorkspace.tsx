@@ -139,8 +139,9 @@ export function MeetingWorkspace() {
   return (
     <div className="mt-ws">
       <header className="mt-ws-head">
+        {/* F-3: the meeting title H1 lives in the MeetingPage shell; this workspace renders inside
+            its <Outlet/>, so a second title H1 here duplicated the page heading. LIVE badge only. */}
         <div className="mt-ws-titlerow">
-          <h1 className="page-title">{meeting.title}</h1>
           <span className="mt-live">
             <StatusChip tone="danger" label={t('meetings.live')} />
           </span>
@@ -154,6 +155,7 @@ export function MeetingWorkspace() {
           </div>
           <span className="mt-ws-divider" aria-hidden="true" />
           <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
+            <Icon name="pause" size={15} />
             {t('meetings.pause')}
           </Button>
           <Button onClick={onEnd} loading={endMeeting.isPending}>
@@ -445,7 +447,11 @@ function AttendancePanel({
       <div className="mt-att-head">
         <div className="mt-att-headrow">
           <h2 className="mt-col-title">{t('meetings.attendance')}</h2>
-          <StatusChip tone={quorumMet ? 'success' : 'neutral'} label={t(quorumMet ? 'meetings.quorum.met' : 'meetings.quorum.notMet')} />
+          {/* F-18: borderless inline dot + text (design), not a filled StatusChip. */}
+          <span className={`mt-quorum ${quorumMet ? '' : 'not-met'}`}>
+            <span className="mt-quorum-dot" aria-hidden="true" />
+            {t(quorumMet ? 'meetings.quorum.met' : 'meetings.quorum.notMet')}
+          </span>
         </div>
         <div className="mt-att-summary">{t('meetings.attendanceSummary', { present: presentCount, total, needed })}</div>
       </div>

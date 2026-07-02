@@ -94,7 +94,7 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button variant="danger" loading={supersede.isPending} onClick={() => void onConfirm()}>
+          <Button variant="secondary" className="btn-warn" loading={supersede.isPending} onClick={() => void onConfirm()}>
             {t('decisions.supersede.confirm')}
           </Button>
         </>

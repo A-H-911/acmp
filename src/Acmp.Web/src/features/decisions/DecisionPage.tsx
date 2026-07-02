@@ -10,6 +10,9 @@
  *    Guid), so the successor link is omitted (flagged) — the supersede round-trip navigates to it directly.
  *  - Alternatives render as stored text (one LocalizedString), not the design's structured "Not chosen"
  *    cards (not modeled) — operator-confirmed.
+ *  - Decision-statement section (design's dedicated statement block before Rationale) is intentionally
+ *    omitted: the DecisionDetail DTO carries no `statement` field, so there is no real content to render.
+ *    Deferred pending a backend `Decision.Statement` field — no empty/fabricated UI.
  *  - Honest defers (no fabrication): Convert-to-ADR = disabled stub (ADR module → P9/P11); Vote result,
  *    Effective date, Decided-in-meeting, Affected systems, and the immutable-history timeline are not
  *    rendered (vote/audit-query/relationship data lands in P9/P14).

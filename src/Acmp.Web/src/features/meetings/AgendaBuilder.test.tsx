@@ -106,7 +106,9 @@ describe('AgendaBuilder (P6c)', () => {
   it('renders the header, draft chip, budget, pool, and agenda items', () => {
     detailResult({ data: MEETING });
     setup();
-    expect(screen.getByRole('heading', { name: 'Q2 Architecture Review' })).toBeInTheDocument();
+    // F-3: the meeting-title H1 is owned by the MeetingPage shell (this tab renders in its
+    // Outlet), so the builder no longer renders a duplicate title heading of its own.
+    expect(screen.queryByRole('heading', { name: 'Q2 Architecture Review' })).not.toBeInTheDocument();
     expect(screen.getByText('Draft')).toBeInTheDocument();
     expect(screen.getByText('Time budget')).toBeInTheDocument();
     // Budget: 35 used of 90 → 55 buffer, comfortably "Fits".

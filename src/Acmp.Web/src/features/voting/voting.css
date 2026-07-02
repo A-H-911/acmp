@@ -72,6 +72,8 @@
 .quorum-pip { flex: 1; block-size: 6px; border-radius: 3px; background: var(--sunken); }
 .quorum-pip.on-met { background: var(--st-success-dot); }
 .quorum-pip.on-pending { background: var(--st-warn-dot); }
+/* the pip at index minCast-1 marks the quorum threshold (design) */
+.quorum-pip.threshold { box-shadow: 0 0 0 1.5px var(--st-success-fg); }
 .quorum-detail { font-size: 11px; color: var(--text-3); margin-block-start: 7px; }
 .tally-live { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--st-danger-fg); }
 .tally-live-dot { inline-size: 6px; block-size: 6px; border-radius: 50%; background: var(--st-danger-dot); }
@@ -98,6 +100,9 @@
 .ballot-cast { inline-size: 100%; margin-block-start: 11px; }
 .ballot-recuse-row { display: flex; align-items: center; gap: 8px; margin-block-start: 10px; padding-block-start: 10px; border-block-start: 1px solid var(--border-soft); }
 .ballot-recuse-note { font-size: 10.5px; color: var(--text-3); line-height: 1.4; }
+/* recuse is a warn-toned action, not neutral (design). Higher specificity beats the base variant. */
+.btn.ballot-recuse-warn { color: var(--st-warn-fg); }
+.btn.ballot-recuse-warn:hover:not(:disabled) { background: var(--st-warn-bg); }
 .ballot-note { font-size: 10.5px; color: var(--text-3); text-align: center; margin-block-start: 8px; }
 .ballot-recorded { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-block-end: 11px; background: var(--subtle); border-radius: 9px; font-size: 12px; }
 

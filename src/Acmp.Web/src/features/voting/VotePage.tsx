@@ -172,7 +172,10 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
                 </div>
                 <div className="quorum-pips">
                   {Array.from({ length: Math.max(eligibleCount, vote.minCast) }, (_, i) => (
-                    <span key={i} className={`quorum-pip ${i < castCount ? (quorumMet ? 'on-met' : 'on-pending') : ''}`} />
+                    <span
+                      key={i}
+                      className={`quorum-pip ${i < castCount ? (quorumMet ? 'on-met' : 'on-pending') : ''}${i === vote.minCast - 1 ? ' threshold' : ''}`}
+                    />
                   ))}
                 </div>
                 <div className="quorum-detail">{t('voting.quorumDetail', { cast: castCount, eligible: eligibleCount, needed: vote.minCast })}</div>
@@ -188,7 +191,7 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
               {canManage && (
                 <>
                   <Button className="vote-open-btn" loading={openVote.isPending} onClick={() => void onOpen()}>
-                    <Icon name="chevron" size={16} aria-hidden /> {t('voting.openVoting')}
+                    <Icon name="arrowRight" size={16} aria-hidden /> {t('voting.openVoting')}
                   </Button>
                   <div className="vote-open-note">{t('voting.openVotingNote')}</div>
                 </>
@@ -331,10 +334,10 @@ function BallotForm({ vote, cacheKey, myBallot }: { vote: VoteDetail; cacheKey: 
           aria-label={t('voting.commentPh')}
         />
         <Button className="ballot-cast" disabled={!choice} onClick={() => setConfirmOpen(true)}>
-          <Icon name="audit" size={16} aria-hidden /> {already ? t('voting.changeVote') : t('voting.castVote')}
+          <Icon name="clipboardCheck" size={16} aria-hidden /> {already ? t('voting.changeVote') : t('voting.castVote')}
         </Button>
         <div className="ballot-recuse-row">
-          <Button variant="secondary" size="sm" loading={recuse.isPending} onClick={() => void recuse.mutateAsync({ id: vote.id })}>
+          <Button variant="secondary" size="sm" className="ballot-recuse-warn" loading={recuse.isPending} onClick={() => void recuse.mutateAsync({ id: vote.id })}>
             <Icon name="x" size={13} aria-hidden /> {t('voting.recuseAction')}
           </Button>
           <span className="ballot-recuse-note">{t('voting.recuseNote')}</span>
@@ -346,7 +349,7 @@ function BallotForm({ vote, cacheKey, myBallot }: { vote: VoteDetail; cacheKey: 
       <Dialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        icon={<Icon name="audit" size={20} aria-hidden />}
+        icon={<Icon name="clipboardCheck" size={20} aria-hidden />}
         title={t('voting.confirmTitle')}
         description={t('voting.confirmBody')}
         footer={

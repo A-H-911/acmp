@@ -37,7 +37,7 @@ const TYPES: { v: string; icon: IconName }[] = [
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
 const STEPS = ['type', 'justification', 'scope', 'attachments', 'urgency'];
 const MAX_TITLE = 120;
-const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const DRAFT_KEY = 'acmp-topic-draft-v1';
 const SOURCE_DEFAULT = 'CommitteeMember';
 
@@ -212,7 +212,7 @@ export function SubmitTopic() {
       if (f.size > MAX_FILE_BYTES) rejected = true;
       else next.push(f);
     }
-    setFileError(rejected ? t('submit.err.fileSize', { max: 50 }) : null);
+    setFileError(rejected ? t('submit.err.fileSize', { max: MAX_FILE_BYTES / (1024 * 1024) }) : null);
     if (next.length) setFiles((prev) => [...prev, ...next]);
   }
 

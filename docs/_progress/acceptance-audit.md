@@ -12,6 +12,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P9-review remediation (2026-07-02): the F-1…F-28 audit burn-down (branch `feat/p9-review-remediation`).
+> **BL-066 — the durable, immutable, hash-chained AuditEvent store — now ships** behind `IAuditSink`
+> (`SqlAuditSink` + `AuditDbContext` schema `audit` + `AuditChainVerifier`, migration `Audit_Init`), so the
+> audit non-negotiable is no longer log-only. Verdict deltas (conservative, G-TRACE):
+> **AC-019 Pending → Met** (hash-chain + integrity check that reports the first broken link / entry —
+> unit-proven: valid chain, broken-link, content-tamper, genesis). **AC-018 → Partial** (append-only is
+> enforced at the app layer — no mutators, no delete path — plus a UNIQUE `PreviousHash` non-forking index;
+> a DB-level UPDATE/DELETE-blocking trigger for out-of-app/DBA writes is P16 hardening). **AC-017 → Partial**
+> (entry carries eventType/subject/payload-JSON/UTC/hash on every state change; strict before/after JSON +
+> correlation-id remain). **AC-020 stays Pending** (no Auditor search UI yet). Also: the stale rollup below
+> (was "66 ACs · through P5b", F-8) is superseded — regenerate before the next phase gate. FE fidelity
+> F-2…F-28 are design-parity fixes (no AC verdict change); see progress-log P9-review entry.
+>
 > P7a update (2026-07-01): Decisions module backend (record / issue / supersede). **Partial** (domain +
 > application + API proven by tests; live HTTP/UI confirmation → P7b/P17 per G-TRACE): **AC-027** (issued
 > decision immutable — no-mutator + re-issue/re-supersede guards), **AC-028** (supersession back-link, both

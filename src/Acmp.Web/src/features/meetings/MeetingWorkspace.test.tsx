@@ -86,7 +86,9 @@ describe('MeetingWorkspace (P6d)', () => {
 
   it('renders the live header, elapsed timer, agenda spine, active item, and attendance', () => {
     setup();
-    expect(screen.getByRole('heading', { name: 'Q2 Architecture Review' })).toBeInTheDocument();
+    // F-3: the meeting-title H1 is owned by the MeetingPage shell (this workspace renders in its
+    // Outlet), so the workspace no longer renders a duplicate title heading of its own.
+    expect(screen.queryByRole('heading', { name: 'Q2 Architecture Review' })).not.toBeInTheDocument();
     expect(screen.getByText('Live')).toBeInTheDocument();
     expect(screen.getByRole('timer')).toBeInTheDocument();
     // Default active item = first Pending item.

@@ -78,7 +78,7 @@
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
 }
 .state-icon {
-  inline-size: 40px; block-size: 40px; border-radius: var(--r-lg);
+  inline-size: 52px; block-size: 52px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center;
   background: var(--subtle); color: var(--text-3);
 }
@@ -86,12 +86,23 @@
    (design: a gray "No access" tile, not an amber warning). */
 .state-icon.error { background: var(--st-danger-bg); color: var(--st-danger-fg); }
 .state-icon.success { background: var(--st-success-bg); color: var(--st-success-fg); }
-.state-title { margin: 0; font-size: 15px; font-weight: 600; }
+.state-title { margin: 0; font-size: 17px; font-weight: 700; }
 /* Full-page states (404 / error boundary / callback) — System States anatomy. */
 .state-title-lg { font-size: 20px; font-weight: 700; }
 .state-body { margin: 0; max-inline-size: 42ch; font-size: 13px; color: var(--text-2); }
 .state-actions { display: flex; gap: var(--sp-2); margin-block-start: var(--sp-1); }
 .state-note { margin: 0; font-size: 11.5px; color: var(--text-3); }
+.state-note-mono { font-family: var(--mono); }
+/* Permission-denied / error actions rendered as links styled like buttons (System States anatomy). */
+.state-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  block-size: 38px; padding-inline: 16px; border-radius: var(--control-radius);
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+  font-size: 13.5px; font-weight: 600; text-decoration: none; transition: background var(--dur-fast) var(--ease);
+}
+.state-btn:hover { background: var(--subtle); }
+.state-btn-primary { border-color: var(--primary); background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow); }
+.state-btn-primary:hover { background: var(--primary-hover); }
 /* Oversized 404 code — mono, faint (System States `404`). */
 .state-code { font-family: var(--mono); font-size: 64px; font-weight: 500; line-height: 1; letter-spacing: 2px; color: var(--border-strong); }
 .state-icon-lg { inline-size: 60px; block-size: 60px; border-radius: 15px; }
@@ -117,9 +128,9 @@
 /* ============================ Notification center ============================ */
 /* Bell popover — ACMP.dc.html L92–131. role="dialog" + click-away scrim, flex column with a
    scrolling list between a sticky header/tabs and a sticky "View all" footer. */
-.notif-scrim { position: fixed; inset: 0; z-index: 39; }
+.notif-scrim { position: fixed; inset: 0; z-index: 60; }
 .notif-panel {
-  position: absolute; inset-block-start: 46px; inset-inline-end: var(--sp-4); z-index: 40;
+  position: absolute; inset-block-start: 46px; inset-inline-end: var(--sp-4); z-index: 70;
   inline-size: 388px; max-block-size: 560px; display: flex; flex-direction: column; overflow: hidden;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 13px; box-shadow: var(--shadow-lg);
@@ -210,7 +221,7 @@
 .notif-badge {
   position: absolute; inset-block-start: -3px; inset-inline-end: -3px; min-inline-size: 16px;
   block-size: 16px; padding-inline: 3px; border-radius: 8px; border: 2px solid var(--header);
-  background: var(--st-danger-dot); color: #fff; font-size: 9px; font-weight: 700;
+  background: var(--st-danger-dot); color: #fff; font-size: 10px; font-weight: 700;
   line-height: 11px; display: flex; align-items: center; justify-content: center;
 }
 /* Empty inbox = a calm "all caught up" success state. */
