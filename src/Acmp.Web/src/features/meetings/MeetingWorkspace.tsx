@@ -38,6 +38,8 @@ import {
   type Discussion,
 } from '../../api/meetings';
 import { useMembers, type Member } from '../../api/members';
+import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
+import { CallVoteDialog } from '../voting/CallVoteDialog';
 import { AREAS } from '../../nav/navModel';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
@@ -84,6 +86,7 @@ export function MeetingWorkspace() {
   const { key } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const auth = useAuth();
   const meetingQuery = useMeetingDetail(key);
   const membersQuery = useMembers();
   const endMeeting = useEndMeeting(key);
@@ -166,6 +169,8 @@ export function MeetingWorkspace() {
           <ActiveItem
             key={activeItem.topicId}
             item={activeItem}
+            meetingId={meeting.id}
+            canManageVote={hasRole(auth, 'chairman', 'secretary')}
             index={items.findIndex((i) => i.topicId === activeItem.topicId) + 1}
             discussion={meeting.discussions.find((d) => d.topicId === activeItem.topicId)}
             onSaveNote={(body) => captureDiscussion.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, body })}
@@ -242,6 +247,8 @@ function AgendaSpine({
 
 function ActiveItem({
   item,
+  meetingId,
+  canManageVote,
   index,
   discussion,
   onSaveNote,
@@ -249,6 +256,8 @@ function ActiveItem({
   recording,
 }: {
   item: AgendaItem;
+  meetingId: string;
+  canManageVote: boolean;
   index: number;
   discussion: Discussion | undefined;
   onSaveNote: (body: string) => void;
@@ -256,6 +265,7 @@ function ActiveItem({
   recording: boolean;
 }) {
   const { t } = useTranslation();
+  const [voteOpen, setVoteOpen] = useState(false);
   return (
     <section className="mt-active" aria-label={item.topicTitle}>
       <div className="mt-active-card">
@@ -289,7 +299,12 @@ function ActiveItem({
             <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
               <Icon name="action" size={14} aria-hidden /> {t('meetings.createAction')}
             </Button>
-            <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
+            <Button
+              variant="secondary"
+              disabled={!canManageVote}
+              title={canManageVote ? undefined : t('voting.openVotingNote')}
+              onClick={() => setVoteOpen(true)}
+            >
               <Icon name="audit" size={14} aria-hidden /> {t('meetings.callVote')}
             </Button>
           </div>
@@ -297,6 +312,11 @@ function ActiveItem({
       </div>
 
       <CapturedOnItem />
+      <CallVoteDialog
+        open={voteOpen}
+        onClose={() => setVoteOpen(false)}
+        source={{ topicId: item.topicId, topicKey: item.topicKey, meetingId }}
+      />
     </section>
   );
 }

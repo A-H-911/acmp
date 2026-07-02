@@ -76,6 +76,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > Backend green: Domain 138 / Application 531 / Architecture 24 / Api 99 / Integration 17; per-file gate ≥95% (global 99.71%).
 > Backend-only — no FE/i18n change. See progress-log P9a entry.
 >
+> P9b update (2026-07-02): Voting UI (FE-only) — the `/votes/:key` screen (`isVoting`) + the meeting-workspace
+> "Call vote" configure dialog, wired to `/api/votes`. **AC-021/022/023/024/025/026 stay Partial** but the
+> `/votes/:id` UI leg they awaited is now shipped (screen states + cast/change/recuse/close/configure); the
+> **Met** flip still waits on the real-stack E2E → P17 per G-TRACE. **AC-052** gains the live deep-link target
+> (`/votes/:key` now renders the vote-open notification's destination). Reconciliations (design to update):
+> double-vote is editable-until-close not a hard block (Fork 1); quorum-fail is a 409 toast not a resting state
+> (Fork 2); the closed panel defers View-decision / Record-override (Fork 3). FE green: 544 tests, per-file
+> ≥95% lines (votes.ts/voteState.ts 100%, VotePage 98.3%); i18n parity 909 keys. See progress-log P9b entry.
+>
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.
 > The P1 scaffold delivers infrastructure only (no business features), so no AC flips to `Met` here.
 >
