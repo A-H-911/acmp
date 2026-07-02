@@ -9,6 +9,7 @@ using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Behaviors;
 using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Contracts.Actions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -75,6 +76,15 @@ public class DecisionHandlerTests
     }
 
     private static INotificationChannel NoNotify() => Substitute.For<INotificationChannel>();
+
+    // The cross-module AC-029 seam (Actions-owned). Defaults to "a link exists" so pre-P8d issue tests pass;
+    // the gate tests flip it to false to prove the reject.
+    private static IActionLinkDirectory Links(bool hasLink = true)
+    {
+        var l = Substitute.For<IActionLinkDirectory>();
+        l.DecisionHasLinkedActionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(hasLink);
+        return l;
+    }
 
     private static RecordDecisionCommand RecordCmd(
         DecisionOutcome outcome = DecisionOutcome.Approved, LocalizedString? alternatives = null,
@@ -156,7 +166,7 @@ public class DecisionHandlerTests
         var channel = new RecordingChannel();
         var audit = Substitute.For<IAuditSink>();
 
-        await new IssueDecisionHandler(db, recorder, user, clock, audit, Dir("kc-a", "kc-b"), channel)
+        await new IssueDecisionHandler(db, recorder, user, clock, audit, Dir("kc-a", "kc-b"), channel, Links())
             .Handle(new IssueDecisionCommand(id, ChairOverride: false, OverrideJustification: null), default);
 
         var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery("DECN-2026-001"), default);
@@ -174,11 +184,55 @@ public class DecisionHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
+        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links())
             .Handle(new IssueDecisionCommand(Guid.NewGuid(), false, null), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Decision not found.");
     }
+
+    [Fact] // AC-029: a follow-up-bearing decision with NO downstream link cannot be issued; it stays Draft
+    public async Task Issue_followup_outcome_without_a_downstream_link_is_rejected_and_stays_draft()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, id) = await DraftedAsync(user, clock, DecisionOutcome.Approved);   // follow-up-bearing
+        await using var _ = db;
+
+        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false))
+            .Handle(new IssueDecisionCommand(id, false, null), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*downstream link*");
+        var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery("DECN-2026-001"), default);
+        detail!.Status.Should().Be("Draft");   // unchanged
+    }
+
+    [Fact] // AC-029 exemption (locked P8 fork): a non-follow-up outcome issues with no link required
+    public async Task Issue_non_followup_outcome_is_exempt_from_the_link_gate()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (db, id) = await DraftedAsync(user, clock, DecisionOutcome.Rejected);   // NOT follow-up-bearing
+        await using var _ = db;
+
+        await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false))
+            .Handle(new IssueDecisionCommand(id, false, null), default);
+
+        var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery("DECN-2026-001"), default);
+        detail!.Status.Should().Be("Issued");
+    }
+
+    [Theory] // the five follow-up-bearing outcomes require a link; everything else is exempt (locked P8 fork)
+    [InlineData(DecisionOutcome.Approved, true)]
+    [InlineData(DecisionOutcome.ConditionallyApproved, true)]
+    [InlineData(DecisionOutcome.EnhancementsRequired, true)]
+    [InlineData(DecisionOutcome.DesignChangesRequired, true)]
+    [InlineData(DecisionOutcome.ResearchRequired, true)]
+    [InlineData(DecisionOutcome.Rejected, false)]
+    [InlineData(DecisionOutcome.MoreInfoRequired, false)]
+    [InlineData(DecisionOutcome.FeedbackProvided, false)]
+    [InlineData(DecisionOutcome.Deferred, false)]
+    [InlineData(DecisionOutcome.Escalated, false)]
+    [InlineData(DecisionOutcome.Converted, false)]
+    public void RequiresDownstreamLink_matches_the_locked_followup_set(DecisionOutcome outcome, bool expected) =>
+        DecisionOutcomeRules.RequiresDownstreamLink(outcome).Should().Be(expected);
 
     [Fact] // AC-028: supersede issues a successor first, then flips the prior to Superseded with a back-link
     public async Task Supersede_issues_successor_then_supersedes_prior_with_backlink()
@@ -195,7 +249,7 @@ public class DecisionHandlerTests
             priorId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
                 .Handle(RecordCmd(), default)).Id;
         await using (var db = Db(name, user, clock)) // the prior must be Issued before it can be superseded (W21)
-            await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
+            await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links())
                 .Handle(new IssueDecisionCommand(priorId, false, null), default);
 
         DecisionSummaryDto successor;
