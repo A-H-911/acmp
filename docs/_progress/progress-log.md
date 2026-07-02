@@ -12,6 +12,81 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10a — Risks backend (branch `feat/P10a-risks-backend`)
+
+### 2026-07-03 — the Risk aggregate + Mitigations + W15 lifecycle (backend only)
+
+**Scope.** First slice of P10. **P10 is 2–3 phases compressed** (the design's own Usage Map splits it as P8
+Actions+**Risks** and P11 Deps/Traceability) — sliced GO-gated: **P10a Risks BE** → P10b Risks UI → P10c
+Relationship/traceability BE + AC-029 widening → P10d Dependencies BE → P10e Deps register + traceability
+panels UI → **P10f full BFS SVG impact graph** (operator GO to build it now; pulls BL-122/123 forward from
+Phase 2) → **P10g risk/dep dashboards** (operator GO). This slice = the **Risks** module backend only (no
+`Acmp.Web`). Pre-code reviewed by the architect + advisor (both GO); 6 architect fixes folded in.
+
+**Module home.** New `Risks` module (`src/Modules/Risks/{Domain,Application,Infrastructure}`) mirroring the
+Actions pattern verbatim. `Risk` aggregate + owned `Mitigation` child (`risk_mitigations`, the exact
+`DecisionCondition` shape). Schema `risks`; migration `Risks_Init` (`risks` + `risk_mitigations` +
+`risk_key_counters`).
+
+**Domain (W15, docs/12 §10).** Single `RiskStatus{Open,Mitigating,Closed,Accepted,Escalated}` enum (no
+orthogonal side column — architect B-1). Transitions: raise→Open; Open→Mitigating (needs ≥1 mitigation);
+Mitigating→Closed (all mitigations Done **or** a closure note); Open/Mitigating→Accepted (rationale +
+authority, terminal); Open/Mitigating→Escalated (reason + target). **Escalated is transient** — it returns via
+BeginMitigation (Escalated→Mitigating) or Close (Escalated→Closed) (docs/12 §10:220). `Closed`+`Accepted`
+terminal. Acceptance/escalation/closure **evidence is stored on the aggregate** (not audit-only) so P10b can
+render "why/to whom" (advisor #3). `RowVersion` (409 on stale write). Owned `Mitigation` = forward-only
+`Planned→InProgress→Done`.
+
+**Derived exposure (single-sourced, advisor #2).** `RiskExposureScale`: `Severity = Likelihood×Impact` (1–9,
+`RiskLevel{Low=1,Medium=2,High=3}`) → `Exposure` band `≤2 Low · ≤4 Medium · ≤6 High · 9 Critical` (matches the
+design heat-grid seed). **Never persisted** (docs/12:247) — projected into the DTOs; P10b's grid consumes the
+band, never re-derives it.
+
+**Authorization.** `Risk.Manage` (Chairman/Secretary; Member/Reviewer AiO) for raise/mitigate/begin/close/
+escalate. **Accept is narrower** → new dedicated **`Risk.Accept`** policy (Chairman/Secretary, no AiO — architect
+M-2) added to `Policies` + `AuthorizationRegistration.Matrix` + the independently-encoded `PermissionMatrixTests`
+cell (`AADDDDDD`). Escalate rides `Risk.Manage` per §10 (architect M-1). MediatR `AuthorizationBehavior`
+backstops every command.
+
+**Notifications + audit.** Raise notifies the owner (skip self, docs/13:201). **Escalate fans out to Secretary +
+Chairman** via `ICommitteeDirectory.GetActiveMembersInRoleAsync` (BL-135), skipping the actor + de-duped. Every
+state change **and every mitigation mutation** emits an `AuditEvent` via `IAuditSink`
+(`Risks.RiskRaised/RiskMitigating/RiskClosed/RiskAccepted/RiskEscalated/MitigationAdded/MitigationStatusChanged`;
+accept/escalate high-importance). No cross-module table read (ADR-0001) — subject is a soft `(SubjectType,
+SubjectId)` + `SubjectKey` snapshot; a mitigation's `LinkedActionId` is a bare Guid, no FK.
+
+**API.** `/api/risks` register (status/owner/exposure filters, exposure-desc default sort, paging) + `/{key}`
+detail + POST transitions (`/mitigations`, `/mitigations/{id}/status`, `/begin-mitigation`, `/close`,
+`/escalate` = Risk.Manage; `/accept` = Risk.Accept). Wired into `Program.cs`, `MigrationRunner`,
+`SqlBackstopFixture`, `ModuleBoundaryTests` (+ `Risks_should_not_depend_on_other_modules` fact), and the Api
+test factory's InMemory swaps.
+
+**Design↔behavior reconciliations (design to be updated to match, guardrail #14 — no UI in this slice):**
+- **Description optional.** docs/11 types `Risk.Description` required, but the design create form collects only
+  Title/Likelihood/Impact/Owner/Linked-topic/**Mitigation plan** (no Description) → backend accepts it optional.
+- **Mitigation plan → first mitigation.** The create form's "Mitigation plan" textarea seeds an initial
+  `Mitigation` (Type=Reduce default — the form collects no type). Flagged.
+- **"Severity" vs "Exposure".** docs/27/28 call the band "Severity=Critical"; the design column is "Exposure".
+  We expose both `Severity:int` (1–9 score) and the `Exposure` band; the dashboard `severity=` filter maps to
+  the band. Minor doc reconciliation.
+- **Dangling subject.** No cross-module existence check on `SubjectId` (ADR-0001) — the UI picks from real lists
+  + the snapshot key travels (architect Q4, lean-lazy).
+
+**Gates (local, pre-push).** Build clean; **849 tests green** (Domain 158, Application 557 incl. new Risk suites +
+the Risk.Accept matrix cell, Architecture 28 incl. the new boundary fact, Api 106 incl. 7 Risks contract tests);
+per-file coverage **99.72% global, no file <95%** (`check-coverage.mjs`); `dotnet format --verify-no-changes`
+clean (fixed the EF-generated migration's CRLF). Integration (Testcontainers) wired but not run locally (Docker)
+→ CI.
+
+**AC.** No verdicts flip — P10a is backend; W15 risk lifecycle + escalation are domain/handler/HTTP-pipeline
+proven, but the live real-stack (Keycloak-PKCE + SQL) leg → **P17** per G-TRACE. Feeds AC-066 (chairman
+escalated-risks, its dashboard = P10g) + AC-053 (risk-escalation notification deep-link).
+
+**Next.** P10b — Risks register + detail UI (`ACMP Lists & Registers` `risks` 8-col table + 3×3 exposure heat +
+routed `/risks/:key` detail + create-risk dialog), consuming the shipped `/api/risks` contract.
+
+---
+
 ## P9-review — Remediation slice (branch `feat/p9-review-remediation`)
 
 ### 2026-07-02 — F-1…F-28 from the adversarial P1–P9 audit (BL-066 + fidelity)

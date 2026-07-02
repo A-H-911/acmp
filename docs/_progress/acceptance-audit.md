@@ -12,6 +12,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10a update (2026-07-03): Risks module backend (branch `feat/P10a-risks-backend`) — the `Risk` aggregate +
+> owned `Mitigation` + full W15 lifecycle (raise/mitigate/close/accept/escalate), derived Severity/Exposure,
+> `RSK-YYYY-###` keys, migration `Risks_Init`, `/api/risks` endpoints, hash-chained audit on every state +
+> mitigation change, escalation fan-out to Secretary+Chairman (BL-135), and a new dedicated **`Risk.Accept`**
+> policy (Chairman/Secretary, no owner-AiO). **No AC verdicts flip** (P10a is backend; the risk lifecycle is
+> domain + handler + HTTP-pipeline proven, but the live real-stack Keycloak-PKCE + SQL leg → **P17** per
+> G-TRACE). It stands up the data for **AC-066** (chairman escalated-risks widget → P10g dashboards) and
+> **AC-053** (risk-escalation notification). Backend 849 tests green (incl. the Risk.Accept permission-matrix
+> cell + the new module-boundary fact); per-file coverage ≥95% (global 99.72%); `dotnet format` clean. See
+> progress-log P10a entry.
+>
 > P9-review remediation (2026-07-02): the F-1…F-28 audit burn-down (branch `feat/p9-review-remediation`).
 > **BL-066 — the durable, immutable, hash-chained AuditEvent store — now ships** behind `IAuditSink`
 > (`SqlAuditSink` + `AuditDbContext` schema `audit` + `AuditChainVerifier`, migration `Audit_Init`), so the

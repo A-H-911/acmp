@@ -3,6 +3,7 @@ using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
+using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<MeetingsDbContext>(),
             scope.ServiceProvider.GetRequiredService<DecisionsDbContext>(),
             scope.ServiceProvider.GetRequiredService<ActionsDbContext>(),
+            scope.ServiceProvider.GetRequiredService<RisksDbContext>(),
             scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),
             scope.ServiceProvider.GetRequiredService<AuditDbContext>(),
         };

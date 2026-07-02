@@ -12,6 +12,8 @@ using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
 using Acmp.Modules.Notifications.Application;
 using Acmp.Modules.Notifications.Infrastructure;
+using Acmp.Modules.Risks.Application;
+using Acmp.Modules.Risks.Infrastructure;
 using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Infrastructure;
 using Acmp.Shared;
@@ -40,6 +42,7 @@ builder.Services.AddTopicsModule(builder.Configuration);
 builder.Services.AddMeetingsModule(builder.Configuration);
 builder.Services.AddDecisionsModule(builder.Configuration);
 builder.Services.AddActionsModule(builder.Configuration);
+builder.Services.AddRisksModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
@@ -54,6 +57,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     MeetingsApplicationExtensions.Assembly,
     DecisionsApplicationExtensions.Assembly,
     ActionsApplicationExtensions.Assembly,
+    RisksApplicationExtensions.Assembly,
     NotificationsApplicationExtensions.Assembly));
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
@@ -127,6 +131,7 @@ app.MapMinutesEndpoints();
 app.MapDecisionEndpoints();
 app.MapVoteEndpoints();
 app.MapActionEndpoints();
+app.MapRiskEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
 

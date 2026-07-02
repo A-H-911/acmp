@@ -3,6 +3,7 @@ using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
+using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,7 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
         await using (var db = NewMeetingsSql()) await db.Database.MigrateAsync();
         await using (var db = NewDecisionsSql()) await db.Database.MigrateAsync();
         await using (var db = NewActionsSql()) await db.Database.MigrateAsync();
+        await using (var db = NewRisksSql()) await db.Database.MigrateAsync();
         await using (var db = NewNotificationsSql()) await db.Database.MigrateAsync();
     }
 
@@ -58,6 +60,9 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
 
     public ActionsDbContext NewActionsSql() => new(
         SqlOptions<ActionsDbContext>(ActionsDbContext.Schema), Clock, CurrentUser);
+
+    public RisksDbContext NewRisksSql() => new(
+        SqlOptions<RisksDbContext>(RisksDbContext.Schema), Clock, CurrentUser);
 
     public NotificationsDbContext NewNotificationsSql() => new(
         SqlOptions<NotificationsDbContext>(NotificationsDbContext.Schema), Clock, CurrentUser);

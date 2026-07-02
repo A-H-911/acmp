@@ -42,6 +42,7 @@ public class PermissionMatrixTests
         [Policies.ActionCreate] = "AAODDDDD",
         [Policies.ActionVerify] = "AAODDDDD",
         [Policies.RiskManage] = "AAOODDDD",
+        [Policies.RiskAccept] = "AADDDDDD",
         [Policies.DependencyCreate] = "AAOODDDD",
         [Policies.AdrCreate] = "AAOODDDD",
         [Policies.AdrApprove] = "AADDDDDD",
