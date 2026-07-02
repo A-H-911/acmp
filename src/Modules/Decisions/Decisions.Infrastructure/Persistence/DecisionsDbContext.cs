@@ -18,6 +18,7 @@ public sealed class DecisionsDbContext : ModuleDbContext, IDecisionsDbContext
     }
 
     public DbSet<Decision> Decisions => Set<Decision>();
+    public DbSet<Vote> Votes => Set<Vote>();
     internal DbSet<DecisionKeyCounter> KeyCounters => Set<DecisionKeyCounter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -8,13 +8,15 @@ using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Decisions.Application.Features.RecordDecision;
 
 // W12 (record): the Secretary (or Chairman) drafts a decision against a topic. Creates a Draft — not yet
 // issued, so it is still mutable-by-replacement and carries no chair attribution. RBAC = Decision.Record.
-// AC-029 (a downstream Action/Risk link required before a decision can be ISSUED) is DEFERRED to P8
-// (OQ-045) — there is no Action artifact yet, so the gate is unbuildable and intentionally NOT enforced.
+// AC-029 (a downstream Action/Risk link required before a decision can be ISSUED) is now enforced at issue
+// time (P8d, IssueDecisionHandler via IActionLinkDirectory). A supplied VoteId is validated here (exists +
+// same topic) so a dangling/mismatched vote-coupling is never persisted (defence in depth for SoD-3).
 public sealed record RecordDecisionCommand(
     Guid TopicId,
     Guid? MeetingId,
@@ -87,6 +89,16 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
     {
         var now = _clock.UtcNow;
         var (sub, _) = CurrentActor.Of(_user);
+
+        // A vote-coupled draft must reference an existing vote on the SAME topic — reject a dangling or
+        // cross-topic coupling at draft time (the issue path re-checks + gates SoD-3). In-module read.
+        if (request.VoteId is { } voteId)
+        {
+            var vote = await _db.Votes.AsNoTracking().FirstOrDefaultAsync(v => v.PublicId == voteId, ct)
+                ?? throw new InvalidOperationException("The referenced vote does not exist.");
+            if (vote.TopicId != request.TopicId)
+                throw new InvalidOperationException("The referenced vote belongs to a different topic.");
+        }
 
         var key = await _keys.NextDecisionKeyAsync(now.Year, ct);
         var conditions = (request.Conditions ?? Array.Empty<DecisionConditionRequest>())

@@ -125,6 +125,7 @@ app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
 app.MapMinutesEndpoints();
 app.MapDecisionEndpoints();
+app.MapVoteEndpoints();
 app.MapActionEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();

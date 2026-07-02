@@ -6,8 +6,9 @@ namespace Acmp.Modules.Decisions.Infrastructure.Persistence.Configurations;
 
 // Decision aggregate: its own table + an owned decision_conditions child table (FK back to the decision).
 // Bilingual fields are owned LocalizedString value objects (en/ar column pair) — Rationale required, the
-// rest optional (nullable columns). Cross-module references (topic/meeting/vote/linked-action ids) are
-// plain values, no FK (ADR-0001).
+// rest optional (nullable columns). Cross-module references (topic/meeting/linked-action ids) are plain
+// values, no FK (ADR-0001). VoteId is an INTRA-module reference (Vote is Decisions-owned too); it carries
+// no FK by choice — existence + same-topic are enforced in the Record/Issue handlers (right-sized, ≤20 users).
 public sealed class DecisionConfiguration : IEntityTypeConfiguration<Decision>
 {
     public void Configure(EntityTypeBuilder<Decision> b)

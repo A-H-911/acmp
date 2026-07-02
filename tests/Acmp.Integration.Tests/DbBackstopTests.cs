@@ -144,6 +144,19 @@ public sealed class DbBackstopTests
         await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
     }
 
+    [Fact] // (top-level unique) two votes with the same human key — VOTE-YYYY-### must be unique
+    public async Task VoteKey_Duplicate_IsRejectedBySql()
+    {
+        var key = UniqueKey("VOTE");
+        await using var db = _fx.NewDecisionsSql();
+        db.Votes.Add(Vote.Configure(key, Guid.NewGuid(), null, new[] { "Approve", "Reject" }, false,
+            new QuorumRule(0, 1), new[] { new VoteEligibleVoter("kc-a", "A") }, "it-actor", DateTimeOffset.UtcNow));
+        db.Votes.Add(Vote.Configure(key, Guid.NewGuid(), null, new[] { "Approve", "Reject" }, false,
+            new QuorumRule(0, 1), new[] { new VoteEligibleVoter("kc-b", "B") }, "it-actor", DateTimeOffset.UtcNow));
+
+        await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
+    }
+
     [Fact] // (top-level unique) two actions with the same human key — ACT-YYYY-### must be unique
     public async Task ActionKey_Duplicate_IsRejectedBySql()
     {

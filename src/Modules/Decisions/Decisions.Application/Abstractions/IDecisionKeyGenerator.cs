@@ -5,4 +5,5 @@
 public interface IDecisionKeyGenerator
 {
     Task<string> NextDecisionKeyAsync(int year, CancellationToken ct = default);
+    Task<string> NextVoteKeyAsync(int year, CancellationToken ct = default);
 }
