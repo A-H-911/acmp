@@ -14,6 +14,11 @@ vi.mock('../api/systemHealth', () => ({ useSystemHealth: vi.fn() }));
 import { useSystemHealth } from '../api/systemHealth';
 const mockUseHealth = useSystemHealth as unknown as Mock;
 
+vi.mock('../api/jobs', () => ({ useAdminJobs: vi.fn(), useRequeueJob: vi.fn() }));
+import { useAdminJobs, useRequeueJob } from '../api/jobs';
+const mockUseJobs = useAdminJobs as unknown as Mock;
+const mockUseRequeue = useRequeueJob as unknown as Mock;
+
 const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
@@ -33,6 +38,11 @@ const HEALTHY: SystemHealth = {
 function renderPage() {
   mockUseMembers.mockReturnValue({ data: MEMBERS, isLoading: false, isError: false, refetch: vi.fn() });
   mockUseHealth.mockReturnValue({ data: HEALTHY, isLoading: false, isError: false, refetch: vi.fn(), isFetching: false });
+  mockUseJobs.mockReturnValue({
+    data: { configured: true, counts: { succeeded: 3, processing: 0, scheduled: 0, enqueued: 0, failed: 0 }, jobs: [] },
+    isLoading: false, isError: false, refetch: vi.fn(),
+  });
+  mockUseRequeue.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false, variables: undefined });
   renderWithAuth(<AdministrationPage />, { roles: ['administrator'] });
 }
 
@@ -40,6 +50,8 @@ describe('AdministrationPage — sub-tab container', () => {
   beforeEach(() => {
     mockUseMembers.mockReset();
     mockUseHealth.mockReset();
+    mockUseJobs.mockReset();
+    mockUseRequeue.mockReset();
   });
 
   it('renders all seven sub-tabs, all navigable (design disables none)', () => {
@@ -89,15 +101,21 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getAllByText('Planned').length).toBeGreaterThan(0);
   });
 
-  it('shows honest-empty for templates / streams / jobs (later-phase modules)', async () => {
+  it('shows honest-empty for templates / streams (later-phase modules)', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('tab', { name: /Templates/ }));
     expect(screen.getByText('No templates yet')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /Streams/ }));
     expect(screen.getByText('No streams configured')).toBeInTheDocument();
+  });
+
+  it('switches to Job Monitor and renders the live Hangfire stat tiles', async () => {
+    const user = userEvent.setup();
+    renderPage();
     await user.click(screen.getByRole('tab', { name: /Job Monitor/ }));
-    expect(screen.getByText('No job data yet')).toBeInTheDocument();
+    expect(screen.getByText('No jobs yet')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument(); // succeeded tile
   });
 
   it('opening a user detail replaces the tabbed view (design userdetail sub-state)', async () => {

@@ -12,6 +12,52 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8c-2 — Administration → Job Monitor tab (branch `feat/P8c-2-actions-jobs-admin`)
+
+### 2026-07-02 — the designed Hangfire Job Monitor tab (AC-056; operator fork B)
+
+**What (backend).** Two bearer-authed endpoints on the existing `/api/admin` group (inherits
+`Policies.AdminConfig` → Administrator-only, guardrail #4). `GET /api/admin/jobs` resolves `JobStorage`
+**optionally from DI** (only registered when background jobs are enabled) → `Configured=false` under the
+Testing host / a Hangfire-less deploy, else projects `GetMonitoringApi()` via a **pure `JobsMonitorMapper`**
+(5 counts + a recent-runs table). `POST /api/admin/jobs/{id}/requeue` = the design's Retry button
+(`IBackgroundJobClient.Requeue`) — **not read-only, so audited** (`admin.job.requeued`, guardrail #5); 503
+when Hangfire is off, 404 when the job id is unknown. Reconciled the `AdminEndpoints.cs` header (Hangfire is
+no longer "monitoring not configured" — it's a live tab with an honest `Configured=false` fallback).
+
+**What (frontend).** Filled the designed `isJobs` tab (`ACMP Administration.dc.html`), replacing the
+`ComingDataTab` placeholder. `api/jobs.ts` (`useAdminJobs` 30s poll + `useRequeueJob`); `JobMonitor.tsx`
+composes the shared Table / StatusChip / Button / states (5 stat tiles + recent-runs table + Retry on failed
+rows only); `jobFormat.ts` formats relative "when" via native **`Intl.RelativeTimeFormat`** (EN + AR plurals
+for free) + duration. Full states: loading / error / **not-configured** / empty. i18n `admin.jobs.*` EN+AR by
+hand; logical-property CSS (RTL-clean); axe AA.
+
+**Honest-sparse.** Shows only jobs that actually run (the P8c-1 sweep) — not the mock's aspirational
+DigestEmail/DiagramRender catalog. On a fresh stack the tiles are mostly zero and the table empty (the empty
+state handles it), which the real-SQL boot confirmed.
+
+**Decisions / flags.**
+- **Test seam (advisor call).** The mapping lives in a pure `JobsMonitorMapper` unit-tested against a
+  **mocked `IMonitoringApi`** (NSubstitute, added to Api.Tests) — deterministic ≥95% without a Hangfire server
+  and without the Hangfire.InMemory dep. The endpoint's live `Map`/requeue branches are covered by wired
+  integration tests that substitute `JobStorage`/`IBackgroundJobClient` into the Testing host.
+- **Relative time.** Native `Intl.RelativeTimeFormat` renders "2 minutes ago" / "قبل دقيقتين" rather than the
+  mock's compact "2m ago" — a deliberate, honest deviation (correct Arabic dual/plural forms, zero i18n keys).
+- **Retries column.** The backend doesn't populate a retry count (would need a per-row `JobDetails` call), so
+  non-failed rows show "—" and the Retry button carries no "n/m" suffix — honest-sparse, upgrade later if needed.
+
+**Verification.** Backend: Application 496 / Domain 123 / Architecture 24 / Integration 16 / **Api 88** green;
+per-file coverage gate **171 files @ 99.67%** (`JobsMonitor.cs` + `AdminEndpoints.cs` both 100%); `dotnet format
+--verify-no-changes` clean. Frontend: **514 tests green**, new files 100% lines (`jobs.ts` / `JobMonitor.tsx` /
+`jobFormat.ts`), i18n parity 843, `tsc -b` + `vite build` + oxlint clean. **Real-stack gate (P8c-1 lesson):**
+booted a throwaway console mirroring `Program.cs`'s Hangfire registration against the running `acmp-sqlserver`
+container → `JobStorage` resolves as `SqlServerStorage` (non-null) and `GetStatistics()` works, proving the
+`Configured=true` path is real, not the fallback. Visual-verified the populated tab via a throwaway seeded-cache
+harness in **EN-light + AR-RTL-dark** (tiles, chips, Retry, RTL mirroring, dark tokens all match), then deleted it.
+**AC-056 → Met.**
+
+---
+
 ## P8c-1 — Actions reminder/escalation Hangfire sweep (branch `feat/P8c-actions-jobs`)
 
 ### 2026-07-01 — app-owned Hangfire + the due-soon/overdue/escalation sweep (W22; AC-054/055)
