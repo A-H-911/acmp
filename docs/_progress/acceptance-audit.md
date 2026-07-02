@@ -73,7 +73,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > trigger it awaited is now raised (live center render → P9b/P17). Pre-commit review (csharp-reviewer) fixed a
 > HIGH (unvalidated `Decision.VoteId` could silently skip the SoD-3 gate) + a MEDIUM (misleading 403 pre-close)
 > by validating the coupling (exists + same-topic + closed) at both record and issue, with 3 guard tests.
-> Backend green: Domain 138 / Application 528 / Architecture 24 / Api 99 / Integration 17; per-file gate ≥95%.
+> Backend green: Domain 138 / Application 531 / Architecture 24 / Api 99 / Integration 17; per-file gate ≥95% (global 99.71%).
 > Backend-only — no FE/i18n change. See progress-log P9a entry.
 >
 > Status at PH-0: all PH-1 acceptance criteria are `Pending` — no governance features built yet.

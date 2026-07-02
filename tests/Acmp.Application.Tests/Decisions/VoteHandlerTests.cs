@@ -443,6 +443,28 @@ public class VoteHandlerTests
         v.Validate(new CastBallotCommand(Guid.NewGuid(), "", null)).IsValid.Should().BeFalse();
     }
 
+    [Fact]
+    public void Change_and_Recuse_validators_enforce_id_and_choice()
+    {
+        new ChangeBallotValidator().Validate(new ChangeBallotCommand(Guid.NewGuid(), "Approve", null)).IsValid.Should().BeTrue();
+        new ChangeBallotValidator().Validate(new ChangeBallotCommand(Guid.NewGuid(), "", null)).IsValid.Should().BeFalse();
+        new RecuseVoteValidator().Validate(new RecuseVoteCommand(Guid.NewGuid())).IsValid.Should().BeTrue();
+        new RecuseVoteValidator().Validate(new RecuseVoteCommand(Guid.Empty)).IsValid.Should().BeFalse();
+    }
+
+    [Fact] // not-found path for the change/recuse handlers
+    public async Task Change_and_Recuse_throw_when_the_vote_is_missing()
+    {
+        var clock = Clock(Now); var u = User("kc-alice", "Alice");
+        await using var db = Db("nf-" + Guid.NewGuid(), u, clock);
+        var change = () => new ChangeBallotHandler(db, u, clock, Substitute.For<IAuditSink>())
+            .Handle(new ChangeBallotCommand(Guid.NewGuid(), "Approve", null), default);
+        await change.Should().ThrowAsync<KeyNotFoundException>();
+        var recuse = () => new RecuseVoteHandler(db, u, clock, Substitute.For<IAuditSink>())
+            .Handle(new RecuseVoteCommand(Guid.NewGuid()), default);
+        await recuse.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
     // ── authorization pipeline (guardrail 4) ──────────────────────────────────
     [Fact]
     public async Task Pipeline_forbids_a_member_from_configuring_a_vote()

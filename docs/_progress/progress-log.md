@@ -72,13 +72,16 @@ Backend only — no `Acmp.Web` (the `/votes/:id` UI + wiring the meeting-workspa
 - **No-MeetingId present-check skip** (a vote run outside a live meeting has no attendance to count).
 
 **Verification.** `dotnet build acmp.sln` 0 errors (2 pre-existing NU1902 OpenTelemetry advisories only);
-`dotnet format --verify-no-changes` clean; `dotnet test` green — **Domain 138 / Application 528 / Architecture
+`dotnet format --verify-no-changes` clean; `dotnet test` green — **Domain 138 / Application 531 / Architecture
 24 / Api 99 / Integration 17** (Testcontainers ran: new `VOTE` unique-key + migration-applies backstops). New
 tests: `VoteTests` (15 — configure/open/cast/recuse/close guards, tally freeze, immutability, forward-only),
-`VoteHandlerTests` (22 — each command incl. authz-deny, double-vote audited denial, present-quorum via a mocked
+`VoteHandlerTests` (25 — each command incl. authz-deny, double-vote audited denial, present-quorum via a mocked
 seam, VoteOpened fan-out, the SoD-3 AC-015/016 path, + the 3 coupling-guard tests), `VotesApiTests` (9 — HTTP
-round-trips incl. AC-024 close-without-quorum and AC-025 cast-after-close 409). Per-file coverage gate ≥95%
-green. Backend-only — no FE/i18n change.
+round-trips incl. AC-024 close-without-quorum and AC-025 cast-after-close 409), `MeetingQuorumSourceTests`.
+Per-file **≥95% coverage gate green (global 99.71%)** — a follow-up added the `MeetingQuorumSource` direct test
++ Change/Recuse validator + not-found tests to lift 3 files the seam-mock/direct-handler tests had left <95%
+(the first CI run caught them; `node scripts/check-coverage.mjs` now runs locally pre-push). Backend-only — no
+FE/i18n change.
 
 **AC.** AC-021/022/023/024/025/026 **Pending → Partial** (domain + handler + HTTP proven; the **Met** flip
 waits on the live real-stack + `/votes/:id` UI leg → P9b/P17 per G-TRACE). AC-015/016 (SoD-3) strengthen from
