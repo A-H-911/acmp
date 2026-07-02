@@ -38,6 +38,27 @@ public class DecisionsApiTests
     private sealed record ConditionInfo(string Status);
     private sealed record DecisionDetail(string Key, string Status, Guid? SupersededByDecisionId, List<ConditionInfo> Conditions);
 
+    // AC-029: satisfy the downstream-link gate by creating a follow-up action sourced from the decision
+    // (the real cross-module seam — /api/actions writes the (SourceType=Decision, SourceId) reference the
+    // IActionLinkDirectory then counts). Chairman is allowed to create actions (docs/10).
+    private static async Task LinkActionTo(HttpClient client, Guid decisionId)
+    {
+        var body = new
+        {
+            title = Loc("Follow-up action", "إجراء متابعة"),
+            description = (object?)null,
+            priority = "Normal",
+            ownerUserId = "kc-owner",
+            ownerName = "Owner",
+            dueDate = (DateTimeOffset?)null,
+            sourceType = "Decision",
+            sourceId = decisionId,
+            sourceKey = (string?)null,
+            meetingKey = (string?)null,
+        };
+        (await client.PostAsJsonAsync("/api/actions", body)).StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
     [Fact] // AC-008
     public async Task Record_without_token_returns_401()
     {
@@ -93,18 +114,60 @@ public class DecisionsApiTests
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact] // W12: a Chairman issues a recorded decision (Draft → Issued)
+    [Fact] // W12: a Chairman issues a recorded decision (Draft → Issued) — AC-029 satisfied by a linked action
     public async Task Chairman_issues_a_recorded_decision()
     {
         await using var factory = new AcmpWebApplicationFactory();
         var chair = Client(factory, "Chairman", "kc-chair");
         var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
+        await LinkActionTo(chair, decision!.Id);   // Approved is follow-up-bearing → needs ≥1 downstream link
 
-        var issue = await chair.PostAsJsonAsync($"/api/decisions/{decision!.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        var issue = await chair.PostAsJsonAsync($"/api/decisions/{decision.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
         issue.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var detail = await (await chair.GetAsync($"/api/decisions/{decision.Key}")).Content.ReadFromJsonAsync<DecisionDetail>();
         detail!.Status.Should().Be("Issued");
+    }
+
+    [Fact] // AC-029 (OQ-045 failing-first): a follow-up-bearing decision with NO downstream link is rejected
+    public async Task Issue_followup_decision_without_a_downstream_link_returns_409_and_stays_draft()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var chair = Client(factory, "Chairman", "kc-chair");
+        var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
+
+        var rejected = await chair.PostAsJsonAsync($"/api/decisions/{decision!.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        rejected.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var stillDraft = await (await chair.GetAsync($"/api/decisions/{decision.Key}")).Content.ReadFromJsonAsync<DecisionDetail>();
+        stillDraft!.Status.Should().Be("Draft");
+
+        // once a follow-up action links to it, the same issue succeeds (real cross-module seam)
+        await LinkActionTo(chair, decision.Id);
+        var accepted = await chair.PostAsJsonAsync($"/api/decisions/{decision.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        accepted.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact] // AC-029 exemption: a non-follow-up outcome (Rejected) issues with no downstream link required
+    public async Task Issue_non_followup_decision_without_a_link_succeeds()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var chair = Client(factory, "Chairman", "kc-chair");
+        var body = new
+        {
+            topicId = Guid.NewGuid(),
+            meetingId = (Guid?)null,
+            outcome = "Rejected",
+            title = Loc("Reject the proposal", "رفض المقترح"),
+            rationale = Loc("Out of scope", "خارج النطاق"),
+            alternatives = (object?)null,
+            voteId = (Guid?)null,
+            conditions = Array.Empty<object>(),
+        };
+        var decision = await (await chair.PostAsJsonAsync("/api/decisions", body)).Content.ReadFromJsonAsync<DecisionSummary>();
+
+        var issue = await chair.PostAsJsonAsync($"/api/decisions/{decision!.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        issue.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact] // docs/10: issue is Chairman-only — a Secretary is forbidden
@@ -125,7 +188,8 @@ public class DecisionsApiTests
         await using var factory = new AcmpWebApplicationFactory();
         var chair = Client(factory, "Chairman", "kc-chair");
         var prior = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
-        await chair.PostAsJsonAsync($"/api/decisions/{prior!.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        await LinkActionTo(chair, prior!.Id);   // AC-029: the prior (Approved) needs a link before it can be issued
+        await chair.PostAsJsonAsync($"/api/decisions/{prior.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
 
         var supersede = await chair.PostAsJsonAsync($"/api/decisions/{prior.Id}/supersede", new
         {

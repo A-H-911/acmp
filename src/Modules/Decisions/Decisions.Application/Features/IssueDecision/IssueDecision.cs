@@ -1,7 +1,9 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Actions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -17,6 +19,14 @@ namespace Acmp.Modules.Decisions.Application.Features.IssueDecision;
 // notification to the committee, and audit (payload carries the override flag, AC-016/SoD-3). A chair
 // override (issuing against the vote) must carry a justification — enforced by the validator (400) and
 // the domain guard (defence in depth). The SoD-3 co-attestation GATE itself is vote-coupled → P9.
+//
+// AC-029 downstream-link gate (FR-067, OQ-045): a follow-up-bearing decision (Approved / ConditionallyApproved
+// / EnhancementsRequired / DesignChangesRequired / ResearchRequired) cannot be Issued until ≥1 downstream
+// artifact links to it — enforced HERE in the handler, not on Decision.Issue, because the link count is
+// cross-module (Actions) and the Decision domain cannot see it. Living in this handler ALSO auto-exempts the
+// supersession successor (SupersedeDecisionHandler calls Decision.Issue directly, never this path) — not a
+// bypass: superseding requires a prior Issued decision, and first-issue is only reachable through this gate,
+// so every lineage root already passed it (ASM, docs/41). Rejected/Deferred/etc. issue freely.
 public sealed record IssueDecisionCommand(
     Guid DecisionId,
     bool ChairOverride,
@@ -52,10 +62,11 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
     private readonly IAuditSink _audit;
     private readonly ICommitteeDirectory _directory;
     private readonly INotificationChannel _notifications;
+    private readonly IActionLinkDirectory _links;
 
     public IssueDecisionHandler(IDecisionsDbContext db, ITopicDecisionRecorder topics,
         ICurrentUser user, IClock clock, IAuditSink audit,
-        ICommitteeDirectory directory, INotificationChannel notifications)
+        ICommitteeDirectory directory, INotificationChannel notifications, IActionLinkDirectory links)
     {
         _db = db;
         _topics = topics;
@@ -64,12 +75,20 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         _audit = audit;
         _directory = directory;
         _notifications = notifications;
+        _links = links;
     }
 
     public async Task Handle(IssueDecisionCommand request, CancellationToken ct)
     {
         var decision = await _db.Decisions.FirstOrDefaultAsync(d => d.PublicId == request.DecisionId, ct)
             ?? throw new KeyNotFoundException("Decision not found.");
+
+        // AC-029: follow-up-bearing outcomes need ≥1 downstream link before Issue. Cross-module count via the
+        // Actions-owned contract (never a Decisions→Actions table read). InvalidOperationException → 409.
+        if (DecisionOutcomeRules.RequiresDownstreamLink(decision.Outcome)
+            && !await _links.DecisionHasLinkedActionAsync(decision.PublicId, ct))
+            throw new InvalidOperationException(
+                "At least one downstream link (Action, Risk, or other artifact) is required before a decision can be Issued.");
 
         var (sub, name) = CurrentActor.Of(_user);
         decision.Issue(sub, name, request.ChairOverride, request.OverrideJustification, _clock.UtcNow);

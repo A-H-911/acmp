@@ -12,6 +12,45 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P8d — AC-029 decision→action downstream-link gate (branch `feat/P8d-actions-decision-gate`)
+
+### 2026-07-02 — the AC-029 gate retrofit (OQ-045 resolved; closes the Actions module)
+
+**What (backend-only — Fork 2 GO).** A follow-up-bearing decision cannot be **Issued** until ≥1 downstream
+artifact links to it (AC-029, FR-067, US-054). New cross-module seam `IActionLinkDirectory`
+(`Acmp.Shared/Contracts/Actions`, mirrors `ICommitteeDirectory`) with one primitive method
+`DecisionHasLinkedActionAsync(Guid decisionId)`; impl `ActionLinkDirectory` in `Actions.Infrastructure`
+counts `(SourceType=Decision, SourceId)` via `AnyAsync` (no FK, no caller-side table read — ArchUnit green,
+24 pass). `IssueDecisionHandler` injects it and, **for follow-up-bearing outcomes only**
+(`DecisionOutcomeRules.RequiresDownstreamLink` — Approved/ConditionallyApproved/EnhancementsRequired/
+DesignChangesRequired/ResearchRequired), throws `InvalidOperationException` → **409** when zero links; the
+decision stays **Draft**. Rejected/Deferred/etc. issue freely.
+
+**Two design calls (operator GO, both surfaced pre-code):**
+- **Fork 1 — hard, not soft.** AC-029 + FR-067 + OQ-045(a) all mandate reject-and-stay-Draft; the brief's
+  soft lean was overridden per "OQ-045's default wins."
+- **Supersession exempt (ASM-014).** The check lives in `IssueDecisionHandler`, **not** `Decision.Issue` —
+  the count is cross-module so the domain can't see it, and handler-placement auto-exempts
+  `SupersedeDecisionHandler` (which drafts+issues the successor atomically with zero links; gating it would
+  deadlock every correction). Not a bypass: first-issue is only reachable through the gated path, so every
+  lineage root already passed it. OQ-045's "domain guard" + "supersession successor's issue" phrasing amended;
+  ASM-014 recorded in docs/41.
+
+**Why no FE (Fork 2).** No affordance triggers Draft→Issue today (`api/decisions.ts` = read + supersede;
+record/issue UI was out of P7b scope), and under a hard gate an Issued decision *always* has ≥1 link — so a
+"missing links" indicator is dead code. The issue-UI + create-on-draft relaxation is a later slice. No
+`.dc.html` change, no visual-verify needed.
+
+**Gates.** Backend build+format clean; **173 files @ 99.67%** per-file coverage (≥95% gate green); Domain 123
+/ Arch 24 / Application 509 / Integration 16 / Api 90 all pass. New tests: handler reject/exempt + the
+11-outcome `RequiresDownstreamLink` theory; API 409-then-link-then-204 (OQ-045 failing-first, real
+cross-module seam) + Rejected-exemption. **AC-029 → Met.**
+
+**Next.** P8 (Actions) is **complete** — P8a/b/b2a/b2b/c-1/c-2/d all shipped. Next phase per roadmap (P9
+Voting / P10 Risks+Dependencies+Traceability, which will widen the AC-029 predicate to typed edges — ASM-014).
+
+---
+
 ## P8c-2 — Administration → Job Monitor tab (branch `feat/P8c-2-actions-jobs-admin`)
 
 ### 2026-07-02 — the designed Hangfire Job Monitor tab (AC-056; operator fork B)

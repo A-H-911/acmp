@@ -1,6 +1,8 @@
 ﻿using Acmp.Modules.Actions.Application;
 using Acmp.Modules.Actions.Application.Abstractions;
+using Acmp.Modules.Actions.Infrastructure.Directory;
 using Acmp.Modules.Actions.Infrastructure.Persistence;
+using Acmp.Shared.Contracts.Actions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,9 @@ public static class ActionsInfrastructureExtensions
 
         services.AddScoped<IActionsDbContext>(sp => sp.GetRequiredService<ActionsDbContext>());
         services.AddScoped<IActionKeyGenerator, ActionKeyGenerator>();
+
+        // Cross-module seam for the Decisions AC-029 downstream-link gate (ADR-0001, FR-067, OQ-045).
+        services.AddScoped<IActionLinkDirectory, ActionLinkDirectory>();
 
         services.AddActionsApplication();
         return services;
