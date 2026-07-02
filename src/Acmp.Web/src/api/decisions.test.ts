@@ -44,6 +44,7 @@ describe('useSupersedeDecision', () => {
       priorDecisionId: 'p1',
       outcome: 'Approved',
       title: { en: 'Adopt Keycloak (v2)', ar: 'اعتماد كيكلوك (٢)' },
+      statement: { en: 'The committee adopts Keycloak (v2).', ar: 'تعتمد اللجنة.' },
       rationale: { en: 'Corrected', ar: 'مصحح' },
       alternatives: null,
       conditions: [],
@@ -64,7 +65,7 @@ describe('useSupersedeDecision', () => {
     const { result } = renderHook(() => useSupersedeDecision('DECN-2026-008'), { wrapper });
     result.current.mutate({
       priorDecisionId: 'p1', outcome: 'Approved',
-      title: { en: 't', ar: 't' }, rationale: { en: 'r', ar: 'r' },
+      title: { en: 't', ar: 't' }, statement: { en: 's', ar: 's' }, rationale: { en: 'r', ar: 'r' },
       conditions: [], reason: { en: 'x', ar: 'x' },
     });
     await waitFor(() => expect(result.current.isError).toBe(true));

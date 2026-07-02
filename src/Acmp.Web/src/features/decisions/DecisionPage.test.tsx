@@ -30,6 +30,7 @@ const ISSUED: DecisionDetail = {
   id: 'p1', key: 'DECN-2026-008', topicId: 't-guid', meetingId: 'm-guid',
   outcome: 'ConditionallyApproved', status: 'Issued',
   title: { en: 'Adopt Keycloak as the standard IdP', ar: 'اعتماد كيكلوك' },
+  statement: { en: 'The committee adopts Keycloak as the standard identity provider.', ar: 'تعتمد اللجنة كيكلوك.' },
   rationale: { en: 'Consolidate identity onto one proven platform.', ar: 'توحيد الهوية.' },
   alternatives: { en: 'Build an in-house IdP — higher burden.', ar: 'بناء داخلي.' },
   voteId: null, chairApprovedByUserId: 'kc-chair', chairApprovedByName: 'Sara Chair',
@@ -137,6 +138,7 @@ describe('DecisionPage (P7b)', () => {
     await user.click(screen.getByRole('button', { name: 'Supersede' }));
 
     await user.type(screen.getByLabelText(/Title/), 'Adopt federated IdP');
+    await user.type(screen.getByLabelText(/Decision statement/), 'The committee adopts a federated IdP');
     await user.type(screen.getByLabelText(/Rationale/), 'Pivoted to federation');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'Federated pivot');
     await user.click(screen.getByRole('button', { name: 'Supersede decision' }));
@@ -156,6 +158,7 @@ describe('DecisionPage (P7b)', () => {
     setup(['chairman']);
     await user.click(screen.getByRole('button', { name: 'Supersede' }));
     await user.type(screen.getByLabelText(/^Title/), 'New title');
+    await user.type(screen.getByLabelText(/Decision statement/), 'The committee decides anew');
     await user.type(screen.getByLabelText(/^Rationale/), 'New rationale');
     await user.type(screen.getByLabelText(/Alternatives considered/), 'We weighed a SaaS IdP');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'pivot');
@@ -174,6 +177,7 @@ describe('DecisionPage (P7b)', () => {
     await user.click(screen.getByRole('option', { name: 'Conditionally Approved' }));
 
     await user.type(screen.getByLabelText(/^Title/), 'Conditional title');
+    await user.type(screen.getByLabelText(/Decision statement/), 'The committee conditionally decides');
     await user.type(screen.getByLabelText(/^Rationale/), 'Conditional rationale');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'why');
 
@@ -201,6 +205,7 @@ describe('DecisionPage (P7b)', () => {
     setup(['chairman']);
     await user.click(screen.getByRole('button', { name: 'Supersede' }));
     await user.type(screen.getByLabelText(/^Title/), 'T');
+    await user.type(screen.getByLabelText(/Decision statement/), 'S');
     await user.type(screen.getByLabelText(/^Rationale/), 'R');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'x');
     await user.click(screen.getByRole('button', { name: 'Supersede decision' }));

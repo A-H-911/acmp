@@ -34,7 +34,12 @@ tamper detection, genesis, empty). ArchUnit still green (Shared is not a module 
 `div[role=dialog]` with no trap/Esc/restore). **F-3 (MAJOR, a11y).** Removed the duplicate `<h1>` on the
 agenda/workspace tabs (shell owns the single page H1). **F-4/F-5 (MAJOR).** SideNav gains the "Viewing as
 {role}" indicator + audit-logging footer card; the permission-denied state gains Back-home / Request-access
-actions + the `403 · /path` line. **F-6.** Decision-statement omission documented (needs a backend field).
+actions + the `403 · /path` line. **F-6 (built, not deferred).** Real bilingual `Decision.Statement` field end-to-end — domain (required, `Draft`
+guard), EF owned `statement_en/ar` + migration `Decisions_AddStatement`, Record/Supersede commands +
+validators + `DecisionDetailDto` + mapping + API bodies, FE `DecisionDetail`/`SupersedeInput` types, the
+"Decision statement" section on `DecisionPage` before Rationale, a statement input in the supersede dialog,
+and EN/AR `decisions.statement` + `decisions.field.statement*` keys. The reconciliation-comment defer is
+removed.
 **F-7.** Stale agenda tokens (`--agenda-budget-h/-rail-w`) reconciled to the rendered 10px/360px and the
 screens now consume them. **F-8.** (docs) acceptance-audit rollup regenerated below.
 

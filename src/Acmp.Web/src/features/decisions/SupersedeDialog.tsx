@@ -2,7 +2,7 @@
  * Supersede dialog (P7b, W21). The design's dialog (ACMP Decision, Voting & ADR — supersedeOpen)
  * collects only a reason, but the shipped supersede command drafts + auto-issues a FULL successor
  * decision in one transaction — so this dialog must capture that successor body (outcome, title,
- * rationale, optional alternatives, conditions when conditional) plus the reason. Extending the
+ * statement, rationale, optional alternatives, conditions when conditional) plus the reason. Extending the
  * one-field mock to the real body is a blessed deviation (design updated later).
  *
  * Content is entered in one language and MIRRORED to both LocalizedString columns (en === ar) — the
@@ -41,6 +41,7 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
 
   const [outcome, setOutcome] = useState<DecisionOutcome>('Approved');
   const [title, setTitle] = useState('');
+  const [statement, setStatement] = useState('');
   const [rationale, setRationale] = useState('');
   const [alternatives, setAlternatives] = useState('');
   const [conditions, setConditions] = useState<string[]>([]);
@@ -54,6 +55,7 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
   function validate(): boolean {
     const e: Record<string, string> = {};
     if (!title.trim()) e.title = t('decisions.supersede.err.title');
+    if (!statement.trim()) e.statement = t('decisions.supersede.err.statement');
     if (!rationale.trim()) e.rationale = t('decisions.supersede.err.rationale');
     if (!reason.trim()) e.reason = t('decisions.supersede.err.reason');
     if (isConditional && cleanConditions.length === 0) e.conditions = t('decisions.supersede.err.conditions');
@@ -69,6 +71,7 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
         priorDecisionId,
         outcome,
         title: loc(title),
+        statement: loc(statement),
         rationale: loc(rationale),
         alternatives: alternatives.trim() ? loc(alternatives) : null,
         conditions: cleanConditions.map((c) => ({ text: loc(c), dueDate: null })),
@@ -122,6 +125,12 @@ export function SupersedeDialog({ open, onClose, priorKey, priorDecisionId, cach
         <Field label={t('decisions.field.title')} required error={errors.title}>
           {(p) => (
             <Input {...p} value={title} maxLength={512} placeholder={t('decisions.field.titlePh')} onChange={(e) => setTitle(e.target.value)} />
+          )}
+        </Field>
+
+        <Field label={t('decisions.field.statement')} required error={errors.statement}>
+          {(p) => (
+            <Textarea {...p} rows={2} value={statement} maxLength={2000} placeholder={t('decisions.field.statementPh')} onChange={(e) => setStatement(e.target.value)} />
           )}
         </Field>
 

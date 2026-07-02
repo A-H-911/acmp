@@ -158,6 +158,7 @@
     "notFoundBody": "This decision does not exist or has been removed.",
     "supersededBadge": "Superseded",
     "supersededLead": "This decision has been superseded",
+    "statement": "Decision statement",
     "rationale": "Rationale",
     "conditions": "Conditions",
     "alternatives": "Alternatives considered",
@@ -191,6 +192,8 @@
       "outcome": "Outcome",
       "title": "Title",
       "titlePh": "A short headline for this decision",
+      "statement": "Decision statement",
+      "statementPh": "State plainly what the committee decided",
       "rationale": "Rationale",
       "rationalePh": "Why the committee reached this outcome",
       "alternatives": "Alternatives considered",
@@ -213,6 +216,7 @@
       "error": "The decision could not be superseded. Please try again.",
       "err": {
         "title": "A title is required.",
+        "statement": "A decision statement is required.",
         "rationale": "A rationale is required.",
         "reason": "A reason is required.",
         "conditions": "A conditionally-approved decision needs at least one condition."

@@ -35,7 +35,7 @@ public static class DecisionsEndpoints
         group.MapPost("/", async (RecordDecisionBody body, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new RecordDecisionCommand(
-                body.TopicId, body.MeetingId, body.Outcome, body.Title, body.Rationale, body.Alternatives, body.VoteId,
+                body.TopicId, body.MeetingId, body.Outcome, body.Title, body.Statement, body.Rationale, body.Alternatives, body.VoteId,
                 body.Conditions ?? Array.Empty<DecisionConditionRequest>()), ct);
             return Results.Created($"/api/decisions/{result.Key}", result);
         }).RequireAuthorization(Policies.DecisionRecord);
@@ -51,7 +51,7 @@ public static class DecisionsEndpoints
         group.MapPost("/{id:guid}/supersede", async (Guid id, SupersedeDecisionBody body, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new SupersedeDecisionCommand(
-                id, body.Outcome, body.Title, body.Rationale, body.Alternatives,
+                id, body.Outcome, body.Title, body.Statement, body.Rationale, body.Alternatives,
                 body.Conditions ?? Array.Empty<DecisionConditionRequest>(), body.Reason), ct);
             return Results.Created($"/api/decisions/{result.Key}", result);
         }).RequireAuthorization(Policies.DecisionChairApprove);
@@ -60,12 +60,12 @@ public static class DecisionsEndpoints
     }
 
     public sealed record RecordDecisionBody(
-        Guid TopicId, Guid? MeetingId, DecisionOutcome Outcome, LocalizedString Title, LocalizedString Rationale,
-        LocalizedString? Alternatives, Guid? VoteId, IReadOnlyList<DecisionConditionRequest>? Conditions);
+        Guid TopicId, Guid? MeetingId, DecisionOutcome Outcome, LocalizedString Title, LocalizedString Statement,
+        LocalizedString Rationale, LocalizedString? Alternatives, Guid? VoteId, IReadOnlyList<DecisionConditionRequest>? Conditions);
 
     public sealed record IssueDecisionBody(bool ChairOverride, LocalizedString? OverrideJustification);
 
     public sealed record SupersedeDecisionBody(
-        DecisionOutcome Outcome, LocalizedString Title, LocalizedString Rationale, LocalizedString? Alternatives,
-        IReadOnlyList<DecisionConditionRequest>? Conditions, LocalizedString Reason);
+        DecisionOutcome Outcome, LocalizedString Title, LocalizedString Statement, LocalizedString Rationale,
+        LocalizedString? Alternatives, IReadOnlyList<DecisionConditionRequest>? Conditions, LocalizedString Reason);
 }

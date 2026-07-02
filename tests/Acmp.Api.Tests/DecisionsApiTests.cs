@@ -28,6 +28,7 @@ public class DecisionsApiTests
         meetingId = (Guid?)null,
         outcome = "Approved",
         title = Loc("Adopt Keycloak", "اعتماد كيكلوك"),
+        statement = Loc("The committee adopts Keycloak.", "تعتمد اللجنة كيكلوك."),
         rationale = Loc("Sound choice", "اختيار سليم"),
         alternatives = (object?)null,
         voteId = (Guid?)null,
@@ -159,6 +160,7 @@ public class DecisionsApiTests
             meetingId = (Guid?)null,
             outcome = "Rejected",
             title = Loc("Reject the proposal", "رفض المقترح"),
+            statement = Loc("The committee rejects the proposal.", "ترفض اللجنة المقترح."),
             rationale = Loc("Out of scope", "خارج النطاق"),
             alternatives = (object?)null,
             voteId = (Guid?)null,
@@ -195,6 +197,7 @@ public class DecisionsApiTests
         {
             outcome = "Approved",
             title = Loc("Adopt Keycloak (v2)", "اعتماد كيكلوك (٢)"),
+            statement = Loc("The committee adopts Keycloak (v2).", "تعتمد اللجنة كيكلوك (٢)."),
             rationale = Loc("Corrected", "مصحح"),
             alternatives = (object?)null,
             conditions = Array.Empty<object>(),

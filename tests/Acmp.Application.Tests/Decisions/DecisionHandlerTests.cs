@@ -29,6 +29,7 @@ public class DecisionHandlerTests
     private static readonly DateTimeOffset Now = new(2026, 3, 1, 9, 0, 0, TimeSpan.Zero);
     private static readonly Guid Topic = Guid.NewGuid();
     private static readonly LocalizedString Title = LocalizedString.Create("Adopt Keycloak", "اعتماد كيكلوك");
+    private static readonly LocalizedString Statement = LocalizedString.Create("The committee adopts Keycloak.", "تعتمد اللجنة كيكلوك.");
     private static readonly LocalizedString Rationale = LocalizedString.Create("Sound choice", "اختيار سليم");
 
     private sealed class FakeRecorder : ITopicDecisionRecorder
@@ -89,7 +90,7 @@ public class DecisionHandlerTests
     private static RecordDecisionCommand RecordCmd(
         DecisionOutcome outcome = DecisionOutcome.Approved, LocalizedString? alternatives = null,
         IReadOnlyList<DecisionConditionRequest>? conditions = null) =>
-        new(Topic, MeetingId: null, outcome, Title, Rationale, alternatives, VoteId: null,
+        new(Topic, MeetingId: null, outcome, Title, Statement, Rationale, alternatives, VoteId: null,
             conditions ?? Array.Empty<DecisionConditionRequest>());
 
     private static async Task<(DecisionsDbContext Db, Guid DecisionId)> DraftedAsync(ICurrentUser user, IClock clock,
@@ -255,7 +256,7 @@ public class DecisionHandlerTests
         DecisionSummaryDto successor;
         await using (var db = Db(name, user, clock))
             successor = await new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), recorder, user, clock, audit, Dir(), channel)
-                .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Rationale, null,
+                .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Statement, Rationale, null,
                     Array.Empty<DecisionConditionRequest>(), reason), default);
 
         successor.Key.Should().Be("DECN-2026-002");
@@ -280,7 +281,7 @@ public class DecisionHandlerTests
 
         var act = () => new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), new FakeRecorder(), user, clock,
                 Substitute.For<IAuditSink>(), Dir(), NoNotify())
-            .Handle(new SupersedeDecisionCommand(Guid.NewGuid(), DecisionOutcome.Approved, Title, Rationale, null,
+            .Handle(new SupersedeDecisionCommand(Guid.NewGuid(), DecisionOutcome.Approved, Title, Statement, Rationale, null,
                 Array.Empty<DecisionConditionRequest>(), LocalizedString.Create("r", "ر")), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -295,7 +296,7 @@ public class DecisionHandlerTests
 
         var act = () => new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), new FakeRecorder(), user, clock,
                 Substitute.For<IAuditSink>(), Dir(), NoNotify())
-            .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Rationale, null,
+            .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Statement, Rationale, null,
                 Array.Empty<DecisionConditionRequest>(), LocalizedString.Create("r", "ر")), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -327,7 +328,7 @@ public class DecisionHandlerTests
     {
         var v = new RecordDecisionValidator();
         var bad = new RecordDecisionCommand(Guid.Empty, null, DecisionOutcome.Approved,
-            Title, new LocalizedString("", ""), null, null, Array.Empty<DecisionConditionRequest>());
+            Title, Statement, new LocalizedString("", ""), null, null, Array.Empty<DecisionConditionRequest>());
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
@@ -336,7 +337,7 @@ public class DecisionHandlerTests
     {
         var v = new RecordDecisionValidator();
         var mirrored = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
-            Title, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
+            Title, Statement, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
         v.Validate(mirrored).IsValid.Should().BeTrue();
 
         var missingAr = mirrored with { Rationale = new LocalizedString("English only", "") };
@@ -344,6 +345,9 @@ public class DecisionHandlerTests
 
         var missingEn = mirrored with { Title = new LocalizedString("", "عربي فقط") };
         v.Validate(missingEn).IsValid.Should().BeFalse();
+
+        var missingStmt = mirrored with { Statement = new LocalizedString("English only", "") };
+        v.Validate(missingStmt).IsValid.Should().BeFalse();
     }
 
     [Fact] // a title over the nvarchar(512) column bound is a clean 400, not a SaveChanges 500
@@ -352,7 +356,7 @@ public class DecisionHandlerTests
         var v = new RecordDecisionValidator();
         var longTitle = new LocalizedString(new string('x', 513), new string('ي', 513));
         var bad = new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved,
-            longTitle, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
+            longTitle, Statement, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
@@ -361,7 +365,7 @@ public class DecisionHandlerTests
     {
         var v = new RecordDecisionValidator();
         var bad = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
-            Title, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
+            Title, Statement, Rationale, null, null, Array.Empty<DecisionConditionRequest>());
         v.Validate(bad).IsValid.Should().BeFalse();
     }
 
@@ -371,15 +375,15 @@ public class DecisionHandlerTests
         var v = new RecordDecisionValidator();
 
         var nullText = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
-            Title, Rationale, null, null, new[] { new DecisionConditionRequest(null!, null) });
+            Title, Statement, Rationale, null, null, new[] { new DecisionConditionRequest(null!, null) });
         v.Validate(nullText).IsValid.Should().BeFalse();
 
         var blankText = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
-            Title, Rationale, null, null, new[] { new DecisionConditionRequest(new LocalizedString("", ""), null) });
+            Title, Statement, Rationale, null, null, new[] { new DecisionConditionRequest(new LocalizedString("", ""), null) });
         v.Validate(blankText).IsValid.Should().BeFalse();
 
         var ok = new RecordDecisionCommand(Topic, null, DecisionOutcome.ConditionallyApproved,
-            Title, Rationale, null, null, new[] { new DecisionConditionRequest(LocalizedString.Create("Do X", "افعل"), null) });
+            Title, Statement, Rationale, null, null, new[] { new DecisionConditionRequest(LocalizedString.Create("Do X", "افعل"), null) });
         v.Validate(ok).IsValid.Should().BeTrue();
     }
 

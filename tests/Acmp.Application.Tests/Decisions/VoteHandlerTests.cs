@@ -335,8 +335,9 @@ public class VoteHandlerTests
         var sec = User("kc-sec", "Sec");
         await using var db = Db(name, sec, clock);
         var title = LocalizedString.Create("Adopt", "اعتماد"); var rationale = LocalizedString.Create("Sound", "سليم");
+        var statement = LocalizedString.Create("The committee adopts.", "تعتمد اللجنة.");
         var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), sec, clock, Substitute.For<IAuditSink>())
-            .Handle(new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved, title, rationale, null, voteId,
+            .Handle(new RecordDecisionCommand(Topic, null, DecisionOutcome.Approved, title, statement, rationale, null, voteId,
                 Array.Empty<DecisionConditionRequest>()), default);
         return summary.Id;
     }
@@ -396,8 +397,9 @@ public class VoteHandlerTests
         var sec = User("kc-sec", "Sec");
         await using var db = Db(name, sec, clock);
         var title = LocalizedString.Create("Adopt", "اعتماد"); var rationale = LocalizedString.Create("Sound", "سليم");
+        var statement = LocalizedString.Create("The committee adopts.", "تعتمد اللجنة.");
         var act = () => new RecordDecisionHandler(db, new DecisionKeyGenerator(db), sec, clock, Substitute.For<IAuditSink>())
-            .Handle(new RecordDecisionCommand(Guid.NewGuid(), null, DecisionOutcome.Approved, title, rationale, null, voteId,
+            .Handle(new RecordDecisionCommand(Guid.NewGuid(), null, DecisionOutcome.Approved, title, statement, rationale, null, voteId,
                 Array.Empty<DecisionConditionRequest>()), default);
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*different topic*");
     }
