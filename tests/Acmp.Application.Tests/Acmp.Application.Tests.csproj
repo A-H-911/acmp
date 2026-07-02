@@ -42,6 +42,8 @@
     <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Application\Acmp.Modules.Notifications.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Risks\Risks.Application\Acmp.Modules.Risks.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Risks\Risks.Infrastructure\Acmp.Modules.Risks.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

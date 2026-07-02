@@ -5,6 +5,7 @@ using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
+using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
@@ -48,6 +49,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<ActionsDbContext>>();
             services.RemoveAll<ActionsDbContext>();
             services.AddDbContext<ActionsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-actions"));
+
+            services.RemoveAll<DbContextOptions<RisksDbContext>>();
+            services.RemoveAll<RisksDbContext>();
+            services.AddDbContext<RisksDbContext>(o => o.UseInMemoryDatabase(_dbName + "-risks"));
 
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();

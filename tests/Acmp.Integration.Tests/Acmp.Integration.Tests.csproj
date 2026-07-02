@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\src\Modules\Decisions\Decisions.Infrastructure\Acmp.Modules.Decisions.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Actions\Actions.Infrastructure\Acmp.Modules.Actions.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Risks\Risks.Infrastructure\Acmp.Modules.Risks.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

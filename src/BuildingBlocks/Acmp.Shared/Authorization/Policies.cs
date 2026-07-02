@@ -21,6 +21,7 @@ public static class Policies
     public const string ActionCreate = "Action.Create";
     public const string ActionVerify = "Action.Verify";
     public const string RiskManage = "Risk.Manage";
+    public const string RiskAccept = "Risk.Accept";
     public const string DependencyCreate = "Dependency.Create";
     public const string AdrCreate = "Adr.Create";
     public const string AdrApprove = "Adr.Approve";

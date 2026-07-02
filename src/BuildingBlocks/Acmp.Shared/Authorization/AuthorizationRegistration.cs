@@ -34,6 +34,7 @@ public static class AuthorizationRegistration
         (Policies.ActionCreate,         new[] { Chairman, Secretary }, new[] { Member }),
         (Policies.ActionVerify,         new[] { Chairman, Secretary }, new[] { Member }),
         (Policies.RiskManage,           new[] { Chairman, Secretary }, new[] { Member, Reviewer }),
+        (Policies.RiskAccept,           new[] { Chairman, Secretary }, Array.Empty<string>()),
         (Policies.DependencyCreate,     new[] { Chairman, Secretary }, new[] { Member, Reviewer }),
         (Policies.AdrCreate,            new[] { Chairman, Secretary }, new[] { Member, Reviewer }),
         (Policies.AdrApprove,           new[] { Chairman, Secretary }, Array.Empty<string>()),
