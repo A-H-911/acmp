@@ -13,16 +13,18 @@ interface StateProps {
   body?: string;
   icon?: ReactNode;
   action?: ReactNode;
+  note?: string;
   tone?: 'default' | 'error';
 }
 
-function StateShell({ title, body, icon, action, tone = 'default' }: StateProps) {
+function StateShell({ title, body, icon, action, note, tone = 'default' }: StateProps) {
   return (
     <div className="state" role="status">
       {icon && <div className={`state-icon ${tone === 'default' ? '' : tone}`}>{icon}</div>}
       {title && <p className="state-title">{title}</p>}
       {body && <p className="state-body">{body}</p>}
       {action && <div className="state-actions">{action}</div>}
+      {note && <p className="state-note state-note-mono">{note}</p>}
     </div>
   );
 }
@@ -46,7 +48,7 @@ export function LoadingState({ label }: { label?: string }) {
   );
 }
 
-export function ErrorState({ title, body, onRetry }: { title?: string; body?: string; onRetry?: () => void }) {
+export function ErrorState({ title, body, onRetry, requestId }: { title?: string; body?: string; onRetry?: () => void; requestId?: string }) {
   const { t } = useTranslation();
   return (
     <StateShell
@@ -54,18 +56,30 @@ export function ErrorState({ title, body, onRetry }: { title?: string; body?: st
       icon={<Icon name="alertCircle" size={20} aria-hidden />}
       title={title ?? t('state.errorTitle')}
       body={body ?? t('common.error')}
-      action={onRetry && <Button variant="secondary" onClick={onRetry}>{t('common.retry')}</Button>}
+      action={onRetry && (
+        <Button onClick={onRetry}><Icon name="refresh" size={15} />{t('common.retry')}</Button>
+      )}
+      note={requestId ? `${t('state.errorRef')} · ${requestId}` : undefined}
     />
   );
 }
 
-export function PermissionDenied({ body }: { body?: string }) {
+export function PermissionDenied({ body, path }: { body?: string; path?: string }) {
   const { t } = useTranslation();
+  // No self-registration (ADR-0015): "Request access" emails an administrator rather than self-serving.
+  const deniedPath = path ?? (typeof window !== 'undefined' ? window.location.pathname : '');
   return (
     <StateShell
       icon={<Icon name="lock" size={20} aria-hidden />}
       title={t('state.deniedTitle')}
       body={body ?? t('common.permissionDenied')}
+      action={
+        <>
+          <a className="state-btn state-btn-primary" href="/">{t('state.backHome')}</a>
+          <a className="state-btn" href={`mailto:?subject=${encodeURIComponent(`${t('state.requestAccess')}: ${deniedPath}`)}`}>{t('state.requestAccess')}</a>
+        </>
+      }
+      note={deniedPath ? `403 · ${deniedPath}` : undefined}
     />
   );
 }

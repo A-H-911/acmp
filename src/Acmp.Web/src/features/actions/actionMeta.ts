@@ -10,14 +10,15 @@ import type { ActionStatus } from '../../api/actions';
 
 // Open/InProgress/Blocked/Completed/Verified match the design's actStatus map exactly. Cancelled has
 // no visual in "ACMP Lists & Registers.dc.html" (its actStatus lists only 5) — a no-reference tone
-// choice (neutral, terminal side-state); flagged in the progress log.
+// choice: `danger` (terminal red) so a cancelled action reads visually distinct from Open (neutral),
+// rather than colliding with it; flagged in the progress log.
 const STATUS_TONE: Record<ActionStatus, StatusTone> = {
   Open: 'neutral',
   InProgress: 'info',
   Blocked: 'danger',
   Completed: 'success',
   Verified: 'scheduled',
-  Cancelled: 'neutral',
+  Cancelled: 'danger',
 };
 
 export function statusTone(status: ActionStatus): StatusTone {

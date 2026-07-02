@@ -44,6 +44,14 @@ public sealed class DecisionConfiguration : IEntityTypeConfiguration<Decision>
         });
         b.Navigation(x => x.Title).IsRequired();
 
+        // Required bilingual decision statement (en/ar columns NOT NULL) — the "what was decided" sentence.
+        b.OwnsOne(x => x.Statement, t =>
+        {
+            t.Property(p => p.En).HasColumnName("statement_en").IsRequired().HasMaxLength(2000);
+            t.Property(p => p.Ar).HasColumnName("statement_ar").IsRequired().HasMaxLength(2000);
+        });
+        b.Navigation(x => x.Statement).IsRequired();
+
         // Required bilingual rationale (en/ar columns NOT NULL).
         b.OwnsOne(x => x.Rationale, t =>
         {

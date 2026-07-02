@@ -13,11 +13,12 @@ public class DecisionTests
     private static readonly DateTimeOffset Now = new(2026, 3, 1, 9, 0, 0, TimeSpan.Zero);
     private static readonly Guid Topic = Guid.NewGuid();
     private static readonly LocalizedString Title = LocalizedString.Create("Adopt Keycloak", "اعتماد كيكلوك");
+    private static readonly LocalizedString Statement = LocalizedString.Create("The committee adopts Keycloak.", "تعتمد اللجنة كيكلوك.");
     private static readonly LocalizedString Rationale = LocalizedString.Create("Sound choice", "اختيار سليم");
 
     private static Decision Drafted(DecisionOutcome outcome = DecisionOutcome.Approved,
         IEnumerable<DecisionConditionInput>? conditions = null) =>
-        Decision.Draft("DECN-2026-001", Topic, meetingId: null, outcome, Title, Rationale, alternatives: null,
+        Decision.Draft("DECN-2026-001", Topic, meetingId: null, outcome, Title, Statement, Rationale, alternatives: null,
             voteId: null, conditions ?? Array.Empty<DecisionConditionInput>(), "kc-chair", Now);
 
     [Fact]
@@ -35,15 +36,19 @@ public class DecisionTests
     public void Draft_requires_a_topic_a_title_and_a_rationale()
     {
         var noTopic = () => Decision.Draft("DECN-2026-002", Guid.Empty, null, DecisionOutcome.Approved,
-            Title, Rationale, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
+            Title, Statement, Rationale, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
         noTopic.Should().Throw<InvalidOperationException>().WithMessage("*topic*");
 
         var noTitle = () => Decision.Draft("DECN-2026-002", Topic, null, DecisionOutcome.Approved,
-            null!, Rationale, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
+            null!, Statement, Rationale, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
         noTitle.Should().Throw<InvalidOperationException>().WithMessage("*title*");
 
+        var noStatement = () => Decision.Draft("DECN-2026-002", Topic, null, DecisionOutcome.Approved,
+            Title, null!, Rationale, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
+        noStatement.Should().Throw<InvalidOperationException>().WithMessage("*statement*");
+
         var noRationale = () => Decision.Draft("DECN-2026-002", Topic, null, DecisionOutcome.Approved,
-            Title, null!, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
+            Title, Statement, null!, null, null, Array.Empty<DecisionConditionInput>(), "kc", Now);
         noRationale.Should().Throw<InvalidOperationException>().WithMessage("*rationale*");
     }
 

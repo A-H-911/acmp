@@ -14,7 +14,8 @@ export type IconName =
   | 'x' | 'checkCircle' | 'infoCircle' | 'warnTriangle' | 'clock' | 'user' | 'send'
   | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel'
   | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog'
-  | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh';
+  | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh'
+  | 'arrowRight' | 'clipboardCheck' | 'pause';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -83,16 +84,25 @@ const PATHS: Record<IconName, ReactNode> = {
   mail: <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 7l9 6 9-6" />,
   video: <path d="M15 10l5-3v10l-5-3M3 7a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
   refresh: <path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" />,
+  // Directional — carries className="dir-flip" at the call site so it mirrors in RTL.
+  arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
+  // Ballot / clipboard-check — cast & confirm-vote actions (Decision, Voting & ADR.dc.html).
+  clipboardCheck: <><path d="M9 3h6a1 1 0 011 1v1a1 1 0 01-1 1H9a1 1 0 01-1-1V4a1 1 0 011-1z" /><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><path d="M9 14l2 2 4-4" /></>,
+  // Meeting workspace Pause control.
+  pause: <><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></>,
 };
 
 interface IconProps {
   name: IconName;
   size?: number;
+  // Per-glyph stroke weight: the design uses ~1.6 for nav glyphs and 2 for chevrons/carets.
+  // Default stays 1.7 (the settled compromise); override at the call site to match the reference.
+  strokeWidth?: number;
   className?: string;
   'aria-hidden'?: boolean;
 }
 
-export function Icon({ name, size = 18, className, 'aria-hidden': ariaHidden = true }: IconProps) {
+export function Icon({ name, size = 18, strokeWidth = 1.7, className, 'aria-hidden': ariaHidden = true }: IconProps) {
   return (
     <svg
       width={size}
@@ -100,7 +110,7 @@ export function Icon({ name, size = 18, className, 'aria-hidden': ariaHidden = t
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.7}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

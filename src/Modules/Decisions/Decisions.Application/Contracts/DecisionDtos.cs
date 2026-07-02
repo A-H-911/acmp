@@ -31,6 +31,7 @@ public sealed record DecisionDetailDto(
     string Outcome,
     string Status,
     LocalizedString Title,
+    LocalizedString Statement,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     Guid? VoteId,

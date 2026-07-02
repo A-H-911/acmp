@@ -21,8 +21,16 @@ export function SideNav() {
   const exactMatch = (path: string) =>
     path === '/' || allPaths.some((p) => p !== path && p.startsWith(`${path}/`));
 
+  const primaryRole = roles[0] ?? 'Guest';
+
   return (
     <nav className="sidebar" aria-label={t('nav.primary')}>
+      <div className="nav-roleview">
+        <span className="nav-roleview-dot" aria-hidden="true" />
+        <span className="nav-roleview-text">
+          {t('nav.viewingAs')} <b>{t(`roles.${primaryRole}`, primaryRole)}</b>
+        </span>
+      </div>
       {groups.map((group, gi) => (
         <div key={group.labelKey ?? `cta-${gi}`}>
           {group.labelKey && <div className="nav-group-label">{t(group.labelKey)}</div>}
@@ -44,6 +52,13 @@ export function SideNav() {
           ))}
         </div>
       ))}
+      <div className="nav-audit-card">
+        <Icon name="lock" size={15} aria-hidden />
+        <div>
+          <div className="nav-audit-title">{t('nav.auditOn')}</div>
+          <div className="nav-audit-sub">{t('nav.auditSub')}</div>
+        </div>
+      </div>
     </nav>
   );
 }

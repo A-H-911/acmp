@@ -26,6 +26,7 @@ public sealed record SupersedeDecisionCommand(
     Guid PriorDecisionId,
     DecisionOutcome Outcome,
     LocalizedString Title,
+    LocalizedString Statement,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     IReadOnlyList<DecisionConditionRequest> Conditions,
@@ -46,6 +47,10 @@ public sealed class SupersedeDecisionValidator : AbstractValidator<SupersedeDeci
         RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
         RuleFor(x => x.Title!.En).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (EN) is required (max 512).");
         RuleFor(x => x.Title!.Ar).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (AR) is required (max 512).");
+
+        RuleFor(x => x.Statement).NotNull().WithMessage("A decision statement is required.");
+        RuleFor(x => x.Statement!.En).NotEmpty().MaximumLength(2000).When(x => x.Statement is not null).WithMessage("Statement (EN) is required (max 2000).");
+        RuleFor(x => x.Statement!.Ar).NotEmpty().MaximumLength(2000).When(x => x.Statement is not null).WithMessage("Statement (AR) is required (max 2000).");
 
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
         RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
@@ -109,7 +114,7 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
 
         // Successor inherits the prior's topic + meeting; it reaches Issued before the prior is superseded.
         var successor = Decision.Draft(key, prior.TopicId, prior.MeetingId, request.Outcome,
-            request.Title, request.Rationale, request.Alternatives, voteId: null, conditions, sub, now);
+            request.Title, request.Statement, request.Rationale, request.Alternatives, voteId: null, conditions, sub, now);
         successor.Issue(sub, name, chairOverride: false, overrideJustification: null, now);
         _db.Decisions.Add(successor);
 

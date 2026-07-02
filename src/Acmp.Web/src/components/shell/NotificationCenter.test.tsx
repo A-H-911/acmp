@@ -72,7 +72,7 @@ describe('NotificationCenter (P6b — ACMP.dc.html L92–131)', () => {
     feed({ data: { items: ITEMS, unreadCount: 1 } });
     const user = userEvent.setup();
     renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
-    await user.click(screen.getByRole('tab', { name: /All/ }));
+    await user.click(screen.getByRole('button', { name: /All/ }));
     expect(screen.getByText('A new meeting is scheduled.')).toBeTruthy();
   });
 

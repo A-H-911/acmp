@@ -73,11 +73,12 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
           </button>
         </div>
 
-        <div className="notif-tabs" role="tablist" aria-label={t('notif.title')}>
+        {/* Filter toggles, not a WAI-ARIA tablist: aria-pressed segmented buttons (ACMP.dc.html) —
+            a tablist would need tabpanels + roving tabindex + arrow-key nav we don't implement. */}
+        <div className="notif-tabs" role="group" aria-label={t('notif.title')}>
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'unread'}
+            aria-pressed={tab === 'unread'}
             className={tab === 'unread' ? 'is-active' : ''}
             onClick={() => setTab('unread')}
           >
@@ -85,8 +86,7 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={tab === 'all'}
+            aria-pressed={tab === 'all'}
             className={tab === 'all' ? 'is-active' : ''}
             onClick={() => setTab('all')}
           >

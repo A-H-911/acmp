@@ -168,6 +168,12 @@
   font-weight: 700;
   flex: 0 0 auto;
 }
+/* list-row owner avatar is smaller than kanban-card avatar */
+.bk-list-item .bk-avatar {
+  inline-size: 19px;
+  block-size: 19px;
+  font-size: 9px;
+}
 .bk-owner-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -809,7 +815,7 @@
   color: var(--text-2);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-full);
+  border-radius: 9px;
   padding: 0 7px;
   font-feature-settings: 'tnum';
 }

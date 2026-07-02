@@ -104,11 +104,6 @@ export function ActionsRegister() {
       </div>
 
       <div className="act-bar" role="search" aria-label={t('actions.filtersLabel')}>
-        <button type="button" className="act-saved" disabled title={t('actions.comingSoon')}>
-          <Icon name="funnel" size={14} aria-hidden /> {t('actions.savedView')}
-          <Icon name="chevronDown" size={13} aria-hidden />
-        </button>
-        <span className="act-divider" aria-hidden="true" />
         <FilterChip
           multiple
           label={t('actions.filter.status')}

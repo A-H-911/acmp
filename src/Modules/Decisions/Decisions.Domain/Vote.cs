@@ -16,7 +16,9 @@ namespace Acmp.Modules.Decisions.Domain;
 // ballots + tally are FROZEN (AC-025); every re-transition throws (AC-026).
 //
 // ponytail: immutability is enforced by no-public-mutators + RowVersion + the status guards (exactly like
-// Decision) — the crypto hash-chain over votes/ballots is deferred to P14 (ADR-0009).
+// Decision). Every vote STATE CHANGE (Configured/Open/Close/Ratify) is hash-chained now via the durable
+// AuditEvent store (BL-066, ADR-0009); a crypto hash-chain over the Vote/Ballot rows themselves is a
+// separate P14 refinement.
 public sealed class Vote : AuditableEntity
 {
     public const string AbstainChoice = "Abstain";

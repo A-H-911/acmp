@@ -5,6 +5,7 @@ using Acmp.Shared.Infrastructure.FileStorage;
 using Acmp.Shared.Infrastructure.Identity;
 using Acmp.Shared.Infrastructure.Time;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Minio;
@@ -21,8 +22,13 @@ public static class SharedKernelExtensions
         services.AddScoped<IResourceAuthorizer, ResourceAuthorizer>();
         services.AddSingleton<IClock, SystemClock>();
 
-        // P4 interim audit sink (structured log -> Seq). Replaced by the durable AuditEvent store (BL-066).
-        services.AddScoped<IAuditSink, SerilogAuditSink>();
+        // BL-066 (ADR-0009): the durable, immutable, hash-chained AuditEvent store (schema "audit") behind
+        // the IAuditSink seam. It also mirrors to Serilog->Seq, so the interim SerilogAuditSink is retired.
+        // Call sites are unchanged. The Api.Tests factory swaps this context to EF-InMemory like the modules.
+        services.AddDbContext<AuditDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("Acmp"), sql =>
+                sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema)));
+        services.AddScoped<IAuditSink, SqlAuditSink>();
 
         // Behaviors wrap the handler outer-to-inner in registration order:
         // logging (outermost) -> authorization -> validation (closest to the handler).

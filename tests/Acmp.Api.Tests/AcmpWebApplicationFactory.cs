@@ -6,6 +6,7 @@ using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
+using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -51,6 +52,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();
             services.AddDbContext<NotificationsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-notifications"));
+
+            services.RemoveAll<DbContextOptions<AuditDbContext>>();
+            services.RemoveAll<AuditDbContext>();
+            services.AddDbContext<AuditDbContext>(o => o.UseInMemoryDatabase(_dbName + "-audit"));
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });

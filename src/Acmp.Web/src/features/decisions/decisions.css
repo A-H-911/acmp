@@ -207,6 +207,11 @@
   font-weight: 500;
 }
 
+/* supersede confirm — destructive-but-reversible → warn tone, not danger red (design).
+   Higher specificity (.btn.btn-warn) so it wins over the base variant class. */
+.btn.btn-warn { background: var(--st-warn-dot); color: #fff; }
+.btn.btn-warn:hover:not(:disabled) { filter: brightness(0.94); }
+
 /* supersede dialog body */
 .dec-supersede-form {
   display: flex;

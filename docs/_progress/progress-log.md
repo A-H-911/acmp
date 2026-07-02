@@ -12,6 +12,52 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P9-review — Remediation slice (branch `feat/p9-review-remediation`)
+
+### 2026-07-02 — F-1…F-28 from the adversarial P1–P9 audit (BL-066 + fidelity)
+
+**Scope.** Burn-down of every finding from the pre-advance P1–P9 audit — one governance backend feature
+plus ~27 frontend fidelity fixes. No advance to P10 until this lands green.
+
+**F-1 (MAJOR, governance) — BL-066 durable hash-chained audit store.** The `IAuditSink` seam now binds to
+`SqlAuditSink` (schema `audit`), replacing the interim Serilog-only sink: every state change is appended to
+an immutable, append-only, SHA-256 **hash-chained** `AuditEvent` row (each row's `Hash` covers the prior
+row's `Hash`; a UNIQUE index on `PreviousHash` makes the chain non-forking) and still mirrors to Seq.
+New: `AuditEvent`, `AuditDbContext`, `SqlAuditSink`, `AuditChainVerifier`, `AuditDbContextFactory`,
+migration `Audit_Init`; wired into `MigrationRunner` + both Api-test factories (InMemory swap). Fail-closed.
+`Acmp.Shared` gains the SqlServer+Design EF packages (it already houses `ModuleDbContext`). Seam comments in
+`IAuditSink`/`Vote` reconciled: **state-change hash-chaining is now shipped**; per-ballot crypto chaining
+stays an explicit P14 refinement (not a silent ride). 5 new tests (chain continuity, broken-link + content
+tamper detection, genesis, empty). ArchUnit still green (Shared is not a module assembly).
+
+**F-2 (MAJOR, a11y).** MoM supersede dialog rebuilt on the shared focus-trapped `Dialog` (was a hand-rolled
+`div[role=dialog]` with no trap/Esc/restore). **F-3 (MAJOR, a11y).** Removed the duplicate `<h1>` on the
+agenda/workspace tabs (shell owns the single page H1). **F-4/F-5 (MAJOR).** SideNav gains the "Viewing as
+{role}" indicator + audit-logging footer card; the permission-denied state gains Back-home / Request-access
+actions + the `403 · /path` line. **F-6 (built, not deferred).** Real bilingual `Decision.Statement` field end-to-end — domain (required, `Draft`
+guard), EF owned `statement_en/ar` + migration `Decisions_AddStatement`, Record/Supersede commands +
+validators + `DecisionDetailDto` + mapping + API bodies, FE `DecisionDetail`/`SupersedeInput` types, the
+"Decision statement" section on `DecisionPage` before Rationale, a statement input in the supersede dialog,
+and EN/AR `decisions.statement` + `decisions.field.statement*` keys. The reconciliation-comment defer is
+removed.
+**F-7.** Stale agenda tokens (`--agenda-budget-h/-rail-w`) reconciled to the rendered 10px/360px and the
+screens now consume them. **F-8.** (docs) acceptance-audit rollup regenerated below.
+
+**F-9…F-28 (MINOR fidelity).** Sidebar padding, breadcrumb 12.5/7, badge 10px, brand 32px/.4px l-spacing,
+lang-btn 13/12, per-glyph icon stroke prop, state-icon 52/13 + title 17/700, error retry primary+refresh+
+request-id, notif panel z-index above sticky chrome + `aria-pressed` toggles (was a tab-list without
+panels), agenda drop-zone/heading tones, attendance/quorum indicator, Pause icon, minutes doc max-width +
+token backdrop, list chip `sm` + list avatar 19/9, kanban count 9px radius + hint copy, attachment cap
+**50→25 MB** (constant + both locales), "Secretary of the Committee" copy, decision Cast/Confirm ballot icon
++ arrow-right open-vote + warn-toned recuse + quorum-threshold pip ring, supersede warn tone, Actions saved-
+view stub removed + Cancelled→distinct terminal tone, decision issued-label EN/AR alignment.
+
+**Gates.** Backend 814 (Application 536, +5 audit) + 24 ArchUnit green; per-file coverage ≥95% (fresh
+`--collect` run); FE 545 green, per-file lines 100% on changed files; i18n parity 915; `dotnet format` clean.
+**Next.** Advance to P10 once merged.
+
+---
+
 ## P9b — Voting UI (branch `feat/P9b-voting-ui`)
 
 ### 2026-07-02 — the `/votes/:key` screen + "Call vote" configure dialog (W11; AC-021…026 + AC-052)

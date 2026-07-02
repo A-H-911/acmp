@@ -9,8 +9,7 @@
  *  - Superseded banner shows the reason; the successor's DECN- key isn't on the prior's DTO (only its
  *    Guid), so the successor link is omitted (flagged) — the supersede round-trip navigates to it directly.
  *  - Alternatives render as stored text (one LocalizedString), not the design's structured "Not chosen"
- *    cards (not modeled) — operator-confirmed.
- *  - Honest defers (no fabrication): Convert-to-ADR = disabled stub (ADR module → P9/P11); Vote result,
+ *    cards (not modeled) — operator-confirmed. *  - Honest defers (no fabrication): Convert-to-ADR = disabled stub (ADR module → P9/P11); Vote result,
  *    Effective date, Decided-in-meeting, Affected systems, and the immutable-history timeline are not
  *    rendered (vote/audit-query/relationship data lands in P9/P14).
  */
@@ -114,6 +113,9 @@ export function DecisionPage() {
       <div className="dec-grid">
         <article className={`dec-body${superseded ? ' dec-body-muted' : ''}`}>
           <section className="dec-section">
+            <h2 className="dec-section-h">{t('decisions.statement')}</h2>
+            <p className="dec-prose dec-statement">{pick(decn.statement)}</p>
+
             <h2 className="dec-section-h">{t('decisions.rationale')}</h2>
             <p className="dec-prose">{pick(decn.rationale)}</p>
           </section>

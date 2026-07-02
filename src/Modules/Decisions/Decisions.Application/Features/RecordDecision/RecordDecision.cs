@@ -22,6 +22,7 @@ public sealed record RecordDecisionCommand(
     Guid? MeetingId,
     DecisionOutcome Outcome,
     LocalizedString Title,
+    LocalizedString Statement,
     LocalizedString Rationale,
     LocalizedString? Alternatives,
     Guid? VoteId,
@@ -45,6 +46,10 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
         RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
         RuleFor(x => x.Title!.En).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (EN) is required (max 512).");
         RuleFor(x => x.Title!.Ar).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (AR) is required (max 512).");
+
+        RuleFor(x => x.Statement).NotNull().WithMessage("A decision statement is required.");
+        RuleFor(x => x.Statement!.En).NotEmpty().MaximumLength(2000).When(x => x.Statement is not null).WithMessage("Statement (EN) is required (max 2000).");
+        RuleFor(x => x.Statement!.Ar).NotEmpty().MaximumLength(2000).When(x => x.Statement is not null).WithMessage("Statement (AR) is required (max 2000).");
 
         RuleFor(x => x.Rationale).NotNull().WithMessage("A rationale is required.");
         RuleFor(x => x.Rationale!.En).NotEmpty().When(x => x.Rationale is not null).WithMessage("Rationale (EN) is required.");
@@ -105,7 +110,7 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
             .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
 
         var decision = Decision.Draft(key, request.TopicId, request.MeetingId, request.Outcome,
-            request.Title, request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
+            request.Title, request.Statement, request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
 
         _db.Decisions.Add(decision);
         await _db.SaveChangesAsync(ct);

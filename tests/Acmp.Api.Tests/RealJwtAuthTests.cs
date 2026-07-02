@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
+using Acmp.Shared.Infrastructure.Audit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -29,6 +30,9 @@ public class RealJwtAuthTests
                 services.RemoveAll<DbContextOptions<MembershipDbContext>>();
                 services.RemoveAll<MembershipDbContext>();
                 services.AddDbContext<MembershipDbContext>(o => o.UseInMemoryDatabase(_dbName));
+                services.RemoveAll<DbContextOptions<AuditDbContext>>();
+                services.RemoveAll<AuditDbContext>();
+                services.AddDbContext<AuditDbContext>(o => o.UseInMemoryDatabase(_dbName + "-audit"));
                 // Authentication is intentionally NOT swapped — the real JwtBearer scheme stays.
             });
         }

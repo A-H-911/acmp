@@ -27,6 +27,7 @@ import {
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { Button } from '../../components/ui/Button';
+import { Dialog } from '../../components/ui/Dialog';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { LoadingState, ErrorState } from '../../components/states';
 import { MeetingGate } from './MeetingGate';
@@ -199,15 +200,17 @@ function ActionsCard({ meetingId, mom }: { meetingId: string; mom: MinutesDetail
           <p className="mom-card-note">{t('meetings.mom.correctionsNote')}</p>
           <Button variant="secondary" onClick={() => setSupersedeOpen(true)}>{t('meetings.mom.supersede')}</Button>
         </div>
-        {supersedeOpen && <SupersedeMinutesDialog meetingId={meetingId} mom={mom} onClose={() => setSupersedeOpen(false)} />}
+        <SupersedeMinutesDialog meetingId={meetingId} mom={mom} open={supersedeOpen} onClose={() => setSupersedeOpen(false)} />
       </section>
     );
   }
   return null; // Draft actions live in the editor; Superseded has none
 }
 
-/** Corrected-version dialog (AC-036): a new body + a reason → a published successor under the same key. */
-function SupersedeMinutesDialog({ meetingId, mom, onClose }: { meetingId: string; mom: MinutesDetail; onClose: () => void }) {
+/** Corrected-version dialog (AC-036): a new body + a reason → a published successor under the same
+ *  key. Built on the shared Dialog so it gets focus-trap, Esc-to-close, backdrop-click close and
+ *  focus restore (the hand-rolled backdrop had none). Same fields + i18n keys as before. */
+function SupersedeMinutesDialog({ meetingId, mom, open, onClose }: { meetingId: string; mom: MinutesDetail; open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const supersede = useSupersedeMinutes(meetingId);
   const [body, setBody] = useState('');
@@ -229,10 +232,20 @@ function SupersedeMinutesDialog({ meetingId, mom, onClose }: { meetingId: string
   };
 
   return (
-    <div className="mom-dialog-backdrop" role="dialog" aria-modal="true" aria-label={t('meetings.mom.supersedeTitle')}>
-      <div className="mom-dialog">
-        <h3 className="mom-dialog-h">{t('meetings.mom.supersedeTitle')}</h3>
-        <p className="mom-dialog-note">{t('meetings.mom.supersedeNote')}</p>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      tone="warn"
+      title={t('meetings.mom.supersedeTitle')}
+      description={t('meetings.mom.supersedeNote')}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button loading={supersede.isPending} onClick={() => void onSubmit()}>{t('meetings.mom.supersedeConfirm')}</Button>
+        </>
+      }
+    >
+      <div className="mom-supersede-body">
         <label className="mom-label" htmlFor="mom-sup-body">{t('meetings.mom.bodyLabel')}</label>
         <MarkdownEditor id="mom-sup-body" value={body} onChange={setBody} rows={8} ariaLabel={t('meetings.mom.bodyLabel')} />
         {touched && !body.trim() && <p className="mom-field-error">{t('meetings.mom.bodyRequired')}</p>}
@@ -240,12 +253,8 @@ function SupersedeMinutesDialog({ meetingId, mom, onClose }: { meetingId: string
         <input id="mom-sup-reason" className="mom-input" value={reason} onChange={(e) => setReason(e.target.value)} />
         {touched && !reason.trim() && <p className="mom-field-error">{t('meetings.mom.reasonRequired')}</p>}
         {error && <p className="mom-field-error" role="alert">{error}</p>}
-        <div className="mom-dialog-actions">
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button disabled={supersede.isPending} onClick={onSubmit}>{t('meetings.mom.supersedeConfirm')}</Button>
-        </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
 

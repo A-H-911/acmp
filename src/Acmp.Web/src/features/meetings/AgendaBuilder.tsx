@@ -191,8 +191,9 @@ export function AgendaBuilder() {
 
       <div className="mt-builder-head">
         <div>
+          {/* F-3: the meeting title H1 lives in the MeetingPage shell; this tab renders inside
+              its <Outlet/>, so a second title H1 here duplicated the page heading. Chip only. */}
           <div className="mt-builder-titlerow">
-            <h1 className="page-title">{meeting.title}</h1>
             <StatusChip tone={agendaTone(agendaStatus)} label={t(`meetings.agendaStatus.${agendaStatus}`, { defaultValue: agendaStatus })} />
           </div>
           <div className="mt-builder-meta">
@@ -235,7 +236,7 @@ export function AgendaBuilder() {
             onDrop={onAgendaDrop}
           >
             <div className="mt-agenda-head">
-              <h2 className="mt-col-title">
+              <h2 className="mt-col-title mt-col-title-strong">
                 {t('meetings.agendaOrder')} <span className="mt-muted">· {t('meetings.itemCount', { count: items.length })}</span>
               </h2>
               <span className="mt-drag-hint"><Icon name="grip" size={13} aria-hidden /> {t('meetings.dragHint')}</span>

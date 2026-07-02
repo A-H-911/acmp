@@ -345,7 +345,7 @@ function TopicsList({ rows }: { rows: TopicSummary[] }) {
               </span>
             </span>
             <span className="bk-list-side">
-              <StatusChip tone={tone} label={t(`topics.status.${r.status}`)} />
+              <StatusChip tone={tone} label={t(`topics.status.${r.status}`)} size="sm" />
               <Age days={r.ageDays} breached={r.slaBreached} />
             </span>
           </Link>

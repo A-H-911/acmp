@@ -158,6 +158,7 @@
     "notFoundBody": "This decision does not exist or has been removed.",
     "supersededBadge": "Superseded",
     "supersededLead": "This decision has been superseded",
+    "statement": "Decision statement",
     "rationale": "Rationale",
     "conditions": "Conditions",
     "alternatives": "Alternatives considered",
@@ -167,7 +168,7 @@
     "meta": {
       "outcome": "Outcome",
       "approvedBy": "Approving authority",
-      "issuedAt": "Issued"
+      "issuedAt": "Issue date"
     },
     "outcome": {
       "Approved": "Approved",
@@ -191,6 +192,8 @@
       "outcome": "Outcome",
       "title": "Title",
       "titlePh": "A short headline for this decision",
+      "statement": "Decision statement",
+      "statementPh": "State plainly what the committee decided",
       "rationale": "Rationale",
       "rationalePh": "Why the committee reached this outcome",
       "alternatives": "Alternatives considered",
@@ -213,6 +216,7 @@
       "error": "The decision could not be superseded. Please try again.",
       "err": {
         "title": "A title is required.",
+        "statement": "A decision statement is required.",
         "rationale": "A rationale is required.",
         "reason": "A reason is required.",
         "conditions": "A conditionally-approved decision needs at least one condition."
@@ -288,6 +292,9 @@
   "nav": {
     "primary": "Primary navigation",
     "readOnly": "Read-only",
+    "viewingAs": "Viewing as",
+    "auditOn": "Audit logging on",
+    "auditSub": "Every action is recorded to an immutable, tamper-evident log.",
     "session": "My Session",
     "submit": "Submit Topic",
     "home": "Home",
@@ -375,7 +382,10 @@
     "emptyTitle": "Nothing here yet",
     "emptyBody": "Items will appear here once they are created.",
     "errorTitle": "Something went wrong",
-    "deniedTitle": "Access denied"
+    "deniedTitle": "Access denied",
+    "backHome": "Back home",
+    "requestAccess": "Request access",
+    "errorRef": "Reference"
   },
   "dnd": {
     "dragHandle": "Reorder {{name}}",
@@ -649,7 +659,7 @@
     "fSystems": "Affected systems",
     "fSystemsPh": "Type a system and press Enter…",
     "dropFiles": "Drop files here or click to upload",
-    "dropHint": "PDF, PNG, SVG, DOCX · up to 50 MB",
+    "dropHint": "PDF, PNG, SVG, DOCX · up to 25 MB",
     "guardTitle": "Leave without submitting?",
     "guardBody": "This topic hasn’t been submitted to the committee. Your draft is saved on this device, so you can finish it later.",
     "keepEditing": "Keep editing",
@@ -664,7 +674,7 @@
       "attachments": "Attachments & diagrams",
       "attachmentsHelp": "Add evaluations, diagrams, or supporting documents.",
       "urgency": "Urgency",
-      "urgencyHelp": "Helps the Secretary prioritize triage."
+      "urgencyHelp": "Helps the Secretary of the Committee prioritize triage."
     },
     "typeDesc": {
       "ResearchDiscovery": "A spike or investigation",
@@ -688,7 +698,7 @@
     }
   },
   "kanban": {
-    "hint": "Drag a card to another column, or focus a card and press M to move it by keyboard.",
+    "hint": "Drag cards between columns, or focus a card and press M to move it by keyboard.",
     "moveHint": "Press M to move.",
     "moveTitle": "Move topic to…",
     "current": "current",

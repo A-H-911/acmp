@@ -167,6 +167,18 @@ describe('MeetingMinutes (P7d)', () => {
     expect(supersede.mutateAsync).toHaveBeenCalledWith({ id: 'mom1', summary: 'Corrected minutes', reason: 'Fixed attendance' });
   });
 
+  it('opens the supersede dialog on the shared Dialog (role=dialog, Esc closes)', async () => {
+    const user = userEvent.setup();
+    arrange({ list: [summary(1, 'Published')], mom: detail({ status: 'Published' }) });
+    m(useSupersedeMinutes).mockReturnValue(mutation());
+    setup(['secretary']);
+
+    await user.click(screen.getByRole('button', { name: 'Supersede' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument(); // shared Dialog (focus-trapped, aria-modal)
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); // Esc-to-close from the shared Dialog
+  });
+
   it('renders the superseded state with its reason', () => {
     arrange({
       list: [summary(2, 'Published'), summary(1, 'Superseded')],

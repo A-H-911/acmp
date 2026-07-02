@@ -49,6 +49,7 @@ export interface DecisionDetail {
   outcome: DecisionOutcome;
   status: DecisionStatus;
   title: LocalizedText;
+  statement: LocalizedText;
   rationale: LocalizedText;
   alternatives: LocalizedText | null;
   voteId: string | null;
@@ -76,6 +77,7 @@ export interface SupersedeInput {
   priorDecisionId: string;
   outcome: DecisionOutcome;
   title: LocalizedText;
+  statement: LocalizedText;
   rationale: LocalizedText;
   alternatives?: LocalizedText | null;
   conditions: { text: LocalizedText; dueDate?: string | null }[];

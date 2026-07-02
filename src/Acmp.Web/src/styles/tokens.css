@@ -25,7 +25,9 @@
   --row-min: 44px;         /* table / list rows */
   --field-gap: 16px;       /* stacked form fields */
   --page-max: 72rem;       /* content width cap */
-  --agenda-budget-h: 8px; --agenda-card-pad: 13px; --agenda-rail-w: 280px;
+  /* Values reconciled to the rendered design + implementation (F-7): the agenda budget-bar track is
+     10px, the agenda rail column is 360px; the old 8px/280px token values matched neither and were stale. */
+  --agenda-budget-h: 10px; --agenda-card-pad: 13px; --agenda-rail-w: 360px;
   --dur-fast: 120ms; --dur: 180ms; --dur-slow: 280ms;
   --ease: cubic-bezier(.2, .6, .2, 1);
 
