@@ -18,6 +18,7 @@ const SEGMENT_AREA: Record<string, AreaKey> = {
   topics: 'backlog',
   meetings: 'agenda',
   decisions: 'decisions',
+  votes: 'decisions',
   actions: 'actions',
   adrs: 'adrs',
   risks: 'risks',
@@ -42,6 +43,7 @@ function leafCrumb(segs: readonly string[], t: TFunction): Crumb | null {
   if (a === 'meetings' && b === 'new') return { label: t('meetings.schedule.title') };
   if (a === 'meetings' && b) return { label: b, mono: true };
   if (a === 'decisions' && b) return { label: b, mono: true };
+  if (a === 'votes' && b) return { label: b, mono: true };
   return null;
 }
 

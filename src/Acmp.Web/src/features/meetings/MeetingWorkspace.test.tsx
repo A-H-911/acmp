@@ -17,6 +17,8 @@ vi.mock('../../api/meetings', () => ({
   useRecordActualTime: vi.fn(),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
+// The wired "Call vote" dialog pulls in useConfigureVote; stub it so the workspace renders without a QueryClient.
+vi.mock('../../api/votes', () => ({ useConfigureVote: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })) }));
 
 import {
   useMeetingDetail,
@@ -176,11 +178,19 @@ describe('MeetingWorkspace (P6d)', () => {
     expect(screen.getByRole('button', { name: 'Record time' })).toBeEnabled();
   });
 
-  it('renders the P7/P8/P9 stub actions as disabled', () => {
+  it('renders Record decision / Create action as disabled stubs (P7/P8 workspace)', () => {
     setup();
     expect(screen.getByRole('button', { name: 'Record decision' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Create action' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Call vote' })).toBeDisabled();
+  });
+
+  it('P9b: Call vote is enabled for a manager and opens the configure dialog', async () => {
+    const user = userEvent.setup();
+    setup();
+    const callVote = screen.getByRole('button', { name: 'Call vote' });
+    expect(callVote).toBeEnabled();
+    await user.click(callVote);
+    expect(screen.getByRole('dialog', { name: 'Configure a vote session' })).toBeInTheDocument();
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {

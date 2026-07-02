@@ -12,6 +12,63 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P9b — Voting UI (branch `feat/P9b-voting-ui`)
+
+### 2026-07-02 — the `/votes/:key` screen + "Call vote" configure dialog (W11; AC-021…026 + AC-052)
+
+**Scope.** Frontend-only (`src/Acmp.Web`) — **no backend change**; wires the shipped P9a `/api/votes` contract
+into the UI. Composed to the `isVoting` screen in `ACMP Decision, Voting & ADR.dc.html` + the `vote` form in
+`ACMP Create Flows & Dialogs.dc.html` (guardrail #14). One slice (operator Fork-0 GO).
+
+**What.**
+- **`api/votes.ts`** — `useVote(key)` (read by key) + the W11 transition hooks (`useConfigureVote`,
+  `useOpenVote`, `useCastBallot`, `useChangeBallot`, `useRecuseVote`, `useCloseVote`; mutate by Guid id,
+  invalidate the vote detail). Mirrors `api/decisions.ts`. 100% covered vs a stubbed fetch.
+- **`features/voting/voteState.ts`** — pure derivation of the six design states from live facts
+  (`vote.status` + the signed-in user's ballot row + cast flag). 100% covered.
+- **`features/voting/VotePage.tsx` + `voting.css`** — the screen: header (VOTE key + status + attributed
+  badge), eligible-voters list, live tally + quorum pips, your-ballot radiogroup + comment + confirm dialog,
+  recuse, close (manager), the not_open/ineligible/recused/closed states. Route `/votes/:key` (App.tsx);
+  breadcrumb segment added to the shell (`nav/breadcrumbs.ts`, folds to the Decisions area).
+- **`features/voting/CallVoteDialog.tsx`** — the configure flow, launched from the meeting workspace's
+  "Call vote" button (now wired, Chair/Secretary only = `Vote.Manage`); binds the current meeting + agenda
+  item's topic (Fork 5), seeds eligible voters from the roster (`Member.isVotingEligible`), fixed
+  Approve/Reject options + Abstain toggle (Fork 4), one quorum number → MinPresent = MinCast; on success
+  navigates to the new `/votes/:key`.
+- i18n `voting.*` namespace added to EN + AR (parity gate green, 909 keys; AR strings taken from the design).
+
+**Design↔behavior reconciliations (design to be updated to match, guardrail #14):**
+- **Fork 1** — `double_error` is NOT a hard block: the backend allows `ChangeBallot` until close, so a cast
+  ballot renders editable with its recorded choice shown ("change until close").
+- **Fork 2** — `quorum_failed` is NOT a resting state: a failed close is a 409 with the vote still Open,
+  surfaced as an announced inline error; the design's "re-open / extend" CTA is dropped (no backend).
+- **Fork 3 (deferred)** — the closed panel shows counter-of-record + result summary + a Ratified note;
+  "View decision record" (no reverse vote→decision link in the DTO) and "Record override" (no
+  issue-from-vote UI) are omitted, not faked.
+- **R-A** — quorum pips track cast-count → MinCast (the DTO carries no live present count; present-quorum is
+  server-only at Open).
+- **Not modeled** — motion text, called-by, and per-voter roles are not on the Vote aggregate; the honest
+  header/voter rows show VOTE key + status + attributed, and name + choice + comment only. Flagged for a
+  possible future backend field (motion/question).
+- **Configure vs open** — the dialog CONFIGURES (Configured state) and lands on the not_open screen where the
+  chair clicks "Open voting" (the design's own not_open leg); the design's "Open vote" primary is relabelled
+  "Configure vote". The design's "Closes" date has no backend and is omitted (votes close manually).
+
+**Verification.** FE `tsc --noEmit` clean; `oxlint` clean; i18n parity OK. `vitest run --coverage` green —
+**544 tests pass** (new: `votes.test.ts` 6, `voteState.test.ts` 8, `VotePage.test.tsx` 11,
+`CallVoteDialog.test.tsx` 4; `MeetingWorkspace.test.tsx` updated for the wired Call-vote button). Per-file
+**≥95% lines gate green** (perFile, ADR-0016) — votes.ts/voteState.ts 100%, VotePage.tsx 98.3%,
+breadcrumbs.ts 100%. Backend untouched (FE-only) → BE gates unaffected from the green `main` baseline.
+
+**AC.** AC-021/022/023/024/025/026 stay **Partial** but gain the live `/votes/:key` UI leg (the final **Met**
+flip still waits on the real-stack E2E → P17 per G-TRACE). AC-052 gains the live notification-center
+deep-link target (`/votes/:key` now renders).
+
+**Next.** P10 — Risks + Dependencies + Traceability (widens AC-029 to typed edges); the deferred
+issue-from-vote decision path (Fork 3) is revisited when the record/issue-decision UI is built.
+
+---
+
 ## P9a — Voting backend (branch `feat/P9a-voting-backend`)
 
 ### 2026-07-02 — the Vote aggregate + SoD-3 gate (W11; AC-021/022/023/024/025/026 + AC-015/016 + AC-052)
