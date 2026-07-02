@@ -1,4 +1,4 @@
-using Acmp.Modules.Meetings.Domain;
+﻿using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Directory;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
