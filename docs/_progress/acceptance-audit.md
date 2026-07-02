@@ -12,6 +12,20 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10b update (2026-07-03): Risks register + detail UI (branch `feat/P10b-risks-ui`) — FRONTEND only,
+> composed to `ACMP Lists & Registers.dc.html` (`risks` 8-col table + drill-in) and the `risk` create form,
+> consuming the merged `/api/risks` contract (no backend change). Ships the `/risks` register (status +
+> exposure filters, key/exposure/status server sorts, 3×3 heat mini-grid, global count + critical badge),
+> a routed `/risks/:key` detail (facts + LARGE exposure matrix + legend + prose Mitigation-plan card), and a
+> "New risk" create dialog (Title/Likelihood/Impact/Owner/Linked-topic/Mitigation-plan → POST /api/risks).
+> **No AC verdicts flip** — P10b is FE composition; the live real-stack (Keycloak-PKCE + SQL) leg → **P17**
+> per G-TRACE. The detail's Related/Traceability panel is honest-partial: it shows the linked subject key
+> display-only; typed edges + the impact graph (**AC-062/063**) remain **Pending → P10c/e**. FE gates green:
+> tsc + oxlint clean, 582 vitest (37 new, axe-clean structure/ARIA), i18n parity (991 keys), per-file line
+> coverage 100% on all 5 new files. Live screenshot-compare against the `.dc.html` (register heat grid +
+> detail matrix, RTL + dark) is the one remaining manual check — pending a running-stack pass. See
+> progress-log P10b entry.
+>
 > P10a update (2026-07-03): Risks module backend (branch `feat/P10a-risks-backend`) — the `Risk` aggregate +
 > owned `Mitigation` + full W15 lifecycle (raise/mitigate/close/accept/escalate), derived Severity/Exposure,
 > `RSK-YYYY-###` keys, migration `Risks_Init`, `/api/risks` endpoints, hash-chained audit on every state +

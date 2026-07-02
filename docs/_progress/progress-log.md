@@ -12,6 +12,78 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10b — Risks register + detail UI (branch `feat/P10b-risks-ui`)
+
+### 2026-07-03 — the /risks register + routed detail + create dialog (frontend only)
+
+**Scope.** Second P10 slice — **FRONTEND only** (`src/Acmp.Web`), composed to `ACMP Lists & Registers.dc.html`
+(the `risks` `gRsk` 8-col table + risk drill-in) and the `risk` create form in
+`ACMP Create Flows & Dialogs.dc.html`, consuming the **already-merged** `/api/risks` contract (P10a, #77) —
+**no backend change**. Read + create only; the W15 lifecycle transitions (begin-mitigation/close/escalate/
+accept + mitigation edits) are a later slice, mirroring the P8b → P8b2 split. Pre-code reviewed by the
+`ecc:architect` subagent + advisor (both GO); their fixes folded in (see below).
+
+**Files.** New feature folder `features/risks/`: `RisksRegister.tsx` (register), `RiskPage.tsx` (routed
+`/risks/:key` detail), `CreateRiskDialog.tsx` (create), `riskMeta.ts` (pure tone/heat mappers), `risks.css`
+(ported register/detail classes + the new heat/matrix primitives). New `api/risks.ts` (server-state hooks).
+Wiring: `App.tsx` (`/risks` → RisksRegister, add `/risks/:key` → RiskPage, replacing the placeholder);
+`breadcrumbs.ts` (risks leaf crumb). i18n: a full `risks.*` block in **both** `en.json` + `ar.json` (every
+enum value by hand — 5 statuses, 4 exposures, 3 levels). Clone template = the P8b `features/actions/*`.
+
+**Register.** 8-col `gRsk` table (ID · Risk · Prob. · Impact · Exposure · Owner · Status · Linked): mono
+accent key + title `<Link>`; Prob./Impact as colour-coded level words; **Exposure = a 3×3 7px heat mini-grid
++ a StatusChip** (the on-cell at `(x=lvlIdx[prob], yTop=2−lvlIdx[impact])` painted with the projected band's
+colour); owner avatar; status chip; linked subject key or —. Header "Risk register" / "N risks" + a red-dot
+"N critical" badge, both **filter-independent** (two `pageSize=1` count queries). Status + Exposure multi-
+filters; Owner filter is a disabled stub (needs a Keycloak-keyed directory). **Only key/exposure/status are
+server-sortable** (`GetRisksRegister.Sort`) — the other columns are not sortable. Empty/loading(8-col
+skeleton)/error states. "New risk" opens the create dialog.
+
+**Detail.** Routed `/risks/:key` (blessed deviation vs the design drawer, so RiskAssigned/RiskEscalated can
+deep-link) — header chips (key + status), a 6-fact grid (Prob/Impact/Exposure/Owner/Status/Linked), the
+**LARGE 3×3 exposure matrix + Probability/Impact/Exposure legend** (`role=img` with an accessible cell
+description), and a **prose "Mitigation plan" card** rendering the mitigation description(s). The
+Related/Traceability panel is **honest-partial** — the linked subject key display-only + a "traceability
+coming" note; typed edges + the impact graph land in P10c/e.
+
+**Create.** `Title · Likelihood · Impact · Owner · Linked topic · Mitigation plan` → `POST /api/risks`.
+Content mirrored (`en === ar`, the FTS pattern). On success routes to the new `/risks/:key`.
+
+**Design↔behaviour reconciliations (design to be updated to match, guardrail #14):**
+- **Linked topic REQUIRED** (design marks it optional): `RaiseRisk` requires a non-empty `SubjectId` Guid and
+  there is no "no-subject" seam, so the picker is required and maps to `SubjectType=Topic` (**Option A**,
+  architect-ruled; System=2 can't satisfy the validator without a backend change).
+- **No immutability warning** on the create confirm — risks are NOT immutable; neutral "Create risk" copy.
+- **Likelihood/Impact default to Medium/High** (the design pre-fill) so the 1-based `RiskLevel` enum is always
+  valid on submit (advisor).
+- **Accepted/Escalated status tones are no-reference** (the design `riskStatus` lists only Open/Mitigating/
+  Closed): Escalated → danger, Accepted → info.
+- **"Mitigation plan" is a single prose card, not a mitigations table** — the design has no such table; a
+  structured mitigation list is a later, no-reference extension (advisor).
+- Saved-view "Open risks by exposure" chrome dropped (the default exposure-desc sort realises it), matching
+  the actions-register precedent.
+
+**Architect/advisor fixes folded:** topic picker reads one large page (`pageSize=200`) not a silent page-1;
+sortable columns pinned to the backend's `key/exposure/status`; tests assert **repeated** `status=`/`exposure=`
+query params (array binding); `risks.css` ports only the classes risks use + the new heat/matrix primitives
+(no blind `act-→rsk-` rename); `levelColor` drops Critical (an Exposure band, never a probability/impact);
+8-col skeleton (not 7); Related panel shows the subject key rather than a blank box.
+
+**Gates (local, pre-push).** `tsc --noEmit` clean; `oxlint` clean (only the pre-existing Toast warning);
+**582 vitest green** (37 new across api/riskMeta/register/detail/dialog, incl. axe WCAG 2.2 AA structure/ARIA
+= 0 violations); i18n parity OK (991 keys); **per-file line coverage 100%** on all 5 new files
+(`coverage-summary.json`). Live screenshot-compare against the `.dc.html` (register heat grid + detail matrix,
+RTL + dark) is the one remaining manual check — pending a running-stack pass (needs seeded risk data +
+backend/Keycloak/SQL); flagged, not claimed done.
+
+**AC.** No verdicts flip — P10b is FE composition over the merged contract; the live real-stack leg → **P17**
+per G-TRACE. Related/Traceability panel is honest-partial → **AC-062/063 stay Pending** (→ P10c/e).
+
+**Next.** P10c — Relationship (traceability) backend + panel API + AC-029 widening (a generic typed edge;
+widen the decision-issue gate so ANY downstream edge, Action OR Relationship, satisfies AC-029).
+
+---
+
 ## P10a — Risks backend (branch `feat/P10a-risks-backend`)
 
 ### 2026-07-03 — the Risk aggregate + Mitigations + W15 lifecycle (backend only)

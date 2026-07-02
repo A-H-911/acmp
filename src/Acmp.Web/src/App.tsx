@@ -22,6 +22,8 @@ import { DecisionPage } from './features/decisions/DecisionPage';
 import { VotePage } from './features/voting/VotePage';
 import { ActionsRegister } from './features/actions/ActionsRegister';
 import { ActionPage } from './features/actions/ActionPage';
+import { RisksRegister } from './features/risks/RisksRegister';
+import { RiskPage } from './features/risks/RiskPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -62,7 +64,8 @@ export const appRoutes = createRoutesFromElements(
         <Route path="actions" element={<ActionsRegister />} />
         <Route path="actions/:key" element={<ActionPage />} />
         <Route path="adrs" element={<PlaceholderPage titleKey="nav.adrs" />} />
-        <Route path="risks" element={<PlaceholderPage titleKey="nav.risks" />} />
+        <Route path="risks" element={<RisksRegister />} />
+        <Route path="risks/:key" element={<RiskPage />} />
         <Route path="dependencies" element={<PlaceholderPage titleKey="nav.deps" />} />
         <Route path="research" element={<PlaceholderPage titleKey="nav.research" />} />
         <Route path="wiki" element={<PlaceholderPage titleKey="nav.wiki" />} />

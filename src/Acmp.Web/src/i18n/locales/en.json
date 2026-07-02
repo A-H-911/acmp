@@ -153,6 +153,96 @@
       "err": { "title": "A title is required.", "owner": "An owner is required.", "due": "A due date is required." }
     }
   },
+  "risks": {
+    "title": "Risk register",
+    "count": "{{count}} risks",
+    "criticalCount": "{{count}} critical",
+    "newRisk": "New risk",
+    "filtersLabel": "Risk filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Risk pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Risk register",
+    "unassigned": "Unassigned",
+    "clearFilters": "Clear filters",
+    "filter": {
+      "status": "Status",
+      "exposure": "Exposure",
+      "owner": "Owner",
+      "anyOwner": "Any owner"
+    },
+    "col": {
+      "key": "ID",
+      "risk": "Risk",
+      "prob": "Prob.",
+      "impact": "Impact",
+      "exposure": "Exposure",
+      "owner": "Owner",
+      "status": "Status",
+      "linked": "Linked"
+    },
+    "status": {
+      "Open": "Open",
+      "Mitigating": "Mitigating",
+      "Escalated": "Escalated",
+      "Accepted": "Accepted",
+      "Closed": "Closed"
+    },
+    "exposure": {
+      "Critical": "Critical",
+      "High": "High",
+      "Medium": "Medium",
+      "Low": "Low"
+    },
+    "level": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High"
+    },
+    "empty": {
+      "title": "No risks match these filters",
+      "body": "No risks match the current filters. Clear them to see the full register."
+    },
+    "error": {
+      "title": "Couldn’t load the risks",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "notFoundTitle": "Risk not found",
+    "notFoundBody": "This risk does not exist or has been removed.",
+    "fact": {
+      "prob": "Probability",
+      "impact": "Impact",
+      "exposure": "Exposure",
+      "owner": "Owner",
+      "status": "Status",
+      "linked": "Linked"
+    },
+    "exposureMatrix": "Probability × Impact",
+    "matrixAria": "Probability {{prob}}, impact {{impact}}, exposure {{exposure}}",
+    "mitigationPlan": "Mitigation plan",
+    "related": "Related",
+    "relatedSubjectDir": "REL",
+    "relatedSubject": "Linked artifact",
+    "tracePending": "Full traceability — typed links and the impact graph — arrives in a later slice.",
+    "create": {
+      "title": "Create a risk",
+      "subtitle": "Register a risk for tracking and mitigation.",
+      "confirm": "Create risk",
+      "error": "The risk could not be created. Please try again.",
+      "titleField": "Title",
+      "titlePh": "Name the risk…",
+      "likelihood": "Likelihood",
+      "impact": "Impact",
+      "owner": "Owner",
+      "ownerPh": "Select an owner",
+      "topic": "Linked topic",
+      "topicPh": "Select a topic",
+      "plan": "Mitigation plan",
+      "planPh": "How the risk will be reduced (optional)…",
+      "err": { "title": "A title is required.", "owner": "An owner is required.", "topic": "A linked topic is required." }
+    }
+  },
   "decisions": {
     "notFoundTitle": "Decision not found",
     "notFoundBody": "This decision does not exist or has been removed.",
