@@ -22,7 +22,7 @@ import { Icon } from '../../components/icons';
 import { Button } from '../../components/ui/Button';
 import { useArtifactRelationships, type ArtifactType } from '../../api/traceability';
 import { useArtifactDependencies, type DependencyEndpointType } from '../../api/dependencies';
-import { buildPanelRows, panelRowCount, type PanelDir, type PanelRow } from './traceMeta';
+import { buildPanelRows, panelRowCount, GRAPH_FOCUS_TYPES, type PanelDir, type PanelRow } from './traceMeta';
 import { CreateRelationshipDialog } from './CreateRelationshipDialog';
 import { CreateDependencyDialog } from '../dependencies/CreateDependencyDialog';
 import './traceability.css';
@@ -60,18 +60,27 @@ export function TraceabilityPanel({ traceType, depType, id, artifactKey, title }
           <Icon name="deps" size={16} aria-hidden />
           <h2>{t('trace.panel.title')}</h2>
         </div>
-        {canLink && (
-          <div className="tp-head-actions">
-            {depType && (
-              <Button variant="secondary" size="sm" onClick={() => setDepOpen(true)}>
-                <Icon name="plus" size={13} aria-hidden /> {t('trace.addDependency')}
-              </Button>
-            )}
+        <div className="tp-head-actions">
+          {(GRAPH_FOCUS_TYPES as readonly string[]).includes(traceType) && (
+            <Link
+              className="btn btn-secondary btn-sm"
+              to={`/traceability/${traceType}/${artifactKey}`}
+              state={{ focusId: id, focusTitle: title }}
+            >
+              <Icon name="deps" size={13} aria-hidden /> {t('trace.graph.openGraph')}
+            </Link>
+          )}
+          {canLink && depType && (
+            <Button variant="secondary" size="sm" onClick={() => setDepOpen(true)}>
+              <Icon name="plus" size={13} aria-hidden /> {t('trace.addDependency')}
+            </Button>
+          )}
+          {canLink && (
             <Button variant="secondary" size="sm" onClick={() => setRelOpen(true)}>
               <Icon name="plus" size={13} aria-hidden /> {t('trace.addRelationship')}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="tp-body">

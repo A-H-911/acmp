@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useArtifactRelationships, useCreateRelationship, RELATIONSHIP_TYPES, ARTIFACT_TYPES } from './traceability';
+import { useArtifactRelationships, useCreateRelationship, useTraceGraph, RELATIONSHIP_TYPES, ARTIFACT_TYPES } from './traceability';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /* Real traceability hooks vs a stubbed fetch — assert URL building, enabling, and create body. */
@@ -30,6 +30,22 @@ describe('useArtifactRelationships', () => {
     rerender({ t: 'Decision', i: 'g-9' });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(urlOf(spy)).toBe('/api/traceability/Decision/g-9');
+  });
+});
+
+describe('useTraceGraph', () => {
+  it('is disabled without a resolved id, then reads the depth-bounded subgraph', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { focusType: 'Topic', focusId: 'g-1', depth: 3, nodes: [], edges: [], partial: false } }));
+    const { wrapper } = makeQueryWrapper();
+    const { rerender, result } = renderHook(
+      ({ i }: { i?: string }) => useTraceGraph('Topic', i, 3),
+      { wrapper, initialProps: {} as { i?: string } },
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(spy).not.toHaveBeenCalled();
+    rerender({ i: 'g-1' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/traceability/graph/Topic/g-1?depth=3');
   });
 });
 

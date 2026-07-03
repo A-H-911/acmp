@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPanelRows, panelRowCount, hrefFor } from './traceMeta';
+import { buildPanelRows, buildTypeGroups, panelRowCount, hrefFor, relDirection, typeColor, GRAPH_FOCUS_TYPES } from './traceMeta';
 import type { ArtifactRelationships } from '../../api/traceability';
 import type { ArtifactDependencies } from '../../api/dependencies';
 
@@ -76,5 +76,61 @@ describe('buildPanelRows — merge + count', () => {
     expect(panelRowCount(g)).toBe(2);
     const empty = buildPanelRows(undefined, undefined);
     expect(panelRowCount(empty)).toBe(0);
+  });
+});
+
+describe('impact-graph meta', () => {
+  it('typeColor covers known types and falls back for unknown', () => {
+    expect(typeColor('Topic')).toBe('var(--accent)');
+    expect(typeColor('Risk')).toBe('var(--st-danger-dot)');
+    expect(typeColor('Nonsense')).toBe('var(--text-3)');
+  });
+
+  it('relDirection reads dep vs rel vocabularies and falls back to related', () => {
+    expect(relDirection('dep', 'DependsOn')).toBe('up');
+    expect(relDirection('dep', 'Blocks')).toBe('down');
+    expect(relDirection('rel', 'Produces')).toBe('down');
+    expect(relDirection('rel', 'DerivedFrom')).toBe('up');
+    expect(relDirection('rel', 'Nonsense')).toBe('related');
+  });
+
+  it('GRAPH_FOCUS_TYPES is the four routable-as-focus types', () => {
+    expect([...GRAPH_FOCUS_TYPES]).toEqual(['Topic', 'Decision', 'Action', 'Risk']);
+  });
+});
+
+describe('buildTypeGroups (aside)', () => {
+  it('groups dependency edges by KIND and relationship edges by far TYPE', () => {
+    const groups = buildTypeGroups(
+      rels({ outgoing: [relEdge({ relType: 'DecidedBy', otherType: 'Decision', otherKey: 'DECN-8', otherTitle: 'Approve' })] }),
+      deps({ outbound: [depEdge({ kind: 'DependsOn', otherType: 'Topic', otherKey: 'TOP-9' })] }),
+    );
+    const depGroup = groups.find((g) => g.key === 'dep:DependsOn')!;
+    expect(depGroup.labelKey).toBe('deps.kind.DependsOn');
+    expect(depGroup.dir).toBe('up');
+    expect(depGroup.items[0]).toEqual({ key: 'TOP-9', title: 'Other', href: '/topics/TOP-9' });
+    const relGroup = groups.find((g) => g.key === 'rel:Decision')!;
+    expect(relGroup.labelKey).toBe('trace.type.Decision');
+    expect(relGroup.artifactType).toBe('Decision');
+    expect(relGroup.dir).toBe('down');
+    // dependency groups sort before relationship groups.
+    expect(groups[0].key).toBe('dep:DependsOn');
+  });
+
+  it('a far type with edges of conflicting directions collapses to "related"', () => {
+    const groups = buildTypeGroups(
+      rels({
+        outgoing: [relEdge({ relType: 'Produces', otherType: 'Action', otherKey: 'ACT-1' })], // down
+        incoming: [relEdge({ id: 'r2', relType: 'Produces', direction: 'Incoming', otherType: 'Action', otherKey: 'ACT-2' })], // inverts → up
+      }),
+      deps(),
+    );
+    const relGroup = groups.find((g) => g.key === 'rel:Action')!;
+    expect(relGroup.dir).toBe('related');
+    expect(relGroup.items).toHaveLength(2);
+  });
+
+  it('is empty when both sources are empty/undefined', () => {
+    expect(buildTypeGroups(undefined, undefined)).toEqual([]);
   });
 });
