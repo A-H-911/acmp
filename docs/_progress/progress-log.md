@@ -12,6 +12,89 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10d — Dependencies backend (branch `feat/P10d-dependencies-backend`)
+
+### 2026-07-03 — the `Dependencies` module: governed DPN edge + register/panel API (backend only)
+
+**Scope.** Fourth P10 slice — **BACKEND only**. A new **`Dependencies` module** (docs/README core bounded context)
+holding the first-class governed `Dependency` edge (`DPN-YYYY-###`), its create/resolve/remove lifecycle, and
+the read APIs a later UI (P10e) consumes: register, by-key detail, and a by-artifact panel query. No `Acmp.Web`.
+Pre-code reviewed by the `ecc:architect` subagent + advisor (both GO-WITH-FIXES); all fixes folded.
+
+**Module.** `src/Modules/Dependencies/{Domain,Application,Infrastructure}`, schema `dependencies`, migration
+`Dependencies_Init` (`dependencies` + `dependency_key_counters` tables), cloned from the Risks scaffold (key-gen
++ RowVersion) + Traceability (leaf wiring). `Dependency : AuditableEntity` = a self-describing directed edge
+`(FromType,FromId,FromKey,FromTitle)` —`Kind`→ `(ToType,ToId,ToKey,ToTitle)`, `Note?`, `Status` + `RowVersion`
+(ADR-0018, mutable root). Endpoint snapshots on both ends (no cross-module FK, ADR-0001/0019). Three enums,
+all module-local (ArtifactType is Traceability-Domain-local): `DependencyEndpointType {Topic,Action,System,
+Decision}`, `DependencyKind {DependsOn,BlockedBy,Blocks,RelatesTo}`, `DependencyStatus {Open,Resolved,Removed}`.
+Status carries the soft-delete — `Removed` is the retract state (no separate `IsActive`; rows never hard-deleted).
+
+**Features.** `CreateDependency` (RBAC `Policies.DependencyCreate`; DPN key-gen via per-module counter; validator =
+enums + **self-loop guard** From≠To + snapshots non-empty + Note≤1000; audits `Dependency.Created`).
+`ResolveDependency`/`RemoveDependency` (by PublicId; domain guard Open-only → 409; 404 unknown; audit
+`Dependency.Resolved`/`Dependency.Removed`). `GetDependencyByKey` (detail). `GetDependenciesRegister` (paged;
+filters Kind/Status/BlockedOnly; sorts key/status; **Removed excluded by default** unless the Status filter asks;
+all predicates DB-translatable). `GetDependenciesForArtifact` (the by-artifact panel — `{outbound,inbound}` split
+on `(FromType,FromId)`/`(ToType,ToId)`, Removed excluded) — **this is the read-time-composition seam** that lets
+P10e's traceability panel show dependencies without a mirror edge. `IsBlocker = Kind∈{BlockedBy,Blocks} &&
+Status==Open` is computed in the DTO mapping (register "Blocked" column + Blocked-work filter), never stored.
+
+**OQ-046 — the mirror-edge decision (operator GO).** docs/30 §1.34/§1.1 said the Dependencies module keeps a
+`depends-on` Relationship edge in sync (write-through). **Resolved to read-time composition** (store the DPN
+ONCE; the panel/graph query BOTH modules and merge) — per-module DbContexts share no transaction, so a mirror
+risks dual-write drift for no benefit. **Unification** of the two aggregates into one edge table was explicitly
+considered (operator asked "why two tables?") and **rejected** by both reviewers: sparse/nullable columns for the
+~12 non-governed RelTypes, it would fold a core bounded context into the cross-cutting Search&Traceability module
+(or make Decisions depend on Dependencies for AC-029), and different lifecycle ⇒ different aggregate (docs/11 §A.3
+"keep both, distinct roles" is settled). Recorded via **OQ-046** (docs/42), **ASM-016** (docs/41), and inline edits
+to **docs/30 §1.1** (fixed the stale "maintained in sync" sentence — the likely source of the "are we duplicating?"
+instinct) + **docs/11 §Dependency**. **Consequence flagged:** P10f's recursive-CTE impact traversal must UNION the
+Dependencies table (it won't see dep edges via `Relationship`).
+
+**Design↔behaviour reconciliations (flagged, ASM-016):**
+- **Kind = design's 4 chips** `{DependsOn,BlockedBy,Blocks,RelatesTo}` — docs/11's `Impacts` dropped (unused), `Blocks`
+  added (FR-094 + design). docs/11 edited.
+- **`IsCrossStream` (FR-095) NOT modelled** — it's `(derived)`; computed read-time in P10e from real stream *sets*
+  (`Topic.AffectedStreamIds` is `Guid[]`; a scalar snapshot is lossy). FR-095 = P10e work (Topics+Membership
+  stream-resolution contract). Register Cross-stream column honest-partial in P10d.
+- **`Note` = plain `string?`** not docs/11's `LocalizedString?` (single free-text Notes box; user annotation ≠ system
+  label; mirrors `Relationship.Notes`).
+- **Status `{Open,Resolved,Removed}`** vs design register `{Active,Resolved}` ("Active"=Open label; "Removed"=soft-
+  delete-absent).
+- **Endpoint types not validated against a per-Kind matrix** (trusted actor, ASM-015 pt6 posture).
+- **Member/Reviewer `Dependency.Create` AiO dormant** — the endpoint is resourceless so `CapabilityHandler` grants
+  only Chairman/Secretary; deferred because **no FE caller yet** (a topic-sourced create satisfies the existing
+  `ITopicCapabilityResolver` once P10e supplies `ITopicScopedResource`; only action→action is resolver-blocked) —
+  NOT because auth can't express it. Command `AllowedRoles={Chairman,Secretary}` matches the effective gate.
+- **Resolve/Remove reuse `Policies.DependencyCreate`** (no `Dependency.Manage` — same trusted actors, YAGNI).
+
+**Authz.** `Policies.DependencyCreate` + its `AuthorizationRegistration` matrix cell + `PermissionMatrixTests` cell +
+docs/10 row 17 **already existed from P4** — reused, no new policy wiring.
+
+**Wiring.** `Program.cs` (AddDependenciesModule + MediatR assembly + MapDependencyEndpoints), `MigrationRunner`
+contexts[], `AcmpWebApplicationFactory` InMemory swap, `ModuleBoundaryTests` (Domains/Applications arrays + a
+`Dependencies_should_not_depend_on_other_modules` fact — green), `Acmp.Api.csproj` + Domain/Application test-project
+references, solution (`dotnet sln add` ×3). (Api.Tests needed no ref change — `DependenciesDbContext` resolves
+transitively through `Acmp.Api`, same as Risks/Traceability.)
+
+**Gates (local, pre-push — re-verified by hand, not just the build agent).** `dotnet build -c Release` clean;
+**all tests green — Domain 168 / Application 608 / Api 121 / Architecture 36 / Integration 17 = 950** (Dependencies:
+10 new Domain + 22 App + 8 Api + 4 Arch rows). `node scripts/check-coverage.mjs .` **exit 0 — global 99.75%, 0 files
+< 95%** (all new Dependencies files measured). `dotnet format --verify-no-changes` clean (migration CRLF/BOM fixed).
+Live real-SQL boot NOT run (backend-only, InMemory factory covers wiring; the RowVersion 409 path + recursive-CTE
+traversal that need real SQL are P10f/P17).
+
+**AC.** **No AC verdicts flip** (backend-only, matching P10a/P10c discipline). Stands up the data for **FR-094**
+(create DPN edge), **FR-095** (cross-stream — derivation is P10e), **FR-098** (topic-detail deps list — the
+by-artifact query serves it in P10e). FR-096/097 (transitive impact + Tarseem graph) = Phase 2 → P10f. AC-062/063
+stay Pending → P10e. Live real-stack legs → P17 per G-TRACE.
+
+**Next.** P10e — Deps register + Traceability panels UI (`/dependencies` register + the deps panel on
+Topic/Decision/Action/Risk detail = AC-062/063; FR-095 cross-stream read-time; FR-098 topic deps list).
+
+---
+
 ## P10c — Relationship (traceability) backend + panel API + AC-029 widening (branch `feat/P10c-relationships-backend`)
 
 ### 2026-07-03 — the Traceability module + typed edges + widened decision-issue gate (backend only)

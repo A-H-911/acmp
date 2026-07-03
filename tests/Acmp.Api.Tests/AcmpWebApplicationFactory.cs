@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Actions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
@@ -58,6 +59,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<TraceabilityDbContext>>();
             services.RemoveAll<TraceabilityDbContext>();
             services.AddDbContext<TraceabilityDbContext>(o => o.UseInMemoryDatabase(_dbName + "-traceability"));
+
+            services.RemoveAll<DbContextOptions<DependenciesDbContext>>();
+            services.RemoveAll<DependenciesDbContext>();
+            services.AddDbContext<DependenciesDbContext>(o => o.UseInMemoryDatabase(_dbName + "-dependencies"));
 
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();

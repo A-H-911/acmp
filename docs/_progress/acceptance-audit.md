@@ -12,6 +12,21 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10d update (2026-07-03): Dependencies module backend (branch `feat/P10d-dependencies-backend`) — the
+> first-class governed `Dependency` edge (`DPN-YYYY-###`) in a new `Dependencies` module (schema `dependencies`,
+> migration `Dependencies_Init`), with create/resolve/remove lifecycle (`Open→Resolved|Removed`, RowVersion,
+> hash-chained audit on every state change), a self-loop-guarded typed edge with endpoint snapshots (no
+> cross-module FK), the `/api/dependencies` register + by-key detail + **by-artifact panel query** (the read-time
+> composition seam for P10e), and RBAC via the pre-existing `Policies.DependencyCreate`. **No AC verdicts flip**
+> (P10d is backend; the lifecycle is domain + handler + HTTP-pipeline proven, but the live real-stack Keycloak-PKCE
+> + SQL leg → **P17** per G-TRACE). It stands up the data for **FR-094** (create DPN edge), **FR-095** (cross-stream
+> — the derivation is P10e read-time work), and **FR-098** (topic-detail deps list — the by-artifact query serves
+> it in P10e). FR-096/097 (transitive impact + Tarseem graph) = Phase 2 → P10f. **AC-062/063 stay Pending → P10e**
+> (they assert on the FE traceability/deps panel display). **OQ-046 resolved** (read-time composition, no mirror
+> edge; unification rejected — ASM-016). Backend 950 tests green (Domain 168 / App 608 / Api 121 / Arch 36 /
+> Integration 17); per-file coverage ≥95% (global 99.75%, 0 files <95%); `dotnet format` clean. See progress-log
+> P10d entry.
+>
 > P10b update (2026-07-03): Risks register + detail UI (branch `feat/P10b-risks-ui`) — FRONTEND only,
 > composed to `ACMP Lists & Registers.dc.html` (`risks` 8-col table + drill-in) and the `risk` create form,
 > consuming the merged `/api/risks` contract (no backend change). Ships the `/risks` register (status +
