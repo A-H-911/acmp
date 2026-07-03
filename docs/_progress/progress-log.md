@@ -12,6 +12,62 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10f — Impact-graph backend: read-time subgraph endpoint + FR-095 Topic-scope (branch `feat/P10f-graph-backend`)
+
+### 2026-07-03 — the `/api/traceability/graph` transitive endpoint (backend; PR1 of 2)
+
+**Scope.** Sixth P10 slice, split into **two PRs** (architect call): **PR1 = backend** (this entry) — the server-side impact-graph
+traversal + the two cross-module read seams; **PR2 = frontend** — the bespoke SVG graph page + group-by-type aside.
+Pre-planned with the `ecc:architect` subagent (two rounds) + advisor. **The operator overrode both reviewers' FE-only lean**
+and chose (1) a **backend subgraph endpoint** (server-side BFS) and (2) **build FR-095 cross-stream now** (not defer); the
+one-page IA + register-graph-deferred stayed as blessed. A third genuinely-unsettled sub-decision — the **stream model for
+non-Topic artifacts** — was put to the operator, who chose **(a) Topic-scope** (OQ-047).
+
+**Delivered (FR-096 transitive graph).**
+- **`GET /api/traceability/graph/{type}/{id}?depth=1..3`** → `{ focusType, focusId, depth, nodes[], edges[], partial }`, read-all.
+  `GetImpactGraph` query + handler in the **Traceability module** (docs/30 home). A pure `ImpactGraphComposer` runs the BFS;
+  the handler wires it to the real reads. **Read-time composition, NOT a cross-schema CTE** (ADR-0020 clarifies ADR-0019's
+  "recursive CTE" phrase — a two-schema CTE would break ADR-0001). No new tables/migration.
+- **Two new `Acmp.Shared` ports (ADR-0001-safe, primitive DTOs — module enums never leak into the kernel):**
+  `IDependencyArtifactReader` (Dependencies.Infrastructure impl, reuses the existing `GetDependenciesForArtifact` read — one
+  source of truth) and `ITopicStreamReader` (Topics.Infrastructure impl, `Topic.AffectedStreams` codes).
+- **Composer guards:** visited-set keyed on the type-**NAME** string + id (`ArtifactType`/`DependencyEndpointType` overlap by
+  name only — the #2 trap), `MaxNodes=60` ceiling (OQ-018) → `partial`, depth clamp 1–3, per-node try/catch → failed node is a
+  leaf + `partial` (never blanks the graph). Tier = signed BFS level at first discovery (design-faithful `buildTiers`).
+  Dual-enum: **System** (dep-only, ∉ ArtifactType) skips the relationship read + dead-ends; a rel-only type (Adr/…) skips the
+  dependency read. `blocked` = node touches an active blocker dep edge (`IsBlocker`); far-node lifecycle status NOT returned
+  (cross-module read, ADR-0001).
+- **FR-095 cross-stream = Topic-scope (partial, OQ-047):** `isCrossStream` true only when both ends are Topics with disjoint
+  non-empty stream-code sets; every edge touching a non-Topic is never cross-stream. Post-pass over the built graph.
+
+**ADR-0001 / boundaries.** Traceability composes Dependencies + Topics **only through `Acmp.Shared` ports** — never their
+assemblies. The seam DTOs live in `Acmp.Shared` (the #1 CI trap: reusing `Dependencies.Application.DependencyEdgeDto` would
+turn the `Traceability_should_not_depend_on_other_modules` ArchUnit test RED). **All 36 architecture tests green** — no
+boundary rule needed changing (the P8d `IActionLinkDirectory` precedent already sanctions "Infrastructure implements a Shared
+port").
+
+**Gates (local, pre-push — the ones P9a's CI cycles taught us not to skip).** `dotnet build` clean; **972 tests green**
+(Domain 168 / Arch 36 / Application 627 / Integration 17 / Api 124; **+24 new**: 15 composer branch tests via the handler with
+faked ports, 2 `DependencyArtifactReader`, 2 `TopicStreamReader`, 3 graph API integration tests incl. 401 + a real
+Topic→Decision→Action depth-1-vs-2 walk, +2 more). `dotnet format --verify-no-changes` clean (fixed the UTF-8-BOM CHARSET on
+every new file — the known trap). `node scripts/check-coverage.mjs .` → **global 99.75%, exit 0, 100% line coverage on all 7
+new files**.
+
+**Docs.** **ADR-0020** (read-time composition, clarifies ADR-0019; the two ports; FR-095 Topic-scope). **OQ-047** (stream-
+inheritance model, default (a) Topic-scope, inherit model (b) stays OPEN on the multi/zero-topic semantic; relates OQ-018
+node cap). docs/30 §4.1 (composition-not-CTE note) + §6.2 (endpoint contract). Memory `p10-risks-deps-traceability-plan`
+updated (the wrong `AffectedStreamIds Guid[]` note corrected to `AffectedStreams` string codes).
+
+**AC.** **FR-096 (transitive impact graph) → data stood up** (endpoint + tests); the user-facing graph is PR2, so the
+end-to-end AC verdict lands with the FE. **FR-095 → Partial (Topic-scope)** — honestly not "built" (thin coverage in a mostly
+cross-TYPE graph). AC-062/063 unaffected (still Partial→P17). No live-stack pass needed for a backend contract slice.
+
+**Next.** P10f **PR2** — the bespoke in-app SVG impact-graph page (depth 1–3, blocked toggle, roving-tabindex keyboard nav,
+List-tree fallback, group-by-type aside) consuming this endpoint + `useTraceGraph`; register/panel "Open graph" wiring; full
+EN/AR + RTL + light/dark + axe + visual-verify vs the `.dc.html`. Then P10g dashboards.
+
+---
+
 ## P10e — Dependencies register + Traceability panels UI (branch `feat/P10e-deps-traceability-ui`)
 
 ### 2026-07-03 — the `/dependencies` register + the shared traceability panel + create dialogs (frontend only)

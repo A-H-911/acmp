@@ -29,6 +29,10 @@ public static class TopicsInfrastructureExtensions
         // decision is issued (InCommittee→Decided); idempotent.
         services.AddScoped<ITopicDecisionRecorder, TopicDecisionRecorder>();
 
+        // Cross-module read seam consumed by the Traceability impact graph (ADR-0001, P10f / FR-095): a
+        // topic's affected-stream codes, for Topic↔Topic cross-stream classification.
+        services.AddScoped<ITopicStreamReader, TopicStreamReader>();
+
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 
         services.AddTopicsApplication();

@@ -12,6 +12,22 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10f update (2026-07-03): Impact-graph **backend** (branch `feat/P10f-graph-backend`, **PR1 of 2**) — the
+> server-side transitive traversal endpoint + two cross-module read seams. **The operator overrode both reviewers'
+> FE-only lean**: a backend subgraph endpoint (server-side BFS) + FR-095 built now. `GET
+> /api/traceability/graph/{type}/{id}?depth=1..3` composes this module's `Relationship` edges with the Dependencies
+> module's edges (via the new `Acmp.Shared` `IDependencyArtifactReader` port) at **read time** — NOT a cross-schema
+> recursive CTE (ADR-0020 clarifies ADR-0019; a two-schema CTE breaks ADR-0001). All 36 ArchUnit boundary tests stay
+> green (the seam DTOs are Shared-owned). **FR-096** (transitive impact graph) — the **data/endpoint is stood up +
+> tested** (composer branch tests + a real Topic→Decision→Action HTTP walk); the user-facing graph is **PR2 (FE)**, so
+> the end-to-end AC verdict lands there — **structurally proven, not yet Met**. **FR-095** (cross-stream) → **Partial
+> (Topic-scope, OQ-047)**: `isCrossStream` is computed only for Topic↔Topic edges (disjoint `Topic.AffectedStreams`
+> codes, via the new `ITopicStreamReader` port); non-Topic endpoints carry no stream — honestly *partial*, not "built"
+> (the inherit-from-topic model stays OPEN). No AC verdict flips (backend contract slice; live real-stack leg → P17).
+> Node cap `MaxNodes=60` honours OQ-018 with a `partial` flag. Gates: 972 tests green (+24 new), format clean,
+> per-file coverage 100% on all 7 new files (global 99.75%). ADR-0020 + OQ-047 recorded. **Next: P10f PR2 (FE graph).**
+> See progress-log P10f entry.
+
 > P10e update (2026-07-03): Dependencies register + Traceability panels UI (branch
 > `feat/P10e-deps-traceability-ui`) — **FRONTEND only**, consuming the merged `/api/dependencies` +
 > `/api/traceability` contracts (no backend change). Ships the `/dependencies` register (From·Relation·To·

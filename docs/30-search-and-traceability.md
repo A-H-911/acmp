@@ -155,6 +155,8 @@ SELECT DISTINCT * FROM TraversalCTE;
 
 For ≤20 users and expected artifact counts (hundreds to low thousands), SQL recursive CTE traversal is adequate (ADR-0003 — SQL Server is sufficient). If the graph grows beyond ~10,000 nodes, revisit with a graph-capable store `[unverified: not expected in v1 lifecycle]`.
 
+> **P10f (implemented, ADR-0020):** the transitive impact traversal is composed at **read time across both edge stores**, NOT by the single-schema recursive CTE shown above. Because a `Dependency` is stored once and never mirrored into `Relationship` (OQ-046), a CTE over the `traceability` schema alone would miss dependency edges, and a CTE spanning both schemas would be a cross-module table join (ADR-0001 violation). Instead, `GetImpactGraph` (Traceability module) runs a breadth-first walk that, per node, UNIONs its own `Relationship` edges with the Dependencies module's edges read through the `Acmp.Shared` `IDependencyArtifactReader` port. Guards: visited-set on the type-**name** string + id (the `ArtifactType` and `DependencyEndpointType` enums overlap by name only), `MaxNodes` ceiling (OQ-018, surfaced as a `partial` flag), depth 1–3, per-node failure isolation.
+
 ### 4.2 Blocked-Work Detection
 
 A Hangfire nightly job runs a full sweep of `blocks` edges and produces a `BlockedWorkSummary` (stored in a reporting read model table):
@@ -230,6 +232,8 @@ TOP-2026-042 (root)
 ```
 
 Cycles are detected during traversal (visited-set guard) and rendered as `[cycle detected — already shown above]`.
+
+> **Endpoint (P10f, FR-096):** `GET /api/traceability/graph/{type}/{id}?depth=1..3` → `{ focusType, focusId, depth, nodes[], edges[], partial }`. Read-all (any authenticated committee member). Each node carries `{ type, id, key, title, tier (signed: 0=focus, −=upstream, +=downstream), blocked, streams[] }`; the **focus** node has empty key/title (its identity is not on any edge — the SPA supplies it). Each edge carries `{ source (rel|dep), rel, fromType/fromId, toType/toId, isBlocker, isCrossStream }`. `blocked` = the node touches an active blocker dependency edge (`IsBlocker`); far-node lifecycle status is **not** returned (cross-module read, ADR-0001). `isCrossStream` is **Topic-scope** (FR-095 partial, OQ-047): true only when both ends are Topics with disjoint non-empty stream-code sets, read via the `ITopicStreamReader` port. `partial=true` when the node ceiling or a per-node read failure truncated the walk (never a silent truncation).
 
 ### 6.3 Graph Visualization (Phase 2)
 
