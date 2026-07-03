@@ -1,6 +1,8 @@
 ﻿using Acmp.Modules.Dependencies.Application;
 using Acmp.Modules.Dependencies.Application.Abstractions;
+using Acmp.Modules.Dependencies.Infrastructure.Directory;
 using Acmp.Modules.Dependencies.Infrastructure.Persistence;
+using Acmp.Shared.Contracts.Dependencies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,9 @@ public static class DependenciesInfrastructureExtensions
 
         services.AddScoped<IDependenciesDbContext>(sp => sp.GetRequiredService<DependenciesDbContext>());
         services.AddScoped<IDependencyKeyGenerator, DependencyKeyGenerator>();
+
+        // Cross-module port the Traceability impact-graph composer reads through (P10f, ADR-0001).
+        services.AddScoped<IDependencyArtifactReader, DependencyArtifactReader>();
 
         services.AddDependenciesApplication();
         return services;

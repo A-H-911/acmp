@@ -127,4 +127,86 @@ public class TraceabilityApiTests
         var response = await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/traceability/{Guid.NewGuid()}/deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    // ---- FR-096 impact graph (P10f) ----------------------------------------------------------------------
+
+    private sealed record GNode(string Type, Guid Id, string Key, string Title, int Tier, bool Blocked, List<string> Streams);
+    private sealed record GEdge(string Source, string Rel, string FromType, Guid FromId, string ToType, Guid ToId, bool IsBlocker, bool IsCrossStream);
+    private sealed record Graph(string FocusType, Guid FocusId, int Depth, List<GNode> Nodes, List<GEdge> Edges, bool Partial);
+
+    [Fact] // AC-008: no token → 401
+    public async Task Graph_without_token_returns_401()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var response = await Client(factory, roles: null).GetAsync($"/api/traceability/graph/Topic/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact] // FR-096: a real end-to-end walk — Topic→Decision→Action composes into signed tiers over 2 hops.
+    public async Task Graph_composes_relationship_edges_into_tiers()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var sec = Client(factory, "Secretary", "kc-sec");
+        var topicId = Guid.NewGuid();
+        var decisionId = Guid.NewGuid();
+        var actionId = Guid.NewGuid();
+
+        // Topic --DecidedBy--> Decision --RecordedAs--> Action
+        await sec.PostAsJsonAsync("/api/traceability", EdgeBody(topicId, decisionId));
+        await sec.PostAsJsonAsync("/api/traceability", new
+        {
+            sourceType = "Decision",
+            sourceId = decisionId,
+            sourceKey = "DECN-2026-007",
+            sourceTitle = "Approve gateway",
+            targetType = "Action",
+            targetId = actionId,
+            targetKey = "ACT-2026-010",
+            targetTitle = "Do the migration",
+            relType = "RecordedAs",
+            notes = (string?)null,
+        });
+
+        var graph = await (await sec.GetAsync($"/api/traceability/graph/Topic/{topicId}?depth=2"))
+            .Content.ReadFromJsonAsync<Graph>();
+
+        graph!.FocusType.Should().Be("Topic");
+        graph.Depth.Should().Be(2);
+        graph.Nodes.Should().HaveCount(3);
+        graph.Nodes.Single(n => n.Id == topicId).Tier.Should().Be(0);
+        graph.Nodes.Single(n => n.Id == decisionId).Tier.Should().Be(1);
+        graph.Nodes.Single(n => n.Id == actionId).Tier.Should().Be(2);
+        graph.Nodes.Single(n => n.Id == actionId).Key.Should().Be("ACT-2026-010");
+        graph.Edges.Should().HaveCount(2);
+        graph.Partial.Should().BeFalse();
+    }
+
+    [Fact] // Depth 1 stops one hop out — the Action (2 hops) is not in the graph.
+    public async Task Graph_depth_one_stops_at_first_hop()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var sec = Client(factory, "Secretary", "kc-sec");
+        var topicId = Guid.NewGuid();
+        var decisionId = Guid.NewGuid();
+        var actionId = Guid.NewGuid();
+        await sec.PostAsJsonAsync("/api/traceability", EdgeBody(topicId, decisionId));
+        await sec.PostAsJsonAsync("/api/traceability", new
+        {
+            sourceType = "Decision",
+            sourceId = decisionId,
+            sourceKey = "DECN-2026-007",
+            sourceTitle = "Approve",
+            targetType = "Action",
+            targetId = actionId,
+            targetKey = "ACT-2026-010",
+            targetTitle = "Do it",
+            relType = "RecordedAs",
+            notes = (string?)null,
+        });
+
+        var graph = await (await sec.GetAsync($"/api/traceability/graph/Topic/{topicId}?depth=1"))
+            .Content.ReadFromJsonAsync<Graph>();
+
+        graph!.Nodes.Select(n => n.Id).Should().NotContain(actionId);
+    }
 }

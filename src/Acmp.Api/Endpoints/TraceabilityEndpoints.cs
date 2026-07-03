@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Traceability.Application.Features.CreateRelationship;
 using Acmp.Modules.Traceability.Application.Features.DeactivateRelationship;
 using Acmp.Modules.Traceability.Application.Features.GetArtifactRelationships;
+using Acmp.Modules.Traceability.Application.Features.GetImpactGraph;
 using Acmp.Modules.Traceability.Domain.Enums;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -19,6 +20,11 @@ public static class TraceabilityEndpoints
         // AC-062: the traceability panel for one artifact — active outgoing + incoming edges (one hop).
         group.MapGet("/{type}/{id:guid}", async (ArtifactType type, Guid id, ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new GetArtifactRelationshipsQuery(type, id), ct)));
+
+        // FR-096 (P10f): the depth-bounded impact subgraph around one artifact (transitive traceability +
+        // dependency edges, read-time composition). Depth is clamped to 1..3 in the composer.
+        group.MapGet("/graph/{type}/{id:guid}", async (ArtifactType type, Guid id, int? depth, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new GetImpactGraphQuery(type, id, depth ?? 2), ct)));
 
         // AC-063: create an explicit typed edge between two artifacts.
         group.MapPost("/", async (CreateRelationshipBody body, ISender sender, CancellationToken ct) =>
