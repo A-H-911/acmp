@@ -49,6 +49,18 @@ function leafCrumb(segs: readonly string[], t: TFunction): Crumb | null {
   return null;
 }
 
+/**
+ * Impact-graph route `/traceability/:type/:key` → the focus artifact's own area + a mono record crumb
+ * linking back to its detail page, then the "Traceability" leaf. Type-aware root (a Risk focus reads
+ * "Risks › RSK-… › Traceability", not "Backlog"). Only the four types with a detail route resolve here.
+ */
+const TRACE_TYPE: Record<string, { area: AreaKey; seg: string }> = {
+  Topic: { area: 'backlog', seg: 'topics' },
+  Decision: { area: 'decisions', seg: 'decisions' },
+  Action: { area: 'actions', seg: 'actions' },
+  Risk: { area: 'risks', seg: 'risks' },
+};
+
 /** Build the breadcrumb trail for a pathname. The last crumb is always the current page. */
 export function deriveBreadcrumbs(pathname: string, t: TFunction): Crumb[] {
   const segs = pathname.split('/').filter(Boolean);
@@ -57,6 +69,15 @@ export function deriveBreadcrumbs(pathname: string, t: TFunction): Crumb[] {
 
   if (seg0 === 'notifications') {
     crumbs.push({ label: t('notif.title') });
+  } else if (seg0 === 'traceability') {
+    const [, type, key] = segs;
+    const map = type ? TRACE_TYPE[type] : undefined;
+    if (map) {
+      const area = AREAS[map.area];
+      crumbs.push({ label: t(area.labelKey), href: area.path });
+      if (key) crumbs.push({ label: key, mono: true, href: `/${map.seg}/${key}` });
+      crumbs.push({ label: t('trace.graph.crumb') });
+    }
   } else if (seg0 && seg0 !== 'dashboard') {
     const areaKey = SEGMENT_AREA[seg0];
     if (areaKey) {

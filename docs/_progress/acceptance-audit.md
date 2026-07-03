@@ -12,6 +12,27 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10f PR2 update (2026-07-03): Impact-graph **frontend** (branch `feat/P10f-graph-ui`, **PR2 of 2**) — the bespoke
+> in-app page at **`/traceability/:type/:key`** consuming the merged PR1 endpoint. One focus-centric page: a 320px
+> group-by-TYPE **Relationships aside** (`buildTypeGroups` — dependency edges by KIND, relationship edges by far TYPE)
+> + a **Dependency&impact** section with a Graph/List segmented control, depth 1–3, Blocked + Cross-stream highlight
+> toggles, a depth-tiered **SVG** (pure `graphLayout.ts` geometry; RTL = `scaleX(-1)` on the edges-only layer + logical
+> `inset-inline-start` nodes) and a genuine **list-tree fallback** (role=tree). **FR-096** (transitive impact graph) →
+> **Met**: a **live real-stack VR pass** (`e2e/p10f-graph-vr.spec.ts` — real Keycloak login, secretary seeds a focus
+> topic + a 3-tier subgraph via the self-describing edge APIs, opens the graph via the warm-path panel button) captured
+> **EN-light + AR-dark + list** and screenshot-compared **pixel-faithful to `ACMP Traceability & Dependencies.dc.html`**:
+> the RTL edge-flip (top visual risk) meets the logically-positioned nodes, tier columns / type chips / focus highlight /
+> Blocked pill / group-by-type aside all render per the design. **FR-095** cross-stream toggle is now **wired** (per-edge
+> `isCrossStream` is on the wire) but stays **Partial (Topic-scope)** — flagged in-UI honestly. Reconciliations flagged
+> (guardrail #14, design→behavior): a11y `role="application"`→**roving-tabindex**; per-node lifecycle **status chip
+> omitted** (ADR-0001, no far-node status on the wire) — graph nodes show a **type chip** instead, aside/list drop it;
+> cross-stream badge shows the **stream code** (no Membership seam); type-aware breadcrumb root; partial + empty-graph
+> are no-reference compositions. Entry point: the P10e detail-page panel gains an **"Open graph"** affordance (warm
+> path, passes `{id,title}` via router state); the `/dependencies` register stub stays deferred (no single focus).
+> Gates (local): `tsc -b` clean, oxlint clean, **684 vitest green** (+53 new), **per-file coverage 100% on the 5 new
+> FE files** (global 99.13%), i18n EN/AR parity by hand (`trace.graph.*` + full 17-type `trace.type.*`), axe AA clean
+> on graph + aside + list. No backend/ADR changes. **Next: operator merge GO + optional live VR sweep.**
+>
 > P10f update (2026-07-03): Impact-graph **backend** (branch `feat/P10f-graph-backend`, **PR1 of 2**) — the
 > server-side transitive traversal endpoint + two cross-module read seams. **The operator overrode both reviewers'
 > FE-only lean**: a backend subgraph endpoint (server-side BFS) + FR-095 built now. `GET

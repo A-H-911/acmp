@@ -90,6 +90,59 @@ export function useArtifactRelationships(type: ArtifactType | undefined, id: str
   });
 }
 
+/*
+ * Impact graph (P10f, FR-096). GET /api/traceability/graph/{type}/{id}?depth=1..3 returns the whole
+ * depth-bounded subgraph around a focus artifact — the backend owns the BFS, the rel+dep union, the
+ * Topic-scope cross-stream math, the blocked flag, dangling-edge filtering, and a MaxNodes=60 ceiling
+ * (partial=true if capped or a node read failed). The SPA does NOT re-traverse; it lays out columns
+ * from the signed tier and colours edges from source+direction. The FOCUS node carries empty key/title
+ * (its identity is not on any edge) — the page injects those from the URL / router state.
+ */
+
+/** One node in the impact graph. Tier is signed: 0 = focus, negative = upstream, positive = downstream. */
+export interface ImpactGraphNode {
+  type: ArtifactType | 'System';
+  id: string;
+  key: string;
+  title: string;
+  tier: number;
+  blocked: boolean;
+  streams: string[];
+}
+
+/** One directed edge. source disambiguates rel (RelationshipType) from dep (DependencyKind) in `rel`. */
+export interface ImpactGraphEdge {
+  source: 'rel' | 'dep';
+  rel: string;
+  fromType: string;
+  fromId: string;
+  toType: string;
+  toId: string;
+  isBlocker: boolean;
+  isCrossStream: boolean;
+}
+
+export interface ImpactGraph {
+  focusType: string;
+  focusId: string;
+  depth: number;
+  nodes: ImpactGraphNode[];
+  edges: ImpactGraphEdge[];
+  partial: boolean;
+}
+
+/**
+ * The transitive impact subgraph for one focus artifact (FR-096). One query — the FE never re-BFSes.
+ * Disabled until the focus GUID is resolved (warm = router state, cold = a by-key detail fetch).
+ */
+export function useTraceGraph(type: ArtifactType | undefined, id: string | undefined, depth: number) {
+  return useQuery({
+    queryKey: ['traceability', 'graph', type, id, depth],
+    queryFn: () => api<ImpactGraph>(`/traceability/graph/${type}/${id}?depth=${depth}`),
+    enabled: !!type && !!id,
+  });
+}
+
 /** Create input — endpoint snapshots for both ends + the relationship type + optional notes. */
 export interface CreateRelationshipInput {
   sourceType: ArtifactType;

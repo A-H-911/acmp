@@ -46,6 +46,19 @@ describe('deriveBreadcrumbs', () => {
     expect(decision[2]).toMatchObject({ label: 'DECN-2026-008', mono: true, current: true });
   });
 
+  it('builds a type-aware trail for the impact-graph route (area › record › Traceability)', () => {
+    const topic = deriveBreadcrumbs('/traceability/Topic/TOP-2026-014', t);
+    expect(topic.map((c) => c.label)).toEqual([t('nav.home'), t('nav.backlog'), 'TOP-2026-014', t('trace.graph.crumb')]);
+    expect(topic[2]).toMatchObject({ mono: true, href: '/topics/TOP-2026-014' }); // record links back
+    expect(topic[3].current).toBe(true); // Traceability leaf
+
+    const risk = deriveBreadcrumbs('/traceability/Risk/RSK-2026-006', t);
+    expect(risk.map((c) => c.label)).toEqual([t('nav.home'), t('nav.risks'), 'RSK-2026-006', t('trace.graph.crumb')]);
+
+    // A non-focusable type falls through to Home only (no detail route to root against).
+    expect(labels('/traceability/Meeting/MTG-1')).toEqual([t('nav.home')]);
+  });
+
   it('handles the notifications inbox and unknown paths', () => {
     expect(labels('/notifications')).toEqual([t('nav.home'), t('notif.title')]);
     // Unknown path (the 404 catch-all) collapses to Home as the current page.

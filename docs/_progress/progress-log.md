@@ -12,6 +12,62 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10f PR2 — Impact-graph frontend: bespoke SVG page + group-by-type aside (branch `feat/P10f-graph-ui`)
+
+### 2026-07-03 — the `/traceability/:type/:key` impact-graph UI (frontend; PR2 of 2)
+
+**Scope.** Second half of P10f — the user-facing page that consumes the merged PR1 endpoint
+(`GET /api/traceability/graph/{type}/{id}?depth=1..3`). Plan-first past `ecc:architect` (which looped the advisor and
+confirmed all three rulings) → folded → operator GO → built → local gates green. FE-only; no backend/ADR change.
+
+**Delivered (one focus-centric page, ported from `ACMP Traceability & Dependencies.dc.html`).**
+- **Route `/traceability/:type/:key`** (one generic route; `:type` validated against `ARTIFACT_TYPES`; invalid → redirect home).
+  **Focus identity**: WARM = the detail-page "Open graph" button passes `{id,title}` via router state; COLD deep-link =
+  a by-key detail fetch (`useTopicDetail`/`useDecision`/`useAction`/`useRisk`) → `{id,title}`. A valid-but-non-focusable
+  type with no warm state shows an "open from the artifact's page" state (never crashes). Type-aware breadcrumb (Topic→Backlog…).
+- **(a) Relationships aside** (320px, group-by-TYPE): new pure `buildTypeGroups` in `traceMeta.ts` — **dependency edges group
+  by KIND, relationship edges by far ARTIFACT TYPE** (architect ruling; a Topic can sit under both "Depends on" and "Blocks").
+  Reuses the two 1-hop panel reads (already warm in cache on the warm path), independent of the depth selector.
+- **(b) Dependency & impact section**: Graph/List segmented control · depth 1–3 · Blocked + Cross-stream highlight toggles.
+  - **`useTraceGraph(type,id,depth)`** = ONE TanStack query (the FE never re-BFSes — the backend owns the traversal).
+  - **`graphLayout.ts`** — pure geometry (100% unit-tested): bins the backend's SIGNED tiers into columns, cubic-bezier
+    edges, per-edge colour by **direction** (`relDirection` over the real 16-RelationshipType / 4-DependencyKind vocab,
+    NOT the design's toy 8-key map), highlight styling, `nextFocusIndex` (linear, no-wrap), edge dedup + dangling filter.
+  - **`ImpactGraph.tsx`** — SVG render + interaction. **a11y crux reconciled** (design `role="application"` → **roving-tabindex**
+    over real `<button>` nodes, `aria-current`/`aria-label`, linear arrow-nav in column/row order, `aria-live` announcements,
+    `aria-hidden` edge layer). **RTL**: `scaleX(-1)` on the edges-only SVG + logical `inset-inline-start` nodes (unit-tested).
+    Enter/click **re-centres** on a focusable node (warm nav with the node's own GUID) or opens its detail page.
+  - **`ImpactGraphList.tsx`** — genuine list-tree fallback (role=tree/treeitem/aria-level, focus-path crumb, indented rows).
+  - `graph.css` — logical properties throughout; `acmpDash` edge animation gated behind `@media (prefers-reduced-motion)`.
+
+**Reconciliations flagged (guardrail #14, design→behavior).** role→roving-tabindex; **per-node lifecycle status chip omitted**
+everywhere (backend returns no far-node status — cross-module read, ADR-0001) → graph nodes show a **type chip** instead
+(a11y win: not colour-alone), aside/list drop it; cross-stream badge shows the **stream code** (avoids a Membership seam);
+Blocked pill from `node.blocked`/`edge.isBlocker`; type-aware breadcrumb root; partial-notice + empty-graph = no-reference
+compositions. Cross-stream toggle now **works** (per-edge `isCrossStream` on the wire) but stays **Topic-scope partial** (flagged).
+
+**Decisions folded (architect + advisor; not re-litigated).** aside = reuse panel reads + `buildTypeGroups`; SVG coverage =
+pure layout at 100% + component state tests (no coverage exclusion); RTL = replicate the design's flip exactly; edge dedup by
+`from→to`; arrow-nav clamps (no wrap, matching the tree fallback).
+
+**Gates (local, all green).** `tsc -b` clean · oxlint clean (only a pre-existing Toast warning) · **684 vitest pass** (+53
+new) · **per-file line coverage 100% on the 5 new FE files**, 100% on the `traceMeta`/`api` additions, global 99.13% ·
+i18n EN/AR parity by hand (`trace.graph.*` + full 17-entry `trace.type.*`, every label from the `.dc.html` `t` object) ·
+**axe AA clean** on graph + aside + list.
+
+**Live VR pass (FR-096 → Met).** Booted the real stack (`npm run e2e:up`; KC bootstrap admin = `ChangeMe_KC#2026` from
+`.env.example` — the persisted-volume `Acmp_KC-…` in memory did NOT apply to this fresh boot, corrected) and ran a new
+`e2e/p10f-graph-vr.spec.ts`: real Keycloak PKCE login → secretary seeds a focus topic + a 3-tier subgraph via the
+self-describing edge APIs (`POST /api/traceability` + `/api/dependencies`, synthetic targets except a real 2nd topic for the
+Topic-scope cross-stream case) → opens the graph via the warm-path panel button. Captured **EN-light + AR-dark + list** to
+`e2e/vr-out/` and screenshot-compared **pixel-faithful to the `.dc.html`**: the **RTL edge-flip meets the nodes** (top risk,
+resolved), tier columns / curved edges / type chips / focus highlight / Blocked pill / group-by-type aside / list-tree all
+match. The VR spec is committed (mirrors `vr-sweep.spec.ts`; coexists in CI, no count-assertion interference).
+
+**Next.** Operator merge GO (branch → 4 CI checks green → squash-merge #83).
+
+---
+
 ## P10f — Impact-graph backend: read-time subgraph endpoint + FR-095 Topic-scope (branch `feat/P10f-graph-backend`)
 
 ### 2026-07-03 — the `/api/traceability/graph` transitive endpoint (backend; PR1 of 2)
