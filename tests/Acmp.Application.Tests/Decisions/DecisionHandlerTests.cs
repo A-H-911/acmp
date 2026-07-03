@@ -13,6 +13,7 @@ using Acmp.Shared.Contracts.Actions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
+using Acmp.Shared.Contracts.Traceability;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -85,6 +86,15 @@ public class DecisionHandlerTests
         var l = Substitute.For<IActionLinkDirectory>();
         l.DecisionHasLinkedActionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(hasLink);
         return l;
+    }
+
+    // P10c: the widened AC-029 arm — a downstream traceability edge. Defaults to none so the Action-arm tests
+    // above are unchanged (the gate stays governed by the Action link).
+    private static ITraceabilityLinks TraceLinks(bool hasEdge = false)
+    {
+        var t = Substitute.For<ITraceabilityLinks>();
+        t.DecisionHasDownstreamEdgeAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(hasEdge);
+        return t;
     }
 
     private static RecordDecisionCommand RecordCmd(
@@ -167,7 +177,7 @@ public class DecisionHandlerTests
         var channel = new RecordingChannel();
         var audit = Substitute.For<IAuditSink>();
 
-        await new IssueDecisionHandler(db, recorder, user, clock, audit, Dir("kc-a", "kc-b"), channel, Links())
+        await new IssueDecisionHandler(db, recorder, user, clock, audit, Dir("kc-a", "kc-b"), channel, Links(), TraceLinks())
             .Handle(new IssueDecisionCommand(id, ChairOverride: false, OverrideJustification: null), default);
 
         var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery("DECN-2026-001"), default);
@@ -185,7 +195,7 @@ public class DecisionHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links())
+        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(), TraceLinks())
             .Handle(new IssueDecisionCommand(Guid.NewGuid(), false, null), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Decision not found.");
@@ -198,7 +208,7 @@ public class DecisionHandlerTests
         var (db, id) = await DraftedAsync(user, clock, DecisionOutcome.Approved);   // follow-up-bearing
         await using var _ = db;
 
-        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false))
+        var act = () => new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false), TraceLinks())
             .Handle(new IssueDecisionCommand(id, false, null), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*downstream link*");
@@ -213,7 +223,7 @@ public class DecisionHandlerTests
         var (db, id) = await DraftedAsync(user, clock, DecisionOutcome.Rejected);   // NOT follow-up-bearing
         await using var _ = db;
 
-        await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false))
+        await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(hasLink: false), TraceLinks())
             .Handle(new IssueDecisionCommand(id, false, null), default);
 
         var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery("DECN-2026-001"), default);
@@ -250,7 +260,7 @@ public class DecisionHandlerTests
             priorId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
                 .Handle(RecordCmd(), default)).Id;
         await using (var db = Db(name, user, clock)) // the prior must be Issued before it can be superseded (W21)
-            await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links())
+            await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(), TraceLinks())
                 .Handle(new IssueDecisionCommand(priorId, false, null), default);
 
         DecisionSummaryDto successor;

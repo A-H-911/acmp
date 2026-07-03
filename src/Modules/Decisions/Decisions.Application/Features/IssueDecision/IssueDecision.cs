@@ -9,6 +9,7 @@ using Acmp.Shared.Contracts.Actions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
+using Acmp.Shared.Contracts.Traceability;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -32,10 +33,16 @@ namespace Acmp.Modules.Decisions.Application.Features.IssueDecision;
 // AC-029 downstream-link gate (FR-067, OQ-045): a follow-up-bearing decision (Approved / ConditionallyApproved
 // / EnhancementsRequired / DesignChangesRequired / ResearchRequired) cannot be Issued until ≥1 downstream
 // artifact links to it — enforced HERE in the handler, not on Decision.Issue, because the link count is
-// cross-module (Actions) and the Decision domain cannot see it. Living in this handler ALSO auto-exempts the
+// cross-module and the Decision domain cannot see it. Living in this handler ALSO auto-exempts the
 // supersession successor (SupersedeDecisionHandler calls Decision.Issue directly, never this path) — not a
 // bypass: superseding requires a prior Issued decision, and first-issue is only reachable through this gate,
 // so every lineage root already passed it (ASM, docs/41). Rejected/Deferred/etc. issue freely.
+//
+// P10c widened "downstream link" to ANY downstream edge (ASM-P10c-2): the gate is satisfied by ≥1 linked
+// ActionItem (IActionLinkDirectory) OR ≥1 downstream traceability edge (ITraceabilityLinks — decision as
+// source of recorded-as/resolves, or target of implements; upstream/lineage edges excluded). A superset of
+// the P8d Action-only gate, so AC-029 cannot regress. The two Shared contracts are OR'd (each module owns its
+// own store; ADR-0001 forbids unifying them behind one cross-module read).
 public sealed record IssueDecisionCommand(
     Guid DecisionId,
     bool ChairOverride,
@@ -72,10 +79,12 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
     private readonly ICommitteeDirectory _directory;
     private readonly INotificationChannel _notifications;
     private readonly IActionLinkDirectory _links;
+    private readonly ITraceabilityLinks _traceLinks;
 
     public IssueDecisionHandler(IDecisionsDbContext db, ITopicDecisionRecorder topics,
         ICurrentUser user, IClock clock, IAuditSink audit,
-        ICommitteeDirectory directory, INotificationChannel notifications, IActionLinkDirectory links)
+        ICommitteeDirectory directory, INotificationChannel notifications, IActionLinkDirectory links,
+        ITraceabilityLinks traceLinks)
     {
         _db = db;
         _topics = topics;
@@ -85,6 +94,7 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         _directory = directory;
         _notifications = notifications;
         _links = links;
+        _traceLinks = traceLinks;
     }
 
     public async Task Handle(IssueDecisionCommand request, CancellationToken ct)
@@ -92,10 +102,12 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         var decision = await _db.Decisions.FirstOrDefaultAsync(d => d.PublicId == request.DecisionId, ct)
             ?? throw new KeyNotFoundException("Decision not found.");
 
-        // AC-029: follow-up-bearing outcomes need ≥1 downstream link before Issue. Cross-module count via the
-        // Actions-owned contract (never a Decisions→Actions table read). InvalidOperationException → 409.
+        // AC-029: follow-up-bearing outcomes need ≥1 downstream link before Issue — a linked Action OR a
+        // downstream traceability edge. Cross-module counts via the owning modules' contracts (never a
+        // Decisions→Actions/Traceability table read). Short-circuits on the Action arm. InvalidOperation → 409.
         if (DecisionOutcomeRules.RequiresDownstreamLink(decision.Outcome)
-            && !await _links.DecisionHasLinkedActionAsync(decision.PublicId, ct))
+            && !await _links.DecisionHasLinkedActionAsync(decision.PublicId, ct)
+            && !await _traceLinks.DecisionHasDownstreamEdgeAsync(decision.PublicId, ct))
             throw new InvalidOperationException(
                 "At least one downstream link (Action, Risk, or other artifact) is required before a decision can be Issued.");
 

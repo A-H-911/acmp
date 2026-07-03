@@ -16,6 +16,8 @@ using Acmp.Modules.Risks.Application;
 using Acmp.Modules.Risks.Infrastructure;
 using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Infrastructure;
+using Acmp.Modules.Traceability.Application;
+using Acmp.Modules.Traceability.Infrastructure;
 using Acmp.Shared;
 using Acmp.Shared.Authorization;
 using Hangfire;
@@ -43,6 +45,7 @@ builder.Services.AddMeetingsModule(builder.Configuration);
 builder.Services.AddDecisionsModule(builder.Configuration);
 builder.Services.AddActionsModule(builder.Configuration);
 builder.Services.AddRisksModule(builder.Configuration);
+builder.Services.AddTraceabilityModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
@@ -58,6 +61,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     DecisionsApplicationExtensions.Assembly,
     ActionsApplicationExtensions.Assembly,
     RisksApplicationExtensions.Assembly,
+    TraceabilityApplicationExtensions.Assembly,
     NotificationsApplicationExtensions.Assembly));
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
@@ -132,6 +136,7 @@ app.MapDecisionEndpoints();
 app.MapVoteEndpoints();
 app.MapActionEndpoints();
 app.MapRiskEndpoints();
+app.MapTraceabilityEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
 

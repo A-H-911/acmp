@@ -42,6 +42,9 @@
     <ProjectReference Include="..\..\src\Modules\Risks\Risks.Domain\Acmp.Modules.Risks.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Risks\Risks.Application\Acmp.Modules.Risks.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Risks\Risks.Infrastructure\Acmp.Modules.Risks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Traceability\Traceability.Domain\Acmp.Modules.Traceability.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Traceability\Traceability.Application\Acmp.Modules.Traceability.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Traceability\Traceability.Infrastructure\Acmp.Modules.Traceability.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

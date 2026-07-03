@@ -24,9 +24,11 @@ public class ModuleBoundaryTests
     private static readonly Assembly ActionsApp = typeof(Acmp.Modules.Actions.Application.ActionsApplicationExtensions).Assembly;
     private static readonly Assembly RisksDomain = typeof(Acmp.Modules.Risks.Domain.Risk).Assembly;
     private static readonly Assembly RisksApp = typeof(Acmp.Modules.Risks.Application.RisksApplicationExtensions).Assembly;
+    private static readonly Assembly TraceabilityDomain = typeof(Acmp.Modules.Traceability.Domain.Relationship).Assembly;
+    private static readonly Assembly TraceabilityApp = typeof(Acmp.Modules.Traceability.Application.TraceabilityApplicationExtensions).Assembly;
 
-    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain }, new object[] { ActionsDomain }, new object[] { RisksDomain } };
-    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp }, new object[] { ActionsApp }, new object[] { RisksApp } };
+    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain }, new object[] { ActionsDomain }, new object[] { RisksDomain }, new object[] { TraceabilityDomain } };
+    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp }, new object[] { ActionsApp }, new object[] { RisksApp }, new object[] { TraceabilityApp } };
 
     [Theory]
     [MemberData(nameof(Domains))]
@@ -51,7 +53,8 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure",
                 "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure",
                 "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
-                "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure")
+                "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
+                "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -66,7 +69,7 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Membership.Infrastructure", "Acmp.Modules.Topics.Infrastructure",
                 "Acmp.Modules.Meetings.Infrastructure", "Acmp.Modules.Notifications.Infrastructure",
                 "Acmp.Modules.Decisions.Infrastructure", "Acmp.Modules.Actions.Infrastructure",
-                "Acmp.Modules.Risks.Infrastructure")
+                "Acmp.Modules.Risks.Infrastructure", "Acmp.Modules.Traceability.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -157,6 +160,24 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
                 "Acmp.Modules.Decisions.Domain", "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure",
                 "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
+                "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(Describe(result));
+    }
+
+    [Fact] // Traceability is a leaf — its edges self-describe via value snapshots (ADR-0019); it reads no other
+           // module's tables. Decisions consumes its AC-029 answer through the Acmp.Shared ITraceabilityLinks port.
+    public void Traceability_should_not_depend_on_other_modules()
+    {
+        var result = Types.InAssemblies(new[] { TraceabilityDomain, TraceabilityApp })
+            .Should().NotHaveDependencyOnAny(
+                "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
+                "Acmp.Modules.Decisions.Domain", "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure",
+                "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
+                "Acmp.Modules.Risks.Domain", "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
                 "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 

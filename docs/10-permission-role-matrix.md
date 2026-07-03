@@ -85,6 +85,7 @@ ABAC scope (stream, confidentiality, delegation, SoD) further constrains every *
 | 29 | Read audit log (`Audit.Read`) | A | A | D | D | A | D | D | D |
 | 30 | Export reports (`Report.Export`) | A | A | A | A | A | D | AiO | D |
 | 31 | Configure system (`Admin.Config`) | D | D | D | D | D | A | D | D |
+| 32 | Create/deactivate traceability edge (`Traceability.Link`) | A | A | D | D | D | D | D | D |
 
 **Reading the matrix — key intents.**
 - **Process control** (rows 2, 4, 5, 6, 7, 8, 9, 10, 12) is `Secretary`+`Chairman` only. The Secretary runs the loop; the Chairman has parallel authority and chairs.
@@ -94,6 +95,7 @@ ABAC scope (stream, confidentiality, delegation, SoD) further constrains every *
 - **Auditor** is read-plus-export only (29, 30) and explicitly `D` on every mutating row.
 - **Submitter** can submit (1), edit own submission (3), attach a diagram to own submission (25), and export own reports (30); everything else `D`.
 - **Guest/Presenter** can only attach a diagram to the topic they present (25, via Presenter relationship); all process/governance actions `D`. Read access to the specific topic/meeting is granted by the Presenter/Guest scope, not a matrix row.
+- **Traceability edges** (32, `Traceability.Link`) — creating/deactivating a typed relationship edge is `Secretary`+`Chairman` only in v1 (P10c). docs/30 §6.1 additionally envisions the topic **Owner** creating edges on their own topic (`AiO`); that overlay is **deferred** — there is no ABAC resource handler for arbitrary artifact types yet, and no edge-create UI (ASM-P10c-4). *Reading* the traceability panel is committee-wide (any authenticated role, incl. Auditor/Member), enforced only by endpoint authentication, not a matrix row.
 
 ---
 

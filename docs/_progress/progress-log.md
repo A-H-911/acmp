@@ -12,6 +12,74 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10c — Relationship (traceability) backend + panel API + AC-029 widening (branch `feat/P10c-relationships-backend`)
+
+### 2026-07-03 — the Traceability module + typed edges + widened decision-issue gate (backend only)
+
+**Scope.** Third P10 slice — **BACKEND only**. A new **`Traceability` module** (docs/30's "Search&Traceability"
+home; ADR-0008) holding the generic typed `Relationship` edge, its create/deactivate/panel API, and the
+cross-module seam that **widens the AC-029 decision-issue gate** to accept ANY downstream edge (Action OR
+Relationship). No `Acmp.Web`. Pre-code reviewed by the `ecc:architect` subagent + advisor (both
+GO-WITH-FIXES); all fixes folded (see below).
+
+**Module.** `src/Modules/Traceability/{Domain,Application,Infrastructure}`, schema `traceability`, cloned from
+the Risks scaffold. `Relationship` aggregate = a self-describing edge `(SourceType,SourceId,SourceKey,
+SourceTitle)` —`RelType`→ `(TargetType,TargetId,TargetKey,TargetTitle)`, `Notes?`, `IsActive` soft-delete +
+`DeactivatedAt/By`, audit stamps from `AuditableEntity`. `ArtifactType` (16 values, docs/30 §1.1) +
+`RelationshipType` (16 values, §2.2) enums. Migration `Traceability_Init` (`relationships` table + 3 filtered
+indexes on active edges: source, target, reltype). **No physical Artifact registry** — reconciled against
+ADR-0008 via **ADR-0019** (amends 0008): edges self-describe, matching docs/30 §2.1's FK-less SQL (ASM-015).
+
+**Features.** `CreateRelationship` (AC-063; RBAC `Traceability.Link` = Chairman/Secretary; validator incl.
+**source≠target** self-loop guard + domain defence-in-depth; audits `Relationship.Created`). `Deactivate­Relationship`
+(soft-delete only, never hard-delete per docs/30 §5 / ADR-0009; audits `Relationship.Deactivated`; 404 unknown;
+idempotent on already-inactive). `GetArtifactRelationships` (AC-062; keyed by `(ArtifactType, PublicId)` →
+`{outgoing[], incoming[]}`, one hop, active edges only; the far endpoint resolved per direction). The panel row
+returns `relType`+`direction` enum names (no English `inverseLabel` on the wire — the SPA localizes forward +
+inverse labels, guardrail #9).
+
+**AC-029 widening.** New Shared seam `ITraceabilityLinks.DecisionHasDownstreamEdgeAsync(decisionId)` (impl in
+Traceability.Infrastructure, mirrors `IActionLinkDirectory`). `IssueDecisionHandler` predicate is now
+`RequiresDownstreamLink(outcome) && !(actionLink OR relationshipEdge)` — two Shared contracts OR'd (each module
+owns its store; ADR-0001 forbids unifying them). **Downstream is a CURATED RelType set, NOT "any edge"**
+(advisor's sharpen; both reviewers' original leans leaked): the decision is source of `recorded-as`/`resolves`
+or target of `implements`; upstream/lineage (`decided-by`/`derived-from`/`supersedes`) are excluded so a
+decision can never be self-satisfied by its own topic (ASM-P10c-2). The gate query is separate from the panel's
+source-OR-target query. Superset of the P8d Action-only gate → **AC-029 stays Met, no regression**.
+
+**Design↔behaviour reconciliations (flagged):**
+- **No Artifact registry** (ADR-0008 prescribed one; docs/30 §2.1 SQL has none) → **ADR-0019** amends 0008.
+- **Curated AC-029 downstream set** vs a naive "any edge" — the AC text *"Action, Risk, or other artifact"*
+  maps to `implements`(Action)/`resolves`(Risk)/`recorded-as`(ADR).
+- **Title snapshotted on the edge** (AC-062 requires the panel to display title; key-only would force a
+  read-time resolution seam into P10e) — accepted staleness, `// ponytail:`-style note (ASM-015).
+- **`Traceability.Link` authz = Chairman/Secretary only** — docs/30 §6.1's topic-Owner AiO create is deferred
+  (no ABAC resource handler for arbitrary artifact types; no UI yet). New docs/10 row 32 + matrix note.
+- **Panel shows explicit edges only** — projecting existing soft-refs (Decision→Topic, Action→source,
+  Risk→subject) is a later slice, and should be **read-time composition, not write-through** (ASM-015).
+
+**Wiring.** `Program.cs` (AddTraceabilityModule + MediatR assembly + MapTraceabilityEndpoints), `MigrationRunner`,
+`AcmpWebApplicationFactory` InMemory swap, `ModuleBoundaryTests` (arrays + a `Traceability_should_not_depend_on_
+other_modules` fact — green), `PermissionMatrixTests` cell `Traceability.Link = AADDDDDD`, `Policies` +
+`AuthorizationRegistration.Matrix`. Solution + test-project references added.
+
+**Gates (local, pre-push).** `dotnet build` clean; **all tests green** — 158 Domain / 32 Arch / 586 App / 17
+Integration / 113 Api (Traceability: 20 new App unit tests incl. the curated-predicate theory + 6 new Api
+contract tests; DecisionsApiTests +1 for the edge-satisfies-AC-029 path; the 8 IssueDecision ctor sites threaded
+the new `ITraceabilityLinks` substitute). `dotnet format --verify-no-changes` clean (fixed the generated
+migration's CRLF + object-initializer whitespace). **Per-file coverage 99.73% global, 0 files < 95%** — all 13
+new Traceability files measured. Live real-SQL boot NOT run (backend-only, InMemory factory covers wiring;
+the recursive-CTE traversal that would need real SQL is P10f).
+
+**AC.** **AC-029 stays Met** (widened superset; new test proves the edge-only path issues). **AC-062/063 stay
+Pending → P10e** — this slice makes them API-testable + audited, but both assert on the FE *panel display*, which
+lands with the traceability panels UI. Live real-stack legs → P17 per G-TRACE.
+
+**Next.** P10d — Dependencies backend (`Dependency` governed edge DPN; mirrors a `depends-on` Relationship per
+docs/30 §1.34; blocked-work + cross-stream).
+
+---
+
 ## P10b — Risks register + detail UI (branch `feat/P10b-risks-ui`)
 
 ### 2026-07-03 — the /risks register + routed detail + create dialog (frontend only)
