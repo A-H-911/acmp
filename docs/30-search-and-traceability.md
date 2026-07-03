@@ -31,7 +31,7 @@ Every governed entity in ACMP is an **Artifact** — a node in the traceability 
 | `Recommendation` | `REC-YYYY-###` | `Recommendation` | Research |
 | `Document` | `DOC-YYYY-###` | `Document` | Knowledge |
 
-> Note: The `Dependency` entity in the Dependencies module is itself an edge artifact with an `DPN-` ID; it is *also* representable as a `Relationship` edge of type `depends-on`. For clarity: `Dependency` (the module aggregate) carries richer first-class attributes (status, notes, blocker flag); the `Relationship` edge captures the same link for graph traversal. Both representations are maintained in sync by the Dependencies module via in-process contracts.
+> Note: The `Dependency` entity in the Dependencies module is itself an edge artifact with a `DPN-` ID; it is *conceptually* a `depends-on`/`blocks` link, but it carries richer first-class attributes (business key, status lifecycle, blocked-work semantics) that the generic `Relationship` does not. **The two are distinct aggregates in distinct modules, and a `Dependency` is stored ONCE (in the Dependencies module) — it is NOT mirrored into the `Relationship` table** (OQ-046 / ASM-016, P10d): per-module DbContexts share no transaction, so a write-through mirror would risk dual-write drift for no benefit. The unified traceability graph is composed at **read-time**: the panel/impact views query BOTH modules and merge (the Dependencies module exposes an artifact-scoped query; the graph traversal in §4.1 must UNION the Dependencies table — it does not see dependency edges via `Relationship`). This keeps a single source of truth per edge while preserving the two-model boundary (docs/11 §A.3 "keep both, distinct roles"; ADR-0008/ADR-0019).
 
 ---
 

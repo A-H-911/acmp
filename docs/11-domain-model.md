@@ -323,7 +323,8 @@ Per the brief's mandated simplifications (avoid over-engineering, explicit domai
 
 #### Dependency *(aggregate root — directed edge)*
 - **Purpose:** A typed directed dependency between artifacts (topic/action/system/decision) enabling blocked-work tracking and cross-stream impact (ADR-0008). Overlaps the generic `Relationship` but is a **first-class governed edge** with status.
-- **Key attributes:** `Id:Guid` · `Key:string` (`DPN-…`) · `FromType:enum` · `FromId:Guid` · `ToType:enum` · `ToId:Guid` · `Kind:enum{BlockedBy,DependsOn,Impacts,RelatesTo}` · `Status:enum{Open,Resolved,Removed}` · `IsCrossStream:bool` (derived) · `Note:LocalizedString?` · `CreatedByUserId:Guid`.
+- **Key attributes:** `Id:Guid` · `Key:string` (`DPN-…`) · `FromType:enum` · `FromId:Guid` · `ToType:enum` · `ToId:Guid` · `Kind:enum{DependsOn,BlockedBy,Blocks,RelatesTo}` · `Status:enum{Open,Resolved,Removed}` · `IsCrossStream:bool` (derived) · `Note:string?` · `CreatedByUserId:Guid`.
+  - *P10d reconciliations (ASM-016):* `Kind` = the design register's 4 chips (`Depends on / Blocked by / Blocks / Relates to`); the earlier `Impacts` value is dropped (unused by FR-094 / the design / the §2.2 Relationship catalog) and `Blocks` added (FR-094 + design). `Note` is a plain `string?` (single free-text Notes box in the create dialog; a user annotation is not a system-localized label — mirrors `Relationship.Notes`), not a `LocalizedString`. `IsCrossStream` is `(derived)` and computed **read-time** in the P10e panel from real stream *sets* (`Topic.AffectedStreamIds` is a `Guid[]`) — it is NOT stored (FR-095 needs a stream-resolution contract spanning Topics+Membership, owned by P10e).
 - **Relationships:** connects any two governed artifacts; consumed by impact analysis (graph traversal in SQL) and `Action` blocking.
 - **Owning module:** Dependencies (closely paired with Search & Traceability).
 - **Lifecycle:** `Open → Resolved|Removed`.

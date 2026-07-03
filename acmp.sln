@@ -89,6 +89,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Traceability.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Traceability.Infrastructure", "src\Modules\Traceability\Traceability.Infrastructure\Acmp.Modules.Traceability.Infrastructure.csproj", "{941BEBBC-3E1F-47D6-94A5-FB56C20077B2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{177EE069-B3A9-4C15-850D-C1BE4C798F38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Dependencies.Domain", "src\Modules\Dependencies\Dependencies.Domain\Acmp.Modules.Dependencies.Domain.csproj", "{52A471C5-BE85-477C-B762-97EA7A400D19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Dependencies.Application", "src\Modules\Dependencies\Dependencies.Application\Acmp.Modules.Dependencies.Application.csproj", "{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Dependencies.Infrastructure", "src\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj", "{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -222,6 +230,18 @@ Global
 		{941BEBBC-3E1F-47D6-94A5-FB56C20077B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{941BEBBC-3E1F-47D6-94A5-FB56C20077B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{941BEBBC-3E1F-47D6-94A5-FB56C20077B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52A471C5-BE85-477C-B762-97EA7A400D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52A471C5-BE85-477C-B762-97EA7A400D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52A471C5-BE85-477C-B762-97EA7A400D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52A471C5-BE85-477C-B762-97EA7A400D19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{116B21B8-2E5B-403D-AF2A-B7C5A3699ACB} = {ACEAF987-769F-4821-877C-AB0580F265DB}
@@ -264,5 +284,9 @@ Global
 		{42A3715D-F87D-48E5-9605-E5F58006A09E} = {530D9A88-F37D-45D2-93D9-31E81A2E48A7}
 		{AC284FD7-F564-4925-A4FA-9FE24902696C} = {530D9A88-F37D-45D2-93D9-31E81A2E48A7}
 		{941BEBBC-3E1F-47D6-94A5-FB56C20077B2} = {530D9A88-F37D-45D2-93D9-31E81A2E48A7}
+		{177EE069-B3A9-4C15-850D-C1BE4C798F38} = {F7D11363-72BC-4081-96DA-6DD9C65235F2}
+		{52A471C5-BE85-477C-B762-97EA7A400D19} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
+		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
+		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
 	EndGlobalSection
 EndGlobal

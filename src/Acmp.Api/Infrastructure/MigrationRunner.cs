@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Actions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
@@ -27,6 +28,7 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<ActionsDbContext>(),
             scope.ServiceProvider.GetRequiredService<RisksDbContext>(),
             scope.ServiceProvider.GetRequiredService<TraceabilityDbContext>(),
+            scope.ServiceProvider.GetRequiredService<DependenciesDbContext>(),
             scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),
             scope.ServiceProvider.GetRequiredService<AuditDbContext>(),
         };
