@@ -24,6 +24,7 @@ import { StatusChip } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, exposureTone, exposureMatrix } from './riskMeta';
+import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import './risks.css';
 
 export function RiskPage() {
@@ -116,7 +117,10 @@ export function RiskPage() {
           )}
         </div>
 
-        <RelatedPanel subjectKey={risk.subjectKey} />
+        <div className="detail-aside-stack">
+          <RelatedPanel subjectKey={risk.subjectKey} />
+          <TraceabilityPanel traceType="Risk" id={risk.id} artifactKey={risk.key} title={pick(risk.title)} />
+        </div>
       </div>
     </section>
   );

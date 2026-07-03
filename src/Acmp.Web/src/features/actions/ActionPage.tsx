@@ -22,6 +22,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, progressColorDetail } from './actionMeta';
 import { ActionActions } from './ActionActions';
+import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import './actions.css';
 
 export function ActionPage() {
@@ -103,7 +104,10 @@ export function ActionPage() {
           )}
         </div>
 
-        <RelatedPanel sourceKey={act.sourceKey} meetingKey={act.meetingKey} />
+        <div className="detail-aside-stack">
+          <RelatedPanel sourceKey={act.sourceKey} meetingKey={act.meetingKey} />
+          <TraceabilityPanel traceType="Action" depType="Action" id={act.id} artifactKey={act.key} title={pick(act.title)} />
+        </div>
       </div>
     </section>
   );

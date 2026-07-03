@@ -26,6 +26,7 @@ import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { outcomeTone, conditionTone } from './decisionMeta';
 import { SupersedeDialog } from './SupersedeDialog';
 import { CreateActionDialog } from '../actions/CreateActionDialog';
+import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import './decisions.css';
 
 export function DecisionPage() {
@@ -145,7 +146,7 @@ export function DecisionPage() {
           )}
         </article>
 
-        <aside className="dec-side">
+        <div className="dec-side detail-aside-stack">
           <section className="dec-card">
             <div className="dec-card-h">{t('decisions.recordDetail')}</div>
             <div className="dec-card-body">
@@ -157,7 +158,8 @@ export function DecisionPage() {
               ))}
             </div>
           </section>
-        </aside>
+          <TraceabilityPanel traceType="Decision" depType="Decision" id={decn.id} artifactKey={decn.key} title={pick(decn.title)} />
+        </div>
       </div>
 
       {data.id && (

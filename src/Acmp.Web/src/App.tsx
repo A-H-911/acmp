@@ -24,6 +24,8 @@ import { ActionsRegister } from './features/actions/ActionsRegister';
 import { ActionPage } from './features/actions/ActionPage';
 import { RisksRegister } from './features/risks/RisksRegister';
 import { RiskPage } from './features/risks/RiskPage';
+import { DependenciesRegister } from './features/dependencies/DependenciesRegister';
+import { DependencyPage } from './features/dependencies/DependencyPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -66,7 +68,8 @@ export const appRoutes = createRoutesFromElements(
         <Route path="adrs" element={<PlaceholderPage titleKey="nav.adrs" />} />
         <Route path="risks" element={<RisksRegister />} />
         <Route path="risks/:key" element={<RiskPage />} />
-        <Route path="dependencies" element={<PlaceholderPage titleKey="nav.deps" />} />
+        <Route path="dependencies" element={<DependenciesRegister />} />
+        <Route path="dependencies/:key" element={<DependencyPage />} />
         <Route path="research" element={<PlaceholderPage titleKey="nav.research" />} />
         <Route path="wiki" element={<PlaceholderPage titleKey="nav.wiki" />} />
         <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />

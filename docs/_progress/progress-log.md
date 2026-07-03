@@ -12,6 +12,71 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10e — Dependencies register + Traceability panels UI (branch `feat/P10e-deps-traceability-ui`)
+
+### 2026-07-03 — the `/dependencies` register + the shared traceability panel + create dialogs (frontend only)
+
+**Scope.** Fifth P10 slice — **FRONTEND only** (`src/Acmp.Web`), consuming the merged `/api/dependencies` +
+`/api/traceability` contracts (no backend change). Mirrors the P10b (Risks UI) / P8b (Actions UI) template.
+Pre-code reviewed by the `ecc:architect` subagent + advisor (both folded); two scope calls put to the operator
+and answered: **panel = detail-page aside only** (the standalone group-by-type Relationships page + the SVG graph
+ship together in P10f), and **the register's "New dependency" ships limited + flagged** (Topic/Action pickable).
+
+**Delivered.**
+- **`/dependencies` register** (`DependenciesRegister`) composed to the Lists&Registers deps table: columns
+  **From · Relation · To · Blocked · Status** (rows link to the edge detail), global "N links" + "N blocked"
+  header counts (filter-independent, via `useDependenciesCounts` count fan-out), a Relation filter + a
+  Blocked-work toggle, key/status server sorts, loading/empty/error states, "New dependency" (Chair/Sec) + a
+  disabled "Open graph" stub (→ P10f).
+- **`/dependencies/:key`** (`DependencyPage`) — the **edge** detail (From/Relation/To/Blocked/Status + Notes +
+  navigable endpoints); NOT an artifact, so it carries no traceability panel (architect ruling). Replaces the
+  `/dependencies` PlaceholderPage; breadcrumb leaf added for the DPN key.
+- **`TraceabilityPanel`** — the shared detail-page aside (AC-062) mounted on **Topic / Decision / Action / Risk**
+  detail. It MERGES typed Relationship edges (`/api/traceability`) + governed Dependency edges
+  (`/api/dependencies/artifact`) at read time into **Upstream / Downstream / Related** groups, each row = relation
+  label + far key + title + a **navigable link** (routeless types render as plain text — no dead links). Dependency
+  data is only fetched for the 4 `DependencyEndpointType` artifacts (Topic/Action/System/Decision); a **Risk** detail
+  shows relationship edges only (no `DependencyEndpointType.Risk`).
+- **Create dialogs (AC-063).** `CreateDependencyDialog` (composed to the design `dependency` form) + the
+  no-reference `CreateRelationshipDialog`, both Chair/Sec-gated, launched contextually from the panel (From/Source
+  pre-seeded, works for any type) or from the register (blank-both-ends, Topic/Action only). One shared
+  `ArtifactPicker` (type→artifact over the 3 registers with FE list hooks: Topic/Action/Risk).
+
+**Design↔behaviour reconciliations (flagged, ASM-016 / guardrail #14):**
+- **Cross-stream column + filter OMITTED** (not rendered as an all-"—" column — fidelity theater is less honest than
+  omission): `IsCrossStream` is not on the wire and its cross-module derivation (FR-095) is deferred to a later slice.
+- **No far-artifact lifecycle status chip** in the panel (a cross-module read, ADR-0001); dependency edges instead
+  carry a self-describing **"Blocked" pill** (`IsBlocker`, ADR-0019).
+- **Direction axis** (Upstream/Downstream/Related) is a curated FE map (`traceMeta`): the design specifies direction
+  only for the 4 dep kinds (`relMeta`) + 7 far-types (`groupDefs`), not all 16 RelationshipTypes — the rest is a
+  flagged heuristic; the relation label + link carry the real semantics.
+- **`CreateRelationshipDialog` is a no-reference composition** (no generic traceability-edge form in the design).
+- **Only 3 of 16 artifact types are pickable** in create (Topic/Action/Risk — the only FE list sources; Decision &
+  System have no register hook). Contextual create sidesteps this for the From/Source end.
+- **"Open graph"** disabled stub → P10f; **`/dependencies/:key`** routed (not a drawer) for deep-linking.
+
+**Gates (local, pre-push).** `tsc -b` clean; `oxlint` clean (only the pre-existing Toast fast-refresh warning);
+`vite build` clean. **Vitest 638 green (+56 new)**, axe-clean structure/ARIA on every new screen. i18n **key parity OK
+(1090 keys)** — the `deps.*` + `trace.*` namespaces added to BOTH locales by hand, every enum value covered (Kind 4,
+Status 3, RelationshipType 16, direction 3, pickable types 3). **Per-file coverage ≥95% on every new file** (100%
+lines on the api hooks + meta + panel + dialogs; register/page ≥97%), global threshold green. **VISUAL-VERIFY DONE** —
+drove the **live stack** (real Keycloak auth-code+PKCE + real SQL: dependencies seeded via `POST /api/dependencies`,
+which self-describe per ADR-0019) and screenshot-compared the three reference-backed surfaces (register, edge detail,
+create dialog) vs the `.dc.html` in **EN-light + AR-RTL-dark**: From·Relation·To·Blocked·Status columns, "N links / N
+blocked" counts, coloured relation arrows, Active chips, New-dependency + disabled Open-graph, and the `dependency`
+create form all match; RTL fully mirrored + dark tokens clean; Cross-stream correctly absent. (The `TraceabilityPanel`
++ `CreateRelationshipDialog` are no-reference compositions — not screenshot-gated.)
+
+**AC.** **AC-062 (traceability panel) + AC-063 (create typed edge) → Partial** (the FE panel/dialogs are structurally
+proven by tests, but the live real-stack Keycloak-PKCE + SQL round-trip → **P17** per G-TRACE, matching every prior FE
+slice). **FR-098** (topic-detail inbound/outbound deps) is served by the panel on Topic detail. **FR-095** (cross-stream)
+stays deferred (column omitted honestly). FR-096/097 (impact graph) = P10f.
+
+**Next.** P10f — the bespoke SVG impact graph (must UNION the Dependencies + Relationship edges) + the standalone
+group-by-type Relationships page; then P10g dashboards.
+
+---
+
 ## P10d — Dependencies backend (branch `feat/P10d-dependencies-backend`)
 
 ### 2026-07-03 — the `Dependencies` module: governed DPN edge + register/panel API (backend only)

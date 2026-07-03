@@ -1,0 +1,138 @@
+/*
+ * Traceability panel + create-dialog primitives (P10e). The panel is the shared detail-page aside
+ * (Topic/Decision/Action/Risk), grouped Upstream / Downstream / Related. Logical properties only
+ * (RTL-safe); tokens from the design system. The far-artifact status chip is intentionally absent
+ * (cross-module read, ADR-0001) — dependency edges carry a self-describing "Blocked" pill instead.
+ */
+
+/* ---------- aside stack (a detail page can show Related + Traceability panels) ---------- */
+.detail-aside-stack { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------- panel ---------- */
+.tp {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  position: sticky;
+  inset-block-start: 74px;
+}
+.tp-head {
+  padding: 13px 15px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tp-head-title { display: flex; align-items: center; gap: 8px; color: var(--accent); }
+.tp-head-title h2 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.tp-head-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tp-body { padding: 10px; }
+.tp-muted { margin: 6px 4px; font-size: 12px; color: var(--text-3); line-height: 1.55; }
+.tp-error { color: var(--st-danger-fg); }
+
+.tp-group + .tp-group { margin-block-start: 12px; }
+.tp-group-head {
+  margin: 2px 4px 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.tp-dir-up { color: var(--st-warn-fg); }
+.tp-dir-down { color: var(--st-info-fg); }
+.tp-dir-related { color: var(--st-neutral-fg); }
+
+.tp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tp-item { min-inline-size: 0; }
+.tp-item-link,
+.tp-item-static {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  inline-size: 100%;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  border-radius: 9px;
+  padding: 9px 10px;
+  text-align: start;
+  text-decoration: none;
+}
+.tp-item-link:hover { border-color: var(--accent); }
+.tp-item-static { cursor: default; }
+.tp-rel {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--st-neutral-fg);
+  flex: 0 0 auto;
+  inline-size: 74px;
+}
+.tp-other { flex: 1 1 auto; min-inline-size: 0; }
+.tp-other-key {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tp-other-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tp-blocked {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--st-danger-fg);
+  background: var(--st-danger-bg);
+  border-radius: 5px;
+  padding-block: 1px;
+  padding-inline: 6px;
+}
+.tp-chev { color: var(--text-3); flex: 0 0 auto; }
+
+/* ---------- create dialogs (dependency + relationship) ---------- */
+.dep-create-form { display: flex; flex-direction: column; gap: var(--field-gap); }
+.dep-locked {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  border: 1px solid var(--border);
+  background: var(--subtle);
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+.dep-locked-key { font-family: var(--mono); font-size: 12px; color: var(--accent); flex: 0 0 auto; }
+.dep-locked-title {
+  font-size: 13px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- artifact picker ---------- */
+.dep-picker { display: flex; flex-direction: column; gap: 5px; }
+.dep-picker-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.dep-picker-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; }
+
+@media (max-width: 860px) {
+  .tp { position: static; }
+  .dep-picker-row { grid-template-columns: 1fr; }
+}

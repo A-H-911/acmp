@@ -26,6 +26,7 @@ import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials } from './topicMeta';
+import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
@@ -88,7 +89,7 @@ export function TopicDetail() {
           {tab === 'votes' && <Votes />}
           {tab === 'history' && <History topic={topic} />}
         </div>
-        <RelationshipsSidebar />
+        <TraceabilityPanel traceType="Topic" depType="Topic" id={topic.id} artifactKey={topic.key} title={topic.title} />
       </div>
     </section>
   );
@@ -292,20 +293,3 @@ function History({ topic }: { topic: Topic }) {
   );
 }
 
-function RelationshipsSidebar() {
-  const { t } = useTranslation();
-  return (
-    <aside className="dt-rel" aria-label={t('detail.rel.title')}>
-      <div className="dt-rel-head">
-        <div className="dt-rel-title">
-          <Icon name="deps" size={16} aria-hidden />
-          <h2>{t('detail.rel.title')}</h2>
-        </div>
-        <div className="dt-rel-sub">{t('detail.rel.sub')}</div>
-      </div>
-      <div className="dt-rel-body">
-        <EmptyState title={t('detail.rel.emptyTitle')} body={t('detail.rel.emptyBody')} />
-      </div>
-    </aside>
-  );
-}

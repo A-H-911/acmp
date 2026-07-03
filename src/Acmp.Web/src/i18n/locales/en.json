@@ -243,6 +243,141 @@
       "err": { "title": "A title is required.", "owner": "An owner is required.", "topic": "A linked topic is required." }
     }
   },
+  "deps": {
+    "title": "Dependencies",
+    "count": "{{count}} links",
+    "blockedCount": "{{count}} blocked",
+    "newDependency": "New dependency",
+    "openGraph": "Open graph",
+    "graphSoon": "The dependency & impact graph ships in a later slice.",
+    "filtersLabel": "Dependency filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Dependency pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Dependencies register",
+    "clearFilters": "Clear filters",
+    "blocked": "Blocked",
+    "no": "No",
+    "related": "Endpoints",
+    "filter": {
+      "relation": "Relation",
+      "anyRelation": "Any relation",
+      "blockedWork": "Blocked work"
+    },
+    "col": {
+      "from": "From",
+      "relation": "Relation",
+      "to": "To",
+      "blocked": "Blocked",
+      "status": "Status"
+    },
+    "kind": {
+      "DependsOn": "Depends on",
+      "BlockedBy": "Blocked by",
+      "Blocks": "Blocks",
+      "RelatesTo": "Relates to"
+    },
+    "status": {
+      "Open": "Active",
+      "Resolved": "Resolved",
+      "Removed": "Removed"
+    },
+    "empty": {
+      "title": "No dependencies match these filters",
+      "body": "No dependency links match the current filters. Clear them to see the full register."
+    },
+    "error": {
+      "title": "Couldn’t load the dependencies",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "notFoundTitle": "Dependency not found",
+    "notFoundBody": "This dependency does not exist or has been removed.",
+    "fact": {
+      "from": "From",
+      "relation": "Relation",
+      "to": "To",
+      "blocked": "Blocked",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "create": {
+      "title": "Create a dependency",
+      "subtitle": "A typed link between two artifacts.",
+      "confirm": "Create dependency",
+      "error": "The dependency could not be created. Please try again.",
+      "from": "From entity",
+      "relationship": "Relationship",
+      "to": "To entity",
+      "notes": "Notes",
+      "notesPh": "Why this dependency exists (optional)…",
+      "err": {
+        "from": "A source artifact is required.",
+        "to": "A target artifact is required.",
+        "selfLoop": "An artifact cannot depend on itself."
+      }
+    }
+  },
+  "trace": {
+    "panel": {
+      "title": "Traceability",
+      "empty": "No typed relationships or dependencies yet.",
+      "error": "Couldn’t load the traceability links."
+    },
+    "addRelationship": "Add relationship",
+    "addDependency": "Add dependency",
+    "noRoute": "No detail page for this artifact type yet.",
+    "dir": {
+      "up": "Upstream",
+      "down": "Downstream",
+      "related": "Related"
+    },
+    "type": {
+      "Topic": "Topic",
+      "Action": "Action",
+      "Risk": "Risk"
+    },
+    "rel": {
+      "DecidedBy": "Decided by",
+      "RecordedAs": "Recorded as",
+      "Produces": "Produces",
+      "Mitigates": "Mitigates",
+      "Addresses": "Addresses",
+      "Supersedes": "Supersedes",
+      "Governs": "Governs",
+      "Violates": "Violates",
+      "DependsOn": "Depends on",
+      "Informs": "Informs",
+      "IllustratedBy": "Illustrated by",
+      "References": "References",
+      "DerivedFrom": "Derived from",
+      "Implements": "Implements",
+      "Blocks": "Blocks",
+      "Resolves": "Resolves"
+    },
+    "picker": {
+      "type": "Type",
+      "typePh": "Select a type",
+      "artifact": "Artifact",
+      "artifactPh": "Select an artifact",
+      "pickTypeFirst": "Pick a type first"
+    },
+    "create": {
+      "title": "Add a relationship",
+      "subtitle": "A typed traceability edge between two artifacts.",
+      "confirm": "Create relationship",
+      "error": "The relationship could not be created. Please try again.",
+      "source": "Source",
+      "relationship": "Relationship",
+      "target": "Target",
+      "notes": "Notes",
+      "notesPh": "Context for this relationship (optional)…",
+      "err": {
+        "target": "A target artifact is required.",
+        "selfLoop": "An artifact cannot relate to itself."
+      }
+    }
+  },
   "decisions": {
     "notFoundTitle": "Decision not found",
     "notFoundBody": "This decision does not exist or has been removed.",
