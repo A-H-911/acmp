@@ -59,9 +59,13 @@ ship together in P10f), and **the register's "New dependency" ships limited + fl
 `vite build` clean. **Vitest 638 green (+56 new)**, axe-clean structure/ARIA on every new screen. i18n **key parity OK
 (1090 keys)** — the `deps.*` + `trace.*` namespaces added to BOTH locales by hand, every enum value covered (Kind 4,
 Status 3, RelationshipType 16, direction 3, pickable types 3). **Per-file coverage ≥95% on every new file** (100%
-lines on the api hooks + meta + panel + dialogs; register/page ≥97%), global threshold green. **VISUAL-VERIFY vs the
-`.dc.html` (EN-light + AR-RTL-dark) is the one remaining manual check — pending a running-stack pass** (same honest
-caveat as P10b), flagged not claimed.
+lines on the api hooks + meta + panel + dialogs; register/page ≥97%), global threshold green. **VISUAL-VERIFY DONE** —
+drove the **live stack** (real Keycloak auth-code+PKCE + real SQL: dependencies seeded via `POST /api/dependencies`,
+which self-describe per ADR-0019) and screenshot-compared the three reference-backed surfaces (register, edge detail,
+create dialog) vs the `.dc.html` in **EN-light + AR-RTL-dark**: From·Relation·To·Blocked·Status columns, "N links / N
+blocked" counts, coloured relation arrows, Active chips, New-dependency + disabled Open-graph, and the `dependency`
+create form all match; RTL fully mirrored + dark tokens clean; Cross-stream correctly absent. (The `TraceabilityPanel`
++ `CreateRelationshipDialog` are no-reference compositions — not screenshot-gated.)
 
 **AC.** **AC-062 (traceability panel) + AC-063 (create typed edge) → Partial** (the FE panel/dialogs are structurally
 proven by tests, but the live real-stack Keycloak-PKCE + SQL round-trip → **P17** per G-TRACE, matching every prior FE

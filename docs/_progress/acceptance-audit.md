@@ -29,9 +29,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > graph) = P10f. Reconciliations flagged (ASM-016 / guardrail #14): no far-artifact status chip (ADR-0001; dep
 > "Blocked" pill instead), direction axis is a curated FE heuristic for the 16 relTypes, generic-relationship
 > dialog is a no-reference composition, only 3 of 16 artifact types are pickable in create (Topic/Action/Risk).
-> **Visual-verify vs the `.dc.html` (EN-light + AR-RTL-dark) is the one remaining manual check — pending a
-> running-stack pass** (same honest caveat as P10b). FE gates green: tsc + oxlint + vite build clean, 638 vitest
-> green, i18n parity (1090 keys). See progress-log P10e entry.
+> **Visual-verify DONE** — drove the live stack (real Keycloak PKCE + SQL) and screenshot-compared the three
+> reference-backed surfaces (register, edge detail, create dialog) vs the `.dc.html` in EN-light + AR-RTL-dark; all
+> match, RTL mirrored + dark tokens clean, Cross-stream correctly absent. (This is a visual-fidelity pass, NOT the
+> AC-062/063 Met evidence — those still need the full create-via-UI → both-panels-reflect round-trip, which is P17.)
+> FE gates green: tsc + oxlint + vite build clean, 638 vitest green, i18n parity (1090 keys). See progress-log
+> P10e entry.
 >
 > P10d update (2026-07-03): Dependencies module backend (branch `feat/P10d-dependencies-backend`) — the
 > first-class governed `Dependency` edge (`DPN-YYYY-###`) in a new `Dependencies` module (schema `dependencies`,
