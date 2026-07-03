@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
     <ProjectReference Include="..\Modules\Risks\Risks.Infrastructure\Acmp.Modules.Risks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Traceability\Traceability.Infrastructure\Acmp.Modules.Traceability.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

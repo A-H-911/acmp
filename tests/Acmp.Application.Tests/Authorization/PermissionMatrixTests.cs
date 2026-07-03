@@ -44,6 +44,7 @@ public class PermissionMatrixTests
         [Policies.RiskManage] = "AAOODDDD",
         [Policies.RiskAccept] = "AADDDDDD",
         [Policies.DependencyCreate] = "AAOODDDD",
+        [Policies.TraceabilityLink] = "AADDDDDD",
         [Policies.AdrCreate] = "AAOODDDD",
         [Policies.AdrApprove] = "AADDDDDD",
         [Policies.AdrSupersede] = "AADDDDDD",

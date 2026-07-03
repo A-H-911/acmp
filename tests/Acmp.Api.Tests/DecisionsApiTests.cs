@@ -60,6 +60,26 @@ public class DecisionsApiTests
         (await client.PostAsJsonAsync("/api/actions", body)).StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    // P10c: satisfy AC-029 via the OTHER arm — a downstream traceability edge (decision --recorded-as--> ADR)
+    // with NO linked action. Proves the widened gate is a superset (edge alone is enough to issue).
+    private static async Task LinkEdgeTo(HttpClient client, Guid decisionId)
+    {
+        var body = new
+        {
+            sourceType = "Decision",
+            sourceId = decisionId,
+            sourceKey = "DECN-2026-001",
+            sourceTitle = "Adopt Keycloak",
+            targetType = "Adr",
+            targetId = Guid.NewGuid(),
+            targetKey = "ADR-2026-005",
+            targetTitle = "Identity",
+            relType = "RecordedAs",
+            notes = (string?)null,
+        };
+        (await client.PostAsJsonAsync("/api/traceability", body)).StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
     [Fact] // AC-008
     public async Task Record_without_token_returns_401()
     {
@@ -122,6 +142,21 @@ public class DecisionsApiTests
         var chair = Client(factory, "Chairman", "kc-chair");
         var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
         await LinkActionTo(chair, decision!.Id);   // Approved is follow-up-bearing → needs ≥1 downstream link
+
+        var issue = await chair.PostAsJsonAsync($"/api/decisions/{decision.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
+        issue.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await (await chair.GetAsync($"/api/decisions/{decision.Key}")).Content.ReadFromJsonAsync<DecisionDetail>();
+        detail!.Status.Should().Be("Issued");
+    }
+
+    [Fact] // P10c: AC-029 widened — a follow-up decision with NO action but a downstream traceability edge issues
+    public async Task Chairman_issues_a_followup_decision_satisfied_by_a_traceability_edge()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var chair = Client(factory, "Chairman", "kc-chair");
+        var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
+        await LinkEdgeTo(chair, decision!.Id);   // downstream edge, no action
 
         var issue = await chair.PostAsJsonAsync($"/api/decisions/{decision.Id}/issue", new { chairOverride = false, overrideJustification = (object?)null });
         issue.StatusCode.Should().Be(HttpStatusCode.NoContent);

@@ -19,6 +19,7 @@ using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
+using Acmp.Shared.Contracts.Traceability;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -330,6 +331,15 @@ public class VoteHandlerTests
         return l;
     }
 
+    // P10c: the widened AC-029 arm defaults to no downstream edge, so these vote/SoD-3 tests stay governed by
+    // the Action link exactly as before.
+    private static ITraceabilityLinks TraceLinks(bool hasEdge = false)
+    {
+        var t = Substitute.For<ITraceabilityLinks>();
+        t.DecisionHasDownstreamEdgeAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(hasEdge);
+        return t;
+    }
+
     private static async Task<Guid> RecordVoteCoupledDecisionAsync(string name, IClock clock, Guid voteId)
     {
         var sec = User("kc-sec", "Sec");
@@ -353,7 +363,7 @@ public class VoteHandlerTests
         await using (var db = Db(name, chair, clock))
         {
             var act = () => new IssueDecisionHandler(db, new FakeRecorder(), chair, clock, audit, Dir(),
-                    Substitute.For<INotificationChannel>(), Links())
+                    Substitute.For<INotificationChannel>(), Links(), TraceLinks())
                 .Handle(new IssueDecisionCommand(decisionId, false, null), default);
             await act.Should().ThrowAsync<ForbiddenAccessException>();
         }
@@ -374,7 +384,7 @@ public class VoteHandlerTests
 
         await using (var db = Db(name, chair, clock))
             await new IssueDecisionHandler(db, new FakeRecorder(), chair, clock, Substitute.For<IAuditSink>(), Dir(),
-                    Substitute.For<INotificationChannel>(), Links())
+                    Substitute.For<INotificationChannel>(), Links(), TraceLinks())
                 .Handle(new IssueDecisionCommand(decisionId, false, null), default);
 
         await using var read = Db(name, chair, clock);
@@ -417,7 +427,7 @@ public class VoteHandlerTests
         await using (var db = Db(name, chair, clock))
         {
             var act = () => new IssueDecisionHandler(db, new FakeRecorder(), chair, clock, Substitute.For<IAuditSink>(), Dir(),
-                    Substitute.For<INotificationChannel>(), Links())
+                    Substitute.For<INotificationChannel>(), Links(), TraceLinks())
                 .Handle(new IssueDecisionCommand(decisionId, false, null), default);
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*must be closed*");
         }
