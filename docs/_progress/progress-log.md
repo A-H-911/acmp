@@ -57,6 +57,9 @@ source-OR-target query. Superset of the P8d Action-only gate → **AC-029 stays 
   (no ABAC resource handler for arbitrary artifact types; no UI yet). New docs/10 row 32 + matrix note.
 - **Panel shows explicit edges only** — projecting existing soft-refs (Decision→Topic, Action→source,
   Risk→subject) is a later slice, and should be **read-time composition, not write-through** (ASM-015).
+- **Edge endpoint types not validated against docs/30 §2.2** — the create validator checks enum + self-loop
+  only, not the per-RelType type matrix (trusted-actor input). Consequence: a malformed edge could satisfy the
+  AC-029 gate; the full 16-type matrix is deferred (ASM-015 point 6, advisor's final catch).
 
 **Wiring.** `Program.cs` (AddTraceabilityModule + MediatR assembly + MapTraceabilityEndpoints), `MigrationRunner`,
 `AcmpWebApplicationFactory` InMemory swap, `ModuleBoundaryTests` (arrays + a `Traceability_should_not_depend_on_
