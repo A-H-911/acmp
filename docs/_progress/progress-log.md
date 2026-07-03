@@ -53,11 +53,18 @@ pure layout at 100% + component state tests (no coverage exclusion); RTL = repli
 **Gates (local, all green).** `tsc -b` clean · oxlint clean (only a pre-existing Toast warning) · **684 vitest pass** (+53
 new) · **per-file line coverage 100% on the 5 new FE files**, 100% on the `traceMeta`/`api` additions, global 99.13% ·
 i18n EN/AR parity by hand (`trace.graph.*` + full 17-entry `trace.type.*`, every label from the `.dc.html` `t` object) ·
-**axe AA clean** on graph + aside + list. **Not yet run: the live real-stack screenshot-compare vs the `.dc.html`** (VR sweep
-needs the Docker stack; deferred to an operator pass per the P10b precedent — FR-096 stays *structurally proven, not Met*).
+**axe AA clean** on graph + aside + list.
 
-**Next.** Operator merge GO (branch → 4 CI checks green → squash). Optional: drive the live VR sweep (EN-light + AR-dark) to
-close the FR-096 visual leg; otherwise it tracks to P17.
+**Live VR pass (FR-096 → Met).** Booted the real stack (`npm run e2e:up`; KC bootstrap admin = `ChangeMe_KC#2026` from
+`.env.example` — the persisted-volume `Acmp_KC-…` in memory did NOT apply to this fresh boot, corrected) and ran a new
+`e2e/p10f-graph-vr.spec.ts`: real Keycloak PKCE login → secretary seeds a focus topic + a 3-tier subgraph via the
+self-describing edge APIs (`POST /api/traceability` + `/api/dependencies`, synthetic targets except a real 2nd topic for the
+Topic-scope cross-stream case) → opens the graph via the warm-path panel button. Captured **EN-light + AR-dark + list** to
+`e2e/vr-out/` and screenshot-compared **pixel-faithful to the `.dc.html`**: the **RTL edge-flip meets the nodes** (top risk,
+resolved), tier columns / curved edges / type chips / focus highlight / Blocked pill / group-by-type aside / list-tree all
+match. The VR spec is committed (mirrors `vr-sweep.spec.ts`; coexists in CI, no count-assertion interference).
+
+**Next.** Operator merge GO (branch → 4 CI checks green → squash-merge #83).
 
 ---
 

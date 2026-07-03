@@ -18,10 +18,11 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > + a **Dependency&impact** section with a Graph/List segmented control, depth 1–3, Blocked + Cross-stream highlight
 > toggles, a depth-tiered **SVG** (pure `graphLayout.ts` geometry; RTL = `scaleX(-1)` on the edges-only layer + logical
 > `inset-inline-start` nodes) and a genuine **list-tree fallback** (role=tree). **FR-096** (transitive impact graph) →
-> **Partial→ (data + UI stood up; unit + a11y verified)**: the page renders the endpoint's subgraph, arrow-nav +
-> Enter work, EN/AR + light/dark composed to the `.dc.html`; the **live real-stack screenshot-compare vs the design is
-> pending an operator stack pass** (matches the P10b precedent) — the end-to-end AC verdict stays *structurally proven,
-> not yet Met* until that pass (→ P17 unless run now). **FR-095** cross-stream toggle is now **wired** (per-edge
+> **Met**: a **live real-stack VR pass** (`e2e/p10f-graph-vr.spec.ts` — real Keycloak login, secretary seeds a focus
+> topic + a 3-tier subgraph via the self-describing edge APIs, opens the graph via the warm-path panel button) captured
+> **EN-light + AR-dark + list** and screenshot-compared **pixel-faithful to `ACMP Traceability & Dependencies.dc.html`**:
+> the RTL edge-flip (top visual risk) meets the logically-positioned nodes, tier columns / type chips / focus highlight /
+> Blocked pill / group-by-type aside all render per the design. **FR-095** cross-stream toggle is now **wired** (per-edge
 > `isCrossStream` is on the wire) but stays **Partial (Topic-scope)** — flagged in-UI honestly. Reconciliations flagged
 > (guardrail #14, design→behavior): a11y `role="application"`→**roving-tabindex**; per-node lifecycle **status chip
 > omitted** (ADR-0001, no far-node status on the wire) — graph nodes show a **type chip** instead, aside/list drop it;
