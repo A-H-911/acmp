@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import axe from 'axe-core';
 import { DecisionPage } from './DecisionPage';
+
+// The traceability panel has its own test (TraceabilityPanel.test.tsx); stub it here so this page
+// test stays isolated from the panel's auth/query providers.
+vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => 'TRACE_PANEL' }));
 import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import { makeAuth } from '../../test/render';
 import { ApiError } from '../../api/apiClient';

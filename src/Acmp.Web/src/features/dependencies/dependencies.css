@@ -1,0 +1,239 @@
+/*
+ * Dependencies register + edge detail (P10e) — composed to the "ACMP Lists & Registers.dc.html"
+ * deps table + `buildDetail` deps drill-in. Logical properties only (RTL-safe); tokens from the
+ * design system. Status chips reuse the shared StatusChip; only register cells, relation colour,
+ * and the edge-detail layout live here. The Cross-stream column is intentionally absent (FR-095
+ * deferred — see dependencies.ts).
+ */
+
+/* ---------- register header ---------- */
+.dep-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block-end: 16px;
+}
+.dep-head-sub {
+  margin-block-start: 5px;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.dep-head-count { font-feature-settings: 'tnum'; }
+.dep-head-sep { inline-size: 3px; block-size: 3px; border-radius: 50%; background: var(--text-3); }
+.dep-head-blocked {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--st-danger-fg);
+  font-weight: 600;
+}
+.dep-head-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.dep-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--st-danger-dot);
+  flex: 0 0 auto;
+}
+
+/* ---------- filter bar ---------- */
+.dep-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-end: 14px;
+}
+.dep-blocked-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  block-size: 30px;
+  padding-inline: 11px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dep-blocked-toggle.on {
+  border-color: var(--st-danger-dot);
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+}
+.dep-showing {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---------- register cells ---------- */
+.dep-endpoint-link {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+.dep-endpoint-link:hover { text-decoration: underline; }
+.dep-endpoint { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.dep-rel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.dep-blocked-cell {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--st-danger-fg);
+  background: var(--st-danger-bg);
+  border-radius: 6px;
+  padding-block: 2px;
+  padding-inline: 8px;
+}
+.dep-muted { color: var(--text-3); font-size: 12.5px; }
+.dep-empty-actions { display: flex; gap: 9px; justify-content: center; margin-block-start: 18px; }
+.dep-foot { margin-block-start: 14px; }
+
+/* ---------- loading skeleton (5-col deps grid) ---------- */
+.dep-skel-head,
+.dep-skel-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 150px minmax(120px, 1fr) 96px 116px;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 12px;
+}
+.dep-skel-head { block-size: 42px; border-block-end: 1px solid var(--border); background: var(--header); }
+.dep-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
+.dep-skel-bar { block-size: 10px; border-radius: 5px; }
+
+/* ---------- edge detail ---------- */
+.dep-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}
+.dep-detail-main { min-inline-size: 0; }
+.dep-detail-head { padding: 18px 20px; margin-block-end: 16px; }
+.dep-detail-chips {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-end: 9px;
+}
+.dep-key-chip {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding-block: 2px;
+  padding-inline: 8px;
+}
+.dep-detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dep-detail-endpoint { font-family: var(--mono); font-size: 14px; color: var(--text); }
+.dep-detail-rel { font-size: 12.5px; font-weight: 600; }
+
+.dep-facts { padding: 18px 20px; margin-block-end: 16px; }
+.dep-facts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 16px; }
+.dep-fact { display: flex; flex-direction: column; gap: 3px; }
+.dep-fact-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.dep-fact-value { font-size: 13.5px; font-weight: 600; color: var(--text); }
+
+.dep-note { padding: 18px 20px; }
+.dep-note-body { margin: 6px 0 0; font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+
+/* ---------- edge-detail related endpoints ---------- */
+.dep-related { position: sticky; inset-block-start: 74px; }
+.dep-related-head {
+  padding: 13px 15px;
+  border-block-end: 1px solid var(--border);
+  background: var(--subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+.dep-related-title { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.dep-related-body { padding: 8px; }
+.dep-related-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  border-radius: 9px;
+  padding: 9px 10px;
+  margin-block-end: 6px;
+  text-align: start;
+  text-decoration: none;
+}
+.dep-related-item.link:hover { border-color: var(--accent); }
+.dep-related-dir {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--st-neutral-fg);
+  flex: 0 0 auto;
+  inline-size: 46px;
+}
+.dep-related-main { flex: 1 1 auto; min-inline-size: 0; }
+.dep-related-key {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dep-related-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .dep-detail-grid { grid-template-columns: 1fr; }
+  .dep-related { position: static; }
+}

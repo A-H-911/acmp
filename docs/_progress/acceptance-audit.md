@@ -12,6 +12,27 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10e update (2026-07-03): Dependencies register + Traceability panels UI (branch
+> `feat/P10e-deps-traceability-ui`) — **FRONTEND only**, consuming the merged `/api/dependencies` +
+> `/api/traceability` contracts (no backend change). Ships the `/dependencies` register (From·Relation·To·
+> Blocked·Status; Relation + Blocked-work filters; key/status server sorts; global link/blocked counts),
+> a routed `/dependencies/:key` **edge** detail, and the shared **`TraceabilityPanel`** aside on
+> Topic/Decision/Action/Risk detail — merging typed Relationship edges + governed Dependency edges at read
+> time into Upstream/Downstream/Related groups with navigable links, plus Chair/Sec-gated create dialogs
+> (dependency + generic relationship). **AC-062** (traceability panel: upstream + downstream typed relationships
+> with type + target ID + title + navigable link) and **AC-063** (create a typed edge → both panels reflect it,
+> audited) move **Pending → Partial**: the FE panel/dialogs are structurally proven (56 new vitest, axe-clean,
+> per-file coverage ≥95%), but the **Met** flip waits on the live real-stack (Keycloak-PKCE + SQL) round-trip →
+> **P17** per G-TRACE, matching every prior FE slice. **FR-098** (topic-detail inbound/outbound deps) is served by
+> the panel on Topic detail. **FR-095** (cross-stream) stays deferred — the Cross-stream column/filter is omitted
+> honestly (not modelled on the wire; its cross-module stream derivation is a later slice). FR-096/097 (impact
+> graph) = P10f. Reconciliations flagged (ASM-016 / guardrail #14): no far-artifact status chip (ADR-0001; dep
+> "Blocked" pill instead), direction axis is a curated FE heuristic for the 16 relTypes, generic-relationship
+> dialog is a no-reference composition, only 3 of 16 artifact types are pickable in create (Topic/Action/Risk).
+> **Visual-verify vs the `.dc.html` (EN-light + AR-RTL-dark) is the one remaining manual check — pending a
+> running-stack pass** (same honest caveat as P10b). FE gates green: tsc + oxlint + vite build clean, 638 vitest
+> green, i18n parity (1090 keys). See progress-log P10e entry.
+>
 > P10d update (2026-07-03): Dependencies module backend (branch `feat/P10d-dependencies-backend`) — the
 > first-class governed `Dependency` edge (`DPN-YYYY-###`) in a new `Dependencies` module (schema `dependencies`,
 > migration `Dependencies_Init`), with create/resolve/remove lifecycle (`Open→Resolved|Removed`, RowVersion,

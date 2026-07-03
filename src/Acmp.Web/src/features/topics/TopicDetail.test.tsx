@@ -9,6 +9,9 @@ import { makeAuth } from '../../test/render';
 import { ApiError } from '../../api/apiClient';
 import type { TopicDetail as Topic } from '../../api/topics';
 
+// The traceability panel (which replaced the P5 empty relationships sidebar) has its own test; stub
+// it here so this page test stays isolated from the panel's query providers.
+vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => 'TRACE_PANEL' }));
 vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn() }));
 import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment } from '../../api/topics';
 
@@ -76,10 +79,10 @@ describe('TopicDetail (P5b)', () => {
     expect(screen.getAllByText('Urgent').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows the relationships sidebar as an empty state (P5)', () => {
+  it('mounts the traceability panel in the sidebar (P10e replaced the P5 empty state)', () => {
     result({ data: TOPIC });
     setup();
-    expect(screen.getByText('No linked items yet')).toBeInTheDocument();
+    expect(screen.getByText('TRACE_PANEL')).toBeInTheDocument();
   });
 
   it('switches to Discussion and posts a comment by topic id', async () => {
