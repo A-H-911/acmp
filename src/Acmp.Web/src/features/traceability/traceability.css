@@ -130,7 +130,9 @@
   font-weight: 600;
   color: var(--text);
 }
-.dep-picker-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; }
+.dep-picker-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
+/* Top-align the Type + Artifact pair — neutralize the global `.field + .field` top-margin. */
+.dep-picker-row .field { margin-block-start: 0; }
 
 @media (max-width: 860px) {
   .tp { position: static; }

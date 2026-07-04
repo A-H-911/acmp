@@ -12,6 +12,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10-graph-dialogs update (2026-07-04): operator live-review fixes (branch `feat/P10-graph-dialogs`) —
+> **behaviour-consistency + fidelity, NO AC flips.** Impact-graph tier direction corrected (kind-aware:
+> `DependsOn`/`BlockedBy` reverse to match the backend `From --Kind--> To` semantics) + Option-2 subtree-side
+> inheritance so a branch never crosses the focus column (**operator-approved deviation from the reference
+> `buildTiers`, guardrail #14 — design `.dc.html` update owed**). Aside `buildTypeGroups` direction made
+> consistent with `buildPanelRows` + the graph. Create-dialog fidelity: 38px accent header tile + paired-field
+> top-alignment (`.field + .field` margin reset). **FR-096** (impact graph) stays **Met** — now correct on real
+> data. Backend 975 green (+2 composer tests), FE 702 green. See progress-log "P10-graph-dialogs".
+>
 > P10-review update (2026-07-04): remediation of the adversarial P10 audit (branch `feat/P10-review`) —
 > **fidelity + i18n + doc-integrity hygiene only, NO AC flips.** Fixed 7 MAJOR (Risks filter order; Deps
 > blocked-toggle colour/height + relation-arrow orientation; Traceability aside `openGraph` key + matched-node

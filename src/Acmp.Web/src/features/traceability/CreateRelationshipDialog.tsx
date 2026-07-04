@@ -87,6 +87,7 @@ export function CreateRelationshipDialog({ open, onClose, source }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
+      tone="accent"
       icon={<Icon name="deps" size={20} aria-hidden />}
       title={t('trace.create.title')}
       description={t('trace.create.subtitle')}
