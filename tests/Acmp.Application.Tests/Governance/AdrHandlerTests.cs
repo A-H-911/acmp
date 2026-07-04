@@ -290,6 +290,10 @@ public class AdrHandlerTests
         var page = await handler.Handle(new GetAdrsRegisterQuery(SortBy: "title", PageSize: 1, Page: 1), CancellationToken.None);
         page.Total.Should().Be(2);
         page.Items.Should().ContainSingle();
+
+        var byStatus = await handler.Handle(new GetAdrsRegisterQuery(SortBy: "status", SortDir: "asc"), CancellationToken.None);
+        byStatus.Total.Should().Be(2);
+        byStatus.Items.First().Status.Should().Be("Draft"); // Draft (1) sorts before Proposed (2)
     }
 
     // ── Validators ───────────────────────────────────────────────────────────────────────────────────────
