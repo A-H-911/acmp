@@ -27,6 +27,7 @@ public static class Policies
     public const string AdrCreate = "Adr.Create";
     public const string AdrApprove = "Adr.Approve";
     public const string AdrSupersede = "Adr.Supersede";
+    public const string AdrPromote = "Adr.Promote";
     public const string InvariantCreate = "Invariant.Create";
     public const string InvariantApprove = "Invariant.Approve";
     public const string TemplateManage = "Template.Manage";

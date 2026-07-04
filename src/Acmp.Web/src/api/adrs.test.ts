@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useAdrsRegister, useAdrsCount, useAdr, useCreateAdr, useProposeAdr } from './adrs';
+import { useAdrsRegister, useAdrsCount, useAdr, useCreateAdr, useProposeAdr, usePromoteDecisionToAdr } from './adrs';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
@@ -90,6 +90,21 @@ describe('useProposeAdr', () => {
     await result.current.mutateAsync('g-1');
     expect(urlOf(spy)).toBe('/api/adrs/g-1/propose');
     expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('POST');
+    expect(inval).toHaveBeenCalledWith({ queryKey: ['adrs'] });
+  });
+});
+
+describe('usePromoteDecisionToAdr', () => {
+  it('POSTs the decision id to /api/adrs/from-decision (201) and invalidates the adrs family', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { id: 'g-9', key: 'ADR-2026-004' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const inval = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => usePromoteDecisionToAdr(), { wrapper });
+    const out = await result.current.mutateAsync('dec-guid');
+    expect(urlOf(spy)).toBe('/api/adrs/from-decision');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ decisionId: 'dec-guid' });
+    expect(out.key).toBe('ADR-2026-004');
     expect(inval).toHaveBeenCalledWith({ queryKey: ['adrs'] });
   });
 });

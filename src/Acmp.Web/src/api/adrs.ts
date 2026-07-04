@@ -170,3 +170,21 @@ export function useProposeAdr() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['adrs'] }),
   });
 }
+
+/**
+ * FR-068: promote an issued Decision to a new (Draft) ADR (POST /api/adrs/from-decision → 201 AdrSummary).
+ * Chairman only (Adr.Promote); the API pre-fills the ADR from the decision and links them bidirectionally.
+ * A 409 means the decision isn't Issued or has already been promoted (the message names the existing ADR).
+ */
+export function usePromoteDecisionToAdr() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (decisionId: string) =>
+      api<AdrSummary>('/adrs/from-decision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decisionId }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['adrs'] }),
+  });
+}

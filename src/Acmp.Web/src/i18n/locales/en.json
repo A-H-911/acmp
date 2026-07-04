@@ -610,6 +610,13 @@
     "recordDetail": "Record detail",
     "convertAdr": "Convert to ADR",
     "convertAdrSoon": "Available when the ADR module ships (Phase 9+).",
+    "convert": {
+      "title": "Convert to ADR",
+      "subtitle": "Create an Architecture Decision Record",
+      "body": "This creates a new Draft ADR pre-filled from {{key}} and links the two. You can refine the ADR before proposing it.",
+      "confirm": "Create ADR",
+      "error": "The ADR could not be created. Please try again."
+    },
     "meta": {
       "outcome": "Outcome",
       "approvedBy": "Approving authority",

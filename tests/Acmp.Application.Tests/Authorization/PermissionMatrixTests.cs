@@ -47,6 +47,7 @@ public class PermissionMatrixTests
         [Policies.TraceabilityLink] = "AADDDDDD",
         [Policies.AdrCreate] = "AAOODDDD",
         [Policies.AdrApprove] = "AADDDDDD",
+        [Policies.AdrPromote] = "ADDDDDDD",
         [Policies.AdrSupersede] = "AADDDDDD",
         [Policies.InvariantCreate] = "AAOODDDD",
         [Policies.InvariantApprove] = "AADDDDDD",

@@ -25,6 +25,9 @@ import { useDecision, useSupersedeDecision } from '../../api/decisions';
 // suite needs no QueryClient. Its own behaviour is covered in CreateActionDialog.test.tsx.
 vi.mock('../../api/members', () => ({ useMembers: () => ({ data: [] }) }));
 vi.mock('../../api/actions', () => ({ useCreateAction: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
+// The (always-mounted) ConvertToAdrDialog uses the promote mutation; stub it so this suite needs no
+// QueryClient. Its own behaviour is covered in ConvertToAdrDialog.test.tsx.
+vi.mock('../../api/adrs', () => ({ usePromoteDecisionToAdr: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
 
 const mockDecision = useDecision as unknown as Mock;
 const mockSupersede = useSupersedeDecision as unknown as Mock;
@@ -123,6 +126,21 @@ describe('DecisionPage (P7b)', () => {
     result({ data: ISSUED });
     setup(['secretary']);
     expect(screen.queryByRole('button', { name: 'Supersede' })).not.toBeInTheDocument();
+  });
+
+  it('offers Convert to ADR to a chairman and opens the confirm dialog (FR-068)', async () => {
+    const user = userEvent.setup();
+    result({ data: ISSUED });
+    setup(['chairman']);
+    await user.click(screen.getByRole('button', { name: 'Convert to ADR' }));
+    // The confirm dialog names the source decision in its body.
+    expect(screen.getByText(/pre-filled from DECN-2026-008/)).toBeInTheDocument();
+  });
+
+  it('hides Convert to ADR from a non-chair', () => {
+    result({ data: ISSUED });
+    setup(['secretary']);
+    expect(screen.queryByRole('button', { name: 'Convert to ADR' })).not.toBeInTheDocument();
   });
 
   it('validates the supersede dialog before submitting', async () => {

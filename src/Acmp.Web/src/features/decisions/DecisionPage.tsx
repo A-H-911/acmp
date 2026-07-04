@@ -25,6 +25,7 @@ import { Icon } from '../../components/icons';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { outcomeTone, conditionTone } from './decisionMeta';
 import { SupersedeDialog } from './SupersedeDialog';
+import { ConvertToAdrDialog } from './ConvertToAdrDialog';
 import { CreateActionDialog } from '../actions/CreateActionDialog';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import './decisions.css';
@@ -36,6 +37,7 @@ export function DecisionPage() {
   const { data, isLoading, isError, error, refetch } = useDecision(key);
   const [supersedeOpen, setSupersedeOpen] = useState(false);
   const [createActionOpen, setCreateActionOpen] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
 
   if (isLoading) return <section className="page"><LoadingState /></section>;
   if (isError || !data) {
@@ -58,6 +60,8 @@ export function DecisionPage() {
   const superseded = decn.status === 'Superseded';
   const isActive = decn.status === 'Issued';
   const canSupersede = isActive && hasRole(auth, 'chairman');
+  // FR-068: only the Chairman promotes an issued decision to an ADR; the API re-checks (Adr.Promote).
+  const canConvert = isActive && hasRole(auth, 'chairman');
   // W13: a follow-up action is raised from an active decision. Chairman/Secretary/Member may create; the
   // API re-checks (Member is allow-if-owner). Owner assignment happens in the dialog.
   const canCreateAction = isActive && hasRole(auth, 'chairman', 'secretary', 'member');
@@ -87,10 +91,12 @@ export function DecisionPage() {
                 {t('actions.create.action')}
               </Button>
             )}
-            <Button variant="secondary" disabled title={t('decisions.convertAdrSoon')}>
-              <Icon name="adr" size={15} aria-hidden />
-              {t('decisions.convertAdr')}
-            </Button>
+            {canConvert && (
+              <Button variant="secondary" onClick={() => setConvertOpen(true)}>
+                <Icon name="adr" size={15} aria-hidden />
+                {t('decisions.convertAdr')}
+              </Button>
+            )}
             {canSupersede && (
               <Button variant="secondary" onClick={() => setSupersedeOpen(true)}>
                 <Icon name="refresh" size={15} aria-hidden />
@@ -176,6 +182,14 @@ export function DecisionPage() {
           open={createActionOpen}
           onClose={() => setCreateActionOpen(false)}
           source={{ sourceType: 'Decision', sourceId: decn.id, sourceKey: decn.key }}
+        />
+      )}
+      {convertOpen && (
+        <ConvertToAdrDialog
+          open
+          onClose={() => setConvertOpen(false)}
+          decisionId={decn.id}
+          decisionKey={decn.key}
         />
       )}
     </section>

@@ -39,6 +39,7 @@ public static class AuthorizationRegistration
         (Policies.TraceabilityLink,     new[] { Chairman, Secretary }, Array.Empty<string>()),
         (Policies.AdrCreate,            new[] { Chairman, Secretary }, new[] { Member, Reviewer }),
         (Policies.AdrApprove,           new[] { Chairman, Secretary }, Array.Empty<string>()),
+        (Policies.AdrPromote,           new[] { Chairman }, Array.Empty<string>()),
         (Policies.AdrSupersede,         new[] { Chairman, Secretary }, Array.Empty<string>()),
         (Policies.InvariantCreate,      new[] { Chairman, Secretary }, new[] { Member, Reviewer }),
         (Policies.InvariantApprove,     new[] { Chairman, Secretary }, Array.Empty<string>()),

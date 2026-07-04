@@ -24,6 +24,23 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > 100% on 5 new FE files, tsc/oxlint/build/i18n-parity all clean. Live `.dc.html` screenshot-VR pending a
 > running-stack pass. **Next = P11c (Invariant backend).**
 
+> P11e update (2026-07-04): Decision→ADR promotion (FR-068) — full-stack, branch `feat/P11e-decision-to-adr`, **NO
+> AC flips** (Governance PH-2/AC-less; traces to **FR-068**, now done). The Chairman promotes an **Issued** decision
+> to a new **Draft** ADR, pre-filled + bidirectionally linked. Backend: two cross-module Shared.Contracts seams —
+> **IDecisionReader** (read, pre-fill) + **ITraceabilityWriter** (first WRITE seam — records a system `RecordedAs`
+> Decision→ADR edge, idempotent, audited); **PromoteDecisionToAdr** command guards **Issued-only** + **one-ADR-per-
+> decision** (both 409); new **Adr.Promote policy = Chairman ONLY** (docs/10 matrix row `"ADDDDDDD"`); endpoint POST
+> /api/adrs/from-decision. Bidirectional link = SourceDecisionId (ADR→Decision) + RecordedAs edge (Decision→ADR).
+> FE: wired the pre-existing disabled "Convert to ADR" stub → Chairman-gated button + confirm dialog (design-
+> referenced, `ACMP Decision, Voting & ADR.dc.html` convertOpen) → navigate to the new ADR; 409 surfaces inline.
+> Pre-fill map Context←Rationale/Decision←Statement/Drivers←Alternatives (flagged). Gates green: backend format
+> clean + all tests pass (5 promote handler + 4 endpoint + 3 writer + PermissionMatrix row) + coverage 99.79%; FE
+> i18n parity (1311 keys) + 770 vitest + per-file 100% on new/changed files + tsc/vite/oxlint clean. **ADR-0021
+> recorded** (cross-module write-seam precedent, extends ADR-0001). **Live `.dc.html` screenshot-VR DONE → PASS**
+> (real Docker stack; issued Decision detail + confirm dialog + promoted Draft ADR with the live RecordedAs
+> bidirectional link, EN-light + AR-dark, pixel-faithful; RTL mirrors) — **FR-068 verified end-to-end.** **★ P11
+> COMPLETE ★** (ADRs+Invariants+promotion). See progress-log "P11e".
+>
 > P11d update (2026-07-04): Invariant UI — invariants tab + `/invariants` register + `/invariants/:key` detail +
 > Create-Invariant dialog (branch `feat/P11d-invariant-ui`), **FE + one backend hotfix, NO AC flips.** Governance is PH-2/AC-less;
 > traces to **FR-106** (create Category/Scope/Statement/Rationale/Owner, born Draft) + FR-107 read/register. Detail
