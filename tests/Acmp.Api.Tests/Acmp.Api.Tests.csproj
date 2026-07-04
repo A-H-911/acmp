@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Acmp.Api\Acmp.Api.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\BuildingBlocks\Acmp.Shared\Acmp.Shared.csproj" />
     <ProjectReference Include="..\..\src\Modules\Risks\Risks.Domain\Acmp.Modules.Risks.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Domain\Acmp.Modules.Dependencies.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Governance\Governance.Domain\Acmp.Modules.Governance.Domain.csproj" />
   </ItemGroup>
 
 </Project>
