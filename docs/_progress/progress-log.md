@@ -12,6 +12,64 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11b — ADR UI: register + MADR detail + create dialog (branch `feat/P11b-adr-ui`)
+
+### 2026-07-04 — the `/adrs` register, the MADR-lite detail, and the create dialog (FE-only)
+
+Second slice of **P11**. Retired the `/adrs` PlaceholderPage and shipped the full ADR read+create surface
+against the P11a backend, composed to the design (guardrail #14): the **`ACMP Lists & Registers.dc.html`**
+isAdrs tab (register), the **`ACMP Decision, Voting & ADR.dc.html`** isAdr screen (MADR detail), and the
+`adr` form in **`ACMP Create Flows & Dialogs.dc.html`** (create dialog). Mirrors the Risks P10b FE structure
+(register/detail/create-dialog + api module + meta + css + tests). **FE-only — no backend touched.**
+
+**Files (new).** `api/adrs.ts` (types + `useAdrsRegister`/`useAdrsCount`/`useAdr`/`useCreateAdr`/`useProposeAdr`);
+`features/governance/` → `adrMeta.ts` (statusTone + client-side `.md` export, FR-104), `AdrsRegister.tsx`,
+`AdrPage.tsx`, `CreateAdrDialog.tsx`, `governance.css`; plus 5 test files. **Wiring:** `App.tsx` routes
+`/adrs` → register + `/adrs/:key` → detail; `nav/breadcrumbs.ts` adds the `adrs` mono leaf crumb; i18n
+`adrs.*` namespace in en + ar (mirrored, parity-checked).
+
+**Create dialog — born Proposed, not inert Draft (advisor-caught).** The design's create form defaults
+Status to "Proposed" and the register renders a first-class `proposed` row, so an ADR is *not* born Draft.
+The dialog keeps a **Draft/Proposed selector** and maps Proposed → **create (Draft) then POST `/propose`**
+(both routes are `Adr.Create`, so the author is permitted). This lands ADRs in a real governance state
+instead of an un-advanceable Draft. A `createdRef` guard means a failed-propose retry re-proposes without a
+duplicate create. Content (Title/Context/Decision + optional Consequences +/−) is entered once and MIRRORED
+to both locales.
+
+**Design↔behaviour reconciliations (flagged; design owes updates):**
+- **5 states + canon "Approved" label.** The design's 3 state-tabs (proposed/accepted/superseded) are a
+  PREVIEW toggle, not a control — the detail renders a fixed status chip; the register renders Draft +
+  Deprecated chips the design's preview omits, and uses "Approved" (canon) not "accepted".
+- **Read-only detail (⚠ merge-GO callout).** No propose/approve/supersede/deprecate BUTTONS this slice (the
+  design shows none on the ADR detail — only Export .md). The endpoints exist (P11a); their UI is a later
+  lifecycle slice (mirrors Risks P10b). Consequence: a created ADR advances to Proposed via the create
+  dialog, but approve/supersede/deprecate have no UI yet.
+- **Register supersede column = marker only.** The lean `AdrSummary` carries `IsSuperseded` (bool), not the
+  peer keys/direction; the register shows a "Superseded" marker, the full directional chain is on the detail
+  (`GetAdrByKey` resolves peer keys). Not touching the merged backend DTO for a FE slice.
+- **Create form:** Status-select kept (mapped to lifecycle, above); the design's **Linked-decision** field is
+  dropped (= the P11e promotion path, `SourceDecisionId`); Consequences split to optional Positive/Negative
+  to match the read model; Decision-drivers + considered-options not collected (optional, no draft-edit UI).
+- **Tabs:** ADRs live; **Invariants** present-but-disabled (P11d); **Violations** omitted entirely (operator
+  DEFER decision). **Category** filter rendered-but-disabled (no server category). Metadata "Tags" omitted
+  (not modelled).
+- **Options:** a non-chosen option renders as a neutral "Alternative" (the design's "Rejected" tag is a
+  stronger claim the model — chosen vs not — doesn't carry).
+
+**Traceability.** The detail's aside uses the real shared `TraceabilityPanel traceType="Adr"` (ArtifactType
+already has Adr) where the design had static links. `Adr` is not in `GRAPH_FOCUS_TYPES`, so the panel's
+"Open graph" affordance is absent (graceful) — an ADR isn't a graph-focus root yet.
+
+**Gates.** 735 vitest green (+33: 7 api, 5 adrMeta, 9 register, 7 detail, 5 dialog); per-file line coverage
+100% on all 5 new files (gate 99.78% global ≥95%); tsc `-b` clean, oxlint clean, i18n parity OK (1240 keys),
+`vite build` clean. Register + detail + dialog are axe-clean (WCAG 2.2 AA). **Live `.dc.html` screenshot-VR
+pending a running-stack pass** (like P10b) — composed pixel-faithful to the reference; offer a VR pass at
+merge-GO.
+
+**Next = P11c** (Invariant backend — the `Invariant` aggregate in the Governance module).
+
+---
+
 ## P11a — ADR backend: the Governance bounded context + the Adr aggregate (branch `feat/P11a-adr-backend`)
 
 ### 2026-07-04 — new Governance module (ADRs); MADR-lite lifecycle, supersede-not-edit, W17/W21

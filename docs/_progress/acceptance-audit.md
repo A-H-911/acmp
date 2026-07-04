@@ -12,6 +12,18 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P11b update (2026-07-04): ADR **UI** — the `/adrs` register + `/adrs/:key` MADR-lite detail + create dialog
+> (branch `feat/P11b-adr-ui`), **FE-only, NO AC flips** (Governance is PH-2, AC-less). Advances the UI half of
+> **FR-099/100/103** (author MADR-lite, register, supersede back-link display) to done and **FR-104** (Export
+> `.md`, now shipped client-side). FR-101 lifecycle transitions are surfaced only as far as create→Proposed
+> (approve/supersede/deprecate BUTTONS are a later slice — read-only detail, mirrors Risks P10b); FR-102 FTS
+> still deferred to Search. Create dialog lands ADRs in **Proposed** (design default) not inert Draft
+> (create→`/propose`, both `Adr.Create`). Reconciliations flagged in the progress log: 5 states + "Approved"
+> label; read-only detail; register supersede = marker-only (lean summary); Invariants tab disabled (P11d),
+> Violations tab omitted (operator DEFER); Category filter disabled. 735 vitest green (+33), per-file line cov
+> 100% on 5 new FE files, tsc/oxlint/build/i18n-parity all clean. Live `.dc.html` screenshot-VR pending a
+> running-stack pass. **Next = P11c (Invariant backend).**
+
 > P11a update (2026-07-04): ADR backend — the new **Governance** module + the `Adr` aggregate (branch
 > `feat/P11a-adr-backend`), **BACKEND only, NO AC flips.** Governance is PH-2 scope and AC-less (the docs/40
 > ACs are PH-1 MVP); it traces to **FR-099/100/101/102/104** (create MADR-lite + lifecycle Draft→Proposed→

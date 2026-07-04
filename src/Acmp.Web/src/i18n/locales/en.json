@@ -153,6 +153,96 @@
       "err": { "title": "A title is required.", "owner": "An owner is required.", "due": "A due date is required." }
     }
   },
+  "adrs": {
+    "title": "ADRs & Invariants",
+    "count": "{{count}} records",
+    "newAdr": "New ADR",
+    "tabsLabel": "ADR registers",
+    "tab": {
+      "adrs": "ADRs",
+      "invariants": "Architecture Invariants",
+      "soon": "Soon"
+    },
+    "filtersLabel": "ADR filters",
+    "filter": {
+      "status": "Status",
+      "category": "Category",
+      "anyCategory": "Any category"
+    },
+    "clearFilters": "Clear filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "ADR pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "ADR register",
+    "col": {
+      "key": "ID",
+      "title": "Title",
+      "status": "Status",
+      "supersede": "Supersedes / superseded-by"
+    },
+    "status": {
+      "Draft": "Draft",
+      "Proposed": "Proposed",
+      "Approved": "Approved",
+      "Superseded": "Superseded",
+      "Deprecated": "Deprecated"
+    },
+    "empty": {
+      "title": "No ADRs match these filters",
+      "body": "No ADRs match the current filters. Clear them to see the full register."
+    },
+    "error": {
+      "title": "Couldn’t load the ADRs",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "notFoundTitle": "ADR not found",
+    "notFoundBody": "This ADR does not exist or has been removed.",
+    "recordLabel": "Architecture Decision Record",
+    "exportMd": "Export .md",
+    "supersedes": "Supersedes",
+    "supersededBy": "Superseded by",
+    "section": {
+      "context": "Context & problem statement",
+      "drivers": "Decision drivers",
+      "options": "Considered options",
+      "decision": "Decision outcome",
+      "consequences": "Consequences"
+    },
+    "consequence": {
+      "positive": "Positive",
+      "negative": "Negative"
+    },
+    "option": {
+      "chosen": "Chosen",
+      "alternative": "Alternative"
+    },
+    "meta": {
+      "title": "Metadata",
+      "status": "Status",
+      "date": "Date",
+      "author": "Author",
+      "approvedBy": "Approved by"
+    },
+    "create": {
+      "title": "Create an ADR",
+      "subtitle": "MADR-lite architecture decision record.",
+      "confirm": "Save ADR",
+      "error": "The ADR could not be created. Please try again.",
+      "titleField": "Title",
+      "titlePh": "Name the decision…",
+      "status": "Status",
+      "context": "Context",
+      "contextPh": "The problem and the forces at play…",
+      "decision": "Decision",
+      "decisionPh": "The decision being made…",
+      "positive": "Positive consequences",
+      "positivePh": "What improves (optional)…",
+      "negative": "Negative consequences",
+      "negativePh": "Trade-offs and costs (optional)…",
+      "err": { "title": "A title is required.", "context": "A context is required.", "decision": "A decision is required." }
+    }
+  },
   "risks": {
     "title": "Risk register",
     "count": "{{count}} risks",
