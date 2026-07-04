@@ -91,7 +91,7 @@ export function CreateInvariantDialog({ open, onClose }: Props) {
       open={open}
       onClose={onClose}
       tone="accent"
-      icon={<Icon name="shieldUser" size={20} aria-hidden />}
+      icon={<Icon name="shieldPlus" size={20} aria-hidden />}
       title={t('invariants.create.title')}
       description={t('invariants.create.subtitle')}
       footer={
@@ -129,20 +129,23 @@ export function CreateInvariantDialog({ open, onClose }: Props) {
           )}
         </Field>
 
-        <Field label={t('invariants.create.owner')} required error={errors.owner}>
-          {(p) => (
-            <Select
-              id={p.id}
-              options={ownerOptions}
-              value={ownerId}
-              onChange={setOwnerId}
-              placeholder={t('invariants.create.ownerPh')}
-              ariaLabel={t('invariants.create.owner')}
-              aria-invalid={p['aria-invalid']}
-              aria-describedby={p['aria-describedby']}
-            />
-          )}
-        </Field>
+        {/* Owner sits at half width (design lays it in a two-column row). */}
+        <div className="adr-create-row">
+          <Field label={t('invariants.create.owner')} required error={errors.owner}>
+            {(p) => (
+              <Select
+                id={p.id}
+                options={ownerOptions}
+                value={ownerId}
+                onChange={setOwnerId}
+                placeholder={t('invariants.create.ownerPh')}
+                ariaLabel={t('invariants.create.owner')}
+                aria-invalid={p['aria-invalid']}
+                aria-describedby={p['aria-describedby']}
+              />
+            )}
+          </Field>
+        </div>
 
         {submitError && (
           <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{submitError}</p>

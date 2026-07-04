@@ -15,7 +15,8 @@ export type IconName =
   | 'viewTable' | 'viewList' | 'viewKanban' | 'viewTimeline' | 'download' | 'upload' | 'funnel'
   | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog'
   | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh'
-  | 'arrowRight' | 'clipboardCheck' | 'pause' | 'ban' | 'arrowUpRight';
+  | 'arrowRight' | 'arrowLeft' | 'clipboardCheck' | 'pause' | 'ban' | 'arrowUpRight'
+  | 'shieldPlus' | 'filterLines' | 'checklist';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -25,7 +26,8 @@ const PATHS: Record<IconName, ReactNode> = {
   session: <path d="M15 10l4.6-3.5a1 1 0 011.4 1v9a1 1 0 01-1.4 1L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
   decision: <><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></>,
   action: <><path d="M9 11l3 3 8-8" /><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" /></>,
-  adr: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2" /></>,
+  // ADR mark = a book/record (matches the design's ADR glyph in Lists & Registers + Decision detail).
+  adr: <path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7" />,
   risk: <><path d="M10.3 3.6L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.4 3.6a2 2 0 00-3.4 0z" /><path d="M12 9v4M12 17h.01" /></>,
   deps: <><circle cx="6" cy="6" r="3" /><circle cx="18" cy="18" r="3" /><path d="M9 6h6a3 3 0 013 3v6" /></>,
   research: <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></>,
@@ -76,6 +78,12 @@ const PATHS: Record<IconName, ReactNode> = {
   activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
   stream: <path d="M3 12h4l3 8 4-16 3 8h4" />,
   shieldUser: <path d="M12 2l8 4.5v9L12 22l-8-4.5v-9L12 2zM12 7a3 3 0 100 6 3 3 0 000-6zM7.5 18a4.5 4.5 0 019 0" />,
+  // Architecture-invariant mark = shield + plus (the design's invariant glyph in the register tab + create form).
+  shieldPlus: <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 7v6M9 9.5h6" />,
+  // Filtered-count glyph (narrowing lines) next to the register "Showing N" line — the design's funnel mark.
+  filterLines: <path d="M3 4h18M6 8h12M9 12h6M11 16h2" />,
+  // Generic empty-state glyph (checklist-check) shared by every register's empty state in the design.
+  checklist: <path d="M9 11l3 3 8-8M3 12h.01M3 7h.01M3 17h.01" />,
   cog: <path d="M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />,
   // System Health + Notification channel glyphs (paths lifted from ACMP Administration.dc.html).
   server: <path d="M3 5h18v6H3zM3 13h18v6H3zM7 8h.01M7 16h.01" />,
@@ -86,6 +94,7 @@ const PATHS: Record<IconName, ReactNode> = {
   refresh: <path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" />,
   // Directional — carries className="dir-flip" at the call site so it mirrors in RTL.
   arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
+  arrowLeft: <path d="M19 12H5M11 6l-6 6 6 6" />,
   ban: <><circle cx="12" cy="12" r="9" /><path d="M5.6 5.6l12.8 12.8" /></>,
   arrowUpRight: <path d="M7 17L17 7M9 7h8v8" />,
   // Ballot / clipboard-check — cast & confirm-vote actions (Decision, Voting & ADR.dc.html).

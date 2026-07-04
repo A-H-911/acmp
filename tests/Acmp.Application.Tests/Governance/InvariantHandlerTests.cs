@@ -289,7 +289,8 @@ public class InvariantHandlerTests
         var priorKey = (await db.Invariants.SingleAsync()).Key;
 
         var channel = new RecordingChannel();
-        var successor = await new SupersedeInvariantHandler(db, new InvariantKeyGenerator(db), user, clock, new RecordingAudit(),
+        var audit = new RecordingAudit();
+        var successor = await new SupersedeInvariantHandler(db, new InvariantKeyGenerator(db), user, clock, audit,
             new FakeCommittee(new[] { new CommitteeRecipient("kc-m1", "M1"), new CommitteeRecipient("kc-chair", "Chair") }), channel)
             .Handle(new SupersedeInvariantCommand(priorId, InvariantCategory.Security, InvariantScope.Platform,
                 Statement with { }, Rationale with { }, null, "kc-owner", "Owner", Reason with { }), CancellationToken.None);
@@ -298,6 +299,10 @@ public class InvariantHandlerTests
         var prior = await db.Invariants.FirstAsync(a => a.Key == priorKey);
         prior.Status.Should().Be(InvariantStatus.Superseded);
         prior.SupersededByInvariantId.Should().Be(successor.Id);
+
+        // The born-Active successor records its own activation, and the prior records the supersede — both audited.
+        audit.Calls.Should().Contain(c => c.Event == "Governance.InvariantActivated");
+        audit.Calls.Should().Contain(c => c.Event == "Governance.InvariantSuperseded");
 
         var priorDetail = await new GetInvariantByKeyHandler(db).Handle(new GetInvariantByKeyQuery(priorKey), CancellationToken.None);
         priorDetail!.SupersededByInvariantKey.Should().Be(successor.Key);

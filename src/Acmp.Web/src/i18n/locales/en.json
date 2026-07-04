@@ -160,8 +160,7 @@
     "tabsLabel": "ADR registers",
     "tab": {
       "adrs": "ADRs",
-      "invariants": "Architecture Invariants",
-      "soon": "Soon"
+      "invariants": "Architecture Invariants"
     },
     "filtersLabel": "ADR filters",
     "filter": {
@@ -170,7 +169,7 @@
       "anyCategory": "Any category"
     },
     "clearFilters": "Clear filters",
-    "showing": "Showing {{shown}} of {{total}}",
+    "showing": "Showing {{count}}",
     "pageNav": "ADR pages",
     "prevPage": "Previous page",
     "nextPage": "Next page",
@@ -189,8 +188,8 @@
       "Deprecated": "Deprecated"
     },
     "empty": {
-      "title": "No ADRs match these filters",
-      "body": "No ADRs match the current filters. Clear them to see the full register."
+      "title": "Nothing to show",
+      "body": "No ADRs match the current filters."
     },
     "error": {
       "title": "Couldn’t load the ADRs",
@@ -254,7 +253,7 @@
       "anyCategory": "Any category"
     },
     "clearFilters": "Clear filters",
-    "showing": "Showing {{shown}} of {{total}}",
+    "showing": "Showing {{count}}",
     "pageNav": "Invariant pages",
     "prevPage": "Previous page",
     "nextPage": "Next page",
@@ -289,8 +288,8 @@
       "OrgWide": "Organization-wide"
     },
     "empty": {
-      "title": "No invariants match these filters",
-      "body": "No invariants match the current filters. Clear them to see the full register."
+      "title": "Nothing to show",
+      "body": "No invariants match the current filters."
     },
     "error": {
       "title": "Couldn’t load the invariants",
@@ -609,11 +608,11 @@
     "alternatives": "Alternatives considered",
     "recordDetail": "Record detail",
     "convertAdr": "Convert to ADR",
-    "convertAdrSoon": "Available when the ADR module ships (Phase 9+).",
     "convert": {
       "title": "Convert to ADR",
       "subtitle": "Create an Architecture Decision Record",
       "body": "This creates a new Draft ADR pre-filled from {{key}} and links the two. You can refine the ADR before proposing it.",
+      "preview": "A new Draft ADR will be created and linked to this decision in both directions.",
       "confirm": "Create ADR",
       "error": "The ADR could not be created. Please try again."
     },

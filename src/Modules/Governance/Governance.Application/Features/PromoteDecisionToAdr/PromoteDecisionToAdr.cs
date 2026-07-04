@@ -60,10 +60,21 @@ public sealed class PromoteDecisionToAdrHandler : IRequestHandler<PromoteDecisio
         if (!string.Equals(decision.Status, IssuedStatus, StringComparison.Ordinal))
             throw new InvalidOperationException("Only an issued decision can be promoted to an ADR.");
 
-        // One ADR per decision — a second promotion is blocked (409) and names the existing ADR.
+        // One ADR per decision — a second promotion is blocked (409) and names the existing ADR. The retry also
+        // HEALS a missing reverse edge: the ADR insert and the Decision→ADR edge commit in two transactions
+        // (separate DbContexts — no ambient transaction to avoid MSDTC on-prem), so a crash between them can
+        // leave the ADR without its edge. Re-running Convert re-records the edge idempotently, then reports 409.
+        // A same-instant concurrent double-promote that races past this app guard is caught by the filtered
+        // unique index on SourceDecisionId (AdrConfiguration) — the DB rejects the second insert, never a dup ADR.
         var existing = await _db.Adrs.AsNoTracking().FirstOrDefaultAsync(a => a.SourceDecisionId == decision.Id, ct);
         if (existing is not null)
+        {
+            await _trace.RecordEdgeAsync(
+                "Decision", decision.Id, decision.Key, decision.Title.En,
+                "Adr", existing.PublicId, existing.Key, existing.Title.En,
+                relTypeName: "RecordedAs", ct);
             throw new InvalidOperationException($"This decision has already been promoted to ADR {existing.Key}.");
+        }
 
         var now = _clock.UtcNow;
         var (sub, name) = CurrentActor.Of(_user);

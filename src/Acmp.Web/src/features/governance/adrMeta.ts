@@ -11,8 +11,9 @@ export const ADR_STATUSES: readonly AdrStatus[] = ['Draft', 'Proposed', 'Approve
 
 /**
  * Status → chip tone. Draft is a neutral work-in-progress; Proposed is in-flight (info); Approved is the
- * live decision (success); Superseded is retired-but-kept (warn); Deprecated is withdrawn (danger). This
- * mirrors the design's adrStatus map, extended to the two states the design's 3-tab preview omits.
+ * live decision (success); Superseded is retired-but-kept (neutral — matches the design's neutral Superseded
+ * badge); Deprecated is withdrawn (danger). Mirrors the design's adrStatus map, extended to the states the
+ * design's 3-tab preview omits.
  */
 export function statusTone(status: AdrStatus): StatusTone {
   switch (status) {
@@ -23,7 +24,7 @@ export function statusTone(status: AdrStatus): StatusTone {
     case 'Approved':
       return 'success';
     case 'Superseded':
-      return 'warn';
+      return 'neutral';
     case 'Deprecated':
       return 'danger';
   }

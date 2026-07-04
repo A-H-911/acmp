@@ -294,3 +294,14 @@
 /* ---------- convert-to-ADR confirm dialog (P11e, FR-068) ---------- */
 .dec-convert-body { display: flex; flex-direction: column; gap: 12px; }
 .dec-convert-text { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-2); }
+.dec-convert-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.dec-convert-preview-icon { display: inline-flex; color: var(--accent); flex: 0 0 auto; }
+.dec-convert-preview-text { font-size: 12.5px; line-height: 1.5; color: var(--text-2); }

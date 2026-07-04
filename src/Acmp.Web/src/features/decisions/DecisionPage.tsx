@@ -9,9 +9,11 @@
  *  - Superseded banner shows the reason; the successor's DECN- key isn't on the prior's DTO (only its
  *    Guid), so the successor link is omitted (flagged) — the supersede round-trip navigates to it directly.
  *  - Alternatives render as stored text (one LocalizedString), not the design's structured "Not chosen"
- *    cards (not modeled) — operator-confirmed. *  - Honest defers (no fabrication): Convert-to-ADR = disabled stub (ADR module → P9/P11); Vote result,
- *    Effective date, Decided-in-meeting, Affected systems, and the immutable-history timeline are not
- *    rendered (vote/audit-query/relationship data lands in P9/P14).
+ *    cards (not modeled) — operator-confirmed.
+ *  - Convert-to-ADR (FR-068) is a live Chairman action on an issued decision → ConvertToAdrDialog. It is the
+ *    design's primary CTA here; Create-follow-up-action (a W13 addition not in the reference) is secondary.
+ *  - Honest defers (no fabrication): Vote result, Effective date, Decided-in-meeting, Affected systems, and
+ *    the immutable-history timeline are not rendered (vote/audit-query/relationship data lands in P9/P14).
  */
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -85,16 +87,16 @@ export function DecisionPage() {
         </div>
         {isActive && (
           <div className="dec-head-actions">
-            {canCreateAction && (
-              <Button variant="primary" onClick={() => setCreateActionOpen(true)}>
-                <Icon name="action" size={15} aria-hidden />
-                {t('actions.create.action')}
-              </Button>
-            )}
             {canConvert && (
-              <Button variant="secondary" onClick={() => setConvertOpen(true)}>
+              <Button variant="primary" onClick={() => setConvertOpen(true)}>
                 <Icon name="adr" size={15} aria-hidden />
                 {t('decisions.convertAdr')}
+              </Button>
+            )}
+            {canCreateAction && (
+              <Button variant="secondary" onClick={() => setCreateActionOpen(true)}>
+                <Icon name="action" size={15} aria-hidden />
+                {t('actions.create.action')}
               </Button>
             )}
             {canSupersede && (

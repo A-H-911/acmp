@@ -240,7 +240,8 @@ public class AdrHandlerTests
         var priorKey = (await db.Adrs.SingleAsync()).Key;
 
         var channel = new RecordingChannel();
-        var successor = await new SupersedeAdrHandler(db, new AdrKeyGenerator(db), user, clock, new RecordingAudit(),
+        var audit = new RecordingAudit();
+        var successor = await new SupersedeAdrHandler(db, new AdrKeyGenerator(db), user, clock, audit,
             new FakeCommittee(new[] { new CommitteeRecipient("kc-m1", "M1"), new CommitteeRecipient("kc-chair", "Chair") }), channel)
             .Handle(new SupersedeAdrCommand(priorId, Title with { }, Context with { }, null, Decision with { }, null, null, Opts(), Reason with { }), CancellationToken.None);
 
@@ -248,6 +249,10 @@ public class AdrHandlerTests
         var prior = await db.Adrs.FirstAsync(a => a.Key == priorKey);
         prior.Status.Should().Be(AdrStatus.Superseded);
         prior.SupersededByAdrId.Should().Be(successor.Id);
+
+        // The born-Approved successor records its own approval, and the prior records the supersede — both audited.
+        audit.Calls.Should().Contain(c => c.Event == "Governance.AdrApproved");
+        audit.Calls.Should().Contain(c => c.Event == "Governance.AdrSuperseded");
 
         // Detail resolves peer keys in both directions.
         var priorDetail = await new GetAdrByKeyHandler(db).Handle(new GetAdrByKeyQuery(priorKey), CancellationToken.None);

@@ -16,7 +16,7 @@ Every existing cross-module seam in `Acmp.Shared.Contracts` is **read-only** (`I
 - ADR-0001 forbids a module reading or writing another module's tables directly.
 - Referencing `Traceability.Application`'s `CreateRelationshipCommand` from `Governance.Application` would be a new module→module application-layer dependency (ArchUnit-visible) and carries the command's user-facing RBAC (`Traceability.Link` = Chairman/Secretary), which is the wrong authorization for a *system consequence* of an already-authorized action.
 - The read-seam pattern (a primitive-only port in `Acmp.Shared.Contracts`, implemented in the owning module's Infrastructure) is already proven five times and keeps the shared kernel free of the owning module's enums.
-- A domain-event → subscriber approach is more decoupled but heavier machinery than a ≤20-user on-prem tool needs for a synchronous, in-transaction consequence (guardrail #12).
+- A domain-event → subscriber approach is more decoupled but heavier machinery than a ≤20-user on-prem tool needs for a synchronous, best-effort consequence of an already-committed action (guardrail #12).
 
 ## Decision Outcome
 
@@ -33,6 +33,7 @@ This is the sanctioned pattern for any future module-initiated cross-module writ
 - Good: no `Governance.Application → Traceability.Application` coupling; the shared kernel stays enum-free; the write reuses the owning module's store as the single source of truth; the pattern generalizes.
 - Trade-off: a system write bypasses the user-facing `CreateRelationship` command's validation/authorization. Accepted — the port applies the same domain guards (`Relationship.Create`) and the caller is separately authorized; the audit `System=true` marker keeps the trail honest.
 - Trade-off: two write paths now exist for edges (the user command and the system port). Accepted — they share the domain factory and store; only the entry authorization differs.
+- Trade-off: the consuming action's own write (e.g. the ADR insert in the Governance context) and the edge write (Traceability context) commit in **two separate transactions**, not one — an ambient `TransactionScope` across two DbContexts would risk MSDTC escalation on the on-prem SQL box. A crash between them can leave the primary record without its reverse edge. Mitigation: the caller's idempotency guard (FR-068's one-ADR-per-decision) re-records the missing edge on a retry, so the gap self-heals; and the forward link (`Adr.SourceDecisionId`, written in the first transaction) always survives. A filtered unique index / outbox is the upgrade path if a future write needs hard atomicity.
 
 ## Validation
 

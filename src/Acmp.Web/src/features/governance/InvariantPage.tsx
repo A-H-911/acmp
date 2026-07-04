@@ -56,13 +56,15 @@ function InvariantDetailView({ inv }: { inv: InvariantDetail }) {
     { label: t('invariants.meta.owner'), value: inv.ownerName || t('invariants.unassigned') },
     { label: t('invariants.meta.date'), value: fmtDate(inv.activatedAt ?? inv.createdAt) },
   ];
+  // Superseded/Retired invariants read as stood-down — the body dims (mirrors the ADR detail treatment).
+  const isRetired = inv.status === 'Superseded' || inv.status === 'Retired';
 
   return (
     <section className="page adr-detail">
       <div className="adr-detail-top">
         <div className="adr-detail-chips">
           <span className="adr-key-chip">{inv.key}</span>
-          <StatusChip tone={statusTone(inv.status)} label={t(`invariants.status.${inv.status}`)} size="sm" />
+          <StatusChip tone={statusTone(inv.status)} label={t(`invariants.status.${inv.status}`)} />
         </div>
       </div>
       <span className="adr-detail-eyebrow">{t('invariants.recordLabel')}</span>
@@ -71,7 +73,7 @@ function InvariantDetailView({ inv }: { inv: InvariantDetail }) {
       <SupersedeBanner inv={inv} />
 
       <div className="adr-detail-grid">
-        <article className="card adr-body">
+        <article className={`card adr-body${isRetired ? ' adr-body-muted' : ''}`}>
           <Section heading={t('invariants.section.rationale')} icon="infoCircle">
             <p className="adr-prose">{pick(inv.rationale)}</p>
           </Section>
@@ -122,7 +124,7 @@ function SupersedeBanner({ inv }: { inv: InvariantDetail }) {
     <div className="adr-supersede-banner">
       {inv.supersedesInvariantKey && (
         <div className="adr-supersede-link">
-          <Icon name="arrowRight" size={14} aria-hidden />
+          <span className="adr-supersede-icon"><Icon name="arrowLeft" size={14} aria-hidden /></span>
           <div>
             <span className="adr-supersede-label">{t('invariants.supersedes')}</span>
             <span className="adr-supersede-key">{inv.supersedesInvariantKey}</span>
@@ -131,7 +133,7 @@ function SupersedeBanner({ inv }: { inv: InvariantDetail }) {
       )}
       {inv.supersededByInvariantKey && (
         <div className="adr-supersede-link is-by">
-          <Icon name="arrowRight" size={14} aria-hidden />
+          <span className="adr-supersede-icon"><Icon name="arrowRight" size={14} aria-hidden /></span>
           <div>
             <span className="adr-supersede-label">{t('invariants.supersededBy')}</span>
             <span className="adr-supersede-key">{inv.supersededByInvariantKey}</span>

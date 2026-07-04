@@ -136,11 +136,18 @@ public class PromoteDecisionToAdrTests
         var first = await Handler(db, user, clock, new RecordingAudit(), reader, new RecordingTraceWriter())
             .Handle(new PromoteDecisionToAdrCommand(DecId), CancellationToken.None);
 
-        var act = () => Handler(db, user, clock, new RecordingAudit(), reader, new RecordingTraceWriter())
+        var healTrace = new RecordingTraceWriter();
+        var act = () => Handler(db, user, clock, new RecordingAudit(), reader, healTrace)
             .Handle(new PromoteDecisionToAdrCommand(DecId), CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage($"*{first.Key}*");
         (await db.Adrs.CountAsync()).Should().Be(1); // no duplicate ADR
+
+        // The blocked retry still idempotently re-records the Decision→ADR edge — healing a reverse edge that a
+        // mid-failure between the ADR insert and the first edge write could have left missing.
+        healTrace.Edges.Should().ContainSingle();
+        healTrace.Edges[0].SrcType.Should().Be("Decision");
+        healTrace.Edges[0].Rel.Should().Be("RecordedAs");
     }
 
     [Fact]

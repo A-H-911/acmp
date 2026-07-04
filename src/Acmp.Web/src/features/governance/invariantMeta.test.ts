@@ -10,7 +10,7 @@ describe('statusTone', () => {
     expect(statusTone('Proposed')).toBe('info');
     expect(statusTone('Active')).toBe('success');
     expect(statusTone('Retired')).toBe('neutral');
-    expect(statusTone('Superseded')).toBe('warn');
+    expect(statusTone('Superseded')).toBe('neutral');
   });
 });
 

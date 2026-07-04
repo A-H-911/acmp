@@ -103,6 +103,11 @@ public sealed class SupersedeAdrHandler : IRequestHandler<SupersedeAdrCommand, A
         prior.Supersede(successor.PublicId, request.Reason, now);
         await _db.SaveChangesAsync(ct);
 
+        // The successor is born Approved via this supersession — record its own approval so the new record has an
+        // audit row of its own (not only the prior's supersede event); ViaSupersession marks how it was approved.
+        await _audit.EmitAsync("Governance.AdrApproved", sub,
+            new { successor.PublicId, successor.Key, ViaSupersession = true, PriorKey = prior.Key }, ct);
+
         await _audit.EmitAsync("Governance.AdrSuperseded", sub,
             new { prior.PublicId, prior.Key, SupersededBy = successor.PublicId, SuccessorKey = successor.Key }, ct);
 

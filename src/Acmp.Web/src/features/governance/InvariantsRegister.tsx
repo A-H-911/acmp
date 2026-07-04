@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useInvariantsRegister, useInvariantsCount, type InvariantSummary } from '../../api/invariants';
+import { useAdrsCount } from '../../api/adrs';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -57,6 +58,7 @@ export function InvariantsRegister() {
     pageSize: PAGE_SIZE,
   });
   const total = useInvariantsCount();
+  const adrTotal = useAdrsCount();
 
   const clearFilters = () => setStatuses([]);
   const onSort = (col: string) => {
@@ -68,14 +70,12 @@ export function InvariantsRegister() {
   };
 
   const pageTotal = data?.total ?? 0;
-  const shown = data?.items.length ?? 0;
-  const hasFilters = statuses.length > 0;
 
   return (
     <section className="page">
       <div className="adr-head">
         <div>
-          <h1 className="page-title">{t('invariants.title')}</h1>
+          <h1 className="page-title">{t('adrs.title')}</h1>
           <div className="adr-head-sub">{t('invariants.count', { count: total.data ?? 0 })}</div>
         </div>
         <Button variant="primary" onClick={() => setCreateOpen(true)}>
@@ -83,7 +83,7 @@ export function InvariantsRegister() {
         </Button>
       </div>
 
-      <GovernanceTabs active="invariants" invCount={total.data ?? 0} />
+      <GovernanceTabs active="invariants" adrCount={adrTotal.data ?? 0} invCount={total.data ?? 0} />
 
       <div className="adr-bar" role="search" aria-label={t('invariants.filtersLabel')}>
         <FilterChip
@@ -96,7 +96,7 @@ export function InvariantsRegister() {
         />
         <FilterChip label={t('invariants.filter.category')} anyLabel={t('invariants.filter.anyCategory')} options={[]} value="" onChange={() => {}} disabled />
         {data && (
-          <span className="adr-count"><Icon name="viewList" size={13} aria-hidden /> {t('invariants.showing', { shown, total: pageTotal })}</span>
+          <span className="adr-count"><Icon name="filterLines" size={13} aria-hidden /> {t('invariants.showing', { count: pageTotal })}</span>
         )}
       </div>
 
@@ -106,12 +106,12 @@ export function InvariantsRegister() {
         <ErrorState title={t('invariants.error.title')} body={t('invariants.error.body')} onRetry={() => refetch()} />
       ) : pageTotal === 0 ? (
         <div>
-          <EmptyState icon="shieldUser" title={t('invariants.empty.title')} body={t('invariants.empty.body')} />
+          <EmptyState icon="checklist" title={t('invariants.empty.title')} body={t('invariants.empty.body')} />
           <div className="adr-empty-actions">
+            <Button variant="secondary" onClick={clearFilters}>{t('invariants.clearFilters')}</Button>
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Icon name="plus" size={16} aria-hidden /> {t('invariants.newInvariant')}
             </Button>
-            {hasFilters && <Button variant="secondary" onClick={clearFilters}>{t('invariants.clearFilters')}</Button>}
           </div>
         </div>
       ) : (

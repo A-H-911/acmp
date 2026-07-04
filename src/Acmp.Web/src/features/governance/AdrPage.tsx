@@ -76,13 +76,15 @@ function AdrDetailView({ adr }: { adr: AdrDetail }) {
     { label: t('adrs.meta.author'), value: adr.authorName },
     { label: t('adrs.meta.approvedBy'), value: adr.approvedByName ?? '—' },
   ];
+  // Superseded/Deprecated records read as retired — the body dims (the design's reduced-opacity treatment).
+  const isRetired = adr.status === 'Superseded' || adr.status === 'Deprecated';
 
   return (
     <section className="page adr-detail">
       <div className="adr-detail-top">
         <div className="adr-detail-chips">
           <span className="adr-key-chip">{adr.key}</span>
-          <StatusChip tone={statusTone(adr.status)} label={t(`adrs.status.${adr.status}`)} size="sm" />
+          <StatusChip tone={statusTone(adr.status)} label={t(`adrs.status.${adr.status}`)} />
         </div>
         <Button variant="secondary" onClick={onExport}>
           <Icon name="download" size={15} aria-hidden /> {t('adrs.exportMd')}
@@ -94,7 +96,7 @@ function AdrDetailView({ adr }: { adr: AdrDetail }) {
       <SupersedeBanner adr={adr} />
 
       <div className="adr-detail-grid">
-        <article className="card adr-body">
+        <article className={`card adr-body${isRetired ? ' adr-body-muted' : ''}`}>
           <Section heading={t('adrs.section.context')} icon="infoCircle">
             <p className="adr-prose">{pick(adr.context)}</p>
           </Section>
@@ -185,8 +187,8 @@ function OptionCard({ option, pick }: { option: AdrOption; pick: (l: LocalizedTe
 
 /**
  * The supersede-links banner — shows the prior ADR this one supersedes and/or the successor that
- * superseded it, each a peer key resolved in-module. Rendered only when at least one link exists; a
- * superseded ADR's body is dimmed via the is-retired class (the design's reduced-opacity treatment).
+ * superseded it, each a peer key resolved in-module. Rendered only when at least one link exists.
+ * "Supersedes" points back (left arrow); "Superseded by" points forward (right arrow); both mirror in RTL.
  */
 function SupersedeBanner({ adr }: { adr: AdrDetail }) {
   const { t } = useTranslation();
@@ -195,7 +197,7 @@ function SupersedeBanner({ adr }: { adr: AdrDetail }) {
     <div className="adr-supersede-banner">
       {adr.supersedesAdrKey && (
         <div className="adr-supersede-link">
-          <Icon name="arrowRight" size={14} aria-hidden />
+          <span className="adr-supersede-icon"><Icon name="arrowLeft" size={14} aria-hidden /></span>
           <div>
             <span className="adr-supersede-label">{t('adrs.supersedes')}</span>
             <span className="adr-supersede-key">{adr.supersedesAdrKey}</span>
@@ -204,7 +206,7 @@ function SupersedeBanner({ adr }: { adr: AdrDetail }) {
       )}
       {adr.supersededByAdrKey && (
         <div className="adr-supersede-link is-by">
-          <Icon name="arrowRight" size={14} aria-hidden />
+          <span className="adr-supersede-icon"><Icon name="arrowRight" size={14} aria-hidden /></span>
           <div>
             <span className="adr-supersede-label">{t('adrs.supersededBy')}</span>
             <span className="adr-supersede-key">{adr.supersededByAdrKey}</span>

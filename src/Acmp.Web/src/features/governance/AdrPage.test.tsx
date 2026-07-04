@@ -133,6 +133,18 @@ describe('AdrPage (P11b)', () => {
     expect(screen.getByText('Decision outcome')).toBeInTheDocument();
   });
 
+  it('dims the body for a superseded/deprecated ADR (the retired treatment)', () => {
+    result({ data: { ...DETAIL, status: 'Superseded' } });
+    const { container } = setup();
+    expect(container.querySelector('.adr-body')).toHaveClass('adr-body-muted');
+  });
+
+  it('does not dim the body for a live (Approved) ADR', () => {
+    result({ data: DETAIL });
+    const { container } = setup();
+    expect(container.querySelector('.adr-body')).not.toHaveClass('adr-body-muted');
+  });
+
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {
     result({ data: DETAIL });
     setup();
