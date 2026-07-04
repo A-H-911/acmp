@@ -24,6 +24,25 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > 100% on 5 new FE files, tsc/oxlint/build/i18n-parity all clean. Live `.dc.html` screenshot-VR pending a
 > running-stack pass. **Next = P11c (Invariant backend).**
 
+> P11d update (2026-07-04): Invariant UI — invariants tab + `/invariants` register + `/invariants/:key` detail +
+> Create-Invariant dialog (branch `feat/P11d-invariant-ui`), **FE + one backend hotfix, NO AC flips.** Governance is PH-2/AC-less;
+> traces to **FR-106** (create Category/Scope/Statement/Rationale/Owner, born Draft) + FR-107 read/register. Detail
+> is **read-only** (no lifecycle buttons, no markdown export) — all propose/activate/retire/supersede UI (ADR +
+> Invariant) deferred to one later governance-lifecycle slice. Create dialog lands invariants in **Draft** with
+> **no create→propose chain** (design form has no Status field, born-Draft per operator). Reconciliations flagged
+> (progress log): no-reference detail (guardrail #14, cued by the register's detail-drawer facts, Viol. omitted);
+> register drops the Viol. column (5 cols); Rationale + Owner REQUIRED though design marks optional (backend
+> validator, Option A); ExceptionsPolicy not collected (sent null, shown-if-present); Category filter disabled (no
+> server filter param); OQ-036 open. **OQ-048 doc-fix folded in**: struck the `+ kind (…)` clause from docs/12 §9's
+> Invariant-create guard row (docs/22 §A = SSoT). Gates green: **765 vitest** (+30), per-file line cov 100% on the
+> new FE files (global 99.21%), tsc/oxlint/vite-build/i18n-parity all clean. **Live `.dc.html` screenshot-VR DONE →
+> PASS** (real fresh Docker stack; register+create+detail, EN-light+AR-dark, pixel-faithful; RTL mirrors, dark
+> clean) — **FR-106 create/read verified live.** During VR, found + fixed a **latent P11a backend defect**:
+> `GovernanceDbContext` was missing from `MigrationRunner`, so the Governance schema was never created on the
+> deployed stack (ADRs non-functional in deployment since P11a) — one-line fix (operator GO), repairs ADR +
+> Invariant together (dotnet format clean; backend `dotnet test`/coverage to run pre-push). **Next = P11e
+> (Decision→ADR promotion, FR-068).** See progress-log "P11d".
+>
 > P11c update (2026-07-04): Invariant backend — the `Invariant` aggregate in the **Governance** module (branch
 > `feat/P11c-invariant-backend`), **BACKEND only, NO AC flips.** Governance is PH-2 scope and AC-less; this slice
 > traces to **FR-106/107** (create Category/Scope/Statement/Rationale/Owner + lifecycle Draft→Proposed→Active→

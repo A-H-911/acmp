@@ -12,6 +12,79 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11d — Invariant UI: register + no-reference detail + create dialog (branch `feat/P11d-invariant-ui`)
+
+### 2026-07-04 — Invariants tab on `/adrs`, `/invariants` register + `/invariants/:key` detail, Create-Invariant dialog (FE-only)
+
+Fourth slice of **P11**, **frontend only** — consumes the live P11c backend as-is (no backend touched). Retires
+the last disabled tab: the Governance register is now a two-tab surface (ADRs · Architecture Invariants) and the
+Invariant record has a full read + create-Draft path. Mirrors the P11b ADR FE shape one-for-one.
+
+**Structure.** New `api/invariants.ts` (reads + `useCreateInvariant`; **no propose hook** — see below) + five
+`features/governance` files: `invariantMeta.ts` (status tone + category-dot maps + enum lists), a small shared
+`GovernanceTabs` (extracted so `/adrs` and `/invariants` keep one tab bar in sync — the previously-disabled
+Invariants tab is now a real `Link`), `InvariantsRegister`, `InvariantPage`, `CreateInvariantDialog`. Routes
+`/invariants` + `/invariants/:key` (the notification deep-link target) in `App.tsx`; both fold to the `adrs` nav
+area with a mono leaf in `breadcrumbs.ts`. i18n `invariants.*` namespace added to **both** locales, every
+Status/Category/Scope **value** included (parity check only guards keys). New `gInv` grid + category-dot CSS.
+
+**Operator decisions applied (this slice):**
+- **Detail = read-only mirror** of `AdrPage` — facts (Status/Category/Scope/Owner/Date) + supersession banner +
+  real `TraceabilityPanel traceType="Invariant"`. **No propose/activate/retire/supersede buttons** and **no
+  markdown export** (an Invariant is a standing rule, not a MADR doc). All lifecycle transitions (ADR *and*
+  Invariant) are deferred to one later governance-lifecycle slice.
+- **Create = born Draft, no Status field** (matches the design form literally). So there is **no create→propose
+  chain** (unlike `CreateAdrDialog`): create → route to `/invariants/:key`. A born Draft therefore has no UI path
+  to propose it until the deferred lifecycle slice — an accepted consequence of the born-Draft choice.
+
+**Reconciliations flagged (guardrail #14):** (1) **No-reference detail** — there is no `.dc.html` for the
+Invariant detail; composed from the shared design system + docs/14, cued by the register's detail-drawer facts
+panel in `ACMP Lists & Registers.dc.html` (Category/Scope/Status/Owner/ID), with the register's **Viol.** column
+& fact **omitted** (operator DEFER). (2) The register drops the design's 6th **Viol.** column → 5 columns
+(ID·Statement·Category·Scope·Status). (3) **Rationale + Owner are REQUIRED** in the create dialog though the
+design marks them optional — the backend `CreateInvariant` validator rejects an empty Rationale/OwnerUserId
+(Option A, mirroring the Risk dialog's required linked-topic). (4) **ExceptionsPolicy** is in the read model but
+not the design's create form, so it is not collected (sent null); it renders on the detail when present.
+(5) **Category filter** chip is rendered (design parity) but disabled — the register query has no category
+*filter* param (category is a sort key only); enabling it is a backend follow-up. (6) **OQ-036** stays OPEN
+(Category set incl. Compliance).
+
+**OQ-048 doc-fix folded in (operator instruction):** struck the `+ kind (Principle/Standard/Policy/Constraint)`
+clause from `docs/12-entity-lifecycles.md` §9's Invariant-create guard row — docs/22 §A is the concept SSoT and
+§9 was the lone outlier. Doc-only, no CI.
+
+**★ Latent P11a backend defect found + fixed during live VR (operator GO to fix).** The live VR pass surfaced
+that `GovernanceDbContext` was never registered in `Acmp.Api/Infrastructure/MigrationRunner.cs` — so the whole
+Governance schema (ADR + Invariant tables **and** `governance.adr_key_counters`) is never created on the deployed
+Docker stack. This means **ADRs have been non-functional in deployment since P11a** (create → 500
+`Invalid object name 'governance.adr_key_counters'`); it went unnoticed because P11a/b/c were backend/unit-gated
+and the P11b live VR was only ever "pending." One-line root-cause fix: added `GovernanceDbContext` to the
+MigrationRunner context list (+ using). Backend touch inside an FE slice, but it's a genuine defect blocking the
+requested VR and the entire deployed module — operator approved. Repairs ADRs + Invariants together.
+
+**Gates (all green locally).** i18n parity OK (1306 keys); oxlint clean (one pre-existing Toast warning,
+untouched); **765 vitest tests** (was 735; +30 across the 5 new test files + the updated ADR-register tab test);
+**per-file line coverage 100%** on all new `features/governance` + `api/invariants` files (global 99.21%);
+`tsc -b` + `vite build` clean. No AC flips — Governance is PH-2/AC-less; traces to **FR-106** (create) +
+FR-107 read/register.
+
+**★ Live `.dc.html` screenshot-VR — PASS (real fresh Docker stack).** New `e2e/p11d-invariant-vr.spec.ts` (login
+as secretary → seed 5 invariants via `/api/invariants`, 2 proposed+approved → Active, 3 Draft → captures) shot
+the register + create dialog + no-reference detail in **EN-light and AR-RTL-dark** to `e2e/vr-out/`. Verified
+pixel-faithful: register matches `ACMP Lists & Registers.dc.html` isInvTab (5 cols ID·Statement·Category·Scope·
+Status, category dots, Draft/Active chips, Viol. column correctly dropped, ADRs-link + active Invariants tab);
+create matches `ACMP Create Flows & Dialogs.dc.html` invariant form (Category·Scope·Statement·Rationale·Owner,
+Rationale/Owner marked required per the backend); detail is the read-only no-reference composition (facts aside +
+traceability, no lifecycle/export buttons). RTL fully mirrors (nav + columns flip, Arabic enum values) and dark
+theme is clean. This also validated the MigrationRunner fix end-to-end (invariants create + activate now work on
+the deployed stack). **FR-106 create/read verified live.**
+
+**Next:** operator GO → push + remote CI green → squash-merge; then **P11e** (Decision→ADR promotion, FR-068).
+The deferred **governance-lifecycle** slice (propose/approve/supersede/deprecate buttons for both ADR + Invariant
+detail) remains queued.
+
+---
+
 ## P11c — Invariant backend: the `Invariant` aggregate in the Governance module (branch `feat/P11c-invariant-backend`)
 
 ### 2026-07-04 — Architecture Invariant aggregate (AIV-YYYY-###); W18/W21 lifecycle, supersede-not-edit (backend)

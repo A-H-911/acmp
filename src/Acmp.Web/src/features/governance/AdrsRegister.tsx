@@ -30,6 +30,7 @@ import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, ADR_STATUSES } from './adrMeta';
 import { CreateAdrDialog } from './CreateAdrDialog';
+import { GovernanceTabs } from './GovernanceTabs';
 import './governance.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetAdrsRegister.Sort: key/title/status).
@@ -83,16 +84,7 @@ export function AdrsRegister() {
         </Button>
       </div>
 
-      <div className="adr-tabs" role="tablist" aria-label={t('adrs.tabsLabel')}>
-        <span className="adr-tab is-active" role="tab" aria-selected="true">
-          <Icon name="adr" size={16} aria-hidden /> {t('adrs.tab.adrs')}
-          <span className="adr-tab-count">{total.data ?? 0}</span>
-        </span>
-        <span className="adr-tab is-disabled" role="tab" aria-disabled="true" title={t('adrs.tab.soon')}>
-          <Icon name="shieldUser" size={16} aria-hidden /> {t('adrs.tab.invariants')}
-          <span className="adr-tab-soon">{t('adrs.tab.soon')}</span>
-        </span>
-      </div>
+      <GovernanceTabs active="adrs" adrCount={total.data ?? 0} />
 
       <div className="adr-bar" role="search" aria-label={t('adrs.filtersLabel')}>
         <FilterChip
