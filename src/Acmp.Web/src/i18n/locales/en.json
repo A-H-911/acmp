@@ -243,6 +243,92 @@
       "err": { "title": "A title is required.", "context": "A context is required.", "decision": "A decision is required." }
     }
   },
+  "invariants": {
+    "title": "Architecture Invariants",
+    "count": "{{count}} invariants",
+    "newInvariant": "New invariant",
+    "filtersLabel": "Invariant filters",
+    "filter": {
+      "status": "Status",
+      "category": "Category",
+      "anyCategory": "Any category"
+    },
+    "clearFilters": "Clear filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Invariant pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Invariant register",
+    "unassigned": "Unassigned",
+    "col": {
+      "key": "ID",
+      "statement": "Statement",
+      "category": "Category",
+      "scope": "Scope",
+      "status": "Status"
+    },
+    "status": {
+      "Draft": "Draft",
+      "Proposed": "Proposed",
+      "Active": "Active",
+      "Retired": "Retired",
+      "Superseded": "Superseded"
+    },
+    "category": {
+      "Security": "Security",
+      "Performance": "Performance",
+      "Data": "Data",
+      "Interoperability": "Interoperability",
+      "Compliance": "Compliance",
+      "Other": "Other"
+    },
+    "scope": {
+      "SingleStream": "Single stream",
+      "MultiStream": "Multi-stream",
+      "Platform": "Platform",
+      "OrgWide": "Organization-wide"
+    },
+    "empty": {
+      "title": "No invariants match these filters",
+      "body": "No invariants match the current filters. Clear them to see the full register."
+    },
+    "error": {
+      "title": "Couldn’t load the invariants",
+      "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
+    },
+    "notFoundTitle": "Invariant not found",
+    "notFoundBody": "This invariant does not exist or has been removed.",
+    "recordLabel": "Architecture Invariant",
+    "supersedes": "Supersedes",
+    "supersededBy": "Superseded by",
+    "section": {
+      "rationale": "Rationale",
+      "exceptions": "Exceptions policy"
+    },
+    "meta": {
+      "title": "Metadata",
+      "status": "Status",
+      "category": "Category",
+      "scope": "Scope",
+      "owner": "Owner",
+      "date": "Date"
+    },
+    "create": {
+      "title": "Create an invariant",
+      "subtitle": "A standing rule systems must never violate.",
+      "confirm": "Save invariant",
+      "error": "The invariant could not be created. Please try again.",
+      "category": "Category",
+      "scope": "Scope",
+      "statement": "Statement",
+      "statementPh": "The rule systems must never violate…",
+      "rationale": "Rationale",
+      "rationalePh": "Why this rule exists…",
+      "owner": "Owner",
+      "ownerPh": "Select an owner…",
+      "err": { "statement": "A statement is required.", "rationale": "A rationale is required.", "owner": "An owner is required." }
+    }
+  },
   "risks": {
     "title": "Risk register",
     "count": "{{count}} risks",

@@ -243,6 +243,92 @@
       "err": { "title": "العنوان مطلوب.", "context": "السياق مطلوب.", "decision": "القرار مطلوب." }
     }
   },
+  "invariants": {
+    "title": "الثوابت المعمارية",
+    "count": "{{count}} ثابت",
+    "newInvariant": "ثابت جديد",
+    "filtersLabel": "مرشّحات الثوابت",
+    "filter": {
+      "status": "الحالة",
+      "category": "الفئة",
+      "anyCategory": "كل الفئات"
+    },
+    "clearFilters": "مسح المرشّحات",
+    "showing": "عرض {{shown}} من {{total}}",
+    "pageNav": "صفحات الثوابت",
+    "prevPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "tableCaption": "سجل الثوابت المعمارية",
+    "unassigned": "غير مُسنَد",
+    "col": {
+      "key": "المعرّف",
+      "statement": "النص",
+      "category": "الفئة",
+      "scope": "النطاق",
+      "status": "الحالة"
+    },
+    "status": {
+      "Draft": "مسودة",
+      "Proposed": "مقترح",
+      "Active": "نشط",
+      "Retired": "متقاعد",
+      "Superseded": "مُستبدَل"
+    },
+    "category": {
+      "Security": "الأمن",
+      "Performance": "الأداء",
+      "Data": "البيانات",
+      "Interoperability": "التشغيل البيني",
+      "Compliance": "الامتثال",
+      "Other": "أخرى"
+    },
+    "scope": {
+      "SingleStream": "مسار واحد",
+      "MultiStream": "متعدّد المسارات",
+      "Platform": "المنصّة",
+      "OrgWide": "على مستوى المؤسسة"
+    },
+    "empty": {
+      "title": "لا ثوابت تطابق هذه المرشّحات",
+      "body": "لا ثوابت تطابق المرشّحات الحالية. امسحها لعرض السجل كاملًا."
+    },
+    "error": {
+      "title": "تعذّر تحميل الثوابت",
+      "body": "الخدمة غير متاحة مؤقتًا. مرشّحاتك محفوظة — أعد المحاولة بعد لحظات."
+    },
+    "notFoundTitle": "الثابت غير موجود",
+    "notFoundBody": "هذا الثابت غير موجود أو تمت إزالته.",
+    "recordLabel": "ثابت معماري",
+    "supersedes": "يحلّ محلّ",
+    "supersededBy": "استُبدل بـ",
+    "section": {
+      "rationale": "المبرّر",
+      "exceptions": "سياسة الاستثناءات"
+    },
+    "meta": {
+      "title": "البيانات الوصفية",
+      "status": "الحالة",
+      "category": "الفئة",
+      "scope": "النطاق",
+      "owner": "المالك",
+      "date": "التاريخ"
+    },
+    "create": {
+      "title": "إنشاء ثابت معماري",
+      "subtitle": "قاعدة دائمة يجب ألا تخالفها الأنظمة.",
+      "confirm": "حفظ الثابت",
+      "error": "تعذّر إنشاء الثابت. حاول مرة أخرى.",
+      "category": "الفئة",
+      "scope": "النطاق",
+      "statement": "النص",
+      "statementPh": "القاعدة التي يجب ألا تخالفها الأنظمة…",
+      "rationale": "المبرّر",
+      "rationalePh": "سبب وجود هذه القاعدة…",
+      "owner": "المالك",
+      "ownerPh": "اختر مالكًا…",
+      "err": { "statement": "النص مطلوب.", "rationale": "المبرّر مطلوب.", "owner": "المالك مطلوب." }
+    }
+  },
   "risks": {
     "title": "سجل المخاطر",
     "count": "{{count}} مخاطرة",

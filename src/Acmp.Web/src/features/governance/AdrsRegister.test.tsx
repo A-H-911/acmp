@@ -61,12 +61,14 @@ describe('AdrsRegister (P11b)', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
-  it('renders the filter-independent header total and the tab bar (ADRs active, Invariants disabled)', () => {
+  it('renders the filter-independent header total and the tab bar (ADRs active, Invariants links to /invariants)', () => {
     setup();
     expect(screen.getByText('7 records')).toBeInTheDocument();
     const adrsTab = screen.getByRole('tab', { name: /ADRs/ });
     expect(adrsTab).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: /Architecture Invariants/ })).toHaveAttribute('aria-disabled', 'true');
+    const invTab = screen.getByRole('tab', { name: /Architecture Invariants/ });
+    expect(invTab).toHaveAttribute('aria-selected', 'false');
+    expect(invTab).toHaveAttribute('href', '/invariants');
   });
 
   it('renders rows: key, title link, status chip, and a superseded marker only for superseded rows', () => {

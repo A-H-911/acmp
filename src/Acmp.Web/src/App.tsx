@@ -24,6 +24,8 @@ import { ActionsRegister } from './features/actions/ActionsRegister';
 import { ActionPage } from './features/actions/ActionPage';
 import { AdrsRegister } from './features/governance/AdrsRegister';
 import { AdrPage } from './features/governance/AdrPage';
+import { InvariantsRegister } from './features/governance/InvariantsRegister';
+import { InvariantPage } from './features/governance/InvariantPage';
 import { RisksRegister } from './features/risks/RisksRegister';
 import { RiskPage } from './features/risks/RiskPage';
 import { DependenciesRegister } from './features/dependencies/DependenciesRegister';
@@ -71,6 +73,8 @@ export const appRoutes = createRoutesFromElements(
         <Route path="actions/:key" element={<ActionPage />} />
         <Route path="adrs" element={<AdrsRegister />} />
         <Route path="adrs/:key" element={<AdrPage />} />
+        <Route path="invariants" element={<InvariantsRegister />} />
+        <Route path="invariants/:key" element={<InvariantPage />} />
         <Route path="risks" element={<RisksRegister />} />
         <Route path="risks/:key" element={<RiskPage />} />
         <Route path="dependencies" element={<DependenciesRegister />} />

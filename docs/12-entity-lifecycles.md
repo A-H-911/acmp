@@ -195,7 +195,7 @@ stateDiagram-v2
 
 | From → To | Trigger / Action | Guard / precondition | Allowed role | Emitted event | Audit |
 |---|---|---|---|---|---|
-| (none) → Draft | create invariant [W18] | statement + kind (Principle/Standard/Policy/Constraint) + category | Owner/Secretary (`Invariant.Create` AiO) | `InvariantDrafted` | yes |
+| (none) → Draft | create invariant [W18] | statement + category | Owner/Secretary (`Invariant.Create` AiO) | `InvariantDrafted` | yes |
 | Draft → Proposed | propose [W18] | scope + rationale present | Owner/Secretary (`Invariant.Create`) | `InvariantProposed` | yes |
 | Proposed → Active | approve/activate [W18] | committee/chair approval; scope validated | Chairman/Secretary (`Invariant.Approve`) | `InvariantActivated` | yes (high) |
 | Active → Retired | retire [W21] | retirement rationale | Chairman/Secretary (`Invariant.Approve`) | `InvariantRetired` | yes (high) |

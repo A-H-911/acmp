@@ -108,6 +108,37 @@
 .adr-empty-actions { display: flex; gap: 9px; justify-content: center; margin-block-start: 18px; }
 .adr-foot { margin-block-start: 14px; }
 
+/* ---------- invariant register cells ---------- */
+.inv-stmt-link {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  line-height: 1.45;
+}
+.inv-stmt-link:hover { color: var(--accent); }
+.inv-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.inv-cat-dot { inline-size: 7px; block-size: 7px; border-radius: 50%; flex: 0 0 auto; }
+
+/* ---------- invariant loading skeleton (5-col gInv grid, 8 rows) ---------- */
+.inv-skel-head,
+.inv-skel-row {
+  display: grid;
+  grid-template-columns: 132px minmax(180px, 1fr) 150px 140px 128px;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 12px;
+}
+.inv-skel-head { block-size: 42px; border-block-end: 1px solid var(--border); background: var(--header); }
+.inv-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
+
 /* ---------- loading skeleton (4-col gAdr grid, 8 rows) ---------- */
 .adr-skel-head,
 .adr-skel-row {
