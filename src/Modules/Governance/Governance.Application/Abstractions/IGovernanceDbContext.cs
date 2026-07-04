@@ -9,5 +9,6 @@ namespace Acmp.Modules.Governance.Application.Abstractions;
 public interface IGovernanceDbContext
 {
     DbSet<Adr> Adrs { get; }
+    DbSet<Invariant> Invariants { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

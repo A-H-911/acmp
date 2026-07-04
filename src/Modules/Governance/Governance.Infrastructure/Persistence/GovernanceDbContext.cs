@@ -8,7 +8,7 @@ namespace Acmp.Modules.Governance.Infrastructure.Persistence;
 
 // Maps ONLY the governance schema (docs/34 §12: no cross-module tables). References to other modules (an
 // ADR's SourceDecisionId) are by value, never by FK navigation (ADR-0001). Considered options are an owned
-// collection of Adr (adr_options table). The Invariant aggregate joins this context in the P11c slice.
+// collection of Adr (adr_options table). The Invariant aggregate (AIV-YYYY-###) shares this context (P11c).
 public sealed class GovernanceDbContext : ModuleDbContext, IGovernanceDbContext
 {
     public const string Schema = "governance";
@@ -19,6 +19,7 @@ public sealed class GovernanceDbContext : ModuleDbContext, IGovernanceDbContext
     }
 
     public DbSet<Adr> Adrs => Set<Adr>();
+    public DbSet<Invariant> Invariants => Set<Invariant>();
     internal DbSet<AdrKeyCounter> KeyCounters => Set<AdrKeyCounter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
