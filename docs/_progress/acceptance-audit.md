@@ -12,6 +12,30 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10g update (2026-07-04): Risk & Dependency **reports** (branch `feat/P10g-risk-dep-reports`) — the LAST P10
+> slice, **FRONTEND only**. Replaces the `/reports` placeholder with a focused analytics surface that REUSES
+> the card renderers/tokens of `ACMP Dashboards & Reports.dc.html` (matrix / stat / bars); the full Reports IA
+> (view-tabs, Export, filters, role dashboards, other-domain cards) is **deferred to P12 Reporting** — this page
+> is a **no-reference composition** of the design's card system (guardrail #14), not a verbatim port. Six cards,
+> every number composed **client-side** from three existing REST reads (risks + dependencies + topics; no
+> backend): a **risk-exposure 3×3 count matrix** (coloured by severity `L×I`, active-scoped), risk + dependency
+> **stat** tiles, **dependencies-by-relation** bars, and — per the operator's "Fuller" scope call (override of
+> both reviewers' defer-lean) — the two **by-stream** cards (Risk by stream, Cross-stream/blocked deps by stream)
+> that join each risk/dep to its linked **Topic's streams** (`includeClosed` topics fetch; multi-stream topic
+> counts under each stream, distinct KPI ≠ bar sum; stream **code** shown, no localized name on the wire).
+> **FR-138** (per-stream report of topics/decisions/actions/**risks**, *Should*/Ph2) → **Partial** (per-stream
+> risk + dependency breakdowns stand up; no date-range filter / export yet). **FR-095** (cross-stream) advanced
+> in the reporting surface, stays **Partial (Topic-scope, OQ-047)** — recorded as a scoped partial-advance
+> (inherit-from-topic model adopted for reporting aggregation only; P10f's per-edge semantic unchanged).
+> **FR-135/136/137** (role dashboards, **AC-064/065/066**) remain **Pending → P12** — this is the *Reports* view,
+> not the role *Dashboard* tab. No Must-AC flips. Reconciliations flagged (guardrail #14): whole page is a
+> no-reference composition; matrix merges High+Critical exposure bands into one danger tint (per the design's
+> authored cells); by-stream shows raw stream code; reads are authenticated-only so Administrator won't 403.
+> Gates (local): `tsc -b` clean, oxlint clean, **702 vitest green** (+18 new incl. the money-path by-stream
+> reducer properties + axe), **per-file coverage 100% on both new files**, i18n EN/AR parity by hand (37
+> `reports.*` keys both locales). Live real-stack VR of the reference-backed matrix → per prior-slice cadence.
+> See progress-log P10g entry.
+>
 > P10f PR2 update (2026-07-03): Impact-graph **frontend** (branch `feat/P10f-graph-ui`, **PR2 of 2**) — the bespoke
 > in-app page at **`/traceability/:type/:key`** consuming the merged PR1 endpoint. One focus-centric page: a 320px
 > group-by-TYPE **Relationships aside** (`buildTypeGroups` — dependency edges by KIND, relationship edges by far TYPE)

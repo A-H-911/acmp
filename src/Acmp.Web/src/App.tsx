@@ -27,6 +27,7 @@ import { RiskPage } from './features/risks/RiskPage';
 import { DependenciesRegister } from './features/dependencies/DependenciesRegister';
 import { DependencyPage } from './features/dependencies/DependencyPage';
 import { ImpactGraphPage } from './features/traceability/ImpactGraphPage';
+import { ReportsPage } from './features/reports/ReportsPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -75,7 +76,7 @@ export const appRoutes = createRoutesFromElements(
         <Route path="research" element={<PlaceholderPage titleKey="nav.research" />} />
         <Route path="wiki" element={<PlaceholderPage titleKey="nav.wiki" />} />
         <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
-        <Route path="reports" element={<PlaceholderPage titleKey="nav.reports" />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route path="search" element={<PlaceholderPage titleKey="common.search" />} />
 
         <Route path="admin" element={<RequireRole roles={['administrator']} />}>

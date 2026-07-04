@@ -1273,5 +1273,33 @@
     }
   },
   "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard." },
-  "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." }
+  "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." },
+  "reports": {
+    "title": "Reports",
+    "lead": "Risk and dependency analytics",
+    "card": {
+      "riskExposure": { "title": "Risk exposure" },
+      "riskStat": { "title": "Risk overview", "sub": "committee-wide snapshot" },
+      "depStat": { "title": "Dependency overview", "sub": "current snapshot" },
+      "depsByKind": { "title": "Dependencies by relation", "sub": "all links by kind" },
+      "riskByStream": { "title": "Risk by stream" },
+      "blockedByStream": { "title": "Cross-stream dependencies" }
+    },
+    "activeCount": "{{count}} active",
+    "streamCount": "{{count}} open risks",
+    "blockedCount": "{{count}} blocked",
+    "streamNote": "Topic-linked only",
+    "risk": { "open": "Open", "mitigating": "Mitigating", "highSeverity": "High severity", "critical": "Critical" },
+    "dep": { "total": "Total links", "open": "Open", "blocked": "Blocked", "resolved": "Resolved" },
+    "level": { "Low": "Low", "Medium": "Med", "High": "High" },
+    "probability": "Probability",
+    "viewDetail": "View detail",
+    "drill": "Open {{title}}",
+    "cellLabel": "{{count}} risks · impact {{impact}} · probability {{prob}}",
+    "noStreamRisks": "No stream-linked risks",
+    "noStreamBlocked": "No stream-linked blockers",
+    "empty": { "title": "No reporting data yet", "body": "Reports populate as risks and dependencies are raised." },
+    "error": { "title": "Couldn’t load reports", "body": "Something went wrong loading the reporting data." },
+    "p12Note": "Committee, decision, action and audit reports arrive with the Reporting module."
+  }
 }
