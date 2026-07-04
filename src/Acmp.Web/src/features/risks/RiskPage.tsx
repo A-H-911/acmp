@@ -138,7 +138,10 @@ function RelatedPanel({ subjectKey }: { subjectKey: string | null }) {
     <aside className="card rsk-related" aria-label={t('risks.related')}>
       <div className="rsk-related-head">
         <Icon name="deps" size={15} aria-hidden />
-        <h2 className="rsk-related-title">{t('risks.related')}</h2>
+        <div className="rsk-related-heading">
+          <h2 className="rsk-related-title">{t('risks.related')}</h2>
+          <span className="rsk-related-sub">{t('risks.relatedSub')}</span>
+        </div>
       </div>
       <div className="rsk-related-body">
         {subjectKey && (

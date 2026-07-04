@@ -12,6 +12,90 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10-review — remediation of the adversarial P10 audit (branch `feat/P10-review`)
+
+### 2026-07-04 — fixed the 7 MAJOR + the MINOR fidelity/i18n cluster from the exhaustive P10 audit
+
+An adversarial, element-by-element audit of all 7 merged P10 slices (Risks · Dependencies · Traceability ·
+Impact-graph · Reports) against the governing `.dc.html` files + backend correctness returned **GO on
+correctness/architecture** (972 BE tests, 702 FE, per-file cov ≥95%, ArchUnit 36/36, secrets clean, audit
+events present, AC-029 gate holds) but **NO-GO on "fidelity-reconciled done"**: 7 MAJOR (6 fidelity + 1
+governance) + a MINOR cluster incl. one **Arabic-gender bilingual defect** (guardrail 9). This slice
+remediates them (pattern = the P9-review `b904890` fast-follow). All gates green locally.
+
+**Backend.**
+- **ADR index (MAJOR):** `adr/README.md` stopped at ADR-0018; **indexed ADR-0019 (self-describing edges,
+  amends 0008) + ADR-0020 (impact-graph read-time composition)** — both existed on disk + cited in code but
+  were unindexed (violated the README's own "discoverable index" rule).
+- **Impact-graph BFS (MINOR):** `ImpactGraphComposer` outer loop gated on `!partial`, so one node's transient
+  read failure / the MaxNodes ceiling **halted every sibling branch** at that level. Decoupled — the walk is
+  bounded by depth + the `expanded` cycle-guard + the ceiling; `partial` is still returned truthfully but no
+  longer truncates unrelated branches. Added a regression test (`Failed_branch_does_not_halt_sibling_expansion`
+  — a sibling reaches depth 3 after another branch fails at depth 2; would fail under the old gate).
+- **ArchUnit gap (MINOR):** `Decisions_should_not_depend_on_other_modules` omitted **Traceability + Actions**
+  (the AC-029 gate consumes both via Shared ports) — added them to the forbidden list so a future direct
+  reference is caught.
+
+**Risks.** Filter-chip order fixed to **Status → Owner → Exposure** (was Status→Exposure→Owner, MAJOR); gRsk
+last-4 column widths → **120/130/112/96**; exposure chip **20px** (2px shorter than the status chip); prob/impact
+cell **12px**; linked-cell **weight 500**; matrix legend **colon** (via `::after`, locale-safe); Related panel
+**"Traceability — both directions" subtitle** (`risks.relatedSub`); create form pairs **Owner + Linked-topic** on
+one row; empty state gains a **"New risk"** CTA; New-risk **plus icon 16**; skeleton head bar **54px**.
+
+**Dependencies.** Blocked-work toggle rebuilt to the shared **`.fchip` metrics (34px, accent-on)** — was a
+bespoke 30px pill that **turned danger-red when active** and misaligned with the Relation chip (2 MAJOR);
+Relation-cell arrow → **horizontal `arrowRight` flipped by direction** (`.dep-rel-back`) instead of a vertical
+↑/↓ (MAJOR); relation cell **11.5px / gap 6**; Blocked cell renders **nothing** when not a blocker (was "No") and
+the blocked badge uses the shared **`.badge` metrics + the new `ban` glyph**; Relation col **132px**, From/To
+min **140px**; empty state gains a **"New dependency"** CTA (Chair/Sec); detail Blocked fact → **"Yes"/"No"**
+(new `deps.yes`); detail blocked badge gets the ban glyph.
+
+**Traceability / Impact-graph.** Aside footer button now uses **`trace.graph.openGraph`** ("Open dependency
+graph") instead of `graphTitle` ("Dependency & impact") which duplicated the section `<h2>` (MAJOR); **matched
+blocked/cross nodes now get their affirmative `st-danger`/`st-warn` border** (`hit` field → `.ig-node--hitBlocked/
+--hitCross`) — previously only the non-matches dimmed (MAJOR); non-focus nodes regain **`box-shadow: var(--shadow)`**;
+the **List fallback now honours the Blocked/Cross toggles** (`buildListRows` takes `HighlightState`; rows tint via
+`igl-row--hit*`) and draws the **tree-connector stub** on indented rows; list rel column **78px**; `openGraph` copy →
+**"Open dependency graph"** (EN+AR). SVG geometry / RTL flip math untouched.
+
+**Reports.** **Arabic-gender fix (the bilingual defect):** the matrix **impact-row** axis now uses a distinct
+**masculine** key set `reports.impactLevel.*` (`منخفض/متوسط/عالٍ`) instead of reusing the feminine probability
+`reports.level.*` (`…عالية`); EN unaffected. Drill icon → diagonal **`arrowUpRight` (↗)**, no RTL flip (matches
+the reference external-link glyph); risk-exposure sub restores the **"probability × impact ·"** prefix; header
+margin **`--sp-4`**, title→lead rhythm **`--sp-1` (4px)**, lead **13px**; skeleton head bar **13px/6px**.
+
+**Accepted / deferred (NOT changed — flagged for the operator, guardrail 11):**
+- **AiO dead path (B4, CONCERN):** Member/Reviewer are listed allow-if-owner on `Risk.Manage`/`Dependency.Create`
+  but no endpoint sets an `ITopicScopedResource`, so the AiO path never fires (fails **closed** to Chair/Sec +
+  delegation). Platform-wide (Actions/ADR too), not a P10 regression. Left as-is: the real fix is either wiring
+  ABAC resources (a dedicated authz slice) or trimming the role lists (touches the 248-case permission matrix) —
+  neither belongs in a fidelity review. **Recorded for a future authz slice.**
+- **"Showing X of Y" (RK2/D13) + register-specific empty/error copy (RK9/RK10/D14):** kept — these are an
+  **app-wide** pattern (actions/deps/risks all share it); matching one register's `.dc.html` verbatim would break
+  consistency with the others. Better UX; documented deviation.
+- **Reports exposure-KPI headline (R3) + Critical stat double-count (R9):** the `/reports` page is a **no-reference
+  composition** (P10g); adding the 28px KPI headline or reworking the tile semantics risks inventing layout the
+  design doesn't govern — deferred to **P12 Reporting** (which builds the full Reports shell).
+- **Dependency detail "Impact" narrative (D16):** needs the exact reference prose (no-reference edge detail) —
+  deferred rather than invent copy (guardrail 14).
+- **Token-hygiene px in traceability/graph.css + aside related-arrow (T8):** SVG geometry px are legitimately
+  bespoke; the aside arrow reading is arguably clearer — left, low value.
+
+**New shared assets:** `ban` + `arrowUpRight` icons (`components/icons.tsx`). **New i18n keys** (EN+AR parity
+1172): `risks.relatedSub`, `deps.yes`, `reports.impactLevel.*`; **changed copy:** `trace.graph.openGraph`,
+`reports.activeCount`.
+
+**Gates (all green locally):** BE `dotnet test` **972 green** (+1 composer regression); `dotnet format
+--verify-no-changes` clean; ArchUnit **36/36**. FE `tsc -b && vite build` clean; oxlint clean; **702 vitest green**
+(2 test assertions updated for the new aside label + reports sub copy); **per-file coverage gate exit 0**
+(≥95% lines, `perFile:true`); i18n parity **1172**. **No AC flips** (fidelity/hygiene remediation — AC-029 stays
+Met, AC-062/063 stay Partial, FR-095 stays Partial Topic-scope). Live 4-mode VR re-capture on a running stack
+recommended before merge (static computed-value parity done; live render deferred, as in P10b/e).
+
+**Next:** operator merge GO (squash) → P10 fidelity-reconciled → advance to **P11 (Governance ADRs/Invariants)**.
+
+---
+
 ## P10g — Risk & Dependency reports: the `/reports` analytics surface (branch `feat/P10g-risk-dep-reports`)
 
 ### 2026-07-04 — the risk-exposure + dependency dashboards (frontend; the LAST P10 slice)

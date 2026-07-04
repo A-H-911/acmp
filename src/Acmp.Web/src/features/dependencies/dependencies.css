@@ -50,24 +50,27 @@
   flex-wrap: wrap;
   margin-block-end: 14px;
 }
+/* Mirrors the shared .fchip metrics (reference `isDeps` filter row) so it aligns with the Relation
+   chip beside it; the ON state uses the accent, like every other register toggle. */
 .dep-blocked-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  block-size: 30px;
-  padding-inline: 11px;
-  border: 1px solid var(--border-strong);
+  gap: 6px;
+  block-size: 34px;
+  padding-inline: 12px;
+  border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-2);
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 500;
   cursor: pointer;
 }
+.dep-blocked-toggle:hover { background: var(--subtle); }
 .dep-blocked-toggle.on {
-  border-color: var(--st-danger-dot);
-  background: var(--st-danger-bg);
-  color: var(--st-danger-fg);
+  border-color: var(--accent);
+  background: var(--primary-tint);
+  color: var(--accent);
 }
 .dep-showing {
   margin-inline-start: auto;
@@ -91,20 +94,26 @@
 .dep-rel {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12.5px;
+  gap: 6px;
+  font-size: 11.5px;
   font-weight: 600;
 }
+/* Direction arrow: a horizontal arrow flipped by relation direction (reference `isDeps`); the
+   "up/back" kinds point against reading order, and both sides still mirror under RTL. */
+.dep-rel-back { transform: scaleX(-1); }
+[dir='rtl'] .dep-rel-back { transform: none; }
+/* Blocked badge — the shared .badge metrics (h20 · pad-i 7 · r5 · 10.5px/700) + the ban glyph. */
 .dep-blocked-cell {
   display: inline-flex;
   align-items: center;
-  font-size: 11px;
+  gap: 4px;
+  block-size: 20px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--st-danger-fg);
   background: var(--st-danger-bg);
-  border-radius: 6px;
-  padding-block: 2px;
-  padding-inline: 8px;
+  border-radius: 5px;
+  padding-inline: 7px;
 }
 .dep-muted { color: var(--text-3); font-size: 12.5px; }
 .dep-empty-actions { display: flex; gap: 9px; justify-content: center; margin-block-start: 18px; }
@@ -114,7 +123,7 @@
 .dep-skel-head,
 .dep-skel-row {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) 150px minmax(120px, 1fr) 96px 116px;
+  grid-template-columns: minmax(140px, 1fr) 132px minmax(140px, 1fr) 96px 116px;
   align-items: center;
   gap: 12px;
   padding-inline: 12px;

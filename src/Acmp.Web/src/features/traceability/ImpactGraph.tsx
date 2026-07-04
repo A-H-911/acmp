@@ -163,7 +163,7 @@ function GraphNode({ ln, roving, refCb, onKeyDown, onActivate }: NodeProps) {
     <button
       ref={refCb}
       type="button"
-      className={`ig-node${ln.isFocus ? ' ig-node--focus' : ''}`}
+      className={`ig-node${ln.isFocus ? ' ig-node--focus' : ''}${ln.hit === 'blocked' ? ' ig-node--hitBlocked' : ln.hit === 'cross' ? ' ig-node--hitCross' : ''}`}
       style={{ insetInlineStart: ln.x, insetBlockStart: ln.y, inlineSize: 152, blockSize: 94, opacity: ln.dim ? 0.3 : 1 }}
       tabIndex={roving ? 0 : -1}
       aria-current={ln.isFocus ? 'true' : undefined}

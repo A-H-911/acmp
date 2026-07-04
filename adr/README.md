@@ -26,6 +26,8 @@ This folder contains the Architecture Decision Records (ADRs) for the Architectu
 | [ADR-0016](ADR-0016-test-coverage-basis-and-e2e.md) | Test Coverage Basis (≥95% lines, FE + BE), Exclusions, E2E Harness, and DB-Backstop Integration Tests | Accepted | 2026-06-29 |
 | [ADR-0017](ADR-0017-react-19-amends-0012.md) | Adopt React 19 (amends ADR-0012) | Accepted | 2026-06-25 |
 | [ADR-0018](ADR-0018-optimistic-concurrency-rowversion.md) | Optimistic Concurrency via RowVersion (implements docs/16 §1.5) | Accepted | 2026-06-30 |
+| [ADR-0019](ADR-0019-amends-0008-self-describing-edges.md) | Self-Describing Relationship Edges, No Physical Artifact Registry (amends ADR-0008) | Accepted | 2026-07-03 |
+| [ADR-0020](ADR-0020-impact-graph-read-time-composition.md) | Impact Graph by Read-Time Contract Composition, Not a Cross-Schema Traversal (clarifies ADR-0019) | Accepted | 2026-07-03 |
 
 ---
 

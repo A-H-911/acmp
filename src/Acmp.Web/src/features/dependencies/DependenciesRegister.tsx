@@ -122,7 +122,7 @@ export function DependenciesRegister() {
           aria-pressed={filters.blockedOnly}
           onClick={() => setFilters((f) => ({ ...f, blockedOnly: !f.blockedOnly }))}
         >
-          <span className="dep-dot" aria-hidden="true" /> {t('deps.filter.blockedWork')}
+          <Icon name="ban" size={13} aria-hidden /> {t('deps.filter.blockedWork')}
         </button>
         {data && (
           <span className="dep-showing"><Icon name="backlog" size={13} aria-hidden /> {t('deps.showing', { shown, total })}</span>
@@ -136,11 +136,14 @@ export function DependenciesRegister() {
       ) : total === 0 ? (
         <div>
           <EmptyState icon="deps" title={t('deps.empty.title')} body={t('deps.empty.body')} />
-          {hasFilters && (
-            <div className="dep-empty-actions">
-              <Button variant="secondary" onClick={clearFilters}>{t('deps.clearFilters')}</Button>
-            </div>
-          )}
+          <div className="dep-empty-actions">
+            {canCreate && (
+              <Button variant="primary" onClick={() => setCreateOpen(true)}>
+                <Icon name="plus" size={16} aria-hidden /> {t('deps.newDependency')}
+              </Button>
+            )}
+            {hasFilters && <Button variant="secondary" onClick={clearFilters}>{t('deps.clearFilters')}</Button>}
+          </div>
         </div>
       ) : (
         <>
@@ -190,7 +193,7 @@ function Relation({ row }: { row: DependencySummary }) {
   const { t } = useTranslation();
   return (
     <span className="dep-rel" style={{ color: kindColor(row.kind) }}>
-      <Icon name={kindPointsUp(row.kind) ? 'arrowUp' : 'arrowDown'} size={13} className="dir-flip" aria-hidden />
+      <Icon name="arrowRight" size={13} className={kindPointsUp(row.kind) ? 'dep-rel-back' : 'dir-flip'} aria-hidden />
       {t(`deps.kind.${row.kind}`)}
     </span>
   );
@@ -200,9 +203,9 @@ function DepsTable({ rows, sort, onSort }: { rows: DependencySummary[]; sort: { 
   const { t } = useTranslation();
   const columns: Column<DependencySummary>[] = [
     { id: 'from', header: t('deps.col.from'), sortable: true, cell: (r) => <Link className="dep-endpoint-link" to={`/dependencies/${r.key}`}>{r.fromKey}</Link> },
-    { id: 'relation', header: t('deps.col.relation'), width: '150px', cell: (r) => <Relation row={r} /> },
+    { id: 'relation', header: t('deps.col.relation'), width: '132px', cell: (r) => <Relation row={r} /> },
     { id: 'to', header: t('deps.col.to'), cell: (r) => <span className="dep-endpoint">{r.toKey}</span> },
-    { id: 'blocked', header: t('deps.col.blocked'), width: '96px', cell: (r) => (r.isBlocker ? <span className="dep-blocked-cell">{t('deps.blocked')}</span> : <span className="dep-muted">{t('deps.no')}</span>) },
+    { id: 'blocked', header: t('deps.col.blocked'), width: '96px', cell: (r) => (r.isBlocker ? <span className="dep-blocked-cell"><Icon name="ban" size={11} aria-hidden />{t('deps.blocked')}</span> : null) },
     { id: 'status', header: t('deps.col.status'), width: '116px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`deps.status.${r.status}`)} size="sm" /> },
   ];
   return <Table caption={t('deps.tableCaption')} columns={columns} rows={rows} getRowKey={(r) => r.id} sort={sort} onSortChange={onSort} />;

@@ -90,7 +90,7 @@ for (const mode of MODES) {
 
     // Warm path: open the graph from the topic's own detail-page panel button.
     await page.goto(`/topics/${focusKey}`);
-    await page.getByRole('link', { name: /Open graph|فتح المخطط/ }).click();
+    await page.getByRole('link', { name: /Open dependency graph|فتح مخطط الاعتماديات/ }).click();
     await page.waitForURL(/\/traceability\/Topic\//, { timeout: 20_000 });
     await shot(page, `p10f-graph-depth2-${mode.name}`);
 

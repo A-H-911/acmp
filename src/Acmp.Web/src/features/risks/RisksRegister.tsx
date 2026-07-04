@@ -95,7 +95,7 @@ export function RisksRegister() {
           </div>
         </div>
         <Button variant="primary" onClick={() => setCreateOpen(true)}>
-          <Icon name="plus" size={15} aria-hidden /> {t('risks.newRisk')}
+          <Icon name="plus" size={16} aria-hidden /> {t('risks.newRisk')}
         </Button>
       </div>
 
@@ -108,6 +108,7 @@ export function RisksRegister() {
           onChange={(statuses) => setFilters((f) => ({ ...f, statuses }))}
           clearLabel={t('risks.clearFilters')}
         />
+        <FilterChip label={t('risks.filter.owner')} anyLabel={t('risks.filter.anyOwner')} options={[]} value="" onChange={() => {}} disabled />
         <FilterChip
           multiple
           label={t('risks.filter.exposure')}
@@ -116,7 +117,6 @@ export function RisksRegister() {
           onChange={(exposures) => setFilters((f) => ({ ...f, exposures }))}
           clearLabel={t('risks.clearFilters')}
         />
-        <FilterChip label={t('risks.filter.owner')} anyLabel={t('risks.filter.anyOwner')} options={[]} value="" onChange={() => {}} disabled />
         {data && (
           <span className="rsk-count"><Icon name="backlog" size={13} aria-hidden /> {t('risks.showing', { shown, total })}</span>
         )}
@@ -129,11 +129,12 @@ export function RisksRegister() {
       ) : total === 0 ? (
         <div>
           <EmptyState icon="risk" title={t('risks.empty.title')} body={t('risks.empty.body')} />
-          {hasFilters && (
-            <div className="rsk-empty-actions">
-              <Button variant="secondary" onClick={clearFilters}>{t('risks.clearFilters')}</Button>
-            </div>
-          )}
+          <div className="rsk-empty-actions">
+            <Button variant="primary" onClick={() => setCreateOpen(true)}>
+              <Icon name="plus" size={16} aria-hidden /> {t('risks.newRisk')}
+            </Button>
+            {hasFilters && <Button variant="secondary" onClick={clearFilters}>{t('risks.clearFilters')}</Button>}
+          </div>
         </div>
       ) : (
         <>
@@ -163,7 +164,7 @@ function RisksSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="rsk-skel-head" aria-hidden="true">
         {Array.from({ length: 8 }).map((_, i) => (
-          <span key={i} className="skeleton rsk-skel-bar" style={{ inlineSize: 50 }} />
+          <span key={i} className="skeleton rsk-skel-bar" style={{ inlineSize: 54 }} />
         ))}
       </div>
       {rowWidths.map((w, i) => (
@@ -216,10 +217,10 @@ function RisksTable({ rows, lang, sort, onSort }: { rows: RiskSummary[]; lang: s
     { id: 'risk', header: t('risks.col.risk'), cell: (r) => <Link className="rsk-title-link" to={`/risks/${r.key}`}>{pick(r.title)}</Link> },
     { id: 'prob', header: t('risks.col.prob'), width: '80px', cell: (r) => <span className="rsk-level" style={{ color: levelColor(r.likelihood) }}>{t(`risks.level.${r.likelihood}`)}</span> },
     { id: 'impact', header: t('risks.col.impact'), width: '78px', cell: (r) => <span className="rsk-level" style={{ color: levelColor(r.impact) }}>{t(`risks.level.${r.impact}`)}</span> },
-    { id: 'exposure', header: t('risks.col.exposure'), width: '134px', sortable: true, cell: (r) => <Heat row={r} /> },
-    { id: 'owner', header: t('risks.col.owner'), width: '134px', cell: (r) => <Owner name={r.ownerName} /> },
-    { id: 'status', header: t('risks.col.status'), width: '116px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`risks.status.${r.status}`)} size="sm" /> },
-    { id: 'linked', header: t('risks.col.linked'), width: '100px', cell: (r) => <span className="rsk-linked">{r.subjectKey ?? '—'}</span> },
+    { id: 'exposure', header: t('risks.col.exposure'), width: '120px', sortable: true, cell: (r) => <Heat row={r} /> },
+    { id: 'owner', header: t('risks.col.owner'), width: '130px', cell: (r) => <Owner name={r.ownerName} /> },
+    { id: 'status', header: t('risks.col.status'), width: '112px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`risks.status.${r.status}`)} size="sm" /> },
+    { id: 'linked', header: t('risks.col.linked'), width: '96px', cell: (r) => <span className="rsk-linked">{r.subjectKey ?? '—'}</span> },
   ];
   return <Table caption={t('risks.tableCaption')} columns={columns} rows={rows} getRowKey={(r) => r.id} sort={sort} onSortChange={onSort} />;
 }

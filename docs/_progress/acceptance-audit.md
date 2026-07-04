@@ -12,6 +12,18 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P10-review update (2026-07-04): remediation of the adversarial P10 audit (branch `feat/P10-review`) —
+> **fidelity + i18n + doc-integrity hygiene only, NO AC flips.** Fixed 7 MAJOR (Risks filter order; Deps
+> blocked-toggle colour/height + relation-arrow orientation; Traceability aside `openGraph` key + matched-node
+> highlight border; **ADR-0019/0020 now indexed** in `adr/README.md`) + a MINOR cluster incl. the **Arabic-gender
+> matrix impact-axis** defect (new masculine `reports.impactLevel.*`). Backend: decoupled the impact-graph BFS
+> `partial` loop-halt (+1 regression test) and closed the Decisions ArchUnit forbidden-list gap. **AC-029 stays
+> Met** (gate untouched), **AC-062/063 stay Partial**, **FR-095 stays Partial (Topic-scope)**, **AC-064/065/066
+> stay Pending → P12**. Accepted/deferred (recorded, guardrail 11): the AiO dead-path (B4, fails closed →
+> future authz slice), app-wide "Showing X of Y" + register copy, the reports KPI headline (R3 → P12), and the
+> dep-detail Impact prose (D16). Gates green: 972 BE + 702 FE tests, format clean, per-file cov ≥95%, i18n 1172.
+> See progress-log "P10-review".
+>
 > P10g update (2026-07-04): Risk & Dependency **reports** (branch `feat/P10g-risk-dep-reports`) — the LAST P10
 > slice, **FRONTEND only**. Replaces the `/reports` placeholder with a focused analytics surface that REUSES
 > the card renderers/tokens of `ACMP Dashboards & Reports.dc.html` (matrix / stat / bars); the full Reports IA
