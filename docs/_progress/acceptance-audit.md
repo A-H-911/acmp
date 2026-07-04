@@ -33,8 +33,11 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > authored cells); by-stream shows raw stream code; reads are authenticated-only so Administrator won't 403.
 > Gates (local): `tsc -b` clean, oxlint clean, **702 vitest green** (+18 new incl. the money-path by-stream
 > reducer properties + axe), **per-file coverage 100% on both new files**, i18n EN/AR parity by hand (37
-> `reports.*` keys both locales). Live real-stack VR of the reference-backed matrix → per prior-slice cadence.
-> See progress-log P10g entry.
+> `reports.*` keys both locales). **Live VR PASS** (`e2e/p10g-reports-vr.spec.ts`): real Keycloak login,
+> secretary seeds risks reproducing the design's matrix, opens `/reports`, captured **EN-light + AR-dark** and
+> screenshot-compared **pixel-faithful to `ACMP Dashboards & Reports.dc.html`** — the 3×3 matrix layout +
+> severity-zone tinting (all 9 cells), stat tiles, bars and P12 note match; **RTL Probability axis mirrors,
+> cells track the axis** (dark tokens + Arabic labels clean). See progress-log P10g entry.
 >
 > P10f PR2 update (2026-07-03): Impact-graph **frontend** (branch `feat/P10f-graph-ui`, **PR2 of 2**) — the bespoke
 > in-app page at **`/traceability/:type/:key`** consuming the merged PR1 endpoint. One focus-centric page: a 320px

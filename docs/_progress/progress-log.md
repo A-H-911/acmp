@@ -73,10 +73,23 @@ AR ported from the `.dc.html` `t` object) · axe AA clean.
 → **Partial** — the two by-stream cards stand up per-stream risk + dependency breakdowns (no date-range
 filter / export yet). **FR-095** (cross-stream) advanced in the reporting surface, stays **Partial
 (Topic-scope, OQ-047)**. **FR-135/136/137** (role dashboards, AC-064/065/066) remain **Pending → P12** (this
-is the *Reports* view, not the role *Dashboard* tab). Live real-stack VR of the reference-backed matrix →
-per prior-slice cadence.
+is the *Reports* view, not the role *Dashboard* tab).
 
-**Next.** Local gates green → push → 4 CI checks → operator merge GO (squash). **P10 COMPLETE** after merge.
+**Live VR pass (matrix, the reference-backed surface).** Booted the real stack (`npm run e2e:up`; KC bootstrap
+`ChangeMe_KC#2026`) and ran `e2e/p10g-reports-vr.spec.ts`: real Keycloak PKCE login → secretary seeds 6 risks
+whose `(impact, likelihood)` reproduce the design's authored matrix + a blocking cross-topic dependency →
+opens `/reports`. Captured **EN-light + AR-dark** to `e2e/vr-out/` and screenshot-compared **pixel-faithful to
+`ACMP Dashboards & Reports.dc.html`**: the 3×3 matrix layout (54px rowhead + Low/Med/High probability columns,
+High/Med/Low impact rows, "Probability" caption), the **severity-zone cell tinting matches all 9 authored
+cells**, stat tiles, relation bars, by-stream bars ("Topic-linked only") and the P12 note all render per the
+design. **RTL (AR-dark): the Probability axis mirrors and the danger cells track the axis** (High×High stays
+danger) — the top visual risk, resolved — with clean dark tokens and full Arabic labels. (Counts read higher
+than the design's 6 only because both VR tests seed the shared DB — a harness artifact; the zone pattern is
+exactly proportional. The spec asserts nothing, screenshots only, and no committed spec counts risks/deps →
+no CI interference.)
+
+**Next.** Local gates green + live VR pass → push → 4 CI checks → operator merge GO (squash). **P10 COMPLETE**
+after merge.
 
 ---
 
