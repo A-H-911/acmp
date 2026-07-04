@@ -1,6 +1,8 @@
 ﻿using Acmp.Modules.Decisions.Application;
 using Acmp.Modules.Decisions.Application.Abstractions;
+using Acmp.Modules.Decisions.Infrastructure.Directory;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Shared.Contracts.Decisions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,9 @@ public static class DecisionsInfrastructureExtensions
 
         services.AddScoped<IDecisionsDbContext>(sp => sp.GetRequiredService<DecisionsDbContext>());
         services.AddScoped<IDecisionKeyGenerator, DecisionKeyGenerator>();
+
+        // Cross-module read seam powering the FR-068 Decision→ADR promotion (Governance consumes it).
+        services.AddScoped<IDecisionReader, DecisionReader>();
 
         services.AddDecisionsApplication();
         return services;

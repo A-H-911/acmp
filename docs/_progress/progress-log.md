@@ -12,6 +12,58 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11e — Decision→ADR promotion (FR-068): full-stack, Chairman-only (branch `feat/P11e-decision-to-adr`)
+
+### 2026-07-04 — "Convert to ADR" from an issued Decision — new IDecisionReader + ITraceabilityWriter seams, promote command, wired FE button + confirm dialog
+
+Fifth and final planned P11 slice — **full-stack** (backend + FE), delivering **FR-068**: the Chairman promotes an
+**issued** committee Decision to a new ADR, pre-filled from the decision and bidirectionally linked. The design's
+"Convert to ADR" (`ACMP Decision, Voting & ADR.dc.html` convertOpen) is a **confirm dialog, not a form** — the
+pre-fill is server-side.
+
+**Two new cross-module seams (ADR-0001; house pattern = Acmp.Shared.Contracts ports, no cross-module command send):**
+- **`IDecisionReader`** (read) — Governance reads a decision's content (Title/Statement/Rationale/Alternatives +
+  Status) to pre-fill the ADR, without touching the Decisions tables. Impl in `Decisions.Infrastructure`.
+- **`ITraceabilityWriter`** (write, NEW kind of seam) — lets an authorized action record a *system* typed edge in
+  the Traceability store without referencing Traceability.Application. Impl in `Traceability.Infrastructure`;
+  idempotent per (source, target, relType); audited with a `System=true` marker. (The existing seams were all
+  reads; this is the first write seam.)
+
+**`PromoteDecisionToAdr` command** (Governance): reads the decision → guards eligibility (**Issued** only, else 409)
+and **idempotency** (one ADR per decision — a second promote is 409 naming the existing ADR) → `Adr.Draft(...,
+sourceDecisionId)` → writes a **`RecordedAs` edge (Decision → ADR)** via ITraceabilityWriter → audits
+`Governance.AdrPromotedFromDecision`. **RBAC = new `Adr.Promote` policy = Chairman ONLY** (stricter than
+Adr.Create; docs/10 matrix row added, `"ADDDDDDD"`). Endpoint `POST /api/adrs/from-decision`. The bidirectional
+link = `SourceDecisionId` on the ADR (ADR → Decision) + the RecordedAs edge (Decision → ADR), so both detail
+panels cross-link.
+
+**Pre-fill mapping** (decision → MADR-lite ADR; both already bilingual → no mirroring): Title←Title, **Context←
+Rationale**, Decision←Statement, Drivers←Alternatives; consequences/options empty. ADR born **Draft** — the
+Chairman refines it and runs the normal ADR lifecycle. (Context←Rationale is the loosest map — flagged; the
+decision has no dedicated "context/problem" field.)
+
+**FE** — the Decision detail already carried a **disabled "Convert to ADR" stub**; P11e wires it: a Chairman-gated
+button (`hasRole(auth,'chairman')`, shown on Issued decisions) opens the new **`ConvertToAdrDialog`** (confirm-only,
+matches the design) → `POST /api/adrs/from-decision` → navigate to the new `/adrs/:key`. A 409 surfaces inline
+without navigating. `usePromoteDecisionToAdr` added to `api/adrs.ts`; `decisions.convert.*` i18n (en+ar). Dialog is
+**lazy-mounted** (only when open) to keep the decision-page test suite's timing headroom under coverage load.
+
+**Reconciliations flagged:** (1) the promotion UX lives on the **Decision** side (the design's button), so the ADR
+create dialog's dropped "Linked decision" field stays dropped (P11b note resolved). (2) `RecordedAs` (not the
+memory's guessed "DerivesFrom") is the curated Decision→ADR RelationshipType. (3) Context←Rationale pre-fill map.
+
+**Gates (all green locally).** Backend: `dotnet format` clean (BOM/CHARSET fixed on the new files — [[ci-gates-run-locally-pre-push]]); build 0 errors; **all tests pass** incl. **5 promote handler + 4 endpoint-contract + 3 TraceabilityWriter** tests and the **PermissionMatrix** row for Adr.Promote; per-file coverage ≥95% (global 99.79%). FE: i18n parity (1311 keys); oxlint clean; **770 vitest (+5)**; per-file line cov 100% on `adrs.ts`/`DecisionPage.tsx`/`ConvertToAdrDialog`; tsc + vite build clean. No AC flips — Governance is PH-2/AC-less; traces to **FR-068** (done).
+
+**★ ADR-0021 recorded** (operator GO): `Adr/ADR-0021-cross-module-write-seam.md` — cross-module *system* writes go through a `Acmp.Shared.Contracts` write port (extends ADR-0001), establishing `ITraceabilityWriter` as the first write seam deliberately (prior seams were read-only; direct cross-module command sends stay disallowed).
+
+**★ Live `.dc.html` screenshot-VR — PASS (real fresh Docker stack).** New `e2e/p11e-promote-vr.spec.ts` (login chairman → seed a real issued decision: record Approved → link a follow-up action to satisfy the AC-029 gate → issue → drive Convert-to-ADR) captured, in EN-light + AR-RTL-dark: (1) the issued Decision detail with the Chairman-only "Convert to ADR" action, (2) the confirm dialog (pixel-faithful to `ACMP Decision, Voting & ADR.dc.html` convertOpen), (3) the promoted ADR — born **Draft**, pre-filled (Context←Rationale, Decision drivers←Alternatives, Decision outcome←Statement) with the **RecordedAs bidirectional link live** in its traceability panel ("UPSTREAM · RECORDED AS · DECN-…"). RTL fully mirrors, dark clean. **FR-068 verified end-to-end on the deployed stack.**
+
+**★ P11 COMPLETE ★** — ADRs (P11a/b) + Invariants (P11c/d) + promotion (P11e) all shipped. **Next:** operator GO →
+push → CI → squash-merge. The deferred **governance-lifecycle** slice (propose/approve/supersede/deprecate buttons
+for the ADR + Invariant details) remains the only queued Governance follow-up; then P12 (Reporting) or beyond.
+
+---
+
 ## P11d — Invariant UI: register + no-reference detail + create dialog (branch `feat/P11d-invariant-ui`)
 
 ### 2026-07-04 — Invariants tab on `/adrs`, `/invariants` register + `/invariants/:key` detail, Create-Invariant dialog (FE-only)

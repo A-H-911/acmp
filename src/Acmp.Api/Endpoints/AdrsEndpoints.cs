@@ -3,6 +3,7 @@ using Acmp.Modules.Governance.Application.Features.ChangeAdrStatus;
 using Acmp.Modules.Governance.Application.Features.CreateAdr;
 using Acmp.Modules.Governance.Application.Features.GetAdrByKey;
 using Acmp.Modules.Governance.Application.Features.GetAdrsRegister;
+using Acmp.Modules.Governance.Application.Features.PromoteDecisionToAdr;
 using Acmp.Modules.Governance.Application.Features.ProposeAdr;
 using Acmp.Modules.Governance.Application.Features.SupersedeAdr;
 using Acmp.Modules.Governance.Application.Features.UpdateAdrDraft;
@@ -44,6 +45,14 @@ public static class AdrsEndpoints
                 body.DecisionText, body.ConsequencesPositive, body.ConsequencesNegative, body.Options), ct);
             return Results.Created($"/api/adrs/{result.Key}", result);
         }).RequireAuthorization(Policies.AdrCreate);
+
+        // FR-068: promote an issued Decision to a new ADR (Draft), pre-filled + bidirectionally linked.
+        // Chairman only (Adr.Promote). 409 if the decision is not Issued or already promoted.
+        group.MapPost("/from-decision", async (PromoteFromDecisionBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new PromoteDecisionToAdrCommand(body.DecisionId), ct);
+            return Results.Created($"/api/adrs/{result.Key}", result);
+        }).RequireAuthorization(Policies.AdrPromote);
 
         // Revise a Draft.
         group.MapPut("/{id:guid}/draft", async (Guid id, UpdateAdrDraftBody body, ISender sender, CancellationToken ct) =>
@@ -101,6 +110,8 @@ public static class AdrsEndpoints
         IReadOnlyList<AdrOptionRequest>? Options);
 
     public sealed record DeprecateAdrBody(LocalizedString Reason);
+
+    public sealed record PromoteFromDecisionBody(Guid DecisionId);
 
     public sealed record SupersedeAdrBody(
         LocalizedString Title, LocalizedString Context, LocalizedString? DecisionDrivers,

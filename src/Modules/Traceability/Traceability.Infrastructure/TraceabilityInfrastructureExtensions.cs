@@ -24,6 +24,9 @@ public static class TraceabilityInfrastructureExtensions
         // Cross-module port powering the widened AC-029 decision-issue gate (Decisions consumes it).
         services.AddScoped<ITraceabilityLinks, TraceabilityLinks>();
 
+        // Cross-module WRITE port: lets an authorized action record a system edge (P11e Decision→ADR).
+        services.AddScoped<ITraceabilityWriter, TraceabilityWriter>();
+
         services.AddTraceabilityApplication();
         return services;
     }
