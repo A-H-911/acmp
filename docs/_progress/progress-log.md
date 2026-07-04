@@ -12,6 +12,58 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11a — ADR backend: the Governance bounded context + the Adr aggregate (branch `feat/P11a-adr-backend`)
+
+### 2026-07-04 — new Governance module (ADRs); MADR-lite lifecycle, supersede-not-edit, W17/W21
+
+First slice of **P11 — ADRs & Invariants**. Stood up the new **`Acmp.Modules.Governance`** bounded context
+(Domain/Application/Infrastructure, schema `governance`) and the **`Adr` aggregate** — backend only; the UI is
+P11b. Skeleton mirrors **Risks** (module layout, key-gen + counter, register query, endpoint style, InMemory
+test harness); the **lifecycle/immutability mirrors Decisions** (supersede-not-edit, `SupersededBy…Id`,
+AuditEvent-per-transition via the existing `IAuditSink`, no new store, **no ADR hash-chain** — guardrail #5
+hash-chains only votes/decisions/audit).
+
+**Aggregate.** `Adr` (in-app key `ADR-YYYY-###`, distinct from the planning `ADR-####` files, README §F):
+MADR-lite fields — Title/Context/Decision required, DecisionDrivers/Consequences(+/−) optional bilingual
+prose, an owned **`AdrOption`** collection (considered options with a `chosen` flag, same shape as Risk's
+Mitigation), Author snapshot, `SourceDecisionId` (nullable, for the P11e promotion), the supersession chain
+(`SupersededByAdrId` + reason, `SupersedesAdrId`, `DeprecationReason`), approval attribution, and a
+`RowVersion` concurrency token (OQ-043 is resolved for new modules, ADR-0018). Lifecycle
+**Draft → Proposed → Approved → (Superseded | Deprecated)** + Proposed → Draft (request-changes); once
+Approved the content is frozen (no setters; correction = a new superseding ADR, FR-101).
+
+**Features (vertical slices).** CreateAdr · UpdateAdrDraft (the request-changes revise loop) · ProposeAdr
+(notifies the Reviewer roster, W17) · ApproveAdr (**SoD soft** — the author may approve, recorded as
+`AuthorApprovedSelf` in the audit payload, operator decision 2026-07-04; committee fan-out) · RequestAdrChanges ·
+DeprecateAdr (committee fan-out) · SupersedeAdr (authors + approves a successor, links both directions, then
+freezes the prior — one transaction, W21 ordering, mirrors SupersedeDecision) · GetAdrByKey (resolves the
+peer supersession keys in-module) · GetAdrsRegister (status filter + substring search + sort/paging; **FTS
+FR-102 deferred to the Search phase**). Endpoints `/api/adrs` with the existing `Adr.Create`/`Adr.Approve`/
+`Adr.Supersede` policies (already in the docs/10 matrix — nothing to register). ArchUnit
+`Governance_should_not_depend_on_other_modules` added; 40/40 boundary tests green.
+
+**Authorization note (recorded).** Standalone ADR authoring is **Chairman/Secretary only**: `Adr.Create`'s
+allow-if-owner cells (Member/Reviewer) need an ownership relationship, which a bare create has none of, so the
+ABAC handler denies Member/Reviewer at create time. Consistent with the Risk pattern; the MediatR
+`AllowedRoles` backstop lists the AiO roles but the endpoint is the primary gate.
+
+**Reconciliations flagged (guardrail #14/#11, for P11b + the design update):** (1) the design ADR detail
+illustrates only **proposed/accepted/superseded** (3) while the canonical model is **5** states and the label
+is **"Approved"** not "accepted" — implemented the 5 canonical states; the design owes Draft/Deprecated chips +
+the label. (2) FTS repository search deferred. Cross-module ADR links (FR-103) ride the existing self-describing
+Traceability edges (ArtifactType already has `Adr`) — **no new Traceability seam needed** in P11a.
+
+**Gates (all green locally).** Build clean; **1007 backend tests** (was 975; +24 Governance: 10 domain, 12
+application, 6 API HTTP-contract through the real policy pipeline, +2 ArchUnit); **per-file coverage ≥95%**
+(global 99.76%); `dotnet format --verify-no-changes` exit 0; EF migration `Governance_Init` generated. No FE
+change (P11b). No AC flips — Governance is PH-2/AC-less; traces to FR-099/100/101/102/104 (partial: create +
+lifecycle + supersede + register done; FTS + Markdown-export → P11b/Search).
+
+**Next:** operator GO → PR + remote CI green → squash-merge; then **P11b** (ADR register + MADR detail + create
+dialog, fidelity to `ACMP Decision, Voting & ADR.dc.html` `isAdr` + `Lists & Registers` + `Create Flows`).
+
+---
+
 ## P10-graph-dialogs — impact-graph direction fix + create-dialog fidelity (branch `feat/P10-graph-dialogs`)
 
 ### 2026-07-04 — operator-driven live visual review of the impact graph + the three create dialogs

@@ -28,9 +28,11 @@ public class ModuleBoundaryTests
     private static readonly Assembly TraceabilityApp = typeof(Acmp.Modules.Traceability.Application.TraceabilityApplicationExtensions).Assembly;
     private static readonly Assembly DependenciesDomain = typeof(Acmp.Modules.Dependencies.Domain.Dependency).Assembly;
     private static readonly Assembly DependenciesApp = typeof(Acmp.Modules.Dependencies.Application.DependenciesApplicationExtensions).Assembly;
+    private static readonly Assembly GovernanceDomain = typeof(Acmp.Modules.Governance.Domain.Adr).Assembly;
+    private static readonly Assembly GovernanceApp = typeof(Acmp.Modules.Governance.Application.GovernanceApplicationExtensions).Assembly;
 
-    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain }, new object[] { ActionsDomain }, new object[] { RisksDomain }, new object[] { TraceabilityDomain }, new object[] { DependenciesDomain } };
-    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp }, new object[] { ActionsApp }, new object[] { RisksApp }, new object[] { TraceabilityApp }, new object[] { DependenciesApp } };
+    public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain }, new object[] { ActionsDomain }, new object[] { RisksDomain }, new object[] { TraceabilityDomain }, new object[] { DependenciesDomain }, new object[] { GovernanceDomain } };
+    public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp }, new object[] { ActionsApp }, new object[] { RisksApp }, new object[] { TraceabilityApp }, new object[] { DependenciesApp }, new object[] { GovernanceApp } };
 
     [Theory]
     [MemberData(nameof(Domains))]
@@ -57,7 +59,8 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
                 "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
                 "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure",
-                "Acmp.Modules.Dependencies.Application", "Acmp.Modules.Dependencies.Infrastructure")
+                "Acmp.Modules.Dependencies.Application", "Acmp.Modules.Dependencies.Infrastructure",
+                "Acmp.Modules.Governance.Application", "Acmp.Modules.Governance.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -73,7 +76,7 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Meetings.Infrastructure", "Acmp.Modules.Notifications.Infrastructure",
                 "Acmp.Modules.Decisions.Infrastructure", "Acmp.Modules.Actions.Infrastructure",
                 "Acmp.Modules.Risks.Infrastructure", "Acmp.Modules.Traceability.Infrastructure",
-                "Acmp.Modules.Dependencies.Infrastructure")
+                "Acmp.Modules.Dependencies.Infrastructure", "Acmp.Modules.Governance.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));
@@ -209,6 +212,27 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
                 "Acmp.Modules.Risks.Domain", "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
                 "Acmp.Modules.Traceability.Domain", "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure",
+                "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(Describe(result));
+    }
+
+    [Fact] // Governance (ADRs + Invariants) reaches Membership (ICommitteeDirectory, review/approval fan-out) and
+           // the notification channel only through Acmp.Shared contracts — never another module's assemblies
+           // (ADR-0001). The P11e Decision→ADR promotion will likewise be a Shared contract, not a Decisions ref.
+    public void Governance_should_not_depend_on_other_modules()
+    {
+        var result = Types.InAssemblies(new[] { GovernanceDomain, GovernanceApp })
+            .Should().NotHaveDependencyOnAny(
+                "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
+                "Acmp.Modules.Decisions.Domain", "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure",
+                "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
+                "Acmp.Modules.Risks.Domain", "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
+                "Acmp.Modules.Traceability.Domain", "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure",
+                "Acmp.Modules.Dependencies.Domain", "Acmp.Modules.Dependencies.Application", "Acmp.Modules.Dependencies.Infrastructure",
                 "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 

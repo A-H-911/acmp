@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Actions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Dependencies.Infrastructure.Persistence;
+using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
@@ -63,6 +64,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<DependenciesDbContext>>();
             services.RemoveAll<DependenciesDbContext>();
             services.AddDbContext<DependenciesDbContext>(o => o.UseInMemoryDatabase(_dbName + "-dependencies"));
+
+            services.RemoveAll<DbContextOptions<GovernanceDbContext>>();
+            services.RemoveAll<GovernanceDbContext>();
+            services.AddDbContext<GovernanceDbContext>(o => o.UseInMemoryDatabase(_dbName + "-governance"));
 
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();

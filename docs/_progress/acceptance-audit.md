@@ -12,6 +12,19 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P11a update (2026-07-04): ADR backend — the new **Governance** module + the `Adr` aggregate (branch
+> `feat/P11a-adr-backend`), **BACKEND only, NO AC flips.** Governance is PH-2 scope and AC-less (the docs/40
+> ACs are PH-1 MVP); it traces to **FR-099/100/101/102/104** (create MADR-lite + lifecycle Draft→Proposed→
+> Approved→(Superseded|Deprecated) + supersede back-link/immutability + register — all done; FTS FR-102 and
+> Markdown-export FR-104 deferred to P11b/Search). The general **audit-immutability AC-017/018** apply — every
+> ADR transition emits an `IAuditSink` event and Approved ADRs are frozen (supersede-not-edit, mirrors
+> Decisions AC-027/028). **Operator decisions (2026-07-04):** violations FR-108/109 **deferred** (model
+> contested → OQ owed); **SoD soft** on approve (author may approve, recorded `AuthorApprovedSelf`); promotion
+> FR-068 **build in P11e**. Design↔behaviour flag: the `.dc.html` shows 3 ADR states + "accepted" label vs the
+> canonical 5 states + "Approved" (design update owed, guardrail #14). Gates green: **1007 BE tests** (+24),
+> per-file cov ≥95% (global 99.76%), format clean, ArchUnit 40/40, migration `Governance_Init`. No FE change,
+> no AC verdict change. See progress-log "P11a".
+>
 > P10-graph-dialogs update (2026-07-04): operator live-review fixes (branch `feat/P10-graph-dialogs`) —
 > **behaviour-consistency + fidelity, NO AC flips.** Impact-graph tier direction corrected (kind-aware:
 > `DependsOn`/`BlockedBy` reverse to match the backend `From --Kind--> To` semantics) + Option-2 subtree-side

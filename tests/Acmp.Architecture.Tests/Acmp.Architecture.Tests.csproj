@@ -48,6 +48,9 @@
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Domain\Acmp.Modules.Dependencies.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Application\Acmp.Modules.Dependencies.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Governance\Governance.Domain\Acmp.Modules.Governance.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Governance\Governance.Application\Acmp.Modules.Governance.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

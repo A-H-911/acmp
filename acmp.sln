@@ -97,6 +97,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Dependencies.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Dependencies.Infrastructure", "src\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj", "{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Governance", "Governance", "{D21B9FF5-1458-4C21-8EC8-083588C7A083}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Governance.Domain", "src\Modules\Governance\Governance.Domain\Acmp.Modules.Governance.Domain.csproj", "{DF01F98A-793C-4FC9-B965-4803322810CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Governance.Application", "src\Modules\Governance\Governance.Application\Acmp.Modules.Governance.Application.csproj", "{390AD392-D85D-43AA-B603-DC5738A37A5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Governance.Infrastructure", "src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj", "{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -242,6 +250,18 @@ Global
 		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF01F98A-793C-4FC9-B965-4803322810CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF01F98A-793C-4FC9-B965-4803322810CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF01F98A-793C-4FC9-B965-4803322810CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF01F98A-793C-4FC9-B965-4803322810CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{390AD392-D85D-43AA-B603-DC5738A37A5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{390AD392-D85D-43AA-B603-DC5738A37A5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{390AD392-D85D-43AA-B603-DC5738A37A5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{390AD392-D85D-43AA-B603-DC5738A37A5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{116B21B8-2E5B-403D-AF2A-B7C5A3699ACB} = {ACEAF987-769F-4821-877C-AB0580F265DB}
@@ -288,5 +308,9 @@ Global
 		{52A471C5-BE85-477C-B762-97EA7A400D19} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
 		{7C337EC0-D8A8-4C1D-A608-995F22BFDC7C} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
 		{2F9082D6-2945-4F89-BAA8-2E130C14C3F8} = {177EE069-B3A9-4C15-850D-C1BE4C798F38}
+		{D21B9FF5-1458-4C21-8EC8-083588C7A083} = {F7D11363-72BC-4081-96DA-6DD9C65235F2}
+		{DF01F98A-793C-4FC9-B965-4803322810CF} = {D21B9FF5-1458-4C21-8EC8-083588C7A083}
+		{390AD392-D85D-43AA-B603-DC5738A37A5C} = {D21B9FF5-1458-4C21-8EC8-083588C7A083}
+		{86C6AC0F-7FE8-4847-AF4A-68F19746E0F0} = {D21B9FF5-1458-4C21-8EC8-083588C7A083}
 	EndGlobalSection
 EndGlobal
