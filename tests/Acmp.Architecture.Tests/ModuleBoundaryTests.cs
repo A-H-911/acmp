@@ -122,7 +122,8 @@ public class ModuleBoundaryTests
         result.IsSuccessful.Should().BeTrue(Describe(result));
     }
 
-    [Fact] // Decisions reaches Topics (ITopicDecisionRecorder), Membership (ICommitteeDirectory), and the
+    [Fact] // Decisions reaches Topics (ITopicDecisionRecorder), Membership (ICommitteeDirectory), Actions +
+           // Traceability (the AC-029 downstream-link gate via IActionLinkDirectory + ITraceabilityLinks), and the
            // notification channel only through Acmp.Shared contracts — never another module's assemblies.
     public void Decisions_should_not_depend_on_other_modules()
     {
@@ -131,6 +132,8 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
                 "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
                 "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
+                "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
+                "Acmp.Modules.Traceability.Domain", "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure",
                 "Acmp.Modules.Dependencies.Domain", "Acmp.Modules.Dependencies.Application", "Acmp.Modules.Dependencies.Infrastructure",
                 "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();

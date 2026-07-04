@@ -135,35 +135,37 @@ export function CreateRiskDialog({ open, onClose }: Props) {
           </Field>
         </div>
 
-        <Field label={t('risks.create.owner')} required error={errors.owner}>
-          {(p) => (
-            <Select
-              id={p.id}
-              options={ownerOptions}
-              value={ownerId}
-              onChange={setOwnerId}
-              placeholder={t('risks.create.ownerPh')}
-              ariaLabel={t('risks.create.owner')}
-              aria-invalid={p['aria-invalid']}
-              aria-describedby={p['aria-describedby']}
-            />
-          )}
-        </Field>
+        <div className="rsk-create-row">
+          <Field label={t('risks.create.owner')} required error={errors.owner}>
+            {(p) => (
+              <Select
+                id={p.id}
+                options={ownerOptions}
+                value={ownerId}
+                onChange={setOwnerId}
+                placeholder={t('risks.create.ownerPh')}
+                ariaLabel={t('risks.create.owner')}
+                aria-invalid={p['aria-invalid']}
+                aria-describedby={p['aria-describedby']}
+              />
+            )}
+          </Field>
 
-        <Field label={t('risks.create.topic')} required error={errors.topic}>
-          {(p) => (
-            <Select
-              id={p.id}
-              options={topicOptions}
-              value={topicId}
-              onChange={setTopicId}
-              placeholder={t('risks.create.topicPh')}
-              ariaLabel={t('risks.create.topic')}
-              aria-invalid={p['aria-invalid']}
-              aria-describedby={p['aria-describedby']}
-            />
-          )}
-        </Field>
+          <Field label={t('risks.create.topic')} required error={errors.topic}>
+            {(p) => (
+              <Select
+                id={p.id}
+                options={topicOptions}
+                value={topicId}
+                onChange={setTopicId}
+                placeholder={t('risks.create.topicPh')}
+                ariaLabel={t('risks.create.topic')}
+                aria-invalid={p['aria-invalid']}
+                aria-describedby={p['aria-describedby']}
+              />
+            )}
+          </Field>
+        </div>
 
         <Field label={t('risks.create.plan')}>
           {(p) => (

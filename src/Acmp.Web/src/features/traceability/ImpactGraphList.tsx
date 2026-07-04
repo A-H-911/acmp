@@ -9,16 +9,17 @@ import { useTranslation } from 'react-i18next';
 import { Icon } from '../../components/icons';
 import type { ImpactGraph } from '../../api/traceability';
 import { hrefFor } from './traceMeta';
-import { buildListRows } from './graphLayout';
+import { buildListRows, type HighlightState } from './graphLayout';
 
 interface Props {
   graph: ImpactGraph;
   focusKey: string;
+  highlight?: HighlightState;
 }
 
-export function ImpactGraphList({ graph, focusKey }: Props) {
+export function ImpactGraphList({ graph, focusKey, highlight }: Props) {
   const { t } = useTranslation();
-  const rows = buildListRows(graph);
+  const rows = buildListRows(graph, highlight);
   const focusNode = graph.nodes.find((n) => n.id === graph.focusId && n.tier === 0);
   const focusStream = focusNode?.streams.length ? focusNode.streams.join(', ') : '—';
 
@@ -33,8 +34,10 @@ export function ImpactGraphList({ graph, focusKey }: Props) {
       <div className="igl-tree" role="tree" aria-label={t('trace.graph.graphAria', { key: focusKey })}>
         {rows.map((r) => {
           const href = hrefFor(r.node.type, r.node.key);
+          const hitClass = r.hit === 'blocked' ? ' igl-row--hitBlocked' : r.hit === 'cross' ? ' igl-row--hitCross' : '';
           const inner = (
             <>
+              {r.indent > 0 && <span className="igl-connector" aria-hidden />}
               <span className={`igl-rel igl-rel-${r.dir}`}>
                 <Icon
                   name={r.dir === 'up' ? 'arrowUp' : r.dir === 'down' ? 'arrowDown' : 'arrowRight'}
@@ -57,11 +60,11 @@ export function ImpactGraphList({ graph, focusKey }: Props) {
           );
           const common = { role: 'treeitem' as const, 'aria-level': r.level };
           return href ? (
-            <Link key={r.key} to={href} className="igl-row" style={{ marginInlineStart: r.indent }} {...common}>
+            <Link key={r.key} to={href} className={`igl-row${hitClass}`} style={{ marginInlineStart: r.indent }} {...common}>
               {inner}
             </Link>
           ) : (
-            <div key={r.key} className="igl-row" style={{ marginInlineStart: r.indent }} tabIndex={0} {...common}>
+            <div key={r.key} className={`igl-row${hitClass}`} style={{ marginInlineStart: r.indent }} tabIndex={0} {...common}>
               {inner}
             </div>
           );

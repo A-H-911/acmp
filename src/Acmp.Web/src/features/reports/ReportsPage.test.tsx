@@ -73,7 +73,7 @@ describe('ReportsPage (P10g)', () => {
   it('shows the active-risk matrix count and a stream code bar', () => {
     loaded();
     setup();
-    expect(screen.getByText('2 active')).toBeInTheDocument();
+    expect(screen.getByText(/2 active/)).toBeInTheDocument();
     // by-stream cards render raw stream codes (no localized name on the wire)
     expect(screen.getAllByText('identity').length).toBeGreaterThan(0);
   });

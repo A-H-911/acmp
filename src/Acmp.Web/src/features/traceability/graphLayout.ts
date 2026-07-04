@@ -41,6 +41,8 @@ export interface LaidOutNode {
   isFocus: boolean;
   crossStream: boolean;
   dim: boolean;
+  /** A matched node under an active toggle gets an affirmative coloured border (reference `bd`). */
+  hit: 'blocked' | 'cross' | null;
 }
 
 export interface LaidOutEdge {
@@ -125,8 +127,9 @@ export function layoutGraph(
     const p = posByKey.get(key)!;
     const isFocus = n.id === graph.focusId && n.tier === 0;
     const crossStream = crossKeys.has(key);
-    const matches = (hi.blocked && n.blocked) || (hi.cross && crossStream);
-    return { key, node: n, x: p.x, y: p.y, col: p.col, isFocus, crossStream, dim: anyHi && !isFocus && !matches };
+    const hit: LaidOutNode['hit'] = hi.blocked && n.blocked ? 'blocked' : hi.cross && crossStream ? 'cross' : null;
+    const matches = hit !== null;
+    return { key, node: n, x: p.x, y: p.y, col: p.col, isFocus, crossStream, dim: anyHi && !isFocus && !matches, hit: isFocus ? null : hit };
   });
 
   const laidEdges = layoutEdges(graph.edges, posByKey, hi);
@@ -215,6 +218,8 @@ export interface ListRow {
   relLabel: string;
   typeColor: string;
   crossStream: boolean;
+  /** Matched under an active toggle (mirrors the graph node highlight) — tints the row. */
+  hit: 'blocked' | 'cross' | null;
 }
 
 /**
@@ -222,7 +227,7 @@ export interface ListRow {
  * aria-level + indent); dir/label from the discovering edge toward focus. Pure — no i18n (labels are
  * the `deps.kind.*` / `trace.rel.*` keys the panel already uses; the component resolves them).
  */
-export function buildListRows(graph: ImpactGraph): ListRow[] {
+export function buildListRows(graph: ImpactGraph, hi: HighlightState = { blocked: false, cross: false }): ListRow[] {
   const crossKeys = new Set<string>();
   graph.edges.forEach((e) => {
     if (e.isCrossStream) {
@@ -242,6 +247,8 @@ export function buildListRows(graph: ImpactGraph): ListRow[] {
           ? `deps.kind.${edge.rel}`
           : `trace.rel.${edge.rel}`
         : '';
+      const crossStream = crossKeys.has(key);
+      const hit: ListRow['hit'] = hi.blocked && n.blocked ? 'blocked' : hi.cross && crossStream ? 'cross' : null;
       return {
         key,
         node: n,
@@ -250,7 +257,8 @@ export function buildListRows(graph: ImpactGraph): ListRow[] {
         dir: tierDir(n.tier),
         relLabel,
         typeColor: typeColor(n.type),
-        crossStream: crossKeys.has(key),
+        crossStream,
+        hit,
       };
     });
 

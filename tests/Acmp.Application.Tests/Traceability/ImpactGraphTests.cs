@@ -260,6 +260,32 @@ public class ImpactGraphTests
         g.Nodes.Select(n => n.Id).Should().Contain(mid); // still present, just not expanded
     }
 
+    [Fact] // A node read failure at one branch must NOT halt deeper expansion of the other branches (the walk is
+           // bounded by depth/ceiling/cycle-guard, not by `partial`). Under the old `!partial` loop gate, the
+           // failure at level 2 skipped level 3 entirely and `grand` would be missing.
+    public async Task Failed_branch_does_not_halt_sibling_expansion()
+    {
+        var f = new Fixture();
+        var focus = Guid.NewGuid();
+        var bad = Guid.NewGuid();
+        var good = Guid.NewGuid();
+        var leaf = Guid.NewGuid();
+        var grand = Guid.NewGuid();
+        f.Rels[("Topic", focus)] = new(new[]
+        {
+            Rel(RelationshipType.DependsOn, "Outgoing", ArtifactType.Topic, bad),
+            Rel(RelationshipType.DependsOn, "Outgoing", ArtifactType.Topic, good),
+        }, Array.Empty<RelationshipEdgeDto>());
+        f.RelThrows.Add(("Topic", bad)); // bad throws when expanded at level 2
+        f.Rels[("Topic", good)] = new(new[] { Rel(RelationshipType.DependsOn, "Outgoing", ArtifactType.Topic, leaf) }, Array.Empty<RelationshipEdgeDto>());
+        f.Rels[("Topic", leaf)] = new(new[] { Rel(RelationshipType.DependsOn, "Outgoing", ArtifactType.Topic, grand) }, Array.Empty<RelationshipEdgeDto>());
+
+        var g = await Run(f, ArtifactType.Topic, focus, 3);
+
+        g.Partial.Should().BeTrue();                        // bad's failure flagged partial
+        g.Nodes.Select(n => n.Id).Should().Contain(grand);  // ...but the sibling still reached level 3
+    }
+
     // ---- FR-095 Topic-scope cross-stream -----------------------------------------------------------------
 
     [Fact] // Two Topics with disjoint non-empty streams → the edge is cross-stream.

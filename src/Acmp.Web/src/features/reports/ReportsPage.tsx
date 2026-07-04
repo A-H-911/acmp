@@ -146,7 +146,7 @@ function ReportCard({ title, sub, to, note, children }: ReportCardProps) {
           <div className="rpt-card-sub">{sub}</div>
         </div>
         <Link className="rpt-drill" to={to} aria-label={t('reports.drill', { title })}>
-          <Icon name="arrowRight" size={15} className="dir-flip" aria-hidden />
+          <Icon name="arrowUpRight" size={15} aria-hidden />
         </Link>
       </div>
       <div className="rpt-card-body">{children}</div>
@@ -171,14 +171,14 @@ function MatrixView({ matrix }: { matrix: ReturnType<typeof riskMatrix> }) {
       </div>
       {matrix.rows.map((row) => (
         <div key={row.impact} className="rpt-matrix-row" role="row">
-          <span className="rpt-matrix-rowhead" role="rowheader">{t(`reports.level.${row.impact}`)}</span>
+          <span className="rpt-matrix-rowhead" role="rowheader">{t(`reports.impactLevel.${row.impact}`)}</span>
           {row.cells.map((cell: MatrixCell, ci) => (
             <span
               key={ci}
               role="cell"
               className="rpt-cell"
               style={{ background: `var(--st-${cell.zone}-bg)`, color: `var(--st-${cell.zone}-fg)` }}
-              aria-label={t('reports.cellLabel', { count: cell.count, impact: t(`reports.level.${row.impact}`), prob: t(`reports.level.${cols[ci]}`) })}
+              aria-label={t('reports.cellLabel', { count: cell.count, impact: t(`reports.impactLevel.${row.impact}`), prob: t(`reports.level.${cols[ci]}`) })}
             >
               {cell.count}
             </span>

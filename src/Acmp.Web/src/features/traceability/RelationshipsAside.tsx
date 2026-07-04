@@ -112,7 +112,7 @@ export function RelationshipsAside({ groups, total, loading, onOpenGraph }: Prop
         )}
         <div className="rg-foot">
           <Button variant="secondary" className="rg-foot-btn" onClick={onOpenGraph}>
-            <Icon name="deps" size={15} aria-hidden /> {t('trace.graph.graphTitle')}
+            <Icon name="deps" size={15} aria-hidden /> {t('trace.graph.openGraph')}
           </Button>
         </div>
       </div>

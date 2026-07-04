@@ -43,7 +43,7 @@ export function DependencyPage() {
     { label: t('deps.fact.from'), value: dep.fromKey },
     { label: t('deps.fact.relation'), value: t(`deps.kind.${dep.kind}`), color: kindColor(dep.kind) },
     { label: t('deps.fact.to'), value: dep.toKey },
-    { label: t('deps.fact.blocked'), value: dep.isBlocker ? t('deps.blocked') : t('deps.no'), color: dep.isBlocker ? 'var(--st-danger-fg)' : undefined },
+    { label: t('deps.fact.blocked'), value: dep.isBlocker ? t('deps.yes') : t('deps.no'), color: dep.isBlocker ? 'var(--st-danger-fg)' : undefined },
     { label: t('deps.fact.status'), value: t(`deps.status.${dep.status}`) },
   ];
   const fromHref = hrefFor(dep.fromType, dep.fromKey);
@@ -57,7 +57,7 @@ export function DependencyPage() {
             <div className="dep-detail-chips">
               <span className="dep-key-chip">{dep.key}</span>
               <StatusChip tone={statusTone(dep.status)} label={t(`deps.status.${dep.status}`)} size="sm" />
-              {dep.isBlocker && <span className="dep-blocked-cell">{t('deps.blocked')}</span>}
+              {dep.isBlocker && <span className="dep-blocked-cell"><Icon name="ban" size={11} aria-hidden />{t('deps.blocked')}</span>}
             </div>
             <h1 className="dep-detail-title">
               <span className="dep-detail-endpoint">{dep.fromKey}</span>

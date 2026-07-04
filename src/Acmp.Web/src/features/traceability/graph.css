@@ -84,9 +84,12 @@
   .ig-edge--animated { animation: acmpDash 0.6s linear infinite; }
 }
 .ig-tier-label { position: absolute; inset-block-start: 8px; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-3); }
-.ig-node { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; gap: 5px; padding: 9px 11px; border-radius: 10px; text-align: start; overflow: hidden; background: var(--surface); border: 1px solid var(--border); transition: opacity 0.15s, border-color 0.15s; }
+.ig-node { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; gap: 5px; padding: 9px 11px; border-radius: 10px; text-align: start; overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); transition: opacity 0.15s, border-color 0.15s; }
 .ig-node:hover { border-color: var(--accent); }
 .ig-node--focus { border-width: 2px; border-color: var(--accent); background: var(--primary-tint); box-shadow: var(--shadow-lg); }
+/* A node matched by an active toggle gets the affirmative coloured border (reference `bd`). */
+.ig-node--hitBlocked { border-color: var(--st-danger-dot); }
+.ig-node--hitCross { border-color: var(--st-warn-dot); }
 .ig-node-row { display: flex; align-items: center; gap: 6px; }
 .ig-node-typedot { inline-size: 7px; block-size: 7px; border-radius: 2px; flex: 0 0 auto; }
 .ig-node-key { font-family: var(--mono); font-size: 10px; color: var(--text-2); }
@@ -116,9 +119,13 @@
 .igl-path-key--focus { color: var(--accent); font-weight: 700; }
 .igl-path-key--stream { color: var(--text-3); font-weight: 500; }
 .igl-tree { display: flex; flex-direction: column; gap: 3px; }
-.igl-row { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface); text-decoration: none; }
+.igl-row { position: relative; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface); text-decoration: none; }
 .igl-row:hover, .igl-row:focus-visible { border-color: var(--accent); }
-.igl-rel { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; flex: 0 0 auto; inline-size: 82px; }
+.igl-row--hitBlocked { border-color: var(--st-danger-dot); background: var(--st-danger-bg); }
+.igl-row--hitCross { border-color: var(--st-warn-dot); background: var(--st-warn-bg); }
+/* Tree connector stub linking an indented row to its parent tier (reference `hasConnector`). */
+.igl-connector { position: absolute; inset-inline-start: -13px; inline-size: 13px; block-size: 1.5px; background: var(--border-strong); }
+.igl-rel { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; flex: 0 0 auto; inline-size: 78px; }
 .igl-rel-up { color: var(--st-warn-fg); }
 .igl-rel-down { color: var(--st-info-fg); }
 .igl-rel-related { color: var(--st-neutral-fg); }

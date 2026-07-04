@@ -97,7 +97,10 @@ internal static class ImpactGraphComposer
         nodes[focusKey] = new NodeAcc { Type = focusType.ToString(), Id = focusId, Tier = 0 };
         var frontier = new List<string> { focusKey };
 
-        for (var level = 1; level <= depth && !partial; level++)
+        // The walk is bounded by `depth`, the `expanded` cycle guard, and the MaxNodes ceiling (which stops
+        // AddNode from queueing new nodes) — NOT by `partial`. A single node's transient read failure or the
+        // node ceiling flags `partial` truthfully but must not halt expansion of the other branches at this level.
+        for (var level = 1; level <= depth; level++)
         {
             var next = new List<string>();
             foreach (var nodeKey in frontier)

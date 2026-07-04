@@ -164,7 +164,7 @@ function GraphBody({ focus, focusKey, focusTitle, view, highlight, graph }: Grap
       {view === 'graph' ? (
         <ImpactGraph graph={graph.data} focusKey={focusKey} focusTitle={focusTitle} highlight={highlight} />
       ) : (
-        <ImpactGraphList graph={graph.data} focusKey={focusKey} />
+        <ImpactGraphList graph={graph.data} focusKey={focusKey} highlight={highlight} />
       )}
     </>
   );

@@ -37,7 +37,7 @@ describe('RelationshipsAside (P10f)', () => {
     const onOpenGraph = vi.fn();
     const user = userEvent.setup();
     renderWithAuth(<RelationshipsAside groups={groups} total={3} loading={false} onOpenGraph={onOpenGraph} />);
-    await user.click(screen.getByRole('button', { name: /Dependency & impact/ }));
+    await user.click(screen.getByRole('button', { name: /Open dependency graph/ }));
     expect(onOpenGraph).toHaveBeenCalledOnce();
   });
 
