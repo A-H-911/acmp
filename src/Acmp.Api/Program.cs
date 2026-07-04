@@ -147,6 +147,7 @@ app.MapRiskEndpoints();
 app.MapTraceabilityEndpoints();
 app.MapDependencyEndpoints();
 app.MapAdrEndpoints();
+app.MapInvariantEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
 

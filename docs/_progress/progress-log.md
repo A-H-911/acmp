@@ -12,6 +12,64 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11c — Invariant backend: the `Invariant` aggregate in the Governance module (branch `feat/P11c-invariant-backend`)
+
+### 2026-07-04 — Architecture Invariant aggregate (AIV-YYYY-###); W18/W21 lifecycle, supersede-not-edit (backend)
+
+Third slice of **P11**. Added the **`Invariant` aggregate** to the existing `Acmp.Modules.Governance` bounded
+context — a sibling of `Adr` in the same module/schema. **Backend only; the UI is P11d.** The skeleton mirrors
+the `Adr` aggregate (P11a): same key-counter table, register-query/detail shape, endpoint style, InMemory test
+harness; the lifecycle/immutability mirrors Decisions/ADR (supersede-not-edit, `SupersededBy…Id`,
+AuditEvent-per-transition via the existing `IAuditSink`, no new store, **no hash-chain** — guardrail #5).
+
+**★ Blocker resolved before coding — the `Kind` field dropped (OQ-048).** The re-orient note claimed "docs/12
++ the design form require an Invariant `Kind` (Principle/Standard/Policy/Constraint)". Reading the design form
+directly (`ACMP Create Flows & Dialogs.dc.html` `invariant`) showed it has **Category · Scope · Statement ·
+Rationale · Owner and NO Kind**; FR-106 also omits it; and **docs/22 §A** (the concept SSoT per README §G)
+makes Architecture Invariant a *sibling* of Principle/Standard/Policy/Constraint, not their parent (Policy =
+external register, Constraint = `CON-###`). Only docs/12 §9 mentions a Kind. **Operator GO (2026-07-04): drop
+Kind.** The aggregate carries **Category + Scope** only. Recorded as **OQ-048** (docs/12 §9 owes a correction).
+
+**Aggregate.** `Invariant` (in-app key `AIV-YYYY-###`, README §F): `Category` (enum — OQ-036 default set incl.
+Compliance) + `Scope` (enum — FR-106's single/multi-stream/platform/org-wide) + `Statement` (req) + `Rationale`
+(req) bilingual prose + optional `ExceptionsPolicy` (docs/22 §A.5) + `Owner` (userId + name snapshot, FR-106) +
+activation attribution + the supersession chain (`SupersededByInvariantId`/`SupersedesInvariantId` + reasons) +
+`RowVersion` (ADR-0018). Lifecycle **Draft → Proposed → Active → (Retired | Superseded)** + Proposed → Draft
+(request-changes); once Active the statement is frozen (correction = a new superseding invariant).
+
+**Features (vertical slices).** CreateInvariant · UpdateInvariantDraft · ProposeInvariant (notifies the Reviewer
+roster, W18) · ApproveInvariant (activate; **SoD soft** — the author may approve, recorded `AuthorApprovedSelf` off the
+server-derived creator `CreatedBy`, not the client Owner field;
+committee fan-out) · RequestInvariantChanges · RetireInvariant (committee fan-out) · SupersedeInvariant (authors
++ activates a successor, links both directions, freezes the prior — one transaction, W21 ordering) ·
+GetInvariantByKey (resolves peer supersession keys in-module) · GetInvariantsRegister (status filter + substring
+search + sort/paging; FTS deferred to Search). Endpoints `/api/invariants` with the existing
+`Invariant.Create`/`Invariant.Approve` policies (already in the docs/10 matrix rows 21/22 + registered in P11a —
+nothing to wire). Migration `Governance_InvariantInit` (invariants table + Key/Status indexes; the shared
+`adr_key_counters` table is reused for `AIV` rows). ArchUnit already covers the Governance assemblies (40/40).
+
+**Reconciliations flagged (guardrail #14/#11):** (1) **OQ-048** Kind dropped (above). (2) **docs/12 §9 splits its
+Draft/Proposed field guards** (statement+category at Draft, scope+rationale at Propose); the design's single
+create-dialog collects everything at once, so we require all fields at Draft (as ADR does) — noted as an
+intended simplification. (3) docs/12 §9 says "notify **stream owners** on Activate", but an invariant's scope is
+a *class* (single/multi/platform/org-wide), not a link to a specific stream — no stream roster to resolve — so
+activation notifies the **committee** (P11d flag: add a stream link if per-stream targeting is ever wanted).
+(4) **Category enum = OQ-036 default** (adds Compliance over FR-106's list) — OQ-036 stays OPEN (committee to
+confirm). (5) A **request-changes** (Proposed → Draft) back-edge + `UpdateInvariantDraft` are included though
+docs/12 §9's table omits them — symmetric with the ADR sibling (§8), otherwise a proposed invariant needing a
+fix would be stuck.
+
+**Gates (all green locally).** Build clean; **1038 backend tests** (was 1007; +31: 10 domain, 15 application,
+6 API HTTP-contract through the real policy pipeline); **per-file coverage ≥95%** (global 99.79%); `dotnet
+format --verify-no-changes` exit 0 (BOM/CHARSET fixed on the new files); EF migration generated. No FE change
+(P11d). No AC flips — Governance is PH-2/AC-less; traces to **FR-106/107** (create + lifecycle + supersede +
+register done) with FR-108/109 violations **deferred** (operator) and FTS deferred to Search.
+
+**Next:** operator GO → PR + remote CI green → squash-merge; then **P11d** (Invariant UI — invariants tab on
+`/adrs` + a no-reference Invariant detail + Create-Invariant dialog).
+
+---
+
 ## P11b — ADR UI: register + MADR detail + create dialog (branch `feat/P11b-adr-ui`)
 
 ### 2026-07-04 — the `/adrs` register, the MADR-lite detail, and the create dialog (FE-only)

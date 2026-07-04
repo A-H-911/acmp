@@ -4,6 +4,7 @@ using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acmp.Modules.Governance.Infrastructure.Migrations
 {
     [DbContext(typeof(GovernanceDbContext))]
-    partial class GovernanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260704120808_Governance_InvariantInit")]
+    partial class Governance_InvariantInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

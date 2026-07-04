@@ -19,6 +19,7 @@ public static class GovernanceInfrastructureExtensions
 
         services.AddScoped<IGovernanceDbContext>(sp => sp.GetRequiredService<GovernanceDbContext>());
         services.AddScoped<IAdrKeyGenerator, AdrKeyGenerator>();
+        services.AddScoped<IInvariantKeyGenerator, InvariantKeyGenerator>();
 
         services.AddGovernanceApplication();
         return services;

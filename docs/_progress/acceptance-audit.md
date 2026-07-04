@@ -24,6 +24,21 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > 100% on 5 new FE files, tsc/oxlint/build/i18n-parity all clean. Live `.dc.html` screenshot-VR pending a
 > running-stack pass. **Next = P11c (Invariant backend).**
 
+> P11c update (2026-07-04): Invariant backend — the `Invariant` aggregate in the **Governance** module (branch
+> `feat/P11c-invariant-backend`), **BACKEND only, NO AC flips.** Governance is PH-2 scope and AC-less; this slice
+> traces to **FR-106/107** (create Category/Scope/Statement/Rationale/Owner + lifecycle Draft→Proposed→Active→
+> (Retired|Superseded) + supersede back-link/immutability + register — all done). **FR-108/109** (violation
+> recording + list) stay **deferred** (operator, model contested — violations = Risk/Action/AuditEvent per
+> docs/22 §A.5, not a sub-entity). FTS deferred to Search. The general **audit-immutability AC-017/018** apply —
+> every invariant transition emits an `IAuditSink` event and Active invariants are frozen (supersede-not-edit).
+> **Operator decision (2026-07-04):** the `Invariant.Kind` enum was **dropped** (OQ-048) — the design form +
+> FR-106 omit it and docs/22 §A (concept SSoT, README §G) makes Invariant a sibling of Principle/Standard/
+> Policy/Constraint, not their parent; docs/12 §9 owes a correction. **SoD soft** on activate (author may
+> approve, recorded `AuthorApprovedSelf` off the server-derived creator `CreatedBy`, not the client Owner field). Design↔behaviour flags (progress log): all-fields-at-Draft vs docs/12
+> §9's split guards; "stream owners on Activate" → committee (scope is a class, no stream link); Category enum =
+> OQ-036 default (adds Compliance). Gates green: **1038 BE tests** (+31), per-file cov ≥95% (global 99.79%),
+> format clean, migration `Governance_InvariantInit`. No FE change, no AC verdict change. See progress-log "P11c".
+>
 > P11a update (2026-07-04): ADR backend — the new **Governance** module + the `Adr` aggregate (branch
 > `feat/P11a-adr-backend`), **BACKEND only, NO AC flips.** Governance is PH-2 scope and AC-less (the docs/40
 > ACs are PH-1 MVP); it traces to **FR-099/100/101/102/104** (create MADR-lite + lifecycle Draft→Proposed→
