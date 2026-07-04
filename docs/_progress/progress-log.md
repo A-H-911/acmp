@@ -12,6 +12,87 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10g — Risk & Dependency reports: the `/reports` analytics surface (branch `feat/P10g-risk-dep-reports`)
+
+### 2026-07-04 — the risk-exposure + dependency dashboards (frontend; the LAST P10 slice)
+
+**Scope.** Seventh and final P10 slice. Replaces the `/reports` `PlaceholderPage` with a focused **Risk &
+Dependency reports** page, REUSING the card renderers/tokens of `ACMP Dashboards & Reports.dc.html` (matrix /
+stat / bars). The full Reports IA — the Dashboard/Reports toggle, role tabs, the 6 view-tabs
+(executive/committee/stream/decisions/actions/audit), Export, and the filters row — is **deferred to P12
+Reporting** (guardrail #14: this page is a **no-reference composition** of the design's card system, not a
+verbatim port). Plan-first past `ecc:architect` (2 rounds) + advisor (both GO-WITH-FIXES, all folded).
+**Operator scope call: chose the "Fuller" option — BUILD the two by-stream cards now** (override of both
+reviewers' "defer by-stream" lean, same pattern as P10f's full-stack override).
+
+**Delivered (FE-only, no backend — `src/Acmp.Web/src/features/reports/*`).**
+- **`ReportsPage.tsx`** at `/reports` — a 2-col card grid over **six** cards, every number composed
+  **client-side** from three existing REST reads (`useRisksRegister` + `useDependenciesRegister` +
+  `useBacklog`, each at `pageSize=500`; no server pageSize clamp on any — verified). Loading (shimmer
+  skeletons, gated behind `prefers-reduced-motion`), **error** (explicit branch — the design specs none;
+  retry refetches all three), and **empty** (both registers total 0) states.
+- **`reportAgg.ts`** — pure, 100%-tested reducers:
+  - **Risk exposure** 3×3 probability×impact **count matrix**, cells coloured by **severity** (`L×I`:
+    ≤2 success, 3–4 warn, ≥6 danger) — verified to reproduce the design's 9 authored `mcell` zones exactly.
+    Scoped to **active** risks (exclude Closed + Accepted); "N active" sublabel.
+  - **Risk stat** (Open / Mitigating / High-severity / Critical) + **Dependency stat** (Total / Open /
+    Blocked via `isBlocker` / Resolved) + **Dependencies by relation** bars (the 4 kinds).
+  - **Risk by stream** + **Cross-stream dependencies** (blocked-by-stream) bars — the by-stream join:
+    `risk.subjectId`/`dep.{from,to}Id` → the linked **Topic's `streams`** (only Topic carries streams).
+    Multi-stream topic counts under **each** of its streams (intended per-stream semantics; `Σbars ≥` the
+    **distinct** KPI, which is never the bar sum); non-Topic subjects/endpoints + empty-stream topics
+    excluded (flagged Topic-scope). Topics fetched with **`includeClosed=true`** — an active risk can hang
+    off a closed topic, and dropping those would silently undercount the tally (architect's trap catch).
+- **`reports.css`** — logical properties throughout; card/matrix/stat/bars/skeleton primitives px-matched to
+  the `.dc.html`; local `acmpShimmer` keyframe.
+
+**Reconciliations flagged (guardrail #14, design→behavior).** Whole page = a **no-reference composition** of
+the design's card renderers (the design's own Reports view has exactly ONE buildable risk card — the matrix —
+and ZERO from-wire dependency cards; its dep card is by-stream, which we build here). Matrix coloured by
+**severity** (merges High+Critical exposure bands into one danger tint, per the design's authored cells).
+By-stream cards show the raw stream **CODE** (no localized stream name on the wire — `StreamRef{code,nameEn,
+nameAr}` rides only on `Member`; a Membership names seam is deferred, P10f precedent). Deferred to P12
+(flagged in-UI via the `p12Note`): the view-tabs, Export, filters row, role dashboards, and non-risk/dep
+cards. Drill + "View detail" affordances repoint to the real `/risks` and `/dependencies` registers.
+
+**Decisions folded (architect + advisor).** FE-only aggregation over one full list per register (the matrix
+needs per-row L×I, which count fan-out can't give; ≤20 users ⇒ one list + reduce is right-sized — the code
+already comments "a stats endpoint would be overkill"). Reads are authenticated-only ("any authenticated
+committee member" — no role policy), so an Administrator with `reports:view` nav access won't 403 to a blank
+page. **OQ-047 scoped partial-advance:** the by-stream cards adopt the *inherit-from-topic* stream model
+(model b) **for reporting aggregation only**; P10f's per-edge Topic↔Topic cross-stream semantic is unchanged
+— recorded as an addendum, NOT a closure (the multi/zero-topic semantic is exactly why FR-095 stays partial).
+
+**Gates (local, all green).** `tsc -b` clean · oxlint clean · **702 vitest pass** (+18 new: 11 reducer incl.
+the money-path by-stream properties — multi-stream topic lands in each stream bar, `Σbars ≥ distinct KPI` —
++ 7 component covering all four states + retry-refetches-all-three + axe) · **per-file line coverage 100% on
+both new `.ts`/`.tsx` files** · i18n EN/AR parity by hand (37 `reports.*` keys both locales, 1167 total each,
+AR ported from the `.dc.html` `t` object) · axe AA clean.
+
+**AC.** No Must-AC flips. **FR-138** (per-stream report of topics/decisions/actions/**risks**, *Should*/Ph2)
+→ **Partial** — the two by-stream cards stand up per-stream risk + dependency breakdowns (no date-range
+filter / export yet). **FR-095** (cross-stream) advanced in the reporting surface, stays **Partial
+(Topic-scope, OQ-047)**. **FR-135/136/137** (role dashboards, AC-064/065/066) remain **Pending → P12** (this
+is the *Reports* view, not the role *Dashboard* tab).
+
+**Live VR pass (matrix, the reference-backed surface).** Booted the real stack (`npm run e2e:up`; KC bootstrap
+`ChangeMe_KC#2026`) and ran `e2e/p10g-reports-vr.spec.ts`: real Keycloak PKCE login → secretary seeds 6 risks
+whose `(impact, likelihood)` reproduce the design's authored matrix + a blocking cross-topic dependency →
+opens `/reports`. Captured **EN-light + AR-dark** to `e2e/vr-out/` and screenshot-compared **pixel-faithful to
+`ACMP Dashboards & Reports.dc.html`**: the 3×3 matrix layout (54px rowhead + Low/Med/High probability columns,
+High/Med/Low impact rows, "Probability" caption), the **severity-zone cell tinting matches all 9 authored
+cells**, stat tiles, relation bars, by-stream bars ("Topic-linked only") and the P12 note all render per the
+design. **RTL (AR-dark): the Probability axis mirrors and the danger cells track the axis** (High×High stays
+danger) — the top visual risk, resolved — with clean dark tokens and full Arabic labels. (Counts read higher
+than the design's 6 only because both VR tests seed the shared DB — a harness artifact; the zone pattern is
+exactly proportional. The spec asserts nothing, screenshots only, and no committed spec counts risks/deps →
+no CI interference.)
+
+**Next.** Local gates green + live VR pass → push → 4 CI checks → operator merge GO (squash). **P10 COMPLETE**
+after merge.
+
+---
+
 ## P10f PR2 — Impact-graph frontend: bespoke SVG page + group-by-type aside (branch `feat/P10f-graph-ui`)
 
 ### 2026-07-03 — the `/traceability/:type/:key` impact-graph UI (frontend; PR2 of 2)
