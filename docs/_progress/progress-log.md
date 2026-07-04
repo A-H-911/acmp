@@ -12,6 +12,54 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P10-graph-dialogs — impact-graph direction fix + create-dialog fidelity (branch `feat/P10-graph-dialogs`)
+
+### 2026-07-04 — operator-driven live visual review of the impact graph + the three create dialogs
+
+Follow-up from a hands-on visual test of the seeded stack. Operator reported: the impact-graph edges
+"flow under" the focus node, the graph/list/aside disagree on direction, and the create dialogs had
+alignment + header issues. Full evidence-based review (real graph JSON + live screenshots) + advisor
+consult, then operator-approved fixes.
+
+**Impact-graph tier direction — root cause + fix (operator-approved deviation, guardrail #14).**
+Verified against the backend enum (`DependencyKind.cs`: *"From --Kind--> To"*): `From --DependsOn--> To`
+means *From depends on To*, so **To is the prerequisite (upstream), From is the depender (downstream)**.
+The composer (mirroring the reference `buildTiers`) assigned tier sign from the **raw arrow** only —
+inverting `DependsOn`/`BlockedBy`. For a focus whose only neighbour is an upstream hub, that hub's whole
+subtree landed on the *far downstream* side, so every subtree edge crossed the focus column ("flows
+under 004"). Rendered a 3-way comparison (Current 4 crossings / Option 1 partial / **Option 2 zero**) for
+the operator, who chose **Option 2 + GO** on the deviation.
+- **`ImpactGraphComposer` now uses Option-2 tiering:** (1) `DependsOn`/`BlockedBy` reverse the stored
+  arrow (aligning the graph with the register/panel/backend semantics); (2) a node's **side is set at its
+  first hop from the focus and inherited by its whole subtree**, so a branch never crosses the focus.
+  Magnitude stays the BFS depth. Verified live on `TOP-2026-004`: focus→+1(depender)→+2→+3, all
+  downstream, **0 crossing edges**.
+- **Direction consistency:** `buildPanelRows` (detail-panel) already inverted for inbound; the graph-page
+  **aside `buildTypeGroups` did not** (dep groups used a flat `DEP_DIR[kind]`). Fixed it to invert dep
+  direction per inbound/outbound (single dir, else `related`) — so aside, list, and graph now agree.
+- **DEVIATION FROM REFERENCE recorded:** the design's `.dc.html` `buildTiers` still encodes the old
+  raw-arrow sign (its sample data authors `depends` edges as prerequisite→depender so the pathology never
+  shows). Per guardrail #14, **the design is owed an update** to the Option-2 semantics. Flagged here as a
+  design-update TODO; the platform is the interim source of truth for this behaviour.
+
+**Create dialogs (risk / dependency / relationship).**
+- Header icon tile → **38px accent-tinted** (`.dialog-icon` 40→38 + new `.dialog-icon-accent`, `tone="accent"`
+  on all three), matching the design "Create Flows" tile instead of the neutral confirm tone.
+- **Paired-field vertical misalignment fixed:** the global `.field + .field { margin-block-start }` was
+  pushing the right column (Impact / Linked-topic; Type / Artifact) down. Scoped `align-items:start` +
+  `.field` margin reset on `.rsk-create-row` and `.dep-picker-row`; and the risk pairs no longer collapse
+  on narrow viewports (dropped the ≤860px stack for the dialog rows). Operator kept the paired layout as-is.
+
+**Tests + verification.** Backend **975 green** (+2 new composer tests: `DependsOn_reverses_direction`,
+`Subtree_inherits_the_branch_side`; updated `Builds_signed_tiers…` + `Inbound_blocks_dependency_is_upstream`
+to the corrected semantics). FE build + traceMeta tests green. Live-verified against real seeded data
+(graph JSON + screenshots; dialog screenshots). No AC flips (fidelity/behaviour-consistency; FR-096 graph
+stays Met, now correct-for-real-data).
+
+**Next:** commit as one PR (this branch), CI green, then the design `.dc.html` update for the tier semantics.
+
+---
+
 ## P10-review — remediation of the adversarial P10 audit (branch `feat/P10-review`)
 
 ### 2026-07-04 — fixed the 7 MAJOR + the MINOR fidelity/i18n cluster from the exhaustive P10 audit

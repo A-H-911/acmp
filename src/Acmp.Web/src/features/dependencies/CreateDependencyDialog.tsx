@@ -110,6 +110,7 @@ export function CreateDependencyDialog({ open, onClose, from }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
+      tone="accent"
       icon={<Icon name="deps" size={20} aria-hidden />}
       title={t('deps.create.title')}
       description={t('deps.create.subtitle')}

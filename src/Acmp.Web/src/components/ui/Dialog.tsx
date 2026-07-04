@@ -7,8 +7,9 @@ interface DialogProps {
   onClose: () => void;
   title: string;
   description?: string;
-  /** Header icon tile tone (Design System §12: warn for confirmations, danger for destructive). */
-  tone?: 'default' | 'warn' | 'danger';
+  /** Header icon tile tone (Design System §12: warn for confirmations, danger for destructive;
+   *  accent for create-form headers, matching the "Create Flows" tinted 38px tile). */
+  tone?: 'default' | 'warn' | 'danger' | 'accent';
   icon?: ReactNode;
   /** Extra body content below the description. */
   children?: ReactNode;

@@ -92,7 +92,8 @@ public class ImpactGraphTests
         var upstreamTopic = Guid.NewGuid();
         f.Rels[("Topic", focus)] = new(
             new[] { Rel(RelationshipType.DecidedBy, "Outgoing", ArtifactType.Decision, decision, "DECN-1", "Approve") },
-            new[] { Rel(RelationshipType.DependsOn, "Incoming", ArtifactType.Topic, upstreamTopic, "TOP-9", "Upstream") });
+            // Produces is a non-reversing kind, so an incoming edge is plainly upstream (−1).
+            new[] { Rel(RelationshipType.Produces, "Incoming", ArtifactType.Topic, upstreamTopic, "TOP-9", "Upstream") });
 
         var g = await Run(f, ArtifactType.Topic, focus, 1);
 
@@ -198,17 +199,55 @@ public class ImpactGraphTests
         g.Nodes.Single(n => n.Id == action).Tier.Should().Be(1); // outbound → downstream
     }
 
-    [Fact] // An inbound dependency edge places the far end upstream (−1).
-    public async Task Inbound_dependency_is_upstream()
+    [Fact] // An inbound BLOCKS dependency (other --Blocks--> focus) puts the blocker upstream (−1) — Blocks
+           // does not reverse (From is the blocker/upstream).
+    public async Task Inbound_blocks_dependency_is_upstream()
     {
         var f = new Fixture();
         var focus = Guid.NewGuid();
         var other = Guid.NewGuid();
-        f.Deps[("Action", focus)] = new(Array.Empty<DependencyGraphEdge>(), new[] { Dep("DependsOn", "Topic", other, blocker: false) });
+        f.Deps[("Action", focus)] = new(Array.Empty<DependencyGraphEdge>(), new[] { Dep("Blocks", "Topic", other, blocker: true) });
 
         var g = await Run(f, ArtifactType.Action, focus, 1);
 
         g.Nodes.Single(n => n.Id == other).Tier.Should().Be(-1);
+    }
+
+    [Fact] // DependsOn/BlockedBy reverse the stored arrow (From --DependsOn--> To = From depends on To, so
+           // To is the prerequisite/upstream, From is the depender/downstream) — aligning the graph with the
+           // register/panel. An inbound depender is DOWNSTREAM (+1); an outbound prerequisite is UPSTREAM (−1).
+    public async Task DependsOn_reverses_direction()
+    {
+        var f = new Fixture();
+        var focus = Guid.NewGuid();
+        var depender = Guid.NewGuid();      // depender --DependsOn--> focus  (inbound)
+        var prerequisite = Guid.NewGuid();  // focus --DependsOn--> prerequisite (outbound)
+        f.Deps[("Action", focus)] = new(
+            new[] { Dep("DependsOn", "Topic", prerequisite, blocker: false) },
+            new[] { Dep("DependsOn", "Topic", depender, blocker: false) });
+
+        var g = await Run(f, ArtifactType.Action, focus, 1);
+
+        g.Nodes.Single(n => n.Id == depender).Tier.Should().Be(1);       // depends on focus → downstream
+        g.Nodes.Single(n => n.Id == prerequisite).Tier.Should().Be(-1);  // focus depends on it → upstream
+    }
+
+    [Fact] // Option-2 subtree-side inheritance: once a branch is on the downstream side, its whole subtree
+           // stays downstream — an incoming edge on a downstream node keeps its far end downstream (+2, not
+           // −2), so no branch ever crosses back over the focus column.
+    public async Task Subtree_inherits_the_branch_side()
+    {
+        var f = new Fixture();
+        var focus = Guid.NewGuid();
+        var child = Guid.NewGuid();
+        var grand = Guid.NewGuid();
+        f.Rels[("Topic", focus)] = new(new[] { Rel(RelationshipType.DecidedBy, "Outgoing", ArtifactType.Decision, child) }, Array.Empty<RelationshipEdgeDto>());
+        f.Rels[("Decision", child)] = new(Array.Empty<RelationshipEdgeDto>(), new[] { Rel(RelationshipType.Produces, "Incoming", ArtifactType.Topic, grand) });
+
+        var g = await Run(f, ArtifactType.Topic, focus, 2);
+
+        g.Nodes.Single(n => n.Id == child).Tier.Should().Be(1);  // downstream
+        g.Nodes.Single(n => n.Id == grand).Tier.Should().Be(2);  // inherits child's side (not −2)
     }
 
     // ---- dual-enum: System dead-end + unmapped-type skip -------------------------------------------------

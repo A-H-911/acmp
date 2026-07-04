@@ -215,14 +215,18 @@ export function buildTypeGroups(
   rels: ArtifactRelationships | undefined,
   deps: ArtifactDependencies | undefined,
 ): TypeGroup[] {
-  const depByKind = new Map<DependencyKind, TypeGroup['items']>();
-  const pushDep = (e: ArtifactDependencies['outbound'][number]) => {
-    const list = depByKind.get(e.kind) ?? [];
-    list.push({ key: e.otherKey, title: e.otherTitle, href: hrefFor(e.otherType, e.otherKey) });
-    depByKind.set(e.kind, list);
+  // Direction is per-edge: inbound edges invert the base (a DependsOn pointing INTO the focus means the
+  // far end is the depender → downstream), consistent with buildPanelRows + the impact-graph tiers.
+  const depByKind = new Map<DependencyKind, { items: TypeGroup['items']; dirs: Set<PanelDir> }>();
+  const pushDep = (e: ArtifactDependencies['outbound'][number], outbound: boolean) => {
+    const dir = outbound ? DEP_DIR[e.kind] : invert(DEP_DIR[e.kind]);
+    const g = depByKind.get(e.kind) ?? { items: [], dirs: new Set<PanelDir>() };
+    g.items.push({ key: e.otherKey, title: e.otherTitle, href: hrefFor(e.otherType, e.otherKey) });
+    g.dirs.add(dir);
+    depByKind.set(e.kind, g);
   };
-  deps?.outbound.forEach(pushDep);
-  deps?.inbound.forEach(pushDep);
+  deps?.outbound.forEach((e) => pushDep(e, true));
+  deps?.inbound.forEach((e) => pushDep(e, false));
 
   const relByType = new Map<ArtifactType, { items: TypeGroup['items']; dirs: Set<PanelDir> }>();
   const pushRel = (e: ArtifactRelationships['outgoing'][number]) => {
@@ -238,8 +242,15 @@ export function buildTypeGroups(
 
   const groups: TypeGroup[] = [];
   DEP_KIND_ORDER.forEach((kind) => {
-    const items = depByKind.get(kind);
-    if (items?.length) groups.push({ key: `dep:${kind}`, labelKey: `deps.kind.${kind}`, dir: DEP_DIR[kind], items });
+    const g = depByKind.get(kind);
+    if (g?.items.length) {
+      groups.push({
+        key: `dep:${kind}`,
+        labelKey: `deps.kind.${kind}`,
+        dir: g.dirs.size === 1 ? [...g.dirs][0] : 'related',
+        items: g.items,
+      });
+    }
   });
   ARTIFACT_TYPES.forEach((type) => {
     const g = relByType.get(type);

@@ -103,6 +103,7 @@ export function CreateRiskDialog({ open, onClose }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
+      tone="accent"
       icon={<Icon name="risk" size={20} aria-hidden />}
       title={t('risks.create.title')}
       description={t('risks.create.subtitle')}

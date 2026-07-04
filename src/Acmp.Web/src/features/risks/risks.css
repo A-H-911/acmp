@@ -284,10 +284,15 @@
 
 /* ---------- create form ---------- */
 .rsk-create-form { display: flex; flex-direction: column; gap: var(--field-gap); }
-.rsk-create-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rsk-create-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+/* The two fields in a pair grid must top-align — neutralize the global `.field + .field` top-margin
+   that otherwise pushes the right column (Impact / Linked-topic) down. */
+.rsk-create-row .field { margin-block-start: 0; }
 
 @media (max-width: 860px) {
   .rsk-detail-grid { grid-template-columns: 1fr; }
   .rsk-related { position: static; }
-  .rsk-create-row { grid-template-columns: 1fr; }
 }
+/* The create-dialog paired rows (Likelihood+Impact, Owner+Linked-topic) stay 2-col inside the
+   ≤440px dialog at every viewport — the page-level 860px collapse must not stack them. */
+.dialog .rsk-create-row { grid-template-columns: 1fr 1fr; }

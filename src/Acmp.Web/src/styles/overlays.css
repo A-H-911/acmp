@@ -36,11 +36,13 @@
 }
 .dialog-body { padding: 20px 22px 0; }
 .dialog-icon {
-  inline-size: 40px; block-size: 40px; border-radius: var(--r-lg); margin-block-end: 14px;
+  inline-size: 38px; block-size: 38px; border-radius: var(--r-lg); margin-block-end: 14px;
   display: flex; align-items: center; justify-content: center; background: var(--subtle); color: var(--text-3);
 }
 .dialog-icon-warn { background: var(--st-warn-bg); color: var(--st-warn-fg); }
 .dialog-icon-danger { background: var(--st-danger-bg); color: var(--st-danger-fg); }
+/* Create-form tile (design "Create Flows" header): a brand-tinted 38px tile, not the neutral confirm tone. */
+.dialog-icon-accent { background: var(--primary-tint); color: var(--accent); }
 .dialog-title { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
 .dialog-desc { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
 .dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 22px; }

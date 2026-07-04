@@ -57,13 +57,32 @@ internal static class ImpactGraphComposer
         var nodes = new Dictionary<string, NodeAcc>(StringComparer.Ordinal);
         var edges = new Dictionary<string, EdgeAcc>(StringComparer.Ordinal);
         var expanded = new HashSet<string>(StringComparer.Ordinal);
+        // Each node's SIDE (−1 upstream / +1 downstream), set once at its first hop from the focus and
+        // inherited by its whole subtree (Option-2 tiering — operator-approved deviation from the reference
+        // `buildTiers`, guardrail #14): a branch never crosses the focus column. focus = 0.
+        var sideOf = new Dictionary<string, int>(StringComparer.Ordinal);
         var partial = false;
 
         string KeyOf(string type, Guid id) => $"{type}:{id}";
 
-        // First discovery wins the tier (mirrors the reference `!(x in tier)` guard); a later/deeper sighting
-        // never moves a node. Returns the node key when it is NEW (so the caller queues it), else null.
-        string? AddNode(string type, Guid id, string key, string title, int tier)
+        // The FROM end of these kinds is the depender/blocked (downstream); the TO end is the prerequisite/
+        // blocker (upstream) — i.e. the stored arrow points against the impact flow. Reversing them aligns the
+        // graph with the backend enum comment (From --Kind--> To) as read by the register/panel.
+        static bool ReversesFlow(string name) => name is "DependsOn" or "BlockedBy";
+
+        // Tier for a newly-discovered node: magnitude = BFS depth; sign = the branch side. `rawDir` is +1 when
+        // the parent points OUT to the node (outgoing/outbound), −1 when the node points IN to the parent.
+        (int Tier, int Side) TierFor(string parentKey, int rawDir, string name, int level)
+        {
+            var effDir = ReversesFlow(name) ? -rawDir : rawDir;
+            var parentSide = sideOf.TryGetValue(parentKey, out var ps) ? ps : 0;
+            var side = parentSide != 0 ? parentSide : (effDir >= 0 ? 1 : -1);
+            return (side >= 0 ? level : -level, side);
+        }
+
+        // First discovery wins the tier + side; a later/deeper sighting never moves a node. Returns the node
+        // key when it is NEW (so the caller queues it), else null.
+        string? AddNode(string type, Guid id, string key, string title, int tier, int side)
         {
             var k = KeyOf(type, id);
             if (nodes.TryGetValue(k, out var existing))
@@ -73,6 +92,7 @@ internal static class ImpactGraphComposer
             }
             if (nodes.Count >= MaxNodes) { partial = true; return null; }
             nodes[k] = new NodeAcc { Type = type, Id = id, Key = key, Title = title, Tier = tier };
+            sideOf[k] = side;
             return k;
         }
 
@@ -95,6 +115,7 @@ internal static class ImpactGraphComposer
 
         var focusKey = KeyOf(focusType.ToString(), focusId);
         nodes[focusKey] = new NodeAcc { Type = focusType.ToString(), Id = focusId, Tier = 0 };
+        sideOf[focusKey] = 0;
         var frontier = new List<string> { focusKey };
 
         // The walk is bounded by `depth`, the `expanded` cycle guard, and the MaxNodes ceiling (which stops
@@ -125,31 +146,36 @@ internal static class ImpactGraphComposer
                     continue;
                 }
 
-                // Relationship edges. Outgoing → the far end is downstream (+level); incoming → upstream (−level).
+                // Relationship edges. rawDir +1 = parent points OUT to the far end; −1 = far end points IN.
+                // TierFor applies the kind-aware direction + subtree-side inheritance.
                 foreach (var e in rels.Outgoing)
                 {
                     AddEdge("rel", e.Id, e.RelType, node.Type, node.Id, e.OtherType, e.OtherId, false);
-                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, level);
+                    var (tier, s) = TierFor(nodeKey, +1, e.RelType, level);
+                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, tier, s);
                     if (added is not null) next.Add(added);
                 }
                 foreach (var e in rels.Incoming)
                 {
                     AddEdge("rel", e.Id, e.RelType, e.OtherType, e.OtherId, node.Type, node.Id, false);
-                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, -level);
+                    var (tier, s) = TierFor(nodeKey, -1, e.RelType, level);
+                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, tier, s);
                     if (added is not null) next.Add(added);
                 }
 
-                // Dependency edges. Outbound = this node is the From end (far end downstream); inbound = To end.
+                // Dependency edges. Outbound = this node is the From end; inbound = To end.
                 foreach (var e in deps.Outbound)
                 {
                     AddEdge("dep", e.Id, e.Kind, node.Type, node.Id, e.OtherType, e.OtherId, e.IsBlocker);
-                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, level);
+                    var (tier, s) = TierFor(nodeKey, +1, e.Kind, level);
+                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, tier, s);
                     if (added is not null) next.Add(added);
                 }
                 foreach (var e in deps.Inbound)
                 {
                     AddEdge("dep", e.Id, e.Kind, e.OtherType, e.OtherId, node.Type, node.Id, e.IsBlocker);
-                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, -level);
+                    var (tier, s) = TierFor(nodeKey, -1, e.Kind, level);
+                    var added = AddNode(e.OtherType, e.OtherId, e.OtherKey, e.OtherTitle, tier, s);
                     if (added is not null) next.Add(added);
                 }
             }
