@@ -34,8 +34,11 @@ live app renders the current user's Keycloak role.
   topics/actions/votes, Mentions) NOT rendered = design extras not AC-required (AC-064 committee-WIDE) + Mentions no
   backing; "escalated actions"=overdue-beyond-threshold per AC-065's own definition (Actions have no Escalated status);
   votes carry no title on wire. **Deleted orphaned `components/ui/Card.tsx`** (only consumer was the old placeholder →
-  0% cov). **REMAINING: live `.dc.html` pixel-VR (Docker stack) — final guardrail-#14 check; historical stale-bundle
-  env quirk (see [[web-visual-verify-cache-busting]]) may block it → operator-trust precedent from P11.** Then merge GO.
+  0% cov). **Committed `eeebc41`, PR #94 — all 4 CI checks green (incl. e2e). Live `.dc.html` pixel-VR PASS**
+  (`e2e/p12-dashboard-vr.spec.ts`: real login + API seed; 3 variants × EN-light + AR-dark, pixel-faithful; RTL/dark
+  correct; Escalated-actions card proves AC-066 threshold end-to-end; empty cards = fresh-stack seeding limits).
+  **Stale-bundle quirk did NOT bite this time** — `e2e:up --build` served the fresh bundle (verified served JS
+  contained `dash-greeting`/`secretaryQueue`, no `Role-tailored`). Only remaining: **operator squash-merge GO.**
 - **PR3 (FE)** — Reports shell: wrap P10g `/reports` into full design IA (6 view-tabs, filters, CSV export, data-states,
   add `columns`+`stack` renderers); honest-empty for time-series cards. Live VR.
 

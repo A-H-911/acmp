@@ -43,8 +43,11 @@ AC-065 and AC-066. Votes carry no title on the wire, so the awaiting-vote row sh
 replaced. i18n: new `dashboard.*` namespace, EN + AR hand-written (parity 1364).
 
 **Gates:** tsc, 802 vitest (25 new), per-file coverage (global 99.80%), i18n parity, oxlint, build — all green
-locally. FE-only; backend untouched. **Next: live `.dc.html` pixel-VR (Docker stack) — the final guardrail-#14
-fidelity check for this new visual surface — then operator merge GO. PR3 = Reports shell completes P12.**
+locally + on remote CI (PR #94, all 4 checks incl. e2e). FE-only; backend untouched. **Live `.dc.html` pixel-VR
+PASS** (`e2e/p12-dashboard-vr.spec.ts` — real login + API seed on the Docker stack; all three variants captured
+EN-light + AR-dark, pixel-faithful to `ACMP Dashboards & Reports.dc.html`, RTL/light-dark correct; the populated
+Escalated-actions card confirms the AC-066 overdue threshold end-to-end; empty cards = fresh-stack seeding limits,
+not fidelity gaps). **Next: operator squash-merge GO. PR3 = Reports shell completes P12.**
 
 ## P12-PR1 — Reporting thin registers (backend reads) — branch `feat/P12-pr1-report-reads`
 

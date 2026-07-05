@@ -28,8 +28,12 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > "Escalated actions" = overdue beyond the escalation threshold — **AC-065's own definition** (Actions have no
 > Escalated status), one shared const feeds AC-065 + AC-066. Also removed the now-orphaned `components/ui/Card.tsx`
 > (its only consumer was the placeholder dashboard). FE gates green: tsc, 802 vitest, per-file cov (global 99.80%),
-> i18n parity 1364, oxlint, build. **Live `.dc.html` pixel-VR: still to run (Docker stack) — the final guardrail-#14
-> fidelity check for this new visual surface.** See progress-log "P12-PR2".
+> i18n parity 1364, oxlint, build. **Live `.dc.html` pixel-VR PASS** (`e2e/p12-dashboard-vr.spec.ts`, real login +
+> API seed on the Docker stack): all three variants captured EN-light + AR-dark, pixel-faithful to
+> `ACMP Dashboards & Reports.dc.html` — card anatomy/grid/typography/tokens, RTL mirroring (nav, segment bar,
+> chevrons, badges), light/dark all correct; the populated Escalated-actions card confirms the AC-066 overdue
+> threshold end-to-end. Cards left empty (SLA/triage/votes/risks/deferred) are fresh-stack seeding limits, not
+> fidelity gaps. See progress-log "P12-PR2".
 >
 > P12-PR1 update (2026-07-05): Reporting thin registers (backend reads, branch `feat/P12-pr1-report-reads`) —
 > **NO AC flips.** PR1 is backend enablement for the P12 role dashboards: `GET /api/decisions` + `GET /api/votes`
@@ -734,9 +738,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-061 | Search & Trace | Pending | — | Arabic search via word-breaker |
 | AC-062 | Search & Trace | Pending | TraceabilityTests (panel groups outgoing/incoming, "other" endpoint per direction, excludes inactive) + TraceabilityApiTests (`GET /api/traceability/{type}/{id}`) | **P10c: panel API in place + audited** (`GetArtifactRelationships`, one hop). Stays Pending → **P10e**: AC-062 asserts the FE *panel display*, which lands with the traceability panels UI. |
 | AC-063 | Search & Trace | Pending | TraceabilityApiTests (Secretary creates edge → both source + target panels show it) + TraceabilityTests (create audits `Relationship.Created`) | **P10c: typed edge create + soft-delete + audit in place** (RBAC `Traceability.Link`). Stays Pending → **P10e**: AC-063 asserts the FE panel shows the new edge on both artifacts. |
-| AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR pending. |
-| AC-065 | Dashboards | Met | dashboardAgg.test (overdue-beyond-threshold, SLA-breach sort) + RoleDashboard.test (secretary variant renders triage/MoMs/escalated counts + SLA list with aging) | P12-PR2: secretary variant; escalation threshold = shared const (AC-065 definition). Live pixel-VR pending. |
-| AC-066 | Dashboards | Met | dashboardAgg.test (deferred≥2, overdue-beyond-threshold) + RoleDashboard.test (chairman variant renders Closed votes / escalated risks / escalated actions / deferred≥2 with badges) | P12-PR2: chairman variant; "escalated actions" = overdue-beyond-threshold (AC-065 definition, Actions have no Escalated status). Live pixel-VR pending. |
+| AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR PASS (EN-light + AR-dark). |
+| AC-065 | Dashboards | Met | dashboardAgg.test (overdue-beyond-threshold, SLA-breach sort) + RoleDashboard.test (secretary variant renders triage/MoMs/escalated counts + SLA list with aging) | P12-PR2: secretary variant; escalation threshold = shared const (AC-065 definition). Live pixel-VR PASS (EN-light + AR-dark). |
+| AC-066 | Dashboards | Met | dashboardAgg.test (deferred≥2, overdue-beyond-threshold) + RoleDashboard.test (chairman variant renders Closed votes / escalated risks / escalated actions / deferred≥2 with badges) | P12-PR2: chairman variant; "escalated actions" = overdue-beyond-threshold (AC-065 definition, Actions have no Escalated status). Live pixel-VR PASS (EN-light + AR-dark). |
 
 **Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.
