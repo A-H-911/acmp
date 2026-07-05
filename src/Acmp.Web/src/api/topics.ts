@@ -19,6 +19,7 @@ export interface TopicSummary {
   ownerId: string | null;
   ownerName: string | null;
   priority: number;
+  timesDeferred: number;
   ageDays: number;
   slaBreached: boolean;
   createdAt: string;

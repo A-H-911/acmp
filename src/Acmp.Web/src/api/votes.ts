@@ -65,6 +65,31 @@ export function useVote(key: string | undefined) {
   });
 }
 
+/** Committee-wide votes register row (GET /api/votes). */
+export interface VoteSummary {
+  id: string;
+  key: string;
+  topicId: string;
+  meetingId: string | null;
+  status: VoteStatus;
+  options: string[];
+  allowAbstain: boolean;
+  minPresent: number;
+  minCast: number;
+  openedAt: string | null;
+  closedAt: string | null;
+}
+
+/** P12: the committee-wide votes register (no `topic` = across all topics). The chairman dashboard's
+ *  "votes awaiting approval" queue passes { status: 'Closed' } (Closed but not yet Ratified). */
+export function useVotesRegister(params: { status?: VoteStatus } = {}) {
+  const qs = params.status ? `?status=${params.status}` : '';
+  return useQuery({
+    queryKey: ['votes', 'register', params],
+    queryFn: () => api<VoteSummary[]>(`/votes${qs}`),
+  });
+}
+
 /** An eligible voter seeded at configure time (Keycloak sub + display-name snapshot). */
 export interface VoteEligibleVoter {
   userId: string;

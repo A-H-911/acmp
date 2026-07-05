@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import {
-  useMinutesForMeeting, useMinutes, useDraftMinutes, useReviseMinutes, useSubmitMinutes,
+  useMinutesForMeeting, useMinutesAwaiting, useMinutes, useDraftMinutes, useReviseMinutes, useSubmitMinutes,
   useRequestMinutesChanges, useApproveMinutes, usePublishMinutes, useSupersedeMinutes,
 } from './minutes';
 import { ApiError } from './apiClient';
@@ -12,6 +12,16 @@ afterEach(() => vi.unstubAllGlobals());
 
 const urlOf = (spy: ReturnType<typeof stubFetch>) => String(spy.mock.calls.at(-1)![0]);
 const methodOf = (spy: ReturnType<typeof stubFetch>) => (spy.mock.calls.at(-1)![1] as RequestInit | undefined)?.method;
+
+describe('useMinutesAwaiting', () => {
+  it('reads the committee-wide InReview approval queue (no meeting param)', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [{ id: '1', key: 'MIN-2026-018', status: 'InReview' }] }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useMinutesAwaiting(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/minutes');
+  });
+});
 
 describe('useMinutesForMeeting', () => {
   it('stays idle without a meeting id, then reads the version list', async () => {

@@ -845,9 +845,83 @@
   },
   "dev": { "role": "Preview role (dev only)", "roleShort": "Role", "rolesHeader": "Roles are read-only from Keycloak" },
   "dashboard": {
-    "title": "Committee dashboard",
-    "welcome": "Welcome, {{name}}.",
-    "placeholder": "Role-tailored widgets will appear here as modules are built."
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "sub": {
+      "committee": "Here’s where the committee stands today.",
+      "secretary": "Your triage, minutes and escalation queue at a glance.",
+      "chairman": "Decisions, votes and risks awaiting your sign-off."
+    },
+    "loading": "Loading dashboard…",
+    "error": {
+      "title": "Couldn’t load the dashboard",
+      "body": "Something went wrong fetching your dashboard data. Try again."
+    },
+    "card": {
+      "backlog": "Backlog health",
+      "nextMeeting": "Next meeting",
+      "actions": "Action status",
+      "recentDecisions": "Recent decisions",
+      "secretaryQueue": "Secretary queue",
+      "sla": "Topics over SLA",
+      "votesAwaiting": "Votes awaiting approval",
+      "escalatedRisks": "Escalated risks",
+      "escalatedActions": "Escalated actions",
+      "deferredTopics": "Deferred ≥ 2 times"
+    },
+    "openBacklog": "Open backlog",
+    "openAgenda": "Open agenda",
+    "viewAll": "View all",
+    "activeTopics": "active topics",
+    "itemsCount": "{{count}} items",
+    "noMeeting": "No upcoming meeting scheduled.",
+    "noDecisions": "No decisions issued yet.",
+    "noSla": "No topics past their SLA.",
+    "noVotes": "No votes awaiting your approval.",
+    "noRisks": "No escalated risks.",
+    "noActions": "No escalated actions.",
+    "noDeferred": "No topics deferred twice or more.",
+    "voteAwaitingRow": "Closed vote — awaiting your approval",
+    "bucket": {
+      "triage": "Triage",
+      "accepted": "Accepted",
+      "scheduled": "Scheduled",
+      "returned": "Returned",
+      "done": "Decided"
+    },
+    "urgency": {
+      "Critical": "critical",
+      "Urgent": "urgent",
+      "Normal": "normal",
+      "Low": "low"
+    },
+    "agenda": {
+      "Draft": "Agenda: Draft",
+      "Published": "Agenda: Published"
+    },
+    "action": {
+      "Open": "Open",
+      "InProgress": "In progress",
+      "Blocked": "Blocked",
+      "overdue": "Overdue"
+    },
+    "queue": {
+      "triage": "Awaiting triage",
+      "moms": "Minutes to approve",
+      "escalated": "Overdue (escalated)"
+    },
+    "exposure": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High",
+      "Critical": "Critical"
+    },
+    "ageDays": "{{count}}d aging",
+    "overdueDays": "{{count}}d overdue",
+    "deferredTimes": "{{count}}×"
   },
   "admin": {
     "title": "Administration",

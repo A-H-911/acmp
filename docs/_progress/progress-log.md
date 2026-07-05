@@ -12,6 +12,43 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P12-PR2 — Role dashboards (FE) — branch `feat/P12-pr2-role-dashboards`
+
+**AC-064/065/066 → Met.** The home route `/` now renders the real role dashboard (`features/dashboard/RoleDashboard`),
+replacing the P3 placeholder. One page picks the variant for the signed-in user's highest committee role — **Chairman
+> Secretary > everyone-else = Committee**; the design's "Viewing as…" role tabs are a preview affordance in the
+`.dc.html`, not a live control (release checklist F-19 treats these as three distinct dashboards, one AC each, so a
+Chairman seeing only chairman cards is correct — Committee is the member/fallback variant).
+
+**Client-composed, no server aggregation (ADR-0022).** Every number is derived in the browser from the PR1 registers
+plus existing reads. The AC-carrying logic sits in a pure, directly-tested `dashboardAgg.ts` (the `reportAgg.ts`
+precedent) so a wrong bucket/threshold fails a unit test, not just a screenshot:
+- **Committee (AC-064):** backlog by status (kanban buckets, reuses `bucketOf`/`BUCKET_TONE`) **and** urgency, next
+  scheduled meeting (`nextScheduledMeeting` — soonest upcoming, not list order) + agenda link, open action counts
+  (Open/InProgress/Blocked) + overdue, last-5 issued decisions (server-ordered).
+- **Secretary (AC-065):** triage-awaiting count, MoMs-awaiting count, overdue-beyond-escalation count, SLA-breach list
+  with aging. Keeps Backlog/Next-meeting for design fidelity.
+- **Chairman (AC-066):** Closed¬Ratified votes, escalated risks, escalated actions, topics deferred ≥2 (all-time —
+  `includeClosed` fetch, since a twice-deferred topic may now be closed).
+
+**Reconciliations (guardrail #14, flagged):** the design's personalized member cards (My topics/actions/votes,
+Mentions) are **not** rendered — design extras, not required by any AC (AC-064 is committee-WIDE), and Mentions has no
+backing system; the committee variant shows the AC-064 data via the design's card patterns instead. AC-064's urgency
+breakdown + the committee recent-decisions/action-status cards and the chairman cards have no exact design card and
+reuse the segment/stat/list patterns. **"Escalated actions" = overdue beyond the escalation threshold — AC-065's own
+definition** (the Action aggregate has no Escalated status); one shared `ESCALATION_THRESHOLD_DAYS` const feeds both
+AC-065 and AC-066. Votes carry no title on the wire, so the awaiting-vote row shows key + a generic label → `/votes/:key`.
+
+**Housekeeping:** removed `components/ui/Card.tsx` — orphaned once the placeholder dashboard (its only consumer) was
+replaced. i18n: new `dashboard.*` namespace, EN + AR hand-written (parity 1364).
+
+**Gates:** tsc, 802 vitest (25 new), per-file coverage (global 99.80%), i18n parity, oxlint, build — all green
+locally + on remote CI (PR #94, all 4 checks incl. e2e). FE-only; backend untouched. **Live `.dc.html` pixel-VR
+PASS** (`e2e/p12-dashboard-vr.spec.ts` — real login + API seed on the Docker stack; all three variants captured
+EN-light + AR-dark, pixel-faithful to `ACMP Dashboards & Reports.dc.html`, RTL/light-dark correct; the populated
+Escalated-actions card confirms the AC-066 overdue threshold end-to-end; empty cards = fresh-stack seeding limits,
+not fidelity gaps). **Next: operator squash-merge GO. PR3 = Reports shell completes P12.**
+
 ## P12-PR1 — Reporting thin registers (backend reads) — branch `feat/P12-pr1-report-reads`
 
 **Phase kickoff + architecture call.** P12 (Dashboards & Reports) is the design's two surfaces behind a top-bar

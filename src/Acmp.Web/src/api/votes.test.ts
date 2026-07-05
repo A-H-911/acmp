@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import {
-  useVote, useConfigureVote, useOpenVote, useCastBallot, useChangeBallot, useRecuseVote, useCloseVote,
+  useVote, useVotesRegister, useConfigureVote, useOpenVote, useCastBallot, useChangeBallot, useRecuseVote, useCloseVote,
 } from './votes';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
@@ -11,6 +11,24 @@ afterEach(() => vi.unstubAllGlobals());
 
 const urlOf = (spy: ReturnType<typeof stubFetch>) => String(spy.mock.calls.at(-1)![0]);
 const methodOf = (spy: ReturnType<typeof stubFetch>) => (spy.mock.calls.at(-1)![1] as RequestInit).method;
+
+describe('useVotesRegister', () => {
+  it('filters by status (the chairman queue passes Closed)', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [{ id: '1', key: 'VOTE-2026-008', status: 'Closed' }] }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useVotesRegister({ status: 'Closed' }), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/votes?status=Closed');
+  });
+
+  it('reads the whole register with no status', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [] }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useVotesRegister(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/votes');
+  });
+});
 
 describe('useVote', () => {
   it('stays idle without a key, then reads by key', async () => {
