@@ -5,7 +5,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Actions.Domain;
 
-// The Action aggregate root (docs/11 §Action, docs/12 §7; workflows W13/W14/W22) — a concrete, owned
+// The Action aggregate root (docs/domain/domain-model.md §Action, docs/domain/entity-lifecycles.md §7; workflows W13/W14/W22) — a concrete, owned
 // follow-up task arising from a decision/condition/meeting/topic/risk. Named ActionItem, not Action, to
 // avoid an ambiguous-reference clash with System.Action (the BCL delegate) in the many files that import
 // this namespace alongside System.
@@ -14,10 +14,10 @@ namespace Acmp.Modules.Actions.Domain;
 // snapshots — never an EF navigation (ADR-0001). The people fields (Owner/CompletedBy/VerifiedBy) are
 // Keycloak subjects (the ICurrentUser.UserId space, like Decision.ChairApprovedByUserId), so the SoD-1
 // verifier ≠ owner/completer guard is a direct string comparison; a display-name snapshot rides alongside
-// for the UI. (docs/11 types the owner as a member id; we store the sub for a self-contained SoD check —
+// for the UI. (docs/domain/domain-model.md types the owner as a member id; we store the sub for a self-contained SoD check —
 // flagged in the progress log.)
 //
-// Overdue is DERIVED (IsOverdue), never persisted (docs/12 line 159). Verification stamps are write-once
+// Overdue is DERIVED (IsOverdue), never persisted (docs/domain/entity-lifecycles.md line 159). Verification stamps are write-once
 // (AC-013). The SoD-1 verifier gate (AC-012/013) is enforced — and its denial audited — by the verify
 // handler (SegregationOfDuties.CanVerifyAction); the domain keeps the transition guards.
 public sealed class ActionItem : AuditableEntity
@@ -68,7 +68,7 @@ public sealed class ActionItem : AuditableEntity
     public void MarkEscalatedToSecretary(DateTimeOffset now) => EscalatedToSecretaryAt = now;
     public void MarkEscalatedToChairman(DateTimeOffset now) => EscalatedToChairmanAt = now;
 
-    // Derived overdue overlay (docs/12 line 159): past due while work is still open. Never persisted.
+    // Derived overdue overlay (docs/domain/entity-lifecycles.md line 159): past due while work is still open. Never persisted.
     public bool IsOverdue(DateTimeOffset now) =>
         DueDate is { } due && due < now &&
         Status is ActionStatus.Open or ActionStatus.InProgress or ActionStatus.Blocked;

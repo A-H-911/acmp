@@ -1,5 +1,5 @@
 /*
- * The four canonical screen states (docs/14 §4): empty, loading, error,
+ * The four canonical screen states (docs/domain/information-architecture.md §4): empty, loading, error,
  * permission-denied. Every list/detail screen composes these rather than
  * hand-rolling its own. All copy comes through i18n (guardrail 9).
  */

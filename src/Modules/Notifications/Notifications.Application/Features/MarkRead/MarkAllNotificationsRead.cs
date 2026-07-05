@@ -7,7 +7,7 @@ namespace Acmp.Modules.Notifications.Application.Features.MarkRead;
 
 // Mark ALL of the signed-in user's unread notifications read (the center's "Mark all read"). Scoped to
 // ICurrentUser (guardrail 4) — only the caller's own items are touched. Returns the number flipped.
-// Unlike the single MarkRead, a bulk clear emits an AuditEvent after persistence (guardrail 5 / docs/26):
+// Unlike the single MarkRead, a bulk clear emits an AuditEvent after persistence (guardrail 5 / docs/domain/audit-and-records.md):
 // it's a one-click sweep of the whole inbox, worth a record. This reverses P6e's no-audit choice for
 // read-all per the operator's P6b Option-B decision (2026-06-30); single MarkRead stays un-audited.
 // The emit sits after SaveChanges and only when something actually changed (the count==0 short-circuit

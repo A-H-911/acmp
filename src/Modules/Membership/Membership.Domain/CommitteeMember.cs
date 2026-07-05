@@ -15,7 +15,7 @@ public sealed class CommitteeMember : AuditableEntity
 
     private CommitteeMember() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string KeycloakUserId { get; private set; } = string.Empty;
@@ -63,7 +63,7 @@ public sealed class CommitteeMember : AuditableEntity
 
     public void SetVotingEligibility(bool eligible) => IsVotingEligible = eligible;
 
-    // Replaces the member's stream assignments (docs/10 §E.1). Idempotent on duplicates.
+    // Replaces the member's stream assignments (docs/domain/permission-role-matrix.md §E.1). Idempotent on duplicates.
     public void AssignStreams(IEnumerable<long> streamIds)
     {
         _streams.Clear();
@@ -71,7 +71,7 @@ public sealed class CommitteeMember : AuditableEntity
             _streams.Add(new MemberStreamAssignment(id));
     }
 
-    // Vote casting is Chairman/Member only (docs/10 §C row 11); seed eligibility accordingly.
+    // Vote casting is Chairman/Member only (docs/domain/permission-role-matrix.md §C row 11); seed eligibility accordingly.
     private static bool DefaultVotingEligibility(CommitteeRole role) =>
         role is CommitteeRole.Chairman or CommitteeRole.Member;
 }

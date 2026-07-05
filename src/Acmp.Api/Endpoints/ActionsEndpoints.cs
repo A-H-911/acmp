@@ -11,7 +11,7 @@ using MediatR;
 namespace Acmp.Api.Endpoints;
 
 // Thin endpoint layer over MediatR (CLAUDE.md). The group requires authentication (401 without a token,
-// AC-008); each mutating route adds its docs/10 policy (403 for the wrong role). The MediatR
+// AC-008); each mutating route adds its docs/domain/permission-role-matrix.md policy (403 for the wrong role). The MediatR
 // AuthorizationBehavior re-checks roles at the application boundary (defence in depth, guardrail 4). Reads
 // are committee-wide; create + the lifecycle transitions are Action.Create; verify is Action.Verify (with
 // the SoD-1 guard inside the handler).
@@ -43,7 +43,7 @@ public static class ActionsEndpoints
             return Results.Created($"/api/actions/{result.Key}", result);
         }).RequireAuthorization(Policies.ActionCreate);
 
-        // W14: lifecycle transitions (Action.Create = create/edit, docs/10 row 14).
+        // W14: lifecycle transitions (Action.Create = create/edit, docs/domain/permission-role-matrix.md row 14).
         group.MapPost("/{id:guid}/start", async (Guid id, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new StartActionCommand(id), ct);

@@ -17,10 +17,10 @@ export interface LocalizedText {
   ar: string;
 }
 
-/** ActionStatus (docs/12 §7) — wire = enum names, localized in the UI. 6 states incl. Cancelled. */
+/** ActionStatus (docs/domain/entity-lifecycles.md §7) — wire = enum names, localized in the UI. 6 states incl. Cancelled. */
 export type ActionStatus = 'Open' | 'InProgress' | 'Blocked' | 'Completed' | 'Verified' | 'Cancelled';
 
-/** ActionPriority (docs/11) — wire = enum names. The middle value is `Normal` (UI labels it "Medium"). */
+/** ActionPriority (docs/domain/domain-model.md) — wire = enum names. The middle value is `Normal` (UI labels it "Medium"). */
 export type ActionPriority = 'Low' | 'Normal' | 'High';
 
 /** The source artifact an action is raised from (W13). No standalone create — always from a context. */

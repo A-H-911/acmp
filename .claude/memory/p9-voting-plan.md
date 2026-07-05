@@ -16,7 +16,7 @@ quorum pips / COI recusal / chairman approval-override) + wire the meeting-works
 GO-gated. See [[p8-actions-plan]], [[p7-minutes-decisions-plan]].
 
 ## Locked decisions (operator GO)
-- **Vote aggregate lives INSIDE the Decisions module** (docs/11 "Owning module: Decisions") — NOT a new module,
+- **Vote aggregate lives INSIDE the Decisions module** (docs/domain/domain-model.md "Owning module: Decisions") — NOT a new module,
   like MoM lives in Meetings. Same DbContext as Decision, so Vote↔Decision is an in-module read (no seam).
 - **Quorum = live attendance-linked (fork 1):** new Shared seam `IMeetingQuorumSource`
   (`Contracts/Meetings`, impl in Meetings.Infrastructure) → present-eligible count (IsVotingEligible +

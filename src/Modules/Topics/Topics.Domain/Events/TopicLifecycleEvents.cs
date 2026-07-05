@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.Events;
 
 namespace Acmp.Modules.Topics.Domain.Events;
 
-// Topic lifecycle domain events (docs/12 §1). Raised by the aggregate on each transition; platform
+// Topic lifecycle domain events (docs/domain/entity-lifecycles.md §1). Raised by the aggregate on each transition; platform
 // modules (Audit, Notifications, Traceability) subscribe via INotificationHandler — the Topics module
 // never calls them directly (ADR-0001). Payload is intentionally small: identity + what a subscriber
 // needs to route. The compliance AuditEvent is emitted by the application handler (IAuditSink).

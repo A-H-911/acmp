@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Decisions.Infrastructure.Persistence;
 
-// Maps ONLY the decisions schema (docs/34 §12: no cross-module tables). References to other modules
+// Maps ONLY the decisions schema (docs/domain/repository-structure.md §12: no cross-module tables). References to other modules
 // (topic, meeting, vote, linked action = their PublicId) are by value, never by FK navigation (ADR-0001).
 public sealed class DecisionsDbContext : ModuleDbContext, IDecisionsDbContext
 {

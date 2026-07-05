@@ -22,7 +22,7 @@ public static class MeetingsInfrastructureExtensions
         services.AddScoped<IMeetingsDbContext>(sp => sp.GetRequiredService<MeetingsDbContext>());
         services.AddScoped<IMeetingKeyGenerator, MeetingKeyGenerator>();
 
-        // Cross-module seam for the Decisions Vote present-quorum gate (ADR-0001, docs/12 §4).
+        // Cross-module seam for the Decisions Vote present-quorum gate (ADR-0001, docs/domain/entity-lifecycles.md §4).
         services.AddScoped<IMeetingQuorumSource, MeetingQuorumSource>();
 
         services.AddMeetingsApplication();

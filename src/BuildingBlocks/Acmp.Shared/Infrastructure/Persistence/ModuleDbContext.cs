@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Shared.Infrastructure.Persistence;
 
 // Base DbContext for every module. Stamps AuditableEntity fields on save from IClock + ICurrentUser.
-// Each module derives one of these and maps ONLY its own schema tables (docs/34 section 12).
+// Each module derives one of these and maps ONLY its own schema tables (docs/domain/repository-structure.md section 12).
 public abstract class ModuleDbContext : DbContext
 {
     private readonly IClock _clock;

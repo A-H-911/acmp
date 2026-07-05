@@ -4,7 +4,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Decisions.Domain;
 
-// A single condition attached to a ConditionallyApproved decision (docs/11 §Decisions). Owned by the
+// A single condition attached to a ConditionallyApproved decision (docs/domain/domain-model.md §Decisions). Owned by the
 // Decision root, mutated only through it. Bilingual text (guardrail 9). LinkedActionId is a forward
 // reference to the Action that discharges the condition (P8) — a plain value, never a cross-module FK.
 public sealed class DecisionCondition : BaseEntity

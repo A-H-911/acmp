@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Decisions.Domain;
 
-// A single voter's ballot on a Vote (docs/11 §Vote). Owned by the Vote root, mutated only through it
+// A single voter's ballot on a Vote (docs/domain/domain-model.md §Vote). Owned by the Vote root, mutated only through it
 // (mirrors DecisionCondition ownership). Seeded at Configure — one row per eligible voter, Choice=null =
 // "awaiting". Always attributed (ADR-0010): VoterUserId is the Keycloak sub, VoterName a display snapshot.
 // Recused = excluded from the quorum base + the tally (a distinct ballot state, not a choice).

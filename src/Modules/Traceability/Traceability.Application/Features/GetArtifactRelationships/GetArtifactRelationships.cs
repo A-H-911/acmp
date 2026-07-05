@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Traceability.Application.Features.GetArtifactRelationships;
 
 // AC-062: the traceability panel for one artifact — its active outgoing and incoming typed edges, one hop
-// (docs/30 §6.1). Transitive impact analysis (subgraph / BFS) is a later slice (P10f). Readable by any
+// (docs/domain/search-and-traceability.md §6.1). Transitive impact analysis (subgraph / BFS) is a later slice (P10f). Readable by any
 // authenticated committee member (read-all). Keyed by (type, PublicId): the stable identity the SPA already
 // holds from the artifact's detail payload.
 public sealed record GetArtifactRelationshipsQuery(ArtifactType Type, Guid Id)

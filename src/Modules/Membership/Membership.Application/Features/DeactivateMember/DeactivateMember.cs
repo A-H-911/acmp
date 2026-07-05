@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Membership.Application.Features.DeactivateMember;
 
 // Administrator deactivates a member (AC-058). Blocks ACMP access while the record + all historical
-// attribution remain intact. Only Administrator manages users (docs/10 row 27, SoD-5).
+// attribution remain intact. Only Administrator manages users (docs/domain/permission-role-matrix.md row 27, SoD-5).
 public sealed record DeactivateMemberCommand(Guid MemberPublicId) : IRequest, IAuthorizedRequest
 {
     public IReadOnlyCollection<string> AllowedRoles { get; } = new[] { nameof(CommitteeRole.Administrator) };
@@ -41,7 +41,7 @@ public sealed class DeactivateMemberHandler : IRequestHandler<DeactivateMemberCo
         member.Deactivate();
         await _db.SaveChangesAsync(ct);
 
-        // State change on a governed record -> audit (docs/26, guardrail 5). Interim sink (Serilog->Seq);
+        // State change on a governed record -> audit (docs/domain/audit-and-records.md, guardrail 5). Interim sink (Serilog->Seq);
         // the immutable hash-chained AuditEvent store is BL-066.
         await _audit.EmitAsync("Membership.MemberDeactivated", _user.UserId,
             new { member.PublicId, before = before.ToString(), after = member.Status.ToString() }, ct);

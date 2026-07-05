@@ -4,7 +4,7 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// The Agenda aggregate (docs/11 §C, W6) — the ordered, time-boxed set of topics planned for a meeting.
+// The Agenda aggregate (docs/domain/domain-model.md §C, W6) — the ordered, time-boxed set of topics planned for a meeting.
 // Belongs to one Meeting by id (MeetingId), never an EF navigation (ADR-0001). Items are editable while
 // Draft/Published; the agenda Locks at meeting start and Closes when the meeting is held. Publishing is
 // versioned and re-publishable. Topic display data is snapshotted onto each item at add time.
@@ -14,7 +14,7 @@ public sealed class Agenda : AuditableEntity
 
     private Agenda() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;  // AGN-YYYY-### (human-readable display key)

@@ -2,7 +2,7 @@
 
 namespace Acmp.Modules.Meetings.Domain.Events;
 
-// MinutesOfMeeting lifecycle domain events (docs/12 §6, W10). Raised by the aggregate on each transition;
+// MinutesOfMeeting lifecycle domain events (docs/domain/entity-lifecycles.md §6, W10). Raised by the aggregate on each transition;
 // platform modules (Audit, Notifications) react via the application handler — the Meetings module never
 // reaches into them (ADR-0001). Payload stays small: identity + what a subscriber needs to route.
 

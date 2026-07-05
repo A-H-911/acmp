@@ -15,7 +15,7 @@ using MediatR;
 namespace Acmp.Api.Endpoints;
 
 // Thin endpoint layer over MediatR (CLAUDE.md) for MinutesOfMeeting (W10). The group requires
-// authentication (401 without a token); each mutating route adds its docs/10 policy (403 for the wrong
+// authentication (401 without a token); each mutating route adds its docs/domain/permission-role-matrix.md policy (403 for the wrong
 // role). Reads are committee-wide; draft/revise/submit = Minutes.Capture; request-changes/approve/publish/
 // supersede = Minutes.Approve. Domain guards surface as 409 (Conflict) via the global handler; a stale
 // RowVersion write is 409 too.

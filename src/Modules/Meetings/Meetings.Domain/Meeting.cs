@@ -4,7 +4,7 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// The Meeting aggregate (docs/11 §C, docs/12 §5) — a scheduled committee session that anchors
+// The Meeting aggregate (docs/domain/domain-model.md §C, docs/domain/entity-lifecycles.md §5) — a scheduled committee session that anchors
 // attendance and discussion. The Agenda is a sibling aggregate referenced by id (MeetingId), never an
 // EF navigation, so the meeting-start use case can load both and flip topic state in one transaction
 // without breaching the module/aggregate boundary (ADR-0001). Identity to other modules is by id +
@@ -21,7 +21,7 @@ public sealed class Meeting : AuditableEntity
 
     private Meeting() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;   // MTG-YYYY-### (human-readable display key)

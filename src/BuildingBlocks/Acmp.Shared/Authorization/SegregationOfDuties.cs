@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Shared.Authorization;
 
-// Segregation-of-duties guards (docs/10 §E.4). Pure, side-effect-free predicates the owning
+// Segregation-of-duties guards (docs/domain/permission-role-matrix.md §E.4). Pure, side-effect-free predicates the owning
 // module's handler calls; a violation is a hard Deny regardless of role. SoD-5 (Administrator
 // walled off committee content) is structural — encoded by role lists in the matrix, not here.
 public static class SegregationOfDuties

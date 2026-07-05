@@ -6,9 +6,9 @@
 // IActionLinkDirectory). Speaks only in primitives — the contract never leaks Attendance/Meeting into the
 // shared kernel.
 //
-// Powers the Vote present-quorum gate (docs/12 §4, ADR-0010): at Open, the count of eligible-and-present
+// Powers the Vote present-quorum gate (docs/domain/entity-lifecycles.md §4, ADR-0010): at Open, the count of eligible-and-present
 // attendees must meet the vote's MinPresent threshold. "Present" = an Attendance row with IsVotingEligible
-// AND Status ∈ {Present, Late} (docs/11 §Attendance — Present/Late count toward quorum).
+// AND Status ∈ {Present, Late} (docs/domain/domain-model.md §Attendance — Present/Late count toward quorum).
 public interface IMeetingQuorumSource
 {
     Task<int> GetPresentEligibleCountAsync(Guid meetingId, CancellationToken ct = default);

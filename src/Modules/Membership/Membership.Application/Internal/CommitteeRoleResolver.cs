@@ -3,7 +3,7 @@
 namespace Acmp.Modules.Membership.Application.Internal;
 
 // Resolves the single cached "primary" role from the set of canonical role names a principal holds
-// (a principal may hold several, docs/10 §B). Highest privilege wins — the CommitteeRole enum is
+// (a principal may hold several, docs/domain/permission-role-matrix.md §B). Highest privilege wins — the CommitteeRole enum is
 // ordered most-privileged first (Chairman = 0), so the lowest value is primary.
 internal static class CommitteeRoleResolver
 {

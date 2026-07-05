@@ -22,7 +22,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Forbidden"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Not found"),
-            // Optimistic-concurrency stale write (RowVersion mismatch) → 409 (docs/16 §1.5, docs/15 §7.4, ADR-0018).
+            // Optimistic-concurrency stale write (RowVersion mismatch) → 409 (docs/domain/data-architecture.md §1.5, docs/domain/architecture-detail.md §7.4, ADR-0018).
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The record was modified by another user; reload and try again."),
             InvalidOperationException => (StatusCodes.Status409Conflict, "Conflict"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")

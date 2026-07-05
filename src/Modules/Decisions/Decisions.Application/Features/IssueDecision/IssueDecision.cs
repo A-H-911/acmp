@@ -36,7 +36,7 @@ namespace Acmp.Modules.Decisions.Application.Features.IssueDecision;
 // cross-module and the Decision domain cannot see it. Living in this handler ALSO auto-exempts the
 // supersession successor (SupersedeDecisionHandler calls Decision.Issue directly, never this path) — not a
 // bypass: superseding requires a prior Issued decision, and first-issue is only reachable through this gate,
-// so every lineage root already passed it (ASM, docs/41). Rejected/Deferred/etc. issue freely.
+// so every lineage root already passed it (ASM, docs/risks/risk-register.md). Rejected/Deferred/etc. issue freely.
 //
 // P10c widened "downstream link" to ANY downstream edge (ASM-P10c-2): the gate is satisfied by ≥1 linked
 // ActionItem (IActionLinkDirectory) OR ≥1 downstream traceability edge (ITraceabilityLinks — decision as

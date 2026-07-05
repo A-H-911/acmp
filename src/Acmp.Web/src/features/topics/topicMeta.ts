@@ -1,7 +1,7 @@
 /*
  * Pure presentation mappers for Topic read models — shared by the backlog and
  * (later) the detail screen. Status tone maps the canonical TopicStatus wire
- * names (docs/12 §1) onto the six StatusChip tones; the chip carries the
+ * names (docs/domain/entity-lifecycles.md §1) onto the six StatusChip tones; the chip carries the
  * localized label + a colored dot, never color alone (WCAG 1.4.1).
  */
 import type { StatusTone } from '../../components/ui/StatusChip';

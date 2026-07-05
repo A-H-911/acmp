@@ -2,7 +2,7 @@
 
 namespace Acmp.Modules.Membership.Domain;
 
-// A bounded-window delegation of a capability (policy) from one member to another (docs/10 §E.3).
+// A bounded-window delegation of a capability (policy) from one member to another (docs/domain/permission-role-matrix.md §E.3).
 // Delegations are first-class, audited, and auto-expire; they cannot transfer a capability the
 // delegator lacks, and never bypass immutability (none exists to bypass).
 public sealed class Delegation : AuditableEntity

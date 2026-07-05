@@ -5,7 +5,7 @@ namespace Acmp.Modules.Actions.Application.Contracts;
 // Read models returned to the SPA. Enums project as their string names (stable wire contract, localized
 // in the UI). Bilingual text is the LocalizedString value object (the SPA picks the locale). Actions never
 // joins another module's tables (ADR-0001) — only ids + display-key snapshots travel. IsOverdue is the
-// DERIVED overlay computed against the request clock (docs/12 line 159), not a stored status.
+// DERIVED overlay computed against the request clock (docs/domain/entity-lifecycles.md line 159), not a stored status.
 
 public sealed record ActionSummaryDto(
     Guid Id,

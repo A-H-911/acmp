@@ -7,7 +7,7 @@
  * Enums travel as their string names (localized in the UI). Bilingual fields are
  * LocalizedString value objects ({ en, ar }); the SPA picks the locale on read.
  * Severity (1..9) and the Exposure band are server-DERIVED (RiskExposureScale,
- * docs/12) — the client renders the band, never recomputes it.
+ * docs/domain/entity-lifecycles.md) — the client renders the band, never recomputes it.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
@@ -19,7 +19,7 @@ export interface LocalizedText {
   ar: string;
 }
 
-/** RiskStatus (docs/12 §10, W15) — wire = enum names, localized in the UI. 5 states. */
+/** RiskStatus (docs/domain/entity-lifecycles.md §10, W15) — wire = enum names, localized in the UI. 5 states. */
 export type RiskStatus = 'Open' | 'Mitigating' | 'Closed' | 'Accepted' | 'Escalated';
 
 /** RiskLevel (probability + impact) — wire = enum names. 1-based domain (Low=1..High=3). */

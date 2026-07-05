@@ -6,12 +6,12 @@ using Acmp.Shared.Domain.Entities;
 namespace Acmp.Modules.Topics.Domain;
 
 // The governed Topic aggregate — the heart of the core loop (intake → backlog → agenda → decision).
-// One state machine (docs/12 §1); "TopicRequest" is just its pre-Accepted projection. Identity to other
+// One state machine (docs/domain/entity-lifecycles.md §1); "TopicRequest" is just its pre-Accepted projection. Identity to other
 // modules is by stable key only: actor/author/submitter = the Keycloak subject (matches the audit log
 // and ABAC resolvers); Owner = the assigned CommitteeMember.PublicId + a name snapshot for display.
 // Never an EF navigation to another module, so the modular-monolith boundary holds (ADR-0001).
 // Implements the shared ABAC contracts so the platform authorization handlers can scope writes by
-// stream and by per-topic ownership (docs/10 §E).
+// stream and by per-topic ownership (docs/domain/permission-role-matrix.md §E).
 public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource
 {
     private readonly List<string> _streams = new();
@@ -23,7 +23,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
 
     private Topic() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty; // TOP-YYYY-### (human-readable display key)
@@ -51,7 +51,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public IReadOnlyCollection<TopicComment> Comments => _comments.AsReadOnly();
     public IReadOnlyCollection<TopicStatusEvent> History => _history.AsReadOnly();
 
-    // ABAC contracts (docs/10 §E): write access is bounded by these.
+    // ABAC contracts (docs/domain/permission-role-matrix.md §E): write access is bounded by these.
     public IReadOnlyCollection<string> AffectedStreams => _streams.AsReadOnly();
     Guid ITopicScopedResource.TopicId => PublicId;
 
@@ -82,7 +82,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         return topic;
     }
 
-    // ---- lifecycle transitions (docs/12 §1) ----
+    // ---- lifecycle transitions (docs/domain/entity-lifecycles.md §1) ----
 
     // W1: submit for triage. Enforces the AC-030 required set; the stricter design-required fields
     // (justification) are enforced by the SubmitTopic validator at the application boundary.
@@ -195,7 +195,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         Raise(new TopicConvertedEvent(PublicId, Key, now));
     }
 
-    // ---- edits (field-level lock rules, docs/12 §1, AC-034) ----
+    // ---- edits (field-level lock rules, docs/domain/entity-lifecycles.md §1, AC-034) ----
 
     // Content (title/description/justification) is editable only before Acceptance — locked thereafter to
     // prevent retroactive modification (AC-034). The *who* (Owner vs Secretary) is enforced by ABAC.
@@ -264,7 +264,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         if (string.IsNullOrWhiteSpace(reason)) throw new InvalidOperationException(message);
     }
 
-    // Field edits are blocked once Decided (docs/12 §1): Decided/Closed/Converted are immutable.
+    // Field edits are blocked once Decided (docs/domain/entity-lifecycles.md §1): Decided/Closed/Converted are immutable.
     private void EnsureMutable()
     {
         if (Status is TopicStatus.Decided or TopicStatus.Closed or TopicStatus.Converted)

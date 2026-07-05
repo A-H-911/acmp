@@ -4,7 +4,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Risks.Domain;
 
-// A planned/implemented response reducing a Risk (docs/11 §Mitigation). Owned child of the Risk aggregate
+// A planned/implemented response reducing a Risk (docs/domain/domain-model.md §Mitigation). Owned child of the Risk aggregate
 // (reached only through it) — the exact shape of DecisionCondition: BaseEntity identity, a bilingual text,
 // its own Planned→InProgress→Done status, and an optional LinkedActionId (the Action fulfilling it, a soft
 // value ref, no FK — ADR-0001). Mutation is driven by the Risk aggregate so its invariants hold.
@@ -34,7 +34,7 @@ public sealed class Mitigation : BaseEntity
         };
     }
 
-    // Forward-only (Planned → InProgress → Done); a mitigation never regresses (docs/12 §10).
+    // Forward-only (Planned → InProgress → Done); a mitigation never regresses (docs/domain/entity-lifecycles.md §10).
     internal void SetStatus(MitigationStatus status)
     {
         if (status < Status)

@@ -1,5 +1,5 @@
 /*
- * Status chip — the one way status is shown across ACMP (docs/14 §5).
+ * Status chip — the one way status is shown across ACMP (docs/domain/information-architecture.md §5).
  * Meaning is carried by the LABEL plus a colored dot, never by color alone
  * (WCAG 1.4.1 non-text contrast). `tone` selects the semantic role; `label`
  * is already-localized text supplied by the caller.

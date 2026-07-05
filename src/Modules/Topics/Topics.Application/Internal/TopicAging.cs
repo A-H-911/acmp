@@ -3,7 +3,7 @@ using Acmp.Modules.Topics.Domain.Enums;
 
 namespace Acmp.Modules.Topics.Application.Internal;
 
-// Backlog aging (docs/09 §B.1, AC-057). The SLA threshold is "time in the same status"; a topic that
+// Backlog aging (docs/domain/topic-taxonomy.md §B.1, AC-057). The SLA threshold is "time in the same status"; a topic that
 // has sat in its current status longer than its urgency allows is breaching SLA and earns the aging
 // badge. AgeDays (since creation) drives the display column; SlaBreached drives the badge + notify.
 public static class TopicAging

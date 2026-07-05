@@ -17,7 +17,7 @@ public sealed class AdrConfiguration : IEntityTypeConfiguration<Adr>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
-        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/domain/data-architecture.md §1.5, ADR-0018)
 
         b.Property(x => x.Key).IsRequired().HasMaxLength(32);
         b.HasIndex(x => x.Key).IsUnique();
@@ -93,7 +93,7 @@ public sealed class AdrConfiguration : IEntityTypeConfiguration<Adr>
             t.Property(p => p.Ar).HasColumnName("deprecation_reason_ar").HasMaxLength(4000);
         });
 
-        // Owned considered options (docs/22 §A.7) — same shape as risk_mitigations.
+        // Owned considered options (docs/domain/standards-and-best-practices.md §A.7) — same shape as risk_mitigations.
         b.Navigation(x => x.Options).UsePropertyAccessMode(PropertyAccessMode.Field);
         b.OwnsMany(x => x.Options, o =>
         {

@@ -3,11 +3,11 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Traceability.Domain;
 
-// The Relationship aggregate root (ADR-0008, docs/30 §2) — a typed directed edge in the traceability graph:
+// The Relationship aggregate root (ADR-0008, docs/domain/search-and-traceability.md §2) — a typed directed edge in the traceability graph:
 // (SourceType, SourceId) --RelType--> (TargetType, TargetId). Both endpoints are SELF-DESCRIBING value
 // snapshots (key + title captured at create time, ADR-0019) — never an EF navigation into the owning module
 // (ADR-0001). No physical Artifact registry. Edges are SOFT-deleted (IsActive=0), never hard-deleted, so the
-// historical link is preserved for audit (docs/30 §5, ADR-0009). CreatedBy/At come from AuditableEntity
+// historical link is preserved for audit (docs/domain/search-and-traceability.md §5, ADR-0009). CreatedBy/At come from AuditableEntity
 // (stamped from the current user); deactivation records who/when explicitly.
 public sealed class Relationship : AuditableEntity
 {
@@ -24,7 +24,7 @@ public sealed class Relationship : AuditableEntity
     public string TargetTitle { get; private set; } = string.Empty;
 
     public RelationshipType RelType { get; private set; }
-    public string? Notes { get; private set; }                       // optional human annotation (docs/30 §2.1)
+    public string? Notes { get; private set; }                       // optional human annotation (docs/domain/search-and-traceability.md §2.1)
 
     public bool IsActive { get; private set; }
     public DateTimeOffset? DeactivatedAt { get; private set; }
@@ -60,7 +60,7 @@ public sealed class Relationship : AuditableEntity
         };
     }
 
-    // Soft-delete (docs/30 §5): the edge stays in the table with IsActive=0 for the audit trail. Idempotent —
+    // Soft-delete (docs/domain/search-and-traceability.md §5): the edge stays in the table with IsActive=0 for the audit trail. Idempotent —
     // deactivating an already-inactive edge is a no-op (the handler still audits the attempt).
     public void Deactivate(string byUserId, DateTimeOffset now)
     {

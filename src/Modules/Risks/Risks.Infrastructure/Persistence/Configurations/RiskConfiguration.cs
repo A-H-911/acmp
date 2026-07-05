@@ -9,7 +9,7 @@ namespace Acmp.Modules.Risks.Infrastructure.Persistence.Configurations;
 // (nullable columns). People fields are Keycloak subject strings + a name snapshot. Cross-module references
 // (subject id/key, a mitigation's linked action id) are plain values, no FK (ADR-0001). The (SubjectType,
 // SubjectId) index backs "risks against this artifact" and the P10 traceability lookups. Severity/Exposure
-// are NOT stored — they are derived at read time (docs/12 line 247).
+// are NOT stored — they are derived at read time (docs/domain/entity-lifecycles.md line 247).
 public sealed class RiskConfiguration : IEntityTypeConfiguration<Risk>
 {
     public void Configure(EntityTypeBuilder<Risk> b)
@@ -18,7 +18,7 @@ public sealed class RiskConfiguration : IEntityTypeConfiguration<Risk>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
-        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/domain/data-architecture.md §1.5, ADR-0018)
 
         b.Property(x => x.Key).IsRequired().HasMaxLength(32);
         b.HasIndex(x => x.Key).IsUnique();
@@ -74,7 +74,7 @@ public sealed class RiskConfiguration : IEntityTypeConfiguration<Risk>
             t.Property(p => p.Ar).HasColumnName("escalation_reason_ar").HasMaxLength(4000);
         });
 
-        // Owned mitigations (docs/11 §Mitigation) — same shape as decision_conditions.
+        // Owned mitigations (docs/domain/domain-model.md §Mitigation) — same shape as decision_conditions.
         b.Navigation(x => x.Mitigations).UsePropertyAccessMode(PropertyAccessMode.Field);
         b.OwnsMany(x => x.Mitigations, m =>
         {

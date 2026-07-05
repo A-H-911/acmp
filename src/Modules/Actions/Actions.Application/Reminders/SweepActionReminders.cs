@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Acmp.Modules.Actions.Application.Reminders;
 
-// W22 / docs/29 §3.4: the recurring sweep that turns derived-overdue into notifications. HEADLESS — there is
+// W22 / docs/domain/notification-strategy.md §3.4: the recurring sweep that turns derived-overdue into notifications. HEADLESS — there is
 // no ICurrentUser in a Hangfire scope, so the audit actor is the system. Idempotent: per-action "already told
 // them" markers gate every send, so re-running the sweep (or running it more than once a day) never spams.
 // ALL logic is here and unit-tested against a fake clock + in-memory actions; Hangfire only cron-triggers it.

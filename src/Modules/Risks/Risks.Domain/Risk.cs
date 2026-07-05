@@ -5,15 +5,15 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Risks.Domain;
 
-// The Risk aggregate root (docs/11 §Risk, docs/12 §10; workflow W15) — a tracked architecture/delivery risk
+// The Risk aggregate root (docs/domain/domain-model.md §Risk, docs/domain/entity-lifecycles.md §10; workflow W15) — a tracked architecture/delivery risk
 // raised against a topic/decision/system/ADR, owning its Mitigations. Identity to other modules is by value
 // only: (SubjectType, SubjectId = subject PublicId) + a display-key snapshot, never an EF navigation
-// (ADR-0001). Severity/Exposure are DERIVED (RiskExposureScale), never stored (docs/12 line 247).
+// (ADR-0001). Severity/Exposure are DERIVED (RiskExposureScale), never stored (docs/domain/entity-lifecycles.md line 247).
 //
 // Lifecycle (W15): raise → Open; Open → Mitigating (needs ≥1 Mitigation); Mitigating → Closed (mitigations
 // Done or a closure note); Open/Mitigating → Accepted (rationale + authority; terminal); Open/Mitigating →
 // Escalated (reason + target). Escalated is transient — it returns to Mitigating (resume) or Closed after
-// handling (docs/12 §10 line 220). Closed and Accepted are terminal. The acceptance/escalation/closure
+// handling (docs/domain/entity-lifecycles.md §10 line 220). Closed and Accepted are terminal. The acceptance/escalation/closure
 // evidence is stored on the aggregate (not audit-only) so the detail screen can show "why / to whom".
 public sealed class Risk : AuditableEntity
 {
@@ -40,7 +40,7 @@ public sealed class Risk : AuditableEntity
     public Guid SubjectId { get; private set; }
     public string? SubjectKey { get; private set; }   // e.g. TOP-2026-014 — snapshot for the Linked column
 
-    // Terminal/transition evidence (docs/12 §10) — stored so the detail page can render it, not audit-only.
+    // Terminal/transition evidence (docs/domain/entity-lifecycles.md §10) — stored so the detail page can render it, not audit-only.
     public DateTimeOffset? ClosedAt { get; private set; }
     public LocalizedString? ClosureNote { get; private set; }
     public LocalizedString? AcceptanceRationale { get; private set; }

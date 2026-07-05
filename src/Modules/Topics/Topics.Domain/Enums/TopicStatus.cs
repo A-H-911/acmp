@@ -1,7 +1,7 @@
 ﻿namespace Acmp.Modules.Topics.Domain.Enums;
 
-// Canonical Topic status model (README §E, docs/12 §1). The single state machine; "TopicRequest" is the
-// pre-Accepted projection (Draft/Submitted/Triage), not a separate entity (docs/11 §A.2). Backlog views
+// Canonical Topic status model (README §E, docs/domain/entity-lifecycles.md §1). The single state machine; "TopicRequest" is the
+// pre-Accepted projection (Draft/Submitted/Triage), not a separate entity (docs/domain/domain-model.md §A.2). Backlog views
 // (kanban buckets, status chips) group these into presentation buckets — that grouping lives in the read
 // model, never here. Field edits are blocked once Decided; Converted/Closed/Rejected are terminal exits.
 public enum TopicStatus

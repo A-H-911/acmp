@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// A per-meeting presence record (docs/11 §C, W8) — quorum input. Mutated only via the Meeting root.
+// A per-meeting presence record (docs/domain/domain-model.md §C, W8) — quorum input. Mutated only via the Meeting root.
 // Identity to Membership is by id + a display-name snapshot (no cross-module navigation, ADR-0001).
 public sealed class Attendance : BaseEntity
 {

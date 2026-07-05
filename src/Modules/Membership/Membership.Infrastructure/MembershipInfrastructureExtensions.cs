@@ -23,7 +23,7 @@ public static class MembershipInfrastructureExtensions
 
         services.AddScoped<IMembershipDbContext>(sp => sp.GetRequiredService<MembershipDbContext>());
 
-        // ABAC ports the shared-kernel authorization handlers depend on (docs/10 §D/§E).
+        // ABAC ports the shared-kernel authorization handlers depend on (docs/domain/permission-role-matrix.md §D/§E).
         services.AddScoped<IUserStreamProvider, UserStreamProvider>();
         services.AddScoped<ITopicCapabilityResolver, TopicCapabilityResolver>();
         services.AddScoped<ITopicCapabilityWriter, TopicCapabilityWriter>();

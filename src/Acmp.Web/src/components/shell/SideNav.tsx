@@ -1,5 +1,5 @@
 /*
- * Role-filtered primary navigation (docs/14 §2.1). Renders only the groups and
+ * Role-filtered primary navigation (docs/domain/information-architecture.md §2.1). Renders only the groups and
  * areas the current roles can reach; "view" access shows a read-only eye marker.
  * Labels are i18n keys; the sidebar mirrors to the inline-end edge in RTL via
  * logical properties.

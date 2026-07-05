@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Notifications.Infrastructure.Persistence;
 
-// Maps ONLY the notifications schema (docs/34 §12; ADR-0001). RecipientUserId is a Keycloak subject by
+// Maps ONLY the notifications schema (docs/domain/repository-structure.md §12; ADR-0001). RecipientUserId is a Keycloak subject by
 // value — no FK navigation to Membership.
 public sealed class NotificationsDbContext : ModuleDbContext, INotificationsDbContext
 {

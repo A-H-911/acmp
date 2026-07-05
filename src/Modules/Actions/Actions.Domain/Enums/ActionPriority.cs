@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Actions.Domain.Enums;
 
-// Action handling priority (docs/11 §Action). An attribute, not a lifecycle state.
+// Action handling priority (docs/domain/domain-model.md §Action). An attribute, not a lifecycle state.
 public enum ActionPriority
 {
     Low = 0,

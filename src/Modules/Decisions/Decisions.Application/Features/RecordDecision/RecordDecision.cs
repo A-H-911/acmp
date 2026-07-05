@@ -39,7 +39,7 @@ public sealed class RecordDecisionValidator : AbstractValidator<RecordDecisionCo
         RuleFor(x => x.Outcome).IsInEnum();
 
         // LocalizedString's positional ctor does NOT validate (only Create does, and that throws an
-        // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/16 §1.5).
+        // ArgumentException → 500). So the boundary check lives here to produce a clean 400 (docs/domain/data-architecture.md §1.5).
         // Content is entered in one UI language and MIRRORED to both columns (the operator's choice — keeps
         // both columns populated for Full-Text Search), so both EN and AR must be present. The per-language
         // max guards the nvarchar(512) title column so an over-long title is a clean 400, not a SaveChanges 500.

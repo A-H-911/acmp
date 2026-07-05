@@ -13,7 +13,7 @@ namespace Acmp.Modules.Governance.Application.Features.CreateInvariant;
 // W18: author a new Architecture Invariant in Draft. RBAC = Invariant.Create (Chairman/Secretary; Member/
 // Reviewer allow-if-owner). Content is entered in one UI language and MIRRORED to both LocalizedString
 // columns (the locked FTS pattern), so both EN+AR are required. Category/Scope/Statement/Rationale/Owner are
-// all required at create (the design's single-step create dialog); ExceptionsPolicy is optional (docs/22 §A.5).
+// all required at create (the design's single-step create dialog); ExceptionsPolicy is optional (docs/domain/standards-and-best-practices.md §A.5).
 public sealed record CreateInvariantCommand(
     InvariantCategory Category,
     InvariantScope Scope,

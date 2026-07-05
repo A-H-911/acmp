@@ -12,21 +12,21 @@ self-contained / CON-001 · Keycloak roles-via-claims · in-app notifications on
 
 ## Fixes applied during verification
 - Reconciliation pass aligned all pre-decision docs (00–14) to the resolved decisions.
-- `docs/06`: removed a `Seq/ELK` mention and a voting-anonymity capability (→ always attributed).
-- `docs/11`: Vote purpose → "always attributed"; `MembershipRole` enum normalized to a single committee-secretary entry.
-- `docs/07` FR-132: reworded from Webex-specific (Phase 1) to generic outbox/retry (Phase 1), Webex 429 handling noted Phase 2.
-- `docs/29`: `DecisionPublished` trigger `Published` → canonical `Issued`.
+- `docs/domain/scope-and-out-of-scope.md`: removed a `Seq/ELK` mention and a voting-anonymity capability (→ always attributed).
+- `docs/domain/domain-model.md`: Vote purpose → "always attributed"; `MembershipRole` enum normalized to a single committee-secretary entry.
+- `docs/requirements/functional.md` FR-132: reworded from Webex-specific (Phase 1) to generic outbox/retry (Phase 1), Webex 429 handling noted Phase 2.
+- `docs/domain/notification-strategy.md`: `DecisionPublished` trigger `Published` → canonical `Issued`.
 - `README.md`: deliverable index ADR range → ADR-0001…ADR-0014; identifier scheme adds `W-##` workflow.
 
 ## Quality-gate posture (Keystone-style)
 - **G-COMPLETE:** no unflagged TODO/TBD/placeholder; unresolved values carry `[unverified]`.
 - **G-REQ-SRC:** every FR/NFR has a source/provenance.
 - **G-DEC-STATUS:** all 14 ADRs carry an explicit status (Accepted).
-- **G-TRACE:** MVP user stories → acceptance criteria → tests wiring defined (`docs/39`, `docs/40`, `docs/31`).
-- **Open decisions** are not hidden: 26 resolved + 37 open `OQ-###` (each with a recommended default) in `docs/42`.
+- **G-TRACE:** MVP user stories → acceptance criteria → tests wiring defined (`docs/domain/user-stories-mvp.md`, `docs/validation/acceptance-criteria.md`, `docs/validation/test-strategy.md`).
+- **Open decisions** are not hidden: 26 resolved + 37 open `OQ-###` (each with a recommended default) in `docs/decisions/open-decision-register.md`.
 
 ## Residual informational notes (non-blocking)
-- A few design-point values remain `[unverified]` by design (chart lib RTL, PDF lib, notification polling interval, Arabic FTS word-breaker quality, exact ASVS chapter IDs) — each has a recommended default and is listed as an `OQ-###` in `docs/42` for confirmation during PH-0/PH-1.
-- The roadmap (`docs/36`) is authoritative for phase placement where a summary doc paraphrases it.
+- A few design-point values remain `[unverified]` by design (chart lib RTL, PDF lib, notification polling interval, Arabic FTS word-breaker quality, exact ASVS chapter IDs) — each has a recommended default and is listed as an `OQ-###` in `docs/decisions/open-decision-register.md` for confirmation during PH-0/PH-1.
+- The roadmap (`docs/planning/roadmap.md`) is authoritative for phase placement where a summary doc paraphrases it.
 
 **Verdict:** structurally sound, internally consistent with the confirmed decisions, and ready for handoff to Claude Design and Claude Code.

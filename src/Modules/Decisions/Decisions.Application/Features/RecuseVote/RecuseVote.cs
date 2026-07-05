@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Decisions.Application.Features.RecuseVote;
 
 // W11 (recuse): the current voter recuses from an Open vote — their ballot is excluded from the quorum base
-// and the tally (a distinct state, not a choice; docs/11 §Vote). RBAC = Vote.Cast (Chairman/Member).
+// and the tally (a distinct state, not a choice; docs/domain/domain-model.md §Vote). RBAC = Vote.Cast (Chairman/Member).
 public sealed record RecuseVoteCommand(Guid VoteId) : IRequest, IAuthorizedRequest
 {
     public IReadOnlyCollection<string> AllowedRoles { get; } = new[] { AcmpRoles.Chairman, AcmpRoles.Member };

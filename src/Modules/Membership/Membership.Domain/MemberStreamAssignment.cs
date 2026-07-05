@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Membership.Domain;
 
-// Join row: a member's assignment to a stream (docs/10 §E.1). Owned by CommitteeMember; the
+// Join row: a member's assignment to a stream (docs/domain/permission-role-matrix.md §E.1). Owned by CommitteeMember; the
 // (member, stream) pair is the composite key.
 public sealed class MemberStreamAssignment
 {

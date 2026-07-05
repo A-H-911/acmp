@@ -1,10 +1,10 @@
 ﻿namespace Acmp.Shared.Authorization;
 
-// Canonical global role names (README §C / docs/10 §B). These string codes are the single
+// Canonical global role names (README §C / docs/domain/permission-role-matrix.md §B). These string codes are the single
 // authorization vocabulary: token role claims map TO them (IRoleClaimMapper), ASP.NET policies
 // require them, and Membership's CommitteeRole enum members are named to match (nameof aligns).
 // Guest/Presenter is the single global role "Guest"; the Presenter ability is the per-topic
-// relationship (docs/10 §D), not a separate role.
+// relationship (docs/domain/permission-role-matrix.md §D), not a separate role.
 public static class AcmpRoles
 {
     public const string Chairman = "Chairman";

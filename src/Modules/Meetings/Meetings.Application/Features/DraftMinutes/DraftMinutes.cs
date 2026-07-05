@@ -15,7 +15,7 @@ namespace Acmp.Modules.Meetings.Application.Features.DraftMinutes;
 // W10 (start MoM): the Secretary (or Chairman) opens an editable Draft against a concluded/live meeting.
 // The parent Meeting is in the SAME module, so loading it to guard status + snapshot its key/title is an
 // in-module read, not a cross-module reach (ADR-0001). One MoM per meeting — a second draft-from-scratch
-// is rejected (corrections go through supersede). RBAC = Minutes.Capture (docs/10 row 8).
+// is rejected (corrections go through supersede). RBAC = Minutes.Capture (docs/domain/permission-role-matrix.md row 8).
 public sealed record DraftMinutesCommand(Guid MeetingId, LocalizedString Summary)
     : IRequest<MinutesSummaryDto>, IAuthorizedRequest
 {
@@ -29,7 +29,7 @@ public sealed class DraftMinutesValidator : AbstractValidator<DraftMinutesComman
         RuleFor(x => x.MeetingId).NotEmpty();
 
         // Content is mirrored to both columns (FTS), so both EN and AR must be present — a clean 400
-        // rather than the LocalizedString ctor throwing at SaveChanges (docs/16 §1.5).
+        // rather than the LocalizedString ctor throwing at SaveChanges (docs/domain/data-architecture.md §1.5).
         RuleFor(x => x.Summary).NotNull().WithMessage("A summary is required.");
         RuleFor(x => x.Summary!.En).NotEmpty().When(x => x.Summary is not null).WithMessage("Summary (EN) is required.");
         RuleFor(x => x.Summary!.Ar).NotEmpty().When(x => x.Summary is not null).WithMessage("Summary (AR) is required.");

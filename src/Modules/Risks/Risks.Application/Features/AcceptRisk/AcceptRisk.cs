@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Risks.Application.Features.AcceptRisk;
 
 // W15 (accept): a governing authority consciously accepts a risk rather than mitigating it (Open/Mitigating
-// → Accepted, terminal). This is NARROWER than the other transitions (docs/12 §10 line 217): Chairman or
+// → Accepted, terminal). This is NARROWER than the other transitions (docs/domain/entity-lifecycles.md §10 line 217): Chairman or
 // Secretary only, NO allow-if-owner — enforced by the dedicated Risk.Accept policy at the endpoint and
 // re-checked here. The rationale + accepting authority are recorded on the aggregate and the act is
 // high-importance audited (guardrail 5).

@@ -32,7 +32,7 @@ import type { TopicSummary } from '../../api/topics';
  *  `sched` matches the --st-sched-* group (the StatusChip 'scheduled' tone). */
 export type Zone = 'success' | 'warn' | 'danger' | 'neutral' | 'info' | 'sched' | 'accent';
 
-/** RiskLevel → its 1-based ordinal (docs/12 RiskExposureScale: severity = likelihood × impact). */
+/** RiskLevel → its 1-based ordinal (docs/domain/entity-lifecycles.md RiskExposureScale: severity = likelihood × impact). */
 const LEVEL_VALUE: Record<RiskLevel, number> = { Low: 1, Medium: 2, High: 3 };
 
 /** "Active" = a live risk: exclude the two terminal states (Closed, Accepted). */

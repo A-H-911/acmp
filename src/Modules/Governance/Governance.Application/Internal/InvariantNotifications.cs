@@ -8,7 +8,7 @@ namespace Acmp.Modules.Governance.Application.Internal;
 // Builds the bilingual in-app notifications the Invariant flow raises (guardrail 9). W18: reviewers are told
 // when an invariant is Proposed; the committee when it is Activated (now in force). W21: the committee is
 // notified when an invariant is Superseded/Retired. The deep link targets the routed invariant view
-// (/invariants/{key}). NOTE: docs/12 §9 says "stream owners on Activate", but an invariant's scope is a class
+// (/invariants/{key}). NOTE: docs/domain/entity-lifecycles.md §9 says "stream owners on Activate", but an invariant's scope is a class
 // (single/multi/platform/org-wide), not a link to a specific stream — there is no stream roster to resolve —
 // so activation notifies the committee (P11d flag: add a stream link if per-stream targeting is ever wanted).
 internal static class InvariantNotifications

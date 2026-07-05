@@ -4,7 +4,7 @@
 // (ADR-0004) and mapped to these; ACMP does not assign roles itself. Member names match the
 // canonical role-name strings (Acmp.Shared.Authorization.AcmpRoles) via nameof so the enum and
 // the authorization vocabulary never drift. Guest = Guest/Presenter; the Presenter ability is the
-// per-topic relationship (docs/10 §D), not a separate global role.
+// per-topic relationship (docs/domain/permission-role-matrix.md §D), not a separate global role.
 public enum CommitteeRole
 {
     Chairman = 0,

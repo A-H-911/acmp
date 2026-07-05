@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Risks.Domain.Enums;
 
-// The response strategy a mitigation embodies (docs/11 §Mitigation). The undefined default 0 forces an
+// The response strategy a mitigation embodies (docs/domain/domain-model.md §Mitigation). The undefined default 0 forces an
 // explicit choice at the boundary (IsInEnum) and the domain guard.
 public enum MitigationType
 {

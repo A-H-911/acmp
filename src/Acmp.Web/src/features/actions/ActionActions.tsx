@@ -6,7 +6,7 @@
  * system (Button + the Confirmation/Destructive Dialog patterns in "ACMP Create Flows & Dialogs.dc.html")
  * and flagged in the progress log for a later design pass.
  *
- * Gating (docs/10 rows 14–15): Chairman/Secretary may manage any action; a Member may manage only actions
+ * Gating (docs/domain/permission-role-matrix.md rows 14–15): Chairman/Secretary may manage any action; a Member may manage only actions
  * they OWN. Verify is separated (SoD-1, AC-012/013): the owner/completer never sees it — a person may not
  * verify their own work. This is UI convenience only; the API re-checks every transition and audits a
  * denied verify. Which buttons a status allows comes from ALLOWED_TRANSITIONS (mirrors the domain guards).

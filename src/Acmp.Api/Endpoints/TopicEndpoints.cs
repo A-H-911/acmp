@@ -16,7 +16,7 @@ using MediatR;
 namespace Acmp.Api.Endpoints;
 
 // Thin endpoint layer over MediatR (CLAUDE.md). The group requires authentication (401 without a token,
-// AC-008); RBAC endpoints add the docs/10 policy (403 for the wrong role); ABAC endpoints (prepare) only
+// AC-008); RBAC endpoints add the docs/domain/permission-role-matrix.md policy (403 for the wrong role); ABAC endpoints (prepare) only
 // authenticate here — the handler runs the per-resource owner check (AC-009/034).
 public static class TopicEndpoints
 {

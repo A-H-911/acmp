@@ -2,7 +2,7 @@
 
 namespace Acmp.Modules.Risks.Domain.Events;
 
-// Risk lifecycle domain events (docs/12 §10, W15). Raised by the aggregate on each state change; the
+// Risk lifecycle domain events (docs/domain/entity-lifecycles.md §10, W15). Raised by the aggregate on each state change; the
 // application handlers own the audit + notification side-effects — the module never reaches into the Audit
 // or Notifications modules (ADR-0001). Payload stays small: identity + what a subscriber needs. Mitigation
 // add / status changes are value mutations without a subscriber, so they carry no event (they are still

@@ -13,7 +13,7 @@ namespace Acmp.Modules.Traceability.Application.Features.CreateRelationship;
 // display-key + title snapshot (captured from what the creator was viewing) so the panel can render + deep-link
 // without reading the owning modules' tables (ADR-0001, ADR-0019). RBAC = Traceability.Link (Chairman/Secretary;
 // the topic-Owner AiO create path is deferred — ASM-P10c-4). The create is audited (Relationship.Created,
-// docs/30 §5, guardrail #5).
+// docs/domain/search-and-traceability.md §5, guardrail #5).
 public sealed record CreateRelationshipCommand(
     ArtifactType SourceType, Guid SourceId, string SourceKey, string SourceTitle,
     ArtifactType TargetType, Guid TargetId, string TargetKey, string TargetTitle,

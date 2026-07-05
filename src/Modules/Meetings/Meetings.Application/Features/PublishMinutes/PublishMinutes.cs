@@ -10,7 +10,7 @@ namespace Acmp.Modules.Meetings.Application.Features.PublishMinutes;
 
 // W10 (AC-038): publish the approved MoM. Approved → Published (immutable). On this transition — and only
 // this one — an in-app notification with a deep link fans out to every active committee member. RBAC =
-// Minutes.Approve (docs/10 row 9).
+// Minutes.Approve (docs/domain/permission-role-matrix.md row 9).
 public sealed record PublishMinutesCommand(Guid MinutesId) : IRequest, IAuthorizedRequest
 {
     public IReadOnlyCollection<string> AllowedRoles { get; } = new[] { AcmpRoles.Secretary, AcmpRoles.Chairman };

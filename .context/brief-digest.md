@@ -1,6 +1,6 @@
 # ACMP — Shared Context Digest (for document authors)
 
-This is the shared knowledge base for everyone writing ACMP planning documents. **Read `../README.md` (canonical reference) and this file before writing.** Use canonical roles/modules/entities/IDs/status models from the README exactly. Do not contradict settled decisions; if you disagree, raise it as an `OQ-` in `docs/42-open-decisions.md` rather than silently diverging.
+This is the shared knowledge base for everyone writing ACMP planning documents. **Read `../README.md` (canonical reference) and this file before writing.** Use canonical roles/modules/entities/IDs/status models from the README exactly. Do not contradict settled decisions; if you disagree, raise it as an `OQ-` in `docs/decisions/open-decision-register.md` rather than silently diverging.
 
 ## Writing style (engineering / execution audience)
 - Dense and concise. No filler, no marketing tone. Remove any sentence that doesn't add information.
@@ -88,16 +88,16 @@ Stack constraints (settled — see README §A): .NET/ASP.NET Core, Clean Archite
 - **Messaging / Buttons & Cards:** interactive cards use **Microsoft Adaptive Cards** spec; **Webex supports Adaptive Cards v1.3**; card JSON+images should stay **≤80 KB**, **≤10 image links**. Source: developer.webex.com/messaging/docs/buttons-and-cards.
 - **Auth:** OAuth2 integrations (user-scoped) or bot tokens. **Feasibility takeaway:** scheduling/invitations/metadata/recordings/webhooks/messaging+cards are viable; **transcript automation is gated by Webex Assistant** and licensing/privacy — do not assume it. Treat all Webex features behind the notification/integration **adapter** so the platform never hard-depends on Webex.
 
-### 5.4 Open-source landscape (for `docs/21` + build-vs-buy)
+### 5.4 Open-source landscape (for `docs/domain/open-source-landscape.md` + build-vs-buy)
 - **ADR tooling:** **Log4brains** (docs-as-code ADR mgmt + static site, **MADR** default template, timeline, search; thomvaill/log4brains). **adr-tools** (bash, Nygard format). **dotnet-adr** (.NET global tool). **MADR** template at adr.github.io/madr. Canonical hub: adr.github.io. *Reusable ideas, not a platform to adopt wholesale.*
 - **Backstage** (backstage/backstage; CNCF incubation; created at Spotify; 3,400+ orgs): software **catalog/entity model**, **TechDocs** (docs-as-code Markdown), software templates, plugin architecture (200+). *Heavy (React+Node IDP); reuse the **entity-catalog and docs-as-code ideas**, not the framework — adopting Backstage to run a weekly committee is overkill and off-mission.*
 - **Structurizr / C4** (c4model.com; Structurizr DSL): architecture-as-code; relevant as a **comparator to Tarseem** (we already have Tarseem — do not add Structurizr).
 - **Board/committee/governance SaaS** (BoardEffect, OnBoard, Diligent, Decisions for Teams, Hugo, Fellow): commercial, cloud, not deployable on-prem in a sensitive gov network, not architecture-specific → **learn from, don't adopt**.
 - **Conclusion:** no single OSS/commercial product covers architecture-committee governance + traceability + EN/AR/RTL + on-prem gov constraints. **Build the thin domain core; integrate Tarseem + Keystone + reuse org infra.** Adopt patterns (docs-as-code, catalog, MADR), not platforms.
 
-### 5.5 Standards & frameworks (for `docs/22`)
+### 5.5 Standards & frameworks (for `docs/domain/standards-and-best-practices.md`)
 - **ISO/IEC/IEEE 42010:2022** — architecture description (stakeholders, concerns, viewpoints). Use its vocabulary for the Governance/ADR/Invariant model. (quality.arc42.org/standards/iso-42010 ; iso.org/standard/50508.html — note 2022 supersedes 2011.)
-- **arc42** — 12-section pragmatic architecture-doc template; we structure `docs/15-architecture.md` along arc42. (arc42.org)
+- **arc42** — 12-section pragmatic architecture-doc template; we structure `docs/domain/architecture-detail.md` along arc42. (arc42.org)
 - **C4 model** — System Context / Container / Component / Code (+ dynamic/deployment); our diagrams use C4 levels (rendered via Tarseem's architecture/C4 family). (c4model.com)
 - **ADR formats** — **MADR** (recommended template) vs **Nygard** (lightweight). Recommend MADR-lite for the in-app ADR template. (adr.github.io)
 - **OWASP ASVS 5.0** (May 2025; ~350 reqs, 17 chapters, modular, levels L1/L2/L3) — target **L2** for this sensitive internal system. (owasp.org/www-project-application-security-verification-standard ; github.com/OWASP/ASVS)
@@ -106,7 +106,7 @@ Stack constraints (settled — see README §A): .NET/ASP.NET Core, Clean Archite
 - **.NET architecture** — **Modular monolith + Clean Architecture + vertical slice** is well-supported and Microsoft-endorsed in community/On-.NET guidance (Ardalis/Steve Smith; milanjovanovic.tech; antondevtips.com). Modules talk only via public APIs; no cross-module DB access. Supports ADR-0001/0002.
 - **Records management / auditability** — align audit + retention with general records-management practice and the org's gov requirements; immutability for votes/decisions.
 
-### 5.6 SQL Server sufficiency (for `docs/16` + ADR-0003/0011)
+### 5.6 SQL Server sufficiency (for `docs/domain/data-architecture.md` + ADR-0003/0011)
 - **Full-text search:** SQL Server FTS is adequate for moderate search (topics, docs, transcripts) but weaker than Elasticsearch on fuzzy/typo/autocomplete/customization. For this app's scale it is **sufficient in v1**; if search outgrows it, stand up the platform's **own self-hosted search** (e.g., an OpenSearch container, app-owned) — **not** the org's ELK. (airbyte/influxdata/medium comparisons; mauridb "From ElasticSearch back to SQL Server".)
 - **JSON:** SQL Server has native JSON support (good for storing Tarseem specs + flexible metadata).
 - **Reporting/analytics:** **columnstore indexes** handle dashboard/reporting loads well; SSAS/SSRS exist if needed. Reporting via read models + columnstore is sufficient — **no separate analytics DB** in v1.

@@ -7,7 +7,7 @@ namespace Acmp.Modules.Meetings.Infrastructure.Directory;
 
 // Meetings-owned implementation of the shared IMeetingQuorumSource port (ADR-0001): answers the Decisions
 // module's Vote present-quorum gate without exposing Meetings' tables. "Present-eligible" = an owned
-// Attendance row with IsVotingEligible AND Status ∈ {Present, Late} (docs/11 §Attendance). Unknown meeting =
+// Attendance row with IsVotingEligible AND Status ∈ {Present, Late} (docs/domain/domain-model.md §Attendance). Unknown meeting =
 // 0 (the handler treats "no linked meeting" separately).
 public sealed class MeetingQuorumSource : IMeetingQuorumSource
 {

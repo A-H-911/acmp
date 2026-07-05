@@ -1,5 +1,5 @@
 /*
- * Unauthenticated landing / sign-in route (docs/14 page 1; design "ACMP Sign In").
+ * Unauthenticated landing / sign-in route (docs/domain/information-architecture.md page 1; design "ACMP Sign In").
  * ACMP logo + name + "Sign in to continue" with a primary Log in button that starts
  * the Keycloak auth-code + PKCE redirect (no credentials handled in-app — entered on
  * Keycloak; ADR-0015). Keycloak redirects here after logout; we surface the signed-out

@@ -1,5 +1,5 @@
 /*
- * Top chrome (docs/14 §2; design "ACMP" app shell + "Navigation & IA"): brand,
+ * Top chrome (docs/domain/information-architecture.md §2; design "ACMP" app shell + "Navigation & IA"): brand,
  * global search, locale + theme toggles, notification bell, and the profile
  * menu — avatar + name + role trigger → role="menu" panel holding the identity
  * and a Log out item (OIDC end-session against the self-hosted Keycloak realm,

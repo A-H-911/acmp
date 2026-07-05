@@ -5,8 +5,8 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// The MinutesOfMeeting aggregate root (docs/11 §Meetings, docs/12 §6, W10) — the versioned official
-// record of a meeting. Homed IN the Meetings module (docs/11 §B lists it here), so it references its
+// The MinutesOfMeeting aggregate root (docs/domain/domain-model.md §Meetings, docs/domain/entity-lifecycles.md §6, W10) — the versioned official
+// record of a meeting. Homed IN the Meetings module (docs/domain/domain-model.md §B lists it here), so it references its
 // Meeting by id + display snapshots (MeetingKey/MeetingTitle), never a cross-module read (ADR-0001).
 //
 // Immutability (AC-036, ADR-0009): once Published, NOTHING is editable — a correction is a NEW version
@@ -15,7 +15,7 @@ namespace Acmp.Modules.Meetings.Domain;
 // 5-state): Approve records the approver + the soft-SoD-2 sole-author flag (AC-014); Publish seals the
 // record and drives the notify-all fan-out (AC-038).
 //
-// ponytail: the documented `Content:json (structured sections)` (docs/11) is modelled as a single
+// ponytail: the documented `Content:json (structured sections)` (docs/domain/domain-model.md) is modelled as a single
 // bilingual markdown `Summary` (LocalizedString, mirrored EN===AR) — structured sections aren't needed by
 // any P7c AC (AC-014/036/037/038) and align with the one-editor markdown-as-text decision (DV-04/AM-06).
 // Flagged as a data-model deviation, not a silent drift (guardrail 11).
@@ -23,7 +23,7 @@ public sealed class MinutesOfMeeting : AuditableEntity
 {
     private MinutesOfMeeting() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;      // MIN-YYYY-### — stable across versions of one meeting's minutes

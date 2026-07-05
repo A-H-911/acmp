@@ -14,7 +14,7 @@ namespace Acmp.Modules.Actions.Application.Features.ChangeActionStatus;
 // the domain enforces the legal state machine (a wrong-state call throws → 409). Reasons are bilingual
 // (guardrail 9), mirrored EN+AR.
 
-// ── the roles that may edit an action's progress/status (docs/10 row 14) ────────────────────────────────
+// ── the roles that may edit an action's progress/status (docs/domain/permission-role-matrix.md row 14) ────────────────────────────────
 internal static class ActionEditRoles
 {
     public static readonly string[] Value = { AcmpRoles.Chairman, AcmpRoles.Secretary, AcmpRoles.Member };

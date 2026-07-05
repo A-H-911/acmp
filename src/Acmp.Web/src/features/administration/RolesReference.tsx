@@ -1,7 +1,7 @@
 /*
  * Administration → Roles (mirrors the "ACMP Administration" `roles` section). Read-only reference:
  * the eight committee roles, their responsibilities, and key capabilities are mirrored from the
- * Keycloak realm roles (ADR-0004) and the docs/10 permission matrix — ACMP does not define roles, so
+ * Keycloak realm roles (ADR-0004) and the docs/domain/permission-role-matrix.md permission matrix — ACMP does not define roles, so
  * this is static canonical content, not a live module. The Usage Map schedules the editable surface
  * to P15; this read-only reference is the honest form available now.
  */

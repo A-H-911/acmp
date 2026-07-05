@@ -1,6 +1,6 @@
 /*
  * Navigation model — grouping, order, routes, and per-role visibility.
- * Mirrors the "ACMP Navigation & IA" design (GROUPS/ACCESS/AREA) and docs/14
+ * Mirrors the "ACMP Navigation & IA" design (GROUPS/ACCESS/AREA) and docs/domain/information-architecture.md
  * §2.1. A role that cannot access an area never sees its nav item (FR-024);
  * "view" access still shows the item (with a read-only marker).
  *
@@ -24,7 +24,7 @@ export interface NavArea {
   cta?: boolean;
 }
 
-/** Canonical route per area (docs/14 §3 sitemap). */
+/** Canonical route per area (docs/domain/information-architecture.md §3 sitemap). */
 export const AREAS: Record<AreaKey, NavArea> = {
   session: { key: 'session', labelKey: 'nav.session', path: '/session', icon: 'session', cta: true },
   submit: { key: 'submit', labelKey: 'nav.submit', path: '/backlog/submit', icon: 'plus', cta: true },

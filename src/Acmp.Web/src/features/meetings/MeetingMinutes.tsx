@@ -52,7 +52,7 @@ export function MeetingMinutes() {
 
   if (!meeting) return null; // shell owns loading/error
 
-  // Minutes exist only for a meeting that has started (docs/12 §6 — InProgress/Held/Closed).
+  // Minutes exist only for a meeting that has started (docs/domain/entity-lifecycles.md §6 — InProgress/Held/Closed).
   const meetingRan = meeting.status === 'InProgress' || meeting.status === 'Held' || meeting.status === 'Closed';
   if (!meetingRan) {
     return <MeetingGate icon="doc" title={t('meetings.mom.notReady.title')} body={t('meetings.mom.notReady.body')} />;

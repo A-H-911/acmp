@@ -5,7 +5,7 @@
  * Optional ballot comments are LocalizedString value objects ({ en, ar }), mirrored
  * (en === ar) like the rest of the app's bilingual free text.
  *
- * The Vote aggregate lives inside the Decisions module (docs/11 §Vote); its ratification
+ * The Vote aggregate lives inside the Decisions module (docs/domain/domain-model.md §Vote); its ratification
  * happens as a side-effect of issuing the coupled decision (SoD-3), so there is no
  * "approve vote" mutation here — the closed screen renders the outcome and links out.
  */
@@ -18,7 +18,7 @@ export interface LocalizedText {
   ar: string;
 }
 
-/** VoteStatus (docs/11 §Vote) — wire = enum names, localized in the UI. Forward-only. */
+/** VoteStatus (docs/domain/domain-model.md §Vote) — wire = enum names, localized in the UI. Forward-only. */
 export type VoteStatus = 'Configured' | 'Open' | 'Closed' | 'Ratified';
 
 export interface Ballot {

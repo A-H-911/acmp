@@ -7,7 +7,7 @@ using Stream = Acmp.Modules.Membership.Domain.Stream;
 
 namespace Acmp.Modules.Membership.Infrastructure.Persistence;
 
-// Maps ONLY the membership schema (docs/34 section 12: no cross-module tables).
+// Maps ONLY the membership schema (docs/domain/repository-structure.md section 12: no cross-module tables).
 public sealed class MembershipDbContext : ModuleDbContext, IMembershipDbContext
 {
     public const string Schema = "membership";

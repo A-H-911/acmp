@@ -2,7 +2,7 @@
 
 <!-- What and why. Link the US-### / AC-### this satisfies. -->
 
-## Definition of Done (docs/44)
+## Definition of Done (docs/execution/definition-of-done.md)
 - [ ] Tests pass (unit + integration); coverage meets target
 - [ ] Authorization enforced (role + ABAC); audit events emitted
 - [ ] EN + AR strings (no hardcoded text); verified in RTL
