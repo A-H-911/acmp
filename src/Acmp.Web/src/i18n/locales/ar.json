@@ -845,9 +845,83 @@
   },
   "dev": { "role": "دور المعاينة (للتطوير فقط)", "roleShort": "الدور", "rolesHeader": "الأدوار للقراءة فقط من Keycloak" },
   "dashboard": {
-    "title": "لوحة معلومات اللجنة",
-    "welcome": "مرحبًا، {{name}}.",
-    "placeholder": "ستظهر هنا الأدوات المخصصة حسب الدور عند بناء الوحدات."
+    "greeting": {
+      "morning": "صباح الخير، {{name}}",
+      "afternoon": "مساء الخير، {{name}}",
+      "evening": "مساء الخير، {{name}}"
+    },
+    "sub": {
+      "committee": "هذه هي حالة اللجنة اليوم.",
+      "secretary": "الفرز والمحاضر وطابور التصعيد في لمحة.",
+      "chairman": "قرارات وتصويتات ومخاطر بانتظار اعتمادك."
+    },
+    "loading": "جارٍ تحميل اللوحة…",
+    "error": {
+      "title": "تعذّر تحميل اللوحة",
+      "body": "حدث خطأ أثناء جلب بيانات لوحتك. حاول مرة أخرى."
+    },
+    "card": {
+      "backlog": "حالة قائمة المواضيع",
+      "nextMeeting": "الاجتماع القادم",
+      "actions": "حالة الإجراءات",
+      "recentDecisions": "قرارات حديثة",
+      "secretaryQueue": "طابور أمين السر",
+      "sla": "مواضيع تجاوزت المدة",
+      "votesAwaiting": "تصويتات بانتظار الاعتماد",
+      "escalatedRisks": "مخاطر مُصعّدة",
+      "escalatedActions": "إجراءات مُصعّدة",
+      "deferredTopics": "مؤجّلة مرتين فأكثر"
+    },
+    "openBacklog": "فتح القائمة",
+    "openAgenda": "فتح الأجندة",
+    "viewAll": "عرض الكل",
+    "activeTopics": "موضوعًا نشطًا",
+    "itemsCount": "{{count}} بنود",
+    "noMeeting": "لا يوجد اجتماع قادم مجدول.",
+    "noDecisions": "لم تُصدر قرارات بعد.",
+    "noSla": "لا مواضيع تجاوزت المدة.",
+    "noVotes": "لا تصويتات بانتظار اعتمادك.",
+    "noRisks": "لا مخاطر مُصعّدة.",
+    "noActions": "لا إجراءات مُصعّدة.",
+    "noDeferred": "لا مواضيع مؤجّلة مرتين فأكثر.",
+    "voteAwaitingRow": "تصويت مغلق — بانتظار اعتمادك",
+    "bucket": {
+      "triage": "فرز",
+      "accepted": "مقبول",
+      "scheduled": "مجدول",
+      "returned": "مُعاد",
+      "done": "مُقرّر"
+    },
+    "urgency": {
+      "Critical": "حرِج",
+      "Urgent": "عاجل",
+      "Normal": "عادي",
+      "Low": "منخفض"
+    },
+    "agenda": {
+      "Draft": "الأجندة: مسودة",
+      "Published": "الأجندة: منشورة"
+    },
+    "action": {
+      "Open": "مفتوح",
+      "InProgress": "قيد التنفيذ",
+      "Blocked": "محجوب",
+      "overdue": "متأخر"
+    },
+    "queue": {
+      "triage": "بانتظار الفرز",
+      "moms": "محاضر للاعتماد",
+      "escalated": "متأخرة (مُصعّدة)"
+    },
+    "exposure": {
+      "Low": "منخفض",
+      "Medium": "متوسط",
+      "High": "مرتفع",
+      "Critical": "حرِج"
+    },
+    "ageDays": "{{count}} يوم عمرًا",
+    "overdueDays": "{{count}} يوم تأخّرًا",
+    "deferredTimes": "{{count}}×"
   },
   "admin": {
     "title": "الإدارة",

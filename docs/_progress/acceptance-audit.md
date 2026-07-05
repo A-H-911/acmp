@@ -12,6 +12,25 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P12-PR2 update (2026-07-05): Role dashboards (FE, branch `feat/P12-pr2-role-dashboards`) —
+> **AC-064/065/066 → Met.** One home page at `/` (`features/dashboard/RoleDashboard`) renders the variant for the
+> signed-in user's highest committee role (Chairman > Secretary > else = Committee); the design's "Viewing as…" role
+> tabs are a preview affordance, not a live control (release checklist F-19 = three distinct dashboards, one AC each).
+> Every number is composed client-side (`dashboardAgg`) over the PR1 registers + existing reads — no server
+> aggregation, no chart library (ADR-0022). The AC-carrying logic (bucketing, next-meeting pick, overdue-threshold,
+> deferred≥2, SLA) lives in the pure `dashboardAgg.ts` and is unit-tested directly, so a wrong count can't hide
+> behind a rendered heading. Traces: `dashboardAgg.test` (11) + `RoleDashboard.test` (14: role gating, per-variant
+> live render, empty/loading/error, RTL chevron, axe). **Design→behavior reconciliations (guardrail #14, flagged):**
+> the design's personalized member cards (My topics/actions/votes, Mentions) are NOT rendered — they are design
+> extras, not required by any AC (AC-064 is committee-WIDE), and Mentions has no backing system; the committee
+> variant shows the AC-064 data instead. AC-064's urgency breakdown + the committee recent-decisions/action-status
+> cards and the chairman cards have no exact design card and reuse the design's segment/stat/list patterns.
+> "Escalated actions" = overdue beyond the escalation threshold — **AC-065's own definition** (Actions have no
+> Escalated status), one shared const feeds AC-065 + AC-066. Also removed the now-orphaned `components/ui/Card.tsx`
+> (its only consumer was the placeholder dashboard). FE gates green: tsc, 802 vitest, per-file cov (global 99.80%),
+> i18n parity 1364, oxlint, build. **Live `.dc.html` pixel-VR: still to run (Docker stack) — the final guardrail-#14
+> fidelity check for this new visual surface.** See progress-log "P12-PR2".
+>
 > P12-PR1 update (2026-07-05): Reporting thin registers (backend reads, branch `feat/P12-pr1-report-reads`) —
 > **NO AC flips.** PR1 is backend enablement for the P12 role dashboards: `GET /api/decisions` + `GET /api/votes`
 > registers, `GET /api/minutes` InReview approval queue, and a `Topic.TimesDeferred` counter on the backlog
@@ -715,9 +734,9 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-061 | Search & Trace | Pending | — | Arabic search via word-breaker |
 | AC-062 | Search & Trace | Pending | TraceabilityTests (panel groups outgoing/incoming, "other" endpoint per direction, excludes inactive) + TraceabilityApiTests (`GET /api/traceability/{type}/{id}`) | **P10c: panel API in place + audited** (`GetArtifactRelationships`, one hop). Stays Pending → **P10e**: AC-062 asserts the FE *panel display*, which lands with the traceability panels UI. |
 | AC-063 | Search & Trace | Pending | TraceabilityApiTests (Secretary creates edge → both source + target panels show it) + TraceabilityTests (create audits `Relationship.Created`) | **P10c: typed edge create + soft-delete + audit in place** (RBAC `Traceability.Link`). Stays Pending → **P10e**: AC-063 asserts the FE panel shows the new edge on both artifacts. |
-| AC-064 | Dashboards | Pending | — | Committee dashboard live data |
-| AC-065 | Dashboards | Pending | — | Secretary dashboard |
-| AC-066 | Dashboards | Pending | — | Chairman dashboard |
+| AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR pending. |
+| AC-065 | Dashboards | Met | dashboardAgg.test (overdue-beyond-threshold, SLA-breach sort) + RoleDashboard.test (secretary variant renders triage/MoMs/escalated counts + SLA list with aging) | P12-PR2: secretary variant; escalation threshold = shared const (AC-065 definition). Live pixel-VR pending. |
+| AC-066 | Dashboards | Met | dashboardAgg.test (deferred≥2, overdue-beyond-threshold) + RoleDashboard.test (chairman variant renders Closed votes / escalated risks / escalated actions / deferred≥2 with badges) | P12-PR2: chairman variant; "escalated actions" = overdue-beyond-threshold (AC-065 definition, Actions have no Escalated status). Live pixel-VR pending. |
 
 **Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.

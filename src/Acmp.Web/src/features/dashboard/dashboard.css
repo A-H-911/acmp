@@ -1,0 +1,242 @@
+/*
+ * Role dashboards (P12-PR2) — reuses the card system of "ACMP Dashboards & Reports.dc.html"
+ * (surface card, 12-col grid, segmented bar + legend, stat tiles, mono-keyed lists). Logical
+ * properties only (RTL-safe); tokens from the design system; literal px match the reference.
+ */
+
+/* ---------- header ---------- */
+.dash-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-block-end: 20px;
+}
+.dash-greeting {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.dash-sub {
+  margin-block-start: 5px;
+  margin-block-end: 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.dash-today {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 7px 12px;
+}
+
+/* ---------- grid + card ---------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; } /* inline `span N` clamps to the single column */
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.dash-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-end: 13px;
+}
+.dash-card-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.dash-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 12.5px;
+  text-decoration: none;
+}
+.dash-link:hover { text-decoration: underline; }
+
+/* ---------- backlog health ---------- */
+.dash-kpi {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-block-end: 12px;
+}
+.dash-kpi-n {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  font-feature-settings: 'tnum';
+}
+.dash-kpi-l { font-size: 13px; color: var(--text-2); }
+.dash-seg {
+  display: flex;
+  block-size: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--sunken);
+  margin-block-end: 13px;
+}
+.dash-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.dash-legend b { color: var(--text); font-weight: 600; }
+.dash-legend-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+.dash-urgency {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block-start: 13px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--border-soft);
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.dash-urgency b { color: var(--text); font-weight: 600; }
+
+/* ---------- stat tiles ---------- */
+.dash-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.dash-stat {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--subtle);
+}
+.dash-stat-v {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  font-feature-settings: 'tnum';
+}
+.dash-stat-l {
+  margin-block-start: 2px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+/* ---------- keyed lists ---------- */
+.dash-keylist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.dash-keylist li + li { border-block-start: 1px solid var(--border-soft); }
+.dash-keylist a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  text-decoration: none;
+  color: inherit;
+}
+.dash-keylist a:hover { opacity: 0.78; }
+.dash-key {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.dash-primary {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-row-chev { color: var(--text-3); flex: 0 0 auto; }
+
+/* ---------- badges + empty ---------- */
+.dash-badge {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9px;
+  padding: 1px 8px;
+  flex: 0 0 auto;
+  font-feature-settings: 'tnum';
+}
+.dash-badge.warn { color: var(--st-warn-fg); background: var(--st-warn-bg); }
+.dash-badge.danger { color: var(--st-danger-fg); background: var(--st-danger-bg); }
+.dash-empty {
+  margin: 0;
+  padding-block: 6px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+/* ---------- next meeting ---------- */
+.dash-mtg-title { font-size: 13.5px; font-weight: 600; }
+.dash-mtg-when { font-size: 12.5px; color: var(--text-2); margin-block-end: 13px; }
+.dash-mtg-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-end: 14px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.dash-btn {
+  margin-block-start: auto;
+  block-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  background: var(--subtle);
+  color: var(--text);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+.dash-btn:hover { background: var(--sunken); }

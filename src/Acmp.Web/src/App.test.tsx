@@ -17,11 +17,16 @@ import i18n from './i18n';
 afterEach(() => vi.unstubAllGlobals());
 
 function emptyApi() {
+  const emptyPage = { items: [], total: 0, page: 1, pageSize: 500, totalPages: 0 };
   return stubFetch((url) => {
     if (url.includes('/notifications')) {
       return { jsonBody: { items: [], unreadCount: 0, total: 0, hasMore: false } };
     }
     if (url.includes('/members')) return { jsonBody: [] };
+    // The home dashboard fans out to several registers; give each its real empty shape
+    // (paged for topics/actions/risks, bare arrays for the rest) so the grid renders zeros.
+    if (/\/(topics|actions|risks)(\?|$)/.test(url)) return { jsonBody: emptyPage };
+    if (/\/(meetings|decisions|votes|minutes)(\?|$)/.test(url)) return { jsonBody: [] };
     return { jsonBody: {} };
   });
 }
@@ -48,7 +53,8 @@ describe('appRoutes guards', () => {
 
   it('renders a protected route inside the shell for an authenticated member', async () => {
     renderAt('/', makeAuth(['member']));
-    expect(await screen.findByText(i18n.t('dashboard.title'))).toBeInTheDocument();
+    // A member lands on the committee dashboard variant (its sub-line always renders).
+    expect(await screen.findByText(i18n.t('dashboard.sub.committee'))).toBeInTheDocument();
     // The shell has the primary nav; the breadcrumb is a second <nav>, so query by name.
     expect(screen.getByRole('navigation', { name: i18n.t('nav.primary') })).toBeInTheDocument();
   });
