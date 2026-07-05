@@ -39,8 +39,17 @@ live app renders the current user's Keycloak role.
   correct; Escalated-actions card proves AC-066 threshold end-to-end; empty cards = fresh-stack seeding limits).
   **Stale-bundle quirk did NOT bite this time** — `e2e:up --build` served the fresh bundle (verified served JS
   contained `dash-greeting`/`secretaryQueue`, no `Role-tailored`). Only remaining: **operator squash-merge GO.**
-- **PR3 (FE)** — Reports shell: wrap P10g `/reports` into full design IA (6 view-tabs, filters, CSV export, data-states,
-  add `columns`+`stack` renderers); honest-empty for time-series cards. Live VR.
+- **PR3 (FE) — BUILT + all FE gates green** (branch `feat/P12-pr3-reports-shell`). Full Reports IA over 6 view-tabs
+  (executive/committee/stream/decisions/actions/audit), NO AC. `reportViews.ts` (pure `buildView`→`ReportCard[]` +
+  `viewToCsv`) + `ReportsPage.tsx` rewrite (tabs + Stream filter + CSV export + states + bars/columns/stack/stat/matrix/
+  empty renderers). ~16 REAL snapshot cards (aging = histogram of CURRENT ageDays → earns the `columns` renderer;
+  reuses P10g matrix/by-stream + dashboardAgg.backlogByBucket); added `columns`+`stack` renderers + `Zone`+='sched'.
+  **Honest-empty (flagged): `trend`** (per-week/quarter series, no history — ADR-0022 PH-3) **+ `seam`** (attendance
+  not on MeetingSummary; vote attribution not on VoteSummary). **KILLED (advisor): DATA state-tabs** (preview
+  affordance) **+ Period filter** (dishonest w/o time series); shipped only the real Stream filter. CSV = current-view
+  rows, no PDF. Gates: tsc, 815 vitest (+33), per-file cov 100% on new files/99.80% global, i18n 1456, oxlint, build.
+  **REMAINING: live `.dc.html` pixel-VR (`e2e/p12-reports-vr.spec.ts` — executive+committee tabs EN-light+AR-dark) →
+  commit/PR/CI → merge GO. ★ P12 COMPLETE after this. ★** Removed superseded `p10g-reports-vr.spec.ts`.
 
 **Right-sizing = [[ADR-0022]]** (client-side aggregation over thin registers; NO columnstore read-model layer; NO chart
 library — CSS primitives; **resolves OQ-022**). Deferred + flagged: server PDF export, Hangfire-scheduled reports,
