@@ -125,6 +125,19 @@ public class TopicTests
 
         t.Status.Should().Be(TopicStatus.Deferred);
         t.RevisitOn.Should().Be(revisit);
+        t.TimesDeferred.Should().Be(1);
+    }
+
+    [Fact] // AC-066: the chairman dashboard surfaces topics Deferred ≥2× — the counter spans reactivations.
+    public void TimesDeferred_counts_each_defer_across_reactivation()
+    {
+        var t = Submitted();
+        t.BeginTriage(Secretary, "Khalid A.", Now);
+        t.Defer("first", null, Secretary, "Khalid A.", Now);
+        t.Reactivate(Secretary, "Khalid A.", Now);
+        t.Defer("second", null, Secretary, "Khalid A.", Now);
+
+        t.TimesDeferred.Should().Be(2);
     }
 
     [Fact]

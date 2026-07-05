@@ -16,6 +16,7 @@ public sealed record TopicSummaryDto(
     Guid? OwnerId,
     string? OwnerName,
     int Priority,
+    int TimesDeferred,
     int AgeDays,
     bool SlaBreached,
     DateTimeOffset CreatedAt);

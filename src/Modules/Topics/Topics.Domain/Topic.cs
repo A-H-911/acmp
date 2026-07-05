@@ -36,6 +36,9 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public TopicSource Source { get; private set; }
     public TopicStatus Status { get; private set; }
     public int Priority { get; private set; }
+    // How many times this topic has been Deferred (W20). Governance signal for the chairman dashboard's
+    // "Deferred ≥2×" list (AC-066) — a topic bouncing off the agenda repeatedly needs attention.
+    public int TimesDeferred { get; private set; }
     public string SubmittedBySub { get; private set; } = string.Empty;
     public string SubmittedByName { get; private set; } = string.Empty;
     public Guid? OwnerId { get; private set; }            // CommitteeMember.PublicId
@@ -128,6 +131,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         RequireStatus(TopicStatus.Triage, TopicStatus.Accepted, TopicStatus.Scheduled, TopicStatus.InCommittee);
         RequireReason(reason, "A defer reason is required.");
         RevisitOn = revisitOn;
+        TimesDeferred++;
         Transition(TopicStatus.Deferred, reason, actorSub, actorName, now);
         Raise(new TopicDeferredEvent(PublicId, Key, reason.Trim(), revisitOn, now));
     }

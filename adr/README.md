@@ -28,6 +28,8 @@ This folder contains the Architecture Decision Records (ADRs) for the Architectu
 | [ADR-0018](ADR-0018-optimistic-concurrency-rowversion.md) | Optimistic Concurrency via RowVersion (implements docs/16 §1.5) | Accepted | 2026-06-30 |
 | [ADR-0019](ADR-0019-amends-0008-self-describing-edges.md) | Self-Describing Relationship Edges, No Physical Artifact Registry (amends ADR-0008) | Accepted | 2026-07-03 |
 | [ADR-0020](ADR-0020-impact-graph-read-time-composition.md) | Impact Graph by Read-Time Contract Composition, Not a Cross-Schema Traversal (clarifies ADR-0019) | Accepted | 2026-07-03 |
+| [ADR-0021](ADR-0021-cross-module-write-seam.md) | Cross-Module System Writes Go Through a Shared.Contracts Write Port (extends ADR-0001) | Accepted | 2026-07-04 |
+| [ADR-0022](ADR-0022-reporting-client-side-no-columnstore.md) | Reporting = Client-Side Aggregation over Thin Registers — No Columnstore Read-Model Layer, No Chart Library (extends ADR-0001/0003; resolves OQ-022) | Accepted | 2026-07-05 |
 
 ---
 

@@ -12,6 +12,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P12-PR1 update (2026-07-05): Reporting thin registers (backend reads, branch `feat/P12-pr1-report-reads`) —
+> **NO AC flips.** PR1 is backend enablement for the P12 role dashboards: `GET /api/decisions` + `GET /api/votes`
+> registers, `GET /api/minutes` InReview approval queue, and a `Topic.TimesDeferred` counter on the backlog
+> projection (migration `Topics_AddTimesDeferred`). **AC-064/065/066 (FR-135/136/137) stay Pending** — they flip to
+> Met in **PR2** when the dashboards render this data end-to-end through the UI (G-TRACE: an AC is Met only when
+> demonstrable, not when its data source exists). Right-sizing recorded in **ADR-0022** (no columnstore read-model
+> layer, no chart library; resolves OQ-022). +6 backend tests (decisions/votes/minutes registers, TimesDeferred);
+> Application 679 + Domain 188 green; format clean. See progress-log "P12-PR1".
+>
 > P11 audit-remediation update (2026-07-05): adversarial-audit fixes across the Governance surfaces (branch
 > `fix/p11-audit-remediation`), **NO AC flips** (Governance is PH-2, AC-less). Design-fidelity: superseded-body
 > dimming (+ removed a false `is-retired` comment), Superseded chip tone `warn`→`neutral`, `shieldPlus`/`book`/

@@ -4,6 +4,7 @@ using Acmp.Modules.Decisions.Application.Features.ChangeBallot;
 using Acmp.Modules.Decisions.Application.Features.CloseVote;
 using Acmp.Modules.Decisions.Application.Features.ConfigureVote;
 using Acmp.Modules.Decisions.Application.Features.GetVoteByKey;
+using Acmp.Modules.Decisions.Application.Features.GetVotes;
 using Acmp.Modules.Decisions.Application.Features.GetVotesForTopic;
 using Acmp.Modules.Decisions.Application.Features.IssueDecision;
 using Acmp.Modules.Decisions.Application.Features.OpenVote;
@@ -86,6 +87,24 @@ public class VoteHandlerTests
         var summary = await new ConfigureVoteHandler(db, new DecisionKeyGenerator(db), sec, clock, Substitute.For<IAuditSink>())
             .Handle(cmd, default);
         return (summary.Id, summary.Key);
+    }
+
+    // ── committee-wide register (P12, feeds AC-066 chairman "votes awaiting approval") ──
+    [Fact]
+    public async Task GetVotes_register_returns_all_and_status_filter_isolates_a_state()
+    {
+        var clock = Clock(Now);
+        var name = "vreg-" + Guid.NewGuid();
+        await ConfigureAsync(name, clock, ConfigCmd());
+        await ConfigureAsync(name, clock, ConfigCmd());   // two Configured votes; register is not topic-scoped
+
+        await using var read = Db(name, User("kc-any"), clock);
+        (await new GetVotesHandler(read).Handle(new GetVotesQuery(null), default)).Should().HaveCount(2);
+        // The filter mechanic is enum-name equality; a live Closed transition is exercised by the
+        // lifecycle tests — the register only re-filters, so proving isolation on Configured suffices.
+        (await new GetVotesHandler(read).Handle(new GetVotesQuery("Configured"), default)).Should().HaveCount(2);
+        (await new GetVotesHandler(read).Handle(new GetVotesQuery("Closed"), default)).Should().BeEmpty();
+        (await new GetVotesHandler(read).Handle(new GetVotesQuery("NotAStatus"), default)).Should().HaveCount(2);
     }
 
     // ── configure ───────────────────────────────────────────────────────────
