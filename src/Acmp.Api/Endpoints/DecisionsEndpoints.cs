@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Contracts;
 using Acmp.Modules.Decisions.Application.Features.GetDecisionByKey;
+using Acmp.Modules.Decisions.Application.Features.GetDecisions;
 using Acmp.Modules.Decisions.Application.Features.GetDecisionsByTopic;
 using Acmp.Modules.Decisions.Application.Features.IssueDecision;
 using Acmp.Modules.Decisions.Application.Features.RecordDecision;
@@ -21,9 +22,13 @@ public static class DecisionsEndpoints
     {
         var group = app.MapGroup("/api/decisions").WithTags("Decisions").RequireAuthorization();
 
-        // Reads — any authenticated committee member. List filters by Topic.PublicId (a Guid).
-        group.MapGet("/", async (Guid topic, ISender sender, CancellationToken ct) =>
-            Results.Ok(await sender.Send(new GetDecisionsByTopicQuery(topic), ct)));
+        // Reads — any authenticated committee member. With ?topic={guid} → that topic's decision
+        // history; without it → the committee-wide register (optional ?status= and ?limit=, e.g. the
+        // dashboard's last-5 issued, AC-064).
+        group.MapGet("/", async (Guid? topic, string? status, int? limit, ISender sender, CancellationToken ct) =>
+            topic is Guid topicId
+                ? Results.Ok(await sender.Send(new GetDecisionsByTopicQuery(topicId), ct))
+                : Results.Ok(await sender.Send(new GetDecisionsQuery(status, limit), ct)));
 
         group.MapGet("/{key}", async (string key, ISender sender, CancellationToken ct) =>
         {

@@ -12,6 +12,57 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P12-PR1 — Reporting thin registers (backend reads) — branch `feat/P12-pr1-report-reads`
+
+**Phase kickoff + architecture call.** P12 (Dashboards & Reports) is the design's two surfaces behind a top-bar
+toggle: the role **Dashboard** (`/`, pending AC-064/065/066) and the tabbed **Reports** (`/reports`, no AC — reuses
+the P10g `rpt-*` card renderers). The toggle reconciles to the app's existing nav (`home` + `reports` are already
+separate items), so no toggle is built. Planned as GO-gated slices: **PR1 backend reads → PR2 role dashboards
+(closes the ACs) → PR3 Reports shell.** Operator GO on all three: build the thin registers, start with PR1, record
+the right-sizing as an ADR.
+
+**Right-sizing (ADR-0022, guardrail #11/#12).** Dropped the docs/27 §5 Reporting **read-model / columnstore** layer
+and the `/api/v1/reports/*` aggregation endpoints — for ≤20 users with bounded registers, client-side aggregation
+over plain reads (the P10f/P10g precedent) is right-sized. **No chart library** — the `.dc.html` renders every chart
+as CSS primitives; this **resolves OQ-022** (no lib to RTL-validate). Server **PDF** export + **Hangfire-scheduled**
+reports + time-series/advanced dashboards (docs/27 DB-13/14/22/23/24) deferred to PH-3; Research dashboard DB-18 =
+PH-2. CSV export (client-side) is the one export in v1.
+
+**Built (backend only — the four reads the dashboards need; FE consumers land in PR2).**
+- **`GetDecisions` register** → `GET /api/decisions` (committee-wide, optional `status`/`limit`, issued-desc). The
+  existing `?topic=` route now branches: with `topic` → per-topic history; without → the register. Feeds AC-064
+  "last 5 issued decisions" + the Reports decision view. (`GetDecisions.cs`, `DecisionsEndpoints.cs`)
+- **`GetVotes` register** → `GET /api/votes` (committee-wide, optional `status`; same `?topic=` branch). Feeds the
+  chairman queue "votes awaiting approval" = Closed¬Ratified (AC-066) + the Reports voting view. (`GetVotes.cs`,
+  `VotesEndpoints.cs`)
+- **`GetMinutesAwaiting`** → `GET /api/minutes` with no `meeting` → the cross-meeting InReview approval queue. Feeds
+  the secretary dashboard "MoMs awaiting approval" (AC-065). Only head versions are ever InReview, so no de-dupe.
+  (`GetMinutesAwaiting.cs`, `MinutesEndpoints.cs`)
+- **`Topic.TimesDeferred`** — a domain counter incremented in `Topic.Defer()` (spans reactivations), exposed on the
+  backlog projection (`TopicSummaryDto`). Feeds the chairman dashboard "topics Deferred ≥2×" (AC-066). This is a
+  small **domain change** (not a pure read) — flagged: the aggregate previously raised `TopicDeferredEvent` but kept
+  no count. Forward-only migration `Topics_AddTimesDeferred` (single non-null column, default 0).
+
+**Reconciliations flagged.** Design "role tabs" (*Viewing as…*) = a preview affordance, not a real control — the live
+dashboard renders the current user's Keycloak role (PR2). Design covers only coordinator/chairman/member; the other
+5 roles' fallback (default → Committee dashboard) is a PR2 decision. AC-064 (any member) content ≠ the design's
+personalized "member" card set — PR2 composes the AC-required committee data using the design's card patterns and
+flags the design→behavior additions.
+
+**Gates (backend).** `dotnet build acmp.sln` clean (only known NU1902); **Application 679 + Domain 188 tests green**
+(+6 new: decisions register scope/limit + status-filter, votes register status-filter, minutes InReview queue,
+`TimesDeferred` ×2); `dotnet format --verify-no-changes` clean (BOM/EOL/imports fixed). Coverage + full-suite +
+ArchUnit run pre-commit.
+
+**AC audit.** **No flips yet** — PR1 is backend enablement; AC-064/065/066 flip to Met in **PR2** when the dashboards
+render the data end-to-end (G-TRACE: an AC is Met only when demonstrable through the UI). Also indexed the two
+un-indexed ADRs found in `adr/README.md` (**ADR-0021** P11e, **ADR-0022** this slice) — DI-01 hygiene.
+
+**Next:** PR2 — the role Dashboard at `/` (three variants), consuming these registers + existing reads; closes
+AC-064/065/066; live `.dc.html` VR.
+
+---
+
 ## P11 audit remediation — fidelity + robustness fixes across the Governance surfaces (branch `fix/p11-audit-remediation`)
 
 Remediated an adversarial P11 audit (ADR + Invariant + Decision→ADR promotion) against the local `.dc.html`

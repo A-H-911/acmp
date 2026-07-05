@@ -4,6 +4,7 @@ using Acmp.Modules.Decisions.Application.Features.ChangeBallot;
 using Acmp.Modules.Decisions.Application.Features.CloseVote;
 using Acmp.Modules.Decisions.Application.Features.ConfigureVote;
 using Acmp.Modules.Decisions.Application.Features.GetVoteByKey;
+using Acmp.Modules.Decisions.Application.Features.GetVotes;
 using Acmp.Modules.Decisions.Application.Features.GetVotesForTopic;
 using Acmp.Modules.Decisions.Application.Features.OpenVote;
 using Acmp.Modules.Decisions.Application.Features.RecuseVote;
@@ -22,9 +23,13 @@ public static class VotesEndpoints
     {
         var group = app.MapGroup("/api/votes").WithTags("Votes").RequireAuthorization();
 
-        // Reads — any authenticated committee member. List filters by Topic.PublicId (a Guid).
-        group.MapGet("/", async (Guid topic, ISender sender, CancellationToken ct) =>
-            Results.Ok(await sender.Send(new GetVotesForTopicQuery(topic), ct)));
+        // Reads — any authenticated committee member. With ?topic={guid} → that topic's ballot
+        // history; without it → the committee-wide register (optional ?status=, e.g. the chairman
+        // queue's Closed-not-Ratified votes awaiting approval, AC-066).
+        group.MapGet("/", async (Guid? topic, string? status, ISender sender, CancellationToken ct) =>
+            topic is Guid topicId
+                ? Results.Ok(await sender.Send(new GetVotesForTopicQuery(topicId), ct))
+                : Results.Ok(await sender.Send(new GetVotesQuery(status), ct)));
 
         group.MapGet("/{key}", async (string key, ISender sender, CancellationToken ct) =>
         {

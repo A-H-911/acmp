@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Features.ApproveMinutes;
 using Acmp.Modules.Meetings.Application.Features.DraftMinutes;
+using Acmp.Modules.Meetings.Application.Features.GetMinutesAwaiting;
 using Acmp.Modules.Meetings.Application.Features.GetMinutesByKey;
 using Acmp.Modules.Meetings.Application.Features.GetMinutesForMeeting;
 using Acmp.Modules.Meetings.Application.Features.PublishMinutes;
@@ -26,8 +27,12 @@ public static class MinutesEndpoints
 
         // Reads — any authenticated committee member. List = version history for a meeting (a Guid);
         // detail = a key (optionally a specific version, else the current/head version).
-        group.MapGet("/", async (Guid meeting, ISender sender, CancellationToken ct) =>
-            Results.Ok(await sender.Send(new GetMinutesForMeetingQuery(meeting), ct)));
+        // With ?meeting={guid} → that meeting's minutes version history; without it → the committee-wide
+        // approval queue (all InReview, across meetings) for the secretary dashboard (AC-065).
+        group.MapGet("/", async (Guid? meeting, ISender sender, CancellationToken ct) =>
+            meeting is Guid meetingId
+                ? Results.Ok(await sender.Send(new GetMinutesForMeetingQuery(meetingId), ct))
+                : Results.Ok(await sender.Send(new GetMinutesAwaitingQuery(), ct)));
 
         group.MapGet("/{key}", async (string key, int? version, ISender sender, CancellationToken ct) =>
         {

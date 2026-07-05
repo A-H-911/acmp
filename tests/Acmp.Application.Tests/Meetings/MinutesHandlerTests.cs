@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Features.ApproveMinutes;
 using Acmp.Modules.Meetings.Application.Features.DraftMinutes;
+using Acmp.Modules.Meetings.Application.Features.GetMinutesAwaiting;
 using Acmp.Modules.Meetings.Application.Features.GetMinutesByKey;
 using Acmp.Modules.Meetings.Application.Features.GetMinutesForMeeting;
 using Acmp.Modules.Meetings.Application.Features.PublishMinutes;
@@ -96,6 +97,26 @@ public class MinutesHandlerTests
     {
         await using var db = Db(name, user, clock);
         return (await db.Meetings.FirstAsync()).PublicId;
+    }
+
+    // P12 — committee-wide approval queue feeding the secretary dashboard (AC-065).
+    [Fact]
+    public async Task GetMinutesAwaiting_lists_only_InReview_records()
+    {
+        var user = User(); var clock = Clock(Now);
+        var (name, minutesId) = await DraftedAsync(user, clock);   // a Draft — not yet awaiting
+
+        await using var read1 = Db(name, user, clock);
+        (await new GetMinutesAwaitingHandler(read1).Handle(new GetMinutesAwaitingQuery(), default))
+            .Should().BeEmpty();
+
+        await using (var db = Db(name, user, clock))               // Draft → InReview
+            await new SubmitMinutesForReviewHandler(db, user, clock, Substitute.For<IAuditSink>())
+                .Handle(new SubmitMinutesForReviewCommand(minutesId), default);
+
+        await using var read2 = Db(name, user, clock);
+        (await new GetMinutesAwaitingHandler(read2).Handle(new GetMinutesAwaitingQuery(), default))
+            .Should().ContainSingle().Which.Status.Should().Be("InReview");
     }
 
     [Fact]

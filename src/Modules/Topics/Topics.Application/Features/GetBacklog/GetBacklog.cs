@@ -102,6 +102,6 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
 
     private static TopicSummaryDto Map(Topic t, DateTimeOffset now) => new(
         t.PublicId, t.Key, t.Title, t.Type.ToString(), t.Status.ToString(), t.Urgency.ToString(),
-        t.Scope.ToString(), t.AffectedStreams.ToList(), t.OwnerId, t.OwnerName, t.Priority,
+        t.Scope.ToString(), t.AffectedStreams.ToList(), t.OwnerId, t.OwnerName, t.Priority, t.TimesDeferred,
         TopicAging.AgeDays(t.CreatedAt, now), TopicAging.IsBreaching(t, now), t.CreatedAt);
 }

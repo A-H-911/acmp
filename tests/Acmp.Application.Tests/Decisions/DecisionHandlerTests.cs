@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Contracts;
 using Acmp.Modules.Decisions.Application.Features.GetDecisionByKey;
+using Acmp.Modules.Decisions.Application.Features.GetDecisions;
 using Acmp.Modules.Decisions.Application.Features.GetDecisionsByTopic;
 using Acmp.Modules.Decisions.Application.Features.IssueDecision;
 using Acmp.Modules.Decisions.Application.Features.RecordDecision;
@@ -330,6 +331,50 @@ public class DecisionHandlerTests
         list.Should().HaveCount(2);
         list[0].Key.Should().Be("DECN-2026-002");   // newest first
         list.Should().OnlyContain(d => d.TopicId == Topic);
+    }
+
+    // ── committee-wide register (P12, feeds AC-064 "last N issued decisions") ────
+    [Fact]
+    public async Task GetDecisions_register_returns_the_whole_set_newest_first_and_respects_limit()
+    {
+        var user = User(); var clock = Clock(Now);
+        var name = "reg-" + Guid.NewGuid();
+        for (var i = 0; i < 3; i++)   // the register is NOT topic-scoped — three records is enough to prove it
+            await using (var db = Db(name, user, clock))
+                await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+                    .Handle(RecordCmd(), default);
+
+        await using var read = Db(name, user, clock);
+        var all = await new GetDecisionsHandler(read).Handle(new GetDecisionsQuery(null, null), default);
+        all.Should().HaveCount(3);
+        all[0].Key.Should().Be("DECN-2026-003");   // newest first
+
+        var top2 = await new GetDecisionsHandler(read).Handle(new GetDecisionsQuery(null, 2), default);
+        top2.Should().HaveCount(2);
+        top2[0].Key.Should().Be("DECN-2026-003");
+    }
+
+    [Fact]
+    public async Task GetDecisions_status_filter_isolates_issued_and_ignores_an_unparseable_value()
+    {
+        var user = User(); var clock = Clock(Now);
+        var name = "regs-" + Guid.NewGuid();
+        Guid issuedId;
+        await using (var db = Db(name, user, clock))
+            issuedId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+                .Handle(RecordCmd(), default)).Id;
+        await using (var db = Db(name, user, clock))          // a second record that stays Draft
+            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+                .Handle(RecordCmd(), default);
+        await using (var db = Db(name, user, clock))
+            await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(), TraceLinks())
+                .Handle(new IssueDecisionCommand(issuedId, false, null), default);
+
+        await using var read = Db(name, user, clock);
+        (await new GetDecisionsHandler(read).Handle(new GetDecisionsQuery("Issued", null), default))
+            .Should().ContainSingle().Which.Status.Should().Be("Issued");
+        (await new GetDecisionsHandler(read).Handle(new GetDecisionsQuery("NotAStatus", null), default))
+            .Should().HaveCount(2);   // unparseable filter is ignored → the whole register
     }
 
     // ── validators ──────────────────────────────────────────────────────────
