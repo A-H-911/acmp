@@ -12,6 +12,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P11 audit-remediation update (2026-07-05): adversarial-audit fixes across the Governance surfaces (branch
+> `fix/p11-audit-remediation`), **NO AC flips** (Governance is PH-2, AC-less). Design-fidelity: superseded-body
+> dimming (+ removed a false `is-retired` comment), Superseded chip tone `warn`→`neutral`, `shieldPlus`/`book`/
+> `filterLines`/`checklist` glyphs, shared Invariant H1, `nav`+`aria-current` tab bar, Convert-to-ADR primary CTA +
+> preview box, supersede left-arrow/badge, numeric metrics + sticky aside, "Showing N", dead-code/comment cleanup
+> (EN/AR parity 1310/1310). Backend robustness: **BE1 `Governance_AdrSourceDecisionUnique`** filtered unique index
+> (one ADR per decision, DB backstop), re-promote **edge-heal**, corrected ADR-0021 "in-transaction" wording,
+> supersede successor `AdrApproved`/`InvariantActivated` audit. The general **audit-immutability AC-017/018** still
+> hold (every governance transition audited; approved ADRs / active invariants frozen). Gates: BE 1059 + cov 99.80%
+> + format + ArchUnit 40/40; FE 772 + cov + parity + build. See progress-log "P11 audit remediation".
+>
 > P11b update (2026-07-04): ADR **UI** — the `/adrs` register + `/adrs/:key` MADR-lite detail + create dialog
 > (branch `feat/P11b-adr-ui`), **FE-only, NO AC flips** (Governance is PH-2, AC-less). Advances the UI half of
 > **FR-099/100/103** (author MADR-lite, register, supersede back-link display) to done and **FR-104** (Export

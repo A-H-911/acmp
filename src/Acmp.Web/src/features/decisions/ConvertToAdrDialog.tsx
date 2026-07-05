@@ -57,6 +57,10 @@ export function ConvertToAdrDialog({ open, onClose, decisionId, decisionKey }: P
     >
       <div className="dec-convert-body">
         <p className="dec-convert-text">{t('decisions.convert.body', { key: decisionKey })}</p>
+        <div className="dec-convert-preview">
+          <span className="dec-convert-preview-icon"><Icon name="adr" size={16} aria-hidden /></span>
+          <span className="dec-convert-preview-text">{t('decisions.convert.preview')}</span>
+        </div>
         {submitError && (
           <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{submitError}</p>
         )}

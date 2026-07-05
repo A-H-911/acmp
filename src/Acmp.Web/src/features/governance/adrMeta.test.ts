@@ -23,7 +23,7 @@ describe('statusTone', () => {
     expect(statusTone('Draft')).toBe('neutral');
     expect(statusTone('Proposed')).toBe('info');
     expect(statusTone('Approved')).toBe('success');
-    expect(statusTone('Superseded')).toBe('warn');
+    expect(statusTone('Superseded')).toBe('neutral');
     expect(statusTone('Deprecated')).toBe('danger');
   });
 });

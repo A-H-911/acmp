@@ -21,8 +21,8 @@ export const INVARIANT_SCOPES: readonly InvariantScope[] = ['SingleStream', 'Mul
 
 /**
  * Status → chip tone. Draft is neutral WIP; Proposed is in-flight (info); Active is the live rule
- * (success); Retired is stood-down (neutral); Superseded is replaced-but-kept (warn). Mirrors the design's
- * invStatus map (active/draft/retired), extended to the two states the design's preview omits.
+ * (success); Retired is stood-down (neutral); Superseded is replaced-but-kept (neutral — matches the ADR
+ * Superseded tone and the design's neutral Superseded badge). Mirrors the design's invStatus map.
  */
 export function statusTone(status: InvariantStatus): StatusTone {
   switch (status) {
@@ -35,7 +35,7 @@ export function statusTone(status: InvariantStatus): StatusTone {
     case 'Retired':
       return 'neutral';
     case 'Superseded':
-      return 'warn';
+      return 'neutral';
   }
 }
 

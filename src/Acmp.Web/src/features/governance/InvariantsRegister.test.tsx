@@ -11,6 +11,11 @@ vi.mock('../../api/invariants', async (orig) => ({
   useInvariantsRegister: vi.fn(),
   useInvariantsCount: vi.fn(),
 }));
+// The tab bar shows the ADR total too — stub that cross-register count so the register renders in isolation.
+vi.mock('../../api/adrs', async (orig) => ({
+  ...(await orig<typeof import('../../api/adrs')>()),
+  useAdrsCount: vi.fn(() => ({ data: 6 })),
+}));
 // Isolate the register from the create dialog's data hooks — a light stub proves the open wiring.
 vi.mock('./CreateInvariantDialog', () => ({
   CreateInvariantDialog: ({ open }: { open: boolean }) => (open ? <div>create-invariant-dialog</div> : null),
@@ -64,11 +69,12 @@ describe('InvariantsRegister (P11d)', () => {
   it('renders the filter-independent header total and the tab bar (Invariants active, ADRs links to /adrs)', () => {
     setup();
     expect(screen.getByText('9 invariants')).toBeInTheDocument();
-    const invTab = screen.getByRole('tab', { name: /Architecture Invariants/ });
-    expect(invTab).toHaveAttribute('aria-selected', 'true');
-    const adrsTab = screen.getByRole('tab', { name: /ADRs/ });
-    expect(adrsTab).toHaveAttribute('aria-selected', 'false');
-    expect(adrsTab).toHaveAttribute('href', '/adrs');
+    // The tab bar is a <nav>; the active tab is marked aria-current, the other is a route link.
+    const nav = screen.getByRole('navigation', { name: 'ADR registers' });
+    const invTab = within(nav).getByText('Architecture Invariants');
+    expect(invTab).toHaveAttribute('aria-current', 'page');
+    const adrsLink = within(nav).getByRole('link', { name: /ADRs/ });
+    expect(adrsLink).toHaveAttribute('href', '/adrs');
   });
 
   it('renders rows: key, statement link, category, scope, and status chip', () => {
@@ -79,7 +85,7 @@ describe('InvariantsRegister (P11d)', () => {
     expect(screen.getByText('Security')).toBeInTheDocument();
     expect(screen.getByText('Platform')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
+    expect(screen.getByText('Showing 2')).toBeInTheDocument();
   });
 
   it('filters by status via the server params', async () => {
@@ -111,14 +117,16 @@ describe('InvariantsRegister (P11d)', () => {
     expect(screen.getByText('create-invariant-dialog')).toBeInTheDocument();
   });
 
-  it('renders an empty state with a clear button only when a filter is active', async () => {
+  it('renders an empty state that always offers clear-filters (design parity) and resets the params', async () => {
     const user = userEvent.setup();
     withRows([], 0);
     setup();
-    expect(screen.getByText('No invariants match these filters')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    expect(screen.getByText('Nothing to show')).toBeInTheDocument();
+    // The empty state always offers Clear filters (design parity), not only when a filter is active.
+    expect(screen.getByRole('button', { name: 'Clear filters' })).toBeInTheDocument();
     await user.click(within(screen.getByRole('search')).getByRole('button', { name: 'Status' }));
     await user.click(screen.getByText('Retired'));
+    expect(lastParams().statuses).toEqual(['Retired']);
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(lastParams().statuses).toBeUndefined();
   });

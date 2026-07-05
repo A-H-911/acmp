@@ -1,10 +1,11 @@
 /*
  * Governance register tab bar (P11d) — the shared "ADRs | Architecture Invariants" switch that heads both
  * the ADR register (/adrs) and the Invariant register (/invariants), matching the design's isAdrs tab bar.
- * The active tab is the current page (a static span); the other is a Link to its route, so tabs deep-link.
+ * These are route deep-links, not a true tab widget, so it is a <nav> with the current page marked
+ * aria-current — not role="tablist" (which would promise a tabpanel/roving-tabindex contract we don't honor).
  *
- * Each tab shows its own count only when the hosting page supplies it (the ADR page knows the ADR total,
- * the Invariant page knows the Invariant total) — this avoids cross-fetching the other register's count.
+ * Both counts render on both tabs (matching the design); each hosting page supplies both totals from the two
+ * lightweight count queries.
  */
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -31,10 +32,10 @@ export function GovernanceTabs({ active, adrCount, invCount }: Props) {
   const { t } = useTranslation();
   const tabs: TabDef[] = [
     { key: 'adrs', to: '/adrs', icon: 'adr', labelKey: 'adrs.tab.adrs', count: adrCount },
-    { key: 'invariants', to: '/invariants', icon: 'shieldUser', labelKey: 'adrs.tab.invariants', count: invCount },
+    { key: 'invariants', to: '/invariants', icon: 'shieldPlus', labelKey: 'adrs.tab.invariants', count: invCount },
   ];
   return (
-    <div className="adr-tabs" role="tablist" aria-label={t('adrs.tabsLabel')}>
+    <nav className="adr-tabs" aria-label={t('adrs.tabsLabel')}>
       {tabs.map((tab) => {
         const label = (
           <>
@@ -43,15 +44,15 @@ export function GovernanceTabs({ active, adrCount, invCount }: Props) {
           </>
         );
         return tab.key === active ? (
-          <span key={tab.key} className="adr-tab is-active" role="tab" aria-selected="true">
+          <span key={tab.key} className="adr-tab is-active" aria-current="page">
             {label}
           </span>
         ) : (
-          <Link key={tab.key} className="adr-tab" role="tab" aria-selected="false" to={tab.to}>
+          <Link key={tab.key} className="adr-tab" to={tab.to}>
             {label}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

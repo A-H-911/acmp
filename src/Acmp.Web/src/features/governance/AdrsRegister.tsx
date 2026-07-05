@@ -13,14 +13,15 @@
  *    IsSuperseded (bool), not the peer keys/direction (that lives on the detail, where GetAdrByKey resolves
  *    them). Enriching the register with directional peer keys is a later, backend-touching follow-up.
  *  - Category filter is rendered (design parity) but disabled — there is no server-side ADR category yet.
- *  - Tabs: ADRs is live; Invariants is present-but-disabled (P11d); Violations is omitted entirely
- *    (operator DEFER decision — no violations surface in v1).
+ *  - Tabs: ADRs and Invariants are both live; Violations is omitted entirely (operator DEFER decision —
+ *    no violations surface in v1).
  *  - "New ADR" opens CreateAdrDialog; the API enforces Adr.Create (Chairman/Secretary, or allow-if-owner).
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdrsRegister, useAdrsCount, type AdrSummary } from '../../api/adrs';
+import { useInvariantsCount } from '../../api/invariants';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -58,6 +59,7 @@ export function AdrsRegister() {
     pageSize: PAGE_SIZE,
   });
   const total = useAdrsCount();
+  const invTotal = useInvariantsCount();
 
   const clearFilters = () => setStatuses([]);
   const onSort = (col: string) => {
@@ -69,8 +71,6 @@ export function AdrsRegister() {
   };
 
   const pageTotal = data?.total ?? 0;
-  const shown = data?.items.length ?? 0;
-  const hasFilters = statuses.length > 0;
 
   return (
     <section className="page">
@@ -84,7 +84,7 @@ export function AdrsRegister() {
         </Button>
       </div>
 
-      <GovernanceTabs active="adrs" adrCount={total.data ?? 0} />
+      <GovernanceTabs active="adrs" adrCount={total.data ?? 0} invCount={invTotal.data ?? 0} />
 
       <div className="adr-bar" role="search" aria-label={t('adrs.filtersLabel')}>
         <FilterChip
@@ -97,7 +97,7 @@ export function AdrsRegister() {
         />
         <FilterChip label={t('adrs.filter.category')} anyLabel={t('adrs.filter.anyCategory')} options={[]} value="" onChange={() => {}} disabled />
         {data && (
-          <span className="adr-count"><Icon name="viewList" size={13} aria-hidden /> {t('adrs.showing', { shown, total: pageTotal })}</span>
+          <span className="adr-count"><Icon name="filterLines" size={13} aria-hidden /> {t('adrs.showing', { count: pageTotal })}</span>
         )}
       </div>
 
@@ -107,12 +107,12 @@ export function AdrsRegister() {
         <ErrorState title={t('adrs.error.title')} body={t('adrs.error.body')} onRetry={() => refetch()} />
       ) : pageTotal === 0 ? (
         <div>
-          <EmptyState icon="adr" title={t('adrs.empty.title')} body={t('adrs.empty.body')} />
+          <EmptyState icon="checklist" title={t('adrs.empty.title')} body={t('adrs.empty.body')} />
           <div className="adr-empty-actions">
+            <Button variant="secondary" onClick={clearFilters}>{t('adrs.clearFilters')}</Button>
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Icon name="plus" size={16} aria-hidden /> {t('adrs.newAdr')}
             </Button>
-            {hasFilters && <Button variant="secondary" onClick={clearFilters}>{t('adrs.clearFilters')}</Button>}
           </div>
         </div>
       ) : (

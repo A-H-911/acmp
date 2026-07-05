@@ -11,6 +11,11 @@ vi.mock('../../api/adrs', async (orig) => ({
   useAdrsRegister: vi.fn(),
   useAdrsCount: vi.fn(),
 }));
+// The tab bar shows the Invariant total too — stub that cross-register count so the register renders in isolation.
+vi.mock('../../api/invariants', async (orig) => ({
+  ...(await orig<typeof import('../../api/invariants')>()),
+  useInvariantsCount: vi.fn(() => ({ data: 4 })),
+}));
 // Isolate the register from the create dialog's data hooks — a light stub proves the open wiring.
 vi.mock('./CreateAdrDialog', () => ({
   CreateAdrDialog: ({ open }: { open: boolean }) => (open ? <div>create-adr-dialog</div> : null),
@@ -64,11 +69,12 @@ describe('AdrsRegister (P11b)', () => {
   it('renders the filter-independent header total and the tab bar (ADRs active, Invariants links to /invariants)', () => {
     setup();
     expect(screen.getByText('7 records')).toBeInTheDocument();
-    const adrsTab = screen.getByRole('tab', { name: /ADRs/ });
-    expect(adrsTab).toHaveAttribute('aria-selected', 'true');
-    const invTab = screen.getByRole('tab', { name: /Architecture Invariants/ });
-    expect(invTab).toHaveAttribute('aria-selected', 'false');
-    expect(invTab).toHaveAttribute('href', '/invariants');
+    // The tab bar is a <nav>; the active tab is marked aria-current, the other is a route link.
+    const nav = screen.getByRole('navigation', { name: 'ADR registers' });
+    const adrsTab = within(nav).getByText('ADRs');
+    expect(adrsTab).toHaveAttribute('aria-current', 'page');
+    const invLink = within(nav).getByRole('link', { name: /Architecture Invariants/ });
+    expect(invLink).toHaveAttribute('href', '/invariants');
   });
 
   it('renders rows: key, title link, status chip, and a superseded marker only for superseded rows', () => {
@@ -80,7 +86,7 @@ describe('AdrsRegister (P11b)', () => {
     // The unsuperseded row shows a dash; the superseded row shows the marker chip.
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getAllByText('Superseded').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
+    expect(screen.getByText('Showing 2')).toBeInTheDocument();
   });
 
   it('filters by status via the server params', async () => {
@@ -109,14 +115,16 @@ describe('AdrsRegister (P11b)', () => {
     expect(screen.getByText('create-adr-dialog')).toBeInTheDocument();
   });
 
-  it('renders an empty state with a clear button only when a filter is active', async () => {
+  it('renders an empty state that always offers clear-filters (design parity) and resets the params', async () => {
     const user = userEvent.setup();
     withRows([], 0);
     setup();
-    expect(screen.getByText('No ADRs match these filters')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+    expect(screen.getByText('Nothing to show')).toBeInTheDocument();
+    // The empty state always offers Clear filters (design parity), not only when a filter is active.
+    expect(screen.getByRole('button', { name: 'Clear filters' })).toBeInTheDocument();
     await user.click(within(screen.getByRole('search')).getByRole('button', { name: 'Status' }));
     await user.click(screen.getByText('Deprecated'));
+    expect(lastParams().statuses).toEqual(['Deprecated']);
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(lastParams().statuses).toBeUndefined();
   });

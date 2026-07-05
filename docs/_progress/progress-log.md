@@ -12,6 +12,47 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P11 audit remediation — fidelity + robustness fixes across the Governance surfaces (branch `fix/p11-audit-remediation`)
+
+Remediated an adversarial P11 audit (ADR + Invariant + Decision→ADR promotion) against the local `.dc.html`
+references and docs/26/10. **No AC verdict change** (Governance is PH-2, AC-less); this is fidelity + robustness.
+
+**Design fidelity (matched to `Lists & Registers` / `Decision, Voting & ADR` / `Create Flows`):**
+- Superseded/Deprecated ADR + Superseded/Retired Invariant bodies now **dim** (`.adr-body-muted`, opacity .62);
+  removed a **false comment** that claimed a non-existent `is-retired` dimming.
+- Superseded chip tone `warn`→**`neutral`** (ADR + Invariant), matching the design + the neutral Decision badge.
+- New `shieldPlus` invariant glyph (tab + create) and `filterLines` funnel glyph (register "Showing"); the shared
+  `adr` icon → book (design's ADR mark, app-wide incl. sidenav); empty states use the generic `checklist` glyph.
+- Invariant register H1 → shared **"ADRs & Invariants"** (`adrs.title`); "Showing N of M"→**"Showing N"**.
+- Tab bar: real **`<nav>` + `aria-current`** (was a fake `role=tablist` with no tabpanel contract); active label
+  `--accent`→`--text` (accent underline only), inactive `--text-3`→`--text-2`; both counts shown on both tabs.
+- Convert-to-ADR is the **primary + leading** CTA on the Decision detail (Create-follow-up-action → secondary);
+  convert dialog gains the "will be created + bidirectional" preview box.
+- Supersede banner: left arrow for "Supersedes" + 26×26 icon badge. ADR detail metrics restored to reference
+  (aside 280px, body 24/28 + max 720, section 24, title 8, md chip, sticky aside — scoped). Owner field half-width.
+- Empty state offers **Clear filters** always (design parity, was filter-gated). Removed dead `.adr-tab-soon` CSS +
+  `adrs.tab.soon` / `decisions.convertAdrSoon` i18n keys + stale comments (EN/AR parity held at 1310/1310).
+
+**Backend robustness:**
+- Promotion is honestly two-transaction (ADR insert + edge write across two DbContexts, no MSDTC): the re-promote
+  path now **idempotently heals a missing reverse edge**; **ADR-0021's "in-transaction" wording corrected**.
+- **BE1 — `Governance_AdrSourceDecisionUnique` migration:** a **filtered unique index** on `Adr.SourceDecisionId`
+  (`WHERE IS NOT NULL`) is the DB backstop behind the app guard — a same-instant concurrent double-promote can
+  never insert two ADRs for one decision (non-promoted ADRs unconstrained). InMemory ignores `HasFilter`, so unit
+  tests are unaffected; the race surfaces as a DB reject, never a duplicate.
+- Supersede now emits the **successor's own** `AdrApproved` / `InvariantActivated` audit event (not only the prior's
+  supersede event).
+
+**Deliberately NOT built (flagged):** error-state request-id + Contact (needs correlation-id plumbing that doesn't
+exist) and the saved-view control (app-wide chrome / design-preview artifact) — both out of P11 scope.
+
+**Gates:** BE 1061 tests + per-file cov 99.80% + `dotnet format` clean + ArchUnit 40/40; FE 772 tests + per-file
+cov met + i18n parity 1310/1310 + oxlint + tsc/vite build clean. Live pixel-VR skipped this pass (local web
+container served a stale bundle after rebuild — an env caching quirk, not a code issue; operator elected to trust
+the green gates). **Next:** operator merge GO.
+
+---
+
 ## P11e — Decision→ADR promotion (FR-068): full-stack, Chairman-only (branch `feat/P11e-decision-to-adr`)
 
 ### 2026-07-04 — "Convert to ADR" from an issued Decision — new IDecisionReader + ITraceabilityWriter seams, promote command, wired FE button + confirm dialog

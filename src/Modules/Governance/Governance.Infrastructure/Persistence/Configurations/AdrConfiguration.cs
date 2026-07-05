@@ -28,6 +28,10 @@ public sealed class AdrConfiguration : IEntityTypeConfiguration<Adr>
         b.Property(x => x.AuthorUserId).IsRequired().HasMaxLength(128);
         b.Property(x => x.AuthorName).IsRequired().HasMaxLength(256);
         b.Property(x => x.SourceDecisionId);
+        // One ADR per promoted decision (FR-068): a filtered unique index is the DB-level backstop behind the
+        // handler's app guard, so a same-instant concurrent double-promote can never insert two ADRs for one
+        // decision. Filtered (NOT NULL) so ordinary ADRs — which have no source decision — are unconstrained.
+        b.HasIndex(x => x.SourceDecisionId).IsUnique().HasFilter("[SourceDecisionId] IS NOT NULL");
 
         b.Property(x => x.ApprovedAt);
         b.Property(x => x.ApprovedByUserId).HasMaxLength(128);
