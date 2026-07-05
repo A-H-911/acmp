@@ -53,6 +53,15 @@ export function useMinutesForMeeting(meetingId: string | undefined) {
   });
 }
 
+/** P12: the committee-wide minutes approval queue (GET /api/minutes, no `meeting` = all InReview
+ *  across meetings). Feeds the secretary dashboard's "MoMs awaiting approval" count (AC-065). */
+export function useMinutesAwaiting() {
+  return useQuery({
+    queryKey: ['minutes', 'awaiting'],
+    queryFn: () => api<MinutesSummary[]>('/minutes'),
+  });
+}
+
 /** Detail by key; a specific version, or the head (current) when version is omitted. */
 export function useMinutes(key: string | undefined, version?: number) {
   return useQuery({

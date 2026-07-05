@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useDecision, useSupersedeDecision } from './decisions';
+import { useDecision, useDecisionsRegister, useSupersedeDecision } from './decisions';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
@@ -31,6 +31,24 @@ describe('useDecision', () => {
     const { result } = renderHook(() => useDecision('DECN-2026-999'), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect((result.current.error as ApiError).status).toBe(404);
+  });
+});
+
+describe('useDecisionsRegister', () => {
+  it('passes status + limit as query params', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [{ id: '1', key: 'DECN-2026-008', status: 'Issued' }] }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useDecisionsRegister({ status: 'Issued', limit: 5 }), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/decisions?status=Issued&limit=5');
+  });
+
+  it('reads the whole register with no params', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [] }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useDecisionsRegister(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/decisions');
   });
 });
 

@@ -35,12 +35,12 @@ const TOPICS: TopicSummary[] = [
   {
     id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', type: 'ArchitectureDecision',
     status: 'Scheduled', urgency: 'Urgent', scope: 'MultiStream', streams: ['identity', 'platform'],
-    ownerId: 'o1', ownerName: 'Omar H', priority: 1, ageDays: 9, slaBreached: true, createdAt: '2026-02-15T09:00:00Z',
+    ownerId: 'o1', ownerName: 'Omar H', priority: 1, timesDeferred: 0, ageDays: 9, slaBreached: true, createdAt: '2026-02-15T09:00:00Z',
   },
   {
     id: 'g2', key: 'TOP-2026-031', title: 'Event streaming spike', type: 'ResearchDiscovery',
     status: 'Triage', urgency: 'Normal', scope: 'SingleStream', streams: ['notifications'],
-    ownerId: null, ownerName: null, priority: 5, ageDays: 4, slaBreached: false, createdAt: '2026-02-20T09:00:00Z',
+    ownerId: null, ownerName: null, priority: 5, timesDeferred: 0, ageDays: 4, slaBreached: false, createdAt: '2026-02-20T09:00:00Z',
   },
 ];
 

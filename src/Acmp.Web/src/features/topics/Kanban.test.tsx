@@ -19,7 +19,7 @@ let returnMutate: Mock;
 
 const row = (over: Partial<TopicSummary>): TopicSummary => ({
   id: 'x', key: 'TOP-0', title: 'T', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal',
-  scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0, ageDays: 1,
+  scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0, timesDeferred: 0, ageDays: 1,
   slaBreached: false, createdAt: '2026-02-15T09:00:00Z', ...over,
 });
 

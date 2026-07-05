@@ -72,6 +72,31 @@ export function useDecision(key: string | undefined) {
   });
 }
 
+/** Committee-wide decisions register row (GET /api/decisions). */
+export interface DecisionSummary {
+  id: string;
+  key: string;
+  topicId: string;
+  meetingId: string | null;
+  outcome: DecisionOutcome;
+  status: DecisionStatus;
+  title: LocalizedText;
+  issuedAt: string | null;
+}
+
+/** P12: the committee-wide decisions register (no `topic` = across all topics). `status`/`limit`
+ *  filter server-side; the dashboard's "last 5 issued" passes { status: 'Issued', limit: 5 }. */
+export function useDecisionsRegister(params: { status?: DecisionStatus; limit?: number } = {}) {
+  const q = new URLSearchParams();
+  if (params.status) q.set('status', params.status);
+  if (params.limit != null) q.set('limit', String(params.limit));
+  const qs = q.toString();
+  return useQuery({
+    queryKey: ['decisions', 'register', params],
+    queryFn: () => api<DecisionSummary[]>(`/decisions${qs ? `?${qs}` : ''}`),
+  });
+}
+
 /** The successor-decision body the supersede command drafts + auto-issues (W21). */
 export interface SupersedeInput {
   priorDecisionId: string;
