@@ -12,6 +12,39 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P12-PR3 — Reports shell (FE) — branch `feat/P12-pr3-reports-shell`
+
+**The full Reports IA over six view-tabs** (executive / committee / stream / decisions / actions / audit),
+replacing P10g's focused risk/dep page at `/reports`. **No AC** (the Reports view has none) — this is design-IA
++ feature completeness. Client-composed over existing REST reads (ADR-0022: no server read-model, no chart
+library — CSS primitives). Pure, directly-tested assembly in `reportViews.ts` (`buildView` → `ReportCard[]`);
+the page (`ReportsPage.tsx`) is the shell: view-tabs, the Stream filter, CSV export, data-states, renderers.
+
+**~16 real cards, composed from snapshot reads** — the advisor's recount corrected an early over-estimate of
+what's blocked by the missing time series. REAL: decision outcome mix (stack), risk exposure (matrix, reuses
+P10g), open-items / verification / approval-coverage / immutable-records / supersede (stat), backlog-by-status
+& action-status & by-stream (bars), and **topic-aging histogram (columns — a histogram of CURRENT ages, not a
+time series, which is what earns the `columns` renderer)**. Added the `columns` + `stack` renderers to the
+existing matrix/stat/bars set; extended the `Zone` type with the `sched` tone slug.
+
+**Honest-empty (guardrail #11, flagged), two categories:** `trend` — per-week/quarter series the app keeps no
+history for (throughput, decisions-per-quarter, created-vs-closed, overdue-trend, audit-event-volume; ADR-0022
+defers time series to PH-3); `seam` — data not on the summary DTOs (meeting attendance not on MeetingSummary;
+per-ballot vote attribution not on VoteSummary). Each renders a "Phase 3" card and self-documents in the CSV.
+
+**Killed two decorative pieces (advisor):** the design's "DATA: Live/Loading/Empty" state tabs (a preview
+affordance like the dashboard's role tabs — real state = query status) and the "Period: This quarter" filter (a
+filter that can't filter without a time series = silent drift). Shipped only the **Stream filter**, which does
+real work (narrows topics + their linked risks/deps; decisions/actions carry no stream on their DTO → stay
+committee-wide, flagged). CSV = current-view aggregates → rows, one button (no PDF — ADR-0022).
+
+**Gates:** tsc, 815 vitest (33 new: reportViews.test + rewritten ReportsPage.test), per-file coverage (ReportsPage/
+reportViews/reportAgg all 100%; global 99.80%), i18n parity 1456 (EN+AR `reports.*`), oxlint, build — all green
+locally. FE-only; backend untouched. **Live `.dc.html` pixel-VR PASS** (`e2e/p12-reports-vr.spec.ts` — executive +
+committee tabs, EN-light + AR-dark): all five renderers (matrix/stack/stat/bars/**columns** aging histogram) + both
+honest-empty states (trend/seam) pixel-faithful, RTL-mirrored (Export/tabs/filter, columns right-to-left),
+light/dark correct. Replaced the superseded `p10g-reports-vr.spec.ts`. **★ Completes P12. ★**
+
 ## P12-PR2 — Role dashboards (FE) — branch `feat/P12-pr2-role-dashboards`
 
 **AC-064/065/066 → Met.** The home route `/` now renders the real role dashboard (`features/dashboard/RoleDashboard`),

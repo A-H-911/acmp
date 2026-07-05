@@ -28,8 +28,9 @@ import type { RiskSummary, RiskStatus, RiskLevel } from '../../api/risks';
 import type { DependencySummary, DependencyKind } from '../../api/dependencies';
 import type { TopicSummary } from '../../api/topics';
 
-/** Shared-kernel status tone slugs (the design's --st-<zone>-* token families). */
-export type Zone = 'success' | 'warn' | 'danger' | 'neutral' | 'info';
+/** Shared-kernel status tone slugs (the design's --st-<zone>-* token families).
+ *  `sched` matches the --st-sched-* group (the StatusChip 'scheduled' tone). */
+export type Zone = 'success' | 'warn' | 'danger' | 'neutral' | 'info' | 'sched';
 
 /** RiskLevel → its 1-based ordinal (docs/12 RiskExposureScale: severity = likelihood × impact). */
 const LEVEL_VALUE: Record<RiskLevel, number> = { Low: 1, Medium: 2, High: 3 };
@@ -83,6 +84,10 @@ export interface StatTile {
   value: number;
   labelKey: string;
   zone?: Zone;
+  /** Raw label shown instead of a translated key (e.g. a stream code with no localized name). */
+  label?: string;
+  /** Unit appended to the value (e.g. '%' for a rate tile); omitted for plain counts. */
+  suffix?: string;
 }
 
 export function riskStats(risks: readonly RiskSummary[]): StatTile[] {
