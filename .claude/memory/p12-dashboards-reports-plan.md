@@ -55,6 +55,19 @@ live app renders the current user's Keycloak role.
 library — CSS primitives; **resolves OQ-022**). Deferred + flagged: server PDF export, Hangfire-scheduled reports,
 time-series/advanced dashboards (docs/27 DB-13/14/22/23/24) → PH-3; Research dashboard DB-18 → PH-2. CSV = only v1 export.
 
+**P12 AUDIT REMEDIATION (2026-07-05, branch `fix/p12-audit-remediation`):** adversarial audit → fidelity + data-honesty
+fixes, **NO AC flips** (AC-064/065/066 stay Met). ★ The one MAJOR: Reports **Stream filter now scopes decisions +
+actions** via each record's linked Topic (`DecisionSummary.topicId`; `ActionSummary` Topic-source) — was silently
+committee-wide; `applyStreamFilter` moved into the pure `reportViews` + unit-tested. Fidelity: Conditional outcome→green
+(approved-family), In-progress→new `accent` Zone (+`--st-accent-dot/-fg` tokens), stream bars colour-cycle per rank,
+aging labels en-dash, Exec KPIs restored (approved-rate% + high-sev count), stat-card drill/footer, always-on filter row
++ real "Updated {{time}}", empty copy refreshed, dead `p12Note` removed, `.dash-mtg-meta` gap 10→8px. **Design-update-owed
+(guardrail #14):** dashboards diverge from reference by AC design (Chairman keylists vs approve-cards; member→committee;
+secretary queue+SLA); DATA-tabs + Period/Status filters + KPI deltas stay removed; "Other" kept over design's "Pending".
+Blessed: KeyList chevron/accent-key; shared EmptyState reuse; stub-`0` audit tiles (correct-by-invariant). i18n 1458 (net +2).
+The build-time pixel-VR PASSED but missed these per-series colour/en-dash deltas (below diff threshold) — VR isn't a
+substitute for source review. See [[exact-design-fidelity-visual-loop]].
+
 AC→data map: AC-064 (committee/any-member: backlog by status+urgency ✅, next meeting ✅, action counts ✅, overdue ✅,
 last-5 issued decisions ← new register). AC-065 (secretary: Triage count ✅, MoMs-awaiting ← new register, overdue-beyond-
 escalation ✅, SLA-breach list via `slaBreached`/`ageDays` ✅). AC-066 (chairman: votes-awaiting ← new register, escalated

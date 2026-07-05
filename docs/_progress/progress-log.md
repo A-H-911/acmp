@@ -12,6 +12,57 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P12 audit remediation — branch `fix/p12-audit-remediation`
+
+Adversarial P12 (Dashboards & Reports) audit → **fidelity + data-honesty fixes, NO AC flips**
+(AC-064/065/066 stay Met; PR3 Reports is AC-less). FE-only; backend untouched. All fixes reconciled
+against the governing `ACMP Dashboards & Reports.dc.html` (per the Usage Map).
+
+**Data honesty (was MAJOR):** the Reports **Stream filter** now scopes **decisions and actions** too —
+each resolved through its linked Topic (`DecisionSummary.topicId`; `ActionSummary` Topic-source) — so no
+card silently stays committee-wide while the toolbar implies a stream scope. `applyStreamFilter` moved
+into the pure, directly-tested `reportViews` (new unit test: topics/decisions/actions/risks/deps all
+narrow; non-Topic-sourced actions drop). This is the honest completion of FR-095's Topic-scope model
+(OQ-047) for the reporting surface.
+
+**Fidelity (per-series colour + copy — the pixel-VR missed these below its diff threshold):**
+- Decision-outcome stack **"Conditional" → green** (`--st-success`), rejoining the design's Approved+
+  Conditional "approved" family (was blue/info).
+- Action-status **"In progress" → accent** — added an `accent` `Zone` + `--st-accent-dot/-fg` tokens
+  (the enum previously had no accent, collapsing it to info-blue).
+- Backlog-by-stream bars **colour-cycle per rank** (`info/sched/success/warn/danger`) to match the
+  design's multi-stream palette (was uniform blue).
+- Topic-aging labels use the design **en-dash** `0–7 / 8–14 / 15–30` (were ASCII hyphens).
+- **KPI headlines restored** where computable: Exec "Decision outcomes" (approved-or-conditional %) and
+  "Risk exposure" (high-severity count).
+- **Drill button + "View detail" footer** added to the stat cards with a real destination
+  (supersede/verification/coverage/immutable/throughput-by-stream → their registers).
+- Filter row **always renders** and carries a real **"Updated {{time}}"** (freshest `dataUpdatedAt`),
+  matching the design's filter+timestamp row (Period/Status filters stay removed — see below).
+- Empty-state copy refreshed (stale P10g "risks and dependencies" → "committee activity"); dead
+  `reports.p12Note` key removed. Dashboard `.dash-mtg-meta` gap 10→**8px** (design).
+
+**Design-update-owed (guardrail #14 — reference no longer depicts the build; NOT code-fixable honestly):**
+- The three **dashboards** diverge from the reference by design (AC-064/065/066-driven): Chairman =
+  votes-awaiting/escalated-risks/escalated-actions/deferred≥2 (not the design's approve-decision/meeting/
+  votes/snapshot cards); Committee = AC-064 committee-wide data (not the design's personalized member
+  cards); Secretary drops Agenda-readiness/Pending-approvals/Throughput for the AC-065 queue+SLA. The
+  DESIGN should be updated to match.
+- Reports **"DATA: Live/Loading/Empty" state tabs** and the **Period/Status filters** stay removed
+  (preview affordance / dishonest without a time series) — design update owed.
+- KPI **delta chips** (+6% / −0.6 …) stay omitted — they need a prior-period the app doesn't keep
+  (ADR-0022 defers time series); adding fake deltas would violate guardrail #11.
+- Outcome 4th segment stays **"Other"** (the issued¬approved¬conditional¬rejected catch-all) rather than
+  the design's "Pending" — "Other" is the accurate label; design update owed.
+
+**Blessed (defensible, no change):** KeyList trailing chevron + accent key (navigable-row affordance);
+shared `EmptyState` reuse for the reports empty (canonical component); stub-`0` audit/supersede tiles
+(`missing`/`disputed` are correct-by-invariant, not tracked metrics).
+
+**Gates:** i18n parity **1458** (EN/AR, net +2: `reports.updated` + `reports.kpi.*` − dead `p12Note`);
+FE tsc/vitest(+coverage per-file ≥95)/oxlint/build — [pending clean-copy run; repo node_modules corrupted
+by stray dev-servers]. Backend untouched.
+
 ## P12-PR3 — Reports shell (FE) — branch `feat/P12-pr3-reports-shell`
 
 **The full Reports IA over six view-tabs** (executive / committee / stream / decisions / actions / audit),

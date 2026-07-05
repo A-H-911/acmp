@@ -219,7 +219,7 @@
 .dash-mtg-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-block-end: 14px;
   font-size: 12px;

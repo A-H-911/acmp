@@ -12,6 +12,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P12 audit-remediation update (2026-07-05): adversarial-audit fixes across Dashboards & Reports (branch
+> `fix/p12-audit-remediation`), **NO AC flips** (AC-064/065/066 stay Met; PR3 Reports is AC-less). Fidelity +
+> data-honesty only: the Reports **Stream filter now scopes decisions/actions** via their linked Topic (no card
+> silently committee-wide — the audit's one MAJOR), plus per-series colour (Conditional→green, In-progress→accent,
+> stream multicolor), en-dash aging labels, restored Exec KPIs, stat-card drill/footer, always-on filter row +
+> real "Updated {{time}}", refreshed empty copy, dead `p12Note` removed. `applyStreamFilter` moved to the pure
+> `reportViews` + unit-tested. Design-update-owed logged (dashboards diverge by AC design; DATA-tabs/Period-Status
+> filters/KPI-deltas removed) — reference must be refreshed (guardrail #14). See progress-log "P12 audit remediation".
+>
 > P12-PR2 update (2026-07-05): Role dashboards (FE, branch `feat/P12-pr2-role-dashboards`) —
 > **AC-064/065/066 → Met.** One home page at `/` (`features/dashboard/RoleDashboard`) renders the variant for the
 > signed-in user's highest committee role (Chairman > Secretary > else = Committee); the design's "Viewing as…" role

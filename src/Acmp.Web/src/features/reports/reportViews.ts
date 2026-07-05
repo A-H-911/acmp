@@ -61,9 +61,12 @@ export interface ReportData {
 
 const pctOf = (v: number, max: number) => Math.round((v / Math.max(1, max)) * 100);
 
+/** Per-rank colour cycle for stream bars (matches the design's multi-stream palette). */
+const STREAM_PALETTE: readonly Zone[] = ['info', 'sched', 'success', 'warn', 'danger'];
+
 /** Group a topic set by each topic's stream codes (a topic in N streams counts N times),
- *  optionally filtered to a predicate; returns count bars, largest first. */
-function streamBars(topics: readonly TopicSummary[], keep: (t: TopicSummary) => boolean, zone: Zone): Bar[] {
+ *  optionally filtered to a predicate; returns count bars, largest first, colour-cycled per rank. */
+function streamBars(topics: readonly TopicSummary[], keep: (t: TopicSummary) => boolean): Bar[] {
   const per = new Map<string, number>();
   for (const t of topics) {
     if (!keep(t)) continue;
@@ -71,22 +74,39 @@ function streamBars(topics: readonly TopicSummary[], keep: (t: TopicSummary) => 
   }
   const entries = [...per.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const max = Math.max(1, ...entries.map(([, v]) => v));
-  return entries.map(([code, v]) => ({ key: code, label: code, count: v, pct: pctOf(v, max), zone }));
+  return entries.map(([code, v], i) => ({ key: code, label: code, count: v, pct: pctOf(v, max), zone: STREAM_PALETTE[i % STREAM_PALETTE.length] }));
+}
+
+/** Stream filter — narrows every set to the selected stream, resolving decisions/actions/risks/deps
+ *  through their linked Topic. A record whose topic isn't in the stream (or that has no topic) drops
+ *  out, so the whole view is stream-scoped — no card silently stays committee-wide. */
+export function applyStreamFilter(d: ReportData, stream: string): ReportData {
+  if (stream === 'all') return d;
+  const inStream = (tp: TopicSummary) => (tp.streams ?? []).includes(stream);
+  const topicIds = new Set(d.allTopics.filter(inStream).map((tp) => tp.id));
+  return {
+    activeTopics: d.activeTopics.filter(inStream),
+    allTopics: d.allTopics.filter(inStream),
+    decisions: d.decisions.filter((dec) => topicIds.has(dec.topicId)),
+    actions: d.actions.filter((a) => a.sourceType === 'Topic' && topicIds.has(a.sourceId)),
+    risks: d.risks.filter((r) => r.subjectType === 'Topic' && topicIds.has(r.subjectId)),
+    deps: d.deps.filter((x) => (x.fromType === 'Topic' && topicIds.has(x.fromId)) || (x.toType === 'Topic' && topicIds.has(x.toId))),
+  };
 }
 
 // ---- aging histogram (columns) — REAL: a histogram of CURRENT ages, not a time series ----
 
-const AGING_BUCKETS: { key: string; test: (d: number) => boolean; zone: Zone }[] = [
-  { key: '0-7', test: (d) => d <= 7, zone: 'success' },
-  { key: '8-14', test: (d) => d > 7 && d <= 14, zone: 'info' },
-  { key: '15-30', test: (d) => d > 14 && d <= 30, zone: 'warn' },
-  { key: '30+', test: (d) => d > 30, zone: 'danger' },
+const AGING_BUCKETS: { key: string; label: string; test: (d: number) => boolean; zone: Zone }[] = [
+  { key: '0-7', label: '0–7', test: (d) => d <= 7, zone: 'success' },
+  { key: '8-14', label: '8–14', test: (d) => d > 7 && d <= 14, zone: 'info' },
+  { key: '15-30', label: '15–30', test: (d) => d > 14 && d <= 30, zone: 'warn' },
+  { key: '30+', label: '30+', test: (d) => d > 30, zone: 'danger' },
 ];
 
 export function agingColumns(topics: readonly TopicSummary[]): Column[] {
   const counts = AGING_BUCKETS.map((b) => topics.filter((t) => b.test(t.ageDays)).length);
   const max = Math.max(1, ...counts);
-  return AGING_BUCKETS.map((b, i) => ({ key: b.key, label: b.key, value: counts[i], pct: pctOf(counts[i], max), zone: b.zone }));
+  return AGING_BUCKETS.map((b, i) => ({ key: b.key, label: b.label, value: counts[i], pct: pctOf(counts[i], max), zone: b.zone }));
 }
 
 // ---- backlog by status (bars) ----
@@ -113,7 +133,8 @@ export function decisionOutcomeStack(decisions: readonly DecisionSummary[]): Seg
   const other = issued.length - approved - conditional - rejected;
   const total = issued.length;
   const raw: [string, number, Zone][] = [
-    ['approved', approved, 'success'], ['conditional', conditional, 'info'],
+    // Approved + Conditional are one "approved" family → both green (design SoT).
+    ['approved', approved, 'success'], ['conditional', conditional, 'success'],
     ['rejected', rejected, 'danger'], ['other', other, 'neutral'],
   ];
   return raw.map(([key, value, zone]) => ({ key, labelKey: `reports.outcome.${key}`, value, pct: pctOf(value, total), zone }));
@@ -156,7 +177,7 @@ export function supersedeStats(decisions: readonly DecisionSummary[]): StatTile[
 export function actionStatusBars(actions: readonly ActionSummary[]): Bar[] {
   const rows: [string, (a: ActionSummary) => boolean, Zone][] = [
     ['Open', (a) => a.status === 'Open', 'neutral'],
-    ['InProgress', (a) => a.status === 'InProgress', 'info'],
+    ['InProgress', (a) => a.status === 'InProgress', 'accent'],
     ['Blocked', (a) => a.status === 'Blocked', 'danger'],
     ['Verified', (a) => a.status === 'Verified', 'success'],
   ];
@@ -204,13 +225,19 @@ const seam = (key: string, titleKey: string, subKey: string): ReportCard => ({ k
 export function buildView(view: ReportView, d: ReportData): ReportCard[] {
   const streamMap = buildTopicStreamMap(d.allTopics);
   switch (view) {
-    case 'executive':
+    case 'executive': {
+      const outcomes = decisionOutcomeStack(d.decisions);
+      const issued = outcomes.reduce((s, x) => s + x.value, 0);
+      const approvedFamily = outcomes.filter((s) => s.key === 'approved' || s.key === 'conditional').reduce((s, x) => s + x.value, 0);
+      const exposure = riskMatrix(d.risks);
+      const highSev = d.risks.filter((r) => isActiveRisk(r) && (r.exposure === 'High' || r.exposure === 'Critical')).length;
       return [
-        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kind: 'stack', segments: decisionOutcomeStack(d.decisions), to: '/decisions' },
+        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kpi: issued > 0 ? `${pctOf(approvedFamily, issued)}%` : '—', kpiSubKey: 'reports.kpi.approvedRate', kind: 'stack', segments: outcomes, to: '/decisions' },
         trend('throughput', 'reports.card.throughput', 'reports.sub.throughput'),
-        { key: 'exposure', titleKey: 'reports.card.riskExposure.title', subKey: 'reports.activeCount', subVars: { count: riskMatrix(d.risks).active }, kind: 'matrix', matrix: riskMatrix(d.risks), to: '/risks' },
+        { key: 'exposure', titleKey: 'reports.card.riskExposure.title', subKey: 'reports.activeCount', subVars: { count: exposure.active }, kpi: String(highSev), kpiSubKey: 'reports.kpi.highSeverity', kind: 'matrix', matrix: exposure, to: '/risks' },
         { key: 'open', titleKey: 'reports.card.openItems', subKey: 'reports.sub.openItems', kind: 'stat', stats: openItemsStats(d) },
       ];
+    }
     case 'committee':
       return [
         { key: 'byStatus', titleKey: 'reports.card.backlogStatus', subKey: 'reports.activeTopics', subVars: { count: d.activeTopics.length }, kind: 'bars', bars: backlogStatusBars(d.activeTopics), to: '/backlog' },
@@ -220,31 +247,31 @@ export function buildView(view: ReportView, d: ReportData): ReportCard[] {
       ];
     case 'stream':
       return [
-        { key: 'backlogStream', titleKey: 'reports.card.backlogStream', subKey: 'reports.sub.backlogStream', kind: 'bars', bars: streamBars(d.activeTopics, () => true, 'info'), to: '/backlog' },
+        { key: 'backlogStream', titleKey: 'reports.card.backlogStream', subKey: 'reports.sub.backlogStream', kind: 'bars', bars: streamBars(d.activeTopics, () => true), to: '/backlog' },
         { key: 'riskStream', titleKey: 'reports.card.riskByStream.title', subKey: 'reports.streamCount', subVars: { count: risksByStream(d.risks, streamMap).kpi }, kind: 'bars', bars: risksByStream(d.risks, streamMap).bars, to: '/risks' },
         { key: 'depStream', titleKey: 'reports.card.blockedByStream.title', subKey: 'reports.blockedCount', subVars: { count: blockedDepsByStream(d.deps, streamMap).kpi }, kind: 'bars', bars: blockedDepsByStream(d.deps, streamMap).bars, to: '/dependencies' },
-        { key: 'throughputStream', titleKey: 'reports.card.throughputStream', subKey: 'reports.sub.throughputStream', kind: 'stat', stats: throughputByStreamStats(d.allTopics) },
+        { key: 'throughputStream', titleKey: 'reports.card.throughputStream', subKey: 'reports.sub.throughputStream', kind: 'stat', stats: throughputByStreamStats(d.allTopics), to: '/backlog' },
       ];
     case 'decisions':
       return [
         trend('perQuarter', 'reports.card.perQuarter', 'reports.sub.perQuarter'),
         { key: 'outcomes', titleKey: 'reports.card.outcomeMix', subKey: 'reports.sub.outcomes', kind: 'stack', segments: decisionOutcomeStack(d.decisions), to: '/decisions' },
         trend('turnaround', 'reports.card.turnaround', 'reports.sub.turnaround'),
-        { key: 'supersede', titleKey: 'reports.card.supersede', subKey: 'reports.sub.supersede', kind: 'stat', stats: supersedeStats(d.decisions) },
+        { key: 'supersede', titleKey: 'reports.card.supersede', subKey: 'reports.sub.supersede', kind: 'stat', stats: supersedeStats(d.decisions), to: '/decisions' },
       ];
     case 'actions':
       return [
         trend('createdClosed', 'reports.card.createdClosed', 'reports.sub.createdClosed'),
         { key: 'byStatus', titleKey: 'reports.card.actionStatus', subKey: 'reports.sub.actionStatus', kind: 'bars', bars: actionStatusBars(d.actions), to: '/actions' },
         trend('overdueTrend', 'reports.card.overdueTrend', 'reports.sub.overdueTrend'),
-        { key: 'verify', titleKey: 'reports.card.verification', subKey: 'reports.sub.verification', kind: 'stat', stats: verificationStats(d.actions) },
+        { key: 'verify', titleKey: 'reports.card.verification', subKey: 'reports.sub.verification', kind: 'stat', stats: verificationStats(d.actions), to: '/actions' },
       ];
     case 'audit':
       return [
-        { key: 'coverage', titleKey: 'reports.card.coverage', subKey: 'reports.sub.coverage', kind: 'stat', stats: approvalCoverageStats(d.decisions) },
+        { key: 'coverage', titleKey: 'reports.card.coverage', subKey: 'reports.sub.coverage', kind: 'stat', stats: approvalCoverageStats(d.decisions), to: '/decisions' },
         seam('voteAttribution', 'reports.card.voteAttribution', 'reports.sub.voteAttribution'),
         trend('eventVolume', 'reports.card.eventVolume', 'reports.sub.eventVolume'),
-        { key: 'immutable', titleKey: 'reports.card.immutable', subKey: 'reports.sub.immutable', kind: 'stat', stats: immutableRecordsStats(d) },
+        { key: 'immutable', titleKey: 'reports.card.immutable', subKey: 'reports.sub.immutable', kind: 'stat', stats: immutableRecordsStats(d), to: '/decisions' },
       ];
   }
 }

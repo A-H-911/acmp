@@ -1617,11 +1617,12 @@
     "probability": "Probability",
     "viewDetail": "View detail",
     "drill": "Open {{title}}",
+    "updated": "Updated {{time}}",
+    "kpi": { "approvedRate": "approved or conditional", "highSeverity": "high-severity risks" },
     "cellLabel": "{{count}} risks · impact {{impact}} · probability {{prob}}",
     "noStreamRisks": "No stream-linked risks",
     "noStreamBlocked": "No stream-linked blockers",
-    "empty": { "title": "No reporting data yet", "body": "Reports populate as risks and dependencies are raised." },
-    "error": { "title": "Couldn’t load reports", "body": "Something went wrong loading the reporting data." },
-    "p12Note": "Committee, decision, action and audit reports arrive with the Reporting module."
+    "empty": { "title": "No reporting data yet", "body": "Reports populate as committee activity is recorded." },
+    "error": { "title": "Couldn’t load reports", "body": "Something went wrong loading the reporting data." }
   }
 }

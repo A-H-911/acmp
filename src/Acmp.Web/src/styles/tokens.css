@@ -55,6 +55,7 @@
   --st-warn-bg: #fbf0d6; --st-warn-fg: #83540a; --st-warn-dot: #cf8a1c;
   --st-success-bg: #dcefe1; --st-success-fg: #1d6a39; --st-success-dot: #2f9e54;
   --st-danger-bg: #fbe2e2; --st-danger-fg: #9f2530; --st-danger-dot: #d6453f;
+  --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
 }
 
 [data-theme="dark"] {
@@ -73,6 +74,7 @@
   --st-warn-bg: #33260f; --st-warn-fg: #e2af57; --st-warn-dot: #cf8a1c;
   --st-success-bg: #10301d; --st-success-fg: #6ec78a; --st-success-dot: #2f9e54;
   --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d6453f;
+  --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
 }
 
 /* Arabic locale uses the Plex Arabic family (set on <html dir="rtl">). */

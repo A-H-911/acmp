@@ -14,7 +14,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBacklog, type TopicSummary } from '../../api/topics';
+import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
 import { useActionsRegister } from '../../api/actions';
 import { useRisksRegister } from '../../api/risks';
@@ -24,14 +24,14 @@ import { Icon } from '../../components/icons';
 import type { Bar, StatTile, RiskMatrix, MatrixCell } from './reportAgg';
 import {
   REPORT_VIEWS, type ReportView, type ReportCard, type ReportData, type Column, type Segment,
-  buildView, viewToCsv,
+  buildView, viewToCsv, applyStreamFilter,
 } from './reportViews';
 import './reports.css';
 
 const ALL = 500;
 
 export function ReportsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [view, setView] = useState<ReportView>('executive');
   const [stream, setStream] = useState('all');
 
@@ -83,6 +83,11 @@ export function ReportsPage() {
   const isEmpty = ready && (activeTopics.data!.total ?? 0) === 0 && decisions.data!.length === 0
     && (risks.data!.total ?? 0) === 0 && (deps.data!.total ?? 0) === 0 && actions.data!.total === 0;
 
+  const updatedAt = Math.max(0, ...reads.map((r) => (r as { dataUpdatedAt?: number }).dataUpdatedAt ?? 0));
+  const updatedLabel = updatedAt > 0
+    ? t('reports.updated', { time: new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' }).format(new Date(updatedAt)) })
+    : '';
+
   return (
     <section className="page rpt">
       <header className="rpt-toolbar">
@@ -111,15 +116,18 @@ export function ReportsPage() {
         ))}
       </div>
 
-      {streamOptions.length > 0 && (
+      {(streamOptions.length > 0 || updatedLabel) && (
         <div className="rpt-filters">
-          <label className="rpt-filter">
-            <span className="rpt-filter-l">{t('reports.filter.stream')}</span>
-            <select value={stream} onChange={(e) => setStream(e.target.value)}>
-              <option value="all">{t('reports.filter.allStreams')}</option>
-              {streamOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </label>
+          {streamOptions.length > 0 && (
+            <label className="rpt-filter">
+              <span className="rpt-filter-l">{t('reports.filter.stream')}</span>
+              <select value={stream} onChange={(e) => setStream(e.target.value)}>
+                <option value="all">{t('reports.filter.allStreams')}</option>
+                {streamOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </label>
+          )}
+          {updatedLabel && <span className="rpt-updated">{updatedLabel}</span>}
         </div>
       )}
 
@@ -136,21 +144,6 @@ export function ReportsPage() {
       )}
     </section>
   );
-}
-
-/** Stream filter — narrows the topic sets, and the risk/dep sets via their linked Topic.
- *  Decisions/actions carry no stream on their summary DTOs, so they stay committee-wide (flagged). */
-function applyStreamFilter(d: ReportData, stream: string): ReportData {
-  if (stream === 'all') return d;
-  const inStream = (tp: TopicSummary) => (tp.streams ?? []).includes(stream);
-  const topicIds = new Set(d.allTopics.filter(inStream).map((tp) => tp.id));
-  return {
-    ...d,
-    activeTopics: d.activeTopics.filter(inStream),
-    allTopics: d.allTopics.filter(inStream),
-    risks: d.risks.filter((r) => r.subjectType === 'Topic' && topicIds.has(r.subjectId)),
-    deps: d.deps.filter((x) => (x.fromType === 'Topic' && topicIds.has(x.fromId)) || (x.toType === 'Topic' && topicIds.has(x.toId))),
-  };
 }
 
 function ReportCardView({ card }: { card: ReportCard }) {
