@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   agingColumns, backlogStatusBars, decisionOutcomeStack, openItemsStats,
   throughputByStreamStats, supersedeStats, actionStatusBars, verificationStats,
-  buildView, viewToCsv, REPORT_VIEWS, type ReportData,
+  buildView, viewToCsv, applyStreamFilter, REPORT_VIEWS, type ReportData,
 } from './reportViews';
 import type { TopicSummary } from '../../api/topics';
 import type { DecisionSummary } from '../../api/decisions';
@@ -36,7 +36,7 @@ const dep = (p: Partial<DependencySummary>): DependencySummary => ({
 describe('agingColumns', () => {
   it('bins topics by current age into 0-7 / 8-14 / 15-30 / 30+', () => {
     const cols = agingColumns([topic({ ageDays: 3 }), topic({ ageDays: 10 }), topic({ ageDays: 20 }), topic({ ageDays: 45 }), topic({ ageDays: 60 })]);
-    expect(cols.map((c) => [c.label, c.value])).toEqual([['0-7', 1], ['8-14', 1], ['15-30', 1], ['30+', 2]]);
+    expect(cols.map((c) => [c.label, c.value])).toEqual([['0–7', 1], ['8–14', 1], ['15–30', 1], ['30+', 2]]); // en-dash labels (design)
     expect(cols[3].zone).toBe('danger');
   });
 });
@@ -58,6 +58,32 @@ describe('decisionOutcomeStack', () => {
       decision({ status: 'Draft', outcome: 'Approved' }), // drafts excluded
     ]);
     expect(segs.map((s) => [s.key, s.value])).toEqual([['approved', 1], ['conditional', 1], ['rejected', 1], ['other', 1]]);
+    // Approved + Conditional share the green "approved" family (design SoT).
+    expect(segs.find((s) => s.key === 'conditional')!.zone).toBe('success');
+  });
+});
+
+describe('applyStreamFilter', () => {
+  it('scopes topics, decisions, actions, risks and deps to the stream via each linked topic', () => {
+    const idT = topic({ id: 'idT', streams: ['identity'] });
+    const payT = topic({ id: 'payT', streams: ['payments'] });
+    const d: ReportData = {
+      activeTopics: [idT, payT], allTopics: [idT, payT],
+      decisions: [decision({ topicId: 'idT' }), decision({ topicId: 'payT' })],
+      actions: [action({ sourceType: 'Topic', sourceId: 'idT' }), action({ sourceType: 'Topic', sourceId: 'payT' }), action({ sourceType: 'Meeting', sourceId: 'idT' })],
+      risks: [risk({ subjectType: 'Topic', subjectId: 'idT' }), risk({ subjectType: 'Topic', subjectId: 'payT' })],
+      deps: [dep({ fromType: 'Topic', fromId: 'idT', toType: 'Topic', toId: 'x' }), dep({ fromType: 'Topic', fromId: 'payT', toType: 'Topic', toId: 'y' })],
+    };
+    const out = applyStreamFilter(d, 'identity');
+    expect(out.activeTopics.map((tp) => tp.id)).toEqual(['idT']);
+    expect(out.decisions).toHaveLength(1); // the payments-linked decision drops
+    expect(out.actions).toHaveLength(1); // payments action + the non-Topic (Meeting) action both drop
+    expect(out.risks).toHaveLength(1);
+    expect(out.deps).toHaveLength(1);
+  });
+  it('returns the same object untouched for "all"', () => {
+    const d: ReportData = { activeTopics: [], allTopics: [], decisions: [], actions: [], risks: [], deps: [] };
+    expect(applyStreamFilter(d, 'all')).toBe(d);
   });
 });
 

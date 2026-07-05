@@ -91,6 +91,12 @@ describe('ReportsPage (P12-PR3 shell)', () => {
     expect(screen.getByText('1 active topics')).toBeInTheDocument();
   });
 
+  it('shows a last-updated timestamp from the freshest read', () => {
+    mBacklog.mockReturnValue({ ...paged([topic({})]), dataUpdatedAt: Date.parse('2026-06-24T09:30:00Z') });
+    setup();
+    expect(screen.getByText(/Updated/)).toBeInTheDocument();
+  });
+
   it('exports the current view as CSV', async () => {
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     setup();
