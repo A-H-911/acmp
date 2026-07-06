@@ -1,5 +1,7 @@
 # Claude Design — Input Package (Deliverable 52)
 
+> **ARCHIVED (2026-07-06).** This file is the historical Claude-Design handoff record. The design phase is complete; the authoritative design references are now the local `.dc.html` files in `/ACMP product context/` (per-screen index: `ACMP Usage Map.dc.html`), read directly with file tools — not via the design MCP (INV-014). Do not use this file to drive new work.
+
 **Purpose:** everything Claude Design needs to design the ACMP UI as a coherent, usable system. It gives structure and constraints without over-prescribing visuals. Pair this with `claude-design-prompts.md` (the 10 layered prompts).
 
 ---

@@ -1,15 +1,15 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
 
 # Checkpoints & Release Gates — ACMP
 
-The hard review/approval gates applied at every phase and release boundary. These are the **[BLOCK]** items from the [release-readiness checklist](checkpoints.md): a deployment must not proceed while any of them is unchecked or failing. The release secretary (Secretary role) is the sole authority to proceed to deployment, and only after every [BLOCK] gate below is checked and signed.
+The hard review/approval gates applied at every phase and release boundary. These are the **[BLOCK]** items from the pre-migration release-readiness checklist: a deployment must not proceed while any of them is unchecked or failing. The release secretary (Secretary role) is the sole authority to proceed to deployment, and only after every [BLOCK] gate below is checked and signed.
 
-**How to use:** copy this gate set into the release ticket. Each gate is a hard blocker — check it with the responsible party's initials and date, and attach evidence (scan results, test-run links, backup confirmation, sign-off sheets). Non-[BLOCK] supporting checks (functional spot-checks, performance soak tests, screen-reader smoke tests, etc.) are not gates but are still required by the [Definition of Done](definition-of-done.md); the full non-gating checklist lives in [45-release-readiness-checklist.md](checkpoints.md). This document carries only the gates.
+**How to use:** copy this gate set into the release ticket. Each gate is a hard blocker — check it with the responsible party's initials and date, and attach evidence (scan results, test-run links, backup confirmation, sign-off sheets). Non-[BLOCK] supporting checks (functional spot-checks, performance soak tests, screen-reader smoke tests, etc.) are not gates but are still required by the [Definition of Done](definition-of-done.md), which carries the non-gating checks (the original consolidated checklist, `45-release-readiness-checklist.md`, is in git history). This document carries only the gates.
 
 ---
 
@@ -31,7 +31,7 @@ _Supporting (non-gating) checks F-06 – F-19 in the full checklist: permission-
 
 | # | Gate | Owner | Status |
 |---|---|---|---|
-| S-01 | OWASP ASVS L2 checklist reviewed against [25-security-controls.md](../domain/security-controls.md); no unmitigated High or Critical findings. Evidence: signed ASVS L2 review sheet attached. | Security Reviewer | ☐ |
+| S-01 | OWASP ASVS L2 checklist reviewed against [docs/domain/security-controls.md](../domain/security-controls.md); no unmitigated High or Critical findings. Evidence: signed ASVS L2 review sheet attached. | Security Reviewer | ☐ |
 | S-02 | SAST scan (Semgrep or equivalent) clean: zero unmitigated High/Critical code-level findings; Low/Medium triaged with documented rationale. | Security Reviewer | ☐ |
 | S-03 | DAST scan (OWASP ZAP or equivalent) run against staging: zero unmitigated High/Critical dynamic findings; scan report attached. | Security Reviewer | ☐ |
 | S-04 | Dependency vulnerability scan (`dotnet list package --vulnerable` + `npm audit`): zero unmitigated High/Critical CVEs in production dependencies. | Tech Lead | ☐ |
@@ -84,7 +84,7 @@ _Supporting (non-gating) checks A-04 – A-07: form-control labels and icon-butt
 
 ## Gate 6 — Performance
 
-_No [BLOCK] gate in this group. All performance checks (P-01 – P-04: smoke-load test, 30-minute soak, Hangfire queue-at-rest, SQL query-plan review) are required supporting checks per the [Definition of Done](definition-of-done.md), but none is a hard release blocker. See [45-release-readiness-checklist.md](checkpoints.md) §Group 6._
+_No [BLOCK] gate in this group. All performance checks (P-01 – P-04: smoke-load test, 30-minute soak, Hangfire queue-at-rest, SQL query-plan review) are required supporting checks per the [Definition of Done](definition-of-done.md) §Performance, but none is a hard release blocker._
 
 ---
 
@@ -136,8 +136,8 @@ _Supporting (non-gating) sign-offs SO-05 – SO-07: Tech Lead architectural-inte
 
 ## Traceability
 
-- Implements **Deliverable 58** (Release-readiness checklist); source: [45-release-readiness-checklist.md](checkpoints.md) ([BLOCK] items only).
-- [BLOCK] security gates enforce: ADR-0009 (audit immutability, S-09), ADR-0004 (Keycloak OIDC, S-10/S-11), FR-013 (secrets externalized, S-07), [25-security-controls.md](../domain/security-controls.md) (ASVS L2, S-01).
+- Implements **Deliverable 58** (Release-readiness checklist); source: the pre-migration `45-release-readiness-checklist.md` (git history) — [BLOCK] items carried here verbatim, non-gating checks re-homed to the [Definition of Done](definition-of-done.md).
+- [BLOCK] security gates enforce: ADR-0009 (audit immutability, S-09), ADR-0004 (Keycloak OIDC, S-10/S-11), FR-013 (secrets externalized, S-07), [docs/domain/security-controls.md](../domain/security-controls.md) (ASVS L2, S-01).
 - Localization gates enforce: FR-003 (EN/AR, L-01), FR-004 (RTL, L-02), FR-014 (localized errors, supporting L-07).
 - Accessibility gates enforce: FR-034/FR-047 (DnD alternatives, A-03), WCAG 2.2 AA (A-01).
 - Data gates enforce: FR-012 (EF Core migrations, D-01), `README.md §A` (backup/restore target, D-03).

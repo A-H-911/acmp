@@ -98,7 +98,7 @@ The formal standards and industry frameworks ACMP holds itself to. Non-complianc
 |---|---|---|
 | **arc42** | Architecture documentation template (12 sections) | `docs/domain/architecture-detail.md` is structured along arc42's 12 sections; each section maps to a planning doc |
 | **C4 model** | Layered architecture diagrams (Context, Container, Component, Code) | Diagrams use C4 levels L1–L3; rendered by Tarseem's `architecture/C4` family (L4 not diagrammed) |
-| **MADR** | Architecture Decision Record format | Repo ADRs use a MADR-lite template (`adr/template.md`); in-app ADRs extend MADR 3.x with committee fields |
+| **MADR** | Architecture Decision Record format | Repo ADRs use a MADR-lite format (conventions in `docs/adrs/README.md`); in-app ADRs extend MADR 3.x with committee fields |
 | **OWASP ASVS 5.0 — Level L2** | Application security verification (~350 requirements, 17 chapters) | Target L2 across all chapters (sensitive internal governance data; L3 not required). Mapped in `docs/domain/security-controls.md` |
 | **OWASP Top 10 (2021)** | Baseline web-app security checklist | Applied as a design + review checklist (access control, injection, crypto, misconfiguration, vulnerable components) |
 | **OWASP LLM Top 10 — LLM01** | Prompt-injection risk for AI features | Phase 3 only: AI-extracted transcript content is untrusted candidate data, human-approved before commit; content isolation + structured output |
@@ -127,7 +127,7 @@ Repo ADRs are MADR-lite Markdown in [`../adrs/`](../adrs/), numbered sequentiall
 
 | Step | Action |
 |---|---|
-| **Draft** | Copy `adr/template.md` → `adr/ADR-NNNN-<kebab-title>.md`; author the context and options |
+| **Draft** | Create `docs/adrs/adr-NNNN-<kebab-title>.md` following `docs/adrs/README.md`; author the context and options |
 | **Proposed** | Open a PR; link the relevant `FR-`/`NFR-`/`OQ-` from the planning package |
 | **Accepted** | PR merged; status → `Accepted`; date updated |
 | **Superseded** | A new ADR references the old one (`Superseded by ADR-MMMM`); the old ADR's status header is updated but its **original text is preserved** (immutable after Accepted, per ADR-0009) |

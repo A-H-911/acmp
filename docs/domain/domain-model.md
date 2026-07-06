@@ -2,7 +2,7 @@
 
 **Purpose:** The complete ACMP domain model — every entity (brief §12), typed, related, assigned to a canonical module, with lifecycle / permission / audit / retention references — and the aggregate boundaries the execution agent must honor.
 
-> This is the domain contract. Entity names, modules, IDs and status models are from `../README.md` §B/§E/§F verbatim. Lifecycles referenced as `[→ doc 12 §X]`; permissions as policy names from `10-permission-role-matrix.md`. Concept disambiguation (principle/standard/policy/constraint vs invariant/ADR) lives in `22-standards-and-best-practices.md` and is **not** duplicated here.
+> This is the domain contract. Entity names, modules, IDs and status models are from `../README.md` §B/§E/§F verbatim. Lifecycles referenced as `[→ doc 12 §X]`; permissions as policy names from `docs/domain/permission-role-matrix.md`. Concept disambiguation (principle/standard/policy/constraint vs invariant/ADR) lives in `docs/domain/standards-and-best-practices.md` and is **not** duplicated here.
 
 ---
 
@@ -13,7 +13,7 @@ Per the brief's mandated simplifications (avoid over-engineering, explicit domai
 1. **Backlog is a view, not a heavy entity.** `Backlog` is a **query/filter projection over `Topic`** (status ∈ {Submitted, Triage, Accepted, Prepared, Scheduled} + priority + stream + aging), not a stored aggregate. It owns no rows beyond optional saved-view/filter definitions and the priority ordering field that lives **on `Topic`**. No `Backlog`↔`Topic` join table. (See §C.Topics.)
 2. **TopicRequest vs Topic — recommend a single entity with status.** Intake (`TopicRequest`) and the governed work item (`Topic`) are the **same aggregate at different lifecycle stages**. **Recommendation: model one `Topic` aggregate** whose early states (`Draft`, `Submitted`, `Triage`) *are* "the request", graduating to `Accepted` on triage. A separate `TopicRequest` table adds a hand-off seam, dual identity, and copy logic for no governance benefit. `TopicRequest` is retained in this document **only as a logical/named lifecycle facet** (the pre-acceptance projection) — `[→ doc 12 §2]` documents its transitions as the early Topic states. The execution agent implements **one table**. (Splitting is reconsidered only if intake must accept anonymous/low-trust external submissions with a different schema — currently out of scope, `OQ-DM-001`.)
 3. **Comment / Attachment / Relationship / AuditEvent are shared & polymorphic.** Each is **one model attached by reference** (`(SubjectType, SubjectId)` soft reference across aggregates), not duplicated per entity. They live in shared modules (Knowledge / Platform / Search&Traceability / Audit&Records) and any aggregate may be their subject. No `TopicComment`, `DecisionComment`, etc.
-4. **Principle / Standard / Policy / Constraint are facets of Invariant/ADR — no separate heavy entities.** They are expressed as an `Invariant` (with a `Category`/`Kind` facet) or captured in an `ADR`. The platform does **not** create `Principle`, `Standard`, `Policy`, `Constraint` tables. (Disambiguation: `22-standards-and-best-practices.md`.)
+4. **Principle / Standard / Policy / Constraint are facets of Invariant/ADR — no separate heavy entities.** They are expressed as an `Invariant` (with a `Category`/`Kind` facet) or captured in an `ADR`. The platform does **not** create `Principle`, `Standard`, `Policy`, `Constraint` tables. (Disambiguation: `docs/domain/standards-and-best-practices.md`.)
 5. **System & Service are lightweight catalog references** (the *governed* estate), not a full CMDB. They exist to tag `AffectedSystems` and traceability, deliberately thin.
 6. **Aggregate roots own their invariants and child entities.** A module may not read another module's tables (`README` §B / ADR-0001); cross-aggregate links use the typed `Relationship` edge or in-process contracts, never FK reach-across.
 
@@ -45,7 +45,7 @@ Per the brief's mandated simplifications (avoid over-engineering, explicit domai
 
 ## C. Entities by module
 
-> Each subsection: **Purpose · Key attributes (typed) · Relationships · Owning module · Lifecycle · Permissions · Audit · Retention.** "Audit: full mutation" = create/update/delete/state-change recorded to `AuditEvent`. Retention defaults defer to `26-audit-and-records-management.md`; values below are the domain-recommended baseline.
+> Each subsection: **Purpose · Key attributes (typed) · Relationships · Owning module · Lifecycle · Permissions · Audit · Retention.** "Audit: full mutation" = create/update/delete/state-change recorded to `AuditEvent`. Retention defaults defer to `docs/domain/audit-and-records.md`; values below are the domain-recommended baseline.
 
 ### Module: Membership
 
@@ -557,4 +557,4 @@ erDiagram
 ---
 
 ## Traceability
-Implements **Deliverable 14**. Entities, modules, IDs, status models from `../README.md` §B/§E/§F. Lifecycles detailed in `12-entity-lifecycles.md`; permissions/policies in `10-permission-role-matrix.md`; workflows that mutate these entities in `13-workflows.md`. Settled decisions referenced: ADR-0001 (modular monolith/aggregate isolation), ADR-0003 (SQL Server), ADR-0005 (notifications — in-app v1, Webex Phase 2), ADR-0006 (Tarseem/Diagram), ADR-0007 (Keystone/Research), ADR-0008 (Relationship/traceability), ADR-0009 (immutability/audit), ADR-0010 (Vote — always attributed). Object storage provider = self-hosted MinIO (settled). Concept disambiguation deferred to `22-standards-and-best-practices.md`. Data-architecture/logical model in `16-data-architecture-and-model.md`. Open questions: OQ-DM-001 (TopicRe
+Implements **Deliverable 14**. Entities, modules, IDs, status models from `../README.md` §B/§E/§F. Lifecycles detailed in `docs/domain/entity-lifecycles.md`; permissions/policies in `docs/domain/permission-role-matrix.md`; workflows that mutate these entities in `docs/domain/workflows.md`. Settled decisions referenced: ADR-0001 (modular monolith/aggregate isolation), ADR-0003 (SQL Server), ADR-0005 (notifications — in-app v1, Webex Phase 2), ADR-0006 (Tarseem/Diagram), ADR-0007 (Keystone/Research), ADR-0008 (Relationship/traceability), ADR-0009 (immutability/audit), ADR-0010 (Vote — always attributed). Object storage provider = self-hosted MinIO (settled). Concept disambiguation deferred to `docs/domain/standards-and-best-practices.md`. Data-architecture/logical model in `docs/domain/data-architecture.md`. Open questions: OQ-DM-001 (TopicRe

@@ -27,7 +27,7 @@ live pixels.
    - CSS delta = app computed-style vs reference markup values → property-level FIX list.
    - Pixel delta = `node diff.mjs ref.png app.png out.png` → mismatch % + diff image
      (crop both to equal size; mask font-metric + mock-data regions).
-4. **Classify** each delta on two axes and log to `docs/_progress/design-parity-ledger.md`:
+4. **Classify** each delta on two axes and log to `docs/progress/design-parity-ledger.md`:
    - **Visual**: `FIX` (match exactly) · `MATCH`
    - **Behaviour**: `KEEP-GATED` (match look, restrict behaviour — e.g. dev-only) ·
      `INTENDED-DATA` (real IDs/content, prototype demo data not copied) · `MATCH`

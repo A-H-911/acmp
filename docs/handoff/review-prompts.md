@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -41,7 +41,7 @@ Confirm the critical gates (G-IDS, G-DEC-STATUS, G-REQ-SRC, G-COMPLETE, G-TRACE,
 Review the PR against the Definition of Done phase-footer:
 
 1. **Acceptance criteria.** Every `AC-###` the PR claims is traced to a passing test in [`../validation/acceptance-criteria.md`](../validation/acceptance-criteria.md); no claim is asserted "Met" without demonstrable evidence (G-CLAIM). Confirm the requirement traces to ≥1 decision, ≥1 work item, and ≥1 test (G-TRACE).
-2. **Design fidelity (INV-014).** For any screen with a matching `.dc.html` in `/ACMP product context/`, confirm the PR matches it — tokens, component anatomy, all states (empty/loading/error/permission-denied), iconography, full RTL mirroring, light/dark, copy (EN+AR), AA. Reconcile every deviation before approval; flag no-reference screens.
+2. **Design fidelity (INV-014).** For any screen with a matching `.dc.html` in `/ACMP product context/`, confirm the PR matches it — tokens, component anatomy, all states (empty/loading/error/permission-denied), iconography, full RTL mirroring, light/dark, copy (EN+AR), AA. **Read the `.dc.html` directly with the file tools — NOT via the design MCP**; the [Usage Map](../../ACMP%20product%20context/ACMP%20Usage%20Map.dc.html) is the authoritative per-screen index for which reference covers which screen. Reconcile every deviation before approval; flag no-reference screens.
 3. **Gates.** Tests pass; authorization enforced; audit events emitted; EN/AR + RTL verified; accessibility checks pass; no secrets; no new high/critical vulns; an ADR added/updated if a decision changed; assumptions/open-questions recorded; CI green.
 
 **Approve** only when no `INV-###` fails and no `AC-###` claim is unsupported. Otherwise return the PR with the specific failing check.

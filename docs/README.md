@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -35,7 +35,20 @@ This directory is the **Keystone v1.0.0 planning & governance package** for the 
 | What could go wrong | [risks/risk-register.md](risks/risk-register.md) |
 | Where the build is | [progress/status-report.md](progress/status-report.md) · [validation/acceptance-audit.md](validation/acceptance-audit.md) |
 | Identifiers & conventions | [governance/naming-conventions.md](governance/naming-conventions.md) · [governance/glossary.md](governance/glossary.md) |
+| What each screen must look like | [`../ACMP product context/`](../ACMP%20product%20context/) — local `.dc.html` design references; the [Usage Map](../ACMP%20product%20context/ACMP%20Usage%20Map.dc.html) is the authoritative per-screen index (read directly with file tools, not via MCP — INV-014) |
 | The deep domain/design detail | [domain/](domain/) (extension docs — domain model, workflows, threat model, dashboards, IA, …) |
+
+## Canonical reference (§A–§G)
+
+The pre-migration `docs/README.md` carried the single-source-of-truth canon in lettered sections `§A…§G`; many package documents still cite them by letter. Each canon now lives in a register — the letters resolve as follows:
+
+- **§A — Settled technology decisions** → [decisions/open-decision-register.md](decisions/open-decision-register.md) (`DEC-001…027`, each backed by an ADR).
+- **§B — Canonical modules** (bounded contexts inside the monolith) → [architecture/architecture.md](architecture/architecture.md).
+- **§C — Canonical roles (RBAC) + per-topic capabilities (ABAC)** → [domain/permission-role-matrix.md](domain/permission-role-matrix.md).
+- **§D — Canonical topic taxonomy** → [domain/topic-taxonomy.md](domain/topic-taxonomy.md).
+- **§E — Canonical status models** (entity lifecycles + the 11-outcome decision vocabulary) → [domain/entity-lifecycles.md](domain/entity-lifecycles.md) and [architecture/architecture.md](architecture/architecture.md).
+- **§F — Identifier scheme** → [governance/naming-conventions.md](governance/naming-conventions.md) (§Runtime entity keys).
+- **§G — Glossary** (EN ↔ AR) → [governance/glossary.md](governance/glossary.md).
 
 ## The non-negotiables (read these first)
 

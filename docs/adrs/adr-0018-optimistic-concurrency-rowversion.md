@@ -50,5 +50,5 @@ Applied in v1 to the **built** mutable aggregate roots: `Topic` (Topics), `Meeti
 ## Links / Notes
 
 - Implements `docs/domain/data-architecture.md` §1.5; status codes per `docs/domain/architecture-detail.md` §7.4.
-- Resolves OQ-043 (`docs/decisions/open-decision-register.md`); recorded as R-27 in §A.
+- Resolves OQ-043 ([open-question register](../decisions/open-question-register.md)); recorded as DEC-027 (formerly `R-27`) in the [open-decision register](../decisions/open-decision-register.md).
 - Numbering note: this is ADR-0018. ADR-0017 (the React-19 amendment, renumbered from a colliding ADR-0015) lands in the same doc-integrity slice; the two do not collide.

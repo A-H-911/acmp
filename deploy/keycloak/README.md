@@ -17,7 +17,7 @@ authorization-code + PKCE, roles from realm-role/group claims, **no self-registr
   `AcmpRoles.All`: `Chairman, Secretary, Member, Reviewer, Auditor, Administrator, Submitter, Guest`.
   > Do **not** rename `Guest` to "Guest/Presenter": the claim mapper (`KeycloakRoleClaimMapper` /
   > SPA `roles.ts`) takes the leaf after the last `/`, so "Guest/Presenter" would mis-map to
-  > `presenter` and fail. Presenter is a per-topic relationship (docs/10 §D), not a global role.
+  > `presenter` and fail. Presenter is a per-topic relationship (docs/domain/permission-role-matrix.md §D), not a global role.
 - An initial admin user **`acmp-admin`** (`Administrator` + `Secretary`) with **no committed
   password** — it imports with an `UPDATE_PASSWORD` required action (guardrail 7: no secrets in source).
 - `acmp-web` **default client scopes** include **`basic`** — in Keycloak 24+ the `sub` (and `auth_time`)
@@ -37,7 +37,7 @@ after Keycloak is healthy and reconciles config idempotently via `kcadm` (`deplo
 - **Add new critical config** by adding an `ensure_*` step to `reconcile.sh` (e.g. `ensure_default_scope`).
 - It reuses the Keycloak image (`bash` + `kcadm`, no `curl`/`jq`) — **no new runtime dependency** (CON-001).
 - **Not** `import --override` on boot: that would reset the bootstrap admin password / required-actions on
-  every restart. Reconciliation is surgical instead. (See OQ-041 in `docs/42`.)
+  every restart. Reconciliation is surgical instead. (See OQ-041 in `docs/decisions/open-question-register.md`.)
 
 ## User provisioning (manual — Q3 / ADR-0015)
 
@@ -64,7 +64,7 @@ If your browser does not auto-resolve `*.localhost`, add `127.0.0.1 keycloak.loc
 
 Keycloak's **own** operational store is a dedicated **Postgres** container (`keycloak-db`, volume
 `kcdata`) — OQ-038 option (a). ACMP **application** data stays SQL-Server-only (ADR-0003); this store
-holds only Keycloak's realm/users/sessions and is covered by backup/restore (docs/33). The live
+holds only Keycloak's realm/users/sessions and is covered by backup/restore (docs/domain/deployment.md). The live
 `docker compose up` bring-up is the operator's verification (the build sandbox cannot launch the stack).
 
 ## Production hardening (P18, not in this dev profile)

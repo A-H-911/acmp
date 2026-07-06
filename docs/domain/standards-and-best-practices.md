@@ -282,7 +282,7 @@ arc42's 12 sections and their ACMP mapping:
 | 6. Runtime View | Workflow diagrams in `docs/domain/workflows.md` |
 | 7. Deployment View | `docs/domain/deployment.md` |
 | 8. Cross-Cutting Concepts | `docs/domain/standards-and-best-practices.md` (this doc), `docs/domain/architecture-detail.md` §cross-cutting |
-| 9. Architecture Decisions | `adr/` directory |
+| 9. Architecture Decisions | `docs/adrs/` directory |
 | 10. Quality Requirements | `docs/requirements/non-functional.md` |
 | 11. Risks & Technical Debt | `docs/risks/risk-register.md` (RISK-###) |
 | 12. Glossary | README §G |

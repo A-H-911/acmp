@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -27,6 +27,9 @@ The durable index of work that is **known-not-done**: intentionally deferred fea
 | D-08 | Notification user preferences (per-user per-event) | Feature-deferral | All-or-nothing per event type | Phase 2 | Phase 2 | Open |
 | D-09 | File-attachment storage sizing / ops config | Ops-config | `IFileStore` backed by MinIO; volume sizing at deploy | Ops | Deploy-time configuration | Open |
 | D-10 | Bulk topic operations (defer multiple, reassign owner) | Feature-deferral | One at a time | Phase 3 | Phase 3 | Open |
+| D-11 | Tarseem diagram render sidecar (behind `IDiagramRenderer`) + Diagrams surface | Feature-deferral | Diagrams authored externally and attached as files | Phase 2 | P14 kickoff (Tarseem container build validated) | Open |
+| D-12 | Email notification channel via `INotificationChannel` | Feature-deferral | In-app notification center only (no email in v1) | Phase 3 | SMTP relay available (see [dependency register](../requirements/dependency-register.md)) | Open |
+| D-13 | Per-ballot crypto hash chaining (vote *state-change* chain shipped in the P9-review slice, PR #76; individual ballots covered transitively, not individually chained) | Tech-debt | Hash-chained vote state-change audit rows | Phase 2 | P16 security-hardening slice | Open |
 
 ## Change records
 

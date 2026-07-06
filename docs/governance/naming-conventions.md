@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -52,6 +52,7 @@ ACMP's domain and design docs (under [domain/](../domain/)) carry richer, ACMP-s
 | `C-<AREA>-##` | Security control | domain/security-controls.md |
 | `SoD-#` | Segregation-of-duties rule | domain/permission-role-matrix.md |
 | `OOS-##` / `D-##` | Out-of-scope / deferred item | execution/deferred-work-register.md |
+| `P##` | Build slice (execution ladder, `P1…P19`; also branch names `feat/P{n}-<slug>`) | planning/roadmap.md §Build-slice ladder |
 | `R-##` | *(legacy)* resolved-decision alias — **now migrated to `DEC-NNN`** | decisions/open-decision-register.md |
 
 ## Runtime (in-app) entity keys

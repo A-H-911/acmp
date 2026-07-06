@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -14,38 +14,41 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **Groups** — `WBS-N` where `N` = the epic number: `WBS-1` ↔ `EPIC-01`, `WBS-2` ↔ `EPIC-02`, … `WBS-20` ↔ `EPIC-20`.
 - **Leaves** — `WBS-N.N`, one per `BL-###` backlog item, numbered in delivery order within the group.
 - **BL → WBS crosswalk** is carried inline: every leaf ends with `(BL-### / EPIC-##)`, so the former ids stay traceable both ways.
-- **Realizes** — each leaf cites the FR(s) it actually delivers. PH-1 leaves cite their epic's PH-1 FR set; a deferred (PH-2/PH-3) leaf cites the specific deferred FR it realizes. The group heading carries the epic's full FR envelope verbatim from [38-epics-and-features.md](work-breakdown.md).
+- **Size key** (epic-level, restored from the pre-migration epics doc) — S = days · M = 1–2 weeks · L = 3–5 weeks · XL = 6+ weeks.
+- **Realizes** — each leaf cites the FR(s) it actually delivers. PH-1 leaves cite their epic's PH-1 FR set; a deferred (PH-2/PH-3) leaf cites the specific deferred FR it realizes. The group heading carries the epic's full FR envelope, carried verbatim from the pre-migration `38-epics-and-features.md` (git history).
 
 **Totals:** 20 WBS groups · 135 WBS leaves (135 `BL-###` items: 90 in Phase 1, 37 in Phase 2, 8 in Phase 3). Backlog-number gaps (BL-091–100, BL-138–200) are intentional phase-block reservations, not missing work.
 
 ## EPIC → WBS crosswalk
 
-| EPIC | Title | WBS group | Leaves | Phase |
-|---|---|---|---|---|
-| EPIC-01 | Platform Foundation | WBS-1 | WBS-1.1 – WBS-1.16 | 1 |
-| EPIC-02 | Identity & Access Management | WBS-2 | WBS-2.1 – WBS-2.6 | 1 |
-| EPIC-03 | Membership & User Management | WBS-3 | WBS-3.1 – WBS-3.6 | 1–2 |
-| EPIC-04 | Topic Intake & Lifecycle | WBS-4 | WBS-4.1 – WBS-4.12 | 1–3 |
-| EPIC-05 | Backlog Management | WBS-5 | WBS-5.1 – WBS-5.7 | 1–2 |
-| EPIC-06 | Agenda & Meeting Management | WBS-6 | WBS-6.1 – WBS-6.11 | 1–2 |
-| EPIC-07 | Minutes of Meeting (MoM) | WBS-7 | WBS-7.1 – WBS-7.4 | 1 |
-| EPIC-08 | Decision Management | WBS-8 | WBS-8.1 – WBS-8.4 | 1 |
-| EPIC-09 | Voting Engine | WBS-9 | WBS-9.1 – WBS-9.7 | 1–2 |
-| EPIC-10 | Action Tracking | WBS-10 | WBS-10.1 – WBS-10.7 | 1 |
-| EPIC-11 | Risk Management | WBS-11 | WBS-11.1 – WBS-11.3 | 1–2 |
-| EPIC-12 | Dependency Management | WBS-12 | WBS-12.1 – WBS-12.4 | 1–2 |
-| EPIC-13 | Notifications & Alerts | WBS-13 | WBS-13.1 – WBS-13.5 | 1–2 |
-| EPIC-14 | Dashboards & Reporting | WBS-14 | WBS-14.1 – WBS-14.5 | 1–2 |
-| EPIC-15 | Search & Traceability | WBS-15 | WBS-15.1 – WBS-15.8 | 1–3 |
-| EPIC-16 | Audit & Records | WBS-16 | WBS-16.1 – WBS-16.5 | 1–2 |
-| EPIC-17 | Governance — ADRs & Invariants | WBS-17 | WBS-17.1 – WBS-17.7 | 2–3 |
-| EPIC-18 | Tarseem Diagram Management | WBS-18 | WBS-18.1 – WBS-18.6 | 2 |
-| EPIC-19 | Research & Keystone Integration + Knowledge | WBS-19 | WBS-19.1 – WBS-19.7 | 2 |
-| EPIC-20 | AI & Advanced Analytics | WBS-20 | WBS-20.1 – WBS-20.5 | 3 |
+| EPIC | Title | Module(s) | Size | WBS group | Leaves | Phase |
+|---|---|---|---|---|---|---|
+| EPIC-01 | Platform Foundation | Platform | XL | WBS-1 | WBS-1.1 – WBS-1.16 | 1 |
+| EPIC-02 | Identity & Access Management | Platform / Membership | L | WBS-2 | WBS-2.1 – WBS-2.6 | 1 |
+| EPIC-03 | Membership & User Management | Membership | M | WBS-3 | WBS-3.1 – WBS-3.6 | 1–2 |
+| EPIC-04 | Topic Intake & Lifecycle | Topics | XL | WBS-4 | WBS-4.1 – WBS-4.12 | 1–3 |
+| EPIC-05 | Backlog Management | Topics | L | WBS-5 | WBS-5.1 – WBS-5.7 | 1–2 |
+| EPIC-06 | Agenda & Meeting Management | Meetings | L | WBS-6 | WBS-6.1 – WBS-6.11 | 1–2 |
+| EPIC-07 | Minutes of Meeting (MoM) | Meetings | M | WBS-7 | WBS-7.1 – WBS-7.4 | 1 |
+| EPIC-08 | Decision Management | Decisions | L | WBS-8 | WBS-8.1 – WBS-8.4 | 1 |
+| EPIC-09 | Voting Engine | Decisions | M | WBS-9 | WBS-9.1 – WBS-9.7 | 1–2 |
+| EPIC-10 | Action Tracking | Actions | M | WBS-10 | WBS-10.1 – WBS-10.7 | 1 |
+| EPIC-11 | Risk Management | Risks | M | WBS-11 | WBS-11.1 – WBS-11.3 | 1–2 |
+| EPIC-12 | Dependency Management | Dependencies | M | WBS-12 | WBS-12.1 – WBS-12.4 | 1–2 |
+| EPIC-13 | Notifications & Alerts | Notifications | M | WBS-13 | WBS-13.1 – WBS-13.5 | 1–2 |
+| EPIC-14 | Dashboards & Reporting | Reporting | L | WBS-14 | WBS-14.1 – WBS-14.5 | 1–2 |
+| EPIC-15 | Search & Traceability | Search&Traceability | L | WBS-15 | WBS-15.1 – WBS-15.8 | 1–3 |
+| EPIC-16 | Audit & Records | Audit&Records | M | WBS-16 | WBS-16.1 – WBS-16.5 | 1–2 |
+| EPIC-17 | Governance — ADRs & Invariants | Governance | L | WBS-17 | WBS-17.1 – WBS-17.7 | 2–3 |
+| EPIC-18 | Tarseem Diagram Management | Diagrams | L | WBS-18 | WBS-18.1 – WBS-18.6 | 2 |
+| EPIC-19 | Research & Keystone Integration + Knowledge | Research / Knowledge | L | WBS-19 | WBS-19.1 – WBS-19.7 | 2 |
+| EPIC-20 | AI & Advanced Analytics | Meetings / Reporting | M | WBS-20 | WBS-20.1 – WBS-20.5 | 3 |
 
 ---
 
 ## WBS-1 — Platform Foundation
+
+**Goal:** Stand up the production-grade application skeleton: containerized deployment, configuration management, observability, background jobs, file storage, database migrations, API documentation, and baseline UX infrastructure (i18n, RTL, themes, error handling).
 
 **Epic FR envelope:** FR-001, FR-003–FR-015.
 
@@ -68,6 +71,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-2 — Identity & Access Management
 
+**Goal:** Authenticate all users via Keycloak OIDC (authorization-code + PKCE); map Keycloak group/realm-role claims to ACMP canonical roles; enforce RBAC on every API endpoint and UI route; support per-topic ABAC capability checks.
+
 **Epic FR envelope:** FR-001–FR-002, FR-016, FR-018, FR-022, FR-024.
 
 - **WBS-2.1** OIDC authorization-code + PKCE flow: Keycloak integration; token validation middleware; silent renew; logout. Realizes FR-001–FR-002, FR-016, FR-018, FR-022, FR-024. (BL-017 / EPIC-02).
@@ -78,6 +83,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-2.6** Role-aware navigation: frontend hides unauthorized nav items and action buttons. Realizes FR-001–FR-002, FR-016, FR-018, FR-022, FR-024. (BL-027 / EPIC-02).
 
 ## WBS-3 — Membership & User Management
+
+**Goal:** Enable Administrators to provision, manage, and deactivate committee members; define stream membership; surface the member directory.
 
 **Epic FR envelope:** FR-016–FR-021; FR-023 (PH-2).
 
@@ -90,6 +97,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-4 — Topic Intake & Lifecycle
 
+**Goal:** Allow authorized users to submit topics, manage their full lifecycle from Draft through Closed/Decided, and maintain a complete immutable status history with attachments and comments.
+
 **Epic FR envelope:** FR-025–FR-029, FR-038–FR-040, FR-042–FR-044; FR-030, FR-036, FR-041, FR-045 (PH-2). Note: envelope FR-036 (timeline view) is realized under WBS-5.7; FR-041 (topic templates) under WBS-19.6 / WBS-19.7.
 
 - **WBS-4.1** Topic entity + migration: all fields; `TOP-YYYY-###` ID generation. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-028 / EPIC-04).
@@ -99,13 +108,15 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-4.5** Topic edit lock: Owner/Secretary in Draft/Submitted/Triage; post-Accepted metadata-only for Secretary. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-032 / EPIC-04).
 - **WBS-4.6** Topic comment thread: timestamped, attributed, immutable after post. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-033 / EPIC-04).
 - **WBS-4.7** Topic detail page: all fields, status history with actors/timestamps, linked artifacts, traceability excerpt. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-034 / EPIC-04).
-- **WBS-4.8** Aging indicator: background Hangfire SLA evaluation; visual badge + Secretary notification. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-035 / EPIC-04).
+- **WBS-4.8** Aging indicator: background Hangfire SLA evaluation (thresholds — Critical: 3d, Urgent: 7d, Normal: 21d [unverified — OQ-SLA-URGENCY]); visual badge + Secretary notification. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-035 / EPIC-04).
 - **WBS-4.9** Prepared + Scheduled status transitions: Secretary marks Prepared; schedules to a meeting. Realizes FR-025–FR-029, FR-038–FR-040, FR-042–FR-044. (BL-036 / EPIC-04).
 - **WBS-4.10** Topic conversion workflow: convert to/from ADR/Research Mission; typed link; Converted status. Realizes FR-030 (PH-2). (BL-136 / EPIC-04).
 - **WBS-4.11** Topic Reopen: Secretary reopens Closed/Rejected topic with recorded reason; re-enters triage. Realizes FR-045 (PH-2). (BL-137 / EPIC-04).
 - **WBS-4.12** Bulk topic operations: Secretary defers/reassigns multiple topics at once. Realizes D-10 (bulk topic operations — deferred item, no dedicated FR; PH-3). (BL-208 / EPIC-04).
 
 ## WBS-5 — Backlog Management
+
+**Goal:** Give secretaries and members multiple views of the topic backlog with drag-and-drop reprioritization, filtering, and urgency-aware visual indicators.
 
 **Epic FR envelope:** FR-031–FR-035, FR-037–FR-038; FR-036 (PH-2).
 
@@ -118,6 +129,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-5.7** Timeline/Gantt-lite view: topic date bars; pan/zoom. Realizes FR-036 (PH-2). (BL-128 / EPIC-05).
 
 ## WBS-6 — Agenda & Meeting Management
+
+**Goal:** Enable secretaries to create and publish meeting agendas, record meeting metadata, track attendance, and capture live meeting notes.
 
 **Epic FR envelope:** FR-046–FR-052, FR-056, FR-061; FR-057–FR-058 (PH-2).
 
@@ -135,6 +148,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-7 — Minutes of Meeting (MoM)
 
+**Goal:** Automate MoM generation from meeting data, support versioned review/approval, and distribute approved minutes to the committee.
+
 **Epic FR envelope:** FR-053–FR-055; FR-059–FR-060 (PH-3, realized under WBS-20).
 
 - **WBS-7.1** MoM entity + migration: `MIN-YYYY-###`; versioned content; approval state. Realizes FR-053–FR-055. (BL-053 / EPIC-07).
@@ -143,6 +158,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-7.4** MoM distribution: in-app notification to all committee members on approval with deep link. Realizes FR-053–FR-055. (BL-056 / EPIC-07).
 
 ## WBS-8 — Decision Management
+
+**Goal:** Record committee decisions with canonical outcomes, full rationale capture, supersession chain, and downstream traceability links; enforce immutability once issued.
 
 **Epic FR envelope:** FR-062–FR-067, FR-069; FR-068 (PH-2, realized under WBS-17.4).
 
@@ -153,9 +170,11 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-9 — Voting Engine
 
+**Goal:** Provide an attributed, quorum-enforced voting mechanism with chairman approval, immutable audit trail, and full vote lifecycle management.
+
 **Epic FR envelope:** FR-070–FR-075, FR-077–FR-078; FR-076 (PH-2).
 
-- **WBS-9.1** Vote entity + migration: `VOTE-…`; eligible voters, options, quorum threshold, abstention flag; lifecycle status. Realizes FR-070–FR-075, FR-077–FR-078. (BL-060 / EPIC-09).
+- **WBS-9.1** Vote entity + migration: `VOTE-…`; eligible voters, options (Approve/Reject; or Approve/ConditionallyApprove/Reject; or custom), quorum threshold, abstention flag; lifecycle status. Realizes FR-070–FR-075, FR-077–FR-078. (BL-060 / EPIC-09).
 - **WBS-9.2** Vote configuration + open UI: Secretary configures; vote opens; in-app notification to eligible voters. Realizes FR-070–FR-075, FR-077–FR-078. (BL-061 / EPIC-09).
 - **WBS-9.3** Vote casting: one-vote-per-voter enforcement at API layer; abstention option; live aggregate display. Realizes FR-070–FR-075, FR-077–FR-078. (BL-062 / EPIC-09).
 - **WBS-9.4** Quorum enforcement: vote cannot close if present-voters < quorum; check from attendance record. Realizes FR-070–FR-075, FR-077–FR-078. (BL-063 / EPIC-09).
@@ -164,6 +183,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-9.7** Conflict-of-interest flag per voter per vote: declaration recorded; no auto-exclusion. Realizes FR-076 (PH-2). (BL-127 / EPIC-09).
 
 ## WBS-10 — Action Tracking
+
+**Goal:** Create, track, remind, escalate, and verify action items linked to topics/decisions/risks; derive Overdue state automatically; provide a cross-topic actions dashboard.
 
 **Epic FR envelope:** FR-079–FR-088.
 
@@ -177,6 +198,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-11 — Risk Management
 
+**Goal:** Record, track, and escalate risks linked to topics and actions; enforce mitigation plan before close; surface risk status on the topic detail page.
+
 **Epic FR envelope:** FR-089–FR-091, FR-093; FR-092 (PH-2).
 
 - **WBS-11.1** Risk entity + migration: `RSK-…`; title, description, likelihood, impact, owner, mitigation plan; linked to topic/action. Realizes FR-089–FR-091, FR-093. (BL-076 / EPIC-11).
@@ -184,6 +207,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-11.3** Risk escalation notification: notify Secretary + Chairman when risk status = Escalated. Realizes FR-092 (PH-2). (BL-135 / EPIC-11).
 
 ## WBS-12 — Dependency Management
+
+**Goal:** Model typed dependency edges between governance artifacts; flag cross-stream dependencies; provide impact analysis and graph visualization.
 
 **Epic FR envelope:** FR-094–FR-095, FR-098; FR-096–FR-097 (PH-2). Note: envelope FR-096 (impact analysis query) is realized under WBS-15.6.
 
@@ -194,15 +219,19 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-13 — Notifications & Alerts
 
+**Goal:** Dispatch all committee notifications via the INotificationChannel abstraction; deliver the in-app notification center in v1; add the Webex Adaptive Card adapter in PH-2; support user preferences and digest in PH-2.
+
 **Epic FR envelope:** FR-129–FR-132; FR-133–FR-134 (PH-2).
 
 - **WBS-13.1** In-app notification center: bell icon, list, mark-as-read, deep links; `INotificationChannel` + in-app adapter. Realizes FR-129–FR-132. (BL-052 / EPIC-13).
 - **WBS-13.2** Notification event catalog: all PH-1 events wired to `INotificationChannel` dispatch. Realizes FR-129–FR-132. (BL-082 / EPIC-13).
-- **WBS-13.3** Webex adapter: `INotificationChannel` Adaptive Cards (v1.3, ≤80KB); 429 back-off via Hangfire retry. Realizes FR-129–FR-132 (PH-2 adapter). (BL-112 / EPIC-13).
+- **WBS-13.3** Webex adapter: `INotificationChannel` Adaptive Cards (v1.3, ≤80KB, ≤10 image links per card); 429 + Retry-After back-off via Hangfire retry. Realizes FR-129–FR-132 (PH-2 adapter). (BL-112 / EPIC-13).
 - **WBS-13.4** Notification user preferences: per-user per-event-type opt-in/out page. Realizes FR-133 (PH-2). (BL-124 / EPIC-13).
 - **WBS-13.5** Notification digest Hangfire job: daily/weekly summary to opted-in users. Realizes FR-134 (PH-2). (BL-125 / EPIC-13).
 
 ## WBS-14 — Dashboards & Reporting
+
+**Goal:** Provide role-tailored dashboards (committee/secretary/chairman) in PH-1; expand with per-stream, decision history, and action trend reports in PH-2; KPI health dashboard in PH-3.
 
 **Epic FR envelope:** FR-135–FR-137; FR-138–FR-140, FR-142 (PH-2); FR-141 (PH-3, realized under WBS-20.5).
 
@@ -213,6 +242,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-14.5** Decision history report + CSV export; action completion trend chart; CSV/PNG export for all reports. Realizes FR-139–FR-140, FR-142 (PH-2). (BL-130 / EPIC-14).
 
 ## WBS-15 — Search & Traceability
+
+**Goal:** Provide bilingual full-text search across all governed artifacts and a typed traceability graph that lets any user navigate upstream/downstream relationships from any artifact.
 
 **Epic FR envelope:** FR-143–FR-147; FR-148 (PH-2); FR-149 (PH-3).
 
@@ -227,15 +258,19 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-16 — Audit & Records
 
+**Goal:** Maintain an append-only, immutable audit log for all governed entities; provide search and export; enforce no-purge retention in v1.
+
 **Epic FR envelope:** FR-150–FR-153; FR-154–FR-155 (PH-2).
 
 - **WBS-16.1** Audit log entity + migration: append-only; entity type, ID, action, actor, UTC timestamp, before/after JSON, correlation ID; no UPDATE/DELETE. Realizes FR-150–FR-153. (BL-066 / EPIC-16).
-- **WBS-16.2** Audit hash chain: SHA-256 chained hash over vote + issued-decision records; chain verifiable. Realizes FR-150–FR-153. (BL-067 / EPIC-16).
+- **WBS-16.2** Audit hash chain: SHA-256 chained hash over vote + issued-decision records; chain verifiable (RISK-003 mitigation; ADR-0009). Realizes FR-150–FR-153. (BL-067 / EPIC-16).
 - **WBS-16.3** Audit log search UI: Auditor/Administrator search by entity type, ID, actor, action, date range; paginated. Realizes FR-150–FR-153. (BL-081 / EPIC-16).
 - **WBS-16.4** Audit log export: CSV/JSON by date range + entity filter; Auditor/Administrator only. Realizes FR-154 (PH-2). (BL-132 / EPIC-16).
 - **WBS-16.5** Retention policy configuration: configurable period per entity type; no auto-purge in v1; Admin UI. Realizes FR-155 (PH-2). (BL-133 / EPIC-16).
 
 ## WBS-17 — Governance — ADRs & Invariants
+
+**Goal:** Provide an in-app ADR repository with full lifecycle and supersession, and an Architecture Invariant registry with violation tracking.
 
 **Epic FR envelope:** FR-099–FR-109; FR-110 (PH-3).
 
@@ -249,6 +284,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-18 — Tarseem Diagram Management
 
+**Goal:** Enable creation and management of architecture diagrams via Tarseem JSON spec; render via containerized sidecar; version specs; export artifacts; attach to governed artifacts.
+
 **Epic FR envelope:** FR-121–FR-128.
 
 - **WBS-18.1** Tarseem container: FastAPI wrapper around `tarseem.generate()`; internal HTTP endpoint; wired in Docker Compose. Realizes FR-121–FR-128. (BL-101 / EPIC-18).
@@ -259,6 +296,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 - **WBS-18.6** Diagram attachment to topics/ADRs/decisions via traceability relationship model. Realizes FR-121–FR-128. (BL-134 / EPIC-18).
 
 ## WBS-19 — Research & Keystone Integration + Knowledge
+
+**Goal:** Enable Research Missions with optional Keystone package import; provide a wiki/knowledge base and template management.
 
 **Epic FR envelope:** FR-111–FR-120.
 
@@ -272,6 +311,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## WBS-20 — AI & Advanced Analytics
 
+**Goal:** Add human-reviewed AI candidate extraction from transcripts; email notification channel; KPI health dashboard; and traceability matrix export.
+
 **Epic FR envelope:** FR-059–FR-060, FR-110, FR-141, FR-149; email items in FR-130.
 
 - **WBS-20.1** Transcript FTS index: SQL Server FTS on transcript content; search restricted to Chairman/Secretary/Auditor. Realizes FR-059–FR-060. (BL-201 / EPIC-20).
@@ -284,8 +325,8 @@ The Keystone work-breakdown structure for ACMP. Every deliverable is a `WBS-N` g
 
 ## Traceability
 
-- **EPIC → WBS group:** the crosswalk table above (`WBS-N` ↔ `EPIC-0N`); source epics in [38-epics-and-features.md](work-breakdown.md).
+- **EPIC → WBS group:** the crosswalk table above (`WBS-N` ↔ `EPIC-0N`); source epics in [docs/planning/work-breakdown.md](work-breakdown.md).
 - **BL → WBS leaf:** the inline `(BL-### / EPIC-##)` tag on every leaf; ordered delivery sequence in [execution/backlog.md](../execution/backlog.md).
-- **WBS leaf → FR:** the `Realizes FR-###` clause on every leaf; requirement text in [07-functional-requirements.md](../requirements/functional.md).
+- **WBS leaf → FR:** the `Realizes FR-###` clause on every leaf; requirement text in [docs/requirements/functional.md](../requirements/functional.md).
 - **WBS → AC / test:** resolved in the [traceability matrix](../validation/traceability-matrix.md) (G-TRACE gate: every MVP requirement → ≥1 decision, ≥1 work item, ≥1 test).
 - Cross-epic realization notes (FR-036 → WBS-5.7, FR-041 → WBS-19.6/19.7, FR-068 → WBS-17.4, FR-096 → WBS-15.6, FR-141 → WBS-20.5) prevent double-counting where an epic's FR envelope is delivered by another group's leaf.

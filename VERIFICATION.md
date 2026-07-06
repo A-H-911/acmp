@@ -2,9 +2,11 @@
 
 **Date:** 2026-06-24 · **Method:** automated full-tree scan + independent read-only audit subagent + targeted fixes.
 
+> **Layout note (2026-07-06):** this record describes the package as verified at handoff. The layout has since migrated to Keystone v1.0.0 (PR #97): the numbered `docs/00–45` files were reshaped into foldered registers under `docs/`, `adr/` moved to `docs/adrs/` (now 22 ADRs), and `execution-handoff/` was retired (its content re-homed into `AGENTS.md`, `docs/handoff/`, and `docs/requirements/invariant-register.md`). Current mechanical verification runs via the Keystone validator — see `docs/README.md` §Status.
+
 ## Coverage
 - **All 59 required deliverables present** and mapped in `README.md`'s deliverable index.
-- Package contents: 46 `docs/` files (00–45), 14 ADRs + index in `adr/`, 2 `design-handoff/` files, 4 `execution-handoff/` files, root `CLAUDE.md`, this record. ~177,000 words.
+- Package contents at handoff: 46 `docs/` files (00–45), 14 ADRs + index in `adr/`, 2 `design-handoff/` files, 4 `execution-handoff/` files, root `CLAUDE.md`, this record. ~177,000 words.
 
 ## Consistency with secretary-confirmed decisions (2026-06-24)
 Independent audit result: **16/16 resolved-decision checks PASS** — verified consistently across README, ADRs, domain model, FRs/NFRs, architecture, security, notifications, roadmap, guardrails, and CLAUDE.md:

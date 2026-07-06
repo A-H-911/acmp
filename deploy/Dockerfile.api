@@ -1,4 +1,4 @@
-# Multi-stage build for the ASP.NET Core 8 API (docs/33).
+# Multi-stage build for the ASP.NET Core 8 API (docs/domain/deployment.md).
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY global.json ./

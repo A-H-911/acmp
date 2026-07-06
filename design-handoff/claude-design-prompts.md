@@ -1,5 +1,7 @@
 # Claude Design — Layered Prompts (Deliverable 53)
 
+> **ARCHIVED (2026-07-06).** This file is the historical Claude-Design handoff record. The design phase is complete; the authoritative design references are now the local `.dc.html` files in `/ACMP product context/` (per-screen index: `ACMP Usage Map.dc.html`), read directly with file tools — not via the design MCP (INV-014). Do not use this file to drive new work.
+
 Ten prompts to drive the ACMP UI design, from system to screens to audit. **Use them in order.** Feed `claude-design-input-package.md` alongside each prompt (it is the shared context). The prompts give structure and constraints but deliberately **leave visual creativity to Claude Design** — they specify *what must work*, not *what it must look like*.
 
 **Global constraints to repeat in every prompt:** bilingual **English + Arabic with full RTL**; **light + dark**; **WCAG 2.2 AA**; **desktop + tablet**; **government-grade, calm, serious, information-dense** tone; accessible drag-and-drop with keyboard alternatives; Gregorian dates; sensitive internal tool (no marketing flair, no dark patterns).

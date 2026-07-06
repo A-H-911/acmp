@@ -430,7 +430,7 @@ This strategy keeps the deployment simple (a Docker Compose stack, on-prem, no K
 ## Traceability
 
 - Deliverable 31 (`docs/domain/build-vs-buy-vs-integrate.md`)
-- Informs: `execution-handoff/` (build plan), `docs/planning/roadmap.md`, `docs/execution/backlog.md`, `docs/planning/work-breakdown.md`
+- Informs: `docs/handoff/` (build prompts), `docs/planning/roadmap.md`, `docs/execution/backlog.md`, `docs/planning/work-breakdown.md`
 - ADRs: ADR-0001 (modular monolith), ADR-0002 (.NET), ADR-0003 (SQL Server), ADR-0004 (Keycloak), ADR-0005 (notifications), ADR-0006 (Tarseem), ADR-0007 (Keystone optional), ADR-0009 (immutability), ADR-0011 (SQL FTS), ADR-0012 (React)
 - Informed by: `docs/domain/open-source-landscape.md`, `docs/domain/tarseem-analysis.md`, `docs/domain/keystone-analysis.md`
 - Open questions raised: OQ on SQL Server Arabic FTS quality (§3.9)

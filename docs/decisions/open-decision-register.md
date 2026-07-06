@@ -7,7 +7,7 @@ owner: lead-secretary
 
 # Open-Decision Register — ACMP
 
-These entries mirror the settled canon from `docs/decisions/open-decision-register.md §A` (confirmed by the secretary 2026-06-24). Every row is settled and overrides anything contradicting it elsewhere. They map one-to-one from the former `R-##` ids: **R-01 → DEC-001, R-02 → DEC-002, … R-27 → DEC-027** (add 100-based numbering: `R-0N → DEC-0NN`). "Promoted to" carries the source ADR where one exists; `n/a (canon)` means the decision is canon recorded in the README/CON register with no dedicated ADR.
+These entries carry the settled canon formerly recorded in the pre-migration `docs/42-open-decisions.md §A` (confirmed by the secretary 2026-06-24). Every row is settled and overrides anything contradicting it elsewhere. They map one-to-one from the former `R-##` ids: **R-01 → DEC-001, R-02 → DEC-002, … R-27 → DEC-027** (add 100-based numbering: `R-0N → DEC-0NN`). "Promoted to" carries the source ADR where one exists; `n/a (canon)` means the decision is canon recorded in the README/CON register with no dedicated ADR.
 
 | ID | Decision | Status | Rationale | Promoted to | Trigger to revisit |
 |---|---|---|---|---|---|

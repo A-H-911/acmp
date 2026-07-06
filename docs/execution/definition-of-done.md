@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -13,7 +13,7 @@ The completion criteria that must be satisfied before any Story, Feature/Epic, o
 
 - Items marked **[HARD]** are non-negotiable; a single unchecked [HARD] item blocks promotion.
 - Items marked **[SOFT]** may have a documented exception approved by the Tech Lead + Secretary; the exception is logged in the sprint retrospective.
-- DoD applies to all PH-1 work and carries forward unchanged to PH-2/PH-3 unless the team explicitly revises it via a committee topic (see [43-post-release-operating-model.md](../domain/post-release-operating-model.md) §8.3).
+- DoD applies to all PH-1 work and carries forward unchanged to PH-2/PH-3 unless the team explicitly revises it via a committee topic (see [docs/domain/post-release-operating-model.md](../domain/post-release-operating-model.md) §8.3).
 
 ---
 
@@ -32,7 +32,7 @@ Every user story (`US-###`) must satisfy all of the following before the story i
 
 ### Authorization & Security
 
-- [ ] **[HARD]** Authorization policy is enforced at the API handler layer (ASP.NET Core policy-based authorization); the story's capability appears in the permission matrix ([10-permission-role-matrix.md](../domain/permission-role-matrix.md)) and the policy exists and is named consistently.
+- [ ] **[HARD]** Authorization policy is enforced at the API handler layer (ASP.NET Core policy-based authorization); the story's capability appears in the permission matrix ([docs/domain/permission-role-matrix.md](../domain/permission-role-matrix.md)) and the policy exists and is named consistently.
 - [ ] **[HARD]** Deny-by-default verified: unauthenticated requests return HTTP 401; unauthorized role/ABAC attempts return HTTP 403.
 - [ ] **[HARD]** SoD rules (SoD-1 through SoD-5) relevant to this story are enforced in code and verified by a test (e.g., AC-012 for Action.Verify, AC-015 for Vote.Close).
 - [ ] **[HARD]** No secrets (connection strings, API keys, tokens) are hardcoded in source code or container images; all secrets are externalized via environment variables/secrets manager (FR-013).
@@ -66,7 +66,7 @@ Every user story (`US-###`) must satisfy all of the following before the story i
 
 ### Acceptance Criteria
 
-- [ ] **[HARD]** All AC-### criteria linked to this US-### (per [40-acceptance-criteria.md](../validation/acceptance-criteria.md)) are verified passing — either by automated test or documented manual test result.
+- [ ] **[HARD]** All AC-### criteria linked to this US-### (per [docs/validation/acceptance-criteria.md](../validation/acceptance-criteria.md)) are verified passing — either by automated test or documented manual test result.
 - [ ] **[HARD]** The QA engineer or Tech Lead has confirmed acceptance; no AC is "assumed passing" without evidence.
 
 ---
@@ -82,12 +82,12 @@ Every `EPIC-##` must satisfy all Story-level DoD items for its constituent stori
 
 ### Permission Matrix Tests
 
-- [ ] **[HARD]** A test matrix exists (parametrized integration tests) covering every action in the epic's scope against every relevant role (Allow / AiO / Deny cells from [10-permission-role-matrix.md](../domain/permission-role-matrix.md) §C); all cells verified passing.
+- [ ] **[HARD]** A test matrix exists (parametrized integration tests) covering every action in the epic's scope against every relevant role (Allow / AiO / Deny cells from [docs/domain/permission-role-matrix.md](../domain/permission-role-matrix.md) §C); all cells verified passing.
 - [ ] **[HARD]** ABAC scope tests exist for stream-scoped actions (a Member in Stream-A cannot act on Stream-B-only topics).
 
 ### Workflow Coverage
 
-- [ ] **[HARD]** The canonical workflow(s) from [13-workflows.md](../domain/workflows.md) that this epic implements are traceable to tests (each workflow step corresponds to at least one unit/integration/E2E test).
+- [ ] **[HARD]** The canonical workflow(s) from [docs/domain/workflows.md](../domain/workflows.md) that this epic implements are traceable to tests (each workflow step corresponds to at least one unit/integration/E2E test).
 - [ ] **[SOFT]** Exception and alternate paths from each workflow definition are tested (e.g., quorum-not-met path in W11, rejection-without-reason blocked in W2).
 
 ### Dashboard Data Validation
@@ -116,7 +116,7 @@ A release (production deployment of a named phase or patch) must satisfy all Epi
 
 ### Security
 
-- [ ] **[HARD]** OWASP ASVS L2 checklist reviewed; no unmitigated High or Critical items ([25-security-controls.md](../domain/security-controls.md)).
+- [ ] **[HARD]** OWASP ASVS L2 checklist reviewed; no unmitigated High or Critical items ([docs/domain/security-controls.md](../domain/security-controls.md)).
 - [ ] **[HARD]** SAST scan (e.g., Semgrep, .NET Roslyn analyzers) clean or all findings triaged with accepted exceptions documented.
 - [ ] **[HARD]** DAST scan (e.g., OWASP ZAP against staging) run; High/Critical findings resolved or accepted with documented risk.
 - [ ] **[HARD]** Dependency vulnerability scan (e.g., `dotnet list package --vulnerable`, npm audit) clean or findings triaged; no High/Critical unmitigated CVEs in production dependencies.
@@ -125,6 +125,7 @@ A release (production deployment of a named phase or patch) must satisfy all Epi
 - [ ] **[HARD]** All secrets externalized; no secrets in `docker-compose.yml`, Dockerfiles, or committed config files (FR-013).
 - [ ] **[HARD]** TLS enforced on all external-facing endpoints; certificates valid.
 - [ ] **[HARD]** Audit immutability verified: a test asserts that attempting to UPDATE or DELETE any audit log row (even as a DBA-level test user) fails; hash-chain integrity check passes on the full audit log in staging.
+- [ ] **[SOFT]** Input validation confirmed: SQL injection attempt on search and form fields returns 400 (no DB error); XSS payload in Markdown fields is sanitized on render (no script execution).
 
 ### Data
 
@@ -160,6 +161,7 @@ A release (production deployment of a named phase or patch) must satisfy all Epi
 - [ ] **[HARD]** Health check endpoints (`/health/live`, `/health/ready`) return HTTP 200 in staging Docker Compose stack (FR-007).
 - [ ] **[SOFT]** OpenTelemetry traces are visible in Seq (or configured trace backend) for at least one inbound HTTP request and one Hangfire background job (FR-010).
 - [ ] **[SOFT]** Hangfire dashboard accessible to Administrator in staging; no failed jobs without acknowledged resolution.
+- [ ] **[SOFT]** Error-rate alerting in Seq confirmed: a test 5xx event triggers the configured alert rule; the alert is visible in Seq within 1 minute.
 
 ### Operability
 
@@ -168,23 +170,26 @@ A release (production deployment of a named phase or patch) must satisfy all Epi
 - [ ] **[HARD]** Docker Compose file (`docker-compose.yml`) validated: all containers (ACMP app, SQL Server, Seq, MinIO) start up in order with correct healthcheck dependencies; no manual intervention required.
 - [ ] **[SOFT]** MinIO buckets and lifecycle policies confirmed correct in staging.
 - [ ] **[SOFT]** Container resource limits (CPU, memory) set appropriately for the target VM size; verified they do not cause OOM under normal load.
+- [ ] **[SOFT]** OpenAPI document accessible and valid in the staging environment; all in-scope endpoints documented (FR-008).
 
 ### Sign-off
 
-- [ ] **[HARD]** Secretary (PO) UAT sign-off: end-to-end governance loop completed in staging (topic → triage → agenda → meeting → vote → decision → action); Secretary confirms the workflow matches the operating model ([43-post-release-operating-model.md](../domain/post-release-operating-model.md) §4).
+- [ ] **[HARD]** Secretary (PO) UAT sign-off: end-to-end governance loop completed in staging (topic → triage → agenda → meeting → vote → decision → action); Secretary confirms the workflow matches the operating model ([docs/domain/post-release-operating-model.md](../domain/post-release-operating-model.md) §4).
 - [ ] **[HARD]** Chairman UAT sign-off: voting, chairman approval, and decision record verified in staging.
 - [ ] **[HARD]** Security sign-off from designated security reviewer: all [HARD] security items above checked and confirmed.
 - [ ] **[SOFT]** Tech Lead sign-off: architectural integrity confirmed; no module boundary violations introduced.
 - [ ] **[SOFT]** QA lead sign-off: all AC-### criteria verified; E2E test suite green.
+- [ ] **[SOFT]** Deployment window scheduled and communicated to all committee members via in-app notification (maintenance window: Sunday 00:00–04:00 per [post-release-operating-model.md](../domain/post-release-operating-model.md) §2.2).
+- [ ] **[SOFT]** Post-deployment verification plan confirmed: responsible party, monitoring window (48h), escalation contact list, rollback trigger criteria documented.
 
 ---
 
 ## Traceability
 
-- Implements **Deliverable 57** (Definition of Done); source: [44-definition-of-done.md](definition-of-done.md).
+- Implements **Deliverable 57** (Definition of Done); source: the pre-migration `44-definition-of-done.md` (git history), extended with the non-gating checks re-homed from `45-release-readiness-checklist.md`.
 - Story DoD enforces: FR-009 (Serilog/Seq), FR-013 (externalized config), FR-150/FR-151 (audit events), FR-003/FR-004 (EN/AR + RTL), FR-034/FR-047 (DnD accessibility), FR-024 (role-based UI).
-- Feature/Epic DoD enforces: [10-permission-role-matrix.md](../domain/permission-role-matrix.md) (permission matrix tests), [13-workflows.md](../domain/workflows.md) (workflow coverage), ADR-0009 (immutability).
-- Release DoD enforces: [planning/roadmap.md](../planning/roadmap.md) §PH-1 Exit Criteria, [25-security-controls.md](../domain/security-controls.md) (ASVS L2), [40-acceptance-criteria.md](../validation/acceptance-criteria.md) (AC-### coverage per G-TRACE).
-- SoD rules (SoD-1 through SoD-5) per [10-permission-role-matrix.md](../domain/permission-role-matrix.md) §E.4 are explicitly required in the Story-level Authorization checklist.
+- Feature/Epic DoD enforces: [docs/domain/permission-role-matrix.md](../domain/permission-role-matrix.md) (permission matrix tests), [docs/domain/workflows.md](../domain/workflows.md) (workflow coverage), ADR-0009 (immutability).
+- Release DoD enforces: [planning/roadmap.md](../planning/roadmap.md) §PH-1 Exit Criteria, [docs/domain/security-controls.md](../domain/security-controls.md) (ASVS L2), [docs/validation/acceptance-criteria.md](../validation/acceptance-criteria.md) (AC-### coverage per G-TRACE).
+- SoD rules (SoD-1 through SoD-5) per [docs/domain/permission-role-matrix.md](../domain/permission-role-matrix.md) §E.4 are explicitly required in the Story-level Authorization checklist.
 - Release-boundary [BLOCK] gates that apply this DoD → [execution/checkpoints.md](checkpoints.md).
-- Revision authority: changes to this DoD are governed per [43-post-release-operating-model.md](../domain/post-release-operating-model.md) §8.3 (submit as a committee topic).
+- Revision authority: changes to this DoD are governed per [docs/domain/post-release-operating-model.md](../domain/post-release-operating-model.md) §8.3 (submit as a committee topic).

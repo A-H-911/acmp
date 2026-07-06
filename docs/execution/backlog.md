@@ -1,15 +1,15 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
 
 # Execution Backlog — ACMP
 
-The ordered build sequence for ACMP: Phase 1 (MVP Governance) first, then Phase 2 (Governance Expansion) and Phase 3 (Research & Knowledge), prioritized by value and dependency. Each `BL-###` item maps to a `WBS-N.N` leaf in [planning/work-breakdown.md](../planning/work-breakdown.md) and to an `EPIC-##` in [38-epics-and-features.md](../planning/work-breakdown.md). This is the delivery order; do not start an item before its `Depends-On` items are delivered.
+The ordered build sequence for ACMP: Phase 1 (MVP Governance) first, then Phase 2 (Governance Expansion) and Phase 3 (Research & Knowledge), prioritized by value and dependency. Each `BL-###` item maps to a `WBS-N.N` leaf in [planning/work-breakdown.md](../planning/work-breakdown.md) and to an `EPIC-##` in [planning/work-breakdown.md](../planning/work-breakdown.md). This is the delivery order; do not start an item before its `Depends-On` items are delivered.
 
-**Priority key:** P1 = blocker/foundation · P2 = core loop · P3 = workflow completion · P4 = enhancement/expansion.
+**Priority key:** P1 = blocker/foundation · P2 = core loop · P3 = workflow completion · P4 = enhancement/expansion. (Priority codes only — unrelated to the `P1…P19` build-slice ladder in [planning/roadmap.md](../planning/roadmap.md).)
 
 **Size key:** XS = <1d · S = 1–2d · M = 3–5d · L = 1–2w · XL = 2–4w.
 
@@ -236,8 +236,8 @@ The ordered build sequence for ACMP: Phase 1 (MVP Governance) first, then Phase 
 ## Traceability
 
 - Each `BL-###` → `WBS-N.N` leaf in [planning/work-breakdown.md](../planning/work-breakdown.md).
-- Each `BL-###` → `EPIC-##` in [38-epics-and-features.md](../planning/work-breakdown.md).
-- `BL-###` → `FR-###` via the epic FR lists (see [07-functional-requirements.md](../requirements/functional.md)).
+- Each `BL-###` → `EPIC-##` in [planning/work-breakdown.md](../planning/work-breakdown.md).
+- `BL-###` → `FR-###` via the epic FR lists (see [docs/requirements/functional.md](../requirements/functional.md)).
 - Phase assignments → [planning/roadmap.md](../planning/roadmap.md) phase scope tables.
 - Deferred items and out-of-scope exclusions → [execution/deferred-work-register.md](deferred-work-register.md).
 - Completion gate per item → [execution/definition-of-done.md](definition-of-done.md); phase/release gates → [execution/checkpoints.md](checkpoints.md).

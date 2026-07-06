@@ -179,7 +179,7 @@ Per `README.md §A` (resolved 2026-06-24): **keep all records; no automatic purg
 - **Retention:** Last 30 daily backups retained on-prem; off-site copy on another volume (org policy).
 - **Testing:** Monthly restore test on a staging environment; Tech Lead documents the test result.
 - **RTO target:** ≤ 4 hours (restore from backup to operational); data loss ≤ 24 hours (nightly backup RPO).
-- Backup and restore procedure documented in the operational runbook (`execution-handoff/`).
+- Backup and restore procedure documented in the operational runbook (see `docs/domain/deployment.md` and `HANDOFF-RUNBOOK.md`).
 
 ### 5.4 Data quality responsibilities
 

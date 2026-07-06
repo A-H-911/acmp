@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -81,6 +81,14 @@ Every PR into `main` must pass these required checks before merge. All run on a 
 `dotnet test` passing is not the same as CI green: run `dotnet format --verify-no-changes` and the per-file coverage check locally too, since format (BOM/charset) and coverage gaps fail CI even when tests pass.
 
 A build is **security-cleared** when CodeQL, the dependency scans, Gitleaks, and Trivy are all clean (or every finding has an approved, referenced suppression). Dependency exemptions live in `docs/security-exemptions.md`, require lead + security-owner sign-off, and expire after 90 days.
+
+## Working discipline (carried from the pre-migration agent guardrails)
+
+Three standing rules for any agent or contributor working the package (restored from the pre-migration `execution-handoff/agent-guardrails.md` "DO" list; mirrored in `AGENTS.md`):
+
+- **Validate before claiming.** Never assert an `AC-###` is Met, a test passes, or CI is green without demonstrable evidence (a run, a log, a link). Report facts, not claims.
+- **Every artifact has an owner and a status.** New or changed package documents carry front-matter `status` / `version` / `updated` / `owner`; work items carry an ID and a status. Nothing lands ownerless or status-less.
+- **Keep the planning package authoritative.** When code and the package disagree, fix the code or raise an ADR/`OQ-` — never let them drift silently; update the affected register in the same PR as the change.
 
 ## Commit conventions
 

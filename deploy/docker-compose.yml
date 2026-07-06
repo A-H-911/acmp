@@ -25,7 +25,7 @@ services:
       ACCEPT_EULA: "Y"
       # Recent Seq requires a first-run admin password OR an explicit no-auth opt-out, else it exits on
       # startup. The bundled Seq is internal dev observability (UI on a loopback host port); prod sets
-      # SEQ_FIRSTRUN_ADMINPASSWORD instead (docs/33 / P18).
+      # SEQ_FIRSTRUN_ADMINPASSWORD instead (docs/domain/deployment.md / P18).
       SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
     ports:
       - "5341:5341"   # ingestion (Serilog + OTLP) — app uses internal seq:5341, host map is operator-only
@@ -59,7 +59,7 @@ services:
 
   # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
-  # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/33, ADR-0015).
+  # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/domain/deployment.md, ADR-0015).
   keycloak-db:
     image: postgres:16
     environment:
