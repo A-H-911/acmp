@@ -148,7 +148,7 @@ not start from the prototype's internal role keys — use the planning package's
 
 ## Stage 5 — Drive the build
 
-Work top-to-bottom through `execution-handoff/phase-prompts.md` (P1–P19). Each phase self-enforces: unit + integration tests, the relevant `AC-###` (`docs/40`), authorization (`docs/10`) + audit events, no hardcoded strings (EN+AR) + RTL, progress-log + acceptance-audit updates, conventional commits. Confirm each phase before the next. If a step would break a guardrail (`execution-handoff/agent-guardrails.md`), the agent is instructed to **stop and ask**.
+Work top-to-bottom through `execution-handoff/phase-prompts.md` (P1–P19). Each phase self-enforces: unit + integration tests, the relevant `AC-###` (`docs/validation/acceptance-criteria.md`), authorization (`docs/domain/permission-role-matrix.md`) + audit events, no hardcoded strings (EN+AR) + RTL, progress-log + acceptance-audit updates, conventional commits. Confirm each phase before the next. If a step would break a guardrail (`execution-handoff/agent-guardrails.md`), the agent is instructed to **stop and ask**.
 
 ---
 
@@ -162,9 +162,9 @@ Work top-to-bottom through `execution-handoff/phase-prompts.md` (P1–P19). Each
 | `/execution-handoff/phase-prompts.md` | Build slices P1–P19 |
 | `/execution-handoff/agent-guardrails.md` | Binding constraints |
 | `/execution-handoff/claude-code-execution-package.md` | What to build / what's resolved vs open / how to track progress |
-| `/docs/40-acceptance-criteria.md` | `AC-###` acceptance criteria |
-| `/docs/36-roadmap.md` | Phases + exit criteria |
-| `/docs/10-permission-role-matrix.md` | Role × action × ABAC scope |
+| `/docs/validation/acceptance-criteria.md` | `AC-###` acceptance criteria |
+| `/docs/planning/roadmap.md` | Phases + exit criteria |
+| `/docs/domain/permission-role-matrix.md` | Role × action × ABAC scope |
 | `/design-handoff/` | Claude Design input package + the 10 design prompts |
 | `/VERIFICATION.md` | Planning-package verification record |
 

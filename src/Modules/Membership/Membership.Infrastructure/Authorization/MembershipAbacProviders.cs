@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Membership.Infrastructure.Authorization;
 
-// Membership-owned implementations of the shared ABAC ports (docs/10 §D/§E). They read ONLY
+// Membership-owned implementations of the shared ABAC ports (docs/domain/permission-role-matrix.md §D/§E). They read ONLY
 // Membership tables and are injected into the shared-kernel authorization handlers — the
 // in-process public-contract pattern that keeps module boundaries intact (ADR-0001). userId is the
 // Keycloak subject (ICurrentUser.UserId).

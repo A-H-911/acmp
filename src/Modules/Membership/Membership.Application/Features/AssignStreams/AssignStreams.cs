@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Membership.Application.Features.AssignStreams;
 
-// Administrator sets a member's stream assignments (BL-024). Streams scope WRITE access (docs/10
+// Administrator sets a member's stream assignments (BL-024). Streams scope WRITE access (docs/domain/permission-role-matrix.md
 // §E.1); read stays committee-wide. Unknown stream ids are ignored — only resolved streams assign.
 public sealed record AssignStreamsCommand(Guid MemberPublicId, IReadOnlyList<Guid> StreamPublicIds)
     : IRequest, IAuthorizedRequest

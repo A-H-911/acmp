@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.0.0",
+  "skill_version": "1.0.0",
+  "project_profile": {
+    "name": "ACMP",
+    "summary": "Single system of record for one Architecture Committee (on-prem, bilingual, <=20 users).",
+    "mode": "resume"
+  },
+  "scope": {
+    "mvp": "The PH-1 governance loop (topic intake → agenda → meeting → vote → decision → action) with RBAC+ABAC, in-app notifications, EN/AR+RTL, hash-chained audit, role dashboards, FTS, and typed traceability.",
+    "full_target": "PH-2 (ADRs/Invariants/Research/Knowledge/Diagrams/Webex/expanded reporting) + PH-3 (AI extraction, email, KPI dashboard)."
+  },
+  "registers": {
+    "fr": 155,
+    "nfr": 63,
+    "con": 15,
+    "inv": 14,
+    "asm": 16,
+    "dep": 11,
+    "oq": 48,
+    "dec": 27,
+    "adr": 23,
+    "risk": 11,
+    "kpi": 21,
+    "stk": 6,
+    "ac": 66,
+    "test": 50,
+    "wbs": 20,
+    "ph": 4,
+    "ms": 6
+  },
+  "selected_artifacts": [
+    "00-charter.md",
+    "01-executive-summary.md",
+    "adrs/adr-0001-modular-monolith.md",
+    "adrs/adr-0002-dotnet-clean-architecture.md",
+    "adrs/adr-0003-sql-server-single-datastore.md",
+    "adrs/adr-0004-keycloak-oidc-identity.md",
+    "adrs/adr-0005-notification-channel-abstraction.md",
+    "adrs/adr-0006-tarseem-render-sidecar.md",
+    "adrs/adr-0007-keystone-optional-companion.md",
+    "adrs/adr-0008-traceability-relationship-model.md",
+    "adrs/adr-0009-audit-immutability.md",
+    "adrs/adr-0010-voting-model.md",
+    "adrs/adr-0011-search-sqlserver-fts.md",
+    "adrs/adr-0012-react-typescript-frontend.md",
+    "adrs/adr-0013-self-contained-deployment.md",
+    "adrs/adr-0014-background-jobs-observability.md",
+    "adrs/adr-0015-self-hosted-keycloak-all-dependencies-owned.md",
+    "adrs/adr-0016-test-coverage-basis-and-e2e.md",
+    "adrs/adr-0017-react-19-amends-0012.md",
+    "adrs/adr-0018-optimistic-concurrency-rowversion.md",
+    "adrs/adr-0019-amends-0008-self-describing-edges.md",
+    "adrs/adr-0020-impact-graph-read-time-composition.md",
+    "adrs/adr-0021-cross-module-write-seam.md",
+    "adrs/adr-0022-reporting-client-side-no-columnstore.md",
+    "adrs/README.md",
+    "architecture/architecture.md",
+    "architecture/diagrams/README.md",
+    "architecture/technology-comparison.md",
+    "decisions/assumption-register.md",
+    "decisions/open-decision-register.md",
+    "decisions/open-question-register.md",
+    "domain/architecture-detail.md",
+    "domain/audit-and-records.md",
+    "domain/build-vs-buy-vs-integrate.md",
+    "domain/current-state.md",
+    "domain/data-architecture.md",
+    "domain/deployment.md",
+    "domain/devsecops-plan.md",
+    "domain/documentation-plan.md",
+    "domain/domain-model.md",
+    "domain/entity-lifecycles.md",
+    "domain/git-workflow-detail.md",
+    "domain/information-architecture.md",
+    "domain/integration-architecture.md",
+    "domain/keystone-analysis.md",
+    "domain/metrics-kpi-catalog.md",
+    "domain/notification-strategy.md",
+    "domain/open-source-landscape.md",
+    "domain/organization-and-problem.md",
+    "domain/pain-points.md",
+    "domain/permission-role-matrix.md",
+    "domain/post-release-operating-model.md",
+    "domain/product-vision-and-principles.md",
+    "domain/reporting-dashboards.md",
+    "domain/repository-structure.md",
+    "domain/scope-and-out-of-scope.md",
+    "domain/search-and-traceability.md",
+    "domain/security-controls.md",
+    "domain/security-threat-model.md",
+    "domain/stakeholders.md",
+    "domain/standards-and-best-practices.md",
+    "domain/tarseem-analysis.md",
+    "domain/topic-taxonomy.md",
+    "domain/user-stories-mvp.md",
+    "domain/webex-feasibility.md",
+    "domain/workflows.md",
+    "execution/backlog.md",
+    "execution/checkpoints.md",
+    "execution/deferred-work-register.md",
+    "execution/definition-of-done.md",
+    "governance/contributing.md",
+    "governance/glossary.md",
+    "governance/governance.md",
+    "governance/naming-conventions.md",
+    "handoff/execution-readiness-report.md",
+    "handoff/follow-up-prompts.md",
+    "handoff/handoff-manifest.json",
+    "handoff/initial-prompt.md",
+    "handoff/review-prompts.md",
+    "planning/roadmap.md",
+    "planning/work-breakdown.md",
+    "progress/design-parity-ledger.md",
+    "progress/progress-log.md",
+    "progress/status-report.md",
+    "README.md",
+    "requirements/constraint-register.md",
+    "requirements/dependency-register.md",
+    "requirements/functional.md",
+    "requirements/invariant-register.md",
+    "requirements/non-functional.md",
+    "risks/risk-register.md",
+    "validation/acceptance-audit.md",
+    "validation/acceptance-criteria.md",
+    "validation/ph0-validation.md",
+    "validation/rebuild-findings.md",
+    "validation/test-strategy.md",
+    "validation/traceability-matrix.md"
+  ],
+  "stages": [
+    {
+      "id": "intake",
+      "status": "done"
+    },
+    {
+      "id": "classify",
+      "status": "done"
+    },
+    {
+      "id": "extract",
+      "status": "done"
+    },
+    {
+      "id": "normalize",
+      "status": "done"
+    },
+    {
+      "id": "scope",
+      "status": "done"
+    },
+    {
+      "id": "architecture",
+      "status": "done"
+    },
+    {
+      "id": "decisions",
+      "status": "done"
+    },
+    {
+      "id": "risk",
+      "status": "done"
+    },
+    {
+      "id": "planning",
+      "status": "done"
+    },
+    {
+      "id": "artifact-generation",
+      "status": "done"
+    },
+    {
+      "id": "handoff",
+      "status": "done"
+    }
+  ],
+  "last_completed_stage": "handoff",
+  "change_log": [
+    {
+      "timestamp": "2026-07-06",
+      "actor": "keystone-migration",
+      "action": "reshape",
+      "target": "docs/",
+      "detail": "Migrated the hand-built ACMP planning package into Keystone v1.0.0 package format and mechanics; validator-green."
+    }
+  ]
+}

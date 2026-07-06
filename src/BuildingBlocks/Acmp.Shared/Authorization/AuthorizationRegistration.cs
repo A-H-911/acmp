@@ -7,13 +7,13 @@ using static Acmp.Shared.Authorization.AcmpRoles;
 namespace Acmp.Shared.Authorization;
 
 // Composition root for ACMP authorization: the Keycloak role-claim mapper, the ABAC handlers, and
-// the named-policy registry encoding the docs/10 §C capability matrix. Each policy is a single
+// the named-policy registry encoding the docs/domain/permission-role-matrix.md §C capability matrix. Each policy is a single
 // CapabilityRequirement (full-allow roles + allow-if-owner roles); Deny is the absence of both, so
 // Administrator's exclusion from committee content (SoD-5) is structural — it is simply never
 // listed on a content row.
 public static class AuthorizationRegistration
 {
-    // Row = (policy, full-Allow roles, Allow-if-owner roles). Transcribed from docs/10 §C.
+    // Row = (policy, full-Allow roles, Allow-if-owner roles). Transcribed from docs/domain/permission-role-matrix.md §C.
     // NOTE: this is the *registration* encoding. The permission-matrix test encodes the expected
     // A/AiO/D cells INDEPENDENTLY and asserts the registered policies match (no shared table).
     private static readonly (string Policy, string[] Allow, string[] Owner)[] Matrix =

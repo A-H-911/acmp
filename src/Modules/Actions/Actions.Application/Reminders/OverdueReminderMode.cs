@@ -8,6 +8,6 @@ public enum OverdueReminderMode
     Once,
 
     // Notify the owner at most once per calendar day for as long as it stays overdue (the default; matches
-    // the docs/29 §3.4 "daily" job, de-duplicated so a sweep that runs more than once a day still sends once).
+    // the docs/domain/notification-strategy.md §3.4 "daily" job, de-duplicated so a sweep that runs more than once a day still sends once).
     DailyWhileOverdue,
 }

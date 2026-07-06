@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Membership.Application.Features.CreateDelegation;
 
 // Chairman/Secretary delegates a capability (policy) to another member for a bounded window
-// (docs/10 §E.3, row 28 Auth.Delegate). The delegate exercises the delegated policy only within
+// (docs/domain/permission-role-matrix.md §E.3, row 28 Auth.Delegate). The delegate exercises the delegated policy only within
 // the window; delegations auto-expire and are audited.
 public sealed record CreateDelegationCommand(
     Guid DelegateMemberPublicId, string Capability, DateTimeOffset ValidFrom, DateTimeOffset ValidTo)

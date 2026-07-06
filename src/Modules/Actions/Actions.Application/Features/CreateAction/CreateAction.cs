@@ -37,7 +37,7 @@ public sealed class CreateActionValidator : AbstractValidator<CreateActionComman
     public CreateActionValidator()
     {
         // LocalizedString's positional ctor does not validate (only Create does, which throws → 500). The
-        // boundary checks live here for a clean 400 (docs/16 §1.5). Title is mirrored EN+AR; the per-language
+        // boundary checks live here for a clean 400 (docs/domain/data-architecture.md §1.5). Title is mirrored EN+AR; the per-language
         // max guards the nvarchar(512) column so an over-long title is a clean 400, not a SaveChanges 500.
         RuleFor(x => x.Title).NotNull().WithMessage("A title is required.");
         RuleFor(x => x.Title!.En).NotEmpty().MaximumLength(512).When(x => x.Title is not null).WithMessage("Title (EN) is required (max 512).");

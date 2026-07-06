@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Governance.Domain;
 
-// A considered option in the MADR "Considered options" section (docs/22 §A.7; the design's Options cards).
+// A considered option in the MADR "Considered options" section (docs/domain/standards-and-best-practices.md §A.7; the design's Options cards).
 // Owned child of the Adr aggregate (reached only through it) — the same shape as Risk's Mitigation: a
 // BaseEntity identity + a bilingual name, an optional bilingual body, and a chosen flag (exactly one option
 // is normally the chosen one, but the domain does not force it — an early-draft ADR may have none chosen yet).

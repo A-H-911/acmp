@@ -101,7 +101,7 @@ public sealed class RaiseRiskHandler : IRequestHandler<RaiseRiskCommand, RiskSum
             Exposure = risk.Exposure().ToString(),
         }, ct);
 
-        // W15 (docs/13 line 201): notify the owner (skip if the raiser owns it themselves — no self-noise).
+        // W15 (docs/domain/workflows.md line 201): notify the owner (skip if the raiser owns it themselves — no self-noise).
         if (!string.Equals(risk.OwnerUserId, sub, StringComparison.Ordinal))
             await _notifications.PublishAsync(RiskNotifications.Assigned(risk.OwnerUserId, risk.Key), ct);
 

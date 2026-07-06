@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Acmp.Shared.Authorization.Abac;
 
-// docs/10 §E.1 stream scope for WRITE actions. Read is committee-wide by settled decision
+// docs/domain/permission-role-matrix.md §E.1 stream scope for WRITE actions. Read is committee-wide by settled decision
 // (README §C, OQ-AUTH-001 = read-visible/write-scoped) so this constrains mutation only.
 public sealed class StreamScopeRequirement : IAuthorizationRequirement
 {

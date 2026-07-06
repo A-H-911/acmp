@@ -2,7 +2,7 @@
 
 **Status:** Draft v1.0 · **Date:** 2026-06-24 · **Audience:** Engineering / execution (the lead secretary + the Claude Code execution agent) · **Downstream executor:** Claude Code · **Design executor:** Claude Design
 
-This repository is a **planning and handoff package**, not application code. It defines *what* to build, *why*, *which decisions are settled*, *which remain open*, and *how* an execution agent should build it without overengineering. It deliberately follows the **Keystone** methodology and identifier scheme (see `docs/20-keystone-analysis-and-integration.md`) so the package is internally consistent and traceable.
+This repository is a **planning and handoff package**, not application code. It defines *what* to build, *why*, *which decisions are settled*, *which remain open*, and *how* an execution agent should build it without overengineering. It deliberately follows the **Keystone** methodology and identifier scheme (see `docs/domain/keystone-analysis.md`) so the package is internally consistent and traceable.
 
 > **One-line product definition:** A focused, auditable, bilingual (EN/AR) web platform that is the single system of record for the Architecture Committee — from topic intake through backlog, agenda, meeting, minutes, voting, decision, ADR, action, risk, dependency, and traceability — replacing the current text-file process. It is *architecture governance*, not generic project management.
 
@@ -14,9 +14,9 @@ This repository is a **planning and handoff package**, not application code. It 
 2. **For context and rationale**, read `docs/` in numeric order.
 3. **For the build**, the execution agent reads `execution-handoff/initial-prompt.md` first, then obeys `execution-handoff/agent-guardrails.md` and the generated repo's `CLAUDE.md`.
 4. **For UI**, submit `design-handoff/` to Claude Design.
-5. **Decisions** are recorded as ADRs in `adr/`. Anything unsettled is in `docs/42-open-decisions.md` — these are flagged, never hidden.
+5. **Decisions** are recorded as ADRs in `adr/`. Anything unsettled is in `docs/decisions/open-decision-register.md` — these are flagged, never hidden.
 
-**Conventions.** Facts are cited. Recommendations are labelled **Recommendation**. Unverified claims are marked `[unverified]`. Assumptions are `ASM-###` and listed in `docs/41-raid.md`. Nothing in this package should be treated as code-ready until its acceptance criteria (`docs/40-acceptance-criteria.md`) are defined.
+**Conventions.** Facts are cited. Recommendations are labelled **Recommendation**. Unverified claims are marked `[unverified]`. Assumptions are `ASM-###` and listed in `docs/risks/risk-register.md`. Nothing in this package should be treated as code-ready until its acceptance criteria (`docs/validation/acceptance-criteria.md`) are defined.
 
 ---
 
@@ -37,65 +37,65 @@ Everything else the platform needs, it ships in its own containers.
 
 | # | Deliverable | File |
 |---|---|---|
-| 1 | Executive summary | `docs/00-executive-summary.md` |
-| 2 | Understanding of org & problem | `docs/01-organization-and-problem.md` |
-| 3 | Current-state process analysis | `docs/02-current-state-analysis.md` |
-| 4 | Pain-point analysis | `docs/03-pain-points.md` |
-| 5 | Stakeholder & user-role analysis | `docs/04-stakeholders-and-roles.md` |
-| 6 | Product vision | `docs/05-product-vision-and-principles.md` |
-| 7 | Product principles | `docs/05-product-vision-and-principles.md` |
-| 8 | Scope definition | `docs/06-scope-and-out-of-scope.md` |
-| 9 | Out-of-scope definition | `docs/06-scope-and-out-of-scope.md` |
-| 10 | Functional requirements | `docs/07-functional-requirements.md` |
-| 11 | Non-functional requirements | `docs/08-non-functional-requirements.md` |
-| 12 | Topic taxonomy | `docs/09-topic-taxonomy.md` |
-| 13 | Permission & role matrix | `docs/10-permission-role-matrix.md` |
-| 14 | Domain model | `docs/11-domain-model.md` |
-| 15 | Entity lifecycle models | `docs/12-entity-lifecycles.md` |
-| 16 | Workflow definitions | `docs/13-workflows.md` |
-| 17 | Information architecture | `docs/14-information-architecture-sitemap.md` |
-| 18 | Sitemap | `docs/14-information-architecture-sitemap.md` |
-| 19 | Page & screen inventory | `docs/14-information-architecture-sitemap.md` |
-| 20 | Architecture recommendation | `docs/15-architecture.md` |
-| 21 | Architecture diagrams | `docs/15-architecture.md` |
-| 22 | Module definitions | `docs/15-architecture.md` |
-| 23 | Data architecture | `docs/16-data-architecture-and-model.md` |
-| 24 | Initial logical data model | `docs/16-data-architecture-and-model.md` |
-| 25 | Integration architecture | `docs/17-integration-architecture.md` |
-| 26 | Webex feasibility analysis | `docs/18-webex-feasibility.md` |
-| 27 | Tarseem repo analysis + integration | `docs/19-tarseem-analysis-and-integration.md` |
-| 28 | Keystone repo analysis + integration | `docs/20-keystone-analysis-and-integration.md` |
-| 29 | Open-source landscape analysis | `docs/21-open-source-landscape.md` |
-| 30 | Standards & best-practices analysis | `docs/22-standards-and-best-practices.md` |
-| 31 | Build-vs-buy-vs-integrate analysis | `docs/23-build-vs-buy-vs-integrate.md` |
-| 32 | Security threat model | `docs/24-security-threat-model.md` |
-| 33 | Security-control plan | `docs/25-security-controls.md` |
-| 34 | Audit & records-management plan | `docs/26-audit-and-records-management.md` |
-| 35 | Reporting & dashboard specification | `docs/27-reporting-and-dashboards.md` |
-| 36 | Metrics & KPI catalog | `docs/28-metrics-and-kpi-catalog.md` |
-| 37 | Notification strategy | `docs/29-notification-strategy.md` |
-| 38 | Search & traceability model | `docs/30-search-and-traceability.md` |
-| 39 | Testing strategy | `docs/31-testing-strategy.md` |
-| 40 | DevSecOps plan | `docs/32-devsecops-plan.md` |
-| 41 | Containerization & deployment plan | `docs/33-containerization-and-deployment.md` |
-| 42 | Repository structure | `docs/34-repository-structure.md` |
-| 43 | Documentation plan | `docs/35-documentation-plan.md` |
-| 44 | Phased roadmap | `docs/36-roadmap.md` |
-| 45 | Prioritized implementation backlog | `docs/37-implementation-backlog.md` |
-| 46 | Epics & features | `docs/38-epics-and-features.md` |
-| 47 | User stories for initial release | `docs/39-user-stories-mvp.md` |
-| 48 | Acceptance criteria | `docs/40-acceptance-criteria.md` |
-| 49 | Risks, assumptions, constraints, dependencies | `docs/41-raid.md` |
-| 50 | Open decisions requiring org input | `docs/42-open-decisions.md` |
-| 51 | ADRs for major decisions | `adr/ADR-0001…ADR-0014` (incl. ADR-0013 self-contained, ADR-0014 jobs/observability) |
+| 1 | Executive summary | `docs/00-charter.md` |
+| 2 | Understanding of org & problem | `docs/domain/organization-and-problem.md` |
+| 3 | Current-state process analysis | `docs/domain/current-state.md` |
+| 4 | Pain-point analysis | `docs/domain/pain-points.md` |
+| 5 | Stakeholder & user-role analysis | `docs/domain/stakeholders.md` |
+| 6 | Product vision | `docs/domain/product-vision-and-principles.md` |
+| 7 | Product principles | `docs/domain/product-vision-and-principles.md` |
+| 8 | Scope definition | `docs/domain/scope-and-out-of-scope.md` |
+| 9 | Out-of-scope definition | `docs/domain/scope-and-out-of-scope.md` |
+| 10 | Functional requirements | `docs/requirements/functional.md` |
+| 11 | Non-functional requirements | `docs/requirements/non-functional.md` |
+| 12 | Topic taxonomy | `docs/domain/topic-taxonomy.md` |
+| 13 | Permission & role matrix | `docs/domain/permission-role-matrix.md` |
+| 14 | Domain model | `docs/domain/domain-model.md` |
+| 15 | Entity lifecycle models | `docs/domain/entity-lifecycles.md` |
+| 16 | Workflow definitions | `docs/domain/workflows.md` |
+| 17 | Information architecture | `docs/domain/information-architecture.md` |
+| 18 | Sitemap | `docs/domain/information-architecture.md` |
+| 19 | Page & screen inventory | `docs/domain/information-architecture.md` |
+| 20 | Architecture recommendation | `docs/domain/architecture-detail.md` |
+| 21 | Architecture diagrams | `docs/domain/architecture-detail.md` |
+| 22 | Module definitions | `docs/domain/architecture-detail.md` |
+| 23 | Data architecture | `docs/domain/data-architecture.md` |
+| 24 | Initial logical data model | `docs/domain/data-architecture.md` |
+| 25 | Integration architecture | `docs/domain/integration-architecture.md` |
+| 26 | Webex feasibility analysis | `docs/domain/webex-feasibility.md` |
+| 27 | Tarseem repo analysis + integration | `docs/domain/tarseem-analysis.md` |
+| 28 | Keystone repo analysis + integration | `docs/domain/keystone-analysis.md` |
+| 29 | Open-source landscape analysis | `docs/domain/open-source-landscape.md` |
+| 30 | Standards & best-practices analysis | `docs/domain/standards-and-best-practices.md` |
+| 31 | Build-vs-buy-vs-integrate analysis | `docs/domain/build-vs-buy-vs-integrate.md` |
+| 32 | Security threat model | `docs/domain/security-threat-model.md` |
+| 33 | Security-control plan | `docs/domain/security-controls.md` |
+| 34 | Audit & records-management plan | `docs/domain/audit-and-records.md` |
+| 35 | Reporting & dashboard specification | `docs/domain/reporting-dashboards.md` |
+| 36 | Metrics & KPI catalog | `docs/domain/metrics-kpi-catalog.md` |
+| 37 | Notification strategy | `docs/domain/notification-strategy.md` |
+| 38 | Search & traceability model | `docs/domain/search-and-traceability.md` |
+| 39 | Testing strategy | `docs/validation/test-strategy.md` |
+| 40 | DevSecOps plan | `docs/domain/devsecops-plan.md` |
+| 41 | Containerization & deployment plan | `docs/domain/deployment.md` |
+| 42 | Repository structure | `docs/domain/repository-structure.md` |
+| 43 | Documentation plan | `docs/domain/documentation-plan.md` |
+| 44 | Phased roadmap | `docs/planning/roadmap.md` |
+| 45 | Prioritized implementation backlog | `docs/execution/backlog.md` |
+| 46 | Epics & features | `docs/planning/work-breakdown.md` |
+| 47 | User stories for initial release | `docs/domain/user-stories-mvp.md` |
+| 48 | Acceptance criteria | `docs/validation/acceptance-criteria.md` |
+| 49 | Risks, assumptions, constraints, dependencies | `docs/risks/risk-register.md` |
+| 50 | Open decisions requiring org input | `docs/decisions/open-decision-register.md` |
+| 51 | ADRs for major decisions | `docs/adrs/adr-0001…ADR-0014` (incl. ADR-0013 self-contained, ADR-0014 jobs/observability) |
 | 52 | Claude Design input package | `design-handoff/claude-design-input-package.md` |
 | 53 | Claude Design prompts | `design-handoff/claude-design-prompts.md` |
 | 54 | Claude Code execution package | `execution-handoff/claude-code-execution-package.md` |
 | 55 | Initial Claude Code prompt | `execution-handoff/initial-prompt.md` |
 | 56 | Follow-up prompts per phase | `execution-handoff/phase-prompts.md` |
-| 57 | Definition of Done | `docs/44-definition-of-done.md` |
-| 58 | Release-readiness checklist | `docs/45-release-readiness-checklist.md` |
-| 59 | Post-release governance & operating model | `docs/43-post-release-operating-model.md` |
+| 57 | Definition of Done | `docs/execution/definition-of-done.md` |
+| 58 | Release-readiness checklist | `docs/execution/checkpoints.md` |
+| 59 | Post-release governance & operating model | `docs/domain/post-release-operating-model.md` |
 | + | Agent guardrails | `execution-handoff/agent-guardrails.md` |
 | + | Generated-repo agent context | `CLAUDE.md` |
 
@@ -133,18 +133,18 @@ Everything else the platform needs, it ships in its own containers.
 Core domain: **Membership · Topics · Meetings · Decisions · Actions · Risks · Dependencies · Governance (ADRs + Invariants) · Research · Knowledge · Diagrams**
 Cross-cutting/platform: **Notifications · Reporting · Search&Traceability · Audit&Records · Platform (Shared Kernel: IDs, localization, file storage, base entities, background jobs)**
 
-Rule (enforced): a module may not read another module's tables; modules communicate via in-process public contracts (interfaces / MediatR) only. See ADR-0001, `docs/15-architecture.md`.
+Rule (enforced): a module may not read another module's tables; modules communicate via in-process public contracts (interfaces / MediatR) only. See ADR-0001, `docs/domain/architecture-detail.md`.
 
 ### C. Canonical roles (global RBAC) + per-topic capabilities (ABAC)
 
 **Global roles:** `Chairman`, `Secretary` (display name: **Secretary of the Committee** — *أمين سر اللجنة*; the committee lead / primary user; renamed from "Coordinator" on 2026-06-25), `Member`, `Reviewer`, `Auditor`, `Administrator`, `Submitter` (stream requester), `Guest/Presenter` (time-boxed).
 **Per-topic capabilities (relationship-based, not global roles):** `Owner`, `Assignee/Contributor`, `Presenter`.
-Authorization = role policy **+** topic/stream scope (ABAC). **Roles are sourced from Keycloak group/realm-role claims** and mapped to the canonical roles. **Default stream visibility: all committee members may READ topics across all streams**; create/edit is restricted by role + ownership. **Single committee** (not generalized to multiple). Full matrix in `docs/10-permission-role-matrix.md`.
+Authorization = role policy **+** topic/stream scope (ABAC). **Roles are sourced from Keycloak group/realm-role claims** and mapped to the canonical roles. **Default stream visibility: all committee members may READ topics across all streams**; create/edit is restricted by role + ownership. **Single committee** (not generalized to multiple). Full matrix in `docs/domain/permission-role-matrix.md`.
 
 ### D. Canonical topic taxonomy (kept deliberately small)
 
 **Topic Type (4):** `ResearchDiscovery`, `ArchitectureDecision`, `EnhancementInnovation`, `GovernanceStandardization`.
-**Urgency (attribute, not a type):** `Normal | Urgent | Critical` (drives SLA). *Rationale: "Urgent" is a handling speed, not a kind of work — modelling it as an attribute avoids type explosion.* Full taxonomy + devil's-advocate in `docs/09-topic-taxonomy.md`.
+**Urgency (attribute, not a type):** `Normal | Urgent | Critical` (drives SLA). *Rationale: "Urgent" is a handling speed, not a kind of work — modelling it as an attribute avoids type explosion.* Full taxonomy + devil's-advocate in `docs/domain/topic-taxonomy.md`.
 
 ### E. Canonical status models
 
@@ -159,14 +159,14 @@ Authorization = role policy **+** topic/stream scope (ABAC). **Roles are sourced
 ### F. Identifier scheme
 
 **Planning-package IDs (used in *this* package, Keystone-aligned):**
-`FR-###` functional req · `NFR-###` non-functional req · `CON-###` constraint · `ASM-###` assumption · `DEP-###` dependency · `OQ-###` open question · `DEC-###` planning decision · `ADR-####` decision record · `RISK-###` risk · `HYP-###` hypothesis · `AC-###` acceptance criterion · `PH-#` phase · `EPIC-##` · `US-###` user story · `KPI-##` metric · `W-##` workflow (defined in `docs/13-workflows.md`).
+`FR-###` functional req · `NFR-###` non-functional req · `CON-###` constraint · `ASM-###` assumption · `DEP-###` dependency · `OQ-###` open question · `DEC-###` planning decision · `ADR-####` decision record · `RISK-###` risk · `HYP-###` hypothesis · `AC-###` acceptance criterion · `PH-#` phase · `EPIC-##` · `US-###` user story · `KPI-##` metric · `W-##` workflow (defined in `docs/domain/workflows.md`).
 Statuses: `Draft → Proposed → Approved | Rejected | Superseded | Deferred → Implemented`. A *proposed* item is never rendered as *approved*.
 
 **Runtime (in-app) entity keys** (human-readable, year-scoped): `TOP-YYYY-###` topic · `MTG-YYYY-###` meeting · `AGN-YYYY-###` agenda · `MIN-YYYY-###` minutes · `VOTE-…` · `DECN-YYYY-###` committee decision · `ACT-…` action · `RSK-…` risk · `DPN-…` dependency edge · `ADR-…` in-app ADR · `AIV-…` architecture invariant · `DOC-…` · `TPL-…` template · `DGM-…` diagram · `RMS-…` research mission · `FND-…` finding · `REC-…` recommendation. (Note: in-app ADRs and the product's "Architecture Invariant" `AIV-` are distinct from this package's planning `ADR-####` usage.)
 
 ### G. Glossary (committee terms; EN ↔ AR pairing finalized in design handoff)
 
-Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM) · Decision · Vote · Quorum · Action · Risk · Dependency · ADR (Architecture Decision Record) · Architecture Invariant · Principle · Standard · Stream · System/Service · Research Mission · Finding · Recommendation · Traceability. Distinctions between *principle / standard / policy / constraint / invariant / decision / ADR* are defined once in `docs/22-standards-and-best-practices.md` §"Concept disambiguation" and must not be duplicated.
+Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM) · Decision · Vote · Quorum · Action · Risk · Dependency · ADR (Architecture Decision Record) · Architecture Invariant · Principle · Standard · Stream · System/Service · Research Mission · Finding · Recommendation · Traceability. Distinctions between *principle / standard / policy / constraint / invariant / decision / ADR* are defined once in `docs/domain/standards-and-best-practices.md` §"Concept disambiguation" and must not be duplicated.
 
 ---
 

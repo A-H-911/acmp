@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Risks.Infrastructure.Persistence;
 
-// Maps ONLY the risks schema (docs/34 §12: no cross-module tables). References to other modules (the
+// Maps ONLY the risks schema (docs/domain/repository-structure.md §12: no cross-module tables). References to other modules (the
 // subject artifact = its PublicId + snapshot key, a mitigation's linked action id) are by value, never by
 // FK navigation (ADR-0001). Mitigations are an owned collection of Risk (risk_mitigations table).
 public sealed class RisksDbContext : ModuleDbContext, IRisksDbContext

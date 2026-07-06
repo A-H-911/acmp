@@ -5,7 +5,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Decisions.Domain;
 
-// The Vote aggregate root (docs/11 §Vote, docs/12 §4, ADR-0010) — a configurable, always-attributed ballot
+// The Vote aggregate root (docs/domain/domain-model.md §Vote, docs/domain/entity-lifecycles.md §4, ADR-0010) — a configurable, always-attributed ballot
 // on a topic/decision. OWNED BY the Decisions module (like MinutesOfMeeting lives inside Meetings). Identity
 // to other modules is by id only (TopicId = Topic.PublicId; MeetingId = Meeting.PublicId) — never an EF
 // navigation, so the module boundary holds (ADR-0001).
@@ -27,7 +27,7 @@ public sealed class Vote : AuditableEntity
 
     private Vote() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;   // VOTE-YYYY-### (human-readable display key)
@@ -42,7 +42,7 @@ public sealed class Vote : AuditableEntity
     public DateTimeOffset? OpenedAt { get; private set; }
     public DateTimeOffset? ClosedAt { get; private set; }
 
-    // SoD-3 (docs/12 §4): the actor who CLOSED the vote is the counter of record (Option A — no separate
+    // SoD-3 (docs/domain/entity-lifecycles.md §4): the actor who CLOSED the vote is the counter of record (Option A — no separate
     // co-attester field). The decision-issue path checks chair ≠ this counter (AC-015/016).
     public string? CounterUserId { get; private set; }        // Keycloak sub of the closer
     public string? CounterName { get; private set; }          // display snapshot
@@ -161,7 +161,7 @@ public sealed class Vote : AuditableEntity
     }
 
     // W11/W12: ratify. Closed → Ratified. Called when the linked decision is chair-approved (IssueDecision).
-    // Adds no mutation to the frozen ballots/tally (docs/12 §4).
+    // Adds no mutation to the frozen ballots/tally (docs/domain/entity-lifecycles.md §4).
     public void Ratify(DateTimeOffset now)
     {
         RequireStatus(VoteStatus.Closed);

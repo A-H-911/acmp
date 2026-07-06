@@ -2,7 +2,7 @@
 
 namespace Acmp.Modules.Decisions.Domain.Events;
 
-// Vote lifecycle domain events (docs/12 §4, W11). Raised by the aggregate on each transition; the
+// Vote lifecycle domain events (docs/domain/entity-lifecycles.md §4, W11). Raised by the aggregate on each transition; the
 // application handler routes them to Audit/Notifications — the Decisions module never reaches into those
 // modules (ADR-0001). Payload stays small: identity + what a subscriber needs to route.
 

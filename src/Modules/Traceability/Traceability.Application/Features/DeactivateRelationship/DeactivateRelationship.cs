@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Traceability.Application.Features.DeactivateRelationship;
 
-// Soft-delete an edge that was created in error (docs/30 §5): the row is kept with IsActive=0 for the audit
+// Soft-delete an edge that was created in error (docs/domain/search-and-traceability.md §5): the row is kept with IsActive=0 for the audit
 // trail — hard deletes are not permitted (ADR-0009). RBAC = Traceability.Link (same authority that creates).
 // Audited (Relationship.Deactivated, guardrail #5). Unknown id → 404; already-inactive → no-op, still audited.
 public sealed record DeactivateRelationshipCommand(Guid Id) : IRequest, IAuthorizedRequest

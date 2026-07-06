@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Traceability.Domain.Enums;
 
-// The curated typed-edge vocabulary (docs/30 §2.2). Each type is DIRECTED (Source → RelType → Target); the
+// The curated typed-edge vocabulary (docs/domain/search-and-traceability.md §2.2). Each type is DIRECTED (Source → RelType → Target); the
 // inverse reading (Target → Source) is resolved at read time, never stored as a second row. Names here are
 // the catalog's kebab-case labels in PascalCase (the wire serializes the enum name; the SPA maps each to a
 // localized forward + inverse label, so no English label is stored — guardrail #9). The vocabulary is

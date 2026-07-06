@@ -11,15 +11,15 @@ For every phase prompt the user pastes for ACMP, also satisfy the **Standard Foo
 `/execution-handoff/phase-prompts.md` — even when the pasted prompt does not restate it:
 
 - ship unit + integration tests
-- satisfy the relevant `AC-###` (`/docs/40`) and flip its verdict in `/docs/_progress/acceptance-audit.md`
-- enforce authorization (`/docs/10`) and emit `AuditEvent`s
+- satisfy the relevant `AC-###` (`/docs/validation/acceptance-criteria.md`) and flip its verdict in `/docs/validation/acceptance-audit.md`
+- enforce authorization (`/docs/domain/permission-role-matrix.md`) and emit `AuditEvent`s
 - no hardcoded strings (EN + AR) and verify RTL
 - no secrets in source
-- update `/docs/_progress/progress-log.md`
+- update `/docs/progress/progress-log.md`
 - conventional commits (small, reviewable)
 - raise an ADR in `/adr` for any new architecture decision
 
-**Why:** these are the project's Definition-of-Done gates (docs/44; Keystone G-PROGRESS / G-TRACE). The
+**Why:** these are the project's Definition-of-Done gates (docs/execution/definition-of-done.md; Keystone G-PROGRESS / G-TRACE). The
 per-phase prompts assume the footer applies to every slice without restating it.
 
 **How to apply:** treat the footer as appended to every phase prompt; do not call a phase done until each

@@ -54,7 +54,7 @@ builder.Services.AddDependenciesModule(builder.Configuration);
 builder.Services.AddGovernanceModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
 
-// Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/10 matrix).
+// Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/domain/permission-role-matrix.md matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
 
@@ -87,7 +87,7 @@ builder.Services.AddHealthChecks()
     .AddCheck("api", () => HealthCheckResult.Healthy("Serving requests"), tags: new[] { "live" })
     .AddSqlServer(connectionString, name: "sqlserver", tags: new[] { "ready" });
 
-// Action reminder/escalation knobs (docs/29 §3.4, W22) — bound from appsettings "ActionReminders".
+// Action reminder/escalation knobs (docs/domain/notification-strategy.md §3.4, W22) — bound from appsettings "ActionReminders".
 builder.Services.Configure<ActionReminderOptions>(
     builder.Configuration.GetSection(ActionReminderOptions.SectionName));
 

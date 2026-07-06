@@ -8,7 +8,7 @@
 //
 // Powers the AC-029 downstream-link gate (FR-067, OQ-045): a follow-up-bearing decision cannot be Issued
 // until ≥1 downstream artifact links to it. Until the Risk module (P10) and the typed-edge Traceability
-// module (ADR-0008) land, "downstream link" == "≥1 ActionItem sourced from the decision" (ASM, docs/41).
+// module (ADR-0008) land, "downstream link" == "≥1 ActionItem sourced from the decision" (ASM, docs/risks/risk-register.md).
 public interface IActionLinkDirectory
 {
     Task<bool> DecisionHasLinkedActionAsync(Guid decisionId, CancellationToken ct = default);

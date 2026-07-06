@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// Placement of one Topic on an Agenda with order, time-box, presenter (docs/11 §C, W6). The topic
+// Placement of one Topic on an Agenda with order, time-box, presenter (docs/domain/domain-model.md §C, W6). The topic
 // key/title/urgent are display snapshots captured when the item is added — Meetings never reads Topics
 // tables (ADR-0001); the real link is TopicId. ActualMinutes is the per-item time actually spent,
 // recorded during the live meeting (the design's "12:30 / 20:00"). Mutated only via the Agenda root.

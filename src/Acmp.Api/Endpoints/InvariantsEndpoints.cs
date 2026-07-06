@@ -14,10 +14,10 @@ using MediatR;
 namespace Acmp.Api.Endpoints;
 
 // Thin endpoint layer over MediatR (CLAUDE.md). The group requires authentication (401 without a token,
-// AC-008); each mutating route adds its docs/10 policy (403 for the wrong role). The MediatR
+// AC-008); each mutating route adds its docs/domain/permission-role-matrix.md policy (403 for the wrong role). The MediatR
 // AuthorizationBehavior re-checks roles at the application boundary (defence in depth, guardrail 4). Reads
 // are committee-wide; create/edit/propose/request-changes are Invariant.Create; approve is Invariant.Approve;
-// retire/supersede are Invariant.Approve (there is no separate supersede policy for invariants, docs/10 §22).
+// retire/supersede are Invariant.Approve (there is no separate supersede policy for invariants, docs/domain/permission-role-matrix.md §22).
 public static class InvariantsEndpoints
 {
     public static IEndpointRouteBuilder MapInvariantEndpoints(this IEndpointRouteBuilder app)

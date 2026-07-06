@@ -7,7 +7,7 @@ namespace Acmp.Api.Endpoints;
 
 // Administration system endpoints (NR-08). The System Health tab reads the live status of the ASP.NET
 // health checks that are actually registered (api liveness + SQL Server in v1); the Job Monitor tab reads
-// Hangfire's own monitoring API. Both are Admin-config gated (docs/10 §C -> Policies.AdminConfig). Honest by
+// Hangfire's own monitoring API. Both are Admin-config gated (docs/domain/permission-role-matrix.md §C -> Policies.AdminConfig). Honest by
 // construction: health surfaces only what is truly monitored (every other service tile renders as
 // "monitoring not configured"); jobs surfaces only what actually runs and reports Configured=false when
 // Hangfire isn't wired (the "Testing" host / no connection string) rather than inventing a status. Uptime% /

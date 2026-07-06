@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Acmp.Shared.Authorization;
 
 // Evaluates a CapabilityRequirement: RBAC grant (A) ⟶ Allow-if-owner relationship (AiO) ⟶
-// delegation widening (docs/10 §E.3). Deny-by-default: the requirement is only satisfied if one
+// delegation widening (docs/domain/permission-role-matrix.md §E.3). Deny-by-default: the requirement is only satisfied if one
 // path calls Succeed. Overlay precedence and SoD/immutability are out of band — a relationship
 // never overrides a Deny (a role absent from both lists is simply never satisfied here).
 public sealed class CapabilityHandler : AuthorizationHandler<CapabilityRequirement>
@@ -36,7 +36,7 @@ public sealed class CapabilityHandler : AuthorizationHandler<CapabilityRequireme
 
         // Matrix "AiO": the role grants it only with a per-topic relationship on the target topic.
         // ponytail: any relationship counts in P4 (no aggregate yet); per-capability gating (Owner
-        // edits vs Presenter read-only, docs/10 §D) is refined when Topics ship (P5).
+        // edits vs Presenter read-only, docs/domain/permission-role-matrix.md §D) is refined when Topics ship (P5).
         if (requirement.OwnerRoles.Any(user.IsInRole) && context.Resource is ITopicScopedResource scoped)
         {
             var caps = await _capabilities.GetCapabilitiesAsync(userId, scoped.TopicId);
@@ -47,7 +47,7 @@ public sealed class CapabilityHandler : AuthorizationHandler<CapabilityRequireme
             }
         }
 
-        // Delegation widening: an active, in-window delegation for this policy grants it (docs/10 §E.3).
+        // Delegation widening: an active, in-window delegation for this policy grants it (docs/domain/permission-role-matrix.md §E.3).
         if (await _delegations.HasActiveDelegationAsync(userId, requirement.PolicyName))
             context.Succeed(requirement);
     }

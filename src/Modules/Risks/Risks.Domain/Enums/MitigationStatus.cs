@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Risks.Domain.Enums;
 
-// Mitigation lifecycle (docs/11 §Mitigation, docs/12 §10): Planned → InProgress → Done. Full mutation
+// Mitigation lifecycle (docs/domain/domain-model.md §Mitigation, docs/domain/entity-lifecycles.md §10): Planned → InProgress → Done. Full mutation
 // audited by the handlers.
 public enum MitigationStatus
 {

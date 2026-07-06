@@ -26,7 +26,7 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedOnAdd();
         b.HasAlternateKey(x => x.PublicId);
-        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/16 §1.5, ADR-0018)
+        b.Property(x => x.RowVersion).IsRowVersion(); // optimistic concurrency (docs/domain/data-architecture.md §1.5, ADR-0018)
         b.Property(x => x.Key).IsRequired().HasMaxLength(32);
         b.HasIndex(x => x.Key).IsUnique();
 

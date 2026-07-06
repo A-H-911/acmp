@@ -5,12 +5,12 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Governance.Domain;
 
-// The ADR aggregate root (in-app ADR-YYYY-###; docs/11 §Governance, docs/12 §8; workflows W17/W21) — a
+// The ADR aggregate root (in-app ADR-YYYY-###; docs/domain/domain-model.md §Governance, docs/domain/entity-lifecycles.md §8; workflows W17/W21) — a
 // MADR-lite architecture decision record owning its considered Options. Identity to other modules is by value
 // only: SourceDecisionId = the promoting Decision's PublicId (W17), never an EF navigation (ADR-0001).
 // Distinct from this package's planning ADR-#### files (README §F).
 //
-// Lifecycle (docs/12 §8): Draft (author/revise) → Proposed (submit for approval) → Approved (immutable, in
+// Lifecycle (docs/domain/entity-lifecycles.md §8): Draft (author/revise) → Proposed (submit for approval) → Approved (immutable, in
 // force); Proposed → Draft on requested changes; Approved → Superseded (a successor ADR is approved) or
 // Deprecated (retired without a replacement). The decisive rule (FR-101, ADR-0009): once Approved the
 // content is FROZEN — there are no field setters, and a correction is a NEW ADR that supersedes this one.
@@ -20,14 +20,14 @@ public sealed class Adr : AuditableEntity
 
     private Adr() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;   // ADR-YYYY-###
     public AdrStatus Status { get; private set; }
     public LocalizedString Title { get; private set; } = null!;
 
-    // MADR-lite sections (docs/22 §A.7; FR-099). Context + Decision are required; drivers/consequences are
+    // MADR-lite sections (docs/domain/standards-and-best-practices.md §A.7; FR-099). Context + Decision are required; drivers/consequences are
     // optional bilingual prose (markdown-as-text, the DV-04 model). Considered options are the owned list.
     public LocalizedString Context { get; private set; } = null!;
     public LocalizedString? DecisionDrivers { get; private set; }

@@ -5,7 +5,7 @@ namespace Acmp.Modules.Risks.Application.Contracts;
 // Read models returned to the SPA. Enums project as their string names (stable wire contract, localized in
 // the UI). Bilingual text is the LocalizedString value object (the SPA picks the locale). Risks never join
 // another module's tables (ADR-0001) — only ids + a display-key snapshot travel. Severity (1..9) + the
-// Exposure band are the DERIVED overlay (docs/12 line 247), computed here, never stored; the design's heat
+// Exposure band are the DERIVED overlay (docs/domain/entity-lifecycles.md line 247), computed here, never stored; the design's heat
 // grid consumes the band as-is.
 
 public sealed record RiskSummaryDto(

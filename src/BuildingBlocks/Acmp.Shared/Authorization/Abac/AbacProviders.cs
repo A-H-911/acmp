@@ -4,26 +4,26 @@
 // Membership.Infrastructure (reading only its own tables) and injected here — the in-process
 // public-contract pattern that keeps module boundaries intact (ADR-0001).
 
-// The streams a principal is assigned to (docs/10 §E.1).
+// The streams a principal is assigned to (docs/domain/permission-role-matrix.md §E.1).
 public interface IUserStreamProvider
 {
     Task<IReadOnlyCollection<string>> GetAssignedStreamsAsync(string userId, CancellationToken ct = default);
 }
 
-// The per-topic relationship capabilities a principal holds on a topic (docs/10 §D).
+// The per-topic relationship capabilities a principal holds on a topic (docs/domain/permission-role-matrix.md §D).
 public interface ITopicCapabilityResolver
 {
     Task<IReadOnlyCollection<TopicCapabilityType>> GetCapabilitiesAsync(
         string userId, Guid topicId, CancellationToken ct = default);
 }
 
-// Whether the principal holds an active (in-window) delegation for a capability/policy (docs/10 §E.3).
+// Whether the principal holds an active (in-window) delegation for a capability/policy (docs/domain/permission-role-matrix.md §E.3).
 public interface IDelegationResolver
 {
     Task<bool> HasActiveDelegationAsync(string userId, string capability, CancellationToken ct = default);
 }
 
-// Grants/revokes a per-topic capability (Owner/Assignee/Presenter, docs/10 §D). Implemented in
+// Grants/revokes a per-topic capability (Owner/Assignee/Presenter, docs/domain/permission-role-matrix.md §D). Implemented in
 // Membership.Infrastructure (it owns the TopicCapabilityGrant table); called cross-module by Topics on
 // accept ("grant-on-accept", W2) so the owner's per-topic relationship is resolvable by the ABAC
 // CapabilityHandler. Modules never write each other's tables — this in-process port is the seam (ADR-0001).

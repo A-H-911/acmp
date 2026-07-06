@@ -1,7 +1,7 @@
 /*
  * Route gates. ProtectedRoute requires an authenticated session; RequireRole
  * additionally requires one of the given roles, rendering an inline 403 state
- * otherwise (docs/14 page 91). These hide UI — the API is the real authority
+ * otherwise (docs/domain/information-architecture.md page 91). These hide UI — the API is the real authority
  * (P4); a denied user must still get a 403 from the server, not just a hidden
  * link.
  */

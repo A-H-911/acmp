@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Meetings.Infrastructure.Persistence;
 
-// Maps ONLY the meetings schema (docs/34 §12: no cross-module tables). References to other modules
+// Maps ONLY the meetings schema (docs/domain/repository-structure.md §12: no cross-module tables). References to other modules
 // (chair/presenter/attendee = CommitteeMember.PublicId; agenda item = Topic.PublicId) are by value,
 // never by FK navigation (ADR-0001). Agenda references its Meeting by id, not an EF navigation.
 public sealed class MeetingsDbContext : ModuleDbContext, IMeetingsDbContext

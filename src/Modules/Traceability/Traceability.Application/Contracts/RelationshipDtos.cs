@@ -16,7 +16,7 @@ public sealed record RelationshipEdgeDto(
     string OtherTitle,
     string? Notes);
 
-// The artifact's traceability panel (docs/30 §6.1): its outgoing and incoming typed edges, one hop.
+// The artifact's traceability panel (docs/domain/search-and-traceability.md §6.1): its outgoing and incoming typed edges, one hop.
 public sealed record ArtifactRelationshipsDto(
     IReadOnlyList<RelationshipEdgeDto> Outgoing,
     IReadOnlyList<RelationshipEdgeDto> Incoming);

@@ -24,7 +24,7 @@ function renderBoundary() {
 }
 
 // The boundary must catch a child render error, show a SAFE fallback reconciled to
-// System States `error` (no technical detail leaked, docs/14 p92), log to console for
+// System States `error` (no technical detail leaked, docs/domain/information-architecture.md p92), log to console for
 // diagnostics only, and offer the reload + go-to-dashboard recovery actions.
 describe('ErrorBoundary', () => {
   afterEach(() => {

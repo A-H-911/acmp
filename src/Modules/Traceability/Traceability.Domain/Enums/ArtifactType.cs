@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Traceability.Domain.Enums;
 
-// The kinds of governed artifact that can be an endpoint of a traceability edge (docs/30 §1.1). An edge
+// The kinds of governed artifact that can be an endpoint of a traceability edge (docs/domain/search-and-traceability.md §1.1). An edge
 // stores the type + the artifact's PublicId + a display-key/title snapshot — never an EF navigation into the
 // owning module (ADR-0001, ADR-0019). New artifact types join the graph by adding a value here; no schema
 // change to the Relationship table. Serialized on the wire as the string name (localized in the SPA).

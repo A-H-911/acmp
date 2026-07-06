@@ -10,7 +10,7 @@ namespace Acmp.Modules.Meetings.Application.Features.ApproveMinutes;
 // W10 (AC-014, SoD-2 soft): approve the MoM. InReview → Approved. SoD-2 is a SOFT rule — approving a MoM
 // you solely authored is ALLOWED, but the act is flagged (MinutesApprovedBySoleAuthor audit + the
 // ApprovedBySoleAuthor field the admin UI surfaces as a warning). Approval does NOT publish or notify —
-// that is a separate transition (operator-locked 5-state). RBAC = Minutes.Approve (docs/10 row 9).
+// that is a separate transition (operator-locked 5-state). RBAC = Minutes.Approve (docs/domain/permission-role-matrix.md row 9).
 public sealed record ApproveMinutesCommand(Guid MinutesId) : IRequest, IAuthorizedRequest
 {
     public IReadOnlyCollection<string> AllowedRoles { get; } = new[] { AcmpRoles.Secretary, AcmpRoles.Chairman };

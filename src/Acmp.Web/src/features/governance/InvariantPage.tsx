@@ -1,6 +1,6 @@
 /*
  * Invariant detail (P11d) — NO-REFERENCE composition (guardrail #14): there is no dedicated `.dc.html` for
- * the Invariant detail. It is composed from the shared design system + docs/14, taking its cue from the
+ * the Invariant detail. It is composed from the shared design system + docs/domain/information-architecture.md, taking its cue from the
  * register's detail-drawer facts panel in "ACMP Lists & Registers.dc.html" (Category / Scope / Status /
  * Owner / Invariant-ID), and mirroring the read-only shape of the ADR detail (AdrPage). Read by key
  * (GET /api/invariants/{key}). The shell owns the breadcrumb, so this body starts at the header.

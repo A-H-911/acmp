@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Governance.Domain.Enums;
 
-// ADR lifecycle (README §E, docs/12 §8, docs/22 §A.7): Draft → Proposed → Approved → (Superseded | Deprecated),
+// ADR lifecycle (README §E, docs/domain/entity-lifecycles.md §8, docs/domain/standards-and-best-practices.md §A.7): Draft → Proposed → Approved → (Superseded | Deprecated),
 // with Proposed → Draft on requested changes. Once Approved the record is immutable — a correction is a NEW
 // ADR that supersedes it (ADR-0009, supersede-not-edit), never an edit. Serialized on the wire as the string
 // name (localized in the SPA). NOTE: the design ADR detail illustrates only proposed/accepted/superseded; the

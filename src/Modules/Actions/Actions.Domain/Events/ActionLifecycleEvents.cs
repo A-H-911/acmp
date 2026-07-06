@@ -2,7 +2,7 @@
 
 namespace Acmp.Modules.Actions.Domain.Events;
 
-// Action lifecycle domain events (docs/12 §7). Raised by the aggregate on each transition; the
+// Action lifecycle domain events (docs/domain/entity-lifecycles.md §7). Raised by the aggregate on each transition; the
 // application handlers own the audit + notification side-effects — the module never reaches into the
 // Audit or Notifications modules (ADR-0001). Payload stays small: identity + what a subscriber needs.
 

@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Meetings.Domain.Enums;
 
-// How the meeting is held (docs/12 §5). InPerson = on-site only; Hybrid = on-site + remote attendees;
+// How the meeting is held (docs/domain/entity-lifecycles.md §5). InPerson = on-site only; Hybrid = on-site + remote attendees;
 // Remote = fully online. Additive domain modelling (no ADR required).
 public enum MeetingMode
 {

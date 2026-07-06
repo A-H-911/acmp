@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 
-/** 404 catch-all — reconciled to ACMP System States `404` (docs/14 page 90). */
+/** 404 catch-all — reconciled to ACMP System States `404` (docs/domain/information-architecture.md page 90). */
 export function NotFoundPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();

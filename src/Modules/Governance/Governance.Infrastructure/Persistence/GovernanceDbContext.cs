@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Governance.Infrastructure.Persistence;
 
-// Maps ONLY the governance schema (docs/34 §12: no cross-module tables). References to other modules (an
+// Maps ONLY the governance schema (docs/domain/repository-structure.md §12: no cross-module tables). References to other modules (an
 // ADR's SourceDecisionId) are by value, never by FK navigation (ADR-0001). Considered options are an owned
 // collection of Adr (adr_options table). The Invariant aggregate (AIV-YYYY-###) shares this context (P11c).
 public sealed class GovernanceDbContext : ModuleDbContext, IGovernanceDbContext

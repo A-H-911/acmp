@@ -5,27 +5,27 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Governance.Domain;
 
-// The Architecture Invariant aggregate root (in-app AIV-YYYY-###; docs/11 §Governance, docs/12 §9, docs/22
+// The Architecture Invariant aggregate root (in-app AIV-YYYY-###; docs/domain/domain-model.md §Governance, docs/domain/entity-lifecycles.md §9, docs/domain/standards-and-best-practices.md
 // §A.5; workflow W18) — a standing structural rule the governed estate must always exhibit. Sibling of the
 // Adr aggregate in the same module.
 //
-// Concept fidelity (docs/22 §A, the concept single-source-of-truth per README §G): an Architecture Invariant
+// Concept fidelity (docs/domain/standards-and-best-practices.md §A, the concept single-source-of-truth per README §G): an Architecture Invariant
 // is DISTINCT from Principle/Standard/Policy/Constraint — those are their own concepts (Policy is an external
 // register ACMP only consumes; Constraint is a CON-### planning id). So there is deliberately NO "Kind"
-// enum folding them in — docs/12 §9 mentions a "kind" that FR-106 and the design create-form both omit; §A
+// enum folding them in — docs/domain/entity-lifecycles.md §9 mentions a "kind" that FR-106 and the design create-form both omit; §A
 // governs the tie (OQ-P11c-1, dropped by operator 2026-07-04). The invariant carries Category + Scope only.
 //
-// Lifecycle (docs/12 §9, FR-107): Draft (author/revise) → Proposed (submit for approval) → Active (in force,
+// Lifecycle (docs/domain/entity-lifecycles.md §9, FR-107): Draft (author/revise) → Proposed (submit for approval) → Active (in force,
 // immutable); Proposed → Draft on requested changes; Active → Retired (rationale) or Superseded (a successor
 // invariant is activated). Once Active the statement is FROZEN — a correction is a NEW invariant that
 // supersedes this one (ADR-0009, supersede-not-edit). Violations are tracked separately (Risk/Action/Audit),
-// never as a state here (docs/22 §A.5). docs/12 §9 splits its Draft/Proposed field guards, but the design's
+// never as a state here (docs/domain/standards-and-best-practices.md §A.5). docs/domain/entity-lifecycles.md §9 splits its Draft/Proposed field guards, but the design's
 // single create-dialog collects every required field at once, so we require them all at Draft (as Adr does).
 public sealed class Invariant : AuditableEntity
 {
     private Invariant() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;   // AIV-YYYY-###
@@ -34,7 +34,7 @@ public sealed class Invariant : AuditableEntity
     public InvariantScope Scope { get; private set; }
 
     // The rule itself (FR-106). Statement + Rationale are required bilingual prose; ExceptionsPolicy is the
-    // optional "how exceptions are handled" note (docs/22 §A.5). Markdown-as-text (the DV-04 model).
+    // optional "how exceptions are handled" note (docs/domain/standards-and-best-practices.md §A.5). Markdown-as-text (the DV-04 model).
     public LocalizedString Statement { get; private set; } = null!;
     public LocalizedString Rationale { get; private set; } = null!;
     public LocalizedString? ExceptionsPolicy { get; private set; }

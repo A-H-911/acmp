@@ -1,6 +1,6 @@
 /*
  * Pure presentation mappers for Action read models (register + detail).
- * Status tone maps the 6 canonical ActionStatus wire names (docs/12 §7) onto the
+ * Status tone maps the 6 canonical ActionStatus wire names (docs/domain/entity-lifecycles.md §7) onto the
  * shared StatusChip tones; meaning is carried by the localized label + a colored
  * dot, never colour alone (WCAG 1.4.1). Progress-bar colour follows the design's
  * thresholds in "ACMP Lists & Registers.dc.html".
@@ -49,7 +49,7 @@ export function initials(name: string): string {
 /** ActionStatus values in lifecycle order — the register's Status filter options. */
 export const ACTION_STATUSES: ActionStatus[] = ['Open', 'InProgress', 'Blocked', 'Completed', 'Verified', 'Cancelled'];
 
-/** The W14 lifecycle transitions a user can trigger (docs/12 §7 — one POST endpoint each). */
+/** The W14 lifecycle transitions a user can trigger (docs/domain/entity-lifecycles.md §7 — one POST endpoint each). */
 export type ActionTransition = 'start' | 'block' | 'unblock' | 'progress' | 'complete' | 'cancel' | 'verify';
 
 /**
@@ -60,7 +60,7 @@ export type ActionTransition = 'start' | 'block' | 'unblock' | 'progress' | 'com
  *   Completed   → Verify · Cancel
  *   Verified/Cancelled → terminal (none)
  * A wrong button would hit a domain 400/409, so the UI shows only what the state allows. Role/owner
- * gating (docs/10 rows 14–15 + SoD-1 on `verify`) is layered on top at render time.
+ * gating (docs/domain/permission-role-matrix.md rows 14–15 + SoD-1 on `verify`) is layered on top at render time.
  */
 export const ALLOWED_TRANSITIONS: Record<ActionStatus, ActionTransition[]> = {
   Open: ['start', 'progress', 'cancel'],

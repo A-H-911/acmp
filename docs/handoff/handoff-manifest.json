@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "package_version": "1.0.0",
+  "project": "ACMP",
+  "generated": "2026-07-06",
+  "generator": "keystone",
+  "mvp_definition": "The complete architecture-governance loop live end to end (topic intake to backlog, agenda, meeting, minutes, voting, decision, ADR, action, risk, dependency) for one committee, with role+ABAC authorization, immutable hash-chained audit, in-app notifications, bilingual EN/AR + RTL, and basic dashboards.",
+  "invariants": [
+    { "id": "INV-001", "statement": "Do not replace the approved stack (.NET 8 / ASP.NET Core / EF Core / SQL Server / React + TypeScript / Vite) without a new ADR." },
+    { "id": "INV-002", "statement": "Modular monolith only — no microservices, brokers, service mesh, Kubernetes, or a second database without a measured need recorded in an ADR." },
+    { "id": "INV-003", "statement": "Self-contained (CON-001) — no dependency on org runtime infra; ACMP bundles all runtime deps incl. self-hosted Keycloak + SQL Server; only external dep is Webex (Phase 2)." },
+    { "id": "INV-004", "statement": "No endpoint or command bypasses policy-based authorization (role + ABAC); enforce least privilege and segregation of duties." },
+    { "id": "INV-005", "statement": "Every state change emits an AuditEvent; votes, issued decisions, approved ADRs, and published minutes are immutable (superseded, never edited); hash-chain votes/decisions/audit." },
+    { "id": "INV-006", "statement": "AI-extracted content is candidate-only until a human approves it; treat transcripts/briefs as untrusted input (OWASP LLM01)." },
+    { "id": "INV-007", "statement": "No secrets in source control; use externalized config + Docker secrets / git-ignored .env." },
+    { "id": "INV-008", "statement": "No feature without unit + integration tests and a satisfied AC-###." },
+    { "id": "INV-009", "statement": "No hardcoded user-facing strings — everything via i18n (EN + AR); every screen renders correctly in RTL; Gregorian dates." },
+    { "id": "INV-010", "statement": "Do not duplicate Tarseem (diagrams, JSON spec = source of truth) or Keystone (research) functionality without a documented ADR." },
+    { "id": "INV-011", "statement": "Do not mask assumptions or open decisions; record inferences as ASM-### and unresolved decisions as OQ-###, never silently deciding a flagged item." },
+    { "id": "INV-012", "statement": "Do not overengineer — right-size for an on-prem, low-traffic, ≤20-user internal tool." },
+    { "id": "INV-013", "statement": "No commits direct to main; every slice ships on a short-lived branch → PR → green CI → review → squash-merge, keeping main green and deployable." },
+    { "id": "INV-014", "statement": "No UI drift from the reference design — any screen with a matching .dc.html matches it exactly; no-reference screens compose from the design system + IA spec and are flagged." }
+  ],
+  "entry_points": {
+    "initial_prompt": "handoff/initial-prompt.md",
+    "follow_up_prompts": "handoff/follow-up-prompts.md",
+    "review_prompts": "handoff/review-prompts.md",
+    "readiness_report": "handoff/execution-readiness-report.md",
+    "package_readme": "README.md",
+    "agent_control": "../AGENTS.md"
+  },
+  "prerequisites": {
+    "runtimes": [".NET 8", "Node 20", "Docker Compose"],
+    "tooling": ["dotnet", "npm", "python 3.9+ for validate_package.py"],
+    "accounts_access": ["self-hosted Keycloak admin"]
+  },
+  "phases": [
+    { "id": "PH-0", "goal": "Discovery & validation — eliminate blockers before code; complete the planning package.", "exit_criteria": "All PH-1-blocking OQ- resolved or defaulted; validator gates green; environments accessible. Status: complete." },
+    { "id": "PH-1", "goal": "MVP governance — the complete governance loop live end to end with identity, audit, notifications, EN/AR+RTL, and basic dashboards.", "exit_criteria": "All Must FRs implemented, tested, signed off; zero Sev-1; one full meeting cycle on the platform; staging stable. Status: complete." },
+    { "id": "PH-2", "goal": "Governance expansion — ADRs + Invariants, risks/dependencies + impact graph, reporting, Webex adapter, Tarseem sidecar, Knowledge/Research.", "exit_criteria": "Should FRs signed off; Tarseem sidecar and Webex adapter stable; zero Sev-1. Status: substantially delivered (P10/P11/P12 shipped); Webex/Tarseem/Knowledge remainder outstanding." },
+    { "id": "PH-3", "goal": "Research & knowledge — AI-assisted transcript extraction (candidate-only, human-reviewed), email channel, KPI dashboard, traceability export.", "exit_criteria": "Committed Could FRs implemented + tested; AI off by default; privacy review signed off. Status: not started." }
+  ],
+  "readiness": "ready"
+}

@@ -46,7 +46,7 @@ The Usage Map is authoritative. Where any older `.dc.html` disagrees with it, th
 ## De-duplications / removals
 
 - **Meeting overlap** → resolved by the ownership split above (Usage Map §A). `ACMP Meetings` owns route-level permission-denied; the `denied` state inside `ACMP Agenda & Meeting` is the **minutes edit-access** denial (a legitimate sub-state of `minutes`, not a second route gate) — re-scope its enum to `minutes/edit-denied` when convenient.
-- **Notifications** → collapsed from 3 references to 2 owned surfaces (bell + inbox); docs/14 p.79/80 are reference only; preferences dropped from v1.
+- **Notifications** → collapsed from 3 references to 2 owned surfaces (bell + inbox); docs/domain/information-architecture.md p.79/80 are reference only; preferences dropped from v1.
 - **Registers vs detail (RD-10)** → confirmed intentional: `ACMP Lists & Registers` = list/register views; `ACMP Decision, Voting & ADR` = detail. No contradiction.
 - **Admin `notif` vs user inbox** → clarified: Administration's "Notification settings" is org-level config (distinct from the user's `/notifications` inbox).
 

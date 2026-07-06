@@ -3,9 +3,9 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Membership.Domain;
 
-// A per-topic relationship (Owner/Assignee/Presenter) granted to a member on a topic (docs/10 §D).
+// A per-topic relationship (Owner/Assignee/Presenter) granted to a member on a topic (docs/domain/permission-role-matrix.md §D).
 // References the topic by id only — no FK into the Topics module (module boundary, ADR-0001).
-// Presenter grants are meeting-scoped and time-boxed via ValidFrom/ValidTo (docs/10 §D, §E.3).
+// Presenter grants are meeting-scoped and time-boxed via ValidFrom/ValidTo (docs/domain/permission-role-matrix.md §D, §E.3).
 public sealed class TopicCapabilityGrant : AuditableEntity
 {
     private TopicCapabilityGrant() { }

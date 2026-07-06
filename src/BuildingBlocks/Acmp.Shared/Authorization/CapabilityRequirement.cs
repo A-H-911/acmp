@@ -2,7 +2,7 @@
 
 namespace Acmp.Shared.Authorization;
 
-// One row of the docs/10 §C capability matrix as an authorization requirement.
+// One row of the docs/domain/permission-role-matrix.md §C capability matrix as an authorization requirement.
 // AllowRoles  = matrix "A"   (role grants the action outright).
 // OwnerRoles  = matrix "AiO" (role grants it only with a per-topic relationship on the target).
 // A Deny is the absence of both. SoD-5 is encoded by simply never listing Administrator in a

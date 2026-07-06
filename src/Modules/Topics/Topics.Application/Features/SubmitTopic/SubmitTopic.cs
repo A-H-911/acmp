@@ -10,7 +10,7 @@ using MediatR;
 namespace Acmp.Modules.Topics.Application.Features.SubmitTopic;
 
 // W1: submit a new topic for triage (AC-030). Creates the Draft and submits it in one action ("Submit
-// for triage"). Submitter attribution = the current principal. Roles per Policies.TopicSubmit (docs/10).
+// for triage"). Submitter attribution = the current principal. Roles per Policies.TopicSubmit (docs/domain/permission-role-matrix.md).
 public sealed record SubmitTopicCommand(
     string Title, string Description, string Justification,
     TopicType Type, TopicUrgency Urgency, TopicSource Source,

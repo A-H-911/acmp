@@ -10,7 +10,7 @@ using MediatR;
 namespace Acmp.Modules.Risks.Application.Features.ManageMitigations;
 
 // W15 mitigation management: plan a mitigation, advance its status (Planned → InProgress → Done). Both are
-// RBAC = Risk.Manage (Chairman/Secretary; Member/Reviewer allow-if-owner) and audited (docs/11 §Mitigation
+// RBAC = Risk.Manage (Chairman/Secretary; Member/Reviewer allow-if-owner) and audited (docs/domain/domain-model.md §Mitigation
 // "full mutation audited"). They share RiskTransition (load → mutate → save → audit); the aggregate enforces
 // that the risk is still live and that a mitigation never regresses.
 

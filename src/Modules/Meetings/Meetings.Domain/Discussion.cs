@@ -3,7 +3,7 @@ using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
 
-// Captured discussion notes for one agenda topic during a meeting (docs/11 §C, W9). v1 keeps a single
+// Captured discussion notes for one agenda topic during a meeting (docs/domain/domain-model.md §C, W9). v1 keeps a single
 // editable Human note per topic (matches the workspace's autosaved notes field); transcript-derived
 // candidates (Phase 3) would be added as separate IsApproved=false rows pending human review.
 // Mutated only via the Meeting root.

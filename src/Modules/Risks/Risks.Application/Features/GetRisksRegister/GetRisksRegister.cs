@@ -14,7 +14,7 @@ namespace Acmp.Modules.Risks.Application.Features.GetRisksRegister;
 // default = the "Open risks by exposure" saved view). Readable by any authenticated committee member
 // (read-all, README §C). DB-translatable predicates (status, owner) run in SQL; the derived exposure filter,
 // text search, and exposure/severity sort run in memory after materialising — right-sized for one low-traffic
-// committee (docs/12: severity/exposure is a computed overlay, not a stored column).
+// committee (docs/domain/entity-lifecycles.md: severity/exposure is a computed overlay, not a stored column).
 public sealed record GetRisksRegisterQuery(
     IReadOnlyList<RiskStatus>? Statuses = null,
     string? OwnerUserId = null,

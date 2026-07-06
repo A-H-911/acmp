@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Decisions.Domain;
 
-// Frozen tally computed at Close (docs/11 §Vote, docs/12 §4 "tally frozen"). Per-option cast counts +
+// Frozen tally computed at Close (docs/domain/domain-model.md §Vote, docs/domain/entity-lifecycles.md §4 "tally frozen"). Per-option cast counts +
 // the abstain count + the total non-recused ballots that counted toward quorum. Immutable once set;
 // serialized inline on the vote row (JSON) — a snapshot, never recomputed after Close (AC-025).
 // NOTE: as a record over a Dictionary, the synthesized == uses REFERENCE equality for OptionCounts

@@ -1,5 +1,5 @@
 /*
- * OIDC callback handler (reconciled to ACMP System States `callback`, docs/14
+ * OIDC callback handler (reconciled to ACMP System States `callback`, docs/domain/information-architecture.md
  * page 2). react-oidc-context processes the authorization code automatically;
  * this shows the secure-handoff spinner and routes onward once the session
  * resolves (or surfaces a token-exchange error).

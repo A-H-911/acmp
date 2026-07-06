@@ -1,7 +1,7 @@
 /*
  * App-level error boundary. React has no functional equivalent, so this stays a
  * class component. It shows a user-friendly state with no technical detail
- * (reconciled to ACMP System States `error`, docs/14 page 92) and recovery
+ * (reconciled to ACMP System States `error`, docs/domain/information-architecture.md page 92) and recovery
  * actions; the raw error is logged to the console for diagnostics only.
  */
 import { Component, type ErrorInfo, type ReactNode } from 'react';

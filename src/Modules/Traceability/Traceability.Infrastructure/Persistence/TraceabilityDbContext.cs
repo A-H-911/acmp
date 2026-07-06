@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Traceability.Infrastructure.Persistence;
 
-// Maps ONLY the traceability schema (docs/34 §12: no cross-module tables). Edge endpoints are value snapshots
+// Maps ONLY the traceability schema (docs/domain/repository-structure.md §12: no cross-module tables). Edge endpoints are value snapshots
 // (type + PublicId + key + title), never FK navigations into other modules (ADR-0001, ADR-0019).
 public sealed class TraceabilityDbContext : ModuleDbContext, ITraceabilityDbContext
 {

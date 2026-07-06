@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Acmp.Modules.Traceability.Infrastructure.Persistence.Configurations;
 
-// Relationship edge → the relationships table (docs/30 §2.1). Both endpoints are stored as value snapshots
+// Relationship edge → the relationships table (docs/domain/search-and-traceability.md §2.1). Both endpoints are stored as value snapshots
 // (type + PublicId + key + title), no FK to any module (ADR-0001, ADR-0019). The (SourceType, SourceId) and
 // (TargetType, TargetId) filtered indexes back the two panel queries (outgoing / incoming) over active edges;
 // the RelType index backs the AC-029 downstream lookup + future reporting. IsActive is a soft-delete flag —
-// rows are never physically deleted (docs/30 §5, ADR-0009).
+// rows are never physically deleted (docs/domain/search-and-traceability.md §5, ADR-0009).
 public sealed class RelationshipConfiguration : IEntityTypeConfiguration<Relationship>
 {
     public void Configure(EntityTypeBuilder<Relationship> b)
@@ -37,7 +37,7 @@ public sealed class RelationshipConfiguration : IEntityTypeConfiguration<Relatio
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.Ignore(x => x.DomainEvents);
 
-        // Panel access paths (docs/30 §2.1 IX_Relationship_Source / _Target), filtered to active edges.
+        // Panel access paths (docs/domain/search-and-traceability.md §2.1 IX_Relationship_Source / _Target), filtered to active edges.
         b.HasIndex(x => new { x.SourceType, x.SourceId }).HasFilter("[IsActive] = 1");
         b.HasIndex(x => new { x.TargetType, x.TargetId }).HasFilter("[IsActive] = 1");
         b.HasIndex(x => x.RelType).HasFilter("[IsActive] = 1");

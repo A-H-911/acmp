@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Shared.Authorization;
 
-// Named authorization policy constants — one per row of the docs/10 §C capability matrix.
+// Named authorization policy constants — one per row of the docs/domain/permission-role-matrix.md §C capability matrix.
 // Policies are registered centrally (AuthorizationRegistration) and enforced at the owning
 // module's endpoints; many target aggregates ship in later phases, but the contract is fixed in P4.
 public static class Policies

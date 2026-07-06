@@ -53,7 +53,7 @@ live app renders the current user's Keycloak role.
 
 **Right-sizing = [[ADR-0022]]** (client-side aggregation over thin registers; NO columnstore read-model layer; NO chart
 library — CSS primitives; **resolves OQ-022**). Deferred + flagged: server PDF export, Hangfire-scheduled reports,
-time-series/advanced dashboards (docs/27 DB-13/14/22/23/24) → PH-3; Research dashboard DB-18 → PH-2. CSV = only v1 export.
+time-series/advanced dashboards (docs/domain/reporting-dashboards.md DB-13/14/22/23/24) → PH-3; Research dashboard DB-18 → PH-2. CSV = only v1 export.
 
 **P12 AUDIT REMEDIATION (2026-07-05, branch `fix/p12-audit-remediation`):** adversarial audit → fidelity + data-honesty
 fixes, **NO AC flips** (AC-064/065/066 stay Met). ★ The one MAJOR: Reports **Stream filter now scopes decisions +
@@ -66,7 +66,15 @@ aging labels en-dash, Exec KPIs restored (approved-rate% + high-sev count), stat
 secretary queue+SLA); DATA-tabs + Period/Status filters + KPI deltas stay removed; "Other" kept over design's "Pending".
 Blessed: KeyList chevron/accent-key; shared EmptyState reuse; stub-`0` audit tiles (correct-by-invariant). i18n 1458 (net +2).
 The build-time pixel-VR PASSED but missed these per-series colour/en-dash deltas (below diff threshold) — VR isn't a
-substitute for source review. See [[exact-design-fidelity-visual-loop]].
+substitute for source review. See [[exact-design-fidelity-visual-loop]]. **★ POST-REMEDIATION LIVE VR PASS (merged
+`b3c1a45`):** fresh `deploy/docker-compose.yml` boot (down -v + up --build; SA-login mismatch on in-place web rebuild
+forced the fresh boot), `acmp-admin` password set via kcadm (`VrPass#2026`; realm user is born UPDATE_PASSWORD-required
+with NO seeded credential), seeded 8 topics/6 risks/3 actions via the SPA bearer over `/api/*` (urgency enum =
+Normal/Urgent/Critical NOT High/Low; source=`CommitteeMember`; risk L/I=Low/Medium/High; actions POST then
+`/actions/{id}/start`→InProgress). Confirmed EN-light + AR-RTL-dark: Conditional legend dot GREEN (#1), In-progress bar
+ACCENT `#6db0ee` distinct from neutral Open (#2), Backlog-by-stream MULTICOLOR cycle (#3), aging labels EN-DASH
+`0–7/8–14/15–30` (#4), restored KPIs (exposure "3 high-severity", open-items) (#7), "Updated {{time}}"/"حُدّث" (#9),
+always-on filter row (#10), shell breadcrumb on dashboard+reports; full RTL mirror + dark clean.
 
 AC→data map: AC-064 (committee/any-member: backlog by status+urgency ✅, next meeting ✅, action counts ✅, overdue ✅,
 last-5 issued decisions ← new register). AC-065 (secretary: Triage count ✅, MoMs-awaiting ← new register, overdue-beyond-

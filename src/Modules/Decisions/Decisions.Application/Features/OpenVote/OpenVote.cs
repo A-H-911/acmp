@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Acmp.Modules.Decisions.Application.Features.OpenVote;
 
 // W11 (open): the Secretary (or Chairman) opens voting (Configured → Open). RBAC = Vote.Manage. The
-// present-quorum gate (docs/12 §4) resolves the eligible-and-present count from the linked meeting via the
+// present-quorum gate (docs/domain/entity-lifecycles.md §4) resolves the eligible-and-present count from the linked meeting via the
 // Meetings seam (ADR-0001) and lets the domain compare it to MinPresent. On success: lock the config
 // (AC-021), fan out a VoteOpened notification with a /votes/{key} deep link to each eligible voter
 // (AC-021/AC-052), and audit.

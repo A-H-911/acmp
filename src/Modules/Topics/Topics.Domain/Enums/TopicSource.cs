@@ -1,6 +1,6 @@
 ﻿namespace Acmp.Modules.Topics.Domain.Enums;
 
-// Submitter channel — informational, not a workflow driver (docs/09 §B.3). Defaults to CommitteeMember
+// Submitter channel — informational, not a workflow driver (docs/domain/topic-taxonomy.md §B.3). Defaults to CommitteeMember
 // at submission; the Secretary may adjust during triage. Used for reporting/filtering and attribution.
 public enum TopicSource
 {

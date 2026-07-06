@@ -11,7 +11,7 @@ namespace Acmp.Api.Endpoints;
 
 // Thin endpoint layer: no business logic, delegates to MediatR (CLAUDE.md coding standards).
 // The group requires authentication (401 without a token, AC-008); admin-only operations add the
-// docs/10 policy that returns 403 for an authenticated-but-unauthorized role.
+// docs/domain/permission-role-matrix.md policy that returns 403 for an authenticated-but-unauthorized role.
 public static class MembershipEndpoints
 {
     public static IEndpointRouteBuilder MapMembershipEndpoints(this IEndpointRouteBuilder app)
@@ -29,7 +29,7 @@ public static class MembershipEndpoints
         group.MapPost("/me", async (ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new ProvisionCurrentUserCommand(), ct)));
 
-        // Membership administration — Administrator only (docs/10 row 27, Admin.Users / SoD-5).
+        // Membership administration — Administrator only (docs/domain/permission-role-matrix.md row 27, Admin.Users / SoD-5).
         group.MapPost("/{publicId:guid}/deactivate", async (Guid publicId, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new DeactivateMemberCommand(publicId), ct);
@@ -42,7 +42,7 @@ public static class MembershipEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.AdminUsers);
 
-        // Delegate authority for a bounded window — Chairman/Secretary (docs/10 row 28, Auth.Delegate).
+        // Delegate authority for a bounded window — Chairman/Secretary (docs/domain/permission-role-matrix.md row 28, Auth.Delegate).
         group.MapPost("/delegations", async (CreateDelegationCommand command, ISender sender, CancellationToken ct) =>
         {
             var publicId = await sender.Send(command, ct);

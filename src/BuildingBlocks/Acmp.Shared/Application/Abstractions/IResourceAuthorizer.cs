@@ -5,7 +5,7 @@
 // per-resource decisions — owner-of-this-topic, stream scope — need the loaded aggregate. A handler
 // loads the entity, then calls EnsureAsync(entity, policy); the implementation evaluates the
 // registered policy (CapabilityRequirement etc.) against the current principal via ASP.NET's
-// IAuthorizationService. This is the P4→P5 deferral ("live ABAC HTTP 403") made concrete (docs/10 §E).
+// IAuthorizationService. This is the P4→P5 deferral ("live ABAC HTTP 403") made concrete (docs/domain/permission-role-matrix.md §E).
 public interface IResourceAuthorizer
 {
     Task<bool> IsAuthorizedAsync(object resource, string policy, CancellationToken ct = default);

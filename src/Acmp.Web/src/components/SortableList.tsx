@@ -1,7 +1,7 @@
 /*
  * Shared accessible sortable list (ADR-0012). Pointer + keyboard dragging via
  * @dnd-kit, AND an always-present keyboard fallback (Move up / Move down
- * buttons) so reordering never depends on drag — docs/14 §5. Generic over the
+ * buttons) so reordering never depends on drag — docs/domain/information-architecture.md §5. Generic over the
  * item type; feature screens (kanban, agenda builder) consume it at their
  * phases. P3 ships the component + its test only.
  */

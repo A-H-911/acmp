@@ -5,7 +5,7 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Decisions.Domain;
 
-// The Decision aggregate root (docs/11 §Decisions, docs/12 §W12/W21) — the committee's recorded outcome
+// The Decision aggregate root (docs/domain/domain-model.md §Decisions, docs/domain/entity-lifecycles.md §W12/W21) — the committee's recorded outcome
 // on a topic. Identity to other modules is by id only (TopicId = Topic.PublicId; MeetingId =
 // Meeting.PublicId; VoteId = the P9 ballot) — never an EF navigation, so the modular-monolith boundary
 // holds (ADR-0001). The decisive immutability rule (AC-027): once Issued, NOTHING is editable — there are
@@ -17,7 +17,7 @@ public sealed class Decision : AuditableEntity
 
     private Decision() { }
 
-    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/16 §1.5, ADR-0018).
+    // Optimistic-concurrency token (SQL rowversion). A stale write throws DbUpdateConcurrencyException → API 409 (docs/domain/data-architecture.md §1.5, ADR-0018).
     public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     public string Key { get; private set; } = string.Empty;   // DECN-YYYY-### (human-readable display key)

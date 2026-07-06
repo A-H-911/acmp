@@ -13,7 +13,7 @@ namespace Acmp.Modules.Actions.Application.Features.GetActionsRegister;
 // The Actions register as a filtered/sorted/paged view (the design's isActions table). Readable by any
 // authenticated committee member (read-all, README §C). DB-translatable predicates (status, owner) run in
 // SQL; the derived "overdue" filter, text search, and sort run in memory after materialising — right-sized
-// for a single low-traffic committee (docs/12: overdue is a computed overlay, not a stored column).
+// for a single low-traffic committee (docs/domain/entity-lifecycles.md: overdue is a computed overlay, not a stored column).
 public sealed record GetActionsRegisterQuery(
     IReadOnlyList<ActionStatus>? Statuses = null,
     string? OwnerUserId = null,

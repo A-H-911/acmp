@@ -11,7 +11,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
 
-/** ArtifactType (docs/30 §1.1) — the 16 governed artifact kinds that can be an edge endpoint. */
+/** ArtifactType (docs/domain/search-and-traceability.md §1.1) — the 16 governed artifact kinds that can be an edge endpoint. */
 export type ArtifactType =
   | 'Topic'
   | 'Meeting'
@@ -30,7 +30,7 @@ export type ArtifactType =
   | 'Recommendation'
   | 'Document';
 
-/** RelationshipType (docs/30 §2.2) — the curated directed typed-edge vocabulary (16 values). */
+/** RelationshipType (docs/domain/search-and-traceability.md §2.2) — the curated directed typed-edge vocabulary (16 values). */
 export type RelationshipType =
   | 'DecidedBy'
   | 'RecordedAs'
