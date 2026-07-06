@@ -4,7 +4,7 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Security headers (docs/25). script-src 'self' only (OQ-028); Vite emits no inline scripts.
+    # Security headers (docs/domain/security-controls.md). script-src 'self' only (OQ-028); Vite emits no inline scripts.
     # connect-src + frame-src allow the self-hosted Keycloak origin (ADR-0015) so the SPA can fetch
     # OIDC metadata/token/JWKS and run the silent-renew iframe. ${KEYCLOAK_ORIGIN} is substituted at
     # container start (nginx envsubst); each environment supplies its own origin with no rebuild.

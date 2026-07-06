@@ -61,4 +61,4 @@ git pull --ff-only
 
 ## Scope
 
-Applies to **every** phase `P1–P19` (`execution-handoff/phase-prompts.md`) and to every change-slice (e.g. `execution-handoff/CHANGE-001-keycloak-ownership.md`). The **Standard Footer** in `phase-prompts.md` and **guardrail #13** in `agent-guardrails.md` enforce it.
+Applies to **every** build slice `P1–P19` (ladder in `docs/planning/roadmap.md`; per-slice prompts in `docs/handoff/follow-up-prompts.md`) and to every change-slice (e.g. `CHG-001` in `docs/execution/deferred-work-register.md`). The **Standard Footer** in `docs/handoff/follow-up-prompts.md` and **INV-013** in `docs/requirements/invariant-register.md` enforce it.

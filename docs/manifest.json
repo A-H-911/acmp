@@ -248,7 +248,7 @@
       "path": "domain/deployment.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "\"3.9\""
+      "version": "1.0.0"
     },
     {
       "path": "domain/devsecops-plan.md",
@@ -428,31 +428,31 @@
       "path": "execution/backlog.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "execution/checkpoints.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "execution/deferred-work-register.md",
       "kind": "register",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "execution/definition-of-done.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "governance/contributing.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "governance/glossary.md",
@@ -470,7 +470,7 @@
       "path": "governance/naming-conventions.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "handoff/execution-readiness-report.md",
@@ -482,7 +482,7 @@
       "path": "handoff/follow-up-prompts.md",
       "kind": "prompt",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "handoff/handoff-manifest.json",
@@ -500,19 +500,19 @@
       "path": "handoff/review-prompts.md",
       "kind": "prompt",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "planning/roadmap.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "planning/work-breakdown.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "progress/design-parity-ledger.md",
@@ -536,7 +536,7 @@
       "path": "README.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "requirements/constraint-register.md",
@@ -602,7 +602,7 @@
       "path": "validation/test-strategy.md",
       "kind": "narrative",
       "status": "Approved",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "validation/traceability-matrix.md",

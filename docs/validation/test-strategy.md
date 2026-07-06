@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary
 ---
@@ -69,3 +69,138 @@ Entries map to real test suites named in `docs/validation/acceptance-audit.md` a
 | TEST-048 | OWASP ZAP baseline DAST | E2E | Security baseline scan (advisory in PH-1, blocking from PH-2) | Planned |
 | TEST-049 | External adapter contract tests (Webex, Tarseem, Keystone via WireMock) | Integration | Adapter request/response contracts, retry and circuit-breaker | Planned |
 | TEST-050 | Backup and restore runbook verification | Integration | SQL and MinIO restore, row-count parity, smoke on restored instance | Planned |
+
+## Test-design annex (restored from the pre-migration testing strategy)
+
+> Restored 2026-07-06 from `31-testing-strategy.md` (git history) — the fine-grained design tables the Keystone condensation dropped. Primarily serves the P17 testing-hardening slice and the Planned TEST- suites above.
+
+### Per-layer run-time targets
+
+| Layer | Target count (per module) | Run time target |
+|---|---|---|
+| Unit / Domain | 20–50 per module | < 5 s total |
+| App / Handler | 10–30 per module | < 15 s total |
+| API Integration | 5–15 per major flow | < 3 min total |
+| Frontend Component | 10–25 per page/feature | < 60 s total |
+| E2E | 15–30 total (critical flows only) | < 10 min total |
+
+### Voting-integrity assertions (TEST-011/012/013)
+
+| Test | Assertion |
+|---|---|
+| Vote cast while ballot Open → recorded with voter identity | Voter name + timestamp in DB |
+| Vote cast after ballot Closed → rejected | 422 + domain exception |
+| Duplicate vote by same voter → rejected | 422 |
+| Quorum reached → ballot auto-closes, VoteClosed event fires | DB state + event published |
+| Chairman override recorded with chairman's identity | Immutable record with `ChairmanId` |
+| Closed ballot: any mutation attempt → 422 | Full test matrix per field |
+| Abstention persisted correctly | `VoteOption.Abstain` in DB |
+| Result tally: correct count per option | Aggregate calculation verified |
+| Ballot Ratified: no further changes accepted | All write operations → 422 |
+
+### Decision-history / immutability assertions (TEST-014/015/016)
+
+| Test | Assertion |
+|---|---|
+| Issued `Decision` row: PUT/PATCH → 422 | HTTP + DB state unchanged |
+| Decision superseded → old record preserved, `SupersededBy` set | Both records in DB |
+| AuditEvent created on issue | `audit` schema has event |
+| `Vote` rows: no UPDATE/DELETE path exists | No API route + DB trigger not needed (EF no-track) |
+| ADR lifecycle: Approved→Superseded creates new ADR; original status unchanged | Both rows exist |
+| Minutes: once published, content hash stored; any re-publish invalidates if content differs | Hash check in test |
+
+### Audit-trail scope (TEST-044)
+
+Every create/update/delete command on every aggregate must produce an `AuditEvent` row with `(SubjectType, SubjectId, ActionType, ActorId, Timestamp, Before, After)`. API-integration tests assert audit-table rows after each command, covering all domain actions listed in [domain/audit-and-records.md](../domain/audit-and-records.md). Audit-trail tests run as a dedicated CI stage before release; zero gaps = release gate.
+
+### File-upload assertions (TEST-023 + integration)
+
+| Test | Assertion |
+|---|---|
+| Valid file (PDF/DOCX/PNG ≤ size limit) → stored in MinIO | `IFileStore` returns key; object exists in MinIO bucket |
+| Oversized file → 413 | Error shape matches API contract |
+| Disallowed MIME type → 415 | MIME check before MinIO write |
+| Pre-signed URL: returned URL is time-limited | URL expires ≤ configured TTL |
+| MinIO unreachable → graceful error (not 500 with stack trace) | Circuit-breaker fires; user-facing message |
+| Duplicate attachment → de-duplicated by hash | Only one object stored |
+
+Integration tests use a real MinIO container via Testcontainers or a docker-compose test profile.
+
+### Localization checks (TEST-040)
+
+Every user-visible string has translations for both `en` and `ar`; missing key = CI failure (key-set parity script). RTL: component tests assert `dir="rtl"` on the root element when locale is `ar`. Dates: locale `ar` uses Gregorian formatting with the Arabic locale — never Hijri ([docs/README.md](../README.md) §A). Backend `LocalizedString` entities populate both `En` and `Ar`; validators reject null `Ar` on create.
+
+### Arabic / RTL assertions (TEST-034/042)
+
+| Test | Tool | Assertion |
+|---|---|---|
+| Root `<html dir="rtl">` when locale=ar | Vitest / RTL | DOM attribute |
+| Sidebar renders on right in RTL | Playwright screenshot diff | Visual regression |
+| Logical CSS (`margin-inline-start`) mirrors correctly | Playwright + axe | Layout direction |
+| Arabic text in diagram JSON spec → Tarseem renders Arabic RTL | Tarseem mock + spec check | Spec field populated |
+| DnD handles keyboard navigation in RTL (Arrow keys mirrored) | Vitest / user-event | Event handler |
+| Form error messages in Arabic | Vitest | `getByRole('alert')` shows AR text |
+| Table column order reversal in RTL | RTL snapshot | Column sequence |
+
+### Accessibility assertions (TEST-035/042) — WCAG 2.2 AA (NFR-035)
+
+| Test | Tool | Trigger |
+|---|---|---|
+| Automated axe-core scan on every component | `jest-axe` in Vitest | Per component test |
+| Automated axe-core scan on every rendered page | Playwright + `@axe-core/playwright` | E2E suite |
+| Keyboard-only navigation: tab order, focus visible, no keyboard trap | Playwright manual flow | E2E |
+| DnD: keyboard-only drag (`@dnd-kit` keyboard sensors) | Playwright user-event | E2E |
+| Screen reader roles: interactive elements have accessible names | Vitest `getByRole` | Component |
+| Color contrast: no violation at AA | axe-core | Component + E2E |
+| Language attribute set correctly per locale | Vitest | Component |
+
+Zero axe-core violations in `critical` / `serious` is a merge gate.
+
+### k6 performance scenarios (TEST-047)
+
+Right-sized for ≤20 users / ~15 concurrent; run in staging after the integration suite and pre-release, not per-PR.
+
+| Scenario | VUs | Duration | Pass criteria |
+|---|---|---|---|
+| Homepage / dashboard load | 15 | 60 s | P95 ≤ 2 s (NFR-001) |
+| Topic list (100 topics) | 10 | 60 s | P95 ≤ 2 s |
+| Vote cast (concurrent) | 5 | 30 s | P95 ≤ 1 s; no 5xx |
+| File upload (10 MB PDF) | 3 | 60 s | P95 ≤ 10 s |
+| Search (full-text) | 5 | 60 s | P95 ≤ 3 s (NFR-002) |
+| Notification delivery (in-app poll) | 10 | 60 s | P95 ≤ 5 s |
+
+### Test-data strategy
+
+- **Fluent builders** in `tests/TestBuilders/` per aggregate (`TopicBuilder.Create().WithType(…).WithStatus(…).Build()`, `VoteBuilder.Create().WithEligibleVoters(3).WithQuorum(2).Build()`, `DecisionBuilder.Create().AsIssued().Build()`); builders default to valid, complete objects, chain methods override fields.
+- **Seed data:** unit/handler tests use builders only (no DB); API-integration collections seed their own minimal set via a `SeedHelper` (EF Core direct, not the API); E2E suites run dedicated `seed.sql` + `seed-minio.sh` first — 3 users (Chairman, Secretary, Member), 5 topics across all types, 2 completed votes, 1 issued decision, 2 open actions; staging uses a richer bilingual `deploy/seed/staging-seed.sql` with Arabic-named topics and decisions.
+
+### Mocking boundaries
+
+| Boundary | Test layer | Mock approach |
+|---|---|---|
+| Keycloak JWT validation | All layers above unit | `TestAuthHandler` injects claims; no real KC call |
+| SQL Server | Unit, Handler | In-memory EF Core (pure logic only) |
+| SQL Server | Integration | Real Testcontainers SQL Server 2022 |
+| MinIO `IFileStore` | Unit, Handler | `NSubstitute` mock |
+| MinIO | File-upload integration | Real MinIO container (Testcontainers) |
+| `INotificationChannel` | Handler | `NSubstitute` mock; assert `Publish()` called |
+| Hangfire jobs | Handler | Mock `IBackgroundJobClient`; assert enqueue call |
+| Seq | All | No mock; Seq container optional; logs buffered in tests |
+| `ITarseemAdapter` | Handler, API Integration | WireMock stub |
+| `IWebexAdapter` | Handler, API Integration | WireMock stub |
+| `IClock` | All | `NSubstitute` mock; inject fixed `DateTimeOffset` |
+
+Rule: real DB and real MinIO only in integration tests and above; everything else mocks at the interface boundary.
+
+### Acceptance-test naming (AC traceability)
+
+Acceptance criteria live in [validation/acceptance-criteria.md](acceptance-criteria.md); each `AC-###` maps to at least one test. Tests are xUnit methods with descriptive names carrying the AC reference — `[Fact(DisplayName = "AC-044: VoteClosed event creates AuditEvent")]` — not Gherkin files (SpecFlow not planned). CI maps test DisplayName AC references to the criteria list; any `AC-###` with zero passing tests = build warning in PH-1, block from PH-2.
+
+### Per-phase test focus
+
+| Phase | Focus | New test categories added |
+|---|---|---|
+| **PH-1** (core loop: intake→vote→decision) | Core workflow, domain rules, auth/authz, audit trail, voting integrity | Unit, handler, API integration, migration, permission matrix, voting, immutability |
+| **PH-2** (Webex, Tarseem, notifications, diagrams) | Adapter contracts, file upload, MinIO, render pipeline | Contract tests (Webex, Tarseem), file-upload, container smoke |
+| **PH-3** (AI extraction, research, Keystone import) | AI candidate output validation, human-review gate, Keystone manifest import | Keystone contract, AI output schema tests |
+| **Release hardening** (P16–P19) | Performance, accessibility full audit, reporting correctness | k6 extended, axe-core full coverage, ZAP block mode |

@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: lead-secretary + Claude Code execution agent
 generation: derived
@@ -14,7 +14,7 @@ generation: derived
 
 - **What this is.** ACMP (Architecture Committee Management Platform) — a focused, auditable, bilingual (EN/AR) web platform that is the **single system of record for one Architecture Committee**: topic intake → backlog → agenda → meeting → minutes → voting → decision → ADR → action → risk → dependency, with end-to-end traceability. It is **architecture governance, not generic project management.** On-prem, low-traffic, ≤20 users.
 - **The contract — read in order:** [package README](docs/README.md) → [charter](docs/00-charter.md) → [architecture](docs/architecture/architecture.md) → [roadmap](docs/planning/roadmap.md) → [acceptance criteria](docs/validation/acceptance-criteria.md). **ADRs ([docs/adrs/](docs/adrs/)) and approved registers are FINAL** — do not re-open settled decisions; supersede via a new ADR.
-- **Where you are now.** Live state is the [status report](docs/progress/status-report.md) and the [acceptance audit](docs/validation/acceptance-audit.md); the running narrative is the [progress log](docs/progress/progress-log.md). **Current phase: P12 (Dashboards & Reports) COMPLETE — MVP P1–P12 shipped; next is P13+ (Phase 2 / hardening).** Do not re-litigate settled decisions.
+- **Where you are now.** Live state is the [status report](docs/progress/status-report.md) and the [acceptance audit](docs/validation/acceptance-audit.md); the running narrative is the [progress log](docs/progress/progress-log.md); the canonical build-slice ladder (`P1…P19`, shipped + remaining) is in the [roadmap](docs/planning/roadmap.md). **Current phase: P12 (Dashboards & Reports) COMPLETE — MVP P1–P12 shipped; next is P13+ (Phase 2 / hardening), per-slice prompts in [follow-up-prompts](docs/handoff/follow-up-prompts.md).** Do not re-litigate settled decisions.
 
 ## Invariants — never violate (a violation requires a new ADR)
 
@@ -40,6 +40,7 @@ See the [constraint register](docs/requirements/constraint-register.md) (CON-) a
 - Respect **module boundaries** — a module never reads another module's tables; communicate via in-process contracts / MediatR / domain events only (ADR-0001).
 - **Track at each phase gate**, then STOP: keep [acceptance criteria](docs/validation/acceptance-criteria.md) current (status + evidence); update the [acceptance audit](docs/validation/acceptance-audit.md) (verdict + evidence per AC-); append the [progress log](docs/progress/progress-log.md); regenerate the [status report](docs/progress/status-report.md). **No phase starts with red CI. Record deviations as ADRs.**
 - **Branch → reviewable PR → green CI → squash-merge → delete branch → sync main.** `main` stays green and deployable (see [contributing](docs/governance/contributing.md)).
+- **Working discipline** (source: [contributing](docs/governance/contributing.md) §Working discipline): **validate before claiming** — evidence, not assertions; **every artifact has an owner + status** — front-matter on package docs, IDs on work items; **the package stays authoritative** — code/package drift is fixed or ADR'd in the same PR, never silent.
 
 ## Kickoff
 

@@ -182,6 +182,13 @@
       "action": "reshape",
       "target": "docs/",
       "detail": "Migrated the hand-built ACMP planning package into Keystone v1.0.0 package format and mechanics; validator-green."
+    },
+    {
+      "timestamp": "2026-07-06",
+      "actor": "migration-gap-remediation",
+      "action": "repair",
+      "target": "docs/ + root agent surface",
+      "detail": "Restored the P1-P19 build-slice ladder (roadmap) + per-slice prompts P13-P19 (follow-up-prompts); re-wired design references (Usage Map + read-directly-not-MCP; CLAUDE.md INV-014 mislabel fixed); restored README section-A-G canonical pointers; repaired ~200 stale pre-migration path references; restored condensed content (test-design annex, DoD checks, epic goals/sizes, team rosters); added D-11/D-12/D-13. Validator-green."
     }
   ]
 }

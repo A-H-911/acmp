@@ -2,7 +2,7 @@
 
 **Purpose:** Define what documentation lives where, in what format, owned by whom, updated on what trigger — so the planning package, the engineering codebase, and the in-app committee knowledge base remain consistent, non-redundant, and never go stale.
 
-> Stack: docs-as-code in VCS; MADR ADRs in `adr/`; Swagger/OpenAPI auto-generated; per-module READMEs; arc42 architecture doc; EN/AR user guides; in-app wiki (Markdown, Knowledge module) for committee knowledge. Tarseem diagram JSON specs versioned in repo.
+> Stack: docs-as-code in VCS; MADR ADRs in `docs/adrs/`; Swagger/OpenAPI auto-generated; per-module READMEs; arc42 architecture doc; EN/AR user guides; in-app wiki (Markdown, Knowledge module) for committee knowledge. Tarseem diagram JSON specs versioned in repo.
 
 ---
 
@@ -21,9 +21,9 @@
 
 | Doc type | Location | Format | Owner | Update trigger |
 |---|---|---|---|---|
-| **Planning package** (Deliverables 1–59) | `/docs/00-*.md` … `/docs/45-*.md` | Markdown | Lead secretary | Requirement / decision change; phase gate |
+| **Planning package** (Deliverables 1–59) | the foldered registers under `/docs` (see `docs/README.md` §Package layout) | Markdown | Lead secretary | Requirement / decision change; phase gate |
 | **arc42 architecture doc** | `/docs/arc42/` (generated from `/docs/domain/architecture-detail.md`) | Markdown | Lead engineer | Architecture decision change (ADR update) |
-| **ADRs** | `/adr/ADR-NNNN-*.md` | MADR Markdown | Decision proposer + lead | New architectural decision; superseding |
+| **ADRs** | `/docs/adrs/adr-NNNN-*.md` | MADR Markdown | Decision proposer + lead | New architectural decision; superseding |
 | **Per-module README** | `/src/Modules/<Module>/README.md` | Markdown | Module lead | Module interface change; new features |
 | **Shared Kernel README** | `/src/BuildingBlocks/Acmp.Shared/README.md` | Markdown | Lead engineer | Shared contract / interface change |
 | **API reference (OpenAPI)** | `/docs/api/openapi.json` + served via Swagger UI at `/swagger` | OpenAPI 3.1 JSON | Auto-generated (CI) | Any endpoint change (auto on build) |
@@ -83,7 +83,7 @@ Source: adr.github.io/madr — adapted to a shorter "MADR-lite" form suited to a
 
 | Step | Action |
 |---|---|
-| **Create** | Copy `adr/template.md` → `adr/ADR-NNNN-<kebab-title>.md`; set status `Proposed` |
+| **Create** | Create `docs/adrs/adr-NNNN-<kebab-title>.md` following the conventions in `docs/adrs/README.md`; set status `Proposed` |
 | **Propose** | Open a PR; link to relevant FR/NFR/OQ in planning package |
 | **Accept** | PR merged; status → `Accepted`; date updated |
 | **Supersede** | New ADR references old one: `Superseded by ADR-MMMM`; old ADR updated to `Superseded by ADR-MMMM` status — **original text preserved** (immutable after Accepted, per ADR-0009 philosophy) |
@@ -97,7 +97,7 @@ Source: adr.github.io/madr — adapted to a shorter "MADR-lite" form suited to a
 
 | Type | Location | Tool |
 |---|---|---|
-| **Repo ADRs** (engineering decisions about the ACMP platform itself) | `/adr/ADR-NNNN-*.md` | MADR Markdown in VCS |
+| **Repo ADRs** (engineering decisions about the ACMP platform itself) | `/docs/adrs/adr-NNNN-*.md` | MADR Markdown in VCS |
 | **In-app ADRs** (committee governance decisions about org architecture, recorded in ACMP) | Knowledge module / Governance module (entities with `ADR-` prefix per README §F) | The ACMP application itself |
 
 These are **distinct** — do not conflate. Repo ADRs govern how ACMP is built; in-app ADRs are the committee's governance output that ACMP exists to produce.
@@ -200,7 +200,7 @@ New engineers need, in this reading order:
 1. `README.md` (root) — what ACMP is, quick-start commands.
 2. `CLAUDE.md` — project map, conventions, guardrails (Claude Code agent also reads this).
 3. `docs/domain/architecture-detail.md` — macro-architecture, module boundaries.
-4. `adr/` — why key decisions were made.
+4. `docs/adrs/` — why key decisions were made.
 5. `src/Modules/<assigned-module>/README.md` — module-specific context.
 6. `CONTRIBUTING.md` — branching, PR rules, code style.
 7. `docs/domain/deployment.md` — how to run the stack locally.
@@ -224,7 +224,7 @@ The planning package (this package, `acmp-plan/`) is not the application repo. O
 | `docs/domain/deployment.md` | → `deploy/README.md` + Dockerfiles + Compose files |
 | `docs/validation/test-strategy.md` | → `docs/testing-strategy.md` + encoded as test patterns in code |
 | `docs/domain/documentation-plan.md` | → `docs/documentation-plan.md` + triggers CLAUDE.md and per-module README templates |
-| `execution-handoff/initial-prompt.md` | → Used once to bootstrap Claude Code; not stored in app repo |
+| `docs/handoff/` prompts | → Orient and drive Claude Code sessions (in-repo since the Keystone migration; the original `execution-handoff/` bootstrap is retired) |
 | `design-handoff/` | → Submitted to Claude Design; outputs stored in `docs/design/` |
 | `docs/validation/acceptance-criteria.md` | → Encoded as test `DisplayName` tags in test projects |
 | `docs/requirements/functional.md` | → Referenced as `FR-###` in backlog/issue tracker |

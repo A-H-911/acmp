@@ -57,4 +57,4 @@ Concretely:
 - Resolves **ASM-001** (`docs/risks/risk-register.md`) as *false → mitigated by bundling Keycloak*. Closes **RISK-001** (claim-mapping coordination with an external Keycloak admin).
 - New open decisions (added to `docs/decisions/open-decision-register.md`): **OQ-038** Keycloak datastore (PH-0 spike), **OQ-039** future upstream federation/brokering (deferred), **OQ-040** bundled SQL Server production edition/licensing (deploy phase).
 - Supersedes the federation aspect of **ADR-0004** (OIDC + PKCE + claims-based roles + no self-registration remain in force); amends **ADR-0013** (the "two external exceptions" carve-out is withdrawn — all runtime dependencies are bundled) and **CON-001** (now: zero external runtime services in v1).
-- Rollout: applied as a **change-set after P4 completes** (`execution-handoff/CHANGE-001-keycloak-ownership.md`); P4 code is unaffected.
+- Rollout: applied as a **change-set after P4 completes** (recorded as `CHG-001` in `docs/execution/deferred-work-register.md`; the original `CHANGE-001-keycloak-ownership.md` change record is in git history); P4 code is unaffected.

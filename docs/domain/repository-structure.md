@@ -29,7 +29,7 @@ acmp/                                   ← repository root
 │
 ├── docs/                               ← Planning package + arc42 + runbooks (§6)
 │
-├── adr/                                ← MADR Architecture Decision Records (§7)
+├── docs/adrs/                          ← MADR Architecture Decision Records (§7)
 │
 ├── deploy/                             ← Dockerfiles, Compose, env samples, secrets placeholder (§8)
 │
@@ -279,8 +279,8 @@ These run in the CI unit-test stage; any violation → build failure.
 
 ```
 docs/
-├── 00-executive-summary.md
-├── 01-organization-and-problem.md
+├── docs/01-executive-summary.md
+├── docs/domain/organization-and-problem.md
 ├── … (complete planning package: docs/00-charter.md through docs/execution/checkpoints.md)
 ├── arc42/                              ← arc42 architecture document (generated from docs/domain/architecture-detail.md)
 ├── runbooks/
@@ -296,10 +296,10 @@ docs/
 
 ---
 
-## 7. `adr/` — Architecture Decision Records (MADR)
+## 7. `docs/adrs/` — Architecture Decision Records (MADR)
 
 ```
-adr/
+docs/adrs/
 ├── README.md                           ← ADR process: how to create, number, supersede
 ├── template.md                         ← MADR-lite template (see docs/domain/documentation-plan.md)
 ├── ADR-0001-modular-monolith.md
@@ -380,7 +380,7 @@ scripts/
 ├── ISSUE_TEMPLATE/
 │   ├── bug-report.md
 │   └── feature-request.md
-└── CODEOWNERS                          ← Lead = owner of deploy/, adr/, docs/
+└── CODEOWNERS                          ← Lead = owner of deploy/, docs/ (incl. docs/adrs/)
 ```
 
 ---
@@ -411,4 +411,4 @@ scripts/
 
 ## Traceability
 
-Links: `docs/domain/architecture-detail.md` §6 (module boundaries, dependency rule) · `docs/validation/test-strategy.md` §5 (ArchUnit rules) · `docs/domain/devsecops-plan.md` §1 (branching), §3 (workflow files) · `docs/domain/deployment.md` §2 (Compose, Dockerfiles) · `docs/domain/documentation-plan.md` (docs/ + adr/ conventions) · `../README.md` §B (canonical modules) · execution-handoff/agent-guardrails.md (agent reads CLAUDE.md first).
+Links: `docs/domain/architecture-detail.md` §6 (module boundaries, dependency rule) · `docs/validation/test-strategy.md` §5 (ArchUnit rules) · `docs/domain/devsecops-plan.md` §1 (branching), §3 (workflow files) · `docs/domain/deployment.md` §2 (Compose, Dockerfiles) · `docs/domain/documentation-plan.md` (docs/ + docs/adrs/ conventions) · `../README.md` §B (canonical modules) · `docs/requirements/invariant-register.md` (binding agent constraints; the agent reads CLAUDE.md → AGENTS.md first).

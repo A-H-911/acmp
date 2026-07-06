@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.0.0
+version: 1.1.0
 updated: 2026-07-06
 owner: Claude Code execution agent
 generation: derived
@@ -12,9 +12,9 @@ Derived snapshot of where the build is. Regenerated each update cycle from the [
 
 ## Current position
 
-- **Phase:** PH-1 (MVP Governance) **complete**; PH-2 (Governance Expansion) **substantially delivered**.
-- **Latest slice:** P12 (Dashboards & Reports) complete, including its adversarial audit remediation. `main` is green and deployable.
-- **Next:** remaining PH-2 backlog (Webex adapter, Tarseem sidecar, Knowledge/Research) and cross-cutting hardening (P16–P18), or the queued Governance lifecycle-buttons follow-up.
+- **Phase:** PH-1 (MVP Governance) **complete**; PH-2 (Governance Expansion) **substantially delivered**. The canonical build-slice ladder (`P1…P19`) is in [planning/roadmap.md](../planning/roadmap.md) §Build-slice ladder.
+- **Latest slice:** P12 (Dashboards & Reports) complete, including its adversarial audit remediation; followed by the Keystone migration (PR #97) and its **gap remediation** (execution ladder + design wiring + link integrity restored — see the progress log). `main` is green and deployable.
+- **Next:** remaining PH-2 backlog via the per-slice prompts in [handoff/follow-up-prompts.md](../handoff/follow-up-prompts.md) — **P13** Webex adapter · **P14** Tarseem sidecar + Diagrams · **P15** Research/Knowledge — or cross-cutting hardening (**P16–P19**), or the queued Governance lifecycle-buttons follow-up.
 
 ## Delivered (by module / slice)
 
@@ -34,5 +34,5 @@ The package is under Keystone v1.0.0 governance. Critical gates are confirmed by
 ## Open items
 
 - Accepted-open questions: [decisions/open-question-register.md](../decisions/open-question-register.md) (the `Deferred` rows carry applied defaults).
-- Deferred work: [execution/deferred-work-register.md](../execution/deferred-work-register.md) (`D-01…D-10`; Webex/AI/Gantt/etc.).
+- Deferred work: [execution/deferred-work-register.md](../execution/deferred-work-register.md) (`D-01…D-13`; Webex/AI/Gantt/Tarseem/email/per-ballot-chaining/etc.).
 - Design-update-owed items from the P11/P12 audits are logged in the progress log (reference-design divergences blessed by the operator; the design is to be updated to match).

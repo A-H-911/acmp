@@ -7,7 +7,7 @@ owner: lead-secretary
 
 # Open-Question Register — ACMP
 
-These entries mirror `docs/decisions/open-decision-register.md §B`. Every OQ carries a recommended default so the build is never blocked; the **Resolution** column is that applied default (or the recorded resolution where the item is settled). **Blocking? = Yes** marks the eight PH-0 hard blockers the org must answer before PH-1 coding starts (OQ-003, OQ-020, OQ-024, OQ-030, OQ-031, OQ-032, OQ-034, OQ-038); all others carry a working default so **No**. **Status = Approved** where the doc records the item as resolved/applied; **Deferred** where it stays open awaiting organizational input (its default is applied meanwhile). Category grouping is preserved as subheadings.
+These entries carry the open questions formerly recorded in the pre-migration `docs/42-open-decisions.md §B`. Every OQ carries a recommended default so the build is never blocked; the **Resolution** column is that applied default (or the recorded resolution where the item is settled). **Blocking? = Yes** marks the eight PH-0 hard blockers the org must answer before PH-1 coding starts (OQ-003, OQ-020, OQ-024, OQ-030, OQ-031, OQ-032, OQ-034, OQ-038); all others carry a working default so **No**. **Status = Approved** where the doc records the item as resolved/applied; **Deferred** where it stays open awaiting organizational input (its default is applied meanwhile). Category grouping is preserved as subheadings.
 
 ### Identity & Access
 

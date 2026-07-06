@@ -1,8 +1,8 @@
 # Architecture Committee Management Platform (ACMP) — Planning & Execution Package
 
-**Status:** Draft v1.0 · **Date:** 2026-06-24 · **Audience:** Engineering / execution (the lead secretary + the Claude Code execution agent) · **Downstream executor:** Claude Code · **Design executor:** Claude Design
+**Status:** Approved · **Date:** 2026-06-24 · **Updated:** 2026-07-06 (Keystone v1.0.0 package layout; build shipped through P12) · **Audience:** Engineering / execution (the lead secretary + the Claude Code execution agent) · **Downstream executor:** Claude Code
 
-This repository is a **planning and handoff package**, not application code. It defines *what* to build, *why*, *which decisions are settled*, *which remain open*, and *how* an execution agent should build it without overengineering. It deliberately follows the **Keystone** methodology and identifier scheme (see `docs/domain/keystone-analysis.md`) so the package is internally consistent and traceable.
+This repository holds the **ACMP application** (`src/`, `deploy/`, `tests/`) together with its **planning & governance package** (`docs/` — a Keystone v1.0.0 package). The package defines *what* to build, *why*, *which decisions are settled*, *which remain open*, and *how* an execution agent should build it without overengineering; it follows the **Keystone** methodology and identifier scheme (see `docs/domain/keystone-analysis.md`) so it is internally consistent and traceable.
 
 > **One-line product definition:** A focused, auditable, bilingual (EN/AR) web platform that is the single system of record for the Architecture Committee — from topic intake through backlog, agenda, meeting, minutes, voting, decision, ADR, action, risk, dependency, and traceability — replacing the current text-file process. It is *architecture governance*, not generic project management.
 
@@ -10,11 +10,11 @@ This repository is a **planning and handoff package**, not application code. It 
 
 ## How to use this package
 
-1. **Read this README fully.** It is the canonical reference: glossary, roles, modules, entities, IDs, status models, and the settled technology decisions. Every other document defers to it.
-2. **For context and rationale**, read `docs/` in numeric order.
-3. **For the build**, the execution agent reads `execution-handoff/initial-prompt.md` first, then obeys `execution-handoff/agent-guardrails.md` and the generated repo's `CLAUDE.md`.
-4. **For UI**, submit `design-handoff/` to Claude Design.
-5. **Decisions** are recorded as ADRs in `adr/`. Anything unsettled is in `docs/decisions/open-decision-register.md` — these are flagged, never hidden.
+1. **Read this README fully.** It is the GitHub landing copy of the canonical reference: glossary, roles, modules, entities, IDs, status models, and the settled technology decisions. The package entry point is [`docs/README.md`](docs/README.md).
+2. **For context and rationale**, follow the reading order in [`docs/README.md`](docs/README.md) (charter → architecture → roadmap → acceptance criteria; deep detail under `docs/domain/`).
+3. **For the build**, the execution agent reads `CLAUDE.md` (which imports `AGENTS.md`), then [`docs/handoff/initial-prompt.md`](docs/handoff/initial-prompt.md); the binding constraints are the invariants in [`docs/requirements/invariant-register.md`](docs/requirements/invariant-register.md).
+4. **For UI**, read the local `.dc.html` design references in [`ACMP product context/`](ACMP%20product%20context/) **directly with file tools** (INV-014); the Usage Map is the per-screen index. (The original `design-handoff/` Claude-Design route is archived/superseded.)
+5. **Decisions** are recorded as ADRs in [`docs/adrs/`](docs/adrs/). Anything unsettled is in `docs/decisions/open-question-register.md` — these are flagged, never hidden.
 
 **Conventions.** Facts are cited. Recommendations are labelled **Recommendation**. Unverified claims are marked `[unverified]`. Assumptions are `ASM-###` and listed in `docs/risks/risk-register.md`. Nothing in this package should be treated as code-ready until its acceptance criteria (`docs/validation/acceptance-criteria.md`) are defined.
 
@@ -87,17 +87,17 @@ Everything else the platform needs, it ships in its own containers.
 | 48 | Acceptance criteria | `docs/validation/acceptance-criteria.md` |
 | 49 | Risks, assumptions, constraints, dependencies | `docs/risks/risk-register.md` |
 | 50 | Open decisions requiring org input | `docs/decisions/open-decision-register.md` |
-| 51 | ADRs for major decisions | `docs/adrs/adr-0001…ADR-0014` (incl. ADR-0013 self-contained, ADR-0014 jobs/observability) |
-| 52 | Claude Design input package | `design-handoff/claude-design-input-package.md` |
-| 53 | Claude Design prompts | `design-handoff/claude-design-prompts.md` |
-| 54 | Claude Code execution package | `execution-handoff/claude-code-execution-package.md` |
-| 55 | Initial Claude Code prompt | `execution-handoff/initial-prompt.md` |
-| 56 | Follow-up prompts per phase | `execution-handoff/phase-prompts.md` |
+| 51 | ADRs for major decisions | `docs/adrs/adr-0001…adr-0022` (incl. ADR-0013 self-contained, ADR-0015 self-hosted Keycloak) |
+| 52 | Claude Design input package | `design-handoff/claude-design-input-package.md` *(archived — superseded by direct-read of `ACMP product context/`)* |
+| 53 | Claude Design prompts | `design-handoff/claude-design-prompts.md` *(archived)* |
+| 54 | Claude Code execution package | distributed post-migration: `AGENTS.md` + `docs/handoff/initial-prompt.md` + the registers *(original file in git history)* |
+| 55 | Initial Claude Code prompt | `docs/handoff/initial-prompt.md` |
+| 56 | Follow-up prompts per phase | `docs/handoff/follow-up-prompts.md` (per-slice prompts; ladder in `docs/planning/roadmap.md`) |
 | 57 | Definition of Done | `docs/execution/definition-of-done.md` |
 | 58 | Release-readiness checklist | `docs/execution/checkpoints.md` |
 | 59 | Post-release governance & operating model | `docs/domain/post-release-operating-model.md` |
-| + | Agent guardrails | `execution-handoff/agent-guardrails.md` |
-| + | Generated-repo agent context | `CLAUDE.md` |
+| + | Agent guardrails | `docs/requirements/invariant-register.md` (`INV-001…014`; former guardrails 1:1) |
+| + | Generated-repo agent context | `CLAUDE.md` → `AGENTS.md` |
 
 ---
 
@@ -180,4 +180,4 @@ Architecture Committee · Backlog · Topic · Agenda · Meeting · Minutes (MoM)
 6. **Auditable & immutable where it matters.** Votes and issued decisions cannot be silently changed.
 7. **Bilingual and RTL are first-class**, not bolted on.
 8. **Progressive delivery.** Prove the core committee loop (intake→decision→action) before expanding.
-9. **Explicit domain concepts over generic abstraction
+9. **Explicit domain concepts over generic abstraction.** Prefer named committee concepts (Topic, Decision, ADR, Invariant) to speculative generic frameworks; if reaching for an enterprise pattern, justify it against an actual requirement or don't add it. *(Ending reconstructed 2026-07-06 — the original line was truncated in every historical copy; wording follows the execution package §15 and INV-012.)*

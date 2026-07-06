@@ -1,6 +1,6 @@
 ---
 name: phase-prompt-standard-footer
-description: "For every ACMP phase prompt the user pastes, also satisfy the phase-prompts.md Standard Footer."
+description: "For every ACMP phase prompt the user pastes, also satisfy the follow-up-prompts.md Standard Footer."
 metadata: 
   node_type: memory
   type: feedback
@@ -8,7 +8,7 @@ metadata:
 ---
 
 For every phase prompt the user pastes for ACMP, also satisfy the **Standard Footer** at the top of
-`/execution-handoff/phase-prompts.md` — even when the pasted prompt does not restate it:
+`/docs/handoff/follow-up-prompts.md` — even when the pasted prompt does not restate it:
 
 - ship unit + integration tests
 - satisfy the relevant `AC-###` (`/docs/validation/acceptance-criteria.md`) and flip its verdict in `/docs/validation/acceptance-audit.md`
@@ -17,7 +17,7 @@ For every phase prompt the user pastes for ACMP, also satisfy the **Standard Foo
 - no secrets in source
 - update `/docs/progress/progress-log.md`
 - conventional commits (small, reviewable)
-- raise an ADR in `/adr` for any new architecture decision
+- raise an ADR in `/docs/adrs` for any new architecture decision
 
 **Why:** these are the project's Definition-of-Done gates (docs/execution/definition-of-done.md; Keystone G-PROGRESS / G-TRACE). The
 per-phase prompts assume the footer applies to every slice without restating it.

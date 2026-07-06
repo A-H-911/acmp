@@ -1,4 +1,4 @@
-# Multi-stage build for the React SPA served by nginx (docs/33).
+# Multi-stage build for the React SPA served by nginx (docs/domain/deployment.md).
 FROM node:22-alpine AS build
 WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./

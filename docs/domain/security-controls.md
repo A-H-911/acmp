@@ -1,6 +1,6 @@
 # 25 — Security Controls (Deliverable 33)
 
-**Purpose:** The ACMP security-control plan — each control has an ID, ties to one or more threats from `24-security-threat-model.md`, maps to OWASP ASVS 5.0 Level 2 (and OWASP Top 10 where applicable), and is sized to a **≤20-user on-prem** deployment, with explicit notes where ASVS L3 would be overkill.
+**Purpose:** The ACMP security-control plan — each control has an ID, ties to one or more threats from `docs/domain/security-threat-model.md`, maps to OWASP ASVS 5.0 Level 2 (and OWASP Top 10 where applicable), and is sized to a **≤20-user on-prem** deployment, with explicit notes where ASVS L3 would be overkill.
 
 > Target: **OWASP ASVS 5.0 L2** (NFR-018). Threat IDs (`T-…`, `AB-…`) and asset IDs (`A…`) are from `24`. ASVS chapter bindings use the published ASVS 5.0 (May 2025) 17-chapter structure (V1–V17); chapter-title bindings are `[unverified]` against a live re-fetch in this environment. OWASP Top 10 (2021) cross-refs as `A0x`. Phase: **P1** = v1 / **P2** = Webex phase / **P3** = AI-extraction phase. Sources: https://owasp.org/www-project-application-security-verification-standard/ · https://github.com/OWASP/ASVS · https://owasp.org/Top10/ · https://genai.owasp.org (LLM Top 10).
 
@@ -12,7 +12,7 @@
 2. **Right-size to L2, not L3.** This is a small, internal, on-prem, low-traffic, high-sensitivity system. We meet **L2** in full. We explicitly **do not** adopt L3-only burdens that buy little here: HSM/key-vault hardware, full anti-automation/bot-defence tiers, exhaustive memory-safety proofs, or client-side cert pinning. Each such omission is noted inline as **[L3-skip]** with the reason. Insider-risk controls (SoD, immutability, audit) are nonetheless implemented at L3-grade because they are the actual threat.
 3. **The IdP owns authN strength.** ACMP self-hosts Keycloak (ADR-0015); MFA, password policy, and account lockout are configured in ACMP's **own** Keycloak realm, not re-implemented in ACMP app code. ACMP validates tokens and enforces authZ.
 4. **Insider-first.** Where prevention can't stop a privileged insider (P3), add **detection** (Seq anomaly alerting) and **non-repudiation** (append-only, attributed, optionally hash-chained audit).
-5. **No immutability bypass for any role** — including Administrator and Chairman (`10-permission-role-matrix.md` §E.5).
+5. **No immutability bypass for any role** — including Administrator and Chairman (`docs/domain/permission-role-matrix.md` §E.5).
 
 ---
 
@@ -34,7 +34,7 @@
 
 | Control-ID | Control | Threat addressed | ASVS / Top 10 | Phase |
 |---|---|---|---|---|
-| **C-AUTHZ-01** | **ASP.NET Core policy-based authorization**, deny-by-default. Each action maps to a named policy (`Policy.Vote.Cast`, `Policy.Decision.ChairApprove`, …) per the `10-permission-role-matrix.md` capability matrix. Absence of an explicit Allow = Deny. | T-02, T-07, AB-3 | V8 · A01 | P1 |
+| **C-AUTHZ-01** | **ASP.NET Core policy-based authorization**, deny-by-default. Each action maps to a named policy (`Policy.Vote.Cast`, `Policy.Decision.ChairApprove`, …) per the `docs/domain/permission-role-matrix.md` capability matrix. Absence of an explicit Allow = Deny. | T-02, T-07, AB-3 | V8 · A01 | P1 |
 | **C-AUTHZ-02** | **Resource-based authorization** (`IAuthorizationService.AuthorizeAsync(user, resource, policy)`) for every per-instance decision, so the handler evaluates the **actual** target aggregate (the `Topic`/`Vote`/`Action`) for relationship + scope + SoD — preventing IDOR/horizontal access. | T-07, T-08, AB-3 | V8 · A01 | P1 |
 | **C-AUTHZ-03** | **Stream-scope ABAC** (`StreamScopeRequirement`): a `Member`/`Reviewer`/`Submitter` may act only on topics intersecting their assigned streams; `Chairman`/`Secretary`/`Auditor`/`Administrator` are committee-wide (read). Default visibility per OQ-AUTH-001. | T-08, AB-6 | V8 · A01 | P1 |
 | **C-AUTHZ-04** | **Confidentiality ABAC** (`ConfidentialityRequirement`): `Restricted` topics (security findings, sensitive partner matters) visible only to Chair/Coord, explicit grantees, Owner/Assignees, and Auditor (read); excluded from default stream visibility **and from search results** for non-grantees. Confidentiality narrows, never widens, scope. | T-08, AB-6, AB-8 | V8, V14 · A01 | P1 |
@@ -57,7 +57,7 @@
 
 | Control-ID | Control | Threat addressed | ASVS / Top 10 | Phase |
 |---|---|---|---|---|
-| **C-API-01** | **Minimal authenticated surface:** every endpoint authenticated+authorized except `/health` and OIDC callback (NFR-020); REST verbs match intent; no debug/admin endpoints exposed through nginx beyond the single `/api` route (`15-architecture.md` §9). | T-02 | V4 · A01 | P1 |
+| **C-API-01** | **Minimal authenticated surface:** every endpoint authenticated+authorized except `/health` and OIDC callback (NFR-020); REST verbs match intent; no debug/admin endpoints exposed through nginx beyond the single `/api` route (`docs/domain/architecture-detail.md` §9). | T-02 | V4 · A01 | P1 |
 | **C-API-02** | **Export endpoints are scoped by role** (`Report.Export`): Auditor/Chair/Secretary full; Member/Reviewer scoped; Submitter own-only (`10` row 30). Bulk/list responses honour stream-scope + confidentiality. | T-10, AB-6 | V8, V4 · A01 | P1 |
 | **C-API-03** | **Basic rate-limiting** (ASP.NET rate-limiter / nginx `limit_req`) on auth, search, and export endpoints to blunt scripted enumeration/export and brute force. **Proportional:** thresholds tuned for ~15 concurrent users, not anti-DDoS. | T-10, T-22, AB-6 | V2 (anti-automation, L2-light) · A04 | P1 |
 | **C-API-04** | **Strict request validation & content negotiation:** reject unexpected content types, enforce max body/JSON depth/array size, validate all DTOs (`C-INP-01`); stable error contract (`C-WEB-03`). | T-12, T-13, T-22 | V2, V4 | P1 |
@@ -112,7 +112,7 @@
 
 | Control-ID | Control | Threat addressed | ASVS / Top 10 | Phase |
 |---|---|---|---|---|
-| **C-AUDIT-01** | **Append-only `AuditEvent`:** no UPDATE/DELETE triggers, constraints, or ORM paths target the audit table (NFR-040); the platform exposes only an internal recorder — **no write/delete API** for any role. Full design in `26-audit-and-records-management.md`. | T-06, T-21, AB-5 | V16 · A09 | P1 |
+| **C-AUDIT-01** | **Append-only `AuditEvent`:** no UPDATE/DELETE triggers, constraints, or ORM paths target the audit table (NFR-040); the platform exposes only an internal recorder — **no write/delete API** for any role. Full design in `docs/domain/audit-and-records.md`. | T-06, T-21, AB-5 | V16 · A09 | P1 |
 | **C-AUDIT-02** | **Every state transition writes one audit row in the same DB transaction** (NFR-042) — no transition without an audit entry is a defect. Votes (each ballot, open/close), decisions, ADRs, MoM, role grants all covered. | T-04, T-05, T-21, AB-1 | V16 · A09 | P1 |
 | **C-AUDIT-03** | **Server-derived, attributed, correlated events:** actor = validated `sub` (never client-supplied); server-set timestamps (`OccurredAt`, `IssuedAt`); `CorrelationId`, `Action`, `SubjectType/Id`, `Outcome`, before/after. Defeats back-dating/impersonation in the record. | T-05, T-11, AB-2, AB-7 | V16 · A09 | P1 |
 | **C-AUDIT-04** | **DB-permission segregation:** the application's SQL principal has **no DELETE/UPDATE grant on `audit.*`** (and none on closed-vote/issued-decision rows); **administrators cannot delete audit** (`26`). Insert-only at the database, not merely the app layer. | T-06, AB-5 | V16, V13 · A09 | P1 |
@@ -167,7 +167,7 @@
 
 | Control-ID | Control | Threat addressed | ASVS / Top 10 | Phase |
 |---|---|---|---|---|
-| **C-WX-01** | **Webhook signature verification:** validate the Webex webhook **HMAC signature** (shared secret) and reject/replay-protect unsigned or mismatched payloads before processing (`18-webex-feasibility.md`). | T-18 | V4, V12 · A08 | P2 |
+| **C-WX-01** | **Webhook signature verification:** validate the Webex webhook **HMAC signature** (shared secret) and reject/replay-protect unsigned or mismatched payloads before processing (`docs/domain/webex-feasibility.md`). | T-18 | V4, V12 · A08 | P2 |
 | **C-WX-02** | **Least-scope tokens:** OAuth integration (user-scoped) or bot token granted the **minimum scopes** needed (meetings/recordings/messaging); tokens stored as secrets (`C-SEC-01`), rotated (`C-SEC-03`); honour 429 + `Retry-After` (rate limits ~300 req/min). | T-03, T-18 | V13, V4 | P2 |
 | **C-WX-03** | **Adapter isolation:** all Webex calls behind the integration adapter; ACMP **never hard-depends** on Webex; a compromised/abusive integration cannot reach beyond the adapter's contract. Transcript automation is **not assumed** (gated by Webex Assistant, `.context/brief-digest.md` §5.3). | T-18, AB-10 | V15, V4 | P2 |
 
@@ -259,9 +259,9 @@
 |---|---|---|
 | **OQ-SEC-005** | Confirm SAST/DAST/secret/image-scan tool choices and CI gating thresholds (which severities block merge/release). | Semgrep/SonarQube (SAST), ZAP (DAST), gitleaks (secrets), Trivy (image); block on High+. |
 | **OQ-SEC-006** | Confirm whether a `Content-Security-Policy` strict enough to forbid inline scripts is compatible with the chosen React build/runtime (nonce/hash strategy). | Strict CSP with hashes/nonces; validate during build. |
-| (see also) | OQ-SEC-001..004 and RISK-SEC-001..002 from `24-security-threat-model.md`. | — |
+| (see also) | OQ-SEC-001..004 and RISK-SEC-001..002 from `docs/domain/security-threat-model.md`. | — |
 
 ---
 
 ## Traceability
-Implements **Deliverable 33**. Every control ties to a threat (`T-…`/`AB-…`) and asset (`A…`) in `24-security-threat-model.md` and to an OWASP ASVS 5.0 chapter (V1–V17) + OWASP Top 10 (2021)/LLM Top 10. Authorization/SoD/immutability policy realized in `10-permission-role-matrix.md` §E; data-protection mechanics in `16-data-architecture-and-model.md` §1.6/§1.8/§1.10; audit/records design in `26-audit-and-records-management.md`. NFRs satisfied: NFR-018 (ASVS L2), NFR-019 (TLS), NFR-020 (authN/Z surface), NFR-021 (injection), NFR-022 (CSRF), NFR-023 (session), NFR-024 (secrets), NFR-025/027 (recordings/transcripts), NFR-026 (LLM01), NFR-028/029 (privacy/attributed voting), NFR-040/041/042 (audit/immutability), NFR-046 (alerting), NFR-051 (CVEs), NFR-054 (image size), NFR-056..058 (backup/DR). Settled decisions: ADR-0004 (Keycloak/OIDC), ADR-0005 (notifications/channels), ADR-0009 (audit/immutability), ADR-0010 (attributed voting), ADR-0006/0007 (Tarseem/Keystone untrusted inputs). Webex specifics: `18-webex-feasibility.md`. Standards: `22-standards-and-best-practices.md`. New: OQ-SEC-005..006 (plus OQ-SEC-001..004, RISK-SEC-001..002 from `24`).
+Implements **Deliverable 33**. Every control ties to a threat (`T-…`/`AB-…`) and asset (`A…`) in `docs/domain/security-threat-model.md` and to an OWASP ASVS 5.0 chapter (V1–V17) + OWASP Top 10 (2021)/LLM Top 10. Authorization/SoD/immutability policy realized in `docs/domain/permission-role-matrix.md` §E; data-protection mechanics in `docs/domain/data-architecture.md` §1.6/§1.8/§1.10; audit/records design in `docs/domain/audit-and-records.md`. NFRs satisfied: NFR-018 (ASVS L2), NFR-019 (TLS), NFR-020 (authN/Z surface), NFR-021 (injection), NFR-022 (CSRF), NFR-023 (session), NFR-024 (secrets), NFR-025/027 (recordings/transcripts), NFR-026 (LLM01), NFR-028/029 (privacy/attributed voting), NFR-040/041/042 (audit/immutability), NFR-046 (alerting), NFR-051 (CVEs), NFR-054 (image size), NFR-056..058 (backup/DR). Settled decisions: ADR-0004 (Keycloak/OIDC), ADR-0005 (notifications/channels), ADR-0009 (audit/immutability), ADR-0010 (attributed voting), ADR-0006/0007 (Tarseem/Keystone untrusted inputs). Webex specifics: `docs/domain/webex-feasibility.md`. Standards: `docs/domain/standards-and-best-practices.md`. New: OQ-SEC-005..006 (plus OQ-SEC-001..004, RISK-SEC-001..002 from `24`).

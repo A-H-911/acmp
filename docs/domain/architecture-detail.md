@@ -2,7 +2,7 @@
 
 **Purpose:** The architecture core of ACMP — system context, container topology, the confirmed macro-architecture (modular monolith), module boundaries, backend/frontend/cross-cutting architecture, integration summary, and a phasing table — structured along **arc42** and using **C4** levels for diagrams.
 
-> Structure follows arc42 (§5.5 standards). Settled technology decisions are in `../README.md` §A and are **binding**; this document explains and applies them, it does not re-open them. Entities/modules/IDs from `../README.md` §B/§F and `11-domain-model.md`. NFR IDs from `08-non-functional-requirements.md`. External facts are cited to the digest §6 and marked `[unverified]` where not from a cited source. Diagrams are authored as Mermaid (renderable in Markdown); per ADR-0006 the C4/sequence diagrams **may also be authored as Tarseem JSON specs** and rendered as versioned artifacts.
+> Structure follows arc42 (§5.5 standards). Settled technology decisions are in `../README.md` §A and are **binding**; this document explains and applies them, it does not re-open them. Entities/modules/IDs from `../README.md` §B/§F and `docs/domain/domain-model.md`. NFR IDs from `docs/requirements/non-functional.md`. External facts are cited to the digest §6 and marked `[unverified]` where not from a cited source. Diagrams are authored as Mermaid (renderable in Markdown); per ADR-0006 the C4/sequence diagrams **may also be authored as Tarseem JSON specs** and rendered as versioned artifacts.
 
 ---
 
@@ -10,7 +10,7 @@
 
 ACMP is the single, auditable, bilingual (EN/AR) system of record for one Architecture Committee — intake → backlog → agenda → meeting → minutes → vote → decision → ADR → action → risk → dependency → traceability. It replaces a text-file process. It is **architecture governance, not generic project management** (`../README.md` guiding principle 1).
 
-**Top quality goals** (driving the architecture; full set in `08-non-functional-requirements.md`):
+**Top quality goals** (driving the architecture; full set in `docs/requirements/non-functional.md`):
 
 | # | Quality goal | Architectural driver | Key NFRs |
 |---|---|---|---|
@@ -21,7 +21,7 @@ ACMP is the single, auditable, bilingual (EN/AR) system of record for one Archit
 | Q5 | **Security (sensitive gov data)** | OWASP ASVS L2; Keycloak OIDC; ABAC; pre-signed URLs | NFR-018..029 |
 | Q6 | **Traceability** | typed `Relationship` edge graph; SQL traversal | (ADR-0008) |
 
-**Stakeholders:** see `04-stakeholders-and-roles.md`. The architecture-relevant actors are enumerated in §3.
+**Stakeholders:** see `docs/domain/stakeholders.md`. The architecture-relevant actors are enumerated in §3.
 
 ---
 
@@ -82,7 +82,7 @@ flowchart TB
 
 Solid arrows = v1 runtime dependencies. Dashed = deferred/optional/pluggable (never hard-coded; always behind an adapter — ADR-0005/0006/0007).
 
-**Actor → primary intent** (architecture-relevant; full matrix in `10-permission-role-matrix.md`):
+**Actor → primary intent** (architecture-relevant; full matrix in `docs/domain/permission-role-matrix.md`):
 
 | Actor | Primary interaction with ACMP |
 |---|---|
@@ -204,7 +204,7 @@ The 16 modules (`../README.md` §B), grouped. Each is a bounded context = a proj
 **Core domain (11):** Membership · Topics · Meetings · Decisions · Actions · Risks · Dependencies · Governance (ADRs + Invariants) · Research · Knowledge · Diagrams
 **Cross-cutting / platform (5):** Notifications · Reporting · Search & Traceability · Audit & Records · **Platform (Shared Kernel)**
 
-| Module | Aggregate roots (from `11-domain-model.md`) | SQL schema | Owns |
+| Module | Aggregate roots (from `docs/domain/domain-model.md`) | SQL schema | Owns |
 |---|---|---|---|
 | Membership | `User`, `Committee` | `membership` | Role, Permission, CommitteeMembership, Stream, System, Service |
 | Topics | `Topic`, `TopicType` | `topics` | Backlog (view), topic-level ProgressUpdate |
@@ -225,7 +225,7 @@ The 16 modules (`../README.md` §B), grouped. Each is a bounded context = a proj
 
 ### 6.2 The dependency rule (enforced)
 
-**A module may not read another module's tables.** Modules communicate only via in-process **public contracts** (interfaces / MediatR commands & queries) or **domain events** (ADR-0001, `11-domain-model.md` §B). Cross-aggregate references are **by id only** — never EF navigation across a module boundary. Polymorphic hosts (`Comment`, `Attachment`, `Relationship`, `AuditEvent`) use a soft `(SubjectType, SubjectId)` reference precisely so they create **no FK coupling** that would violate isolation.
+**A module may not read another module's tables.** Modules communicate only via in-process **public contracts** (interfaces / MediatR commands & queries) or **domain events** (ADR-0001, `docs/domain/domain-model.md` §B). Cross-aggregate references are **by id only** — never EF navigation across a module boundary. Polymorphic hosts (`Comment`, `Attachment`, `Relationship`, `AuditEvent`) use a soft `(SubjectType, SubjectId)` reference precisely so they create **no FK coupling** that would violate isolation.
 
 **Shared Kernel** is the one module every other module may depend on (downward only). It holds: ID generation (Guid + human-readable keys, `../README.md` §F), `LocalizedString`, base entity/audit scaffolding, `IClock`, `ICurrentUser`, `IFileStore`, `INotificationChannel` (interface; impls live in Notifications), and Hangfire job infrastructure. **No module may depend "up" or "sideways" into a peer's internals.**
 
@@ -317,7 +317,7 @@ flowchart LR
     slices -. via interfaces .-> I
 ```
 
-- **Domain** has no outward dependencies; it owns aggregate invariants (votes/decisions immutability, status machines per `12-entity-lifecycles.md`).
+- **Domain** has no outward dependencies; it owns aggregate invariants (votes/decisions immutability, status machines per `docs/domain/entity-lifecycles.md`).
 - **Application** = the vertical slices; orchestrates the domain via MediatR; depends on Domain + abstractions only.
 - **Infrastructure** implements persistence (EF Core, schema-per-module) and external adapters; depends inward.
 - **Controllers are thin**: validate auth policy, send a MediatR request, map the result. No business logic in controllers.
@@ -357,11 +357,11 @@ flowchart LR
 
 **Why here.** (b) makes the dependency rule (§6.2) **physically true**: a module's `DbContext` cannot read another schema's tables because it does not map them — boundary violation becomes a compile/runtime impossibility, not a guideline. It keeps cross-module queries in-process and trivial (same database, so the traceability graph traversal and reporting read models still work in plain SQL — ADR-0008, digest §5.6) while avoiding the distributed-tx pain of (c). (a) is rejected: a shared context invites exactly the cross-module reads NFR-047 forbids. (c) is rejected: separate databases break single-transaction immutability (votes + decision + audit must commit atomically) and add operational weight disproportionate to ≤20 users.
 
-**Risks.** Cross-module reporting needs read models, not cross-schema joins in handlers — addressed by the Reporting module's projections (§10.5). Migrations across many contexts need ordering — addressed by forward-only EF migrations run at deploy (see `16-data-architecture-and-model.md` §migration). Devil's-advocate: *"schema-per-module is needless ceremony in one DB"* — it is the cheapest mechanism that makes isolation **enforced rather than aspirational**, and it costs only a schema prefix.
+**Risks.** Cross-module reporting needs read models, not cross-schema joins in handlers — addressed by the Reporting module's projections (§10.5). Migrations across many contexts need ordering — addressed by forward-only EF migrations run at deploy (see `docs/domain/data-architecture.md` §migration). Devil's-advocate: *"schema-per-module is needless ceremony in one DB"* — it is the cheapest mechanism that makes isolation **enforced rather than aspirational**, and it costs only a schema prefix.
 
 ### 7.4 REST API conventions
 
-- **Resource-oriented**, plural nouns: `/api/topics`, `/api/topics/{key}`, `/api/meetings/{key}/agenda`. Human-readable keys in URLs (`TOP-2026-042`) per `../README.md` §F / `14-information-architecture-sitemap.md`.
+- **Resource-oriented**, plural nouns: `/api/topics`, `/api/topics/{key}`, `/api/meetings/{key}/agenda`. Human-readable keys in URLs (`TOP-2026-042`) per `../README.md` §F / `docs/domain/information-architecture.md`.
 - **Verbs** map to lifecycle transitions as sub-resources or actions where REST CRUD is a poor fit, e.g. `POST /api/votes/{key}/close`, `POST /api/decisions/{key}/issue`, `POST /api/topics/{key}/submit` — transitions are explicit, not implicit field edits (immutability — ADR-0009).
 - **Status codes:** 400 validation, 401 no/invalid token, 403 policy/ABAC denied, 404, **409 on illegal transition / mutation of frozen vote/decision** (NFR-041), 422 where semantically richer.
 - **Pagination/filtering/sorting** on all list endpoints (backlog, search, audit) — query params; server-side; P95 targets NFR-002/004.
@@ -392,7 +392,7 @@ React 18 + TypeScript + Vite (ADR-0012). The SPA is a thin, accessible, bilingua
 
 ### 8.1 Structure — feature folders
 
-Mirror the backend modules so navigation and ownership line up with `14-information-architecture-sitemap.md`:
+Mirror the backend modules so navigation and ownership line up with `docs/domain/information-architecture.md`:
 
 ```
 src/
@@ -412,7 +412,7 @@ Each feature folder owns its routes, TanStack Query hooks, and components; cross
 
 ### 8.2 Routing & state
 
-- **Routing:** React Router; deep-linkable canonical artifact routes (`/topics/TOP-2026-042`) valid regardless of entry path (`14-information-architecture-sitemap.md` §1.2). Role-filtered nav rendered from the user's mapped roles; unauthorized routes 404/redirect, never a permission wall.
+- **Routing:** React Router; deep-linkable canonical artifact routes (`/topics/TOP-2026-042`) valid regardless of entry path (`docs/domain/information-architecture.md` §1.2). Role-filtered nav rendered from the user's mapped roles; unauthorized routes 404/redirect, never a permission wall.
 - **Server state:** **TanStack Query** is the source of truth for server data (caching, invalidation, optimistic updates for DnD reorder). This is the bulk of app state.
 - **Client state:** minimal — only genuine UI state (modals, theme, language, live-meeting local buffer). A light store (Zustand or Context) `[unverified — exact lib at build time]`; **no Redux** unless a measured need appears (right-sizing).
 - **Unsaved-work protection:** route-leave guards + autosave (meeting notes debounce, NFR-006) to prevent lost edits (brief UX requirement).
@@ -442,7 +442,7 @@ Each feature folder owns its routes, TanStack Query hooks, and components; cross
 
 - **AuthN:** Keycloak OIDC; API validates the JWT (signature via JWKS, issuer, audience, expiry) on **every** request (NFR-020). No self-registration (ADR-0004).
 - **AuthZ — two layers:**
-  1. **RBAC via ASP.NET policies.** Canonical roles (`../README.md` §C) are **sourced from Keycloak group/realm-role claims** and mapped to ACMP roles; each fine-grained `Permission` maps 1:1 to a named policy (e.g. `Vote.Cast`, `Decision.ChairApprove`) — `10-permission-role-matrix.md`.
+  1. **RBAC via ASP.NET policies.** Canonical roles (`../README.md` §C) are **sourced from Keycloak group/realm-role claims** and mapped to ACMP roles; each fine-grained `Permission` maps 1:1 to a named policy (e.g. `Vote.Cast`, `Decision.ChairApprove`) — `docs/domain/permission-role-matrix.md`.
   2. **ABAC handlers** add **topic/stream scope** and **separation-of-duties** (e.g. verifier ≠ owner; chair-approve ≠ recorder): an `IAuthorizationHandler` evaluates the resource (topic stream, ownership, voting eligibility) against the principal. **Default stream visibility: all committee members may READ all streams**; create/edit gated by role + ownership (ADR/README §C).
 - Enforced uniformly in the MediatR Authorization behavior (§7.2) so no handler is reachable unchecked. Denials are audited (`Auth.Denied`).
 
@@ -456,11 +456,11 @@ Each feature folder owns its routes, TanStack Query hooks, and components; cross
 
 ### 9.4 Reporting (read models + columnstore)
 
-Dashboards/reports run off **read models** in a `reporting` schema with **columnstore indexes** for aggregation (digest §5.6, NFR-013) — no separate analytics DB in v1 (ADR-0003). Read models are projected from domain events (the Reporting module subscribes), keeping reporting queries off the transactional hot tables. Detail in `27-reporting-and-dashboards.md`.
+Dashboards/reports run off **read models** in a `reporting` schema with **columnstore indexes** for aggregation (digest §5.6, NFR-013) — no separate analytics DB in v1 (ADR-0003). Read models are projected from domain events (the Reporting module subscribes), keeping reporting queries off the transactional hot tables. Detail in `docs/domain/reporting-dashboards.md`.
 
 ### 9.5 Notifications (channel abstraction, in-app v1, outbox)
 
-`INotificationChannel` abstraction (ADR-0005). **v1 = in-app notification center only** (no email). **Webex adapter = Phase 2**; email when an SMTP relay exists. Delivery is durable via the **SQL outbox**: the triggering transaction stages a `Notification`/outbox row; a Hangfire job dispatches it; failures retry. Webex is **never hard-coded** and sits behind a **circuit breaker** (§9.10). Strategy in `29-notification-strategy.md`.
+`INotificationChannel` abstraction (ADR-0005). **v1 = in-app notification center only** (no email). **Webex adapter = Phase 2**; email when an SMTP relay exists. Delivery is durable via the **SQL outbox**: the triggering transaction stages a `Notification`/outbox row; a Hangfire job dispatches it; failures retry. Webex is **never hard-coded** and sits behind a **circuit breaker** (§9.10). Strategy in `docs/domain/notification-strategy.md`.
 
 ### 9.6 Background jobs (Hangfire on SQL)
 
@@ -468,7 +468,7 @@ Dashboards/reports run off **read models** in a `reporting` schema with **column
 
 ### 9.7 Audit (append-only + immutability)
 
-`AuditEvent` is **append-only**: no UPDATE/DELETE triggers, constraints, or ORM paths target it (NFR-040). Every state transition writes an audit row **in the same transaction** (NFR-042, §7.2). **Votes and issued decisions are immutable** after their freeze event — mutation attempts return 409 (NFR-041, ADR-0009). Optional hash-chaining for tamper-evidence is a `[unverified]` design option deferred to `26-audit-and-records-management.md`.
+`AuditEvent` is **append-only**: no UPDATE/DELETE triggers, constraints, or ORM paths target it (NFR-040). Every state transition writes an audit row **in the same transaction** (NFR-042, §7.2). **Votes and issued decisions are immutable** after their freeze event — mutation attempts return 409 (NFR-041, ADR-0009). Optional hash-chaining for tamper-evidence is a `[unverified]` design option deferred to `docs/domain/audit-and-records.md`.
 
 ### 9.8 Observability
 
@@ -488,7 +488,7 @@ Dashboards/reports run off **read models** in a `reporting` schema with **column
 
 ### 9.11 Security boundaries (summary)
 
-Single ingress (nginx, TLS termination); internal container traffic TLS ≥1.2 (NFR-019); secrets externalized (NFR-024); OWASP ASVS L2 target (NFR-018); CSRF/anti-forgery (NFR-022); parameterized queries / EF only (NFR-021); LLM inputs (transcripts) treated as untrusted, AI output never auto-committed (NFR-026). Full treatment in `24-security-threat-model.md` / `25-security-controls.md`.
+Single ingress (nginx, TLS termination); internal container traffic TLS ≥1.2 (NFR-019); secrets externalized (NFR-024); OWASP ASVS L2 target (NFR-018); CSRF/anti-forgery (NFR-022); parameterized queries / EF only (NFR-021); LLM inputs (transcripts) treated as untrusted, AI output never auto-committed (NFR-026). Full treatment in `docs/domain/security-threat-model.md` / `docs/domain/security-controls.md`.
 
 ### 9.12 Backup / recovery & scalability
 
@@ -499,7 +499,7 @@ Single ingress (nginx, TLS termination); internal container traffic TLS ≥1.2 (
 
 ## 10. Core-loop sequence (arc42 §6 runtime)
 
-The committee loop **intake → decision → action** (workflows W1, W11, W12, W13 in `13-workflows.md`), showing the modular monolith's in-process module collaboration, the same-transaction audit, and the outbox-backed notification.
+The committee loop **intake → decision → action** (workflows W1, W11, W12, W13 in `docs/domain/workflows.md`), showing the modular monolith's in-process module collaboration, the same-transaction audit, and the outbox-backed notification.
 
 ```mermaid
 sequenceDiagram
@@ -581,10 +581,10 @@ Explicit disposition per capability. Columns: **Initial release** (v1) · **Post
 
 Kept brief to avoid duplication — full treatment in the integration docs:
 
-- **Integration architecture (overall, adapter pattern, contracts):** `17-integration-architecture.md`.
-- **Webex feasibility** (rate limits ~300 req/min; 429+Retry-After; webhooks incl. meetingTranscripts; **transcripts gated by Webex Assistant, not programmatically enableable**; Adaptive Cards v1.3 ≤80 KB; OAuth2/bot): `18-webex-feasibility.md` (digest §5.3).
-- **Tarseem analysis + integration** (schema-driven Python engine, Apache-2.0 v1.0.0; sidecar/CLI; JSON spec = source of truth; deterministic, no network at render; 11 families incl. C4/ER/sequence/deployment): `19-tarseem-analysis-and-integration.md` (digest §5.1).
-- **Keystone analysis + integration** (optional Claude Code authoring workflow, MIT; import manifest/requirements/decisions/risks/acceptance/traceability; adopt ID scheme + gates; never embedded): `20-keystone-analysis-and-integration.md` (digest §5.2).
+- **Integration architecture (overall, adapter pattern, contracts):** `docs/domain/integration-architecture.md`.
+- **Webex feasibility** (rate limits ~300 req/min; 429+Retry-After; webhooks incl. meetingTranscripts; **transcripts gated by Webex Assistant, not programmatically enableable**; Adaptive Cards v1.3 ≤80 KB; OAuth2/bot): `docs/domain/webex-feasibility.md` (digest §5.3).
+- **Tarseem analysis + integration** (schema-driven Python engine, Apache-2.0 v1.0.0; sidecar/CLI; JSON spec = source of truth; deterministic, no network at render; 11 families incl. C4/ER/sequence/deployment): `docs/domain/tarseem-analysis.md` (digest §5.1).
+- **Keystone analysis + integration** (optional Claude Code authoring workflow, MIT; import manifest/requirements/decisions/risks/acceptance/traceability; adopt ID scheme + gates; never embedded): `docs/domain/keystone-analysis.md` (digest §5.2).
 
 All three sit behind ACMP abstractions (`INotificationChannel`, `IDiagramRenderer`, Research import) so none is a hard runtime dependency (CON-001).
 
@@ -592,4 +592,4 @@ All three sit behind ACMP abstractions (`INotificationChannel`, `IDiagramRendere
 
 ## Traceability
 
-Implements **Deliverables 20 (architecture recommendation), 21 (architecture diagrams), 22 (module definitions)**. Confirms **ADR-0001** (modular monolith) with devil's-advocate; applies **ADR-0002** (.NET 8/Clean+slices/MediatR/EF), **ADR-0003** (SQL Server, MinIO, columnstore), **ADR-0004** (Keycloak OIDC, Hangfire-on-SQL note), **ADR-0005** (notifications channel, in-app v1, Webex Phase 2), **ADR-0006** (Tarseem/diagrams), **ADR-0007** (Keystone optional), **ADR-0008** (Relationship/traceability), **ADR-0009** (audit immutability), **ADR-0010** (attributed voting), **ADR-0011** (SQL FTS), **ADR-0012** (frontend). Modules/entities/IDs from `../README.md` §B/§F and `11-domain-model.md`. NFRs referenced throughout from `08-non-functional-requirements.md` (esp. NFR-001..016 perf/availability, NFR-019/024 security boundaries, NFR-040..046 audit/observability, NFR-047 module isolation, NFR-052..055 deployment). Workflows in `10`/`13`; data architecture in `16-data-architecture-and-model.md`; reporting `27`; notifications `29`; search/traceability `30`; integration `17`–`20`; security `24`/`25`; containerization/deployment `33`. Standards: arc42, C4, ISO/IEC/IEEE 42010 (digest §5.5). Open-question candidates raised in this doc: see final report.
+Implements **Deliverables 20 (architecture recommendation), 21 (architecture diagrams), 22 (module definitions)**. Confirms **ADR-0001** (modular monolith) with devil's-advocate; applies **ADR-0002** (.NET 8/Clean+slices/MediatR/EF), **ADR-0003** (SQL Server, MinIO, columnstore), **ADR-0004** (Keycloak OIDC, Hangfire-on-SQL note), **ADR-0005** (notifications channel, in-app v1, Webex Phase 2), **ADR-0006** (Tarseem/diagrams), **ADR-0007** (Keystone optional), **ADR-0008** (Relationship/traceability), **ADR-0009** (audit immutability), **ADR-0010** (attributed voting), **ADR-0011** (SQL FTS), **ADR-0012** (frontend). Modules/entities/IDs from `../README.md` §B/§F and `docs/domain/domain-model.md`. NFRs referenced throughout from `docs/requirements/non-functional.md` (esp. NFR-001..016 perf/availability, NFR-019/024 security boundaries, NFR-040..046 audit/observability, NFR-047 module isolation, NFR-052..055 deployment). Workflows in `10`/`13`; data architecture in `docs/domain/data-architecture.md`; reporting `27`; notifications `29`; search/traceability `30`; integration `17`–`20`; security `24`/`25`; containerization/deployment `33`. Standards: arc42, C4, ISO/IEC/IEEE 42010 (digest §5.5). Open-question candidates raised in this doc: see final report.

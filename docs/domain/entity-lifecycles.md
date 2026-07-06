@@ -2,7 +2,7 @@
 
 **Purpose:** Canonical state machines for the governed entities — state lists, transition tables (trigger · guard · allowed role · emitted event · audit), terminal/immutable rules — that the domain layer enforces.
 
-> States are taken from `../README.md` §E verbatim. Roles/policies reference `10-permission-role-matrix.md`; entities reference `11-domain-model.md`; transitions are exercised by the workflows in `13-workflows.md` (cross-ref `[W#]`). Every transition emits a domain event and an `AuditEvent` (ADR-0009). "Allowed role" lists the role(s)/policy that may invoke the transition; ABAC scope + SoD from doc 10 §E always apply on top.
+> States are taken from `../README.md` §E verbatim. Roles/policies reference `docs/domain/permission-role-matrix.md`; entities reference `docs/domain/domain-model.md`; transitions are exercised by the workflows in `docs/domain/workflows.md` (cross-ref `[W#]`). Every transition emits a domain event and an `AuditEvent` (ADR-0009). "Allowed role" lists the role(s)/policy that may invoke the transition; ABAC scope + SoD from doc 10 §E always apply on top.
 
 **Conventions.** `Guard` = precondition that must hold or the transition is rejected (domain error). `Event` = published domain event (drives notifications/projections). Terminal states are noted per machine. Immutable states reject all field mutation (ADR-0009).
 
@@ -58,7 +58,7 @@ stateDiagram-v2
 
 **Terminal/immutable.** `Converted` and (post-archival) `Closed` are terminal for normal operation; `Closed`/`Rejected` may exit to `Reopened` only via explicit justified action. `Converted` is terminal (work continues on the successor artifact). Field edits are blocked once `Decided` except via supersession of the linked `Decision`.
 
-**TopicRequest facet.** Per `11-domain-model.md` §A.2, "TopicRequest" is the **pre-`Accepted` projection** of `Topic` — i.e. states `Draft → Submitted → Triage` (+ early `Rejected`/`Deferred`). It has **no separate state machine**; see §2 for the explicit mapping. The execution agent implements one machine (this one).
+**TopicRequest facet.** Per `docs/domain/domain-model.md` §A.2, "TopicRequest" is the **pre-`Accepted` projection** of `Topic` — i.e. states `Draft → Submitted → Triage` (+ early `Rejected`/`Deferred`). It has **no separate state machine**; see §2 for the explicit mapping. The execution agent implements one machine (this one).
 
 ---
 
@@ -250,4 +250,4 @@ stateDiagram-v2
 ---
 
 ## Traceability
-Implements **Deliverable 15**. States from `../README.md` §E; roles/policies/SoD from `10-permission-role-matrix.md` §C/§E; entities/attributes from `11-domain-model.md`; transitions driven by workflows in `13-workflows.md` (`[W#]`). Settled decisions: ADR-0009 (immutability/audit), ADR-0010 (voting). TopicRequest-merge recommendation per `11-domain-model.md` §A.2 (OQ-DM-001). Recording/transcript optionality per `18-webex-feasibility.md`.
+Implements **Deliverable 15**. States from `../README.md` §E; roles/policies/SoD from `docs/domain/permission-role-matrix.md` §C/§E; entities/attributes from `docs/domain/domain-model.md`; transitions driven by workflows in `docs/domain/workflows.md` (`[W#]`). Settled decisions: ADR-0009 (immutability/audit), ADR-0010 (voting). TopicRequest-merge recommendation per `docs/domain/domain-model.md` §A.2 (OQ-DM-001). Recording/transcript optionality per `docs/domain/webex-feasibility.md`.
