@@ -16,7 +16,7 @@ public class AdaptiveCardBuilderTests
             LocalizedString.Create("Open it to review.", "افتحه للمراجعة."), "AgendaPublished", link);
 
     [Fact]
-    public void Builds_a_v1_3_card_with_room_and_an_absolute_deep_link_button()
+    public void Builds_a_v1_3_dual_language_card_with_an_absolute_deep_link_button()
     {
         var json = AdaptiveCardBuilder.BuildSpaceMessageJson("room-1", Msg(), "https://acmp.local/", "en");
 
@@ -29,10 +29,13 @@ public class AdaptiveCardBuilderTests
         var content = card.GetProperty("content");
         content.GetProperty("version").GetString().Should().Be("1.3");
 
+        // Dual-language: BOTH the English and Arabic title render, regardless of DefaultLanguage.
+        json.Should().Contain("Agenda published").And.Contain("تم نشر جدول الأعمال");
+
         var action = content.GetProperty("actions")[0];
         action.GetProperty("type").GetString().Should().Be("Action.OpenUrl");
         action.GetProperty("url").GetString().Should().Be("https://acmp.local/meetings/MTG-2026-001");
-        action.GetProperty("title").GetString().Should().Be("Open in ACMP");
+        action.GetProperty("title").GetString().Should().Be("Open in ACMP · افتح في ACMP");
     }
 
     [Fact]

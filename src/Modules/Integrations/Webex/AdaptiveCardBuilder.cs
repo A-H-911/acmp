@@ -25,19 +25,22 @@ public static class AdaptiveCardBuilder
     // Returns the serialized POST /messages request body (roomId + adaptive-card attachment).
     public static string BuildSpaceMessageJson(string roomId, NotificationMessage message, string acmpBaseUrl, string language)
     {
-        var title = Pick(message.Title, language);
-        var body = Pick(message.Body, language);
+        // Dual-language card (the committee is bilingual, INV-009): render BOTH EN and AR. DefaultLanguage only
+        // decides which is shown first; Arabic blocks are right-aligned so they read correctly RTL.
+        var arFirst = string.Equals(language, "ar", StringComparison.OrdinalIgnoreCase);
+        object EnTitle() => new { type = "TextBlock", text = message.Title.En, weight = "Bolder", size = "Medium", wrap = true, horizontalAlignment = "Left" };
+        object ArTitle() => new { type = "TextBlock", text = message.Title.Ar, weight = "Bolder", size = "Medium", wrap = true, horizontalAlignment = "Right" };
+        object EnBody() => new { type = "TextBlock", text = message.Body.En, wrap = true, spacing = "Small", horizontalAlignment = "Left" };
+        object ArBody() => new { type = "TextBlock", text = message.Body.Ar, wrap = true, spacing = "Small", horizontalAlignment = "Right" };
 
         var card = new Dictionary<string, object?>
         {
             ["$schema"] = "http://adaptivecards.io/schemas/adaptive-card.json",
             ["type"] = "AdaptiveCard",
             ["version"] = "1.3",
-            ["body"] = new object[]
-            {
-                new { type = "TextBlock", text = title, weight = "Bolder", size = "Medium", wrap = true },
-                new { type = "TextBlock", text = body, wrap = true, spacing = "Small" },
-            },
+            ["body"] = arFirst
+                ? new[] { ArTitle(), EnTitle(), ArBody(), EnBody() }
+                : new[] { EnTitle(), ArTitle(), EnBody(), ArBody() },
         };
 
         var url = AbsoluteLink(message.DeepLink, acmpBaseUrl);
@@ -45,14 +48,14 @@ public static class AdaptiveCardBuilder
         {
             card["actions"] = new object[]
             {
-                new { type = "Action.OpenUrl", title = OpenLabel(language), url },
+                new { type = "Action.OpenUrl", title = "Open in ACMP · افتح في ACMP", url },
             };
         }
 
         var request = new
         {
             roomId,
-            markdown = title, // plain fallback for clients that do not render cards
+            markdown = $"{message.Title.En} / {message.Title.Ar}", // plain fallback for clients that don't render cards
             attachments = new[]
             {
                 new { contentType = "application/vnd.microsoft.card.adaptive", content = card },
@@ -66,12 +69,6 @@ public static class AdaptiveCardBuilder
                 $"Webex card payload is {bytes} bytes, over the {MaxPayloadBytes}-byte Adaptive Cards limit.");
         return json;
     }
-
-    private static string Pick(LocalizedString value, string language) =>
-        string.Equals(language, "ar", StringComparison.OrdinalIgnoreCase) ? value.Ar : value.En;
-
-    private static string OpenLabel(string language) =>
-        string.Equals(language, "ar", StringComparison.OrdinalIgnoreCase) ? "افتح في ACMP" : "Open in ACMP";
 
     private static string? AbsoluteLink(string? relative, string acmpBaseUrl)
     {
