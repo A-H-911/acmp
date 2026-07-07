@@ -13,6 +13,19 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
 
+    # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
+    # without mixed content. The trailing slash on proxy_pass strips /kc so KC (served at root) matches;
+    # X-Forwarded-* (with KC_PROXY_HEADERS=xforwarded) make KC emit https absolute URLs (issuer = /kc).
+    location /kc/ {
+        proxy_pass http://keycloak:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port 443;
+    }
+
     location /api/ {
         proxy_pass http://api:8080;
         proxy_http_version 1.1;

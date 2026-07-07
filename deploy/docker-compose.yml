@@ -90,9 +90,12 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_ENABLED: "true"
-      # Pin the issuer so the SPA (browser) and the API (in-cluster) agree byte-for-byte.
-      # `*.localhost` resolves to loopback in browsers; the api reaches it via extra_hosts below.
-      KC_HOSTNAME: "http://keycloak.localhost:8085"
+      # Trust the reverse proxy's X-Forwarded-* so KC emits correct https absolute URLs behind nginx/ngrok.
+      KC_PROXY_HEADERS: "xforwarded"
+      # Issuer pinned so the SPA (browser) and the API agree byte-for-byte. ngrok-only (PR-C): KC is served
+      # same-origin over https under /kc via the web nginx proxy (KEYCLOAK_HOSTNAME=https://acmp.ngrok.dev/kc),
+      # eliminating the https-page→http-KC mixed content. Default keeps the localhost profile working.
+      KC_HOSTNAME: "${KEYCLOAK_HOSTNAME:-http://keycloak.localhost:8085}"
       KC_HOSTNAME_STRICT: "false"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
