@@ -35,10 +35,11 @@ public sealed class WebexApiClient : IWebexApiClient
             throw new WebexApiException((int)response.StatusCode, await SafeBodyAsync(response, ct));
     }
 
-    public async Task<WebexRecording?> GetRecordingAsync(string recordingId, CancellationToken ct = default)
+    public async Task<WebexRecording?> GetRecordingAsync(string accessToken, string recordingId, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, $"recordings/{Uri.EscapeDataString(recordingId)}");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.BotToken);
+        // Recordings are user-scoped — authenticate with the OAuth host token, NOT the bot token (Webex 403s it).
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         using var response = await _http.SendAsync(request, ct);
         if (response.StatusCode == HttpStatusCode.NotFound)

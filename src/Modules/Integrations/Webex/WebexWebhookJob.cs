@@ -1,4 +1,5 @@
-﻿using Acmp.Shared.Contracts.Meetings;
+﻿using Acmp.Modules.Integrations.Webex.Oauth;
+using Acmp.Shared.Contracts.Meetings;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 
@@ -9,12 +10,15 @@ namespace Acmp.Modules.Integrations.Webex;
 // deterministic set), so a re-delivered webhook is harmless. Uncorrelated recordings are logged and dropped.
 public sealed class WebexWebhookJob
 {
+    private readonly IWebexTokenService _tokens;
     private readonly IWebexApiClient _client;
     private readonly IMeetingWebexWriter _writer;
     private readonly ILogger<WebexWebhookJob> _logger;
 
-    public WebexWebhookJob(IWebexApiClient client, IMeetingWebexWriter writer, ILogger<WebexWebhookJob> logger)
+    public WebexWebhookJob(IWebexTokenService tokens, IWebexApiClient client, IMeetingWebexWriter writer,
+        ILogger<WebexWebhookJob> logger)
     {
+        _tokens = tokens;
         _client = client;
         _writer = writer;
         _logger = logger;
@@ -23,7 +27,16 @@ public sealed class WebexWebhookJob
     [AutomaticRetry(Attempts = 3)]
     public async Task ProcessRecordingAsync(string recordingId, CancellationToken ct)
     {
-        var recording = await _client.GetRecordingAsync(recordingId, ct);
+        // Recordings are user-scoped — fetch with the secretary OAuth token (the bot token gets a 403). No token
+        // (consent not completed) => drop the recording; the webhook is best-effort, never blocks anything.
+        var token = await _tokens.GetValidAccessTokenAsync(ct);
+        if (token is null)
+        {
+            _logger.LogWarning("No Webex OAuth token; cannot fetch recording {RecordingId}", recordingId);
+            return;
+        }
+
+        var recording = await _client.GetRecordingAsync(token, recordingId, ct);
         if (recording is null)
         {
             _logger.LogWarning("Webex recording {RecordingId} was not found", recordingId);

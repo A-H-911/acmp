@@ -9,9 +9,10 @@ public interface IWebexApiClient
     // AdaptiveCardBuilder. Kept as a pre-serialized string so the Hangfire job argument is trivially durable.
     Task PostSpaceMessageAsync(string messageRequestJson, CancellationToken ct = default);
 
-    // GET /recordings/{id} — fetch the recording reference for the recording-ready webhook. Returns null if
-    // the recording is gone (404).
-    Task<WebexRecording?> GetRecordingAsync(string recordingId, CancellationToken ct = default);
+    // GET /recordings/{id} — fetch the recording reference for the recording-ready webhook, authenticated with
+    // the secretary OAuth USER token. Recordings are user-scoped (`meeting:recordings_read`); the bot token has
+    // no meeting scopes and Webex answers 403 (confirmed live in the P13 sandbox). Returns null on 404.
+    Task<WebexRecording?> GetRecordingAsync(string accessToken, string recordingId, CancellationToken ct = default);
 
     // POST /meetings — create a Webex meeting with the secretary OAuth USER token (a bot cannot host).
     // Returns the id + join URL, or null if the response carried no id.

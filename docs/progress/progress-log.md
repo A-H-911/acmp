@@ -31,7 +31,9 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 **Verification:** 722 Application tests (incl. **39 Webex unit** + **4 composition-root smoke** tests) + **144 API** (incl. 4 webhook/oauth integration) + **41 ArchUnit** + **188 Domain** — all green after moving the Hangfire server out of the API. Two EF migrations. Full solution builds clean; `dotnet format --verify-no-changes` clean; Keystone validator all-7 PASS. No product AC regressions.
 
-**Next (open):** operator-run **live sandbox** validation (`docker compose --profile ngrok up`, a reserved/ephemeral ngrok URL + Webex sandbox creds) → confirm a card renders in the space and a recording webhook attaches → then flip the AC-067/072 "live pass" notes; plus the WS5/6 doc polish (`functional.md` FR-056/057 flips, status-report regen) as P13 formally closes.
+- **Live sandbox run (2026-07-07).** `docker compose --profile ngrok up` against the real Webex sandbox on `acmp.ngrok.dev`. **Proven live:** the dedicated **worker container** (Hangfire server + dispatchers + job dequeue/retry — the definitive ADR-0024 validation); **AC-069** webhook (valid HMAC-SHA1 → 200, invalid → 401 over the public tunnel; worker dequeued the job); the **OAuth setup-key gate** (`/start` no key → 404); bot → committee-space post (200, after the operator added the bot). **Two issues surfaced that mocked tests couldn't:** (1) recording fetch used the **bot token** → Webex **403 "missing scopes"** (recordings are user-scoped), so `GetRecordingAsync` now takes the **OAuth host token** (resolved by the webhook job via `IWebexTokenService`, graceful when consent isn't done) — FIXED + tested; (2) the bot wasn't in the space (404) → operator added it.
+
+**Next (open):** complete OAuth consent (setup-key URL) + a real recorded sandbox meeting to close **AC-070/072** live; trigger a domain event from the SPA to close **AC-067** (card render); then flip the "live pass" notes; plus the WS5/6 doc polish (`functional.md` FR-056/057 flips, status-report regen) as P13 formally closes.
 
 ---
 

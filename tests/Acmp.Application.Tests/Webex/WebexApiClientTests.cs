@@ -50,13 +50,13 @@ public class WebexApiClientTests
     {
         var found = Client(_ => Json(HttpStatusCode.OK,
             "{\"id\":\"rec-1\",\"meetingId\":\"webex-abc\",\"playbackUrl\":\"https://play\",\"downloadUrl\":\"https://dl\",\"durationSeconds\":1800}"));
-        var rec = await found.GetRecordingAsync("rec-1");
+        var rec = await found.GetRecordingAsync("user-token", "rec-1");
         rec!.MeetingId.Should().Be("webex-abc");
         rec.PlaybackUrl.Should().Be("https://play");
         rec.DurationSeconds.Should().Be(1800);
 
         var missing = Client(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
-        (await missing.GetRecordingAsync("gone")).Should().BeNull();
+        (await missing.GetRecordingAsync("user-token", "gone")).Should().BeNull();
     }
 
     [Fact]
