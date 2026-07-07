@@ -6,16 +6,20 @@
  * link.
  */
 import type { ReactNode } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth, hasRole } from './AcmpAuthContext';
 import type { CommitteeRole } from './roles';
 import { LoadingState, ErrorState, PermissionDenied } from '../components/states';
 
 export function ProtectedRoute() {
   const auth = useAuth();
+  const location = useLocation();
   if (auth.isLoading) return <LoadingState />;
   if (auth.error && !auth.isAuthenticated) return <ErrorState body={auth.error} />;
-  if (!auth.isAuthenticated) return <Navigate to="/login" replace />;
+  // Carry where the user was headed to /login (a card deep link opens an unauthenticated tab) so the
+  // sign-in returns them there, not to '/'.
+  if (!auth.isAuthenticated)
+    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
   return <Outlet />;
 }
 

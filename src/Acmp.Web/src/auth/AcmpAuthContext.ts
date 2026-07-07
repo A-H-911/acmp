@@ -18,7 +18,9 @@ export interface AcmpAuth {
   userId?: string;
   displayName: string;
   initials: string;
-  signIn: () => void;
+  /** Start the login redirect. `returnTo` (a deep-link path) is preserved across the Keycloak
+   *  round-trip so a card link lands on its target, not `/`; omit it for a plain sign-in. */
+  signIn: (returnTo?: string) => void;
   signOut: () => void;
   /** DEV-only role switcher for the shell preview; undefined in production. */
   devSetRoles?: (roles: CommitteeRole[]) => void;

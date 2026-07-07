@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AuthProvider as OidcProvider, useAuth as useOidc } from 'react-oidc-context';
 import { AcmpAuthContext, type AcmpAuth } from './AcmpAuthContext';
-import { oidcConfig, oidcEnabled } from './authConfig';
+import { oidcConfig, oidcEnabled, RETURN_KEY, returnPathToStore } from './authConfig';
 import { rolesFromClaims, type CommitteeRole } from './roles';
 import { claimStringsFrom, displayNameFrom, initialsFrom, type OidcProfileLike } from './oidcProfile';
 import { api, setTokenGetter } from '../api/apiClient';
@@ -62,7 +62,14 @@ function OidcBridge({ children }: { children: ReactNode }) {
       userId: profile?.sub,
       displayName: name,
       initials: initialsFrom(name),
-      signIn: () => void oidc.signinRedirect(),
+      signIn: (returnTo?: string) => {
+        // Set-or-clear (never leave a stale value): stash a real deep link for AuthCallbackPage to
+        // restore, but a plain sign-in must wipe any leftover key from an earlier abandoned attempt.
+        const to = returnPathToStore(returnTo);
+        if (to) sessionStorage.setItem(RETURN_KEY, to);
+        else sessionStorage.removeItem(RETURN_KEY);
+        void oidc.signinRedirect();
+      },
       signOut: () => { setAuthStatus('signed_out'); void oidc.signoutRedirect(); },
     };
   }, [oidc]);

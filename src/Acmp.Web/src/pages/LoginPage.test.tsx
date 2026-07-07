@@ -1,8 +1,10 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import { setAuthStatus } from '../auth/authStatus';
+import { AcmpAuthContext } from '../auth/AcmpAuthContext';
 import { renderWithAuth, makeAuth } from '../test/render';
 import i18n from '../i18n';
 
@@ -19,6 +21,20 @@ describe('LoginPage', () => {
     const btn = screen.getByRole('button', { name: /log in|تسجيل الدخول/i });
     fireEvent.click(btn);
     expect(signIn).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards the deep-link path (router state.from) to signIn so login returns there', () => {
+    const signIn = vi.fn();
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/meetings/new' } }]}>
+        <AcmpAuthContext.Provider value={makeAuth([], { isAuthenticated: false, signIn })}>
+          <LoginPage />
+        </AcmpAuthContext.Provider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /log in|تسجيل الدخول/i }));
+    expect(signIn).toHaveBeenCalledWith('/meetings/new');
   });
 
   it('shows an info banner after a deliberate sign-out', () => {

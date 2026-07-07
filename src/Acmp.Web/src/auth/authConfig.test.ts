@@ -83,4 +83,31 @@ describe('oidcConfig', () => {
     cfg.onSigninCallback?.(undefined);
     expect(replace).toHaveBeenCalledWith({}, document.title, '/');
   });
+
+  it('restores a stored deep-link path into the URL after sign-in', async () => {
+    vi.stubEnv('VITE_OIDC_AUTHORITY', 'https://kc.example/realms/acmp');
+    vi.stubEnv('VITE_OIDC_CLIENT_ID', 'acmp-web');
+    const { oidcConfig, RETURN_KEY } = await loadConfig();
+    sessionStorage.setItem(RETURN_KEY, '/meetings/new');
+    const replace = vi.spyOn(window.history, 'replaceState');
+    (oidcConfig as unknown as ConfigView).onSigninCallback?.(undefined);
+    expect(replace).toHaveBeenCalledWith({}, document.title, '/meetings/new');
+    sessionStorage.clear();
+  });
+});
+
+describe('returnPathToStore', () => {
+  it('keeps a real deep-link path', async () => {
+    const { returnPathToStore } = await loadConfig();
+    expect(returnPathToStore('/meetings/new')).toBe('/meetings/new');
+    expect(returnPathToStore('/decisions/DEC-2026-001?tab=votes')).toBe('/decisions/DEC-2026-001?tab=votes');
+  });
+
+  it('clears (returns null) for no path, home, and the auth routes — no stale target on a plain sign-in', async () => {
+    const { returnPathToStore } = await loadConfig();
+    expect(returnPathToStore(undefined)).toBeNull();
+    expect(returnPathToStore('/')).toBeNull();
+    expect(returnPathToStore('/login')).toBeNull();
+    expect(returnPathToStore('/auth/callback')).toBeNull();
+  });
 });
