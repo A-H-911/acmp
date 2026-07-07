@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <!-- Dedicated background-worker host (ADR-0024): runs the Hangfire SERVER that processes the jobs the API
+       enqueues (Webex sends/webhooks/meeting-create + the recurring action-reminder sweep). It is a HOST, not
+       a constrained module, so it composes everything via Acmp.Bootstrap and is exempt from the ArchUnit
+       module-boundary rules — exactly like Acmp.Api. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>acmp-worker</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serilog -> console + self-hosted Seq (ADR-0014), config-driven. GRANULAR packages, NOT Serilog.AspNetCore:
+         this is a headless daemon on the slim dotnet/runtime:8.0 base, and Serilog.AspNetCore carries a
+         FrameworkReference to Microsoft.AspNetCore.App that isn't present in that image (would crash at startup). -->
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acmp.Bootstrap\Acmp.Bootstrap.csproj" />
+  </ItemGroup>
+
+</Project>

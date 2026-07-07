@@ -1,8 +1,8 @@
 # ADR-0024: Dedicated Background-Worker Container
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-07
-- Deciders: Architecture Committee (operator-requested; pending the P13 WS0 slice)
+- Deciders: Architecture Committee (operator-requested; implemented in the P13 WS0 slice)
 
 ## Context and Problem Statement
 
@@ -24,7 +24,9 @@ INV-002 requires the platform to stay a modular monolith — no second process w
 
 ## Decision Outcome
 
-Chosen option: **2**. A new `Acmp.Worker` .NET Generic Host runs `AddHangfireServer()` and the recurring-job registrations (the action-reminder sweep moves here); the API keeps `AddHangfire(storage)` **client-only** (retains `IBackgroundJobClient` to enqueue). Both hosts share an `AddAcmpModules(config)` composition root so their DI never drifts. The worker registers a `SystemCurrentUser` (`system:worker`) for headless audit attribution (`CurrentUserService` is HTTP-bound). The **API owns migrations** (`MigrationRunner`); the worker waits for the schema, avoiding a two-host migration race. A configurable `ngrok` ingress service exposes the API's webhook endpoint (dev + optional prod via a reserved domain).
+Chosen option: **2**. A new `Acmp.Worker` .NET Generic Host runs `AddHangfireServer()` and the recurring-job registrations (the action-reminder sweep moves here); the API keeps `AddHangfire(storage)` **client-only** (retains `IBackgroundJobClient` to enqueue). Both hosts share an `AddAcmpModules(config)` / `AddAcmpHangfireStorage(cs)` composition root in the new `Acmp.Bootstrap` library so their DI never drifts. The **API owns migrations** (`MigrationRunner`); the worker waits for the schema (compose `depends_on: api healthy`), avoiding a two-host migration race. A configurable `ngrok` ingress service (compose profile `ngrok`) exposes the API's webhook endpoint (dev + optional prod via a reserved `NGROK_DOMAIN`).
+
+No bespoke headless identity was added: every worker job either opts out of the MediatR authorization check (`SweepActionRemindersCommand` is not an `IAuthorizedRequest`) or hardcodes its own `system:*` audit actor (the sweep uses `system:action-reminders`, the Webex writers `system:webex`), and the shared-kernel `CurrentUserService` is null-safe with no `HttpContext`. A `SystemCurrentUser` would change zero observable behaviour, so it is deliberately omitted (YAGNI) — add one only if a future job reads `ICurrentUser`.
 
 ### Consequences
 
@@ -33,10 +35,10 @@ Chosen option: **2**. A new `Acmp.Worker` .NET Generic Host runs `AddHangfireSer
 
 ## Validation
 
-- A worker smoke test confirms the host builds and resolves the recurring jobs + Webex jobs from DI.
-- `docker compose up` brings up API + worker + ngrok; a scheduled reminder and a Webex send/webhook both execute on the worker.
+- `CompositionRootTests` (in `Acmp.Application.Tests`) confirm the shared `AddAcmpModules` resolves the MediatR pipeline (the recurring sweep) and constructs every Webex job the worker runs, and that the Webex provisioner overrides the Meetings no-op default (Webex-after-Meetings order). This makes composition drift a build-time failure.
+- The API/Application/ArchUnit suites stay green after moving the Hangfire server out of the API (143 API + 722 Application + 41 ArchUnit).
+- **Pending (operator, live env):** `docker compose up` brings up API + worker + ngrok; a scheduled reminder and a Webex send/webhook both execute on the worker against the live sandbox.
 
 ## Links / Notes
 
-- Extends ADR-0014 (Hangfire outbox/jobs), ADR-0023 (Webex jobs). Until this slice lands, all jobs run on the API's Hangfire server.
-- Status stays **Proposed** until the P13 WS0 slice implements and validates it.
+- Extends ADR-0014 (Hangfire jobs), ADR-0023 (Webex jobs). The shared composition root lives in `Acmp.Bootstrap`; `Acmp.Worker` is a **host** (like `Acmp.Api`), exempt from the ArchUnit module-boundary rules.

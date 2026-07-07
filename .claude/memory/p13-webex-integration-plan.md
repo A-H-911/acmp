@@ -1,6 +1,6 @@
 ---
 name: p13-webex-integration-plan
-description: P13 Webex integration (Phase 2) — app/adapter surface + governance COMPLETE & CI-green on branch feat/p13-webex-integration; WS0 infra + coverage-run + live sandbox remain.
+description: P13 Webex integration (Phase 2) — app/adapter surface + WS0 worker-container split + governance COMPLETE & CI-green on branch feat/p13-webex-integration; only operator live sandbox remains.
 metadata:
   type: project
 ---
@@ -17,4 +17,6 @@ metadata:
 
 **Verification:** 710 Application (+39 Webex unit) / 143 API (+3 webhook integration AC-069/071) / 188 Domain / 41 ArchUnit (Webex boundary) — green. Keystone validator all-7 PASS. `dotnet format` applied. 2 migrations.
 
-**REMAINING (open):** **WS0** — `Acmp.Worker` daemon container + shared `AddAcmpModules` composition root + API→Hangfire-client-only split + docker-compose worker + configurable **ngrok** ingress (implements ADR-0024). Then: a coverage-collection CI run (`check-coverage.mjs` ≥95%, not run this session — cost); operator-run **live Webex sandbox** validation (ngrok URL + creds) → flip AC-067/072 "live pass" notes; minor naming-conventions module entry + status-report regen. See [[keystone-migration-gap-remediation]], [[ci-gates-run-locally-pre-push]], [[always-stage-claude-memory-in-commits]].
+**WS0 DONE + CI-green (2026-07-07):** `Acmp.Bootstrap` library = single composition root (`AddAcmpModules` + `AddAcmpHangfireStorage`) BOTH hosts call → no DI drift. New `Acmp.Worker` Generic Host runs `AddHangfireServer()` + the recurring action-reminder sweep (moved off API); **API now enqueue-only** (server removed, `IBackgroundJobClient` kept). API owns EF migrations; worker waits (`compose depends_on: api healthy`). `Dockerfile.worker` + compose `worker` service + opt-in (`--profile ngrok`) ngrok ingress (reserved `NGROK_DOMAIN` optional); Webex env in `.env.example` for both. **`SystemCurrentUser` deliberately SKIPPED (YAGNI, advisor-grade evidence):** every worker job either isn't an `IAuthorizedRequest` (sweep) or hardcodes its `system:*` audit actor (`system:action-reminders`/`system:webex`), and `CurrentUserService` is null-safe headless → a SystemCurrentUser changes zero behaviour. `Acmp.Worker`/`Acmp.Bootstrap` are hosts/wiring → ArchUnit enumerates assemblies by explicit type-ref, so auto-exempt (no ArchUnit edit). `CompositionRootTests` (4) make composition drift a build-time failure. ADR-0024 → **Accepted**. 722 App (+4 smoke) / 143 API / 41 Arch / 188 Domain green; format clean; validator all-7.
+
+**REMAINING (open):** operator-run **live Webex sandbox** validation (`docker compose --profile ngrok up` + ngrok URL + Webex creds) → confirm space card renders + recording webhook attaches → flip AC-067/072 "live pass" notes; a coverage-collection run (`check-coverage.mjs` ≥95% — not run, cost); WS5/6 doc polish (`functional.md` FR-056/057→Met, status-report regen) as P13 formally closes. See [[keystone-migration-gap-remediation]], [[ci-gates-run-locally-pre-push]], [[always-stage-claude-memory-in-commits]].
