@@ -46,16 +46,20 @@
       "redirectUris": [
         "http://keycloak.localhost:8088/*",
         "http://localhost:8088/*",
-        "http://localhost:5173/*"
+        "http://localhost:5173/*",
+        "https://acmp.ngrok.dev/*",
+        "https://acmp.ngrok.app/*"
       ],
       "webOrigins": [
         "http://keycloak.localhost:8088",
         "http://localhost:8088",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://acmp.ngrok.dev",
+        "https://acmp.ngrok.app"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:8088/*##http://localhost:5173/*"
+        "post.logout.redirect.uris": "http://localhost:8088/*##http://localhost:5173/*##https://acmp.ngrok.dev/*##https://acmp.ngrok.app/*"
       },
       "defaultClientScopes": ["basic", "profile", "email", "roles"],
       "protocolMappers": [

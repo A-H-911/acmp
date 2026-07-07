@@ -13,6 +13,9 @@ public sealed class WebexApiClient : IWebexApiClient
 {
     private static readonly TimeSpan DefaultRetryAfter = TimeSpan.FromSeconds(5);
 
+    // Webex meetings API accepts ISO 8601 but rejects the "o" round-trip format's 7 fractional-second digits.
+    private const string WebexDateFormat = "yyyy-MM-ddTHH:mm:ss'Z'";
+
     private readonly HttpClient _http;
     private readonly WebexOptions _options;
 
@@ -70,8 +73,10 @@ public sealed class WebexApiClient : IWebexApiClient
         var payload = new
         {
             title,
-            start = start.UtcDateTime.ToString("o"),
-            end = end.UtcDateTime.ToString("o"),
+            // Seconds-precision UTC ISO 8601 (e.g. 2026-07-10T06:00:00Z). NOT the round-trip "o" format — its
+            // 7-digit fractional seconds are rejected by the Webex meetings API with HTTP 400 (confirmed live).
+            start = start.UtcDateTime.ToString(WebexDateFormat, CultureInfo.InvariantCulture),
+            end = end.UtcDateTime.ToString(WebexDateFormat, CultureInfo.InvariantCulture),
         };
         using var content = JsonContent.Create(payload);
         using var request = new HttpRequestMessage(HttpMethod.Post, "meetings") { Content = content };

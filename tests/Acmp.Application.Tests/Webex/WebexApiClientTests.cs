@@ -60,12 +60,23 @@ public class WebexApiClientTests
     }
 
     [Fact]
-    public async Task Create_meeting_parses_id_and_join_url()
+    public async Task Create_meeting_parses_id_and_sends_seconds_precision_utc_dates()
     {
-        var client = Client(_ => Json(HttpStatusCode.OK, "{\"id\":\"webex-9\",\"webLink\":\"https://webex/join\"}"));
-        var created = await client.CreateMeetingAsync("user-token", "Committee", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1));
+        string? body = null;
+        var client = Client(req =>
+        {
+            body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Json(HttpStatusCode.OK, "{\"id\":\"webex-9\",\"webLink\":\"https://webex/join\"}");
+        });
+
+        var start = new DateTimeOffset(2026, 7, 10, 6, 0, 0, TimeSpan.Zero);
+        var created = await client.CreateMeetingAsync("user-token", "Committee", start, start.AddHours(1));
+
         created!.Id.Should().Be("webex-9");
         created.JoinUrl.Should().Be("https://webex/join");
+        // Seconds-precision UTC — the "o" format's 7 fractional digits get a Webex 400 (caught in the live sandbox).
+        body.Should().Contain("\"start\":\"2026-07-10T06:00:00Z\"").And.Contain("\"end\":\"2026-07-10T07:00:00Z\"");
+        body.Should().NotContain(".0000000");
     }
 
     private sealed class StubHandler : HttpMessageHandler
