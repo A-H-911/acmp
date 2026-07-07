@@ -246,19 +246,20 @@ services:
     restart: unless-stopped
 
   # Optional inbound ingress for the Webex recording-ready webhook (P13, ADR-0024). Opt-in: `--profile ngrok`.
-  # Default = an ephemeral dev tunnel to the API's webhook. For a durable prod URL, set a reserved domain in
-  # NGROK_DOMAIN and append `--domain=$NGROK_DOMAIN` to the command (or a compose override). Register the tunnel
-  # URL as Webex's webhook and set WEBEX_WEBHOOK_PUBLIC_URL to it.
+  # Tunnels the WHOLE app: nginx (web:80) serves the SPA AND reverse-proxies /api -> api:8080, so the SPA, the
+  # webhook (/api/webex/webhook) and the OAuth callback (/api/webex/oauth/callback) all sit on ONE public HTTPS
+  # domain. NGROK_URL = your reserved ngrok domain (dev: https://acmp.ngrok.dev, prod: https://acmp.ngrok.app);
+  # required when this profile is active. Register that URL + /api/webex/webhook as the Webex webhook targetUrl.
   # ponytail: routing PROD webhook traffic through ngrok's SaaS tunnel is in mild tension with the self-contained
   # posture (CON-001/INV-003) — prefer the org reverse proxy in prod; treat ngrok as dev + an accepted fallback.
   ngrok:
     image: ngrok/ngrok:latest
     profiles: ["ngrok"]
-    command: ["http", "api:8080"]
+    command: ["http", "web:80", "--url=${NGROK_URL}"]
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     depends_on:
-      api:
+      web:
         condition: service_healthy
     ports:
       - "4040:4040"   # ngrok agent inspection UI (operator-only)

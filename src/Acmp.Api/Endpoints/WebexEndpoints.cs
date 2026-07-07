@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Acmp.Modules.Integrations.Webex;
 using Acmp.Modules.Integrations.Webex.Oauth;
-using Acmp.Shared.Authorization;
+using Acmp.Shared.Application.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Acmp.Api.Endpoints;
@@ -24,9 +24,15 @@ public static class WebexEndpoints
             .WithTags("Webex")
             .AddEndpointFilter<WebexSignatureFilter>();
 
-        // OAuth consent flow for the secretary meeting-create token (WS3b). Admin-gated: an administrator
-        // completes this once on a private-network device with reach to Webex.
-        var oauth = app.MapGroup("/api/webex/oauth").WithTags("Webex").RequireAuthorization(Policies.AdminConfig);
+        // OAuth consent flow for the secretary meeting-create token (WS3b). ANONYMOUS by necessity: both legs
+        // are top-level browser navigations (the redirect to Webex, then Webex's redirect back), which cannot
+        // carry a Keycloak bearer — ACMP is bearer-only with no server session cookie, so identity-gating a
+        // browser-navigable endpoint is structurally impossible (a JwtBearer gate here would 401 every callback).
+        // CSRF is instead defended by the single-use `state` cookie (verified in the callback), and token linking
+        // is audited (INV-005) for attributability. ponytail: the on-prem/private-network posture (CON-001) makes
+        // this acceptable; the hardening path is SPA-mediated initiation — an authenticated XHR returns the
+        // authorize URL — once an admin "Connect Webex" screen exists.
+        var oauth = app.MapGroup("/api/webex/oauth").WithTags("Webex");
         oauth.MapGet("/start", StartOAuth);
         oauth.MapGet("/callback", CallbackAsync);
         return app;
@@ -82,6 +88,12 @@ public static class WebexEndpoints
             return Results.BadRequest("Webex token exchange failed.");
 
         await tokens.StoreFromExchangeAsync(token, ct);
+
+        // Attribute the link (INV-005): storing a host OAuth token is a state change, and because /start is
+        // anonymous, this audit event is what makes an unexpected linking visible after the fact.
+        var audit = http.RequestServices.GetRequiredService<IAuditSink>();
+        await audit.EmitAsync("Webex.OAuthTokenLinked", "system:webex-oauth", new { scope = options.Value.OAuthScopes }, ct);
+
         return Results.Content("Webex integration authorized. You can close this window.");
     }
 

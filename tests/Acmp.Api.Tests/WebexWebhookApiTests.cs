@@ -85,6 +85,19 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    [Fact]
+    public async Task Oauth_callback_is_reachable_without_authentication()
+    {
+        // The OAuth callback is a top-level browser redirect FROM Webex — it cannot carry a Keycloak bearer, so
+        // it must be anonymous (the WS0 bug fix; a JwtBearer gate would 401 every real callback). No bearer +
+        // a code but no state cookie => 400 from the single-use `state` check, NOT 401 — proving it is reachable
+        // anonymously and defended by the state cookie, not by identity.
+        var response = await EnabledClient(new FakeScheduler())
+            .GetAsync("/api/webex/oauth/callback?code=abc");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private sealed class FakeScheduler : IWebexJobScheduler
     {
         public int Enqueued;
