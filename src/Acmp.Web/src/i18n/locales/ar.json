@@ -1321,6 +1321,7 @@
       "locationPlaceholder": "مثال: قاعة الاجتماعات أ أو عبر الإنترنت",
       "joinLabel": "رابط الانضمام",
       "joinPlaceholder": "https://…",
+      "joinAutoNote": "يُنشأ تلقائيًا بواسطة Webex — يظهر رابط الانضمام على الاجتماع بعد حفظه.",
       "confirm": "جدولة",
       "failed": "تعذّرت جدولة الاجتماع. حاول مرة أخرى."
     },
@@ -1354,6 +1355,7 @@
     "reviewMinutes": "مراجعة المحضر",
     "reschedule": "إعادة الجدولة",
     "overview": {
+      "joinWebex": "الانضمام إلى اجتماع Webex",
       "readinessTitle": "الجاهزية",
       "agendaPublished": "تم نشر جدول الأعمال",
       "topicsScheduled": "الموضوعات المجدولة",

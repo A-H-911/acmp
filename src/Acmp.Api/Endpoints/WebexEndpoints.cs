@@ -34,7 +34,22 @@ public static class WebexEndpoints
         var oauth = app.MapGroup("/api/webex/oauth").WithTags("Webex");
         oauth.MapGet("/start", StartOAuth);
         oauth.MapGet("/callback", CallbackAsync);
+
+        // Runtime config the SPA reads to drive the schedule form's join-URL field (P13, point 5): whether
+        // Webex is on, and whether an online meeting will actually get an auto-created join URL (needs a stored
+        // OAuth token — the create job no-ops without one). Authenticated: no FallbackPolicy exists, so the
+        // RequireAuthorization is what keeps it from being anonymous.
+        app.MapGet("/api/webex/status", GetStatusAsync).WithTags("Webex").RequireAuthorization();
         return app;
+    }
+
+    private static async Task<IResult> GetStatusAsync(HttpContext http, IOptions<WebexOptions> options, CancellationToken ct)
+    {
+        var enabled = options.Value.Enabled;
+        // The adapter (incl. IWebexTokenService) is unregistered when disabled (AC-071) — only resolve it when on.
+        var canAutoCreate = enabled
+            && await http.RequestServices.GetRequiredService<IWebexTokenService>().HasTokenAsync(ct);
+        return Results.Ok(new WebexStatusResponse(enabled, canAutoCreate));
     }
 
     private const string StateCookie = "webex_oauth_state";
@@ -144,6 +159,10 @@ public static class WebexEndpoints
         return Results.Ok();
     }
 }
+
+// Runtime Webex config surfaced to the SPA. CanAutoCreate implies Enabled (a stored OAuth token exists),
+// so an online meeting will get an auto-generated join URL; the schedule form uses it to choose the field mode.
+public sealed record WebexStatusResponse(bool Enabled, bool CanAutoCreate);
 
 // The subset of the Webex webhook payload ACMP consumes (developer.webex.com webhooks guide).
 public sealed record WebexWebhookEnvelope

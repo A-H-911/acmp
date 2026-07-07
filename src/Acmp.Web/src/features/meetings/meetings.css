@@ -1473,6 +1473,25 @@
   box-shadow: var(--shadow);
   padding: 15px 16px;
 }
+/* Join-Webex CTA — surfaced above readiness when the meeting has an https join URL (P13). */
+.mt-join {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: var(--r-lg);
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.mt-join:hover { filter: brightness(1.05); }
+.mt-join:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
 .mt-readiness .mt-col-title,
 .mt-quicklinks .mt-col-title {
   margin-block-end: 11px;

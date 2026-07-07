@@ -23,6 +23,17 @@ const BANNER_ICON: Record<Exclude<MeetingPhase, 'ready'>, IconName> = {
   cancelled: 'x',
 };
 
+/** Only surface a join link for an https URL (Webex auto-create writes https; guards against a bad
+ *  manual value producing a javascript:/data: link). Returns the url when safe, else null. */
+function safeJoinUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Quick-link targets, relative to the meeting shell (the index shares the parent's path). */
 const QUICK_LINKS: { to: string; icon: IconName; labelKey: string }[] = [
   { to: 'agenda', icon: 'backlog', labelKey: 'meetings.overview.linkAgenda' },
@@ -38,6 +49,7 @@ export function MeetingOverview() {
   const { data: members } = useMembers();
   if (!meeting) return null; // shell owns loading/error.
 
+  const joinUrl = safeJoinUrl(meeting.joinUrl);
   const agenda = meeting.agenda;
   const items = agenda?.items ?? [];
   const agendaPublished = agenda?.status === 'Published' || agenda?.status === 'Locked';
@@ -76,6 +88,13 @@ export function MeetingOverview() {
         </div>
 
         <aside className="mt-overview-side">
+          {joinUrl && (
+            <a className="mt-join" href={joinUrl} target="_blank" rel="noopener noreferrer">
+              <Icon name="video" size={16} aria-hidden />
+              <span>{t('meetings.overview.joinWebex')}</span>
+            </a>
+          )}
+
           <section className="mt-readiness" aria-label={t('meetings.overview.readinessTitle')}>
             <h2 className="mt-col-title">{t('meetings.overview.readinessTitle')}</h2>
             <ul className="mt-readiness-list">

@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useScheduleMeeting, type MeetingType, type MeetingMode } from '../../api/meetings';
 import { useMembers } from '../../api/members';
+import { useWebexStatus } from '../../api/webex';
 import { AREAS } from '../../nav/navModel';
 import { Button } from '../../components/ui/Button';
 import { Field, Input } from '../../components/ui/Field';
@@ -39,6 +40,7 @@ export function SchedulePage() {
   const navigate = useNavigate();
   const members = useMembers();
   const schedule = useScheduleMeeting();
+  const webex = useWebexStatus();
 
   const [title, setTitle] = useState('');
   const [chairId, setChairId] = useState('');
@@ -54,6 +56,10 @@ export function SchedulePage() {
   const activeMembers = useMemo(() => (members.data ?? []).filter((m) => m.isActive), [members.data]);
   const chairOptions = activeMembers.map((m) => ({ value: m.publicId, label: m.fullName }));
   const effectiveChairId = chairId || activeMembers.find((m) => m.role === 'Chairman')?.publicId || '';
+
+  const isOnline = mode !== 'InPerson';
+  // Webex will own the join URL for an online meeting only when enabled AND an OAuth token exists.
+  const autoJoinWebex = isOnline && (webex.data?.canAutoCreate ?? false);
 
   const startIso = toIso(date, startTime);
   const endIso = toIso(date, endTime);
@@ -80,7 +86,9 @@ export function SchedulePage() {
         type,
         mode,
         location: location.trim() || undefined,
-        joinUrl: joinUrl.trim() || undefined,
+        // Webex auto-creates the URL for an online meeting (autoJoinWebex) → send nothing; the create job
+        // writes it back. In-person → no online link. Otherwise the manual value (Zoom/Teams).
+        joinUrl: isOnline && !autoJoinWebex ? joinUrl.trim() || undefined : undefined,
       },
       { onSuccess: (meeting) => navigate(`/meetings/${meeting.key}`) },
     );
@@ -182,9 +190,21 @@ export function SchedulePage() {
             {(p) => <Input {...p} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('meetings.schedule.locationPlaceholder')} />}
           </Field>
 
-          <Field label={t('meetings.schedule.joinLabel')}>
-            {(p) => <Input {...p} type="url" value={joinUrl} onChange={(e) => setJoinUrl(e.target.value)} placeholder={t('meetings.schedule.joinPlaceholder')} />}
-          </Field>
+          {/* Join URL (P13, point 5): in-person meetings have no online link; when Webex will auto-create
+              the meeting the field is read-only (the URL appears on the meeting view after saving); otherwise
+              it's a manual entry (Zoom/Teams). */}
+          {isOnline &&
+            (autoJoinWebex ? (
+              <Field label={t('meetings.schedule.joinLabel')} help={t('meetings.schedule.joinAutoNote')}>
+                {(p) => <Input {...p} type="url" value="" readOnly disabled />}
+              </Field>
+            ) : (
+              <Field label={t('meetings.schedule.joinLabel')}>
+                {(p) => (
+                  <Input {...p} type="url" value={joinUrl} onChange={(e) => setJoinUrl(e.target.value)} placeholder={t('meetings.schedule.joinPlaceholder')} />
+                )}
+              </Field>
+            ))}
 
           {schedule.isError && <p className="mt-schedule-error" role="alert">{t('meetings.schedule.failed')}</p>}
         </div>

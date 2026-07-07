@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
 import { MeetingOverview } from './MeetingOverview';
@@ -88,6 +88,25 @@ describe('MeetingOverview (P6a)', () => {
     expect(screen.getByRole('link', { name: 'Open the live workspace' })).toHaveAttribute('href', '/meetings/MTG-2026-019/notes');
     expect(screen.getByRole('link', { name: 'Review minutes' })).toHaveAttribute('href', '/meetings/MTG-2026-019/minutes');
     expect(screen.getByRole('link', { name: 'View recording' })).toHaveAttribute('href', '/meetings/MTG-2026-019/recording');
+  });
+
+  it('shows the Join Webex link only for an https joinUrl (P13)', () => {
+    // https URL → link rendered.
+    setup(meeting({ mode: 'Remote', joinUrl: 'https://acmp.webex.com/meet/abc' }));
+    expect(screen.getByRole('link', { name: 'Join Webex meeting' })).toHaveAttribute(
+      'href',
+      'https://acmp.webex.com/meet/abc',
+    );
+
+    // null joinUrl → no link.
+    cleanup();
+    setup(meeting({ mode: 'InPerson', joinUrl: null }));
+    expect(screen.queryByRole('link', { name: 'Join Webex meeting' })).not.toBeInTheDocument();
+
+    // non-https (defensive) → suppressed.
+    cleanup();
+    setup(meeting({ mode: 'Remote', joinUrl: 'javascript:alert(1)' }));
+    expect(screen.queryByRole('link', { name: 'Join Webex meeting' })).not.toBeInTheDocument();
   });
 
   it('renders nothing until the detail resolves', () => {

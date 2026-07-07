@@ -24,7 +24,7 @@ public sealed class WebexOptions
 
     // Absolute base for the "Open in ACMP" card button (card deep links are stored relative).
     public string AcmpBaseUrl { get; init; } = string.Empty;
-    public string DefaultLanguage { get; init; } = "en";         // card render language: en | ar
+    public string DefaultLanguage { get; init; } = "ar";         // card render order: which language shows first (both always render). ar-first: the committee's primary audience is Arabic (INV-009).
 
     // OAuth (secretary user token) for meeting auto-create — a bot cannot host a meeting (feasibility §4).
     public string OAuthClientId { get; init; } = string.Empty;

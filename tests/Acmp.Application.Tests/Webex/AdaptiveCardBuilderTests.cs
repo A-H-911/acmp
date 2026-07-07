@@ -48,6 +48,19 @@ public class AdaptiveCardBuilderTests
     }
 
     [Fact]
+    public void Renders_arabic_first_when_language_is_ar()
+    {
+        // Arabic-first is the default (WebexOptions.DefaultLanguage = "ar"): the committee's primary
+        // audience is Arabic. Order only — both languages still render (asserted above).
+        var json = AdaptiveCardBuilder.BuildSpaceMessageJson("room-1", Msg(), "https://acmp.local", "ar");
+
+        using var doc = JsonDocument.Parse(json);
+        var body = doc.RootElement.GetProperty("attachments")[0].GetProperty("content").GetProperty("body");
+        body[0].GetProperty("text").GetString().Should().Be("تم نشر جدول الأعمال"); // Arabic title precedes English
+        body[1].GetProperty("text").GetString().Should().Be("Agenda published");
+    }
+
+    [Fact]
     public void Omits_the_action_when_there_is_no_deep_link()
     {
         var json = AdaptiveCardBuilder.BuildSpaceMessageJson("room-1", Msg(link: null), "https://acmp.local", "en");
