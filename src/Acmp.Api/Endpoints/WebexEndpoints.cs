@@ -24,14 +24,13 @@ public static class WebexEndpoints
             .WithTags("Webex")
             .AddEndpointFilter<WebexSignatureFilter>();
 
-        // OAuth consent flow for the secretary meeting-create token (WS3b). ANONYMOUS by necessity: both legs
-        // are top-level browser navigations (the redirect to Webex, then Webex's redirect back), which cannot
-        // carry a Keycloak bearer — ACMP is bearer-only with no server session cookie, so identity-gating a
-        // browser-navigable endpoint is structurally impossible (a JwtBearer gate here would 401 every callback).
-        // CSRF is instead defended by the single-use `state` cookie (verified in the callback), and token linking
-        // is audited (INV-005) for attributability. ponytail: the on-prem/private-network posture (CON-001) makes
-        // this acceptable; the hardening path is SPA-mediated initiation — an authenticated XHR returns the
-        // authorize URL — once an admin "Connect Webex" screen exists.
+        // OAuth consent flow for the secretary meeting-create token (WS3b). These are top-level browser
+        // navigations (redirect to Webex, then Webex's redirect back), so they can't carry a Keycloak bearer —
+        // ACMP is bearer-only with no server session cookie. /start is therefore gated by an operator-only
+        // SETUP KEY (WebexOptions.OAuthSetupKey, fail-closed) so it isn't unauthenticated token-minting; /callback
+        // is anonymous but only completes a flow whose single-use `state` cookie was minted by a key-gated /start
+        // in the same browser, and token linking is audited (INV-005). ponytail: production hardening is
+        // SPA-mediated initiation behind AdminConfig with a subject-bound state, once a "Connect Webex" screen exists.
         var oauth = app.MapGroup("/api/webex/oauth").WithTags("Webex");
         oauth.MapGet("/start", StartOAuth);
         oauth.MapGet("/callback", CallbackAsync);
@@ -40,11 +39,21 @@ public static class WebexEndpoints
 
     private const string StateCookie = "webex_oauth_state";
 
-    private static IResult StartOAuth(HttpContext http, IOptions<WebexOptions> options)
+    private static IResult StartOAuth(HttpContext http, IOptions<WebexOptions> options, string? key)
     {
         var o = options.Value;
         if (!o.Enabled)
             return Results.BadRequest("Webex is not enabled.");
+
+        // Operator-only gate. /start can't use the bearer (it's a browser navigation), so without this it would
+        // be an unauthenticated token-minting endpoint — acute once the app is publicly reachable via ngrok.
+        // Fail closed: an unconfigured or mismatched key is a 404 (don't reveal the endpoint). The gate + the
+        // single-use `state` cookie together mean an anonymous /callback can only complete a flow that an
+        // operator (key holder) initiated in the same browser.
+        if (string.IsNullOrEmpty(o.OAuthSetupKey) || string.IsNullOrEmpty(key) ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(o.OAuthSetupKey), Encoding.UTF8.GetBytes(key)))
+            return Results.NotFound();
 
         // Bind a single-use OAuth `state` to the admin's browser to defend against OAuth CSRF /
         // authorization-code injection: the callback must echo this exact value (ADR-0023 security note).

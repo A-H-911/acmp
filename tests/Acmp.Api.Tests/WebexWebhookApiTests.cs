@@ -98,6 +98,18 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Fact]
+    public async Task Oauth_start_is_gated_by_the_setup_key()
+    {
+        // /start can't carry a bearer (it's a browser navigation), so it's gated by the operator-only setup key.
+        // The base EnabledClient configures no key => fail-closed 404, proving /start is not an unauthenticated
+        // token-minting endpoint (the flagged HIGH). A wrong key is likewise indistinguishable from absent.
+        var response = await EnabledClient(new FakeScheduler())
+            .GetAsync("/api/webex/oauth/start?key=wrong");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private sealed class FakeScheduler : IWebexJobScheduler
     {
         public int Enqueued;

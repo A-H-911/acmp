@@ -34,4 +34,11 @@ public sealed class WebexOptions
 
     // Symmetric key (base64) encrypting the persisted OAuth refresh/access tokens at rest.
     public string TokenEncryptionKey { get; init; } = string.Empty;
+
+    // Operator-only gate for the OAuth consent initiation (/api/webex/oauth/start). That endpoint is a
+    // top-level browser navigation, so it cannot carry a Keycloak bearer; without a gate it would be an
+    // UNAUTHENTICATED token-minting endpoint (worse once the app is publicly reachable via ngrok). /start
+    // requires this key (fail-closed: empty key => /start is 404), which only the operator holds. The
+    // hardening path remains SPA-mediated initiation behind AdminConfig with a subject-bound state.
+    public string OAuthSetupKey { get; init; } = string.Empty;
 }
