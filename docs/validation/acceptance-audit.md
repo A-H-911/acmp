@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-06-30
+updated: 2026-07-07
 ---
 
 # ACMP Acceptance Audit
@@ -815,6 +815,13 @@ reconciliation, 2026-06-30, which flipped **AC-035 Partial→Met** once its live
 >   `core-loop.spec` (UI accept → live-HTTP prepare → the prepared topic visibly flows into the live agenda
 >   pool, is added + published). Per the project's own G-TRACE rule ("Met once the live HTTP/UI leg lands")
 >   this is the one clean flip.
+>   - **⚠ 2026-07-07 correction (tracked as [D-15](../execution/deferred-work-register.md)).** The "live HTTP
+>     leg" above is a **direct HTTP** call in the E2E — **the SPA has no UI to mark a topic Prepared** (only
+>     `accept`/`return` are wired). So in the product a Secretary/Owner **cannot** perform this step, no topic
+>     reaches `Prepared`, and the agenda-builder pool is **permanently empty via the UI** (operator-reported).
+>     The transition + `TopicPrepared` audit + scheduling-eligibility are genuinely Met **at the API**; the
+>     **user-facing UI affordance is missing**. Verdict arguably **Partial** — flagged for operator decision;
+>     the (frontend-only) remediation is scoped as high-priority **D-15**.
 > - **Caveats closed, no verdict change** (evidence strengthened on already-`Met` rows): **AC-001** (auth.spec
 >   = the automated UI-regression that was "→ P17"); **AC-044** (the "recommended live browser axe/RTL pass" —
 >   native drag-reorder on a real browser + live axe AA); **AC-051** (the "standing cross-session browser
