@@ -6,11 +6,11 @@ using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Notifications.Application.Channels;
 
-// The v1 notification channel (ADR-0005, AC-053): a synchronous write to the in-app notification center.
-// Registered as the single INotificationChannel implementation; email/Webex are added later behind the
-// same interface. Synchronous write meets AC-051's ≤5s for a ≤20-user committee — no queue/Hangfire here.
-// Callers (e.g. Meetings) depend only on the Shared INotificationChannel interface, never on this module.
-public sealed class InAppNotificationChannel : INotificationChannel
+// The in-app notification sink (ADR-0005, AC-053): a synchronous write to the in-app notification center.
+// Registered as an INotificationSink behind the NotificationDispatcher; Webex is a second sink (P13).
+// Synchronous write meets AC-051's ≤5s for a ≤20-user committee — no queue/Hangfire here. Callers depend
+// only on the Shared INotificationChannel (the dispatcher), never on this module.
+public sealed class InAppNotificationChannel : INotificationSink
 {
     private readonly INotificationsDbContext _db;
 

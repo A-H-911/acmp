@@ -141,6 +141,17 @@ namespace Acmp.Modules.Meetings.Infrastructure.Migrations
                     b.Property<Guid>("PublicId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RecordingDownloadUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<int?>("RecordingDurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecordingUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -174,6 +185,10 @@ namespace Acmp.Modules.Meetings.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<string>("WebexMeetingId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
                     b.HasKey("Id");
 
                     b.HasAlternateKey("PublicId");
@@ -184,6 +199,8 @@ namespace Acmp.Modules.Meetings.Infrastructure.Migrations
                     b.HasIndex("ScheduledStart");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("WebexMeetingId");
 
                     b.ToTable("meetings", "meetings");
                 });

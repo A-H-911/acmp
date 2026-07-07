@@ -5,6 +5,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using FluentValidation;
 using MediatR;
@@ -54,10 +55,11 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
     private readonly IAuditSink _audit;
     private readonly ICommitteeDirectory _directory;
     private readonly INotificationChannel _notifications;
+    private readonly IWebexMeetingProvisioner _webex;
 
     public ScheduleMeetingHandler(IMeetingsDbContext db, IMeetingKeyGenerator keys,
         ICurrentUser user, IClock clock, IAuditSink audit,
-        ICommitteeDirectory directory, INotificationChannel notifications)
+        ICommitteeDirectory directory, INotificationChannel notifications, IWebexMeetingProvisioner webex)
     {
         _db = db;
         _keys = keys;
@@ -66,6 +68,7 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
         _audit = audit;
         _directory = directory;
         _notifications = notifications;
+        _webex = webex;
     }
 
     public async Task<MeetingSummaryDto> Handle(ScheduleMeetingCommand request, CancellationToken ct)
@@ -88,6 +91,11 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
         await _audit.EmitAsync("Meetings.MeetingScheduled", sub, new { meeting.PublicId, meeting.Key }, ct);
         await MeetingNotifications.FanOutAsync(_directory, _notifications,
             MeetingNotifications.MeetingScheduled(meeting.Title, meeting.Key, meeting.ScheduledStart), ct);
+
+        // Best-effort Webex meeting auto-create for online meetings (P13, WS3b). No-op unless Webex is enabled;
+        // never blocks scheduling.
+        await _webex.ProvisionAsync(meeting.PublicId, meeting.Title, meeting.ScheduledStart, meeting.ScheduledEnd,
+            meeting.Mode != MeetingMode.InPerson, ct);
 
         return MeetingMapping.ToSummary(meeting, agenda);
     }

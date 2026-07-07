@@ -30,6 +30,7 @@ The durable index of work that is **known-not-done**: intentionally deferred fea
 | D-11 | Tarseem diagram render sidecar (behind `IDiagramRenderer`) + Diagrams surface | Feature-deferral | Diagrams authored externally and attached as files | Phase 2 | P14 kickoff (Tarseem container build validated) | Open |
 | D-12 | Email notification channel via `INotificationChannel` | Feature-deferral | In-app notification center only (no email in v1) | Phase 3 | SMTP relay available (see [dependency register](../requirements/dependency-register.md)) | Open |
 | D-13 | Per-ballot crypto hash chaining (vote *state-change* chain shipped in the P9-review slice, PR #76; individual ballots covered transitively, not individually chained) | Tech-debt | Hash-chained vote state-change audit rows | Phase 2 | P16 security-hardening slice | Open |
+| D-14 | Webex per-user DM cards, meeting auto-invitations, and email→member attendance auto-populate | Feature-deferral | P13 ships **space** delivery (committee Webex space), meeting auto-create without invitees, and recording-ready webhook; attendance stays manual | Phase 2/3 | `ICommitteeDirectory` exposes member email (a Membership seam extension) — email is persisted but not projected today | Open |
 
 ## Change records
 

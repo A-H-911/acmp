@@ -9,6 +9,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -87,7 +88,7 @@ public class MeetingHandlerTests
     private static async Task<(MeetingsDbContext Db, Guid MeetingId)> ScheduledMeetingAsync(ICurrentUser user, IClock clock)
     {
         var db = NewDb(user, clock);
-        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
+        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Substitute.For<IWebexMeetingProvisioner>())
             .Handle(ScheduleCmd(), CancellationToken.None);
         return (db, summary.Id);
     }
@@ -98,7 +99,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify())
+        var summary = await new ScheduleMeetingHandler(db, new MeetingKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Substitute.For<IWebexMeetingProvisioner>())
             .Handle(ScheduleCmd(), CancellationToken.None);
 
         summary.Key.Should().Be("MTG-2026-001");

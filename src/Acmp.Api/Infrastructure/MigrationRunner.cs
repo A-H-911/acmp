@@ -2,6 +2,7 @@
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
+using Acmp.Modules.Integrations.Webex.Oauth;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
@@ -20,7 +21,7 @@ public static class MigrationRunner
     {
         using var scope = app.Services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        var contexts = new DbContext[]
+        var contexts = new List<DbContext>
         {
             scope.ServiceProvider.GetRequiredService<MembershipDbContext>(),
             scope.ServiceProvider.GetRequiredService<TopicsDbContext>(),
@@ -34,6 +35,10 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),
             scope.ServiceProvider.GetRequiredService<AuditDbContext>(),
         };
+
+        // The Webex OAuth token store is only registered when the adapter is enabled (P13).
+        if (scope.ServiceProvider.GetService<WebexDbContext>() is { } webexDb)
+            contexts.Add(webexDb);
 
         // Non-relational providers (the in-memory store used by integration tests) have no migrations.
         if (contexts.Any(c => !c.Database.IsRelational()))

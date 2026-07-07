@@ -12,6 +12,25 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13 — Webex integration (Phase 2) — branch `feat/p13-webex-integration`
+
+**2026-07-07.** Phase-2 Webex adapter behind `INotificationChannel` + a meeting/recording client (ADR-0005, ADR-0023). **Application/adapter surface COMPLETE + CI-green; infra split (worker container) and docs polish still open.**
+
+- **Multi-channel dispatch (WS1).** New `INotificationSink` + `NotificationDispatcher` (the single `INotificationChannel`) fan out to every sink; the in-app channel became a sink. **Zero changes to the ~15 existing callers.**
+- **Webex adapter module (WS2).** New `Acmp.Modules.Integrations.Webex` (depends only on `Acmp.Shared`, ArchUnit-enforced): typed `WebexApiClient` (bot auth, 429→typed exception), `AdaptiveCardBuilder` (v1.3, ≤80 KB, EN/AR, absolute deep-link), `WebexNotificationSink` (Enabled-gated, committee-wide events only, **one post per event** collapse, failure-isolated), `WebexSendJob` (429→reschedule via Hangfire), testable `IWebexJobScheduler` seam.
+- **Recording webhook + write-back (WS3).** First **anonymous** endpoint `POST /api/webex/webhook` authenticated by **HMAC-SHA1** (Webex default; SHA256/512 configurable) over the raw body + 5-min replay guard; `IMeetingWebexWriter` (ADR-0021 write seam) + new `Meeting` Webex fields (`WebexMeetingId` indexed for correlation, recording ref) + migration `Meetings_AddWebexFields`; recording processor fetches `GET /recordings/{id}` and attaches (idempotent, audited INV-005).
+- **OAuth + meeting auto-create (WS3b).** Secretary OAuth flow (`/api/webex/oauth/start|callback`, Admin-gated); `WebexToken` store (AES-GCM encrypted, own `webex` schema, migration `Webex_TokenStore`, provisioned by `MigrationRunner`) with transparent refresh; `ScheduleMeeting` enqueues create for online meetings via the new Shared `IWebexMeetingProvisioner` (Meetings registers a no-op default; the adapter overrides when enabled) → writes id + join URL back. **Dropped the speculative `IMeetingIntegration` Shared seam** (YAGNI — used once, internal to the module).
+
+**Decisions applied:** Hangfire-native retry (no outbox table); **space-only delivery** (per-user email absent from `ICommitteeDirectory` → per-user DM/invitations/email-attendance deferred, **D-14**); **HMAC-SHA1 default** (corrected from an initial SHA256 assumption via Webex docs); adapter **not registered at all when `Webex:Enabled=false`** (clean AC-071, avoids a Hangfire-off-in-Testing DI landmine).
+
+**New acceptance criteria:** **AC-067…072** added (space card + in-app; 429 reschedule; webhook HMAC 401/200 + replay; recording attach + audit; disabled = in-app only; meeting auto-create + graceful no-token). AC-069/071(edge) proven by WebApplicationFactory integration tests; the rest by unit tests.
+
+**Verification:** 710 Application tests + **31 Webex unit tests** + **3 webhook integration tests** + **41 ArchUnit** (Webex boundary added) — all green. Two EF migrations. Full solution builds clean. No product AC regressions.
+
+**Next (open):** WS0 — dedicated background-worker container (Hangfire server split from the API, shared composition root, ngrok ingress, docker-compose) + **ADR-0024**; WS5/6 remainder — acceptance-audit verdicts, `functional.md` FR flips (FR-056/057→Met), status-report regen, naming-conventions (new module), validator + coverage/format gates; then the operator-run **live sandbox** validation (ngrok + Webex creds).
+
+---
+
 ## Keystone migration gap remediation — branch `fix/keystone-migration-gaps`
 
 **2026-07-06.** Adversarial post-migration audit (3 exploration agents + advisor + independent devil's-advocate verification) found the PR #97 migration **faithful on register content** (all 66 ACs + Given/When/Then intact; guardrails→INV 1:1; CHANGE-001 substance preserved) but **lossy on the agentic surface**. Remediated, docs-only:

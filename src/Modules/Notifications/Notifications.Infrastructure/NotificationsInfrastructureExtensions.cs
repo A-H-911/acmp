@@ -22,7 +22,10 @@ public static class NotificationsInfrastructureExtensions
                 sql.MigrationsHistoryTable("__EFMigrationsHistory", NotificationsDbContext.Schema)));
 
         services.AddScoped<INotificationsDbContext>(sp => sp.GetRequiredService<NotificationsDbContext>());
-        services.AddScoped<INotificationChannel, InAppNotificationChannel>();
+        // The dispatcher is the single INotificationChannel; it fans out to every registered sink. The
+        // in-app sink is always present; the Webex adapter (P13) registers a second sink in its own module.
+        services.AddScoped<INotificationSink, InAppNotificationChannel>();
+        services.AddScoped<INotificationChannel, NotificationDispatcher>();
 
         services.AddNotificationsApplication();
         return services;

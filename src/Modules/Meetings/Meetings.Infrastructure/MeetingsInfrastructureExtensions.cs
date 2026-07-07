@@ -24,6 +24,10 @@ public static class MeetingsInfrastructureExtensions
 
         // Cross-module seam for the Decisions Vote present-quorum gate (ADR-0001, docs/domain/entity-lifecycles.md §4).
         services.AddScoped<IMeetingQuorumSource, MeetingQuorumSource>();
+        // Inbound Webex write seam (ADR-0021, P13): the Webex integration stores the correlation id + recording.
+        services.AddScoped<IMeetingWebexWriter, MeetingWebexWriter>();
+        // Default no-op meeting provisioner; the Webex adapter overrides it (when enabled) after this call.
+        services.AddScoped<IWebexMeetingProvisioner, NullWebexMeetingProvisioner>();
 
         services.AddMeetingsApplication();
         return services;

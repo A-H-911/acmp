@@ -10,6 +10,7 @@ using Acmp.Modules.Dependencies.Application;
 using Acmp.Modules.Dependencies.Infrastructure;
 using Acmp.Modules.Governance.Application;
 using Acmp.Modules.Governance.Infrastructure;
+using Acmp.Modules.Integrations.Webex;
 using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Infrastructure;
 using Acmp.Modules.Membership.Application;
@@ -53,6 +54,9 @@ builder.Services.AddTraceabilityModule(builder.Configuration);
 builder.Services.AddDependenciesModule(builder.Configuration);
 builder.Services.AddGovernanceModule(builder.Configuration);
 builder.Services.AddNotificationsModule(builder.Configuration);
+// Webex adapter (P13, ADR-0005): a second INotificationSink behind the dispatcher. Registers nothing when
+// Webex:Enabled is false (AC-071) — in-app stays the sole channel. The send job runs on Hangfire.
+builder.Services.AddWebexIntegration(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/domain/permission-role-matrix.md matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
@@ -150,6 +154,7 @@ app.MapAdrEndpoints();
 app.MapInvariantEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
+app.MapWebexEndpoints(); // P13: anonymous, HMAC-authenticated inbound Webex webhook
 
 // Apply EF migrations on startup, retrying while SQL Server finishes accepting connections.
 await MigrationRunner.MigrateAsync(app);

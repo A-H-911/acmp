@@ -7,7 +7,7 @@ metadata:
   originSessionId: af8554f0-2b34-4de6-bc46-c88f3dc8902a
 ---
 
-Adversarial audit of the Keystone migration (PR #97), remediated on branch `fix/keystone-migration-gaps` (2026-07-06). Key durable facts:
+Adversarial audit of the Keystone migration (PR #97), remediated on branch `fix/keystone-migration-gaps` — **MERGED to main (squash `ba2f11e`, PR #98, all 4 CI checks green, 2026-07-06)**. Key durable facts:
 
 - **The build-slice ladder is `P1…P19`**, canonically defined in `docs/planning/roadmap.md` §Build-slice ladder (P1–P12 shipped w/ PR numbers; P13 Webex · P14 Tarseem+Diagrams · P15 Research/Knowledge · P16 security · P17 testing · P18 deployment · P19 final audit). Per-slice prompts for P13–P19 live in `docs/handoff/follow-up-prompts.md`. Three OTHER "P-number" schemes exist in history — backlog priority codes P1–P4, the Usage Map's internal phase numbers, and early audit-era "P14" tokens — the roadmap's legacy-token map disambiguates; never renumber the Usage Map (INV-014).
 - **Truncation accident predating the migration:** commit `16e0577` clipped the tails of `execution-handoff/phase-prompts.md` (P18 mid-sentence, P19 lost), `HANDOFF-RUNBOOK.md`, and the READMEs' guiding-principles list. Baseline `c487448` holds the full originals. The advisor's "P19 is a numeric error" conclusion was wrong because it verified against the truncated revision — when auditing "lost" content, always check the EARLIEST version, not just the pre-change parent.
