@@ -48,6 +48,9 @@ public static class WebexIntegrationExtensions
         services.AddScoped<WebexMeetingCreateJob>();
         // Overrides the Meetings module's no-op default (registered earlier in composition) when enabled.
         services.AddScoped<IWebexMeetingProvisioner, WebexMeetingProvisioner>();
+        // Re-registers the recordings webhook on host startup (redeploy / ngrok-URL change). Best-effort;
+        // no-ops until a token exists. Runs in both hosts — the reconcile converges, so that is harmless.
+        services.AddHostedService<WebexWebhookRegistrar>();
 
         return services;
     }

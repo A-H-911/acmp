@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Acmp.Modules.Integrations.Webex;
 using Acmp.Modules.Integrations.Webex.Oauth;
 using Acmp.Shared.Application.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Acmp.Api.Endpoints;
@@ -117,6 +118,13 @@ public static class WebexEndpoints
         // anonymous, this audit event is what makes an unexpected linking visible after the fact.
         var audit = http.RequestServices.GetRequiredService<IAuditSink>();
         await audit.EmitAsync("Webex.OAuthTokenLinked", "system:webex-oauth", new { scope = options.Value.OAuthScopes }, ct);
+
+        // Register the recordings webhook now that we hold a token — this is the moment it becomes possible
+        // (recordings are host-owned; the webhook needs the just-linked OAuth token). Best-effort: EnsureAsync
+        // swallows failures + audits its own create, so it can neither fail the callback nor double-audit; the
+        // startup registrar retries on the next restart if this call could not reach Webex.
+        var registrarLog = http.RequestServices.GetRequiredService<ILogger<WebexWebhookRegistrar>>();
+        await WebexWebhookRegistrar.EnsureAsync(http.RequestServices, registrarLog, ct);
 
         return Results.Content("Webex integration authorized. You can close this window.");
     }

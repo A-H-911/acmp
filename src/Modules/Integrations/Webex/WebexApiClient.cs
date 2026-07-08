@@ -98,6 +98,91 @@ public sealed class WebexApiClient : IWebexApiClient
         public string? WebLink { get; init; }
     }
 
+    public async Task<bool> EnsureRecordingsWebhookAsync(string accessToken, string targetUrl, string secret, CancellationToken ct = default)
+    {
+        var existing = await ListWebhooksAsync(accessToken, ct);
+        var recordingHooks = existing
+            .Where(w => string.Equals(w.Resource, "recordings", StringComparison.OrdinalIgnoreCase)
+                     && string.Equals(w.Event, "created", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        // Keep at most one hook already on the current targetUrl (assumed ours — the secret is redacted on
+        // read so we cannot re-verify it); delete every other recordings hook (stale ngrok URLs + any
+        // duplicate a concurrent API/worker registration created). Converges to exactly one.
+        var keep = recordingHooks.FirstOrDefault(w =>
+            string.Equals(w.TargetUrl, targetUrl, StringComparison.OrdinalIgnoreCase));
+        foreach (var hook in recordingHooks)
+        {
+            if (ReferenceEquals(hook, keep) || string.IsNullOrEmpty(hook.Id))
+                continue;
+            await DeleteWebhookAsync(accessToken, hook.Id!, ct);
+        }
+
+        if (keep is not null)
+            return false;
+
+        var payload = new
+        {
+            name = "acmp-recordings-created",
+            resource = "recordings",
+            @event = "created",
+            targetUrl,
+            secret,
+        };
+        using var content = JsonContent.Create(payload);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "webhooks") { Content = content };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var response = await _http.SendAsync(request, ct);
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            throw new WebexRateLimitException(ReadRetryAfter(response));
+        if (!response.IsSuccessStatusCode)
+            throw new WebexApiException((int)response.StatusCode, await SafeBodyAsync(response, ct));
+        return true;
+    }
+
+    private async Task<IReadOnlyList<WebhookDto>> ListWebhooksAsync(string accessToken, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "webhooks");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var response = await _http.SendAsync(request, ct);
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            throw new WebexRateLimitException(ReadRetryAfter(response));
+        if (!response.IsSuccessStatusCode)
+            throw new WebexApiException((int)response.StatusCode, await SafeBodyAsync(response, ct));
+
+        var list = await response.Content.ReadFromJsonAsync<WebhookListDto>(cancellationToken: ct);
+        return list?.Items ?? [];
+    }
+
+    private async Task DeleteWebhookAsync(string accessToken, string id, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, $"webhooks/{Uri.EscapeDataString(id)}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var response = await _http.SendAsync(request, ct);
+        if (response.StatusCode is HttpStatusCode.NotFound)
+            return; // already gone — a concurrent reconcile beat us to it
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            throw new WebexRateLimitException(ReadRetryAfter(response));
+        if (!response.IsSuccessStatusCode)
+            throw new WebexApiException((int)response.StatusCode, await SafeBodyAsync(response, ct));
+    }
+
+    private sealed record WebhookListDto
+    {
+        public IReadOnlyList<WebhookDto>? Items { get; init; }
+    }
+
+    private sealed record WebhookDto
+    {
+        public string? Id { get; init; }
+        public string? TargetUrl { get; init; }
+        public string? Resource { get; init; }
+        public string? Event { get; init; }
+    }
+
     private static TimeSpan ReadRetryAfter(HttpResponseMessage response)
     {
         var header = response.Headers.RetryAfter;
