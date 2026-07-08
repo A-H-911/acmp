@@ -32,6 +32,14 @@ public class WebexSignatureTests
     }
 
     [Fact]
+    public void Accepts_a_correct_sha512_signature()
+    {
+        using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(Secret));
+        var signature = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(Body))).ToLowerInvariant();
+        WebexSignature.IsValid("HMACSHA512", Secret, Body, signature).Should().BeTrue();
+    }
+
+    [Fact]
     public void Rejects_a_tampered_body()
     {
         var signature = Sign("HMACSHA1", Secret, Body);

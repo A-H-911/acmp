@@ -244,6 +244,9 @@ public class MeetingHandlerTests
         var list = await new GetMeetingsHandler(db).Handle(new GetMeetingsQuery(), default);
         list.Should().ContainSingle();
         list[0].ItemCount.Should().Be(1);
+
+        // The query record's synthesized copy-constructor (the decl line the coverage basis counts).
+        (new GetMeetingsQuery() with { }).AllowedRoles.Should().BeEmpty();
     }
 
     // ───────────────────────── S1 adversarial: conduct/cancel/agenda-edit (ADR-0016) ─────────────────────────

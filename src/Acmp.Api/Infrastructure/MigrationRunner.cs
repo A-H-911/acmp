@@ -36,28 +36,41 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<AuditDbContext>(),
         };
 
-        // The Webex OAuth token store is only registered when the adapter is enabled (P13).
-        if (scope.ServiceProvider.GetService<WebexDbContext>() is { } webexDb)
-            contexts.Add(webexDb);
+        AddWebexIfPresent(contexts, scope.ServiceProvider);
 
         // Non-relational providers (the in-memory store used by integration tests) have no migrations.
         if (contexts.Any(c => !c.Database.IsRelational()))
             return;
 
-        const int maxAttempts = 12;
+        await RunAsync(contexts, logger, db => db.Database.MigrateAsync(), d => Task.Delay(d));
+    }
+
+    // The Webex OAuth token store is only registered when the adapter is enabled (P13). Split out so the
+    // enabled/disabled branch is unit-testable without a WebApplication.
+    public static void AddWebexIfPresent(List<DbContext> contexts, IServiceProvider services)
+    {
+        if (services.GetService<WebexDbContext>() is { } webexDb)
+            contexts.Add(webexDb);
+    }
+
+    // The retry loop, split out with injectable migrate/delay seams so it is unit-testable without a real
+    // SQL Server or real 5s waits (the DI-resolving wrapper above is covered incidentally by the app boot).
+    public static async Task RunAsync(IReadOnlyList<DbContext> contexts, ILogger logger,
+        Func<DbContext, Task> migrate, Func<TimeSpan, Task> delay, int maxAttempts = 12)
+    {
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
             try
             {
                 foreach (var db in contexts)
-                    await db.Database.MigrateAsync();
+                    await migrate(db);
                 logger.LogInformation("Database migrations applied.");
                 return;
             }
             catch (Exception ex) when (attempt < maxAttempts)
             {
                 logger.LogWarning(ex, "Migration attempt {Attempt}/{Max} failed; retrying in 5s.", attempt, maxAttempts);
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await delay(TimeSpan.FromSeconds(5));
             }
         }
     }

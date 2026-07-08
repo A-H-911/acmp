@@ -47,6 +47,21 @@ public class WebexMeetingCreateJobTests
         await client.DidNotReceive().CreateMeetingAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
         await writer.DidNotReceive().SetWebexMeetingAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task Skips_the_writeback_when_the_create_returns_no_meeting()
+    {
+        var tokens = Substitute.For<IWebexTokenService>();
+        tokens.GetValidAccessTokenAsync(Arg.Any<CancellationToken>()).Returns("acc-1");
+        var client = Substitute.For<IWebexApiClient>();
+        client.CreateMeetingAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns((CreatedWebexMeeting?)null);
+        var writer = Substitute.For<IMeetingWebexWriter>();
+
+        await Job(tokens, client, writer).CreateAsync(Guid.NewGuid(), "Committee", Start, Start.AddHours(1), default);
+
+        await writer.DidNotReceive().SetWebexMeetingAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
 }
 
 // The provisioner only enqueues for online meetings when enabled.

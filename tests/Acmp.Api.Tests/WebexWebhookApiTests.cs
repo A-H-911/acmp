@@ -86,6 +86,54 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Empty_body_with_a_valid_signature_is_accepted_and_nothing_is_enqueued()
+    {
+        // Valid HMAC over an empty body: the filter passes it through, but Handle drops an empty payload.
+        var fake = new FakeScheduler();
+        var response = await EnabledClient(fake).SendAsync(Post("", Sign("")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fake.Enqueued.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Malformed_json_is_accepted_and_nothing_is_enqueued()
+    {
+        // Never 500 back to Webex on a body that fails to deserialize.
+        const string body = "{ not json";
+        var fake = new FakeScheduler();
+        var response = await EnabledClient(fake).SendAsync(Post(body, Sign(body)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fake.Enqueued.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Null_envelope_is_accepted_and_nothing_is_enqueued()
+    {
+        // A literal JSON null deserializes to a null envelope — accept and ignore.
+        const string body = "null";
+        var fake = new FakeScheduler();
+        var response = await EnabledClient(fake).SendAsync(Post(body, Sign(body)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fake.Enqueued.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task An_event_older_than_the_replay_window_is_dropped()
+    {
+        // Replay guard: a recordings/created event created > 5 minutes ago is ignored (never enqueued).
+        var body =
+            $"{{\"resource\":\"recordings\",\"event\":\"created\",\"created\":\"{DateTimeOffset.UtcNow.AddMinutes(-10):o}\",\"data\":{{\"id\":\"rec-old\"}}}}";
+        var fake = new FakeScheduler();
+        var response = await EnabledClient(fake).SendAsync(Post(body, Sign(body)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fake.Enqueued.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Oauth_callback_is_reachable_without_authentication()
     {
         // The OAuth callback is a top-level browser redirect FROM Webex — it cannot carry a Keycloak bearer, so

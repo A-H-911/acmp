@@ -142,5 +142,8 @@ public class MembershipAdminFeatureTests
 
         streams.Select(s => s.Code).Should().Equal("architecture", "platform");
         streams[0].NameAr.Should().Be("الهندسة");
+
+        // The query record's synthesized copy-constructor (the decl line the coverage basis counts).
+        (new GetStreamsQuery() with { }).AllowedRoles.Should().BeEmpty();
     }
 }

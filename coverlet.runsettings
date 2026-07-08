@@ -19,8 +19,13 @@
                MinioFileStore is the Phase-2 S3 adapter, not wired into any v1 runtime flow (ADR-0016
                §1: exclude with a Phase-2 note until the slice that touches it). -->
           <ExcludeByFile>**/Migrations/*.cs,**/*DbContextFactory.cs,**/MinioFileStore.cs</ExcludeByFile>
-          <!-- Source-generated code (e.g. [GeneratedRegex]) and compiler/EF scaffolding. -->
-          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverage,DebuggerNonUserCodeAttribute</ExcludeByAttribute>
+          <!-- Source-generated code (e.g. [GeneratedRegex]) and EF scaffolding via GeneratedCodeAttribute.
+               CompilerGeneratedAttribute is intentionally NOT listed: it also tags async/iterator STATE
+               MACHINES (where async method bodies live), so excluding it silently drops the coverage of any
+               async-heavy, unit-tested code (whole Webex module read ~40% though its tests pass). Coverlet
+               already skips truly un-mappable generated members (record Equals/GetHashCode, lambdas) on its
+               own, so leaving this off measures async bodies without counting record boilerplate. -->
+          <ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverage,DebuggerNonUserCodeAttribute</ExcludeByAttribute>
           <!-- Program.cs is the composition root (host builder); exercised at boot, no branching to assert. -->
           <Exclude>[Acmp.Api]Program</Exclude>
         </Configuration>
