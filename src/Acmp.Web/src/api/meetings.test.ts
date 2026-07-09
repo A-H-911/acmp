@@ -5,6 +5,7 @@ import {
   useAddAgendaItem, useRemoveAgendaItem, useMoveAgendaItem, useSetTimebox,
   useAssignPresenter, usePublishAgenda, useStartMeeting, useEndMeeting,
   useMarkAttendance, useCaptureDiscussion, useRecordActualTime,
+  useRecordingUrl, useDeleteMeetingRecording, useUploadMeetingRecording,
 } from './meetings';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
@@ -205,5 +206,51 @@ describe('live-meeting mutations (invalidate detail only)', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(urlOf(spy)).toBe('/api/meetings/m1/agenda/items/t1/actual-time');
     expect(lastBody(spy)).toEqual({ actualMinutes: 12, outcome: 'Discussed' });
+  });
+});
+
+describe('recording (FR-056)', () => {
+  it('useUploadMeetingRecording POSTs the multipart file and invalidates the detail + presigned-url keys', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { source: 'Uploaded', fileName: 'r.mp4', contentType: 'video/mp4', sizeBytes: 3 } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useUploadMeetingRecording('MTG-2026-002'), { wrapper });
+    result.current.mutate(new File(['abc'], 'r.mp4', { type: 'video/mp4' }));
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/meetings/MTG-2026-002/recording');
+    expect(methodOf(spy)).toBe('POST');
+    expect((result.current.data as { source: string }).source).toBe('Uploaded');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'detail', 'MTG-2026-002'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'recording-url', 'MTG-2026-002'] });
+  });
+
+  it('useRecordingUrl fetches the presigned URL when enabled', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { url: 'https://minio/acmp-recordings/x.mp4?sig=1' } }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useRecordingUrl('MTG-2026-002', true), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/meetings/MTG-2026-002/recording/url');
+    expect(result.current.data?.url).toContain('acmp-recordings');
+  });
+
+  it('useRecordingUrl stays idle when not enabled (no uploaded recording)', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { url: 'x' } }));
+    const { wrapper } = makeQueryWrapper();
+    renderHook(() => useRecordingUrl('MTG-2026-002', false), { wrapper });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('useDeleteMeetingRecording DELETEs and invalidates the detail + presigned-url keys', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useDeleteMeetingRecording('MTG-2026-002'), { wrapper });
+    result.current.mutate();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/meetings/MTG-2026-002/recording');
+    expect(methodOf(spy)).toBe('DELETE');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'detail', 'MTG-2026-002'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'recording-url', 'MTG-2026-002'] });
   });
 });

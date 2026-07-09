@@ -283,6 +283,23 @@ public class WebexApiClientTests
         ex.Which.RetryAfter.Should().Be(TimeSpan.FromSeconds(5)); // DefaultRetryAfter
     }
 
+    [Fact] // SafeBodyAsync: an error body that cannot be decoded (bad charset) still yields a typed exception
+    public async Task Error_body_that_throws_on_read_falls_back_to_unreadable_placeholder()
+    {
+        // The bytes buffer fine at SendAsync; ReadAsStringAsync then resolves the bogus charset and throws,
+        // which SafeBodyAsync swallows into the "<unreadable body>" fallback.
+        var client = Client(_ =>
+        {
+            var content = new StringContent("boom", Encoding.UTF8, "text/plain");
+            content.Headers.ContentType!.CharSet = "not-a-real-charset";
+            return new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = content };
+        });
+
+        var ex = await client.Invoking(c => c.PostSpaceMessageAsync("{}")).Should().ThrowAsync<WebexApiException>();
+        ex.Which.Message.Should().Contain("<unreadable body>");
+        ex.Which.StatusCode.Should().Be(400);
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _responder;
