@@ -816,6 +816,7 @@
       "minutesReady": "Minutes",
       "decisionApproved": "Decision",
       "actionAssigned": "Action",
+      "topicPrepared": "Topic",
       "default": "Update"
     },
     "noUnreadTitle": "No unread notifications",
@@ -1159,6 +1160,11 @@
       "Deferred": "Deferred",
       "Reopened": "Reopened",
       "Converted": "Converted"
+    },
+    "prepare": {
+      "button": "Mark prepared",
+      "error": "Couldn’t mark this topic prepared. Try again.",
+      "forbidden": "You don’t have permission to prepare this topic."
     }
   },
   "submit": {
@@ -1385,7 +1391,7 @@
     "urgent": "Urgent",
     "add": "Add",
     "addTopic": "Add {{key}} to the agenda",
-    "poolEmpty": { "title": "Nothing to schedule", "body": "Topics prepared for an agenda will appear here, ready to add." },
+    "poolEmpty": { "title": "Nothing to schedule", "body": "Open an accepted topic and choose “Mark prepared” to add it to this pool." },
     "agendaItems": "Agenda items",
     "agendaOrder": "Agenda order",
     "agendaView": "Agenda",

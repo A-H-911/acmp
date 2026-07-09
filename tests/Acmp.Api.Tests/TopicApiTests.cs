@@ -130,6 +130,31 @@ public class TopicApiTests
         asSecretary.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
+    [Fact] // W4 (AC-035): accepted → prepared over HTTP. Exercises the real pipeline so the prepare
+    // handler's ICommitteeDirectory + INotificationChannel dependencies must actually resolve in DI —
+    // a mocked unit test can't prove that. The Secretary roster fan-out is asserted at the handler level.
+    public async Task Secretary_prepares_an_accepted_topic_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
+
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
+
+        var owner = (await (await Client(factory, "Secretary").GetAsync("/api/members"))
+            .Content.ReadFromJsonAsync<List<MemberRow>>())!.Single(m => m.Role == nameof(CommitteeRole.Member));
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        (await sec.PostAsJsonAsync($"/api/topics/{topic!.Id}/accept", new { ownerId = owner.PublicId, ownerName = "Owner One" }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var prepared = await sec.PostAsync($"/api/topics/{topic.Id}/prepare", null);
+        prepared.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await sec.GetAsync($"/api/topics/{topic.Key}");
+        (await detail.Content.ReadFromJsonAsync<TopicRow>())!.Status.Should().Be("Prepared");
+    }
+
     [Fact] // AC-031
     public async Task Reject_without_a_reason_returns_400()
     {

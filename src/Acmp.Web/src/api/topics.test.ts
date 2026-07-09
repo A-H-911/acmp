@@ -6,6 +6,7 @@ import {
   useSubmitTopic,
   useAcceptTopic,
   useReturnTopic,
+  usePrepareTopic,
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
@@ -123,6 +124,22 @@ describe('topic mutations', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(urlOf(spy)).toBe('/api/topics/abc/accept');
     expect(lastBody(spy)).toEqual({ ownerId: 'u1', ownerName: 'Owner One' });
+  });
+
+  it('usePrepareTopic POSTs to the prepare endpoint and invalidates backlog, pool, and detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => usePrepareTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate('abc');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/prepare');
+    expect((init as RequestInit).method).toBe('POST');
+    // the pool key is what unblocks the agenda builder (D-15) — assert all three invalidations
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'prepared'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });
 
   it('useReturnTopic routes reject vs defer to different endpoints/bodies', async () => {

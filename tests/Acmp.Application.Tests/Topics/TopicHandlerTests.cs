@@ -12,6 +12,8 @@ using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Exceptions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Contracts.Notifications;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -122,6 +124,16 @@ public class TopicHandlerTests
             a.EnsureAsync(Arg.Any<object>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromException(new ForbiddenAccessException("Forbidden.")));
         return a;
+    }
+
+    // The Secretary roster for the prepare fan-out. Empty by default (no recipients); pass subs to
+    // exercise skip-self. Name mirrors the sub — display name is irrelevant to the notification target.
+    private static ICommitteeDirectory Directory(params string[] secretarySubs)
+    {
+        var d = Substitute.For<ICommitteeDirectory>();
+        d.GetActiveMembersInRoleAsync(AcmpRoles.Secretary, Arg.Any<CancellationToken>())
+            .Returns(secretarySubs.Select(s => new CommitteeRecipient(s, s)).ToArray());
+        return d;
     }
 
     // Builds a topic walked to the requested status via the real domain transitions, then persists it.
@@ -313,7 +325,7 @@ public class TopicHandlerTests
         var user = User("kc-sec", "Sec");
         await using var db = NewDb(user, Clock(default));
 
-        var act = () => new PrepareTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new PrepareTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Directory(), Substitute.For<INotificationChannel>())
             .Handle(new PrepareTopicCommand(Guid.NewGuid()), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -326,7 +338,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Accepted);
 
-        var act = () => new PrepareTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new PrepareTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>(), Directory(), Substitute.For<INotificationChannel>())
             .Handle(new PrepareTopicCommand(topic.PublicId), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
@@ -339,7 +351,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Submitted);   // MarkPrepared requires Accepted
 
-        var act = () => new PrepareTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new PrepareTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Directory(), Substitute.For<INotificationChannel>())
             .Handle(new PrepareTopicCommand(topic.PublicId), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -353,11 +365,30 @@ public class TopicHandlerTests
         var topic = await SeedTopicAsync(db, TopicStatus.Accepted);
         var audit = Substitute.For<IAuditSink>();
 
-        await new PrepareTopicHandler(db, Authz(), user, Clock(default), audit)
+        await new PrepareTopicHandler(db, Authz(), user, Clock(default), audit, Directory(), Substitute.For<INotificationChannel>())
             .Handle(new PrepareTopicCommand(topic.PublicId), default);
 
         (await db.Topics.SingleAsync()).Status.Should().Be(TopicStatus.Prepared);
         await audit.Received(1).EmitAsync("Topics.TopicPrepared", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // W4: the Secretary roster is notified on prepare, except the actor if they are a Secretary
+    public async Task Prepare_notifies_each_secretary_except_the_actor()
+    {
+        var user = User("kc-sec", "Sec");                       // the actor is themselves a Secretary
+        await using var db = NewDb(user, Clock(default));
+        var topic = await SeedTopicAsync(db, TopicStatus.Accepted);
+        var directory = Directory("kc-sec", "kc-sec2");         // two Secretaries, incl. the actor
+        var notifications = Substitute.For<INotificationChannel>();
+
+        await new PrepareTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), directory, notifications)
+            .Handle(new PrepareTopicCommand(topic.PublicId), default);
+
+        await notifications.Received(1).PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-sec2" && m.Category == "TopicPrepared" && m.DeepLink == "/topics/" + topic.Key),
+            Arg.Any<CancellationToken>());
+        await notifications.DidNotReceive().PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-sec"), Arg.Any<CancellationToken>());
     }
 
     // ---- PrioritizeTopicHandler (AC-043) ----

@@ -12,14 +12,16 @@ import type { TopicDetail as Topic } from '../../api/topics';
 // The traceability panel (which replaced the P5 empty relationships sidebar) has its own test; stub
 // it here so this page test stays isolated from the panel's query providers.
 vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => 'TRACE_PANEL' }));
-vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn() }));
-import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment } from '../../api/topics';
+vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(), usePrepareTopic: vi.fn() }));
+import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
 const mockAddComment = useAddTopicComment as unknown as Mock;
 const mockUpload = useUploadTopicAttachment as unknown as Mock;
+const mockPrepare = usePrepareTopic as unknown as Mock;
 let mutate: Mock;
 let uploadMutate: Mock;
+let prepareMutate: Mock;
 
 const TOPIC: Topic = {
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
@@ -59,6 +61,9 @@ describe('TopicDetail (P5b)', () => {
     mockUpload.mockReset();
     uploadMutate = vi.fn();
     mockUpload.mockReturnValue({ mutate: uploadMutate, isPending: false });
+    mockPrepare.mockReset();
+    prepareMutate = vi.fn();
+    mockPrepare.mockReturnValue({ mutate: prepareMutate, isPending: false });
   });
 
   it('renders the header and overview from the detail DTO', () => {
@@ -125,6 +130,29 @@ describe('TopicDetail (P5b)', () => {
     await user.click(screen.getByRole('tab', { name: /History/ }));
     expect(screen.getByText(/Triage → Accepted/)).toBeInTheDocument();
     expect(screen.getAllByText(/Looks good/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('offers Mark prepared for an Accepted topic and calls prepare with the topic id (D-15)', async () => {
+    result({ data: { ...TOPIC, status: 'Accepted' } });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: 'Mark prepared' }));
+    expect(prepareMutate).toHaveBeenCalledWith('g1', expect.anything());
+  });
+
+  it('hides Mark prepared when the topic is not Accepted', () => {
+    result({ data: TOPIC }); // Scheduled
+    setup();
+    expect(screen.queryByRole('button', { name: 'Mark prepared' })).not.toBeInTheDocument();
+  });
+
+  it('surfaces a 403 from prepare inline instead of failing silently', async () => {
+    prepareMutate.mockImplementation((_id: string, opts: { onError: (e: unknown) => void }) => opts.onError(new ApiError(403)));
+    result({ data: { ...TOPIC, status: 'Accepted' } });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: 'Mark prepared' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/permission/i);
   });
 
   it('renders a not-found state for a 404', () => {

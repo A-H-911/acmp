@@ -650,7 +650,8 @@
 .dt-owner b { color: var(--text); font-weight: 600; }
 .dt-owner .bk-avatar { background: var(--primary); color: var(--primary-fg); inline-size: 22px; block-size: 22px; }
 .dt-created { display: inline-flex; align-items: center; gap: 6px; }
-.dt-actions { display: flex; gap: var(--sp-2); flex: 0 0 auto; }
+.dt-actions { display: flex; gap: var(--sp-2); flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; }
+.dt-prepare-err { flex-basis: 100%; text-align: end; font-size: 12.5px; color: var(--st-danger-fg); }
 
 .dt-grid {
   display: grid;

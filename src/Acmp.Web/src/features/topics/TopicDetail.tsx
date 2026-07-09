@@ -16,7 +16,7 @@
 import { useContext, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, type TopicDetail as Topic } from '../../api/topics';
+import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic, type TopicDetail as Topic } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -99,6 +99,17 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const { t } = useTranslation();
   const fmt = useDateFmt();
   const urgent = topic.urgency !== 'Normal';
+  const prepare = usePrepareTopic(topic.key);
+  const [prepareErr, setPrepareErr] = useState<string | null>(null);
+  // W4 (AC-035): move an Accepted topic into the agenda pool. Show-and-enforce — the button is offered
+  // for any Accepted topic and the backend 403s a non-owner/non-Secretary, surfaced inline.
+  const onPrepare = () => {
+    setPrepareErr(null);
+    prepare.mutate(topic.id, {
+      onError: (e) =>
+        setPrepareErr(e instanceof ApiError && e.status === 403 ? t('topics.prepare.forbidden') : t('topics.prepare.error')),
+    });
+  };
   return (
     <div className="dt-head">
       <div className="dt-head-main">
@@ -129,10 +140,16 @@ function DetailHeader({ topic }: { topic: Topic }) {
         </div>
       </div>
       <div className="dt-actions">
+        {topic.status === 'Accepted' && (
+          <Button onClick={onPrepare} loading={prepare.isPending}>
+            <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.prepare.button')}
+          </Button>
+        )}
         <Button disabled title={t('topics.comingSoon')}>
           <Icon name="calendar" size={15} aria-hidden /> {t('detail.addAgenda')}
         </Button>
         <Button variant="secondary" disabled title={t('topics.comingSoon')}>{t('detail.edit')}</Button>
+        {prepareErr && <span className="dt-prepare-err" role="alert">{prepareErr}</span>}
       </div>
     </div>
   );

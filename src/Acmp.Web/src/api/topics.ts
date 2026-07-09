@@ -208,6 +208,25 @@ export function useReturnTopic() {
   });
 }
 
+/**
+ * W4 (AC-035): mark an Accepted topic Prepared so it enters the agenda pool. This is the affordance the
+ * SPA was missing (D-15) — without it no topic ever reached Prepared and the agenda builder's pool
+ * (`['topics','prepared']`, GET /topics?status=Prepared) stayed empty by construction. Invalidate the
+ * backlog (re-buckets the card), the prepared pool (unblocks the agenda), and this topic's detail.
+ * Show-and-enforce: the button renders for any Accepted topic; the backend 403s a non-owner/non-Secretary.
+ */
+export function usePrepareTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (topicId: string) => api<void>(`/topics/${topicId}/prepare`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'prepared'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
 /** Post a discussion comment (BL-033). Body field is `reason` (the endpoint's ReasonBody). */
 export function useAddTopicComment(key: string | undefined) {
   const qc = useQueryClient();

@@ -10,6 +10,14 @@ describe('notifType', () => {
     });
   });
 
+  it('maps the TopicPrepared category to its info-toned type (D-15)', () => {
+    expect(notifType('TopicPrepared')).toEqual({
+      labelKey: 'notif.type.topicPrepared',
+      tone: 'info',
+      icon: 'checkCircle',
+    });
+  });
+
   it('falls back to a neutral default for an unknown category (never blank)', () => {
     const t = notifType('SomethingNew');
     expect(t.labelKey).toBe('notif.type.default');
