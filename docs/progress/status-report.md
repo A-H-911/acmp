@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.4.0
+version: 1.5.0
 updated: 2026-07-09
 owner: Claude Code execution agent
 generation: derived
@@ -13,8 +13,8 @@ Derived snapshot of where the build is. Regenerated each update cycle from the [
 ## Current position
 
 - **Phase:** PH-1 (MVP Governance) **complete**; PH-2 (Governance Expansion) **substantially delivered**. The canonical build-slice ladder (`P1…P19`) is in [planning/roadmap.md](../planning/roadmap.md) §Build-slice ladder.
-- **Latest slice:** **D-15 (topic *Prepare*-UI) — DONE (Tier 3).** The highest-priority defect is closed: a **"Mark prepared"** button on the Accepted-topic detail (`usePrepareTopic`, show-and-enforce, invalidates the agenda pool) + a Prepared kanban badge + reworded empty-state + a **Secretary notification** on prepare; the `core-loop.spec` E2E prepare leg was **switched to click the button** (was direct-HTTP) so it drives the affordance, and the **full spec was run locally against the live stack and passes**; CI's e2e job re-validates on the PR. `TopicApiTests` proves the new DI seams. No ADR. Un-prepare gap → **OQ-049**. All gates green incl. e2e (BE 1217 / cov 99.69% / format; FE 845 / cov / i18n 1480 / build; Playwright core-loop green); on branch `fix/d15-topic-prepare-ui`, pending PR + merge. Prior: **P13 — CLOSED & MERGED** (PR #99, squash `7e3394e`; Webex adapter WS0–WS3b + meeting-recording; AC-067–074 `Met`, AC-070 real-cloud confirm = production residual). `main` is green and deployable.
-- **Next:** open the D-15 PR → green CI → squash-merge → sync `main`. Then the remaining PH-2 backlog via [handoff/follow-up-prompts.md](../handoff/follow-up-prompts.md) — **P14** Tarseem + Diagrams · **P15** Research/Knowledge — or hardening (**P16–P19**). Residuals: operator token rotation (Webex + ngrok); a one-time **production** live-confirm of AC-070 with a real cloud recording (deferred-work D-02); the D-15 **design-update-owed** (the design omits Prepare).
+- **Latest slice:** **P13 adversarial-audit remediation — MERGED (two GO-gated slices).** Slice 1 (PR #101, squash `3a973c4`): `MinioFileStore` real coverage via a Testcontainers-MinIO integration test (the FR-056 recording store behind AC-073/074 was falsely coverage-excluded), honest AC rows, recording-tab UI/i18n/a11y minors. Slice 2 (PR #102, squash `308611d`): the **dormant** Webex hardening — fail-closed `TokenEncryptionKey` (`ValidateOnStart`), graceful refresh degradation (AC-072 `null`-on-revoke), refresh audit (`Webex.OAuthTokenRefreshed`, INV-005), webhook replay guard, per-job `Retry-After`, and a real in-memory-Hangfire dead-letter test that restores **AC-068/069 → genuinely-tested `Met`**. Live Webex validation is owed to the operator (sandbox is operator-only). Prior merges this window: **D-15** topic *Prepare*-UI (PR #100, squash `b6bb185`; OQ-049) and **P13** Webex adapter WS0–WS3b + meeting-recording (PR #99, squash `7e3394e`; AC-067–074 `Met`). `main` is green and deployable.
+- **Next:** the remaining PH-2 backlog via [handoff/follow-up-prompts.md](../handoff/follow-up-prompts.md) — **P14** Tarseem + Diagrams · **P15** Research/Knowledge — or hardening (**P16–P19**). Residuals: operator token rotation (Webex + ngrok in `deploy/.env`); a one-time **production** live-confirm of AC-070 with a real cloud recording (deferred-work D-02); the D-15 **design-update-owed** (the design omits Prepare).
 
 ## Delivered (by module / slice)
 
@@ -26,7 +26,7 @@ Derived snapshot of where the build is. Regenerated each update cycle from the [
 | Risks · Dependencies · Traceability + impact graph (P10) | Delivered | P10a–g merged; FR-095/096 |
 | Governance — ADRs & Invariants (P11) + Decision→ADR promotion | Delivered | P11a–e merged; FR-068/099–109 |
 | Dashboards & Reports (P12) | Delivered | P12 PR1–PR3 + audit remediation merged; AC-064/065/066 Met |
-| Webex integration + meeting recording (P13) | Complete — AC-067–074 Met; branch unmerged (PR #99) | WS0–WS3b (ADR-0023/0024); recording upload/playback/delete (ADR-0025; AC-073/074 Met); AC-070 live-attach = production residual (env caveat) |
+| Webex integration + meeting recording (P13) + audit remediation | Delivered — AC-067–074 Met | WS0–WS3b (ADR-0023/0024); recording upload/playback/delete (ADR-0025); audit slices #101/#102 (Testcontainers-MinIO coverage + Webex hardening, AC-068/069 tested-Met); AC-070 live-attach = production residual (env caveat) |
 
 ## Gate snapshot (Keystone package)
 
