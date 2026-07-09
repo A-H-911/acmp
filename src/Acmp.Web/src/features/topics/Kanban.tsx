@@ -142,6 +142,9 @@ function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey }: {
     >
       <div className="kb-card-top">
         <Link className="bk-key" to={`/topics/${topic.key}`}>{topic.key}</Link>
+        {/* Accepted & Prepared share the 'accepted' bucket (topicMeta:42) — badge the Prepared ones so
+            they're distinguishable without splitting the column (design = 5 fixed buckets). */}
+        {topic.status === 'Prepared' && <Tag tone="info">{t('topics.status.Prepared')}</Tag>}
         {urgent && <Icon name="warnTriangle" size={12} className="bk-urgent-ic" aria-label={t('topics.urgent')} />}
       </div>
       <Link className="kb-card-title" to={`/topics/${topic.key}`}>{topic.title}</Link>

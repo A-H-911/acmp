@@ -56,6 +56,14 @@ describe('Kanban (P5b)', () => {
     expect(screen.getByRole('region', { name: /Returned, 0/ })).toBeInTheDocument();
   });
 
+  it('badges a Prepared topic so it stays distinct inside the shared Accepted bucket (D-15)', () => {
+    const rows = [row({ id: 'p1', key: 'TOP-2026-104', title: 'Prepared topic', status: 'Prepared', ownerName: 'Omar H', ownerId: 'o9' })];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+    // 'Prepared' is not a bucket label — the only source of that text on the board is the card badge.
+    expect(screen.getByText('Prepared')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Accepted, 1/ })).toBeInTheDocument();
+  });
+
   it('keyboard "M" → move popover → Accepted opens the accept dialog and accepts with an owner', async () => {
     const user = userEvent.setup();
     renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });

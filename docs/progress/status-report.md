@@ -1,6 +1,6 @@
 ---
 status: Approved
-version: 1.3.0
+version: 1.4.0
 updated: 2026-07-09
 owner: Claude Code execution agent
 generation: derived
@@ -13,8 +13,8 @@ Derived snapshot of where the build is. Regenerated each update cycle from the [
 ## Current position
 
 - **Phase:** PH-1 (MVP Governance) **complete**; PH-2 (Governance Expansion) **substantially delivered**. The canonical build-slice ladder (`P1…P19`) is in [planning/roadmap.md](../planning/roadmap.md) §Build-slice ladder.
-- **Latest slice:** **P13 — CLOSED.** The Webex adapter (WS0–WS3b; ADR-0023/0024) and the **meeting-recording** upload / presigned-playback / delete slice (ADR-0025; AC-073/074) are complete, gated, and **live-validated** on `acmp.ngrok.dev`. All P13 ACs (**AC-067–074**) are `Met`. **AC-070**'s real-cloud-recording live-confirm is settled as an **environmental caveat** (the dev/sandbox Webex account records locally only — no cloud webhook; the mechanism is proven live via webhook auto-registration + a synthetic signed webhook; production licensed host exercises it). Work sits on branch `feat/p13-recording-upload`, **PR #99 open + mergeable** vs `main`. Prior: P12 (Dashboards & Reports) + the Keystone migration are merged; `main` is green and deployable.
-- **Next:** **squash-merge PR #99 → sync `main`** (the only remaining P13 mechanical step), plus operator token rotation (Webex + ngrok). Then **D-15** (topic *Prepare*-UI — highest-priority defect) and the remaining PH-2 backlog via [handoff/follow-up-prompts.md](../handoff/follow-up-prompts.md) — **P14** Tarseem + Diagrams · **P15** Research/Knowledge — or hardening (**P16–P19**). Residual: a one-time **production** live-confirm of AC-070 with a real cloud recording (deferred-work D-02).
+- **Latest slice:** **D-15 (topic *Prepare*-UI) — DONE (Tier 3).** The highest-priority defect is closed: a **"Mark prepared"** button on the Accepted-topic detail (`usePrepareTopic`, show-and-enforce, invalidates the agenda pool) + a Prepared kanban badge + reworded empty-state + a **Secretary notification** on prepare; the `core-loop.spec` E2E prepare leg was **switched to click the button** (was direct-HTTP) so it drives the affordance, and the **full spec was run locally against the live stack and passes**; CI's e2e job re-validates on the PR. `TopicApiTests` proves the new DI seams. No ADR. Un-prepare gap → **OQ-049**. All gates green incl. e2e (BE 1217 / cov 99.69% / format; FE 845 / cov / i18n 1480 / build; Playwright core-loop green); on branch `fix/d15-topic-prepare-ui`, pending PR + merge. Prior: **P13 — CLOSED & MERGED** (PR #99, squash `7e3394e`; Webex adapter WS0–WS3b + meeting-recording; AC-067–074 `Met`, AC-070 real-cloud confirm = production residual). `main` is green and deployable.
+- **Next:** open the D-15 PR → green CI → squash-merge → sync `main`. Then the remaining PH-2 backlog via [handoff/follow-up-prompts.md](../handoff/follow-up-prompts.md) — **P14** Tarseem + Diagrams · **P15** Research/Knowledge — or hardening (**P16–P19**). Residuals: operator token rotation (Webex + ngrok); a one-time **production** live-confirm of AC-070 with a real cloud recording (deferred-work D-02); the D-15 **design-update-owed** (the design omits Prepare).
 
 ## Delivered (by module / slice)
 

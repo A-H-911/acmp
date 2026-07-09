@@ -2,13 +2,27 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-06
+updated: 2026-07-09
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## D-15 — Topic *Prepare* (Accepted→Prepared) UI affordance — Tier 3 (Complete) — branch `fix/d15-topic-prepare-ui`
+
+**2026-07-09.** Closed the highest-priority defect: the SPA had no way to mark a topic `Prepared`, so the agenda-builder pool (`GET /topics?status=Prepared`) was permanently empty and the intake→agenda core loop was broken in-product (backend `POST /topics/{id}/prepare` shipped since P5, never wired). Tier 3 = the FE affordance + a backend W4-completeness notification + the honest E2E fix.
+
+- **Frontend.** `usePrepareTopic` (invalidates backlog + `['topics','prepared']` pool + detail — the pool key is what unblocks the agenda builder). A **"Mark prepared"** button on the Accepted-topic detail (`TopicDetail.tsx`), **show-and-enforce** (rendered for any Accepted topic; backend 403s a non-owner/non-Secretary, surfaced inline — the owner is often a plain Member, so a role gate would hide it from the right person). A **Prepared** kanban badge (Accepted & Prepared share the `accepted` bucket, so Prepared was otherwise invisible). Agenda pool empty-state reworded to point at the action. `TopicPrepared` notification type added to `notifPresentation`. i18n EN+AR.
+- **Backend (W4-completeness).** `PrepareTopicHandler` now notifies the **Secretary roster** on prepare via `ICommitteeDirectory.GetActiveMembersInRoleAsync(Secretary)` + `INotificationChannel`, **skipping the actor** (no self-noise, mirrors `CreateAction`). New `TopicNotifications` (bilingual, deep-links `/topics/{key}`). No ADR — reuses existing Shared.Contracts seams; no module-boundary breach.
+- **Honesty / AC-035.** The `core-loop.spec` prepare leg was **switched from a direct-HTTP call to clicking the "Mark prepared" button** so the E2E *drives* the affordance rather than masking its absence, and the **full spec was run locally against the live stack and passes** (the button click drives the prepare `204`, the prepared topic reaches the agenda pool, and the agenda is added + published); CI's e2e job re-validates on the PR. `TopicApiTests` adds `POST /{id}/prepare → 204` through the real pipeline (proves the new DI seams resolve — a mocked unit test can't). Handler + FE hook/screen tests cover fan-out/skip-self, the button, and the badge.
+- **Decisions applied.** Tier 3 per operator; no un-prepare/defer-from-Prepared transition → **OQ-049** (default = defer, `DeferTopic` doesn't allow Prepared so a mis-prepared topic waits until scheduled). Design omits Prepare entirely → **design-update-owed** (no-reference composition). **D-15 → Done.**
+- **Gates (local = CI, incl. e2e).** BE 1217 tests green, coverage 99.69% global (per-file ≥95%), `dotnet format` clean. FE 845 tests green, per-file coverage ≥95% on all changed files, i18n parity OK (1480 keys), `npm run build` type-clean. **Playwright `core-loop.spec` run locally against the live stack — green** (isolated fresh `.env.example` compose project so the operator's dev volumes were untouched); CI's e2e job re-validates on the PR.
+
+**Next:** operator merge (branch → PR → green CI → squash-merge); the remaining PH-2 backlog (P14 Tarseem+Diagrams · P15 Research/Knowledge) or hardening (P16–P19).
 
 ---
 

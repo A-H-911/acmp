@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAs } from './login';
 import { E2E_USERS } from './users';
-import { captureBearer, prepareTopic } from './apiHelpers';
 
 /*
  * S6b (ADR-0016 §2) — the core governance loop end-to-end against the REAL stack:
@@ -13,16 +12,16 @@ import { captureBearer, prepareTopic } from './apiHelpers';
  *    fake a minutes screen.
  *  - "notify" is the publish-agenda fan-out to all committee members; we verify the bell for
  *    BOTH recipients (member + chairman), satisfying the "≥2 members" mandate.
- *  - Two steps have no v1 UI and are API-assisted (see apiHelpers): capturing the secretary's
- *    bearer, and marking the topic Prepared. Submit/accept/schedule/build/publish/conduct/end
- *    are all driven through the real UI.
+ *  - Every step is driven through the real UI, including "Mark prepared" (D-15 closed the last
+ *    API-assisted gap — the topic now reaches Prepared by clicking the button on its detail page,
+ *    so this spec exercises the affordance rather than bypassing it via a direct HTTP prepare).
  *
  * Setup: the stack boots empty, so recipients must self-provision (a login creates an *active*
  * member) BEFORE the fan-out — we log each recipient in once, in its own context, and keep the
  * contexts open to read their notification bells at the end.
  */
 test.describe('core loop — topic → agenda → meeting → conduct → notify', () => {
-  test('a topic travels the full governance loop and notifies the committee', async ({ page, browser, request }) => {
+  test('a topic travels the full governance loop and notifies the committee', async ({ page, browser }) => {
     test.setTimeout(180_000);
 
     const stamp = Date.now();
@@ -40,10 +39,8 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await loginAs(memberPage, 'member');
       });
 
-      let bearer = '';
-      await test.step('secretary signs in (PKCE) and we capture their bearer', async () => {
+      await test.step('secretary signs in (PKCE)', async () => {
         await loginAs(page, 'secretary');
-        bearer = await captureBearer(page);
       });
 
       let topic: { id: string; key: string } = { id: '', key: '' };
@@ -83,8 +80,13 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await expect(page.getByRole('dialog')).toHaveCount(0);
       });
 
-      await test.step('mark the topic Prepared (API — no v1 UI path)', async () => {
-        await prepareTopic(request, bearer, topic.id);
+      await test.step('secretary marks the topic Prepared (UI: "Mark prepared" — closes D-15)', async () => {
+        await page.goto(`/topics/${topic.key}`);
+        const [prepRes] = await Promise.all([
+          page.waitForResponse((r) => r.url().includes(`/api/topics/${topic.id}/prepare`) && r.request().method() === 'POST'),
+          page.getByRole('button', { name: 'Mark prepared' }).click(),
+        ]);
+        expect(prepRes.status()).toBe(204);
       });
 
       let meetingKey = '';

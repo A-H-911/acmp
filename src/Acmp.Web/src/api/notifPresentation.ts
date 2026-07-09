@@ -23,6 +23,7 @@ const TYPES: Record<string, NotifType> = {
   MinutesReady: { labelKey: 'notif.type.minutesReady', tone: 'success', icon: 'doc' },
   DecisionApproved: { labelKey: 'notif.type.decisionApproved', tone: 'success', icon: 'decision' },
   ActionAssigned: { labelKey: 'notif.type.actionAssigned', tone: 'warn', icon: 'action' },
+  TopicPrepared: { labelKey: 'notif.type.topicPrepared', tone: 'info', icon: 'checkCircle' },
 };
 
 const DEFAULT_TYPE: NotifType = { labelKey: 'notif.type.default', tone: 'neutral', icon: 'bell' };
