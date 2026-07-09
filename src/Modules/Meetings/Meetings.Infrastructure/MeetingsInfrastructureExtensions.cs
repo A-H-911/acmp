@@ -29,6 +29,9 @@ public static class MeetingsInfrastructureExtensions
         // Default no-op meeting provisioner; the Webex adapter overrides it (when enabled) after this call.
         services.AddScoped<IWebexMeetingProvisioner, NullWebexMeetingProvisioner>();
 
+        // Recording-upload constraints (FR-056): size cap + allowed video MIME types.
+        services.Configure<MeetingRecordingOptions>(configuration.GetSection(MeetingRecordingOptions.SectionName));
+
         services.AddMeetingsApplication();
         return services;
     }

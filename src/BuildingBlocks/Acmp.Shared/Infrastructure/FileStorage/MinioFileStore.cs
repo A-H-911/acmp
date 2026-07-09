@@ -9,8 +9,13 @@ namespace Acmp.Shared.Infrastructure.FileStorage;
 public sealed class MinioFileStore : IFileStore
 {
     private readonly IMinioClient _client;
+    private readonly MinioPresigner _presigner;
 
-    public MinioFileStore(IMinioClient client) => _client = client;
+    public MinioFileStore(IMinioClient client, MinioPresigner presigner)
+    {
+        _client = client;
+        _presigner = presigner;
+    }
 
     public async Task<string> UploadAsync(string bucket, string objectName, Stream content, string contentType, CancellationToken ct = default)
     {
@@ -24,8 +29,10 @@ public sealed class MinioFileStore : IFileStore
         return objectName;
     }
 
+    // Presigns with the public-endpoint client (browser-reachable via nginx) so the URL resolves + its SigV4
+    // signature validates from the browser; upload/exists/delete keep using the fast internal client.
     public Task<string> GetPreSignedUrlAsync(string bucket, string objectName, TimeSpan expiry, CancellationToken ct = default) =>
-        _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
+        _presigner.Client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectName)
             .WithExpiry((int)expiry.TotalSeconds));
@@ -50,4 +57,14 @@ public sealed class MinioFileStore : IFileStore
         if (!exists)
             await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket), ct);
     }
+}
+
+// Holds the IMinioClient used for presigning — the public-endpoint client when configured (browser-reachable
+// via nginx), else the internal client. A distinct singleton so upload/exists/delete stay on the fast internal
+// endpoint. Lives in this file so it inherits the MinioFileStore coverage exclusion (ADR-0016 §1).
+public sealed class MinioPresigner
+{
+    public MinioPresigner(IMinioClient client) => Client = client;
+
+    public IMinioClient Client { get; }
 }

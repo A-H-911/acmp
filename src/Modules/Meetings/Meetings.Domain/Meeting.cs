@@ -49,6 +49,14 @@ public sealed class Meeting : AuditableEntity
     public string? RecordingDownloadUrl { get; private set; }
     public int? RecordingDurationSeconds { get; private set; }
 
+    // Manually-uploaded recording (FR-056). The bytes live in MinIO via IFileStore; the object key + display
+    // metadata are stored here. Present ⇒ this meeting has a locally-uploaded recording (distinct from the
+    // Webex RecordingUrl path above); playback is served via a short-lived pre-signed URL.
+    public string? RecordingObjectKey { get; private set; }
+    public string? RecordingFileName { get; private set; }
+    public string? RecordingContentType { get; private set; }
+    public long? RecordingSizeBytes { get; private set; }
+
     public IReadOnlyCollection<Attendance> Attendees => _attendees.AsReadOnly();
     public IReadOnlyCollection<Discussion> Discussions => _discussions.AsReadOnly();
 
@@ -172,6 +180,32 @@ public sealed class Meeting : AuditableEntity
         RecordingUrl = Clean(playbackUrl);
         RecordingDownloadUrl = Clean(downloadUrl);
         RecordingDurationSeconds = durationSeconds;
+    }
+
+    // FR-056: attach a manually-uploaded recording (bytes already stored in MinIO via IFileStore). Idempotent
+    // replace — a re-upload overwrites the reference; the caller deletes the superseded object.
+    public void AttachUploadedRecording(string objectKey, string fileName, string contentType, long sizeBytes)
+    {
+        if (string.IsNullOrWhiteSpace(objectKey))
+            throw new InvalidOperationException("A stored recording object key is required.");
+        RecordingObjectKey = objectKey.Trim();
+        RecordingFileName = Clean(fileName);
+        RecordingContentType = Clean(contentType);
+        RecordingSizeBytes = sizeBytes;
+    }
+
+    // FR-056: remove any recording from the meeting — clears both the uploaded-file reference and the Webex
+    // reference. The caller deletes the stored MinIO object for an uploaded recording. Idempotent (no-op when
+    // there is nothing to clear), so a double delete is harmless.
+    public void RemoveRecording()
+    {
+        RecordingObjectKey = null;
+        RecordingFileName = null;
+        RecordingContentType = null;
+        RecordingSizeBytes = null;
+        RecordingUrl = null;
+        RecordingDownloadUrl = null;
+        RecordingDurationSeconds = null;
     }
 
     private void RequireStatus(params MeetingStatus[] allowed)

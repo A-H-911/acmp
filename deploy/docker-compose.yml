@@ -145,6 +145,10 @@ services:
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
+      # Browser-reachable host used ONLY to presign recording playback URLs (ADR-0014); via nginx /acmp-recordings/.
+      # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
+      Minio__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-}
+      Minio__PublicSecure: "true"
       # Bundled Keycloak realm (ADR-0015). Issuer must match the SPA's exactly; RequireHttpsMetadata
       # is false only for the in-stack http dev profile — set true behind TLS in prod (P18).
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"

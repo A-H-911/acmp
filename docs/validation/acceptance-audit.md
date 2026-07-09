@@ -12,6 +12,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
 
+> P13-recording update (2026-07-09): Manual meeting-recording upload + presigned playback + delete (branch
+> `feat/p13-recording-upload`, FR-056 upload leg). **AC-073 (upload+playback) / AC-074 (delete) → Met.** File
+> stored in MinIO via the shipped `IFileStore` seam (ADR-0014) under a server-derived key; playback via a
+> short-lived pre-signed MinIO URL through nginx `/acmp-recordings/` (Host preserved so SigV4 validates);
+> Secretary/Chairman upload/replace/delete, any member plays; size ≤ 2 GB (nginx + Kestrel raised). Delete
+> removes the object (uploaded) or clears the reference (Webex). **ADR-0025** records the decision. Live-validated
+> on `acmp.ngrok.dev` (real upload 200 through nginx — was 413 at the 1 MB default; presigned 200/206; delete →
+> bucket empty). Traces: `MeetingRecordingTests` + `MeetingRecordingApiTests`. See progress-log "P13-recording" entry.
+
 > P12 audit-remediation update (2026-07-05): adversarial-audit fixes across Dashboards & Reports (branch
 > `fix/p12-audit-remediation`), **NO AC flips** (AC-064/065/066 stay Met; PR3 Reports is AC-less). Fidelity +
 > data-honesty only: the Reports **Stream filter now scopes decisions/actions** via their linked Topic (no card
@@ -756,6 +765,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-070 | Webex integration | Met | MeetingWebexWriterTests (attach by WebexMeetingId + `Meetings.RecordingAttached` audit; uncorrelated→false) + WebexWebhookJobTests (fetch→attach; skip null / no-meeting-id) | P13 WS3: reference stored (not the file). |
 | AC-071 | Webex integration | Met | WebexWebhookApiTests (disabled→200 no-op) + WebexNotificationSinkTests (disabled→0 enqueue); adapter unregistered entirely when `Enabled=false` | P13: extends AC-053; air-gapped posture. |
 | AC-072 | Webex integration | Met | WebexMeetingCreateJobTests (token→create + write-back; no-token/no-meeting→skip) + WebexMeetingProvisionerTests (online+enabled→enqueue; else 0) + WebexTokenServiceTests (fresh/refresh/none) | P13 WS3b: OAuth create; graceful no-token. Live create = operator sandbox pass. |
+| AC-073 | Recording upload | Met | UploadRecording handler/validator + GetRecordingUrl handler tests + MeetingRecordingApiTests (401/403/400/404/200; upload→detail; presign→url) + live (real upload 200 through nginx; presigned 200/206) | P13-recording: MinIO via IFileStore, server-derived key, presigned playback (ADR-0025). |
+| AC-074 | Recording delete | Met | DeleteRecording handler tests (uploaded→delete object+clear+audit; webex→clear only; missing→throws) + MeetingRecordingApiTests (401/403/204→detail null) + live (delete → MinIO bucket empty) | P13-recording: both sources; Secretary/Chairman only (ADR-0025). |
 
 **Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.

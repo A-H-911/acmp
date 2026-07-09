@@ -1563,3 +1563,121 @@
 [dir='rtl'] .mt-quicklink-chevron {
   transform: scaleX(-1);
 }
+
+/* Recording tab (P13/PR4 — ACMP Meetings.dc.html isRecording). Player card + footer; self-contained. */
+.mt-recording {
+  display: flex;
+  flex-direction: column;
+}
+.mt-rec-h1 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.mt-rec-card {
+  inline-size: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.mt-rec-frame {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #1a2330, #0e141c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.mt-rec-player {
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+  background: #000;
+}
+.mt-rec-frame-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+.mt-rec-webex {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.12);
+}
+.mt-rec-webex:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.mt-rec-foot {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-soft);
+}
+.mt-rec-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mt-rec-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.mt-rec-size {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.mt-rec-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mt-rec-dl {
+  text-decoration: none;
+}
+.mt-rec-drop {
+  inline-size: 100%;
+  min-block-size: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-xl);
+}
+.mt-rec-drop-ic {
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 13px;
+  background: var(--subtle);
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mt-rec-drop-hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.mt-rec-error {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--st-danger-fg);
+}

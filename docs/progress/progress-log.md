@@ -12,6 +12,22 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13-recording — Meeting-recording upload · presigned playback · delete (Phase 2) — branch `feat/p13-recording-upload`
+
+**2026-07-09.** FR-056's *upload a recording file* leg — delivered end-to-end, live-validated. Reuses the shipped `IFileStore`/MinIO seam (ADR-0014); complements the Webex-webhook reference path (AC-070).
+
+- **Upload (BE).** `POST /api/meetings/{key}/recording` (multipart, Secretary/Chairman) → validate size/MIME (`MeetingRecordingOptions`: video/mp4|webm|quicktime, ≤ 2 GB) → store in MinIO (`acmp-recordings`) under a **server-derived key** (`{meetingKey}/{guid}{ext}`, no client filename — SigV4-safe) → `Meetings.RecordingUploaded` audit. New `Meeting` recording fields + `Meetings_AddRecordingUpload` migration.
+- **Playback (BE + infra).** `GET /{key}/recording/url` mints a 10-min pre-signed MinIO URL; nginx `location /acmp-recordings/` proxies to MinIO with the Host header preserved so the SigV4 signature validates (a dedicated presign `IMinioClient` on the public endpoint + explicit region). `<video src>` plays with Range/seek.
+- **Delete (BE).** `DELETE /{key}/recording` (Secretary/Chairman) clears the reference and, for an uploaded file, removes the MinIO object; a Webex reference is only cleared. `Meetings.RecordingRemoved` audit.
+- **UI (FE).** Recording tab rebuilt to `ACMP Meetings.dc.html` isRecording (full-width player card, source `StatusChip` Webex/Uploaded, Download/Replace/Delete via design-system `Button`/`Dialog`); upload dropzone + honest empty state; new `trash` icon; i18n EN/AR.
+
+**Decisions applied:** ADR-0025 (recordings via MinIO `IFileStore` + presigned playback + delete; Accepted). Reference-not-file for Webex, object-key-not-filename for uploads. Delete is reversible for the Webex source (a re-fired webhook re-attaches) — documented.
+**New acceptance criteria:** **AC-073** (upload + playback), **AC-074** (delete) → **Met** (trace to `MeetingRecordingTests` + `MeetingRecordingApiTests`).
+**Verification:** BE build + Application/API tests green (coverage ≥95%, `MinioFileStore` excluded); `dotnet format` clean; FE vitest + i18n parity; Keystone validator PASS. **Live (`acmp.ngrok.dev`, secretary-test):** real upload 200 through nginx (was **413** at the 1 MB `client_max_body_size` default — the root cause of the operator-reported "upload/replace not working", compounded by a **stale cached bundle**; both fixed); presigned URL 200/206; delete → MinIO bucket empty; full-width design confirmed.
+**Next (open):** AC-070 Webex-webhook live close (operator records a real Webex meeting) — a separate P13 item; transcript retrieval stays P19; D-15 (topic Prepare-UI) next.
+
+---
+
 ## P13 — Webex integration (Phase 2) — branch `feat/p13-webex-integration`
 
 **2026-07-07.** Phase-2 Webex adapter behind `INotificationChannel` + a meeting/recording client (ADR-0005, ADR-0023). **Application/adapter surface + worker-container split COMPLETE + CI-green; only the operator-run live sandbox validation remains.**

@@ -65,7 +65,7 @@ public class WebexApiClientTests
         string? body = null;
         var client = Client(req =>
         {
-            body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            body = new System.IO.StreamReader(req.Content!.ReadAsStream()).ReadToEnd();
             return Json(HttpStatusCode.OK, "{\"id\":\"webex-9\",\"webLink\":\"https://webex/join\"}");
         });
 

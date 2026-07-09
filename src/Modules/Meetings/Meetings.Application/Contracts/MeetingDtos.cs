@@ -52,6 +52,16 @@ public sealed record DiscussionDto(
     string AuthorName,
     DateTimeOffset CapturedAt);
 
+// A meeting's recording: either a locally-uploaded file (Source="Uploaded"; playback via GET /recording/url)
+// or a Webex reference (Source="Webex"; PlaybackUrl is the external URL). Null on the meeting DTO when none.
+public sealed record RecordingDto(
+    string Source,
+    string? FileName,
+    string? ContentType,
+    long? SizeBytes,
+    int? DurationSeconds,
+    string? PlaybackUrl);
+
 public sealed record MeetingDetailDto(
     Guid Id,
     string Key,
@@ -70,4 +80,5 @@ public sealed record MeetingDetailDto(
     DateTimeOffset? HeldAt,
     AgendaDto? Agenda,
     IReadOnlyList<AttendanceDto> Attendance,
-    IReadOnlyList<DiscussionDto> Discussions);
+    IReadOnlyList<DiscussionDto> Discussions,
+    RecordingDto? Recording);

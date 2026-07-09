@@ -39,6 +39,11 @@ public sealed class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         b.Property(x => x.RecordingUrl).HasMaxLength(2048);
         b.Property(x => x.RecordingDownloadUrl).HasMaxLength(2048);
         b.Property(x => x.RecordingDurationSeconds);
+        // Uploaded-recording reference (FR-056): object key in MinIO + display metadata.
+        b.Property(x => x.RecordingObjectKey).HasMaxLength(512);
+        b.Property(x => x.RecordingFileName).HasMaxLength(256);
+        b.Property(x => x.RecordingContentType).HasMaxLength(128);
+        b.Property(x => x.RecordingSizeBytes);
         b.Property(x => x.CreatedBy).IsRequired().HasMaxLength(128);
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.HasIndex(x => x.Status);
