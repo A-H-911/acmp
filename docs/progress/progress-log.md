@@ -12,6 +12,19 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## CI hardening — hosted-runner scarcity & minute-burn — branch `ci/harden-runner-scarcity`
+
+**2026-07-09.** A GitHub-side incident (Actions **major_outage** since 04:34 UTC, *"Delays starting Actions runs"*, ~30% of hosted runs failing to acquire a runner) turned routine pushes red with *"job was not acquired by Runner of type hosted."* The failure is **external** — no workflow change allocates a runner during an outage, so that half self-resolves. What the repo *owns* (private-Free tier: no required checks, capped 2,000 Actions-min/month) is fragility + wasted minutes; PR #103, a one-line markdown change, ran the full backend suite **and** the 7-service e2e stack. This slice hardens both workflows so non-code churn stops drawing on the scarce pool. Billing was investigated and ruled out (intermittency ≠ hard-cliff exhaustion).
+
+- **`ci.yml`.** `paths-ignore` on both `push` and `pull_request` (`*.md`, `**/*.md`, `docs/**`, `ACMP product context/**`, `.claude/**`) so pure non-code changes skip the whole matrix — mixed code+docs still runs (GitHub skips only when *every* file matches); verified no executable code lives under the ignore paths. Workflow-level `concurrency` (`ci-${{ github.ref }}`, `cancel-in-progress` scoped to PRs so a push-to-main never cancels). Per-job `timeout-minutes` (backend 25 / compose 10 / frontend 15) — a runaway-*execution* guard only (does not count acquisition wait, so no interaction with the outage).
+- **`e2e.yml`.** Same `paths-ignore` on `pull_request` (`workflow_dispatch` left unfiltered), separate `concurrency` group, `timeout-minutes: 30`. The path-filter changes *when* e2e runs on a PR → **ADR-0016 §2 amended** (dated 2026-07-09 note, mirroring the S1 amendment): docs-only PRs skip the e2e leg (no testable surface), governed not silent.
+- **Scope discipline.** The `MinioFileStoreTests` read-after-write flake is **not** folded in — separate follow-up (poll/retry around the post-upload `ExistsAsync`). No repo-local Keystone validator on this host to run the mechanical gate; the ADR change is a prose-only dated amendment (no frontmatter/ID/link change), lowest-risk for the validator — owed to CI/operator.
+- **Honest limitation.** This is a cost + blast-radius cut for non-code churn; it gives **no** outage immunity to real code merges (same runners, same ~30% risk while the incident is live).
+
+**Next:** open PR → the PR's own CI/e2e must go green (gated on the outage clearing, since it needs runners) → squash-merge; then re-run the currently-red post-merge run `29017164287` if still red. Behavioral proof of the filter = a later docs-only change triggering **zero** runs.
+
+---
+
 ## P13 audit remediation — Slice 2 (Webex hardening) — branch `fix/p13-audit-slice2`
 
 **2026-07-09.** The second of two GO-gated slices: the **dormant** Webex hardening the audit surfaced. All of it lives behind `Webex:Enabled` (the adapter is unregistered when disabled), so it is unit-tested here with **live Webex validation owed to the operator** (the sandbox is operator-only). No AC regressions; AC-068/069 restored to genuinely-tested `Met`.

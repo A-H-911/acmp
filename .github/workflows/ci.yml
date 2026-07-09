@@ -1,14 +1,35 @@
 name: CI
 
+# Non-code changes (docs, design HTML, agent memory) don't touch build/test —
+# skip the whole matrix for them. A mixed code+docs change still runs (GitHub
+# skips only when EVERY changed file matches). Kept in sync with e2e.yml.
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - 'ACMP product context/**'
+      - '.claude/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - 'ACMP product context/**'
+      - '.claude/**'
+
+# Supersede stale in-flight PR runs; never cancel a push-to-main run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -32,6 +53,7 @@ jobs:
 
   compose:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,6 +68,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: src/Acmp.Web
