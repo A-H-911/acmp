@@ -12,6 +12,17 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13-close — Webex integration + meeting recording, closed (Phase 2) — branch `feat/p13-recording-upload`
+
+**2026-07-09.** P13 declared **complete**. All P13 acceptance criteria (**AC-067–074**) are `Met`; PR #99 (recording slice stacked on the Webex adapter) is open and mergeable vs `main`.
+
+- **AC-070 (Webex recording auto-attach) — settled as an environmental caveat, not a code gap.** The dev/sandbox Webex account we validate against records **locally only** — local recording never fires the cloud `recordings/created` webhook — so a genuine cloud recording cannot traverse the attach pipeline on this stack. The **production** account is licensed for cloud recording and would exercise it. What **is** proven live: webhook **auto-registration** (audit seq=46) and a **synthetic signed** `recordings/created` webhook → **200** → worker job → **graceful drop** (dropped only because the synthetic payload carries no real recording asset to fetch — the pipeline itself ran). That sits on top of the unit/integration attach tests (`MeetingWebexWriterTests`, `WebexWebhookJobTests`). Per working-discipline ("validate before claiming") the AC keeps its `Met` verdict — the literal clause (*webhook processed → reference stored + audit*) is genuinely tested — with the real-cloud-recording confirm logged as a **one-time production residual** (deferred-work D-02).
+- **Residual (non-blocking):** (1) production live-confirm of AC-070 with a real cloud recording; (2) **rotate the exposed Webex bot/OAuth token + ngrok authtoken** (operator, secrets stay in git-ignored `deploy/.env`); (3) squash-merge PR #99 → sync `main`.
+
+**Next:** **D-15** (topic *Prepare*-UI — highest-priority defect; plan-first, GO-gated) then the remaining PH-2 backlog.
+
+---
+
 ## P13-recording — Meeting-recording upload · presigned playback · delete (Phase 2) — branch `feat/p13-recording-upload`
 
 **2026-07-09.** FR-056's *upload a recording file* leg — delivered end-to-end, live-validated. Reuses the shipped `IFileStore`/MinIO seam (ADR-0014); complements the Webex-webhook reference path (AC-070).

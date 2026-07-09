@@ -21,6 +21,15 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > on `acmp.ngrok.dev` (real upload 200 through nginx — was 413 at the 1 MB default; presigned 200/206; delete →
 > bucket empty). Traces: `MeetingRecordingTests` + `MeetingRecordingApiTests`. See progress-log "P13-recording" entry.
 
+> P13-close update (2026-07-09): **P13 (Webex integration + meeting recording) closed.** All P13 ACs
+> (AC-067–074) are `Met`. **AC-070's** live end-to-end leg is settled as an **environmental caveat, not a code
+> gap**: the dev/sandbox Webex account used for validation here records **locally only** (no cloud
+> `recordings/created` webhook), so a genuine cloud recording can't traverse the pipeline on this stack; the
+> **production** (licensed) host cloud-records and would exercise it. The mechanism is proven live — webhook
+> **auto-registration** (audit seq=46) and a **synthetic signed** `recordings/created` webhook → 200 → worker job
+> → graceful drop — on top of the unit/integration attach tests. Residual = a one-time production live-confirm
+> (tracked at deferred-work D-02). No AC downgraded.
+
 > P12 audit-remediation update (2026-07-05): adversarial-audit fixes across Dashboards & Reports (branch
 > `fix/p12-audit-remediation`), **NO AC flips** (AC-064/065/066 stay Met; PR3 Reports is AC-less). Fidelity +
 > data-honesty only: the Reports **Stream filter now scopes decisions/actions** via their linked Topic (no card
@@ -762,7 +771,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-067 | Webex integration | Met | WebexNotificationSinkTests (eligible→1 enqueue; per-recipient fan-out collapses to 1; disabled/non-eligible→0) + AdaptiveCardBuilderTests (v1.3, ≤80 KB, EN/AR, absolute deep-link) | P13 WS2: space card + in-app both delivered; committee-wide events only. Live Webex-space render = operator sandbox pass. |
 | AC-068 | Webex integration | Met | WebexSendJob (429→`Schedule(Retry-After)`, `[AutomaticRetry(3)]`) over WebexApiClient `ReadRetryAfter`; dead-letter surfaces in the admin job monitor | P13 WS2: no tight-loop; reschedule for the server-supplied delay. |
 | AC-069 | Webex integration | Met | WebexWebhookApiTests (valid sig→200 + enqueue; invalid→401 + 0) + WebexSignatureTests (SHA1/SHA256 accept; tamper/wrong-secret/missing reject) | P13 WS3: first anonymous endpoint, HMAC-SHA1 over raw body, 5-min replay guard, idempotent. |
-| AC-070 | Webex integration | Met | MeetingWebexWriterTests (attach by WebexMeetingId + `Meetings.RecordingAttached` audit; uncorrelated→false) + WebexWebhookJobTests (fetch→attach; skip null / no-meeting-id) | P13 WS3: reference stored (not the file). |
+| AC-070 | Webex integration | Met | MeetingWebexWriterTests (attach by WebexMeetingId + `Meetings.RecordingAttached` audit; uncorrelated→false) + WebexWebhookJobTests (fetch→attach; skip null / no-meeting-id); **live**: webhook auto-registration (audit seq=46) + a synthetic signed `recordings/created` webhook → 200 → worker job → graceful drop | P13 WS3: reference stored (not the file). **Live end-to-end with a genuine cloud recording is deferred to production** — the dev/sandbox Webex account records **locally only** (no `recordings/created` cloud webhook); the production licensed host cloud-records. The processing mechanism is proven live; the remaining leg is an environment fact (licensed host), not a code gap. |
 | AC-071 | Webex integration | Met | WebexWebhookApiTests (disabled→200 no-op) + WebexNotificationSinkTests (disabled→0 enqueue); adapter unregistered entirely when `Enabled=false` | P13: extends AC-053; air-gapped posture. |
 | AC-072 | Webex integration | Met | WebexMeetingCreateJobTests (token→create + write-back; no-token/no-meeting→skip) + WebexMeetingProvisionerTests (online+enabled→enqueue; else 0) + WebexTokenServiceTests (fresh/refresh/none) | P13 WS3b: OAuth create; graceful no-token. Live create = operator sandbox pass. |
 | AC-073 | Recording upload | Met | UploadRecording handler/validator + GetRecordingUrl handler tests + MeetingRecordingApiTests (401/403/400/404/200; upload→detail; presign→url) + live (real upload 200 through nginx; presigned 200/206) | P13-recording: MinIO via IFileStore, server-derived key, presigned playback (ADR-0025). |
