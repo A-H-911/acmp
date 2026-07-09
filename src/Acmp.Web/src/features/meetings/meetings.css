@@ -1615,6 +1615,10 @@
 .mt-rec-webex:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+.mt-rec-webex:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
 .mt-rec-foot {
   padding: 14px 16px;
   display: flex;
@@ -1622,7 +1626,6 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  border-top: 1px solid var(--border-soft);
 }
 .mt-rec-info {
   display: inline-flex;

@@ -12,6 +12,19 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13 audit remediation — Slice 1 (recording tab + test integrity) — branch `fix/p13-audit-slice1`
+
+**2026-07-09.** An adversarial audit of the merged P13 slice surfaced a test-integrity gap, three over-claimed ACs, and UI/i18n/a11y minors on the recording tab. This first of two GO-gated slices closes the **Webex-independent, live-validatable** findings; the dormant Webex hardening (fail-open token key, refresh-degradation, audit-on-refresh, replay guard, per-job Retry-After) is deferred to Slice 2 (`fix/p13-audit-slice2`).
+
+- **M3 — production storage now real-covered.** `MinioFileStore` (the FR-056 recording store behind AC-073/074) was behind a coverage exclusion whose "not wired into any v1 flow" justification was **false**. Removed the exclusion + rewrote the comment; added `MinioFileStoreTests` — a **Testcontainers-MinIO** integration test that boots a real MinIO container and exercises every adapter branch (bucket create + skip, presign, `ExistsAsync` found/object-missing/bucket-missing, delete). Coverage gate now counts the file (339 files, still 99.69% global, per-file ≥95%). Needs a running Docker daemon (CI `ubuntu-latest` has one; local gate runs now require Docker Desktop up).
+- **M4 — honest acceptance rows.** **AC-073** stays `Met`, evidence upgraded "faked adapter"→"real adapter (Testcontainers)". **AC-068 → Partial** (interim): the dead-letter/monitor clause rests only on `[AutomaticRetry(3)]` + the Hangfire dashboard, untested — a real in-memory Hangfire dead-letter test in Slice 2 restores Met. **AC-069** stays `Met` with corrected wording ("idempotent" = the idempotent `Meeting.AttachRecording`; within-window outcome test → Slice 2).
+- **Recording-tab minors.** `.mt-rec-webex` (Webex-recording link) gained the missing `:focus-visible` ring (WCAG 2.4.7, matches every sibling control); the upload picker's `accept` narrowed `video/*`→`video/mp4,video/webm,video/quicktime` (matches the server allowlist + hint); two dead i18n keys removed (`recording.uploading`, `recording.loading.body`); the `.mt-rec-foot` divider dropped to match the design reference.
+- **Gates.** BE: build clean, all suites green incl. the new MinIO container test (Integration 18), coverage 99.69% (339 files, per-file ≥95%), `dotnet format` clean. FE: vitest 845 green (one `DecisionPage` timeout flaked under concurrent-container load, confirmed green in isolation), i18n parity 1478, build type-clean. Keystone validator OK.
+
+**Next:** operator merge GO (branch → PR → green CI → squash-merge), then Slice 2 (dormant Webex hardening, unit-tested; live Webex validation owed to operator) + operator secret rotation.
+
+---
+
 ## D-15 — Topic *Prepare* (Accepted→Prepared) UI affordance — Tier 3 (Complete) — branch `fix/d15-topic-prepare-ui`
 
 **2026-07-09.** Closed the highest-priority defect: the SPA had no way to mark a topic `Prepared`, so the agenda-builder pool (`GET /topics?status=Prepared`) was permanently empty and the intake→agenda core loop was broken in-product (backend `POST /topics/{id}/prepare` shipped since P5, never wired). Tier 3 = the FE affordance + a backend W4-completeness notification + the honest E2E fix.
