@@ -30,6 +30,7 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
             builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Webex:Enabled"] = "true",
+                ["Webex:TokenEncryptionKey"] = "test-token-encryption-key-0123456789",
                 ["Webex:WebhookSecret"] = Secret,
                 ["Webex:SignatureAlgorithm"] = "HMACSHA1",
             }));
@@ -126,6 +127,17 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
         // Replay guard: a recordings/created event created > 5 minutes ago is ignored (never enqueued).
         var body =
             $"{{\"resource\":\"recordings\",\"event\":\"created\",\"created\":\"{DateTimeOffset.UtcNow.AddMinutes(-10):o}\",\"data\":{{\"id\":\"rec-old\"}}}}";
+        var fake = new FakeScheduler();
+        var response = await EnabledClient(fake).SendAsync(Post(body, Sign(body)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        fake.Enqueued.Should().Be(0);
+    }
+
+    [Fact] // m7: an event with no `created` timestamp can't be age-checked, so it is dropped (never enqueued).
+    public async Task An_event_with_no_created_timestamp_is_dropped()
+    {
+        const string body = "{\"resource\":\"recordings\",\"event\":\"created\",\"data\":{\"id\":\"rec-nots\"}}";
         var fake = new FakeScheduler();
         var response = await EnabledClient(fake).SendAsync(Post(body, Sign(body)));
 

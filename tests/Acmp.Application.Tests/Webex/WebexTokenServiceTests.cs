@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace Acmp.Application.Tests.Webex;
 
@@ -18,6 +19,8 @@ public class WebexTokenServiceTests
 
     private static WebexTokenProtector Protector() =>
         new(Options.Create(new WebexOptions { TokenEncryptionKey = "k" }));
+
+    private static IAuditSink Sink() => Substitute.For<IAuditSink>();
 
     private static IClock ClockAt(DateTimeOffset now)
     {
@@ -32,7 +35,7 @@ public class WebexTokenServiceTests
     public async Task Returns_null_when_no_token_is_stored()
     {
         var svc = new WebexTokenService(Db(), Protector(), Substitute.For<IWebexOAuthClient>(),
-            ClockAt(T0), NullLogger<WebexTokenService>.Instance);
+            ClockAt(T0), Sink(), NullLogger<WebexTokenService>.Instance);
 
         (await svc.GetValidAccessTokenAsync()).Should().BeNull();
     }
@@ -42,7 +45,7 @@ public class WebexTokenServiceTests
     {
         var db = Db();
         var svc = new WebexTokenService(db, Protector(), Substitute.For<IWebexOAuthClient>(),
-            ClockAt(T0), NullLogger<WebexTokenService>.Instance);
+            ClockAt(T0), Sink(), NullLogger<WebexTokenService>.Instance);
         await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 3600 });
 
         (await svc.GetValidAccessTokenAsync()).Should().Be("acc-1");
@@ -56,7 +59,7 @@ public class WebexTokenServiceTests
         oauth.RefreshAsync("ref-1", Arg.Any<CancellationToken>())
             .Returns(new WebexTokenResponse { AccessToken = "acc-2", RefreshToken = "ref-2", ExpiresIn = 3600 });
         var clock = ClockAt(T0);
-        var svc = new WebexTokenService(db, Protector(), oauth, clock, NullLogger<WebexTokenService>.Instance);
+        var svc = new WebexTokenService(db, Protector(), oauth, clock, Sink(), NullLogger<WebexTokenService>.Instance);
         await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 60 });
 
         clock.UtcNow.Returns(T0.AddHours(1)); // now expired
@@ -75,7 +78,7 @@ public class WebexTokenServiceTests
         var oauth = Substitute.For<IWebexOAuthClient>();
         oauth.RefreshAsync("ref-1", Arg.Any<CancellationToken>()).Returns((WebexTokenResponse?)null);
         var clock = ClockAt(T0);
-        var svc = new WebexTokenService(db, Protector(), oauth, clock, NullLogger<WebexTokenService>.Instance);
+        var svc = new WebexTokenService(db, Protector(), oauth, clock, Sink(), NullLogger<WebexTokenService>.Instance);
         await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 60 });
 
         clock.UtcNow.Returns(T0.AddHours(1)); // now expired
@@ -89,7 +92,7 @@ public class WebexTokenServiceTests
     public async Task StoreFromExchange_rejects_a_response_missing_the_access_or_refresh_token(string? access, string? refresh)
     {
         var svc = new WebexTokenService(Db(), Protector(), Substitute.For<IWebexOAuthClient>(),
-            ClockAt(T0), NullLogger<WebexTokenService>.Instance);
+            ClockAt(T0), Sink(), NullLogger<WebexTokenService>.Instance);
 
         var act = () => svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = access, RefreshToken = refresh, ExpiresIn = 3600 });
 
@@ -101,10 +104,58 @@ public class WebexTokenServiceTests
     {
         var db = Db();
         var svc = new WebexTokenService(db, Protector(), Substitute.For<IWebexOAuthClient>(),
-            ClockAt(T0), NullLogger<WebexTokenService>.Instance);
+            ClockAt(T0), Sink(), NullLogger<WebexTokenService>.Instance);
 
         (await svc.HasTokenAsync()).Should().BeFalse();
         await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 3600 });
         (await svc.HasTokenAsync()).Should().BeTrue();
+    }
+
+    [Fact] // M2: a rejected refresh token (400/401) degrades to null, not a throw — jobs no-op, no dead-letter.
+    public async Task Returns_null_when_the_refresh_token_is_rejected()
+    {
+        var db = Db();
+        var oauth = Substitute.For<IWebexOAuthClient>();
+        oauth.RefreshAsync("ref-1", Arg.Any<CancellationToken>()).ThrowsAsync(new WebexApiException(400, "invalid_grant"));
+        var clock = ClockAt(T0);
+        var svc = new WebexTokenService(db, Protector(), oauth, clock, Sink(), NullLogger<WebexTokenService>.Instance);
+        await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 60 });
+        clock.UtcNow.Returns(T0.AddHours(1)); // expired → triggers refresh
+
+        (await svc.GetValidAccessTokenAsync()).Should().BeNull();
+    }
+
+    [Fact] // M2: a transient refresh failure (5xx) bubbles so Hangfire retries (must NOT be swallowed as null).
+    public async Task Rethrows_when_the_refresh_fails_transiently()
+    {
+        var db = Db();
+        var oauth = Substitute.For<IWebexOAuthClient>();
+        oauth.RefreshAsync("ref-1", Arg.Any<CancellationToken>()).ThrowsAsync(new WebexApiException(500, "server error"));
+        var clock = ClockAt(T0);
+        var svc = new WebexTokenService(db, Protector(), oauth, clock, Sink(), NullLogger<WebexTokenService>.Instance);
+        await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 60 });
+        clock.UtcNow.Returns(T0.AddHours(1));
+
+        var act = () => svc.GetValidAccessTokenAsync();
+
+        await act.Should().ThrowAsync<WebexApiException>();
+    }
+
+    [Fact] // m5 (INV-005): a successful token rotation emits a Webex.OAuthTokenRefreshed audit event.
+    public async Task Audits_the_token_rotation_on_a_successful_refresh()
+    {
+        var db = Db();
+        var oauth = Substitute.For<IWebexOAuthClient>();
+        oauth.RefreshAsync("ref-1", Arg.Any<CancellationToken>())
+            .Returns(new WebexTokenResponse { AccessToken = "acc-2", RefreshToken = "ref-2", ExpiresIn = 3600 });
+        var clock = ClockAt(T0);
+        var audit = Substitute.For<IAuditSink>();
+        var svc = new WebexTokenService(db, Protector(), oauth, clock, audit, NullLogger<WebexTokenService>.Instance);
+        await svc.StoreFromExchangeAsync(new WebexTokenResponse { AccessToken = "acc-1", RefreshToken = "ref-1", ExpiresIn = 60 });
+        clock.UtcNow.Returns(T0.AddHours(1));
+
+        await svc.GetValidAccessTokenAsync();
+
+        await audit.Received(1).EmitAsync("Webex.OAuthTokenRefreshed", "system:webex", Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 }

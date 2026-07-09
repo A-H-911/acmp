@@ -24,15 +24,17 @@ public sealed class WebexTokenService : IWebexTokenService
     private readonly WebexTokenProtector _protector;
     private readonly IWebexOAuthClient _oauth;
     private readonly IClock _clock;
+    private readonly IAuditSink _audit;
     private readonly ILogger<WebexTokenService> _logger;
 
     public WebexTokenService(WebexDbContext db, WebexTokenProtector protector, IWebexOAuthClient oauth,
-        IClock clock, ILogger<WebexTokenService> logger)
+        IClock clock, IAuditSink audit, ILogger<WebexTokenService> logger)
     {
         _db = db;
         _protector = protector;
         _oauth = oauth;
         _clock = clock;
+        _audit = audit;
         _logger = logger;
     }
 
@@ -52,7 +54,21 @@ public sealed class WebexTokenService : IWebexTokenService
         if (row.AccessTokenExpiresAt - ExpiryskEw > _clock.UtcNow)
             return _protector.Unprotect(row.AccessTokenCipher);
 
-        var refreshed = await _oauth.RefreshAsync(_protector.Unprotect(row.RefreshTokenCipher), ct);
+        WebexTokenResponse? refreshed;
+        try
+        {
+            refreshed = await _oauth.RefreshAsync(_protector.Unprotect(row.RefreshTokenCipher), ct);
+        }
+        catch (WebexApiException ex) when (ex.StatusCode is 400 or 401)
+        {
+            // The stored refresh token was rejected (revoked / re-consent required). Degrade gracefully per the
+            // service contract + AC-072: the caller (meeting-create / recording jobs) no-ops instead of throwing
+            // and dead-lettering. Transient failures (429 / 5xx) still bubble so Hangfire retries them.
+            _logger.LogWarning(ex,
+                "Webex refresh token rejected (HTTP {Status}); integration unavailable until re-consent", ex.StatusCode);
+            return null;
+        }
+
         if (refreshed?.AccessToken is null || refreshed.RefreshToken is null)
         {
             _logger.LogWarning("Webex token refresh returned no usable tokens; meeting integration is unavailable");
@@ -60,6 +76,9 @@ public sealed class WebexTokenService : IWebexTokenService
         }
 
         await UpsertAsync(refreshed, ct);
+        // m5 (INV-005): rotating a stored security credential is a state change — audit it. The initial link is
+        // audited at the OAuth callback; this covers the transparent background refresh (self-attributed system actor).
+        await _audit.EmitAsync("Webex.OAuthTokenRefreshed", "system:webex", new { rotatedAt = _clock.UtcNow }, ct);
         return refreshed.AccessToken;
     }
 
