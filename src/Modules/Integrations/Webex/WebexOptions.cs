@@ -32,7 +32,9 @@ public sealed class WebexOptions
     public string OAuthRedirectUri { get; init; } = string.Empty;
     public string OAuthScopes { get; init; } = "spark:messages_write meeting:schedules_write meeting:recordings_read";
 
-    // Symmetric key (base64) encrypting the persisted OAuth refresh/access tokens at rest.
+    // Symmetric secret encrypting the persisted OAuth refresh/access tokens at rest. Any sufficiently long
+    // random string (a SHA-256-derived AES-256 key, not a raw base64 key). Fail-closed validated when Enabled
+    // (WebexOptionsValidator): must be present, >=16 chars, and not the CHANGE_ME placeholder.
     public string TokenEncryptionKey { get; init; } = string.Empty;
 
     // Operator-only gate for the OAuth consent initiation (/api/webex/oauth/start). That endpoint is a

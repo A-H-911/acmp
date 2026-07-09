@@ -32,6 +32,7 @@ public class WebexOAuthApiTests : IClassFixture<AcmpWebApplicationFactory>
             builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Webex:Enabled"] = "true",
+                ["Webex:TokenEncryptionKey"] = "test-token-encryption-key-0123456789",
                 ["Webex:OAuthSetupKey"] = SetupKey,
             }));
             builder.ConfigureTestServices(services =>

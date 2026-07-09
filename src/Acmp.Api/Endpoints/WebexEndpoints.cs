@@ -150,8 +150,9 @@ public static class WebexEndpoints
         if (envelope is null)
             return Results.Ok();
 
-        // Replay guard.
-        if (envelope.Created is { } created && DateTimeOffset.UtcNow - created > MaxAge)
+        // Replay guard: drop events we can't age-check (no Created timestamp — a valid Webex event always
+        // carries one) or that are older than the window. Still 200 to Webex (never process, never 500).
+        if (envelope.Created is not { } created || DateTimeOffset.UtcNow - created > MaxAge)
             return Results.Ok();
 
         if (string.Equals(envelope.Resource, "recordings", StringComparison.OrdinalIgnoreCase)

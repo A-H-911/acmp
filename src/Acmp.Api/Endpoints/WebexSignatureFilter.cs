@@ -7,8 +7,12 @@ namespace Acmp.Api.Endpoints;
 // Authenticates the inbound Webex webhook (the only anonymous endpoint) by HMAC signature, not a user session.
 // Webex signs the raw JSON body and sends the hex digest in the x-spark-signature header (lowercase under
 // HTTP/2); the default algorithm is HMAC-SHA1 (SHA256/512 accepted if the webhook was created with them). We
-// recompute over the RAW body and compare in constant time. On any mismatch the request is rejected 401 and
-// the handler never runs. When Webex is disabled the endpoint accepts and ignores (no processing).
+// read the body as UTF-8 text and recompute over it, comparing in constant time. On any mismatch the request
+// is rejected 401 and the handler never runs. When Webex is disabled the endpoint accepts and ignores.
+// ponytail: the HMAC is computed over the UTF-8-decoded body, which is byte-identical to the raw body for the
+// valid-UTF-8 JSON Webex always sends; a raw-byte HMAC would only matter for malformed non-UTF-8 payloads Webex
+// never emits. Kept text-based to avoid perturbing this security path — upgrade to raw bytes only if a real
+// non-UTF-8 payload is ever observed.
 public sealed class WebexSignatureFilter : IEndpointFilter
 {
     private const string SignatureHeader = "x-spark-signature";

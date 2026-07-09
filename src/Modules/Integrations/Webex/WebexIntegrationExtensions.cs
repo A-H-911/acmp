@@ -4,6 +4,7 @@ using Acmp.Shared.Contracts.Meetings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Acmp.Modules.Integrations.Webex;
 
@@ -16,7 +17,10 @@ public static class WebexIntegrationExtensions
     public static IServiceCollection AddWebexIntegration(this IServiceCollection services, IConfiguration configuration)
     {
         var section = configuration.GetSection(WebexOptions.SectionName);
-        services.Configure<WebexOptions>(section);
+        // Bind + fail-closed validation on start (M1): a placeholder/weak TokenEncryptionKey while Enabled is a
+        // boot failure, never a silent at-rest token exposure. Validation is a no-op when disabled.
+        services.AddOptions<WebexOptions>().Bind(section).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<WebexOptions>, WebexOptionsValidator>();
 
         var options = section.Get<WebexOptions>() ?? new WebexOptions();
         if (!options.Enabled)

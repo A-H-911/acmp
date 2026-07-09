@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace Acmp.Application.Tests.Webex;
 
@@ -15,8 +16,9 @@ public class WebexMeetingCreateJobTests
 {
     private static readonly DateTimeOffset Start = new(2026, 3, 1, 9, 0, 0, TimeSpan.Zero);
 
-    private static WebexMeetingCreateJob Job(IWebexTokenService tokens, IWebexApiClient client, IMeetingWebexWriter writer) =>
-        new(tokens, client, writer, NullLogger<WebexMeetingCreateJob>.Instance);
+    private static WebexMeetingCreateJob Job(IWebexTokenService tokens, IWebexApiClient client,
+        IMeetingWebexWriter writer, IWebexJobScheduler? scheduler = null) =>
+        new(tokens, client, writer, scheduler ?? Substitute.For<IWebexJobScheduler>(), NullLogger<WebexMeetingCreateJob>.Instance);
 
     [Fact]
     public async Task Creates_the_webex_meeting_and_writes_the_correlation_back()
@@ -60,6 +62,25 @@ public class WebexMeetingCreateJobTests
 
         await Job(tokens, client, writer).CreateAsync(Guid.NewGuid(), "Committee", Start, Start.AddHours(1), default);
 
+        await writer.DidNotReceive().SetWebexMeetingAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // m9: 429 reschedules the create for the server Retry-After (no tight loop), mirroring WebexSendJob.
+    public async Task Reschedules_the_create_on_a_rate_limit()
+    {
+        var tokens = Substitute.For<IWebexTokenService>();
+        tokens.GetValidAccessTokenAsync(Arg.Any<CancellationToken>()).Returns("acc-1");
+        var client = Substitute.For<IWebexApiClient>();
+        client.CreateMeetingAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new WebexRateLimitException(TimeSpan.FromSeconds(45)));
+        var writer = Substitute.For<IMeetingWebexWriter>();
+        var scheduler = Substitute.For<IWebexJobScheduler>();
+        var meetingId = Guid.NewGuid();
+
+        await Job(tokens, client, writer, scheduler).CreateAsync(meetingId, "Committee", Start, Start.AddHours(1), default);
+
+        scheduler.Received(1).Schedule<WebexMeetingCreateJob>(
+            Arg.Any<Expression<Func<WebexMeetingCreateJob, Task>>>(), TimeSpan.FromSeconds(45));
         await writer.DidNotReceive().SetWebexMeetingAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 }

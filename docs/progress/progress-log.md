@@ -12,6 +12,24 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13 audit remediation — Slice 2 (Webex hardening) — branch `fix/p13-audit-slice2`
+
+**2026-07-09.** The second of two GO-gated slices: the **dormant** Webex hardening the audit surfaced. All of it lives behind `Webex:Enabled` (the adapter is unregistered when disabled), so it is unit-tested here with **live Webex validation owed to the operator** (the sandbox is operator-only). No AC regressions; AC-068/069 restored to genuinely-tested `Met`.
+
+- **M1 — fail-closed encryption key.** New `WebexOptionsValidator` (`IValidateOptions<WebexOptions>`) wired via `AddOptions().Bind().ValidateOnStart()` (plain `Configure` never validated): when Enabled, `TokenEncryptionKey` must be present, ≥16 chars, and not the `CHANGE_ME` placeholder → **boot failure** instead of encrypting the persisted OAuth tokens under a publicly derivable key. Fixed the misleading "base64" comment (the key is SHA-256-derived from any long secret). The three enabled-Webex test hosts now supply a real key (the correct consequence of fail-closed validation).
+- **M2 — graceful refresh degradation.** `WebexTokenService.GetValidAccessTokenAsync` now catches a **non-transient** `WebexApiException` (400/401 — revoked/re-consent) and returns `null` per its AC-072 contract, so the meeting-create/recording jobs no-op instead of dead-lettering; transient 5xx and `WebexRateLimitException` (429) still bubble for retry.
+- **m5 — audit the rotation (INV-005).** A successful background token refresh now emits `Webex.OAuthTokenRefreshed` (system actor); the initial link was already audited at the OAuth callback.
+- **m7 — replay guard.** A webhook with no `Created` timestamp (un-age-checkable) is now dropped, not processed.
+- **m9 — honor Retry-After everywhere.** `WebexWebhookJob` + `WebexMeetingCreateJob` now reschedule on 429 for the server-supplied delay (mirroring `WebexSendJob`); previously only the send job did.
+- **m8 — deferred with an honest comment.** The HMAC is computed over the UTF-8-decoded body, byte-identical to the raw body for the valid-UTF-8 JSON Webex always sends; a raw-byte HMAC would only matter for malformed non-UTF-8 payloads Webex never emits. Kept text-based to avoid perturbing the security path (documented; upgrade only if such a payload is ever observed).
+- **AC-068 → Met (real Hangfire test).** `WebexJobDeadLetterTests` runs a real in-memory Hangfire server: a job past its `[AutomaticRetry]` cap lands in the **Failed** state (dead-letter), asserted via `IMonitoringApi` (retry delays forced to 0 in the harness only). **AC-069 → Met**: reprocessing the same recording attaches the identical reference (outcome-idempotent) + the no-timestamp drop is tested.
+- **m13 — gated off.** Deleting the tautological `WebexRecordingTests` would drop `WebexRecording` coverage (`DtoContractCoverageTests` doesn't cover it), so it stays; the OAuth-test file naming is cosmetic (skipped, YAGNI).
+- **Gates.** BE: build clean; all suites green incl. the new Hangfire dead-letter server test (Application 796) + the m7 webhook test (API 188); coverage ≥95% per-file (`WebexEndpoints` 93/96 — the residual 3 are a defensively-unreachable disabled branch + two record-declaration lines); `dotnet format` clean. Keystone validator OK. New test-only deps: `Testcontainers.Minio` (Slice 1), `Hangfire.InMemory` (Slice 2).
+
+**Next:** operator merge GO; then **rotate the exposed Webex + ngrok secrets** in `deploy/.env` (the last owed residual), and a one-time production live-confirm of AC-070 + the Webex-enabled paths.
+
+---
+
 ## P13 audit remediation — Slice 1 (recording tab + test integrity) — branch `fix/p13-audit-slice1`
 
 **2026-07-09.** An adversarial audit of the merged P13 slice surfaced a test-integrity gap, three over-claimed ACs, and UI/i18n/a11y minors on the recording tab. This first of two GO-gated slices closes the **Webex-independent, live-validatable** findings; the dormant Webex hardening (fail-open token key, refresh-degradation, audit-on-refresh, replay guard, per-job Retry-After) is deferred to Slice 2 (`fix/p13-audit-slice2`).

@@ -1,8 +1,10 @@
-﻿using Acmp.Modules.Integrations.Webex;
+﻿using System.Linq.Expressions;
+using Acmp.Modules.Integrations.Webex;
 using Acmp.Modules.Integrations.Webex.Oauth;
 using Acmp.Shared.Contracts.Meetings;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace Acmp.Application.Tests.Webex;
 
@@ -11,8 +13,10 @@ namespace Acmp.Application.Tests.Webex;
 // id, and the no-token case are skipped without touching the meeting store.
 public class WebexWebhookJobTests
 {
-    private static WebexWebhookJob Job(IWebexApiClient client, IMeetingWebexWriter writer, IWebexTokenService? tokens = null) =>
-        new(tokens ?? WithToken("user-token"), client, writer, NullLogger<WebexWebhookJob>.Instance);
+    private static WebexWebhookJob Job(IWebexApiClient client, IMeetingWebexWriter writer,
+        IWebexTokenService? tokens = null, IWebexJobScheduler? scheduler = null) =>
+        new(tokens ?? WithToken("user-token"), client, writer,
+            scheduler ?? Substitute.For<IWebexJobScheduler>(), NullLogger<WebexWebhookJob>.Instance);
 
     private static IWebexTokenService WithToken(string? token)
     {
@@ -71,5 +75,40 @@ public class WebexWebhookJobTests
 
         await client.DidNotReceive().GetRecordingAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         await writer.DidNotReceive().AttachRecordingAsync(Arg.Any<string>(), Arg.Any<RecordingReference>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // m9: 429 reschedules the SAME fetch for the server Retry-After instead of tight-looping / dead-lettering.
+    public async Task Reschedules_the_fetch_on_a_rate_limit()
+    {
+        var client = Substitute.For<IWebexApiClient>();
+        client.GetRecordingAsync("user-token", "rec-9", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new WebexRateLimitException(TimeSpan.FromSeconds(30)));
+        var writer = Substitute.For<IMeetingWebexWriter>();
+        var scheduler = Substitute.For<IWebexJobScheduler>();
+
+        await Job(client, writer, scheduler: scheduler).ProcessRecordingAsync("rec-9", default);
+
+        scheduler.Received(1).Schedule<WebexWebhookJob>(
+            Arg.Any<Expression<Func<WebexWebhookJob, Task>>>(), TimeSpan.FromSeconds(30));
+        await writer.DidNotReceive().AttachRecordingAsync(Arg.Any<string>(), Arg.Any<RecordingReference>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // AC-069: a re-delivered/replayed webhook (same recording, within the window) attaches the SAME
+           // deterministic reference — the outcome is idempotent, so the duplicate is harmless.
+    public async Task Reprocessing_the_same_recording_is_idempotent()
+    {
+        var client = Substitute.For<IWebexApiClient>();
+        client.GetRecordingAsync("user-token", "rec-1", Arg.Any<CancellationToken>())
+            .Returns(new WebexRecording("rec-1", "webex-abc", "https://play", "https://dl", 1800));
+        var writer = Substitute.For<IMeetingWebexWriter>();
+        var job = Job(client, writer);
+
+        await job.ProcessRecordingAsync("rec-1", default);
+        await job.ProcessRecordingAsync("rec-1", default);
+
+        // Both deliveries attach the identical reference — replaying converges on one end state (idempotent).
+        await writer.Received(2).AttachRecordingAsync("webex-abc",
+            Arg.Is<RecordingReference>(r => r.PlaybackUrl == "https://play" && r.DurationSeconds == 1800),
+            Arg.Any<CancellationToken>());
     }
 }
