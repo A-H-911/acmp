@@ -54,7 +54,7 @@ export function MeetingRecording() {
 
   const heading = <h1 className="mt-rec-h1">{t('meetings.recording.title')}</h1>;
   const hiddenInput = (
-    <input ref={inputRef} type="file" accept="video/*" className="visually-hidden" aria-label={t('meetings.recording.upload')} onChange={(e) => pick(e.target.files)} />
+    <input ref={inputRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="visually-hidden" aria-label={t('meetings.recording.upload')} onChange={(e) => pick(e.target.files)} />
   );
 
   // A recording exists → design player card (uploaded video or Webex link) + footer (source · meta · actions).

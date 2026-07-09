@@ -16,9 +16,11 @@
                execute under the InMemory test provider.
                *DbContextFactory.cs are IDesignTimeDbContextFactory — run only by `dotnet ef
                migrations` at design time, never at runtime; same un-assertable class as Program.cs.
-               MinioFileStore is the Phase-2 S3 adapter, not wired into any v1 runtime flow (ADR-0016
-               §1: exclude with a Phase-2 note until the slice that touches it). -->
-          <ExcludeByFile>**/Migrations/*.cs,**/*DbContextFactory.cs,**/MinioFileStore.cs</ExcludeByFile>
+               MinioFileStore is NO LONGER excluded — it is the production recording store (FR-056,
+               AC-073/074) and is covered end-to-end by MinioFileStoreTests via a Testcontainers-MinIO
+               container (all branches: bucket create/skip, presign, exists found/object-missing/
+               bucket-missing, delete). -->
+          <ExcludeByFile>**/Migrations/*.cs,**/*DbContextFactory.cs</ExcludeByFile>
           <!-- Source-generated code (e.g. [GeneratedRegex]) and EF scaffolding via GeneratedCodeAttribute.
                CompilerGeneratedAttribute is intentionally NOT listed: it also tags async/iterator STATE
                MACHINES (where async method bodies live), so excluding it silently drops the coverage of any

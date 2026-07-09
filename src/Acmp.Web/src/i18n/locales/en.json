@@ -1503,13 +1503,11 @@
       },
       "upload": "Upload recording",
       "uploadHint": "MP4, WebM or MOV video of the meeting",
-      "uploading": "Uploading…",
       "replace": "Replace recording",
       "download": "Download",
       "openWebex": "Open Webex recording",
       "loading": {
-        "title": "Preparing playback",
-        "body": "Fetching a secure playback link for this recording."
+        "title": "Preparing playback"
       },
       "empty": {
         "title": "No recording yet",
