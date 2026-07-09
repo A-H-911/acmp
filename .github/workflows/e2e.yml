@@ -3,14 +3,29 @@ name: E2E
 # ADR-0016 §2: the E2E leg runs the full compose stack incl. the genuine Keycloak
 # PKCE round-trip. It gates merges to main and is available on demand — NOT on every
 # branch push (it is heavy: it builds images and starts 7 services).
+# Docs-only / non-code PRs skip the heavy stack (ADR-0016 §2 amendment,
+# 2026-07-09). paths-ignore kept in sync with ci.yml. workflow_dispatch is
+# unfiltered — a manual run is always allowed.
 on:
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - 'ACMP product context/**'
+      - '.claude/**'
   workflow_dispatch:
+
+# Supersede a stale in-flight run of the same PR; separate group from ci.yml.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: src/Acmp.Web
