@@ -57,6 +57,32 @@ public class AbacHandlerTests
         (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), outOfScope)).Should().BeFalse();
     }
 
+    [Fact]
+    public async Task Stream_bounded_principal_without_a_subject_claim_is_denied()
+    {
+        var streams = Substitute.For<IUserStreamProvider>();
+        var handler = new StreamScopeHandler(streams);
+        // A stream-bounded role but neither a NameIdentifier nor a "sub" claim -> no user id (line 34-35).
+        var noSubject = new ClaimsPrincipal(
+            new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, AcmpRoles.Member) }, "Test", ClaimTypes.Name, ClaimTypes.Role));
+        var resource = new StubTopic(Guid.NewGuid(), new[] { "stream-a" });
+
+        (await Evaluate(handler, new StreamScopeRequirement(), noSubject, resource)).Should().BeFalse();
+        await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Resource_with_no_affected_streams_is_allowed_for_a_member()
+    {
+        var streams = Substitute.For<IUserStreamProvider>();
+        var handler = new StreamScopeHandler(streams);
+        // Nothing to intersect -> the write is not stream-bounded (line 37-40); never asks for assignments.
+        var resource = new StubTopic(Guid.NewGuid(), Array.Empty<string>());
+
+        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), resource)).Should().BeTrue();
+        await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
     // ---- Capability ownership scoped to the target topic (docs/10 §D, AC-009 / AC-011) ----
 
     [Fact]

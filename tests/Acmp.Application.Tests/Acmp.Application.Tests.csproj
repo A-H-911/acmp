@@ -50,6 +50,8 @@
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Application\Acmp.Modules.Governance.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Integrations\Webex\Acmp.Modules.Integrations.Webex.csproj" />
+    <ProjectReference Include="..\..\src\Acmp.Bootstrap\Acmp.Bootstrap.csproj" />
   </ItemGroup>
 
 </Project>

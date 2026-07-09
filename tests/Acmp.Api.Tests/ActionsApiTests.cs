@@ -135,4 +135,26 @@ public class ActionsApiTests
         var res = await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/actions/{Guid.NewGuid()}/verify", null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    // Endpoint-body coverage: the block/unblock/progress/cancel handlers are thin pass-throughs to their
+    // (already unit-tested) commands; this walks a valid transition path so each HTTP body returns 204.
+    [Fact]
+    public async Task Progress_block_unblock_cancel_transitions_return_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var sec = Client(factory, "Secretary", "kc-sec");
+        var action = await CreateAsync(sec);
+
+        (await sec.PostAsJsonAsync($"/api/actions/{action.Id}/progress", new { progressPct = 25 }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent); // Open allows progress
+        (await sec.PostAsync($"/api/actions/{action.Id}/start", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await sec.PostAsJsonAsync($"/api/actions/{action.Id}/block", new { reason = Loc("Waiting on vendor", "بانتظار المورد") }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await sec.PostAsync($"/api/actions/{action.Id}/unblock", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await sec.PostAsJsonAsync($"/api/actions/{action.Id}/cancel", new { reason = Loc("No longer needed", "لم يعد مطلوبًا") }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await (await sec.GetAsync($"/api/actions/{action.Key}")).Content.ReadFromJsonAsync<ActionDetail>();
+        detail!.Status.Should().Be("Cancelled");
+    }
 }

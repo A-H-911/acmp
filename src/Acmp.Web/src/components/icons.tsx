@@ -16,7 +16,7 @@ export type IconName =
   | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog'
   | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh'
   | 'arrowRight' | 'arrowLeft' | 'clipboardCheck' | 'pause' | 'ban' | 'arrowUpRight'
-  | 'shieldPlus' | 'filterLines' | 'checklist';
+  | 'shieldPlus' | 'filterLines' | 'checklist' | 'trash';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -28,6 +28,7 @@ const PATHS: Record<IconName, ReactNode> = {
   action: <><path d="M9 11l3 3 8-8" /><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" /></>,
   // ADR mark = a book/record (matches the design's ADR glyph in Lists & Registers + Decision detail).
   adr: <path d="M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7M9 12h7" />,
+  trash: <path d="M4 7h16M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M18 7l-1 13a1 1 0 01-1 1H8a1 1 0 01-1-1L6 7M10 11v6M14 11v6" />,
   risk: <><path d="M10.3 3.6L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.4 3.6a2 2 0 00-3.4 0z" /><path d="M12 9v4M12 17h.01" /></>,
   deps: <><circle cx="6" cy="6" r="3" /><circle cx="18" cy="18" r="3" /><path d="M9 6h6a3 3 0 013 3v6" /></>,
   research: <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></>,

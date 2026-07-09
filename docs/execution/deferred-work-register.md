@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.1.0
-updated: 2026-07-06
+version: 1.2.0
+updated: 2026-07-07
 owner: lead-secretary
 ---
 
@@ -18,7 +18,7 @@ The durable index of work that is **known-not-done**: intentionally deferred fea
 | # | Deferred item | Type | Phase-1 handling | Target phase | Trigger to activate | Status |
 |---|---|---|---|---|---|---|
 | D-01 | Timeline / Gantt-lite backlog view | Feature-deferral | Calendar/list views | Phase 2 | Phase 2 start | Open |
-| D-02 | Webex recording/transcript retrieval + storage | Manual-for-now | Secretary pastes link / uploads file | Phase 2 | Webex Assistant enabled org-wide + API access confirmed (OQ in [open-question register](../decisions/open-question-register.md)) | Open |
+| D-02 | Webex recording/transcript retrieval + storage | Manual-for-now | Secretary pastes link / uploads file — **manual upload + presigned playback + delete DELIVERED (P13-recording, ADR-0025, AC-073/074)**; auto-retrieval = AC-070 (`Met`; mechanism proven live — webhook auto-registration + synthetic signed webhook — but a **production** live-confirm with a real cloud recording remains, since the dev/sandbox account records locally only); only transcript retrieval remains beyond that | Phase 2 (transcript → P19) | Webex Assistant enabled org-wide + API access confirmed (OQ in [open-question register](../decisions/open-question-register.md)) | In progress |
 | D-03 | AI candidate extraction from transcripts | Feature-deferral | Secretary reviews transcript, creates actions/decisions manually | Phase 3 | Transcripts machine-readable (depends on D-02) | Open |
 | D-04 | Conflict-of-interest tracking per vote | Manual-for-now | Honor system, noted in MoM | Phase 2 | Phase 2 | Open |
 | D-05 | Keystone research-mission import | Manual-for-now | Secretary creates Research Mission with Keystone package ref | Phase 2 | Keystone package schema stable + import tool built | Open |
@@ -30,6 +30,8 @@ The durable index of work that is **known-not-done**: intentionally deferred fea
 | D-11 | Tarseem diagram render sidecar (behind `IDiagramRenderer`) + Diagrams surface | Feature-deferral | Diagrams authored externally and attached as files | Phase 2 | P14 kickoff (Tarseem container build validated) | Open |
 | D-12 | Email notification channel via `INotificationChannel` | Feature-deferral | In-app notification center only (no email in v1) | Phase 3 | SMTP relay available (see [dependency register](../requirements/dependency-register.md)) | Open |
 | D-13 | Per-ballot crypto hash chaining (vote *state-change* chain shipped in the P9-review slice, PR #76; individual ballots covered transitively, not individually chained) | Tech-debt | Hash-chained vote state-change audit rows | Phase 2 | P16 security-hardening slice | Open |
+| D-14 | Webex per-user DM cards, meeting auto-invitations, and email→member attendance auto-populate | Feature-deferral | P13 ships **space** delivery (committee Webex space), meeting auto-create without invitees, and recording-ready webhook; attendance stays manual | Phase 2/3 | `ICommitteeDirectory` exposes member email (a Membership seam extension) — email is persisted but not projected today | Open |
+| D-15 | **⭐ HIGH PRIORITY — Topic *Prepare* (Accepted→Prepared) has no UI affordance.** `POST /api/topics/{id}/prepare` (BL-036 / AC-035) shipped **backend-only**: the SPA never calls it (only `accept`/`return` are wired, in the kanban). So no topic reaches `Prepared`, the agenda-builder pool (`GET /topics?status=Prepared`) is **permanently empty in-product**, and "Search topics" shows nothing — the intake→agenda **core loop is broken for real users**. Discovered 2026-07-07 from an operator bug report; root-caused against `docs/domain/entity-lifecycles.md §1` (W4) + the design files (which omit Prepare entirely — the kanban has 5 buckets, no `Prepared`; the timeline jumps Accepted→Scheduled). | Tech-debt | E2E `core-loop.spec` performs prepare via **direct HTTP**, masking the gap (see AC-035 audit note). **No user-facing workaround exists.** | Phase 2 (fix early — highest-priority defect) | **Activate immediately.** Fix (frontend-only, no ADR): `usePrepareTopic` + a **"Mark prepared"** button on an `Accepted` topic detail (`TopicDetail.tsx` `.dt-actions`); **gating = show-and-enforce** (render for any Accepted topic, backend 403s — the owner is often a plain Member, so a role gate would hide it from the right person); **invalidate three query keys** (backlog + `['topics','prepared']` + `['topics','detail',key]`); a **"Prepared" badge** on kanban cards (Accepted & Prepared share the `accepted` bucket, `topicMeta.ts`, so Prepared is otherwise invisible); reword the agenda-pool empty-state to point to the action. **Optional W4-completeness:** notify the Secretary on prepare (`PrepareTopicHandler` only audits today; the `INotificationChannel` seam exists). **Open sub-questions (raise an OQ if pursued):** the domain has **no "un-prepare" / defer-from-Prepared** transition (a mis-prepared topic is stuck until scheduled); and **design-update-owed** (the design omits Prepare). | Open |
 
 ## Change records
 

@@ -6,7 +6,7 @@
  * / session-expired status as a tonal banner. Language + theme toggles stay available.
  */
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AcmpAuthContext';
 import { consumeAuthStatus } from '../auth/authStatus';
@@ -19,6 +19,9 @@ export function LoginPage() {
   const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading, signIn } = useAuth();
   const { theme, toggle } = useTheme();
+  // A deep-link gate (ProtectedRoute) forwards the attempted path here; pass it to signIn so login
+  // returns the user there. Undefined on a direct visit / post-logout redirect.
+  const from = (useLocation().state as { from?: string } | null)?.from;
   // Read once on mount: set by signOut / token-expiry before the redirect here.
   const [status] = useState(consumeAuthStatus);
 
@@ -55,7 +58,7 @@ export function LoginPage() {
           <div className="login-appname">{t('app.tagline')}</div>
           <hr className="login-divider" />
           <p className="login-subtitle">{t('auth.subtitle')}</p>
-          <Button className="login-cta" onClick={signIn}>
+          <Button className="login-cta" onClick={() => signIn(from)}>
             <Icon name="login" size={18} className="dir-flip" aria-hidden />
             {t('auth.login')}
           </Button>

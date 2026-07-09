@@ -83,4 +83,43 @@ public class MembershipApiTests
         var profile = await response.Content.ReadFromJsonAsync<Profile>();
         profile!.Role.Should().Be("Secretary");
     }
+
+    [Fact] // BL-024: Administrator assigns a member's streams (empty set clears them) -> 204
+    public async Task Administrator_assigns_streams_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(("kc-mem", "Mem One", CommitteeRole.Member));
+        var admin = Client(factory, "Administrator", sub: "kc-admin");
+
+        var member = (await (await admin.GetAsync("/api/members")).Content.ReadFromJsonAsync<List<MemberRow>>())!
+            .Single(m => m.Role == nameof(CommitteeRole.Member));
+
+        var response = await admin.PutAsJsonAsync($"/api/members/{member.PublicId}/streams", Array.Empty<Guid>());
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact] // docs/10 §E.3 (Auth.Delegate): Secretary delegates a capability for a bounded window -> 201
+    public async Task Secretary_creates_a_delegation_returns_201()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(
+            ("kc-sec", "Sec One", CommitteeRole.Secretary),
+            ("kc-target", "Target One", CommitteeRole.Member));
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        var target = (await (await sec.GetAsync("/api/members")).Content.ReadFromJsonAsync<List<MemberRow>>())!
+            .Single(m => m.Role == nameof(CommitteeRole.Member));
+        var body = new
+        {
+            delegateMemberPublicId = target.PublicId,
+            capability = "Vote.Cast",
+            validFrom = DateTimeOffset.UtcNow,
+            validTo = DateTimeOffset.UtcNow.AddDays(7),
+        };
+
+        var response = await sec.PostAsJsonAsync("/api/members/delegations", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 }

@@ -90,9 +90,12 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_ENABLED: "true"
-      # Pin the issuer so the SPA (browser) and the API (in-cluster) agree byte-for-byte.
-      # `*.localhost` resolves to loopback in browsers; the api reaches it via extra_hosts below.
-      KC_HOSTNAME: "http://keycloak.localhost:8085"
+      # Trust the reverse proxy's X-Forwarded-* so KC emits correct https absolute URLs behind nginx/ngrok.
+      KC_PROXY_HEADERS: "xforwarded"
+      # Issuer pinned so the SPA (browser) and the API agree byte-for-byte. ngrok-only (PR-C): KC is served
+      # same-origin over https under /kc via the web nginx proxy (KEYCLOAK_HOSTNAME=https://acmp.ngrok.dev/kc),
+      # eliminating the https-page→http-KC mixed content. Default keeps the localhost profile working.
+      KC_HOSTNAME: "${KEYCLOAK_HOSTNAME:-http://keycloak.localhost:8085}"
       KC_HOSTNAME_STRICT: "false"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
@@ -142,12 +145,29 @@ services:
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
+      # Browser-reachable host used ONLY to presign recording playback URLs (ADR-0014); via nginx /acmp-recordings/.
+      # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
+      Minio__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-}
+      Minio__PublicSecure: "true"
       # Bundled Keycloak realm (ADR-0015). Issuer must match the SPA's exactly; RequireHttpsMetadata
       # is false only for the in-stack http dev profile — set true behind TLS in prod (P18).
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
       Authentication__Keycloak__RequireHttpsMetadata: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
       OTEL_SERVICE_NAME: "acmp-api"
+      # Webex adapter (P13, ADR-0005/0024). Default OFF — in-app is the sole channel (AC-071). Fill these via
+      # .env to enable; the worker below MUST carry the identical values (same job graph). Secrets never committed.
+      Webex__Enabled: "${WEBEX_ENABLED:-false}"
+      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
+      Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
+      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
+      Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
+      Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
+      Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
+      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
+      Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
+      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+      Webex__OAuthSetupKey: "${WEBEX_OAUTH_SETUP_KEY:-}"
     extra_hosts:
       # Resolve the Keycloak issuer host to the Docker host (where port 8085 is published) so the
       # api validates tokens against the same issuer URL the browser used.
@@ -195,6 +215,62 @@ services:
       timeout: 5s
       retries: 6
       start_period: 10s
+
+  # Dedicated background-job worker (ADR-0024): runs the Hangfire SERVER that processes the jobs the API
+  # enqueues (Webex sends/webhooks/meeting-create + the recurring action-reminder sweep). Shares the SQL DB and
+  # Webex config with the API; the API owns EF migrations, so the worker waits for the API to be healthy before
+  # its Hangfire schema bootstraps and its recurring job registers.
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      Minio__Endpoint: "minio:9000"
+      Minio__AccessKey: ${MINIO_ROOT_USER}
+      Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
+      Minio__Secure: "false"
+      # Webex config MUST match the API's exactly (same job graph). Fill via .env to enable (default off).
+      Webex__Enabled: "${WEBEX_ENABLED:-false}"
+      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
+      Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
+      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
+      Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
+      Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
+      Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
+      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
+      Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
+      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      seq:
+        condition: service_started
+      minio:
+        condition: service_started
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Optional inbound ingress for the Webex recording-ready webhook (P13, ADR-0024). Opt-in: `--profile ngrok`.
+  # Tunnels the WHOLE app: nginx (web:80) serves the SPA AND reverse-proxies /api -> api:8080, so the SPA, the
+  # webhook (/api/webex/webhook) and the OAuth callback (/api/webex/oauth/callback) all sit on ONE public HTTPS
+  # domain. NGROK_URL = your reserved ngrok domain (dev: https://acmp.ngrok.dev, prod: https://acmp.ngrok.app);
+  # required when this profile is active. Register that URL + /api/webex/webhook as the Webex webhook targetUrl.
+  # ponytail: routing PROD webhook traffic through ngrok's SaaS tunnel is in mild tension with the self-contained
+  # posture (CON-001/INV-003) — prefer the org reverse proxy in prod; treat ngrok as dev + an accepted fallback.
+  ngrok:
+    image: ngrok/ngrok:latest
+    profiles: ["ngrok"]
+    command: ["http", "web:80", "--url=${NGROK_URL}"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "4040:4040"   # ngrok agent inspection UI (operator-only)
 
 volumes:
   mssql-data:

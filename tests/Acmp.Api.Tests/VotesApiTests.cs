@@ -169,4 +169,26 @@ public class VotesApiTests
         var open = await Client(factory, "Secretary", "u-sec").PostAsJsonAsync($"/api/votes/{Guid.NewGuid()}/open", new { });
         open.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact] // W11: while the vote is Open a voter recasts (change) and another recuses — both 204
+    public async Task Change_ballot_and_recuse_while_open_return_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var sec = Client(factory, "Secretary", "u-sec");
+        var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody(minCast: 1))).Content.ReadFromJsonAsync<VoteSummary>();
+        await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });
+
+        var alice = Client(factory, "Member", "u-alice");
+        await alice.PostAsJsonAsync($"/api/votes/{vote.Id}/cast", new { choice = "Approve", comment = (object?)null });
+        (await alice.PostAsJsonAsync($"/api/votes/{vote.Id}/change", new { choice = "Reject", comment = (object?)null }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var bob = Client(factory, "Member", "u-bob");
+        (await bob.PostAsJsonAsync($"/api/votes/{vote.Id}/recuse", new { }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await (await sec.GetAsync($"/api/votes/{vote.Key}")).Content.ReadFromJsonAsync<VoteDetail>();
+        detail!.Ballots.Single(b => b.VoterUserId == "u-alice").Choice.Should().Be("Reject");
+        detail.Ballots.Single(b => b.VoterUserId == "u-bob").Recused.Should().BeTrue();
+    }
 }

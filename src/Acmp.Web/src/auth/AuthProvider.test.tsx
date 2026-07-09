@@ -21,6 +21,9 @@ vi.mock('./authConfig', () => ({
     return mockOidcEnabled;
   },
   oidcConfig: {},
+  RETURN_KEY: 'acmp-return-to',
+  returnPathToStore: (r?: string) =>
+    !r || r === '/' || r === '/login' || r.startsWith('/auth') ? null : r,
 }));
 
 interface FakeOidc {
@@ -56,6 +59,8 @@ function Probe() {
       <span data-testid="initials">{a.initials}</span>
       <span data-testid="err">{a.error ?? ''}</span>
       <button onClick={a.signOut}>sign out</button>
+      <button onClick={() => a.signIn('/meetings/new')}>signin deep</button>
+      <button onClick={() => a.signIn('/')}>signin home</button>
       {a.devSetRoles && <button onClick={() => a.devSetRoles!(['auditor'])}>become auditor</button>}
     </>
   );
@@ -240,6 +245,33 @@ describe('AuthProvider — OidcBridge (configured Keycloak)', () => {
     expect(expiredHandlers.length).toBeGreaterThan(0);
     act(() => expiredHandlers.forEach((h) => h()));
     expect(sessionStorage.getItem('acmp:auth-status')).toBe('session_expired');
+  });
+
+  it('stashes a deep-link path for post-login restore, then starts the redirect', async () => {
+    mockOidcEnabled = true;
+    stubFetch(() => ({ jsonBody: {} }));
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'signin deep' }));
+    expect(sessionStorage.getItem('acmp-return-to')).toBe('/meetings/new');
+    expect(oidc.signinRedirect).toHaveBeenCalled();
+  });
+
+  it('clears a stale return path on a plain sign-in (no hijack of a later login)', async () => {
+    mockOidcEnabled = true;
+    stubFetch(() => ({ jsonBody: {} }));
+    sessionStorage.setItem('acmp-return-to', '/old/path');
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'signin home' }));
+    expect(sessionStorage.getItem('acmp-return-to')).toBeNull();
+    expect(oidc.signinRedirect).toHaveBeenCalled();
   });
 
   it('surfaces a token-exchange error from the IdP', () => {

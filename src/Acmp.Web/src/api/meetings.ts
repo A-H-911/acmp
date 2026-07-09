@@ -71,6 +71,15 @@ export interface Discussion {
   capturedAt: string;
 }
 
+export interface RecordingDto {
+  source: 'Uploaded' | 'Webex';
+  fileName: string | null;
+  contentType: string | null;
+  sizeBytes: number | null;
+  durationSeconds: number | null;
+  playbackUrl: string | null;
+}
+
 export interface MeetingDetail {
   id: string;
   key: string;
@@ -90,6 +99,7 @@ export interface MeetingDetail {
   agenda: Agenda | null;
   attendance: AttendanceEntry[];
   discussions: Discussion[];
+  recording?: RecordingDto | null; // always present from the API; optional so older test fixtures compile
 }
 
 export function useMeetings() {
@@ -132,6 +142,50 @@ export function useMeetingDetail(key: string | undefined) {
     queryFn: () => api<MeetingDetail>(`/meetings/${key}`),
     enabled: !!key,
     retry: false, // a 404 (unknown key) shouldn't retry — surface "not found" immediately
+  });
+}
+
+/** FR-056: upload a meeting recording file (multipart). No Content-Type header — the browser sets the
+ *  multipart boundary; the field name `file` matches the server's IFormFile. Returns the RecordingDto. */
+export function uploadMeetingRecording(meetingKey: string, file: File): Promise<RecordingDto> {
+  const form = new FormData();
+  form.append('file', file);
+  return api<RecordingDto>(`/meetings/${meetingKey}/recording`, { method: 'POST', body: form });
+}
+
+export function useUploadMeetingRecording(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => uploadMeetingRecording(key!, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meetings', 'detail', key] });
+      qc.invalidateQueries({ queryKey: ['meetings', 'recording-url', key] }); // drop the stale presigned URL after replace
+    },
+  });
+}
+
+/** Playback: fetch a short-lived presigned MinIO URL for the uploaded recording (ADR-0014). Enabled only
+ *  when the meeting has an uploaded recording; the URL feeds a <video src>. Refetch before the 10-min TTL. */
+export function useRecordingUrl(key: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['meetings', 'recording-url', key],
+    queryFn: () => api<{ url: string }>(`/meetings/${key}/recording/url`),
+    enabled: !!key && enabled,
+    retry: false,
+    staleTime: 8 * 60 * 1000,
+  });
+}
+
+/** FR-056: delete a meeting's recording (uploaded file or Webex reference). Invalidates the detail + the
+ *  presigned-url query so the UI drops the player immediately. */
+export function useDeleteMeetingRecording(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>(`/meetings/${key}/recording`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meetings', 'detail', key] });
+      qc.invalidateQueries({ queryKey: ['meetings', 'recording-url', key] });
+    },
   });
 }
 

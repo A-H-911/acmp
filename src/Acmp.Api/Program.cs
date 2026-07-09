@@ -1,32 +1,8 @@
 ﻿using Acmp.Api.Endpoints;
 using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
-using Acmp.Modules.Actions.Application;
-using Acmp.Modules.Actions.Application.Reminders;
-using Acmp.Modules.Actions.Infrastructure;
-using Acmp.Modules.Decisions.Application;
-using Acmp.Modules.Decisions.Infrastructure;
-using Acmp.Modules.Dependencies.Application;
-using Acmp.Modules.Dependencies.Infrastructure;
-using Acmp.Modules.Governance.Application;
-using Acmp.Modules.Governance.Infrastructure;
-using Acmp.Modules.Meetings.Application;
-using Acmp.Modules.Meetings.Infrastructure;
-using Acmp.Modules.Membership.Application;
-using Acmp.Modules.Membership.Infrastructure;
-using Acmp.Modules.Notifications.Application;
-using Acmp.Modules.Notifications.Infrastructure;
-using Acmp.Modules.Risks.Application;
-using Acmp.Modules.Risks.Infrastructure;
-using Acmp.Modules.Topics.Application;
-using Acmp.Modules.Topics.Infrastructure;
-using Acmp.Modules.Traceability.Application;
-using Acmp.Modules.Traceability.Infrastructure;
-using Acmp.Shared;
+using Acmp.Bootstrap;
 using Acmp.Shared.Authorization;
-using Hangfire;
-using Hangfire.SqlServer;
-using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
@@ -41,36 +17,13 @@ builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
-// Shared kernel (clock, current-user, file store, MediatR behaviors) + modules.
-builder.Services.AddSharedKernel(builder.Configuration);
-builder.Services.AddMembershipModule(builder.Configuration);
-builder.Services.AddTopicsModule(builder.Configuration);
-builder.Services.AddMeetingsModule(builder.Configuration);
-builder.Services.AddDecisionsModule(builder.Configuration);
-builder.Services.AddActionsModule(builder.Configuration);
-builder.Services.AddRisksModule(builder.Configuration);
-builder.Services.AddTraceabilityModule(builder.Configuration);
-builder.Services.AddDependenciesModule(builder.Configuration);
-builder.Services.AddGovernanceModule(builder.Configuration);
-builder.Services.AddNotificationsModule(builder.Configuration);
+// Shared kernel + all modules + Webex adapter + MediatR, composed identically to the worker via the shared
+// composition root (Acmp.Bootstrap, ADR-0024) so both hosts resolve the same service graph.
+builder.Services.AddAcmpModules(builder.Configuration);
 
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/domain/permission-role-matrix.md matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
-
-// One MediatR registration over the shared + module application assemblies.
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-    typeof(SharedKernelExtensions).Assembly,
-    MembershipApplicationExtensions.Assembly,
-    TopicsApplicationExtensions.Assembly,
-    MeetingsApplicationExtensions.Assembly,
-    DecisionsApplicationExtensions.Assembly,
-    ActionsApplicationExtensions.Assembly,
-    RisksApplicationExtensions.Assembly,
-    TraceabilityApplicationExtensions.Assembly,
-    DependenciesApplicationExtensions.Assembly,
-    GovernanceApplicationExtensions.Assembly,
-    NotificationsApplicationExtensions.Assembly));
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -87,28 +40,14 @@ builder.Services.AddHealthChecks()
     .AddCheck("api", () => HealthCheckResult.Healthy("Serving requests"), tags: new[] { "live" })
     .AddSqlServer(connectionString, name: "sqlserver", tags: new[] { "ready" });
 
-// Action reminder/escalation knobs (docs/domain/notification-strategy.md §3.4, W22) — bound from appsettings "ActionReminders".
-builder.Services.Configure<ActionReminderOptions>(
-    builder.Configuration.GetSection(ActionReminderOptions.SectionName));
-
-// Background jobs — app-owned Hangfire on ACMP's OWN SQL (ADR-0014, CON-001). Its schema bootstraps its own
-// tables; it never shares ACMP's domain tables and adds no external service. Skipped under the "Testing" host
-// (the integration factory swaps SQL for EF-InMemory) so tests never open a real SQL connection.
+// Background jobs — app-owned Hangfire on ACMP's OWN SQL (ADR-0014, CON-001), ENQUEUE-ONLY here. The API
+// registers the Hangfire CLIENT (IBackgroundJobClient); the SERVER that processes jobs runs in the dedicated
+// Acmp.Worker container (ADR-0024). Skipped under the "Testing" host (the integration factory swaps SQL for
+// EF-InMemory) so tests never open a real SQL connection.
 var backgroundJobsEnabled = !builder.Environment.IsEnvironment("Testing")
     && !string.IsNullOrWhiteSpace(connectionString);
 if (backgroundJobsEnabled)
-{
-    builder.Services.AddHangfire(cfg => cfg
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
-        {
-            SchemaName = "HangFire",
-            PrepareSchemaIfNecessary = true,
-        }));
-    builder.Services.AddHangfireServer();
-}
+    builder.Services.AddAcmpHangfireStorage(connectionString);
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
 builder.Services.AddOpenTelemetry()
@@ -150,22 +89,14 @@ app.MapAdrEndpoints();
 app.MapInvariantEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
+app.MapWebexEndpoints(); // P13: anonymous, HMAC-authenticated inbound Webex webhook
 
-// Apply EF migrations on startup, retrying while SQL Server finishes accepting connections.
+// The API OWNS schema migrations (both hosts share one SQL DB; a single migrator avoids a two-host race —
+// the worker waits for the schema). Retries while SQL Server finishes accepting connections.
 await MigrationRunner.MigrateAsync(app);
 
-// Recurring action reminder/escalation sweep (AC-054/055). The job body just sends the MediatR command — all
-// logic lives in the (unit-tested) SweepActionRemindersHandler; Hangfire only cron-triggers it.
-if (backgroundJobsEnabled)
-{
-    var reminderOptions = builder.Configuration.GetSection(ActionReminderOptions.SectionName)
-        .Get<ActionReminderOptions>() ?? new ActionReminderOptions();
-    // Use the DI-resolved manager, NOT the static RecurringJob — the static one reads JobStorage.Current,
-    // which isn't initialized until the Hangfire hosted server starts (after this point), so it would throw.
-    app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("action-reminders",
-        sender => sender.Send(new SweepActionRemindersCommand(), CancellationToken.None),
-        reminderOptions.SweepCron);
-}
+// The recurring action-reminder sweep (AC-054/055) is REGISTERED AND RUN by the Acmp.Worker container
+// (ADR-0024), not here — the API no longer hosts a Hangfire server.
 
 app.Run();
 

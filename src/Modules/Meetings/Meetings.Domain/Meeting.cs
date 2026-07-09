@@ -41,6 +41,22 @@ public sealed class Meeting : AuditableEntity
     public DateTimeOffset? CancelledAt { get; private set; }
     public string? CancellationReason { get; private set; }
 
+    // Webex integration (P13). WebexMeetingId is the correlation key the recording webhook resolves against;
+    // it is set when ACMP auto-creates the Webex meeting (WS3b) or a secretary captures it. The recording
+    // fields hold the reference (not the file) once the recording-ready webhook fires (FR-056/057).
+    public string? WebexMeetingId { get; private set; }
+    public string? RecordingUrl { get; private set; }          // playback URL
+    public string? RecordingDownloadUrl { get; private set; }
+    public int? RecordingDurationSeconds { get; private set; }
+
+    // Manually-uploaded recording (FR-056). The bytes live in MinIO via IFileStore; the object key + display
+    // metadata are stored here. Present ⇒ this meeting has a locally-uploaded recording (distinct from the
+    // Webex RecordingUrl path above); playback is served via a short-lived pre-signed URL.
+    public string? RecordingObjectKey { get; private set; }
+    public string? RecordingFileName { get; private set; }
+    public string? RecordingContentType { get; private set; }
+    public long? RecordingSizeBytes { get; private set; }
+
     public IReadOnlyCollection<Attendance> Attendees => _attendees.AsReadOnly();
     public IReadOnlyCollection<Discussion> Discussions => _discussions.AsReadOnly();
 
@@ -143,6 +159,53 @@ public sealed class Meeting : AuditableEntity
         var discussion = new Discussion(topicId, body, authorSub, authorName, DiscussionOrigin.Human, isApproved: true, now);
         _discussions.Add(discussion);
         return discussion;
+    }
+
+    // ---- Webex (P13) ----
+
+    // Correlate this meeting to a Webex meeting (from auto-create, WS3b, or manual capture). The Webex
+    // meeting id is the key the recording-ready webhook resolves against; the join URL is refreshed if given.
+    public void SetWebexMeeting(string webexMeetingId, string? joinUrl)
+    {
+        if (string.IsNullOrWhiteSpace(webexMeetingId))
+            throw new InvalidOperationException("A Webex meeting id is required.");
+        WebexMeetingId = webexMeetingId.Trim();
+        if (!string.IsNullOrWhiteSpace(joinUrl)) JoinUrl = joinUrl.Trim();
+    }
+
+    // Store the recording reference once Webex signals the recording is ready (FR-056/057). Idempotent —
+    // re-attaching the same reference yields the same state, so a re-delivered webhook is harmless.
+    public void AttachRecording(string? playbackUrl, string? downloadUrl, int? durationSeconds)
+    {
+        RecordingUrl = Clean(playbackUrl);
+        RecordingDownloadUrl = Clean(downloadUrl);
+        RecordingDurationSeconds = durationSeconds;
+    }
+
+    // FR-056: attach a manually-uploaded recording (bytes already stored in MinIO via IFileStore). Idempotent
+    // replace — a re-upload overwrites the reference; the caller deletes the superseded object.
+    public void AttachUploadedRecording(string objectKey, string fileName, string contentType, long sizeBytes)
+    {
+        if (string.IsNullOrWhiteSpace(objectKey))
+            throw new InvalidOperationException("A stored recording object key is required.");
+        RecordingObjectKey = objectKey.Trim();
+        RecordingFileName = Clean(fileName);
+        RecordingContentType = Clean(contentType);
+        RecordingSizeBytes = sizeBytes;
+    }
+
+    // FR-056: remove any recording from the meeting — clears both the uploaded-file reference and the Webex
+    // reference. The caller deletes the stored MinIO object for an uploaded recording. Idempotent (no-op when
+    // there is nothing to clear), so a double delete is harmless.
+    public void RemoveRecording()
+    {
+        RecordingObjectKey = null;
+        RecordingFileName = null;
+        RecordingContentType = null;
+        RecordingSizeBytes = null;
+        RecordingUrl = null;
+        RecordingDownloadUrl = null;
+        RecordingDurationSeconds = null;
     }
 
     private void RequireStatus(params MeetingStatus[] allowed)

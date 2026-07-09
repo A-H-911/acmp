@@ -30,6 +30,7 @@ public class ModuleBoundaryTests
     private static readonly Assembly DependenciesApp = typeof(Acmp.Modules.Dependencies.Application.DependenciesApplicationExtensions).Assembly;
     private static readonly Assembly GovernanceDomain = typeof(Acmp.Modules.Governance.Domain.Adr).Assembly;
     private static readonly Assembly GovernanceApp = typeof(Acmp.Modules.Governance.Application.GovernanceApplicationExtensions).Assembly;
+    private static readonly Assembly WebexIntegration = typeof(Acmp.Modules.Integrations.Webex.WebexIntegrationExtensions).Assembly;
 
     public static IEnumerable<object[]> Domains() => new[] { new object[] { MembershipDomain }, new object[] { TopicsDomain }, new object[] { MeetingsDomain }, new object[] { NotificationsDomain }, new object[] { DecisionsDomain }, new object[] { ActionsDomain }, new object[] { RisksDomain }, new object[] { TraceabilityDomain }, new object[] { DependenciesDomain }, new object[] { GovernanceDomain } };
     public static IEnumerable<object[]> Applications() => new[] { new object[] { MembershipApp }, new object[] { TopicsApp }, new object[] { MeetingsApp }, new object[] { NotificationsApp }, new object[] { DecisionsApp }, new object[] { ActionsApp }, new object[] { RisksApp }, new object[] { TraceabilityApp }, new object[] { DependenciesApp }, new object[] { GovernanceApp } };
@@ -247,6 +248,28 @@ public class ModuleBoundaryTests
                 "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
                 "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
                 "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure")
+            .GetResult();
+
+        result.IsSuccessful.Should().BeTrue(Describe(result));
+    }
+
+    [Fact] // The Webex adapter (P13) is a host-agnostic integration module: it depends ONLY on Acmp.Shared
+           // contracts (INotificationSink, IMeetingWebexWriter, IWebexMeetingProvisioner) — never a domain
+           // module's assemblies (ADR-0001). Both hosts (API + worker) compose it via AddWebexIntegration.
+    public void Webex_should_not_depend_on_other_modules()
+    {
+        var result = Types.InAssemblies(new[] { WebexIntegration })
+            .Should().NotHaveDependencyOnAny(
+                "Acmp.Modules.Topics.Domain", "Acmp.Modules.Topics.Application", "Acmp.Modules.Topics.Infrastructure",
+                "Acmp.Modules.Membership.Domain", "Acmp.Modules.Membership.Application", "Acmp.Modules.Membership.Infrastructure",
+                "Acmp.Modules.Meetings.Domain", "Acmp.Modules.Meetings.Application", "Acmp.Modules.Meetings.Infrastructure",
+                "Acmp.Modules.Decisions.Domain", "Acmp.Modules.Decisions.Application", "Acmp.Modules.Decisions.Infrastructure",
+                "Acmp.Modules.Actions.Domain", "Acmp.Modules.Actions.Application", "Acmp.Modules.Actions.Infrastructure",
+                "Acmp.Modules.Risks.Domain", "Acmp.Modules.Risks.Application", "Acmp.Modules.Risks.Infrastructure",
+                "Acmp.Modules.Traceability.Domain", "Acmp.Modules.Traceability.Application", "Acmp.Modules.Traceability.Infrastructure",
+                "Acmp.Modules.Dependencies.Domain", "Acmp.Modules.Dependencies.Application", "Acmp.Modules.Dependencies.Infrastructure",
+                "Acmp.Modules.Governance.Domain", "Acmp.Modules.Governance.Application", "Acmp.Modules.Governance.Infrastructure",
+                "Acmp.Modules.Notifications.Domain", "Acmp.Modules.Notifications.Application", "Acmp.Modules.Notifications.Infrastructure")
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue(Describe(result));

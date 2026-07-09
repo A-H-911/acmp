@@ -47,6 +47,20 @@ public static class SharedKernelExtensions
             .WithCredentials(accessKey, secretKey)
             .WithSSL(secure)
             .Build());
+
+        // Presign client: uses the public endpoint (browser-reachable via nginx) when configured, so presigned
+        // GET URLs resolve + validate from the browser (ADR-0014); else the internal client (local dev). The
+        // explicit region avoids a region-discovery round-trip at presign time.
+        var publicEndpoint = minio["PublicEndpoint"];
+        var publicSecure = bool.TryParse(minio["PublicSecure"], out var ps) && ps;
+        services.AddSingleton(sp => string.IsNullOrWhiteSpace(publicEndpoint)
+            ? new MinioPresigner(sp.GetRequiredService<IMinioClient>())
+            : new MinioPresigner(new MinioClient()
+                .WithEndpoint(publicEndpoint)
+                .WithCredentials(accessKey, secretKey)
+                .WithSSL(publicSecure)
+                .WithRegion("us-east-1")
+                .Build()));
         services.AddScoped<IFileStore, MinioFileStore>();
 
         return services;

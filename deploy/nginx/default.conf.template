@@ -13,12 +13,42 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
 
+    # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
+    # without mixed content. The trailing slash on proxy_pass strips /kc so KC (served at root) matches;
+    # X-Forwarded-* (with KC_PROXY_HEADERS=xforwarded) make KC emit https absolute URLs (issuer = /kc).
+    location /kc/ {
+        proxy_pass http://keycloak:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port 443;
+    }
+
+    # Presigned MinIO object GETs for recording playback (ADR-0014, P13). Only presigned requests validate —
+    # MinIO 403s anything unsigned and never lists the bucket. No trailing slash on proxy_pass so the
+    # /acmp-recordings/<object> path (the S3 bucket path) is preserved; Host is forwarded so the SigV4
+    # signature validates against the host the app signed. chunked/buffering off per MinIO-behind-proxy guidance.
+    location /acmp-recordings/ {
+        proxy_pass http://minio:9000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        chunked_transfer_encoding off;
+        proxy_buffering off;
+    }
+
     location /api/ {
         proxy_pass http://api:8080;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # Meeting recordings are large video (FR-056). Default 1m would 413 any real upload; allow up to the
+        # app's recording cap. Give slow large uploads room before the proxy times out.
+        client_max_body_size 2100m;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
     }
 
     location / {

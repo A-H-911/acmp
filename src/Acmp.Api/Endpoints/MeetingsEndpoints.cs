@@ -1,10 +1,13 @@
 ﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
+using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
+using Acmp.Modules.Meetings.Application.Features.GetRecordingUrl;
 using Acmp.Modules.Meetings.Application.Features.PublishAgenda;
 using Acmp.Modules.Meetings.Application.Features.ScheduleMeeting;
+using Acmp.Modules.Meetings.Application.Features.UploadRecording;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -29,6 +32,33 @@ public static class MeetingsEndpoints
             var meeting = await sender.Send(new GetMeetingDetailQuery(key), ct);
             return meeting is null ? Results.NotFound() : Results.Ok(meeting);
         });
+
+        // FR-056: upload a meeting recording file (multipart). Size/MIME validated in the handler; Secretary/Chairman.
+        group.MapPost("/{key}/recording", async (string key, IFormFile file, ISender sender, CancellationToken ct) =>
+        {
+            await using var stream = file.OpenReadStream();
+            var dto = await sender.Send(new UploadRecordingCommand(key, file.FileName, file.ContentType, file.Length, stream), ct);
+            return Results.Ok(dto);
+        }).RequireAuthorization(Policies.MinutesCapture).DisableAntiforgery()
+          // Recordings are large video: raise this endpoint's Kestrel body + multipart limits above the
+          // 28.6 MB / 128 MB defaults (nginx client_max_body_size is raised in parallel). Matches the app cap.
+          .WithMetadata(
+              new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(RecordingUploadMaxBytes),
+              new Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute { MultipartBodyLengthLimit = RecordingUploadMaxBytes });
+
+        // Playback: mint a short-lived presigned MinIO URL for an uploaded recording (any committee member).
+        group.MapGet("/{key}/recording/url", async (string key, ISender sender, CancellationToken ct) =>
+        {
+            var url = await sender.Send(new GetRecordingUrlQuery(key), ct);
+            return url is null ? Results.NotFound() : Results.Ok(new { url });
+        });
+
+        // FR-056: delete a meeting's recording (uploaded file or Webex reference). Secretary/Chairman.
+        group.MapDelete("/{key}/recording", async (string key, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new DeleteRecordingCommand(key), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.MinutesCapture);
 
         // W5: schedule a meeting (creates the meeting + a draft agenda).
         group.MapPost("/", async (ScheduleMeetingCommand command, ISender sender, CancellationToken ct) =>
@@ -106,6 +136,10 @@ public static class MeetingsEndpoints
 
         return app;
     }
+
+    // Per-endpoint upload ceiling for recordings (matches MeetingRecordingOptions default = 2 GB). If the
+    // operator raises the app cap above this, raise here + nginx client_max_body_size too.
+    private const long RecordingUploadMaxBytes = 2L * 1024 * 1024 * 1024;
 
     public sealed record ReasonBody(string Reason);
     public sealed record AddAgendaItemBody(Guid TopicId, string TopicKey, string TopicTitle, bool Urgent,

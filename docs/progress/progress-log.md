@@ -12,6 +12,58 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## P13-close — Webex integration + meeting recording, closed (Phase 2) — branch `feat/p13-recording-upload`
+
+**2026-07-09.** P13 declared **complete**. All P13 acceptance criteria (**AC-067–074**) are `Met`; PR #99 (recording slice stacked on the Webex adapter) is open and mergeable vs `main`.
+
+- **AC-070 (Webex recording auto-attach) — settled as an environmental caveat, not a code gap.** The dev/sandbox Webex account we validate against records **locally only** — local recording never fires the cloud `recordings/created` webhook — so a genuine cloud recording cannot traverse the attach pipeline on this stack. The **production** account is licensed for cloud recording and would exercise it. What **is** proven live: webhook **auto-registration** (audit seq=46) and a **synthetic signed** `recordings/created` webhook → **200** → worker job → **graceful drop** (dropped only because the synthetic payload carries no real recording asset to fetch — the pipeline itself ran). That sits on top of the unit/integration attach tests (`MeetingWebexWriterTests`, `WebexWebhookJobTests`). Per working-discipline ("validate before claiming") the AC keeps its `Met` verdict — the literal clause (*webhook processed → reference stored + audit*) is genuinely tested — with the real-cloud-recording confirm logged as a **one-time production residual** (deferred-work D-02).
+- **Residual (non-blocking):** (1) production live-confirm of AC-070 with a real cloud recording; (2) **rotate the exposed Webex bot/OAuth token + ngrok authtoken** (operator, secrets stay in git-ignored `deploy/.env`); (3) squash-merge PR #99 → sync `main`.
+
+**Next:** **D-15** (topic *Prepare*-UI — highest-priority defect; plan-first, GO-gated) then the remaining PH-2 backlog.
+
+---
+
+## P13-recording — Meeting-recording upload · presigned playback · delete (Phase 2) — branch `feat/p13-recording-upload`
+
+**2026-07-09.** FR-056's *upload a recording file* leg — delivered end-to-end, live-validated. Reuses the shipped `IFileStore`/MinIO seam (ADR-0014); complements the Webex-webhook reference path (AC-070).
+
+- **Upload (BE).** `POST /api/meetings/{key}/recording` (multipart, Secretary/Chairman) → validate size/MIME (`MeetingRecordingOptions`: video/mp4|webm|quicktime, ≤ 2 GB) → store in MinIO (`acmp-recordings`) under a **server-derived key** (`{meetingKey}/{guid}{ext}`, no client filename — SigV4-safe) → `Meetings.RecordingUploaded` audit. New `Meeting` recording fields + `Meetings_AddRecordingUpload` migration.
+- **Playback (BE + infra).** `GET /{key}/recording/url` mints a 10-min pre-signed MinIO URL; nginx `location /acmp-recordings/` proxies to MinIO with the Host header preserved so the SigV4 signature validates (a dedicated presign `IMinioClient` on the public endpoint + explicit region). `<video src>` plays with Range/seek.
+- **Delete (BE).** `DELETE /{key}/recording` (Secretary/Chairman) clears the reference and, for an uploaded file, removes the MinIO object; a Webex reference is only cleared. `Meetings.RecordingRemoved` audit.
+- **UI (FE).** Recording tab rebuilt to `ACMP Meetings.dc.html` isRecording (full-width player card, source `StatusChip` Webex/Uploaded, Download/Replace/Delete via design-system `Button`/`Dialog`); upload dropzone + honest empty state; new `trash` icon; i18n EN/AR.
+
+**Decisions applied:** ADR-0025 (recordings via MinIO `IFileStore` + presigned playback + delete; Accepted). Reference-not-file for Webex, object-key-not-filename for uploads. Delete is reversible for the Webex source (a re-fired webhook re-attaches) — documented.
+**New acceptance criteria:** **AC-073** (upload + playback), **AC-074** (delete) → **Met** (trace to `MeetingRecordingTests` + `MeetingRecordingApiTests`).
+**Verification:** BE build + Application/API tests green (coverage ≥95%, `MinioFileStore` excluded); `dotnet format` clean; FE vitest + i18n parity; Keystone validator PASS. **Live (`acmp.ngrok.dev`, secretary-test):** real upload 200 through nginx (was **413** at the 1 MB `client_max_body_size` default — the root cause of the operator-reported "upload/replace not working", compounded by a **stale cached bundle**; both fixed); presigned URL 200/206; delete → MinIO bucket empty; full-width design confirmed.
+**Next (open):** AC-070 Webex-webhook live close (operator records a real Webex meeting) — a separate P13 item; transcript retrieval stays P19; D-15 (topic Prepare-UI) next.
+
+---
+
+## P13 — Webex integration (Phase 2) — branch `feat/p13-webex-integration`
+
+**2026-07-07.** Phase-2 Webex adapter behind `INotificationChannel` + a meeting/recording client (ADR-0005, ADR-0023). **Application/adapter surface + worker-container split COMPLETE + CI-green; only the operator-run live sandbox validation remains.**
+
+- **Multi-channel dispatch (WS1).** New `INotificationSink` + `NotificationDispatcher` (the single `INotificationChannel`) fan out to every sink; the in-app channel became a sink. **Zero changes to the ~15 existing callers.**
+- **Webex adapter module (WS2).** New `Acmp.Modules.Integrations.Webex` (depends only on `Acmp.Shared`, ArchUnit-enforced): typed `WebexApiClient` (bot auth, 429→typed exception), `AdaptiveCardBuilder` (v1.3, ≤80 KB, EN/AR, absolute deep-link), `WebexNotificationSink` (Enabled-gated, committee-wide events only, **one post per event** collapse, failure-isolated), `WebexSendJob` (429→reschedule via Hangfire), testable `IWebexJobScheduler` seam.
+- **Recording webhook + write-back (WS3).** First **anonymous** endpoint `POST /api/webex/webhook` authenticated by **HMAC-SHA1** (Webex default; SHA256/512 configurable) over the raw body + 5-min replay guard; `IMeetingWebexWriter` (ADR-0021 write seam) + new `Meeting` Webex fields (`WebexMeetingId` indexed for correlation, recording ref) + migration `Meetings_AddWebexFields`; recording processor fetches `GET /recordings/{id}` and attaches (idempotent, audited INV-005).
+- **OAuth + meeting auto-create (WS3b).** Secretary OAuth flow (`/api/webex/oauth/start|callback`, Admin-gated); `WebexToken` store (AES-GCM encrypted, own `webex` schema, migration `Webex_TokenStore`, provisioned by `MigrationRunner`) with transparent refresh; `ScheduleMeeting` enqueues create for online meetings via the new Shared `IWebexMeetingProvisioner` (Meetings registers a no-op default; the adapter overrides when enabled) → writes id + join URL back. **Dropped the speculative `IMeetingIntegration` Shared seam** (YAGNI — used once, internal to the module).
+
+- **Dedicated worker container (WS0, ADR-0024 → Accepted).** New `Acmp.Bootstrap` library holds the single composition root (`AddAcmpModules` + `AddAcmpHangfireStorage`) both hosts call, so their DI never drifts. New `Acmp.Worker` .NET Generic Host runs `AddHangfireServer()` + the recurring action-reminder sweep (moved off the API); the **API is now enqueue-only** (`AddHangfire` client, server removed). The **API owns EF migrations**; the worker waits for the schema (`docker compose depends_on: api healthy`), avoiding a two-host race. New `Dockerfile.worker` + compose `worker` service + an opt-in (`--profile ngrok`) configurable `ngrok` ingress for the webhook (dev + optional prod via a reserved `NGROK_DOMAIN`); Webex env plumbed through `.env.example` for both hosts. **`SystemCurrentUser` deliberately NOT added** (YAGNI): every worker job either opts out of the MediatR auth check or hardcodes its own `system:*` audit actor, and `CurrentUserService` is null-safe headless — so it would change zero behaviour. `Acmp.Worker`/`Acmp.Bootstrap` are hosts/wiring, exempt from the ArchUnit module rules.
+
+**Decisions applied:** Hangfire-native retry (no outbox table); **space-only delivery** (per-user email absent from `ICommitteeDirectory` → per-user DM/invitations/email-attendance deferred, **D-14**); **HMAC-SHA1 default** (corrected from an initial SHA256 assumption via Webex docs); adapter **not registered at all when `Webex:Enabled=false`** (clean AC-071, avoids a Hangfire-off-in-Testing DI landmine); **worker/API split** (ADR-0024) isolates rate-limited/retry-heavy Webex jobs from request serving.
+
+**New acceptance criteria:** **AC-067…072** added (space card + in-app; 429 reschedule; webhook HMAC 401/200 + replay; recording attach + audit; disabled = in-app only; meeting auto-create + graceful no-token). AC-069/071(edge) proven by WebApplicationFactory integration tests; the rest by unit tests.
+
+- **OAuth flow fix + ngrok wiring (WS0 follow-up, sandbox prep).** The OAuth consent endpoints (`/api/webex/oauth/start|callback`) were `RequireAuthorization(AdminConfig)` (JwtBearer) — structurally un-completable, since both legs are top-level **browser navigations** that can't carry a bearer (ACMP is bearer-only, no session cookie), so Webex's callback redirect always 401'd. Made them **anonymous**, protected by the existing single-use `state` cookie, with a **token-link audit event** (INV-005) for attributability; ADR-0023 updated. Regression test asserts the callback is reachable without auth (400 on missing state, not 401). ngrok wired for the live sandbox: compose tunnels `web:80` (nginx serves the SPA + proxies `/api`) via reserved `${NGROK_URL}` (dev `acmp.ngrok.dev` / prod `acmp.ngrok.app`); Webex bot/space/OAuth creds + authtoken live in the git-ignored `deploy/.env`.
+
+**Verification:** 722 Application tests (incl. **39 Webex unit** + **4 composition-root smoke** tests) + **144 API** (incl. 4 webhook/oauth integration) + **41 ArchUnit** + **188 Domain** — all green after moving the Hangfire server out of the API. Two EF migrations. Full solution builds clean; `dotnet format --verify-no-changes` clean; Keystone validator all-7 PASS. No product AC regressions.
+
+- **Live sandbox run (2026-07-07).** `docker compose --profile ngrok up` against the real Webex sandbox on `acmp.ngrok.dev`. **Proven live:** the dedicated **worker container** (Hangfire server + dispatchers + job dequeue/retry — the definitive ADR-0024 validation); **AC-069** webhook (valid HMAC-SHA1 → 200, invalid → 401 over the public tunnel; worker dequeued the job); the **OAuth setup-key gate** (`/start` no key → 404); bot → committee-space post (200, after the operator added the bot). **Two issues surfaced that mocked tests couldn't:** (1) recording fetch used the **bot token** → Webex **403 "missing scopes"** (recordings are user-scoped), so `GetRecordingAsync` now takes the **OAuth host token** (resolved by the webhook job via `IWebexTokenService`, graceful when consent isn't done) — FIXED + tested; (2) the bot wasn't in the space (404) → operator added it.
+
+**Next (open):** complete OAuth consent (setup-key URL) + a real recorded sandbox meeting to close **AC-070/072** live; trigger a domain event from the SPA to close **AC-067** (card render); then flip the "live pass" notes; plus the WS5/6 doc polish (`functional.md` FR-056/057 flips, status-report regen) as P13 formally closes.
+
+---
+
 ## Keystone migration gap remediation — branch `fix/keystone-migration-gaps`
 
 **2026-07-06.** Adversarial post-migration audit (3 exploration agents + advisor + independent devil's-advocate verification) found the PR #97 migration **faithful on register content** (all 66 ACs + Given/When/Then intact; guardrails→INV 1:1; CHANGE-001 substance preserved) but **lossy on the agentic surface**. Remediated, docs-only:

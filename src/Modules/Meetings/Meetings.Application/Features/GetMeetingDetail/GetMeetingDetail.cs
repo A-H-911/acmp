@@ -36,6 +36,19 @@ public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQu
             meeting.StartedAt, meeting.HeldAt,
             agenda is null ? null : MeetingMapping.ToDto(agenda),
             meeting.Attendees.OrderBy(a => a.Name).Select(MeetingMapping.ToDto).ToList(),
-            meeting.Discussions.Select(MeetingMapping.ToDto).ToList());
+            meeting.Discussions.Select(MeetingMapping.ToDto).ToList(),
+            BuildRecording(meeting));
+    }
+
+    // At most one recording per meeting: a locally-uploaded file (object key present) or a Webex reference
+    // (playback URL present). Uploaded playback is fetched via GET /recording/url; Webex exposes the URL inline.
+    private static RecordingDto? BuildRecording(Domain.Meeting m)
+    {
+        if (m.RecordingObjectKey is not null)
+            return new RecordingDto("Uploaded", m.RecordingFileName, m.RecordingContentType,
+                m.RecordingSizeBytes, m.RecordingDurationSeconds, null);
+        if (m.RecordingUrl is not null)
+            return new RecordingDto("Webex", null, null, null, m.RecordingDurationSeconds, m.RecordingUrl);
+        return null;
     }
 }

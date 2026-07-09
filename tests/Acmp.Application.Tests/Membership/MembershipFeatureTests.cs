@@ -118,6 +118,24 @@ public class MembershipFeatureTests
     }
 
     [Fact]
+    public async Task Provision_rejects_an_unauthenticated_caller()
+    {
+        // The pre-role guard: no validated identity → 401 before any role resolution.
+        var user = Substitute.For<ICurrentUser>();
+        user.IsAuthenticated.Returns(false);
+        await using var db = NewDb(user);
+
+        var cmd = new ProvisionCurrentUserCommand();
+        // The command record's synthesized copy-constructor (the decl line the coverage basis counts).
+        (cmd with { }).AllowedRoles.Should().BeEmpty();
+
+        var act = () => new ProvisionCurrentUserHandler(db, user, Clock(), Audit())
+            .Handle(cmd, CancellationToken.None);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>().WithMessage("Authentication required.");
+    }
+
+    [Fact]
     public async Task Deactivate_disables_member_but_keeps_attribution()
     {
         var admin = CurrentUser("kc-admin", "Admin", "admin@acmp.gov", "Administrator");

@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-06-30
+updated: 2026-07-07
 ---
 
 # ACMP Acceptance Audit
@@ -11,6 +11,24 @@ Every `AC-###` from `docs/validation/acceptance-criteria.md` → verdict. Keysto
 A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate **G-TRACE**).
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
+
+> P13-recording update (2026-07-09): Manual meeting-recording upload + presigned playback + delete (branch
+> `feat/p13-recording-upload`, FR-056 upload leg). **AC-073 (upload+playback) / AC-074 (delete) → Met.** File
+> stored in MinIO via the shipped `IFileStore` seam (ADR-0014) under a server-derived key; playback via a
+> short-lived pre-signed MinIO URL through nginx `/acmp-recordings/` (Host preserved so SigV4 validates);
+> Secretary/Chairman upload/replace/delete, any member plays; size ≤ 2 GB (nginx + Kestrel raised). Delete
+> removes the object (uploaded) or clears the reference (Webex). **ADR-0025** records the decision. Live-validated
+> on `acmp.ngrok.dev` (real upload 200 through nginx — was 413 at the 1 MB default; presigned 200/206; delete →
+> bucket empty). Traces: `MeetingRecordingTests` + `MeetingRecordingApiTests`. See progress-log "P13-recording" entry.
+
+> P13-close update (2026-07-09): **P13 (Webex integration + meeting recording) closed.** All P13 ACs
+> (AC-067–074) are `Met`. **AC-070's** live end-to-end leg is settled as an **environmental caveat, not a code
+> gap**: the dev/sandbox Webex account used for validation here records **locally only** (no cloud
+> `recordings/created` webhook), so a genuine cloud recording can't traverse the pipeline on this stack; the
+> **production** (licensed) host cloud-records and would exercise it. The mechanism is proven live — webhook
+> **auto-registration** (audit seq=46) and a **synthetic signed** `recordings/created` webhook → 200 → worker job
+> → graceful drop — on top of the unit/integration attach tests. Residual = a one-time production live-confirm
+> (tracked at deferred-work D-02). No AC downgraded.
 
 > P12 audit-remediation update (2026-07-05): adversarial-audit fixes across Dashboards & Reports (branch
 > `fix/p12-audit-remediation`), **NO AC flips** (AC-064/065/066 stay Met; PR3 Reports is AC-less). Fidelity +
@@ -750,6 +768,14 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR PASS (EN-light + AR-dark). |
 | AC-065 | Dashboards | Met | dashboardAgg.test (overdue-beyond-threshold, SLA-breach sort) + RoleDashboard.test (secretary variant renders triage/MoMs/escalated counts + SLA list with aging) | P12-PR2: secretary variant; escalation threshold = shared const (AC-065 definition). Live pixel-VR PASS (EN-light + AR-dark). |
 | AC-066 | Dashboards | Met | dashboardAgg.test (deferred≥2, overdue-beyond-threshold) + RoleDashboard.test (chairman variant renders Closed votes / escalated risks / escalated actions / deferred≥2 with badges) | P12-PR2: chairman variant; "escalated actions" = overdue-beyond-threshold (AC-065 definition, Actions have no Escalated status). Live pixel-VR PASS (EN-light + AR-dark). |
+| AC-067 | Webex integration | Met | WebexNotificationSinkTests (eligible→1 enqueue; per-recipient fan-out collapses to 1; disabled/non-eligible→0) + AdaptiveCardBuilderTests (v1.3, ≤80 KB, EN/AR, absolute deep-link) | P13 WS2: space card + in-app both delivered; committee-wide events only. Live Webex-space render = operator sandbox pass. |
+| AC-068 | Webex integration | Met | WebexSendJob (429→`Schedule(Retry-After)`, `[AutomaticRetry(3)]`) over WebexApiClient `ReadRetryAfter`; dead-letter surfaces in the admin job monitor | P13 WS2: no tight-loop; reschedule for the server-supplied delay. |
+| AC-069 | Webex integration | Met | WebexWebhookApiTests (valid sig→200 + enqueue; invalid→401 + 0) + WebexSignatureTests (SHA1/SHA256 accept; tamper/wrong-secret/missing reject) | P13 WS3: first anonymous endpoint, HMAC-SHA1 over raw body, 5-min replay guard, idempotent. |
+| AC-070 | Webex integration | Met | MeetingWebexWriterTests (attach by WebexMeetingId + `Meetings.RecordingAttached` audit; uncorrelated→false) + WebexWebhookJobTests (fetch→attach; skip null / no-meeting-id); **live**: webhook auto-registration (audit seq=46) + a synthetic signed `recordings/created` webhook → 200 → worker job → graceful drop | P13 WS3: reference stored (not the file). **Live end-to-end with a genuine cloud recording is deferred to production** — the dev/sandbox Webex account records **locally only** (no `recordings/created` cloud webhook); the production licensed host cloud-records. The processing mechanism is proven live; the remaining leg is an environment fact (licensed host), not a code gap. |
+| AC-071 | Webex integration | Met | WebexWebhookApiTests (disabled→200 no-op) + WebexNotificationSinkTests (disabled→0 enqueue); adapter unregistered entirely when `Enabled=false` | P13: extends AC-053; air-gapped posture. |
+| AC-072 | Webex integration | Met | WebexMeetingCreateJobTests (token→create + write-back; no-token/no-meeting→skip) + WebexMeetingProvisionerTests (online+enabled→enqueue; else 0) + WebexTokenServiceTests (fresh/refresh/none) | P13 WS3b: OAuth create; graceful no-token. Live create = operator sandbox pass. |
+| AC-073 | Recording upload | Met | UploadRecording handler/validator + GetRecordingUrl handler tests + MeetingRecordingApiTests (401/403/400/404/200; upload→detail; presign→url) + live (real upload 200 through nginx; presigned 200/206) | P13-recording: MinIO via IFileStore, server-derived key, presigned playback (ADR-0025). |
+| AC-074 | Recording delete | Met | DeleteRecording handler tests (uploaded→delete object+clear+audit; webex→clear only; missing→throws) + MeetingRecordingApiTests (401/403/204→detail null) + live (delete → MinIO bucket empty) | P13-recording: both sources; Secretary/Chairman only (ADR-0025). |
 
 **Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
 (AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.
@@ -809,6 +835,13 @@ reconciliation, 2026-06-30, which flipped **AC-035 Partial→Met** once its live
 >   `core-loop.spec` (UI accept → live-HTTP prepare → the prepared topic visibly flows into the live agenda
 >   pool, is added + published). Per the project's own G-TRACE rule ("Met once the live HTTP/UI leg lands")
 >   this is the one clean flip.
+>   - **⚠ 2026-07-07 correction (tracked as [D-15](../execution/deferred-work-register.md)).** The "live HTTP
+>     leg" above is a **direct HTTP** call in the E2E — **the SPA has no UI to mark a topic Prepared** (only
+>     `accept`/`return` are wired). So in the product a Secretary/Owner **cannot** perform this step, no topic
+>     reaches `Prepared`, and the agenda-builder pool is **permanently empty via the UI** (operator-reported).
+>     The transition + `TopicPrepared` audit + scheduling-eligibility are genuinely Met **at the API**; the
+>     **user-facing UI affordance is missing**. Verdict arguably **Partial** — flagged for operator decision;
+>     the (frontend-only) remediation is scoped as high-priority **D-15**.
 > - **Caveats closed, no verdict change** (evidence strengthened on already-`Met` rows): **AC-001** (auth.spec
 >   = the automated UI-regression that was "→ P17"); **AC-044** (the "recommended live browser axe/RTL pass" —
 >   native drag-reorder on a real browser + live axe AA); **AC-051** (the "standing cross-session browser
