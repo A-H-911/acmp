@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Actions.Application.Abstractions;
 using Acmp.Modules.Actions.Application.Internal;
+using Acmp.Modules.Actions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Exceptions;
 using Acmp.Shared.Authorization;
@@ -48,15 +49,14 @@ public sealed class VerifyActionHandler : IRequestHandler<VerifyActionCommand>
         // SoD-1 (AC-012): audit the denied attempt, then refuse with 403.
         if (!SegregationOfDuties.CanVerifyAction(sub, action.OwnerUserId, action.CompletedByUserId))
         {
-            await _audit.EmitAsync("Actions.ActionVerifyDenied", sub,
-                new { action.PublicId, action.Key, Reason = "SoD-1: verifier is the owner or the completer" }, ct);
+            await _audit.EmitEnrichedAsync("Actions.ActionVerifyDenied", nameof(ActionItem), action.PublicId.ToString(), AuditOutcome.Denied, ct);
             throw new ForbiddenAccessException("An action's verifier cannot be its owner or the person who completed it.");
         }
 
         action.Verify(sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Actions.ActionVerified", sub, new { action.PublicId, action.Key }, ct);
+        await _audit.EmitEnrichedAsync("Actions.ActionVerified", nameof(ActionItem), action.PublicId.ToString(), ct: ct);
         if (!string.Equals(action.OwnerUserId, sub, StringComparison.Ordinal))
             await _notifications.PublishAsync(ActionNotifications.Verified(action.OwnerUserId, action.Key), ct);
     }

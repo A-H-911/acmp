@@ -21,7 +21,6 @@ internal static class ActionTransition
         mutate(action, clock.UtcNow);
         await db.SaveChangesAsync(ct);
 
-        await audit.EmitAsync(auditEvent, sub,
-            new { action.PublicId, action.Key, Status = action.Status.ToString() }, ct);
+        await audit.EmitEnrichedAsync(auditEvent, nameof(ActionItem), action.PublicId.ToString(), ct: ct);
     }
 }

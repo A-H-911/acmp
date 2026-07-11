@@ -88,8 +88,7 @@ public sealed class CreateActionHandler : IRequestHandler<CreateActionCommand, A
         _db.Actions.Add(action);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Actions.ActionCreated", sub,
-            new { action.PublicId, action.Key, action.OwnerUserId, SourceType = action.SourceType.ToString() }, ct);
+        await _audit.EmitEnrichedAsync("Actions.ActionCreated", nameof(ActionItem), action.PublicId.ToString(), ct: ct);
 
         // W13: notify the assigned owner (skip if the creator assigned it to themselves — no self-noise).
         if (!string.Equals(action.OwnerUserId, sub, StringComparison.Ordinal))
