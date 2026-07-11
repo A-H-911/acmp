@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Contracts;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Modules.Governance.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Domain.ValueObjects;
@@ -67,7 +68,7 @@ public sealed class UpdateInvariantDraftHandler : IRequestHandler<UpdateInvarian
         await _db.SaveChangesAsync(ct);
 
         var (sub, _) = CurrentActor.Of(_user);
-        await _audit.EmitAsync("Governance.InvariantDraftUpdated", sub, new { inv.PublicId, inv.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantDraftUpdated", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
 
         return InvariantMapping.ToSummary(inv);
     }

@@ -75,7 +75,7 @@ public sealed class CreateInvariantHandler : IRequestHandler<CreateInvariantComm
         _db.Invariants.Add(inv);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Governance.InvariantDrafted", sub, new { inv.PublicId, inv.Key, inv.OwnerUserId }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantDrafted", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
 
         return InvariantMapping.ToSummary(inv);
     }

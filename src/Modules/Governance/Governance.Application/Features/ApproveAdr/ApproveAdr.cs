@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
@@ -43,14 +44,14 @@ public sealed class ApproveAdrHandler : IRequestHandler<ApproveAdrCommand>
             ?? throw new KeyNotFoundException("ADR not found.");
 
         var (sub, name) = CurrentActor.Of(_user);
-        var authorApprovedSelf = string.Equals(adr.AuthorUserId, sub, StringComparison.Ordinal);
 
         adr.Approve(sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        // High-importance governance event; SoD-soft posture recorded (guardrail 4, operator 2026-07-04).
-        await _audit.EmitAsync("Governance.AdrApproved", sub,
-            new { adr.PublicId, adr.Key, AuthorApprovedSelf = authorApprovedSelf }, ct);
+        // High-importance governance event; SoD-soft posture (guardrail 4, operator 2026-07-04). Self-approval is
+        // reconstructable from the enriched record — ApprovedByUserId (in the before/after) vs the persisted
+        // AuthorUserId — so the previously-explicit AuthorApprovedSelf flag is redundant (ADR-0026 enrichment).
+        await _audit.EmitEnrichedAsync("Governance.AdrApproved", nameof(Adr), adr.PublicId.ToString(), ct: ct);
 
         // W17: notify the committee that the ADR is approved and in force (skip the approver).
         await AdrNotifications.FanOutAsync(_committee, _notifications, AdrNotifications.Approved(adr.Key), sub, ct);

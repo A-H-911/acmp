@@ -59,7 +59,7 @@ public class InvariantHandlerTests
     {
         public List<(string Event, string? Sub, object? Data)> Calls { get; } = new();
         public Task EmitAsync(string e, string? s, object? d = null, CancellationToken ct = default) { Calls.Add((e, s, d)); return Task.CompletedTask; }
-        public Task EmitEnrichedAsync(string action, string subjectType, string? subjectId, string outcome = "Success", CancellationToken ct = default) => Task.CompletedTask;
+        public Task EmitEnrichedAsync(string action, string subjectType, string? subjectId, string outcome = "Success", CancellationToken ct = default) { Calls.Add((action, subjectId, null)); return Task.CompletedTask; }
     }
 
     private sealed class FakeCommittee : ICommitteeDirectory
@@ -187,8 +187,9 @@ public class InvariantHandlerTests
             .Handle(new ApproveInvariantCommand(created.Id), CancellationToken.None);
 
         (await db.Invariants.SingleAsync()).Status.Should().Be(InvariantStatus.Active);
-        var data = audit.Calls.Single(c => c.Event == "Governance.InvariantActivated").Data!;
-        data.GetType().GetProperty("AuthorApprovedSelf")!.GetValue(data).Should().Be(true);
+        audit.Calls.Should().Contain(c => c.Event == "Governance.InvariantActivated");
+        var subject = await db.Invariants.SingleAsync();
+        subject.ActivatedByUserId.Should().Be(subject.CreatedBy, "self-approval (SoD-soft)");
         channel.Sent.Select(m => m.RecipientUserId).Should().BeEquivalentTo("kc-m1", "kc-m2");
     }
 
@@ -210,8 +211,9 @@ public class InvariantHandlerTests
             new FakeCommittee(Array.Empty<CommitteeRecipient>()), new RecordingChannel())
             .Handle(new ApproveInvariantCommand(created.Id), CancellationToken.None);
 
-        var data = audit.Calls.Single(c => c.Event == "Governance.InvariantActivated").Data!;
-        data.GetType().GetProperty("AuthorApprovedSelf")!.GetValue(data).Should().Be(false);
+        audit.Calls.Should().Contain(c => c.Event == "Governance.InvariantActivated");
+        var subject = await db.Invariants.SingleAsync();
+        subject.ActivatedByUserId.Should().NotBe(subject.CreatedBy, "a different user approved");
     }
 
     [Fact]

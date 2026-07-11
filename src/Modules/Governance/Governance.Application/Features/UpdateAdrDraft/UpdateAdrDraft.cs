@@ -76,7 +76,7 @@ public sealed class UpdateAdrDraftHandler : IRequestHandler<UpdateAdrDraftComman
         await _db.SaveChangesAsync(ct);
 
         var (sub, _) = CurrentActor.Of(_user);
-        await _audit.EmitAsync("Governance.AdrDraftUpdated", sub, new { adr.PublicId, adr.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrDraftUpdated", nameof(Adr), adr.PublicId.ToString(), ct: ct);
 
         return AdrMapping.ToSummary(adr);
     }

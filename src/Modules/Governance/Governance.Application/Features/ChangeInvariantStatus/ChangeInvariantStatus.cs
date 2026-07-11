@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
@@ -38,7 +39,7 @@ public sealed class RequestInvariantChangesHandler : IRequestHandler<RequestInva
         var (sub, _) = CurrentActor.Of(_user);
         inv.RequestChanges(_clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Governance.InvariantChangesRequested", sub, new { inv.PublicId, inv.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantChangesRequested", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
     }
 }
 
@@ -85,7 +86,7 @@ public sealed class RetireInvariantHandler : IRequestHandler<RetireInvariantComm
         var (sub, _) = CurrentActor.Of(_user);
         inv.Retire(request.Reason, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Governance.InvariantRetired", sub, new { inv.PublicId, inv.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantRetired", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
         // W21: notify the committee of the retirement (no successor key).
         await InvariantNotifications.FanOutAsync(_committee, _notifications,
             InvariantNotifications.Superseded(inv.Key, successorKey: null), sub, ct);
