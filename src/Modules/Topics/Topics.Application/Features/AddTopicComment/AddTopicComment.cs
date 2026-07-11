@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using FluentValidation;
 using MediatR;
@@ -47,7 +48,7 @@ public sealed class AddTopicCommentHandler : IRequestHandler<AddTopicCommentComm
         topic.AddComment(request.Body, sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.CommentAdded", sub, new { topic.PublicId, topic.Key }, ct);
+        await _audit.EmitEnrichedAsync("Topics.CommentAdded", nameof(Topic), topic.PublicId.ToString(), ct: ct);
         return topic.Comments.Last().PublicId;
     }
 }

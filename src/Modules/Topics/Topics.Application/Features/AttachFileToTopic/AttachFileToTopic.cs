@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Contracts;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -71,8 +72,7 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
             storageKey, sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.DocumentAttached", sub,
-            new { topic.PublicId, topic.Key, attachment.FileName, attachment.SizeBytes }, ct);
+        await _audit.EmitEnrichedAsync("Topics.DocumentAttached", nameof(Topic), topic.PublicId.ToString(), ct: ct);
 
         return new TopicAttachmentDto(attachment.PublicId, attachment.FileName, attachment.ContentType,
             attachment.SizeBytes, attachment.UploadedByName, attachment.UploadedAt);

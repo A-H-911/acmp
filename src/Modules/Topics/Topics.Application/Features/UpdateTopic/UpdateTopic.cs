@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
@@ -66,6 +67,6 @@ public sealed class UpdateTopicHandler : IRequestHandler<UpdateTopicCommand>
         topic.SetTags(request.Tags);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.TopicUpdated", sub, new { topic.PublicId, topic.Key }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicUpdated", nameof(Topic), topic.PublicId.ToString(), ct: ct);
     }
 }

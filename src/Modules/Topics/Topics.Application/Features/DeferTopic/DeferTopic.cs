@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -49,6 +50,6 @@ public sealed class DeferTopicHandler : IRequestHandler<DeferTopicCommand>
         topic.Defer(request.Reason, request.RevisitOn, sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.TopicDeferred", sub, new { topic.PublicId, topic.Key, request.Reason }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicDeferred", nameof(Topic), topic.PublicId.ToString(), ct: ct);
     }
 }

@@ -70,7 +70,7 @@ public sealed class SubmitTopicHandler : IRequestHandler<SubmitTopicCommand, Sub
         _db.Topics.Add(topic);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.TopicSubmitted", sub, new { topic.PublicId, topic.Key }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicSubmitted", nameof(Topic), topic.PublicId.ToString(), ct: ct);
         return new SubmitTopicResult(topic.PublicId, topic.Key);
     }
 }
