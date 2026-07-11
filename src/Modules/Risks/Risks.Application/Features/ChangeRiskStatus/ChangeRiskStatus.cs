@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Risks.Application.Abstractions;
 using Acmp.Modules.Risks.Application.Features.ManageMitigations;
 using Acmp.Modules.Risks.Application.Internal;
+using Acmp.Modules.Risks.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -115,8 +116,7 @@ public sealed class EscalateRiskHandler : IRequestHandler<EscalateRiskCommand>
         risk.Escalate(request.Reason, request.Target, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Risks.RiskEscalated", sub,
-            new { risk.PublicId, risk.Key, Target = risk.EscalationTarget }, ct);
+        await _audit.EmitEnrichedAsync("Risks.RiskEscalated", nameof(Risk), risk.PublicId.ToString(), ct: ct);
 
         // BL-135: fan out to the current Secretary + Chairman (headless roster lookup), skipping the actor.
         var secretaries = await _committee.GetActiveMembersInRoleAsync(AcmpRoles.Secretary, ct);
