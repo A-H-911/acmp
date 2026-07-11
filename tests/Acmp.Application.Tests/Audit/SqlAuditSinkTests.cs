@@ -15,14 +15,29 @@ public class SqlAuditSinkTests
         public DateTimeOffset UtcNow { get; } = new(2026, 7, 2, 10, 0, 0, TimeSpan.Zero);
     }
 
+    private sealed class FakeUser : ICurrentUser
+    {
+        public bool IsAuthenticated => true;
+        public string? UserId { get; init; } = "kc-1";
+        public string? UserName => UserId;
+        public string? Email => null;
+        public string? DisplayName => UserId;
+        public IReadOnlyCollection<string> Roles { get; init; } = Array.Empty<string>();
+        public bool IsInRole(string role) => Roles.Contains(role);
+    }
+
     private static AuditDbContext NewDb(string name) =>
         new(new DbContextOptionsBuilder<AuditDbContext>().UseInMemoryDatabase(name).Options);
+
+    private static SqlAuditSink Sink(AuditDbContext db, AuditChangeBuffer? buffer = null, ICurrentUser? user = null) =>
+        new(db, new FixedClock(), user ?? new FakeUser(), buffer ?? new AuditChangeBuffer(),
+            NullLogger<SqlAuditSink>.Instance);
 
     [Fact]
     public async Task First_emit_chains_off_genesis()
     {
         await using var db = NewDb(nameof(First_emit_chains_off_genesis));
-        var sink = new SqlAuditSink(db, new FixedClock(), NullLogger<SqlAuditSink>.Instance);
+        var sink = Sink(db);
 
         await sink.EmitAsync("Test.Created", "kc-1", new { X = 1 });
 
@@ -41,7 +56,7 @@ public class SqlAuditSinkTests
     public async Task Second_emit_links_to_previous_hash_and_verifies()
     {
         await using var db = NewDb(nameof(Second_emit_links_to_previous_hash_and_verifies));
-        var sink = new SqlAuditSink(db, new FixedClock(), NullLogger<SqlAuditSink>.Instance);
+        var sink = Sink(db);
 
         await sink.EmitAsync("A", "kc-1", new { X = 1 });
         await sink.EmitAsync("B", null, null);   // exercises the null-subject + null-data path
@@ -86,5 +101,45 @@ public class SqlAuditSinkTests
     public void Empty_chain_is_valid()
     {
         AuditChainVerifier.Verify(Array.Empty<AuditEvent>()).IsValid.Should().BeTrue();
+    }
+
+    // ADR-0026 (PR1 step 5) — the enriched (v2) emit path.
+    [Fact]
+    public async Task Enriched_emit_writes_a_v2_row_draining_before_after_and_actor()
+    {
+        await using var db = NewDb(nameof(Enriched_emit_writes_a_v2_row_draining_before_after_and_actor));
+        var pid = Guid.NewGuid().ToString();
+        var buffer = new AuditChangeBuffer();
+        buffer.Add(new AuditChange("Topic", pid, "{\"Status\":\"Accepted\"}", "{\"Status\":\"Prepared\"}"));
+        var sink = Sink(db, buffer, new FakeUser { UserId = "kc-9", Roles = new[] { "Chairman" } });
+
+        await sink.EmitEnrichedAsync("Topics.Prepared", "Topic", pid);
+
+        await using var reader = NewDb(nameof(Enriched_emit_writes_a_v2_row_draining_before_after_and_actor));
+        var row = await reader.AuditEvents.SingleAsync();
+        row.HashVersion.Should().Be(2);
+        row.Action.Should().Be("Topics.Prepared");
+        row.SubjectType.Should().Be("Topic");
+        row.SubjectId.Should().Be(pid);
+        row.ActorUserId.Should().Be("kc-9");
+        row.ActorRole.Should().Be("Chairman");
+        row.Outcome.Should().Be(AuditOutcome.Success);
+        row.BeforeJson.Should().Contain("Accepted");
+        row.AfterJson.Should().Contain("Prepared");
+        row.Hash.Should().Be(row.Recompute(), "the enriched row is internally consistent (v2 hash)");
+    }
+
+    [Fact]
+    public async Task Enriched_emit_for_a_denial_has_no_before_after()
+    {
+        await using var db = NewDb(nameof(Enriched_emit_for_a_denial_has_no_before_after));
+        var sink = Sink(db); // empty buffer — a denial/system event mutated no entity
+
+        await sink.EmitEnrichedAsync("Decisions.BallotDenied", "Vote", Guid.NewGuid().ToString(), AuditOutcome.Denied);
+
+        var row = await db.AuditEvents.SingleAsync();
+        row.Outcome.Should().Be(AuditOutcome.Denied);
+        row.BeforeJson.Should().BeNull();
+        row.AfterJson.Should().BeNull();
     }
 }

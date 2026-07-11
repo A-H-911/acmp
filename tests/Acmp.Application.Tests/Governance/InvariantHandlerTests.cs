@@ -59,6 +59,7 @@ public class InvariantHandlerTests
     {
         public List<(string Event, string? Sub, object? Data)> Calls { get; } = new();
         public Task EmitAsync(string e, string? s, object? d = null, CancellationToken ct = default) { Calls.Add((e, s, d)); return Task.CompletedTask; }
+        public Task EmitEnrichedAsync(string action, string subjectType, string? subjectId, string outcome = "Success", CancellationToken ct = default) => Task.CompletedTask;
     }
 
     private sealed class FakeCommittee : ICommitteeDirectory

@@ -34,6 +34,7 @@ public class TraceabilityWriterTests
     {
         public List<string> Events { get; } = new();
         public Task EmitAsync(string e, string? s, object? d = null, CancellationToken ct = default) { Events.Add(e); return Task.CompletedTask; }
+        public Task EmitEnrichedAsync(string action, string subjectType, string? subjectId, string outcome = "Success", CancellationToken ct = default) => Task.CompletedTask;
     }
 
     private static readonly Guid Src = Guid.NewGuid();
