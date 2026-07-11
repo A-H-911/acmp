@@ -108,6 +108,33 @@ public class RisksApiTests
         detail!.Status.Should().Be("Closed");
     }
 
+    // Pre-existing coverage gap surfaced by a fully-clean coverage run (the mitigation-status transition
+    // endpoint had no HTTP test): advance a mitigation Planned -> InProgress via its own route. Closed here so
+    // the per-file gate stays green; the endpoint is a thin pass-through to the (unit-tested) command.
+    private sealed record MitigationView(Guid Id, string Status);
+    private sealed record RiskWithMitigations(string Key, string Status, IReadOnlyList<MitigationView> Mitigations);
+
+    [Fact] // W15: set a mitigation's status via /mitigations/{mitigationId}/status
+    public async Task Set_mitigation_status_advances_the_mitigation()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var sec = Client(factory, "Secretary", "kc-sec");
+        var risk = await RaiseAsync(sec);
+
+        (await sec.PostAsJsonAsync($"/api/risks/{risk.Id}/mitigations",
+            new { description = Loc("Dual-run", "تشغيل مزدوج"), type = "Reduce", ownerUserId = (string?)null, linkedActionId = (Guid?)null, dueDate = (DateTimeOffset?)null }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await (await sec.GetAsync($"/api/risks/{risk.Key}")).Content.ReadFromJsonAsync<RiskWithMitigations>();
+        var mitigationId = detail!.Mitigations.Should().ContainSingle().Subject.Id;
+
+        (await sec.PostAsJsonAsync($"/api/risks/{risk.Id}/mitigations/{mitigationId}/status", new { status = "InProgress" }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var after = await (await sec.GetAsync($"/api/risks/{risk.Key}")).Content.ReadFromJsonAsync<RiskWithMitigations>();
+        after!.Mitigations.Should().ContainSingle().Which.Status.Should().Be("InProgress");
+    }
+
     [Fact] // Risk.Accept: Secretary allowed (204); Member denied (403)
     public async Task Accept_is_allowed_for_secretary_and_denied_for_member()
     {

@@ -163,10 +163,10 @@ Derived from the registers — never hand-maintained; re-generate from source. F
 | FR-147 | ADR-0011, ADR-0020 | WBS-15 | TEST-036, TEST-046 | AC-063 | MVP | full |
 | FR-148 | ADR-0011, ADR-0020 | WBS-15 | TEST-036 | (covered by module suite) | Full | full (post-MVP — PH2) |
 | FR-149 | ADR-0011, ADR-0020 | WBS-15 | TEST-036 | (covered by module suite) | Full | full (post-MVP — PH3) |
-| FR-150 | ADR-0009 | WBS-16 | TEST-044 | AC-017 | MVP | full |
-| FR-151 | ADR-0009 | WBS-16 | TEST-044 | AC-017 | MVP | full |
-| FR-152 | ADR-0009 | WBS-16 | TEST-044 | AC-018, AC-019 | MVP | full |
-| FR-153 | ADR-0009 | WBS-16 | TEST-044 | AC-020 | MVP | full |
+| FR-150 | ADR-0009, ADR-0026 | WBS-16 | TEST-044 | AC-017 | MVP | full |
+| FR-151 | ADR-0009, ADR-0026 | WBS-16 | TEST-044 | AC-017 | MVP | full |
+| FR-152 | ADR-0009, ADR-0026 | WBS-16 | TEST-044 | AC-018, AC-019 | MVP | full |
+| FR-153 | ADR-0009, ADR-0027 | WBS-16 | TEST-044 | AC-020 | MVP | full — **role clause superseded by ADR-0027** (audit read = {Auditor, Chairman, Secretary}; Administrator excluded on SoD-5) |
 | FR-154 | ADR-0009 | WBS-16 | TEST-044 | (covered by module suite) | Full | full (post-MVP — PH2) |
 | FR-155 | ADR-0009 | WBS-16 | TEST-044 | (covered by module suite) | Full | full (post-MVP — PH2) |
 

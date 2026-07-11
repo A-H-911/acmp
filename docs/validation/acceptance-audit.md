@@ -307,6 +307,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > cell + the new module-boundary fact); per-file coverage ≥95% (global 99.72%); `dotnet format` clean. See
 > progress-log P10a entry.
 >
+> Audit-module slice (2026-07-12): the enriched audit record + read/verify API (branch `feat/audit-infra`,
+> ADR-0026/0027). **AC-017/018/019/020 Pending/Partial → Met** (INV-005 fully realized end-to-end):
+> **AC-017** — PR1 same-transaction unit-of-work + before/after capture interceptor, PR2 migrated all 74
+> governed emit sites to `EmitEnrichedAsync` (action/subjectType=CLR aggregate name/subjectId/actor/role/
+> outcome/before/after/correlation), PR3 `GET /api/audit` returns the filtered/paged register (normalized
+> across v1 lean + v2 enriched rows). **AC-018** — immutable by construction (no mutators/delete path) +
+> verifier tamper tests. **AC-019** — `GET /api/audit/verify` on-demand chain check. **AC-020** — read gated
+> to {Auditor, Chairman, Secretary}; Administrator excluded on SoD-5 (ADR-0027). Deferred to P16 (logged):
+> DB-permission immutability (INSERT/SELECT-only grant) + the nightly Hangfire verify job. The `/audit` UI is
+> PR4. See progress-log audit-module entry.
+>
 > P9-review remediation (2026-07-02): the F-1…F-28 audit burn-down (branch `feat/p9-review-remediation`).
 > **BL-066 — the durable, immutable, hash-chained AuditEvent store — now ships** behind `IAuditSink`
 > (`SqlAuditSink` + `AuditDbContext` schema `audit` + `AuditChainVerifier`, migration `Audit_Init`), so the
@@ -718,10 +729,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-014 | SoD-2 | Partial | MinutesHandlerTests (sole-author approval allowed + flagged; different approver clears the flag) + MinutesApiTests (sole-author publish → ApprovedBySoleAuthor) + MeetingMinutes.test (published record renders read-only) | P7c: soft SoD-2 flag + `ApprovedBySoleAuthor`; P7d: the minutes tab renders the approved/published record; live real-stack UI → P17 |
 | AC-015 | SoD-3 | Partial | SegregationOfDutiesTests + VoteHandlerTests (chair counted the vote → issue 403 + audited denial; vote stays Closed, not ratified) | P9a: the SoD-3 GATE is now enforced on the decision-issue path — the issuing chair may not be the vote's counter of record (Option A). Live real-stack → P17 |
 | AC-016 | SoD-3 | Partial | SegregationOfDutiesTests + DecisionHandlerTests (override + justification + flag) + VoteHandlerTests (secretary counted → chair issue allowed + vote Ratified) | P9a: the co-attestation GATE is now wired — a secretary-counted vote lets the chair issue + ratify; a chair-counted vote is refused (AC-015). Live real-stack → P17 |
-| AC-017 | Audit | Pending | — | State change → audit entry |
-| AC-018 | Audit | Pending | — | Audit row immutable |
-| AC-019 | Audit | Pending | — | Hash-chain integrity check |
-| AC-020 | Audit | Pending | — | Auditor search; others 403 |
+| AC-017 | Audit | Met | AuditAtomicityTests (enriched before/after populated end-to-end on real SQL) + AuditApiTests (register surfaces normalized v1+v2 rows, entityType/actor filters, paginated) + the PR2 per-module emit-site migration to `EmitEnrichedAsync` | Write side (PR2): every governed state change emits an enriched v2 row (action/subjectType=CLR name/subjectId/actorUserId/actorRole/outcome/before/after/correlationId). Read side (PR3): `GET /api/audit` returns the filtered/paged register. DB-permission immutability → P16 |
+| AC-018 | Audit | Met | AuditEventEnrichmentTests (valid v1→v2 chain verifies; enriched-field tamper flagged with the correct `Reason`) + AuditEvent design (no public setters, no Update/Delete path; SaveChanges only Adds) + UNIQUE `PreviousHash`/`Hash` non-forking indexes | Immutable by construction — the row has no mutation surface, so tamper is detectable (verifier) rather than possible. A DB-level UPDATE/DELETE-blocking grant for out-of-app/DBA writes is P16 hardening (logged, not silently dropped) |
+| AC-019 | Audit | Met | AuditEventEnrichmentTests (tamper → `Verify` reports non-null `BrokenAtSequence` with `Reason`) + AuditApiTests (`GET /api/audit/verify` → {IsValid, BrokenAtSequence, Reason} over an intact chain, RBAC-gated) | On-demand chain-verify endpoint. The nightly Hangfire verify job (C-INS-02) → P16 |
+| AC-020 | Audit | Met | AuditApiTests (Auditor/Chairman/Secretary → 200; Member/Reviewer/**Administrator** → 403; no token → 401 — on both `/api/audit` and `/api/audit/verify`) | Auditor read gated by `Policies.AuditRead` = {Auditor, Chairman, Secretary}; Administrator excluded on SoD-5 (ADR-0027 supersedes the FR-153 role clause). `/audit` UI → PR4 |
 | AC-021 | Voting | Partial | VoteTests + VoteHandlerTests (Open locks config + present-quorum via the seam + VoteOpened fan-out) + VotesApiTests | P9a: config locks at Open, present-quorum gate (live-attendance seam), eligible voters notified (deep link /votes/{key}). Live real-stack + /votes UI → P9b/P17 |
 | AC-022 | Voting | Partial | VoteTests (second cast throws) + VoteHandlerTests (double-vote audited denial `Decisions.BallotDenied`) + VotesApiTests (2nd cast → 409) | P9a: one ballot/voter — first ballot unchanged, denial audited, DB unique-index backstop. Live → P17 |
 | AC-023 | Voting | Partial | VoteHandlerTests + VotesApiTests (GetVoteByKey returns attributed ballots, no masking) | P9a: ballots attributed by name in the detail DTO + aggregate tally. Live Auditor view → P17 |

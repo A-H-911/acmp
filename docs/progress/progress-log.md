@@ -12,6 +12,23 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Audit slice PR3 — Auditor read + on-demand verify API — branch `feat/audit-infra`
+
+**2026-07-12.** The read side that closes the audit module: the Auditor (and Chairman/Secretary) can now read the immutable record and verify its chain over HTTP. **AC-017/018/019/020 → Met.**
+
+- **`AuditEndpoints.cs` — two read-only routes, gated by `Policies.AuditRead`.** `GET /api/audit` — the register: filters `entityType`(=CLR aggregate name in `SubjectType`)/`actor`/`action`/`from`/`to`, paginated, **newest-first (Sequence DESC)**, → `PagedResult<AuditEventDto>`. `GET /api/audit/verify` — on-demand `AuditChainVerifier.Verify` over the whole log (Sequence ASC) → `{IsValid, BrokenAtSequence, Reason}`.
+- **Deliberate deviation from the plan's "GetAuditEventsQuery + MediatR handler" wording** (flagged for the operator): a pure read with no validation and no cross-module concern injects `AuditDbContext` directly into the endpoint lambda — the `AdminEndpoints` precedent — rather than routing through MediatR (which would only drag it through the no-op-for-a-read `AuthorizationBehavior` + `TransactionBehavior`). ADR-0001 is respected — `AuditDbContext` is shared infrastructure, not a business module.
+- **DTO normalizes the two row shapes.** The store holds enriched **v2** rows (governed state changes) and lean **v1** rows (system/integration/authZ events + pre-enrichment history). `AuditEventDto` surfaces enriched fields nullable and pre-normalizes `Action = Action ?? EventType`, `Actor = ActorUserId ?? Subject`, so a mixed log renders one uniform register. `actor`/`action` filters use the same COALESCE, matching across both shapes.
+- **RBAC = {Auditor, Chairman, Secretary}, Administrator excluded (ADR-0027 / SoD-5).** Proven on **both** routes: allowed → 200, Member/Reviewer/**Administrator** → 403, no token → 401. The positive `Auditor → 200` case proves the policy string-matches (a deny-only suite can pass for the wrong reason).
+- **One in-scope deviation, surfaced not buried:** this PR also adds a `RisksApiTests` case for the mitigation-status transition (`POST /mitigations/{id}/status`). A fully-clean coverage run (`rm -rf` all `TestResults` first) showed that endpoint was never HTTP-tested, dropping `RisksEndpoints.cs` below the 95% per-file gate. Whether it regressed or was always untested is **unverified** (a stale-cobertura union in an earlier run could have masked it — the documented trap — but that was not confirmed). Closed opportunistically to keep CI green; flagged for the operator to accept-in-PR or split out.
+- **AC-018 (immutability) traced to what exists, not a hollow test.** `AuditEvent` has no public setters and no Update/Delete path, so a blocked-write test cannot even be attempted; the evidence is the design + `AuditEventEnrichmentTests`' valid-chain + enriched-field-tamper assertions (tamper is *detectable*, not *possible*). No new test pretends otherwise. DB-permission immutability (INSERT/SELECT-only grant) + the nightly Hangfire verify job stay **deferred to P16** (logged, not silently dropped).
+- **Tests.** `AuditApiTests` (13 cases) + a `SeedAuditAsync` factory helper that seeds **both** a lean v1 row and an enriched v2 row, chained off Genesis, so the DTO's cross-shape normalization + filter/paginate are exercised deterministically (post-PR2 the API only ever produces v2 rows, so the v1 branch would otherwise be uncovered).
+- **Package reconciliation folded in.** `audit-and-records.md §1.1` `SubjectType` note reconciled (CLR aggregate name, not the `ArtifactType` enum — required for the before/after drain). `traceability-matrix` FR-150…153 now cite ADR-0026/0027; FR-153's role clause note records the ADR-0027 supersession. `permission-role-matrix §C row 29` already correct (Auditor A / Administrator D).
+
+**Next:** PR4 — the `/audit` UI (read `ACMP Lists & Registers.dc.html` directly per INV-014; clone `features/risks/*`; FE RBAC fix `App.tsx`/`navModel.ts` per ADR-0027; live VR). GO-gated; stop for GO.
+
+---
+
 ## Audit slice PR2 — migrate emit sites to EmitEnrichedAsync — branch `feat/audit-infra`
 
 **2026-07-12.** Every **governed-entity state-change** audit site now emits the enriched, self-describing record (`action`, `subjectType`, `subjectId`, `Outcome`, `before/after` drained from the SaveChanges capture, `CorrelationId`) instead of the lean v1 `EmitAsync`. Migrated per-module, GO-gated, one commit each, `main`-green throughout behind the PR1 compatibility overload: **Topics (9) · Decisions (10) · Risks · Dependencies · Traceability · Governance (17) · Meetings (17) · Actions · Membership** — plus the infra writers `TraceabilityWriter` and `MeetingWebexWriter`.
