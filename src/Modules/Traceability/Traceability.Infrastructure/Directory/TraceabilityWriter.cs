@@ -44,17 +44,6 @@ public sealed class TraceabilityWriter : ITraceabilityWriter
         _db.Relationships.Add(edge);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Relationship.Created", _user.UserId, new
-        {
-            edge.PublicId,
-            SourceType = st.ToString(),
-            edge.SourceId,
-            edge.SourceKey,
-            TargetType = tt.ToString(),
-            edge.TargetId,
-            edge.TargetKey,
-            RelType = rt.ToString(),
-            System = true,
-        }, ct);
+        await _audit.EmitEnrichedAsync("Relationship.Created", nameof(Relationship), edge.PublicId.ToString(), ct: ct);
     }
 }

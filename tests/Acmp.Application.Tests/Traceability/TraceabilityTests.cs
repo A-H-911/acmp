@@ -70,7 +70,7 @@ public class TraceabilityTests
         edge.IsActive.Should().BeTrue();
         edge.Notes.Should().Be("linked at the June meeting");
         edge.CreatedBy.Should().Be("kc-sec");
-        await audit.Received(1).EmitAsync("Relationship.Created", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Relationship.Created", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // The domain guard rejects a self-loop (defence in depth behind the validator).
@@ -122,7 +122,7 @@ public class TraceabilityTests
         edge.IsActive.Should().BeFalse();
         edge.DeactivatedByUserId.Should().Be("kc-chair");
         edge.DeactivatedAt.Should().Be(Now);
-        await audit.Received(1).EmitAsync("Relationship.Deactivated", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Relationship.Deactivated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // Deactivating an unknown edge is a 404 (KeyNotFound).
