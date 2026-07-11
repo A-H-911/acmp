@@ -12,6 +12,20 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+## Audit slice PR2 — migrate emit sites to EmitEnrichedAsync — branch `feat/audit-infra`
+
+**2026-07-12.** Every **governed-entity state-change** audit site now emits the enriched, self-describing record (`action`, `subjectType`, `subjectId`, `Outcome`, `before/after` drained from the SaveChanges capture, `CorrelationId`) instead of the lean v1 `EmitAsync`. Migrated per-module, GO-gated, one commit each, `main`-green throughout behind the PR1 compatibility overload: **Topics (9) · Decisions (10) · Risks · Dependencies · Traceability · Governance (17) · Meetings (17) · Actions · Membership** — plus the infra writers `TraceabilityWriter` and `MeetingWebexWriter`.
+
+- **Convention.** `subjectType = nameof(<Aggregate>)` (must equal the interceptor's captured `ClrType.Name` for before/after to drain) — e.g. `Vote`, `Decision`, `Topic`, `Meeting`, `MinutesOfMeeting`, `Risk`, `ActionItem`, `Adr`, `Invariant`, `Relationship`, `Dependency`, `CommitteeMember`, `Delegation`. `subjectId = <aggregate>.PublicId`. Denials (`BallotDenied`, `ActionVerifyDenied`, `DecisionIssueDenied`) carry `Outcome=Denied` and — per PR1 — autocommit outside the command transaction, surviving the throw.
+- **Data payloads dropped** (before/after replaces them). One deliberate, **documented** fidelity trade: Governance's audit-only `AuthorApprovedSelf` flag is gone — it is reconstructable from the enriched record (`ApprovedByUserId`/`ActivatedByUserId`, captured in before/after) vs the persisted `AuthorUserId`/`CreatedBy`. Tests now assert the **persisted** approver-vs-author fact (stronger than the transient flag). `DecisionIssuance` gained a `decisionId` param (subject = the issued Decision) and shed its now-unused `actorSub`.
+- **Retained on v1 (out of AC-017's literal scope — system/integration/authZ/batch events, NOT governed-entity state changes):** `Authorization.Unauthenticated/Forbidden` (authZ-denial backstop, AC-006), `Authentication.NoRoleClaim`, `admin.job.requeued`, the three Webex OAuth/webhook events, `Actions.RemindersSent` (batch reminder sweep), `Notifications.AllRead` (bulk read-marking). These keep the lean-but-valid v1 row; they can be enriched later if desired but do not gate AC-017.
+- **AC-017 status.** The **write side is complete** — every governed state change now carries the discrete field set (`FR-151`). Left **Pending** pending PR3, which adds the Auditor read/verify API (`GET /api/audit` + `/verify`) that exposes these fields — the plan's "AC-017 read side" + AC-020. Re-grep confirms **0** governed-entity `EmitAsync` sites remain.
+- **Gates.** All suites green (Domain 188 / Arch 41 / App 806 / Integration 23 / Api 188); coverage 99.61% (no file <95%); `dotnet format`, i18n (1478), Keystone clean. A reusable per-module migrator + test-assertion migrator (scratchpad) drove the mechanical bulk; specials (variable/ternary actions, `request.MemberPublicId`, multi-emit supersede pairs, `RecordingAudit` fakes, the wrong-typed `CommitteeMember`) were hand-verified.
+
+**Next:** PR3 — Auditor read/verify API (GET /api/audit filter+paginate under `Policies.AuditRead`, GET /api/audit/verify), then flip AC-017/019/020 with traces (GO-gated; stop for GO).
+
+---
+
 ## Audit slice PR1 — same-transaction atomicity (step 4, NFR-042) — branch `feat/audit-infra`
 
 **2026-07-11.** The last piece of PR1 (ADR-0026): a module state change and its audit append now commit or roll back **together**. Before this, `SaveChangesAsync` then `EmitAsync` ran in two separate transactions on two connections — a failed audit append after a committed change left an unaudited mutation (violating NFR-042). Proven end-to-end against real SQL Server (Testcontainers) — the one thing EF-InMemory cannot show, since it ignores transactions.
