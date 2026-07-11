@@ -6,6 +6,7 @@ using Acmp.Shared.Infrastructure.Identity;
 using Acmp.Shared.Infrastructure.Time;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Minio;
@@ -29,6 +30,12 @@ public static class SharedKernelExtensions
             options.UseSqlServer(configuration.GetConnectionString("Acmp"), sql =>
                 sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema)));
         services.AddScoped<IAuditSink, SqlAuditSink>();
+
+        // ADR-0026: request-scoped before/after capture. EF Core auto-applies DI-registered
+        // ISaveChangesInterceptor instances to every context built via AddDbContext, so all module contexts
+        // feed the buffer without per-module wiring; the enriched sink drains it by (SubjectType, PublicId).
+        services.AddScoped<AuditChangeBuffer>();
+        services.AddScoped<ISaveChangesInterceptor, AuditCaptureInterceptor>();
 
         // Behaviors wrap the handler outer-to-inner in registration order:
         // logging (outermost) -> authorization -> validation (closest to the handler).
