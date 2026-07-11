@@ -1,0 +1,22 @@
+---
+name: audit-slice-literal-ac017
+description: "Audit module (literal AC-017/018/019/020) slice — PR0 ADRs + ALL of PR1 done (steps 1-2-3-4-5, same-tx atomicity proven on real SQL). Next = PR2 (migrate ~80 emit sites), GO-gated."
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 922e83a0-edd2-4cc6-853e-ecbce520c50c
+---
+
+Audit-module slice closing the only Pending core-governance ACs **AC-017/018/019/020** (INV-005). Operator chose the **literal AC-017** path + **same-transaction atomicity (NFR-042)** + **RBAC excludes Administrator** (ADR-0027 supersedes the FR-151/FR-153 role clause on SoD-5 grounds). Approved plan (5 GO-gated PRs): `~/.claude/plans/glittery-forging-meteor.md`. ADR-0026 (enrichment/hash-versioning/same-tx, amends ADR-0009) + ADR-0027 (audit-read = {Auditor, Chairman, Secretary}) both **Accepted**.
+
+**Branches (local, nothing on main):** `feat/audit-adr` (PR0 ADRs, `f009468`+`836cf61`) · `feat/audit-infra` (PR1: steps 1-2 `6d60cec`, step 3 `1fd4e4a`, step 5 `fa68b1c`) · `docs/defer-p14-tarseem` (P14 deferral docs).
+
+**DONE (54 audit tests green; API builds):** enriched versioned `AuditEvent` (v1 formula byte-preserved so history verifies + v2 via `HashVersion`, canonical null-flag payload); `Audit_Enrich` migration; `AuditCaptureInterceptor`+`AuditChangeBuffer` capturing before/after **scalar deltas** (C-PRIV-01) keyed by `BaseEntity.PublicId`; widened `IAuditSink.EmitEnrichedAsync`+`AuditOutcome` + enriched `SqlAuditSink` (drains buffer by (SubjectType,PublicId), actor/role from `ICurrentUser`, correlation from `Activity.Current` OTel trace; denials→null before/after). `ActorUserId`=string sub (not Guid — deviation noted in ADR-0026).
+
+**PR1 step 4 DONE — same-transaction unit-of-work (committed on `feat/audit-infra`, awaiting GO to start PR2).** Module save + audit append now commit/rollback in ONE local tx. Design: scoped shared `DbConnection` (`SharedKernelExtensions`) backs all 10 module contexts + `AuditDbContext` (`(sp,options)=>UseSqlServer(sp.GetRequiredService<DbConnection>()).AddAcmpAuditInterceptors(sp)`); `AmbientTransaction` (scoped, `IAsyncDisposable`+`IDisposable`) holds the tx; `AmbientTransactionStarter` (SaveChangesInterceptor) **lazily begins on the first `ModuleDbContext` write**; `AmbientTransactionInterceptor` (`CommandCreated` — one hook, covers reads+writes) enlists every command; `TransactionBehavior<,>` (innermost MediatR) commits/rolls back. ONE connection avoids MSDTC. `WebexDbContext` (plain `DbContext`, written outside MediatR) intentionally NOT on the shared connection.
+
+**★ Two findings that only real-SQL caught (EF-InMemory hid both):** (1) **EF DI auto-apply of `IInterceptor` does NOT fire** for these contexts — tx never began, rollback was a silent no-op, happy/denial tests passed *trivially*. Fixed by EXPLICIT `.AddAcmpAuditInterceptors(sp)` per context (concrete scoped registrations, not `AddScoped<IInterceptor,_>`). (2) **Denials must autocommit, not roll back** — because begin is gated to `ModuleDbContext` writes, a denial (auth/validation outer behaviors, or `CastBallot.BallotDenied` emit-then-throw before any save) never opens a tx → its audit survives the throw. Both proven by `AuditAtomicityTests` (Testcontainers, real DI+`IMediator`, 3 scenarios) + `SharedConnectionWiringTests`.
+
+**Then (each own GO-gated PR):** PR2 = migrate ~80 `EmitAsync`→`EmitEnrichedAsync` (pass `PublicId` as subjectId; handle multi-emit/denials/system events; flip AC-017→Met only when ALL state-change sites migrated) → PR3 = Auditor read/verify API (`GET /api/audit` filter+paginate `Policies.AuditRead`={Auditor,Chairman,Secretary} 403/401; `GET /api/audit/verify`) → PR4 = `/audit` UI to `ACMP Lists & Registers.dc.html` + frontend RBAC fix (drop administrator, add secretary). **Deferred to P16:** DB-permission immutability + nightly Hangfire verify job.
+
+**Gate notes:** cold sync interceptor paths + all-async app → override only the async `SavingChangesAsync` + collapse guard clauses to one line (keeps them line-covered) to clear ≥95% per-file. `dotnet format` wants **UTF-8-BOM** (`CHARSET`) + import ordering — Write-tool files lack BOM; run `dotnet format acmp.sln` to auto-fix before verify. Before `check-coverage`: `rm -rf coverage-out TestResults` (stale cobertura). PR1-complete gates all green: BE Domain 188/Arch 41/App 806/Integration 22/Api 188, coverage 99.62%, format/i18n(1478)/Keystone. See [[ci-gates-run-locally-pre-push]], [[webex-coverage-gate-async-exclusion]].

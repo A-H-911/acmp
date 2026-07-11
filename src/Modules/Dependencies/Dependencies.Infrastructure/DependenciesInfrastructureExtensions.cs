@@ -1,8 +1,10 @@
-﻿using Acmp.Modules.Dependencies.Application;
+﻿using System.Data.Common;
+using Acmp.Modules.Dependencies.Application;
 using Acmp.Modules.Dependencies.Application.Abstractions;
 using Acmp.Modules.Dependencies.Infrastructure.Directory;
 using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Shared.Contracts.Dependencies;
+using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +16,12 @@ public static class DependenciesInfrastructureExtensions
 {
     public static IServiceCollection AddDependenciesModule(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Acmp");
-        services.AddDbContext<DependenciesDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", DependenciesDbContext.Schema)));
+        // On the shared per-scope DbConnection (SharedKernel / ADR-0026 NFR-042) so a state change in this
+        // module and its audit append (and any cross-module write in the same command) commit atomically.
+        services.AddDbContext<DependenciesDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", DependenciesDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
 
         services.AddScoped<IDependenciesDbContext>(sp => sp.GetRequiredService<DependenciesDbContext>());
         services.AddScoped<IDependencyKeyGenerator, DependencyKeyGenerator>();

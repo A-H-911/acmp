@@ -1,4 +1,4 @@
-using Acmp.Shared.Domain.Entities;
+﻿using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Infrastructure.Audit;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +62,37 @@ public class AuditCaptureInterceptorTests
     }
 
     [Fact]
+    public async Task Captures_deleted_scalar_state_as_before_only()
+    {
+        var name = "cap-" + Guid.NewGuid();
+        var buffer = new AuditChangeBuffer();
+        var interceptor = new AuditCaptureInterceptor(buffer);
+
+        Guid pid;
+        await using (var db = new TestDb(name, interceptor))
+        {
+            var w = new Widget { Name = "Z", Count = 9 };
+            db.Add(w);
+            await db.SaveChangesAsync();
+            pid = w.PublicId;
+        }
+
+        buffer.Take("Widget", pid.ToString()); // drain the insert capture
+
+        await using (var db = new TestDb(name, interceptor))
+        {
+            var w = await db.Widgets.FirstAsync();
+            db.Remove(w);
+            await db.SaveChangesAsync();
+        }
+
+        var deleted = buffer.Take("Widget", pid.ToString());
+        deleted.Should().NotBeNull();
+        deleted!.BeforeJson.Should().Contain("\"Name\":\"Z\"").And.Contain("\"Count\":9");
+        deleted.AfterJson.Should().BeNull("a delete has no post-state");
+    }
+
+    [Fact]
     public void Take_matches_type_and_id_exactly_and_never_guesses()
     {
         var buffer = new AuditChangeBuffer();
@@ -71,5 +102,16 @@ public class AuditCaptureInterceptorTests
         buffer.Take("Risk", "id-1").Should().BeNull("a wrong type must not match");
         buffer.Take("Vote", "id-1").Should().NotBeNull();
         buffer.Take("Vote", "id-1").Should().BeNull("a consumed capture is removed");
+    }
+
+    [Fact]
+    public void Take_without_an_id_matches_the_first_capture_of_that_type()
+    {
+        var buffer = new AuditChangeBuffer();
+        buffer.Add(new AuditChange("Vote", "id-1", null, "{}"));
+
+        buffer.Take("Risk", null).Should().BeNull("no capture of that type exists");
+        buffer.Take("Vote", null).Should().NotBeNull("the single-entity case matches by type alone");
+        buffer.Take("Vote", null).Should().BeNull("the matched capture was removed");
     }
 }

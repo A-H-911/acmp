@@ -1,12 +1,14 @@
-﻿using Acmp.Shared.Application.Abstractions;
+﻿using System.Data.Common;
+using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Behaviors;
 using Acmp.Shared.Infrastructure.Audit;
 using Acmp.Shared.Infrastructure.FileStorage;
 using Acmp.Shared.Infrastructure.Identity;
+using Acmp.Shared.Infrastructure.Persistence;
 using Acmp.Shared.Infrastructure.Time;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Minio;
@@ -23,25 +25,40 @@ public static class SharedKernelExtensions
         services.AddScoped<IResourceAuthorizer, ResourceAuthorizer>();
         services.AddSingleton<IClock, SystemClock>();
 
+        // NFR-042 (ADR-0026): ONE shared DbConnection per request scope. Every module DbContext + AuditDbContext
+        // is wired onto this single connection so a command's state change and its audit append commit on ONE
+        // local transaction (no MSDTC escalation). Constructing a SqlConnection opens nothing; the API test host
+        // swaps every context to EF-InMemory, which never resolves this and never touches SQL.
+        services.AddScoped<DbConnection>(_ => new SqlConnection(configuration.GetConnectionString("Acmp")));
+        services.AddScoped<AmbientTransaction>();
+
+        // ADR-0026: request-scoped before/after capture + same-transaction atomicity interceptors. Registered as
+        // concrete scoped types and attached EXPLICITLY per context via .AddAcmpAuditInterceptors(sp) — EF's DI
+        // auto-apply of IInterceptor does not fire for these contexts (proven by AuditAtomicityTests).
+        // AuditCaptureInterceptor snapshots before/after; AmbientTransactionStarter begins the tx on the first
+        // module write; AmbientTransactionInterceptor enlists every subsequent command (reads included) so
+        // nothing runs unenlisted on the shared connection.
+        services.AddScoped<AuditChangeBuffer>();
+        services.AddScoped<AuditCaptureInterceptor>();
+        services.AddScoped<AmbientTransactionStarter>();
+        services.AddScoped<AmbientTransactionInterceptor>();
+
         // BL-066 (ADR-0009): the durable, immutable, hash-chained AuditEvent store (schema "audit") behind
         // the IAuditSink seam. It also mirrors to Serilog->Seq, so the interim SerilogAuditSink is retired.
-        // Call sites are unchanged. The Api.Tests factory swaps this context to EF-InMemory like the modules.
-        services.AddDbContext<AuditDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("Acmp"), sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema)));
+        // On the shared connection (above) so its append joins the command transaction.
+        services.AddDbContext<AuditDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
         services.AddScoped<IAuditSink, SqlAuditSink>();
 
-        // ADR-0026: request-scoped before/after capture. EF Core auto-applies DI-registered
-        // ISaveChangesInterceptor instances to every context built via AddDbContext, so all module contexts
-        // feed the buffer without per-module wiring; the enriched sink drains it by (SubjectType, PublicId).
-        services.AddScoped<AuditChangeBuffer>();
-        services.AddScoped<ISaveChangesInterceptor, AuditCaptureInterceptor>();
-
-        // Behaviors wrap the handler outer-to-inner in registration order:
-        // logging (outermost) -> authorization -> validation (closest to the handler).
+        // Behaviors wrap the handler outer-to-inner in registration order: logging (outermost) -> authorization
+        // -> validation -> transaction (innermost). Transaction is innermost so auth/validation DENIALS (which
+        // emit-then-throw) run OUTSIDE the command transaction and autocommit their audit rows (ADR-0026).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 
         // MinIO object storage (ADR-0014). Building the client does not open a connection.
         var minio = configuration.GetSection("Minio");

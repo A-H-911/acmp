@@ -2,13 +2,28 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-09
+updated: 2026-07-11
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## Audit slice PR1 — same-transaction atomicity (step 4, NFR-042) — branch `feat/audit-infra`
+
+**2026-07-11.** The last piece of PR1 (ADR-0026): a module state change and its audit append now commit or roll back **together**. Before this, `SaveChangesAsync` then `EmitAsync` ran in two separate transactions on two connections — a failed audit append after a committed change left an unaudited mutation (violating NFR-042). Proven end-to-end against real SQL Server (Testcontainers) — the one thing EF-InMemory cannot show, since it ignores transactions.
+
+- **One shared connection per scope.** A scoped `DbConnection` (`SharedKernelExtensions`) now backs every module `DbContext` + `AuditDbContext` (`(sp, options) => UseSqlServer(sp.GetRequiredService<DbConnection>())`), so a command's writes and its audit append run on ONE local transaction — no `TransactionScope`, no MSDTC escalation. `WebexDbContext` (integration OAuth store, a plain `DbContext` not a `ModuleDbContext`, written outside the MediatR pipeline) stays on its own connection by design — its writes never open the ambient transaction.
+- **Lazy begin, gated to real writes.** `AmbientTransactionStarter` (a `SaveChangesInterceptor`) opens the transaction on the FIRST relational `ModuleDbContext` write. `AmbientTransactionInterceptor` (`CommandCreated`) enlists every subsequent command — reads included — so a follow-on read on a second context (e.g. `SqlAuditSink.TipHashAsync`'s SELECT on `AuditDbContext`) does not hit SqlClient's "connection has a pending local transaction" rejection. `TransactionBehavior<,>` (innermost MediatR behavior) commits on a clean handler / rolls back on a throw.
+- **Denials survive rollback (ADR-0026).** A Denied/Failure audit has no paired state change, so it must NOT ride the command transaction. Because begin is gated to `ModuleDbContext` writes, an auth/validation denial (outer behaviors) or an in-handler denial like `CastBallot`'s `BallotDenied` (emits-then-throws before any module save) never opens a transaction → its audit autocommits and survives the throw. Proven by test.
+- **EF interceptor auto-apply does NOT fire** (resolves the step-3 caveat). EF's DI auto-apply of registered `IInterceptor`s did not attach to these contexts — the atomicity test caught it (the tx never began; rollback was a silent no-op; scenarios 1/3 passed *trivially* because both writes just autocommitted). Interceptors are now attached EXPLICITLY per context via `.AddAcmpAuditInterceptors(sp)` (concrete scoped registrations), fanned out to all 10 module contexts + `AuditDbContext`.
+- **Proof + gates.** New `AuditAtomicityTests` (Testcontainers, real DI + `IMediator`): CastBallot commits ballot+audit together; a forced audit-append throw rolls the ballot back (no orphan mutation/row); a double-cast's `BallotDenied` persists despite the throw. `SharedConnectionWiringTests` asserts every context is built on the shared connection. `AuditCapture` cold sync path + unused member removed and its `Deleted`/type-only-`Take` paths tested. All suites green (Domain 188 / Arch 41 / App 806 / Integration 22 / Api 188); coverage 99.62% (no file <95%); `dotnet format`, i18n (1478), Keystone all clean.
+- **No AC flip yet.** AC-017 flips to Met only in PR2, when all ~80 `EmitAsync` sites migrate to `EmitEnrichedAsync`. Step 4 is infrastructure; the atomicity property holds for both the legacy and enriched emit paths.
+
+**Next:** PR2 — migrate the ~80 emit sites to `EmitEnrichedAsync` (GO-gated; stop for GO before starting).
 
 ---
 

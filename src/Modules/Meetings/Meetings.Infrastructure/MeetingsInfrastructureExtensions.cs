@@ -1,8 +1,10 @@
-﻿using Acmp.Modules.Meetings.Application;
+﻿using System.Data.Common;
+using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Infrastructure.Directory;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Contracts.Meetings;
+using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +16,12 @@ public static class MeetingsInfrastructureExtensions
 {
     public static IServiceCollection AddMeetingsModule(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Acmp");
-        services.AddDbContext<MeetingsDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", MeetingsDbContext.Schema)));
+        // On the shared per-scope DbConnection (SharedKernel / ADR-0026 NFR-042) so a state change in this
+        // module and its audit append (and any cross-module write in the same command) commit atomically.
+        services.AddDbContext<MeetingsDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", MeetingsDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
 
         services.AddScoped<IMeetingsDbContext>(sp => sp.GetRequiredService<MeetingsDbContext>());
         services.AddScoped<IMeetingKeyGenerator, MeetingKeyGenerator>();

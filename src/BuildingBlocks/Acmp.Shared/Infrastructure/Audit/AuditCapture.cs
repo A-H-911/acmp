@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Acmp.Shared.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -22,8 +22,6 @@ public sealed record AuditChange(string SubjectType, string SubjectId, string? B
 public sealed class AuditChangeBuffer
 {
     private readonly List<AuditChange> _changes = new();
-
-    public IReadOnlyList<AuditChange> Changes => _changes;
 
     public void Add(AuditChange change) => _changes.Add(change);
 
@@ -57,12 +55,7 @@ public sealed class AuditCaptureInterceptor : SaveChangesInterceptor
 
     public AuditCaptureInterceptor(AuditChangeBuffer buffer) => _buffer = buffer;
 
-    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
-    {
-        Capture(eventData.Context);
-        return base.SavingChanges(eventData, result);
-    }
-
+    // The app persists exclusively via async SaveChangesAsync, so only the async hook is overridden.
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
@@ -72,8 +65,7 @@ public sealed class AuditCaptureInterceptor : SaveChangesInterceptor
 
     private void Capture(DbContext? context)
     {
-        if (context is null)
-            return;
+        if (context is null) return;
 
         foreach (var entry in context.ChangeTracker.Entries<AuditableEntity>())
         {

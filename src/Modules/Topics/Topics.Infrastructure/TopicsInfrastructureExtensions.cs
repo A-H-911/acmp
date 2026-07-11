@@ -1,7 +1,9 @@
-﻿using Acmp.Modules.Topics.Application;
+﻿using System.Data.Common;
+using Acmp.Modules.Topics.Application;
 using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Contracts.Topics;
+using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +15,12 @@ public static class TopicsInfrastructureExtensions
 {
     public static IServiceCollection AddTopicsModule(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Acmp");
-        services.AddDbContext<TopicsDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", TopicsDbContext.Schema)));
+        // On the shared per-scope DbConnection (SharedKernel / ADR-0026 NFR-042) so a state change in this
+        // module and its audit append (and any cross-module write in the same command) commit atomically.
+        services.AddDbContext<TopicsDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", TopicsDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
 
         services.AddScoped<ITopicsDbContext>(sp => sp.GetRequiredService<TopicsDbContext>());
         services.AddScoped<ITopicKeyGenerator, TopicKeyGenerator>();
