@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Dependencies.Application.Abstractions;
 using Acmp.Modules.Dependencies.Application.Internal;
+using Acmp.Modules.Dependencies.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -37,6 +38,6 @@ public sealed class RemoveDependencyHandler : IRequestHandler<RemoveDependencyCo
         edge.Remove();
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Dependency.Removed", sub, new { edge.PublicId, edge.Key }, ct);
+        await _audit.EmitEnrichedAsync("Dependency.Removed", nameof(Dependency), edge.PublicId.ToString(), ct: ct);
     }
 }

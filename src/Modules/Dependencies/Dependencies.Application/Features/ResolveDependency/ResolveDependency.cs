@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Dependencies.Application.Abstractions;
 using Acmp.Modules.Dependencies.Application.Internal;
+using Acmp.Modules.Dependencies.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -36,6 +37,6 @@ public sealed class ResolveDependencyHandler : IRequestHandler<ResolveDependency
         edge.Resolve();
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Dependency.Resolved", sub, new { edge.PublicId, edge.Key }, ct);
+        await _audit.EmitEnrichedAsync("Dependency.Resolved", nameof(Dependency), edge.PublicId.ToString(), ct: ct);
     }
 }

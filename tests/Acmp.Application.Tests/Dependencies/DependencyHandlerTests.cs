@@ -72,7 +72,7 @@ public class DependencyHandlerTests
         edge.Status.Should().Be(DependencyStatus.Open);
         edge.Note.Should().Be("handle first");
         edge.CreatedBy.Should().Be("kc-sec");
-        await audit.Received(1).EmitAsync("Dependency.Created", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Dependency.Created", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class DependencyHandlerTests
 
         await using var read = Db(name, User(), Clock(Now));
         (await read.Dependencies.SingleAsync()).Status.Should().Be(DependencyStatus.Resolved);
-        await audit.Received(1).EmitAsync("Dependency.Resolved", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Dependency.Resolved", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class DependencyHandlerTests
 
         await using var read = Db(name, User(), Clock(Now));
         (await read.Dependencies.SingleAsync()).Status.Should().Be(DependencyStatus.Removed);
-        await audit.Received(1).EmitAsync("Dependency.Removed", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Dependency.Removed", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

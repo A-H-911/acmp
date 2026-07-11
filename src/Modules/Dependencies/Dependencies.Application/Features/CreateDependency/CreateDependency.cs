@@ -74,18 +74,7 @@ public sealed class CreateDependencyHandler : IRequestHandler<CreateDependencyCo
         _db.Dependencies.Add(edge);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Dependency.Created", sub, new
-        {
-            edge.PublicId,
-            edge.Key,
-            FromType = edge.FromType.ToString(),
-            edge.FromId,
-            edge.FromKey,
-            ToType = edge.ToType.ToString(),
-            edge.ToId,
-            edge.ToKey,
-            Kind = edge.Kind.ToString(),
-        }, ct);
+        await _audit.EmitEnrichedAsync("Dependency.Created", nameof(Dependency), edge.PublicId.ToString(), ct: ct);
 
         return edge.Key;
     }
