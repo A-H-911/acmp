@@ -58,7 +58,7 @@ public class MembershipAdminFeatureTests
 
         var stored = await db.Members.SingleAsync(m => m.KeycloakUserId == "kc-u");
         stored.Streams.Select(s => s.StreamId).Should().BeEquivalentTo(new[] { architecture.Id });
-        await audit.Received(1).EmitAsync("Membership.StreamsAssigned", "kc-admin", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Membership.StreamsAssigned", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class MembershipAdminFeatureTests
 
         publicId.Should().NotBeEmpty();
         (await db.Delegations.SingleAsync()).Capability.Should().Be("Agenda.Publish");
-        await audit.Received(1).EmitAsync("Membership.DelegationCreated", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Membership.DelegationCreated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

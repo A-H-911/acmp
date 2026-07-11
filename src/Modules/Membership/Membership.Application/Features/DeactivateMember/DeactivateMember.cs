@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Membership.Application.Abstractions;
+using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using FluentValidation;
@@ -43,7 +44,6 @@ public sealed class DeactivateMemberHandler : IRequestHandler<DeactivateMemberCo
 
         // State change on a governed record -> audit (docs/domain/audit-and-records.md, guardrail 5). Interim sink (Serilog->Seq);
         // the immutable hash-chained AuditEvent store is BL-066.
-        await _audit.EmitAsync("Membership.MemberDeactivated", _user.UserId,
-            new { member.PublicId, before = before.ToString(), after = member.Status.ToString() }, ct);
+        await _audit.EmitEnrichedAsync("Membership.MemberDeactivated", nameof(CommitteeMember), member.PublicId.ToString(), ct: ct);
     }
 }
