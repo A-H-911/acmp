@@ -1,4 +1,6 @@
-﻿using Acmp.Modules.Decisions.Application.Features.CastBallot;
+﻿using System.Diagnostics;
+using Acmp.Modules.Decisions.Application.Features.CastBallot;
+using Acmp.Modules.Decisions.Application.Features.CloseVote;
 using Acmp.Modules.Decisions.Domain;
 using Acmp.Modules.Decisions.Infrastructure;
 using Acmp.Shared;
@@ -47,6 +49,40 @@ public sealed class AuditAtomicityTests
 
         BallotWasCast(voteId).Should().BeTrue("the command completed cleanly");
         AuditRowCount("Decisions.BallotCast").Should().BeGreaterThan(0, "the paired audit row committed with it");
+
+        // The enriched row is self-describing. Casting mutates the Ballot CHILD, not the Vote's own scalars, so
+        // the aggregate-root subject has no scalar delta — before/after is null. This is the known, documented
+        // limitation of the "subject = aggregate root" convention for child-entity mutations (not a stray null).
+        var row = LatestAuditRow("Decisions.BallotCast")!;
+        row.SubjectType.Should().Be(nameof(Vote));
+        row.SubjectId.Should().Be(voteId.ToString());
+        row.ActorUserId.Should().Be("voter-1", "the actor comes from ICurrentUser, not a call argument");
+        row.AfterJson.Should().BeNull("a ballot cast changes the child Ballot, not the Vote's own scalars");
+    }
+
+    [Fact]
+    public async Task CloseVote_persists_a_populated_before_after_on_the_enriched_row()
+    {
+        // The decisive end-to-end check (advisor): that before/after actually DRAINS through a real handler + DI
+        // + SaveChanges — the interceptor keyed a delta by (ClrType.Name, PublicId) and the handler emitted the
+        // matching (nameof(Vote), PublicId). CloseVote mutates the Vote's OWN scalars (Status/ClosedAt/Tally), so
+        // AfterJson must be non-null. Seed an Open vote with one cast ballot so the MinCast=1 quorum is met.
+        var voteId = SeedOpenVote("VOTE-CLOSE-1", withPriorCastByVoter: true);
+        await using var provider = BuildProvider(faultAudit: false, sub: "chair-1", role: "Chairman");
+
+        using var activity = new Activity("audit-e2e");
+        activity.SetIdFormat(ActivityIdFormat.W3C);
+        activity.Start();
+        await Send(provider, new CloseVoteCommand(voteId));
+
+        var row = LatestAuditRow("Decisions.VoteClosed")!;
+        row.SubjectType.Should().Be(nameof(Vote));
+        row.SubjectId.Should().Be(voteId.ToString());
+        row.ActorUserId.Should().Be("chair-1", "the actor comes from ICurrentUser");
+        row.Outcome.Should().Be(AuditOutcome.Success);
+        row.AfterJson.Should().NotBeNull("CloseVote mutates the Vote's OWN scalars — before/after MUST populate (AC-017)");
+        row.AfterJson.Should().Contain("Status", "the Closed status transition is in the delta");
+        row.CorrelationId.Should().Be(activity.TraceId.ToString(), "the ambient OTel trace id is captured (NFR-044)");
     }
 
     [Fact]
@@ -79,7 +115,7 @@ public sealed class AuditAtomicityTests
 
     // ---- composition (mirrors the API host wiring, scoped to Decisions + the shared kernel) ----
 
-    private ServiceProvider BuildProvider(bool faultAudit)
+    private ServiceProvider BuildProvider(bool faultAudit, string sub = "voter-1", string role = "Member")
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -96,8 +132,8 @@ public sealed class AuditAtomicityTests
             typeof(SharedKernelExtensions).Assembly,
             typeof(CastBallotCommand).Assembly));
 
-        // The voter is an authenticated Member matching the seeded ballot's sub.
-        services.AddScoped<ICurrentUser>(_ => new StubVoter("voter-1"));
+        // The acting principal (role configurable) attributes the audit actor.
+        services.AddScoped<ICurrentUser>(_ => new StubVoter(sub, role));
 
         // Scenario 2: wrap the real sink so the success append happens IN the transaction and THEN throws —
         // proving both the ballot and the audit row roll back together.
@@ -149,6 +185,13 @@ public sealed class AuditAtomicityTests
         return audit.AuditEvents.AsNoTracking().Count(e => e.EventType == eventType);
     }
 
+    private AuditEvent? LatestAuditRow(string eventType)
+    {
+        using var audit = NewAuditContext();
+        return audit.AuditEvents.AsNoTracking()
+            .Where(e => e.EventType == eventType).OrderByDescending(e => e.Sequence).FirstOrDefault();
+    }
+
     private AuditDbContext NewAuditContext() => new(
         new DbContextOptionsBuilder<AuditDbContext>()
             .UseSqlServer(_fixture.ConnectionString,
@@ -156,18 +199,23 @@ public sealed class AuditAtomicityTests
             .Options);
 }
 
-// An authenticated committee Member whose sub matches the seeded eligible voter.
+// An authenticated committee member (role configurable) whose sub attributes the audit actor.
 internal sealed class StubVoter : ICurrentUser
 {
     private readonly string _sub;
-    public StubVoter(string sub) => _sub = sub;
+    private readonly string _role;
+    public StubVoter(string sub, string role = "Member")
+    {
+        _sub = sub;
+        _role = role;
+    }
     public bool IsAuthenticated => true;
     public string? UserId => _sub;
     public string? UserName => _sub;
     public string? Email => $"{_sub}@acmp.gov";
     public string? DisplayName => "Voter One";
-    public IReadOnlyCollection<string> Roles => new[] { "Member" };
-    public bool IsInRole(string role) => role == "Member";
+    public IReadOnlyCollection<string> Roles => new[] { _role };
+    public bool IsInRole(string role) => role == _role;
 }
 
 // Calls the real sink (real append into the ambient transaction) then throws — the "audit fails after write"
