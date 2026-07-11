@@ -48,7 +48,7 @@ public class MeetingWebexWriterTests
         meeting.RecordingUrl.Should().Be("https://play");
         meeting.RecordingDownloadUrl.Should().Be("https://dl");
         meeting.RecordingDurationSeconds.Should().Be(1800);
-        await audit.Received(1).EmitAsync("Meetings.RecordingAttached", "system:webex", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingAttached", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class MeetingWebexWriterTests
             "webex-UNKNOWN", new RecordingReference("p", "d", 1));
 
         attached.Should().BeFalse();
-        await audit.DidNotReceive().EmitAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.DidNotReceive().EmitEnrichedAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
