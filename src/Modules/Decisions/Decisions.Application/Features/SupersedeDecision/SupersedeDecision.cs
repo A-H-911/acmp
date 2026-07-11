@@ -122,10 +122,9 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
 
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.DecisionSuperseded", sub,
-            new { prior.PublicId, prior.Key, SupersededBy = successor.PublicId, SuccessorKey = successor.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.DecisionSuperseded", nameof(Decision), prior.PublicId.ToString(), ct: ct);
         await DecisionIssuance.ApplyAsync(_topics, _directory, _notifications, _audit,
-            sub, successor.TopicId, successor.Key, chairOverride: false, ct);
+            successor.TopicId, successor.PublicId, successor.Key, chairOverride: false, ct);
 
         return DecisionMapping.ToSummary(successor);
     }

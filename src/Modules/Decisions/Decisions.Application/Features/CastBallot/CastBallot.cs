@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
@@ -55,14 +56,13 @@ public sealed class CastBallotHandler : IRequestHandler<CastBallotCommand>
             string.Equals(b.VoterUserId, sub, StringComparison.Ordinal));
         if (existing is { HasCast: true })
         {
-            await _audit.EmitAsync("Decisions.BallotDenied", sub,
-                new { vote.PublicId, vote.Key, Reason = "AC-022: voter has already cast a ballot" }, ct);
+            await _audit.EmitEnrichedAsync("Decisions.BallotDenied", nameof(Vote), vote.PublicId.ToString(), AuditOutcome.Denied, ct);
             throw new InvalidOperationException("You have already voted.");
         }
 
         vote.Cast(sub, request.Choice, request.Comment, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.BallotCast", sub, new { vote.PublicId, vote.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.BallotCast", nameof(Vote), vote.PublicId.ToString(), ct: ct);
     }
 }

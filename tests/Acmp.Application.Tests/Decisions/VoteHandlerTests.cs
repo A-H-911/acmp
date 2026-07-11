@@ -120,7 +120,7 @@ public class VoteHandlerTests
         summary.Key.Should().Be("VOTE-2026-001");
         summary.Status.Should().Be("Configured");
         summary.Options.Should().Equal("Approve", "Reject");
-        await audit.Received(1).EmitAsync("Decisions.VoteConfigured", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.VoteConfigured", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ── open + present quorum via the seam ────────────────────────────────────
@@ -136,7 +136,7 @@ public class VoteHandlerTests
 
         channel.Sent.Should().HaveCount(3);
         channel.Sent.Should().OnlyContain(m => m.Category == "VoteOpened" && m.DeepLink == $"/votes/{key}");
-        await audit.Received(1).EmitAsync("Decisions.VoteOpened", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.VoteOpened", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
 
         await using var read = Db(name, sec, clock);
         (await new GetVoteByKeyHandler(read).Handle(new GetVoteByKeyQuery(key), default))!.Status.Should().Be("Open");
@@ -206,7 +206,7 @@ public class VoteHandlerTests
         await using (var db = Db(name, alice, clock))
             await new CastBallotHandler(db, alice, clock, audit).Handle(new CastBallotCommand(id, "Approve", null), default);
 
-        await audit.Received(1).EmitAsync("Decisions.BallotCast", "kc-alice", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.BallotCast", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         await using var read = Db(name, alice, clock);
         var detail = await new GetVoteByKeyHandler(read).Handle(new GetVoteByKeyQuery(key), default);
         detail!.Ballots.Single(b => b.VoterUserId == "kc-alice").Choice.Should().Be("Approve");
@@ -229,7 +229,7 @@ public class VoteHandlerTests
             var act = () => new CastBallotHandler(db, alice, clock, audit).Handle(new CastBallotCommand(id, "Reject", null), default);
             await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*already voted*");
         }
-        await audit.Received(1).EmitAsync("Decisions.BallotDenied", "kc-alice", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.BallotDenied", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -297,7 +297,7 @@ public class VoteHandlerTests
         detail.CounterName.Should().Be("Sara Sec");
         detail.Tally!.OptionCounts["Approve"].Should().Be(1);
         detail.Tally.CastCount.Should().Be(2);
-        await audit.Received(1).EmitAsync("Decisions.VoteClosed", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.VoteClosed", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -386,7 +386,7 @@ public class VoteHandlerTests
                 .Handle(new IssueDecisionCommand(decisionId, false, null), default);
             await act.Should().ThrowAsync<ForbiddenAccessException>();
         }
-        await audit.Received(1).EmitAsync("Decisions.DecisionIssueDenied", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.DecisionIssueDenied", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
 
         await using var read = Db(name, chair, clock);
         var vote = await new GetVoteByKeyHandler(read).Handle(new GetVoteByKeyQuery("VOTE-2026-001"), default);

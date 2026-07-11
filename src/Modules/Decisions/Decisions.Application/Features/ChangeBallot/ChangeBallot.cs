@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
@@ -51,6 +52,6 @@ public sealed class ChangeBallotHandler : IRequestHandler<ChangeBallotCommand>
         vote.ChangeBallot(sub, request.Choice, request.Comment, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.BallotChanged", sub, new { vote.PublicId, vote.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.BallotChanged", nameof(Vote), vote.PublicId.ToString(), ct: ct);
     }
 }
