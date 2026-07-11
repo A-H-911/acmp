@@ -29,7 +29,15 @@ public static class SharedKernelExtensions
         // is wired onto this single connection so a command's state change and its audit append commit on ONE
         // local transaction (no MSDTC escalation). Constructing a SqlConnection opens nothing; the API test host
         // swaps every context to EF-InMemory, which never resolves this and never touches SQL.
-        services.AddScoped<DbConnection>(_ => new SqlConnection(configuration.GetConnectionString("Acmp")));
+        // MARS is enabled because contexts now SHARE one physical connection: EF buffers query results by default
+        // (readers close on await), so today's handlers are fine, but MARS removes the "open DataReader" failure
+        // class should a future handler stream a query on one context while touching another. It is compatible
+        // with the single ambient local transaction (one tx, multiple readers).
+        services.AddScoped<DbConnection>(_ => new SqlConnection(
+            new SqlConnectionStringBuilder(configuration.GetConnectionString("Acmp"))
+            {
+                MultipleActiveResultSets = true,
+            }.ConnectionString));
         services.AddScoped<AmbientTransaction>();
 
         // ADR-0026: request-scoped before/after capture + same-transaction atomicity interceptors. Registered as
