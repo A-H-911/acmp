@@ -57,7 +57,7 @@ public class MeetingRecordingTests
         stored.RecordingContentType.Should().Be("video/mp4");
         stored.RecordingSizeBytes.Should().Be(9);
         await files.Received(1).UploadAsync("acmp-recordings", Arg.Any<string>(), Arg.Any<Stream>(), "video/mp4", Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Meetings.RecordingUploaded", "kc-sara", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingUploaded", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class MeetingRecordingTests
 
         (await db.Meetings.SingleAsync(m => m.Key == meeting.Key)).RecordingObjectKey.Should().BeNull();
         await files.Received(1).DeleteAsync("acmp-recordings", "acmp-recordings/k.mp4", Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Meetings.RecordingRemoved", "kc-sara", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingRemoved", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

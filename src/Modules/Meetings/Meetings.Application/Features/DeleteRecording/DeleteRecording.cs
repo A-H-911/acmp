@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -51,6 +52,6 @@ public sealed class DeleteRecordingHandler : IRequestHandler<DeleteRecordingComm
             catch { /* ponytail: orphaned blob tolerated; a storage sweep can reclaim it if it ever matters */ }
         }
 
-        await _audit.EmitAsync("Meetings.RecordingRemoved", sub, new { meeting.PublicId, meeting.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.RecordingRemoved", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 }

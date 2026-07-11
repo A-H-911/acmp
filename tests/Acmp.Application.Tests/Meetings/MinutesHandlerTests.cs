@@ -146,7 +146,7 @@ public class MinutesHandlerTests
             summary.Status.Should().Be("Draft");
             summary.MeetingKey.Should().Be("MTG-2026-001");
         }
-        await audit.Received(1).EmitAsync("Meetings.MinutesDrafted", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MinutesDrafted", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class MinutesHandlerTests
         var detail = await new GetMinutesByKeyHandler(read).Handle(new GetMinutesByKeyQuery("MIN-2026-001"), default);
         detail!.Status.Should().Be("Approved");
         detail.ApprovedBySoleAuthor.Should().BeTrue();
-        await audit.Received(1).EmitAsync("Meetings.MinutesApprovedBySoleAuthor", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MinutesApprovedBySoleAuthor", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // a DIFFERENT approver clears the sole-author flag (four-eyes satisfied)
@@ -247,7 +247,7 @@ public class MinutesHandlerTests
         var detail = await new GetMinutesByKeyHandler(read).Handle(new GetMinutesByKeyQuery("MIN-2026-001"), default);
         detail!.ApprovedBySoleAuthor.Should().BeFalse();
         detail.ApprovedByName.Should().Be("Sara Chair");
-        await audit.DidNotReceive().EmitAsync("Meetings.MinutesApprovedBySoleAuthor", Arg.Any<string>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.DidNotReceive().EmitEnrichedAsync("Meetings.MinutesApprovedBySoleAuthor", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // AC-037: a change-request bounces to Draft and notifies the author (targeted, not fanned out)
@@ -289,7 +289,7 @@ public class MinutesHandlerTests
 
         channel.Sent.Should().HaveCount(3);
         channel.Sent.Should().OnlyContain(m => m.Category == "MinutesPublished" && m.DeepLink == "/meetings/MTG-2026-001/minutes");
-        await audit.Received(1).EmitAsync("Meetings.MinutesPublished", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MinutesPublished", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
 
         await using var read = Db(name, user, clock);
         (await new GetMinutesByKeyHandler(read).Handle(new GetMinutesByKeyQuery("MIN-2026-001"), default))!.Status.Should().Be("Published");
@@ -330,7 +330,7 @@ public class MinutesHandlerTests
         var current = await new GetMinutesByKeyHandler(read).Handle(new GetMinutesByKeyQuery("MIN-2026-001"), default);
         current!.Version.Should().Be(2); // by-key with no version returns the head
         channel.Sent.Should().HaveCount(2); // the new published version notifies members too
-        await audit.Received(1).EmitAsync("Meetings.MinutesSuperseded", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MinutesSuperseded", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

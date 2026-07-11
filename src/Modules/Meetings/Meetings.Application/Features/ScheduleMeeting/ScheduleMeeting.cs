@@ -88,7 +88,7 @@ public sealed class ScheduleMeetingHandler : IRequestHandler<ScheduleMeetingComm
         _db.Agendas.Add(agenda);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Meetings.MeetingScheduled", sub, new { meeting.PublicId, meeting.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MeetingScheduled", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
         await MeetingNotifications.FanOutAsync(_directory, _notifications,
             MeetingNotifications.MeetingScheduled(meeting.Title, meeting.Key, meeting.ScheduledStart), ct);
 

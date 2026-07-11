@@ -72,7 +72,7 @@ public sealed class DraftMinutesHandler : IRequestHandler<DraftMinutesCommand, M
         _db.Minutes.Add(minutes);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Meetings.MinutesDrafted", sub, new { minutes.PublicId, minutes.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesDrafted", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
         return MinutesMapping.ToSummary(minutes);
     }
 }

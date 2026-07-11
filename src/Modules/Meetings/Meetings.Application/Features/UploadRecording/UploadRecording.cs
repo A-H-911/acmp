@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -81,8 +82,7 @@ public sealed class UploadRecordingHandler : IRequestHandler<UploadRecordingComm
             catch { /* ponytail: orphan tolerated; a storage sweep can reclaim it if it ever matters */ }
         }
 
-        await _audit.EmitAsync("Meetings.RecordingUploaded", sub,
-            new { meeting.PublicId, meeting.Key, request.FileName, request.SizeBytes }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.RecordingUploaded", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
 
         return new RecordingDto("Uploaded", request.FileName, request.ContentType,
             request.SizeBytes, meeting.RecordingDurationSeconds, null);
