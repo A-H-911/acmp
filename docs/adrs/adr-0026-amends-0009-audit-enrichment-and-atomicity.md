@@ -1,8 +1,8 @@
 # ADR-0026: Audit-Event Field Enrichment, Hash Versioning, and Same-Transaction Atomic Append (amends ADR-0009)
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-11
-- Deciders: Architecture Committee execution (secretary to ratify)
+- Deciders: Architecture Committee execution (secretary-ratified 2026-07-11)
 - Amends: ADR-0009 (Append-Only Audit Log with Immutability and Hash-Chain Integrity)
 
 ## Context and Problem Statement

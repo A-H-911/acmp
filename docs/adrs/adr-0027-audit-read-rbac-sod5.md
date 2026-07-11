@@ -1,8 +1,8 @@
 # ADR-0027: Audit-Read Excludes Administrator — Segregation of Duties (supersedes the role clause of FR-151/FR-153)
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-11
-- Deciders: Architecture Committee execution (secretary to ratify)
+- Deciders: Architecture Committee execution (secretary-ratified 2026-07-11)
 - Supersedes: the audit-read **role clause** of FR-151 ("visible to Auditor and Administrator"), FR-153 ("Auditor and Administrator roles shall be able to search the audit log"), and the corresponding wording of AC-017/AC-019 (brief §6.18). Field/immutability/search requirements of those FRs are unchanged.
 
 ## Context and Problem Statement
