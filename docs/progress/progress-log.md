@@ -2,13 +2,32 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-12
+updated: 2026-07-13
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-13 — P15a + P15b (Research module: backend + UI)
+
+**Done**
+- **P15a** (PR #107, `7d82aba`): new **Research** module (schema `research`) — `ResearchMission` (RMS-) + owned `Finding` (FND-) + `Recommendation` (REC-); manual CRUD/lifecycle (`Proposed→Active→Completed` / `Cancelled`, terminal-immutable), **INV-005 enriched audit** (`ResearchDbContext` on the shared `DbConnection` + `AddAcmpAuditInterceptors`), `Research.Manage` RBAC, migration `Research_Init`, endpoints. 1320 BE tests, cov 99.65%, ArchUnit Research-isolation fact.
+- **P15b** (PR #108, `c06dc85`): FE-only `/research` register + `/research/:key` detail + create/manage dialogs, mirroring the Risks slice; **role + status gating** (Chair/Sec via `hasRole`; mission must be `Active` for child mutations; Completed/Cancelled read-only). 920 vitest, per-file cov ≥95%, i18n parity 1618. Built to `ACMP Research & Knowledge.dc.html` (INV-014).
+- **PR #106** (`186f24c`): governance-register refresh + Keystone-import deferral (FR-112 → D-05) + **OQ-050** + **D-17**.
+
+**Decisions / reconciliations**
+- Keystone import (FR-112) deferred out of P15 → future (D-05); **no ADR** (DEC-016/ADR-0007 optional-companion decision intact — scheduling only).
+- RBAC **OQ-050**: `Research.Manage` (#26) is **A-only (Chair/Sec)** for missions — the shared `CapabilityHandler` grants AiO only for `ITopicScopedResource`, and missions aren't topic-scoped (same as ADR/Invariant); `OwnerUserId` = attribution, not authz. Member-owned governance authoring would be a cross-cutting authz change.
+- Design-only omissions (guardrail #14): Hypotheses / Acceptance-criteria sections, Sources aside, Convert (→P15c) / Import (→D-05) buttons; register Topic/Sources columns. **Design-update-owed.**
+- Child-op audit before/after enrichment absent (children are `BaseEntity`); audit **is** emitted (INV-005 holds) → **D-17**.
+
+**Next**
+- **P15c** — Research convert flows (Mission→Topic, Recommendation→Topic/Decision, W16) + the deferred FR-113/115 traceability graph edges (needs a key+title reader seam). Then Knowledge (P15d/e), global search (P15f/g — OQ-034/INV-002 live), template wiring (P15h).
+- **P15b live pixel-VR** (EN-light + AR-dark, RTL) against the redeployed stack.
 
 ---
 
