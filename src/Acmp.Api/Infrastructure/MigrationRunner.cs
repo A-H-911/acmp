@@ -6,6 +6,7 @@ using Acmp.Modules.Integrations.Webex.Oauth;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
+using Acmp.Modules.Research.Infrastructure.Persistence;
 using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
@@ -30,6 +31,7 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<ActionsDbContext>(),
             scope.ServiceProvider.GetRequiredService<RisksDbContext>(),
             scope.ServiceProvider.GetRequiredService<GovernanceDbContext>(),
+            scope.ServiceProvider.GetRequiredService<ResearchDbContext>(),
             scope.ServiceProvider.GetRequiredService<TraceabilityDbContext>(),
             scope.ServiceProvider.GetRequiredService<DependenciesDbContext>(),
             scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),

@@ -28,6 +28,8 @@
     <ProjectReference Include="..\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Governance\Governance.Application\Acmp.Modules.Governance.Application.csproj" />
     <ProjectReference Include="..\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Research\Research.Application\Acmp.Modules.Research.Application.csproj" />
+    <ProjectReference Include="..\Modules\Research\Research.Infrastructure\Acmp.Modules.Research.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Notifications\Notifications.Infrastructure\Acmp.Modules.Notifications.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Integrations\Webex\Acmp.Modules.Integrations.Webex.csproj" />
   </ItemGroup>
