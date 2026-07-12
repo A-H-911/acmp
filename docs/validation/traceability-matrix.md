@@ -125,7 +125,7 @@ Derived from the registers — never hand-maintained; re-generate from source. F
 | FR-109 | ADR-0021, ADR-0009 | WBS-17 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |
 | FR-110 | ADR-0021, ADR-0009 | WBS-17 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH3) |
 | FR-111 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |
-| FR-112 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |
+| FR-112 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | planned — build deferred out of P15 → future (D-05, 2026-07-12); linkage unchanged |
 | FR-113 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |
 | FR-114 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |
 | FR-115 | ADR-0007 | WBS-19 | TEST-041 | (covered by module suite) | Full | full (post-MVP — PH2) |

@@ -30,7 +30,9 @@ Derived snapshot of where the build is. Regenerated each update cycle from the [
 
 ## Gate snapshot (Keystone package)
 
-The package is under Keystone v1.0.0 governance. Critical gates are confirmed by `python <keystone>/scripts/validate_package.py docs` (see [execution-readiness report](../handoff/execution-readiness-report.md) for the authoritative result). Coverage: acceptance audit tracks every `AC-001…066` → verdict (G-PROGRESS); traceability matrix links MVP FR/NFR → decision/WBS/test/AC (G-TRACE).
+The package is under Keystone v1.0.0 governance. Critical gates are confirmed by `python <keystone>/scripts/validate_package.py docs` (see [execution-readiness report](../handoff/execution-readiness-report.md) for the authoritative result). Coverage: the [acceptance audit](../validation/acceptance-audit.md) tracks every `AC-001…074` → verdict (G-PROGRESS); traceability matrix links MVP FR/NFR → decision/WBS/test/AC (G-TRACE).
+
+**AC verdicts (regenerated 2026-07-12 from the acceptance-audit rollup):** **74 ACs · 34 Met · 37 Partial · 3 Pending · 0 Not-met.** The 3 Pending: AC-004 (Keycloak idle-timeout, needs a live realm session policy) and AC-060/061 (global + Arabic search → the P15 Search module). Most `Partial`s are governance-feature ACs whose domain/handler/HTTP legs are proven but whose dedicated live real-stack VR leg is noted "→ P17"; `main` is green at `f32ca31` (all four CI checks incl. e2e). Verdicts are the ledger's per-AC test refs, not a fresh full-suite re-run.
 
 ## Open items
 
