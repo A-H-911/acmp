@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -46,7 +47,6 @@ public sealed class CloseVoteHandler : IRequestHandler<CloseVoteCommand>
         vote.Close(sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.VoteClosed", sub,
-            new { vote.PublicId, vote.Key, vote.ResultSummary, CounterUserId = sub }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.VoteClosed", nameof(Vote), vote.PublicId.ToString(), ct: ct);
     }
 }

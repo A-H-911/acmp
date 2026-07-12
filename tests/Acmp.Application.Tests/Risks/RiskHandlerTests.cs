@@ -95,7 +95,7 @@ public class RiskHandlerTests
         summary.Key.Should().Be("RSK-2026-001");
         summary.Status.Should().Be("Open");
         summary.Exposure.Should().Be("High"); // Medium × High = 6
-        await audit.Received(1).EmitAsync("Risks.RiskRaised", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.RiskRaised", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         channel.Sent.Should().ContainSingle()
             .Which.Should().Match<NotificationMessage>(m => m.RecipientUserId == "kc-owner" && m.DeepLink == "/risks/RSK-2026-001");
     }
@@ -139,8 +139,8 @@ public class RiskHandlerTests
             await new SetMitigationStatusHandler(db, Clock(Now), audit, User())
                 .Handle(new SetMitigationStatusCommand(id, mitigationId, MitigationStatus.InProgress), default);
 
-        await audit.Received(1).EmitAsync("Risks.MitigationAdded", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Risks.MitigationStatusChanged", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.MitigationAdded", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.MitigationStatusChanged", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -160,8 +160,8 @@ public class RiskHandlerTests
 
         await using var read = Db(name, User(), Clock(Now));
         (await new GetRiskByKeyHandler(read).Handle(new GetRiskByKeyQuery(key), default))!.Status.Should().Be("Closed");
-        await audit.Received(1).EmitAsync("Risks.RiskMitigating", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Risks.RiskClosed", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.RiskMitigating", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.RiskClosed", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // BL-135: escalation notifies the Secretary + Chairman, skipping the actor, de-duplicated
@@ -181,7 +181,7 @@ public class RiskHandlerTests
             await new EscalateRiskHandler(db, Clock(Now), audit, actor, committee, channel)
                 .Handle(new EscalateRiskCommand(id, Plan, "Steering Board"), default);
 
-        await audit.Received(1).EmitAsync("Risks.RiskEscalated", "kc-actor", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.RiskEscalated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         channel.Sent.Select(m => m.RecipientUserId).Should().BeEquivalentTo(new[] { "kc-sec", "kc-chair" }); // actor skipped
     }
 
@@ -207,7 +207,7 @@ public class RiskHandlerTests
         var detail = await new GetRiskByKeyHandler(read).Handle(new GetRiskByKeyQuery(key), default);
         detail!.Status.Should().Be("Accepted");
         detail.AcceptingAuthority.Should().Be("Chairman");
-        await audit.Received(1).EmitAsync("Risks.RiskAccepted", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Risks.RiskAccepted", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

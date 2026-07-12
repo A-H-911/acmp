@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Membership.Application.Abstractions;
+using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using FluentValidation;
@@ -46,7 +47,7 @@ public sealed class AssignStreamsHandler : IRequestHandler<AssignStreamsCommand>
         member.AssignStreams(streamIds);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Membership.StreamsAssigned", _user.UserId,
-            new { request.MemberPublicId, streamCount = streamIds.Count }, ct);
+        await _audit.EmitEnrichedAsync("Membership.StreamsAssigned", nameof(CommitteeMember),
+            request.MemberPublicId.ToString(), ct: ct);
     }
 }

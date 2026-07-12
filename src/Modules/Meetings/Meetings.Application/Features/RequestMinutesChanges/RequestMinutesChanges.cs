@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -44,6 +45,6 @@ public sealed class RequestMinutesChangesHandler : IRequestHandler<RequestMinute
         if (!string.IsNullOrWhiteSpace(authorSub))
             await _notifications.PublishAsync(
                 MinutesNotifications.ChangesRequested(authorSub, minutes.MeetingTitle, minutes.MeetingKey), ct);
-        await _audit.EmitAsync("Meetings.MinutesChangesRequested", _user.UserId, new { minutes.PublicId, minutes.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesChangesRequested", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
     }
 }

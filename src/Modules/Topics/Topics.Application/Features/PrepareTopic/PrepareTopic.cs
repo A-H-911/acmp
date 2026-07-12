@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -51,7 +52,7 @@ public sealed class PrepareTopicHandler : IRequestHandler<PrepareTopicCommand>
         topic.MarkPrepared(sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.TopicPrepared", sub, new { topic.PublicId, topic.Key }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicPrepared", nameof(Topic), topic.PublicId.ToString(), ct: ct);
 
         // W4: tell the Secretary roster an item is ready to schedule (skip the actor if a Secretary
         // prepared it themselves — no self-noise, mirrors CreateAction). Empty roster → no recipients.

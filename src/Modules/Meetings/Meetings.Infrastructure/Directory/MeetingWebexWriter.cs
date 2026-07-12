@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Meetings;
 using Microsoft.EntityFrameworkCore;
@@ -9,8 +10,6 @@ namespace Acmp.Modules.Meetings.Infrastructure.Directory;
 // the meeting correlation id and, later, the recording reference — every write emits an AuditEvent (INV-005).
 public sealed class MeetingWebexWriter : IMeetingWebexWriter
 {
-    private const string Actor = "system:webex";
-
     private readonly IMeetingsDbContext _db;
     private readonly IAuditSink _audit;
 
@@ -27,7 +26,7 @@ public sealed class MeetingWebexWriter : IMeetingWebexWriter
 
         meeting.SetWebexMeeting(webexMeetingId, joinUrl);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.WebexMeetingLinked", Actor, new { meeting.Key, webexMeetingId }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.WebexMeetingLinked", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 
     public async Task<bool> AttachRecordingAsync(string webexMeetingId, RecordingReference recording, CancellationToken ct = default)
@@ -38,7 +37,7 @@ public sealed class MeetingWebexWriter : IMeetingWebexWriter
 
         meeting.AttachRecording(recording.PlaybackUrl, recording.DownloadUrl, recording.DurationSeconds);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.RecordingAttached", Actor, new { meeting.Key, webexMeetingId }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.RecordingAttached", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
         return true;
     }
 }

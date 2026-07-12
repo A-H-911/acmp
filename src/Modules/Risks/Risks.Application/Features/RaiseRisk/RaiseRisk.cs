@@ -91,15 +91,7 @@ public sealed class RaiseRiskHandler : IRequestHandler<RaiseRiskCommand, RiskSum
         _db.Risks.Add(risk);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Risks.RiskRaised", sub, new
-        {
-            risk.PublicId,
-            risk.Key,
-            risk.OwnerUserId,
-            SubjectType = risk.SubjectType.ToString(),
-            Severity = risk.Severity(),
-            Exposure = risk.Exposure().ToString(),
-        }, ct);
+        await _audit.EmitEnrichedAsync("Risks.RiskRaised", nameof(Risk), risk.PublicId.ToString(), ct: ct);
 
         // W15 (docs/domain/workflows.md line 201): notify the owner (skip if the raiser owns it themselves — no self-noise).
         if (!string.Equals(risk.OwnerUserId, sub, StringComparison.Ordinal))

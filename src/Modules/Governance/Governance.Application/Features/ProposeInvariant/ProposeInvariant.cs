@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -46,7 +47,7 @@ public sealed class ProposeInvariantHandler : IRequestHandler<ProposeInvariantCo
         inv.Propose(_clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Governance.InvariantProposed", sub, new { inv.PublicId, inv.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantProposed", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
 
         // W18: notify the reviewers (skip the proposer if they hold the Reviewer role themselves).
         var reviewers = await _committee.GetActiveMembersInRoleAsync(AcmpRoles.Reviewer, ct);

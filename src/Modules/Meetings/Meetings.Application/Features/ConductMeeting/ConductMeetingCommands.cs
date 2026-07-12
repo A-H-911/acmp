@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
@@ -54,7 +55,7 @@ public sealed class StartMeetingHandler : IRequestHandler<StartMeetingCommand>
             await _topics.EnterCommitteeAsync(item.TopicId, ct);
 
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.MeetingStarted", _user.UserId, new { meeting.PublicId, meeting.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MeetingStarted", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 }
 
@@ -100,8 +101,7 @@ public sealed class MarkAttendanceHandler : IRequestHandler<MarkAttendanceComman
         meeting.MarkAttendance(request.UserId, request.Status, _clock.UtcNow);
 
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.AttendanceRecorded", _user.UserId,
-            new { meeting.PublicId, request.UserId, Status = request.Status.ToString() }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.AttendanceRecorded", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 }
 
@@ -200,6 +200,6 @@ public sealed class EndMeetingHandler : IRequestHandler<EndMeetingCommand>
         meeting.Hold(_clock.UtcNow);
         agenda.Close();
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.MeetingHeld", _user.UserId, new { meeting.PublicId, meeting.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MeetingHeld", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 }

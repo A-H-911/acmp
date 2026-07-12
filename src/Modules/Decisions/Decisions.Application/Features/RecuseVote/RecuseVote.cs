@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -44,6 +45,6 @@ public sealed class RecuseVoteHandler : IRequestHandler<RecuseVoteCommand>
         vote.Recuse(sub, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.VoteRecused", sub, new { vote.PublicId, vote.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.VoteRecused", nameof(Vote), vote.PublicId.ToString(), ct: ct);
     }
 }

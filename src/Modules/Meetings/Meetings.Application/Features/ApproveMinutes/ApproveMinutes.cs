@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -43,8 +44,8 @@ public sealed class ApproveMinutesHandler : IRequestHandler<ApproveMinutesComman
         minutes.Approve(sub, name, isSoleAuthor, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Meetings.MinutesApproved", sub, new { minutes.PublicId, minutes.Key, isSoleAuthor }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesApproved", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
         if (isSoleAuthor) // AC-014 flagged audit event for four-eyes review
-            await _audit.EmitAsync("Meetings.MinutesApprovedBySoleAuthor", sub, new { minutes.PublicId, minutes.Key }, ct);
+            await _audit.EmitEnrichedAsync("Meetings.MinutesApprovedBySoleAuthor", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
     }
 }

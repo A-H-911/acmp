@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Authorization.Abac;
@@ -58,6 +59,6 @@ public sealed class AcceptTopicHandler : IRequestHandler<AcceptTopicCommand>
         await _db.SaveChangesAsync(ct);
 
         await _capabilities.GrantAsync(topic.PublicId, request.OwnerId, TopicCapabilityType.Owner, ct);
-        await _audit.EmitAsync("Topics.TopicAccepted", sub, new { topic.PublicId, topic.Key, request.OwnerId }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicAccepted", nameof(Topic), topic.PublicId.ToString(), ct: ct);
     }
 }

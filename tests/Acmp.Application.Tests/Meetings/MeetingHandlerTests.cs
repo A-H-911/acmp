@@ -323,7 +323,7 @@ public class MeetingHandlerTests
         var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("Held");
         detail.Agenda!.Status.Should().Be("Closed");
-        await audit.Received(1).EmitAsync("Meetings.MeetingHeld", user.UserId, Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MeetingHeld", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ---- CancelMeetingHandler (W5) ----
@@ -380,7 +380,7 @@ public class MeetingHandlerTests
         var meeting = await db.Meetings.SingleAsync();
         meeting.Status.Should().Be(MeetingStatus.Cancelled);
         meeting.CancellationReason.Should().Be("Quorum will not be met");
-        await audit.Received(1).EmitAsync("Meetings.MeetingCancelled", user.UserId, Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Meetings.MeetingCancelled", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ---- RemoveAgendaItemHandler (W6) ----

@@ -151,7 +151,7 @@ public class MembershipFeatureTests
         stored.IsActive.Should().BeFalse();              // AC-058
         stored.FullName.Should().Be("Bob");              // attribution intact
         // State change emits an AuditEvent (docs/26, guardrail 5).
-        await audit.Received(1).EmitAsync("Membership.MemberDeactivated", "kc-admin", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Membership.MemberDeactivated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

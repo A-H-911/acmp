@@ -60,7 +60,7 @@ const ACCESS: Record<AreaKey, Partial<Record<CommitteeRole, AccessLevel>>> = {
   wiki: { chairman: 'view', secretary: 'full', member: 'full', reviewer: 'view', auditor: 'view' },
   diagrams: { chairman: 'view', secretary: 'view', member: 'view', reviewer: 'view', auditor: 'view', guest: 'view' },
   reports: { chairman: 'full', secretary: 'full', member: 'view', reviewer: 'view', auditor: 'view', administrator: 'view' },
-  audit: { chairman: 'view', auditor: 'full', administrator: 'full' },
+  audit: { auditor: 'full', chairman: 'view', secretary: 'view' },
   admin: { administrator: 'full' },
 };
 

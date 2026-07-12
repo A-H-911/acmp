@@ -89,6 +89,7 @@ app.MapAdrEndpoints();
 app.MapInvariantEndpoints();
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
+app.MapAuditEndpoints(); // AC-017/019/020: Auditor read + on-demand chain-verify (read-only)
 app.MapWebexEndpoints(); // P13: anonymous, HMAC-authenticated inbound Webex webhook
 
 // The API OWNS schema migrations (both hosts share one SQL DB; a single migrator avoids a two-host race —

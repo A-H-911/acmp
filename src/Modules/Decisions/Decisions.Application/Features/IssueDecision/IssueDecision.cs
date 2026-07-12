@@ -129,8 +129,7 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
             // SoD-3: the issuing chair may not be the vote's counter of record (the actor who closed it).
             if (!SegregationOfDuties.HasIndependentCoAttestation(sub, vote.CounterUserId))
             {
-                await _audit.EmitAsync("Decisions.DecisionIssueDenied", sub,
-                    new { decision.PublicId, decision.Key, VoteKey = vote.Key, Reason = "SoD-3: chairman is the sole vote counter" }, ct);
+                await _audit.EmitEnrichedAsync("Decisions.DecisionIssueDenied", nameof(Decision), decision.PublicId.ToString(), AuditOutcome.Denied, ct);
                 throw new ForbiddenAccessException("The chairman issuing a vote-coupled decision cannot be the vote's sole counter.");
             }
         }
@@ -140,6 +139,6 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         await _db.SaveChangesAsync(ct);
 
         await DecisionIssuance.ApplyAsync(_topics, _directory, _notifications, _audit,
-            sub, decision.TopicId, decision.Key, request.ChairOverride, ct);
+            decision.TopicId, decision.PublicId, decision.Key, request.ChairOverride, ct);
     }
 }

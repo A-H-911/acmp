@@ -1,10 +1,12 @@
-﻿using Acmp.Modules.Membership.Application;
+﻿using System.Data.Common;
+using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Application.Abstractions;
 using Acmp.Modules.Membership.Infrastructure.Authorization;
 using Acmp.Modules.Membership.Infrastructure.Directory;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Shared.Authorization.Abac;
 using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +18,12 @@ public static class MembershipInfrastructureExtensions
 {
     public static IServiceCollection AddMembershipModule(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Acmp");
-        services.AddDbContext<MembershipDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", MembershipDbContext.Schema)));
+        // On the shared per-scope DbConnection (SharedKernel / ADR-0026 NFR-042) so a state change in this
+        // module and its audit append (and any cross-module write in the same command) commit atomically.
+        services.AddDbContext<MembershipDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", MembershipDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
 
         services.AddScoped<IMembershipDbContext>(sp => sp.GetRequiredService<MembershipDbContext>());
 

@@ -1,8 +1,10 @@
-﻿using Acmp.Modules.Traceability.Application;
+﻿using System.Data.Common;
+using Acmp.Modules.Traceability.Application;
 using Acmp.Modules.Traceability.Application.Abstractions;
 using Acmp.Modules.Traceability.Infrastructure.Directory;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Contracts.Traceability;
+using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +16,12 @@ public static class TraceabilityInfrastructureExtensions
 {
     public static IServiceCollection AddTraceabilityModule(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Acmp");
-        services.AddDbContext<TraceabilityDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", TraceabilityDbContext.Schema)));
+        // On the shared per-scope DbConnection (SharedKernel / ADR-0026 NFR-042) so a state change in this
+        // module and its audit append (and any cross-module write in the same command) commit atomically.
+        services.AddDbContext<TraceabilityDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", TraceabilityDbContext.Schema))
+                .AddAcmpAuditInterceptors(sp));
 
         services.AddScoped<ITraceabilityDbContext>(sp => sp.GetRequiredService<TraceabilityDbContext>());
 

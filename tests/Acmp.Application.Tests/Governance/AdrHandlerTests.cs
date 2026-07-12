@@ -60,6 +60,7 @@ public class AdrHandlerTests
     {
         public List<(string Event, string? Sub, object? Data)> Calls { get; } = new();
         public Task EmitAsync(string e, string? s, object? d = null, CancellationToken ct = default) { Calls.Add((e, s, d)); return Task.CompletedTask; }
+        public Task EmitEnrichedAsync(string action, string subjectType, string? subjectId, string outcome = "Success", CancellationToken ct = default) { Calls.Add((action, subjectId, null)); return Task.CompletedTask; }
     }
 
     private sealed class FakeCommittee : ICommitteeDirectory
@@ -180,8 +181,9 @@ public class AdrHandlerTests
             .Handle(new ApproveAdrCommand(created.Id), CancellationToken.None);
 
         (await db.Adrs.SingleAsync()).Status.Should().Be(AdrStatus.Approved);
-        var data = audit.Calls.Single(c => c.Event == "Governance.AdrApproved").Data!;
-        data.GetType().GetProperty("AuthorApprovedSelf")!.GetValue(data).Should().Be(true);
+        audit.Calls.Should().Contain(c => c.Event == "Governance.AdrApproved");
+        var subject = await db.Adrs.SingleAsync();
+        subject.ApprovedByUserId.Should().Be(subject.AuthorUserId, "self-approval (SoD-soft)");
         // Fan-out reaches the other members, not the approver.
         channel.Sent.Select(m => m.RecipientUserId).Should().BeEquivalentTo("kc-m1", "kc-m2");
     }

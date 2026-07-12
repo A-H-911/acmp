@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
@@ -38,7 +39,7 @@ public sealed class RequestAdrChangesHandler : IRequestHandler<RequestAdrChanges
         var (sub, _) = CurrentActor.Of(_user);
         adr.RequestChanges(_clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Governance.AdrChangesRequested", sub, new { adr.PublicId, adr.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrChangesRequested", nameof(Adr), adr.PublicId.ToString(), ct: ct);
     }
 }
 
@@ -85,7 +86,7 @@ public sealed class DeprecateAdrHandler : IRequestHandler<DeprecateAdrCommand>
         var (sub, _) = CurrentActor.Of(_user);
         adr.Deprecate(request.Reason, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Governance.AdrDeprecated", sub, new { adr.PublicId, adr.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrDeprecated", nameof(Adr), adr.PublicId.ToString(), ct: ct);
         // W21: notify the committee of the deprecation (no successor key).
         await AdrNotifications.FanOutAsync(_committee, _notifications,
             AdrNotifications.Superseded(adr.Key, successorKey: null), sub, ct);

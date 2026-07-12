@@ -99,8 +99,7 @@ public sealed class PromoteDecisionToAdrHandler : IRequestHandler<PromoteDecisio
             "Adr", adr.PublicId, adr.Key, adr.Title.En,
             relTypeName: "RecordedAs", ct);
 
-        await _audit.EmitAsync("Governance.AdrPromotedFromDecision", sub,
-            new { adr.PublicId, adr.Key, DecisionId = decision.Id, DecisionKey = decision.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrPromotedFromDecision", nameof(Adr), adr.PublicId.ToString(), ct: ct);
 
         return AdrMapping.ToSummary(adr);
     }

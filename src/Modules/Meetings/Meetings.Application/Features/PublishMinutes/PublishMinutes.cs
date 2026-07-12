@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -46,6 +47,6 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
 
         await MinutesNotifications.FanOutAsync(_directory, _notifications,
             MinutesNotifications.MinutesPublished(minutes.MeetingTitle, minutes.MeetingKey), ct);
-        await _audit.EmitAsync("Meetings.MinutesPublished", _user.UserId, new { minutes.PublicId, minutes.Key, minutes.Version }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesPublished", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
     }
 }

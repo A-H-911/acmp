@@ -68,17 +68,7 @@ public sealed class CreateRelationshipHandler : IRequestHandler<CreateRelationsh
         _db.Relationships.Add(edge);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Relationship.Created", sub, new
-        {
-            edge.PublicId,
-            SourceType = edge.SourceType.ToString(),
-            edge.SourceId,
-            edge.SourceKey,
-            TargetType = edge.TargetType.ToString(),
-            edge.TargetId,
-            edge.TargetKey,
-            RelType = edge.RelType.ToString(),
-        }, ct);
+        await _audit.EmitEnrichedAsync("Relationship.Created", nameof(Relationship), edge.PublicId.ToString(), ct: ct);
 
         return edge.PublicId;
     }

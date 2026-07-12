@@ -79,9 +79,8 @@ public sealed class SupersedeMinutesHandler : IRequestHandler<SupersedeMinutesCo
 
         await MinutesNotifications.FanOutAsync(_directory, _notifications,
             MinutesNotifications.MinutesPublished(successor.MeetingTitle, successor.MeetingKey), ct);
-        await _audit.EmitAsync("Meetings.MinutesSuperseded", sub,
-            new { prior.PublicId, prior.Key, SupersededBy = successor.PublicId, successor.Version }, ct);
-        await _audit.EmitAsync("Meetings.MinutesPublished", sub, new { successor.PublicId, successor.Key, successor.Version }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesSuperseded", nameof(MinutesOfMeeting), prior.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesPublished", nameof(MinutesOfMeeting), successor.PublicId.ToString(), ct: ct);
 
         return MinutesMapping.ToSummary(successor);
     }

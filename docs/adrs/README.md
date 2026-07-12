@@ -30,6 +30,11 @@ This folder contains the Architecture Decision Records (ADRs) for the Architectu
 | [ADR-0020](ADR-0020-impact-graph-read-time-composition.md) | Impact Graph by Read-Time Contract Composition, Not a Cross-Schema Traversal (clarifies ADR-0019) | Accepted | 2026-07-03 |
 | [ADR-0021](ADR-0021-cross-module-write-seam.md) | Cross-Module System Writes Go Through a Shared.Contracts Write Port (extends ADR-0001) | Accepted | 2026-07-04 |
 | [ADR-0022](ADR-0022-reporting-client-side-no-columnstore.md) | Reporting = Client-Side Aggregation over Thin Registers — No Columnstore Read-Model Layer, No Chart Library (extends ADR-0001/0003; resolves OQ-022) | Accepted | 2026-07-05 |
+| [ADR-0023](adr-0023-webex-integration-webhook-and-multichannel-dispatch.md) | Webex Integration — Multi-Channel Dispatch, HMAC Webhook, and OAuth Token Storage | Accepted | 2026-07-07 |
+| [ADR-0024](adr-0024-dedicated-background-worker-container.md) | Dedicated Background-Worker Container | Accepted | 2026-07-07 |
+| [ADR-0025](adr-0025-meeting-recording-upload-storage.md) | Meeting-Recording Upload, Presigned Playback, and Deletion | Accepted | 2026-07-09 |
+| [ADR-0026](adr-0026-amends-0009-audit-enrichment-and-atomicity.md) | Audit-Event Field Enrichment, Hash Versioning, and Same-Transaction Atomic Append (amends ADR-0009) | Accepted | 2026-07-11 |
+| [ADR-0027](adr-0027-audit-read-rbac-sod5.md) | Audit-Read Excludes Administrator — Segregation of Duties (supersedes the role clause of FR-151/FR-153) | Accepted | 2026-07-11 |
 
 ---
 

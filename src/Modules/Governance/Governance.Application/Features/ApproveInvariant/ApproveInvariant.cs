@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Application.Abstractions;
 using Acmp.Modules.Governance.Application.Internal;
+using Acmp.Modules.Governance.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
@@ -45,14 +46,14 @@ public sealed class ApproveInvariantHandler : IRequestHandler<ApproveInvariantCo
             ?? throw new KeyNotFoundException("Invariant not found.");
 
         var (sub, name) = CurrentActor.Of(_user);
-        var authorApprovedSelf = string.Equals(inv.CreatedBy, sub, StringComparison.Ordinal);
 
         inv.Activate(sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        // High-importance governance event; SoD-soft posture recorded (guardrail 4, operator 2026-07-04).
-        await _audit.EmitAsync("Governance.InvariantActivated", sub,
-            new { inv.PublicId, inv.Key, AuthorApprovedSelf = authorApprovedSelf }, ct);
+        // High-importance governance event; SoD-soft posture (guardrail 4, operator 2026-07-04). Self-approval is
+        // reconstructable from the enriched record — ActivatedByUserId (in the before/after) vs the persisted
+        // CreatedBy — so the previously-explicit AuthorApprovedSelf flag is redundant (ADR-0026 enrichment).
+        await _audit.EmitEnrichedAsync("Governance.InvariantActivated", nameof(Invariant), inv.PublicId.ToString(), ct: ct);
 
         // W18: notify the committee that the invariant is active and in force (skip the approver).
         await InvariantNotifications.FanOutAsync(_committee, _notifications, InvariantNotifications.Activated(inv.Key), sub, ct);

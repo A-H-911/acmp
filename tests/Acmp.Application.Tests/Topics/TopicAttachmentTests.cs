@@ -62,6 +62,6 @@ public class TopicAttachmentTests
         var stored = await db.Topics.Include(t => t.Attachments).SingleAsync();
         stored.Attachments.Should().ContainSingle(a => a.FileName == "eval.pdf" && a.StorageKey.StartsWith("acmp-topics/"));
         await files.Received(1).UploadAsync("acmp-topics", Arg.Any<string>(), Arg.Any<Stream>(), "application/pdf", Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Topics.DocumentAttached", "kc-omar", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.DocumentAttached", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 }

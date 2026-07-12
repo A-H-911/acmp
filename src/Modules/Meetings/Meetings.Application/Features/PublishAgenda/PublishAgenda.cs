@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -66,8 +67,7 @@ public sealed class PublishAgendaHandler : IRequestHandler<PublishAgendaCommand,
             await _topics.ScheduleAsync(item.TopicId, agenda.MeetingId, ct);
 
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.AgendaPublished", _user.UserId,
-            new { agenda.PublicId, agenda.Key, agenda.MeetingId, agenda.Version, ItemCount = agenda.Items.Count }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.AgendaPublished", nameof(Agenda), agenda.PublicId.ToString(), ct: ct);
 
         // AC-051: notify every active committee member with date + agenda title + deep link to the agenda.
         await MeetingNotifications.FanOutAsync(_directory, _notifications,

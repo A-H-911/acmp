@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
@@ -52,7 +53,7 @@ public sealed class ReviseMinutesHandler : IRequestHandler<ReviseMinutesCommand,
         minutes.Revise(request.Summary, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Meetings.MinutesRevised", _user.UserId, new { minutes.PublicId, minutes.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesRevised", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
         return MinutesMapping.ToSummary(minutes);
     }
 }

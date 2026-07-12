@@ -60,8 +60,8 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
 
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync(created ? "Membership.MemberProvisioned" : "Membership.ProfileSynced", sub,
-            new { member.PublicId, role = member.Role.ToString() }, ct);
+        await _audit.EmitEnrichedAsync(created ? "Membership.MemberProvisioned" : "Membership.ProfileSynced",
+            nameof(CommitteeMember), member.PublicId.ToString(), ct: ct);
 
         return new MemberProfileDto(
             member.PublicId, member.FullName, member.Email, member.Role.ToString(),

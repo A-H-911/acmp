@@ -22,7 +22,6 @@ internal static class RiskTransition
         mutate(risk, clock.UtcNow);
         await db.SaveChangesAsync(ct);
 
-        await audit.EmitAsync(auditEvent, sub,
-            new { risk.PublicId, risk.Key, Status = risk.Status.ToString() }, ct);
+        await audit.EmitEnrichedAsync(auditEvent, nameof(Risk), risk.PublicId.ToString(), ct: ct);
     }
 }

@@ -328,6 +328,63 @@
       "err": { "statement": "النص مطلوب.", "rationale": "المبرّر مطلوب.", "owner": "المالك مطلوب." }
     }
   },
+  "audit": {
+    "title": "سجل التدقيق",
+    "count": "{{count}} حدث",
+    "filtersLabel": "عوامل تصفية التدقيق",
+    "showing": "عرض {{shown}} من {{total}}",
+    "readonly": "للقراءة فقط — سجل إلحاقي غير قابل للتعديل",
+    "system": "النظام",
+    "pageNav": "صفحات التدقيق",
+    "prevPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "tableCaption": "سجل التدقيق",
+    "filter": {
+      "type": "نوع العنصر",
+      "anyType": "أي نوع",
+      "actor": "الفاعل",
+      "anyActor": "أي فاعل",
+      "action": "الإجراء",
+      "anyAction": "أي إجراء",
+      "date": "النطاق الزمني",
+      "anyDate": "أي تاريخ"
+    },
+    "col": {
+      "when": "الطابع الزمني",
+      "actor": "الفاعل",
+      "action": "الإجراء",
+      "artifact": "العنصر",
+      "detail": "التفاصيل"
+    },
+    "entity": {
+      "Vote": "تصويت",
+      "Decision": "قرار",
+      "Topic": "موضوع",
+      "Meeting": "اجتماع",
+      "MinutesOfMeeting": "محضر",
+      "Risk": "مخاطرة",
+      "ActionItem": "إجراء",
+      "Adr": "سجل قرار معماري",
+      "Invariant": "ثابت",
+      "Relationship": "علاقة",
+      "Dependency": "اعتمادية",
+      "CommitteeMember": "عضو",
+      "Delegation": "تفويض"
+    },
+    "outcome": {
+      "Success": "نجاح",
+      "Denied": "مرفوض",
+      "Failure": "فشل"
+    },
+    "empty": {
+      "title": "لا أحداث تدقيق",
+      "body": "لا توجد أحداث مسجّلة تطابق عوامل التصفية هذه."
+    },
+    "error": {
+      "title": "تعذّر تحميل سجل التدقيق",
+      "body": "فشل تحميل سجل التدقيق. أعد المحاولة، أو اتصل بالمسؤول إذا استمرّت المشكلة."
+    }
+  },
   "risks": {
     "title": "سجل المخاطر",
     "count": "{{count}} مخاطرة",

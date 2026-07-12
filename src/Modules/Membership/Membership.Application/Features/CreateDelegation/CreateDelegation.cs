@@ -56,8 +56,7 @@ public sealed class CreateDelegationHandler : IRequestHandler<CreateDelegationCo
         _db.Delegations.Add(delegation);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Membership.DelegationCreated", _user.UserId,
-            new { delegation.PublicId, request.DelegateMemberPublicId, request.Capability, request.ValidFrom, request.ValidTo }, ct);
+        await _audit.EmitEnrichedAsync("Membership.DelegationCreated", nameof(Delegation), delegation.PublicId.ToString(), ct: ct);
 
         return delegation.PublicId;
     }

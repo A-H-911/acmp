@@ -126,7 +126,7 @@ public class DecisionHandlerTests
         summary.Key.Should().Be("DECN-2026-001");
         summary.Status.Should().Be("Draft");
         summary.Outcome.Should().Be("Approved");
-        await audit.Received(1).EmitAsync("Decisions.DecisionDrafted", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.DecisionDrafted", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // nullable owned LocalizedString round-trips: null reads back as null, a value reads back intact
@@ -187,7 +187,7 @@ public class DecisionHandlerTests
         recorder.Decided.Should().ContainSingle().Which.Should().Be(Topic);
         channel.Sent.Should().HaveCount(2);
         channel.Sent.Should().OnlyContain(m => m.Category == "DecisionIssued" && m.DeepLink == "/decisions/DECN-2026-001");
-        await audit.Received(1).EmitAsync("Decisions.DecisionIssued", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.DecisionIssued", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -279,8 +279,8 @@ public class DecisionHandlerTests
         priorDetail.SupersededByDecisionId.Should().Be(successor.Id);
         priorDetail.SupersessionReason.Should().Be(reason);
 
-        await audit.Received(1).EmitAsync("Decisions.DecisionSuperseded", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Decisions.DecisionIssued", "kc-chair", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.DecisionSuperseded", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Decisions.DecisionIssued", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         recorder.Decided.Should().Contain(Topic); // successor's issue still drives the topic (idempotent seam)
     }
 

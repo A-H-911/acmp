@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -49,6 +50,6 @@ public sealed class RejectTopicHandler : IRequestHandler<RejectTopicCommand>
         topic.Reject(request.Reason, sub, name, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Topics.TopicRejected", sub, new { topic.PublicId, topic.Key, request.Reason }, ct);
+        await _audit.EmitEnrichedAsync("Topics.TopicRejected", nameof(Topic), topic.PublicId.ToString(), ct: ct);
     }
 }

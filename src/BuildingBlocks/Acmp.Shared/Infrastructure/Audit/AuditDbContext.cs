@@ -28,6 +28,18 @@ public sealed class AuditDbContext : DbContext
         e.Property(x => x.DataJson);
         e.Property(x => x.PreviousHash).IsRequired().HasMaxLength(64);
         e.Property(x => x.Hash).IsRequired().HasMaxLength(64);
+        // Enriched (v2) columns — ADR-0026 / audit-and-records.md §1.1. All nullable so pre-enrichment
+        // (v1) rows are unaffected; HashVersion defaults to 1 for those (migration) and is set to 2 in code.
+        e.Property(x => x.HashVersion).IsRequired().HasDefaultValue(1);
+        e.Property(x => x.Action).HasMaxLength(200);
+        e.Property(x => x.SubjectType).HasMaxLength(100);
+        e.Property(x => x.SubjectId).HasMaxLength(200);
+        e.Property(x => x.ActorUserId).HasMaxLength(200);
+        e.Property(x => x.ActorRole).HasMaxLength(100);
+        e.Property(x => x.Outcome).HasMaxLength(20);
+        e.Property(x => x.BeforeJson);
+        e.Property(x => x.AfterJson);
+        e.Property(x => x.CorrelationId).HasMaxLength(100);
         // A hash can chain off any given parent at most once → the chain cannot fork, and there is one genesis.
         e.HasIndex(x => x.PreviousHash).IsUnique();
         e.HasIndex(x => x.Hash).IsUnique();

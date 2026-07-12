@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Application.Internal;
+using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Meetings;
@@ -66,6 +67,6 @@ public sealed class OpenVoteHandler : IRequestHandler<OpenVoteCommand>
 
         var recipients = vote.Ballots.Select(b => b.VoterUserId).ToList();
         await VoteNotifications.FanOutAsync(_notifications, recipients, VoteNotifications.VoteOpened(vote.Key), ct);
-        await _audit.EmitAsync("Decisions.VoteOpened", sub, new { vote.PublicId, vote.Key, Present = present }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.VoteOpened", nameof(Vote), vote.PublicId.ToString(), ct: ct);
     }
 }

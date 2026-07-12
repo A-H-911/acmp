@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using FluentValidation;
@@ -44,6 +45,6 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand>
 
         meeting.Cancel(request.Reason, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.MeetingCancelled", _user.UserId, new { meeting.PublicId, meeting.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MeetingCancelled", nameof(Meeting), meeting.PublicId.ToString(), ct: ct);
     }
 }

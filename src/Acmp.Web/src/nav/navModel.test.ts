@@ -11,12 +11,20 @@ describe('navModel role filtering', () => {
     expect(keys).not.toContain('admin'); // admin is administrator-only
   });
 
-  it('shows the administrator only admin + audit (no committee content)', () => {
+  it('shows the administrator admin but NOT audit (SoD-5, ADR-0027) or committee content', () => {
     const nav = buildNav(['administrator']);
     const keys = nav.flatMap((g) => g.items.map((i) => i.key));
-    expect(keys).toEqual(expect.arrayContaining(['home', 'reports', 'audit', 'admin']));
+    expect(keys).toEqual(expect.arrayContaining(['home', 'reports', 'admin']));
+    // ADR-0027 supersedes the FR-153 role clause: the audit record is read by
+    // {Auditor, Chairman, Secretary} only — the system's administrator is excluded (SoD-5).
+    expect(keys).not.toContain('audit');
     expect(keys).not.toContain('backlog');
     expect(keys).not.toContain('decisions');
+  });
+
+  it('shows the auditor the audit trail (read-only oversight)', () => {
+    const keys = buildNav(['auditor']).flatMap((g) => g.items.map((i) => i.key));
+    expect(keys).toContain('audit');
   });
 
   it('marks view-only areas without granting full access', () => {

@@ -10,6 +10,7 @@ using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
+using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -89,5 +90,27 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         foreach (var (sub, name, role) in members)
             db.Members.Add(CommitteeMember.Provision(sub, name, $"{sub}@acmp.gov", role, DateTimeOffset.UtcNow));
         await db.SaveChangesAsync();
+    }
+
+    // Seeds one lean v1 row (a system/authZ event — enriched columns null) and one enriched v2 row (a
+    // governed state change), chained correctly off Genesis, so the /api/audit read tests exercise BOTH row
+    // shapes deterministically (post-PR2 the API only ever produces v2 rows). Returns their hashes for chain
+    // assertions.
+    public async Task<(string V1Hash, string V2Hash)> SeedAuditAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
+        var t = DateTimeOffset.UtcNow;
+
+        var v1 = AuditEvent.CreateNext(AuditEvent.Genesis, t, "Authentication.NoRoleClaim", "kc-legacy", null);
+        db.AuditEvents.Add(v1);
+        await db.SaveChangesAsync();
+
+        var v2 = AuditEvent.CreateEnriched(v1.Hash, t.AddSeconds(1), "Vote.Closed", "Vote", "VOTE-2026-001",
+            "kc-chair", "Chairman", AuditOutcome.Success, null, "{\"status\":\"Closed\"}", "trace-abc");
+        db.AuditEvents.Add(v2);
+        await db.SaveChangesAsync();
+
+        return (v1.Hash, v2.Hash);
     }
 }

@@ -136,7 +136,8 @@ services:
   api:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.api
+      dockerfile: deploy/Dockerfile.backend
+      target: api
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -223,7 +224,8 @@ services:
   worker:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.worker
+      dockerfile: deploy/Dockerfile.backend
+      target: worker
     environment:
       DOTNET_ENVIRONMENT: Production
       ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"

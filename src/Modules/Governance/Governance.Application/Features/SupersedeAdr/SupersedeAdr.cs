@@ -105,11 +105,9 @@ public sealed class SupersedeAdrHandler : IRequestHandler<SupersedeAdrCommand, A
 
         // The successor is born Approved via this supersession — record its own approval so the new record has an
         // audit row of its own (not only the prior's supersede event); ViaSupersession marks how it was approved.
-        await _audit.EmitAsync("Governance.AdrApproved", sub,
-            new { successor.PublicId, successor.Key, ViaSupersession = true, PriorKey = prior.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrApproved", nameof(Adr), successor.PublicId.ToString(), ct: ct);
 
-        await _audit.EmitAsync("Governance.AdrSuperseded", sub,
-            new { prior.PublicId, prior.Key, SupersededBy = successor.PublicId, SuccessorKey = successor.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrSuperseded", nameof(Adr), prior.PublicId.ToString(), ct: ct);
 
         // W21: notify the committee of the replacement (skip the actor).
         await AdrNotifications.FanOutAsync(_committee, _notifications,

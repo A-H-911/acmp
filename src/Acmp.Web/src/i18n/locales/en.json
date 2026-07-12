@@ -328,6 +328,63 @@
       "err": { "statement": "A statement is required.", "rationale": "A rationale is required.", "owner": "An owner is required." }
     }
   },
+  "audit": {
+    "title": "Audit trail",
+    "count": "{{count}} events",
+    "filtersLabel": "Audit filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "readonly": "Read-only — append-only, immutable record",
+    "system": "System",
+    "pageNav": "Audit pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Audit trail",
+    "filter": {
+      "type": "Artifact type",
+      "anyType": "Any type",
+      "actor": "Actor",
+      "anyActor": "Any actor",
+      "action": "Action",
+      "anyAction": "Any action",
+      "date": "Date range",
+      "anyDate": "Any date"
+    },
+    "col": {
+      "when": "Timestamp",
+      "actor": "Actor",
+      "action": "Action",
+      "artifact": "Artifact",
+      "detail": "Detail"
+    },
+    "entity": {
+      "Vote": "Vote",
+      "Decision": "Decision",
+      "Topic": "Topic",
+      "Meeting": "Meeting",
+      "MinutesOfMeeting": "Minutes",
+      "Risk": "Risk",
+      "ActionItem": "Action",
+      "Adr": "ADR",
+      "Invariant": "Invariant",
+      "Relationship": "Relationship",
+      "Dependency": "Dependency",
+      "CommitteeMember": "Member",
+      "Delegation": "Delegation"
+    },
+    "outcome": {
+      "Success": "Success",
+      "Denied": "Denied",
+      "Failure": "Failed"
+    },
+    "empty": {
+      "title": "No audit events",
+      "body": "No recorded events match these filters."
+    },
+    "error": {
+      "title": "Couldn't load the audit trail",
+      "body": "The audit register failed to load. Retry, or contact an administrator if it persists."
+    }
+  },
   "risks": {
     "title": "Risk register",
     "count": "{{count}} risks",

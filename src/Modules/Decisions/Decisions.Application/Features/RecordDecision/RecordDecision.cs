@@ -115,7 +115,7 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
         _db.Decisions.Add(decision);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.DecisionDrafted", sub, new { decision.PublicId, decision.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.DecisionDrafted", nameof(Decision), decision.PublicId.ToString(), ct: ct);
 
         return DecisionMapping.ToSummary(decision);
     }

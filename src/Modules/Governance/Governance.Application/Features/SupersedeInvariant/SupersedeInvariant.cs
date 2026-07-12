@@ -98,11 +98,9 @@ public sealed class SupersedeInvariantHandler : IRequestHandler<SupersedeInvaria
 
         // The successor is born Active via this supersession — record its own activation so the new record has an
         // audit row of its own (not only the prior's supersede event); ViaSupersession marks how it was activated.
-        await _audit.EmitAsync("Governance.InvariantActivated", sub,
-            new { successor.PublicId, successor.Key, ViaSupersession = true, PriorKey = prior.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantActivated", nameof(Invariant), successor.PublicId.ToString(), ct: ct);
 
-        await _audit.EmitAsync("Governance.InvariantSuperseded", sub,
-            new { prior.PublicId, prior.Key, SupersededBy = successor.PublicId, SuccessorKey = successor.Key }, ct);
+        await _audit.EmitEnrichedAsync("Governance.InvariantSuperseded", nameof(Invariant), prior.PublicId.ToString(), ct: ct);
 
         // W21: notify the committee of the replacement (skip the actor).
         await InvariantNotifications.FanOutAsync(_committee, _notifications,

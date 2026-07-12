@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Risks.Application.Abstractions;
 using Acmp.Modules.Risks.Application.Internal;
+using Acmp.Modules.Risks.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
@@ -51,7 +52,6 @@ public sealed class AcceptRiskHandler : IRequestHandler<AcceptRiskCommand>
         risk.Accept(request.Rationale, request.Authority, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Risks.RiskAccepted", sub,
-            new { risk.PublicId, risk.Key, Authority = risk.AcceptingAuthority }, ct);
+        await _audit.EmitEnrichedAsync("Risks.RiskAccepted", nameof(Risk), risk.PublicId.ToString(), ct: ct);
     }
 }

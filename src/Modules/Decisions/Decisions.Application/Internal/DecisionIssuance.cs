@@ -1,4 +1,5 @@
-﻿using Acmp.Shared.Application.Abstractions;
+﻿using Acmp.Modules.Decisions.Domain;
+using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -13,11 +14,13 @@ internal static class DecisionIssuance
 {
     public static async Task ApplyAsync(
         ITopicDecisionRecorder topics, ICommitteeDirectory directory, INotificationChannel notifications,
-        IAuditSink audit, string? actorSub, Guid topicId, string decisionKey, bool chairOverride, CancellationToken ct)
+        IAuditSink audit, Guid topicId, Guid decisionId, string decisionKey, bool chairOverride,
+        CancellationToken ct)
     {
         await topics.MarkDecidedAsync(topicId, ct);
         await DecisionNotifications.FanOutAsync(directory, notifications,
             DecisionNotifications.DecisionIssued(decisionKey), ct);
-        await audit.EmitAsync("Decisions.DecisionIssued", actorSub, new { decisionKey, topicId, chairOverride }, ct);
+        // Enriched (ADR-0026): the issued Decision is the subject; before/after is drained from the save capture.
+        await audit.EmitEnrichedAsync("Decisions.DecisionIssued", nameof(Decision), decisionId.ToString(), ct: ct);
     }
 }

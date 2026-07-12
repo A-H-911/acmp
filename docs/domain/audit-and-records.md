@@ -19,7 +19,7 @@
 | `ActorUserId` | `Guid?` | Who acted | = validated OIDC `sub`→User; `null` only for system/job actors. **Never** from request body. |
 | `ActorRole` | `enum?` | Role exercised | The role under which the action was authorized (RBAC claim). |
 | `Action` | `NVARCHAR` | What happened | Dotted verb, e.g. `Decision.Issued`, `Vote.Closed`, `Vote.BallotCast`, `Auth.Denied`, `Transcript.Read`, `Role.Granted`, `Export.Performed`. |
-| `SubjectType` | `enum (ArtifactType)` | Kind of subject | From the closed `ArtifactType` enum (`16` §4). |
+| `SubjectType` | `NVARCHAR` (CLR aggregate name) | Kind of subject | **As shipped (ADR-0026):** the aggregate's **CLR class name** (`nameof(Vote)`, `nameof(Decision)`, `nameof(Topic)`, `nameof(Meeting)`, `nameof(MinutesOfMeeting)`, `nameof(Risk)`, `nameof(ActionItem)`, `nameof(Adr)`, `nameof(Invariant)`, `nameof(Relationship)`, `nameof(Dependency)`, `nameof(CommitteeMember)`, `nameof(Delegation)`), **not** the `ArtifactType` enum. This is required so it equals the before/after capture interceptor's `ClrType.Name`, letting the enriched sink drain the matching snapshot by `(SubjectType, SubjectId)`. `GET /api/audit?entityType=` filters on these strings. |
 | `SubjectId` | `Guid` | Which subject | **Soft polymorphic reference — no FK** (`16` §1.9) so the row survives subject changes and crosses module boundaries. |
 | `Outcome` | `enum{Success,Denied,Failure}` | Result | `Denied` captures authZ denials (`25` C-AUDIT-06). |
 | `Before` | `NVARCHAR(JSON)?` | Prior state snapshot | For state changes; omit/redact sensitive fields per privacy (`25` C-PRIV-01). |

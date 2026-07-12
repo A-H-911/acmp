@@ -70,7 +70,7 @@ public class TopicHandlerTests
         stored.AffectedStreams.Should().BeEquivalentTo("identity", "platform");  // JSON collection round-trips
         stored.SubmittedByName.Should().Be("Omar H.");
         stored.History.Should().ContainSingle(h => h.ToStatus == TopicStatus.Submitted);  // owned child table
-        await audit.Received(1).EmitAsync("Topics.TopicSubmitted", "kc-omar", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicSubmitted", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class TopicHandlerTests
         stored.Title.Should().Be("New Title");                       // content edited pre-Accept
         stored.Urgency.Should().Be(TopicUrgency.Critical);
         await authz.DidNotReceive().EnsureAsync(Arg.Any<object>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
-        await audit.Received(1).EmitAsync("Topics.TopicUpdated", "kc-omar", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicUpdated", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class TopicHandlerTests
         await act.Should().ThrowAsync<ForbiddenAccessException>();
         await authz.Received(1).EnsureAsync(Arg.Any<object>(), Policies.TopicEdit, Arg.Any<CancellationToken>());
         (await db.Topics.SingleAsync()).Title.Should().Be("Title");  // unchanged
-        await audit.DidNotReceive().EmitAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.DidNotReceive().EmitEnrichedAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -314,7 +314,7 @@ public class TopicHandlerTests
         var stored = await db.Topics.SingleAsync();
         stored.Status.Should().Be(TopicStatus.Deferred);
         stored.RevisitOn.Should().Be(revisit);
-        await audit.Received(1).EmitAsync("Topics.TopicDeferred", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicDeferred", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ---- PrepareTopicHandler (AC-035) ----
@@ -369,7 +369,7 @@ public class TopicHandlerTests
             .Handle(new PrepareTopicCommand(topic.PublicId), default);
 
         (await db.Topics.SingleAsync()).Status.Should().Be(TopicStatus.Prepared);
-        await audit.Received(1).EmitAsync("Topics.TopicPrepared", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicPrepared", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact] // W4: the Secretary roster is notified on prepare, except the actor if they are a Secretary
@@ -445,7 +445,7 @@ public class TopicHandlerTests
             .Handle(new PrioritizeTopicCommand(topic.PublicId, 7), default);
 
         (await db.Topics.SingleAsync()).Priority.Should().Be(7);
-        await audit.Received(1).EmitAsync("Topics.TopicPrioritized", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicPrioritized", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ---- RejectTopicHandler (AC-031/032/033) ----
@@ -503,6 +503,6 @@ public class TopicHandlerTests
         var stored = await db.Topics.Include(t => t.History).SingleAsync();
         stored.Status.Should().Be(TopicStatus.Rejected);
         stored.History.Should().Contain(h => h.ToStatus == TopicStatus.Rejected && h.Reason == "Duplicate of TOP-2026-001");
-        await audit.Received(1).EmitAsync("Topics.TopicRejected", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicRejected", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 }

@@ -82,7 +82,7 @@ public class ActionHandlerTests
         summary.Key.Should().Be("ACT-2026-001");
         summary.Status.Should().Be("Open");
         summary.OwnerName.Should().Be("Owner");
-        await audit.Received(1).EmitAsync("Actions.ActionCreated", "kc-sec", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Actions.ActionCreated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         channel.Sent.Should().ContainSingle()
             .Which.Should().Match<NotificationMessage>(m => m.RecipientUserId == "kc-owner" && m.DeepLink == "/actions/ACT-2026-001");
     }
@@ -122,7 +122,7 @@ public class ActionHandlerTests
         var detail = await new GetActionByKeyHandler(read, Clock(Now)).Handle(new GetActionByKeyQuery(key), default);
         detail!.Status.Should().Be("Verified");
         detail.VerifiedByUserId.Should().Be("kc-verifier");
-        await audit.Received(1).EmitAsync("Actions.ActionVerified", "kc-verifier", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Actions.ActionVerified", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         channel.Sent.Should().ContainSingle().Which.RecipientUserId.Should().Be("kc-owner"); // owner told it's verified
     }
 
@@ -145,7 +145,7 @@ public class ActionHandlerTests
             await act.Should().ThrowAsync<ForbiddenAccessException>();
         }
 
-        await audit.Received(1).EmitAsync("Actions.ActionVerifyDenied", "kc-owner", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitEnrichedAsync("Actions.ActionVerifyDenied", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         await using var read = Db(name, User(), Clock(Now));
         (await new GetActionByKeyHandler(read, Clock(Now)).Handle(new GetActionByKeyQuery(key), default))!.Status.Should().Be("Completed");
     }
@@ -227,9 +227,9 @@ public class ActionHandlerTests
         var detail = await new GetActionByKeyHandler(read, Clock(Now)).Handle(new GetActionByKeyQuery(key), default);
         detail!.Status.Should().Be("InProgress");
         detail.ProgressPct.Should().Be(40);
-        await audit.Received().EmitAsync("Actions.ActionBlocked", "kc-doer", Arg.Any<object>(), Arg.Any<CancellationToken>());
-        await audit.Received().EmitAsync("Actions.ActionUnblocked", "kc-doer", Arg.Any<object>(), Arg.Any<CancellationToken>());
-        await audit.Received().EmitAsync("Actions.ActionProgressUpdated", "kc-doer", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await audit.Received().EmitEnrichedAsync("Actions.ActionBlocked", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await audit.Received().EmitEnrichedAsync("Actions.ActionUnblocked", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await audit.Received().EmitEnrichedAsync("Actions.ActionProgressUpdated", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

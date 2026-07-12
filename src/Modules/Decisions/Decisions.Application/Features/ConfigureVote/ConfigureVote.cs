@@ -74,7 +74,7 @@ public sealed class ConfigureVoteHandler : IRequestHandler<ConfigureVoteCommand,
         _db.Votes.Add(vote);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Decisions.VoteConfigured", sub, new { vote.PublicId, vote.Key }, ct);
+        await _audit.EmitEnrichedAsync("Decisions.VoteConfigured", nameof(Vote), vote.PublicId.ToString(), ct: ct);
 
         return VoteMapping.ToSummary(vote);
     }

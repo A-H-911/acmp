@@ -86,7 +86,7 @@ public sealed class CreateAdrHandler : IRequestHandler<CreateAdrCommand, AdrSumm
         _db.Adrs.Add(adr);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Governance.AdrDrafted", sub, new { adr.PublicId, adr.Key, adr.AuthorUserId }, ct);
+        await _audit.EmitEnrichedAsync("Governance.AdrDrafted", nameof(Adr), adr.PublicId.ToString(), ct: ct);
 
         return AdrMapping.ToSummary(adr);
     }

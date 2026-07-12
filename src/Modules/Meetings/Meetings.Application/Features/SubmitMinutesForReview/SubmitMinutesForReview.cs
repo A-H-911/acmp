@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
+using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -34,6 +35,6 @@ public sealed class SubmitMinutesForReviewHandler : IRequestHandler<SubmitMinute
 
         minutes.SubmitForReview(_clock.UtcNow);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitAsync("Meetings.MinutesInReview", _user.UserId, new { minutes.PublicId, minutes.Key }, ct);
+        await _audit.EmitEnrichedAsync("Meetings.MinutesInReview", nameof(MinutesOfMeeting), minutes.PublicId.ToString(), ct: ct);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Traceability.Application.Abstractions;
 using Acmp.Modules.Traceability.Application.Internal;
+using Acmp.Modules.Traceability.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -39,12 +40,6 @@ public sealed class DeactivateRelationshipHandler : IRequestHandler<DeactivateRe
         edge.Deactivate(sub, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitAsync("Relationship.Deactivated", sub, new
-        {
-            edge.PublicId,
-            RelType = edge.RelType.ToString(),
-            edge.SourceKey,
-            edge.TargetKey,
-        }, ct);
+        await _audit.EmitEnrichedAsync("Relationship.Deactivated", nameof(Relationship), edge.PublicId.ToString(), ct: ct);
     }
 }
