@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-07-07
+updated: 2026-07-12
 ---
 
 # ACMP Acceptance Audit
@@ -776,8 +776,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |
 | AC-060 | Search & Trace | Pending | — | Global search grouped results |
 | AC-061 | Search & Trace | Pending | — | Arabic search via word-breaker |
-| AC-062 | Search & Trace | Pending | TraceabilityTests (panel groups outgoing/incoming, "other" endpoint per direction, excludes inactive) + TraceabilityApiTests (`GET /api/traceability/{type}/{id}`) | **P10c: panel API in place + audited** (`GetArtifactRelationships`, one hop). Stays Pending → **P10e**: AC-062 asserts the FE *panel display*, which lands with the traceability panels UI. |
-| AC-063 | Search & Trace | Pending | TraceabilityApiTests (Secretary creates edge → both source + target panels show it) + TraceabilityTests (create audits `Relationship.Created`) | **P10c: typed edge create + soft-delete + audit in place** (RBAC `Traceability.Link`). Stays Pending → **P10e**: AC-063 asserts the FE panel shows the new edge on both artifacts. |
+| AC-062 | Search & Trace | Partial | TraceabilityTests (panel groups outgoing/incoming, "other" endpoint per direction, excludes inactive) + TraceabilityApiTests (`GET /api/traceability/{type}/{id}`) + P10e `TraceabilityPanel` FE suite (upstream/downstream groups, navigable links, axe-clean) | **P10c: panel API in place + audited** (`GetArtifactRelationships`, one hop). **P10e (merged): the FE traceability panel shipped on Topic/Decision/Action/Risk detail — structurally proven** (56 new vitest, axe-clean, per-file cov ≥95%). Pending → Partial (progress-log P10e); the **Met** flip waits on the live real-stack round-trip → P17 per G-TRACE. |
+| AC-063 | Search & Trace | Partial | TraceabilityApiTests (Secretary creates edge → both source + target panels show it) + TraceabilityTests (create audits `Relationship.Created`) + P10e create-dialog FE suite (dependency + generic-relationship, Chair/Sec-gated) | **P10c: typed edge create + soft-delete + audit in place** (RBAC `Traceability.Link`). **P10e (merged): the Chair/Sec create dialogs shipped from the panel** — structurally proven by tests. Pending → Partial (progress-log P10e); the **Met** flip (create-via-UI → both panels reflect it) waits on the live real-stack round-trip → P17 per G-TRACE. |
 | AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR PASS (EN-light + AR-dark). |
 | AC-065 | Dashboards | Met | dashboardAgg.test (overdue-beyond-threshold, SLA-breach sort) + RoleDashboard.test (secretary variant renders triage/MoMs/escalated counts + SLA list with aging) | P12-PR2: secretary variant; escalation threshold = shared const (AC-065 definition). Live pixel-VR PASS (EN-light + AR-dark). |
 | AC-066 | Dashboards | Met | dashboardAgg.test (deferred≥2, overdue-beyond-threshold) + RoleDashboard.test (chairman variant renders Closed votes / escalated risks / escalated actions / deferred≥2 with badges) | P12-PR2: chairman variant; "escalated actions" = overdue-beyond-threshold (AC-065 definition, Actions have no Escalated status). Live pixel-VR PASS (EN-light + AR-dark). |
@@ -790,11 +790,26 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-073 | Recording upload | Met | UploadRecording handler/validator + GetRecordingUrl handler tests + MeetingRecordingApiTests (401/403/400/404/200; upload→detail; presign→url) + **MinioFileStoreTests (Testcontainers-MinIO: real adapter — bucket create/skip, presign, exists found/object-missing/bucket-missing, delete)** + live (real upload 200 through nginx; presigned 200/206) | P13-recording + P13-audit: MinIO via IFileStore, server-derived key, presigned playback (ADR-0025); the production adapter is now real-container-covered (coverage exclusion removed). |
 | AC-074 | Recording delete | Met | DeleteRecording handler tests (uploaded→delete object+clear+audit; webex→clear only; missing→throws) + MeetingRecordingApiTests (401/403/204→detail null) + live (delete → MinIO bucket empty) | P13-recording: both sources; Secretary/Chairman only (ADR-0025). |
 
-**Summary:** 66 ACs · 14 Met (AC-001/002/008/031/035/039/040/042/045/046/047/050/058/059) · 20 Partial
-(AC-003/005/006/007/009/010/011/012/013/015/016/030/032/033/034/043/048/049/057 + AC-041) · 32 Pending.
-(Through P5b PR4 + the 2026-06-27 P5-review remediation, which corrected AC-043 Met→Partial — the kanban
-keyboard move covers status, not the priority-ordinal reorder the AC specifies — + the S6b-1 E2E
-reconciliation, 2026-06-30, which flipped **AC-035 Partial→Met** once its live HTTP leg landed.)
+**Summary (regenerated 2026-07-12, through the Audit module — PR #105, `f32ca31`):** **74 ACs · 34 Met · 37
+Partial · 3 Pending · 0 Not-met.**
+- **Met (34):** AC-001/002/008/017/018/019/020/029/031/035/039/040/042/044/045/046/047/050/051/053/056/058/
+  059/064/065/066/067/068/069/070/071/072/073/074.
+- **Partial (37):** AC-003/005/006/007/009/010/011/012/013/014/015/016/021/022/023/024/025/026/027/028/030/
+  032/033/034/036/037/038/041/043/048/049/052/054/055/057/062/063.
+- **Pending (3):** AC-004 (Keycloak idle-timeout — needs a live realm session policy, OQ-003) · AC-060 (global
+  grouped search) · AC-061 (Arabic word-breaker search). AC-060/061 = the Search module (P15).
+
+**Verification basis (not a fresh full-suite run):** each `Met` traces to the per-AC test refs above (G-TRACE)
+and `main` is green at `f32ca31` on all four CI checks incl. the full-stack **e2e**. **Honest caveats:** most
+governance-feature `Partial`s (Voting AC-021–026, Decisions AC-027/028, MoM AC-036–038, Actions AC-012/013,
+SoD AC-014/015/016, background jobs AC-054/055, traceability AC-062/063) carry a "live real-stack → P17" note —
+their domain/handler/HTTP legs are unit+integration proven, the dedicated live real-stack VR leg is not yet
+their own gate. **AC-070** (Webex recording attach) is `Met` with a settled environmental residual: the
+mechanism is proven live (webhook auto-registration + a synthetic signed webhook), but a genuine **cloud**
+recording end-to-end awaits a production licensed host (deferred-work D-02) — **not downgraded** (logged, ADR-
+tracked). **Provenance of prior flips:** AC-043 Met→Partial (P5-review, kanban move covers status not the
+priority-ordinal reorder); AC-035 Partial→Met (S6b-1 E2E + D-15 UI); AC-062/063 Pending→Partial (P10e panel UI,
+reconciled here — the table cells had lagged the merged P10e verdict).
 
 > **Test-hardening S1 (2026-06-29):** the AC→test mapping begins here. S1 adds **adversarial, failure-first
 > backend coverage** (BE 89.1% → 97.6% lines, ADR-0016) for the Topics triage/edit handlers

@@ -39,7 +39,14 @@ Integrate **Tarseem** behind `IDiagramRenderer` per [`../domain/tarseem-analysis
 
 **Design (visual source of truth):** `/ACMP product context/ACMP Research & Knowledge.dc.html`.
 
-Build the **Research module standalone first** (manual entry: ResearchMission/Finding/Recommendation + links) and the **Knowledge wiki + Templates** per the PH-2 scope in [`../planning/roadmap.md`](../planning/roadmap.md). Only then, optionally, implement the Keystone import per [`../domain/keystone-analysis.md`](../domain/keystone-analysis.md) + ADR-0007 (D-05): an `IResearchImporter` that ingests a Keystone package's structured artifacts (manifest, requirements, decisions, risks, acceptance criteria, traceability) and maps them to ResearchMission/Finding/Recommendation + links. Keystone is never embedded or a hard dependency. Satisfy the standard footer.
+Build the **Research module standalone** (manual entry: ResearchMission/Finding/Recommendation + links) and the **Knowledge wiki + Templates** per the PH-2 scope in [`../planning/roadmap.md`](../planning/roadmap.md).
+
+**Out of scope for P15 — Keystone import (FR-112), deferred to future work** ([D-05](../execution/deferred-work-register.md); decision 2026-07-12). Do **not** build the `IResearchImporter` in this slice. Concretely:
+- **FR-111** stays in scope, including the ResearchMission's optional **Keystone package-reference field** (a stored URL/path string) — but **no import is performed** against it.
+- **FR-113 / FR-115** stay in scope: Findings/Recommendations are first-class and created **manually**; a Research Mission links to a topic.
+- **FR-114** is delivered **partially** — the detail page shows the package-reference field + **manually-linked** artifacts, but **not** the *import-status* or *imported findings/recommendations/risks* facets (nothing to render without FR-112). Do **not** build an empty import-status widget wired to nothing.
+
+The Keystone import remains an optional additive **future** enhancement (ADR-0007 / DEC-016 unchanged — the decision to integrate Keystone as an optional companion stands; only the build is deferred, per D-05); Keystone is never embedded or a hard dependency (CON-013). Satisfy the standard footer.
 
 ### PH-3 — Research & Knowledge (not started)
 

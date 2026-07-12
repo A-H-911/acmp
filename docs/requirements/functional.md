@@ -208,7 +208,7 @@ owner: lead-secretary
 | ID | Requirement | Priority | Source | Phase |
 |---|---|---|---|---|
 | FR-111 | Secretary shall be able to create a Research Mission record (RMS-…): title, description, linked topic, Keystone package reference (URL or path), status. | S | brief §6.14; ADR-0007; digest §5.2 | 2 |
-| FR-112 | The system shall import a Keystone package's structured artifacts (findings, recommendations, decisions, risks, acceptance criteria) from a referenced Keystone package and map them to ACMP domain entities: Finding (FND-…), Recommendation (REC-…), Risk (RSK-…). | S | ADR-0007; digest §5.2 | 2 |
+| FR-112 | The system shall import a Keystone package's structured artifacts (findings, recommendations, decisions, risks, acceptance criteria) from a referenced Keystone package and map them to ACMP domain entities: Finding (FND-…), Recommendation (REC-…), Risk (RSK-…). | S | ADR-0007; digest §5.2; deferred out of P15 → future (D-05, 2026-07-12) | 3 |
 | FR-113 | Each imported Finding (FND-…) and Recommendation (REC-…) shall be a first-class artifact: individually viewable, linkable in the traceability graph, and associable with decisions and actions. | S | brief §6.14; ADR-0008 | 2 |
 | FR-114 | The Research Mission detail page shall display: the Keystone package reference, import status, all imported findings/recommendations/risks, and linked ACMP artifacts (topics, decisions, actions). | S | brief §6.14 | 2 |
 | FR-115 | A Research Mission shall be linkable to a topic (as the output of a ResearchDiscovery or ResearchRequired decision); this link shall appear in the traceability graph. | S | brief §6.14; ADR-0008 | 2 |

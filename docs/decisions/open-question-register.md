@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.0.0
-updated: 2026-07-06
+version: 1.1.0
+updated: 2026-07-13
 owner: lead-secretary
 ---
 
@@ -107,3 +107,4 @@ These entries carry the open questions formerly recorded in the pre-migration `d
 | OQ-047 | How should non-Topic artifacts carry a stream for the impact graph's cross-stream signal? | No | Default adopted (2026-07-03, P10f): Topic-scope via an `ITopicStreamReader` seam; FR-095 recorded partial; the inherit model stays open pending the multi/zero-topic semantic (ADR-0020) | Deferred |
 | OQ-048 | Does the Invariant aggregate need a `Kind` field? | No | Resolved (2026-07-04, P11c): drop Kind — model Category + Scope only per docs/domain/standards-and-best-practices.md §A + FR-106 + the design form; a docs/domain/entity-lifecycles.md §9 correction is owed | Approved |
 | OQ-049 | Should a topic be able to leave `Prepared` (un-prepare / defer-from-Prepared) before it is scheduled? | No | Default adopted (2026-07-09, D-15 Tier 3): no un-prepare transition in v1 — `DeferTopic` allows Triage/Accepted/Scheduled/InCommittee but not Prepared, so a mis-prepared topic stays Prepared until it is scheduled (then it can be Deferred). Accept the gap; add a Prepared→Accepted un-prepare only if operators hit stuck-Prepared topics in practice | Deferred |
+| OQ-050 | Should non-topic-scoped governance artifacts (ADR, Invariant, ResearchMission) support owner-based allow-if-owner (AiO), or is A-only (Chairman/Secretary) the accepted behavior? | No | Default (2026-07-13, from P15a): accept **A-only**. The matrix marks `Research.Manage` (#26), ADR (#18) and Invariant (#21) AiO for Member/Reviewer, but the shared `CapabilityHandler` resolves AiO only for an `ITopicScopedResource` (a per-topic relationship). These aggregates are not topic-scoped, so Member/Reviewer are denied create/manage — consistent across ADR/Invariant/Research; `OwnerUserId` is attribution, not authz. Revisit only if the committee needs Member-owned governance authoring; realizing it is a **cross-cutting authz change** (a resource/owner ABAC handler affecting all three), not a per-module fix | Deferred |

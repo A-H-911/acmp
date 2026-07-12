@@ -180,7 +180,7 @@ The ordered build sequence for ACMP: Phase 1 (MVP Governance) first, then Phase 
 | BL-113 | Webex recording metadata retrieval: Hangfire job post-meeting; store title/duration/downloadUrl in meeting record | EPIC-06 | Meetings | 2 | M | P2 | BL-043, BL-006 |
 | BL-114 | Webex transcript retrieval: Webex Transcripts API + snippets; stored linked to meeting record; access-restricted | EPIC-06 | Meetings | 2 | M | P2 | BL-113 |
 | BL-115 | Research Mission entity + migration: RMS-… IDs; title, description, linked topic, Keystone package ref, status | EPIC-19 | Research | 2 | S | P2 | BL-002 |
-| BL-116 | Keystone import tool: parse Keystone package manifest → Finding (FND-…), Recommendation (REC-…), Risk (RSK-…) entities | EPIC-19 | Research | 2 | L | P2 | BL-115, BL-076 |
+| BL-116 | Keystone import tool: parse Keystone package manifest → Finding (FND-…), Recommendation (REC-…), Risk (RSK-…) entities. **Deferred out of P15 → future (D-05, 2026-07-12)** | EPIC-19 | Research | 3 | L | P2 | BL-115, BL-076 |
 | BL-117 | Research Mission detail page + traceability links | EPIC-19 | Research | 2 | M | P3 | BL-116, BL-085 |
 | BL-118 | Wiki page entity + migration: DOC-… IDs; Markdown content, category, versioned | EPIC-19 | Knowledge | 2 | S | P2 | BL-002 |
 | BL-119 | Wiki editor UI: Markdown editor with preview; version history; diff view; add to FTS index | EPIC-19 | Knowledge | 2 | M | P2 | BL-118, BL-086 |

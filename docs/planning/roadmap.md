@@ -100,7 +100,7 @@ Per-slice prompts live in [handoff/follow-up-prompts.md](../handoff/follow-up-pr
 |---|---|---|
 | P13 | Webex adapter — notifications + recording links, strictly behind `INotificationChannel` (D-02) | PH-2 remainder |
 | P14 | Tarseem diagram sidecar behind `IDiagramRenderer` + the Diagrams surface (D-11) | PH-2 remainder |
-| P15 | Research & Knowledge — standalone Research module + Knowledge wiki/templates; Keystone import optional (D-05) | PH-2 remainder |
+| P15 | Research & Knowledge — standalone Research module + Knowledge wiki/templates. **Keystone import (FR-112) deferred out of P15 to future work (D-05, 2026-07-12) — not built in this slice** | PH-2 remainder |
 | P16 | Security hardening — OWASP ASVS 5.0 L2 sweep, incl. per-ballot crypto chaining (D-13) | cross-cutting |
 | P17 | Testing hardening — first task: harvest the "→ P17" deferrals from the progress log; partially advanced by the S1–S7 coverage/E2E slices (PR #38–#48, ADR-0016) | cross-cutting |
 | P18 | Deployment — production compose + overrides, migration-on-deploy, nightly backups + warm-standby restore, deployment/rollback runbook | cross-cutting |
