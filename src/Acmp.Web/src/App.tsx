@@ -28,6 +28,8 @@ import { InvariantsRegister } from './features/governance/InvariantsRegister';
 import { InvariantPage } from './features/governance/InvariantPage';
 import { RisksRegister } from './features/risks/RisksRegister';
 import { RiskPage } from './features/risks/RiskPage';
+import { ResearchRegister } from './features/research/ResearchRegister';
+import { MissionPage } from './features/research/MissionPage';
 import { DependenciesRegister } from './features/dependencies/DependenciesRegister';
 import { DependencyPage } from './features/dependencies/DependencyPage';
 import { ImpactGraphPage } from './features/traceability/ImpactGraphPage';
@@ -81,7 +83,8 @@ export const appRoutes = createRoutesFromElements(
         <Route path="dependencies" element={<DependenciesRegister />} />
         <Route path="dependencies/:key" element={<DependencyPage />} />
         <Route path="traceability/:type/:key" element={<ImpactGraphPage />} />
-        <Route path="research" element={<PlaceholderPage titleKey="nav.research" />} />
+        <Route path="research" element={<ResearchRegister />} />
+        <Route path="research/:key" element={<MissionPage />} />
         <Route path="wiki" element={<PlaceholderPage titleKey="nav.wiki" />} />
         <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
         <Route path="reports" element={<ReportsPage />} />
