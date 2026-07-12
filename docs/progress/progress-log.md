@@ -2,13 +2,19 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-11
+updated: 2026-07-12
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+## Audit slice — MERGED to `main` (PR #105)
+
+**2026-07-12.** The whole audit slice (PR0 ADRs → PR4 UI, 21 commits) squash-merged to `main` as `f32ca31`. All four CI checks green: backend (3m31s), frontend (1m24s), **e2e (4m18s)**, compose. The e2e pass is the first end-to-end proof that all 11 module contexts boot on the shared `DbConnection` — validating the PR1 `PersistSecurityInfo=true` fix that CI-only could confirm. One CI-surfaced fix landed on the branch before merge: the generated `Audit_Enrich` migration needed a **file-scoped namespace** (IDE0161) to pass `dotnet format` on Linux — a gate the format check enforces that the local run's known-artifact allowance had masked. `main` is green and deployable. **AC-017/018/019/020 → Met.** Residual (P16, logged): DB-permission immutability + nightly Hangfire verify job; post-merge operator production live-confirm of `/audit`.
 
 ---
 

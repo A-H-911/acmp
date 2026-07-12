@@ -315,8 +315,10 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 > across v1 lean + v2 enriched rows). **AC-018** — immutable by construction (no mutators/delete path) +
 > verifier tamper tests. **AC-019** — `GET /api/audit/verify` on-demand chain check. **AC-020** — read gated
 > to {Auditor, Chairman, Secretary}; Administrator excluded on SoD-5 (ADR-0027). Deferred to P16 (logged):
-> DB-permission immutability (INSERT/SELECT-only grant) + the nightly Hangfire verify job. The `/audit` UI is
-> PR4. See progress-log audit-module entry.
+> DB-permission immutability (INSERT/SELECT-only grant) + the nightly Hangfire verify job. The `/audit` UI
+> (PR4, read to `ACMP Lists & Registers.dc.html`, INV-014) shipped in the same slice. **MERGED to `main`
+> 2026-07-12 (PR #105, squash `f32ca31`); all four CI checks green incl. full-stack e2e.** See progress-log
+> audit-module entry.
 >
 > P9-review remediation (2026-07-02): the F-1…F-28 audit burn-down (branch `feat/p9-review-remediation`).
 > **BL-066 — the durable, immutable, hash-chained AuditEvent store — now ships** behind `IAuditSink`

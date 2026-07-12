@@ -1,11 +1,15 @@
 ---
 name: audit-slice-literal-ac017
-description: "Audit module (literal AC-017/018/019/020) slice — PR0 ADRs + PR1 + PR2 + PR3 + PR4 (/audit UI) DONE on feat/audit-infra. AC-017/018/019/020 Met; all deterministic gates green. Only live pixel-VR + operator push-time full-stack e2e remain."
+description: "Audit module (literal AC-017/018/019/020) slice — ★ MERGED to main (PR #105, squash f32ca31, 2026-07-12), all 4 CI checks green incl. full-stack e2e. AC-017/018/019/020 Met (INV-005 end-to-end). Residual: P16 DB-perm immutability + nightly verify job; operator prod live-confirm of /audit."
 metadata: 
   node_type: memory
   type: project
   originSessionId: 922e83a0-edd2-4cc6-853e-ecbce520c50c
 ---
+
+**★ MERGED to `main` (PR #105, squash `f32ca31`, 2026-07-12).** The full slice (PR0 ADRs → PR4 UI, 21 commits) squash-merged; all 4 CI checks green — backend/frontend/**e2e**/compose. The **e2e** pass is the first end-to-end proof all 11 contexts boot on the shared `DbConnection`, confirming the PR1 `PersistSecurityInfo=true` boot fix (the 18456 blocker). One CI-only fix landed pre-merge: the `Audit_Enrich` migration needed a **file-scoped namespace** (IDE0161) to pass `dotnet format` on Linux — the "CI-on-Linux clean for this artifact" assumption below was WRONG; CI enforces IDE0161, and the branch had never actually been pushed to CI until now. `main` green + deployable. **AC-017/018/019/020 → Met.** Residual: P16 DB-perm immutability + nightly Hangfire verify job (logged); operator production live-confirm of `/audit`.
+
+── original slice record (provenance) ──
 
 Audit-module slice closing the only Pending core-governance ACs **AC-017/018/019/020** (INV-005). Operator chose the **literal AC-017** path + **same-transaction atomicity (NFR-042)** + **RBAC excludes Administrator** (ADR-0027 supersedes the FR-151/FR-153 role clause on SoD-5 grounds). Approved plan (5 GO-gated PRs): `~/.claude/plans/glittery-forging-meteor.md`. ADR-0026 (enrichment/hash-versioning/same-tx, amends ADR-0009) + ADR-0027 (audit-read = {Auditor, Chairman, Secretary}) both **Accepted**.
 
