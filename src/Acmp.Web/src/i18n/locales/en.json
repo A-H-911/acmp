@@ -1709,5 +1709,132 @@
     "noStreamBlocked": "No stream-linked blockers",
     "empty": { "title": "No reporting data yet", "body": "Reports populate as committee activity is recorded." },
     "error": { "title": "Couldn’t load reports", "body": "Something went wrong loading the reporting data." }
+  },
+  "research": {
+    "title": "Research missions",
+    "count": "{{count}} missions",
+    "newMission": "New mission",
+    "filtersLabel": "Research filters",
+    "clearFilters": "Clear filters",
+    "showing": "Showing {{shown}} of {{total}}",
+    "pageNav": "Research pages",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "tableCaption": "Research missions",
+    "unassigned": "Unassigned",
+    "missionTag": "Research mission",
+    "linkedTopic": "Linked topic",
+    "lead": "Lead",
+    "opened": "Opened",
+    "keystoneRef": "Keystone package",
+    "question": "Research question",
+    "add": "Add",
+    "activate": "Start discovery",
+    "complete": "Conclude",
+    "cancel": "Cancel mission",
+    "cancelledLead": "This mission was cancelled",
+    "verify": "Verify",
+    "accept": "Accept",
+    "reject": "Reject",
+    "findings": "Findings",
+    "recommendations": "Recommendations",
+    "noFindings": "No findings captured yet.",
+    "noRecommendations": "No recommendations captured yet.",
+    "actionError": "That action could not be completed. Please try again.",
+    "notFoundTitle": "Mission not found",
+    "notFoundBody": "This research mission does not exist or has been removed.",
+    "filter": {
+      "status": "Status"
+    },
+    "col": {
+      "mission": "Mission",
+      "lead": "Lead",
+      "findings": "Findings",
+      "recs": "Recommendations",
+      "status": "Status",
+      "created": "Created"
+    },
+    "status": {
+      "Proposed": "Proposed",
+      "Active": "In discovery",
+      "Completed": "Concluded",
+      "Cancelled": "Cancelled"
+    },
+    "confidence": {
+      "Low": "Low confidence",
+      "Medium": "Medium confidence",
+      "High": "High confidence"
+    },
+    "priority": {
+      "Low": "Low priority",
+      "Medium": "Medium priority",
+      "High": "High priority"
+    },
+    "finding": {
+      "verified": "Verified",
+      "unverified": "Unverified"
+    },
+    "recStatus": {
+      "Proposed": "Proposed",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    },
+    "empty": {
+      "title": "No research missions yet",
+      "body": "Commission a discovery mission to start capturing findings and recommendations."
+    },
+    "error": {
+      "title": "Couldn’t load the missions",
+      "body": "The service is temporarily unavailable. Retry in a moment."
+    },
+    "create": {
+      "title": "New research mission",
+      "subtitle": "Commission a discovery mission. You’ll be recorded as its lead.",
+      "confirm": "Create mission",
+      "error": "The mission could not be created. Please try again.",
+      "titleField": "Title",
+      "titlePh": "Name the mission…",
+      "question": "Research question",
+      "questionPh": "What is this mission trying to answer?",
+      "topic": "Linked topic",
+      "topicPh": "Select a topic (optional)",
+      "keystone": "Keystone package reference",
+      "keystoneHelp": "Optional — stored for reference; Keystone is not required.",
+      "keystonePh": "e.g. KS-2026-014 (optional)",
+      "err": {
+        "title": "A title is required.",
+        "question": "A research question is required."
+      }
+    },
+    "cancelDialog": {
+      "title": "Cancel this mission",
+      "subtitle": "Record why the mission is being cancelled. This cannot be undone.",
+      "confirm": "Confirm cancellation",
+      "reason": "Reason",
+      "reasonPh": "Why is this mission being cancelled?",
+      "err": "A reason is required."
+    },
+    "findingDialog": {
+      "title": "Add a finding",
+      "subtitle": "Capture what the discovery work uncovered.",
+      "confirm": "Add finding",
+      "summary": "Summary",
+      "summaryPh": "What did you find?",
+      "confidence": "Confidence",
+      "detail": "Detail",
+      "detailPh": "Supporting detail or evidence (optional)…",
+      "err": "A summary is required."
+    },
+    "recDialog": {
+      "title": "Add a recommendation",
+      "subtitle": "Propose an action for the committee to consider.",
+      "confirm": "Add recommendation",
+      "statement": "Statement",
+      "statementPh": "What do you recommend?",
+      "priority": "Priority",
+      "rationale": "Rationale",
+      "rationalePh": "Why this recommendation (optional)…",
+      "err": "A statement is required."
+    }
   }
 }
