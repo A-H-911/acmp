@@ -51,6 +51,9 @@
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Domain\Acmp.Modules.Governance.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Application\Acmp.Modules.Governance.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Research\Research.Domain\Acmp.Modules.Research.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Research\Research.Application\Acmp.Modules.Research.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Research\Research.Infrastructure\Acmp.Modules.Research.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Integrations\Webex\Acmp.Modules.Integrations.Webex.csproj" />
   </ItemGroup>
 

@@ -15,6 +15,8 @@ using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
 using Acmp.Modules.Notifications.Application;
 using Acmp.Modules.Notifications.Infrastructure;
+using Acmp.Modules.Research.Application;
+using Acmp.Modules.Research.Infrastructure;
 using Acmp.Modules.Risks.Application;
 using Acmp.Modules.Risks.Infrastructure;
 using Acmp.Modules.Topics.Application;
@@ -48,6 +50,7 @@ public static class AcmpCompositionRoot
         services.AddTraceabilityModule(configuration);
         services.AddDependenciesModule(configuration);
         services.AddGovernanceModule(configuration);
+        services.AddResearchModule(configuration);
         services.AddNotificationsModule(configuration);
         // Webex adapter (P13, ADR-0005): a second INotificationSink behind the dispatcher, and the meeting
         // provisioner. MUST come AFTER Meetings — its IWebexMeetingProvisioner overrides the Meetings no-op
@@ -66,6 +69,7 @@ public static class AcmpCompositionRoot
             TraceabilityApplicationExtensions.Assembly,
             DependenciesApplicationExtensions.Assembly,
             GovernanceApplicationExtensions.Assembly,
+            ResearchApplicationExtensions.Assembly,
             NotificationsApplicationExtensions.Assembly));
 
         // Action reminder/escalation knobs (docs/domain/notification-strategy.md §3.4). The worker runs the
