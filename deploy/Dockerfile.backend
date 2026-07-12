@@ -1,0 +1,41 @@
+# syntax=docker/dockerfile:1.7-labs
+# Shared build for the ASP.NET Core 8 API + the .NET 8 Worker (docs/domain/deployment.md, ADR-0024).
+#
+# ONE build stage for BOTH: the shared kernel + all modules compile ONCE, not twice. The previous separate
+# Dockerfile.api / Dockerfile.worker each restored AND published the full dependency graph independently —
+# double the restore + double the compile, run concurrently by `docker compose up --build`, which saturated
+# (and on a constrained WSL2 host, crashed) the build daemon. BuildKit deduplicates this `build` stage across
+# the api + worker targets, so `docker compose build api worker` runs it a single time.
+#
+# Restore-layer caching: only the .csproj files are copied before `dotnet restore` (via COPY --parents, which
+# preserves each project's directory structure), so a SOURCE-only change reuses the cached restore layer and
+# only re-publishes. The full source is copied afterwards.
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY global.json acmp.sln ./
+COPY --parents src/**/*.csproj ./
+RUN dotnet restore src/Acmp.Api/Acmp.Api.csproj \
+ && dotnet restore src/Acmp.Worker/Acmp.Worker.csproj
+COPY src/ ./src/
+# Two publishes in one stage: the second reuses the first's already-compiled shared assemblies (incremental),
+# so shared code is compiled once rather than once per image.
+RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-restore \
+ && dotnet publish src/Acmp.Worker/Acmp.Worker.csproj -c Release -o /app/worker --no-restore
+
+# --- API runtime (HTTP; curl for the compose healthcheck) ---
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api
+RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean
+WORKDIR /app
+COPY --from=build /app/api ./
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
+
+# --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
+# IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS worker
+WORKDIR /app
+COPY --from=build /app/worker ./
+ENV DOTNET_ENVIRONMENT=Production
+ENTRYPOINT ["dotnet", "Acmp.Worker.dll"]

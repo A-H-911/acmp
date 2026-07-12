@@ -32,6 +32,7 @@ import { DependenciesRegister } from './features/dependencies/DependenciesRegist
 import { DependencyPage } from './features/dependencies/DependencyPage';
 import { ImpactGraphPage } from './features/traceability/ImpactGraphPage';
 import { ReportsPage } from './features/reports/ReportsPage';
+import { AuditRegister } from './features/audit/AuditRegister';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -90,8 +91,10 @@ export const appRoutes = createRoutesFromElements(
           <Route index element={<Navigate to="/admin/users" replace />} />
           <Route path="users" element={<AdministrationPage />} />
         </Route>
-        <Route path="audit" element={<RequireRole roles={['administrator', 'auditor', 'chairman']} />}>
-          <Route index element={<PlaceholderPage titleKey="nav.audit" />} />
+        {/* Audit read = {Auditor, Chairman, Secretary}; Administrator excluded on SoD-5 (ADR-0027,
+            supersedes the FR-153 role clause). UI gating only — the API enforces Policies.AuditRead. */}
+        <Route path="audit" element={<RequireRole roles={['auditor', 'chairman', 'secretary']} />}>
+          <Route index element={<AuditRegister />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

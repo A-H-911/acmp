@@ -17,6 +17,7 @@ using Acmp.Shared;
 using Acmp.Shared.Infrastructure.Audit;
 using Acmp.Shared.Infrastructure.Persistence;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,5 +72,37 @@ public sealed class SharedConnectionWiringTests
         foreach (var context in contexts)
             context.Database.GetDbConnection().Should().BeSameAs(shared,
                 $"{context.GetType().Name} must be wired onto the shared ambient connection");
+    }
+
+    [Fact]
+    public void Shared_connection_persists_security_info_so_fresh_db_creation_keeps_its_password()
+    {
+        // Regression (2026-07-12). A shared SqlConnection *instance* masks its password out of
+        // SqlConnection.ConnectionString once it has been opened (Microsoft.Data.SqlClient default,
+        // PersistSecurityInfo=false). On a first boot against an EMPTY database, EF's
+        // SqlServerDatabaseCreator derives a `master` connection from THIS instance's (then
+        // password-less) ConnectionString to CREATE the DB -> "Login failed for user 'sa'" (18456),
+        // so the whole stack never starts. PersistSecurityInfo=true keeps the password so the derived
+        // connection authenticates. Neither the EF-InMemory API host nor the Testcontainers suite
+        // reproduced the exact interceptor-open + fresh-DB timing; only the full-stack `.env.example`
+        // boot did. This one-file guard is far cheaper than that boot.
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Acmp"] = "Server=unused;Database=Acmp;User Id=sa;Password=Secret#2026;TrustServerCertificate=True",
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSharedKernel(config);
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var shared = scope.ServiceProvider.GetRequiredService<DbConnection>();
+
+        new SqlConnectionStringBuilder(shared.ConnectionString).PersistSecurityInfo
+            .Should().BeTrue("EF derives a master connection from the shared instance's ConnectionString "
+                + "during fresh-DB creation; without PersistSecurityInfo the password is masked post-open (18456 at boot)");
     }
 }

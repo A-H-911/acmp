@@ -33,10 +33,19 @@ public static class SharedKernelExtensions
         // (readers close on await), so today's handlers are fine, but MARS removes the "open DataReader" failure
         // class should a future handler stream a query on one context while touching another. It is compatible
         // with the single ambient local transaction (one tx, multiple readers).
+        // PersistSecurityInfo=true is REQUIRED here because this is a SHARED SqlConnection *instance*: once it is
+        // opened, Microsoft.Data.SqlClient masks the password out of SqlConnection.ConnectionString by default
+        // (PersistSecurityInfo=false). On a first boot against an EMPTY database, EF's SqlServerDatabaseCreator
+        // derives a `master` connection from this instance's (now password-less) ConnectionString to CREATE the DB
+        // -> "Login failed for user 'sa'" (18456), so the whole stack never starts. EF-InMemory test hosts and the
+        // Testcontainers integration tests did not reproduce the exact interceptor-open + fresh-DB timing; the
+        // full-stack `.env.example` boot did. Retaining the password on the shared instance is safe for an on-prem,
+        // single-tenant deployment where the connection string already lives in config/env (ADR-0003).
         services.AddScoped<DbConnection>(_ => new SqlConnection(
             new SqlConnectionStringBuilder(configuration.GetConnectionString("Acmp"))
             {
                 MultipleActiveResultSets = true,
+                PersistSecurityInfo = true,
             }.ConnectionString));
         services.AddScoped<AmbientTransaction>();
 

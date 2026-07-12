@@ -1,0 +1,57 @@
+/*
+ * Audit register styles — the "ACMP Lists & Registers.dc.html" audit trail. Only audit-specific
+ * cells (mono timestamp, actor avatar, read-only banner) carry local CSS; the card, table, chips,
+ * skeleton shimmer and pagination come from the shared library. RTL-safe via logical properties.
+ */
+
+/* header */
+.aud-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-block-end: 14px; }
+.aud-head-sub { margin-block-start: 5px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.aud-head-count { font-feature-settings: 'tnum'; }
+.aud-head-sep { inline-size: 3px; block-size: 3px; border-radius: 50%; background: var(--text-3); }
+
+/* read-only marker (header inline + card footer banner) — warn tone, lock icon */
+.aud-readonly { display: inline-flex; align-items: center; gap: 6px; color: var(--st-warn-fg); font-weight: 600; }
+/* One integrated card: strip the shared table-wrap's bottom radius + border so the banner
+   reads as its in-card footer strip (single border), not a detached second box. */
+.aud-card .table-wrap { border-end-start-radius: 0; border-end-end-radius: 0; border-block-end: 0; }
+.aud-banner {
+  display: flex; align-items: center; padding: 11px 16px; font-size: 11.5px; color: var(--text-3);
+  background: var(--subtle); border: 1px solid var(--border); border-block-start: 1px solid var(--border-soft);
+  border-end-start-radius: var(--r-xl); border-end-end-radius: var(--r-xl);
+}
+.aud-banner .aud-readonly { color: var(--text-3); font-weight: 500; }
+
+/* filter bar */
+.aud-bar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-block-end: 14px; }
+.aud-count { margin-inline-start: auto; font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+
+/* cells */
+.aud-ts { font-family: var(--mono); font-size: 11.5px; color: var(--text-2); white-space: nowrap; }
+.aud-muted { color: var(--text-3); }
+
+.aud-actor { display: flex; align-items: center; gap: 8px; min-inline-size: 0; }
+.aud-avatar {
+  inline-size: 24px; block-size: 24px; border-radius: 50%; background: var(--sunken); color: var(--text-2);
+  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: 0 0 auto;
+}
+.aud-avatar-sys { color: var(--text-3); }
+.aud-actor-lines { display: flex; flex-direction: column; min-inline-size: 0; }
+.aud-actor-name { font-size: 12.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aud-actor-role { font-size: 10.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.aud-artifact { display: flex; flex-direction: column; min-inline-size: 0; }
+.aud-artifact-type { font-size: 12.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aud-artifact-id { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); }
+
+/* loading skeleton — 5-column gAudit grid */
+.aud-skel-head, .aud-skel-row {
+  display: grid; grid-template-columns: 176px 190px 150px 150px 1fr; align-items: center;
+  gap: 12px; padding-inline: 12px; border-block-end: 1px solid var(--border-soft);
+}
+.aud-skel-head { block-size: 42px; background: var(--header); }
+.aud-skel-row { min-block-size: 48px; }
+.aud-skel-bar { block-size: 10px; border-radius: 5px; }
+.aud-skel-head .aud-skel-bar { block-size: 9px; }
+
+.aud-foot { margin-block-start: 16px; }
