@@ -43,15 +43,20 @@ public sealed class CreateMissionHandler : IRequestHandler<CreateMissionCommand,
     private readonly ICurrentUser _user;
     private readonly IClock _clock;
     private readonly IAuditSink _audit;
+    private readonly Acmp.Shared.Contracts.Topics.ITopicReader _topics;
+    private readonly Acmp.Shared.Contracts.Traceability.ITraceabilityWriter _trace;
 
     public CreateMissionHandler(IResearchDbContext db, IResearchKeyGenerator keys, ICurrentUser user,
-        IClock clock, IAuditSink audit)
+        IClock clock, IAuditSink audit, Acmp.Shared.Contracts.Topics.ITopicReader topics,
+        Acmp.Shared.Contracts.Traceability.ITraceabilityWriter trace)
     {
         _db = db;
         _keys = keys;
         _user = user;
         _clock = clock;
         _audit = audit;
+        _topics = topics;
+        _trace = trace;
     }
 
     public async Task<ResearchMissionSummaryDto> Handle(CreateMissionCommand request, CancellationToken ct)
@@ -67,6 +72,18 @@ public sealed class CreateMissionHandler : IRequestHandler<CreateMissionCommand,
         await _db.SaveChangesAsync(ct);
 
         await _audit.EmitEnrichedAsync("Research.MissionProposed", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+
+        // FR-115: when the mission was prompted by a source topic, record a Topic → Mission traceability edge so
+        // the link shows in the graph + as a navigable xref. Idempotent; a since-deleted/unknown topic → no edge.
+        if (request.SourceTopicId is { } sourceTopicId)
+        {
+            var topic = await _topics.GetSummaryAsync(sourceTopicId, ct);
+            if (topic is not null)
+                await _trace.RecordEdgeAsync(
+                    "Topic", topic.Id, topic.Key, topic.Title,
+                    "ResearchMission", mission.PublicId, mission.Key, mission.Title.En,
+                    relTypeName: "References", ct);
+        }
 
         return ResearchMapping.ToSummary(mission);
     }

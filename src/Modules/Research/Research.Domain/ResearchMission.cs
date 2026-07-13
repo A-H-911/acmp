@@ -152,6 +152,15 @@ public sealed class ResearchMission : AuditableEntity
         RecommendationOf(recommendationPublicId).SetStatus(status);
     }
 
+    // P15c / W16: mark a recommendation Converted after it has been promoted to an execution Topic. Permitted
+    // while Active or (typically) Completed — the mission's own content stays immutable; this records only the
+    // recommendation's downstream disposition + successor topic. Not allowed once Cancelled.
+    public void ConvertRecommendation(Guid recommendationPublicId, Guid topicId)
+    {
+        RequireStatus(ResearchMissionStatus.Active, ResearchMissionStatus.Completed);
+        RecommendationOf(recommendationPublicId).MarkConverted(topicId);
+    }
+
     private Finding FindingOf(Guid publicId) =>
         _findings.FirstOrDefault(f => f.PublicId == publicId)
         ?? throw new KeyNotFoundException("Finding not found on this mission.");

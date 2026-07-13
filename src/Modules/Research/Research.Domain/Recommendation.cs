@@ -56,4 +56,17 @@ public sealed class Recommendation : BaseEntity
             throw new InvalidOperationException($"This recommendation is already {Status}.");
         Status = status;
     }
+
+    // P15c / W16: record that this recommendation has been converted into an execution Topic (TOP-). A display
+    // disposition set once, only from Accepted — the authoritative one-per-recommendation guard is the Topics
+    // side (Topic.SourceRecommendationId's filtered unique index + the Informs edge). LinkedTopicId records the
+    // successor for the mission detail's "Converted → TOP-" chip.
+    internal void MarkConverted(Guid topicId)
+    {
+        if (topicId == Guid.Empty) throw new InvalidOperationException("The successor topic id is required.");
+        if (Status != RecommendationStatus.Accepted)
+            throw new InvalidOperationException("Only an accepted recommendation can be converted.");
+        Status = RecommendationStatus.Converted;
+        LinkedTopicId = topicId;
+    }
 }

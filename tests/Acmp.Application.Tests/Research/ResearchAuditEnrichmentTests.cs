@@ -55,7 +55,9 @@ public class ResearchAuditEnrichmentTests
             clock, user);
 
         // Create → the mission is Added, so the capture is After-only.
-        var created = await new CreateMissionHandler(db, new ResearchKeyGenerator(db), user, clock, sink)
+        var created = await new CreateMissionHandler(db, new ResearchKeyGenerator(db), user, clock, sink,
+                Substitute.For<Acmp.Shared.Contracts.Topics.ITopicReader>(),
+                Substitute.For<Acmp.Shared.Contracts.Traceability.ITraceabilityWriter>())
             .Handle(new CreateMissionCommand(L("Title"), L("Question"), null, null), CancellationToken.None);
 
         // Activate → the mission is Modified (Status), so the capture has Before AND After.

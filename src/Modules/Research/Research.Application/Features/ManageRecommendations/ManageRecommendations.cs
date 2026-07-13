@@ -35,6 +35,15 @@ public sealed record SetRecommendationStatusCommand(
     public IReadOnlyCollection<string> AllowedRoles { get; } = ResearchRoles.Manage;
 }
 
+// P15c / W16: record that a recommendation has been converted into an execution Topic (TOP-). Called after the
+// Topics-side convert succeeds (POST /api/topics/from-research); the authoritative one-per-recommendation guard
+// is the Topic.SourceRecommendationId unique index, so this is a best-effort display disposition.
+public sealed record MarkRecommendationConvertedCommand(
+    Guid MissionId, Guid RecommendationId, Guid TopicId) : IRequest, IAuthorizedRequest
+{
+    public IReadOnlyCollection<string> AllowedRoles { get; } = ResearchRoles.Manage;
+}
+
 public sealed class AddRecommendationValidator : AbstractValidator<AddRecommendationCommand>
 {
     public AddRecommendationValidator()
@@ -134,5 +143,25 @@ public sealed class SetRecommendationStatusHandler : IRequestHandler<SetRecommen
         mission.SetRecommendationStatus(request.RecommendationId, request.Status);
         await _db.SaveChangesAsync(ct);
         await _audit.EmitEnrichedAsync("Research.RecommendationStatusChanged", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+    }
+}
+
+public sealed class MarkRecommendationConvertedHandler : IRequestHandler<MarkRecommendationConvertedCommand>
+{
+    private readonly IResearchDbContext _db;
+    private readonly IAuditSink _audit;
+
+    public MarkRecommendationConvertedHandler(IResearchDbContext db, IAuditSink audit)
+    {
+        _db = db;
+        _audit = audit;
+    }
+
+    public async Task Handle(MarkRecommendationConvertedCommand request, CancellationToken ct)
+    {
+        var mission = await AddRecommendationHandler.Load(_db, request.MissionId, ct);
+        mission.ConvertRecommendation(request.RecommendationId, request.TopicId);
+        await _db.SaveChangesAsync(ct);
+        await _audit.EmitEnrichedAsync("Research.RecommendationConverted", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
     }
 }

@@ -44,6 +44,10 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public Guid? OwnerId { get; private set; }            // CommitteeMember.PublicId
     public string? OwnerName { get; private set; }        // display snapshot
     public DateTimeOffset? RevisitOn { get; private set; }
+    // P15c / W16: when this topic was created by converting a research Recommendation (REC-), the source
+    // recommendation's id — an opaque value ref, no FK (ADR-0001), same shape as ResearchMission.SourceTopicId.
+    // A filtered UNIQUE index on it (TopicConfiguration) enforces one-topic-per-recommendation atomically.
+    public Guid? SourceRecommendationId { get; private set; }
 
     public IReadOnlyCollection<string> Systems => _systems.AsReadOnly();
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
@@ -60,7 +64,8 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public static Topic Draft(string key, string title, string description, string justification,
         TopicType type, TopicUrgency urgency, TopicSource source,
         string submittedBySub, string submittedByName,
-        IEnumerable<string> streams, IEnumerable<string> systems, IEnumerable<string> tags)
+        IEnumerable<string> streams, IEnumerable<string> systems, IEnumerable<string> tags,
+        Guid? sourceRecommendationId = null)
     {
         var topic = new Topic
         {
@@ -75,6 +80,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
             Status = TopicStatus.Draft,
             SubmittedBySub = submittedBySub.Trim(),
             SubmittedByName = submittedByName.Trim(),
+            SourceRecommendationId = sourceRecommendationId,
         };
         topic.ReplaceStrings(topic._streams, streams);
         topic.ReplaceStrings(topic._systems, systems);

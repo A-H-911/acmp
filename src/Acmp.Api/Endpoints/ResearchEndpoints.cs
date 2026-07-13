@@ -111,6 +111,14 @@ public static class ResearchEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.ResearchManage);
 
+        // W16: record that a recommendation was converted to an execution topic (called after POST
+        // /api/topics/from-research succeeds). Sets the display disposition + successor topic id.
+        group.MapPost("/{id:guid}/recommendations/{recommendationId:guid}/convert", async (Guid id, Guid recommendationId, ConvertRecommendationBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new MarkRecommendationConvertedCommand(id, recommendationId, body.TopicId), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.ResearchManage);
+
         return app;
     }
 
@@ -125,4 +133,6 @@ public static class ResearchEndpoints
     public sealed record AddRecommendationBody(LocalizedString Statement, LocalizedString? Rationale, RecommendationPriority Priority, Guid? LinkedTopicId);
 
     public sealed record RecommendationStatusBody(RecommendationStatus Status);
+
+    public sealed record ConvertRecommendationBody(Guid TopicId);
 }
