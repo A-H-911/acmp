@@ -83,9 +83,9 @@ public sealed class SqlAuditSink : IAuditSink
         await _db.AuditEvents.OrderByDescending(e => e.Sequence).Select(e => e.Hash).FirstOrDefaultAsync(ct)
         ?? AuditEvent.Genesis;
 
-    // Build the row off the current tip and insert it; on a PreviousHash tip-race (a concurrent appender took the
-    // same tip first) drop the failed row, re-read the advanced tip and rebuild, up to MaxAppendAttempts. The
-    // catch is narrow — ONLY the PreviousHash duplicate-key — so a Hash-index violation or any other error still
+    // Build the row off the current tip and insert it; on a tip-race (a concurrent appender took the same tip
+    // first — see IsTipRace) drop the failed row, re-read the advanced tip and rebuild, up to MaxAppendAttempts.
+    // The catch is narrow — only the two audit-chain UNIQUE-index duplicate-keys — so any unrelated error still
     // surfaces (fail-closed). Each SaveChanges either commits within the ambient transaction or, on the last
     // attempt, rethrows so the whole command rolls back rather than proceeding unaudited.
     private async Task<AuditEvent> AppendAsync(Func<string, AuditEvent> build, CancellationToken ct)
