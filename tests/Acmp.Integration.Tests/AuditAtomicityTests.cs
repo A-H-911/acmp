@@ -113,6 +113,28 @@ public sealed class AuditAtomicityTests
             "a denial writes no module entity → no transaction → its audit autocommits and survives the throw");
     }
 
+    [Fact]
+    public async Task Concurrent_commands_all_commit_without_forking_the_audit_chain()
+    {
+        // D-18 (reproduces the P15b-VR finding). N commands each write a DISTINCT module row (distinct votes) but
+        // share the ONE global audit chain, so their appends race the AuditEvents PreviousHash UNIQUE index.
+        // Without a retry in SqlAuditSink the loser of each race gets SQL 2601 → the whole command 500s (same-tx,
+        // so its ballot rolls back too). With the retry, every racer re-reads the advanced tip and converges; the
+        // chain stays linear and verifiable. DbConnection is scoped, so each concurrent Send gets its own
+        // connection/transaction — a genuine race, exactly as two real requests would produce.
+        const int n = 8;
+        var voteIds = Enumerable.Range(0, n).Select(i => SeedOpenVote($"VOTE-RACE-{i}")).ToList();
+        await using var provider = BuildProvider(faultAudit: false);
+        var before = AuditRowCount("Decisions.BallotCast");
+
+        var tasks = voteIds.Select(id => Send(provider, new CastBallotCommand(id, "Approve", null))).ToArray();
+        await Task.WhenAll(tasks);
+
+        AuditRowCount("Decisions.BallotCast").Should().Be(before + n, "every concurrent append converged onto the chain — no command lost the race and rolled back");
+        voteIds.Should().OnlyContain(id => BallotWasCast(id), "no command rolled back — the audit-append retry recovered each racer");
+        VerifyWholeChain().IsValid.Should().BeTrue("the hash chain is intact and non-forked after the concurrent appends");
+    }
+
     // ---- composition (mirrors the API host wiring, scoped to Decisions + the shared kernel) ----
 
     private ServiceProvider BuildProvider(bool faultAudit, string sub = "voter-1", string role = "Member")
@@ -190,6 +212,13 @@ public sealed class AuditAtomicityTests
         using var audit = NewAuditContext();
         return audit.AuditEvents.AsNoTracking()
             .Where(e => e.EventType == eventType).OrderByDescending(e => e.Sequence).FirstOrDefault();
+    }
+
+    private AuditChainVerifier.Result VerifyWholeChain()
+    {
+        using var audit = NewAuditContext();
+        var all = audit.AuditEvents.AsNoTracking().OrderBy(e => e.Sequence).ToList();
+        return AuditChainVerifier.Verify(all);
     }
 
     private AuditDbContext NewAuditContext() => new(

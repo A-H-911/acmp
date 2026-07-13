@@ -12,6 +12,16 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-13 — D-18 audit-append concurrency FIXED (bounded retry)
+
+**Done** — branch `fix/d18-audit-append-concurrency`. Resolves the race the P15b VR reproduced.
+- **Failing test first** (operator's chosen approach): `AuditAtomicityTests.Concurrent_commands_all_commit_without_forking_the_audit_chain` fires **8 concurrent same-tx commands** (distinct votes, one shared audit chain) through the full MediatR pipeline on the real SQL backstop. **RED before the fix** — a loser hit SQL 2601 on `IX_AuditEvents_PreviousHash` and its command 500'd/rolled back.
+- **Fix (Option A — bounded retry):** `SqlAuditSink.AppendAsync` now builds the row off a freshly-read tip inside a ≤16-attempt loop; on a `PreviousHash` duplicate-key (2601/2627, matched by index name so a Hash collision / unrelated violation still surfaces) it detaches the failed row, re-reads the advanced tip, recomputes, re-inserts; exhaustion rethrows (**fail-closed preserved**). `Take()`/timestamp captured once outside the loop — only `PreviousHash`+`Hash` vary per attempt.
+- **A over B decided empirically:** the deciding risk (transaction usable after a 2601) is **confirmed** — the test is **GREEN after the fix** (all 8 converge, `AuditChainVerifier` intact), so `sp_getapplock` serialization (Option B) was not needed. No schema/migration, **no ADR** (within ADR-0009/0026's accepted design; the `ponytail:` note pre-authorized the remedy).
+- **Gates:** 1321 BE tests (0 fail; Integration 26), ArchUnit 45, `dotnet format` clean, coverage **99.65%** global (per-file ≥95%). Plan: `~/.claude/plans/d18-audit-append-concurrency-plan.md`. D-18 → **Done**.
+
+---
+
 ### 2026-07-13 — P15b live pixel-VR (PASS) + audit-append race reproduced (D-18)
 
 **Done**
