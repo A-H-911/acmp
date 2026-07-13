@@ -12,6 +12,17 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-13 — P15b live pixel-VR (PASS) + audit-append race reproduced (D-18)
+
+**Done**
+- **P15b live VR — PASS** (PR #110, `test/p15b-research-vr`). Ran `e2e/p15b-research-vr.spec.ts` on the isolated local-authority stack (`-p acmpe2e`, `.env.example`) and screenshot-compared **register + mission detail** in **EN-light + AR-dark (RTL)** against `ACMP Research & Knowledge.dc.html`. Pixel-faithful: type/status chips (`Research mission` / `In discovery` · `Proposed`), Findings/Recommendations section cards with confidence·`Unverified`·`Verify` and priority·`Proposed`·`Accept`/`Reject`, EN title with AR mirror beneath, RTL sidebar/column flip + dark theme all correct. Guardrail-#14 design-only omissions (Hypotheses/Acceptance-criteria, Sources aside, register Topic column, Convert/Import) confirmed absent. **P15b ACs stand with live visual evidence.**
+- Spec hardened on the branch (anti-flake): post-login `page.waitForLoadState('networkidle')` before the seed burst, and `OUT` → `e2e/vr-out/` to match the run doc.
+
+**Finding — D-18 (logged, not fixed here)**
+- The VR **reproduced the ADR-0009/0026-accepted audit-append concurrency race**: `SqlAuditSink` takes no app-lock, so the SPA's login-time `Membership.ProfileSynced` append and the test's `Research.MissionProposed` both chained off audit tip `1f738021` → the loser hit the `PreviousHash` UNIQUE index (SQL 2601) → 500. Pre-existing, all-write-paths, fail-closed. Fix path (bounded retry on 2601 in `AppendAsync`, or `sp_getapplock`) is a **plan-first / GO-gated P16 hardening slice** — **not** patched in this VR PR. See **D-18** in the [deferred-work register](../execution/deferred-work-register.md).
+
+---
+
 ### 2026-07-13 — P15a + P15b (Research module: backend + UI)
 
 **Done**
@@ -27,7 +38,7 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 **Next**
 - **P15c** — Research convert flows (Mission→Topic, Recommendation→Topic/Decision, W16) + the deferred FR-113/115 traceability graph edges (needs a key+title reader seam). Then Knowledge (P15d/e), global search (P15f/g — OQ-034/INV-002 live), template wiring (P15h).
-- **P15b live pixel-VR** (EN-light + AR-dark, RTL) against the redeployed stack.
+- ~~**P15b live pixel-VR** (EN-light + AR-dark, RTL)~~ — **DONE 2026-07-13 (PASS)**, see top entry + PR #110.
 
 ---
 

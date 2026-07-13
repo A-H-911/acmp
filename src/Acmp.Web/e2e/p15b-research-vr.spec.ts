@@ -15,7 +15,7 @@ import { captureBearer } from './apiHelpers';
  * section cards under an Active status chip. Outputs to e2e/vr-out/.
  * Run (isolated stack up): npx playwright test p15b-research-vr --project=chromium
  */
-const OUT = 'vr-out';
+const OUT = 'e2e/vr-out';
 const JSON_H = { 'Content-Type': 'application/json' } as const;
 
 const MODES = [
@@ -143,6 +143,11 @@ for (const mode of MODES) {
     await loginAs(page, 'secretary');
 
     const bearer = await captureBearer(page);
+    // The /backlog load above fires a login-time Membership.ProfileSynced audit append. Let it commit
+    // before the seed burst: SqlAuditSink takes no app-lock, so two appends racing the audit hash-chain's
+    // PreviousHash unique index make the loser 500 (the ADR-0009/0026-accepted concurrency window). A real
+    // user never drives two HTTP clients in the same 100ms — this wait restores that reality for the capture.
+    await page.waitForLoadState('networkidle');
     const activeKey = await seedResearch(request, bearer);
 
     // Register (isResearch, list view). Wait for a seeded mission row via its locale-independent key.
