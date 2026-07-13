@@ -12,13 +12,32 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
-### 2026-07-13 — D-18 audit-append concurrency FIXED (bounded retry)
+### 2026-07-13 — D-18 audit-append concurrency FIXED via serialization (ADR-0028)
 
-**Done** — branch `fix/d18-audit-append-concurrency`. Resolves the race the P15b VR reproduced.
-- **Failing test first** (operator's chosen approach): `AuditAtomicityTests.Concurrent_commands_all_commit_without_forking_the_audit_chain` fires **8 concurrent same-tx commands** (distinct votes, one shared audit chain) through the full MediatR pipeline on the real SQL backstop. **RED before the fix** — a loser hit SQL 2601 on `IX_AuditEvents_PreviousHash` and its command 500'd/rolled back.
-- **Fix (Option A — bounded retry):** `SqlAuditSink.AppendAsync` now builds the row off a freshly-read tip inside a ≤16-attempt loop; on a `PreviousHash` duplicate-key (2601/2627, matched by index name so a Hash collision / unrelated violation still surfaces) it detaches the failed row, re-reads the advanced tip, recomputes, re-inserts; exhaustion rethrows (**fail-closed preserved**). `Take()`/timestamp captured once outside the loop — only `PreviousHash`+`Hash` vary per attempt.
-- **A over B decided empirically:** the deciding risk (transaction usable after a 2601) is **confirmed** — the test is **GREEN after the fix** (all 8 converge, `AuditChainVerifier` intact), so `sp_getapplock` serialization (Option B) was not needed. No schema/migration, **no ADR** (within ADR-0009/0026's accepted design; the `ponytail:` note pre-authorized the remedy).
-- **Gates:** 1321 BE tests (0 fail; Integration 26), ArchUnit 45, `dotnet format` clean, coverage **99.65%** global (per-file ≥95%). Plan: `~/.claude/plans/d18-audit-append-concurrency-plan.md`. D-18 → **Done**.
+**Done** — branch `fix/d18-audit-append-concurrency`. Resolves the race the P15b VR reproduced. The fix arc is
+itself the story of the review discipline working:
+- **Failing test first** (operator's approach): `Concurrent_commands_all_commit_without_forking_the_audit_chain`
+  fires **8 concurrent same-tx commands** (distinct votes, one shared chain) through the full pipeline on real SQL.
+- **First pass (bounded retry)** fixed the real **2-way** race, but CI then showed the 8-way case **deadlocks
+  (SQL 1205)** — a deadlock victim's transaction is rolled back, so in-place retry cannot recover. Frontend CI on
+  the same push failed on a **pre-existing, unrelated `DecisionPage` flake** (logged separately, not D-18).
+- **Devil's-advocate review** (operator-requested) killed a sink-level app lock too: handlers are not uniform —
+  `VerifyAction`/`IssueDecision`/`ConductMeeting` **emit-then-write-more**, so a lock taken at the audit append
+  inverts `{lock, module-rows}` order across handlers → a new cross-handler deadlock. `UPDLOCK,HOLDLOCK` rejected
+  (serializable-insert deadlock). Conclusion: safe serialization must live at **tx-open**, not the sink — a
+  P16-sized, ADR-worthy core change. Operator chose to do it now.
+- **Fix (ADR-0028 — serialize at tx-open):** `AmbientTransaction.EnsureStartedAsync` takes a **transaction-scoped
+  exclusive `sp_getapplock`** ('acmp-audit-chain') right after `BeginTransaction`, before any module write. Every
+  audited write-command acquires the chain lock first (one consistent order → no cross-handler deadlock) and
+  appends serialize (no fork/2601, no 1205). Held to commit ⇒ next command reads a committed tip; `THROW` on
+  lock-timeout ⇒ fail-closed; SQL-Server-only (no-op elsewhere). The **denial/autocommit path** (no ambient tx)
+  keeps the bounded retry (broadened to the `PreviousHash` **or** `Hash` index; deadlock-free), covered by a new
+  `Concurrent_denials_…` test.
+- **Consequence (accepted, in ADR-0028):** audited write-commands now serialize globally — negligible at ≤20
+  users; partition per-stream only if throughput ever bites.
+- **Gates (local):** 27 Integration tests green (both concurrency tests + same-tx atomicity suite). Full BE
+  suite + coverage + CI (where the 1205 first surfaced) to be re-proven on the push. Plan:
+  `~/.claude/plans/d18-audit-append-concurrency-plan.md`. D-18 → **Done**; ADR-0028 Accepted.
 
 ---
 

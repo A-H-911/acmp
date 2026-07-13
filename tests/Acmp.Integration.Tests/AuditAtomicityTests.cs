@@ -135,6 +135,33 @@ public sealed class AuditAtomicityTests
         VerifyWholeChain().IsValid.Should().BeTrue("the hash chain is intact and non-forked after the concurrent appends");
     }
 
+    [Fact]
+    public async Task Concurrent_denials_all_record_their_audit_via_the_retry_without_forking_the_chain()
+    {
+        // ADR-0028: a denial writes NO module entity, so it opens no ambient transaction and holds no tx-open
+        // serialization lock — the sink's bounded retry is what stops concurrent Denied appends forking the chain.
+        // N re-casts of an already-cast ballot each hit the "already voted" denial, so N identical BallotDenied
+        // rows autocommit and race the tip (colliding on BOTH the PreviousHash and Hash unique indexes, since the
+        // actor/subject/clock are identical). Each must still commit — no lost denial audit, no 500.
+        const int n = 8;
+        var voteId = SeedOpenVote("VOTE-DENY-RACE", withPriorCastByVoter: true); // voter-1 has already cast
+        await using var provider = BuildProvider(faultAudit: false);
+        var before = AuditRowCount("Decisions.BallotDenied");
+
+        var tasks = Enumerable.Range(0, n)
+            .Select(_ => Send(provider, new CastBallotCommand(voteId, "Approve", null))).ToArray();
+        var threw = new bool[n];
+        for (var i = 0; i < n; i++)
+        {
+            try { await tasks[i]; }
+            catch (InvalidOperationException) { threw[i] = true; }
+        }
+
+        threw.Should().OnlyContain(t => t, "every re-cast is denied and throws 'already voted'");
+        AuditRowCount("Decisions.BallotDenied").Should().Be(before + n, "each denial's audit row committed — the retry converged, no fork/500");
+        VerifyWholeChain().IsValid.Should().BeTrue("the chain stays intact after the concurrent denial appends");
+    }
+
     // ---- composition (mirrors the API host wiring, scoped to Decisions + the shared kernel) ----
 
     private ServiceProvider BuildProvider(bool faultAudit, string sub = "voter-1", string role = "Member")

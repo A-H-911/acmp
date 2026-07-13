@@ -14,13 +14,14 @@ namespace Acmp.Shared.Infrastructure.Audit;
 // Fail-closed: if the append cannot be persisted the exception propagates (the operation is not silently
 // recorded as unaudited) — correct for a governance system of record.
 //
-// Chain linearity is enforced by the UNIQUE index on PreviousHash: two genuinely concurrent appends both read
-// the same tip and only one can insert against it — the loser hits a duplicate-key (SQL 2601/2627). D-18: rather
-// than let that surface as a 500 (and, same-transaction, roll the whole command back), AppendAsync catches the
-// tip-race and RETRIES — re-reads the now-advanced tip, recomputes the hash, re-inserts — bounded, so it still
-// fails closed if it genuinely cannot persist. ponytail: no application-level lock (sp_getapplock) and no
-// per-stream partitioning; a bounded optimistic retry is enough at this deployment's scale (on-prem, <=20 users,
-// low traffic). Serialize or partition only if sustained contention ever exhausts the retry budget — not before.
+// Chain linearity is enforced by the UNIQUE indexes on PreviousHash and Hash: two concurrent appends off the
+// same tip fork the chain, and the loser hits a duplicate-key (SQL 2601/2627). D-18 / ADR-0028 removes that at
+// the source for WRITE-commands by serializing them on a transaction-scoped app lock taken at tx-open
+// (AmbientTransaction) — so a normal command's audit append never races. This retry remains the backstop for the
+// DENIAL / autocommit path: a denial writes no module entity, so it opens no ambient transaction and holds no
+// tx-open lock; concurrent denials can still fork (and, being autocommit with no crosswise module locks, only
+// fork — never deadlock). AppendAsync catches the tip-race and RETRIES — re-reads the now-advanced tip,
+// recomputes, re-inserts — bounded, so it still fails closed if it genuinely cannot persist.
 public sealed class SqlAuditSink : IAuditSink
 {
     // Upper bound on tip-race retries. One append can only lose to the *other* concurrent appenders in flight, so
@@ -106,10 +107,13 @@ public sealed class SqlAuditSink : IAuditSink
         }
     }
 
-    // A concurrent-append collision on the chain-linearity index — retryable. Narrowed to the PreviousHash index
-    // by name so a Hash collision (a tamper-level event) or any unrelated unique violation is NOT swallowed.
+    // A concurrent-append collision on a chain-linearity index — retryable. Narrowed to the two audit-chain
+    // UNIQUE indexes by name so an unrelated unique violation is NOT swallowed. Both are tip-race artifacts:
+    // PreviousHash collides when two appends share a tip; Hash collides when two IDENTICAL appends share a tip
+    // (same actor/subject/clock) — re-reading the advanced tip changes PreviousHash and so the Hash too.
     private static bool IsTipRace(DbUpdateException ex) =>
         ex.InnerException is SqlException sql
         && sql.Number is 2601 or 2627
-        && sql.Message.Contains("IX_AuditEvents_PreviousHash", StringComparison.Ordinal);
+        && (sql.Message.Contains("IX_AuditEvents_PreviousHash", StringComparison.Ordinal)
+            || sql.Message.Contains("IX_AuditEvents_Hash", StringComparison.Ordinal));
 }

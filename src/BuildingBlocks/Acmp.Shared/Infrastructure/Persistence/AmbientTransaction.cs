@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Shared.Infrastructure.Persistence;
@@ -31,8 +32,33 @@ public sealed class AmbientTransaction : IAsyncDisposable, IDisposable
             if (_connection.State != ConnectionState.Open)
                 await _connection.OpenAsync(ct);
             Current = await _connection.BeginTransactionAsync(ct);
+            await AcquireAuditChainLockAsync(ct);
         }
         EnlistIfNeeded(writer);
+    }
+
+    // D-18 / ADR-0028. Serialize audited write-commands on a single transaction-scoped app lock, taken here — at
+    // tx-open, BEFORE the first module write — so every write-command acquires {audit-chain lock, then module
+    // rows} in the SAME order. That makes it lock-order-safe (a sink-level lock taken at the audit append would
+    // invert order against handlers that write more AFTER emitting, e.g. IssueDecision → traceability). It also
+    // serializes the audit hash-chain append as a consequence, so concurrent commands can neither fork the chain
+    // (PreviousHash/Hash UNIQUE) nor deadlock on its index. Transaction-owned ⇒ auto-released on commit/rollback,
+    // so the next command reads a COMMITTED tip. SQL-Server-only (sp_getapplock); a non-SqlServer relational
+    // connection — none in production; only hypothetical in tests — degrades to no serialization, not an error.
+    private async Task AcquireAuditChainLockAsync(CancellationToken ct)
+    {
+        // SQL-Server-only (sp_getapplock); a non-SqlServer relational connection — none in production; only
+        // hypothetical in tests — simply skips serialization rather than erroring.
+        if (_connection is SqlConnection)
+        {
+            await using var cmd = _connection.CreateCommand();
+            cmd.Transaction = Current;
+            cmd.CommandText =
+                "DECLARE @r int; EXEC @r = sp_getapplock @Resource = N'acmp-audit-chain', @LockMode = 'Exclusive', " +
+                "@LockOwner = 'Transaction', @LockTimeout = 15000; " +
+                "IF @r < 0 THROW 50000, 'audit-chain applock not acquired', 1;";
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
     }
 
     // Puts a context onto the ambient transaction so EF stops opening its OWN (which would collide with the
