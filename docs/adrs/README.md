@@ -35,6 +35,7 @@ This folder contains the Architecture Decision Records (ADRs) for the Architectu
 | [ADR-0025](adr-0025-meeting-recording-upload-storage.md) | Meeting-Recording Upload, Presigned Playback, and Deletion | Accepted | 2026-07-09 |
 | [ADR-0026](adr-0026-amends-0009-audit-enrichment-and-atomicity.md) | Audit-Event Field Enrichment, Hash Versioning, and Same-Transaction Atomic Append (amends ADR-0009) | Accepted | 2026-07-11 |
 | [ADR-0027](adr-0027-audit-read-rbac-sod5.md) | Audit-Read Excludes Administrator — Segregation of Duties (supersedes the role clause of FR-151/FR-153) | Accepted | 2026-07-11 |
+| [ADR-0028](adr-0028-audit-append-serialization.md) | Serialize Audited Write-Commands via a Transaction-Scoped Application Lock (amends ADR-0026; resolves D-18) | Accepted | 2026-07-13 |
 
 ---
 

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using Acmp.Shared.Application.Abstractions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,12 +14,21 @@ namespace Acmp.Shared.Infrastructure.Audit;
 // Fail-closed: if the append cannot be persisted the exception propagates (the operation is not silently
 // recorded as unaudited) — correct for a governance system of record.
 //
-// ponytail: no application-level lock. Chain linearity is enforced by the UNIQUE index on PreviousHash; a
-// genuinely concurrent append loses the race with a unique-constraint violation. At this deployment's scale
-// (on-prem, <=20 users, low traffic) that window is negligible. If throughput ever makes it bite, serialize
-// appends (sp_getapplock) or partition the chain per stream — not before.
+// Chain linearity is enforced by the UNIQUE indexes on PreviousHash and Hash: two concurrent appends off the
+// same tip fork the chain, and the loser hits a duplicate-key (SQL 2601/2627). D-18 / ADR-0028 removes that at
+// the source for WRITE-commands by serializing them on a transaction-scoped app lock taken at tx-open
+// (AmbientTransaction) — so a normal command's audit append never races. This retry remains the backstop for the
+// DENIAL / autocommit path: a denial writes no module entity, so it opens no ambient transaction and holds no
+// tx-open lock; concurrent denials can still fork (and, being autocommit with no crosswise module locks, only
+// fork — never deadlock). AppendAsync catches the tip-race and RETRIES — re-reads the now-advanced tip,
+// recomputes, re-inserts — bounded, so it still fails closed if it genuinely cannot persist.
 public sealed class SqlAuditSink : IAuditSink
 {
+    // Upper bound on tip-race retries. One append can only lose to the *other* concurrent appenders in flight, so
+    // this comfortably exceeds any realistic simultaneous-writer count at <=20 users; exhausting it throws (fail-
+    // closed) rather than looping forever.
+    private const int MaxAppendAttempts = 16;
+
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = false };
 
     private readonly AuditDbContext _db;
@@ -41,8 +51,8 @@ public sealed class SqlAuditSink : IAuditSink
     public async Task EmitAsync(string eventType, string? subject, object? data = null, CancellationToken ct = default)
     {
         var dataJson = data is null ? null : JsonSerializer.Serialize(data, JsonOpts);
-        var evt = AuditEvent.CreateNext(await TipHashAsync(ct), _clock.UtcNow, eventType, subject, dataJson);
-        await AppendAsync(evt, ct);
+        var now = _clock.UtcNow;
+        var evt = await AppendAsync(prev => AuditEvent.CreateNext(prev, now, eventType, subject, dataJson), ct);
         _logger.LogInformation(
             "AuditEvent {AuditEventType} by {AuditSubject} seq={AuditSequence} (Audit=true)",
             eventType, subject ?? "anonymous", evt.Sequence);
@@ -58,11 +68,12 @@ public sealed class SqlAuditSink : IAuditSink
         var actor = _currentUser.UserId;
         var actorRole = _currentUser.Roles.Count > 0 ? string.Join(",", _currentUser.Roles) : null;
         var correlationId = Activity.Current?.TraceId.ToString();
-
-        var evt = AuditEvent.CreateEnriched(await TipHashAsync(ct), _clock.UtcNow, action, subjectType,
+        var now = _clock.UtcNow;
+        // The before/after (Take, consumed once) and every field but PreviousHash are fixed for this event; only
+        // the tip varies across retries, so the closure rebuilds off the freshly-read tip on each attempt.
+        var evt = await AppendAsync(prev => AuditEvent.CreateEnriched(prev, now, action, subjectType,
             subjectId ?? change?.SubjectId, actor, actorRole, outcome, change?.BeforeJson, change?.AfterJson,
-            correlationId);
-        await AppendAsync(evt, ct);
+            correlationId), ct);
         _logger.LogInformation(
             "AuditEvent {AuditAction} {AuditOutcome} on {AuditSubjectType}/{AuditSubjectId} by {AuditActor} seq={AuditSequence} (Audit=true)",
             action, outcome, subjectType, subjectId ?? "-", actor ?? "system", evt.Sequence);
@@ -72,9 +83,37 @@ public sealed class SqlAuditSink : IAuditSink
         await _db.AuditEvents.OrderByDescending(e => e.Sequence).Select(e => e.Hash).FirstOrDefaultAsync(ct)
         ?? AuditEvent.Genesis;
 
-    private async Task AppendAsync(AuditEvent evt, CancellationToken ct)
+    // Build the row off the current tip and insert it; on a PreviousHash tip-race (a concurrent appender took the
+    // same tip first) drop the failed row, re-read the advanced tip and rebuild, up to MaxAppendAttempts. The
+    // catch is narrow — ONLY the PreviousHash duplicate-key — so a Hash-index violation or any other error still
+    // surfaces (fail-closed). Each SaveChanges either commits within the ambient transaction or, on the last
+    // attempt, rethrows so the whole command rolls back rather than proceeding unaudited.
+    private async Task<AuditEvent> AppendAsync(Func<string, AuditEvent> build, CancellationToken ct)
     {
-        _db.AuditEvents.Add(evt);
-        await _db.SaveChangesAsync(ct);
+        for (var attempt = 1; ; attempt++)
+        {
+            var evt = build(await TipHashAsync(ct));
+            _db.AuditEvents.Add(evt);
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return evt;
+            }
+            catch (DbUpdateException ex) when (attempt < MaxAppendAttempts && IsTipRace(ex))
+            {
+                _db.Entry(evt).State = EntityState.Detached;
+                _logger.LogDebug("Audit tip-race on attempt {AuditAppendAttempt}; re-reading tip and retrying", attempt);
+            }
+        }
     }
+
+    // A concurrent-append collision on a chain-linearity index — retryable. Narrowed to the two audit-chain
+    // UNIQUE indexes by name so an unrelated unique violation is NOT swallowed. Both are tip-race artifacts:
+    // PreviousHash collides when two appends share a tip; Hash collides when two IDENTICAL appends share a tip
+    // (same actor/subject/clock) — re-reading the advanced tip changes PreviousHash and so the Hash too.
+    private static bool IsTipRace(DbUpdateException ex) =>
+        ex.InnerException is SqlException sql
+        && sql.Number is 2601 or 2627
+        && (sql.Message.Contains("IX_AuditEvents_PreviousHash", StringComparison.Ordinal)
+            || sql.Message.Contains("IX_AuditEvents_Hash", StringComparison.Ordinal));
 }

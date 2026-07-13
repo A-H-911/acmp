@@ -113,6 +113,55 @@ public sealed class AuditAtomicityTests
             "a denial writes no module entity → no transaction → its audit autocommits and survives the throw");
     }
 
+    [Fact]
+    public async Task Concurrent_commands_all_commit_without_forking_the_audit_chain()
+    {
+        // D-18 (reproduces the P15b-VR finding). N commands each write a DISTINCT module row (distinct votes) but
+        // share the ONE global audit chain, so their appends race the AuditEvents PreviousHash UNIQUE index.
+        // Without a retry in SqlAuditSink the loser of each race gets SQL 2601 → the whole command 500s (same-tx,
+        // so its ballot rolls back too). With the retry, every racer re-reads the advanced tip and converges; the
+        // chain stays linear and verifiable. DbConnection is scoped, so each concurrent Send gets its own
+        // connection/transaction — a genuine race, exactly as two real requests would produce.
+        const int n = 8;
+        var voteIds = Enumerable.Range(0, n).Select(i => SeedOpenVote($"VOTE-RACE-{i}")).ToList();
+        await using var provider = BuildProvider(faultAudit: false);
+        var before = AuditRowCount("Decisions.BallotCast");
+
+        var tasks = voteIds.Select(id => Send(provider, new CastBallotCommand(id, "Approve", null))).ToArray();
+        await Task.WhenAll(tasks);
+
+        AuditRowCount("Decisions.BallotCast").Should().Be(before + n, "every concurrent append converged onto the chain — no command lost the race and rolled back");
+        voteIds.Should().OnlyContain(id => BallotWasCast(id), "no command rolled back — the audit-append retry recovered each racer");
+        VerifyWholeChain().IsValid.Should().BeTrue("the hash chain is intact and non-forked after the concurrent appends");
+    }
+
+    [Fact]
+    public async Task Concurrent_denials_all_record_their_audit_via_the_retry_without_forking_the_chain()
+    {
+        // ADR-0028: a denial writes NO module entity, so it opens no ambient transaction and holds no tx-open
+        // serialization lock — the sink's bounded retry is what stops concurrent Denied appends forking the chain.
+        // N re-casts of an already-cast ballot each hit the "already voted" denial, so N identical BallotDenied
+        // rows autocommit and race the tip (colliding on BOTH the PreviousHash and Hash unique indexes, since the
+        // actor/subject/clock are identical). Each must still commit — no lost denial audit, no 500.
+        const int n = 8;
+        var voteId = SeedOpenVote("VOTE-DENY-RACE", withPriorCastByVoter: true); // voter-1 has already cast
+        await using var provider = BuildProvider(faultAudit: false);
+        var before = AuditRowCount("Decisions.BallotDenied");
+
+        var tasks = Enumerable.Range(0, n)
+            .Select(_ => Send(provider, new CastBallotCommand(voteId, "Approve", null))).ToArray();
+        var threw = new bool[n];
+        for (var i = 0; i < n; i++)
+        {
+            try { await tasks[i]; }
+            catch (InvalidOperationException) { threw[i] = true; }
+        }
+
+        threw.Should().OnlyContain(t => t, "every re-cast is denied and throws 'already voted'");
+        AuditRowCount("Decisions.BallotDenied").Should().Be(before + n, "each denial's audit row committed — the retry converged, no fork/500");
+        VerifyWholeChain().IsValid.Should().BeTrue("the chain stays intact after the concurrent denial appends");
+    }
+
     // ---- composition (mirrors the API host wiring, scoped to Decisions + the shared kernel) ----
 
     private ServiceProvider BuildProvider(bool faultAudit, string sub = "voter-1", string role = "Member")
@@ -190,6 +239,13 @@ public sealed class AuditAtomicityTests
         using var audit = NewAuditContext();
         return audit.AuditEvents.AsNoTracking()
             .Where(e => e.EventType == eventType).OrderByDescending(e => e.Sequence).FirstOrDefault();
+    }
+
+    private AuditChainVerifier.Result VerifyWholeChain()
+    {
+        using var audit = NewAuditContext();
+        var all = audit.AuditEvents.AsNoTracking().OrderBy(e => e.Sequence).ToList();
+        return AuditChainVerifier.Verify(all);
     }
 
     private AuditDbContext NewAuditContext() => new(

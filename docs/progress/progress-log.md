@@ -12,6 +12,35 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-13 — D-18 audit-append concurrency FIXED via serialization (ADR-0028)
+
+**Done** — branch `fix/d18-audit-append-concurrency`. Resolves the race the P15b VR reproduced. The fix arc is
+itself the story of the review discipline working:
+- **Failing test first** (operator's approach): `Concurrent_commands_all_commit_without_forking_the_audit_chain`
+  fires **8 concurrent same-tx commands** (distinct votes, one shared chain) through the full pipeline on real SQL.
+- **First pass (bounded retry)** fixed the real **2-way** race, but CI then showed the 8-way case **deadlocks
+  (SQL 1205)** — a deadlock victim's transaction is rolled back, so in-place retry cannot recover. Frontend CI on
+  the same push failed on a **pre-existing, unrelated `DecisionPage` flake** (logged separately, not D-18).
+- **Devil's-advocate review** (operator-requested) killed a sink-level app lock too: handlers are not uniform —
+  `VerifyAction`/`IssueDecision`/`ConductMeeting` **emit-then-write-more**, so a lock taken at the audit append
+  inverts `{lock, module-rows}` order across handlers → a new cross-handler deadlock. `UPDLOCK,HOLDLOCK` rejected
+  (serializable-insert deadlock). Conclusion: safe serialization must live at **tx-open**, not the sink — a
+  P16-sized, ADR-worthy core change. Operator chose to do it now.
+- **Fix (ADR-0028 — serialize at tx-open):** `AmbientTransaction.EnsureStartedAsync` takes a **transaction-scoped
+  exclusive `sp_getapplock`** ('acmp-audit-chain') right after `BeginTransaction`, before any module write. Every
+  audited write-command acquires the chain lock first (one consistent order → no cross-handler deadlock) and
+  appends serialize (no fork/2601, no 1205). Held to commit ⇒ next command reads a committed tip; `THROW` on
+  lock-timeout ⇒ fail-closed; SQL-Server-only (no-op elsewhere). The **denial/autocommit path** (no ambient tx)
+  keeps the bounded retry (broadened to the `PreviousHash` **or** `Hash` index; deadlock-free), covered by a new
+  `Concurrent_denials_…` test.
+- **Consequence (accepted, in ADR-0028):** audited write-commands now serialize globally — negligible at ≤20
+  users; partition per-stream only if throughput ever bites.
+- **Gates (local):** 27 Integration tests green (both concurrency tests + same-tx atomicity suite). Full BE
+  suite + coverage + CI (where the 1205 first surfaced) to be re-proven on the push. Plan:
+  `~/.claude/plans/d18-audit-append-concurrency-plan.md`. D-18 → **Done**; ADR-0028 Accepted.
+
+---
+
 ### 2026-07-13 — P15b live pixel-VR (PASS) + audit-append race reproduced (D-18)
 
 **Done**
