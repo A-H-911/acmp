@@ -49,6 +49,12 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.OwnerId);
 
+        // P15c / W16: provenance for a topic converted from a research Recommendation. The FILTERED unique index
+        // enforces one-topic-per-recommendation atomically (mirrors AdrConfiguration.SourceDecisionId) — a second
+        // convert of the same REC is rejected by the DB, never a duplicate topic.
+        b.Property(x => x.SourceRecommendationId);
+        b.HasIndex(x => x.SourceRecommendationId).IsUnique().HasFilter("[SourceRecommendationId] IS NOT NULL");
+
         // String collections via JSON columns (backing fields).
         b.Property<List<string>>("_streams").HasColumnName("streams").HasConversion(ListConverter, ListComparer).IsRequired();
         b.Property<List<string>>("_systems").HasColumnName("systems").HasConversion(ListConverter, ListComparer).IsRequired();

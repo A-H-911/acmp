@@ -53,7 +53,9 @@ public class ResearchHandlerTests
     }
 
     private static async Task<ResearchMissionSummaryDto> CreateAsync(ResearchDbContext db, ICurrentUser user, IClock clock, IAuditSink? audit = null) =>
-        await new CreateMissionHandler(db, new ResearchKeyGenerator(db), user, clock, audit ?? Substitute.For<IAuditSink>())
+        await new CreateMissionHandler(db, new ResearchKeyGenerator(db), user, clock, audit ?? Substitute.For<IAuditSink>(),
+                Substitute.For<Acmp.Shared.Contracts.Topics.ITopicReader>(),
+                Substitute.For<Acmp.Shared.Contracts.Traceability.ITraceabilityWriter>())
             .Handle(new CreateMissionCommand(L("Title"), L("Question"), "ref", Guid.NewGuid()), CancellationToken.None);
 
     private static async Task<Guid> ActiveMissionAsync(ResearchDbContext db, ICurrentUser user, IClock clock)

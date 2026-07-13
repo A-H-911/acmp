@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Application.Features.AcceptTopic;
 using Acmp.Modules.Topics.Application.Features.AddTopicComment;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
+using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
@@ -42,6 +43,14 @@ public static class TopicEndpoints
 
         // W1: submit a topic for triage.
         group.MapPost("/", async (SubmitTopicCommand command, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return Results.Created($"/api/topics/{result.Key}", result);
+        }).RequireAuthorization(Policies.TopicSubmit);
+
+        // W16 / FR-113: convert a research mission (or one of its recommendations) into a new execution topic,
+        // linked back by an Informs traceability edge. 409 if the source is ineligible or already converted.
+        group.MapPost("/from-research", async (ConvertResearchToTopicCommand command, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(command, ct);
             return Results.Created($"/api/topics/{result.Key}", result);

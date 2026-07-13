@@ -12,6 +12,19 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-13 — P15c-1 Research convert backend (W16, FR-113/115)
+
+**Done** — branch `feat/p15c1-research-convert-backend`, plan `~/.claude/plans/kind-watching-hinton.md` (operator-approved after a devil's-advocate pass). Target-owns architecture (mirrors P11e / ADR-0021); **no new ADR** (covered by ADR-0001/0019/0020/0021).
+- **Convert (Topics module):** `POST /api/topics/from-research` → `ConvertResearchToTopicCommand` (Chairman/Secretary). Reads the source via a new **`IResearchReader`** seam, creates the Topic natively (`Topic.Draft`+`Submit`), writes a reverse **`Informs`** edge (Research→Topic) via `ITraceabilityWriter`. Mission→Topic (mission must be `Completed`) + Recommendation→Topic (rec must be `Accepted`).
+- **Atomic double-convert guard:** new `Topic.SourceRecommendationId` (opaque value id) + **filtered unique index** (`IX_topics_SourceRecommendationId … IS NOT NULL`), migration `Topics_ConvertProvenance`. App-level 409 self-heals the edge (P11e); the index is the concurrent backstop (proven in `TopicConvertGuardTests` on real SQL — InMemory ignores it).
+- **Recommendation Converted:** `RecommendationStatus.Converted` + `Recommendation.MarkConverted` + `MarkRecommendationConvertedCommand` + `POST /api/research/{id}/recommendations/{recId}/convert` (best-effort display disposition; the index is the real guard).
+- **FR-115:** `CreateMissionHandler` emits a `Topic → ResearchMission` `References` edge when `SourceTopicId` is set (via new **`ITopicReader`** seam). *(Backfill for existing missions + `UpdateMissionDraft` edge deferred to a fast-follow.)*
+- **FR-113 (graph nodes) verified free:** `GetArtifactRelationshipsQuery` is artifact-type-agnostic and Research kinds are already `ArtifactType` values — Research nodes appear/expand once edges exist (no new graph reader). FE open-graph affordance + node styling → P15c-2.
+- **Gates:** 1339 BE tests (Application +15, Integration +2, Api +1 flow), ArchUnit 45 (new Research/Topics cross-module seams boundary-clean), coverage **99.64%**, `dotnet format` clean, build clean.
+- **FR-113/115 → Met (backend); FR-114 → Partial** (linked-artifacts panel is P15c-2). Next = **P15c-2 frontend** (convert dialog + FR-114 panel + xref + converted chip + open-graph + live VR).
+
+---
+
 ### 2026-07-13 — D-18 audit-append concurrency FIXED via serialization (ADR-0028)
 
 **Done** — branch `fix/d18-audit-append-concurrency`. Resolves the race the P15b VR reproduced. The fix arc is

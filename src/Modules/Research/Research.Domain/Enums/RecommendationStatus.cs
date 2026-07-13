@@ -1,10 +1,12 @@
 ﻿namespace Acmp.Modules.Research.Domain.Enums;
 
-// A recommendation's disposition (FR-113). P15a allows Proposed → Accepted | Rejected only. The Converted
-// status (promote a recommendation into a Topic/Action) is the P15c convert flow — deliberately absent here.
+// A recommendation's disposition (FR-113). Proposed → Accepted | Rejected; an Accepted recommendation may then
+// be Converted (P15c / W16) once it has been promoted into an execution Topic. Converted is a display
+// disposition — the authoritative one-per-recommendation guard is Topic.SourceRecommendationId's unique index.
 public enum RecommendationStatus
 {
     Proposed = 1,
     Accepted = 2,
     Rejected = 3,
+    Converted = 4,
 }

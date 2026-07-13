@@ -37,6 +37,10 @@ public static class TopicsInfrastructureExtensions
         // topic's affected-stream codes, for Topic↔Topic cross-stream classification.
         services.AddScoped<ITopicStreamReader, TopicStreamReader>();
 
+        // Cross-module read seam consumed by Research (ADR-0001, P15c / FR-115): a topic's key + title snapshot
+        // for the mission→source-topic traceability edge.
+        services.AddScoped<ITopicReader, TopicReader>();
+
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 
         services.AddTopicsApplication();

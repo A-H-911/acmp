@@ -127,6 +127,12 @@ public class ResearchApiTests
         after.Findings.Single().Confidence.Should().Be("Medium");
         after.Recommendations.Single().Status.Should().Be("Accepted");
 
+        // W16: record the accepted recommendation as converted to an execution topic (successor id).
+        (await chair.PostAsJsonAsync($"/api/research/{mission.Id}/recommendations/{rec.Id}/convert", new { topicId = Guid.NewGuid() }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await (await chair.GetAsync($"/api/research/{mission.Key}")).Content.ReadFromJsonAsync<MissionDetail>())!
+            .Recommendations.Single().Status.Should().Be("Converted");
+
         // Complete (terminal).
         (await chair.PostAsync($"/api/research/{mission.Id}/complete", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await (await chair.GetAsync($"/api/research/{mission.Key}")).Content.ReadFromJsonAsync<MissionDetail>())!.Status.Should().Be("Completed");

@@ -26,6 +26,9 @@ public static class ResearchInfrastructureExtensions
         services.AddScoped<IResearchDbContext>(sp => sp.GetRequiredService<ResearchDbContext>());
         services.AddScoped<IResearchKeyGenerator, ResearchKeyGenerator>();
 
+        // Cross-module read seam (P15c / W16): the Topics convert reads a mission/recommendation through this.
+        services.AddScoped<Acmp.Shared.Contracts.Research.IResearchReader, Directory.ResearchReader>();
+
         services.AddResearchApplication();
         return services;
     }
