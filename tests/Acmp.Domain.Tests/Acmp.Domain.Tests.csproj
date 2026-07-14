@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Domain\Acmp.Modules.Dependencies.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Domain\Acmp.Modules.Governance.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Research\Research.Domain\Acmp.Modules.Research.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Knowledge\Knowledge.Domain\Acmp.Modules.Knowledge.Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
+using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
@@ -74,6 +75,10 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<ResearchDbContext>>();
             services.RemoveAll<ResearchDbContext>();
             services.AddDbContext<ResearchDbContext>(o => o.UseInMemoryDatabase(_dbName + "-research"));
+
+            services.RemoveAll<DbContextOptions<KnowledgeDbContext>>();
+            services.RemoveAll<KnowledgeDbContext>();
+            services.AddDbContext<KnowledgeDbContext>(o => o.UseInMemoryDatabase(_dbName + "-knowledge"));
 
             services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
             services.RemoveAll<NotificationsDbContext>();
