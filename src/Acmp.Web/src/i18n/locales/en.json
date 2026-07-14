@@ -1777,7 +1777,33 @@
     "recStatus": {
       "Proposed": "Proposed",
       "Accepted": "Accepted",
-      "Rejected": "Rejected"
+      "Rejected": "Rejected",
+      "Converted": "Converted"
+    },
+    "convert": {
+      "action": "Convert to execution topic",
+      "recAction": "Convert",
+      "title": "Convert to execution topic",
+      "subtitleMission": "Create a backlog work item from this research mission.",
+      "subtitleRec": "Create a backlog work item from this recommendation.",
+      "confirm": "Convert",
+      "error": "The topic could not be created. Please try again.",
+      "fTitle": "Title",
+      "fTitlePh": "Name the work item…",
+      "fType": "Type",
+      "fUrgency": "Urgency",
+      "fDescription": "Description",
+      "fDescriptionPh": "What needs to be done…",
+      "fJustification": "Justification",
+      "fJustificationPh": "Why this matters now…",
+      "fStreams": "Affected streams",
+      "fStreamsPh": "Add a stream and press Enter…",
+      "err": {
+        "title": "A title is required.",
+        "description": "A description is required.",
+        "justification": "A justification is required.",
+        "streams": "Add at least one stream."
+      }
     },
     "empty": {
       "title": "No research missions yet",

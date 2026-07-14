@@ -28,10 +28,13 @@ export function findingTone(isVerified: boolean): StatusTone {
   return isVerified ? 'success' : 'neutral';
 }
 
+// Converted is a P15c no-reference addition (the design's rec list predates the convert flow): 'scheduled'
+// reads as "moved forward into execution", distinct from Accepted (success) and Proposed (info). Flagged.
 const REC_TONE: Record<RecommendationStatus, StatusTone> = {
   Proposed: 'info',
   Accepted: 'success',
   Rejected: 'danger',
+  Converted: 'scheduled',
 };
 
 export function recStatusTone(status: RecommendationStatus): StatusTone {
@@ -54,4 +57,4 @@ export const CONFIDENCES: Confidence[] = ['Low', 'Medium', 'High'];
 export const PRIORITIES: RecommendationPriority[] = ['Low', 'Medium', 'High'];
 
 /** Recommendation dispositions — the item chip vocabulary (both locales). */
-export const REC_STATUSES: RecommendationStatus[] = ['Proposed', 'Accepted', 'Rejected'];
+export const REC_STATUSES: RecommendationStatus[] = ['Proposed', 'Accepted', 'Rejected', 'Converted'];

@@ -23,6 +23,7 @@ describe('researchMeta', () => {
     expect(recStatusTone('Proposed')).toBe('info');
     expect(recStatusTone('Accepted')).toBe('success');
     expect(recStatusTone('Rejected')).toBe('danger');
+    expect(recStatusTone('Converted')).toBe('scheduled');
     expect(recStatusTone('Unknown' as never)).toBe('neutral');
   });
 
@@ -36,6 +37,6 @@ describe('researchMeta', () => {
     expect(RESEARCH_STATUSES).toEqual(['Proposed', 'Active', 'Completed', 'Cancelled']);
     expect(CONFIDENCES).toEqual(['Low', 'Medium', 'High']);
     expect(PRIORITIES).toEqual(['Low', 'Medium', 'High']);
-    expect(REC_STATUSES).toEqual(['Proposed', 'Accepted', 'Rejected']);
+    expect(REC_STATUSES).toEqual(['Proposed', 'Accepted', 'Rejected', 'Converted']);
   });
 });

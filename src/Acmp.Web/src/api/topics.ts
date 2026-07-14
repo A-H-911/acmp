@@ -106,6 +106,36 @@ export function useSubmitTopic() {
   });
 }
 
+// W16 (P15c): convert a research mission — or one accepted recommendation — into a new execution topic
+// (POST /api/topics/from-research → 201 { id, key }). Target-owns (ADR-0021): the Topics module reads the
+// research source and writes the reverse Informs edge. Chairman/Secretary only (API-enforced). A 409 names
+// the ineligible/already-converted source. Invalidates the backlog so the new topic appears.
+export interface ConvertResearchToTopicInput {
+  missionId: string;
+  recommendationId?: string | null;
+  title: string;
+  description: string;
+  justification: string;
+  type: string;
+  urgency: string;
+  streams: string[];
+  systems: string[];
+  tags: string[];
+}
+
+export function useConvertResearchToTopic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ConvertResearchToTopicInput) =>
+      api<SubmitTopicResult>('/topics/from-research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
+  });
+}
+
 /** Upload one staged file to a created topic (AC-049/050). Multipart — no Content-Type header so the
  *  browser sets the boundary; the field name is `file` to match the IFormFile parameter. */
 export function uploadTopicAttachment(topicId: string, file: File): Promise<unknown> {

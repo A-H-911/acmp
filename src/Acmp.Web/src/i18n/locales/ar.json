@@ -1777,7 +1777,33 @@
     "recStatus": {
       "Proposed": "مقترحة",
       "Accepted": "مقبولة",
-      "Rejected": "مرفوضة"
+      "Rejected": "مرفوضة",
+      "Converted": "محوَّلة"
+    },
+    "convert": {
+      "action": "تحويل إلى موضوع تنفيذي",
+      "recAction": "تحويل",
+      "title": "تحويل إلى موضوع تنفيذي",
+      "subtitleMission": "أنشئ عنصر عمل في قائمة المهام من مهمة البحث هذه.",
+      "subtitleRec": "أنشئ عنصر عمل في قائمة المهام من هذه التوصية.",
+      "confirm": "تحويل",
+      "error": "تعذّر إنشاء الموضوع. يُرجى المحاولة مرة أخرى.",
+      "fTitle": "العنوان",
+      "fTitlePh": "سمِّ عنصر العمل…",
+      "fType": "النوع",
+      "fUrgency": "الإلحاح",
+      "fDescription": "الوصف",
+      "fDescriptionPh": "ما الذي يجب إنجازه…",
+      "fJustification": "المبرر",
+      "fJustificationPh": "لماذا هذا مهم الآن…",
+      "fStreams": "المسارات المتأثرة",
+      "fStreamsPh": "أضف مسارًا ثم اضغط Enter…",
+      "err": {
+        "title": "العنوان مطلوب.",
+        "description": "الوصف مطلوب.",
+        "justification": "المبرر مطلوب.",
+        "streams": "أضف مسارًا واحدًا على الأقل."
+      }
     },
     "empty": {
       "title": "لا توجد مهام بحث بعد",

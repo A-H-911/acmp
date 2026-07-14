@@ -12,6 +12,21 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-13 — P15c-2 Research convert frontend (W16, FR-113/114/115)
+
+**Done** — branch `feat/p15c2-research-convert-frontend`, plan `~/.claude/plans/nothing-clear-for-me-steady-cerf.md` (operator-approved after a devil's-advocate pass). **Frontend-only** — no backend/DB change; wires the SPA against the P15c-1 API surface (#113).
+- **Convert flow:** new `ConvertToTopicDialog` (research-style dialog — no-reference composition, guardrail #14) — a pre-filled topic form → `POST /api/topics/from-research` → navigate to the new `TOP-`. Header **"Convert to execution topic"** button shows only on a **Completed** mission (backend needs Completed; the design mockup shows it on Active — behaviour wins, flagged INV-014). A per-recommendation **Convert** on each **Accepted** rec.
+- **FR-114 panel:** the shared `TraceabilityPanel` (P10e/P11e) mounted on the mission in a two-column `1fr 320px` grid (mirrors the six other detail pages), pointed at `ResearchMission` — lists the source + produced topics, each navigable.
+- **FR-115 xref:** the header "Linked topic" becomes a navigable `TOP-` link from the incoming `Topic→Mission` edge; **falls back** to the plain P15b indicator for older missions (create-time edge only — backfill still deferred).
+- **Converted chip:** **edge-driven** (reads the rec's own outgoing `Informs→Topic` edge), so it shows "Converted → `TOP-`" and self-heals even if the best-effort `mark-converted` POST failed; the mark-converted call is fire-and-forget (non-fatal).
+- **FR-113 open-graph:** added `ResearchMission` to `GRAPH_FOCUS_TYPES` + a `useMission` cold-resolver in `ImpactGraphPage` → the panel's "Open dependency graph" works warm **and** on refresh; Research node styling already present.
+- **Reuse:** extracted `TokenInput` from `SubmitTopic` into `components/ui/TokenInput.tsx` (two callers, one copy).
+- **Gates:** 939 FE tests green (+ new dialog/api/graph/mission specs), coverage **99.64%** (new files 100%, MissionPage 99%), i18n EN+AR parity (1640 keys), oxlint clean, `tsc -b && vite build` clean.
+- **Live pixel-VR = PASS** (`e2e/p15c-convert-vr.spec.ts`, isolated `-p acmpe2e` stack, EN-light + AR-dark RTL): mission detail (convert button + xref + converted/accepted recs + panel), the convert dialog (pre-fill), and the impact graph focused on the mission (RMS focus ↔ source topic upstream). Pixel-faithful to `ACMP Research & Knowledge.dc.html`.
+- **FR-113/114/115 → Met.** ★ **P15c COMPLETE** (backend #113 + this frontend). Next = **P15d/e Knowledge** (wiki + templates) → **P15f/g** global search (OQ-034 + INV-002 go live) → **P15h**.
+
+---
+
 ### 2026-07-13 — P15c-1 Research convert backend (W16, FR-113/115)
 
 **Done** — branch `feat/p15c1-research-convert-backend`, plan `~/.claude/plans/kind-watching-hinton.md` (operator-approved after a devil's-advocate pass). Target-owns architecture (mirrors P11e / ADR-0021); **no new ADR** (covered by ADR-0001/0019/0020/0021).

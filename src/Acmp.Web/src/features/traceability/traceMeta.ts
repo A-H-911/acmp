@@ -202,7 +202,7 @@ const DEP_KIND_ORDER: DependencyKind[] = ['DependsOn', 'BlockedBy', 'Blocks', 'R
  * by-key hook to cold-resolve the GUID. Other types can still be a focus via warm navigation (the
  * clicked node already carries its GUID), but not via a bare URL.
  */
-export const GRAPH_FOCUS_TYPES: readonly ArtifactType[] = ['Topic', 'Decision', 'Action', 'Risk'];
+export const GRAPH_FOCUS_TYPES: readonly ArtifactType[] = ['Topic', 'Decision', 'Action', 'Risk', 'ResearchMission'];
 
 /**
  * Build the aside's group-by-TYPE view from the two 1-hop panel reads (AC-062 seams, already warm in

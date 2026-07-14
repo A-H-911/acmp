@@ -25,6 +25,7 @@ import { Field, Input, Textarea } from '../../components/ui/Field';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
+import { TokenInput } from '../../components/ui/TokenInput';
 import { Icon, type IconName } from '../../components/icons';
 import './topics.css';
 
@@ -438,60 +439,6 @@ export function SubmitTopic() {
         }
       />
     </section>
-  );
-}
-
-interface TokenInputProps {
-  values: string[];
-  onChange: (v: string[]) => void;
-  placeholder: string;
-  ariaLabel: string;
-  removeLabel: (v: string) => string;
-  id?: string;
-  ariaInvalid?: true;
-  describedby?: string;
-}
-
-/** Free-text token input (Enter/comma adds; Backspace on empty removes the last). */
-function TokenInput({ values, onChange, placeholder, ariaLabel, removeLabel, id, ariaInvalid, describedby }: TokenInputProps) {
-  const [draft, setDraft] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const add = () => {
-    const v = draft.trim();
-    if (v && !values.includes(v)) onChange([...values, v]);
-    setDraft('');
-  };
-  return (
-    <div className="tokens-field" onClick={() => inputRef.current?.focus()}>
-      {values.map((v) => (
-        <span className="token" key={v}>
-          {v}
-          <button type="button" className="token-remove" aria-label={removeLabel(v)} onClick={(e) => { e.stopPropagation(); onChange(values.filter((x) => x !== v)); }}>
-            <Icon name="x" size={13} aria-hidden />
-          </button>
-        </span>
-      ))}
-      <input
-        ref={inputRef}
-        id={id}
-        className="tokens-input"
-        aria-label={ariaLabel}
-        aria-invalid={ariaInvalid}
-        aria-describedby={describedby}
-        value={draft}
-        placeholder={values.length === 0 ? placeholder : undefined}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            add();
-          } else if (e.key === 'Backspace' && !draft && values.length) {
-            onChange(values.slice(0, -1));
-          }
-        }}
-        onBlur={add}
-      />
-    </div>
   );
 }
 

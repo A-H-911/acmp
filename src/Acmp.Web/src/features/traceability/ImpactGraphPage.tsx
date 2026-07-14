@@ -20,6 +20,7 @@ import { useTopicDetail } from '../../api/topics';
 import { useDecision } from '../../api/decisions';
 import { useAction } from '../../api/actions';
 import { useRisk } from '../../api/risks';
+import { useMission } from '../../api/research';
 import { buildTypeGroups } from './traceMeta';
 import type { HighlightState } from './graphLayout';
 import { RelationshipsAside } from './RelationshipsAside';
@@ -195,10 +196,11 @@ function useFocusIdentity(
   const decision = useDecision(cold && type === 'Decision' ? key : undefined);
   const action = useAction(cold && type === 'Action' ? key : undefined);
   const risk = useRisk(cold && type === 'Risk' ? key : undefined);
+  const mission = useMission(cold && type === 'ResearchMission' ? key : undefined);
 
   if (warm?.focusId) return { id: warm.focusId, title: warm.focusTitle ?? key, loading: false, error: false };
 
-  const q = type === 'Topic' ? topic : type === 'Decision' ? decision : type === 'Action' ? action : type === 'Risk' ? risk : undefined;
+  const q = type === 'Topic' ? topic : type === 'Decision' ? decision : type === 'Action' ? action : type === 'Risk' ? risk : type === 'ResearchMission' ? mission : undefined;
   if (!q) return { id: undefined, title: key, loading: false, error: false, unsupported: true };
 
   const raw = q.data as { id: string; title: string | { en: string; ar: string } } | undefined;

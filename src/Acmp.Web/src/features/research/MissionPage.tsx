@@ -22,7 +22,7 @@
  *    Recommendation chip = Status (Proposed/Accepted/Rejected).
  */
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useMission, useActivateMission, useCompleteMission, useCancelMission,
@@ -30,6 +30,7 @@ import {
   type MissionDetail, type Finding, type Recommendation, type LocalizedText,
   type Confidence, type RecommendationPriority,
 } from '../../api/research';
+import { useArtifactRelationships } from '../../api/traceability';
 import { ApiError } from '../../api/apiClient';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -39,17 +40,31 @@ import { Field, Textarea } from '../../components/ui/Field';
 import { Select } from '../../components/ui/Select';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
+import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
+import { hrefFor } from '../traceability/traceMeta';
+import { ConvertToTopicDialog } from './ConvertToTopicDialog';
 import { statusTone, findingTone, recStatusTone, CONFIDENCES, PRIORITIES } from './researchMeta';
 import './research.css';
 
 type OpenDialog = null | 'cancel' | 'finding' | 'recommendation';
+
+/** A convert-dialog target: the whole mission (no recommendationId) or one recommendation. */
+interface ConvertTarget {
+  recommendationId?: string;
+  title: string;
+  description: string;
+}
 
 export function MissionPage() {
   const { key } = useParams();
   const { t, i18n } = useTranslation();
   const auth = useAuth();
   const { data, isLoading, isError, error, refetch } = useMission(key);
+  // The mission's typed edges (FR-114) — feeds both the header xref (FR-115) and the Linked-items panel;
+  // one query, deduped with the panel's own read. Disabled until the mission id is known.
+  const rels = useArtifactRelationships('ResearchMission', data?.id);
   const [dialog, setDialog] = useState<OpenDialog>(null);
+  const [convertTarget, setConvertTarget] = useState<ConvertTarget | null>(null);
 
   if (isLoading) return <section className="page"><LoadingState /></section>;
   if (isError || !data) {
@@ -73,18 +88,28 @@ export function MissionPage() {
   const canManage = hasRole(auth, 'chairman', 'secretary');
   const isProposed = m.status === 'Proposed';
   const isActive = m.status === 'Active';
+  const isCompleted = m.status === 'Completed';
   const cancelled = m.status === 'Cancelled';
   const canActivate = canManage && isProposed;
   const canComplete = canManage && isActive;
   const canCancel = canManage && (isProposed || isActive);
   const canAddItems = canManage && isActive;
+  // Mission-level convert (W16) needs a COMPLETED mission — the backend 409s otherwise, so we only show it
+  // then (design mockup shows it on an Active mission; behaviour wins — flagged, INV-014/guardrail #14).
+  const canConvertMission = canManage && isCompleted;
+  // FR-115: the source topic's navigable key comes from the incoming Topic→Mission edge (a create-time
+  // snapshot). Missing for pre-P15c missions / a later source-topic (backfill deferred) — the header then
+  // falls back to the plain "linked topic" indicator.
+  const sourceTopicKey = rels.data?.incoming.find((e) => e.otherType === 'Topic')?.otherKey ?? null;
 
   return (
     <section className="page rsc-detail">
       <MissionHeader
         m={m} pick={pick} otherDir={otherDir} fmtDate={fmtDate}
         canActivate={canActivate} canComplete={canComplete} canCancel={canCancel}
+        canConvert={canConvertMission} sourceTopicKey={sourceTopicKey}
         onCancel={() => setDialog('cancel')}
+        onConvert={() => setConvertTarget({ title: pick(m.title), description: pick(m.question) })}
       />
 
       {cancelled && m.cancellationReason && (
@@ -97,17 +122,36 @@ export function MissionPage() {
         </div>
       )}
 
-      <section className="card rsc-question">
-        <div className="rsc-fact-label">{t('research.question')}</div>
-        <p className="rsc-question-body">{pick(m.question)}</p>
-      </section>
+      <div className="rsc-detail-grid">
+        <div className="rsc-detail-main">
+          <section className="card rsc-question">
+            <div className="rsc-fact-label">{t('research.question')}</div>
+            <p className="rsc-question-body">{pick(m.question)}</p>
+          </section>
 
-      <FindingsSection m={m} pick={pick} canAdd={canAddItems} onAdd={() => setDialog('finding')} />
-      <RecommendationsSection m={m} pick={pick} canAct={canAddItems} onAdd={() => setDialog('recommendation')} />
+          <FindingsSection m={m} pick={pick} canAdd={canAddItems} onAdd={() => setDialog('finding')} />
+          <RecommendationsSection
+            m={m} pick={pick} canAct={canAddItems} canManage={canManage} onAdd={() => setDialog('recommendation')}
+            onConvertRec={(r) => setConvertTarget({ recommendationId: r.id, title: pick(r.statement), description: pick(r.rationale) })}
+          />
+        </div>
+
+        <TraceabilityPanel traceType="ResearchMission" id={m.id} artifactKey={m.key} title={pick(m.title)} />
+      </div>
 
       <CancelMissionDialog open={dialog === 'cancel'} onClose={() => setDialog(null)} missionId={m.id} />
       <AddFindingDialog open={dialog === 'finding'} onClose={() => setDialog(null)} missionId={m.id} />
       <AddRecommendationDialog open={dialog === 'recommendation'} onClose={() => setDialog(null)} missionId={m.id} />
+      {convertTarget && (
+        <ConvertToTopicDialog
+          key={convertTarget.recommendationId ?? 'mission'}
+          onClose={() => setConvertTarget(null)}
+          missionId={m.id}
+          recommendationId={convertTarget.recommendationId}
+          seedTitle={convertTarget.title}
+          seedDescription={convertTarget.description}
+        />
+      )}
     </section>
   );
 }
@@ -120,14 +164,19 @@ interface HeaderProps {
   canActivate: boolean;
   canComplete: boolean;
   canCancel: boolean;
+  canConvert: boolean;
+  /** The source topic's navigable key from the incoming edge, or null → plain indicator fallback. */
+  sourceTopicKey: string | null;
   onCancel: () => void;
+  onConvert: () => void;
 }
 
-function MissionHeader({ m, pick, otherDir, fmtDate, canActivate, canComplete, canCancel, onCancel }: HeaderProps) {
+function MissionHeader({ m, pick, otherDir, fmtDate, canActivate, canComplete, canCancel, canConvert, sourceTopicKey, onCancel, onConvert }: HeaderProps) {
   const { t } = useTranslation();
   const activate = useActivateMission();
   const complete = useCompleteMission();
   const altTitle = m.title.en === m.title.ar ? '' : (otherDir === 'rtl' ? m.title.ar : m.title.en);
+  const topicHref = sourceTopicKey ? hrefFor('Topic', sourceTopicKey) : null;
 
   return (
     <header className="card rsc-head-card">
@@ -141,9 +190,13 @@ function MissionHeader({ m, pick, otherDir, fmtDate, canActivate, canComplete, c
           <h1 className="rsc-detail-title">{pick(m.title)}</h1>
           {altTitle && <div className="rsc-title-alt" dir={otherDir}>{altTitle}</div>}
           <div className="rsc-head-meta">
-            {m.sourceTopicId && (
+            {sourceTopicKey && topicHref ? (
+              <Link className="rsc-xref-link" to={topicHref}>
+                <Icon name="backlog" size={13} aria-hidden /> {t('research.linkedTopic')}: <span className="rsc-xref">{sourceTopicKey}</span>
+              </Link>
+            ) : m.sourceTopicId ? (
               <span className="rsc-meta-linked"><Icon name="backlog" size={13} aria-hidden /> {t('research.linkedTopic')}</span>
-            )}
+            ) : null}
             <span>{t('research.lead')}: <b>{m.ownerName || t('research.unassigned')}</b></span>
             <span className="rsc-meta-dot" aria-hidden="true" />
             <span>{t('research.opened')} {fmtDate(m.createdAt)}</span>
@@ -155,8 +208,13 @@ function MissionHeader({ m, pick, otherDir, fmtDate, canActivate, canComplete, c
             )}
           </div>
         </div>
-        {(canActivate || canComplete || canCancel) && (
+        {(canActivate || canComplete || canCancel || canConvert) && (
           <div className="rsc-head-actions">
+            {canConvert && (
+              <Button variant="primary" onClick={onConvert}>
+                <Icon name="arrowRight" size={15} aria-hidden /> {t('research.convert.action')}
+              </Button>
+            )}
             {canActivate && (
               <Button variant="primary" loading={activate.isPending} onClick={() => void activate.mutateAsync({ id: m.id })}>
                 <Icon name="arrowRight" size={15} aria-hidden /> {t('research.activate')}
@@ -236,9 +294,11 @@ function FindingsSection({ m, pick, canAdd, onAdd }: { m: MissionDetail; pick: (
   );
 }
 
-function RecommendationsSection({ m, pick, canAct, onAdd }: { m: MissionDetail; pick: (l: LocalizedText | null) => string; canAct: boolean; onAdd: () => void }) {
+function RecommendationsSection({ m, pick, canAct, canManage, onAdd, onConvertRec }: {
+  m: MissionDetail; pick: (l: LocalizedText | null) => string; canAct: boolean; canManage: boolean;
+  onAdd: () => void; onConvertRec: (r: Recommendation) => void;
+}) {
   const { t } = useTranslation();
-  const setStatus = useSetRecommendationStatus();
   return (
     <SectionShell icon="checklist" title={t('research.recommendations')} count={m.recommendations.length} canAdd={canAct} onAdd={onAdd}>
       {m.recommendations.length === 0 ? (
@@ -246,32 +306,71 @@ function RecommendationsSection({ m, pick, canAct, onAdd }: { m: MissionDetail; 
       ) : (
         <ul className="rsc-items">
           {m.recommendations.map((r: Recommendation) => (
-            <li className="rsc-item" key={r.id}>
-              <span className="rsc-item-main">
-                <span className="rsc-item-text">{pick(r.statement)}</span>
-                <span className="rsc-item-meta">
-                  {t(`research.priority.${r.priority}`)}
-                  {r.rationale && <> · {pick(r.rationale)}</>}
-                </span>
-              </span>
-              <span className="rsc-item-right">
-                <StatusChip tone={recStatusTone(r.status)} label={t(`research.recStatus.${r.status}`)} size="sm" />
-                {canAct && r.status === 'Proposed' && (
-                  <span className="rsc-item-actions">
-                    <Button variant="ghost" size="sm" loading={setStatus.isPending} onClick={() => void setStatus.mutateAsync({ id: m.id, recommendationId: r.id, status: 'Accepted' })}>
-                      <Icon name="check" size={13} aria-hidden /> {t('research.accept')}
-                    </Button>
-                    <Button variant="ghost" size="sm" loading={setStatus.isPending} onClick={() => void setStatus.mutateAsync({ id: m.id, recommendationId: r.id, status: 'Rejected' })}>
-                      <Icon name="ban" size={13} aria-hidden /> {t('research.reject')}
-                    </Button>
-                  </span>
-                )}
-              </span>
-            </li>
+            <RecommendationCard key={r.id} r={r} missionId={m.id} pick={pick} canAct={canAct} canManage={canManage} onConvert={onConvertRec} />
           ))}
         </ul>
       )}
     </SectionShell>
+  );
+}
+
+function RecommendationCard({ r, missionId, pick, canAct, canManage, onConvert }: {
+  r: Recommendation; missionId: string; pick: (l: LocalizedText | null) => string;
+  canAct: boolean; canManage: boolean; onConvert: (r: Recommendation) => void;
+}) {
+  const { t } = useTranslation();
+  const setStatus = useSetRecommendationStatus();
+  // Convert state is EDGE-driven (self-heals a failed best-effort status-mark): a recommendation with an
+  // outgoing Informs→Topic edge IS converted, whatever the status flag says. Read only for accepted/converted
+  // recs. ponytail: one small read per such rec — fine at ≤20 users; batch if a mission ever holds many.
+  const needsEdge = r.status === 'Accepted' || r.status === 'Converted';
+  const rels = useArtifactRelationships('Recommendation', needsEdge ? r.id : undefined);
+  const topicEdge = rels.data?.outgoing.find((e) => e.otherType === 'Topic');
+  const converted = !!topicEdge || r.status === 'Converted';
+  const topicHref = topicEdge ? hrefFor('Topic', topicEdge.otherKey) : null;
+
+  return (
+    <li className="rsc-item">
+      <span className="rsc-item-main">
+        <span className="rsc-item-text">{pick(r.statement)}</span>
+        <span className="rsc-item-meta">
+          {t(`research.priority.${r.priority}`)}
+          {r.rationale && <> · {pick(r.rationale)}</>}
+        </span>
+      </span>
+      <span className="rsc-item-right">
+        {converted ? (
+          <>
+            <StatusChip tone={recStatusTone('Converted')} label={t('research.recStatus.Converted')} size="sm" />
+            {topicEdge && topicHref && (
+              <Link className="rsc-xref-link" to={topicHref}>
+                <span className="rsc-xref">{topicEdge.otherKey}</span>
+                <Icon name="chevron" size={13} className="dir-flip" aria-hidden />
+              </Link>
+            )}
+          </>
+        ) : (
+          <>
+            <StatusChip tone={recStatusTone(r.status)} label={t(`research.recStatus.${r.status}`)} size="sm" />
+            {canAct && r.status === 'Proposed' && (
+              <span className="rsc-item-actions">
+                <Button variant="ghost" size="sm" loading={setStatus.isPending} onClick={() => void setStatus.mutateAsync({ id: missionId, recommendationId: r.id, status: 'Accepted' })}>
+                  <Icon name="check" size={13} aria-hidden /> {t('research.accept')}
+                </Button>
+                <Button variant="ghost" size="sm" loading={setStatus.isPending} onClick={() => void setStatus.mutateAsync({ id: missionId, recommendationId: r.id, status: 'Rejected' })}>
+                  <Icon name="ban" size={13} aria-hidden /> {t('research.reject')}
+                </Button>
+              </span>
+            )}
+            {canManage && r.status === 'Accepted' && (
+              <Button variant="ghost" size="sm" onClick={() => onConvert(r)}>
+                <Icon name="arrowRight" size={13} aria-hidden /> {t('research.convert.recAction')}
+              </Button>
+            )}
+          </>
+        )}
+      </span>
+    </li>
   );
 }
 

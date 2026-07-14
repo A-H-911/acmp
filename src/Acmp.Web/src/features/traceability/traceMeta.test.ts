@@ -94,8 +94,8 @@ describe('impact-graph meta', () => {
     expect(relDirection('rel', 'Nonsense')).toBe('related');
   });
 
-  it('GRAPH_FOCUS_TYPES is the four routable-as-focus types', () => {
-    expect([...GRAPH_FOCUS_TYPES]).toEqual(['Topic', 'Decision', 'Action', 'Risk']);
+  it('GRAPH_FOCUS_TYPES is the routable-as-focus types (incl. ResearchMission for W16)', () => {
+    expect([...GRAPH_FOCUS_TYPES]).toEqual(['Topic', 'Decision', 'Action', 'Risk', 'ResearchMission']);
   });
 });
 
