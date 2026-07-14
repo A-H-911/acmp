@@ -22,7 +22,8 @@
     "phase2Lead": "Available in a later release.",
     "phase2Title": "Coming in Phase 2",
     "phase2Body": "This area is planned for Phase 2 and isn’t available yet.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "actions": {
     "title": "Actions",
@@ -815,6 +816,7 @@
     "deps": "Dependencies",
     "research": "Research",
     "wiki": "Knowledge / Wiki",
+    "templates": "Templates",
     "diagrams": "Diagrams",
     "reports": "Reports",
     "audit": "Audit Trail",
@@ -1861,6 +1863,140 @@
       "rationale": "Rationale",
       "rationalePh": "Why this recommendation (optional)…",
       "err": "A statement is required."
+    }
+  },
+  "wiki": {
+    "crumbRoot": "Knowledge",
+    "searchLabel": "Search the wiki…",
+    "treeLabel": "Wiki pages",
+    "newPage": "New page",
+    "history": "History",
+    "edit": "Edit",
+    "publish": "Publish",
+    "archive": "Archive",
+    "updated": "Updated",
+    "readtime": "{{count}} min read",
+    "editingBadge": "Editing",
+    "saveChanges": "Save changes",
+    "markdown": "Markdown",
+    "preview": "Preview",
+    "editError": "The page could not be saved. Please try again.",
+    "clearSearch": "Clear search",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This wiki page does not exist or has been removed.",
+    "status": {
+      "Draft": "Draft",
+      "Published": "Published",
+      "Archived": "Archived"
+    },
+    "category": {
+      "Governance": "Governance",
+      "Standards": "Standards",
+      "Operations": "Operations",
+      "General": "General"
+    },
+    "error": {
+      "title": "Couldn’t load the wiki",
+      "body": "The service is temporarily unavailable. Retry in a moment."
+    },
+    "empty": {
+      "title": "No pages yet",
+      "body": "Start the knowledge base by writing the committee’s first reference page."
+    },
+    "searchEmpty": {
+      "title": "No matching pages",
+      "body": "No wiki page matches your search. Try a different term."
+    },
+    "select": {
+      "title": "Select a page",
+      "body": "Choose a page from the tree to start reading."
+    },
+    "versions": {
+      "title": "Version history",
+      "subtitle": "Every save creates an immutable snapshot. Select one to view it.",
+      "empty": "No earlier versions."
+    },
+    "create": {
+      "title": "New wiki page",
+      "subtitle": "Draft a reference page. It stays a draft until you publish it.",
+      "confirm": "Create page",
+      "error": "The page could not be created. Please try again.",
+      "titleField": "Title",
+      "titlePh": "Name the page…",
+      "category": "Space",
+      "body": "Content",
+      "bodyPh": "Write the page in Markdown…",
+      "tags": "Tags",
+      "tagsPh": "Add a tag and press Enter…",
+      "removeTag": "Remove {{tag}}",
+      "err": {
+        "title": "A title is required.",
+        "body": "Content is required."
+      }
+    }
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Standardized templates for topics, ADRs, minutes, and research.",
+    "newTemplate": "New template",
+    "filtersLabel": "Template filters",
+    "clearFilters": "Clear filters",
+    "showing": "Showing {{count}}",
+    "editAria": "Edit {{name}}",
+    "deprecateAria": "Deprecate {{name}}",
+    "filter": {
+      "type": "Type",
+      "anyType": "Any type",
+      "status": "Status"
+    },
+    "col": {
+      "name": "Name",
+      "type": "Type",
+      "version": "Version",
+      "status": "Status",
+      "updated": "Updated"
+    },
+    "status": {
+      "Active": "Active",
+      "Deprecated": "Deprecated"
+    },
+    "targetType": {
+      "Topic": "Topic",
+      "Adr": "ADR",
+      "MinutesOfMeeting": "Minutes of meeting",
+      "ResearchMission": "Research mission"
+    },
+    "empty": {
+      "title": "No templates yet",
+      "body": "Create the first template to standardize how the committee records its work."
+    },
+    "error": {
+      "title": "Couldn’t load the templates",
+      "body": "The service is temporarily unavailable. Retry in a moment."
+    },
+    "deprecate": {
+      "title": "Deprecate this template",
+      "subtitle": "A deprecated template can no longer be used to pre-fill new artifacts. This can’t be undone.",
+      "confirm": "Deprecate"
+    },
+    "form": {
+      "createTitle": "New template",
+      "createSubtitle": "Create a template for a target artifact type.",
+      "editTitle": "Edit template",
+      "editSubtitle": "Revise the name and body. Target type is fixed after creation.",
+      "create": "Create template",
+      "save": "Save changes",
+      "error": "The template could not be saved. Please try again.",
+      "name": "Name",
+      "namePh": "Name the template…",
+      "targetType": "Target type",
+      "targetTypeLocked": "Target type is immutable after creation.",
+      "body": "Body",
+      "bodyPh": "Write the template in Markdown…",
+      "err": {
+        "name": "A name is required.",
+        "body": "A body is required."
+      }
     }
   }
 }

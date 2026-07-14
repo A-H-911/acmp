@@ -12,6 +12,43 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-14 — P15e Knowledge UI: wiki + template management (FR-116/117/119)
+
+**Done (all gates green + live pixel-VR PASS, awaiting commit GO)** — branch `feat/p15e-knowledge-ui`, plan
+`~/.claude/plans/elegant-imagining-tome.md` (operator-approved after a devil's-advocate + advisor de-risk pass;
+4 forks decided by the operator). The FE for the P15d Knowledge backend (both merged #115/#116), one combined
+slice, built in two internal stages (wiki, then templates). The `MarkdownView` foundation + API modules were
+built + verified by the lead; the ~25 mechanical UI files by a general-purpose subagent, then **every gate
+independently re-run by the lead** (not sub-agent trust).
+- **New dep:** `marked@18` + `dompurify@3.4.12` (0 vulns; both self-typed — no `@types/*`). New shared
+  `components/ui/MarkdownView.tsx` = `DOMPurify.sanitize(marked.parse(md))` with an **ALLOWLIST** of markdown
+  tags + link `rel=noopener` hook (react/security.md; sanitize at the call site). 7 tests incl. the cure53
+  XSS-strip assertion (script/on*/`javascript:`/style/iframe stripped). Not an INV-002 concern (an npm render
+  lib, not architecture).
+- **Wiki** (`features/wiki/*`, route `/wiki` + `/wiki/:key`): a 260px category **tree** (`Category` grouped
+  client-side into "spaces", operator-chosen bridge) + reading view (serif title, author resolved via
+  `useMembers` join on `keycloakUserId`, read-time, tags, `MarkdownView` body, `TraceabilityPanel` links) + a
+  split markdown/preview **editor** + a **version-history** panel (from `Versions[]`; diff→P14) + a create
+  dialog. **Tree visibility rule** (no-ref): Published→all, Draft→managers only (dot-marked), Archived excluded.
+  Lifecycle affordances the design omits (New page / Publish / Archive / status badge) added as no-ref
+  compositions, manager-only.
+- **Templates** (`features/templates/*`, standalone flat `/templates` in the Knowledge nav group — NOT the
+  design's admin-only home, since Chair/Sec are the managers): the Administration `.gTpl` table (real backend
+  enums Active/Deprecated + Topic/Adr/MinutesOfMeeting/ResearchMission) + a no-ref create/edit form (TargetType
+  Select disabled on edit — immutable) + a **Deprecate** row action. Removed the honest-empty Admin `templates`
+  tab (`AdministrationPage.tsx`).
+- **Gates (independently re-verified):** `npm run build` clean, `npm run lint` (oxlint) no errors, **1016 tests
+  pass** (132 files) with per-file ≥95% coverage, `check-i18n` parity OK (1736 keys; every enum value keyed in
+  EN+AR). **Live pixel-VR PASS** — `e2e/p15e-knowledge-vr.spec.ts` captured wiki reading/editor + template
+  table × EN-light + AR-dark on the isolated `-p acmpe2e` stack, human-compared pixel-faithful to
+  `ACMP Research & Knowledge.dc.html` + `ACMP Administration.dc.html`.
+- **FR-116/117/119 → Met (UI).** OQ-052 logged (tree Draft/Archived visibility default). Flags: History+status
+  gated to managers (could relax to all readers — minor); TraceabilityPanel substitutes the design's compact
+  linked-artifacts card (richer, also creates edges). Next = **P15f/g** global search (OQ-034 Arabic
+  word-breaker spike FIRST + INV-002) → **P15h** template pre-fill (reads the `targetType` seam).
+
+---
+
 ### 2026-07-14 — P15d-2 Knowledge backend: Template (FR-119)
 
 **Done (all gates green, awaiting commit GO)** — branch `feat/p15d2-knowledge-template`, plan

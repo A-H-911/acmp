@@ -16,7 +16,8 @@ export type IconName =
   | 'usersGroup' | 'template' | 'activity' | 'stream' | 'shieldUser' | 'cog'
   | 'server' | 'database' | 'box' | 'mail' | 'video' | 'refresh'
   | 'arrowRight' | 'arrowLeft' | 'clipboardCheck' | 'pause' | 'ban' | 'arrowUpRight'
-  | 'shieldPlus' | 'filterLines' | 'checklist' | 'trash';
+  | 'shieldPlus' | 'filterLines' | 'checklist' | 'trash'
+  | 'pencil' | 'history' | 'file' | 'folder' | 'archive';
 
 const PATHS: Record<IconName, ReactNode> = {
   home: <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6" />,
@@ -85,6 +86,11 @@ const PATHS: Record<IconName, ReactNode> = {
   filterLines: <path d="M3 4h18M6 8h12M9 12h6M11 16h2" />,
   // Generic empty-state glyph (checklist-check) shared by every register's empty state in the design.
   checklist: <path d="M9 11l3 3 8-8M3 12h.01M3 7h.01M3 17h.01" />,
+  pencil: <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />,
+  history: <path d="M3 3v6h6M3 9a9 9 0 102.6-4.3M12 7v5l3 2" />,
+  file: <path d="M14 3v5h5M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" />,
+  folder: <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />,
+  archive: <><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8M10 12h4" /></>,
   cog: <path d="M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />,
   // System Health + Notification channel glyphs (paths lifted from ACMP Administration.dc.html).
   server: <path d="M3 5h18v6H3zM3 13h18v6H3zM7 8h.01M7 16h.01" />,

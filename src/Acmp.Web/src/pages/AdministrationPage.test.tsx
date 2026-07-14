@@ -54,11 +54,12 @@ describe('AdministrationPage — sub-tab container', () => {
     mockUseRequeue.mockReset();
   });
 
-  it('renders all seven sub-tabs, all navigable (design disables none)', () => {
+  it('renders all six sub-tabs, all navigable (design disables none; Templates moved to /templates)', () => {
     renderPage();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(7);
+    expect(tabs).toHaveLength(6);
     expect(tabs.filter((t) => (t as HTMLButtonElement).disabled)).toHaveLength(0);
+    expect(screen.queryByRole('tab', { name: /Templates/ })).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Users & Membership/ })).toHaveAttribute('aria-selected', 'true');
   });
 
@@ -101,11 +102,9 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getAllByText('Planned').length).toBeGreaterThan(0);
   });
 
-  it('shows honest-empty for templates / streams (later-phase modules)', async () => {
+  it('shows honest-empty for streams (later-phase module)', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('tab', { name: /Templates/ }));
-    expect(screen.getByText('No templates yet')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /Streams/ }));
     expect(screen.getByText('No streams configured')).toBeInTheDocument();
   });
