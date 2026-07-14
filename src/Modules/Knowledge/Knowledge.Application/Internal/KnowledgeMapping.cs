@@ -19,4 +19,10 @@ internal static class KnowledgeMapping
 
     private static DocumentVersionDto ToVersion(DocumentVersion v) =>
         new(v.PublicId, v.Version, v.Title, v.Body, v.SavedAt, v.SavedByUserId);
+
+    public static TemplateSummaryDto ToSummary(Template t) => new(
+        t.PublicId, t.Key, t.Name, t.TargetType.ToString(), t.Status.ToString(), t.Version, t.CreatedAt, t.UpdatedAt);
+
+    public static TemplateDetailDto ToDetail(Template t) => new(
+        t.PublicId, t.Key, t.Name, t.TargetType.ToString(), t.Body, t.Status.ToString(), t.Version, t.CreatedAt, t.UpdatedAt);
 }

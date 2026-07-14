@@ -1,5 +1,8 @@
 ﻿using Acmp.Modules.Knowledge.Application.Features.CreateDocument;
+using Acmp.Modules.Knowledge.Application.Features.CreateTemplate;
 using Acmp.Modules.Knowledge.Application.Features.DocumentLifecycle;
+using Acmp.Modules.Knowledge.Application.Features.EditTemplate;
+using Acmp.Modules.Knowledge.Domain.Enums;
 using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Domain.ValueObjects;
@@ -77,5 +80,47 @@ public class KnowledgeAuditEnrichmentTests
         publishedRow.BeforeJson.Should().Contain("\"Status\":1");
         publishedRow.AfterJson.Should().NotBeNull();
         publishedRow.AfterJson.Should().Contain("\"Status\":2");
+    }
+
+    [Fact]
+    public async Task Template_lifecycle_writes_enriched_audit_rows_with_before_and_after()
+    {
+        var name = "kn-tpl-audit-" + Guid.NewGuid();
+        var buffer = new AuditChangeBuffer();
+        var interceptor = new AuditCaptureInterceptor(buffer);
+        var clock = new FixedClock();
+        var user = User();
+
+        await using var auditDb = new AuditDbContext(
+            new DbContextOptionsBuilder<AuditDbContext>().UseInMemoryDatabase(name + "-audit").Options);
+        var sink = new SqlAuditSink(auditDb, clock, user, buffer, NullLogger<SqlAuditSink>.Instance);
+
+        await using var db = new KnowledgeDbContext(
+            new DbContextOptionsBuilder<KnowledgeDbContext>().UseInMemoryDatabase(name).AddInterceptors(interceptor).Options,
+            clock, user);
+
+        // Create → the template is Added, so the capture is After-only.
+        var created = await new CreateTemplateHandler(db, new KnowledgeKeyGenerator(db), clock, sink)
+            .Handle(new CreateTemplateCommand(L("Name"), TemplateTargetType.Topic, "# body"), CancellationToken.None);
+
+        // Edit → the template is Modified (Version), so the capture has Before AND After.
+        await new EditTemplateHandler(db, clock, sink)
+            .Handle(new EditTemplateCommand(created.Id, L("Name v2"), "# body v2"), CancellationToken.None);
+
+        var rows = await auditDb.AuditEvents.OrderBy(e => e.Sequence).ToListAsync();
+
+        var createdRow = rows.Single(r => r.Action == "Knowledge.TemplateCreated");
+        createdRow.SubjectType.Should().Be("Template");
+        createdRow.SubjectId.Should().Be(created.Id.ToString());
+        createdRow.BeforeJson.Should().BeNull("an insert has no prior state");
+        createdRow.AfterJson.Should().NotBeNull();
+        createdRow.AfterJson.Should().Contain("\"Version\":1");
+        createdRow.ActorUserId.Should().Be("kc-owner");
+
+        var editedRow = rows.Single(r => r.Action == "Knowledge.TemplateEdited");
+        editedRow.BeforeJson.Should().NotBeNull();
+        editedRow.BeforeJson.Should().Contain("\"Version\":1");
+        editedRow.AfterJson.Should().NotBeNull();
+        editedRow.AfterJson.Should().Contain("\"Version\":2");
     }
 }

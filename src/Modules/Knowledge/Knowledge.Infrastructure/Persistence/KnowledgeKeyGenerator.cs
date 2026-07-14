@@ -15,6 +15,8 @@ public sealed class KnowledgeKeyGenerator : IKnowledgeKeyGenerator
 
     public Task<string> NextDocumentKeyAsync(int year, CancellationToken ct = default) => NextKeyAsync("DOC", year, ct);
 
+    public Task<string> NextTemplateKeyAsync(int year, CancellationToken ct = default) => NextKeyAsync("TPL", year, ct);
+
     private async Task<string> NextKeyAsync(string prefix, int year, CancellationToken ct)
     {
         var counter = await _db.KeyCounters.FirstOrDefaultAsync(c => c.Prefix == prefix && c.Year == year, ct);

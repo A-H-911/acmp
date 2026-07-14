@@ -9,4 +9,9 @@ namespace Acmp.Modules.Knowledge.Application.Internal;
 internal static class KnowledgeRoles
 {
     public static readonly string[] DocumentManage = { AcmpRoles.Chairman, AcmpRoles.Secretary };
+
+    // Template.Manage's matrix row (AuthorizationRegistration.cs) grants Administrator too — and it has NO
+    // allow-if-owner roles — so the backstop must include Administrator (unlike DocumentManage), or a valid
+    // Administrator that passes the endpoint policy would be wrongly 403'd at the MediatR boundary.
+    public static readonly string[] TemplateManage = { AcmpRoles.Chairman, AcmpRoles.Secretary, AcmpRoles.Administrator };
 }

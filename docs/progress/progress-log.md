@@ -12,6 +12,41 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-14 — P15d-2 Knowledge backend: Template (FR-119)
+
+**Done (all gates green, awaiting commit GO)** — branch `feat/p15d2-knowledge-template`, plan
+`~/.claude/plans/nothing-clear-for-me-steady-cerf.md` (operator-approved; devil's-advocate pass + advisor
+confirmation on OQ-051 and a Body-type correction). Second of the two GO-gated P15d PRs; a **mirror** onto the
+P15d-1 scaffold — no new module wiring (Template rides the existing `KnowledgeDbContext` + `Knowledge.Application`
+assembly, so **no** MigrationRunner / composition-root / ArchUnit / factory change; ArchUnit stayed 49→49).
+- **Template** (TPL-, `Active → Deprecated`, `byte[] RowVersion` → 409): `Name` bilingual (LocalizedString,
+  mirrored en===ar), `Body` a **single Markdown string** (only Name is bilingual — domain-model §403 marks Body
+  plain, and en===ar makes a 2nd body locale pointless; advisor-caught over-mirror of Document), `TargetType`
+  enum, `Version` a **plain counter** (no snapshot history — FR-117 versioning is a Document-only concern; FR-119
+  asks only for edit). `Create`→Active v1, `Edit`→Version++ (Name+Body; TargetType immutable), `Deprecate`→
+  terminal soft-delete (permanent retention).
+- **OQ-051 resolved → Approved:** `TargetType` = FR-119's set `{Topic, Adr, MinutesOfMeeting, ResearchMission}`,
+  not the §403 sketch `{…, Document, Action}` — requirement is the contract (LLM01); §403 was self-contradictory;
+  Document/Action have no FR (YAGNI, string enum = addable later with no migration). domain-model §402-404
+  reconciled in-PR; spelling mirrors Traceability `ArtifactType`.
+- **CQRS/endpoints:** `CreateTemplate`/`EditTemplate`/`DeprecateTemplate`/`GetTemplateByKey`/
+  `GetTemplatesRegister` (+ **`targetType` filter — the P15h seam**) → `/api/knowledge/templates/*`; mutations
+  `Policies.TemplateManage` (already registered — Chair/Sec/**Admin**), reads committee-wide. Enriched audit
+  (`Knowledge.Template*`). **RBAC backstop** `KnowledgeRoles.TemplateManage` **includes Administrator** (unlike
+  DocumentManage) to match its matrix row — else a valid Admin passing the endpoint policy is wrongly 403'd at the
+  MediatR boundary. Migration `Knowledge_AddTemplate` (one `templates` table, same DbContext — no counter-schema
+  change; TPL- rides the per-prefix `knowledge_key_counters`).
+- **Gates (independently re-verified):** build clean; **Domain 241 (+8) / Architecture 49 / Api 226 (+7) /
+  Application 854 (+9)** all pass; `dotnet format` clean (BOM + file-scoped-namespace on the generated migration);
+  coverage — **no Knowledge/Template file <95%** (the 6 flagged are the pre-existing Docker-gated shared infra,
+  green on CI), global 98.69%. Admin-can-create proven at the API (the one behavioural difference from documents);
+  409 via terminal-state conflict (edit/deprecate a Deprecated template — InMemory can't enforce rowversion; real
+  409 is SQL-enforced). **FR-119 → Met (backend).** Next = **P15e** Knowledge UI (wiki + template management,
+  INV-014 live pixel-VR) → P15f/g global search (OQ-034 + INV-002) → P15h template pre-fill (reads the targetType
+  seam).
+
+---
+
 ### 2026-07-14 — P15d-1 Knowledge backend: Document (FR-116/117)
 
 **Done (all gates green, awaiting commit GO)** — branch `feat/p15d1-knowledge-document`, plan
