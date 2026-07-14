@@ -41,6 +41,8 @@
     <ProjectReference Include="..\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Research\Research.Application\Acmp.Modules.Research.Application.csproj" />
     <ProjectReference Include="..\Modules\Research\Research.Infrastructure\Acmp.Modules.Research.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Knowledge\Knowledge.Application\Acmp.Modules.Knowledge.Application.csproj" />
+    <ProjectReference Include="..\Modules\Knowledge\Knowledge.Infrastructure\Acmp.Modules.Knowledge.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Integrations\Webex\Acmp.Modules.Integrations.Webex.csproj" />
     <!-- Shared composition root (ADR-0024): AddAcmpModules / AddAcmpHangfireStorage, shared with Acmp.Worker. -->
     <ProjectReference Include="..\Acmp.Bootstrap\Acmp.Bootstrap.csproj" />

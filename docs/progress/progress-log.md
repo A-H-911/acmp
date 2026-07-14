@@ -12,6 +12,36 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-14 — P15d-1 Knowledge backend: Document (FR-116/117)
+
+**Done (all gates green, awaiting commit GO)** — branch `feat/p15d1-knowledge-document`, plan
+`~/.claude/plans/nothing-clear-for-me-steady-cerf.md` (operator-approved after a devil's-advocate pass).
+First of two GO-gated P15d PRs (Template = P15d-2). New **Knowledge** module (schema `knowledge`, 3 projects
+mirroring Research), one aggregate now: **Document** (DOC-).
+- **Document** (`Draft → Published → Archived`, `byte[] RowVersion` → 409): `Title`/`Body` bilingual
+  (LocalizedString, mirrored en===ar), `Category` (free-text, FR-116 — domain-model omits it, added per the
+  requirement), `Tags`, `OwnerUserId` (Keycloak-sub **attribution only** — a Document isn't topic-scoped so,
+  like ADRs, Chair/Sec are the effective writers; OQ per-doc owner enforcement). **FR-117 versioning** = an
+  **owned immutable `DocumentVersion` snapshot** (Version, Title, Body, SavedAt, SavedBy) appended on every
+  content save (Create/Edit → `Version++`); Publish/Archive change status only (audited, no new version).
+- **CQRS/endpoints:** `CreateDocument`/`EditDocument`/`Publish`/`Archive`/`GetDocumentByKey`(+versions)/
+  `GetDocumentsRegister` → `/api/knowledge/documents/*`; mutations `Policies.DocumentManage` (already
+  registered), reads committee-wide. Enriched audit (`Knowledge.Document*`) in the shared ambient tx +
+  `sp_getapplock` (ADR-0028) via the shared `DbConnection` + `.AddAcmpAuditInterceptors`.
+- **Registrations:** ★ `KnowledgeDbContext` in `MigrationRunner` (the P11a-bug gate), `AddKnowledgeModule` +
+  MediatR assembly in `AcmpCompositionRoot`, `MapKnowledgeEndpoints` in `Program.cs`, ArchUnit boundary
+  rules, InMemory swap in `AcmpWebApplicationFactory`; migration `Knowledge_Init` (schema `knowledge`:
+  documents + document_versions + key_counters).
+- **Gates (independently re-verified, not sub-agent trust):** build clean; **Domain 233 / Architecture 49 /
+  Api 219 / Application 845** all pass; `dotnet format` clean; coverage — **no Knowledge file <95%** (the 3
+  files flagged are pre-existing shared infra covered by the Docker-gated Integration suite, green on CI).
+- **Decisions/flags:** `TargetType` conflict is P15d-2 (Template). **OQ-051** (FR-119 vs domain-model §403
+  target types) + the Category doc-gap logged. RowVersion 409 proven via terminal-state conflict at the API
+  (InMemory can't enforce rowversion — the Research precedent); real rowversion 409 is SQL-enforced. Next =
+  **P15d-2 Template** → P15e Knowledge UI.
+
+---
+
 ### 2026-07-13 — P15c-2 Research convert frontend (W16, FR-113/114/115)
 
 **Done** — branch `feat/p15c2-research-convert-frontend`, plan `~/.claude/plans/nothing-clear-for-me-steady-cerf.md` (operator-approved after a devil's-advocate pass). **Frontend-only** — no backend/DB change; wires the SPA against the P15c-1 API surface (#113).

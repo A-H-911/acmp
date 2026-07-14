@@ -88,6 +88,7 @@ app.MapDependencyEndpoints();
 app.MapAdrEndpoints();
 app.MapInvariantEndpoints();
 app.MapResearchEndpoints(); // P15a: research missions + findings + recommendations
+app.MapKnowledgeEndpoints(); // P15d: knowledge documents (versioned wiki)
 app.MapNotificationEndpoints();
 app.MapAdminEndpoints();
 app.MapAuditEndpoints(); // AC-017/019/020: Auditor read + on-demand chain-verify (read-only)

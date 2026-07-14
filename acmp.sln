@@ -121,6 +121,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Research.Appli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Research.Infrastructure", "src\Modules\Research\Research.Infrastructure\Acmp.Modules.Research.Infrastructure.csproj", "{6374D423-0FB4-407E-B090-49D709DF15A7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Knowledge", "Knowledge", "{3BBFC6DA-6963-4572-A838-46A11EF322C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Knowledge.Domain", "src\Modules\Knowledge\Knowledge.Domain\Acmp.Modules.Knowledge.Domain.csproj", "{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Knowledge.Application", "src\Modules\Knowledge\Knowledge.Application\Acmp.Modules.Knowledge.Application.csproj", "{9D742134-5E52-4938-BB2E-B8323E1782D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acmp.Modules.Knowledge.Infrastructure", "src\Modules\Knowledge\Knowledge.Infrastructure\Acmp.Modules.Knowledge.Infrastructure.csproj", "{735FD81C-5254-4F54-B06A-95E9A97A05BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -302,6 +310,18 @@ Global
 		{6374D423-0FB4-407E-B090-49D709DF15A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6374D423-0FB4-407E-B090-49D709DF15A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6374D423-0FB4-407E-B090-49D709DF15A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D742134-5E52-4938-BB2E-B8323E1782D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D742134-5E52-4938-BB2E-B8323E1782D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D742134-5E52-4938-BB2E-B8323E1782D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D742134-5E52-4938-BB2E-B8323E1782D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{735FD81C-5254-4F54-B06A-95E9A97A05BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{735FD81C-5254-4F54-B06A-95E9A97A05BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{735FD81C-5254-4F54-B06A-95E9A97A05BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{735FD81C-5254-4F54-B06A-95E9A97A05BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{116B21B8-2E5B-403D-AF2A-B7C5A3699ACB} = {ACEAF987-769F-4821-877C-AB0580F265DB}
@@ -360,5 +380,9 @@ Global
 		{D6577DD3-9ACB-46C2-9766-C7B1061CFA26} = {6C3B87F0-ED35-4BA6-827B-CB647DF39DD6}
 		{14C7C3DF-96E3-4CCB-9A91-62B9FCC250CB} = {6C3B87F0-ED35-4BA6-827B-CB647DF39DD6}
 		{6374D423-0FB4-407E-B090-49D709DF15A7} = {6C3B87F0-ED35-4BA6-827B-CB647DF39DD6}
+		{3BBFC6DA-6963-4572-A838-46A11EF322C3} = {F7D11363-72BC-4081-96DA-6DD9C65235F2}
+		{3BCD8E20-7BC2-43A7-BB88-AF242F19C25C} = {3BBFC6DA-6963-4572-A838-46A11EF322C3}
+		{9D742134-5E52-4938-BB2E-B8323E1782D8} = {3BBFC6DA-6963-4572-A838-46A11EF322C3}
+		{735FD81C-5254-4F54-B06A-95E9A97A05BF} = {3BBFC6DA-6963-4572-A838-46A11EF322C3}
 	EndGlobalSection
 EndGlobal
