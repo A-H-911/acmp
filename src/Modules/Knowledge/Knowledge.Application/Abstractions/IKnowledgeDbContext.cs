@@ -9,5 +9,6 @@ namespace Acmp.Modules.Knowledge.Application.Abstractions;
 public interface IKnowledgeDbContext
 {
     DbSet<Document> Documents { get; }
+    DbSet<Template> Templates { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

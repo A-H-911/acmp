@@ -1,8 +1,13 @@
 ﻿using Acmp.Modules.Knowledge.Application.Features.CreateDocument;
+using Acmp.Modules.Knowledge.Application.Features.CreateTemplate;
+using Acmp.Modules.Knowledge.Application.Features.DeprecateTemplate;
 using Acmp.Modules.Knowledge.Application.Features.DocumentLifecycle;
 using Acmp.Modules.Knowledge.Application.Features.EditDocument;
+using Acmp.Modules.Knowledge.Application.Features.EditTemplate;
 using Acmp.Modules.Knowledge.Application.Features.GetDocumentByKey;
 using Acmp.Modules.Knowledge.Application.Features.GetDocumentsRegister;
+using Acmp.Modules.Knowledge.Application.Features.GetTemplateByKey;
+using Acmp.Modules.Knowledge.Application.Features.GetTemplatesRegister;
 using Acmp.Modules.Knowledge.Domain.Enums;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Domain.ValueObjects;
@@ -63,10 +68,53 @@ public static class KnowledgeEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.DocumentManage);
 
+        MapTemplateEndpoints(app);
         return app;
+    }
+
+    // FR-119: reusable artifact templates (TPL-). Same auth shape as documents — reads are committee-wide, every
+    // mutation is Template.Manage (Chairman/Secretary/Administrator; no allow-if-owner).
+    private static void MapTemplateEndpoints(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/knowledge/templates").WithTags("Knowledge").RequireAuthorization();
+
+        group.MapGet("/", async (ISender sender, CancellationToken ct,
+            TemplateStatus[]? status = null, TemplateTargetType? targetType = null, string? search = null,
+            string sortBy = "created", string sortDir = "desc", int page = 1, int pageSize = 25) =>
+            Results.Ok(await sender.Send(new GetTemplatesRegisterQuery(
+                status is { Length: > 0 } ? status : null, targetType, search, sortBy, sortDir, page, pageSize), ct)));
+
+        group.MapGet("/{key}", async (string key, ISender sender, CancellationToken ct) =>
+        {
+            var template = await sender.Send(new GetTemplateByKeyQuery(key), ct);
+            return template is null ? Results.NotFound() : Results.Ok(template);
+        });
+
+        // FR-119: author a new template (Active).
+        group.MapPost("/", async (CreateTemplateBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new CreateTemplateCommand(body.Name, body.TargetType, body.Body), ct);
+            return Results.Created($"/api/knowledge/templates/{result.Key}", result);
+        }).RequireAuthorization(Policies.TemplateManage);
+
+        // FR-119: revise Name + Body (bumps Version; TargetType is immutable).
+        group.MapPut("/{id:guid}", async (Guid id, EditTemplateBody body, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new EditTemplateCommand(id, body.Name, body.Body), ct)))
+            .RequireAuthorization(Policies.TemplateManage);
+
+        // FR-119: soft delete (Active → Deprecated; terminal).
+        group.MapPost("/{id:guid}/deprecate", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new DeprecateTemplateCommand(id), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TemplateManage);
     }
 
     public sealed record CreateDocumentBody(LocalizedString Title, string Category, LocalizedString Body, IReadOnlyList<string>? Tags);
 
     public sealed record EditDocumentBody(LocalizedString Title, string Category, LocalizedString Body);
+
+    public sealed record CreateTemplateBody(LocalizedString Name, TemplateTargetType TargetType, string Body);
+
+    public sealed record EditTemplateBody(LocalizedString Name, string Body);
 }

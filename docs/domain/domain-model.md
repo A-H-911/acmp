@@ -399,9 +399,10 @@ Per the brief's mandated simplifications (avoid over-engineering, explicit domai
 - **Retention:** permanent (archived, not deleted).
 
 #### Template
-- **Purpose:** A reusable template for topics, ADRs, MoM, documents (template management feature).
-- **Key attributes:** `Id:Guid` · `Key:string` (`TPL-…`) · `Name:LocalizedString` · `TargetType:enum{Topic,ADR,MoM,Document,Action}` · `Body:json/Markdown` · `Status:enum{Active,Deprecated}` · `Version:int`.
-- **Relationships:** instantiated by `Document`/`ADR`/`MinutesOfMeeting`/`Topic`.
+- **Purpose:** A reusable template for topics, ADRs, MoM, and research missions (template management feature).
+- **Key attributes:** `Id:Guid` · `Key:string` (`TPL-…`) · `Name:LocalizedString` · `TargetType:enum{Topic,Adr,MinutesOfMeeting,ResearchMission}` · `Body:Markdown` · `Status:enum{Active,Deprecated}` · `Version:int`.
+  - **OQ-051 (resolved, P15d-2):** `TargetType` is FR-119's set `{Topic, ADR, MoM, Research Mission}`, not the earlier sketch `{Topic, ADR, MoM, Document, Action}` — the functional requirement is the contract (OWASP LLM01), and Document/Action had no FR (YAGNI; addable later with no migration). Member spelling mirrors Traceability `ArtifactType`. `Body` is a single Markdown string (only `Name` is bilingual; en===ar makes a second body locale pointless).
+- **Relationships:** instantiated by `Topic`/`ADR`/`MinutesOfMeeting`/`ResearchMission`.
 - **Owning module:** Knowledge.
 - **Lifecycle:** `Active → Deprecated` (versioned).
 - **Permissions:** `Template.Manage` (23, Secretary/Chairman/Administrator).

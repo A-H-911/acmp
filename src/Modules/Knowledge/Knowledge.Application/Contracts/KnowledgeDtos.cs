@@ -39,3 +39,27 @@ public sealed record DocumentDetailDto(
     IReadOnlyList<DocumentVersionDto> Versions,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);
+
+// Template read models (P15d-2, FR-119). Name is bilingual; Body is a single Markdown string. TargetType + Status
+// project as their string names. The register row omits Body (the register lists templates; the detail carries
+// the content).
+public sealed record TemplateSummaryDto(
+    Guid Id,
+    string Key,
+    LocalizedString Name,
+    string TargetType,
+    string Status,
+    int Version,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
+public sealed record TemplateDetailDto(
+    Guid Id,
+    string Key,
+    LocalizedString Name,
+    string TargetType,
+    string Body,
+    string Status,
+    int Version,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
