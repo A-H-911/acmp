@@ -26,6 +26,7 @@ const SEGMENT_AREA: Record<string, AreaKey> = {
   dependencies: 'deps',
   research: 'research',
   wiki: 'wiki',
+  templates: 'templates',
   diagrams: 'diagrams',
   reports: 'reports',
   audit: 'audit',
@@ -49,6 +50,7 @@ function leafCrumb(segs: readonly string[], t: TFunction): Crumb | null {
   if (a === 'invariants' && b) return { label: b, mono: true };
   if (a === 'risks' && b) return { label: b, mono: true };
   if (a === 'dependencies' && b) return { label: b, mono: true };
+  if (a === 'wiki' && b) return { label: b, mono: true };
   return null;
 }
 

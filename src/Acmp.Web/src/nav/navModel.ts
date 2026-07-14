@@ -12,7 +12,7 @@ import type { IconName } from '../components/icons';
 export type AccessLevel = 'full' | 'view' | 'none';
 export type AreaKey =
   | 'session' | 'submit' | 'home' | 'backlog' | 'agenda' | 'decisions' | 'actions'
-  | 'adrs' | 'risks' | 'deps' | 'research' | 'wiki' | 'diagrams'
+  | 'adrs' | 'risks' | 'deps' | 'research' | 'wiki' | 'templates' | 'diagrams'
   | 'reports' | 'audit' | 'admin';
 
 export interface NavArea {
@@ -38,6 +38,7 @@ export const AREAS: Record<AreaKey, NavArea> = {
   deps: { key: 'deps', labelKey: 'nav.deps', path: '/dependencies', icon: 'deps' },
   research: { key: 'research', labelKey: 'nav.research', path: '/research', icon: 'research' },
   wiki: { key: 'wiki', labelKey: 'nav.wiki', path: '/wiki', icon: 'wiki' },
+  templates: { key: 'templates', labelKey: 'nav.templates', path: '/templates', icon: 'template' },
   diagrams: { key: 'diagrams', labelKey: 'nav.diagrams', path: '/diagrams', icon: 'diagram' },
   reports: { key: 'reports', labelKey: 'nav.reports', path: '/reports', icon: 'reports' },
   audit: { key: 'audit', labelKey: 'nav.audit', path: '/audit', icon: 'audit' },
@@ -58,6 +59,7 @@ const ACCESS: Record<AreaKey, Partial<Record<CommitteeRole, AccessLevel>>> = {
   deps: { chairman: 'view', secretary: 'full', member: 'view', reviewer: 'view', auditor: 'view' },
   research: { chairman: 'view', secretary: 'full', member: 'full', reviewer: 'view', auditor: 'view' },
   wiki: { chairman: 'view', secretary: 'full', member: 'full', reviewer: 'view', auditor: 'view' },
+  templates: { chairman: 'full', secretary: 'full', member: 'view', reviewer: 'view', auditor: 'view', administrator: 'full' },
   diagrams: { chairman: 'view', secretary: 'view', member: 'view', reviewer: 'view', auditor: 'view', guest: 'view' },
   reports: { chairman: 'full', secretary: 'full', member: 'view', reviewer: 'view', auditor: 'view', administrator: 'view' },
   audit: { auditor: 'full', chairman: 'view', secretary: 'view' },
@@ -69,7 +71,7 @@ const GROUPS: { labelKey: string | null; items: AreaKey[] }[] = [
   { labelKey: null, items: ['session', 'submit'] },
   { labelKey: 'navGroup.committee', items: ['home', 'backlog', 'agenda', 'decisions', 'actions'] },
   { labelKey: 'navGroup.governance', items: ['adrs', 'risks', 'deps'] },
-  { labelKey: 'navGroup.knowledge', items: ['research', 'wiki', 'diagrams'] },
+  { labelKey: 'navGroup.knowledge', items: ['research', 'wiki', 'templates', 'diagrams'] },
   { labelKey: 'navGroup.insights', items: ['reports'] },
   { labelKey: 'navGroup.system', items: ['audit', 'admin'] },
 ];

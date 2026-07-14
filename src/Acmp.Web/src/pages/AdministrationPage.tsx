@@ -19,10 +19,10 @@ import { JobMonitor } from '../features/administration/JobMonitor';
 import { ComingDataTab } from '../features/administration/ComingDataTab';
 import '../styles/administration.css';
 
-// The seven Administration sub-tabs, in design order.
+// The Administration sub-tabs, in design order. Templates moved to the standalone /templates route
+// (P15e) in the Knowledge nav group, so it is no longer an Admin tab.
 const TABS: { id: string; icon: IconName }[] = [
   { id: 'users', icon: 'usersGroup' },
-  { id: 'templates', icon: 'template' },
   { id: 'health', icon: 'activity' },
   { id: 'streams', icon: 'stream' },
   { id: 'roles', icon: 'shieldUser' },
@@ -64,7 +64,6 @@ export default function AdministrationPage() {
       {sub === 'health' && <SystemHealth />}
       {sub === 'roles' && <RolesReference />}
       {sub === 'notifications' && <NotificationSettings />}
-      {sub === 'templates' && <ComingDataTab tab="templates" icon="template" />}
       {sub === 'streams' && <ComingDataTab tab="streams" icon="stream" />}
       {sub === 'jobs' && <JobMonitor />}
     </section>
