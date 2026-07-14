@@ -97,6 +97,15 @@
 
 /* ---------- detail: header card ---------- */
 .rsc-detail { display: flex; flex-direction: column; gap: 16px; }
+/* Two-column detail (P15c-2): content + the shared Linked-items panel — mirrors the P10f/P11e detail grid
+   (e.g. .act-detail-grid). Collapses to one column on narrow screens. */
+.rsc-detail-grid { display: grid; grid-template-columns: 1fr 320px; gap: 18px; align-items: start; }
+.rsc-detail-main { min-inline-size: 0; display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 860px) { .rsc-detail-grid { grid-template-columns: 1fr; } }
+/* Navigable topic xref (FR-115 header + a converted recommendation's link). */
+.rsc-xref-link { display: inline-flex; align-items: center; gap: 5px; color: var(--accent); text-decoration: none; }
+.rsc-xref-link:hover { text-decoration: underline; }
+.rsc-xref { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
 .rsc-head-card { padding: 18px 20px; }
 .rsc-head-row {
   display: flex;

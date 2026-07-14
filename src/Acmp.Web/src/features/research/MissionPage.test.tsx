@@ -33,6 +33,29 @@ vi.mock('../../api/research', async (orig) => ({
 }));
 import { useMission } from '../../api/research';
 
+// The mission's typed-edge read (header xref + per-rec converted state) is mocked so the unit test drives it
+// directly. Default = no edges; tests override per scenario via relsFor.impl. Non-hook exports (hrefFor lives
+// in traceMeta, not here) are preserved.
+type RelsResult = { data: { outgoing: unknown[]; incoming: unknown[] } | undefined; isLoading: boolean; isError: boolean };
+const relsFor = vi.hoisted(() => ({
+  impl: (_type: string, _id?: string): RelsResult => ({ data: { outgoing: [], incoming: [] }, isLoading: false, isError: false }),
+}));
+vi.mock('../../api/traceability', async (orig) => ({
+  ...(await orig<typeof import('../../api/traceability')>()),
+  useArtifactRelationships: (type: string, id?: string) => relsFor.impl(type, id),
+}));
+// Heavy shared children with their own tests — stubbed so this stays a focused MissionPage unit test.
+vi.mock('../traceability/TraceabilityPanel', () => ({
+  TraceabilityPanel: (p: { traceType: string; artifactKey: string }) => (
+    <aside data-testid="trace-panel" data-tracetype={p.traceType} data-artifactkey={p.artifactKey} />
+  ),
+}));
+vi.mock('./ConvertToTopicDialog', () => ({
+  ConvertToTopicDialog: (p: { recommendationId?: string; seedTitle: string; seedDescription: string }) => (
+    <div data-testid="convert-dialog" data-rec={p.recommendationId ?? ''} data-seed={p.seedTitle} data-desc={p.seedDescription} />
+  ),
+}));
+
 const mockMission = useMission as unknown as Mock;
 
 const ACTIVE: MissionDetail = {
@@ -75,6 +98,7 @@ describe('MissionPage (P15b)', () => {
   beforeEach(() => {
     mockMission.mockReset();
     Object.values(fns).forEach((f) => f.mockReset().mockResolvedValue(undefined));
+    relsFor.impl = () => ({ data: { outgoing: [], incoming: [] }, isLoading: false, isError: false });
   });
 
   it('shows the loading state while fetching', () => {
@@ -262,6 +286,74 @@ describe('MissionPage (P15b)', () => {
       rationale: null,
       priority: 'Medium',
     });
+  });
+
+  // ---- P15c-2: convert + traceability -----------------------------------------------------------
+  it('Completed + Chair/Sec: offers "Convert to execution topic"; Active does not', () => {
+    result({ data: COMPLETED });
+    setup(['secretary']);
+    expect(screen.getByRole('button', { name: 'Convert to execution topic' })).toBeInTheDocument();
+  });
+
+  it('does not offer mission-level convert on an Active mission (backend needs Completed)', () => {
+    result({ data: ACTIVE });
+    setup();
+    expect(screen.queryByRole('button', { name: 'Convert to execution topic' })).not.toBeInTheDocument();
+  });
+
+  it('opens the convert dialog seeded from the mission', async () => {
+    result({ data: COMPLETED });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Convert to execution topic' }));
+    const dlg = screen.getByTestId('convert-dialog');
+    expect(dlg).toHaveAttribute('data-rec', '');
+    expect(dlg).toHaveAttribute('data-seed', 'Evaluate a unified IdP');
+  });
+
+  it('renders the linked topic as a navigable xref when the incoming edge exists (FR-115)', () => {
+    relsFor.impl = (type) => type === 'ResearchMission'
+      ? { data: { outgoing: [], incoming: [{ otherType: 'Topic', otherKey: 'TOP-2026-014' }] }, isLoading: false, isError: false }
+      : { data: { outgoing: [], incoming: [] }, isLoading: false, isError: false };
+    result({ data: ACTIVE });
+    setup();
+    const link = screen.getByRole('link', { name: /Linked topic/ });
+    expect(link).toHaveAttribute('href', '/topics/TOP-2026-014');
+    expect(link).toHaveTextContent('TOP-2026-014');
+  });
+
+  it('falls back to a plain linked-topic indicator when no edge exists (older missions)', () => {
+    result({ data: ACTIVE }); // sourceTopicId is set; default mock = no edges
+    setup();
+    expect(screen.queryByRole('link', { name: /Linked topic/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Linked topic')).toBeInTheDocument();
+  });
+
+  it('offers per-recommendation Convert on an Accepted rec and seeds the dialog from it', async () => {
+    result({ data: ACTIVE });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Convert' }));
+    const dlg = screen.getByTestId('convert-dialog');
+    expect(dlg).toHaveAttribute('data-rec', 'r2');
+    expect(dlg).toHaveAttribute('data-seed', 'Require a rollback before cutover');
+  });
+
+  it('shows an edge-driven Converted link and hides Convert even if the status flag lags (self-heal)', () => {
+    relsFor.impl = (type, id) => type === 'Recommendation' && id === 'r2'
+      ? { data: { outgoing: [{ otherType: 'Topic', otherKey: 'TOP-2026-020' }], incoming: [] }, isLoading: false, isError: false }
+      : { data: { outgoing: [], incoming: [] }, isLoading: false, isError: false };
+    result({ data: ACTIVE });
+    setup();
+    expect(screen.getByText('Converted')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /TOP-2026-020/ })).toHaveAttribute('href', '/topics/TOP-2026-020');
+    expect(screen.queryByRole('button', { name: 'Convert' })).not.toBeInTheDocument();
+  });
+
+  it('mounts the Linked-items panel focused on the mission', () => {
+    result({ data: ACTIVE });
+    setup();
+    const panel = screen.getByTestId('trace-panel');
+    expect(panel).toHaveAttribute('data-tracetype', 'ResearchMission');
+    expect(panel).toHaveAttribute('data-artifactkey', 'RSCH-2026-005');
   });
 
   it('is axe-clean on an Active mission (WCAG 2.2 AA structure/ARIA)', async () => {

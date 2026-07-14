@@ -18,6 +18,7 @@ vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn() }));
 vi.mock('../../api/decisions', () => ({ useDecision: vi.fn() }));
 vi.mock('../../api/actions', () => ({ useAction: vi.fn() }));
 vi.mock('../../api/risks', () => ({ useRisk: vi.fn() }));
+vi.mock('../../api/research', () => ({ useMission: vi.fn() }));
 // Children have their own tests — reduce them to markers so this test is about the container.
 vi.mock('./ImpactGraph', () => ({ ImpactGraph: ({ focusKey, focusTitle }: { focusKey: string; focusTitle: string }) => <div>GRAPH {focusKey} {focusTitle}</div> }));
 vi.mock('./ImpactGraphList', () => ({ ImpactGraphList: () => <div>LIST_VIEW</div> }));
@@ -29,11 +30,12 @@ import { useTopicDetail } from '../../api/topics';
 import { useDecision } from '../../api/decisions';
 import { useAction } from '../../api/actions';
 import { useRisk } from '../../api/risks';
+import { useMission } from '../../api/research';
 
 const mockGraph = useTraceGraph as unknown as Mock;
 const mockRels = useArtifactRelationships as unknown as Mock;
 const mockDeps = useArtifactDependencies as unknown as Mock;
-const mocks = { Topic: useTopicDetail, Decision: useDecision, Action: useAction, Risk: useRisk } as Record<string, unknown>;
+const mocks = { Topic: useTopicDetail, Decision: useDecision, Action: useAction, Risk: useRisk, ResearchMission: useMission } as Record<string, unknown>;
 
 const graphData = { focusType: 'Topic', focusId: 'g1', depth: 2, nodes: [], edges: [], partial: false };
 function graphState(over: Record<string, unknown> = {}) {
@@ -81,6 +83,14 @@ describe('ImpactGraphPage (P10f)', () => {
     (mocks.Decision as Mock).mockReturnValue({ data: { id: 'd1', title: { en: 'Approve', ar: 'موافقة' } }, isLoading: false, isError: false });
     renderPage('/traceability/Decision/DECN-8');
     expect(screen.getByText(/GRAPH DECN-8 Approve/)).toBeInTheDocument();
+  });
+
+  it('cold path: resolves a ResearchMission (bilingual title) by key — graph opens on refresh (FR-113)', () => {
+    (mocks.ResearchMission as Mock).mockReturnValue({ data: { id: 'rm1', title: { en: 'Unified IdP', ar: 'موفّر موحّد' } }, isLoading: false, isError: false });
+    renderPage('/traceability/ResearchMission/RSCH-2026-005');
+    expect(useMission).toHaveBeenCalledWith('RSCH-2026-005');
+    expect(useTraceGraph).toHaveBeenLastCalledWith('ResearchMission', 'rm1', 2);
+    expect(screen.getByText(/GRAPH RSCH-2026-005 Unified IdP/)).toBeInTheDocument();
   });
 
   it('a valid but non-focusable type (no warm state) shows the unsupported hint', () => {

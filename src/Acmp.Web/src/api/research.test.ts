@@ -4,6 +4,7 @@ import {
   useResearchRegister, useResearchCounts, useMission, useCreateMission,
   useActivateMission, useCompleteMission, useCancelMission,
   useAddFinding, useVerifyFinding, useAddRecommendation, useSetRecommendationStatus,
+  useMarkRecommendationConverted,
 } from './research';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
@@ -147,6 +148,17 @@ describe('finding + recommendation mutations', () => {
     await result.current.mutateAsync({ id: 'm1', recommendationId: 'r1', status: 'Accepted' });
     expect(urlOf(spy)).toBe('/api/research/m1/recommendations/r1/status');
     expect(lastBody(spy)).toEqual({ status: 'Accepted' });
+    expect(inval).toHaveBeenCalledWith({ queryKey: ['research'] });
+  });
+
+  it('markRecommendationConverted POSTs the topicId to the convert sub-route', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const inval = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useMarkRecommendationConverted(), { wrapper });
+    await result.current.mutateAsync({ id: 'm1', recommendationId: 'r2', topicId: 'top-guid' });
+    expect(urlOf(spy)).toBe('/api/research/m1/recommendations/r2/convert');
+    expect(lastBody(spy)).toEqual({ topicId: 'top-guid' });
     expect(inval).toHaveBeenCalledWith({ queryKey: ['research'] });
   });
 });

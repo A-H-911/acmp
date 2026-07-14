@@ -10,6 +10,7 @@ import {
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
+  useConvertResearchToTopic,
 } from './topics';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
@@ -198,5 +199,21 @@ describe('topic mutations', () => {
     result.current.mutate({ topicId: 'abc', file: new File(['x'], 'a.pdf') });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  it('useConvertResearchToTopic POSTs /topics/from-research and invalidates the backlog', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { id: 'top-guid', key: 'TOP-2026-030' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useConvertResearchToTopic(), { wrapper });
+    const body = {
+      missionId: 'm1', recommendationId: 'r2', title: 'T', description: 'D', justification: 'J',
+      type: 'ResearchDiscovery', urgency: 'Normal', streams: ['IAM'], systems: [], tags: [],
+    };
+    result.current.mutate(body);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/topics/from-research');
+    expect(lastBody(spy)).toEqual(body);
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
   });
 });

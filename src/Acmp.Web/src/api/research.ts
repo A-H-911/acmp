@@ -28,8 +28,11 @@ export type Confidence = 'Low' | 'Medium' | 'High';
 /** A recommendation's priority band (FR-113) — wire = enum names. */
 export type RecommendationPriority = 'Low' | 'Medium' | 'High';
 
-/** A recommendation's disposition (FR-113). P15a allows Proposed → Accepted | Rejected only. */
-export type RecommendationStatus = 'Proposed' | 'Accepted' | 'Rejected';
+/**
+ * A recommendation's disposition (FR-113). P15a allows Proposed → Accepted | Rejected; P15c adds
+ * Converted (Accepted → Converted) when the recommendation is turned into an execution topic (W16).
+ */
+export type RecommendationStatus = 'Proposed' | 'Accepted' | 'Rejected' | 'Converted';
 
 export interface Finding {
   id: string;
@@ -202,5 +205,19 @@ export function useSetRecommendationStatus() {
   return useMissionTransition<{ id: string; recommendationId: string; status: RecommendationStatus }>(
     (v) => `/research/${v.id}/recommendations/${v.recommendationId}/status`,
     (v) => ({ status: v.status }),
+  );
+}
+
+/**
+ * W16 (P15c): mark an accepted recommendation Converted after its execution topic was created
+ * (POST /research/{id}/recommendations/{recId}/convert, body { topicId } → 204). This is a best-effort
+ * DISPLAY flag — the real convert (topic + Informs edge) is the /topics/from-research call; a failed
+ * mark here never loses the topic, and the "Converted" chip is edge-driven so it self-heals. Invalidates
+ * ['research'] so the mission detail refetches with the new status.
+ */
+export function useMarkRecommendationConverted() {
+  return useMissionTransition<{ id: string; recommendationId: string; topicId: string }>(
+    (v) => `/research/${v.id}/recommendations/${v.recommendationId}/convert`,
+    (v) => ({ topicId: v.topicId }),
   );
 }

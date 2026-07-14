@@ -242,6 +242,27 @@ describe('SubmitTopic (P5b)', () => {
     expect(screen.queryByText('identity')).not.toBeInTheDocument();
   });
 
+  it('syncs the active section as fieldsets scroll into view (IntersectionObserver scroll-spy)', () => {
+    type IOEntry = { target: { id: string }; isIntersecting: boolean };
+    const callbacks: Array<(e: IOEntry[]) => void> = [];
+    class IOStub {
+      constructor(cb: (e: IOEntry[]) => void) { callbacks.push(cb); }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', IOStub);
+    setup();
+    expect(callbacks).toHaveLength(1);
+    const nav = screen.getByRole('navigation', { name: i18n.t('submit.sectionsLabel') });
+    const steps = within(nav).getAllByRole('button'); // type, justification, scope, attachments, urgency
+    // The 'scope' section (index 2) scrolls into view → its nav item becomes current.
+    act(() => callbacks[0]([{ target: { id: 'sec-scope' }, isIntersecting: true }]));
+    expect(steps[2]).toHaveAttribute('aria-current', 'step');
+    // Scrolling it back out re-resolves the topmost visible section (none → no throw).
+    act(() => callbacks[0]([{ target: { id: 'sec-scope' }, isIntersecting: false }]));
+    vi.unstubAllGlobals();
+  });
+
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {
     const { container } = (() => {
       setup();
