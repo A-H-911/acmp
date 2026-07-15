@@ -30,6 +30,7 @@ import { RisksRegister } from './features/risks/RisksRegister';
 import { RiskPage } from './features/risks/RiskPage';
 import { ResearchRegister } from './features/research/ResearchRegister';
 import { MissionPage } from './features/research/MissionPage';
+import { SearchPage } from './features/search/SearchPage';
 import { WikiPage } from './features/wiki/WikiPage';
 import { TemplatesRegister } from './features/templates/TemplatesRegister';
 import { DependenciesRegister } from './features/dependencies/DependenciesRegister';
@@ -92,7 +93,7 @@ export const appRoutes = createRoutesFromElements(
         <Route path="templates" element={<TemplatesRegister />} />
         <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
         <Route path="reports" element={<ReportsPage />} />
-        <Route path="search" element={<PlaceholderPage titleKey="common.search" />} />
+        <Route path="search" element={<SearchPage />} />
 
         <Route path="admin" element={<RequireRole roles={['administrator']} />}>
           <Route index element={<Navigate to="/admin/users" replace />} />

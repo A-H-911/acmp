@@ -136,6 +136,14 @@ when the FTS-enabled image exists.
 The P1 `docker-compose` uses the stock image (no FTS needed yet for the foundation); a `Dockerfile.sqlserver`
 (FROM the base + FTS) is added when search lands. Logged to progress-log; carry into P5 backlog.
 
+**Resolved (P15f, 2026-07-15):** ran the spike on the derived `deploy/Dockerfile.sqlserver` (base +
+`mssql-server-fts`). `IsFullTextInstalled=1`; `sys.fulltext_languages` contains **lcid 1025 (Arabic)**. FREETEXT
+recall over 20 committee-term queries = **82.9% micro-recall (≥80% gate)** — the word-breaker handles inflection
+(ال- prefix, sound + broken plurals) but misses derivation (عمارة↔معماري, بحث). **Decision: SQL Server FTS +
+LIKE-substring booster** (the booster recovers the derivational misses), **single datastore — INV-002 not
+triggered, no OpenSearch, no ADR.** Realized in P15f; proven end-to-end by `SearchProvidersFtsTests` on a real
+FTS SQL Server (AC-061). OQ-034 → Resolved.
+
 ## 8. P1 scaffold scope (what's in / deferred)
 
 **In (P1):** `global.json`, `acmp.sln`, `Acmp.Api` host, `Acmp.Shared` kernel, **Membership** reference

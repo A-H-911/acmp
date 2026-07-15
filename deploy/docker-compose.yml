@@ -2,7 +2,14 @@ name: acmp
 
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Stock SQL Server 2022 + Full-Text Search (global search, FR-143/145). See deploy/Dockerfile.sqlserver.
+    # NOTE: switching a running stack from the old stock image forces a SQL container rebuild — recreate on a
+    # FRESH volume (`docker compose down -v`) or the mssql-data volume/password state mismatches and the
+    # container comes up unhealthy.
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.sqlserver
+    image: acmp/sqlserver-fts:2022
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}

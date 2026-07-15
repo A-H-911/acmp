@@ -26,6 +26,9 @@ public static class GovernanceInfrastructureExtensions
         services.AddScoped<IInvariantKeyGenerator, InvariantKeyGenerator>();
 
         services.AddGovernanceApplication();
+        // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
+        services.AddScoped<Acmp.Shared.Contracts.Search.ISearchProvider, Acmp.Modules.Governance.Infrastructure.Search.AdrSearchProvider>();
+
         return services;
     }
 }

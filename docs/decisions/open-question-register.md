@@ -81,7 +81,7 @@ These entries carry the open questions formerly recorded in the pre-migration `d
 
 | ID | Question | Blocking? | Resolution | Status |
 |---|---|---|---|---|
-| OQ-034 | Is SQL Server's Arabic word-breaker adequate for committee terminology? | Yes | Run a PH-0 spike; proceed with SQL FTS if ≥80% recall, else escalate to app-owned OpenSearch behind the `ISearchIndex` abstraction in PH-2; validate before replacing | Deferred |
+| OQ-034 | Is SQL Server's Arabic word-breaker adequate for committee terminology? | Yes | **Resolved (P15f, 2026-07-15):** spike on the FTS-enabled deploy image (`mssql-server-fts`) → Arabic word-breaker (lcid 1025) present; FREETEXT micro-recall **82.9% ≥ 80%** over 20 committee-term queries (misses Arabic *derivation* which the provider's LIKE booster recovers). **Engine = SQL Server FTS + LIKE booster (single datastore; INV-002 not triggered, no OpenSearch, no ADR).** Evidence: `SearchProvidersFtsTests` (real-stack, AC-061), ph0-validation §7. | Resolved |
 | OQ-035 | Confirm the Urgency SLA thresholds (validation item for FR-038). | No | Critical 3d, Urgent 7d, Normal 21d; configurable; adjust post-PH-1 pilot (duplicate of OQ-005) | Deferred |
 | OQ-036 | Confirm the Architecture Invariant category enum (validation item for FR-106). | No | Security, Performance, Data, Interoperability, Compliance, Other (duplicate of OQ-007) | Deferred |
 

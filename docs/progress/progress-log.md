@@ -12,6 +12,43 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-15 — P15f/g Global Search (FR-143/144/145/118, AC-060/061; OQ-034 resolved)
+
+**What was done.** Global search across the platform, backend + frontend, on branch `feat/p15f-search-backend`.
+
+- **OQ-034 spike (the PH-0 blocker, finally run).** The stock `mssql/server:2022-latest` image ships without
+  Full-Text Search (PH-0 2026-06-25 finding); built a derived `deploy/Dockerfile.sqlserver` (base +
+  `mssql-server-fts`), confirmed `IsFullTextInstalled=1` and the **Arabic word-breaker (lcid 1025)** is present,
+  and measured **82.9% micro-recall** over 20 committee-term queries (misses Arabic *derivation* — عمارة↔معماري,
+  بحث — which a LIKE booster recovers). **Operator ruling: SQL Server FTS + LIKE booster — single datastore,
+  INV-002 NOT triggered, no OpenSearch, no ADR.** OQ-034 → Resolved; ph0-validation §7 updated.
+- **Backend (P15f).** New `ISearchProvider` cross-module read seam in `Acmp.Shared/Contracts/Search` (+ `SearchHit`,
+  `SearchExcerpt`), the `IDecisionReader`/`ITraceabilityReader` precedent (ADR-0001) — 5 per-module impls (Topics,
+  Decisions, ADRs→Governance, MoMs→Meetings, Documents→Knowledge), each querying ONLY its own FTS-indexed columns:
+  `EF.Functions.FreeText(*_ar,1025) ∪ FreeText(*_en,1033) ∪ LIKE`, degrading to LIKE alone on the InMemory test
+  provider. Inline `SearchEndpoints` coordinator (Acmp.Api) fans out **sequentially** (all modules share one
+  per-scope `DbConnection`, ADR-0026) and groups by artifact type; any authenticated role (US-078). 5 guarded FTS
+  migrations (`IF SERVERPROPERTY('IsFullTextInstalled')=1` + `suppressTransaction` + `EXEC` + per-module catalog
+  `ft_*`) — NO-OP on the stock `SqlBackstopFixture` image, build only on the FTS image. `deploy/Dockerfile.sqlserver`
+  wired into compose (⚠ switching a running stack needs `down -v`).
+- **Frontend (P15g).** `/search` page (was a placeholder; the top-bar box + ⌘K already route to `/search?q=`) —
+  `api/search.ts` `useSearch` hook + `features/search/SearchPage.tsx` grouped results (ID/title/excerpt/status/deep
+  link) with prompt/loading/error/empty states. No-reference composition (INV-014 — no search `.dc.html`). i18n
+  `search.*` EN+AR.
+- **Tests.** `SearchProvidersFtsTests` (Docker-gated, real FTS SQL Server: AC-061 Arabic word-breaker match +
+  all-5 providers execute + seeded projections) · `SearchApiTests` (coordinator/grouping/deep links, HTTP) ·
+  `SearchProviderGuardTests` + `SearchExcerptTests` · `SearchPage.test`/`search.test` (FE).
+
+**Gates (all green).** BE: build; Domain 241/Arch 49/Application 860/Integration 36/Api 229 (0 fail); coverage
+**99.66%** (no file <95%); `dotnet format` clean. FE: 134 files/1023 tests; `tsc && vite build`; i18n parity 1750.
+**AC-060/061 → Met.** Reconciliations: cross-type result status shown as the raw enum name via a neutral chip
+(localization owed); Topics FTS single mixed-language column indexed 1025 (LIKE covers English).
+
+**Next.** Live pixel-VR smoke on the isolated `-p acmpe2e` stack (owed, INV-014 no-ref) → **P15h** template
+pre-fill (reads the `targetType` seam) → P14 Tarseem/Diagrams + version-diff → P16–P19.
+
+---
+
 ### 2026-07-14 — P15e Knowledge UI: wiki + template management (FR-116/117/119)
 
 **Done (all gates green + live pixel-VR PASS, awaiting commit GO)** — branch `feat/p15e-knowledge-ui`, plan
