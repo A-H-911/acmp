@@ -31,6 +31,7 @@ public sealed record ResearchMissionSummaryDto(
     string Status,
     string OwnerName,
     DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt,
     int FindingCount,
     int RecommendationCount);
 

@@ -132,8 +132,8 @@ describe('WikiPage (P15e)', () => {
   it('filters the tree by search and shows the search-empty state on no match', async () => {
     const user = userEvent.setup();
     setup('/wiki', ['secretary']);
-    await user.type(screen.getByRole('searchbox', { name: /Search the wiki/ }), 'zzz');
-    expect(screen.getByText('No matching pages')).toBeInTheDocument();
+    await user.type(screen.getByRole('searchbox', { name: /Search this wiki/ }), 'zzz');
+    expect(screen.getByText('No pages match')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Governance model' })).not.toBeInTheDocument();
   });
 

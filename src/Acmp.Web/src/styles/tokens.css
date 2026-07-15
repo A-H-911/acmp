@@ -33,6 +33,7 @@
 
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-arabic: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --serif: 'IBM Plex Serif', Georgia, serif;   /* editorial titles (wiki reading view); LTR only — flipped to Arabic sans under [dir="rtl"] */
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   /* --font-app is the active family; flipped to Arabic under [dir="rtl"]. */
   --font-app: var(--font-sans);
@@ -77,5 +78,6 @@
   --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
 }
 
-/* Arabic locale uses the Plex Arabic family (set on <html dir="rtl">). */
-[dir="rtl"] { --font-app: var(--font-arabic); }
+/* Arabic locale uses the Plex Arabic family (set on <html dir="rtl">). The Latin serif
+   has no Arabic glyphs, so serif titles fall back to the Arabic sans under RTL. */
+[dir="rtl"] { --font-app: var(--font-arabic); --serif: var(--font-arabic); }

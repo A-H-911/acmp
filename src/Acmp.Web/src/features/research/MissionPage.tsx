@@ -44,6 +44,7 @@ import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import { hrefFor } from '../traceability/traceMeta';
 import { ConvertToTopicDialog } from './ConvertToTopicDialog';
 import { statusTone, findingTone, recStatusTone, CONFIDENCES, PRIORITIES } from './researchMeta';
+import { formatDmy } from '../../lib/p15Date';
 import './research.css';
 
 type OpenDialog = null | 'cancel' | 'finding' | 'recommendation';
@@ -83,7 +84,7 @@ export function MissionPage() {
   const m = data;
   const pick = (l: LocalizedText | null) => (l ? (i18n.language === 'ar' ? l.ar : l.en) : '');
   const otherDir = i18n.language === 'ar' ? 'ltr' : 'rtl';
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(iso));
+  const fmtDate = (iso: string) => formatDmy(iso, i18n.language);
 
   const canManage = hasRole(auth, 'chairman', 'secretary');
   const isProposed = m.status === 'Proposed';
@@ -212,12 +213,12 @@ function MissionHeader({ m, pick, otherDir, fmtDate, canActivate, canComplete, c
           <div className="rsc-head-actions">
             {canConvert && (
               <Button variant="primary" onClick={onConvert}>
-                <Icon name="arrowRight" size={15} aria-hidden /> {t('research.convert.action')}
+                <Icon name="arrowRight" size={15} className="dir-flip" aria-hidden /> {t('research.convert.action')}
               </Button>
             )}
             {canActivate && (
               <Button variant="primary" loading={activate.isPending} onClick={() => void activate.mutateAsync({ id: m.id })}>
-                <Icon name="arrowRight" size={15} aria-hidden /> {t('research.activate')}
+                <Icon name="arrowRight" size={15} className="dir-flip" aria-hidden /> {t('research.activate')}
               </Button>
             )}
             {canComplete && (
@@ -364,7 +365,7 @@ function RecommendationCard({ r, missionId, pick, canAct, canManage, onConvert }
             )}
             {canManage && r.status === 'Accepted' && (
               <Button variant="ghost" size="sm" onClick={() => onConvert(r)}>
-                <Icon name="arrowRight" size={13} aria-hidden /> {t('research.convert.recAction')}
+                <Icon name="arrowRight" size={13} className="dir-flip" aria-hidden /> {t('research.convert.recAction')}
               </Button>
             )}
           </>

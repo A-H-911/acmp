@@ -14,9 +14,9 @@ vi.mock('../../api/wiki', async (orig) => ({
 vi.mock('../../api/members', () => ({
   useMembers: () => ({ data: [{ keycloakUserId: 'kc-1', fullName: 'Khalid Ahmed' }] }),
 }));
-vi.mock('../traceability/TraceabilityPanel', () => ({
-  TraceabilityPanel: (p: { traceType: string; artifactKey: string }) => (
-    <aside data-testid="trace-panel" data-tracetype={p.traceType} data-artifactkey={p.artifactKey} />
+vi.mock('./WikiLinkedArtifacts', () => ({
+  WikiLinkedArtifacts: (p: { documentId: string }) => (
+    <aside data-testid="linked-artifacts" data-documentid={p.documentId} />
   ),
 }));
 
@@ -54,10 +54,12 @@ describe('WikiReadingView (P15e)', () => {
     expect(screen.getByText('kc-unknown')).toBeInTheDocument();
   });
 
-  it('hides the whole action row for a non-manager', () => {
+  it('shows History to a non-manager but hides the lifecycle actions (m18)', () => {
     setup({}, false, ['member']);
+    // History is a read affordance — visible to every reader.
+    expect(screen.getByRole('button', { name: /History/ })).toBeInTheDocument();
+    // Edit + the status badge stay manager-only.
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'History' })).not.toBeInTheDocument();
     expect(screen.queryByText('Published')).not.toBeInTheDocument();
   });
 
@@ -102,11 +104,10 @@ describe('WikiReadingView (P15e)', () => {
     expect(onHistory).toHaveBeenCalled();
   });
 
-  it('mounts the linked-artifacts panel focused on the document', () => {
+  it('mounts the linked-artifacts card focused on the document', () => {
     setup();
-    const panel = screen.getByTestId('trace-panel');
-    expect(panel).toHaveAttribute('data-tracetype', 'Document');
-    expect(panel).toHaveAttribute('data-artifactkey', 'DOC-2026-001');
+    const card = screen.getByTestId('linked-artifacts');
+    expect(card).toHaveAttribute('data-documentid', 'd1');
   });
 
   it('uses createdAt for the updated line when updatedAt is null', () => {

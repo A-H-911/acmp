@@ -26,18 +26,19 @@ import { Button } from '../../components/ui/Button';
 import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials, RESEARCH_STATUSES } from './researchMeta';
+import { formatDmy } from '../../lib/p15Date';
 import { CreateMissionDialog } from './CreateMissionDialog';
 import './research.css';
 
-// Column id → API sortBy. Only these have a server sort (GetMissionsRegister.Sort: title/status/created).
-const SORT_PARAM: Record<string, string> = { mission: 'title', status: 'status', created: 'created' };
+// Column id → API sortBy. Only these have a server sort (GetMissionsRegister.Sort: title/status/updated).
+const SORT_PARAM: Record<string, string> = { mission: 'title', status: 'status', updated: 'updated' };
 const PAGE_SIZE = 25;
 
 export function ResearchRegister() {
   const { t, i18n } = useTranslation();
   const auth = useAuth();
   const [statuses, setStatuses] = useState<string[]>([]);
-  const [sortCol, setSortCol] = useState('created');
+  const [sortCol, setSortCol] = useState('updated');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,7 +51,7 @@ export function ResearchRegister() {
 
   const { data, isLoading, isError, refetch } = useResearchRegister({
     statuses: statuses.length ? statuses : undefined,
-    sortBy: SORT_PARAM[sortCol] ?? 'created',
+    sortBy: SORT_PARAM[sortCol] ?? 'updated',
     sortDir,
     page,
     pageSize: PAGE_SIZE,
@@ -74,7 +75,7 @@ export function ResearchRegister() {
       <div className="rsc-head">
         <div>
           <h1 className="page-title">{t('research.title')}</h1>
-          <div className="rsc-head-sub">{t('research.count', { count: counts.total ?? 0 })}</div>
+          <div className="rsc-head-sub">{t('research.subtitle')}</div>
         </div>
         {canCreate && (
           <Button variant="primary" onClick={() => setCreateOpen(true)}>
@@ -82,6 +83,8 @@ export function ResearchRegister() {
           </Button>
         )}
       </div>
+
+      <div className="rsc-mcount">{t('research.count', { count: counts.total ?? 0 })}</div>
 
       <div className="rsc-bar" role="search" aria-label={t('research.filtersLabel')}>
         <FilterChip
@@ -169,7 +172,7 @@ function Lead({ name }: { name: string }) {
 function MissionsTable({ rows, lang, sort, onSort }: { rows: MissionSummary[]; lang: string; sort: { by: string; dir: SortDir }; onSort: (id: string) => void }) {
   const { t } = useTranslation();
   const pick = (title: MissionSummary['title']) => (lang === 'ar' ? title.ar : title.en);
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: 'medium' }).format(new Date(iso));
+  const fmtDate = (iso: string) => formatDmy(iso, lang);
   const columns: Column<MissionSummary>[] = [
     {
       id: 'mission', header: t('research.col.mission'), sortable: true, cell: (r) => (
@@ -183,7 +186,7 @@ function MissionsTable({ rows, lang, sort, onSort }: { rows: MissionSummary[]; l
     { id: 'findings', header: t('research.col.findings'), width: '96px', cell: (r) => <span className="rsc-num">{r.findingCount}</span> },
     { id: 'recs', header: t('research.col.recs'), width: '110px', cell: (r) => <span className="rsc-num">{r.recommendationCount}</span> },
     { id: 'status', header: t('research.col.status'), width: '124px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`research.status.${r.status}`)} size="sm" /> },
-    { id: 'created', header: t('research.col.created'), width: '128px', sortable: true, cell: (r) => <span className="rsc-date">{fmtDate(r.createdAt)}</span> },
+    { id: 'updated', header: t('research.col.updated'), width: '128px', sortable: true, cell: (r) => <span className="rsc-date">{fmtDate(r.updatedAt ?? r.createdAt)}</span> },
   ];
   return <Table caption={t('research.tableCaption')} columns={columns} rows={rows} getRowKey={(r) => r.id} sort={sort} onSortChange={onSort} />;
 }

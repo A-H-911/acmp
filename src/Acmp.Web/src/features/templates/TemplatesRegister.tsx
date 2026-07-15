@@ -17,6 +17,7 @@ import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, TEMPLATE_STATUSES, TARGET_TYPES } from './templatesMeta';
 import { TemplateFormDialog } from './TemplateFormDialog';
+import { formatDmy } from '../../lib/p15Date';
 import './templates.css';
 
 export function TemplatesRegister() {
@@ -36,7 +37,12 @@ export function TemplatesRegister() {
   const deprecate = useDeprecateTemplate();
 
   const rows = data?.items ?? [];
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(iso));
+  const hasFilters = statuses.length > 0 || targetType !== '';
+  const clearAllFilters = () => {
+    setStatuses([]);
+    setTargetType('');
+  };
+  const fmtDate = (iso: string) => formatDmy(iso, i18n.language);
   const pick = (l: TemplateSummary['name']) => (i18n.language === 'ar' ? l.ar : l.en);
 
   async function onConfirmDeprecate() {
@@ -83,16 +89,25 @@ export function TemplatesRegister() {
       ) : isError ? (
         <ErrorState title={t('templates.error.title')} body={t('templates.error.body')} onRetry={() => refetch()} />
       ) : rows.length === 0 ? (
-        <div>
-          <EmptyState icon="template" title={t('templates.empty.title')} body={t('templates.empty.body')} />
-          {canManage && (
+        hasFilters ? (
+          <div>
+            <EmptyState icon="search" title={t('templates.filterEmpty.title')} body={t('templates.filterEmpty.body')} />
             <div className="tpl-foot" style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button variant="primary" onClick={() => setCreateOpen(true)}>
-                <Icon name="plus" size={16} aria-hidden /> {t('templates.newTemplate')}
-              </Button>
+              <Button variant="secondary" onClick={clearAllFilters}>{t('templates.clearFilters')}</Button>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div>
+            <EmptyState icon="template" title={t('templates.empty.title')} body={t('templates.empty.body')} />
+            {canManage && (
+              <div className="tpl-foot" style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button variant="primary" onClick={() => setCreateOpen(true)}>
+                  <Icon name="plus" size={16} aria-hidden /> {t('templates.newTemplate')}
+                </Button>
+              </div>
+            )}
+          </div>
+        )
       ) : (
         <div className="tpl-card">
           <div className="gTpl tpl-hrow">
@@ -106,7 +121,7 @@ export function TemplatesRegister() {
           {rows.map((tp) => (
             <div className="gTpl tpl-row" key={tp.id}>
               <span className="tpl-cell tpl-name-cell">
-                <span className="tpl-name-icon" aria-hidden="true"><Icon name="file" size={15} /></span>
+                <span className="tpl-name-icon" aria-hidden="true"><Icon name="template" size={15} /></span>
                 <span className="tpl-name">{pick(tp.name)}</span>
               </span>
               <span className="tpl-cell"><span className="tpl-type">{t(`templates.targetType.${tp.targetType}`)}</span></span>

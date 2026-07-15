@@ -256,6 +256,12 @@ public class ResearchHandlerTests
 
         var byStatus = await handler.Handle(new GetMissionsRegisterQuery(SortBy: "status", SortDir: "asc"), CancellationToken.None);
         byStatus.Items.First().Status.Should().Be("Proposed"); // Proposed (1) sorts before Active (2)
+
+        // "updated" sort + the UpdatedAt projection: the activated mission carries a stamp, the untouched one is null.
+        var byUpdated = await handler.Handle(new GetMissionsRegisterQuery(SortBy: "updated", SortDir: "desc"), CancellationToken.None);
+        byUpdated.Total.Should().Be(2);
+        byUpdated.Items.Single(m => m.Key == "RMS-2026-002").UpdatedAt.Should().Be(Now);
+        byUpdated.Items.Single(m => m.Key == "RMS-2026-001").UpdatedAt.Should().BeNull();
     }
 
     // ── Validators ───────────────────────────────────────────────────────────────────────────────────────

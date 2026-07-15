@@ -22,7 +22,7 @@ import { WikiReadingView } from './WikiReadingView';
 import { WikiEditor } from './WikiEditor';
 import { WikiVersionHistory } from './WikiVersionHistory';
 import { CreateDocumentDialog } from './CreateDocumentDialog';
-import { WIKI_CATEGORIES } from './wikiMeta';
+import { categoryLabel } from './wikiMeta';
 import './wiki.css';
 
 interface Space { space: string; pages: DocumentSummary[]; }
@@ -37,7 +37,6 @@ export function WikiPage() {
   const [createOpen, setCreateOpen] = useState(false);
 
   const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en);
-  const categoryLabel = (c: string) => (WIKI_CATEGORIES.includes(c) ? t(`wiki.category.${c}`) : c);
 
   const docs = data?.items ?? [];
   // Archived is excluded from the tree; Draft only for managers, marked.
@@ -74,7 +73,7 @@ export function WikiPage() {
             {spaces.map((sp) => (
               <div className="wiki-space" key={sp.space}>
                 <div className="wiki-space-head">
-                  <Icon name="folder" size={13} aria-hidden /> {categoryLabel(sp.space)}
+                  <Icon name="folder" size={13} aria-hidden /> {categoryLabel(sp.space, t)}
                 </div>
                 {sp.pages.map((pg) => {
                   const active = pg.key === key;

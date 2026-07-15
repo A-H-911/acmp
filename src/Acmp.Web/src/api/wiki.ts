@@ -82,11 +82,12 @@ function toQuery(p: WikiParams): string {
  * The whole document set for the wiki tree (grouped client-side by category → "spaces"). ponytail: one large
  * page instead of typeahead — right-sized for one low-traffic committee (≤20 users, few hundred pages max).
  */
-export function useWikiDocuments(params: WikiParams = {}) {
+export function useWikiDocuments(params: WikiParams = {}, enabled = true) {
   return useQuery({
     queryKey: ['wiki', 'register', params],
     queryFn: () => api<PagedResult<DocumentSummary>>(`/knowledge/documents${toQuery({ pageSize: 500, ...params })}`),
     placeholderData: (prev) => prev,
+    enabled,
   });
 }
 

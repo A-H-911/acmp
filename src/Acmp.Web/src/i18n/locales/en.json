@@ -839,7 +839,7 @@
     "risks": "Risks",
     "deps": "Dependencies",
     "research": "Research",
-    "wiki": "Knowledge / Wiki",
+    "wiki": "Knowledge",
     "templates": "Templates",
     "diagrams": "Diagrams",
     "reports": "Reports",
@@ -1011,7 +1011,7 @@
     "title": "Administration",
     "sub": {
       "users": "Users, roles, and committee membership",
-      "templates": "Standardized templates for topics, ADRs, minutes, decisions, and research",
+      "templates": "Standardized templates for topics, ADRs, minutes, and research",
       "health": "Live status of core services and integrations",
       "streams": "Delivery streams and their committee owners",
       "roles": "Read-only reference — roles & capabilities are defined in Keycloak",
@@ -1738,6 +1738,7 @@
   },
   "research": {
     "title": "Research missions",
+    "subtitle": "Discovery work commissioned by the committee, each linked to a topic",
     "count": "{{count}} missions",
     "newMission": "New mission",
     "filtersLabel": "Research filters",
@@ -1778,7 +1779,8 @@
       "findings": "Findings",
       "recs": "Recommendations",
       "status": "Status",
-      "created": "Created"
+      "created": "Created",
+      "updated": "Updated"
     },
     "status": {
       "Proposed": "Proposed",
@@ -1891,7 +1893,7 @@
   },
   "wiki": {
     "crumbRoot": "Knowledge",
-    "searchLabel": "Search the wiki…",
+    "searchLabel": "Search this wiki…",
     "treeLabel": "Wiki pages",
     "newPage": "New page",
     "history": "History",
@@ -1899,11 +1901,23 @@
     "publish": "Publish",
     "archive": "Archive",
     "updated": "Updated",
-    "readtime": "{{count}} min read",
+    "readtime": "{{minutes}} min read",
     "editingBadge": "Editing",
+    "draftSaved": "Draft autosaved",
     "saveChanges": "Save changes",
     "markdown": "Markdown",
     "preview": "Preview",
+    "toolbarLabel": "Formatting",
+    "linkedArtifacts": "Linked artifacts",
+    "tool": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading": "Heading",
+      "list": "List",
+      "quote": "Quote",
+      "link": "Link",
+      "crosslink": "Cross-link"
+    },
     "editError": "The page could not be saved. Please try again.",
     "clearSearch": "Clear search",
     "notFoundTitle": "Page not found",
@@ -1928,8 +1942,8 @@
       "body": "Start the knowledge base by writing the committee’s first reference page."
     },
     "searchEmpty": {
-      "title": "No matching pages",
-      "body": "No wiki page matches your search. Try a different term."
+      "title": "No pages match",
+      "body": "No wiki pages match your search. Try a different term, or browse the spaces on the left."
     },
     "select": {
       "title": "Select a page",
@@ -1999,6 +2013,10 @@
     "empty": {
       "title": "No templates yet",
       "body": "Create the first template to standardize how the committee records its work."
+    },
+    "filterEmpty": {
+      "title": "No matching templates",
+      "body": "No templates match these filters. Clear them to see all templates."
     },
     "error": {
       "title": "Couldn’t load the templates",

@@ -8,7 +8,7 @@ namespace Acmp.Modules.Research.Application.Internal;
 internal static class ResearchMapping
 {
     public static ResearchMissionSummaryDto ToSummary(ResearchMission m) => new(
-        m.PublicId, m.Key, m.Title, m.Status.ToString(), m.OwnerName, m.CreatedAt,
+        m.PublicId, m.Key, m.Title, m.Status.ToString(), m.OwnerName, m.CreatedAt, m.UpdatedAt,
         m.Findings.Count, m.Recommendations.Count);
 
     public static ResearchMissionDetailDto ToDetail(ResearchMission m) => new(

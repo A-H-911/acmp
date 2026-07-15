@@ -12,6 +12,68 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-15 — P15 (Research & Knowledge) design-fidelity + i18n audit remediation
+
+**What was done.** Closed the enumerated INV-014 (design fidelity) / INV-009 (i18n) defects the P15 audit found
+(the code was already correctness-green — BE/FE tests, coverage, ArchUnit, format all passed; AC-060/061 Met).
+Five batches on `fix/p15-audit-remediation`; all gates re-run green.
+
+- **B1 — tokens + i18n root.** `--serif: 'IBM Plex Serif'` token + new dep `@fontsource/ibm-plex-serif` (400/600)
+  imported in `main.tsx`, scoped to LTR (`[dir="rtl"]` flips `--serif` → `--font-arabic`, so Arabic titles keep the
+  Arabic sans) — the wiki serif title now renders (was falling to sans). `categoryLabel(c,t)` extracted to
+  `wikiMeta.ts` and applied in `WikiReadingView` breadcrumb (was rendering the raw English category under Arabic).
+- **B2 — research.** M4 descriptive subtitle (`research.subtitle`) added, the count moved to its own `mCount` line;
+  **m5**: `UpdatedAt` added to `ResearchMissionSummaryDto` + projection + a new `"updated"` sort arm — the register's
+  last column is now **Updated** (`updatedAt ?? createdAt`), matching the design's `cmUpdated` (was **Created**);
+  m19 the mission `arrowRight` icons flip in RTL (`dir-flip`); m16 DMY dates; m2/m7/m8/m9 value-preserving
+  token adoption in `research.css` (radius→`--chip-radius`/`--r-lg`, spacing→`--sp-4`).
+- **B3 — wiki.** **M3**: a wiki-local full-width 7-icon formatting toolbar (Bold/Italic/Heading/List/Quote/Link/
+  Cross-link) via an extracted pure `markdownInsert` util + a plain textarea — the shared `MarkdownEditor` (6 other
+  surfaces) is untouched. **WK8**: minimal real draft autosave (debounced per-doc/per-lang localStorage, restored on
+  reopen, cleared on save/cancel, "Draft autosaved" indicator). **WK10 (ADR-0029)**: the reading view's
+  `TraceabilityPanel` replaced by a bespoke read-only `WikiLinkedArtifacts` card (mockup-faithful) reusing the same
+  relationship read-hook. **Operator chose option C:** to preserve linking, `Document` was made a **pickable
+  relationship target** (`ArtifactPicker` + `CreateRelationshipDialog` only — not the dependency dialog), so a wiki
+  page is now linked *from the artifact that cites it* — bidirectional, richer than the prior narrow one-way "Add
+  relationship" affordance; the incoming edge shows in the page's card. m15 History-button version chip → muted
+  sans; m17 AR read-time renders Arabic-Indic
+  digits (`ar-u-nu-arab`) + plural; m18 History ungated to all readers (Edit/Publish/Archive stay manager-only);
+  m16 DMY; wiki copy force-matched to the mockup (search placeholder, empty-state).
+- **B4 — templates.** m1 name-cell glyph `file`→`template`; m13 filtered-empty variant (distinct from
+  no-templates-yet, with Clear filters); m16 DMY; reconciled the stale orphaned `admin.sub.templates` desc
+  (dropped "decisions", which is not a target type post-OQ-051).
+- **B5 — shared + search.** m22 search-hit status localized via a `(type)→status-namespace` map with raw fallback
+  (Topics/ADRs/MoMs/Documents mapped; Decisions has no lifecycle-status i18n block → raw, documented); m6 the
+  `/wiki` nav item force-matched to the design label "Knowledge"/"المعرفة" (was "Knowledge / Wiki"). **m20**: the
+  `pencil` icon path was verified byte-identical to the design (dc.html lines 314/331) — no change needed.
+
+**Decisions applied (locked pre-execution).** Force-match the mockup for shared-component/convention items; WK8 =
+minimal real autosave; WK10 = bespoke read-only card + `Document` made a pickable relationship target + **ADR-0029**
+(operator chose option C — mockup-faithful card, linking preserved from the citing artifact); m5 = add `UpdatedAt`
+to the summary DTO; DMY on P15 surfaces only
+(a P15-scoped `formatDmy` helper, not an app-wide switch — logged as separate tech-debt). The exact text of the
+un-recoverable low-severity minors (m2/m7/m8/m9 CSS tokens; m4/m11/m12 templates copy) was not preserved in the
+package; reconstructed conservatively (value-preserving token adoption; the concrete stale-admin-desc reconcile).
+
+**New shared units (≥95% per-file cov, all tested):** `lib/p15Date.ts`, `features/wiki/markdownInsert.ts`,
+`features/wiki/WikiLinkedArtifacts.tsx`, `features/search/searchMeta.ts`.
+
+**Gates (all green).** FE: 1050 tests, i18n parity 1768 keys, oxlint clean, `vite build` ✓, `test:cov` exit 0
+(changed files 96.57–100%). BE: build 0 errors, `dotnet format --verify-no-changes` clean, per-file coverage
+99.67% global (`check-coverage.mjs` exit 0). Live pixel-VR (isolated `-p acmpe2e` stack, **8/8 captures**):
+**PASS** — element-by-element sign-off in EN-light + AR-dark on the enumerated §6 items: serif LTR title (AR
+falls to Arabic sans, no broken glyphs), localized AR breadcrumb ("الحوكمة"), full-width 7-icon wiki toolbar,
+WK10 "Linked artifacts" card (RTL-flipped), "Updated"/"آخر تحديث" register column, DMY dates ("15 Jul 2026" /
+"١٥ يوليو ٢٠٢٦" Arabic-Indic), muted version chip, AR read-time ("قراءة ١ دقائق"), localized search status
+("مُقدَّم"/"منشورة"), M4 subtitle. History-ungate (m18) is unit-tested (the VR user is a manager). No new
+visual defects. **Re-VR'd after the WK10 option-C change** (Document made a pickable relationship target): the
+P15 surfaces are unchanged (the wiki reading view stays the read-only card), 8/8 captures PASS, no regression.
+
+**Next.** PR (`fix/p15-audit-remediation`) → review → squash-merge. Design-update-owed: none new (WK10 matches
+the `.dc.html`). ADR-0029 → operator ratification.
+
+---
+
 ### 2026-07-15 — Register refresh: acceptance-audit + status-report reconciled to P15-complete
 
 **What was done.** Docs-only reconciliation, no code. The `acceptance-audit.md` table body already carried
