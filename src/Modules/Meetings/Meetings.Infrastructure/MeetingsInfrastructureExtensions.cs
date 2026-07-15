@@ -37,6 +37,9 @@ public static class MeetingsInfrastructureExtensions
         services.Configure<MeetingRecordingOptions>(configuration.GetSection(MeetingRecordingOptions.SectionName));
 
         services.AddMeetingsApplication();
+        // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
+        services.AddScoped<Acmp.Shared.Contracts.Search.ISearchProvider, Acmp.Modules.Meetings.Infrastructure.Search.MinutesSearchProvider>();
+
         return services;
     }
 }

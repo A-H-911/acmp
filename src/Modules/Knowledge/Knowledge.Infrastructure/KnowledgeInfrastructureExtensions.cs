@@ -27,6 +27,9 @@ public static class KnowledgeInfrastructureExtensions
         services.AddScoped<IKnowledgeKeyGenerator, KnowledgeKeyGenerator>();
 
         services.AddKnowledgeApplication();
+        // Global-search provider (P15f, FR-118/143): the host fans out over every registered ISearchProvider.
+        services.AddScoped<Acmp.Shared.Contracts.Search.ISearchProvider, Acmp.Modules.Knowledge.Infrastructure.Search.DocumentSearchProvider>();
+
         return services;
     }
 }

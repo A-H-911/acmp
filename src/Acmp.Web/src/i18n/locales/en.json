@@ -1,5 +1,29 @@
 {
   "app": { "name": "ACMP", "committee": "Architecture Committee", "tagline": "Architecture Committee Management Platform" },
+  "search": {
+    "title": "Search",
+    "prompt": {
+      "title": "Search the committee record",
+      "body": "Enter a term to find topics, decisions, ADRs, minutes, and wiki pages."
+    },
+    "loading": "Searching…",
+    "resultsFor": "{{count}} results for “{{query}}”",
+    "empty": {
+      "title": "No matches",
+      "body": "Nothing matched “{{query}}”. Try a different term."
+    },
+    "error": {
+      "title": "Search failed",
+      "body": "The search could not be completed. Please try again."
+    },
+    "groups": {
+      "Topics": "Topics",
+      "Decisions": "Decisions",
+      "ADRs": "ADRs",
+      "MoMs": "Minutes",
+      "Documents": "Wiki"
+    }
+  },
   "common": {
     "search": "Search",
     "searchPlaceholder": "Search topics, decisions, ADRs, actions…",

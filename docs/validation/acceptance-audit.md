@@ -774,8 +774,8 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-057 | Aging | Partial | TopicApplicationTests + TopicHandlerTests (live SlaBreached) + Backlog.test (badge rendered) | Aging badge computed + rendered in the backlog UI (slaBreached-driven, unit-tested); live browser pass + SLA-breach notification → Notifications phase |
 | AC-058 | Membership | Met | CommitteeMemberTests + MembershipFeatureTests | Deactivate → Disabled; name/email/role/attribution intact |
 | AC-059 | Membership | Met | MembershipApiTests (all roles) + UsersMembership.test | Directory readable by every authenticated role; admin screen built |
-| AC-060 | Search & Trace | Pending | — | Global search grouped results |
-| AC-061 | Search & Trace | Pending | — | Arabic search via word-breaker |
+| AC-060 | Search & Trace | Met | SearchApiTests (grouped results + deep links, HTTP) + SearchPage.test (grouped UI, states) | P15f/g global search: `/api/search` fan-out over 5 ISearchProviders → grouped hits (ID/title/excerpt/status/deep link); `/search` page renders groups |
+| AC-061 | Search & Trace | Met | SearchProvidersFtsTests (real FTS SQL Server, Arabic word-breaker lcid 1025 match + English + no encoding loss) | P15f: SQL FTS + LIKE booster (OQ-034 spike 82.9% recall); Arabic FREETEXT proven on the deploy FTS image |
 | AC-062 | Search & Trace | Partial | TraceabilityTests (panel groups outgoing/incoming, "other" endpoint per direction, excludes inactive) + TraceabilityApiTests (`GET /api/traceability/{type}/{id}`) + P10e `TraceabilityPanel` FE suite (upstream/downstream groups, navigable links, axe-clean) | **P10c: panel API in place + audited** (`GetArtifactRelationships`, one hop). **P10e (merged): the FE traceability panel shipped on Topic/Decision/Action/Risk detail — structurally proven** (56 new vitest, axe-clean, per-file cov ≥95%). Pending → Partial (progress-log P10e); the **Met** flip waits on the live real-stack round-trip → P17 per G-TRACE. |
 | AC-063 | Search & Trace | Partial | TraceabilityApiTests (Secretary creates edge → both source + target panels show it) + TraceabilityTests (create audits `Relationship.Created`) + P10e create-dialog FE suite (dependency + generic-relationship, Chair/Sec-gated) | **P10c: typed edge create + soft-delete + audit in place** (RBAC `Traceability.Link`). **P10e (merged): the Chair/Sec create dialogs shipped from the panel** — structurally proven by tests. Pending → Partial (progress-log P10e); the **Met** flip (create-via-UI → both panels reflect it) waits on the live real-stack round-trip → P17 per G-TRACE. |
 | AC-064 | Dashboards | Met | dashboardAgg.test (backlog by bucket + urgency, next meeting, action counts) + RoleDashboard.test (committee variant renders backlog total/next meeting/action tiles/last-5 decisions live; honest empty states) | P12-PR2: committee/member + fallback variant at `/`, client-composed over PR1 registers (ADR-0022). Live `.dc.html` pixel-VR PASS (EN-light + AR-dark). |
@@ -796,8 +796,8 @@ Partial · 3 Pending · 0 Not-met.**
   059/064/065/066/067/068/069/070/071/072/073/074.
 - **Partial (37):** AC-003/005/006/007/009/010/011/012/013/014/015/016/021/022/023/024/025/026/027/028/030/
   032/033/034/036/037/038/041/043/048/049/052/054/055/057/062/063.
-- **Pending (3):** AC-004 (Keycloak idle-timeout — needs a live realm session policy, OQ-003) · AC-060 (global
-  grouped search) · AC-061 (Arabic word-breaker search). AC-060/061 = the Search module (P15).
+- **Pending (1):** AC-004 (Keycloak idle-timeout — needs a live realm session policy, OQ-003). AC-060/061 →
+  **Met** in P15f/g (global search + Arabic word-breaker; SQL FTS + LIKE booster, OQ-034 resolved).
 
 **Verification basis (not a fresh full-suite run):** each `Met` traces to the per-AC test refs above (G-TRACE)
 and `main` is green at `f32ca31` on all four CI checks incl. the full-stack **e2e**. **Honest caveats:** most

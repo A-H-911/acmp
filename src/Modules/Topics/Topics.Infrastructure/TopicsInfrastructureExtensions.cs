@@ -44,6 +44,9 @@ public static class TopicsInfrastructureExtensions
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 
         services.AddTopicsApplication();
+        // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
+        services.AddScoped<Acmp.Shared.Contracts.Search.ISearchProvider, Acmp.Modules.Topics.Infrastructure.Search.TopicSearchProvider>();
+
         return services;
     }
 }

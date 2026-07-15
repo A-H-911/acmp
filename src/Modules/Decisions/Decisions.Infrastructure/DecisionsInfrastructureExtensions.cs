@@ -3,7 +3,9 @@ using Acmp.Modules.Decisions.Application;
 using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Infrastructure.Directory;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Modules.Decisions.Infrastructure.Search;
 using Acmp.Shared.Contracts.Decisions;
+using Acmp.Shared.Contracts.Search;
 using Acmp.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +30,9 @@ public static class DecisionsInfrastructureExtensions
 
         // Cross-module read seam powering the FR-068 Decision→ADR promotion (Governance consumes it).
         services.AddScoped<IDecisionReader, DecisionReader>();
+
+        // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
+        services.AddScoped<ISearchProvider, DecisionSearchProvider>();
 
         services.AddDecisionsApplication();
         return services;
