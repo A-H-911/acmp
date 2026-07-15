@@ -69,8 +69,8 @@ WK10 "Linked artifacts" card (RTL-flipped), "Updated"/"آخر تحديث" regist
 visual defects. **Re-VR'd after the WK10 option-C change** (Document made a pickable relationship target): the
 P15 surfaces are unchanged (the wiki reading view stays the read-only card), 8/8 captures PASS, no regression.
 
-**Next.** PR (`fix/p15-audit-remediation`) → review → squash-merge. Design-update-owed: none new (WK10 matches
-the `.dc.html`). ADR-0029 → operator ratification.
+**Next.** DONE — merged as **PR #121** (`a54e169`); **ADR-0029 ratified → Accepted** (PR #122 `c1aff92`).
+Design-update-owed: none new (WK10 matches the `.dc.html`).
 
 ---
 
