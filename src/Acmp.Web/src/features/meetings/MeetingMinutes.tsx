@@ -31,6 +31,7 @@ import { Dialog } from '../../components/ui/Dialog';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { LoadingState, ErrorState } from '../../components/states';
 import { MeetingGate } from './MeetingGate';
+import { TemplatePicker } from '../templates/TemplatePicker';
 import './minutes.css';
 
 const STATUS_TONE: Record<MinutesStatus, StatusTone> = {
@@ -271,6 +272,8 @@ function CreateMinutes({ meetingId }: { meetingId: string }) {
         <div className="mom-banner-note">{t('meetings.mom.startNote')}</div>
       </div>
       <div className="mom-editor">
+        {/* P15h/FR-120: a template pre-fills the minutes body at creation time (mirrored en===ar on save). */}
+        <TemplatePicker targetType="MinutesOfMeeting" onApply={setBody} hasContent={!!body.trim()} />
         <MarkdownEditor value={body} onChange={setBody} rows={14} ariaLabel={t('meetings.mom.bodyLabel')} />
         <div className="mom-editor-actions">
           <Button disabled={empty || draft.isPending} onClick={() => draft.mutate(body)}>{t('meetings.mom.startDraft')}</Button>

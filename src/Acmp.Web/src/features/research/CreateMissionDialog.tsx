@@ -24,6 +24,7 @@ import { Icon } from '../../components/icons';
 import { ApiError } from '../../api/apiClient';
 import { useBacklog } from '../../api/topics';
 import { useCreateMission, type LocalizedText } from '../../api/research';
+import { TemplatePicker } from '../templates/TemplatePicker';
 
 // ponytail: one large page of topics for the optional picker — a low-traffic committee register, so a
 // single pageSize=200 read beats wiring search-as-you-type. Upgrade to a typeahead if it ever outgrows one page.
@@ -93,6 +94,9 @@ export function CreateMissionDialog({ open, onClose }: Props) {
       }
     >
       <div className="rsc-create-form">
+        {/* P15h/FR-120: a template pre-fills the Question — the mission's only free-form prose field. */}
+        <TemplatePicker targetType="ResearchMission" onApply={setQuestion} hasContent={!!question.trim()} />
+
         <Field label={t('research.create.titleField')} required error={errors.title}>
           {(p) => (
             <Input {...p} value={title} maxLength={512} placeholder={t('research.create.titlePh')} onChange={(e) => setTitle(e.target.value)} />

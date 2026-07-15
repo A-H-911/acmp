@@ -92,3 +92,10 @@
 
 /* ---------- form dialog ---------- */
 .tpl-form { display: flex; flex-direction: column; gap: var(--field-gap); }
+
+/* ---------- template picker (P15h; FR-120) — "start from a template" at artifact creation ---------- */
+.tpl-picker { display: flex; flex-direction: column; gap: 6px; margin-block-end: var(--field-gap); }
+.tpl-picker-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.tpl-picker-row { display: flex; align-items: center; gap: 8px; }
+.tpl-picker-row .select { flex: 1; min-inline-size: 0; }
+.tpl-picker-hint { font-size: 12.5px; color: var(--text-2); margin: 0; }

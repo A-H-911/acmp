@@ -27,6 +27,7 @@ import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { Icon, type IconName } from '../../components/icons';
+import { TemplatePicker } from '../templates/TemplatePicker';
 import './topics.css';
 
 const TYPES: { v: string; icon: IconName }[] = [
@@ -305,6 +306,13 @@ export function SubmitTopic() {
           <fieldset id="sec-justification" className="sub-fieldset">
             <legend className="sub-legend">{t('submit.sec.justification')}</legend>
             <p className="sub-sub">{t('submit.sec.justificationHelp')}</p>
+            {/* P15h/FR-120: a template pre-fills the description; disabled once it has content so a
+                restored draft is never clobbered. */}
+            <TemplatePicker
+              targetType="Topic"
+              onApply={(description) => update({ description })}
+              hasContent={!!form.description.trim()}
+            />
             <Field label={t('submit.fDescription')} required error={errors.description}>
               {(p) => (
                 <MarkdownEditor

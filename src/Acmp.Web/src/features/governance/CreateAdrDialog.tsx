@@ -26,6 +26,7 @@ import { Select } from '../../components/ui/Select';
 import { Icon } from '../../components/icons';
 import { ApiError } from '../../api/apiClient';
 import { useCreateAdr, useProposeAdr, type AdrSummary, type LocalizedText } from '../../api/adrs';
+import { TemplatePicker } from '../templates/TemplatePicker';
 
 type InitialStatus = 'Draft' | 'Proposed';
 
@@ -109,6 +110,9 @@ export function CreateAdrDialog({ open, onClose }: Props) {
       }
     >
       <div className="adr-create-form">
+        {/* P15h/FR-120: a template pre-fills the ADR's Context (its primary narrative field). */}
+        <TemplatePicker targetType="Adr" onApply={setContext} hasContent={!!context.trim()} />
+
         <Field label={t('adrs.create.titleField')} required error={errors.title}>
           {(p) => (
             <Input {...p} value={title} maxLength={512} placeholder={t('adrs.create.titlePh')} onChange={(e) => setTitle(e.target.value)} />

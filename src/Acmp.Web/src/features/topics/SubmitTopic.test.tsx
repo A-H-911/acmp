@@ -19,6 +19,14 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('../../api/topics', () => ({ useSubmitTopic: vi.fn(), uploadTopicAttachment: vi.fn() }));
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 
+// Stub the react-query-backed TemplatePicker to a plain apply button (covered in
+// features/templates/TemplatePicker.test.tsx); keeps this suite query-free.
+vi.mock('../templates/TemplatePicker', () => ({
+  TemplatePicker: ({ onApply, hasContent }: { onApply: (b: string) => void; hasContent?: boolean }) => (
+    <button type="button" disabled={hasContent} onClick={() => onApply('TEMPLATE BODY')}>apply-template</button>
+  ),
+}));
+
 const mockUseSubmit = useSubmitTopic as unknown as Mock;
 const mockUpload = uploadTopicAttachment as unknown as Mock;
 let mutateAsync: Mock;
@@ -64,6 +72,13 @@ describe('SubmitTopic (P5b)', () => {
     expect(screen.getByRole('button', { name: /Enhancement/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Governance/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Submit for triage' })).toBeInTheDocument();
+  });
+
+  it('pre-fills the description from a chosen template, editable before submit (FR-120)', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: 'apply-template' }));
+    expect(screen.getByDisplayValue('TEMPLATE BODY')).toBeInTheDocument();
   });
 
   it('shows localized required-field errors and does not submit an empty form (AC-030/049)', async () => {
