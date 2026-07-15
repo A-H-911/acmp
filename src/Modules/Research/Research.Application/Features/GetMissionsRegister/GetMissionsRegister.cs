@@ -74,6 +74,8 @@ public sealed class GetMissionsRegisterHandler : IRequestHandler<GetMissionsRegi
             "status" => missions.OrderBy(m => m.Status),
             "key" => missions.OrderBy(m => m.Key, StringComparer.Ordinal),
             "title" => missions.OrderBy(m => m.Title.En, StringComparer.OrdinalIgnoreCase),
+            // "Updated" sorts by last-modified, falling back to creation for never-edited missions.
+            "updated" => missions.OrderBy(m => m.UpdatedAt ?? m.CreatedAt),
             _ => missions.OrderBy(m => m.CreatedAt),
         };
         return (desc ? ordered.Reverse() : ordered).ToList();

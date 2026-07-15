@@ -60,6 +60,8 @@ export interface MissionSummary {
   status: ResearchStatus;
   ownerName: string;
   createdAt: string;
+  /** Last-modified stamp; null until the mission has been edited (register "Updated" column falls back to createdAt). */
+  updatedAt: string | null;
   findingCount: number;
   recommendationCount: number;
 }

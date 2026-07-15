@@ -5,15 +5,16 @@
  * dedicated search .dc.html): built from the shared design system (page chrome, states,
  * StatusChip, Icon) and the IA. Each hit is a deep link to the artifact.
  *
- * Reconciliation: status shows the API's enum name via a neutral chip — cross-type status
- * localization across five modules is out of this slice's scope (owed), like the audit
- * register's raw-outcome display.
+ * Reconciliation: each hit's status is localized through its artifact type's status namespace
+ * (searchStatusLabel), with a raw-enum fallback for any type/value without an i18n key — completeness is
+ * bounded by each provider's status vocabulary (m22).
  */
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useSearch, type LocalizedText } from '../../api/search';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { EmptyState, ErrorState, LoadingState } from '../../components/states';
+import { searchStatusLabel } from './searchMeta';
 import './search.css';
 
 const pick = (l: LocalizedText, lang: string) => (lang === 'ar' ? l.ar : l.en);
@@ -60,7 +61,7 @@ export function SearchPage() {
                         <span className="search-hit-key">{hit.key}</span>
                         <span className="search-hit-title">{pick(hit.title, i18n.language)}</span>
                       </Link>
-                      <StatusChip tone="neutral" label={hit.status} size="sm" />
+                      <StatusChip tone="neutral" label={searchStatusLabel(hit.type, hit.status, t)} size="sm" />
                     </div>
                     {hit.excerpt && <p className="search-hit-excerpt">{hit.excerpt}</p>}
                   </li>

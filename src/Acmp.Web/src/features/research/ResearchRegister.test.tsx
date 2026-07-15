@@ -24,11 +24,12 @@ const mockCounts = useResearchCounts as unknown as Mock;
 const ROWS: MissionSummary[] = [
   {
     id: 'm1', key: 'RSCH-2026-005', title: { en: 'Evaluate a unified identity provider', ar: 'تقييم موفّر هوية موحّد' },
-    status: 'Active', ownerName: 'Noura P', createdAt: '2026-06-02T09:00:00Z', findingCount: 2, recommendationCount: 3,
+    status: 'Active', ownerName: 'Noura P', createdAt: '2026-06-02T09:00:00Z', updatedAt: '2026-06-10T09:00:00Z', findingCount: 2, recommendationCount: 3,
   },
   {
     id: 'm2', key: 'RSCH-2026-002', title: { en: 'API gateway consolidation study', ar: 'دراسة دمج البوابات' },
-    status: 'Completed', ownerName: '', createdAt: '2026-05-20T09:00:00Z', findingCount: 4, recommendationCount: 1,
+    // updatedAt null → the "Updated" column falls back to createdAt.
+    status: 'Completed', ownerName: '', createdAt: '2026-05-20T09:00:00Z', updatedAt: null, findingCount: 4, recommendationCount: 1,
   },
 ];
 

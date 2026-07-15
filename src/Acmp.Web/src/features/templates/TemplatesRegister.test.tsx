@@ -61,6 +61,19 @@ describe('TemplatesRegister (P15e)', () => {
     expect(screen.getAllByRole('button', { name: 'New template' }).length).toBeGreaterThan(0);
   });
 
+  it('shows the filtered-empty variant with Clear filters when a filter is active (m13)', async () => {
+    const user = userEvent.setup();
+    withRows([]);
+    setup();
+    await user.click(screen.getByRole('button', { name: /Type/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'ADR' }));
+    // A filter is active + no rows → the "no matches" variant, not "No templates yet".
+    expect(screen.getByText('No matching templates')).toBeInTheDocument();
+    expect(screen.queryByText('No templates yet')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(lastParams().targetType).toBeUndefined();
+  });
+
   it('renders the real backend enum values (Active/Deprecated) with type + version', () => {
     setup();
     expect(screen.getByText('Standard Topic')).toBeInTheDocument();

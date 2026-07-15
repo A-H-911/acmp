@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { statusTone, DOCUMENT_STATUSES, WIKI_CATEGORIES, readTime, initials } from './wikiMeta';
+import type { TFunction } from 'i18next';
+import { statusTone, DOCUMENT_STATUSES, WIKI_CATEGORIES, readTime, initials, categoryLabel } from './wikiMeta';
+
+// Identity stub: known categories resolve through the key, unknown ones bypass it.
+const tKey = ((k: string) => k) as unknown as TFunction;
 
 describe('wikiMeta', () => {
   it('maps each DocumentStatus to its tone', () => {
@@ -23,6 +27,11 @@ describe('wikiMeta', () => {
     expect(readTime('one two three')).toBe(1);
     expect(readTime(Array.from({ length: 400 }, () => 'w').join(' '))).toBe(2);
     expect(readTime(Array.from({ length: 201 }, () => 'w').join(' '))).toBe(2);
+  });
+
+  it('localizes known categories via the wiki.category.* key and falls back to raw for legacy ones', () => {
+    expect(categoryLabel('Governance', tKey)).toBe('wiki.category.Governance');
+    expect(categoryLabel('LegacySpace', tKey)).toBe('LegacySpace');
   });
 
   it('derives two-letter initials with a fallback', () => {

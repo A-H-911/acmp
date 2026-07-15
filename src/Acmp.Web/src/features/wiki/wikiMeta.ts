@@ -5,6 +5,7 @@
  * has no status affordance, so these tones are no-reference choices reconciled to the lifecycle:
  * Draft → neutral (not yet public), Published → success (live), Archived → warn (retired).
  */
+import type { TFunction } from 'i18next';
 import type { StatusTone } from '../../components/ui/StatusChip';
 import type { DocumentStatus } from '../../api/wiki';
 
@@ -27,6 +28,15 @@ export const DOCUMENT_STATUSES: DocumentStatus[] = ['Draft', 'Published', 'Archi
  * into the tree; only NEW documents are constrained to this set (flagged, INV-014 reconciliation).
  */
 export const WIKI_CATEGORIES: string[] = ['Governance', 'Standards', 'Operations', 'General'];
+
+/**
+ * Localized "space" (category) label. Known categories resolve to `wiki.category.*` (EN+AR); legacy
+ * free-text categories fall back to their raw stored value. Shared by the tree, breadcrumb, and create
+ * dialog so no surface renders a raw English category under an Arabic locale (INV-009).
+ */
+export function categoryLabel(category: string, t: TFunction): string {
+  return WIKI_CATEGORIES.includes(category) ? t(`wiki.category.${category}`) : category;
+}
 
 const WORDS_PER_MINUTE = 200;
 
