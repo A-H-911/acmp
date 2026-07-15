@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-07-12
+updated: 2026-07-15
 ---
 
 # ACMP Acceptance Audit
@@ -790,17 +790,17 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | AC-073 | Recording upload | Met | UploadRecording handler/validator + GetRecordingUrl handler tests + MeetingRecordingApiTests (401/403/400/404/200; upload→detail; presign→url) + **MinioFileStoreTests (Testcontainers-MinIO: real adapter — bucket create/skip, presign, exists found/object-missing/bucket-missing, delete)** + live (real upload 200 through nginx; presigned 200/206) | P13-recording + P13-audit: MinIO via IFileStore, server-derived key, presigned playback (ADR-0025); the production adapter is now real-container-covered (coverage exclusion removed). |
 | AC-074 | Recording delete | Met | DeleteRecording handler tests (uploaded→delete object+clear+audit; webex→clear only; missing→throws) + MeetingRecordingApiTests (401/403/204→detail null) + live (delete → MinIO bucket empty) | P13-recording: both sources; Secretary/Chairman only (ADR-0025). |
 
-**Summary (regenerated 2026-07-12, through the Audit module — PR #105, `f32ca31`):** **74 ACs · 34 Met · 37
-Partial · 3 Pending · 0 Not-met.**
-- **Met (34):** AC-001/002/008/017/018/019/020/029/031/035/039/040/042/044/045/046/047/050/051/053/056/058/
-  059/064/065/066/067/068/069/070/071/072/073/074.
+**Summary (regenerated 2026-07-15, through P15 — global search PR #118 `6c6ed95`, P15h PR #119 `68d90d4`):** **74 ACs · 36 Met · 37
+Partial · 1 Pending · 0 Not-met.**
+- **Met (36):** AC-001/002/008/017/018/019/020/029/031/035/039/040/042/044/045/046/047/050/051/053/056/058/
+  059/060/061/064/065/066/067/068/069/070/071/072/073/074.
 - **Partial (37):** AC-003/005/006/007/009/010/011/012/013/014/015/016/021/022/023/024/025/026/027/028/030/
   032/033/034/036/037/038/041/043/048/049/052/054/055/057/062/063.
-- **Pending (1):** AC-004 (Keycloak idle-timeout — needs a live realm session policy, OQ-003). AC-060/061 →
-  **Met** in P15f/g (global search + Arabic word-breaker; SQL FTS + LIKE booster, OQ-034 resolved).
+- **Pending (1):** AC-004 (Keycloak idle-timeout — needs a live realm session policy, OQ-003).
+- **Resolved this cycle:** AC-060/061 Pending → **Met** (P15f/g global search: 5-provider `/api/search` fan-out + `/search` UI; SQL FTS + LIKE booster with the Arabic word-breaker lcid 1025, OQ-034 resolved). Evidence: `SearchApiTests` + `SearchPage.test` (AC-060), `SearchProvidersFtsTests` real-stack FTS (AC-061) — all present in-tree.
 
 **Verification basis (not a fresh full-suite run):** each `Met` traces to the per-AC test refs above (G-TRACE)
-and `main` is green at `f32ca31` on all four CI checks incl. the full-stack **e2e**. **Honest caveats:** most
+and `main` is green at `68d90d4` (through P15h; P15f/g #118 passed all four CI checks incl. the full-stack **e2e**). **Honest caveats:** most
 governance-feature `Partial`s (Voting AC-021–026, Decisions AC-027/028, MoM AC-036–038, Actions AC-012/013,
 SoD AC-014/015/016, background jobs AC-054/055, traceability AC-062/063) carry a "live real-stack → P17" note —
 their domain/handler/HTTP legs are unit+integration proven, the dedicated live real-stack VR leg is not yet
