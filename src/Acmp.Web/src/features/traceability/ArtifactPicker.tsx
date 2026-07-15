@@ -2,15 +2,16 @@
  * Shared artifact picker (P10e) — a two-step (type → artifact) selector used by both the create-
  * dependency and create-relationship dialogs to choose an edge endpoint.
  *
- * Scope honesty: only Topic, Action, and Risk have a FE list source (useBacklog /
- * useActionsRegister / useRisksRegister). Decision and System (dependency endpoints) and the other
- * 13 ArtifactTypes have no register hook yet, so they are NOT pickable this slice — a dialog passes
- * only the subset it can offer. This is why contextual create (From pre-seeded from the launching
- * artifact) is the primary path; the register's blank-both-ends create is limited to Topic/Action
- * and flagged. A future cross-artifact search endpoint widens the pickable set without touching this.
+ * Scope honesty: Topic, Action, Risk, and Document have a FE list source (useBacklog /
+ * useActionsRegister / useRisksRegister / useWikiDocuments). The other ArtifactTypes have no register
+ * hook yet, so they are NOT pickable — a dialog passes only the subset it can offer. This is why
+ * contextual create (From pre-seeded from the launching artifact) is the primary path. A future
+ * cross-artifact search endpoint widens the pickable set without touching this.
  *
- * The three type names (Topic/Action/Risk) are identical in DependencyEndpointType and ArtifactType,
- * so the emitted `type` string is valid in whichever enum the parent dialog targets.
+ * Document is offered by the RELATIONSHIP dialog only (so a wiki page can be linked from the artifact
+ * that cites it — ADR-0029); it is NOT a DependencyEndpointType, so the dependency dialog must never
+ * pass it. Topic/Action/Risk names are identical in DependencyEndpointType and ArtifactType, so the
+ * emitted `type` string is valid in whichever enum the parent dialog targets.
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,9 +20,10 @@ import { Select } from '../../components/ui/Select';
 import { useBacklog } from '../../api/topics';
 import { useActionsRegister } from '../../api/actions';
 import { useRisksRegister } from '../../api/risks';
+import { useWikiDocuments } from '../../api/wiki';
 
 /** The artifact types this slice can list (and therefore pick). */
-export type PickableType = 'Topic' | 'Action' | 'Risk';
+export type PickableType = 'Topic' | 'Action' | 'Risk' | 'Document';
 
 export interface PickedArtifact {
   type: PickableType;
@@ -47,17 +49,19 @@ export function ArtifactPicker({ label, pickableTypes, value, onChange, error }:
   const { t, i18n } = useTranslation();
   const [type, setType] = useState<PickableType | ''>(value?.type ?? (pickableTypes.length === 1 ? pickableTypes[0] : ''));
 
-  // All three queries are declared unconditionally (rules of hooks) and gated by `enabled`, so only
-  // the selected+pickable register actually fetches.
+  // Register reads (rules of hooks: declared unconditionally). The wiki-documents read is gated to when
+  // Document is actually offered, so the dependency dialog never fetches wiki pages.
   const topics = useBacklog({ pageSize: PAGE, includeClosed: true });
   const actions = useActionsRegister({ pageSize: PAGE });
   const risks = useRisksRegister({ pageSize: PAGE });
+  const docs = useWikiDocuments({}, pickableTypes.includes('Document'));
 
   const pickLoc = (v: { en: string; ar: string }) => (i18n.language === 'ar' ? v.ar : v.en);
 
   const optionsFor = (chosen: PickableType): { id: string; key: string; title: string }[] => {
     if (chosen === 'Topic') return (topics.data?.items ?? []).map((x) => ({ id: x.id, key: x.key, title: x.title }));
     if (chosen === 'Action') return (actions.data?.items ?? []).map((x) => ({ id: x.id, key: x.key, title: pickLoc(x.title) }));
+    if (chosen === 'Document') return (docs.data?.items ?? []).map((x) => ({ id: x.id, key: x.key, title: pickLoc(x.title) }));
     return (risks.data?.items ?? []).map((x) => ({ id: x.id, key: x.key, title: pickLoc(x.title) }));
   };
 

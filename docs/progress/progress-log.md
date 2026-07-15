@@ -31,9 +31,12 @@ Five batches on `fix/p15-audit-remediation`; all gates re-run green.
   Cross-link) via an extracted pure `markdownInsert` util + a plain textarea — the shared `MarkdownEditor` (6 other
   surfaces) is untouched. **WK8**: minimal real draft autosave (debounced per-doc/per-lang localStorage, restored on
   reopen, cleared on save/cancel, "Draft autosaved" indicator). **WK10 (ADR-0029)**: the reading view's
-  `TraceabilityPanel` replaced by a bespoke read-only `WikiLinkedArtifacts` card reusing the same relationship
-  read-hook — **drops the wiki "Add relationship" affordance** (deliberate regression; wiki edge creation now only
-  on routable detail pages). m15 History-button version chip → muted sans; m17 AR read-time renders Arabic-Indic
+  `TraceabilityPanel` replaced by a bespoke read-only `WikiLinkedArtifacts` card (mockup-faithful) reusing the same
+  relationship read-hook. **Operator chose option C:** to preserve linking, `Document` was made a **pickable
+  relationship target** (`ArtifactPicker` + `CreateRelationshipDialog` only — not the dependency dialog), so a wiki
+  page is now linked *from the artifact that cites it* — bidirectional, richer than the prior narrow one-way "Add
+  relationship" affordance; the incoming edge shows in the page's card. m15 History-button version chip → muted
+  sans; m17 AR read-time renders Arabic-Indic
   digits (`ar-u-nu-arab`) + plural; m18 History ungated to all readers (Edit/Publish/Archive stay manager-only);
   m16 DMY; wiki copy force-matched to the mockup (search placeholder, empty-state).
 - **B4 — templates.** m1 name-cell glyph `file`→`template`; m13 filtered-empty variant (distinct from
@@ -45,8 +48,9 @@ Five batches on `fix/p15-audit-remediation`; all gates re-run green.
   `pencil` icon path was verified byte-identical to the design (dc.html lines 314/331) — no change needed.
 
 **Decisions applied (locked pre-execution).** Force-match the mockup for shared-component/convention items; WK8 =
-minimal real autosave; WK10 = full bespoke read-only card + **ADR-0029** (accepts reversing the blessed panel
-substitution and dropping wiki edge-creation); m5 = add `UpdatedAt` to the summary DTO; DMY on P15 surfaces only
+minimal real autosave; WK10 = bespoke read-only card + `Document` made a pickable relationship target + **ADR-0029**
+(operator chose option C — mockup-faithful card, linking preserved from the citing artifact); m5 = add `UpdatedAt`
+to the summary DTO; DMY on P15 surfaces only
 (a P15-scoped `formatDmy` helper, not an app-wide switch — logged as separate tech-debt). The exact text of the
 un-recoverable low-severity minors (m2/m7/m8/m9 CSS tokens; m4/m11/m12 templates copy) was not preserved in the
 package; reconstructed conservatively (value-preserving token adoption; the concrete stale-admin-desc reconcile).

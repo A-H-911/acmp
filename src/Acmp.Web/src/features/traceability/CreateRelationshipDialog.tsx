@@ -6,9 +6,10 @@
  * dependency form's shape (Source · Relationship · Target · Notes). Flagged for the design update.
  *
  * Launched contextually from an artifact panel: `source` is pre-seeded + locked (works for ANY
- * ArtifactType — the snapshot is in hand). The Target is picked; only Topic/Action/Risk are pickable
- * this slice (the only ArtifactTypes with a FE list source). No key is returned (edges have no
- * display key), so on success the dialog just closes and the panel re-renders (cache invalidation).
+ * ArtifactType — the snapshot is in hand). The Target is picked from Topic/Action/Risk/Document — the
+ * ArtifactTypes with a FE list source. Document is included so a wiki page can be linked from the
+ * artifact that cites it (ADR-0029; the wiki reading view itself stays a read-only card). No key is
+ * returned (edges have no display key), so on success the dialog closes and the panel re-renders.
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +37,7 @@ interface Props {
   source: RelationshipSource;
 }
 
-const PICKABLE: PickableType[] = ['Topic', 'Action', 'Risk'];
+const PICKABLE: PickableType[] = ['Topic', 'Action', 'Risk', 'Document'];
 
 export function CreateRelationshipDialog({ open, onClose, source }: Props) {
   const { t } = useTranslation();
