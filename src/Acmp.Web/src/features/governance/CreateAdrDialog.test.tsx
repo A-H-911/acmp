@@ -19,6 +19,14 @@ vi.mock('../../api/adrs', async (orig) => ({
   useProposeAdr: () => ({ mutateAsync: propose, isPending: false }),
 }));
 
+// The real TemplatePicker calls react-query hooks; stub it to a plain apply button so these tests
+// stay query-free. The picker's own behaviour is covered in features/templates/TemplatePicker.test.tsx.
+vi.mock('../templates/TemplatePicker', () => ({
+  TemplatePicker: ({ onApply, hasContent }: { onApply: (b: string) => void; hasContent?: boolean }) => (
+    <button type="button" disabled={hasContent} onClick={() => onApply('TEMPLATE BODY')}>apply-template</button>
+  ),
+}));
+
 function setup() {
   return render(
     <MemoryRouter>
@@ -83,6 +91,16 @@ describe('CreateAdrDialog (P11b)', () => {
     expect(create).toHaveBeenCalledTimes(1);
     expect(propose).not.toHaveBeenCalled();
     expect(nav).toHaveBeenCalledWith('/adrs/ADR-2026-012');
+  });
+
+  it('pre-fills the ADR context from a chosen template, editable before submit (FR-120)', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: 'apply-template' }));
+    await user.type(screen.getByLabelText(/Title/), 'Templated ADR');
+    await user.type(screen.getByLabelText(/Decision/), 'Adopt it.');
+    await user.click(screen.getByRole('button', { name: 'Save ADR' }));
+    expect(create.mock.calls[0][0]).toMatchObject({ context: { en: 'TEMPLATE BODY', ar: 'TEMPLATE BODY' } });
   });
 
   it('surfaces a server error on create and does not navigate', async () => {

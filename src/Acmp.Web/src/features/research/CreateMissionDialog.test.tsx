@@ -17,6 +17,14 @@ vi.mock('../../api/research', async (orig) => ({
   useCreateMission: () => ({ mutateAsync: create, isPending: false }),
 }));
 
+// Stub the react-query-backed TemplatePicker to a plain apply button (its own behaviour is covered in
+// features/templates/TemplatePicker.test.tsx); keeps this suite query-free.
+vi.mock('../templates/TemplatePicker', () => ({
+  TemplatePicker: ({ onApply, hasContent }: { onApply: (b: string) => void; hasContent?: boolean }) => (
+    <button type="button" disabled={hasContent} onClick={() => onApply('TEMPLATE BODY')}>apply-template</button>
+  ),
+}));
+
 vi.mock('../../api/topics', () => ({
   useBacklog: () => ({ data: { items: [{ id: 'g-topic', key: 'TOP-2026-014', title: 'Adopt Keycloak', type: 'Standard', status: 'Accepted', urgency: 'Normal', scope: 'x', streams: [], ownerId: null, ownerName: null, priority: 1, timesDeferred: 0, ageDays: 3, slaBreached: false, createdAt: '2026-02-01T00:00:00Z' }], total: 1, page: 1, pageSize: 200, totalPages: 1 } }),
 }));
@@ -81,6 +89,15 @@ describe('CreateMissionDialog (P15b)', () => {
     await user.type(screen.getByLabelText(/Research question/), 'Where are the gaps?');
     await user.click(screen.getByRole('button', { name: 'Create mission' }));
     expect(create.mock.calls[0][0]).toMatchObject({ keystonePackageRef: null, sourceTopicId: null });
+  });
+
+  it('pre-fills the research question from a chosen template (FR-120)', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: 'apply-template' }));
+    await user.type(screen.getByLabelText(/^Title/), 'Templated mission');
+    await user.click(screen.getByRole('button', { name: 'Create mission' }));
+    expect(create.mock.calls[0][0]).toMatchObject({ question: { en: 'TEMPLATE BODY', ar: 'TEMPLATE BODY' } });
   });
 
   it('surfaces a server error and does not navigate', async () => {

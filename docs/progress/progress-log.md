@@ -12,6 +12,52 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-15 — P15h Template pre-fill (FR-120) — the last P15 sub-slice
+
+**What was done.** Wired the P15d/P15e template register into the four artifact-create surfaces so an author
+can start from a template. **FE-only** — read-only reuse of the existing `GET /api/knowledge/templates?targetType`
++ `GET /{key}` seam; no backend, no new module/seam/migration. Branch `feat/p15h-template-prefill`.
+
+- **One shared `TemplatePicker`** (`features/templates/TemplatePicker.tsx`, homed beside the P15e template UI and
+  imported cross-feature like `TraceabilityPanel`): `useTemplates({ targetType, statuses:['Active'] })` → a
+  `Select` of Active templates + a **Use template** button that reads the picked template's Markdown `Body`
+  (`useTemplate(key)`) and hands it to the caller. Empty (no Active templates for the type) → renders nothing
+  (INV-014 empty-state). Placeholders `{{…}}` ride through as literal editable text (FR-120 = pre-fill + edit; no
+  fields-form).
+- **Overwrite guard (advisor de-risk).** Apply is **disabled while the target field already holds content** — so a
+  restored `SubmitTopic` draft (rehydrated from localStorage) is never silently clobbered. FR-120 is "pre-fill",
+  not "replace". `// ponytail:` clear-to-switch is the ceiling; add confirm-to-replace only if it's ever needed.
+- **Four wirings** (content field = the surface's existing single form-state string, mirrored en===ar via `loc()`
+  only at submit — so single-Body→bilingual is a non-problem at the UI layer):
+  Topic→`SubmitTopic.description`, ADR→`CreateAdrDialog.context`, MoM→`CreateMinutes.body`,
+  Research Mission→`CreateMissionDialog.question`.
+- **Field-mapping decisions (operator-blessed in GO).** FR-120 says "the description/content **field**" (singular)
+  → each template fills the one primary content field per artifact. **ADR→Context** (the narrative field);
+  **Mission→Question** (the create command's only free-form prose field — a research question is usually a
+  sentence, so this is the deliberate mapping, not an oversight). Other ADR/MoM fields stay author-entered.
+- **OQ-051 (Approved) note.** FR-119 says "Topics (by type)"; OQ-051 flattened topic templates to a single
+  `Topic` targetType with no per-topic-type sub-filter, so the Topic picker offers all Topic templates regardless
+  of the selected topic type. Forced by the approved data model, not a miss.
+- **INV-014.** The "start from a template" affordance is absent from the create-flow `.dc.html` designs →
+  no-reference composition from the shared `Select`/`Button` (design-update-owed, guardrail #14). RTL comes free
+  from the shared primitives.
+- **Tests.** `TemplatePicker.test.tsx` (lists/empty→null/apply-body/disabled-until-selected/disabled-while-loading/
+  overwrite-guard). Each of the four surfaces stubs the child picker to a plain apply button and adds one test that
+  clicks it and asserts the field received the body (proves the surface `onApply` closure; the real picker→body
+  path is proven once in the picker's own suite).
+
+**Gates (all green).** FE only (no BE change): `tsc -b && vite build` clean; `oxlint` clean (only pre-existing Toast/
+MarkdownView fast-refresh warnings); **i18n parity 1754** (new `templates.picker.*` EN+AR); per-file coverage gate
+`check-coverage.mjs` exit 0 — changed files TemplatePicker 100 / CreateAdrDialog 100 / CreateMissionDialog 100 /
+MeetingMinutes 95.72 / SubmitTopic 99.46. **FR-120 → Met** (covered by the module suite; no dedicated AC, per its
+traceability row). Live pixel-VR not required (no-ref affordance, functional EN+AR only).
+
+**Next.** ★ **P15 COMPLETE** ★ → P14 Tarseem/Diagrams (+ the deferred wiki version-diff) → P16–P19 hardening.
+Residuals unchanged (search result-status localization + no-ref `/search` design; FR-115 pre-P15c source-edge
+backfill; D-19 flaky DecisionPage.test; Webex/ngrok token rotation; AC-070 prod live-confirm; AC-004 KC idle policy).
+
+---
+
 ### 2026-07-15 — P15f/g Global Search (FR-143/144/145/118, AC-060/061; OQ-034 resolved)
 
 **What was done.** Global search across the platform, backend + frontend, on branch `feat/p15f-search-backend`.

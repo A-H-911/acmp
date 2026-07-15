@@ -1962,6 +1962,12 @@
   "templates": {
     "title": "Templates",
     "subtitle": "Standardized templates for topics, ADRs, minutes, and research.",
+    "picker": {
+      "label": "Start from a template",
+      "placeholder": "Choose a template…",
+      "apply": "Use template",
+      "replaceHint": "Clear the field to use a template."
+    },
     "newTemplate": "New template",
     "filtersLabel": "Template filters",
     "clearFilters": "Clear filters",

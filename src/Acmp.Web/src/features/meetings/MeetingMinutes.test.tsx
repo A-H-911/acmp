@@ -22,6 +22,13 @@ vi.mock('../../api/minutes', async (orig) => ({
   usePublishMinutes: vi.fn(),
   useSupersedeMinutes: vi.fn(),
 }));
+// Stub the react-query-backed TemplatePicker to a plain apply button (covered in
+// features/templates/TemplatePicker.test.tsx); keeps this suite query-free.
+vi.mock('../templates/TemplatePicker', () => ({
+  TemplatePicker: ({ onApply, hasContent }: { onApply: (b: string) => void; hasContent?: boolean }) => (
+    <button type="button" disabled={hasContent} onClick={() => onApply('TEMPLATE BODY')}>apply-template</button>
+  ),
+}));
 import { useMeetingDetail } from '../../api/meetings';
 import {
   useMinutesForMeeting, useMinutes, useDraftMinutes, useReviseMinutes, useSubmitMinutes,
@@ -94,6 +101,17 @@ describe('MeetingMinutes (P7d)', () => {
     await user.type(screen.getByLabelText('Minutes body'), 'First draft');
     await user.click(screen.getByRole('button', { name: 'Start minutes' }));
     expect(draft.mutate).toHaveBeenCalledWith('First draft');
+  });
+
+  it('pre-fills the new minutes body from a chosen template (FR-120)', async () => {
+    const user = userEvent.setup();
+    const draft = mutation();
+    arrange({ list: [], mom: null });
+    m(useDraftMinutes).mockReturnValue(draft);
+    setup(['secretary']);
+    await user.click(screen.getByRole('button', { name: 'apply-template' }));
+    await user.click(screen.getByRole('button', { name: 'Start minutes' }));
+    expect(draft.mutate).toHaveBeenCalledWith('TEMPLATE BODY');
   });
 
   it('lets a manager edit a draft: save, then send for review (revise → submit)', async () => {
