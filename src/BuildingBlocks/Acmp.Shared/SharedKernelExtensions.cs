@@ -69,6 +69,11 @@ public static class SharedKernelExtensions
                 .AddAcmpAuditInterceptors(sp));
         services.AddScoped<IAuditSink, SqlAuditSink>();
 
+        // D-16 / C-INS-02 (ADR-0030): the nightly integrity verifier + the audit store's own chain check. Other
+        // modules register their own IIntegrityCheck (e.g. Decisions' vote-ballot chain); the verifier fans out.
+        services.AddScoped<IIntegrityCheck, AuditChainIntegrityCheck>();
+        services.AddScoped<IIntegrityVerifier, IntegrityVerifier>();
+
         // Behaviors wrap the handler outer-to-inner in registration order: logging (outermost) -> authorization
         // -> validation -> transaction (innermost). Transaction is innermost so auth/validation DENIALS (which
         // emit-then-throw) run OUTSIDE the command transaction and autocommit their audit rows (ADR-0026).

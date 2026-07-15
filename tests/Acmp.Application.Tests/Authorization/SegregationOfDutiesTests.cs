@@ -5,6 +5,7 @@ namespace Acmp.Application.Tests.Authorization;
 
 // SoD predicate mechanism (docs/10 §E.4). The end-to-end ACs land with the owning modules
 // (SoD-1 -> Actions/P8, SoD-3 -> Voting/P9); these prove the guards now.
+[Trait("Category", "Security")]
 public class SegregationOfDutiesTests
 {
     // SoD-1 (AC-012 / AC-013): an action's verifier may be neither owner nor the assignee who completed it.

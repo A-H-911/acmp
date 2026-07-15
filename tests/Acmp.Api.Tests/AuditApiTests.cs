@@ -9,6 +9,7 @@ namespace Acmp.Api.Tests;
 // Member/Administrator → 403 (Administrator excluded on SoD-5, ADR-0027 supersedes the FR-153 role clause);
 // no token → 401 (AC-008). The store is seeded with BOTH a lean v1 row and an enriched v2 row so the DTO's
 // cross-shape normalization (Action ?? EventType; Actor ?? Subject) is exercised, not just the v2 path.
+[Trait("Category", "Security")]
 public class AuditApiTests
 {
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "kc-aud")

@@ -12,6 +12,7 @@ namespace Acmp.Application.Tests.Authorization;
 // Handler-level resource authorization seam (ResourceAuthorizer) — reuses IAuthorizationService so the
 // same policy handlers used by endpoints gate resource decisions. Covers the deny (403) and no-principal
 // (401) guards that endpoint tests don't reach directly.
+[Trait("Category", "Security")]
 public class ResourceAuthorizerTests
 {
     private const string Policy = "SomePolicy";

@@ -14,6 +14,7 @@ namespace Acmp.Application.Tests.Authorization;
 // proves the registered policies match the matrix rather than matching themselves (centerpiece).
 // Covers AC-005/006 (RBAC deny), AC-007 (SoD-5: Administrator denied on every committee-content row),
 // and the AiO/ownership dimension for AC-009.
+[Trait("Category", "Security")]
 public class PermissionMatrixTests
 {
     // Role columns in docs/10 §C order.

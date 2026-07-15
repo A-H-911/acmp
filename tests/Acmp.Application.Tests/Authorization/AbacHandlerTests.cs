@@ -11,6 +11,7 @@ namespace Acmp.Application.Tests.Authorization;
 // aggregates land in P5+; here the handlers are proven against stub resources/providers:
 // AC-010 (stream scope), AC-009 (ownership widening), AC-011 (capability scoped to the target),
 // and delegation widening (§E.3).
+[Trait("Category", "Security")]
 public class AbacHandlerTests
 {
     private static ClaimsPrincipal Principal(string userId, params string[] roles)

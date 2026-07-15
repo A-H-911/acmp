@@ -2,8 +2,10 @@
 using Acmp.Modules.Decisions.Application;
 using Acmp.Modules.Decisions.Application.Abstractions;
 using Acmp.Modules.Decisions.Infrastructure.Directory;
+using Acmp.Modules.Decisions.Infrastructure.Integrity;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Search;
+using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Decisions;
 using Acmp.Shared.Contracts.Search;
 using Acmp.Shared.Infrastructure.Persistence;
@@ -33,6 +35,9 @@ public static class DecisionsInfrastructureExtensions
 
         // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
         services.AddScoped<ISearchProvider, DecisionSearchProvider>();
+
+        // D-13 / C-INS-02 (ADR-0030): this module's own tamper check for the nightly integrity verifier.
+        services.AddScoped<IIntegrityCheck, VoteChainIntegrityCheck>();
 
         services.AddDecisionsApplication();
         return services;

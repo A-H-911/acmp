@@ -16,6 +16,7 @@ namespace Acmp.Api.Tests;
 // so the actual authentication path is exercised — not the TestAuthHandler. With no Authority
 // configured the scheme is fail-closed: anonymous and bogus-token requests both get 401 (AC-008),
 // confirming the production auth wiring boots and challenges correctly.
+[Trait("Category", "Security")]
 public class RealJwtAuthTests
 {
     private sealed class RealAuthFactory : WebApplicationFactory<Program>
