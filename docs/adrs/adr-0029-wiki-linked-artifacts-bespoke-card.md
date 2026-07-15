@@ -48,17 +48,21 @@ is complete — no data gap), unions outgoing + incoming, routes each row throug
 navigable `Link`, non-routable → plain row), and renders nothing when the document has no edges.
 
 This **drops the wiki reading view's "Add relationship" affordance** — a deliberate functional regression.
-Wiki edge *creation* now lives only where a routable detail page still exposes the `TraceabilityPanel`; the
-wiki reading view becomes read-only for cross-links, consistent with the mockup. The shared `TraceabilityPanel`
-and its other 7 consumers are untouched.
+Note the shared `ArtifactPicker` only lists `Topic | Action | Risk` as pickable endpoints, so `Document` was
+never a selectable *target* from another artifact's panel; the wiki reading-view panel was therefore the only
+**UI** path to create a wiki cross-link. Removing it makes wiki cross-linking **read-only in the UI** — edges
+are created via the API (or seeding), which is how the existing Document↔Topic edges are made. The shared
+`TraceabilityPanel` and its other 7 consumers are untouched.
 
 ## Consequences
 
 - **Positive:** the reading view matches the mockup (INV-014 closed for WK10); the linked set is identical to
   what the panel showed (same read-hook); no dead links.
-- **Negative / accepted:** cross-links can no longer be *created* from the wiki reading view. For a reference
-  wiki this is acceptable — pages are linked from the artifacts that reference them. If in-place wiki linking
-  is later wanted, re-expose a create affordance without reverting the card.
+- **Negative / accepted:** wiki cross-linking is now **read-only in the UI** — the removed panel was the only
+  UI affordance that could create a `Document` edge (`Document` is not a pickable `ArtifactPicker` target), so
+  no other panel picks up the slack. For a reference wiki this is accepted: edges are seeded/created via the
+  API. To restore in-UI wiki linking later, either add `Document` to `ArtifactPicker`'s pickable set (so other
+  panels can target a wiki page) or re-expose a wiki-side create affordance — without reverting the card.
 - **Scope:** frontend only — no backend, schema, or API change. The design `.dc.html` already specifies this
   card, so no design-update is owed for the reading-view cross-links (the P15e substitution note is
   superseded by this ADR).

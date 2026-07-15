@@ -56,11 +56,16 @@ package; reconstructed conservatively (value-preserving token adoption; the conc
 
 **Gates (all green).** FE: 1050 tests, i18n parity 1768 keys, oxlint clean, `vite build` ✓, `test:cov` exit 0
 (changed files 96.57–100%). BE: build 0 errors, `dotnet format --verify-no-changes` clean, per-file coverage
-99.67% global (`check-coverage.mjs` exit 0). Live pixel-VR: **[sign-off pending this session, plan §6]**.
+99.67% global (`check-coverage.mjs` exit 0). Live pixel-VR (isolated `-p acmpe2e` stack, **8/8 captures**):
+**PASS** — element-by-element sign-off in EN-light + AR-dark on the enumerated §6 items: serif LTR title (AR
+falls to Arabic sans, no broken glyphs), localized AR breadcrumb ("الحوكمة"), full-width 7-icon wiki toolbar,
+WK10 "Linked artifacts" card (RTL-flipped), "Updated"/"آخر تحديث" register column, DMY dates ("15 Jul 2026" /
+"١٥ يوليو ٢٠٢٦" Arabic-Indic), muted version chip, AR read-time ("قراءة ١ دقائق"), localized search status
+("مُقدَّم"/"منشورة"), M4 subtitle. History-ungate (m18) is unit-tested (the VR user is a manager). No new
+visual defects.
 
-**Next.** Live VR visual sign-off on the enumerated elements (serif LTR title, localized AR breadcrumb, 7-icon
-toolbar, Linked-artifacts card, Updated column, DMY, muted version chip, AR read-time, History-for-all, localized
-search status), then PR. Design-update-owed: none new (WK10 matches the `.dc.html`). ADR-0029 → operator ratification.
+**Next.** PR (`fix/p15-audit-remediation`) → review → squash-merge. Design-update-owed: none new (WK10 matches
+the `.dc.html`). ADR-0029 → operator ratification.
 
 ---
 
