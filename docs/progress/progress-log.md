@@ -2,13 +2,40 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-13
+updated: 2026-07-15
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-15 — Register refresh: acceptance-audit + status-report reconciled to P15-complete
+
+**What was done.** Docs-only reconciliation, no code. The `acceptance-audit.md` table body already carried
+AC-060/061 as `Met` (P15f/g global search), but its **Summary rollup** and the status-report **Gate snapshot**
+still read the pre-P15 counts ("34 Met · 3 Pending") — a self-contradiction. Reconciled both to the table +
+verified evidence.
+
+- **Rollup corrected** to **74 ACs · 36 Met · 37 Partial · 1 Pending · 0 Not-met** (was 34/37/3). AC-060/061 added
+  to the Met list; Pending reduced to AC-004 alone (Keycloak idle-timeout, OQ-003).
+- **Verified before asserting Met** (not a fresh full-suite run, per G-TRACE): the cited tests exist in-tree —
+  `SearchApiTests`, `SearchPage.test` (AC-060), `SearchProvidersFtsTests` real-stack FTS (AC-061) — and the slice
+  is merged green (`6c6ed95`/#118, all four CI checks incl. e2e). Green ref advanced `f32ca31` → `68d90d4`
+  (through P15h).
+- **Stale narrative fix.** Status-report "Latest slice" said P15h was "awaiting commit GO"; it is merged
+  (`68d90d4`/#119). Corrected.
+- Frontmatter bumped: acceptance-audit `updated` → 2026-07-15; status-report v1.7.4 → v1.7.5.
+
+**Registers surveyed (no change needed, recorded for the gate).** Open-question register: **42 open** (Deferred,
+default-applied) incl. **7 still-open PH-0 blockers** (OQ-003/020/024/030/031/032/038); 10 settled (incl. OQ-034
+resolved by the P15f spike). Deferred-work register: **17 open** (D-02 in progress), 2 done (D-15, D-18). **D-11
+(Tarseem) activates at the next slice, P14.**
+
+**Next.** **P14 — Tarseem/Diagrams** (activates D-11), then hardening P16–P19. Residuals unchanged: D-19 flaky
+`DecisionPage.test`; D-16/D-17 audit hardening → P16; AC-004 live realm policy; operator token rotation.
 
 ---
 
