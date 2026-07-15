@@ -1,8 +1,8 @@
 # ADR-0029: Read-only "Linked artifacts" card on the wiki reading view + make Document a pickable link target
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-07-15
-- Deciders: Architecture Committee execution (operator chose option C 2026-07-15; formal ratification pending)
+- Deciders: Architecture Committee execution (operator chose option C + ratified 2026-07-15)
 - Context: P15 (Research & Knowledge) design-fidelity audit remediation
 
 ## Context and Problem Statement
