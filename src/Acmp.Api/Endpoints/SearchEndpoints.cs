@@ -43,7 +43,8 @@ public static class SearchEndpoints
                 return Results.Ok(groups);
             })
             .WithTags("Search")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Search);
 
         return app;
     }

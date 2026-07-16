@@ -25,6 +25,10 @@ builder.Services.AddAcmpModules(builder.Configuration);
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
 
+// P16-B4: proportional rate limiting (C-API-03) + read-only-FS-safe DataProtection key-ring (C-CON-003).
+builder.Services.AddAcmpRateLimiting(builder.Configuration);
+builder.Services.AddAcmpDataProtection(builder.Configuration);
+
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
 builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
@@ -64,6 +68,9 @@ app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// After auth so the rate-limiter can partition by the caller's `sub` (see HardeningExtensions).
+app.UseRateLimiter();
 
 // Swagger in non-production only (OQ-019).
 if (!app.Environment.IsProduction())
