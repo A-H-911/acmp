@@ -46,17 +46,19 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Trivy fs + misconfig + secret (report-only — gate Critical after triage)
+      - name: Trivy fs + misconfig + secret (gating on CRITICAL — first scan: 0 vuln/secret, 3 HIGH misconfig)
         # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
-        # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. exit-code 0
-        # keeps this report-only for one triage run.
-        continue-on-error: true
+        # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. The tag is
+        # therefore NOT Dependabot-managed — bump aquasec/trivy manually.
+        # Gates on CRITICAL (--severity also filters the report, so HIGH is not shown here). First triage run
+        # found 0 CRITICAL; the 3 HIGH Dockerfile misconfigs (DS-0002 non-root USER x2, DS-0029) are tracked as
+        # B4 container-hardening work — tighten this gate to HIGH once B4 lands.
         run: |
           docker run --rm -v "$PWD:/repo" aquasec/trivy:0.72.0 fs /repo \
             --scanners vuln,misconfig,secret \
-            --severity CRITICAL,HIGH \
+            --severity CRITICAL \
             --ignore-unfixed \
-            --exit-code 0
+            --exit-code 1
 
   sbom:
     runs-on: ubuntu-latest
