@@ -1,5 +1,7 @@
 server {
-    listen 80;
+    # 8080 (not 80): the runtime image is nginx-unprivileged (non-root UID 101, C-CON-001) which cannot
+    # bind privileged ports. Compose maps host 8088 -> 8080; the healthcheck probes 8080.
+    listen 8080;
     server_name _;
     root /usr/share/nginx/html;
     index index.html;

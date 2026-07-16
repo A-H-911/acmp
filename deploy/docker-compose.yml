@@ -47,7 +47,8 @@ services:
       start_period: 20s
 
   minio:
-    image: minio/minio:latest
+    # Digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot. e2e pulls + exercises it.
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -68,7 +69,8 @@ services:
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
   # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/domain/deployment.md, ADR-0015).
   keycloak-db:
-    image: postgres:16
+    # Digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
+    image: postgres:16@sha256:17e67d7b9890c99b055ba1e0d5c5be4ec27c9d3a72bda32db24a5e5d8a85af0c
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USER}
@@ -86,7 +88,7 @@ services:
   # imports deploy/keycloak/realm-export.json (realm + OIDC client + 8 roles/groups + initial admin).
   # start-dev is the dev profile; prod hardening (production mode, real hostname, TLS) is a P18 override.
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0
+    image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
     command: ["start-dev", "--import-realm"]
     environment:
       KC_DB: postgres
@@ -126,7 +128,7 @@ services:
   # deploy, idempotently and WITHOUT touching users/passwords (unlike a destructive `import --override`).
   # Reuses the keycloak image (bash + kcadm, no curl/jq) — no new runtime dependency (CON-001). Exits 0.
   keycloak-config:
-    image: quay.io/keycloak/keycloak:26.0
+    image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
     depends_on:
       keycloak:
         condition: service_healthy
@@ -216,9 +218,10 @@ services:
       api:
         condition: service_healthy
     ports:
-      - "8088:80"
+      # nginx-unprivileged listens on 8080 (non-root, C-CON-001); host port 8088 unchanged.
+      - "8088:8080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -270,6 +273,8 @@ services:
   # ponytail: routing PROD webhook traffic through ngrok's SaaS tunnel is in mild tension with the self-contained
   # posture (CON-001/INV-003) — prefer the org reverse proxy in prod; treat ngrok as dev + an accepted fallback.
   ngrok:
+    # NOT digest-pinned (unlike the other images): ngrok is behind `profiles:[ngrok]`, so e2e (default
+    # profile) never pulls/exercises it — a pinned bad digest would fail silently. Left tag-pinned. (P16b/B2b)
     image: ngrok/ngrok:latest
     profiles: ["ngrok"]
     command: ["http", "web:80", "--url=${NGROK_URL}"]
