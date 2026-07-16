@@ -12,6 +12,74 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-16 — P16 Batch 2 (PR2): scanners triaged → flipped to gating
+
+**Scope.** Follow-up to the Batch-2 PR1 entry below: triage the first CI run of the report-only scanners and flip
+each to gating. Same branch/PR (`feat/P16b-ci-security-gates` / #126). No product code.
+
+**What was done.**
+- **Gitleaks → GATING.** First run scanned 153 commits under the `.gitleaks.toml` allowlist → **no leaks**. Removed
+  `continue-on-error`.
+- **Semgrep → GATING.** First run flagged **2** `csharp-sqli` findings, both in `AuditImmutabilityDbPermissionTests`
+  (`new SqlCommand(sql, ...)` executing **fixed** test DDL/DML against the SQL container to prove the DB DENY — no
+  untrusted input; a table-permission probe cannot be parameterized). Triaged as false-positive → bare `// nosemgrep`
+  on the two test-helper lines + justification comment; removed `continue-on-error`.
+- **Trivy fs → GATING (CRITICAL).** `trivy-action@0.28.0` never scanned — the tag needs a `v` prefix, and `v0.28.0`
+  itself is broken (its transitive `setup-trivy@v0.2.1` pin was retagged upstream). Replaced the composite action with
+  a **pinned docker image** `aquasec/trivy:0.72.0` (mirrors the gitleaks step; NOT Dependabot-managed → bump
+  manually). First real scan: **0 vuln, 0 secret, 0 CRITICAL**, and **3 HIGH** Dockerfile misconfigs (DS-0002 non-root
+  `USER` ×2 on backend/web, DS-0029 `--no-install-recommends` on sqlserver). Gate set to `--severity CRITICAL
+  --exit-code 1 --ignore-unfixed` per plan. Because `--severity` also filters the report, the 3 HIGH findings are
+  recorded as **[D-21]** (B4 container hardening) so they don't silently vanish from CI.
+- **YAML self-inflict, caught + fixed.** The Trivy gating rename put `first scan: 0 vuln/secret` in the step `name:`;
+  the `": "` starts a YAML mapping → GitHub couldn't parse `security.yml` and the run executed **0 jobs (failure)**.
+  Reworded without a colon; now lint workflow YAML locally (`yaml.safe_load`) before pushing.
+
+**Gates.** All 8 PR checks green on `5148026` — CI backend/compose/frontend, E2E, and Security secrets/sast/trivy-fs/
+sbom; `mergeStateStatus=CLEAN`. `main` is currently unprotected (security checks advisory-until-added to branch
+protection — an ops follow-up).
+
+**Decisions.** No new ADR. No AC verdict change. New deferred item **D-21** (3 HIGH Dockerfile misconfigs → B4).
+OQ-027 stays Deferred. **Awaiting merge consent** (no-review guard). Next after merge: B2b (Trivy image scan +
+base-image digest-pinning), then B3, then P14.
+
+---
+
+### 2026-07-16 — P16 (Security hardening) — Batch 2: CI security gates + supply chain (PR1)
+
+**Scope.** Implements C-SUP-01/02 + C-SAST-01 + C-SEC-02 (OQ-027 default + devsecops-plan). No product code — CI +
+build config + dependency pins. Branch `feat/P16b-ci-security-gates`. Plan (devil's-advocate-reviewed) at
+`~/.claude/plans/apply-the-controls-in-giggly-volcano.md`.
+
+**What was done.**
+- **Dependency CVE remediation + GATE (C-SUP-02).** A pre-scan found **four** transitive HIGH CVEs (not the two the
+  truncated first look showed): `System.Formats.Asn1 5.0.0`, `Newtonsoft.Json 11.0.1`, `System.Net.Http 4.3.0`,
+  `System.Text.RegularExpressions 4.3.0`. New root `Directory.Build.props` pins the framework packages solution-wide
+  (Asn1 8.0.1, System.Net.Http 4.3.4, System.Text.RegularExpressions 4.3.1) and **project-scopes** `Newtonsoft.Json
+  13.0.3` to only the 4 host/integration projects that surface it (Api/Webex/Bootstrap/Worker) — no 3rd-party JSON
+  lib spread to domain projects. Re-scan → **0 High/Critical** (144 Moderate / 46 Low remain, allowed by DoD). New
+  `scripts/check-vulns.mjs` (parses `dotnet list --vulnerable --format json`, `execFileSync` no-shell, exits 1 on
+  High/Critical) **replaces** ci.yml's report-only step — now **gating**. Full suite (1430) + coverage 99.67% green
+  after the bumps (no regression).
+- **Scanners (report-only pending first-run triage) in a new `.github/workflows/security.yml`:** Gitleaks (binary
+  via ghcr image, full history) + `.gitleaks.toml` allowlisting placeholders/test-creds; Semgrep OSS
+  (`p/csharp p/javascript p/security-audit`, no token) + `.semgrepignore`; Trivy fs+misconfig+secret. Each is
+  `continue-on-error` for now — flip to gating after observing the first CI run.
+- **SBOM (C-SUP-01):** `anchore/sbom-action` → CycloneDX JSON artifact (informational).
+- **Dependabot:** `.github/dependabot.yml` — nuget/npm/docker/github-actions, weekly, grouped.
+
+**Deferred to B2b (flagged trim candidates, cost/risk):** Trivy **image** scan (rebuilds images; mostly unfixable
+base-OS CVEs) and **base-image digest-pinning** (compose config-check doesn't pull, so a bad digest only reds e2e).
+
+**Decisions.** No new ADR (implements settled OQ-027). **OQ-027 stays Deferred** (its ZAP/DAST leg is not in B2).
+No AC verdict change (no AC maps to CI gates; satisfies NFR-024/051 via controls).
+
+**Gates.** BE build/format/1430 tests/coverage 99.67%; dep-gate `check-vulns.mjs` exit 0. Next: push → observe the
+report-only scanners on CI → triage → flip Gitleaks/Semgrep/Trivy-fs to gating (same PR or B2b), then B2b
+(Trivy-image + digest-pin), then B3.
+
+---
+
 ### 2026-07-16 — P16 (Security hardening, ASVS 5.0 L2) — Batch 1: Audit & vote crypto core
 
 **Scope.** P16 is a *verify-and-close-gaps* sweep (nearly every control is P1, built across P1–P15; the

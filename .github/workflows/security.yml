@@ -1,0 +1,73 @@
+name: Security
+
+# P16b / C-SUP-01/02, C-SAST-01, C-SEC-02. Supply-chain + SAST + secret scanning. Scanners land REPORT-ONLY
+# (continue-on-error / exit-code 0) so they surface findings on the PR without reding it; each flips to gating
+# once its first run is triaged (the .NET dependency gate already blocks in ci.yml). Skips docs-only changes,
+# in sync with ci.yml.
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
+  pull_request:
+    branches: [ main ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for gitleaks
+      - name: Gitleaks (gating — 153 commits scanned clean, .gitleaks.toml allowlist triaged)
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose --exit-code=1
+
+  sast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep OSS (gating — 2 test-only csharp-sqli findings triaged as FP via nosemgrep)
+        run: semgrep scan --config p/csharp --config p/javascript --config p/security-audit --error --severity ERROR
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy fs + misconfig + secret (gating on CRITICAL — first scan clean, 3 HIGH misconfig deferred)
+        # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
+        # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. The tag is
+        # therefore NOT Dependabot-managed — bump aquasec/trivy manually.
+        # Gates on CRITICAL (--severity also filters the report, so HIGH is not shown here). First triage run
+        # found 0 CRITICAL; the 3 HIGH Dockerfile misconfigs (DS-0002 non-root USER x2, DS-0029) are tracked as
+        # B4 container-hardening work — tighten this gate to HIGH once B4 lands.
+        run: |
+          docker run --rm -v "$PWD:/repo" aquasec/trivy:0.72.0 fs /repo \
+            --scanners vuln,misconfig,secret \
+            --severity CRITICAL \
+            --ignore-unfixed \
+            --exit-code 1
+
+  sbom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: SBOM (CycloneDX, informational — C-SUP-01 / NFR-051)
+        uses: anchore/sbom-action@v0.17.8
+        with:
+          path: .
+          format: cyclonedx-json
+          artifact-name: acmp-sbom.cyclonedx.json

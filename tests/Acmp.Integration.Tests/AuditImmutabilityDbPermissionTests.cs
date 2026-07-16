@@ -63,11 +63,14 @@ public class AuditImmutabilityDbPermissionTests
         delete.Message.Should().Contain("permission was denied");
     }
 
+    // These helpers execute FIXED test DDL/DML against a real SQL container to prove the DB-level DENY; the only
+    // interpolation anywhere is the compile-time const ProbePassword. No untrusted input reaches these — the
+    // csharp-sqli rule is a false positive here (you cannot parameterize a table-permission probe).
     private static async Task ExecAsync(string connectionString, string sql)
     {
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand(sql, connection);
+        await using var command = new SqlCommand(sql, connection); // nosemgrep
         await command.ExecuteNonQueryAsync();
     }
 
@@ -75,7 +78,7 @@ public class AuditImmutabilityDbPermissionTests
     {
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand(sql, connection);
+        await using var command = new SqlCommand(sql, connection); // nosemgrep
         return (int)(await command.ExecuteScalarAsync())!;
     }
 }

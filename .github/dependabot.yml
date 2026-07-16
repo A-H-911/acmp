@@ -1,0 +1,32 @@
+# P16b / C-SUP-02: keep dependencies + pinned actions/images fresh. Grouped minor/patch to limit PR noise for a
+# ≤20-user on-prem system. NOTE: the docker ecosystem updates Dockerfile `FROM`s under deploy/ (best-effort for
+# the `Dockerfile.<name>` naming); it does NOT track images in docker-compose.yml — those are maintained by hand.
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      dotnet-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "npm"
+    directory: "/src/Acmp.Web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "docker"
+    directory: "/deploy"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
