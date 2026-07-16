@@ -10,10 +10,28 @@ server {
     # connect-src + frame-src allow the self-hosted Keycloak origin (ADR-0015) so the SPA can fetch
     # OIDC metadata/token/JWKS and run the silent-renew iframe. ${KEYCLOAK_ORIGIN} is substituted at
     # container start (nginx envsubst); each environment supplies its own origin with no rebuild.
+    #
+    # These are declared at SERVER level so nginx inherits them into every location (/api/, /kc/,
+    # /acmp-recordings/). Do NOT add an `add_header` inside a location block: nginx's add_header does not
+    # merge across levels — a single one in a location DROPS every header inherited from here.
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
+    # HSTS (C-WEB-01). Honored only over https (the ngrok/edge-TLS path) and ignored by browsers over plain
+    # http, so the http dev profile is unaffected. 1 year + includeSubDomains meets ASVS L2; no `preload`
+    # — that is an irreversible public-list commitment and is the operator's call, not the image's (P18).
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    # Permissions-Policy (C-WEB-01): ACMP uses none of these powerful features — recordings are uploaded as
+    # files (FR-056), never captured in-browser — so deny them outright rather than leaving them available
+    # to any injected or third-party frame.
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+    # style-src 'self' with NO 'unsafe-inline' (C-WEB-02 / OQ-028). This needs no frontend refactor: CSP
+    # governs `<style>` elements and `style=""` attributes, NOT the CSSOM — and react-dom applies the
+    # style={{}} prop via CSSOM writes (`style.setProperty(...)` / `style[name] = v`), never by serializing
+    # a style attribute. There is no SSR here (client-rendered Vite SPA) so no style attribute is ever
+    # emitted, index.html carries none, and MarkdownView's DOMPurify allowlist excludes both `style` attrs
+    # and `<style>` tags. Verified live: zero CSP violations (see docs/progress/progress-log.md, P16-B3).
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
 
     # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
     # without mixed content. The trailing slash on proxy_pass strips /kc so KC (served at root) matches;

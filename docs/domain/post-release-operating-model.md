@@ -51,6 +51,37 @@
 - **Hangfire dashboard:** Checked by the Secretary or Tech Lead on the first business day of each week; failed or stalled jobs are investigated and resolved.
 - **Availability target:** 24×7 / 99.9% (per `README.md §A`); achieved via single-node deployment with nightly backup + restore tested monthly (no HA cluster; right-sized for ≤20 users).
 
+### 2.4 Security anomaly alerting — Seq runbook (C-INS-01)
+
+Seq alert rules are **UI/server configuration, not application code** — this runbook is the deliverable that tells the
+operator which rules to create. Every signal below keys off a structured property the app **already emits**; each was
+verified against the code, not assumed. Per **OQ-025** the posture is **audit + alert**, with **no dual-control
+(four-eyes)** on sensitive operations in v1 — an alert is raised and reviewed after the fact rather than blocking the
+actor in-flight.
+
+**How to add each rule:** Seq → *Events* → paste the filter → *Save as Signal* → *Alerts* → new alert on that signal
+with the stated window/threshold → notify the Tech Lead (§2.1 support tiers).
+
+| # | Signal | Seq filter | Threshold | Why / triage |
+|---|---|---|---|---|
+| A-1 | **Record tampering detected** | `@MessageTemplate like 'INTEGRITY ALERT%'` | **any single event** | The nightly `IntegrityVerifier` (C-INS-02) found a broken audit-chain link, a broken vote-ballot chain, or a tally mismatch — or a check failed to run. Highest severity: this is the insider-tamper tripwire (AB-5). Properties: `Check`, `Failure`, `Scanned`. A durable `Security.IntegrityBreachDetected` / `Security.IntegrityCheckError` audit event is written alongside it. Triage: `GET /api/audit/verify` + the `/audit` register |
+| A-2 | **Authorization-denial burst** | `StatusCode in [401, 403]` | > 20 in 5 min, grouped by `RequestPath` | Probing or a broken client (T-07/T-08). Emitted by `UseSerilogRequestLogging`. Seq shows *that* denials spiked, not *who* — the actor identity lives in the `Authorization.Forbidden` / `Authorization.Unauthenticated` audit rows (`AuthorizationBehavior`), so **triage in the `/audit` register**, which is the deliberate split: Seq is the tripwire, the audit register is the evidence |
+| A-3 | **Rate-limit rejection spike** | `StatusCode = 429` | > 50 in 5 min | Sustained 429s mean a client is hammering search/uploads/the Webex webhook past the C-API-03 budget — a runaway integration or abuse. Tune `RateLimiting:*` (see `src/Acmp.Api/Infrastructure/HardeningExtensions.cs`) only after confirming the traffic is legitimate |
+| A-4 | **Server-error spike** | `@Level = 'Error' and StatusCode >= 500` | > 10 in 5 min | Existing §2.3 rule, restated here for one complete alert set |
+| A-5 | **Audit-write failure** | `@Level in ['Error','Fatal'] and @Message like '%audit%'` | any | INV-005 is fail-closed — an audit write that fails takes the whole operation down with it, so this should be silent. Any hit is a real incident |
+
+**Not alertable in v1 — stated, not silently skipped:**
+
+- **Bulk/atypical export volume** (named in C-INS-01): **ACMP has no export feature.** Traceability-matrix export
+  (CSV/Excel) is deferred to Phase 3 (**D-07**), and no other endpoint emits a bulk download. There is nothing to
+  alert on; this signal activates with D-07, not before. Writing a rule now would create a tripwire that can never fire.
+- **Atypical access to `Restricted` topics** (named in C-INS-01): no confidentiality tier exists in the domain
+  (**D-20**, a deferred *feature*). Same reasoning.
+- **Role grants / delegations / off-hours privileged actions:** these emit **audit events to SQL** (C-AUDIT-05), which
+  the Seq stream does not carry — so they are reviewed in the `/audit` register (Auditor/Chair/Secretary) on the
+  Secretary's weekly routine (§4.6) rather than alerted on. Routing audit rows into Seq as well would duplicate the
+  system of record; the register already answers "who did what, when".
+
 ---
 
 ## 3. Release Cadence and Change Management

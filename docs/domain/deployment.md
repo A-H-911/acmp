@@ -278,6 +278,33 @@ secrets:
 - Secret rotation: update the file, `docker compose up -d acmp-api` — no image rebuild needed.
 - **Gitleaks pre-commit hook** and CI scan guard against accidental commits (ADR: `docs/domain/devsecops-plan.md` §4.3).
 
+### 3.4 Encryption — transport, at-rest, backups (C-CRYPTO-01/02/03) — **Operator/P18**
+
+Status: **Partial (Operator/P18)**, not `Met`. Every lever below is a **config seam that already exists** — the
+bundled dev stack ships them off, and only an operator action at deploy time makes them effective. This mirrors the
+C-AUDIT-04 / ADR-0031 precedent: the in-repo scaffold is done; the control is not claimed until the operator flips it.
+
+**Already effective in-repo (no operator action):** the one sensitive value ACMP *persists* — the Webex OAuth
+access/refresh tokens — is encrypted at rest with authenticated **AES-GCM** (256-bit key derived from
+`Webex:TokenEncryptionKey`) by `WebexTokenProtector`, independent of any database- or volume-level encryption.
+
+| Leg | Seam (exists today) | Dev default | Operator step at P18 |
+|---|---|---|---|
+| **C-CRYPTO-01** API↔SQL in transit | `ConnectionStrings__Acmp` (env). **No code reads or overrides `Encrypt`** — it is pure connection-string config | `Encrypt=False;TrustServerCertificate=True` (in-stack Compose network) | Set `Encrypt=True` and `TrustServerCertificate=False`, and mount a CA-issued cert the SQL container serves. Leaving `TrustServerCertificate=True` while flipping `Encrypt` encrypts but does **not** authenticate the server — it defeats the point |
+| **C-CRYPTO-01** API↔MinIO in transit | `Minio__Secure` (env) | `false` | `true` + a cert on MinIO |
+| **C-CRYPTO-01** API↔Seq in transit | `OTEL_EXPORTER_OTLP_ENDPOINT` (env) | `http://seq:5341/…` | `https://…` + a cert on Seq |
+| **C-CRYPTO-02** SQL at rest (TDE) | — (server feature, not app config) | Off | Enable TDE. **Edition-gated:** TDE needs Standard/Enterprise — SQL Server **Express does not support it**. OQ-040 leaves the edition open ("start with Express… escalate to Standard"), so choosing Express **forecloses TDE**; that trade is the operator's to make at P18 |
+| **C-CRYPTO-02** MinIO at rest (SSE) | — (server feature) | Off | Enable SSE (SSE-S3/SSE-KMS needs a KES key server) |
+| **C-CRYPTO-03** Backup encryption | — (backup tooling) | Plain | Encrypt SQL + MinIO backup media — see §6 Backup and Restore |
+
+**Policy (OQ-024, applied default):** TLS **1.2+** on the public endpoint (1.3 preferred where clients allow);
+TLS 1.0/1.1 disabled (NFR-019). **No mTLS in v1** for internal Compose-network links. No HSM (`[L3-skip]`) —
+key custody is the operator's (§3.3 secret handling).
+
+**Why not in-repo now:** enabling any of these needs certificates, a key server, and an edition decision that only
+exist in the target environment. Turning them on in the bundled dev stack would break the local/e2e loop while
+proving nothing about production. The scaffold is verified; the flip is P18.
+
 ---
 
 ## 4. Health and Readiness Endpoints
