@@ -1,0 +1,21 @@
+# P16b / C-SEC-02: gitleaks config. Extends the default ruleset and allowlists the KNOWN non-secrets so the
+# scan can eventually gate without false positives. A genuine finding outside this allowlist is a real leak —
+# rotate the credential; do NOT just add it here.
+title = "ACMP gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders (never real secrets) + test-only credentials committed by design"
+paths = [
+  '''deploy/\.env\.example''',           # placeholder config template (git-ignored real .env)
+  '''.*\.md''',                          # docs may quote example values
+  '''.*\.dc\.html''',                    # design mockups
+]
+regexes = [
+  '''ChangeMe_[A-Za-z0-9#_]*''',         # .env.example / KC bootstrap placeholders
+  '''CHANGE_ME''',
+  '''Pr0be#Passw0rd!''',                 # AuditImmutabilityDbPermissionTests probe login (test-only)
+  '''ChangeMe_KC#2026''',                # documented KC fresh-boot admin placeholder
+]

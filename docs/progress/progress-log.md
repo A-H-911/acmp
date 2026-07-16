@@ -12,6 +12,41 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-16 — P16 (Security hardening) — Batch 2: CI security gates + supply chain (PR1)
+
+**Scope.** Implements C-SUP-01/02 + C-SAST-01 + C-SEC-02 (OQ-027 default + devsecops-plan). No product code — CI +
+build config + dependency pins. Branch `feat/P16b-ci-security-gates`. Plan (devil's-advocate-reviewed) at
+`~/.claude/plans/apply-the-controls-in-giggly-volcano.md`.
+
+**What was done.**
+- **Dependency CVE remediation + GATE (C-SUP-02).** A pre-scan found **four** transitive HIGH CVEs (not the two the
+  truncated first look showed): `System.Formats.Asn1 5.0.0`, `Newtonsoft.Json 11.0.1`, `System.Net.Http 4.3.0`,
+  `System.Text.RegularExpressions 4.3.0`. New root `Directory.Build.props` pins the framework packages solution-wide
+  (Asn1 8.0.1, System.Net.Http 4.3.4, System.Text.RegularExpressions 4.3.1) and **project-scopes** `Newtonsoft.Json
+  13.0.3` to only the 4 host/integration projects that surface it (Api/Webex/Bootstrap/Worker) — no 3rd-party JSON
+  lib spread to domain projects. Re-scan → **0 High/Critical** (144 Moderate / 46 Low remain, allowed by DoD). New
+  `scripts/check-vulns.mjs` (parses `dotnet list --vulnerable --format json`, `execFileSync` no-shell, exits 1 on
+  High/Critical) **replaces** ci.yml's report-only step — now **gating**. Full suite (1430) + coverage 99.67% green
+  after the bumps (no regression).
+- **Scanners (report-only pending first-run triage) in a new `.github/workflows/security.yml`:** Gitleaks (binary
+  via ghcr image, full history) + `.gitleaks.toml` allowlisting placeholders/test-creds; Semgrep OSS
+  (`p/csharp p/javascript p/security-audit`, no token) + `.semgrepignore`; Trivy fs+misconfig+secret. Each is
+  `continue-on-error` for now — flip to gating after observing the first CI run.
+- **SBOM (C-SUP-01):** `anchore/sbom-action` → CycloneDX JSON artifact (informational).
+- **Dependabot:** `.github/dependabot.yml` — nuget/npm/docker/github-actions, weekly, grouped.
+
+**Deferred to B2b (flagged trim candidates, cost/risk):** Trivy **image** scan (rebuilds images; mostly unfixable
+base-OS CVEs) and **base-image digest-pinning** (compose config-check doesn't pull, so a bad digest only reds e2e).
+
+**Decisions.** No new ADR (implements settled OQ-027). **OQ-027 stays Deferred** (its ZAP/DAST leg is not in B2).
+No AC verdict change (no AC maps to CI gates; satisfies NFR-024/051 via controls).
+
+**Gates.** BE build/format/1430 tests/coverage 99.67%; dep-gate `check-vulns.mjs` exit 0. Next: push → observe the
+report-only scanners on CI → triage → flip Gitleaks/Semgrep/Trivy-fs to gating (same PR or B2b), then B2b
+(Trivy-image + digest-pin), then B3.
+
+---
+
 ### 2026-07-16 — P16 (Security hardening, ASVS 5.0 L2) — Batch 1: Audit & vote crypto core
 
 **Scope.** P16 is a *verify-and-close-gaps* sweep (nearly every control is P1, built across P1–P15; the

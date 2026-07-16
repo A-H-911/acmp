@@ -1,0 +1,72 @@
+name: Security
+
+# P16b / C-SUP-01/02, C-SAST-01, C-SEC-02. Supply-chain + SAST + secret scanning. Scanners land REPORT-ONLY
+# (continue-on-error / exit-code 0) so they surface findings on the PR without reding it; each flips to gating
+# once its first run is triaged (the .NET dependency gate already blocks in ci.yml). Skips docs-only changes,
+# in sync with ci.yml.
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
+  pull_request:
+    branches: [ main ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for gitleaks
+      - name: Gitleaks (report-only — flip to gating after first-run triage)
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose --exit-code=1
+
+  sast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep OSS (report-only — OQ-027 block-High after triage)
+        continue-on-error: true
+        run: semgrep scan --config p/csharp --config p/javascript --config p/security-audit --error --severity ERROR
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy fs + misconfig + secret (report-only — gate Critical after triage)
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+  sbom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: SBOM (CycloneDX, informational — C-SUP-01 / NFR-051)
+        uses: anchore/sbom-action@v0.17.8
+        with:
+          path: .
+          format: cyclonedx-json
+          artifact-name: acmp-sbom.cyclonedx.json

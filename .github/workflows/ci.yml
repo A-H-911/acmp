@@ -48,8 +48,8 @@ jobs:
         run: dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Coverage gate (ADR-0016 ≥95% lines, global + per-file)
         run: node scripts/check-coverage.mjs .
-      - name: Vulnerable packages (report)
-        run: dotnet list acmp.sln package --vulnerable --include-transitive
+      - name: Vulnerable packages gate (High/Critical block — C-SUP-02 / OQ-027)
+        run: node scripts/check-vulns.mjs
 
   compose:
     runs-on: ubuntu-latest

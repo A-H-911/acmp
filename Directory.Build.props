@@ -1,0 +1,24 @@
+<Project>
+
+  <!-- P16b / C-SUP-02 (OQ-027): pin patched transitive versions so the CI dependency gate can block on
+       High/Critical CVEs. System.Formats.Asn1 5.0.0 (GHSA-447r-wph3-92pm, HIGH) surfaces transitively across
+       nearly every project via the auth/crypto stack, so it is pinned solution-wide here. Newtonsoft.Json 11.0.1
+       (GHSA-5crp-9r3c-p9vr, HIGH) surfaces in only 4 host/integration projects and is pinned directly in those
+       csprojs (avoids adding a 3rd-party JSON lib to projects that use only System.Text.Json). Verified: no
+       project declares a direct reference to System.Formats.Asn1, so this adds no duplicate reference. -->
+  <ItemGroup>
+    <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
+    <!-- Legacy 4.3.0 transitives with HIGH CVEs, patched in these framework-package versions:
+         System.Net.Http 4.3.0 (GHSA-7jgj-8wvc-jh57) -> 4.3.4; System.Text.RegularExpressions 4.3.0
+         (ReDoS, GHSA-cmhp-...) -> 4.3.1. Subsumed by the net8 runtime; pinned to silence the advisory. -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+  <!-- Newtonsoft.Json only where it actually surfaces (the 4 host/integration projects), scoped by project name
+       so domain/module projects that use System.Text.Json stay free of it. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acmp.Api' Or '$(MSBuildProjectName)' == 'Acmp.Modules.Integrations.Webex' Or '$(MSBuildProjectName)' == 'Acmp.Bootstrap' Or '$(MSBuildProjectName)' == 'Acmp.Worker'">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>
