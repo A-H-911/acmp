@@ -69,6 +69,12 @@ server {
         client_max_body_size 2100m;
         proxy_read_timeout 600s;
         proxy_send_timeout 600s;
+        # Stream the request body straight to Kestrel instead of spooling it to client_body_temp first
+        # (C-CON-003). The root FS is now read-only and /tmp — where this image puts client_body_temp — is a
+        # 64m tmpfs, so buffering a 2 GiB recording would both fail and burn RAM. Off = nginx forwards as it
+        # reads. NOTE: this only stops the PROXY buffering; ASP.NET still spools the multipart section to the
+        # api's own /tmp, which is why that one is a disk volume (see docker-compose.yml).
+        proxy_request_buffering off;
     }
 
     location / {

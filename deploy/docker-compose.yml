@@ -10,6 +10,11 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.sqlserver
     image: acmp/sqlserver-fts:2022
+    # Sidecars get no-new-privileges only (C-CON-003 scopes read-only-FS + cap_drop to the APP containers:
+    # api/worker/web). SQL Server needs a writable /var/opt/mssql for its own data/log/tempdb — the
+    # documented "writable only where needed" exception — and dropping all caps risks breaking the engine's
+    # own startup for no gain on an internal-only service.
+    security_opt: ["no-new-privileges:true"]
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
@@ -28,6 +33,7 @@ services:
   seq:
     # Pinned by digest (was :latest — unpinned caused the firstRun-password break; OQ-031 digest pinning).
     image: datalust/seq@sha256:868a12e93ec0b8c993767a7dd4cd6c8ebc441511c79e4cfac66c911f62d4db65
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     environment:
       ACCEPT_EULA: "Y"
       # Recent Seq requires a first-run admin password OR an explicit no-auth opt-out, else it exits on
@@ -49,6 +55,7 @@ services:
   minio:
     # Digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot. e2e pulls + exercises it.
     image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -71,6 +78,7 @@ services:
   keycloak-db:
     # Digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
     image: postgres:16@sha256:17e67d7b9890c99b055ba1e0d5c5be4ec27c9d3a72bda32db24a5e5d8a85af0c
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USER}
@@ -89,6 +97,7 @@ services:
   # start-dev is the dev profile; prod hardening (production mode, real hostname, TLS) is a P18 override.
   keycloak:
     image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     command: ["start-dev", "--import-realm"]
     environment:
       KC_DB: postgres
@@ -129,6 +138,7 @@ services:
   # Reuses the keycloak image (bash + kcadm, no curl/jq) — no new runtime dependency (CON-001). Exits 0.
   keycloak-config:
     image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     depends_on:
       keycloak:
         condition: service_healthy
@@ -178,6 +188,26 @@ services:
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
       Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
       Webex__OAuthSetupKey: "${WEBEX_OAUTH_SETUP_KEY:-}"
+      # ASP.NET DataProtection key-ring lands on a writable tmpfs (the root FS is read-only below).
+      # Ephemeral is fine: auth is bearer-token, so no protected payload must survive a restart.
+      DataProtection__KeysPath: "/keys"
+    # Container hardening (C-CON-001/002/003, D-21). Root FS read-only; all Linux capabilities dropped
+    # (the app binds 8080 — unprivileged — as non-root UID 1654, so it needs none); no-new-privileges
+    # blocks setuid escalation.
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /keys
+    volumes:
+      # /tmp is a DISK-backed volume, deliberately NOT a tmpfs. ASP.NET's IFormFile binding spools any
+      # multipart section over 64 KB to a temp file in Path.GetTempPath(); a recording upload is capped at
+      # 2 GiB (MeetingsEndpoints.RecordingUploadMaxBytes) while this service is budgeted 512 MB-1 GB RAM
+      # (deployment.md §9). tmpfs pages count against the container's memory cgroup, so a RAM-backed /tmp
+      # would OOM on any real recording upload. nginx's proxy_request_buffering off (default.conf.template)
+      # stops the *proxy* spooling the body — it does not stop the *app* spooling it, hence disk here.
+      # This is the C-CON-003 "writable only where needed" exception, same as sqlserver's data volume.
+      - api-tmp:/tmp
     extra_hosts:
       # Resolve the Keycloak issuer host to the Docker host (where port 8085 is published) so the
       # api validates tokens against the same issuer URL the browser used.
@@ -214,6 +244,30 @@ services:
     environment:
       # CSP Keycloak origin, substituted into the nginx template at startup (runtime, no rebuild).
       KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN:-http://keycloak.localhost:8085}"
+    # Container hardening (C-CON-001/002/003, D-21). nginx-unprivileged already runs as UID 101 and binds
+    # 8080, so no capabilities are needed. Its packaged nginx.conf redirects every writable path into /tmp
+    # (pid /tmp/nginx.pid; client_body/proxy/fastcgi/uwsgi/scgi _temp_path all under /tmp) and leaves
+    # /var/cache/nginx empty — so /tmp + the envsubst output dir are the only tmpfs mounts needed. (The
+    # stock nginx image would also need /var/cache/nginx and /run; this image does not.)
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      # 64m is ample: proxy_request_buffering off (/api/) and proxy_buffering off (/acmp-recordings/) keep
+      # the 2 GiB recording bodies streaming through rather than landing in client_body_temp — which, on a
+      # RAM-backed tmpfs in a 128 MB-budgeted container (deployment.md §9), is exactly what must not happen.
+      - /tmp:size=64m
+      # nginx envsubst renders /etc/nginx/templates/*.template into this dir at container start, which the
+      # read-only root FS forbids. Masking the image's stock conf.d/default.conf is intended — our rendered
+      # default.conf replaces it.
+      #
+      # uid/gid/mode are REQUIRED, not decoration. A bare tmpfs here inherits the image directory's
+      # root:root 0755, so nginx (UID 101) cannot write its own rendered config: envsubst fails with
+      # "conf.d is not writable", and — because this mount also hides the stock default.conf — nginx then
+      # starts with NO server block at all. It reports "ready for start up", forks its workers and shows as
+      # `running` while listening on nothing. Verified: with these options the container boots clean and
+      # serves every security header; without them it silently serves nothing.
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
     depends_on:
       api:
         condition: service_healthy
@@ -254,6 +308,15 @@ services:
       Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
       Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+    # Container hardening (C-CON-001/002/003, D-21). Unlike the api, /tmp can be a RAM-backed tmpfs here:
+    # the worker takes no uploads and streams no files to disk (jobs talk to SQL/MinIO/Webex over the
+    # network), so nothing large is ever spooled. No DataProtection key-ring either — the worker is a
+    # Generic Host with no request pipeline.
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -277,7 +340,11 @@ services:
     # profile) never pulls/exercises it — a pinned bad digest would fail silently. Left tag-pinned. (P16b/B2b)
     image: ngrok/ngrok:latest
     profiles: ["ngrok"]
-    command: ["http", "web:80", "--url=${NGROK_URL}"]
+    security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
+    # web:8080, not web:80 — the C-CON-001 switch to nginx-unprivileged moved the listen port. Because this
+    # service is profile-gated, e2e never exercises it, so the stale :80 would have failed only in an
+    # operator's ngrok session (P16-B4 fix).
+    command: ["http", "web:8080", "--url=${NGROK_URL}"]
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     depends_on:
@@ -291,3 +358,5 @@ volumes:
   seq-data:
   minio-data:
   kcdata:        # self-hosted Keycloak datastore (ADR-0015 / OQ-038); in backup/restore scope
+  api-tmp:       # api /tmp under a read-only root FS — disk-backed so 2 GiB upload spooling never hits RAM
+                 # (C-CON-003; see the api service note). Scratch only: NOT in backup/restore scope.
