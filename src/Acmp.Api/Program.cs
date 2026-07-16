@@ -15,7 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+    .Enrich.FromLogContext()
+    // C-PRIV-01/02: mask sensitive structured properties (emails/tokens/secrets/signed URLs) before any sink.
+    .Enrich.With(new Acmp.Shared.Infrastructure.Observability.SensitiveDataMaskingEnricher()));
 
 // Shared kernel + all modules + Webex adapter + MediatR, composed identically to the worker via the shared
 // composition root (Acmp.Bootstrap, ADR-0024) so both hosts resolve the same service graph.
