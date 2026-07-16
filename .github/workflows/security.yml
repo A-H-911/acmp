@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Trivy fs + misconfig + secret (gating on CRITICAL — first scan: 0 vuln/secret, 3 HIGH misconfig)
+      - name: Trivy fs + misconfig + secret (gating on CRITICAL — first scan clean, 3 HIGH misconfig deferred)
         # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
         # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. The tag is
         # therefore NOT Dependabot-managed — bump aquasec/trivy manually.
