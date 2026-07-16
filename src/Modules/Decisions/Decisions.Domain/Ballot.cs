@@ -18,6 +18,11 @@ public sealed class Ballot : BaseEntity
     public bool Recused { get; private set; }
     public DateTimeOffset? CastAt { get; private set; }
 
+    // D-13 / C-IMM-04 (ADR-0030) — per-ballot tamper-evidence, sealed by the Vote root at Close (see
+    // BallotChain / Vote.SealBallotChain). Null until the vote is closed (and on legacy pre-P16 closed votes).
+    public string? PreviousHash { get; private set; }
+    public string? Hash { get; private set; }
+
     // Seed an eligible-but-awaiting ballot (at Configure). Eligibility = "has a ballot row".
     internal Ballot(string voterUserId, string voterName)
     {
@@ -43,5 +48,13 @@ public sealed class Ballot : BaseEntity
         Choice = null;
         Comment = null;
         CastAt = null;
+    }
+
+    // Stamp the sealed chain links (called once, by the Vote root at Close). Not a mutation of ballot content —
+    // the choice/recusal is already frozen by the status guards; this only records the tamper-evidence hashes.
+    internal void SealHash(string previousHash, string hash)
+    {
+        PreviousHash = previousHash;
+        Hash = hash;
     }
 }

@@ -12,6 +12,7 @@ namespace Acmp.Integration.Tests;
 // (the API maps this to 409, GlobalExceptionHandler); on InMemory the same stale save silently wins —
 // the exact lost-update this slice closes.
 [Collection(SqlBackstopCollection.Name)]
+[Trait("Category", "Security")]
 public sealed class RowVersionConcurrencyTests
 {
     private readonly SqlBackstopFixture _fx;

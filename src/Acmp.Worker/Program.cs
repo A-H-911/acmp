@@ -1,5 +1,6 @@
 ﻿using Acmp.Bootstrap;
 using Acmp.Modules.Actions.Application.Reminders;
+using Acmp.Shared.Application.Abstractions;
 using Hangfire;
 using MediatR;
 using Serilog;
@@ -42,6 +43,12 @@ if (backgroundJobsEnabled)
     host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("action-reminders",
         sender => sender.Send(new SweepActionRemindersCommand(), CancellationToken.None),
         reminderOptions.SweepCron);
+
+    // D-16 / C-INS-02 (ADR-0030): nightly audit + vote hash-chain integrity sweep. Off-peak (03:00); the
+    // verifier logs a high-importance alert + a durable AuditEvent on any detected tampering.
+    host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<IIntegrityVerifier>("integrity-verify",
+        verifier => verifier.RunAsync(CancellationToken.None),
+        Cron.Daily(3));
 }
 
 host.Run();

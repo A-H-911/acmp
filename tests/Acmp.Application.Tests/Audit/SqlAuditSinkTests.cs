@@ -8,6 +8,7 @@ using Xunit;
 namespace Acmp.Application.Tests.Audit;
 
 // BL-066 (ADR-0009) — the durable, immutable, hash-chained AuditEvent store behind IAuditSink.
+[Trait("Category", "Security")]
 public class SqlAuditSinkTests
 {
     private sealed class FixedClock : IClock

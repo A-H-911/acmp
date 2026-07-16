@@ -2,13 +2,66 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-15
+updated: 2026-07-16
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-16 — P16 (Security hardening, ASVS 5.0 L2) — Batch 1: Audit & vote crypto core
+
+**Scope.** P16 is a *verify-and-close-gaps* sweep (nearly every control is P1, built across P1–P15; the
+controls→threats map already lives in `security-controls.md` + `security-threat-model.md`). Too large for one PR,
+so split into GO-gated batches (per the audit-hardening precedent). **Batch 1 only** on `feat/P16a-audit-vote-crypto`
+— the audit & vote crypto core (closes D-13 + D-16). Operator-confirmed scope forks: transit/at-rest crypto =
+scaffold+doc later (Batch 3, Operator/P18); Confidentiality ABAC = deferred feature (verified absent in code →
+[D-20]); SoD-2 soft flag left as-is (per spec `warn+audit`). Plan (with a full devil's-advocate review that
+re-verified every sub-agent claim against source) at `~/.claude/plans/apply-the-controls-in-giggly-volcano.md`.
+
+**What was done.**
+- **W1 — Per-ballot crypto chaining (D-13, ADR-0030).** `Ballot` gains `PreviousHash`/`Hash`; `Vote` gains
+  `ChainSealedAt`. At `Vote.Close` a SHA-256 chain is **sealed over ALL ballot rows** ordered by voter `sub`
+  (position index in the payload → insert/delete/reorder detectable), mirroring `AuditEvent`'s canonical hashing
+  (`Decisions.Domain/BallotChain.cs`, self-contained — no Shared coupling). `Vote.VerifyBallotChain()` + a
+  tally-vs-ballots recompute (`ComputeTally`/`VerifyTally`) detect a forged `tally_json` for free. Ballots are
+  mutable until Close (`ChangeBallot`) — hence seal-at-close. Legacy pre-P16 closes = unsealed/skipped (no
+  backfill). Migration `Decisions_BallotChain` (+3 nullable columns).
+- **W2 — Nightly integrity job (D-16 pt.2 / C-INS-02, ADR-0030).** New `IIntegrityCheck` seam (each module
+  verifies its OWN aggregate — ADR-0001, no cross-module reads) + `IIntegrityVerifier`: fans out over
+  `AuditChainIntegrityCheck` (Shared) + `VoteChainIntegrityCheck` (Decisions), alerting on ANY gap via a
+  high-importance Serilog event **and** a durable `AuditEvent` (the detection is itself tamper-evident).
+  Cron-triggered by `Acmp.Worker` (`Cron.Daily(3)`). A plain service, not a MediatR command (no input/auth/validation,
+  and avoids forcing MediatR to scan Acmp.Shared).
+- **W3 — DB-permission audit immutability (D-16 pt.1 / C-AUDIT-04, ADR-0031).** Migration `Audit_DenyMutation`:
+  `CREATE ROLE acmp_app` + `GRANT SELECT,INSERT` + `DENY UPDATE,DELETE ON SCHEMA::audit`. **Honest boundary:** the
+  app connects as `sa` today (db_owner/sysadmin bypasses DENY) → the control is **inert until an operator maps the
+  app to a least-priv login (P18)**; verdict recorded **Partial**, not Met. Proven now under a restricted `probe`
+  login by `AuditImmutabilityDbPermissionTests` (Testcontainers real SQL). `SqlBackstopFixture` now also applies
+  the audit migrations.
+- **W4 — Security test suite.** `[Trait("Category","Security")]` on the Batch-1 tests + 10 existing security
+  classes (authz matrix, SoD, ABAC, resource authz, real-JWT, audit chain/api/atomicity, RowVersion immutability).
+  Deliverable command: **`dotnet test --filter "Category=Security"` → 339 tests green** (8 domain + 305 app + 9
+  integration + 17 api).
+- **W5 — Control→threat evidence register.** New `docs/validation/security-controls-audit.md`: per-control status +
+  code + test + threat; Batch-1 rows full, later controls carry their target batch. (The 8 one-line test-tag edits
+  are an intentional suite-assembly diff, not scatter.)
+
+**Decisions.** ADR-0030 (per-ballot chaining scheme) + ADR-0031 (DB-permission audit immutability) — both
+**Proposed** (await operator ratification). No AC verdict changes: AC-017/018/019/020 were already `Met`; Batch 1
+closes their "→ P16" residual notes (nightly job + DB-permission) and D-13 tech-debt. Per-ballot chaining maps to
+no single AC (tech-debt). Registers updated: D-13 → Done; D-16 → job done, DB-perm Operator/P18; D-20 added
+(Confidentiality ABAC feature).
+
+**Gates.** BE build clean; `Category=Security` 339 green. Full-suite + `dotnet format` + per-file coverage ≥95%
+run before push. RISK-SEC-001 stands (colluding insiders still co-attest — detectable, not impossible).
+
+**Next.** Stop for GO. Then P16 Batch 2 (CI security gates: SAST/secret/image scan + SBOM + gate CVE + digest-pin,
+report-only→gate so `main` never reds), Batch 3 (transit/at-rest crypto scaffold + CSP/HSTS), Batch 4 (container
+hardening, rate-limit, upload sniffing, PII redaction, anomaly alerts). Also P14 (Tarseem/Diagrams).
 
 ---
 

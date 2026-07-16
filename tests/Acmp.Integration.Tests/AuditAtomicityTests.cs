@@ -26,6 +26,7 @@ namespace Acmp.Integration.Tests;
 //   3. Denial survival — a double-cast's BallotDenied row PERSISTS even though the command then throws, because
 //                        a denial writes no module entity → begins no transaction → autocommits.
 [Collection(SqlBackstopCollection.Name)]
+[Trait("Category", "Security")]
 public sealed class AuditAtomicityTests
 {
     private readonly SqlBackstopFixture _fixture;

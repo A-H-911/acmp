@@ -6,6 +6,7 @@ namespace Acmp.Application.Tests.Audit;
 
 // ADR-0026 — the enriched (v2) AuditEvent row + per-row hash versioning. Proves the chain stays verifiable
 // across a v1 -> v2 boundary and that the v2 canonical payload is deterministic and tamper-evident.
+[Trait("Category", "Security")]
 public class AuditEventEnrichmentTests
 {
     private static readonly DateTimeOffset At = new(2026, 7, 11, 9, 0, 0, TimeSpan.Zero);

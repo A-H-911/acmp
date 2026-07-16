@@ -16,9 +16,10 @@ namespace Acmp.Modules.Decisions.Domain;
 // ballots + tally are FROZEN (AC-025); every re-transition throws (AC-026).
 //
 // ponytail: immutability is enforced by no-public-mutators + RowVersion + the status guards (exactly like
-// Decision). Every vote STATE CHANGE (Configured/Open/Close/Ratify) is hash-chained now via the durable
-// AuditEvent store (BL-066, ADR-0009); a crypto hash-chain over the Vote/Ballot rows themselves is a
-// separate P14 refinement.
+// Decision). Every vote STATE CHANGE (Configured/Open/Close/Ratify) is hash-chained via the durable
+// AuditEvent store (BL-066, ADR-0009). P16/D-13 (ADR-0030) adds a per-ballot crypto hash-chain, sealed at
+// Close (see SealBallotChain / VerifyBallotChain), so a direct-SQL edit of the frozen vote_ballots rows is
+// also detectable — the gap the state-change audit chain does not cover.
 public sealed class Vote : AuditableEntity
 {
     public const string AbstainChoice = "Abstain";
@@ -41,6 +42,10 @@ public sealed class Vote : AuditableEntity
     public string? ResultSummary { get; private set; }
     public DateTimeOffset? OpenedAt { get; private set; }
     public DateTimeOffset? ClosedAt { get; private set; }
+
+    // D-13 / C-IMM-04 (ADR-0030): when the per-ballot hash chain was sealed (at Close). Null = unsealed —
+    // either still open, or a legacy pre-P16 closed vote (the integrity job skips those, never alerts).
+    public DateTimeOffset? ChainSealedAt { get; private set; }
 
     // SoD-3 (docs/domain/entity-lifecycles.md §4): the actor who CLOSED the vote is the counter of record (Option A — no separate
     // co-attester field). The decision-issue path checks chair ≠ this counter (AC-015/016).
@@ -137,27 +142,97 @@ public sealed class Vote : AuditableEntity
     {
         RequireStatus(VoteStatus.Open);
 
-        var cast = _ballots.Where(b => b.HasCast).ToList();
-        if (cast.Count < QuorumRule.MinCast)
+        var castCount = _ballots.Count(b => b.HasCast);
+        if (castCount < QuorumRule.MinCast)
             throw new InvalidOperationException(
-                $"Quorum not met: {cast.Count} of {QuorumRule.MinCast} required votes cast.");
+                $"Quorum not met: {castCount} of {QuorumRule.MinCast} required votes cast.");
 
-        var optionCounts = Options.ToDictionary(o => o, _ => 0, StringComparer.Ordinal);
-        var abstain = 0;
-        foreach (var ballot in cast)
-        {
-            if (string.Equals(ballot.Choice, AbstainChoice, StringComparison.Ordinal)) abstain++;
-            else if (ballot.Choice is not null && optionCounts.ContainsKey(ballot.Choice)) optionCounts[ballot.Choice]++;
-        }
-
-        Tally = new VoteTally(optionCounts, abstain, cast.Count);
-        ResultSummary = string.Join(", ", optionCounts.Select(kv => $"{kv.Key}: {kv.Value}")
-            .Concat(abstain > 0 ? new[] { $"{AbstainChoice}: {abstain}" } : Array.Empty<string>()));
+        Tally = ComputeTally();
+        ResultSummary = string.Join(", ", Tally.OptionCounts.Select(kv => $"{kv.Key}: {kv.Value}")
+            .Concat(Tally.AbstainCount > 0 ? new[] { $"{AbstainChoice}: {Tally.AbstainCount}" } : Array.Empty<string>()));
         Status = VoteStatus.Closed;
         ClosedAt = now;
         CounterUserId = actorSub;
         CounterName = (actorName ?? string.Empty).Trim();
+        SealBallotChain(now); // D-13 / ADR-0030: freeze the per-ballot tamper-evidence chain
         Raise(new VoteClosedEvent(PublicId, Key, now));
+    }
+
+    // The tally is a pure function of the cast, non-recused ballots — extracted so the integrity job can
+    // recompute it and compare against the frozen snapshot (see VerifyTally). Do NOT call after Close to
+    // mutate Tally (AC-025 freezes it); this only reads _ballots.
+    public VoteTally ComputeTally()
+    {
+        var optionCounts = Options.ToDictionary(o => o, _ => 0, StringComparer.Ordinal);
+        var abstain = 0;
+        var castCount = 0;
+        foreach (var ballot in _ballots.Where(b => b.HasCast))
+        {
+            castCount++;
+            if (string.Equals(ballot.Choice, AbstainChoice, StringComparison.Ordinal)) abstain++;
+            else if (ballot.Choice is not null && optionCounts.ContainsKey(ballot.Choice)) optionCounts[ballot.Choice]++;
+        }
+
+        return new VoteTally(optionCounts, abstain, castCount);
+    }
+
+    // D-13 / ADR-0030: seal the per-ballot chain over ALL ballot rows in a deterministic order (by voter sub —
+    // stable + infra-independent, so the verifier reproduces it without trusting EF load order). Called once,
+    // from Close.
+    private void SealBallotChain(DateTimeOffset sealedAt)
+    {
+        var ordered = _ballots.OrderBy(b => b.VoterUserId, StringComparer.Ordinal).ToList();
+        var previousHash = BallotChain.Genesis;
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var b = ordered[i];
+            var hash = BallotChain.ComputeHash(i, b.VoterUserId, b.Choice, b.Recused, b.CastAt,
+                b.Comment?.En, b.Comment?.Ar, previousHash);
+            b.SealHash(previousHash, hash);
+            previousHash = hash;
+        }
+
+        ChainSealedAt = sealedAt;
+    }
+
+    // D-13 tamper-check: re-derive the sealed chain and report the first ballot that fails. An unsealed vote
+    // (still open, or a legacy pre-P16 closed vote) returns Unsealed — not a tamper. Reused by the nightly
+    // integrity job (C-INS-02).
+    public BallotChainResult VerifyBallotChain()
+    {
+        if (ChainSealedAt is null) return BallotChainResult.Unsealed;
+
+        var ordered = _ballots.OrderBy(b => b.VoterUserId, StringComparer.Ordinal).ToList();
+        var previousHash = BallotChain.Genesis;
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var b = ordered[i];
+            var expected = BallotChain.ComputeHash(i, b.VoterUserId, b.Choice, b.Recused, b.CastAt,
+                b.Comment?.En, b.Comment?.Ar, previousHash);
+            if (b.Hash != expected)
+                return BallotChainResult.Broken(i, "ballot content tampered (stored hash != recomputed)");
+            if (b.PreviousHash != previousHash)
+                return BallotChainResult.Broken(i, "ballot chain broken (previous hash mismatch)");
+            previousHash = b.Hash;
+        }
+
+        return BallotChainResult.Valid;
+    }
+
+    // D-16 / C-INS-02: the frozen Tally must still match a recompute from the ballots — a forged tally_json
+    // that no longer agrees with the (chain-verified) ballots is detectable. Field-by-field: VoteTally value-
+    // equality is reference-based over its Dictionary (see VoteTally). A never-closed vote (Tally null) → true.
+    public bool VerifyTally()
+    {
+        if (Tally is null) return true;
+
+        var recomputed = ComputeTally();
+        if (recomputed.AbstainCount != Tally.AbstainCount || recomputed.CastCount != Tally.CastCount) return false;
+        if (recomputed.OptionCounts.Count != Tally.OptionCounts.Count) return false;
+        foreach (var kv in recomputed.OptionCounts)
+            if (!Tally.OptionCounts.TryGetValue(kv.Key, out var stored) || stored != kv.Value) return false;
+
+        return true;
     }
 
     // W11/W12: ratify. Closed → Ratified. Called when the linked decision is chair-approved (IssueDecision).

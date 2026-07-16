@@ -60,6 +60,7 @@ public sealed class VoteConfiguration : IEntityTypeConfiguration<Vote>
         b.Property(x => x.ClosedAt);
         b.Property(x => x.CounterUserId).HasMaxLength(128);
         b.Property(x => x.CounterName).HasMaxLength(256);
+        b.Property(x => x.ChainSealedAt); // D-13 / ADR-0030: per-ballot chain seal timestamp (null = unsealed/legacy)
         b.Property(x => x.CreatedBy).IsRequired().HasMaxLength(128);
         b.Property(x => x.UpdatedBy).HasMaxLength(128);
         b.Ignore(x => x.DomainEvents);
@@ -85,6 +86,8 @@ public sealed class VoteConfiguration : IEntityTypeConfiguration<Vote>
             ball.Property(x => x.Choice).HasMaxLength(64);
             ball.Property(x => x.Recused).IsRequired();
             ball.Property(x => x.CastAt);
+            ball.Property(x => x.PreviousHash).HasMaxLength(64); // D-13 / ADR-0030: sealed per-ballot chain links
+            ball.Property(x => x.Hash).HasMaxLength(64);
             ball.Ignore(x => x.DomainEvents);
             ball.HasIndex("VoteEntityId", "VoterUserId").IsUnique(); // one ballot per voter (DB backstop)
 

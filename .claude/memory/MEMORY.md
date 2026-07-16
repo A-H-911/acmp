@@ -1,5 +1,6 @@
 # Memory Index — ACMP
 
+- [P16a audit & vote crypto](p16a-audit-vote-crypto.md) — Security Batch 1: D-13 per-ballot chaining + D-16 nightly verify + DB-perm immutability (ADR-0030/0031); suite = `--filter Category=Security`.
 - [P6a meeting-IA plan](p6a-meeting-ia-plan.md) — DONE & MERGED (PR #53, `ef074a8`).
 - [P6b notifications-IA plan](p6b-notifications-ia-plan.md) — DONE & shipped; popover+inbox reconciled to ACMP.dc.html; type=Category/key=derived (no migration).
 - [P7 Minutes & Decisions plan](p7-minutes-decisions-plan.md) — COMPLETE, all merged (#58–62). MoM homed in Meetings; version-preserving supersede (MIN key, Version++); Approve+Publish = two transitions; bilingual MIRRORED (en===ar); FE i18n ns=`meetings.mom`.

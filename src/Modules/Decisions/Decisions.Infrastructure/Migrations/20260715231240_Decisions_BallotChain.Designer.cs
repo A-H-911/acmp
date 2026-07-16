@@ -4,6 +4,7 @@ using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acmp.Modules.Decisions.Infrastructure.Migrations
 {
     [DbContext(typeof(DecisionsDbContext))]
-    partial class DecisionsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260715231240_Decisions_BallotChain")]
+    partial class Decisions_BallotChain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
