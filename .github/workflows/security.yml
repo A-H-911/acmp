@@ -27,8 +27,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # full history for gitleaks
-      - name: Gitleaks (report-only — flip to gating after first-run triage)
-        continue-on-error: true
+      - name: Gitleaks (gating — 153 commits scanned clean, .gitleaks.toml allowlist triaged)
         run: |
           docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
             detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose --exit-code=1
@@ -39,8 +38,7 @@ jobs:
     container: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - name: Semgrep OSS (report-only — OQ-027 block-High after triage)
-        continue-on-error: true
+      - name: Semgrep OSS (gating — 2 test-only csharp-sqli findings triaged as FP via nosemgrep)
         run: semgrep scan --config p/csharp --config p/javascript --config p/security-audit --error --severity ERROR
 
   trivy-fs:
@@ -50,7 +48,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Trivy fs + misconfig + secret (report-only — gate Critical after triage)
         continue-on-error: true
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           scan-type: fs
           scan-ref: .
