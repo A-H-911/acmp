@@ -12,6 +12,39 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-16 — P16 Batch 2 (PR2): scanners triaged → flipped to gating
+
+**Scope.** Follow-up to the Batch-2 PR1 entry below: triage the first CI run of the report-only scanners and flip
+each to gating. Same branch/PR (`feat/P16b-ci-security-gates` / #126). No product code.
+
+**What was done.**
+- **Gitleaks → GATING.** First run scanned 153 commits under the `.gitleaks.toml` allowlist → **no leaks**. Removed
+  `continue-on-error`.
+- **Semgrep → GATING.** First run flagged **2** `csharp-sqli` findings, both in `AuditImmutabilityDbPermissionTests`
+  (`new SqlCommand(sql, ...)` executing **fixed** test DDL/DML against the SQL container to prove the DB DENY — no
+  untrusted input; a table-permission probe cannot be parameterized). Triaged as false-positive → bare `// nosemgrep`
+  on the two test-helper lines + justification comment; removed `continue-on-error`.
+- **Trivy fs → GATING (CRITICAL).** `trivy-action@0.28.0` never scanned — the tag needs a `v` prefix, and `v0.28.0`
+  itself is broken (its transitive `setup-trivy@v0.2.1` pin was retagged upstream). Replaced the composite action with
+  a **pinned docker image** `aquasec/trivy:0.72.0` (mirrors the gitleaks step; NOT Dependabot-managed → bump
+  manually). First real scan: **0 vuln, 0 secret, 0 CRITICAL**, and **3 HIGH** Dockerfile misconfigs (DS-0002 non-root
+  `USER` ×2 on backend/web, DS-0029 `--no-install-recommends` on sqlserver). Gate set to `--severity CRITICAL
+  --exit-code 1 --ignore-unfixed` per plan. Because `--severity` also filters the report, the 3 HIGH findings are
+  recorded as **[D-21]** (B4 container hardening) so they don't silently vanish from CI.
+- **YAML self-inflict, caught + fixed.** The Trivy gating rename put `first scan: 0 vuln/secret` in the step `name:`;
+  the `": "` starts a YAML mapping → GitHub couldn't parse `security.yml` and the run executed **0 jobs (failure)**.
+  Reworded without a colon; now lint workflow YAML locally (`yaml.safe_load`) before pushing.
+
+**Gates.** All 8 PR checks green on `5148026` — CI backend/compose/frontend, E2E, and Security secrets/sast/trivy-fs/
+sbom; `mergeStateStatus=CLEAN`. `main` is currently unprotected (security checks advisory-until-added to branch
+protection — an ops follow-up).
+
+**Decisions.** No new ADR. No AC verdict change. New deferred item **D-21** (3 HIGH Dockerfile misconfigs → B4).
+OQ-027 stays Deferred. **Awaiting merge consent** (no-review guard). Next after merge: B2b (Trivy image scan +
+base-image digest-pinning), then B3, then P14.
+
+---
+
 ### 2026-07-16 — P16 (Security hardening) — Batch 2: CI security gates + supply chain (PR1)
 
 **Scope.** Implements C-SUP-01/02 + C-SAST-01 + C-SEC-02 (OQ-027 default + devsecops-plan). No product code — CI +

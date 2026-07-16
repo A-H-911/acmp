@@ -1,5 +1,6 @@
 # Memory Index — ACMP
 
+- [P16b CI security gates](p16b-ci-security-gates.md) — ★MERGE-READY★ PR #126 OPEN, all 8 checks GREEN (`5148026`): dep-CVE gate + Gitleaks/Semgrep/Trivy ALL now GATING & clean (semgrep FPs → bare nosemgrep; trivy → pinned `aquasec/trivy:0.72.0` docker, gate CRITICAL; 3 HIGH Dockerfile misconfigs → D-21/B4). Needs "merge without review" consent, then B2b.
 - [P16a audit & vote crypto](p16a-audit-vote-crypto.md) — Security Batch 1: D-13 per-ballot chaining + D-16 nightly verify + DB-perm immutability (ADR-0030/0031); suite = `--filter Category=Security`.
 - [P6a meeting-IA plan](p6a-meeting-ia-plan.md) — DONE & MERGED (PR #53, `ef074a8`).
 - [P6b notifications-IA plan](p6b-notifications-ia-plan.md) — DONE & shipped; popover+inbox reconciled to ACMP.dc.html; type=Category/key=derived (no migration).
