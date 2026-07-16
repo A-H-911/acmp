@@ -1,8 +1,8 @@
 # ADR-0030: Per-ballot crypto hash chaining for closed votes (D-13)
 
-- Status: Proposed
-- Date: 2026-07-16
-- Deciders: Architecture Committee execution (awaiting operator ratification)
+- Status: Accepted
+- Date: 2026-07-16 (Proposed); ratified 2026-07-16
+- Deciders: Architecture Committee execution; operator ratified 2026-07-16
 - Context: P16 (Security hardening) — Batch 1, closing deferred-work item D-13
 
 ## Context and Problem Statement

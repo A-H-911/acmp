@@ -1,8 +1,8 @@
 # ADR-0031: Database-permission audit immutability (least-priv role, DENY UPDATE/DELETE on schema::audit)
 
-- Status: Proposed
-- Date: 2026-07-16
-- Deciders: Architecture Committee execution (awaiting operator ratification)
+- Status: Accepted
+- Date: 2026-07-16 (Proposed); ratified 2026-07-16
+- Deciders: Architecture Committee execution; operator ratified 2026-07-16
 - Context: P16 (Security hardening) — Batch 1, closing part of deferred-work item D-16
 
 ## Context and Problem Statement

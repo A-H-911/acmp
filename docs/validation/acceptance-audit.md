@@ -2,7 +2,7 @@
 artifact: acceptance-audit
 status: active
 version: v1
-updated: 2026-07-15
+updated: 2026-07-16
 ---
 
 # ACMP Acceptance Audit
