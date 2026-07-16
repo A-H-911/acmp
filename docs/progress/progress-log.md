@@ -12,6 +12,92 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-16 — P16 Batches B2b + B3 + B4: hardening completed (one PR) — branch `feat/P16-hardening-b2b-b3-b4`
+
+**Scope.** The remaining P16 hardening in ONE PR off `main` (`11c6372`), per the operator's full-scope decision:
+B2b (digest-pin + Trivy image scan), B3 (web headers/HSTS/strict CSP + crypto scaffold doc), B4 (non-root +
+read-only FS + rate limiting + magic-byte sniffing + PII redaction + Seq runbook). Closes **D-21**.
+
+**★ The headline: the CSP frontend refactor was cancelled — it was never needed.** The plan's biggest and riskiest
+item (refactor ~110 `style={{}}` sites, incl. a @dnd-kit CSSOM shim, to drop `style-src 'unsafe-inline'`) rested on
+a false premise. **CSP governs `<style>` elements and `style=""` attributes — not the CSSOM** — and react-dom applies
+the `style` prop via CSSOM writes (`style.setProperty(...)` / `style[name] = v`, read directly in the react-dom
+source), never by serializing a style attribute. Only SSR emits one, and this is a client-rendered Vite SPA;
+`index.html` has no inline style; `MarkdownView`'s DOMPurify allowlist excludes `style` attributes and `<style>`
+tags; there is no CSS-in-JS dependency. **Browser-verified** under `style-src 'self'`: CSSOM writes — including the
+@dnd-kit `translate3d` transform shape — apply, while `setAttribute('style')` and an injected `<style>` are blocked.
+So `style-src 'self'` ships against the code as-is. This retires plan risk **R1** (the shim wedging the ≥95%
+coverage gate), the `useCssVars` hook, and ~25 files of churn. Operator chose *skip the refactor, log as hygiene* →
+**D-22** (which records that the CSP rationale is disproven, so it must not be reactivated on those grounds).
+Verifying a locked decision's *necessity* is not re-litigating it: the goal shipped; only the assumed means changed.
+
+**What was done.**
+- **B3 web headers (C-WEB-01/02).** `default.conf.template`: **HSTS** (1y + `includeSubDomains`, no `preload` — an
+  irreversible public-list commitment is the operator's call), **Permissions-Policy** (camera/microphone/geolocation/
+  payment/usb all denied — ACMP uses none; recordings are uploaded files, never captured in-browser), and **CSP
+  `style-src 'self'`** with `'unsafe-inline'` dropped. All **server-level**, since nginx `add_header` does not merge
+  across levels — one in a location block would drop the inherited set. Verified live: `/` returns all six headers and
+  the `/api/` proxy block returns the inherited HSTS/Permissions-Policy/CSP on a 502.
+- **B3 crypto scaffold (C-CRYPTO-01/02/03) → `Partial (Operator/P18)`, never Met** (mirrors the C-AUDIT-04/ADR-0031
+  precedent). `deployment.md` §3.4: `Encrypt` is pure connection-string config — **no code reads or overrides it** —
+  so the transit flip is an operator env change; TDE is **edition-gated** (Express cannot do it, and OQ-040 leaves the
+  edition open, so choosing Express forecloses TDE); MinIO SSE + backup encryption are operator steps. The one
+  persisted secret (Webex OAuth tokens) is already AES-GCM-encrypted by `WebexTokenProtector`.
+- **B3 CSRF (C-WEB-02).** Bearer API + `sessionStorage` tokens ⇒ no ambient auth cookie, no classic CSRF surface. The
+  sole cookie `webex_oauth_state` is HttpOnly+Secure+single-use and correctly **`SameSite=Lax`**. The plan's "set
+  SameSite=Strict on any existing cookie" would have **broken** it: `Strict` withholds the cookie on the cross-site
+  top-level OAuth callback redirect, failing every flow's state check. Documented instead of "hardened" into a bug.
+- **B4 read-only FS (C-CON-002/003).** `read_only` + `cap_drop:[ALL]` + `no-new-privileges` on api/worker/web;
+  **sidecars get no-new-privileges only** (each needs its own writable data dir; dropping caps risks their engines for
+  no gain on internal-only services). Writable mounts scoped to what each image actually does.
+- **B4 Seq alert runbook (C-INS-01)** → `post-release-operating-model.md` §2.4: five rules, each keyed off a property
+  the app **already emits** (`@MessageTemplate like 'INTEGRITY ALERT%'`; `StatusCode` 401/403/429/5xx via
+  `UseSerilogRequestLogging`). OQ-025 honored (audit + alert, no dual-control). Records what is **not** alertable
+  rather than shipping dead tripwires: bulk export does not exist (**D-07**), `Restricted` topics do not exist
+  (**D-20**), and role-grant audit rows live in SQL, not Seq (triaged in `/audit` per §4.6).
+- **C-NOTIF-01/02 audit → Met, no code change.** Every `*Notifications.cs` builder carries only an artifact key, a
+  deep link and day counts — no names, emails, vote or decision content; the sole content field is a meeting title
+  (a governance artifact title, not personal data). Channel is in-app only, so a body never leaves the authed surface.
+
+**★ Three real bugs found by verifying rather than assuming — two of them self-inflicted by this branch's own earlier commits.**
+- **Testcontainers could not build the digest-pinned SQL base.** The B2b digest-pin broke `SearchProvidersFtsTests`:
+  Testcontainers 3.10 parses Dockerfile `FROM` lines to pre-pull base images and its matcher rejects a digest
+  (`Cannot parse image: ...server:2022-latest@sha256:...`) — the `tag@digest` **and** digest-only forms both fail.
+  Fixed by upgrading Testcontainers 3.10→4.13 (one test project, no production code), which keeps the C-SUP-01 pin
+  rather than trading a supply-chain control for a test-framework limitation. Test container images are now passed
+  explicitly, so a future bump cannot silently move which SQL Server/MinIO the tests run against.
+- **The web tmpfs would have silently served nothing.** `/etc/nginx/conf.d` as a bare tmpfs inherits the image
+  directory's `root:root 0755`, so nginx (UID 101) cannot write its rendered config: envsubst fails, and because the
+  mount also hides the stock `default.conf`, nginx starts with **no server block** — logging "ready for start up",
+  forking workers and reporting `running` while listening on nothing. Fixed with `uid=101,gid=101,mode=0755`.
+  (Paths absent from the image — `/tmp`, `/keys` — get 1777 and were unaffected, which is why this hid.)
+- **R3 was under-diagnosed: there are two buffering layers, not one.** `proxy_request_buffering off` stops *nginx*
+  spooling the body, but ASP.NET's `IFormFile` independently spools any multipart section >64 KB to
+  `Path.GetTempPath()`. With recordings capped at 2 GiB against a 512 MB–1 GB api RAM budget (§9) — and tmpfs pages
+  counting against the container's memory cgroup — a RAM-backed `/tmp` would OOM on the first real upload. The api's
+  `/tmp` is therefore a **disk-backed volume** (the C-CON-003 "writable only where needed" exception); worker/web keep
+  tmpfs since they spool nothing. Also fixed a latent bug: `ngrok` still tunnelled `web:80` after the
+  nginx-unprivileged switch moved the listen port to 8080 — profile-gated, so e2e never caught it.
+
+**Gates (local).** Full `dotnet test` **1451 passed / 0 failed**; coverage **416 files, 99.65%** (≥95% gate);
+`dotnet format --verify-no-changes` clean; `check-vulns.mjs` 0 High/Critical; `trivy config deploy/` **0 misconfig**
+at CRITICAL,HIGH (**D-21 closed**; gate tightened CRITICAL→CRITICAL,HIGH); `trivy fs` CRITICAL,HIGH clean.
+**Keystone `validate_package.py` = NOT READY (G-IDS, 74 findings) — pre-existing and identical on `main`** (verified
+via `git archive main docs`); none of the findings touch the files changed here, so this branch adds no new ones.
+
+**Live validation** (isolated `-p acmpe2e` stack, dev stack stopped and volumes preserved). The fully hardened
+read-only stack **boots healthy across every container**; runtime inspection confirms `ReadonlyRootfs=true`,
+`CapDrop=[ALL]`, `no-new-privileges` and non-root users on api/web/worker, with sidecars carrying no-new-privileges
+only. Rate limiting (C-API-03) verified live: 140 webhook posts → exactly 120×200 + 20×429 with `Retry-After: 60`.
+PII redaction (C-PRIV-01/02) verified against 500 real `Acmp.Api` events in Seq: **zero** unmasked sensitive-named
+properties and zero raw email/JWT values.
+
+**Decisions.** No new ADR (read-only FS did not force one). **No AC verdict change** — these controls satisfy
+NFR-018/019/024/051/054. New **D-22** (inline-style hygiene, CSP rationale disproven). **D-21 closed.** OQ-024/025/
+026/028/040 defaults stand; OQ-027's ZAP/DAST leg stays Deferred.
+
+---
+
 ### 2026-07-16 — P16 Batch 2 (PR2): scanners triaged → flipped to gating
 
 **Scope.** Follow-up to the Batch-2 PR1 entry below: triage the first CI run of the report-only scanners and flip
