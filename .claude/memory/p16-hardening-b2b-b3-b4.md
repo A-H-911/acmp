@@ -39,10 +39,32 @@ full `dotnet test` **1451 pass / 0 fail**; coverage **416 files, 99.65%** (≥95
 
 **Keystone validator = `NOT READY` (G-IDS, 74 findings) — PRE-EXISTING, verified identical on `main` (`git archive main docs`).** Not caused by this branch; none of the findings touch my files. Report, don't "fix".
 
-## REMAINING
+## ★ STATE: PR #141 OPEN — ALL 9 CHECKS GREEN, `mergeStateStatus=CLEAN` — **AWAITING MERGE CONSENT (do NOT self-merge)**
 
-1. **e2e + live validation** (in flight): dev stack **stopped** (`docker compose -f deploy/docker-compose.yml stop`, volumes intact); isolated `-p acmpe2e --env-file deploy/.env.example up -d --build --wait`. Verify: read-only stack boots healthy · large recording upload OK · rate-limited endpoint 429 · Seq masked PII · **CSP console sweep = ZERO violations** (load-bearing now that the static argument replaced the refactor — sweep every screen type incl. the 7 dynamic-style ones + WikiPage) · **actually drag** kanban + AgendaBuilder (the @dnd-kit transform only applies mid-drag). **Pixel-VR DROPPED** — nothing was refactored, so there is no visual delta. Then `down -v` acmpe2e + restart dev with `--env-file deploy/.env`.
-2. **Tracking**: `security-controls-audit.md` REWRITTEN (uncommitted) — B2/B3/B4 verdict tables + C-NOTIF **Met** (audited: bodies carry artifact key + deep link + day counts only; sole content = a meeting title, not PII; in-app only). `deferred-work-register.md` **D-22** added + v1.9.0 (uncommitted). Still to do: **progress-log** entry, **status-report** regen, acceptance-audit (**NO AC verdict change**), MEMORY.md.
-3. **PR** — draft, then **REPORT before merging; merge needs explicit "merge without review" consent** (as #124/#125/#126).
+Live validation DONE (isolated `-p acmpe2e`, dev stack stopped then **restored healthy**, dev volumes intact):
+read-only stack boots healthy across every container (runtime-verified `ReadonlyRootfs`/`CapDrop[ALL]`/non-root) ·
+**e2e 40/40** (incl. VR sweep EN-light+AR-dark + drag specs) · **CSP: 26 screens → 0 violations** + a real kanban drag
+**engaged** (accept dialog opened ⇒ not vacuous) → 0 violations · rate limit **140 posts → exactly 120×200 + 20×429**,
+`Retry-After: 60` · **300 MB** recording upload → **HTTP 200** through read-only nginx (64m tmpfs) + read-only api ·
+PNG spoofed as `video/mp4` → **400** · Seq **500 real `Acmp.Api` events → 0 unmasked** PII. Pixel-VR dropped (nothing
+refactored ⇒ no visual delta). Tracking + progress-log + status-report (v1.9.0) + D-22 all committed.
+
+**★ @dnd-kit is TREE-SHAKEN OUT of the production bundle** (`SortableList` imported only by its own test; the real
+kanban/agenda drags are **native HTML5 DnD**, not @dnd-kit) — so plan risk R1 was moot **three times over**.
+
+**⚠ 3 gotchas that cost CI cycles / near-misses:**
+1. **`dotnet format` MUST be solution-wide.** I ran it scoped to one .csproj → exit 0, while CI's `acmp.sln` run
+   → **exit 2, 7 `error CHARSET`** (Write-tool files lack the required UTF-8 BOM, from the EARLIER commits). Fixed
+   by `dotnet format acmp.sln` (BOM only, 7 files, 1 line each). See [[ci-gates-run-locally-pre-push]].
+2. **Never run a load test concurrently with the e2e suite.** My 140-post 429 burst ran during the suite → 1 spurious
+   `audit-vr` failure (every audited write takes the `acmp-audit-chain` applock, ADR-0028, so the burst serialized
+   against the spec's seeding). Clean re-run = 40/40.
+3. **Restoring the dev stack needs `--build web`.** The dev `acmp-web` image predated this branch's
+   nginx-unprivileged switch → stock nginx runs as **root**, and `cap_drop:[ALL]` removes **CAP_DAC_OVERRIDE**, so
+   root could NOT write the uid-101 tmpfs → `Permission denied`, web `Exited(1)`. Rebuild with `--env-file deploy/.env`
+   (the memory's `--build` trap is only about using `.env.example` against the `acmp` volumes).
+
+**Next:** operator merges #141 (squash) → P16 complete bar its stated residuals (OQ-027 ZAP Deferred; C-CRYPTO
+Partial/Operator-P18; trivy-image report-only; ClamAV opt-in) → then **P14** Tarseem/Diagrams.
 
 **Facts:** trivy local needs `MSYS_NO_PATHCONV=1` (Git-Bash mangles `-v "$PWD:/repo"` AND `docker exec <abs-path>`); trivy `config` uses `-q`. `dotnet format --include <many paths>` mis-parses → format per-project(.csproj). **NEVER `npm run e2e:up`** (no `-p` → hits the `acmp` project → wipes dev volumes) — see [[e2e-local-run-nondestructive]]. No new ADR. No AC verdict change.
