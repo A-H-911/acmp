@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.FileStorage;
 using FluentAssertions;

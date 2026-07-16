@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Application.Abstractions;
+﻿namespace Acmp.Shared.Application.Abstractions;
 
 // C-FILE-01 (P16-B4): validates that an upload's ACTUAL content matches its DECLARED content type, so a
 // caller cannot smuggle an executable/HTML/other payload past the declared-Content-Type allow-list by simply

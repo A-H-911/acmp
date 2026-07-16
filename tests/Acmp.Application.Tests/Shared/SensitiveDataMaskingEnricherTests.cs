@@ -1,4 +1,4 @@
-using Acmp.Shared.Infrastructure.Observability;
+﻿using Acmp.Shared.Infrastructure.Observability;
 using FluentAssertions;
 using Serilog;
 using Serilog.Core;

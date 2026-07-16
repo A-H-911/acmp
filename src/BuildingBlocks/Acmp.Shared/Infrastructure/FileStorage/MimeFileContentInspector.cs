@@ -1,4 +1,4 @@
-using Acmp.Shared.Application.Abstractions;
+﻿using Acmp.Shared.Application.Abstractions;
 using MimeDetective;
 using MimeDetective.Definitions;
 using MimeDetective.Engine;
