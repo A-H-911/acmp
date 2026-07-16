@@ -19,7 +19,11 @@ namespace Acmp.Integration.Tests;
 // InMemory happily accepts. Starting the container is expensive, so it is shared via a collection.
 public sealed class SqlBackstopFixture : IAsyncLifetime
 {
-    private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
+    // Image passed explicitly (this is Testcontainers' own default, pinned): the parameterless ctor is
+    // obsolete, and an explicit tag means a Testcontainers upgrade can't silently move which SQL Server
+    // these tests run against.
+    private readonly MsSqlContainer _container =
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
 
     public string ConnectionString { get; private set; } = string.Empty;
 

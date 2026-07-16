@@ -15,8 +15,10 @@ public sealed class MinioFileStoreTests : IAsyncLifetime
 {
     private const string Bucket = "acmp-recordings";
 
-    // Default builder image is a pinned RELEASE tag (reproducible; no floating :latest pull).
-    private readonly MinioContainer _minio = new MinioBuilder()
+    // Pinned RELEASE tag, no floating :latest (reproducible). Passed explicitly rather than relying on the
+    // builder default: the parameterless ctor is obsolete, and an explicit tag means a Testcontainers
+    // upgrade can't silently move which MinIO these tests run against.
+    private readonly MinioContainer _minio = new MinioBuilder("minio/minio:RELEASE.2023-01-31T02-24-19Z")
         .WithUsername("minioadmin")
         .WithPassword("minioadmin")
         .Build();
