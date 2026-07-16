@@ -48,13 +48,16 @@ public sealed class UploadRecordingHandler : IRequestHandler<UploadRecordingComm
     private readonly IFileStore _files;
     private readonly ICurrentUser _user;
     private readonly IAuditSink _audit;
+    private readonly IFileContentInspector _inspector;
 
-    public UploadRecordingHandler(IMeetingsDbContext db, IFileStore files, ICurrentUser user, IAuditSink audit)
+    public UploadRecordingHandler(IMeetingsDbContext db, IFileStore files, ICurrentUser user, IAuditSink audit,
+        IFileContentInspector inspector)
     {
         _db = db;
         _files = files;
         _user = user;
         _audit = audit;
+        _inspector = inspector;
     }
 
     public async Task<RecordingDto> Handle(UploadRecordingCommand request, CancellationToken ct)
@@ -64,6 +67,11 @@ public sealed class UploadRecordingHandler : IRequestHandler<UploadRecordingComm
 
         var (sub, _) = CurrentActor.Of(_user);
         var previousKey = meeting.RecordingObjectKey;
+
+        // C-FILE-01: the declared ContentType was allow-list-checked in the validator; now confirm the actual
+        // bytes match it (magic-byte sniff) so a mislabelled payload can't slip through. Fail-closed, pre-store.
+        if (!_inspector.ContentMatchesDeclared(request.Content, request.ContentType))
+            throw new ValidationException($"Recording content does not match its declared type '{request.ContentType}'.");
 
         // Object key is server-derived: meeting key + GUID + a content-type extension — NEVER the raw client
         // filename. A name with spaces/parens/unicode would break the SigV4 presigned-URL signature (encoding
