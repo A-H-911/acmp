@@ -70,7 +70,7 @@ public class AuditImmutabilityDbPermissionTests
     {
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand(sql, connection); // nosemgrep: csharp.lang.security.sqli.csharp-sqli
+        await using var command = new SqlCommand(sql, connection); // nosemgrep
         await command.ExecuteNonQueryAsync();
     }
 
@@ -78,7 +78,7 @@ public class AuditImmutabilityDbPermissionTests
     {
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand(sql, connection); // nosemgrep: csharp.lang.security.sqli.csharp-sqli
+        await using var command = new SqlCommand(sql, connection); // nosemgrep
         return (int)(await command.ExecuteScalarAsync())!;
     }
 }

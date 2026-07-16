@@ -47,15 +47,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy fs + misconfig + secret (report-only — gate Critical after triage)
+        # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
+        # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. exit-code 0
+        # keeps this report-only for one triage run.
         continue-on-error: true
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: vuln,misconfig,secret
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: '0'
+        run: |
+          docker run --rm -v "$PWD:/repo" aquasec/trivy:0.72.0 fs /repo \
+            --scanners vuln,misconfig,secret \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            --exit-code 0
 
   sbom:
     runs-on: ubuntu-latest
