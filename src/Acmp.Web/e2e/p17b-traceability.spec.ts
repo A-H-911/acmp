@@ -17,10 +17,10 @@ import { apiMembers, apiCreateTopic, type ApiMember } from './scenario';
  * Setup that isn't under test (two topics) is seeded via the API with a real captured bearer; the UI is
  * reserved for the create action being asserted (the scenario.ts convention).
  *
- * ⚠ AUTHORED, NOT YET RUN against the isolated `-p acmpe2e` stack. Selectors + strings are taken from the
- * components (TraceabilityPanel.tsx, CreateRelationshipDialog.tsx, ArtifactPicker.tsx) and en.json, and
- * the custom `Select`→option interaction mirrors core-loop.spec's owner picker — but the first live run
- * is the verification. Likely first-run adjustment points are commented `// VERIFY:`.
+ * Verified live against the isolated `-p acmpe2e` stack (P17b, 2026-07-17): passes first run, 2.5s. The
+ * custom `Select`→option interaction mirrors core-loop.spec's owner picker; each Select's accessible name
+ * is its `ariaLabel` (aria-label wins over the placeholder text), so the type/artifact pickers resolve by
+ * `getByRole('button', { name })`.
  */
 
 const TRACE_PANEL = 'Traceability'; // TraceabilityPanel aside aria-label (trace.panel.title)
@@ -62,7 +62,7 @@ test.describe('P17b — traceability (AC-062 / AC-063)', () => {
     await expect(dialog).toBeVisible();
 
     // ArtifactPicker = two custom Selects (Type → Artifact). Button-opens-options, like core-loop's picker.
-    await dialog.getByRole('button', { name: 'Type' }).click(); // VERIFY: custom Select button name = ariaLabel
+    await dialog.getByRole('button', { name: 'Type' }).click(); // custom Select trigger, accessible name = ariaLabel
     await page.getByRole('option', { name: 'Topic', exact: true }).click();
     await dialog.getByRole('button', { name: 'Artifact' }).click();
     await page.getByRole('option', { name: new RegExp(target.key) }).click(); // option label = `${key} — ${title}`

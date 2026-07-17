@@ -96,13 +96,21 @@ real-fire (R10 gate) → **[feature]** build decision-issue UI + AC-014 badge �
 ★ **e2e wall-clock measured (P17a PR CI): 5m57s against the 30-min cap** — R2 (budget) largely de-risked;
 API-seeding via `scenario.ts` should suffice, storageState almost certainly unneeded.
 
-## P17b spec authoring STARTED — spec #1 written, ⚠ NOT YET RUN
+## P17b spec #1 — ✅ RUN + GREEN (2026-07-17). AC-062/063 → Met.
 
-**`src/Acmp.Web/e2e/p17b-traceability.spec.ts`** (uncommitted, in the working tree on `main`) covers **AC-062 +
-AC-063** (the create round-trip proves both). Compile-clean (`playwright test --list` exit 0) + oxlint clean, real
-selectors from the components + `en.json`. **⚠ authored-pending-live-run** — selectors marked `// VERIFY:` (esp. the
-custom `Select`→option button names) need the first isolated-stack run to confirm. No new seed helper needed (topics
-suffice via `apiCreateTopic`).
+**`src/Acmp.Web/e2e/p17b-traceability.spec.ts`** covers **AC-062 + AC-063** (the create round-trip proves both).
+**Ran first-try green against the isolated `-p acmpe2e` stack: 2.5s test, 4.0s total, exit 0** — every `// VERIFY:`
+selector resolved as predicted by the pre-run static check (read `Select.tsx`+`en.json`+`traceMeta.ts` first). The
+warning header + `// VERIFY:` markers are now removed. **AC-062 + AC-063 flipped Partial→Met** in
+`acceptance-audit.md` (evidence cites the live spec + the live-leg rule in `definition-of-done.md`, NOT "per
+G-TRACE"; ids kept BARE; validator 7/7 incl G-PROGRESS). Spec + audit flips committed together (R9). No new seed
+helper was needed (two topics via `apiCreateTopic`).
+
+Confirmed harness facts from the live run: custom `Select` trigger's accessible name = its `ariaLabel` (wins over
+placeholder) → `getByRole('button',{name})`; option = `role=option`, name = option label; POST hits `/api/traceability`
+→ 201; `useCreateRelationship.onSuccess` invalidates `['traceability']` so the source panel refetches in place (no
+reload). **Stack management this session: Docker Desktop was OFF; started it, `stop`ped the auto-restarted `acmp` dev
+project, brought up `-p acmpe2e` (~6min build), ran, left e2e stack UP for the next clusters.**
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
@@ -114,9 +122,11 @@ name = ariaLabel/placeholder) → `role=option`, per core-loop.spec.
 — authoring 11 unrun specs = confident-but-unverified output, the exact thing this session existed to remove. The
 run is expensive (~6 min/run × selector-fix iterations) and environment-sensitive (**NEVER `npm run e2e:up`** — wipes
 dev volumes; use `-p acmpe2e` after stopping dev). That + the session cost (~$210) ⇒ the live-run + remaining
-clusters belong to a fresh session with clean context and budget. **Next session: run p17b-traceability against the
-isolated stack, fix `// VERIFY:` selectors, then replicate the pattern for the other clusters (add seed helpers
-first).**
+clusters belong to a fresh session with clean context and budget. **✅ spec #1 now DONE (see section above). NEXT:
+replicate the pattern for the remaining bin-(a) clusters — voting (021/023/024), MoM (036/037/038), actions (013),
+decisions (028), notifications (052) — each needs a new seed helper added to `e2e/scenario.ts` FIRST (it has
+topic/meeting/agenda helpers but NONE for votes/decisions/actions/MoM). Run-verify-then-replicate, one cluster at a
+time; do NOT bulk-author unrun specs.**
 
 ## Gotchas for P17b/P17c
 
