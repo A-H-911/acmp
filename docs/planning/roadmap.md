@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.1.0
-updated: 2026-07-06
+version: 1.2.0
+updated: 2026-07-17
 owner: lead-secretary
 ---
 
@@ -99,7 +99,7 @@ Per-slice prompts live in [handoff/follow-up-prompts.md](../handoff/follow-up-pr
 | Slice | Theme | Phase home |
 |---|---|---|
 | P13 | Webex adapter — notifications + recording links, strictly behind `INotificationChannel` (D-02) | PH-2 remainder |
-| P14 | Tarseem diagram sidecar behind `IDiagramRenderer` + the Diagrams surface (D-11) | PH-2 remainder |
+| P14 | Tarseem diagram sidecar behind `IDiagramRenderer` + the Diagrams surface (D-11). **DEFERRED INDEFINITELY and removed from the active ladder — operator decision 2026-07-17, recorded as DEC-028. Not built; re-opened only by explicit operator instruction (no automatic trigger).** Diagrams stay externally authored + attached as files (D-11 Phase-1 handling). Nothing depends on it: PH-2 is otherwise complete and **P17→P19 proceed without it** | PH-2 remainder — **deferred (DEC-028)** |
 | P15 | Research & Knowledge — standalone Research module + Knowledge wiki/templates. **Keystone import (FR-112) deferred out of P15 to future work (D-05, 2026-07-12) — not built in this slice** | PH-2 remainder |
 | P16 | Security hardening — OWASP ASVS 5.0 L2 sweep, incl. per-ballot crypto chaining (D-13) | cross-cutting |
 | P17 | Testing hardening — first task: harvest the "→ P17" deferrals from the progress log; partially advanced by the S1–S7 coverage/E2E slices (PR #38–#48, ADR-0016) | cross-cutting |

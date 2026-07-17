@@ -12,6 +12,51 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-17 — P16 MERGED (★ complete ★) + P14 deferred indefinitely (DEC-028)
+
+**P16 complete.** PR #141 (B2b+B3+B4) squash-merged to `main` as `e15cfff` with 9/9 checks green — joining
+Batch 1 (#124) and Batch 2 (#126). The P16 security slice is now **done**; its residuals are stated, not silent
+(OQ-027 ZAP/DAST Deferred; C-CRYPTO-01/02/03 `Partial (Operator/P18)`; Trivy image scan report-only; ClamAV
+operator opt-in per OQ-026; D-22 inline-style hygiene).
+
+**P14 (Tarseem diagrams) deferred indefinitely — operator decision, registered as `DEC-028`.**
+Registered per the Keystone protocol ([naming-conventions](../governance/naming-conventions.md)): a **`DEC-`** in
+the [open-decision register](../decisions/open-decision-register.md), **not** an ADR, because this is a
+**scheduling** decision and nothing architecturally significant changes — **ADR-0006** (Tarseem as a containerized
+render sidecar, JSON spec = source of truth) **still stands, unchanged**, and OOS-02 ("no in-app diagram engine")
+is untouched. Only the schedule moved. This mirrors the **D-05 / P15 Keystone-import** precedent, which recorded an
+equivalent scheduling deferral without an ADR. Status is **`Approved`** — the *decision* is settled; it is the
+*work* that is deferred.
+
+Registered across the package so no path leads back to it by accident:
+- **DEC-028** (new) — the decision, its rationale, and the trigger: *operator re-opens P14 by explicit
+  instruction*; there is **no automatic trigger**. Also noted that DEC-001…027 were the migrated legacy `R-##`
+  set and ids are newly issued from DEC-028 on.
+- **D-11** — target phase `Phase 2` → **Unscheduled**; its old trigger ("P14 kickoff") **explicitly no longer
+  fires**. Stays `Open`: the work is still known-not-done, and the Phase-1 manual path (diagrams authored
+  externally, attached as files) remains the shipping behaviour.
+- **roadmap** ladder — P14 marked deferred, mirroring how the P15 row records the D-05 deferral.
+- **follow-up-prompts** — the P14 prompt now carries a ⛔ **DO NOT START** banner. It is kept verbatim so the
+  slice can resume unchanged if re-opened; the risk being closed is a fresh session picking it up as "next".
+
+**Safe to defer because nothing depends on it:** the capability is additive, the manual path already works, no AC
+verdict rests on it, and **P17→P19 proceed without it**. With P14 out, **PH-2 is closed**.
+
+**Stale-pointer correction found while doing this (AC-025).** Its note read *"crypto hash-chain → **P14**"* — but
+P14 is Tarseem/diagrams and never carried that work: the per-ballot crypto chain was **delivered in P16a**
+(`BallotChain`, `Vote.SealBallotChain` + tally recompute, ADR-0030, closing D-13). Left alone, deferring P14 would
+have turned a typo into "a shipped control is deferred forever". Corrected to point at P16a. **Verdict unchanged —
+AC-025 stays `Partial`**; its real residual is the live leg → P17.
+*(A second, older `→ P14` mention survives in a P7b **historical** blockquote — "vote/audit-timeline → P9/P14".
+Left as written: it records what was believed at that time, and rewriting history is worse than a dated note. No
+AC verdict depends on it. Flagged here so P17 can judge it with context.)*
+
+**Next (operator's instruction): a fresh session starts at P17 → P18 → P19 planning.**
+
+**Gates.** Keystone `RESULT: OK` (6/6 critical PASS). Docs-only change — no code, no AC verdict change, no new ADR.
+
+---
+
 ### 2026-07-17 — P16-B3 follow-up: Keystone G-IDS gate fixed + SQL transit encrypted + doc corrections
 
 **Scope.** Two loose ends reported on PR #141, landed on the same PR (operator's call). No product code.
