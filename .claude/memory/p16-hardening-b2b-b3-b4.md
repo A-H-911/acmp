@@ -64,7 +64,41 @@ kanban/agenda drags are **native HTML5 DnD**, not @dnd-kit) — so plan risk R1 
    root could NOT write the uid-101 tmpfs → `Permission denied`, web `Exited(1)`. Rebuild with `--env-file deploy/.env`
    (the memory's `--build` trap is only about using `.env.example` against the `acmp` volumes).
 
+## 2026-07-17 follow-up (also on #141): Keystone G-IDS FIXED + SQL transit encrypted
+
+**★ Keystone `G-IDS` 74→0; package now `RESULT: OK` (6/6 critical PASS).** Mechanism (read from
+`validate_package.py`): a **bare ID token in a table's FIRST column = a strong DEFINITION** —
+`_guess_id_column` picks any column where **≥60%** of cells `fullmatch` a governed ID, and it **strips backticks
+only**. `acceptance-audit.md`'s header `| AC |` isn't in `ID_HEADERS` (`id/ref/key/identifier`) → guessed col 0 →
+74 duplicate defs vs `acceptance-criteria.md` (**family = FIRST PATH SEGMENT**, both `validation`).
+**Fix = bold the 74 cells** (`| **AC-001** |`) → no fullmatch → no id col → they become **references**. Same shape
+`security-controls-audit.md` already uses. **A `<!-- G-IDS -->` comment now guards it — the bold is load-bearing;
+un-bolding silently re-reds a critical gate.** ⚠ **Do NOT** use `[AC-001](acceptance-criteria.md#ac-001)` — the
+criteria register has **no per-AC headings**, so that ships 74 broken anchors. Backticks don't help (stripped).
+Pre-checked: both files hold identical 74-ID sets ⇒ no dangling refs; no script/CI/gate parses the bare-ID format.
+
+**★ C-CRYPTO-01 SQL transit now ON** — `Encrypt=False`→`True` on the **4** runtime sites (compose api+worker + both
+`appsettings.json`). **No code** (`SharedKernelExtensions` round-trips it); **all** consumers incl. **Hangfire**
+(`AcmpCompositionRoot`←`Program.cs`), Webex + shared kernel resolve the one `ConnectionStrings:Acmp` ⇒ 4 is
+exhaustive. **Needs NO cert** — SQL Server auto-generates a self-signed one (proved: `sqlcmd -N -C` against our own
+FTS image → `encrypt_option=TRUE`). **Live-verified** `sys.dm_exec_connections`: every app connection FALSE→**TRUE**
+(residual FALSE = SQL's internal `SQLServerCEIP` + the `SQLCMD` probe itself). **Still `Partial`** —
+`TrustServerCertificate=True` ⇒ encrypted but **NOT authenticated**; MinIO/Seq still plaintext (neither
+auto-generates a cert, unlike SQL Server).
+
+**★ 3 wrong claims I'd shipped in #141's `deployment.md` §3.4, now corrected:** (1) "defeats the point" — Step A
+defeats only the *server-auth half*; (2) **"TDE is edition-gated" is FALSE here** — bundled SQL is **Developer =
+Enterprise features** (`SERVERPROPERTY('EngineEdition')=3`) ⇒ TDE would work today; real blocker = **cert key
+custody** (cert lives in `mssql-data`; `down -v` ⇒ backups permanently unrecoverable); (3) **OQ-040 gates TWO P1
+controls** while marked `Blocking?=No` — MS editions table: Express/Web lack **TDE *and* `Encryption for backups`**.
+Also: the Seq leg is **3** endpoints (api OTLP + BOTH Serilog sinks) and the **worker has no OTLP var**.
+
+**⚠ Sub-agent claim that was FALSE:** "SqlClient **5.1.5**, verified" → it's **5.2.0**. Always re-verify agent
+citations. (Conclusion held — 4.0+ defaults `Encrypt=Mandatory` — but the prop was wrong; I replaced that argument
+with the direct sqlcmd proof.)
+
 **Next:** operator merges #141 (squash) → P16 complete bar its stated residuals (OQ-027 ZAP Deferred; C-CRYPTO
-Partial/Operator-P18; trivy-image report-only; ClamAV opt-in) → then **P14** Tarseem/Diagrams.
+Partial/Operator-P18 — MinIO/Seq TLS + TDE + SSE + backup encryption; trivy-image report-only; ClamAV opt-in) →
+then **P14** Tarseem/Diagrams.
 
 **Facts:** trivy local needs `MSYS_NO_PATHCONV=1` (Git-Bash mangles `-v "$PWD:/repo"` AND `docker exec <abs-path>`); trivy `config` uses `-q`. `dotnet format --include <many paths>` mis-parses → format per-project(.csproj). **NEVER `npm run e2e:up`** (no `-p` → hits the `acmp` project → wipes dev volumes) — see [[e2e-local-run-nondestructive]]. No new ADR. No AC verdict change.

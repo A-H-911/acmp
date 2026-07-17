@@ -1,7 +1,7 @@
 ---
 status: Living
-version: 0.2.0
-updated: 2026-07-16
+version: 0.3.0
+updated: 2026-07-17
 owner: Claude Code execution agent
 generation: derived
 ---
@@ -65,9 +65,9 @@ P16) · `Deferred-feature` (out of hardening scope — logged as a feature).
 | **C-WEB-01** security headers + HSTS | T-13 | **Met** | `deploy/nginx/default.conf.template` — CSP, HSTS (1y + includeSubDomains, no preload), Permissions-Policy, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`. All **server-level** so nginx inherits them into `/api/`, `/kc/`, `/acmp-recordings/` (a per-location `add_header` would drop the inherited set — none is added) | Verified live against the read-only container: 200 on `/` carries all 6; the `/api/` proxy block returns the inherited HSTS/Permissions-Policy/CSP on a 502 |
 | **C-WEB-02** strict CSP — `style-src 'self'`, no `'unsafe-inline'` (OQ-028) | T-13 | **Met** | Same template. **No frontend refactor was needed:** CSP governs `<style>` elements + `style=""` attributes, not the CSSOM, and react-dom applies `style={{}}` via CSSOM writes (`style.setProperty` / `style[name]=v`). No SSR (client-rendered SPA) ⇒ no style attribute is ever serialized; `index.html` has none; `MarkdownView` DOMPurify allowlist excludes `style` attrs + `<style>`; no CSS-in-JS dep | Browser-verified under `style-src 'self'`: CSSOM writes (incl. the @dnd-kit transform shape) **apply**; `setAttribute('style')` + injected `<style>` are **blocked**. Live console sweep = zero violations. Residual hygiene → **D-22** |
 | **C-WEB-02** CSRF | T-14 | **Met** | Bearer API; tokens in `sessionStorage` (oidc-client-ts), **no ambient auth cookie** ⇒ no classic CSRF surface. The one cookie, `webex_oauth_state`, is HttpOnly + Secure + single-use + 10-min, and correctly **`SameSite=Lax`** — `Strict` would withhold it on the cross-site top-level OAuth callback redirect and break every flow's state check | `WebexEndpoints` state check (constant-time compare, consume-on-use) |
-| **C-CRYPTO-01** TLS everywhere (transit) | T-20, T-03 | **Partial (Operator/P18)** | Config seam only — `Encrypt` is pure connection-string config (**no code reads or overrides it**); `Minio__Secure`, OTLP endpoint likewise. Operator flips `Encrypt=True` + `TrustServerCertificate=False` + mounts a cert. OQ-024: TLS 1.2+, no mTLS v1 | `deployment.md` §3.4 — mirrors the C-AUDIT-04/ADR-0031 precedent (scaffold done, control not claimed until the operator acts) |
-| **C-CRYPTO-02** at rest (SQL TDE, MinIO SSE) | T-09, T-23, AB-4 | **Partial (Operator/P18)** | Server features, not app config. **TDE is edition-gated** — Express cannot do it, and OQ-040 leaves the edition open, so choosing Express forecloses TDE | `deployment.md` §3.4 |
-| **C-CRYPTO-03** backup encryption | T-23, AB-5 | **Partial (Operator/P18)** | Operator backup tooling | `deployment.md` §3.4 / §6 |
+| **C-CRYPTO-01** TLS everywhere (transit) | T-20, T-03 | **Partial (Operator/P18)** | **SQL leg ON** (P16-B3): `Encrypt=True` on all 4 runtime sites (compose api+worker, both `appsettings.json`) — pure connection-string config, **no code reads or overrides it**, and SQL Server's auto-generated self-signed cert means nothing is mounted. **Still Partial for two reasons:** (1) `TrustServerCertificate=True` ⇒ any cert is accepted — encrypted, **not authenticated** (stops passive sniffing T-20, not an active MITM); (2) **API↔MinIO and API↔Seq remain plaintext** (`Minio__Secure=false`; 3 Seq endpoints on http) — neither server auto-generates a cert, so both need operator-provided certs. OQ-024: TLS 1.2+, no mTLS v1 | **Live-verified**: `sys.dm_exec_connections` — every `Core Microsoft SqlClient Data Provider` connection `encrypt_option=TRUE` (baseline `FALSE`); api+worker healthy; CI `e2e` exercises it end-to-end. Mirrors the C-AUDIT-04/ADR-0031 precedent for the remainder |
+| **C-CRYPTO-02** at rest (SQL TDE, MinIO SSE) | T-09, T-23, AB-4 | **Partial (Operator/P18)** | Server features, not app config. **Correction (P16-B3): TDE is NOT blocked in this stack** — it runs **Developer edition** (`EngineEdition=3`, full Enterprise feature set), so TDE would work here today. It is deferred for **certificate key custody**: the cert lives in the `mssql-data` volume, which the rebuild guidance tells operators to `down -v`, and losing it renders backups **permanently unrecoverable**. Edition only forecloses TDE if the operator picks **Express/Web** at P18 (OQ-040). MinIO SSE needs a **KES key server** (new container + its own custody) | `deployment.md` §3.4 |
+| **C-CRYPTO-03** backup encryption | T-23, AB-5 | **Partial (Operator/P18)** | Operator backup tooling. **Also edition-gated:** per Microsoft's SQL Server 2022 editions table, `Encryption for backups` is Enterprise/Standard-only — Express/Web lack it, exactly as they lack TDE | `deployment.md` §3.4 / §6 |
 | *(already effective)* Webex OAuth token at rest | T-20 | **Met** (prior) | `WebexTokenProtector` — authenticated **AES-GCM**, 256-bit key; the one secret ACMP persists, encrypted independently of TDE | `WebexTokenProtectorTests` |
 
 ## Batch 4 — Runtime hardening (this slice)
@@ -99,3 +99,11 @@ Implements the P16 evidence leg of Deliverable 33. Controls: `../domain/security
 **ADR-0031** (DB-permission immutability). Deferred: D-13 (closed this batch), D-16 (job done; DB-permission
 Operator/P18), Confidentiality ABAC (new feature). OQ defaults honored: OQ-024 (no mTLS v1), OQ-025 (no
 dual-control), OQ-026 (ClamAV opt-in), OQ-028 (strict CSP).
+
+> **Open finding for the operator — OQ-040 is a security decision, not just a capacity one.** OQ-040 (SQL Server
+> edition) is recorded **`Blocking? = No`** with the default *"start with Express… escalate to Standard if limits
+> bind"*. Per Microsoft's SQL Server 2022 editions table, **Express and Web support neither TDE nor
+> `Encryption for backups`** (both Enterprise/Standard-only). Choosing Express therefore forecloses **two P1
+> controls** — C-CRYPTO-02's SQL half and C-CRYPTO-03's SQL half — as a side effect. Surfaced by the P16-B3
+> review; whether to re-classify OQ-040 as blocking is the operator's call (this register records the coupling,
+> it does not change the OQ).

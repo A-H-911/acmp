@@ -2,13 +2,76 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-16
+updated: 2026-07-17
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-17 — P16-B3 follow-up: Keystone G-IDS gate fixed + SQL transit encrypted + doc corrections
+
+**Scope.** Two loose ends reported on PR #141, landed on the same PR (operator's call). No product code.
+
+**Keystone `G-IDS` — 74 findings → 0; package now `RESULT: OK` (all six critical gates PASS).**
+Root cause: the validator treats a **bare ID token in a table's first column** as a *definition*
+(`validate_package.py` `_guess_id_column` — any column where ≥60% of cells `fullmatch` a governed ID; it strips
+backticks only). `acceptance-audit.md`'s header is `| AC | …`, and `AC` is not one of the recognised ID headers
+(`id/ref/key/identifier`), so the validator *guessed* col 0 — 74/74 cells matched — and every audit row became a
+second definition of an AC already defined in `acceptance-criteria.md`. Both files live in the `validation`
+family (`family_of` = first path segment), and uniqueness is scoped per family ⇒ 74 duplicates.
+
+The audit was violating **our own convention**: `naming-conventions.md` §Derived and `manifest.json`
+(`kind: derived`) both say it is *derived* — it reports verdicts on ACs, it does not define them.
+**Fix:** bold the 74 ID cells (`| AC-001 |` → `| **AC-001** |`), which breaks the `fullmatch` so no ID column is
+guessed and the ACs resolve as **references** to their single definition in `acceptance-criteria.md`. This is the
+same shape `security-controls-audit.md` already uses for its control IDs. `acceptance-criteria.md` was **not**
+touched (`status: Approved`, immutable-after-approval). Pre-verified that the two files hold **identical** 74-ID
+sets, so removing the audit's definitions could not create dangling references — and confirmed no script, CI job
+or other gate parses the bare-ID format. A `<!-- G-IDS -->` comment now guards the bold, which is load-bearing but
+otherwise invisible: un-bolding silently re-reds a critical gate.
+*(Rejected: linking the cells (`[AC-001](acceptance-criteria.md#ac-001)`) — the criteria register has no per-AC
+headings, so that ships 74 broken anchors. Not fixing the validator: an in-repo fix exists. Upstream notes for
+Keystone: a **guessed** column yields a *strong* definition where headings yield weak; and the finding locator is
+off by one.)*
+
+**C-CRYPTO-01 — SQL transit is now encrypted in the bundled stack.** `Encrypt=False` → `Encrypt=True` on the 4
+runtime sites (compose api+worker, both `appsettings.json`). No code: `Encrypt` is pure connection-string config
+and `SharedKernelExtensions` round-trips it; verified every SQL consumer — **including Hangfire**
+(`AcmpCompositionRoot` ← `Program.cs`), Webex and the shared kernel — resolves the single `ConnectionStrings:Acmp`,
+so 4 sites are exhaustive. `Encrypt=False` was an **explicit downgrade** from the driver's own secure default.
+**Live-verified, not assumed:** `sys.dm_exec_connections` showed every app connection `encrypt_option=FALSE`
+before and **`TRUE`** after (the only remaining `FALSE` are SQL Server's internal `SQLServerCEIP` telemetry and the
+diagnostic `SQLCMD` probe itself). Needed **no certificate** — SQL Server auto-generates a self-signed one, proven
+by forcing an encrypted `sqlcmd -N -C` session against our own FTS image. **C-CRYPTO-01 stays `Partial`**:
+`TrustServerCertificate=True` means any cert is accepted (encrypted, **not authenticated** — stops passive
+sniffing T-20, not an active MITM), and MinIO + Seq remain plaintext.
+
+**Corrections to `deployment.md` §3.4 — three claims shipped in #141 were wrong.** Recorded plainly rather than
+quietly edited:
+1. *"…it defeats the point"* overstated it. Step A defeats only the **server-authentication half**; it still moves
+   API↔SQL from plaintext to TLS and satisfies **NFR-019**'s literal text — whose own stated check
+   (`nmap --script ssl-enum-ciphers`) failed before and passes now.
+2. **TDE was said to be edition-blocked. It is not, in this stack.** The bundled image runs **Developer edition**
+   (`SERVERPROPERTY('EngineEdition')=3` — full Enterprise feature set), so TDE would work here today. It stays
+   deferred for the real reason: **certificate key custody** (the cert lives in `mssql-data`, the rebuild guidance
+   says `down -v`, and a lost cert makes backups permanently unrecoverable). Right verdict, wrong reason.
+3. **New finding — OQ-040 gates two P1 controls while marked `Blocking? = No`.** Per Microsoft's SQL Server 2022
+   editions table, Express/Web support **neither** TDE **nor** `Encryption for backups`, so its "start with
+   Express" default forecloses **C-CRYPTO-02 *and* C-CRYPTO-03**. Documented in `deployment.md` §3.4 +
+   `security-controls-audit.md`; re-classifying the OQ is the operator's call, so the register is untouched.
+4. Smaller: the Seq leg is **three** endpoints (api OTLP + both Serilog sinks), and the **worker has no OTLP var** —
+   a flip touching only `OTEL_…` would silently leave two in plaintext.
+
+**Gates.** Keystone `RESULT: OK` (6/6 critical PASS; G-IDS 74→0) · `dotnet format acmp.sln --verify-no-changes`
+exit 0 · full `dotnet test` green · coverage ≥95% · `docker compose config -q` clean · api+worker healthy on
+`Encrypt=True` · PR #141 CI re-run.
+
+**Decisions.** No new ADR. **No AC verdict change.** No control flipped to `Met` — C-CRYPTO-01/02/03 remain
+`Partial (Operator/P18)`; only C-CRYPTO-01's evidence improved.
 
 ---
 

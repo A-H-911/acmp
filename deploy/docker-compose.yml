@@ -160,7 +160,13 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      # Encrypt=True (C-CRYPTO-01): the API↔SQL link is TLS, not plaintext. SQL Server auto-generates a
+      # self-signed cert at startup, so this needs nothing mounted — verified in-stack (sys.dm_exec_connections
+      # encrypt_option: FALSE before, TRUE after). TrustServerCertificate=True stays because that cert is
+      # self-signed: the traffic is ENCRYPTED but the server is NOT AUTHENTICATED, so this stops passive
+      # sniffing (T-20) and not an active MITM. Authenticating it (TrustServerCertificate=False + a CA cert
+      # whose CN/SAN is `sqlserver`) is the operator's P18 step — see deployment.md §3.4.
+      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
@@ -292,7 +298,8 @@ services:
       target: worker
     environment:
       DOTNET_ENVIRONMENT: Production
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      # Encrypt=True — must match the api's connection string exactly (C-CRYPTO-01); see the note there.
+      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
