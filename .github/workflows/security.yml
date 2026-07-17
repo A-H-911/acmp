@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # full history for gitleaks
       - name: Gitleaks (gating — 153 commits scanned clean, .gitleaks.toml allowlist triaged)
@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 15
     container: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Semgrep OSS (gating — 2 test-only csharp-sqli findings triaged as FP via nosemgrep)
         run: semgrep scan --config p/csharp --config p/javascript --config p/security-audit --error --severity ERROR
 
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Trivy fs + misconfig + secret (gating on CRITICAL,HIGH)
         # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
         # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. The tag is
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build the API image
         run: docker build -f deploy/Dockerfile.backend --target api -t acmp-api:scan .
       - name: Trivy image scan (report-only — base-OS CVEs are mostly unfixable; W-d lowest-value/highest-cost)
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: SBOM (CycloneDX, informational — C-SUP-01 / NFR-051)
         uses: anchore/sbom-action@v0.17.8
         with:
