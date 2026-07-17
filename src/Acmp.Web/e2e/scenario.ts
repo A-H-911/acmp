@@ -122,6 +122,56 @@ export async function apiAddAgendaItem(
   if (!res.ok()) throw new Error(`[e2e] add agenda item ${res.status()} ${await res.text()}`);
 }
 
+export interface ApiAction {
+  id: string;
+  key: string;
+  status: string;
+}
+
+/**
+ * Create a follow-up action (P17b actions cluster). Owner = the given member's KC sub (`keycloakUserId`,
+ * the identity SoD-1 is keyed by). The source is a create-time snapshot (no cross-module FK — SourceId is
+ * only NotEmpty-validated, ADR-0001), so any seeded artifact id works; the default anchors it to a Topic.
+ */
+export async function apiCreateAction(
+  request: APIRequestContext,
+  bearer: string,
+  opts: { title: string; ownerUserId: string; ownerName: string; sourceId: string; sourceType?: string; priority?: string },
+): Promise<ApiAction> {
+  const res = await request.post('/api/actions', {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: {
+      title: { en: opts.title, ar: opts.title },
+      description: null,
+      priority: opts.priority ?? 'Normal',
+      ownerUserId: opts.ownerUserId,
+      ownerName: opts.ownerName,
+      dueDate: null,
+      sourceType: opts.sourceType ?? 'Topic',
+      sourceId: opts.sourceId,
+      sourceKey: null,
+      meetingKey: null,
+    },
+  });
+  if (res.status() !== 201) throw new Error(`[e2e] create action ${res.status()} ${await res.text()}`);
+  return res.json();
+}
+
+/** Start an action (Open → InProgress). Attributed to the caller. */
+export async function apiStartAction(request: APIRequestContext, bearer: string, actionId: string): Promise<void> {
+  const res = await request.post(`/api/actions/${actionId}/start`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] start action ${res.status()} ${await res.text()}`);
+}
+
+/** Complete an action (→ Completed). CompletedByUserId = the caller's sub — the SoD-1 completer. */
+export async function apiCompleteAction(request: APIRequestContext, bearer: string, actionId: string): Promise<void> {
+  const res = await request.post(`/api/actions/${actionId}/complete`, {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: { completionNote: null },
+  });
+  if (!res.ok()) throw new Error(`[e2e] complete action ${res.status()} ${await res.text()}`);
+}
+
 export interface ApiVote {
   id: string;
   key: string;

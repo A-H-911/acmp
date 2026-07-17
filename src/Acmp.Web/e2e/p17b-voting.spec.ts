@@ -1,9 +1,6 @@
-import { test, expect, type Page } from '@playwright/test';
-import { loginAs } from './login';
-import { captureBearer } from './apiHelpers';
-import {
-  apiMembers, apiCreateTopic, apiConfigureVote, apiOpenVote, apiCastBallot, apiCloseVote, type ApiMember,
-} from './scenario';
+import { test, expect } from '@playwright/test';
+import { roleSession } from './apiHelpers';
+import { apiCreateTopic, apiConfigureVote, apiOpenVote, apiCastBallot, apiCloseVote } from './scenario';
 
 /*
  * P17b — live real-stack leg for the voting ACs (bin (a) of the P17b-0 triage):
@@ -17,16 +14,6 @@ import {
  * attributed ballot is cast by a second, genuinely-logged-in chairman (mirrors core-loop.spec's multi-context
  * pattern), then the secretary views the closed roster.
  */
-
-/** Log a role in via real PKCE, capture its bearer, force member provisioning, and return the member row. */
-async function roleSession(page: Page, role: 'secretary' | 'chairman', acmpRole: string): Promise<{ bearer: string; member: ApiMember }> {
-  await loginAs(page, role);
-  const bearer = await captureBearer(page);
-  await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
-  const member = (await apiMembers(page.request, bearer)).find((m) => m.role === acmpRole);
-  if (!member) throw new Error(`[e2e] ${acmpRole} member not provisioned after ${role} login`);
-  return { bearer, member };
-}
 
 test.describe('P17b — voting (AC-023 / AC-024)', () => {
   test('closing a vote below the cast quorum is rejected, and the vote stays open', async ({ page }) => {

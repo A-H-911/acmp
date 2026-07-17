@@ -132,6 +132,22 @@ ACMP `member.publicId`. `Ballot.VoterUserId` = the KC sub; `CastBallot`/`Vote.Ca
 `CurrentActor.Of(user).Sub` = `ICurrentUser.UserId` (the sub) → a `publicId` eligible-voter row makes every cast 409
 Conflict. GET `/api/members` exposes both — use **`member.keycloakUserId`** (added to the `ApiMember` interface) for
 vote eligibility. Also: **Secretary CANNOT cast** (Vote.Cast = Chairman/Member) — AC-023 needs a real chairman bearer.
+★ **SoD-1 / identity everywhere is the KC sub** — same rule for actions (owner/completer/verifier) and votes.
+
+## ✅ P17b spec #3 — actions AC-013 RUN + GREEN (2026-07-17). AC-013 → Met.
+
+**`src/Acmp.Web/e2e/p17b-actions.spec.ts`** (green first-try, 2.3s): a chairman owns+completes an action (2nd
+context), then the **secretary (a different sub) drives Verify in the UI → 204 → Verified** (SoD-1 positive). Seed
+helpers `apiCreateAction`/`apiStartAction`/`apiCompleteAction` added to `scenario.ts` (owner = `keycloakUserId`;
+`SourceType='Topic'`, `SourceId`=a seeded topic id — SourceId is only NotEmpty-validated, no cross-module FK).
+Enums travel as string names (`priority:'Normal'`, `sourceType:'Topic'`). AC-013 flipped Partial→Met (validator 7/7,
+oxlint clean, id BARE). **Refactor:** extracted the shared `roleSession(page, role, acmpRole)` into `apiHelpers.ts`
+(was duplicated in the voting spec) — voting re-run green after the change. traceability keeps its own
+`secretarySession` (not churned).
+
+**bin-(a) scoreboard: 5 ACs Met (062/063 trace, 023/024 voting, 013 actions). Remaining bin-(a):** AC-021 (CallVote
+in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed), decisions 028 (needs Issued-decision
+seed via API), notifications 052 (reuses the vote seed — assert VoteOpened notification deep-links to `/votes/{key}`).
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but

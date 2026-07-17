@@ -1,4 +1,7 @@
 import { type APIRequestContext, type Page } from '@playwright/test';
+import { loginAs } from './login';
+import { type E2eRole } from './users';
+import { apiMembers, type ApiMember } from './scenario';
 
 /*
  * S6b (ADR-0016 §2) E2E helpers for the two steps the UI alone can't drive on a fresh stack.
@@ -33,4 +36,22 @@ export async function captureBearer(page: Page): Promise<string> {
 export async function prepareTopic(request: APIRequestContext, bearer: string, topicId: string): Promise<void> {
   const res = await request.post(`/api/topics/${topicId}/prepare`, { headers: { Authorization: bearer } });
   if (!res.ok()) throw new Error(`[e2e] prepare ${topicId} failed: ${res.status()} ${await res.text()}`);
+}
+
+/**
+ * Log a role in via the real PKCE round-trip, capture its bearer, force member provisioning (POST
+ * /members/me is idempotent — the same guard dnd-and-failures.spec uses against the async login-time
+ * provision), and return the provisioned member row for that ACMP role. The shared P17b session seam.
+ */
+export async function roleSession(
+  page: Page,
+  role: E2eRole,
+  acmpRole: string,
+): Promise<{ bearer: string; member: ApiMember }> {
+  await loginAs(page, role);
+  const bearer = await captureBearer(page);
+  await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+  const member = (await apiMembers(page.request, bearer)).find((m) => m.role === acmpRole);
+  if (!member) throw new Error(`[e2e] ${acmpRole} member not provisioned after ${role} login`);
+  return { bearer, member };
 }
