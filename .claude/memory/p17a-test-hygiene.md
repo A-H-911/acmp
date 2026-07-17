@@ -154,9 +154,27 @@ accessible name = `notif.title`/`notif.titleUnread` → `getByRole('button',{nam
 `getByRole('dialog',{name:'Notifications'})`; each row's `.notif-row-msg` / `.notif-key` button → `navigate(deepLink)`.
 AC-052 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
 
-**bin-(a) scoreboard: 6 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications). Remaining bin-(a):**
-AC-021 (CallVote in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed chain), decisions 028
-(needs Issued-decision seed via API — SoD-3 co-attester = vote closer ≠ issuer).
+## ✅ P17b spec #5 — decisions AC-028 RUN + GREEN (2026-07-17). AC-028 → Met.
+
+**`src/Acmp.Web/e2e/p17b-decisions.spec.ts`** (green, 1.1s): a chairman supersedes an Issued decision via the
+SupersedeDialog → 201 → navigates to the readable successor; the prior flips to Superseded (banner) with its
+statement intact. Seed helpers `apiRecordDecision`/`apiIssueDecision` added. **Cheap Issued-decision seed:** record
+`outcome='Deferred'` (a NON-follow-up outcome → skips the AC-029 downstream-link gate) with `voteId=null` (skips
+SoD-3/vote-coupling), then issue `chairOverride=false`. Two honest audit notes: (1) actor is **Chairman** — supersede
+is `DecisionChairApprove` (Chairman-only); the AC's "Secretary" is a product↔criterion nuance (OQ candidate); (2) the
+`SupersededByDecisionId` back-link is **not rendered** (prior DTO carries only the successor Guid — flagged in
+DecisionPage), so it stays on API/unit proof. AC-028 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+★★ **TALL-DIALOG VIEWPORT GOTCHA (cost 3 iterations):** the supersede dialog is taller than the default 720px
+viewport, and the modal is `position:fixed` (no page-scroll), so its footer confirm button sat at y≈885 — visible +
+enabled but UN-clickable (`.click()` timed out). Fix: `await page.setViewportSize({ width: 1280, height: 1400 })`
+before opening a tall dialog. The small dialogs (trace/action/vote) didn't hit this. Diagnosis path: `toHaveValue`
+proved the fields filled (ruled out validate), then logging the button `boundingBox` showed y=885 > 720.
+
+**bin-(a) scoreboard: 7 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications, 028 decisions).
+Remaining bin-(a):** AC-021 (CallVote in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed
+chain). Seed helpers now in scenario.ts: topic/meeting/agenda + vote(configure/open/cast/close) + action(create/
+start/complete) + decision(record/issue). Shared `roleSession` in apiHelpers.ts.
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but

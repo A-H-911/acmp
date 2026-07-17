@@ -172,6 +172,49 @@ export async function apiCompleteAction(request: APIRequestContext, bearer: stri
   if (!res.ok()) throw new Error(`[e2e] complete action ${res.status()} ${await res.text()}`);
 }
 
+export interface ApiDecision {
+  id: string;
+  key: string;
+  status: string;
+}
+
+/**
+ * Record a decision (P17b decisions cluster) → Draft. The default outcome `Deferred` is a NON-follow-up
+ * outcome, so it issues freely (no AC-029 downstream-link gate); with no VoteId the SoD-3 / vote-coupling
+ * gates are skipped too — the cheapest path to a seed Issued decision. Policy DecisionRecord (Sec/Chair).
+ */
+export async function apiRecordDecision(
+  request: APIRequestContext,
+  bearer: string,
+  opts: { topicId: string; title: string; statement: string; rationale: string; outcome?: string },
+): Promise<ApiDecision> {
+  const res = await request.post('/api/decisions', {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: {
+      topicId: opts.topicId,
+      meetingId: null,
+      outcome: opts.outcome ?? 'Deferred',
+      title: { en: opts.title, ar: opts.title },
+      statement: { en: opts.statement, ar: opts.statement },
+      rationale: { en: opts.rationale, ar: opts.rationale },
+      alternatives: null,
+      voteId: null,
+      conditions: [],
+    },
+  });
+  if (res.status() !== 201) throw new Error(`[e2e] record decision ${res.status()} ${await res.text()}`);
+  return res.json();
+}
+
+/** Issue a drafted decision (→ Issued). Chairman-only (DecisionChairApprove). No override for a non-vote decision. */
+export async function apiIssueDecision(request: APIRequestContext, bearer: string, decisionId: string): Promise<void> {
+  const res = await request.post(`/api/decisions/${decisionId}/issue`, {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: { chairOverride: false, overrideJustification: null },
+  });
+  if (!res.ok()) throw new Error(`[e2e] issue decision ${res.status()} ${await res.text()}`);
+}
+
 export interface ApiVote {
   id: string;
   key: string;
