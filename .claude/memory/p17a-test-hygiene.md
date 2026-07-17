@@ -145,9 +145,18 @@ oxlint clean, id BARE). **Refactor:** extracted the shared `roleSession(page, ro
 (was duplicated in the voting spec) — voting re-run green after the change. traceability keeps its own
 `secretarySession` (not churned).
 
-**bin-(a) scoreboard: 5 ACs Met (062/063 trace, 023/024 voting, 013 actions). Remaining bin-(a):** AC-021 (CallVote
-in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed), decisions 028 (needs Issued-decision
-seed via API), notifications 052 (reuses the vote seed — assert VoteOpened notification deep-links to `/votes/{key}`).
+## ✅ P17b spec #4 — notifications AC-052 RUN + GREEN (2026-07-17). AC-052 → Met.
+
+**`src/Acmp.Web/e2e/p17b-notifications.spec.ts`** (green first-try, 6.2s): secretary opens a vote with the member as
+eligible voter → member's bell shows the unread VoteOpened → clicking the notification navigates straight to
+`/votes/{key}`. **No new seed helper** — reused `apiConfigureVote`/`apiOpenVote`. Harness facts: bell button
+accessible name = `notif.title`/`notif.titleUnread` → `getByRole('button',{name:/Notifications/})`; the popup =
+`getByRole('dialog',{name:'Notifications'})`; each row's `.notif-row-msg` / `.notif-key` button → `navigate(deepLink)`.
+AC-052 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+**bin-(a) scoreboard: 6 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications). Remaining bin-(a):**
+AC-021 (CallVote in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed chain), decisions 028
+(needs Issued-decision seed via API — SoD-3 co-attester = vote closer ≠ issuer).
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
