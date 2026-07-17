@@ -66,17 +66,57 @@ nothing about verdicts. **NOT licence to flip ACs cheaply.** (2) AC-025 = test t
 (`POST /votes/{id}/change` on a closed vote), record tally/chair-action as immutable-by-absence + raise an OQ.
 (3) AC-054/055 = **force a real fire in e2e** (overrode my recommendation).
 
-## Next: P17b-0 triage — BLOCKS all spec work
+## ★ P17b-0 triage DONE (2026-07-17) — results in `~/.claude/plans/shimmying-splashing-newt.md` §top
 
-Read each of the **≤19** candidate ACs' literal Given/When/Then against **both** the API (`src/Acmp.Api/Endpoints/`)
-**and the UI**; bin: closable-by-spec / needs-product-change / needs-interpretation / unbuilt-UI. **The "~19 flips /
-36→55" forecast is RETRACTED** — it was never triaged. **AC-034/043/048/057 are unbuilt UI** and not P17-closable
-despite carrying `→ P17` tags.
+21 candidate ACs binned (each read against literal G/W/T + verified API+UI surface). **11 clean UI flips / 5
+interpretation / 3 product-blocked / 2 jobs.** Full table + per-AC evidence in the plan file.
 
-★ **The D-15 precedent is the hazard.** S6b wrote live E2E and flipped only **AC-035** — because writing it revealed
-the SPA **had no "Mark prepared" button**; the E2E had masked it with a direct HTTP call. Voting / decision-issue /
-MoM-publish / action-verify UI are **unverified**. Expect some ACs to convert to D-15-shape findings. **Stop and ask
-— do not build product inside a testing slice.**
+★★ **HEADLINE D-15 REPEAT (verified) — decision issuance/ratification has NO working UI.** The "Record decision"
+button is a **`disabled` "coming soon" stub** (`MeetingWorkspace.tsx:298-300`), and `api/decisions.ts` has only
+read + supersede (no record/issue mutation). So a committee **cannot issue a decision or ratify a vote through the
+SPA** — both API-only. This blocks **AC-015/016** AND the **F-03** `[BLOCK]` release gate (needs "chairman ratify →
+decision record Issued" in staging). ("Create action" next to it is also disabled, but actions CAN be created from a
+DecisionPage's CreateActionDialog.)
+
+**Operator decisions (all recorded in the plan):**
+1. **BUILD the decision-issuance UI inside P17** (record→issue with chairman override + secretary co-attestation;
+   backend + SoD-3 gate already exist). Turns P17 into testing+feature ⇒ needs design (INV-014: look for a
+   `.dc.html`) + TDD + review. **Fresh session.**
+2. **BUILD the AC-014 SoD-2 warning badge** — render the existing `approvedBySoleAuthor` field (never rendered today)
+   on the minutes view. Small.
+3. **Flip all 5 (c) interpretations to Met-with-note + OQ each.** ⚠ **AC-022 the operator OVERRODE my
+   recommendation** — its audit note MUST foreground the product↔criterion divergence (Fork 1: re-vote routes to
+   `/change`, so the AC's "You have already voted" rejection never occurs in-UI; only the API 409 + DB unique index
+   enforce one-ballot-per-voter). **Never write "the UI rejects a second ballot" — it's false.**
+
+**P17b execution order (fresh sessions):** bin (a) 11 specs (no deps) → 5 (c) audit-row flips + OQs → AC-054/055
+real-fire (R10 gate) → **[feature]** build decision-issue UI + AC-014 badge → their specs (AC-014/015/016).
+**AC-034/043/048/057** carry `→ P17` tags but are unbuilt UI — not P17-closable; rewrite their residuals.
+
+★ **e2e wall-clock measured (P17a PR CI): 5m57s against the 30-min cap** — R2 (budget) largely de-risked;
+API-seeding via `scenario.ts` should suffice, storageState almost certainly unneeded.
+
+## P17b spec authoring STARTED — spec #1 written, ⚠ NOT YET RUN
+
+**`src/Acmp.Web/e2e/p17b-traceability.spec.ts`** (uncommitted, in the working tree on `main`) covers **AC-062 +
+AC-063** (the create round-trip proves both). Compile-clean (`playwright test --list` exit 0) + oxlint clean, real
+selectors from the components + `en.json`. **⚠ authored-pending-live-run** — selectors marked `// VERIFY:` (esp. the
+custom `Select`→option button names) need the first isolated-stack run to confirm. No new seed helper needed (topics
+suffice via `apiCreateTopic`).
+
+**Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
+the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
+**NONE for votes/decisions/actions/MoM/traceability** — the voting (021/023/024), MoM (036/037/038), actions (013),
+decisions (028), notifications (052) clusters each need a seed helper added. Custom `Select` = button (accessible
+name = ariaLabel/placeholder) → `role=option`, per core-loop.spec.
+
+**Why I stopped at spec #1 (not all 11):** an e2e spec is worthless until RUN against the isolated `-p acmpe2e` stack
+— authoring 11 unrun specs = confident-but-unverified output, the exact thing this session existed to remove. The
+run is expensive (~6 min/run × selector-fix iterations) and environment-sensitive (**NEVER `npm run e2e:up`** — wipes
+dev volumes; use `-p acmpe2e` after stopping dev). That + the session cost (~$210) ⇒ the live-run + remaining
+clusters belong to a fresh session with clean context and budget. **Next session: run p17b-traceability against the
+isolated stack, fix `// VERIFY:` selectors, then replicate the pattern for the other clusters (add seed helpers
+first).**
 
 ## Gotchas for P17b/P17c
 
