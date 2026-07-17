@@ -12,6 +12,92 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-17 — P17a (test hygiene) — ★ un-broke a critical Keystone gate that `main` shipped red ★
+
+**Slice:** `feat/p17a-test-hygiene`. **No AC verdict flips** (by design — P17a is hygiene; verdict work is P17b,
+gated behind the P17b-0 triage). Plan: `~/.claude/plans/shimmying-splashing-newt.md` (revision 2, after a
+devil's-advocate pass broke three of revision 1's claims — see §Corrections below).
+
+**★ The find — `main` was `NOT READY` on critical gate `G-PROGRESS`, while the record said the validator was green.**
+Discovered by running the validator as a routine P17a gate, then bisecting rather than assuming:
+
+| commit | AC id cells in `acceptance-audit.md` | `validate_package.py docs` |
+|---|---|---|
+| `5743f88` (Keystone migration) | bare | **OK** |
+| `11c6372` (P16b) | bare | **OK** |
+| `e15cfff` (P16 #141 — the "G-IDS fix") | **bold** | **NOT READY — G-PROGRESS**, 74 coverage gaps |
+| `6984e5a` (HEAD before this slice) | bold | **NOT READY — G-PROGRESS** |
+| this slice (un-bolded) | bare | **OK — 7/7 critical PASS** |
+
+74 = the full AC set: the validator could not see **a single** verdict. **Root cause, read from the validator, not
+inferred:** `G-IDS` **already special-cases this file by name** and never scans its tables for definitions
+(`validate_package.py:428-436` — `audit_view = "acceptance-audit" in pf.rel.lower()`; `for table in pf.tables: if
+audit_view: continue`), so its AC cells can never be duplicate definitions, bold or bare, and `_guess_id_column` is
+**never reached** for it. **`G-PROGRESS` has no such skip** (`:968-988`): it matches each id cell with
+`cell.strip().strip("`")` + `ID_TOKEN_RE.fullmatch` — which strips **backticks only, never asterisks** — so
+`**AC-001**` matched nothing and every AC reported *"not represented in the acceptance audit (coverage gap)"*.
+
+**Two prior claims retracted** (both corrected in place, at their source): (1) this status report's *"Keystone
+validator NOT READY on G-IDS but pre-existing and identical on `main` (74 findings)"* — **`main` was `OK`**;
+(2) the P16 follow-up's *"G-IDS 74→0; package now RESULT: OK (6/6)"* — it turned a green package **red**, and the
+"green" was recorded **without re-running the validator after the change**. The validator is unchanged since
+2026-06-22, so there is no tooling-version excuse. **Why the reasoning failed (the transferable lesson):** the P16
+note cites `_guess_id_column`'s ≥60% rule *accurately* but never checked the **caller** six lines above it, and never
+ran the validator both ways. **Reading a function is not knowing it runs.** The stale `<!-- G-IDS -->` comment that
+asserted "the bold is load-bearing; un-bolding silently re-reds a critical gate" is replaced with the verified
+mechanism, so the next reader cannot re-break it. Ids **MUST stay bare**; do not link them either (no per-AC
+headings ⇒ 74 broken anchors).
+
+**D-19 (flaky `DecisionPage.test.tsx:174`) — fixed, and its register diagnosis was wrong.** The row blamed
+*"non-deterministic decision selection (order-/hash-dependent pick over the mocked decisions list)"*. **There is no
+list and no selection**: `useDecision` is mocked to one fixed object (`:54-56`) and the mutation is a fixed
+`mockResolvedValue` (`:78`). Real mechanism: `loc` (`LocationDisplay`) is **always mounted**, so
+`await screen.findByTestId('loc')` resolved on its first poll without waiting, and `toHaveTextContent` evaluated
+**once** — before `SupersedeDialog.onConfirm`'s **post-await** `navigate()` (`SupersedeDialog.tsx:70-81`) flushed —
+reading the initial route `DECN-2026-008`. Fix = retry the **assertion**, not the element:
+`await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent(...))`. 8/8 consecutive green (an
+intermittent flake is not *proven* gone by 8 passes; the race is structurally removed, and the runs support it).
+★ **The sibling assertions at `:168`/`:188`/`:209`/`:217-220` were deliberately NOT touched** — `mutateAsync` is
+*invoked* synchronously inside `onConfirm`, so an awaited `user.click` guarantees the call happened; only code after
+the handler's own `await` races. The plan had called for "fixing" them; reading the handler disproved that. Register
+row rewritten with the real mechanism (a register that misdiagnoses its own defect is worse than none).
+
+**Live-leg rule relocated to the Definition of Done (operator decision: keep the bar, fix the label).** The rule
+*"an AC is `Met` only once its live real-stack HTTP/UI leg lands"* is cited across this log and the audit as
+**"per G-TRACE"** — a **mis-citation**: G-TRACE is the Keystone *link-completeness* gate (*"every MVP requirement →
+≥1 decision, ≥1 work item, ≥1 test"*, `work-breakdown.md:331`), it already passes, and it says nothing about AC
+verdicts. The rule is now written explicitly in [definition-of-done.md](../execution/definition-of-done.md)
+§Acceptance Criteria (v1.2.0), with the **D-15** rationale (the prepare API was fully proven while the SPA had no
+button — on API evidence alone AC-035 would have read `Met` while the core loop was broken for every user) and the
+honest carve-out that unbuilt-UI gaps must name their real blocker rather than carry a testing-phase tag.
+**The evidence standard is unchanged** — only its home and label. Existing `per G-TRACE` citations stay as written.
+
+**Also:** `AGENTS.md` §Where-you-are was five slices stale (still "Current phase: P12 … next is P13+") → now
+PH-1/PH-2 closed, P14 deferred (DEC-028), ladder = P17→P18→P19 (v1.2.0). `.github/workflows/security.yml`'s header
+claimed every scanner *"lands REPORT-ONLY … without reding it"* while gitleaks (`--exit-code=1`), semgrep
+(`--error`) and trivy-fs (`--exit-code 1`) are all **gating** — corrected to the real per-job state. The surviving
+`→ P14` in the **P7b historical blockquote** ("vote/audit-timeline → P9/P14"), handed to P17 to judge: **`vote` → P9
+delivered**; **`audit-timeline` → P14 was a mis-pointer** (P14 is Tarseem/diagrams; the audit timeline shipped in the
+Audit slice, PR #105 `f32ca31`) — the same typo class as the AC-025 `"crypto hash-chain → P14"` correction, and with
+P14 now deferred it would read as "a shipped capability is deferred forever". **Annotated, not rewritten** (dated
+nested annotation, matching this package's established pattern; the blockquote records what was believed at P7b).
+
+**Gates (exit codes captured explicitly — piping to `grep`/`tail` swallows `$?`):** Keystone validator **OK, 7/7
+critical PASS**; FE `test:cov` **exit 0** (139 files / 1051 tests, per-file ≥95%); `check-i18n` **OK, 1768 keys**;
+`npm run build` **exit 0**; oxlint clean (2 pre-existing `only-export-components` warnings, untouched). No C# changed.
+
+**Next: P17b-0 — the AC triage, which BLOCKS all spec work.** Read each of the ≤19 candidate ACs' literal
+Given/When/Then against **both** the API surface and the UI, and bin each: closable-by-spec / needs-product-change
+(D-15 shape) / needs-interpretation (AC-025 shape) / unbuilt-UI. **The earlier "~19 flips, 36→55" forecast is
+retracted** — it was never triaged. **AC-034/043/048/057 carry `→ P17` tags but are unbuilt UI** and are not
+P17-closable. Operator decisions carried in: **AC-025** = test the ballot leg live (`POST /votes/{id}/change` on a
+closed vote), record tally/chair-action as immutable-by-absence + raise an `OQ-`; **AC-054/055** = force a **real
+fire** in e2e (compose knob with a safe `0 6 * * *` default; the minutely cron lives only in the CI job's `env:` —
+`deploy/.env.example` is the production template — and gated on verifying a no-op sweep emits no `AuditEvent`, since
+every audited write takes the single global `sp_getapplock('acmp-audit-chain')`).
+
+---
+
 ### 2026-07-17 — P16 MERGED (★ complete ★) + P14 deferred indefinitely (DEC-028)
 
 **P16 complete.** PR #141 (B2b+B3+B4) squash-merged to `main` as `e15cfff` with 9/9 checks green — joining

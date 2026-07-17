@@ -15,9 +15,12 @@ banner). **With P14 out, PH-2 is closed** — the only remaining slices are the 
 
 - **P16 COMPLETE + MERGED** — PR #141 squash **`e15cfff`** (B2b+B3+B4), joining #124 (B1) + #126 (B2). See
   [[p16-hardening-b2b-b3-b4]].
-- **PR #142 OPEN** (`docs/dec-028-defer-p14`) — registers the P14 deferral. Docs-only; **needs merge consent**.
-- Keystone validator is **green** now (`RESULT: OK`, 6/6) — it was NOT-READY (G-IDS) for ages; see the G-IDS
-  mechanism in [[p16-hardening-b2b-b3-b4]] (**never un-bold the AC ids in acceptance-audit.md**).
+- **PR #142 MERGED** (`6984e5a`) — registers the P14 deferral.
+- ⚠ **The Keystone claim that used to sit here was FALSE.** It read: *"validator is green (RESULT: OK, 6/6) … never
+  un-bold the AC ids in acceptance-audit.md"*. In fact `main` was **NOT READY on G-PROGRESS** from `e15cfff` until
+  P17a fixed it — **because** the AC ids were bolded. **The ids MUST stay BARE.** Verified history + root cause:
+  [[p17a-test-hygiene]].
+- **P17 is now in flight** — P17a done; next = **P17b-0 AC triage**. See [[p17a-test-hygiene]].
 
 ## What each slice actually is (from the roadmap ladder)
 

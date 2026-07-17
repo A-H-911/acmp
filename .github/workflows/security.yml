@@ -1,9 +1,15 @@
 name: Security
 
-# P16b / C-SUP-01/02, C-SAST-01, C-SEC-02. Supply-chain + SAST + secret scanning. Scanners land REPORT-ONLY
-# (continue-on-error / exit-code 0) so they surface findings on the PR without reding it; each flips to gating
-# once its first run is triaged (the .NET dependency gate already blocks in ci.yml). Skips docs-only changes,
-# in sync with ci.yml.
+# P16b / C-SUP-01/02, C-SAST-01, C-SEC-02. Supply-chain + SAST + secret scanning.
+# Scanners landed report-only at P16b so their first runs could be triaged without reding PRs; all of them have
+# since been triaged and FLIPPED TO GATING (D-21 closed at P16-B4, which also tightened trivy-fs CRITICAL →
+# CRITICAL,HIGH). Current state — do not infer it from this comment alone; the steps are authoritative:
+#   GATING      — secrets (gitleaks --exit-code=1) · sast (semgrep --error) · trivy-fs (--exit-code 1)
+#   REPORT-ONLY — trivy-image (continue-on-error, --exit-code 0: base-OS CVEs only a base bump can fix)
+#   INFORMATIONAL — sbom (CycloneDX artifact)
+# The .NET dependency CVE gate lives in ci.yml (check-vulns.mjs). Skips docs-only changes, in sync with ci.yml.
+# Header corrected 2026-07-17 (P17a) — it previously described every scanner as report-only, contradicting the
+# steps below.
 on:
   push:
     branches: [ main ]

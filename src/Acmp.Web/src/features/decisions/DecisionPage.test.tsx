@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import axe from 'axe-core';
@@ -171,7 +171,10 @@ describe('DecisionPage (P7b)', () => {
     // Content is mirrored into both bilingual columns (en === ar).
     expect(arg.title).toEqual({ en: 'Adopt federated IdP', ar: 'Adopt federated IdP' });
     expect(arg.reason).toEqual({ en: 'Federated pivot', ar: 'Federated pivot' });
-    expect(await screen.findByTestId('loc')).toHaveTextContent('/decisions/DECN-2026-015');
+    // `loc` is always mounted, so findByTestId would resolve on its first poll and toHaveTextContent
+    // would evaluate once — before onConfirm's post-await navigate() flushed (D-19). Retry the
+    // assertion, not the element.
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('/decisions/DECN-2026-015'));
   });
 
   it('includes optional alternatives in the successor body when provided', async () => {
