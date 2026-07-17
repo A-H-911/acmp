@@ -110,7 +110,28 @@ Confirmed harness facts from the live run: custom `Select` trigger's accessible 
 placeholder) → `getByRole('button',{name})`; option = `role=option`, name = option label; POST hits `/api/traceability`
 → 201; `useCreateRelationship.onSuccess` invalidates `['traceability']` so the source panel refetches in place (no
 reload). **Stack management this session: Docker Desktop was OFF; started it, `stop`ped the auto-restarted `acmp` dev
-project, brought up `-p acmpe2e` (~6min build), ran, left e2e stack UP for the next clusters.**
+project, brought up `-p acmpe2e` (~6min build), ran, left e2e stack UP for the clusters.** ★ **CI e2e (workflow_dispatch
+on the branch) = `success` in 6m13s** vs the 30-min cap — R2 fully de-risked, spec #1 Met flip is CI-backed on Linux.
+
+★ **Run playwright from `src/Acmp.Web` with the LOCAL binary** (`./node_modules/.bin/playwright test <spec>` or `npm
+run e2e -- <spec>`). `npx playwright` from the repo root fetches a SEPARATE `playwright@1.61.1` → "two different
+versions of @playwright/test" / "did not expect test.describe() here". Bash cwd drifts between calls — `cd` explicitly.
+
+## ✅ P17b spec #2 — voting cluster RUN + GREEN (2026-07-17). AC-023/024 → Met.
+
+**`src/Acmp.Web/e2e/p17b-voting.spec.ts`** (2 tests, both green, 1.3s+2.0s): **AC-024** (secretary opens a vote 0-cast
+below MinCast → clicks Close in UI → server rejects → vote stays Open + announced error, Fork 2) and **AC-023** (a
+chairman genuinely casts via a 2nd `browser.newContext()`, secretary closes, closed roster renders the ballot
+attributed by name+choice). Added 4 vote seed helpers to `scenario.ts` (`apiConfigureVote`/`apiOpenVote`/
+`apiCastBallot`/`apiCloseVote`). AC-023/024 flipped Partial→Met (evidence cites the spec + live-leg rule; ids BARE;
+validator 7/7). AC-021 (the 3rd voting AC) NOT done — its under-test path is the CallVoteDialog in MeetingWorkspace
+(heavier: meeting in-session + agenda), separate from VotePage.
+
+★★ **VOTE/BALLOT SEED GOTCHA (cost me one iteration):** eligible-voter `UserId` MUST be the **Keycloak sub**, NOT the
+ACMP `member.publicId`. `Ballot.VoterUserId` = the KC sub; `CastBallot`/`Vote.Cast` match the ballot by
+`CurrentActor.Of(user).Sub` = `ICurrentUser.UserId` (the sub) → a `publicId` eligible-voter row makes every cast 409
+Conflict. GET `/api/members` exposes both — use **`member.keycloakUserId`** (added to the `ApiMember` interface) for
+vote eligibility. Also: **Secretary CANNOT cast** (Vote.Cast = Chairman/Member) — AC-023 needs a real chairman bearer.
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but

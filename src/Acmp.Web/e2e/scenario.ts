@@ -11,6 +11,8 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export interface ApiMember {
   publicId: string;
+  /** The Keycloak sub — the identity votes/ballots are keyed by (NOT publicId). */
+  keycloakUserId: string;
   fullName: string;
   role: string;
   isActive: boolean;
@@ -118,6 +120,81 @@ export async function apiAddAgendaItem(
     },
   });
   if (!res.ok()) throw new Error(`[e2e] add agenda item ${res.status()} ${await res.text()}`);
+}
+
+export interface ApiVote {
+  id: string;
+  key: string;
+  status: string;
+}
+
+/** One eligible voter on the configure command (member sub + display-name snapshot). */
+export interface VoteVoter {
+  userId: string;
+  name: string;
+}
+
+/**
+ * Configure a vote via the API (P17b voting cluster). Stays `Configured` until opened. Defaults match the
+ * common case (two options, cast quorum 1, no attendance quorum, no abstain); callers override per-AC.
+ * Vote.Manage — the secretary's bearer suffices. Returns the vote id (for open/cast/close) + key (for the UI).
+ */
+export async function apiConfigureVote(
+  request: APIRequestContext,
+  bearer: string,
+  opts: {
+    topicId: string;
+    eligibleVoters: VoteVoter[];
+    options?: string[];
+    minPresent?: number;
+    minCast?: number;
+    allowAbstain?: boolean;
+    meetingId?: string;
+  },
+): Promise<ApiVote> {
+  const res = await request.post('/api/votes', {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: {
+      topicId: opts.topicId,
+      meetingId: opts.meetingId ?? null,
+      options: opts.options ?? ['Approve', 'Reject'],
+      allowAbstain: opts.allowAbstain ?? false,
+      minPresent: opts.minPresent ?? 0,
+      minCast: opts.minCast ?? 1,
+      eligibleVoters: opts.eligibleVoters,
+    },
+  });
+  if (res.status() !== 201) throw new Error(`[e2e] configure vote ${res.status()} ${await res.text()}`);
+  return res.json();
+}
+
+/** Open a configured vote (Vote.Manage). Locks the configuration; casting becomes possible. */
+export async function apiOpenVote(request: APIRequestContext, bearer: string, voteId: string): Promise<void> {
+  const res = await request.post(`/api/votes/${voteId}/open`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] open vote ${res.status()} ${await res.text()}`);
+}
+
+/**
+ * Cast a ballot as the CURRENT user (Vote.Cast = Chairman/Member — the Secretary manages but does not vote,
+ * so this must run with a voter's bearer). The caster must be one of the vote's eligible voters.
+ */
+export async function apiCastBallot(
+  request: APIRequestContext,
+  bearer: string,
+  voteId: string,
+  choice: string,
+): Promise<void> {
+  const res = await request.post(`/api/votes/${voteId}/cast`, {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: { choice, comment: null },
+  });
+  if (!res.ok()) throw new Error(`[e2e] cast ballot ${res.status()} ${await res.text()}`);
+}
+
+/** Close an open vote (Vote.Manage). Throws server-side if cast count < MinCast (the AC-024 guard). */
+export async function apiCloseVote(request: APIRequestContext, bearer: string, voteId: string): Promise<void> {
+  const res = await request.post(`/api/votes/${voteId}/close`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] close vote ${res.status()} ${await res.text()}`);
 }
 
 /**
