@@ -50,7 +50,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _image.CreateAsync();
-        _container = new MsSqlBuilder().WithImage(_image).Build();
+        _container = new MsSqlBuilder(_image).Build();
         await _container.StartAsync();
 
         // A full-text catalog cannot live in master/tempdb/model (MsSqlBuilder connects to master) — so create

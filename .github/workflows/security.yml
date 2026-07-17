@@ -46,19 +46,34 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Trivy fs + misconfig + secret (gating on CRITICAL — first scan clean, 3 HIGH misconfig deferred)
+      - name: Trivy fs + misconfig + secret (gating on CRITICAL,HIGH)
         # Pinned docker image (like the gitleaks step) instead of trivy-action: the composite action pins a
         # transitive setup-trivy@vX tag that upstream retagged/removed, breaking action resolution. The tag is
         # therefore NOT Dependabot-managed — bump aquasec/trivy manually.
-        # Gates on CRITICAL (--severity also filters the report, so HIGH is not shown here). First triage run
-        # found 0 CRITICAL; the 3 HIGH Dockerfile misconfigs (DS-0002 non-root USER x2, DS-0029) are tracked as
-        # B4 container-hardening work — tighten this gate to HIGH once B4 lands.
+        # B4 container hardening fixed the 3 HIGH Dockerfile misconfigs (DS-0002 non-root USER, DS-0029), so the
+        # gate is tightened CRITICAL -> CRITICAL,HIGH (D-21 closed). --severity also filters the report.
         run: |
           docker run --rm -v "$PWD:/repo" aquasec/trivy:0.72.0 fs /repo \
             --scanners vuln,misconfig,secret \
-            --severity CRITICAL \
+            --severity CRITICAL,HIGH \
             --ignore-unfixed \
             --exit-code 1
+
+  trivy-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the API image
+        run: docker build -f deploy/Dockerfile.backend --target api -t acmp-api:scan .
+      - name: Trivy image scan (report-only — base-OS CVEs are mostly unfixable; W-d lowest-value/highest-cost)
+        # Report-only by design: image scans re-find base-image CVEs that only a base bump (Dependabot docker)
+        # can fix; gating here would red the build on things this PR can't remediate. Scans the API image (the
+        # primary .NET app surface); the web/nginx base is covered by the digest pin + Dependabot.
+        continue-on-error: true
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.72.0 image \
+            --scanners vuln --severity CRITICAL,HIGH --ignore-unfixed --exit-code 0 acmp-api:scan
 
   sbom:
     runs-on: ubuntu-latest

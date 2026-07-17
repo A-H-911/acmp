@@ -10,7 +10,10 @@
 # Restore-layer caching: only the .csproj files are copied before `dotnet restore` (via COPY --parents, which
 # preserves each project's directory structure), so a SOURCE-only change reuses the cached restore layer and
 # only re-publishes. The full source is copied afterwards.
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+#
+# Base images are digest-pinned (C-SUP-01, P16b/B2b) — the tag is kept before @sha256: so Dependabot's docker
+# ecosystem can bump the pair. Digests are multi-arch manifest-list digests (docker buildx imagetools).
+FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:89ce6291bde9acdf59594e79fb8277c6d84c46e4b1f5bf126a4f18766e4bd597 AS build
 WORKDIR /src
 COPY global.json acmp.sln ./
 COPY --parents src/**/*.csproj ./
@@ -23,19 +26,23 @@ RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-rest
  && dotnet publish src/Acmp.Worker/Acmp.Worker.csproj -c Release -o /app/worker --no-restore
 
 # --- API runtime (HTTP; curl for the compose healthcheck) ---
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api
-RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean
+# Runs as the image's built-in non-root `app` user (UID 1654, ships in .NET 8 aspnet images) — C-CON-001 / DS-0002.
+# Kestrel binds 8080 (unprivileged port), so no root/cap_net_bind is needed.
+FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS api
+RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/api ./
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
+USER app
 ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
 
 # --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
 # IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS worker
+FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS worker
 WORKDIR /app
 COPY --from=build /app/worker ./
 ENV DOTNET_ENVIRONMENT=Production
+USER app
 ENTRYPOINT ["dotnet", "Acmp.Worker.dll"]

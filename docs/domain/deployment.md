@@ -278,6 +278,47 @@ secrets:
 - Secret rotation: update the file, `docker compose up -d acmp-api` — no image rebuild needed.
 - **Gitleaks pre-commit hook** and CI scan guard against accidental commits (ADR: `docs/domain/devsecops-plan.md` §4.3).
 
+### 3.4 Encryption — transport, at-rest, backups (C-CRYPTO-01/02/03) — **Operator/P18**
+
+Status: **Partial (Operator/P18)**, not `Met`. One leg — **API↔SQL in transit — is now ON in the bundled stack**;
+the rest are config seams that only an operator action at deploy time makes effective. This mirrors the
+C-AUDIT-04 / ADR-0031 precedent: the in-repo scaffold is done; the control is not claimed until the operator flips it.
+
+**Already effective in-repo (no operator action):**
+- The one sensitive value ACMP *persists* — the Webex OAuth access/refresh tokens — is encrypted at rest with
+  authenticated **AES-GCM** (256-bit key derived from `Webex:TokenEncryptionKey`) by `WebexTokenProtector`,
+  independent of any database- or volume-level encryption.
+- **API/Worker↔SQL is TLS** (`Encrypt=True`, P16-B3). SQL Server auto-generates a self-signed certificate at
+  startup, so this needs **nothing mounted**. Verified in-stack via `sys.dm_exec_connections`: **every**
+  `Core Microsoft SqlClient Data Provider` connection reports `encrypt_option=TRUE` (it was `FALSE` before).
+  ⚠️ **Encrypted ≠ authenticated** — see the C-CRYPTO-01 row.
+
+| Leg | Seam (exists today) | Bundled-stack state | Operator step at P18 |
+|---|---|---|---|
+| **C-CRYPTO-01** API↔SQL in transit | `ConnectionStrings__Acmp` (env). **No code reads or overrides `Encrypt`** — it is pure connection-string config (`SharedKernelExtensions` round-trips it) | **`Encrypt=True;TrustServerCertificate=True`** — traffic is TLS ≥1.2 against SQL Server's **self-signed** cert | **Step B — authenticate the server:** `TrustServerCertificate=False` + mount a CA-issued cert whose CN/SAN matches the `sqlserver` service name. Today's `TrustServerCertificate=True` makes the client accept **any** certificate: that stops **passive sniffing** (T-20) but **not an active MITM**, which is precisely why this row stays `Partial` and not `Met` |
+| **C-CRYPTO-01** API↔MinIO in transit | `Minio__Secure` (env) → `SharedKernelExtensions` `.WithSSL(secure)` | `false` — **plaintext** | `true` **+ a cert in MinIO's `/root/.minio/certs/`**. Unlike SQL Server, **MinIO does not auto-generate one**, so flipping the flag alone breaks every upload/presign. Also move the healthcheck to https |
+| **C-CRYPTO-01** API↔Seq in transit | **Three** endpoints, not one: `OTEL_EXPORTER_OTLP_ENDPOINT` (**api only** — the worker has none) + the Serilog Seq sink `serverUrl` in **both** `Acmp.Api` and `Acmp.Worker` `appsettings.json` | `http://seq:5341/…` — **plaintext** | Cert on Seq, then flip **all three** + the healthcheck. Changing only the OTEL var silently leaves both Serilog sinks in plaintext |
+| **C-CRYPTO-02** SQL at rest (TDE) | — (server feature, not app config) | Off | Enable TDE (master key → server certificate → DEK → `ALTER DATABASE … SET ENCRYPTION ON`). **Not edition-blocked here:** the bundled image runs **Developer edition** (`MSSQL_PID: Developer`, `SERVERPROPERTY('EngineEdition')=3`), which carries the full Enterprise feature set, so TDE *would* work in this stack today. It is deferred for **key custody**: the certificate lives in the `mssql-data` volume, this file's own compose notes tell operators to `down -v` on rebuilds, and a lost certificate makes every backup **permanently unrecoverable**. **Edition only forecloses TDE if the operator picks Express/Web** at P18 (see the OQ-040 warning below) |
+| **C-CRYPTO-02** MinIO at rest (SSE) | — (server feature) | Off | Enable SSE. SSE-S3/SSE-KMS both need a **KES key server** — a new container plus its own key custody and mTLS certs. The most expensive leg: new infrastructure, not a flag |
+| **C-CRYPTO-03** Backup encryption | — (backup tooling) | Plain | Encrypt SQL + MinIO backup media — see §6 Backup and Restore. **Also edition-gated** (below) |
+
+> ⚠️ **OQ-040 silently gates two P1 controls.** Its recommended default is *"start with Express… escalate to
+> Standard if limits bind"*, and it is marked **`Blocking? = No`**. But per Microsoft's SQL Server 2022 editions
+> table, **Express and Web support neither `Transparent data encryption (TDE)` nor `Encryption for backups`**
+> (both are Enterprise/Standard-only). So choosing Express forecloses **C-CRYPTO-02's SQL half *and*
+> C-CRYPTO-03's SQL half** — two P1 controls — as a side effect of a decision recorded as non-blocking. The
+> edition choice at P18 is therefore a **security** decision, not only a capacity one.
+
+**Policy (OQ-024, applied default):** TLS **1.2+** on the public endpoint (1.3 preferred where clients allow);
+TLS 1.0/1.1 disabled (NFR-019). **No mTLS in v1** for internal Compose-network links. No HSM (`[L3-skip]`) —
+key custody is the operator's (§3.3 secret handling).
+
+**Why the rest is not in-repo:** MinIO SSE needs a key server; MinIO and Seq TLS need certificates *they* serve
+(neither self-generates); TDE needs a certificate whose **backup is an irreducible operator obligation**; backup
+encryption needs backup tooling and a qualifying edition. Turning those on in the bundled stack would break the
+local/e2e loop while proving nothing about production. SQL transit was the one leg that needed **no** certificate
+and **no** operator input — so it is on, and the honest remainder is Step B plus the rows above.
+
 ---
 
 ## 4. Health and Readiness Endpoints

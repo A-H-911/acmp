@@ -111,7 +111,8 @@ public static class TopicEndpoints
             var dto = await sender.Send(new AttachFileToTopicCommand(id, file.FileName,
                 file.ContentType, file.Length, stream), ct);
             return Results.Created($"/api/topics/{id}/attachments/{dto.Id}", dto);
-        }).DisableAntiforgery();
+        }).DisableAntiforgery()
+          .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Upload);
 
         return app;
     }

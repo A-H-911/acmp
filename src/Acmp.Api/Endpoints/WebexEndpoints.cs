@@ -23,7 +23,8 @@ public static class WebexEndpoints
     {
         app.MapPost("/api/webex/webhook", Handle)
             .WithTags("Webex")
-            .AddEndpointFilter<WebexSignatureFilter>();
+            .AddEndpointFilter<WebexSignatureFilter>()
+            .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Webhook);
 
         // OAuth consent flow for the secretary meeting-create token (WS3b). These are top-level browser
         // navigations (redirect to Webex, then Webex's redirect back), so they can't carry a Keycloak bearer —

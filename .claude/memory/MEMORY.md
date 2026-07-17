@@ -1,6 +1,7 @@
 # Memory Index — ACMP
 
-- [P16b CI security gates](p16b-ci-security-gates.md) — ★MERGE-READY★ PR #126 OPEN, all 8 checks GREEN (`5148026`): dep-CVE gate + Gitleaks/Semgrep/Trivy ALL now GATING & clean (semgrep FPs → bare nosemgrep; trivy → pinned `aquasec/trivy:0.72.0` docker, gate CRITICAL; 3 HIGH Dockerfile misconfigs → D-21/B4). Needs "merge without review" consent, then B2b.
+- [P16 B2b+B3+B4 hardening](p16-hardening-b2b-b3-b4.md) — ★RESUME HERE★ one-PR branch `feat/P16-hardening-b2b-b3-b4`, 7 commits, all local gates GREEN (1451 tests, 99.65% cov, trivy/format/vulns clean). ★ **CSP frontend refactor CANCELLED — proven unnecessary** (CSP doesn't govern the CSSOM; react-dom writes styles via CSSOM ⇒ risk R1 gone) → logged as D-22. Caught 2 self-inflicted bugs by verifying: Testcontainers 3.10 can't parse a digest `FROM` (→4.13) + nginx conf.d tmpfs needs `uid=101` or nginx silently serves nothing. REMAINING = e2e/live CSP sweep + drag, progress-log/status-report, PR (no self-merge).
+- [P16b CI security gates](p16b-ci-security-gates.md) — ★MERGED★ PR #126 squash-merged to main (`11c6372`): dep-CVE gate + Gitleaks/Semgrep/Trivy ALL gating & clean; 3 HIGH Dockerfile misconfigs → D-21 (closed in B4).
 - [P16a audit & vote crypto](p16a-audit-vote-crypto.md) — Security Batch 1: D-13 per-ballot chaining + D-16 nightly verify + DB-perm immutability (ADR-0030/0031); suite = `--filter Category=Security`.
 - [P6a meeting-IA plan](p6a-meeting-ia-plan.md) — DONE & MERGED (PR #53, `ef074a8`).
 - [P6b notifications-IA plan](p6b-notifications-ia-plan.md) — DONE & shipped; popover+inbox reconciled to ACMP.dc.html; type=Category/key=derived (no migration).

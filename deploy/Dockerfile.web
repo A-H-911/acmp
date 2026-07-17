@@ -1,5 +1,6 @@
 # Multi-stage build for the React SPA served by nginx (docs/domain/deployment.md).
-FROM node:22-alpine AS build
+# Base images digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
+FROM node:22-alpine@sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2 AS build
 WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./
 RUN npm ci
@@ -15,7 +16,16 @@ ENV VITE_OIDC_AUTHORITY=$VITE_OIDC_AUTHORITY \
     VITE_OIDC_SCOPE=$VITE_OIDC_SCOPE
 RUN npm run build
 
-FROM nginx:alpine AS final
+# Runtime = nginx-unprivileged (C-CON-001 / DS-0002): runs as non-root UID 101 and listens on 8080
+# (unprivileged port). Same official-nginx envsubst entrypoint (/docker-entrypoint.d) so the
+# ${KEYCLOAK_ORIGIN} template substitution is unchanged; only the listen port moves 80 -> 8080
+# (default.conf.template + compose port map + healthcheck follow).
+FROM nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0 AS final
+# The base image already runs as UID 101, but COPY into /usr/share/nginx/html + /etc/nginx/templates needs
+# write access, so briefly switch to root for the copies, then drop back to the non-root user for runtime.
+# The explicit `USER 101` also makes the non-root guarantee visible to the Trivy Dockerfile scan (DS-0002),
+# which reads the Dockerfile text and cannot see the base image's baked-in USER.
+USER root
 # The CSP needs the Keycloak origin; it is templated at container start (nginx envsubst) so each
 # environment supplies its own origin with no rebuild. NGINX_ENVSUBST_FILTER restricts substitution
 # to KEYCLOAK_ORIGIN only, preserving nginx runtime vars ($host, $uri, $scheme).
@@ -23,4 +33,5 @@ ENV KEYCLOAK_ORIGIN="http://keycloak.localhost:8085" \
     NGINX_ENVSUBST_FILTER="KEYCLOAK_ORIGIN"
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /web/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
+USER 101

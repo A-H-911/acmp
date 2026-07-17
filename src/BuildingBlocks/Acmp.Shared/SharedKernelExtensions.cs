@@ -108,6 +108,8 @@ public static class SharedKernelExtensions
                 .WithRegion("us-east-1")
                 .Build()));
         services.AddScoped<IFileStore, MinioFileStore>();
+        // C-FILE-01 magic-byte upload inspection (stateless; the signature trie is built once).
+        services.AddSingleton<IFileContentInspector, MimeFileContentInspector>();
 
         return services;
     }

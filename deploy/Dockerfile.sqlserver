@@ -3,13 +3,16 @@
 # (SERVERPROPERTY('IsFullTextInstalled') = 0); global search needs it, so we install the
 # mssql-server-fts package from the Ubuntu 22.04 Microsoft repo. The Arabic word-breaker
 # (LCID 1025) rides in with it (OQ-034 spike, ph0-validation §7).
-FROM mcr.microsoft.com/mssql/server:2022-latest
+#
+# Base digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
+FROM mcr.microsoft.com/mssql/server:2022-latest@sha256:fc010e5c955453eabc4a24d2f304103e26176fe89796b564f039c45e77a8ebc1
 USER root
+# --no-install-recommends keeps the layer minimal (C-CON-002 / DS-0029) — no suggested extras.
 RUN apt-get update \
- && apt-get install -y curl gnupg2 \
+ && apt-get install -y --no-install-recommends curl gnupg2 \
  && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg \
  && curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list -o /etc/apt/sources.list.d/mssql-server-2022.list \
  && apt-get update \
- && apt-get install -y mssql-server-fts \
+ && apt-get install -y --no-install-recommends mssql-server-fts \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 USER mssql

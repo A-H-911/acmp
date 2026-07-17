@@ -13,7 +13,9 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSerilog((services, config) => config
     .ReadFrom.Configuration(builder.Configuration)
     .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+    .Enrich.FromLogContext()
+    // C-PRIV-01/02: mask sensitive structured properties (emails/tokens/secrets/signed URLs) before any sink.
+    .Enrich.With(new Acmp.Shared.Infrastructure.Observability.SensitiveDataMaskingEnricher()));
 
 builder.Services.AddAcmpModules(builder.Configuration);
 // ponytail: no SystemCurrentUser override — every worker job either opts out of the MediatR auth check

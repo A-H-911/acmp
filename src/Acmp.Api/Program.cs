@@ -15,7 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+    .Enrich.FromLogContext()
+    // C-PRIV-01/02: mask sensitive structured properties (emails/tokens/secrets/signed URLs) before any sink.
+    .Enrich.With(new Acmp.Shared.Infrastructure.Observability.SensitiveDataMaskingEnricher()));
 
 // Shared kernel + all modules + Webex adapter + MediatR, composed identically to the worker via the shared
 // composition root (Acmp.Bootstrap, ADR-0024) so both hosts resolve the same service graph.
@@ -24,6 +26,10 @@ builder.Services.AddAcmpModules(builder.Configuration);
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/domain/permission-role-matrix.md matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
+
+// P16-B4: proportional rate limiting (C-API-03) + read-only-FS-safe DataProtection key-ring (C-CON-003).
+builder.Services.AddAcmpRateLimiting(builder.Configuration);
+builder.Services.AddAcmpDataProtection(builder.Configuration);
 
 // Enums on the wire as their string names (stable, localizable in the SPA; matches the read DTOs).
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -64,6 +70,9 @@ app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// After auth so the rate-limiter can partition by the caller's `sub` (see HardeningExtensions).
+app.UseRateLimiter();
 
 // Swagger in non-production only (OQ-019).
 if (!app.Environment.IsProduction())

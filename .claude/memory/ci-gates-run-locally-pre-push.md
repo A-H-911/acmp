@@ -20,3 +20,11 @@ file lacked the BOM). Both were avoidable.
 **How to apply:** before every `git push`, from repo root run:
 `dotnet build acmp.sln -c Release` → `dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings` → `node scripts/check-coverage.mjs .` (expect EXIT=0) → `dotnet format acmp.sln --verify-no-changes`.
 After creating any file with `Write`, run `dotnet format acmp.sln` once to apply the BOM. See [[coverage-and-e2e-mandate]], [[p9-voting-plan]].
+
+**⚠ Format the SOLUTION, never a project — scoping the check is how this bites a THIRD time (P16-B4, PR #141).**
+`dotnet format <one>.csproj --verify-no-changes` exited 0 while CI's `dotnet format acmp.sln --verify-no-changes`
+exited 2 with **7 `error CHARSET`** files. Reason: the scoped run only checks that project, so BOM-less files added
+by *earlier commits on the same branch* (other projects) are never looked at — the gate passes locally and reds in
+CI. Always `acmp.sln`. Two more traps seen the same session: **`--nologo` is NOT a valid `dotnet format` option**
+(it prints help + exits 1, which reads like a real failure), and `dotnet format ... | tail` **swallows the exit
+code** — redirect to a file and echo `$?` instead, or a failure looks green.

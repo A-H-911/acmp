@@ -49,7 +49,13 @@ public class MeetingRecordingApiTests
     private static MultipartFormDataContent VideoForm(string contentType = "video/mp4", string fileName = "meeting.mp4")
     {
         var form = new MultipartFormDataContent();
-        var file = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02, 0x03 });
+        // A real ISO-BMFF "ftyp" box so the C-FILE-01 magic-byte sniff accepts it as genuine video/mp4 content.
+        var file = new ByteArrayContent(new byte[]
+        {
+            0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D,
+            0x00, 0x00, 0x02, 0x00, 0x69, 0x73, 0x6F, 0x6D, 0x69, 0x73, 0x6F, 0x32,
+            0x61, 0x76, 0x63, 0x31, 0x6D, 0x70, 0x34, 0x31,
+        });
         file.Headers.ContentType = new MediaTypeHeaderValue(contentType);
         form.Add(file, "file", fileName); // field name must match the endpoint's IFormFile parameter ("file")
         return form;
@@ -123,6 +129,22 @@ public class MeetingRecordingApiTests
         var detail = await (await sec.GetAsync($"/api/meetings/{key}")).Content.ReadFromJsonAsync<MeetingRecordingSlice>();
         detail!.Recording!.Source.Should().Be("Uploaded");
         detail.Recording.FileName.Should().Be("board.mp4");
+    }
+
+    [Fact] // C-FILE-01: an allowed content type whose actual bytes don't match it is rejected by the magic-byte sniff
+    public async Task Content_that_does_not_match_the_declared_type_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var app = WithFakeStore(factory);
+        var key = await SeedMeetingAsync(app);
+
+        var form = new MultipartFormDataContent();
+        var png = new ByteArrayContent(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }); // PNG bytes...
+        png.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");                                // ...labelled mp4
+        form.Add(png, "file", "fake.mp4");
+
+        var resp = await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", form);
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     private sealed record UrlResponse(string Url);

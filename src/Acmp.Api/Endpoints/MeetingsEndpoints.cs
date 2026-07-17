@@ -40,6 +40,7 @@ public static class MeetingsEndpoints
             var dto = await sender.Send(new UploadRecordingCommand(key, file.FileName, file.ContentType, file.Length, stream), ct);
             return Results.Ok(dto);
         }).RequireAuthorization(Policies.MinutesCapture).DisableAntiforgery()
+          .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Upload)
           // Recordings are large video: raise this endpoint's Kestrel body + multipart limits above the
           // 28.6 MB / 128 MB defaults (nginx client_max_body_size is raised in parallel). Matches the app cap.
           .WithMetadata(

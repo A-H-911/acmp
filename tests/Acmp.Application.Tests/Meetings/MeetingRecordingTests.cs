@@ -22,6 +22,15 @@ public class MeetingRecordingTests
     private static readonly IOptions<MeetingRecordingOptions> Options =
         Microsoft.Extensions.Options.Options.Create(new MeetingRecordingOptions());
 
+    // These tests exercise the upload/store/audit logic, not content sniffing (C-FILE-01), so the inspector
+    // is a pass-through; the magic-byte behaviour is covered by MimeFileContentInspectorTests.
+    private static readonly IFileContentInspector PassInspector = new PassThroughInspector();
+
+    private sealed class PassThroughInspector : IFileContentInspector
+    {
+        public bool ContentMatchesDeclared(Stream content, string declaredContentType) => true;
+    }
+
     [Fact]
     public void Validator_rejects_oversize_disallowed_type_and_empty_name()
     {
@@ -46,7 +55,7 @@ public class MeetingRecordingTests
         var audit = Substitute.For<IAuditSink>();
 
         var content = new MemoryStream(Encoding.UTF8.GetBytes("mp4-bytes"));
-        var dto = await new UploadRecordingHandler(db, files, user, audit)
+        var dto = await new UploadRecordingHandler(db, files, user, audit, PassInspector)
             .Handle(new UploadRecordingCommand(meeting.Key, "board.mp4", "video/mp4", 9, content), CancellationToken.None);
 
         dto.Source.Should().Be("Uploaded");
@@ -73,7 +82,7 @@ public class MeetingRecordingTests
             .Returns("acmp-recordings/new-key");
         var audit = Substitute.For<IAuditSink>();
 
-        await new UploadRecordingHandler(db, files, user, audit)
+        await new UploadRecordingHandler(db, files, user, audit, PassInspector)
             .Handle(new UploadRecordingCommand(meeting.Key, "new.mp4", "video/mp4", 9, Stream.Null), CancellationToken.None);
 
         await files.Received(1).DeleteAsync("acmp-recordings", "acmp-recordings/old-key", Arg.Any<CancellationToken>());
@@ -83,7 +92,7 @@ public class MeetingRecordingTests
     public async Task Unknown_meeting_throws()
     {
         var (db, user) = NewDb();
-        var handler = new UploadRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>());
+        var handler = new UploadRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>(), PassInspector);
         await FluentActions.Awaiting(() => handler.Handle(
                 new UploadRecordingCommand("MTG-9999-999", "x.mp4", "video/mp4", 1, Stream.Null), CancellationToken.None))
             .Should().ThrowAsync<KeyNotFoundException>();
@@ -103,7 +112,7 @@ public class MeetingRecordingTests
         files.DeleteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("storage down")));
 
-        var dto = await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>())
+        var dto = await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector)
             .Handle(new UploadRecordingCommand(meeting.Key, "new.mp4", "video/mp4", 9, Stream.Null), CancellationToken.None);
 
         dto.FileName.Should().Be("new.mp4"); // upload succeeded despite the cleanup failure
@@ -232,7 +241,7 @@ public class MeetingRecordingTests
         files.UploadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(ci => Task.FromResult($"{ci.ArgAt<string>(0)}/{ci.ArgAt<string>(1)}"));
 
-        await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>())
+        await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector)
             .Handle(new UploadRecordingCommand(meeting.Key, "clip.any", contentType, 3, Stream.Null), CancellationToken.None);
 
         (await db.Meetings.SingleAsync(m => m.Key == meeting.Key)).RecordingObjectKey.Should().EndWith(ext);
