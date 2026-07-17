@@ -1,7 +1,7 @@
 ---
 artifact: acceptance-audit
 status: active
-version: v1.1
+version: v1.2
 updated: 2026-07-17
 ---
 
@@ -748,7 +748,7 @@ A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate 
 | **AC-022** | Voting | Partial | VoteTests (second cast throws) + VoteHandlerTests (double-vote audited denial `Decisions.BallotDenied`) + VotesApiTests (2nd cast → 409) | P9a: one ballot/voter — first ballot unchanged, denial audited, DB unique-index backstop. Live → P17 |
 | **AC-023** | Voting | Partial | VoteHandlerTests + VotesApiTests (GetVoteByKey returns attributed ballots, no masking) | P9a: ballots attributed by name in the detail DTO + aggregate tally. Live Auditor view → P17 |
 | **AC-024** | Voting | Partial | VoteTests (close cast-quorum guard) + VoteHandlerTests + VotesApiTests (close-without-quorum → 409, stays Open) | P9a: "Quorum not met: {cast} of {MinCast}"; vote stays Open. Live → P17 |
-| **AC-025** | Voting | Partial | VoteTests (no mutators post-Close; re-transition throws) + VotesApiTests (cast-after-close → 409) | P9a: immutable after Close (frozen tally/ballots); crypto hash-chain → P14. Live → P17 |
+| **AC-025** | Voting | Partial | VoteTests (no mutators post-Close; re-transition throws) + VotesApiTests (cast-after-close → 409) | P9a: immutable after Close (frozen tally/ballots). Crypto hash-chain — **delivered in P16a**, not deferred: per-ballot SHA-256 chain sealed at `Vote.Close` + tally recompute (`BallotChain`, ADR-0030, closes D-13). *(This note previously read "→ P14", a stale pointer — P14 is Tarseem/diagrams and never carried this work; corrected 2026-07-17 when P14 was deferred via DEC-028, which would otherwise have implied a shipped control was deferred indefinitely.)* **Verdict unchanged — still Partial**: the residual is the live leg → P17 |
 | **AC-026** | Voting | Partial | VoteTests (forward-only; Ratify only from Closed) | P9a: Configured→Open→Closed→Ratified strictly forward-only. Live → P17 |
 | **AC-027** | Decisions | Partial | DecisionTests (no-mutator / re-issue + re-supersede throw) + DecisionHandlerTests + DecisionsApiTests (issue→Issued) + DecisionPage.test (read-only detail, no edit surface) | Domain immutability + issue path proven; P7b renders the read-only detail (no edit affordance); live HTTP/UI confirmation → P17 (G-TRACE) |
 | **AC-028** | Decisions | Partial | DecisionTests (Supersede back-link) + DecisionHandlerTests (successor Issued, prior Superseded, both readable, prior unchanged) + DecisionsApiTests (supersede 201 + prior back-link) + DecisionPage.test (superseded badge/banner + supersede dialog → POST /supersede) | Both readable + prior unchanged proven; P7b adds the supersede dialog + superseded-state UI; live HTTP/UI → P17 (G-TRACE) |

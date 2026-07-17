@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.9.0
-updated: 2026-07-16
+version: 1.10.0
+updated: 2026-07-17
 owner: lead-secretary
 ---
 
@@ -27,7 +27,7 @@ The durable index of work that is **known-not-done**: intentionally deferred fea
 | D-08 | Notification user preferences (per-user per-event) | Feature-deferral | All-or-nothing per event type | Phase 2 | Phase 2 | Open |
 | D-09 | File-attachment storage sizing / ops config | Ops-config | `IFileStore` backed by MinIO; volume sizing at deploy | Ops | Deploy-time configuration | Open |
 | D-10 | Bulk topic operations (defer multiple, reassign owner) | Feature-deferral | One at a time | Phase 3 | Phase 3 | Open |
-| D-11 | Tarseem diagram render sidecar (behind `IDiagramRenderer`) + Diagrams surface | Feature-deferral | Diagrams authored externally and attached as files | Phase 2 | P14 kickoff (Tarseem container build validated) | Open |
+| D-11 | Tarseem diagram render sidecar (behind `IDiagramRenderer`) + Diagrams surface. **Decision 2026-07-17 (DEC-028): P14 — the slice that would have built this — is deferred INDEFINITELY and removed from the active ladder.** The seam is not built; ACMP ships with no in-product diagram renderer. Safe because the capability is additive and the Phase-1 manual path (below) already works, so nothing depends on it — PH-2 is otherwise complete and P17→P19 proceed without it. No ADR (a scheduling decision; OOS-02 "no in-app diagram engine" is unchanged) — same treatment as the D-05 / P15 deferral. | Feature-deferral | Diagrams authored externally and attached as files | **Unscheduled** (was Phase 2 / P14) | **Operator re-opens P14 by explicit instruction (DEC-028).** The former "P14 kickoff (Tarseem container build validated)" trigger **no longer fires** — P14 is not in the ladder | Open |
 | D-12 | Email notification channel via `INotificationChannel` | Feature-deferral | In-app notification center only (no email in v1) | Phase 3 | SMTP relay available (see [dependency register](../requirements/dependency-register.md)) | Open |
 | D-13 | Per-ballot crypto hash chaining (vote *state-change* chain shipped in the P9-review slice, PR #76; individual ballots covered transitively, not individually chained) | Tech-debt | Hash-chained vote state-change audit rows | Phase 2 | P16 security-hardening slice | **✅ Done 2026-07-16 (P16a, ADR-0030)** — per-ballot SHA-256 chain sealed at `Vote.Close` over all `vote_ballots` rows (`BallotChain` / `Vote.VerifyBallotChain`) + a tally-vs-ballots recompute; verified nightly by `IIntegrityVerifier` (C-INS-02). Legacy pre-P16 closes are unsealed/skipped (no backfill — proportional). Tests: `VoteBallotChainTests`, `VoteChainIntegrityCheckTests`. |
 | D-14 | Webex per-user DM cards, meeting auto-invitations, and email→member attendance auto-populate | Feature-deferral | P13 ships **space** delivery (committee Webex space), meeting auto-create without invitees, and recording-ready webhook; attendance stays manual | Phase 2/3 | `ICommitteeDirectory` exposes member email (a Membership seam extension) — email is persisted but not projected today | Open |
