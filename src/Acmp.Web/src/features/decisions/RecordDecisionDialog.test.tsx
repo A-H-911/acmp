@@ -82,16 +82,16 @@ describe('RecordDecisionDialog (P17b, W12)', () => {
     });
   });
 
-  it('surfaces a 403 (SoD-3: chair was the vote closer) inline and does not navigate', async () => {
-    issue.mockRejectedValueOnce(
-      new ApiError(403, { title: 'The chairman issuing a vote-coupled decision cannot be the vote’s sole counter.' }),
-    );
+  it('surfaces a 403 (SoD-3: chair was the vote closer) inline with the segregation-of-duties reason and does not navigate', async () => {
+    // The server returns a generic "Forbidden" title for a 403 (GlobalExceptionHandler); the dialog maps
+    // the issue 403 to the specific SoD-3 reason, since that is the only 403 this chairman-gated call yields.
+    issue.mockRejectedValueOnce(new ApiError(403, { title: 'Forbidden' }));
     const user = userEvent.setup();
     setup();
     await fillRequired(user);
     await user.click(screen.getByRole('button', { name: 'Record & issue' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('cannot be the vote');
+    expect(await screen.findByRole('alert')).toHaveTextContent('segregation of duties');
     expect(nav).not.toHaveBeenCalled();
   });
 

@@ -124,7 +124,15 @@ export function RecordDecisionDialog({ open, onClose, source }: Props) {
       onClose();
       navigate(`/decisions/${recorded.key}`);
     } catch (err) {
-      setSubmitError(err instanceof ApiError ? err.problem?.title ?? t('decisions.record.error') : t('decisions.record.error'));
+      // The dialog is chairman-gated and the vote is Closed by the time we issue, so the only 403 the
+      // issue call returns is the SoD-3 co-attestation denial (chair was the vote's counter). The server
+      // maps it to a generic "Forbidden" title (GlobalExceptionHandler), so give the real reason here.
+      // ponytail: 403 == SoD-3 for this endpoint+role; a plain title fallback covers everything else (409, etc.).
+      if (err instanceof ApiError) {
+        setSubmitError(err.status === 403 ? t('decisions.record.sod3Denied') : err.problem?.title ?? t('decisions.record.error'));
+      } else {
+        setSubmitError(t('decisions.record.error'));
+      }
     }
   }
 

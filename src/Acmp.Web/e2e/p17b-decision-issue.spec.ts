@@ -76,7 +76,9 @@ test.describe('P17b — record → issue decision (AC-015/016, F-03)', () => {
         dialog.getByRole('button', { name: 'Record & issue' }).click(),
       ]);
       expect(issueRes.status()).toBe(403);
-      await expect(dialog.getByRole('alert')).toContainText('cannot be the vote');
+      // The 403 is surfaced inline with the segregation-of-duties reason (the dialog maps the server's
+      // generic "Forbidden" 403 to the specific SoD-3 message — the only 403 this chairman call yields).
+      await expect(dialog.getByRole('alert')).toContainText('segregation of duties');
 
       // The vote was NOT ratified — the denied issue did not transition it.
       const after = await page.request.get(`/api/votes/${vote.key}`, { headers: { Authorization: chairBearer } });
