@@ -290,6 +290,35 @@ export async function apiCloseVote(request: APIRequestContext, bearer: string, v
   if (!res.ok()) throw new Error(`[e2e] close vote ${res.status()} ${await res.text()}`);
 }
 
+/** Publish a meeting's agenda (flips its topics to Scheduled + notifies) — a prerequisite of starting. */
+export async function apiPublishAgenda(request: APIRequestContext, bearer: string, meetingId: string): Promise<void> {
+  const res = await request.post(`/api/meetings/${meetingId}/agenda/publish`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] publish agenda ${res.status()} ${await res.text()}`);
+}
+
+/** Start a meeting (→ in-session). Its agenda must be published first. */
+export async function apiStartMeeting(request: APIRequestContext, bearer: string, meetingId: string): Promise<void> {
+  const res = await request.post(`/api/meetings/${meetingId}/start`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] start meeting ${res.status()} ${await res.text()}`);
+}
+
+/**
+ * Mark a member Present for a meeting. `userId` is the member's publicId (the attendance identity); the
+ * present-eligible count that gates a meeting-linked vote's open counts Present + IsVotingEligible rows.
+ */
+export async function apiMarkAttendance(
+  request: APIRequestContext,
+  bearer: string,
+  meetingId: string,
+  opts: { userId: string; name: string; role: string; isVotingEligible: boolean },
+): Promise<void> {
+  const res = await request.post(`/api/meetings/${meetingId}/attendance`, {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: { userId: opts.userId, name: opts.name, role: opts.role, status: 'Present', isVotingEligible: opts.isVotingEligible },
+  });
+  if (!res.ok()) throw new Error(`[e2e] mark attendance ${res.status()} ${await res.text()}`);
+}
+
 /**
  * Trigger a native HTML5 drag→drop by dispatching the events directly. The app's drag handlers
  * store state in React refs/state on `dragstart` and read it on `drop` (no dataTransfer payload),

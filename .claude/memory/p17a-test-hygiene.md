@@ -171,10 +171,24 @@ enabled but UN-clickable (`.click()` timed out). Fix: `await page.setViewportSiz
 before opening a tall dialog. The small dialogs (trace/action/vote) didn't hit this. Diagnosis path: `toHaveValue`
 proved the fields filled (ruled out validate), then logging the button `boundingBox` showed y=885 > 720.
 
-**bin-(a) scoreboard: 7 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications, 028 decisions).
-Remaining bin-(a):** AC-021 (CallVote in MeetingWorkspace — heavier), MoM 036/037/038 (needs Published-MoM seed
-chain). Seed helpers now in scenario.ts: topic/meeting/agenda + vote(configure/open/cast/close) + action(create/
-start/complete) + decision(record/issue). Shared `roleSession` in apiHelpers.ts.
+## ✅ P17b spec #6 — meeting-workspace vote AC-021 RUN + GREEN (2026-07-17). AC-021 → Met.
+
+**`src/Acmp.Web/e2e/p17b-meeting-vote.spec.ts`** (green FIRST-TRY, 4.3s — the heaviest cluster: 3 contexts, 8 seed
+steps, 2 UI surfaces). Secretary calls a vote from the in-session MeetingWorkspace CallVoteDialog → configures →
+opens on the vote page → config locks + roster = exactly the 2 voting-eligible members. Seed helpers added:
+`apiPublishAgenda`/`apiStartMeeting`/`apiMarkAttendance`. **Key facts:** CallVoteDialog only CONFIGURES (Configured
+state), the OPEN happens on VotePage's "Open voting"; the workspace `/meetings/{key}/notes` auto-activates the first
+Pending item (no manual activate); voting-eligible roles = **Chairman + Member** (`DefaultVotingEligibility`, Secretary
+NOT eligible); a meeting-LINKED vote's open enforces MinPresent against live attendance (count of Present +
+IsVotingEligible rows, self-contained in Meetings) → must mark voters Present first; agenda must be **published before
+start**. Used the tall-viewport fix again. AC-021 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+**bin-(a) scoreboard: 8 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications, 028 decisions, 021
+meeting-vote).** Seed-helper library in scenario.ts now covers: topic(create/prepared) + meeting(schedule/agenda/
+publish/start/attendance) + vote(configure/open/cast/close) + action(create/start/complete) + decision(record/issue).
+Shared `roleSession` in apiHelpers.ts. **Remaining bin-(a): MoM 036/037/038** (needs a Published-MoM seed chain:
+meeting→minutes draft→approve→publish — no helper yet). Then (c) flips (012/022/025/026/027)+OQs, jobs (054/055
+real-fire), and the [fresh-session] decision-issue UI build (F-03).
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
