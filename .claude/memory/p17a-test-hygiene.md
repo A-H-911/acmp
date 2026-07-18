@@ -1,13 +1,37 @@
 ---
 name: p17a-test-hygiene
-description: "★START HERE★ P17 in flight. P17a hygiene DONE on feat/p17a-test-hygiene (incl. un-breaking Keystone G-PROGRESS, red on main since e15cfff). Next = P17b-0 AC triage, which BLOCKS all spec work."
+description: "★START HERE★ P17b COMPLETE (2026-07-18). Decision-issuance UI shipped on feat/decision-issue-ui → AC-014/015/016 Met, F-03 leg landed; 21 ACs Met across P17b total. Next ladder = P18 (deployment) → P19 (release audit). P17a hygiene + the 18-AC live-leg slice (PR #144) already merged."
 metadata: 
   node_type: memory
   type: project
   originSessionId: 6930f94b-a23e-40c1-9edb-0f39c09dd244
 ---
 
-# P17 — Testing hardening (in flight, 2026-07-17)
+# ★ P17b COMPLETE (2026-07-18) — decision-issuance UI, the final P17b slice
+
+On `feat/decision-issue-ui` (off `main` after PR #144). The one D-15-shape product gap the triage flagged is closed:
+the record→issue decision flow now exists in the SPA (was a disabled stub). **FE-only** (backend was complete).
+
+- **New:** `useRecordDecision`/`useIssueDecision` (api/decisions.ts); `features/decisions/RecordDecisionDialog.tsx` —
+  chairman-gated, launched from the `MeetingWorkspace` agenda item; couples the item's Closed vote via
+  `useVotesRegister({status:'Closed'})` filtered by `topicId+meetingId` (⚠ **AgendaItem has NO voteId and there is
+  NO vote-by-topic endpoint** — client-filter the register); **records once holding the Draft** so a failed issue
+  (403/409) never re-records a duplicate; surfaces the SoD-3 403 inline (D-15 show-and-enforce). Reuses
+  `ConditionsEditor` (exported from SupersedeDialog). `MeetingMinutes` renders `approvedBySoleAuthor` as a warn badge (AC-014).
+- **Live specs:** `p17b-decision-issue.spec.ts` (AC-015 chair-closes→403 inline; AC-016 secretary-closes→chair issues
+  w/ override→Issued + vote Ratified = **F-03 leg**), `p17b-sole-author.spec.ts` (AC-014 badge).
+  ⚠ **Specs use a NON-follow-up outcome (Rejected)** so the SoD-3 gate is reached, NOT shadowed by the AC-029 409
+  (gate order in IssueDecision.cs: **AC-029 → vote-coupling → SoD-3**). A follow-up outcome (Approved etc.) needs a seeded downstream link.
+- **★ `ChairOverride` is an independent flag** (true ⇒ justification required + recorded); it is NOT required to
+  ratify a vote. SoD-3 (chair ≠ vote-closer) is the separate gate. AC-016 exercises the override leg for coverage.
+- Reconciliation = **OQ-058** (one merged dialog vs. the design's two surfaces; design-only create-form fields dropped).
+- Gates green: FE test:cov 140 files/1059 tests, decisions.ts 100%, i18n 1786, build/oxlint clean, **Keystone 7/7**. No C# changed.
+- **F-03 stays ☐** (P19 full-loop staging sign-off) but its last missing evidence now exists. **Remaining ladder: P18 → P19.**
+- ⚠ e2e run = isolated `-p acmpe2e` ONLY (never `npm run e2e:up`); the live AC-014/015/016 legs are proven by CI's e2e job on the PR.
+
+---
+
+# P17 — Testing hardening (2026-07-17..18)
 
 Plan: `~/.claude/plans/shimmying-splashing-newt.md` (revision 2 — survived a devil's-advocate pass that broke 3 of
 revision 1's claims). Slice order: **P17a hygiene → P17b-0 triage → P17b live specs → P17c VR.**
