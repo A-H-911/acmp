@@ -315,6 +315,12 @@ services:
       Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
       Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+      # W22 action-reminder sweep cron (ADR-0024). Safe default = daily 06:00 — absent the shell var this is
+      # byte-identical to today, so production is unaffected. The e2e CI job (and the local real-fire run) sets
+      # ACTION_REMINDERS_SWEEP_CRON='* * * * *' so the Hangfire sweep fires every minute and AC-054/055 can prove
+      # a genuine fire on the real stack. The SweepActionReminders handler is a no-op emitting no AuditEvent when
+      # nothing is due (SweepActionReminders.cs:122), so a minutely sweep does not contend on the audit applock.
+      ActionReminders__SweepCron: "${ACTION_REMINDERS_SWEEP_CRON:-0 6 * * *}"
     # Container hardening (C-CON-001/002/003, D-21). Unlike the api, /tmp can be a RAM-backed tmpfs here:
     # the worker takes no uploads and streams no files to disk (jobs talk to SQL/MinIO/Webex over the
     # network), so nothing large is ever spooled. No DataProtection key-ring either — the worker is a

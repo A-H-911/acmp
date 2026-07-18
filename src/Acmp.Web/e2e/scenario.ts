@@ -136,7 +136,7 @@ export interface ApiAction {
 export async function apiCreateAction(
   request: APIRequestContext,
   bearer: string,
-  opts: { title: string; ownerUserId: string; ownerName: string; sourceId: string; sourceType?: string; priority?: string },
+  opts: { title: string; ownerUserId: string; ownerName: string; sourceId: string; sourceType?: string; priority?: string; dueDate?: string },
 ): Promise<ApiAction> {
   const res = await request.post('/api/actions', {
     headers: { Authorization: bearer, ...JSON_HEADERS },
@@ -146,7 +146,7 @@ export async function apiCreateAction(
       priority: opts.priority ?? 'Normal',
       ownerUserId: opts.ownerUserId,
       ownerName: opts.ownerName,
-      dueDate: null,
+      dueDate: opts.dueDate ?? null,
       sourceType: opts.sourceType ?? 'Topic',
       sourceId: opts.sourceId,
       sourceKey: null,

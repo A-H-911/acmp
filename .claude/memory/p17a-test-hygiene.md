@@ -209,9 +209,28 @@ NOT claim "the UI rejects a 2nd ballot"** — it states the SPA routes a re-vote
 
 ## ★★★ 16 ACs Met this session — bin (a) COMPLETE (11) + (c) interpretation flips (5) ★★★
 
-8 spec files: traceability/voting/actions/notifications/decisions/meeting-vote/minutes/immutability. **REMAINING
-P17b:** jobs 054/055 (real-fire, R10 gate — needs the compose knob + minutely cron via CI job env, see plan R4′/R10);
-**[fresh-session] decision-issue UI build** (unblocks AC-015/016 + F-03 — the real driver). See plan §top.
+8 spec files: traceability/voting/actions/notifications/decisions/meeting-vote/minutes/immutability.
+
+## ✅ P17b spec #9 — jobs AC-054/055 REAL-FIRE DONE (2026-07-18). Both → Met. 18 ACs total.
+
+**`src/Acmp.Web/e2e/p17b-jobs.spec.ts`** (green, 22s): seeds a due-soon action + an overdue action, then polls
+(bounded, fail-loud) for a GENUINE Hangfire sweep fire → AC-054 due-reminder to owner, AC-055 escalation to
+Secretary+Chairman + `Actions.RemindersSent` audit. **R10 verified**: `SweepActionReminders.cs:122` returns early
+(no SaveChanges/audit) when nothing due — confirmed live (worker logs: 32ms no-op runs). **Infra (R4′/R4a):** added
+`ActionReminders__SweepCron: "${ACTION_REMINDERS_SWEEP_CRON:-0 6 * * *}"` to the worker in `deploy/docker-compose.yml`
+(safe daily default — production byte-identical) + `ACTION_REMINDERS_SWEEP_CRON: '* * * * *'` in the **e2e.yml job
+`env:`** (shell env beats --env-file in compose interpolation — verified with `docker compose config`). Local test:
+recreate the worker with `ACTION_REMINDERS_SWEEP_CRON='* * * * *' docker compose -p acmpe2e ... up -d --force-recreate
+--no-deps worker`. Gates: check-self-contained ✓, compose config -q ✓; trivy config = CI (single env-var add, no new
+misconfig class). ★★ **AUDIT GOTCHA:** plain `IAuditSink.EmitAsync(evt, actor, data)` stores `data` in the
+**DataJson** column, which the `/api/audit` DTO does NOT expose (only Before/AfterJson) — so assert RemindersSent
+event **presence** (filter `?action=Actions.RemindersSent`), not payload contents. Notification categories:
+`ActionDueReminder`/`ActionOverdue`/`ActionOverdueEscalation`. Thresholds: DueReminder ≤3d, escalate Sec >7d, Chair >14d.
+
+## ★★★ 18 ACs Met this session ★★★ — bin (a) 11 + (c) 5 + jobs 2. **REMAINING P17b: ONLY the [fresh-session]
+decision-issue UI build** (record→issue with chair override + SoD-3 co-attest; backend complete; unblocks AC-015/016
++ F-03 the real driver) + the AC-014 SoD-2 warning badge. 9 spec files. See plan §top for the build spec + INV-014
+design refs. ⚠ e2e stack worker currently has the minutely cron (recreated locally) — `down -v` on teardown clears it.
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
