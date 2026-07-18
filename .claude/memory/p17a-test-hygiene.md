@@ -198,9 +198,20 @@ publish" button; supersede via SupersedeMinutesDialog ("Minutes body"+"Reason fo
 036/037/038 (MoM).** 7 spec files, all live-verified on `-p acmpe2e` + CI-green. `scenario.ts` seed-helper library
 spans topic + meeting(schedule/agenda/publish/start/attendance) + minutes(draft/submit/approve/publish) +
 vote(configure/open/cast/close) + action(create/start/complete) + decision(record/issue); shared `roleSession` in
-apiHelpers.ts. **REMAINING P17b (NOT bin (a)):** (c) flips 012/022/025/026/027 (+OQs — AC-022 note is load-bearing:
-NEVER "UI rejects a 2nd ballot"); jobs 054/055 (real-fire, R10 gate); **[fresh-session] decision-issue UI build**
-(unblocks AC-015/016 + F-03 — the real driver). See plan §top.
+apiHelpers.ts. ## ✅ P17b spec #8 — (c) interpretation flips DONE (2026-07-17). 012/022/025/026/027 → Met.
+
+**`src/Acmp.Web/e2e/p17b-immutability.spec.ts`** (4 tests green first-try): AC-012 owner sees NO Verify (SoD-1 by
+prevention), AC-022 a voter who cast is offered "Change vote" (Fork 1, NOT a rejection), AC-025 POST /change on a
+closed vote → 409, AC-027 decision detail has zero editable fields. AC-026 = immutable-by-absence (no drivable leg —
+domain VoteTests only, no test). All 5 flipped Met-with-note + **OQ-053–057** added. ⚠ **AC-022 note verified: does
+NOT claim "the UI rejects a 2nd ballot"** — it states the SPA routes a re-vote to /change (edit-in-place); the API 409
++ DB unique index enforce one-ballot. Grep-guarded before commit.
+
+## ★★★ 16 ACs Met this session — bin (a) COMPLETE (11) + (c) interpretation flips (5) ★★★
+
+8 spec files: traceability/voting/actions/notifications/decisions/meeting-vote/minutes/immutability. **REMAINING
+P17b:** jobs 054/055 (real-fire, R10 gate — needs the compose knob + minutely cron via CI job env, see plan R4′/R10);
+**[fresh-session] decision-issue UI build** (unblocks AC-015/016 + F-03 — the real driver). See plan §top.
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
