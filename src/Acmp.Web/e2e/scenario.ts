@@ -290,6 +290,46 @@ export async function apiCloseVote(request: APIRequestContext, bearer: string, v
   if (!res.ok()) throw new Error(`[e2e] close vote ${res.status()} ${await res.text()}`);
 }
 
+export interface ApiMinutes {
+  id: string;
+  key: string;
+  version: number;
+  status: string;
+}
+
+/** Start a Draft MoM for a (started/held) meeting. One MoM per meeting. Policy MinutesCapture. */
+export async function apiDraftMinutes(
+  request: APIRequestContext,
+  bearer: string,
+  meetingId: string,
+  summary: string,
+): Promise<ApiMinutes> {
+  const res = await request.post('/api/minutes', {
+    headers: { Authorization: bearer, ...JSON_HEADERS },
+    data: { meetingId, summary: { en: summary, ar: summary } },
+  });
+  if (res.status() !== 201) throw new Error(`[e2e] draft minutes ${res.status()} ${await res.text()}`);
+  return res.json();
+}
+
+/** Submit a Draft MoM for review (Draft → InReview). */
+export async function apiSubmitMinutes(request: APIRequestContext, bearer: string, minutesId: string): Promise<void> {
+  const res = await request.post(`/api/minutes/${minutesId}/submit`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] submit minutes ${res.status()} ${await res.text()}`);
+}
+
+/** Approve an InReview MoM (→ Approved; soft SoD-2 off CreatedBy, non-blocking). Policy MinutesApprove. */
+export async function apiApproveMinutes(request: APIRequestContext, bearer: string, minutesId: string): Promise<void> {
+  const res = await request.post(`/api/minutes/${minutesId}/approve`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] approve minutes ${res.status()} ${await res.text()}`);
+}
+
+/** Publish an Approved MoM (→ Published + notify). Policy MinutesApprove. */
+export async function apiPublishMinutes(request: APIRequestContext, bearer: string, minutesId: string): Promise<void> {
+  const res = await request.post(`/api/minutes/${minutesId}/publish`, { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] publish minutes ${res.status()} ${await res.text()}`);
+}
+
 /** Publish a meeting's agenda (flips its topics to Scheduled + notifies) — a prerequisite of starting. */
 export async function apiPublishAgenda(request: APIRequestContext, bearer: string, meetingId: string): Promise<void> {
   const res = await request.post(`/api/meetings/${meetingId}/agenda/publish`, { headers: { Authorization: bearer } });

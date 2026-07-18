@@ -183,12 +183,24 @@ NOT eligible); a meeting-LINKED vote's open enforces MinPresent against live att
 IsVotingEligible rows, self-contained in Meetings) → must mark voters Present first; agenda must be **published before
 start**. Used the tall-viewport fix again. AC-021 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
 
-**bin-(a) scoreboard: 8 ACs Met (062/063 trace, 023/024 voting, 013 actions, 052 notifications, 028 decisions, 021
-meeting-vote).** Seed-helper library in scenario.ts now covers: topic(create/prepared) + meeting(schedule/agenda/
-publish/start/attendance) + vote(configure/open/cast/close) + action(create/start/complete) + decision(record/issue).
-Shared `roleSession` in apiHelpers.ts. **Remaining bin-(a): MoM 036/037/038** (needs a Published-MoM seed chain:
-meeting→minutes draft→approve→publish — no helper yet). Then (c) flips (012/022/025/026/027)+OQs, jobs (054/055
-real-fire), and the [fresh-session] decision-issue UI build (F-03).
+## ✅ P17b spec #7 — MoM lifecycle AC-036/037/038 RUN + GREEN (2026-07-17). ALL THREE → Met.
+
+**`src/Acmp.Web/e2e/p17b-minutes.spec.ts`** (3 tests green FIRST-TRY: 1.5s/0.97s/1.2s). AC-038 approve&publish,
+AC-037 request-changes, AC-036 supersede→v2. Seed helpers: `apiDraftMinutes`/`apiSubmitMinutes`/`apiApproveMinutes`/
+`apiPublishMinutes`. **Key facts:** minutes page renders for an **InProgress** meeting (NO end step —
+`meeting.status InProgress|Held|Closed`); one MoM per meeting; UI combines approve→publish into ONE "Approve &
+publish" button; supersede via SupersedeMinutesDialog ("Minutes body"+"Reason for superseding"→"Publish correction")
+→ 201 version=2; approve soft-SoD-2 non-blocking. Banners: Published="Published & locked…", Draft="Editable…".
+
+## ★★★ bin (a) COMPLETE — 11 ACs Met this session ★★★
+
+**062/063 (trace), 023/024 (voting), 013 (actions), 052 (notifications), 028 (decisions), 021 (meeting-vote),
+036/037/038 (MoM).** 7 spec files, all live-verified on `-p acmpe2e` + CI-green. `scenario.ts` seed-helper library
+spans topic + meeting(schedule/agenda/publish/start/attendance) + minutes(draft/submit/approve/publish) +
+vote(configure/open/cast/close) + action(create/start/complete) + decision(record/issue); shared `roleSession` in
+apiHelpers.ts. **REMAINING P17b (NOT bin (a)):** (c) flips 012/022/025/026/027 (+OQs — AC-022 note is load-bearing:
+NEVER "UI rejects a 2nd ballot"); jobs 054/055 (real-fire, R10 gate); **[fresh-session] decision-issue UI build**
+(unblocks AC-015/016 + F-03 — the real driver). See plan §top.
 
 **Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
 the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
