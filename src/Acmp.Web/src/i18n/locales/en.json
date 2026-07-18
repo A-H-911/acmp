@@ -754,6 +754,26 @@
         "reason": "A reason is required.",
         "conditions": "A conditionally-approved decision needs at least one condition."
       }
+    },
+    "record": {
+      "title": "Record & issue a decision",
+      "subtitle": "Capture the committee’s outcome and issue it on the record",
+      "linkedTopic": "Linked topic",
+      "ratifies": "Ratifies {{key}} on issue",
+      "override": "Issue against the vote (chair override)",
+      "overrideNote": "Use only when the decision differs from the vote outcome. A justification is required and recorded.",
+      "justification": "Override justification",
+      "justificationPh": "Explain why the decision differs from the vote…",
+      "immutableWarn": "Once issued, a decision cannot be edited — only superseded by a new decision. Review the statement, rationale and conditions before confirming.",
+      "confirm": "Record & issue",
+      "error": "The decision could not be issued. Please try again.",
+      "err": {
+        "title": "A title is required.",
+        "statement": "A decision statement is required.",
+        "rationale": "A rationale is required.",
+        "conditions": "A conditionally-approved decision needs at least one condition.",
+        "justification": "A justification is required for a chair override."
+      }
     }
   },
   "voting": {
@@ -1565,6 +1585,7 @@
       "exportSoon": "PDF export arrives in a later phase",
       "versionHistory": "Version history",
       "current": "Current",
+      "soleAuthor": "Approved by sole author",
       "status": { "Draft": "Draft", "InReview": "In review", "Approved": "Approved", "Published": "Published", "Superseded": "Superseded" },
       "banner": {
         "draft": "Editable — save your changes as you write.",
@@ -1621,6 +1642,7 @@
     },
     "recordTime": "Record time",
     "recordDecision": "Record decision",
+    "recordDecisionNote": "Chairman only",
     "createAction": "Create action",
     "callVote": "Call vote",
     "attendance": "Attendance",

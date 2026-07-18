@@ -40,6 +40,7 @@ import {
 import { useMembers, type Member } from '../../api/members';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { CallVoteDialog } from '../voting/CallVoteDialog';
+import { RecordDecisionDialog } from '../decisions/RecordDecisionDialog';
 import { AREAS } from '../../nav/navModel';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
@@ -173,6 +174,7 @@ export function MeetingWorkspace() {
             item={activeItem}
             meetingId={meeting.id}
             canManageVote={hasRole(auth, 'chairman', 'secretary')}
+            canRecordDecision={hasRole(auth, 'chairman')}
             index={items.findIndex((i) => i.topicId === activeItem.topicId) + 1}
             discussion={meeting.discussions.find((d) => d.topicId === activeItem.topicId)}
             onSaveNote={(body) => captureDiscussion.mutate({ meetingId: meeting.id, topicId: activeItem.topicId, body })}
@@ -251,6 +253,7 @@ function ActiveItem({
   item,
   meetingId,
   canManageVote,
+  canRecordDecision,
   index,
   discussion,
   onSaveNote,
@@ -260,6 +263,7 @@ function ActiveItem({
   item: AgendaItem;
   meetingId: string;
   canManageVote: boolean;
+  canRecordDecision: boolean;
   index: number;
   discussion: Discussion | undefined;
   onSaveNote: (body: string) => void;
@@ -268,6 +272,7 @@ function ActiveItem({
 }) {
   const { t } = useTranslation();
   const [voteOpen, setVoteOpen] = useState(false);
+  const [decisionOpen, setDecisionOpen] = useState(false);
   return (
     <section className="mt-active" aria-label={item.topicTitle}>
       <div className="mt-active-card">
@@ -293,9 +298,15 @@ function ActiveItem({
           {/* DV-16: actual-time + outcome recording, wired to useRecordActualTime. Re-added after
               round-1 deferred it; the backend command (POST …/actual-time) was already in place. */}
           <ActualTimeControl item={item} onRecord={onRecordTime} busy={recording} />
-          {/* Design action row = the 3 capture buttons (Decisions/Actions/Voting → P7/P8/P9). */}
+          {/* Design action row = the 3 capture buttons. Record decision (P17b) records → issues in one
+              dialog (F-03 leg); Create action stays a later-phase stub. Call vote is wired (P9). */}
           <div className="mt-actions">
-            <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
+            <Button
+              variant="secondary"
+              disabled={!canRecordDecision}
+              title={canRecordDecision ? undefined : t('meetings.recordDecisionNote')}
+              onClick={() => setDecisionOpen(true)}
+            >
               <Icon name="decision" size={14} aria-hidden /> {t('meetings.recordDecision')}
             </Button>
             <Button variant="secondary" disabled title={t('meetings.comingSoon')}>
@@ -319,6 +330,13 @@ function ActiveItem({
         onClose={() => setVoteOpen(false)}
         source={{ topicId: item.topicId, topicKey: item.topicKey, meetingId }}
       />
+      {canRecordDecision && (
+        <RecordDecisionDialog
+          open={decisionOpen}
+          onClose={() => setDecisionOpen(false)}
+          source={{ topicId: item.topicId, topicKey: item.topicKey, meetingId }}
+        />
+      )}
     </section>
   );
 }

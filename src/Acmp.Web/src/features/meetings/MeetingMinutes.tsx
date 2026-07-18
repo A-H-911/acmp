@@ -122,6 +122,11 @@ function MinutesBanner({ mom, pick }: { mom: MinutesDetail; pick: (l: LocalizedT
       <div className="mom-banner-main">
         <h1 className="mom-banner-title">{t('meetings.mom.title')}</h1>
         <StatusChip tone={STATUS_TONE[mom.status]} label={t(`meetings.mom.status.${mom.status}`)} size="sm" />
+        {/* AC-014 (soft SoD-2): the approver was the minutes' sole author. Server-set flag surfaced as a
+            warning so the committee can see the segregation-of-duties gap. No .dc.html element → no-ref. */}
+        {mom.approvedBySoleAuthor && (
+          <StatusChip tone="warn" label={t('meetings.mom.soleAuthor')} size="sm" />
+        )}
       </div>
       <div className="mom-banner-note">
         {note}

@@ -2,13 +2,60 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-18 — P17b (final slice) — decision-issuance UI built → AC-014/015/016 Met, F-03 leg landed
+
+**Slice:** `feat/decision-issue-ui` (off `main` after PR #144 merged the 18-AC live-leg slice). This is the P17b **feature**
+build the P17b-0 triage flagged as a D-15-shape product gap: a committee could not issue a decision or ratify a vote
+through the SPA — the "Record decision" button was a disabled "coming soon" stub and `api/decisions.ts` had only
+read + supersede. The backend (`RecordDecision` + `IssueDecision`, SoD-3 co-attestation, vote auto-ratify) was already
+complete; this slice is FE-only.
+
+**Done**
+- `api/decisions.ts`: `useRecordDecision` (POST `/decisions`) + `useIssueDecision` (POST `/{id}/issue`) — the missing mutations.
+- `features/decisions/RecordDecisionDialog.tsx`: a chairman-gated record→issue dialog launched from the in-session
+  `MeetingWorkspace` agenda item (replacing the disabled stub). Couples the agenda item's Closed vote (found client-side
+  in `useVotesRegister({status:'Closed'})` by topic+meeting — there is no vote-by-topic endpoint and the agenda item
+  carries no `voteId`), collects outcome/title/statement/rationale/alternatives?/conditions[] + a chair-override toggle +
+  justification, records once (holds the returned Draft so a failed issue never re-records a duplicate), then issues —
+  surfacing the SoD-3 403 / AC-029 409 inline (D-15 show-and-enforce). Reuses `ConditionsEditor` from `SupersedeDialog`.
+- `MeetingMinutes.tsx`: renders the server-set `approvedBySoleAuthor` flag as a warning badge in the always-mounted banner
+  (AC-014 — the flag was set server-side but never shown).
+- i18n EN+AR (`decisions.record.*`, `meetings.recordDecisionNote`, `meetings.mom.soleAuthor`); decisions.css record-dialog styles.
+- Tests: `RecordDecisionDialog.test` (happy + override + 403-surface + record-once retry guard + validation),
+  `decisions.test` (both new hooks, incl. the SoD-3 403), `MeetingMinutes.test` (badge present/absent), `MeetingWorkspace.test`
+  (chairman opens the dialog; secretary sees it gated). Live specs `p17b-decision-issue.spec.ts` (AC-015/016) +
+  `p17b-sole-author.spec.ts` (AC-014).
+
+**AC flips (Partial → Met, 2026-07-18):**
+- **AC-014** (SoD-2): the sole-author warning badge now renders; proven live (p17b-sole-author.spec).
+- **AC-015** (SoD-3): the chair who closed the vote is denied issue (403) and the UI surfaces it; vote stays Closed. Live (p17b-decision-issue).
+- **AC-016** (SoD-3): a secretary-counted vote lets the chair issue with an override → decision Issued + vote Ratified. Live (p17b-decision-issue).
+
+**F-03 (the real driver):** the previously-missing **"chairman ratify → decision record (Issued)"** leg is now built and
+proven live (AC-016). F-03 itself stays ☐ — it is a P19 full-loop staging sign-off (QA + Secretary), not an AC flip — but
+its last missing evidence now exists.
+
+**Decisions applied**
+- Outcome = **Rejected** (a non-follow-up) in the AC-015/016 specs so the AC-029 downstream-link gate is skipped and the
+  SoD-3 gate is the one reached (gate order in `IssueDecision.cs`: AC-029 → vote-coupling → SoD-3). A follow-up outcome
+  would 409 before SoD-3.
+- Design reconciliation recorded as **OQ-058**: the design's two surfaces (create form + vote-screen override) are merged
+  into one meeting-workspace dialog; design-only create-form fields (Approving authority / Effective date / Affected
+  systems) dropped (no backend field — implement-as-specified); the immutability confirm folded inline.
+
+**Next**
+- Land the branch (specs + audit flips in the same PR, R9) — CI's e2e job proves the AC-014/015/016 live legs.
+- P17b is now complete. Remaining ladder: **P18** (deployment) → **P19** (final audit & release readiness, incl. the F-03 staging gate).
 
 ---
 

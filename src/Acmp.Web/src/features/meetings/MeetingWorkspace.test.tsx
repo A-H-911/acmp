@@ -17,8 +17,16 @@ vi.mock('../../api/meetings', () => ({
   useRecordActualTime: vi.fn(),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
-// The wired "Call vote" dialog pulls in useConfigureVote; stub it so the workspace renders without a QueryClient.
-vi.mock('../../api/votes', () => ({ useConfigureVote: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })) }));
+// The wired "Call vote" + "Record decision" dialogs pull in vote/decision hooks; stub them so the
+// workspace renders without a QueryClient (dialog internals are covered in their own suites).
+vi.mock('../../api/votes', () => ({
+  useConfigureVote: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useVotesRegister: vi.fn(() => ({ data: [] })),
+}));
+vi.mock('../../api/decisions', () => ({
+  useRecordDecision: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useIssueDecision: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+}));
 
 import {
   useMeetingDetail,
@@ -57,11 +65,11 @@ const MEMBERS: Member[] = [
   { publicId: 'u2', keycloakUserId: 'kc-fixture', fullName: 'Omar R', email: 'omar@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
 ];
 
-function setup(detail: MeetingDetail = MEETING) {
+function setup(detail: MeetingDetail = MEETING, roles: Parameters<typeof makeAuth>[0] = ['secretary']) {
   mockDetail.mockReturnValue({ data: detail, isLoading: false, isError: false, error: null });
   mockMembers.mockReturnValue({ data: MEMBERS });
   render(
-    <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
+    <AcmpAuthContext.Provider value={makeAuth(roles)}>
       <MemoryRouter initialEntries={['/meetings/MTG-2026-019']}>
         <Routes>
           <Route path="/meetings/:key" element={<MeetingWorkspace />} />
@@ -180,10 +188,19 @@ describe('MeetingWorkspace (P6d)', () => {
     expect(screen.getByRole('button', { name: 'Record time' })).toBeEnabled();
   });
 
-  it('renders Record decision / Create action as disabled stubs (P7/P8 workspace)', () => {
-    setup();
+  it('gates Record decision to the chairman and keeps Create action a stub (P8 workspace)', () => {
+    setup(); // secretary: Record decision is chairman-only, Create action still deferred
     expect(screen.getByRole('button', { name: 'Record decision' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Create action' })).toBeDisabled();
+  });
+
+  it('P17b: the chairman can open the record → issue decision dialog', async () => {
+    const user = userEvent.setup();
+    setup(MEETING, ['chairman']);
+    const record = screen.getByRole('button', { name: 'Record decision' });
+    expect(record).toBeEnabled();
+    await user.click(record);
+    expect(screen.getByRole('dialog', { name: 'Record & issue a decision' })).toBeInTheDocument();
   });
 
   it('P9b: Call vote is enabled for a manager and opens the configure dialog', async () => {

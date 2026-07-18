@@ -174,8 +174,9 @@ interface ConditionsEditorProps {
 }
 
 /** A conditionally-approved decision needs ≥1 condition (mirrors the domain guard). Minimal
- *  add/edit/remove list — each row is single-language text, mirrored to both columns on submit. */
-function ConditionsEditor({ values, onChange, error }: ConditionsEditorProps) {
+ *  add/edit/remove list — each row is single-language text, mirrored to both columns on submit.
+ *  Shared with RecordDecisionDialog (same field + validation). */
+export function ConditionsEditor({ values, onChange, error }: ConditionsEditorProps) {
   const { t } = useTranslation();
   const rows = values.length > 0 ? values : [''];
   const setAt = (i: number, v: string) => onChange(rows.map((r, j) => (j === i ? v : r)));

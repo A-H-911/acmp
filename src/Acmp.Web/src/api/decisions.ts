@@ -123,3 +123,59 @@ export function useSupersedeDecision(key: string | undefined) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['decisions', 'detail', key] }),
   });
 }
+
+/** The Draft a decision is recorded as (W12, POST /decisions). VoteId couples the ballot the
+ *  chair will ratify at issue time; a follow-up outcome later needs a downstream link (AC-029). */
+export interface RecordInput {
+  topicId: string;
+  meetingId?: string | null;
+  outcome: DecisionOutcome;
+  title: LocalizedText;
+  statement: LocalizedText;
+  rationale: LocalizedText;
+  alternatives?: LocalizedText | null;
+  voteId?: string | null;
+  conditions: { text: LocalizedText; dueDate?: string | null }[];
+}
+
+/** W12 (record): draft a decision against a topic (POST /decisions → 201 + the new DecisionSummary).
+ *  Draft is still mutable-by-replacement; the chair issues it separately. Invalidates the register. */
+export function useRecordDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: RecordInput) =>
+      api<{ id: string; key: string }>('/decisions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['decisions', 'register'] }),
+  });
+}
+
+/** The chair's issue attempt (W12, POST /decisions/{id}/issue → 204). A chair override (issuing
+ *  against the vote) requires a justification; SoD-3 forbids the chair who closed the coupled vote. */
+export interface IssueInput {
+  id: string;
+  chairOverride: boolean;
+  overrideJustification?: LocalizedText | null;
+}
+
+/** W12 (issue): the Chairman issues a Draft (Draft → Issued). A vote-coupled issue auto-ratifies the
+ *  vote in the same transaction, so both the decision and vote caches are refreshed. 403/409 propagate
+ *  (SoD-3 denial / AC-029 / vote integrity) for the caller to surface inline. */
+export function useIssueDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, chairOverride, overrideJustification }: IssueInput) =>
+      api<void>(`/decisions/${id}/issue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chairOverride, overrideJustification: overrideJustification ?? null }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['decisions'] });
+      qc.invalidateQueries({ queryKey: ['votes'] });
+    },
+  });
+}

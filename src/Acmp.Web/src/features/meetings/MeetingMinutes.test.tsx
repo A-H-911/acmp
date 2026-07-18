@@ -197,6 +197,21 @@ describe('MeetingMinutes (P7d)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); // Esc-to-close from the shared Dialog
   });
 
+  it('warns when an approved MoM was signed off by its sole author (AC-014, soft SoD-2)', () => {
+    arrange({
+      list: [summary(1, 'Approved')],
+      mom: detail({ status: 'Approved', approvedByName: 'Sara Chair', approvedBySoleAuthor: true }),
+    });
+    setup(['chairman']);
+    expect(screen.getByText('Approved by sole author')).toBeInTheDocument();
+  });
+
+  it('shows no sole-author warning when the approver was not the sole author', () => {
+    arrange({ list: [summary(1, 'Approved')], mom: detail({ status: 'Approved', approvedBySoleAuthor: false }) });
+    setup(['chairman']);
+    expect(screen.queryByText('Approved by sole author')).not.toBeInTheDocument();
+  });
+
   it('renders the superseded state with its reason', () => {
     arrange({
       list: [summary(2, 'Published'), summary(1, 'Superseded')],
