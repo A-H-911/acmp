@@ -26,6 +26,11 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Force the action-reminder Hangfire sweep to fire every minute in e2e so AC-054/055 can prove a genuine
+      # fire on the real stack (R4a). Compose interpolation takes shell env over --env-file, so the worker gets
+      # minutely HERE while deploy/.env.example and production keep the daily 0 6 * * * default (docker-compose.yml).
+      ACTION_REMINDERS_SWEEP_CRON: '* * * * *'
     defaults:
       run:
         working-directory: src/Acmp.Web

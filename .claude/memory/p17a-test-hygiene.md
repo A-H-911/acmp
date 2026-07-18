@@ -66,17 +66,187 @@ nothing about verdicts. **NOT licence to flip ACs cheaply.** (2) AC-025 = test t
 (`POST /votes/{id}/change` on a closed vote), record tally/chair-action as immutable-by-absence + raise an OQ.
 (3) AC-054/055 = **force a real fire in e2e** (overrode my recommendation).
 
-## Next: P17b-0 triage — BLOCKS all spec work
+## ★ P17b-0 triage DONE (2026-07-17) — results in `~/.claude/plans/shimmying-splashing-newt.md` §top
 
-Read each of the **≤19** candidate ACs' literal Given/When/Then against **both** the API (`src/Acmp.Api/Endpoints/`)
-**and the UI**; bin: closable-by-spec / needs-product-change / needs-interpretation / unbuilt-UI. **The "~19 flips /
-36→55" forecast is RETRACTED** — it was never triaged. **AC-034/043/048/057 are unbuilt UI** and not P17-closable
-despite carrying `→ P17` tags.
+21 candidate ACs binned (each read against literal G/W/T + verified API+UI surface). **11 clean UI flips / 5
+interpretation / 3 product-blocked / 2 jobs.** Full table + per-AC evidence in the plan file.
 
-★ **The D-15 precedent is the hazard.** S6b wrote live E2E and flipped only **AC-035** — because writing it revealed
-the SPA **had no "Mark prepared" button**; the E2E had masked it with a direct HTTP call. Voting / decision-issue /
-MoM-publish / action-verify UI are **unverified**. Expect some ACs to convert to D-15-shape findings. **Stop and ask
-— do not build product inside a testing slice.**
+★★ **HEADLINE D-15 REPEAT (verified) — decision issuance/ratification has NO working UI.** The "Record decision"
+button is a **`disabled` "coming soon" stub** (`MeetingWorkspace.tsx:298-300`), and `api/decisions.ts` has only
+read + supersede (no record/issue mutation). So a committee **cannot issue a decision or ratify a vote through the
+SPA** — both API-only. This blocks **AC-015/016** AND the **F-03** `[BLOCK]` release gate (needs "chairman ratify →
+decision record Issued" in staging). ("Create action" next to it is also disabled, but actions CAN be created from a
+DecisionPage's CreateActionDialog.)
+
+**Operator decisions (all recorded in the plan):**
+1. **BUILD the decision-issuance UI inside P17** (record→issue with chairman override + secretary co-attestation;
+   backend + SoD-3 gate already exist). Turns P17 into testing+feature ⇒ needs design (INV-014: look for a
+   `.dc.html`) + TDD + review. **Fresh session.**
+2. **BUILD the AC-014 SoD-2 warning badge** — render the existing `approvedBySoleAuthor` field (never rendered today)
+   on the minutes view. Small.
+3. **Flip all 5 (c) interpretations to Met-with-note + OQ each.** ⚠ **AC-022 the operator OVERRODE my
+   recommendation** — its audit note MUST foreground the product↔criterion divergence (Fork 1: re-vote routes to
+   `/change`, so the AC's "You have already voted" rejection never occurs in-UI; only the API 409 + DB unique index
+   enforce one-ballot-per-voter). **Never write "the UI rejects a second ballot" — it's false.**
+
+**P17b execution order (fresh sessions):** bin (a) 11 specs (no deps) → 5 (c) audit-row flips + OQs → AC-054/055
+real-fire (R10 gate) → **[feature]** build decision-issue UI + AC-014 badge → their specs (AC-014/015/016).
+**AC-034/043/048/057** carry `→ P17` tags but are unbuilt UI — not P17-closable; rewrite their residuals.
+
+★ **e2e wall-clock measured (P17a PR CI): 5m57s against the 30-min cap** — R2 (budget) largely de-risked;
+API-seeding via `scenario.ts` should suffice, storageState almost certainly unneeded.
+
+## P17b spec #1 — ✅ RUN + GREEN (2026-07-17). AC-062/063 → Met.
+
+**`src/Acmp.Web/e2e/p17b-traceability.spec.ts`** covers **AC-062 + AC-063** (the create round-trip proves both).
+**Ran first-try green against the isolated `-p acmpe2e` stack: 2.5s test, 4.0s total, exit 0** — every `// VERIFY:`
+selector resolved as predicted by the pre-run static check (read `Select.tsx`+`en.json`+`traceMeta.ts` first). The
+warning header + `// VERIFY:` markers are now removed. **AC-062 + AC-063 flipped Partial→Met** in
+`acceptance-audit.md` (evidence cites the live spec + the live-leg rule in `definition-of-done.md`, NOT "per
+G-TRACE"; ids kept BARE; validator 7/7 incl G-PROGRESS). Spec + audit flips committed together (R9). No new seed
+helper was needed (two topics via `apiCreateTopic`).
+
+Confirmed harness facts from the live run: custom `Select` trigger's accessible name = its `ariaLabel` (wins over
+placeholder) → `getByRole('button',{name})`; option = `role=option`, name = option label; POST hits `/api/traceability`
+→ 201; `useCreateRelationship.onSuccess` invalidates `['traceability']` so the source panel refetches in place (no
+reload). **Stack management this session: Docker Desktop was OFF; started it, `stop`ped the auto-restarted `acmp` dev
+project, brought up `-p acmpe2e` (~6min build), ran, left e2e stack UP for the clusters.** ★ **CI e2e (workflow_dispatch
+on the branch) = `success` in 6m13s** vs the 30-min cap — R2 fully de-risked, spec #1 Met flip is CI-backed on Linux.
+
+★ **Run playwright from `src/Acmp.Web` with the LOCAL binary** (`./node_modules/.bin/playwright test <spec>` or `npm
+run e2e -- <spec>`). `npx playwright` from the repo root fetches a SEPARATE `playwright@1.61.1` → "two different
+versions of @playwright/test" / "did not expect test.describe() here". Bash cwd drifts between calls — `cd` explicitly.
+
+## ✅ P17b spec #2 — voting cluster RUN + GREEN (2026-07-17). AC-023/024 → Met.
+
+**`src/Acmp.Web/e2e/p17b-voting.spec.ts`** (2 tests, both green, 1.3s+2.0s): **AC-024** (secretary opens a vote 0-cast
+below MinCast → clicks Close in UI → server rejects → vote stays Open + announced error, Fork 2) and **AC-023** (a
+chairman genuinely casts via a 2nd `browser.newContext()`, secretary closes, closed roster renders the ballot
+attributed by name+choice). Added 4 vote seed helpers to `scenario.ts` (`apiConfigureVote`/`apiOpenVote`/
+`apiCastBallot`/`apiCloseVote`). AC-023/024 flipped Partial→Met (evidence cites the spec + live-leg rule; ids BARE;
+validator 7/7). AC-021 (the 3rd voting AC) NOT done — its under-test path is the CallVoteDialog in MeetingWorkspace
+(heavier: meeting in-session + agenda), separate from VotePage.
+
+★★ **VOTE/BALLOT SEED GOTCHA (cost me one iteration):** eligible-voter `UserId` MUST be the **Keycloak sub**, NOT the
+ACMP `member.publicId`. `Ballot.VoterUserId` = the KC sub; `CastBallot`/`Vote.Cast` match the ballot by
+`CurrentActor.Of(user).Sub` = `ICurrentUser.UserId` (the sub) → a `publicId` eligible-voter row makes every cast 409
+Conflict. GET `/api/members` exposes both — use **`member.keycloakUserId`** (added to the `ApiMember` interface) for
+vote eligibility. Also: **Secretary CANNOT cast** (Vote.Cast = Chairman/Member) — AC-023 needs a real chairman bearer.
+★ **SoD-1 / identity everywhere is the KC sub** — same rule for actions (owner/completer/verifier) and votes.
+
+## ✅ P17b spec #3 — actions AC-013 RUN + GREEN (2026-07-17). AC-013 → Met.
+
+**`src/Acmp.Web/e2e/p17b-actions.spec.ts`** (green first-try, 2.3s): a chairman owns+completes an action (2nd
+context), then the **secretary (a different sub) drives Verify in the UI → 204 → Verified** (SoD-1 positive). Seed
+helpers `apiCreateAction`/`apiStartAction`/`apiCompleteAction` added to `scenario.ts` (owner = `keycloakUserId`;
+`SourceType='Topic'`, `SourceId`=a seeded topic id — SourceId is only NotEmpty-validated, no cross-module FK).
+Enums travel as string names (`priority:'Normal'`, `sourceType:'Topic'`). AC-013 flipped Partial→Met (validator 7/7,
+oxlint clean, id BARE). **Refactor:** extracted the shared `roleSession(page, role, acmpRole)` into `apiHelpers.ts`
+(was duplicated in the voting spec) — voting re-run green after the change. traceability keeps its own
+`secretarySession` (not churned).
+
+## ✅ P17b spec #4 — notifications AC-052 RUN + GREEN (2026-07-17). AC-052 → Met.
+
+**`src/Acmp.Web/e2e/p17b-notifications.spec.ts`** (green first-try, 6.2s): secretary opens a vote with the member as
+eligible voter → member's bell shows the unread VoteOpened → clicking the notification navigates straight to
+`/votes/{key}`. **No new seed helper** — reused `apiConfigureVote`/`apiOpenVote`. Harness facts: bell button
+accessible name = `notif.title`/`notif.titleUnread` → `getByRole('button',{name:/Notifications/})`; the popup =
+`getByRole('dialog',{name:'Notifications'})`; each row's `.notif-row-msg` / `.notif-key` button → `navigate(deepLink)`.
+AC-052 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+## ✅ P17b spec #5 — decisions AC-028 RUN + GREEN (2026-07-17). AC-028 → Met.
+
+**`src/Acmp.Web/e2e/p17b-decisions.spec.ts`** (green, 1.1s): a chairman supersedes an Issued decision via the
+SupersedeDialog → 201 → navigates to the readable successor; the prior flips to Superseded (banner) with its
+statement intact. Seed helpers `apiRecordDecision`/`apiIssueDecision` added. **Cheap Issued-decision seed:** record
+`outcome='Deferred'` (a NON-follow-up outcome → skips the AC-029 downstream-link gate) with `voteId=null` (skips
+SoD-3/vote-coupling), then issue `chairOverride=false`. Two honest audit notes: (1) actor is **Chairman** — supersede
+is `DecisionChairApprove` (Chairman-only); the AC's "Secretary" is a product↔criterion nuance (OQ candidate); (2) the
+`SupersededByDecisionId` back-link is **not rendered** (prior DTO carries only the successor Guid — flagged in
+DecisionPage), so it stays on API/unit proof. AC-028 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+★★ **TALL-DIALOG VIEWPORT GOTCHA (cost 3 iterations):** the supersede dialog is taller than the default 720px
+viewport, and the modal is `position:fixed` (no page-scroll), so its footer confirm button sat at y≈885 — visible +
+enabled but UN-clickable (`.click()` timed out). Fix: `await page.setViewportSize({ width: 1280, height: 1400 })`
+before opening a tall dialog. The small dialogs (trace/action/vote) didn't hit this. Diagnosis path: `toHaveValue`
+proved the fields filled (ruled out validate), then logging the button `boundingBox` showed y=885 > 720.
+
+## ✅ P17b spec #6 — meeting-workspace vote AC-021 RUN + GREEN (2026-07-17). AC-021 → Met.
+
+**`src/Acmp.Web/e2e/p17b-meeting-vote.spec.ts`** (green FIRST-TRY, 4.3s — the heaviest cluster: 3 contexts, 8 seed
+steps, 2 UI surfaces). Secretary calls a vote from the in-session MeetingWorkspace CallVoteDialog → configures →
+opens on the vote page → config locks + roster = exactly the 2 voting-eligible members. Seed helpers added:
+`apiPublishAgenda`/`apiStartMeeting`/`apiMarkAttendance`. **Key facts:** CallVoteDialog only CONFIGURES (Configured
+state), the OPEN happens on VotePage's "Open voting"; the workspace `/meetings/{key}/notes` auto-activates the first
+Pending item (no manual activate); voting-eligible roles = **Chairman + Member** (`DefaultVotingEligibility`, Secretary
+NOT eligible); a meeting-LINKED vote's open enforces MinPresent against live attendance (count of Present +
+IsVotingEligible rows, self-contained in Meetings) → must mark voters Present first; agenda must be **published before
+start**. Used the tall-viewport fix again. AC-021 flipped Partial→Met (validator 7/7, oxlint clean, id BARE).
+
+## ✅ P17b spec #7 — MoM lifecycle AC-036/037/038 RUN + GREEN (2026-07-17). ALL THREE → Met.
+
+**`src/Acmp.Web/e2e/p17b-minutes.spec.ts`** (3 tests green FIRST-TRY: 1.5s/0.97s/1.2s). AC-038 approve&publish,
+AC-037 request-changes, AC-036 supersede→v2. Seed helpers: `apiDraftMinutes`/`apiSubmitMinutes`/`apiApproveMinutes`/
+`apiPublishMinutes`. **Key facts:** minutes page renders for an **InProgress** meeting (NO end step —
+`meeting.status InProgress|Held|Closed`); one MoM per meeting; UI combines approve→publish into ONE "Approve &
+publish" button; supersede via SupersedeMinutesDialog ("Minutes body"+"Reason for superseding"→"Publish correction")
+→ 201 version=2; approve soft-SoD-2 non-blocking. Banners: Published="Published & locked…", Draft="Editable…".
+
+## ★★★ bin (a) COMPLETE — 11 ACs Met this session ★★★
+
+**062/063 (trace), 023/024 (voting), 013 (actions), 052 (notifications), 028 (decisions), 021 (meeting-vote),
+036/037/038 (MoM).** 7 spec files, all live-verified on `-p acmpe2e` + CI-green. `scenario.ts` seed-helper library
+spans topic + meeting(schedule/agenda/publish/start/attendance) + minutes(draft/submit/approve/publish) +
+vote(configure/open/cast/close) + action(create/start/complete) + decision(record/issue); shared `roleSession` in
+apiHelpers.ts. ## ✅ P17b spec #8 — (c) interpretation flips DONE (2026-07-17). 012/022/025/026/027 → Met.
+
+**`src/Acmp.Web/e2e/p17b-immutability.spec.ts`** (4 tests green first-try): AC-012 owner sees NO Verify (SoD-1 by
+prevention), AC-022 a voter who cast is offered "Change vote" (Fork 1, NOT a rejection), AC-025 POST /change on a
+closed vote → 409, AC-027 decision detail has zero editable fields. AC-026 = immutable-by-absence (no drivable leg —
+domain VoteTests only, no test). All 5 flipped Met-with-note + **OQ-053–057** added. ⚠ **AC-022 note verified: does
+NOT claim "the UI rejects a 2nd ballot"** — it states the SPA routes a re-vote to /change (edit-in-place); the API 409
++ DB unique index enforce one-ballot. Grep-guarded before commit.
+
+## ★★★ 16 ACs Met this session — bin (a) COMPLETE (11) + (c) interpretation flips (5) ★★★
+
+8 spec files: traceability/voting/actions/notifications/decisions/meeting-vote/minutes/immutability.
+
+## ✅ P17b spec #9 — jobs AC-054/055 REAL-FIRE DONE (2026-07-18). Both → Met. 18 ACs total.
+
+**`src/Acmp.Web/e2e/p17b-jobs.spec.ts`** (green, 22s): seeds a due-soon action + an overdue action, then polls
+(bounded, fail-loud) for a GENUINE Hangfire sweep fire → AC-054 due-reminder to owner, AC-055 escalation to
+Secretary+Chairman + `Actions.RemindersSent` audit. **R10 verified**: `SweepActionReminders.cs:122` returns early
+(no SaveChanges/audit) when nothing due — confirmed live (worker logs: 32ms no-op runs). **Infra (R4′/R4a):** added
+`ActionReminders__SweepCron: "${ACTION_REMINDERS_SWEEP_CRON:-0 6 * * *}"` to the worker in `deploy/docker-compose.yml`
+(safe daily default — production byte-identical) + `ACTION_REMINDERS_SWEEP_CRON: '* * * * *'` in the **e2e.yml job
+`env:`** (shell env beats --env-file in compose interpolation — verified with `docker compose config`). Local test:
+recreate the worker with `ACTION_REMINDERS_SWEEP_CRON='* * * * *' docker compose -p acmpe2e ... up -d --force-recreate
+--no-deps worker`. Gates: check-self-contained ✓, compose config -q ✓; trivy config = CI (single env-var add, no new
+misconfig class). ★★ **AUDIT GOTCHA:** plain `IAuditSink.EmitAsync(evt, actor, data)` stores `data` in the
+**DataJson** column, which the `/api/audit` DTO does NOT expose (only Before/AfterJson) — so assert RemindersSent
+event **presence** (filter `?action=Actions.RemindersSent`), not payload contents. Notification categories:
+`ActionDueReminder`/`ActionOverdue`/`ActionOverdueEscalation`. Thresholds: DueReminder ≤3d, escalate Sec >7d, Chair >14d.
+
+## ★★★ 18 ACs Met this session ★★★ — bin (a) 11 + (c) 5 + jobs 2. **REMAINING P17b: ONLY the [fresh-session]
+decision-issue UI build** (record→issue with chair override + SoD-3 co-attest; backend complete; unblocks AC-015/016
++ F-03 the real driver) + the AC-014 SoD-2 warning badge. 9 spec files. See plan §top for the build spec + INV-014
+design refs. ⚠ e2e stack worker currently has the minutely cron (recreated locally) — `down -v` on teardown clears it.
+
+**Harness facts confirmed for the remaining specs:** seed via API with `captureBearer(page)` + a real bearer, reserve
+the UI for the behavior under test (`scenario.ts` convention). `scenario.ts` has topic/meeting/agenda helpers but
+**NONE for votes/decisions/actions/MoM/traceability** — the voting (021/023/024), MoM (036/037/038), actions (013),
+decisions (028), notifications (052) clusters each need a seed helper added. Custom `Select` = button (accessible
+name = ariaLabel/placeholder) → `role=option`, per core-loop.spec.
+
+**Why I stopped at spec #1 (not all 11):** an e2e spec is worthless until RUN against the isolated `-p acmpe2e` stack
+— authoring 11 unrun specs = confident-but-unverified output, the exact thing this session existed to remove. The
+run is expensive (~6 min/run × selector-fix iterations) and environment-sensitive (**NEVER `npm run e2e:up`** — wipes
+dev volumes; use `-p acmpe2e` after stopping dev). That + the session cost (~$210) ⇒ the live-run + remaining
+clusters belong to a fresh session with clean context and budget. **✅ spec #1 now DONE (see section above). NEXT:
+replicate the pattern for the remaining bin-(a) clusters — voting (021/023/024), MoM (036/037/038), actions (013),
+decisions (028), notifications (052) — each needs a new seed helper added to `e2e/scenario.ts` FIRST (it has
+topic/meeting/agenda helpers but NONE for votes/decisions/actions/MoM). Run-verify-then-replicate, one cluster at a
+time; do NOT bulk-author unrun specs.**
 
 ## Gotchas for P17b/P17c
 
