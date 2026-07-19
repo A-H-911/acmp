@@ -89,8 +89,13 @@ public static class AcmpCompositionRoot
     // IBackgroundJobClient); the worker adds AddHangfireServer() on top to process jobs (ADR-0024).
     // ExcludeFromCodeCoverage: un-assertable plumbing (like MinioFileStore/Program) — SqlServerStorage's ctor
     // eagerly opens a SQL connection, so it can't run under the InMemory test host; it's skipped at Testing boot.
+    // prepareSchema: true lets the storage create/upgrade its `HangFire` schema on first use — correct for the
+    // dev/e2e stack (the app connects with DDL rights) and for the P18 `--migrate-only` deploy step. In production
+    // the runtime connects as the least-priv `acmp_svc` (no DDL), so it passes FALSE and relies on the migrate step
+    // having pre-provisioned the schema (ADR-0031/0032, deployment.md §5).
     [ExcludeFromCodeCoverage]
-    public static IServiceCollection AddAcmpHangfireStorage(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddAcmpHangfireStorage(this IServiceCollection services, string connectionString,
+        bool prepareSchema = true)
     {
         services.AddHangfire(cfg => cfg
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -99,8 +104,19 @@ public static class AcmpCompositionRoot
             .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
             {
                 SchemaName = "HangFire",
-                PrepareSchemaIfNecessary = true,
+                PrepareSchemaIfNecessary = prepareSchema,
             }));
         return services;
     }
+
+    // Idempotently create/upgrade ONLY the Hangfire `HangFire` schema, as a privileged principal, during the P18
+    // `--migrate-only` deploy step — so the runtime host (least-priv acmp_svc, PrepareSchemaIfNecessary=false) never
+    // needs DDL. Constructing SqlServerStorage with PrepareSchemaIfNecessary=true runs the installer on connect.
+    [ExcludeFromCodeCoverage]
+    public static void EnsureHangfireSchema(string connectionString) =>
+        _ = new SqlServerStorage(connectionString, new SqlServerStorageOptions
+        {
+            SchemaName = "HangFire",
+            PrepareSchemaIfNecessary = true,
+        });
 }

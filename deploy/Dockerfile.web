@@ -21,6 +21,14 @@ RUN npm run build
 # ${KEYCLOAK_ORIGIN} template substitution is unchanged; only the listen port moves 80 -> 8080
 # (default.conf.template + compose port map + healthcheck follow).
 FROM nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0 AS final
+ARG IMAGE_VERSION=dev
+ARG IMAGE_REVISION=unknown
+ARG IMAGE_CREATED=unknown
+LABEL org.opencontainers.image.title="ACMP Web" \
+      org.opencontainers.image.source="https://github.com/A-H-911/acmp" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      org.opencontainers.image.revision="${IMAGE_REVISION}" \
+      org.opencontainers.image.created="${IMAGE_CREATED}"
 # The base image already runs as UID 101, but COPY into /usr/share/nginx/html + /etc/nginx/templates needs
 # write access, so briefly switch to root for the copies, then drop back to the non-root user for runtime.
 # The explicit `USER 101` also makes the non-root guarantee visible to the Trivy Dockerfile scan (DS-0002),

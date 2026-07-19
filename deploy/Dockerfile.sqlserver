@@ -16,3 +16,8 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends mssql-server-fts \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 USER mssql
+# Docker-secrets shim (ADR-0032): if MSSQL_SA_PASSWORD_FILE is set, load the SA password from it; no-op otherwise
+# (Testcontainers/dev pass the plain MSSQL_SA_PASSWORD env). INLINED, not a COPYed script, on purpose: this
+# Dockerfile is built with TWO contexts — compose uses the repo root, SearchProvidersFtsTests uses deploy/ — so a
+# COPY path cannot resolve in both. `exec` keeps sqlservr as PID 1 with signals intact.
+ENTRYPOINT ["/bin/sh", "-c", "if [ -n \"${MSSQL_SA_PASSWORD_FILE:-}\" ] && [ -f \"$MSSQL_SA_PASSWORD_FILE\" ]; then MSSQL_SA_PASSWORD=\"$(cat \"$MSSQL_SA_PASSWORD_FILE\")\"; export MSSQL_SA_PASSWORD; fi; exec /opt/mssql/bin/sqlservr"]

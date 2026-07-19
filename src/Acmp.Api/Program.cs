@@ -11,6 +11,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Docker secrets (docs/domain/deployment.md §3.3, ADR-0032): every file under /run/secrets becomes a config key,
+// with `__` mapping to the section separator (e.g. ConnectionStrings__Acmp -> ConnectionStrings:Acmp). Added last
+// so a mounted secret outranks appsettings/env; optional so a local `dotnet run` without the mount is unaffected.
+// INV-007: no secret literals live in source or compose — only in the git-ignored mounted files (gen-secrets.sh).
+builder.Configuration.AddKeyPerFile("/run/secrets", optional: true);
+
 // Serilog -> console + self-hosted Seq (ADR-0014). Fully configuration-driven.
 builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)
@@ -42,7 +48,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 // Health checks: liveness (self) + readiness (SQL Server). The "api" check is trivially healthy when
 // the app is serving the request — it backs the Administration → System Health "Application" tile (NR-08).
 var connectionString = builder.Configuration.GetConnectionString("Acmp") ?? string.Empty;
-builder.Services.AddHealthChecks()
+var healthChecks = builder.Services.AddHealthChecks()
     .AddCheck("api", () => HealthCheckResult.Healthy("Serving requests"), tags: new[] { "live" })
     .AddSqlServer(connectionString, name: "sqlserver", tags: new[] { "ready" });
 
@@ -53,7 +59,14 @@ builder.Services.AddHealthChecks()
 var backgroundJobsEnabled = !builder.Environment.IsEnvironment("Testing")
     && !string.IsNullOrWhiteSpace(connectionString);
 if (backgroundJobsEnabled)
-    builder.Services.AddAcmpHangfireStorage(connectionString);
+{
+    // Prod runtime connects as the least-priv acmp_svc (no DDL): the `--migrate-only` deploy step pre-provisions the
+    // Hangfire schema, so the host sets Hangfire:PrepareSchema=false. Dev/e2e keeps the default true (ADR-0031/0032).
+    builder.Services.AddAcmpHangfireStorage(connectionString,
+        builder.Configuration.GetValue("Hangfire:PrepareSchema", true));
+    // Readiness sub-checks (NFR-045): MinIO + Hangfire (critical) + Seq (degraded-only).
+    builder.Services.AddAcmpReadinessChecks(healthChecks, builder.Configuration);
+}
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
 builder.Services.AddOpenTelemetry()
@@ -104,9 +117,21 @@ app.MapAdminEndpoints();
 app.MapAuditEndpoints(); // AC-017/019/020: Auditor read + on-demand chain-verify (read-only)
 app.MapWebexEndpoints(); // P13: anonymous, HMAC-authenticated inbound Webex webhook
 
-// The API OWNS schema migrations (both hosts share one SQL DB; a single migrator avoids a two-host race —
-// the worker waits for the schema). Retries while SQL Server finishes accepting connections.
-await MigrationRunner.MigrateAsync(app);
+// Schema migrations. Dev/e2e: the API migrates at startup (Database:MigrateOnStartup default true; it connects
+// with DDL rights and a single migrator avoids a two-host race — the worker waits for the schema). Prod: a dedicated
+// `--migrate-only` deploy step runs migrations as a privileged principal, and the runtime host (least-priv acmp_svc)
+// sets MigrateOnStartup=false and never issues DDL (ADR-0031/0032, deployment.md §5). Retries while SQL Server warms.
+var migrateOnly = args.Contains("--migrate-only");
+if (migrateOnly || builder.Configuration.GetValue("Database:MigrateOnStartup", true))
+    await MigrationRunner.MigrateAsync(app);
+
+if (migrateOnly)
+{
+    // Pre-provision the Hangfire schema in this same privileged step, so the least-priv runtime host needs no DDL.
+    if (!string.IsNullOrWhiteSpace(connectionString))
+        Acmp.Bootstrap.AcmpCompositionRoot.EnsureHangfireSchema(connectionString);
+    return; // deploy migrate step: schema is ready — do not start serving.
+}
 
 // The recurring action-reminder sweep (AC-054/055) is REGISTERED AND RUN by the Acmp.Worker container
 // (ADR-0024), not here — the API no longer hosts a Hangfire server.
