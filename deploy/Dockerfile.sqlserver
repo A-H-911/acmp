@@ -15,4 +15,8 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install -y --no-install-recommends mssql-server-fts \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Docker-secrets shim (ADR-0032): reads MSSQL_SA_PASSWORD from MSSQL_SA_PASSWORD_FILE when set; no-op otherwise.
+COPY deploy/scripts/mssql-entrypoint.sh /usr/local/bin/mssql-entrypoint.sh
+RUN chmod +x /usr/local/bin/mssql-entrypoint.sh
 USER mssql
+ENTRYPOINT ["/usr/local/bin/mssql-entrypoint.sh"]

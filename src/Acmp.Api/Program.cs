@@ -11,6 +11,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Docker secrets (docs/domain/deployment.md §3.3, ADR-0032): every file under /run/secrets becomes a config key,
+// with `__` mapping to the section separator (e.g. ConnectionStrings__Acmp -> ConnectionStrings:Acmp). Added last
+// so a mounted secret outranks appsettings/env; optional so a local `dotnet run` without the mount is unaffected.
+// INV-007: no secret literals live in source or compose — only in the git-ignored mounted files (gen-secrets.sh).
+builder.Configuration.AddKeyPerFile("/run/secrets", optional: true);
+
 // Serilog -> console + self-hosted Seq (ADR-0014). Fully configuration-driven.
 builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)

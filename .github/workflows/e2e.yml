@@ -43,6 +43,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: src/Acmp.Web/package-lock.json
 
+      # ADR-0032: secrets are file-backed. Materialize deploy/secrets/* from the committed placeholder .env.example
+      # before compose (which references those files) parses. No real credentials here — CI values are public.
+      - name: Materialize Docker secret files
+        working-directory: .
+        run: sh deploy/scripts/gen-secrets.sh
+
       - name: Bring up the self-contained stack
         working-directory: .
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example up -d --build --wait

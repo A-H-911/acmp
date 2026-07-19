@@ -10,6 +10,10 @@ using Serilog;
 // API constructs correctly here.
 var builder = Host.CreateApplicationBuilder(args);
 
+// Docker secrets (docs/domain/deployment.md §3.3, ADR-0032): mirror the API — /run/secrets files become config
+// keys (`__` -> `:`), added last, optional. The worker reads the same ConnectionStrings__Acmp / Minio__* secrets.
+builder.Configuration.AddKeyPerFile("/run/secrets", optional: true);
+
 builder.Services.AddSerilog((services, config) => config
     .ReadFrom.Configuration(builder.Configuration)
     .ReadFrom.Services(services)

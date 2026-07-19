@@ -17,14 +17,18 @@ services:
     security_opt: ["no-new-privileges:true"]
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      # ADR-0032: SA password comes from the mounted Docker secret, read by the image's entrypoint shim
+      # (deploy/scripts/mssql-entrypoint.sh) — the mssql image has no native *_FILE support.
+      MSSQL_SA_PASSWORD_FILE: /run/secrets/mssql_sa_password
       MSSQL_PID: Developer
+    secrets:
+      - mssql_sa_password
     ports:
       - "1433:1433"
     volumes:
       - mssql-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -No -Q \"SELECT 1\" || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$(cat /run/secrets/mssql_sa_password)\" -C -No -Q \"SELECT 1\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -59,7 +63,9 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_root_password   # ADR-0032 (native *_FILE)
+    secrets:
+      - minio_root_password
     ports:
       - "9000:9000"   # S3 API
       - "9001:9001"   # console
@@ -82,7 +88,9 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USER}
-      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+      POSTGRES_PASSWORD_FILE: /run/secrets/kc_db_password   # ADR-0032 (native *_FILE)
+    secrets:
+      - kc_db_password
     volumes:
       - kcdata:/var/lib/postgresql/data
     healthcheck:
@@ -98,14 +106,18 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
     security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
+    # ADR-0032: KC's *_FILE support is unreliable across versions, so a thin entrypoint exports the DB + bootstrap
+    # passwords from the mounted secrets, then execs kc.sh with the `command` args (exec => signals intact).
+    entrypoint: ["bash", "-c", "export KC_DB_PASSWORD=\"$(cat /run/secrets/kc_db_password)\"; export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec /opt/keycloak/bin/kc.sh \"$@\"", "--"]
     command: ["start-dev", "--import-realm"]
+    secrets:
+      - kc_db_password
+      - kc_bootstrap_admin_password
     environment:
       KC_DB: postgres
       KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/keycloak"
       KC_DB_USERNAME: ${KC_DB_USER}
-      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_ENABLED: "true"
       # Trust the reverse proxy's X-Forwarded-* so KC emits correct https absolute URLs behind nginx/ngrok.
@@ -142,12 +154,14 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-    entrypoint: ["bash", "/opt/keycloak/reconcile.sh"]
+    # ADR-0032: export the admin password from the mounted secret, then run the reconcile script.
+    entrypoint: ["bash", "-c", "export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec bash /opt/keycloak/reconcile.sh"]
+    secrets:
+      - kc_bootstrap_admin_password
     environment:
       KC_URL: "http://keycloak:8080"
       ACMP_REALM: "acmp"
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
     volumes:
       - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
     restart: "no"
@@ -157,19 +171,20 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: api
+    # ADR-0032: the connection string (which carries the DB password) and the MinIO secret key arrive as Docker
+    # secret files read by AddKeyPerFile(/run/secrets) — no credential literal lives in this compose file.
+    secrets:
+      - ConnectionStrings__Acmp
+      - Minio__SecretKey
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
-      # Encrypt=True (C-CRYPTO-01): the API↔SQL link is TLS, not plaintext. SQL Server auto-generates a
-      # self-signed cert at startup, so this needs nothing mounted — verified in-stack (sys.dm_exec_connections
-      # encrypt_option: FALSE before, TRUE after). TrustServerCertificate=True stays because that cert is
-      # self-signed: the traffic is ENCRYPTED but the server is NOT AUTHENTICATED, so this stops passive
-      # sniffing (T-20) and not an active MITM. Authenticating it (TrustServerCertificate=False + a CA cert
-      # whose CN/SAN is `sqlserver`) is the operator's P18 step — see deployment.md §3.4.
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      # ConnectionStrings__Acmp is a Docker secret (see `secrets:` above), composed by gen-secrets.sh. It carries
+      # `Encrypt=True` (C-CRYPTO-01: API↔SQL is TLS against SQL Server's self-signed cert) + `TrustServerCertificate
+      # =True` (encrypted but NOT authenticated — stops passive sniffing T-20, not an active MITM). Step B
+      # (TrustServerCertificate=False + a CA cert whose CN/SAN is `sqlserver`) is the operator's step — deployment.md §3.4.
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
-      Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
       # Browser-reachable host used ONLY to presign recording playback URLs (ADR-0014); via nginx /acmp-recordings/.
       # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
@@ -296,13 +311,14 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: worker
+    # ADR-0032: same Docker secrets as the api (must match — one job graph). No credential literal here.
+    secrets:
+      - ConnectionStrings__Acmp
+      - Minio__SecretKey
     environment:
       DOTNET_ENVIRONMENT: Production
-      # Encrypt=True — must match the api's connection string exactly (C-CRYPTO-01); see the note there.
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
-      Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
       # Webex config MUST match the API's exactly (same job graph). Fill via .env to enable (default off).
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
@@ -365,6 +381,23 @@ services:
         condition: service_healthy
     ports:
       - "4040:4040"   # ngrok agent inspection UI (operator-only)
+
+# Docker secrets (ADR-0032, deployment.md §3.3). File-backed: gen-secrets.sh materializes deploy/secrets/* from
+# deploy/.env(.example) before `docker compose up` (use deploy/scripts/up.sh). The dir is git-ignored; the .NET
+# hosts read the config-key-named files via AddKeyPerFile, the infra images via *_FILE / the mssql shim.
+secrets:
+  mssql_sa_password:
+    file: ./secrets/mssql_sa_password
+  minio_root_password:
+    file: ./secrets/minio_root_password
+  kc_db_password:
+    file: ./secrets/kc_db_password
+  kc_bootstrap_admin_password:
+    file: ./secrets/kc_bootstrap_admin_password
+  ConnectionStrings__Acmp:
+    file: ./secrets/ConnectionStrings__Acmp
+  Minio__SecretKey:
+    file: ./secrets/Minio__SecretKey
 
 volumes:
   mssql-data:
