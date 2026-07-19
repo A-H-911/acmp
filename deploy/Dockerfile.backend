@@ -28,7 +28,7 @@ RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-rest
 # --- API runtime (HTTP; curl for the compose healthcheck) ---
 # Runs as the image's built-in non-root `app` user (UID 1654, ships in .NET 8 aspnet images) — C-CON-001 / DS-0002.
 # Kestrel binds 8080 (unprivileged port), so no root/cap_net_bind is needed.
-FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS api
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7 AS api
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown
@@ -48,7 +48,7 @@ ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
 
 # --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
 # IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
-FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS worker
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7 AS worker
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown
