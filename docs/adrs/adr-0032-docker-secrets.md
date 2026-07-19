@@ -37,8 +37,8 @@ specifies Docker secrets mounted at `/run/secrets`. This ADR records adopting th
 
 Chosen: **option 2.**
 
-- **Generation** — `deploy/scripts/gen-secrets.sh` materializes `deploy/secrets/*` (git-ignored, mode 600) from
-  `deploy/.env`(.example) before compose parses. `deploy/scripts/up.sh` wraps gen-secrets + `docker compose up` as
+- **Generation** — `deploy/scripts/gen-secrets.sh` materializes `deploy/secrets/*` (git-ignored, **0644 files inside
+  a 0700 dir**) from `deploy/.env`(.example) before compose parses. `deploy/scripts/up.sh` wraps gen-secrets + `docker compose up` as
   the supported single command (NFR-052). CI runs gen-secrets from the committed placeholder `.env.example`.
 - **.NET hosts** — `builder.Configuration.AddKeyPerFile("/run/secrets", optional: true)` (first-party
   `Microsoft.Extensions.Configuration.KeyPerFile`), added last so a mounted secret outranks appsettings/env, and
@@ -59,8 +59,10 @@ Chosen: **option 2.**
 - **Negative / accepted:** a bare `docker compose up` is no longer sufficient — the secret files must exist first, so
   `up.sh`/`gen-secrets.sh` (or the CI step) is mandatory; the mssql/Keycloak shims add a thin, tested entrypoint layer;
   and dev/CI still use public placeholder values (zero hardening benefit there, accepted as the cost of one uniform
-  mechanism). `chmod 600` is honored on Linux/CI; on a Windows dev host NTFS ignores it (cosmetic — the dir is
-  git-ignored regardless).
+  mechanism). Secret **files are 0644 inside a 0700 dir**, not 0600: Docker Compose bind-mounts a file-based secret
+  keeping its host ownership, so a 0600 file owned by the host user is unreadable by the non-root **container** UID
+  (mssql/keycloak/etc.) and the stack fails to start — the 0700 dir provides the host-level confinement instead.
+  (chmod is honored on Linux/CI; a Windows dev host ignores it — cosmetic, the dir is git-ignored regardless.)
 
 ## Traceability
 

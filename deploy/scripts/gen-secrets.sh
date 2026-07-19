@@ -14,6 +14,11 @@ ENV_FILE="$ROOT/deploy/.env"
 [ -f "$ENV_FILE" ] || ENV_FILE="$ROOT/deploy/.env.example"
 SECRETS_DIR="$ROOT/deploy/secrets"
 mkdir -p "$SECRETS_DIR"
+# Dir 0700 keeps other host users out (deployment.md §3.3); the files themselves are 0644 (below) so the non-root
+# CONTAINER UIDs (mssql / keycloak / postgres / minio / the app) can read the compose-mounted secret — a 0600 file
+# owned by the host user is unreadable inside the container and the stack fails to start. (chmod is a no-op on a
+# Windows dev host; it applies on the Linux VM + CI.)
+chmod 700 "$SECRETS_DIR" 2>/dev/null || true
 
 # Load the credential values. The env file is trusted operator/committed config (same file docker compose reads
 # for non-secret interpolation), so sourcing it is acceptable; `#` inside an unquoted value is literal in POSIX sh.
@@ -24,7 +29,7 @@ set +a
 
 write_secret() {  # name value
   printf '%s' "$2" > "$SECRETS_DIR/$1"
-  chmod 600 "$SECRETS_DIR/$1"
+  chmod 644 "$SECRETS_DIR/$1"   # readable by the non-root container UID that mounts it (dir is 0700 — see above)
 }
 
 # --- infra credentials (consumed by SQL Server / MinIO / Postgres / Keycloak) ---
