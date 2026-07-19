@@ -42,10 +42,20 @@ write_secret kc_bootstrap_admin_password  "${KC_BOOTSTRAP_ADMIN_PASSWORD:?set KC
 # Runtime DB login: sa in dev/base; the prod overlay sets ACMP_DB_USER=acmp_svc + ACMP_DB_PASSWORD (P18a Batch 3).
 # TrustServerCertificate flips to False at Step B (operator, deployment.md §3.4); Encrypt stays True (P16-B3).
 DB_USER="${ACMP_DB_USER:-sa}"
+DB_SERVER="${ACMP_DB_SERVER:-sqlserver}"; DB_NAME="${ACMP_DB_NAME:-Acmp}"; DB_TRUST="${ACMP_DB_TRUSTCERT:-True}"
 if [ "$DB_USER" = "sa" ]; then DB_PW="$MSSQL_SA_PASSWORD"; else DB_PW="${ACMP_DB_PASSWORD:?set ACMP_DB_PASSWORD}"; fi
 write_secret ConnectionStrings__Acmp \
-  "Server=${ACMP_DB_SERVER:-sqlserver};Database=${ACMP_DB_NAME:-Acmp};User Id=${DB_USER};Password=${DB_PW};TrustServerCertificate=${ACMP_DB_TRUSTCERT:-True};Encrypt=True"
+  "Server=${DB_SERVER};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PW};TrustServerCertificate=${DB_TRUST};Encrypt=True"
 write_secret Minio__SecretKey             "$MINIO_ROOT_PASSWORD"
+
+# Prod least-priv (P18a Batch 3, ADR-0031): when the runtime login is acmp_svc (not sa), also provide its raw
+# password (sqlserver-init CREATE LOGIN) and a SEPARATE migrator connection string (sa) for the --migrate-only
+# deploy step — the runtime login has no DDL rights, so migrations run under a privileged principal.
+if [ "$DB_USER" != "sa" ]; then
+  write_secret acmp_svc_password          "$DB_PW"
+  write_secret ConnectionStrings__AcmpMigrator \
+    "Server=${DB_SERVER};Database=${DB_NAME};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=${DB_TRUST};Encrypt=True"
+fi
 
 # --- Webex (only when enabled; otherwise the adapter is off and reads nothing — no empty files) ---
 if [ "${WEBEX_ENABLED:-false}" = "true" ]; then

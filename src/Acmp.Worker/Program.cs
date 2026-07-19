@@ -33,7 +33,10 @@ var connectionString = builder.Configuration.GetConnectionString("Acmp") ?? stri
 var backgroundJobsEnabled = !string.IsNullOrWhiteSpace(connectionString);
 if (backgroundJobsEnabled)
 {
-    builder.Services.AddAcmpHangfireStorage(connectionString);
+    // Prod runtime = least-priv acmp_svc (no DDL): the `--migrate-only` deploy step pre-provisions the HangFire
+    // schema, so Hangfire:PrepareSchema=false here. Dev/e2e keeps the default true (ADR-0031/0032, deployment.md §5).
+    builder.Services.AddAcmpHangfireStorage(connectionString,
+        builder.Configuration.GetValue("Hangfire:PrepareSchema", true));
     builder.Services.AddHangfireServer();
 }
 

@@ -70,6 +70,13 @@ services:
       # OIDC metadata must be fetched over HTTPS in prod (the authority is https behind TLS). Overridable to false
       # ONLY for a local overlay smoke against http Keycloak.
       Authentication__Keycloak__RequireHttpsMetadata: "${ACMP_REQUIRE_HTTPS_METADATA:-true}"
+      # Least-priv runtime (ADR-0031): the app connects as acmp_svc (no DDL). The db-migrate one-shot ran migrations
+      # + pre-provisioned the Hangfire schema, so the runtime host neither migrates nor prepares schema.
+      Database__MigrateOnStartup: "false"
+      Hangfire__PrepareSchema: "false"
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits: { cpus: "4", memory: 1G }
@@ -81,9 +88,61 @@ services:
         IMAGE_VERSION: "${IMAGE_VERSION:-dev}"
         IMAGE_REVISION: "${IMAGE_REVISION:-unknown}"
         IMAGE_CREATED: "${IMAGE_CREATED:-unknown}"
+    environment:
+      Hangfire__PrepareSchema: "false"   # least-priv acmp_svc: schema pre-provisioned by db-migrate (ADR-0031)
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits: { cpus: "2", memory: 512M }
+
+  # One-shot: provision the least-priv runtime login `acmp_svc` as `sa`, before migrations (ADR-0031). Reuses the
+  # SQL image (sqlcmd) + the mounted sqlserver-init.sh. Idempotent; exits 0.
+  sqlserver-init:
+    image: acmp/sqlserver-fts:2022
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.sqlserver
+    entrypoint: ["bash", "/opt/init/sqlserver-init.sh"]
+    environment:
+      ACMP_DB_NAME: "${ACMP_DB_NAME:-Acmp}"
+      ACMP_DB_SERVER: "sqlserver"
+    volumes:
+      - ./scripts/sqlserver-init.sh:/opt/init/sqlserver-init.sh:ro
+    secrets:
+      - mssql_sa_password
+      - acmp_svc_password
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  # One-shot: run EF migrations + install the Hangfire schema as a PRIVILEGED principal (the migrator connection
+  # string = sa), so the least-priv runtime never issues DDL. `--migrate-only` migrates then exits 0 (ADR-0031/0032).
+  db-migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      target: api
+    command: ["--migrate-only"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Minimal config for the composition root to build (migrations only touch DbContexts; MinioFileStore is lazy).
+      Minio__Endpoint: "minio:9000"
+      Minio__AccessKey: ${MINIO_ROOT_USER}
+      Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
+      Authentication__Keycloak__RequireHttpsMetadata: "false"
+    secrets:
+      # Mount the migrator (sa) connection string AS ConnectionStrings__Acmp so AddKeyPerFile binds it.
+      - source: ConnectionStrings__AcmpMigrator
+        target: ConnectionStrings__Acmp
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
+    restart: "no"
 
   web:
     build:
@@ -99,3 +158,11 @@ services:
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 128M }
+
+# Prod-only Docker secrets (merged with the base secrets block): the least-priv acmp_svc password (sqlserver-init
+# CREATE LOGIN) and the sa-based migrator connection string (db-migrate --migrate-only). ADR-0031/0032.
+secrets:
+  acmp_svc_password:
+    file: ./secrets/acmp_svc_password
+  ConnectionStrings__AcmpMigrator:
+    file: ./secrets/ConnectionStrings__AcmpMigrator
