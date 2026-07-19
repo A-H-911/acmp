@@ -12,6 +12,49 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-19 — P18 Deployment — P18a hardening (MERGED #146) + P18b backup/runbook
+
+**P18a (`feat/P18a-deploy-hardening`, MERGED PR #146 `7991f93`, all 9 CI checks green).** Three batches finalizing
+deployment per [deployment.md](../domain/deployment.md):
+- **Batch 1 — Docker secrets everywhere (ADR-0032).** Env-var credentials → file-backed Docker secrets at
+  `/run/secrets`. .NET api/worker read them via native `AddKeyPerFile` (`__`→`:`); SQL Server + Keycloak use
+  entrypoint shims (no reliable `_FILE`), MinIO + Postgres use native `*_FILE`. `gen-secrets.sh` materializes
+  `deploy/secrets/*` (0644 in a 0700 dir — 0600 is unreadable by the non-root container UID; **printf not echo** so
+  no trailing newline corrupts the connstr); `up.sh` = single-command bring-up (NFR-052). ⚠ CI caught two bugs a
+  local `docker compose config` did not: the **two-context `Dockerfile.sqlserver`** (compose=repo-root vs
+  `SearchProvidersFtsTests`=deploy/ → the COPY couldn't resolve; **inlined the shim as an ENTRYPOINT**), and the
+  0600→0644 permission fix.
+- **Batch 2 — prod overlay `docker-compose.prod.yml`.** Additive; base stays the dev/e2e stack. Keycloak `start`
+  prod-mode, Seq auth, internal-only ports (Compose `!override`; MinIO/Seq consoles on `127.0.0.1`),
+  `RequireHttpsMetadata`, §9 resource limits, OCI image labels, SQL `/backups` bind-mount.
+- **Batch 3 — least-priv `acmp_svc` + readiness checks (ADR-0031).** ★ **Closes the AC-017/018 "→ P18 least-priv"
+  residual.** Runtime connects as `acmp_svc` (db_datareader+db_datawriter+EXECUTE+acmp_app, **not** db_owner/sysadmin),
+  so the audit-schema DENY finally BINDS. Migrator/runtime split: `--migrate-only` deploy step (a `db-migrate`
+  one-shot, as the sa migrator) runs EF migrations + pre-provisions the Hangfire schema; the runtime sets
+  `Database:MigrateOnStartup=false` + `Hangfire:PrepareSchema=false` and never issues DDL. A `sqlserver-init`
+  one-shot provisions `acmp_svc` + the `acmp_app` role before migrate. NFR-045 readiness: MinIO + Hangfire (critical)
+  + Seq (degraded-only) checks on `/readyz`. **Durable proof (CI):** the extended `AuditImmutabilityDbPermissionTests`
+  shows `acmp_svc` (datawriter + acmp_app, non-sysadmin) is DB-denied audit UPDATE/DELETE — the review rejected the
+  `db_owner` half-measure (it can REVOKE the DENY), so this is the real least-priv. `--migrate-only` verified locally
+  end-to-end (audit + HangFire schemas + acmp_app role, exit 0).
+
+**Rejected the original plan's `db_owner` least-priv (devil's-advocate review):** db_owner can REVOKE the DENY, so it
+neither is least-priv nor closes the residual. Also reaffirmed secrets-everywhere knowing dev/CI values are public.
+
+**P18b (`feat/P18b-backup-runbook`) — Batch 4 backup/restore/warm-standby scripts.** `deploy/scripts/`:
+`backup.sh` (SQL `.bak` + KC `pg_dump` + MinIO `mc mirror` + off-box `scp` + 30d prune; non-SQL legs guarded),
+`restore.sh` (RESTORE WITH REPLACE + verify `decisions.decisions` count — note the doc's `decisions.Decisions` casing
+was wrong), `promote.sh` (warm standby), `crontab.example` (nightly + 4h business-day, NFR-057 RPO ≤4h); ADR-0033
+(backup-as-scripts vs §6's Hangfire sketch); consolidated `deploy/runbooks/README.md`. **Tested restore validated:**
+seed 3 → backup → DELETE 0 → restore → 3 on a real SQL container.
+
+**Operator/P18 residuals that stay open by design (deployment.md §3.4):** TLS certs / topology, C-CRYPTO Step B +
+TDE + MinIO/Seq TLS/SSE + backup encryption, the SQL edition security decision (OQ-040 gates TDE + backup
+encryption), AC-004 Keycloak realm idle-timeout/MFA (OQ-003), the full stack-integrated backup/restore + a real
+standby VM. **Next: P19** (final audit & release readiness).
+
+---
+
 ### 2026-07-18 — P17b (final slice) — decision-issuance UI built → AC-014/015/016 Met, F-03 leg landed
 
 **Slice:** `feat/decision-issue-ui` (off `main` after PR #144 merged the 18-AC live-leg slice). This is the P17b **feature**
