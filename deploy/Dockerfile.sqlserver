@@ -5,7 +5,7 @@
 # (LCID 1025) rides in with it (OQ-034 spike, ph0-validation §7).
 #
 # Base digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
-FROM mcr.microsoft.com/mssql/server:2022-latest@sha256:fc010e5c955453eabc4a24d2f304103e26176fe89796b564f039c45e77a8ebc1
+FROM mcr.microsoft.com/mssql/server:2025-latest@sha256:86cc6144ef39bb0fbed2329e1ad79b13ee82e7b2e4739213a0db0800e668a74a
 USER root
 # --no-install-recommends keeps the layer minimal (C-CON-002 / DS-0029) — no suggested extras.
 RUN apt-get update \
