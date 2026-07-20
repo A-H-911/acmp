@@ -12,6 +12,23 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-20 — D-23 closeable-gap follow-up — 5 items on one branch (AC-032/043/057 → Met)
+
+**Slice:** `feat/D23-closeable-gaps` (off `main` after P19 #148). The five buildable gaps the P19 audit surfaced, built as one combined PR (operator choice), in the order the plan set to minimize CI thrash. Every shape was re-verified against source first (a 2nd devil's-advocate pass caught a real reorder-ordering bug — see below).
+
+**Committed (7 commits):**
+1. **F-04 de-flake** — a deterministic `SqlAuditSink` tip-race unit test (an EF `SaveChanges` interceptor throws a fabricated `Microsoft.Data.SqlClient.SqlException` 2601 on the first save, delegates on the second) so the retry branch's coverage stops depending on the OS scheduler. First commit ⇒ every later push runs on deterministic coverage.
+2. **AC-032 → Met** — `RejectTopicHandler` notifies the submitter on reject (`INotificationChannel` + `TopicNotifications.TopicRejected`, EN/AR, skip-self).
+3. **AC-057 → Met** — a daily headless `SweepTopicSlaHandler` (mirrors `SweepActionReminders`) notifies the Secretary roster on SLA breach; idempotent via a new persisted `Topic.SlaNotifiedAt` marker (migration `Topics_AddSlaNotifiedAt`) reset in `Topic.Transition`.
+4. **AC-043 → Met** — full-stack keyboard priority reorder, **closing the A-03 backlog keyboard-alternative leg** (the one in-repo `[BLOCK]` leg). Handler-side bucket-scoped swap that renumbers 1..N contiguously (priorities default to 0, so a naive swap is a no-op — the **correctness bug the review caught**); a deterministic (Priority, CreatedAt, Key) tiebreak in both the handler and `GetBacklog` so display matches persistence; `POST /priority/move {delta}`; kanban move buttons (≥24px), e2e persistence spec.
+5. **wcag22aa** — the e2e axe sweep now includes `wcag22aa` (adds `target-size`) and scans the kanban view where the reorder controls live.
+6. **BL-016** — server validation failures carry a stable `ErrorCode`; the SPA localizes EN/AR via an `errors.*` catalog (`localizedValidationMessage`); apiClient `errors` type corrected to the real wire shape. **AC-049/AC-030 kept Partial** — the browser live-leg (an upload rejection rendered localized) is the remaining leg.
+7. **Re-audit** — AC-032/043/057 → Met (rollup **60 Met / 13 Partial / 1 Pending / 0 Not-met**); the P19 gate rows A-03 and F-04 updated (both now built/de-flaked, e2e/coverage re-confirmed in CI).
+
+**Verification:** backend `dotnet test` green on the changed handlers (F-04, reject, SLA sweep, move-priority, endpoint); FE Kanban/Backlog/apiClient/SubmitTopic/topics tests green; i18n parity 1797; migration builds; e2e specs (`ac043-reorder`, extended `rtl-a11y`) verified in CI. Keystone 1.0.0 validator 7/7; AC cells bare. **D-23 partially closed** — AC-049 localized-upload live-leg + AC-030 re-confirm remain (register updated).
+
+---
+
 ### 2026-07-20 — P19 Final audit & release readiness — reports + CONDITIONAL NO-GO (ladder complete)
 
 **Slice:** `feat/P19-release-readiness` (off `main` after P18b #147 merged, `1f1eaea`). The last ladder slice. Per the P19 prompt: ran the [checkpoints.md](../execution/checkpoints.md) release gates + full [DoD](../execution/definition-of-done.md), produced the final acceptance-audit report (every `AC-###` → verdict, in [acceptance-audit.md](../validation/acceptance-audit.md) §Final Release-Readiness) and a release-notes summary ([status-report.md](status-report.md) §Release Notes v1.0). **Reports-only, decoupled from feature work (operator decision after a devil's-advocate review); P19 flips zero ACs** (stays 57 Met / 16 Partial / 1 Pending / 0 Not-met).

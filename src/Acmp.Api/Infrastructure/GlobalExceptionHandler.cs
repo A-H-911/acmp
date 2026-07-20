@@ -30,8 +30,11 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         context.Response.StatusCode = status;
         var problem = new ProblemDetails { Status = status, Title = title };
+        // BL-016: carry a stable ErrorCode per failure so the SPA localizes the message (EN/AR) via its i18n
+        // catalog, falling back to the English ErrorMessage for any unmapped code. FluentValidation sets a
+        // default ErrorCode per validator (NotEmptyValidator, …); the file rules set explicit codes.
         if (exception is ValidationException ve)
-            problem.Extensions["errors"] = ve.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
+            problem.Extensions["errors"] = ve.Errors.Select(e => new { e.PropertyName, e.ErrorMessage, e.ErrorCode });
 
         return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {

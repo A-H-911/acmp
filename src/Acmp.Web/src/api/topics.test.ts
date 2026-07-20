@@ -7,6 +7,7 @@ import {
   useAcceptTopic,
   useReturnTopic,
   usePrepareTopic,
+  useMoveTopicPriority,
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
@@ -125,6 +126,18 @@ describe('topic mutations', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(urlOf(spy)).toBe('/api/topics/abc/accept');
     expect(lastBody(spy)).toEqual({ ownerId: 'u1', ownerName: 'Owner One' });
+  });
+
+  it('useMoveTopicPriority POSTs the ±1 delta to the move endpoint and invalidates the backlog (AC-043)', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useMoveTopicPriority(), { wrapper });
+    result.current.mutate({ topicId: 'abc', delta: 1 });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/topics/abc/priority/move');
+    expect(lastBody(spy)).toEqual({ delta: 1 });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
   });
 
   it('usePrepareTopic POSTs to the prepare endpoint and invalidates backlog, pool, and detail', async () => {

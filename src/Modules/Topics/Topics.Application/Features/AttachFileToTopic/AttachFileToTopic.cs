@@ -27,9 +27,11 @@ public sealed class AttachFileToTopicValidator : AbstractValidator<AttachFileToT
         RuleFor(x => x.SizeBytes)
             .GreaterThan(0)
             .LessThanOrEqualTo(o.MaxSizeBytes)
+            .WithErrorCode("FILE_TOO_LARGE")   // BL-016: the SPA localizes by code (it owns the MB limit for display)
             .WithMessage($"File exceeds the maximum allowed size of {o.MaxSizeBytes / (1024 * 1024)} MB.");
         RuleFor(x => x.ContentType)
             .Must(ct => o.AllowedContentTypes.Contains(ct, StringComparer.OrdinalIgnoreCase))
+            .WithErrorCode("FILE_TYPE_NOT_ALLOWED")
             .WithMessage(x => $"File type '{x.ContentType}' is not allowed.");
     }
 }
@@ -69,7 +71,12 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
 
         // C-FILE-01: confirm the actual bytes match the allow-listed declared type before storing (fail-closed).
         if (!_inspector.ContentMatchesDeclared(request.Content, request.ContentType))
-            throw new ValidationException($"File content does not match its declared type '{request.ContentType}'.");
+            throw new ValidationException(new[]
+            {
+                new FluentValidation.Results.ValidationFailure(nameof(request.ContentType),
+                    $"File content does not match its declared type '{request.ContentType}'.")
+                { ErrorCode = "FILE_CONTENT_MISMATCH" },   // BL-016
+            });
 
         // Object key is server-derived (GUID + a content-type extension) — NEVER the raw client filename, which
         // could carry path/encoding tricks or break the presigned-URL signature. The original name is kept as

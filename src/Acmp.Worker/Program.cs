@@ -1,5 +1,6 @@
 ﻿using Acmp.Bootstrap;
 using Acmp.Modules.Actions.Application.Reminders;
+using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Shared.Application.Abstractions;
 using Hangfire;
 using MediatR;
@@ -58,6 +59,13 @@ if (backgroundJobsEnabled)
     host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<IIntegrityVerifier>("integrity-verify",
         verifier => verifier.RunAsync(CancellationToken.None),
         Cron.Daily(3));
+
+    // AC-057: daily backlog SLA-breach sweep — notifies the Secretary roster when a topic exceeds its urgency
+    // SLA (time-in-status). All logic in SweepTopicSlaHandler; idempotent via Topic.SlaNotifiedAt (reset on
+    // transition). Daily matches AC-057's "badge updates daily".
+    host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("topic-sla-sweep",
+        sender => sender.Send(new SweepTopicSlaCommand(), CancellationToken.None),
+        Cron.Daily());
 }
 
 host.Run();

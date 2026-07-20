@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
-import { ApiError } from '../../api/apiClient';
+import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
 import { Field, Input, Textarea } from '../../components/ui/Field';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
@@ -178,15 +178,23 @@ export function SubmitTopic() {
     if (!validate()) return;
     try {
       const res = await submit.mutateAsync({ ...form, source: SOURCE_DEFAULT, tags: [] });
+      let uploadError: string | undefined;
       for (const file of files) {
-        await uploadTopicAttachment(res.id, file).catch(() => {
-          /* a failed attachment shouldn't lose the created topic; detail-screen upload retry → PR3 */
-        });
+        try {
+          await uploadTopicAttachment(res.id, file);
+        } catch (e) {
+          // AC-049 (BL-016): surface the FIRST locale-aware upload rejection (size/MIME/content mismatch)
+          // rather than swallowing it. The topic is already created, so keep the user here to see the error
+          // and finish attaching on the topic screen instead of silently losing the file.
+          if (!uploadError) uploadError = (e instanceof ApiError ? localizedValidationMessage(e.problem) : undefined) ?? t('submit.uploadError');
+        }
       }
       localStorage.removeItem(DRAFT_KEY);
+      if (uploadError) { setSubmitError(uploadError); return; }
       leaveTo(`/topics/${res.key}`);
     } catch (err) {
-      setSubmitError(err instanceof ApiError ? err.problem?.title ?? t('submit.submitError') : t('submit.submitError'));
+      // AC-030 (BL-016): localize the server's validation backstop by error code (EN/AR).
+      setSubmitError(err instanceof ApiError ? (localizedValidationMessage(err.problem) ?? t('submit.submitError')) : t('submit.submitError'));
     }
   }
 

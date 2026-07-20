@@ -139,6 +139,20 @@ public class TopicEndpointsCoverageTests
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
+    [Fact] // AC-043: MoveBody happy path — Secretary reorders by a ±1 delta → 204 (single-item column = no-op)
+    public async Task Secretary_moves_topic_priority_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topic = await (await Client(factory, "Member", sub: "kc-omar")
+            .PostAsJsonAsync("/api/topics", SubmitBody()))
+            .Content.ReadFromJsonAsync<SubmitResult>();
+
+        var response = await Client(factory, "Secretary")
+            .PostAsJsonAsync($"/api/topics/{topic!.Id}/priority/move", new { delta = 1 });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
     // ---- UpdateTopicBody ---------------------------------------------------------------
 
     [Fact] // AC-034: submitter updates own Submitted topic (SubmittedBySub == current user →

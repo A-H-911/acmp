@@ -5,6 +5,7 @@ using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
+using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
@@ -82,10 +83,17 @@ public static class TopicEndpoints
             return Results.NoContent();
         });
 
-        // W3: backlog prioritization.
+        // W3: backlog prioritization (absolute set — drag-and-drop / direct edit).
         group.MapPut("/{id:guid}/priority", async (Guid id, PriorityBody body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new PrioritizeTopicCommand(id, body.Priority), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.BacklogPrioritize);
+
+        // AC-043 / FR-034: keyboard move-up/down reorder within the topic's kanban column (a single ±1 delta).
+        group.MapPost("/{id:guid}/priority/move", async (Guid id, MoveBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new MoveTopicPriorityCommand(id, body.Delta), ct);
             return Results.NoContent();
         }).RequireAuthorization(Policies.BacklogPrioritize);
 
@@ -121,6 +129,7 @@ public static class TopicEndpoints
     public sealed record ReasonBody(string Reason);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
+    public sealed record MoveBody(int Delta);
     public sealed record UpdateTopicBody(string Title, string Description, string Justification,
         TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags);
 }

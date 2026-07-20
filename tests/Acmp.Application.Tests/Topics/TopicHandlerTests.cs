@@ -1,10 +1,12 @@
 ﻿using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
+using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
+using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
@@ -456,7 +458,7 @@ public class TopicHandlerTests
         var user = User("kc-sec", "Sec");
         await using var db = NewDb(user, Clock(default));
 
-        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(Guid.NewGuid(), "Duplicate"), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -469,7 +471,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
 
-        var act = () => new RejectTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(topic.PublicId, "Duplicate"), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
@@ -483,7 +485,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Accepted);    // Reject allows Submitted/Triage only
 
-        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(topic.PublicId, "Too late"), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -494,15 +496,206 @@ public class TopicHandlerTests
     {
         var user = User("kc-sec", "Sec");
         await using var db = NewDb(user, Clock(default));
-        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);   // submitter = kc-omar, actor = kc-sec
         var audit = Substitute.For<IAuditSink>();
+        var notifications = Substitute.For<INotificationChannel>();
 
-        await new RejectTopicHandler(db, Authz(), user, Clock(default), audit)
+        await new RejectTopicHandler(db, Authz(), user, Clock(default), audit, notifications)
             .Handle(new RejectTopicCommand(topic.PublicId, "Duplicate of TOP-2026-001"), default);
 
         var stored = await db.Topics.Include(t => t.History).SingleAsync();
         stored.Status.Should().Be(TopicStatus.Rejected);
         stored.History.Should().Contain(h => h.ToStatus == TopicStatus.Rejected && h.Reason == "Duplicate of TOP-2026-001");
         await audit.Received(1).EmitEnrichedAsync("Topics.TopicRejected", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        // AC-032: the submitter (not the actor) is notified of the rejection.
+        await notifications.Received(1).PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-omar" && m.Category == "TopicRejected"
+                && m.DeepLink == "/topics/" + topic.Key),
+            Arg.Any<CancellationToken>());
+    }
+
+    // ---- SweepTopicSlaHandler (AC-057) ----
+    // Seed = Normal urgency (21-day SLA), submitted 2026-02-01; a clock 22 days later breaches.
+
+    private static SweepTopicSlaHandler SlaSweep(TopicsDbContext db, DateTimeOffset now, INotificationChannel notifications,
+        ICommitteeDirectory directory, IAuditSink audit) =>
+        new(db, Clock(now), notifications, directory, audit);
+
+    [Fact]
+    public async Task Sla_sweep_notifies_the_secretary_and_marks_a_breaching_topic()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);  // 22d after the seed > 21d Normal SLA
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+        var audit = Substitute.For<IAuditSink>();
+
+        var count = await SlaSweep(db, now, notifications, Directory("kc-sec2"), audit)
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(1);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().Be(now);
+        await notifications.Received(1).PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-sec2" && m.Category == "TopicSlaBreach"
+                && m.DeepLink == "/topics/" + topic.Key),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitAsync("Topics.SlaBreachNotified", "system:topic-sla", Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_ignores_a_topic_within_its_sla()
+    {
+        var now = new DateTimeOffset(2026, 2, 5, 9, 0, 0, TimeSpan.Zero);   // 4d after the seed < 21d Normal SLA
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+
+        var count = await SlaSweep(db, now, notifications, Directory("kc-sec2"), Substitute.For<IAuditSink>())
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(0);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().BeNull();
+        await notifications.DidNotReceive().PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_is_a_one_shot_per_breach_window()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+        var handler = SlaSweep(db, now, notifications, Directory("kc-sec2"), Substitute.For<IAuditSink>());
+
+        (await handler.Handle(new SweepTopicSlaCommand(), default)).Should().Be(1);
+        (await handler.Handle(new SweepTopicSlaCommand(), default)).Should().Be(0);   // marker set → not re-notified
+
+        await notifications.Received(1).PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_marks_the_topic_even_when_the_secretary_roster_is_empty()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+
+        var count = await SlaSweep(db, now, notifications, Directory(), Substitute.For<IAuditSink>())  // empty roster
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(1);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().Be(now);   // marker flips so we don't re-scan it
+        await notifications.DidNotReceive().PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // AC-057: a status transition re-arms SLA notification for the new time-in-status window.
+    public void A_status_transition_clears_the_sla_notified_marker()
+    {
+        var t0 = new DateTimeOffset(2026, 2, 1, 9, 0, 0, TimeSpan.Zero);
+        var topic = Topic.Draft("TOP-2026-101", "T", "D", "J", TopicType.ArchitectureDecision,
+            TopicUrgency.Normal, TopicSource.CommitteeMember, "kc-omar", "Omar",
+            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        topic.Submit(t0);
+        topic.MarkSlaNotified(t0);
+        topic.SlaNotifiedAt.Should().Be(t0);
+
+        topic.BeginTriage("kc-sec", "Sec", t0.AddDays(1));
+
+        topic.SlaNotifiedAt.Should().BeNull();
+    }
+
+    // ---- TopicBuckets (AC-043 — server-side mirror of the kanban grouping) ----
+
+    [Theory]
+    [InlineData(TopicStatus.Draft, "triage")]
+    [InlineData(TopicStatus.Submitted, "triage")]
+    [InlineData(TopicStatus.Triage, "triage")]
+    [InlineData(TopicStatus.Reopened, "triage")]
+    [InlineData(TopicStatus.Accepted, "accepted")]
+    [InlineData(TopicStatus.Prepared, "accepted")]
+    [InlineData(TopicStatus.Scheduled, "scheduled")]
+    [InlineData(TopicStatus.InCommittee, "scheduled")]
+    [InlineData(TopicStatus.Deferred, "returned")]
+    [InlineData(TopicStatus.Rejected, "returned")]
+    [InlineData(TopicStatus.Decided, "done")]
+    [InlineData(TopicStatus.Closed, "done")]
+    [InlineData(TopicStatus.Converted, "done")]
+    [InlineData((TopicStatus)999, "triage")]   // defensive default
+    public void TopicBuckets_maps_every_status_to_its_kanban_bucket(TopicStatus status, string bucket) =>
+        Acmp.Modules.Topics.Application.Internal.TopicBuckets.BucketOf(status).Should().Be(bucket);
+
+    // ---- MoveTopicPriorityHandler (AC-043) ----
+
+    private static MoveTopicPriorityHandler MovePriority(TopicsDbContext db, IAuditSink? audit = null, bool deny = false) =>
+        new(db, Authz(deny), Clock(new DateTimeOffset(2026, 3, 1, 9, 0, 0, TimeSpan.Zero)), audit ?? Substitute.For<IAuditSink>());
+
+    // A Submitted topic in the 'triage' bucket with a given key; all share Priority 0 and CreatedAt, so their
+    // deterministic order is by Key (the third tiebreak).
+    private static async Task<Topic> SeedSubmittedAsync(TopicsDbContext db, string key)
+    {
+        var t = Topic.Draft(key, "T", "D", "J", TopicType.ArchitectureDecision, TopicUrgency.Normal,
+            TopicSource.CommitteeMember, "kc-omar", "Omar", new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        t.Submit(new DateTimeOffset(2026, 2, 1, 9, 0, 0, TimeSpan.Zero));
+        db.Topics.Add(t);
+        await db.SaveChangesAsync();
+        return t;
+    }
+
+    [Fact]
+    public async Task Move_throws_not_found_for_an_unknown_topic()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var act = () => MovePriority(db).Handle(new MoveTopicPriorityCommand(Guid.NewGuid(), -1), default);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task Move_is_denied_without_BacklogPrioritize()
+    {
+        await using var db = NewDb(User("kc-member", "M"), Clock(default));
+        var t = await SeedSubmittedAsync(db, "TOP-2026-201");
+        var act = () => MovePriority(db, deny: true).Handle(new MoveTopicPriorityCommand(t.PublicId, -1), default);
+        await act.Should().ThrowAsync<ForbiddenAccessException>();
+    }
+
+    [Fact]
+    public async Task Move_rejects_a_decided_topic()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var t = await SeedTopicAsync(db, TopicStatus.Decided);
+        var act = () => MovePriority(db).Handle(new MoveTopicPriorityCommand(t.PublicId, -1), default);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Move_up_at_the_top_of_the_column_is_a_no_op()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");   // order by Key → a is first
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(a.PublicId, -1), default);
+
+        (await db.Topics.ToListAsync()).Should().OnlyContain(t => t.Priority == 0);   // no swap → no renumber
+    }
+
+    [Fact]
+    public async Task Move_down_swaps_the_neighbour_and_renumbers_the_column_contiguously()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+        await SeedSubmittedAsync(db, "TOP-2026-203");
+        var audit = Substitute.For<IAuditSink>();
+
+        // initial order by (Priority 0, CreatedAt, Key) = [201, 202, 203]. Move 201 DOWN → [202, 201, 203], 1..3.
+        await MovePriority(db, audit).Handle(new MoveTopicPriorityCommand(a.PublicId, 1), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        byKey["TOP-2026-202"].Should().Be(1);
+        byKey["TOP-2026-201"].Should().Be(2);
+        byKey["TOP-2026-203"].Should().Be(3);
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicReordered", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 }

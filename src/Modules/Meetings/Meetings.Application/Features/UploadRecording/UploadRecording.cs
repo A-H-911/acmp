@@ -33,9 +33,11 @@ public sealed class UploadRecordingValidator : AbstractValidator<UploadRecording
         RuleFor(x => x.SizeBytes)
             .GreaterThan(0)
             .LessThanOrEqualTo(o.MaxSizeBytes)
+            .WithErrorCode("FILE_TOO_LARGE")   // BL-016: SPA localizes by code
             .WithMessage($"Recording exceeds the maximum allowed size of {o.MaxSizeBytes / (1024 * 1024)} MB.");
         RuleFor(x => x.ContentType)
             .Must(ct => o.AllowedContentTypes.Contains(ct, StringComparer.OrdinalIgnoreCase))
+            .WithErrorCode("FILE_TYPE_NOT_ALLOWED")
             .WithMessage(x => $"Recording type '{x.ContentType}' is not allowed.");
     }
 }
@@ -71,7 +73,12 @@ public sealed class UploadRecordingHandler : IRequestHandler<UploadRecordingComm
         // C-FILE-01: the declared ContentType was allow-list-checked in the validator; now confirm the actual
         // bytes match it (magic-byte sniff) so a mislabelled payload can't slip through. Fail-closed, pre-store.
         if (!_inspector.ContentMatchesDeclared(request.Content, request.ContentType))
-            throw new ValidationException($"Recording content does not match its declared type '{request.ContentType}'.");
+            throw new ValidationException(new[]
+            {
+                new FluentValidation.Results.ValidationFailure(nameof(request.ContentType),
+                    $"Recording content does not match its declared type '{request.ContentType}'.")
+                { ErrorCode = "FILE_CONTENT_MISMATCH" },   // BL-016
+            });
 
         // Object key is server-derived: meeting key + GUID + a content-type extension — NEVER the raw client
         // filename. A name with spaces/parens/unicode would break the SigV4 presigned-URL signature (encoding
