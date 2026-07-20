@@ -44,6 +44,10 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public Guid? OwnerId { get; private set; }            // CommitteeMember.PublicId
     public string? OwnerName { get; private set; }        // display snapshot
     public DateTimeOffset? RevisitOn { get; private set; }
+    // AC-057: when the SLA-breach sweep last notified the Secretary for this topic's CURRENT status window.
+    // Reset to null on every transition (see Transition) so a fresh breach in a new status re-notifies — an
+    // idempotent one-shot per breach, mirroring ActionItem.OverdueNotifiedAt.
+    public DateTimeOffset? SlaNotifiedAt { get; private set; }
     // P15c / W16: when this topic was created by converting a research Recommendation (REC-), the source
     // recommendation's id — an opaque value ref, no FK (ADR-0001), same shape as ResearchMission.SourceTopicId.
     // A filtered UNIQUE index on it (TopicConfiguration) enforces one-topic-per-recommendation atomically.
@@ -253,10 +257,15 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
 
     // ---- helpers ----
 
+    // AC-057: the SLA-breach sweep records that it has notified the Secretary for this breach; cleared on the
+    // next transition so the next status window can breach and notify afresh.
+    public void MarkSlaNotified(DateTimeOffset now) => SlaNotifiedAt = now;
+
     private void Transition(TopicStatus to, string? reason, string actorSub, string actorName, DateTimeOffset now)
     {
         _history.Add(new TopicStatusEvent(Status, to, reason, actorSub, actorName, now));
         Status = to;
+        SlaNotifiedAt = null;   // AC-057: a status change re-arms SLA notification for the new time-in-status window.
     }
 
     private void RequireStatus(params TopicStatus[] allowed)

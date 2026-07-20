@@ -5,6 +5,7 @@ using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
+using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
@@ -510,5 +511,96 @@ public class TopicHandlerTests
             Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-omar" && m.Category == "TopicRejected"
                 && m.DeepLink == "/topics/" + topic.Key),
             Arg.Any<CancellationToken>());
+    }
+
+    // ---- SweepTopicSlaHandler (AC-057) ----
+    // Seed = Normal urgency (21-day SLA), submitted 2026-02-01; a clock 22 days later breaches.
+
+    private static SweepTopicSlaHandler SlaSweep(TopicsDbContext db, DateTimeOffset now, INotificationChannel notifications,
+        ICommitteeDirectory directory, IAuditSink audit) =>
+        new(db, Clock(now), notifications, directory, audit);
+
+    [Fact]
+    public async Task Sla_sweep_notifies_the_secretary_and_marks_a_breaching_topic()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);  // 22d after the seed > 21d Normal SLA
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+        var audit = Substitute.For<IAuditSink>();
+
+        var count = await SlaSweep(db, now, notifications, Directory("kc-sec2"), audit)
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(1);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().Be(now);
+        await notifications.Received(1).PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-sec2" && m.Category == "TopicSlaBreach"
+                && m.DeepLink == "/topics/" + topic.Key),
+            Arg.Any<CancellationToken>());
+        await audit.Received(1).EmitAsync("Topics.SlaBreachNotified", "system:topic-sla", Arg.Any<object>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_ignores_a_topic_within_its_sla()
+    {
+        var now = new DateTimeOffset(2026, 2, 5, 9, 0, 0, TimeSpan.Zero);   // 4d after the seed < 21d Normal SLA
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+
+        var count = await SlaSweep(db, now, notifications, Directory("kc-sec2"), Substitute.For<IAuditSink>())
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(0);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().BeNull();
+        await notifications.DidNotReceive().PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_is_a_one_shot_per_breach_window()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+        var handler = SlaSweep(db, now, notifications, Directory("kc-sec2"), Substitute.For<IAuditSink>());
+
+        (await handler.Handle(new SweepTopicSlaCommand(), default)).Should().Be(1);
+        (await handler.Handle(new SweepTopicSlaCommand(), default)).Should().Be(0);   // marker set → not re-notified
+
+        await notifications.Received(1).PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Sla_sweep_marks_the_topic_even_when_the_secretary_roster_is_empty()
+    {
+        var now = new DateTimeOffset(2026, 2, 23, 9, 0, 0, TimeSpan.Zero);
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(now));
+        await SeedTopicAsync(db, TopicStatus.Submitted);
+        var notifications = Substitute.For<INotificationChannel>();
+
+        var count = await SlaSweep(db, now, notifications, Directory(), Substitute.For<IAuditSink>())  // empty roster
+            .Handle(new SweepTopicSlaCommand(), default);
+
+        count.Should().Be(1);
+        (await db.Topics.SingleAsync()).SlaNotifiedAt.Should().Be(now);   // marker flips so we don't re-scan it
+        await notifications.DidNotReceive().PublishAsync(Arg.Any<NotificationMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // AC-057: a status transition re-arms SLA notification for the new time-in-status window.
+    public void A_status_transition_clears_the_sla_notified_marker()
+    {
+        var t0 = new DateTimeOffset(2026, 2, 1, 9, 0, 0, TimeSpan.Zero);
+        var topic = Topic.Draft("TOP-2026-101", "T", "D", "J", TopicType.ArchitectureDecision,
+            TopicUrgency.Normal, TopicSource.CommitteeMember, "kc-omar", "Omar",
+            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        topic.Submit(t0);
+        topic.MarkSlaNotified(t0);
+        topic.SlaNotifiedAt.Should().Be(t0);
+
+        topic.BeginTriage("kc-sec", "Sec", t0.AddDays(1));
+
+        topic.SlaNotifiedAt.Should().BeNull();
     }
 }
