@@ -1,0 +1,13 @@
+# ACMP backup schedule (P18b, deployment.md §6). Install on the PRIMARY VM's deploy user:  crontab crontab.example
+# Nightly full backup + every-4h business-day backups so data loss never exceeds 4h (NFR-057 RPO); RTO <= 8h
+# (NFR-056) is met by promote.sh on the standby. Backups land in ACMP_BACKUP_DIR and (if STANDBY_HOST is set in
+# deploy/.env) are scp'd off-box (NFR-058: stored separately from the primary DB server).
+#
+# Adjust the path to your checkout. Output is appended to a log the operator reviews; a non-zero exit (SQL failure)
+# is where an alert hooks in (mail, Seq webhook, etc.).
+
+# Nightly full backup at 02:00
+0 2 * * *      cd /opt/acmp && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
+
+# Every 4 hours during business days (Sun-Thu 08:00, 12:00, 16:00, 20:00) to hold RPO <= 4h
+0 8,12,16,20 * * 0-4   cd /opt/acmp && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
