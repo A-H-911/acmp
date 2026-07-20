@@ -1,5 +1,12 @@
 {
   "app": { "name": "ACMP", "committee": "Architecture Committee", "tagline": "Architecture Committee Management Platform" },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "FILE_TOO_LARGE": "The file exceeds the maximum allowed size.",
+    "FILE_TYPE_NOT_ALLOWED": "That file type isn’t allowed.",
+    "FILE_CONTENT_MISMATCH": "The file’s contents don’t match its declared type.",
+    "NotEmptyValidator": "This field is required."
+  },
   "search": {
     "title": "Search",
     "prompt": {
@@ -1287,6 +1294,7 @@
     "saveDraft": "Save draft",
     "submit": "Submit for triage",
     "submitError": "Couldn’t submit the topic. Check the form and try again.",
+    "uploadError": "The file couldn’t be attached. Check the file and try again.",
     "fType": "Topic type",
     "fTitle": "Title",
     "fTitleHelp": "Be specific — this appears in the backlog and agenda.",

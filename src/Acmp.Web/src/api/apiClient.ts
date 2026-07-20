@@ -6,12 +6,35 @@
  */
 import i18n from '../i18n';
 
+// BL-016: one validation failure as the server actually emits it (GlobalExceptionHandler projects the
+// FluentValidation PropertyName/ErrorMessage/ErrorCode). Previously typed as Record<string,string[]> — the
+// ASP.NET ValidationProblemDetails shape — which did NOT match the wire and was never consumed.
+export interface ProblemError {
+  propertyName?: string;
+  errorMessage?: string;
+  errorCode?: string;
+}
+
 export interface ProblemDetails {
   type?: string;
   title?: string;
   status?: number;
   detail?: string;
-  errors?: Record<string, string[]>;
+  errors?: ProblemError[];
+}
+
+/**
+ * BL-016: localize a validation ProblemDetails (EN/AR). Maps the first failure's stable ErrorCode to an
+ * `errors.<code>` i18n key; falls back to the server's English ErrorMessage, then to the generic message.
+ */
+export function localizedValidationMessage(problem?: ProblemDetails): string | undefined {
+  const first = problem?.errors?.[0];
+  if (!first) return problem?.title;
+  if (first.errorCode) {
+    const translated = i18n.t(`errors.${first.errorCode}`, { defaultValue: '' });
+    if (translated) return translated;
+  }
+  return first.errorMessage ?? i18n.t('errors.generic', { defaultValue: problem?.title ?? '' });
 }
 
 export class ApiError extends Error {
