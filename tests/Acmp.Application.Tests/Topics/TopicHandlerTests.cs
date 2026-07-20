@@ -605,6 +605,26 @@ public class TopicHandlerTests
         topic.SlaNotifiedAt.Should().BeNull();
     }
 
+    // ---- TopicBuckets (AC-043 — server-side mirror of the kanban grouping) ----
+
+    [Theory]
+    [InlineData(TopicStatus.Draft, "triage")]
+    [InlineData(TopicStatus.Submitted, "triage")]
+    [InlineData(TopicStatus.Triage, "triage")]
+    [InlineData(TopicStatus.Reopened, "triage")]
+    [InlineData(TopicStatus.Accepted, "accepted")]
+    [InlineData(TopicStatus.Prepared, "accepted")]
+    [InlineData(TopicStatus.Scheduled, "scheduled")]
+    [InlineData(TopicStatus.InCommittee, "scheduled")]
+    [InlineData(TopicStatus.Deferred, "returned")]
+    [InlineData(TopicStatus.Rejected, "returned")]
+    [InlineData(TopicStatus.Decided, "done")]
+    [InlineData(TopicStatus.Closed, "done")]
+    [InlineData(TopicStatus.Converted, "done")]
+    [InlineData((TopicStatus)999, "triage")]   // defensive default
+    public void TopicBuckets_maps_every_status_to_its_kanban_bucket(TopicStatus status, string bucket) =>
+        Acmp.Modules.Topics.Application.Internal.TopicBuckets.BucketOf(status).Should().Be(bucket);
+
     // ---- MoveTopicPriorityHandler (AC-043) ----
 
     private static MoveTopicPriorityHandler MovePriority(TopicsDbContext db, IAuditSink? audit = null, bool deny = false) =>
