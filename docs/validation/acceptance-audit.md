@@ -1,8 +1,8 @@
 ---
 artifact: acceptance-audit
 status: active
-version: v1.3
-updated: 2026-07-19
+version: v1.4
+updated: 2026-07-20
 ---
 
 # ACMP Acceptance Audit
@@ -11,6 +11,56 @@ Every `AC-###` from `docs/validation/acceptance-criteria.md` → verdict. Keysto
 A requirement is not "done" until its AC is `Met` and traces to ≥1 test (gate **G-TRACE**).
 
 **Verdicts:** `Met` · `Partial` · `Not-met` · `Pending` (not yet implemented).
+
+## Final Release-Readiness Audit (P19) — 2026-07-20
+
+**Verdict: CONDITIONAL NO-GO.** The code side is at its in-repo ceiling; the release is gated on an operator go-live checklist + human UAT/security sign-offs that an execution agent cannot self-certify. Every gate in [checkpoints.md](../execution/checkpoints.md) is a `[BLOCK]`; the **Secretary is the sole authority to proceed**, and only after every open item below is cleared and signed with evidence.
+
+**AC rollup (unchanged — P19 flips no verdict):** 74 ACs · **57 Met · 16 Partial · 1 Pending · 0 Not-met**. The full per-AC verdict table below *is* the "every AC → verdict" report. Verdicts are the ledger's per-AC test refs, not a fresh full-suite re-run.
+
+Legend: **PASS✓** in-repo evidence, grounded this cycle (incl. the green CI run on release-candidate `1f1eaea` / PR #147) · **PASS⧗** code evidence exists, re-confirm on the release commit / in staging · **OPEN-op** operator/human/staging/deploy action (cannot be self-signed) · **OPEN-build** engineering, moved to the deferred follow-up slice (D-23) · **DEFERRED** accepted, OQ-recorded.
+
+| Gate | Item | Status | Evidence / owner |
+|---|---|---|---|
+| F-01 | Must FRs each have a Met AC | **OPEN** | 6 Must FRs (FR-019/022/025/027/040/044) have only Partial ACs — all built code awaiting a live-leg (D-23); FR-034 is already Met via AC-045/046, so AC-043 does not bear on F-01; FR-013 is delivered + gated by S-07 (its only AC, AC-004, is Pending). Closure = the live-leg follow-up + AC-004 realm config. |
+| F-02 | PH-1 stories Done + QA-verified | OPEN-op | QA Lead attest |
+| F-03 | Full governance loop in staging | OPEN-op | QA Lead + Secretary; all AC evidence exists (record→issue→ratify landed P17b #145), the staging run is owed |
+| F-04 | Unit+integration green, no flaky (3 runs) | **OPEN (flaky)** | Tests pass, but the **coverage gate is nondeterministic**: `SqlAuditSink.cs` (the D-18 concurrency retry backstop) went green→red across #147 runs on identical code — its `catch…when(IsTipRace)` retry branch is only covered when a concurrent test triggers the tip-race (80% vs ≥95%). De-flake (a deterministic tip-race test, or a rationale'd coverage exclusion on the backstop) before sign-off. Tech Lead |
+| F-05 | E2E green on staging CI | PASS⧗ | e2e green on #147 (ephemeral `-p acmpe2e`); a persistent-staging run is owed |
+| S-01 | OWASP ASVS L2, no High/Crit | OPEN-op | Security Reviewer; ledger [security-controls-audit.md](security-controls-audit.md) |
+| S-02 | SAST (Semgrep) clean | PASS✓ | `security.yml` sast gating, green on #147 |
+| S-03 | DAST/ZAP on staging | DEFERRED | OQ-027 (not run in v1) |
+| S-04 | Dependency CVE scan clean | PASS✓ | `check-vulns` gating, 0 High/Crit |
+| S-05 | Secret scan clean | PASS✓ | gitleaks gating, green on #147 |
+| S-06 | Container image scan | DEFERRED | trivy-image report-only (base-OS CVEs); green but non-gating |
+| S-07 | Secrets externalized (FR-013) | PASS✓ | Docker secrets everywhere (ADR-0032, P18a) |
+| S-08 | TLS enforced, cert valid | OPEN-op | prod web HTTP:80 for org-proxy TLS, or mount a cert |
+| S-09 | Audit immutability in staging | PASS⧗ | P18a least-priv `acmp_svc` binds the audit DENY + nightly verify job; staging attest owed |
+| S-10 | 401/403 boundary tests | PASS✓ | permission-matrix + `*ApiTests` (AC-005–011 API legs) |
+| D-01 | EF migrations apply clean | PASS✓ | migrator one-shot (P18a) |
+| D-02 | Rollback tested on staging ≤30 min | OPEN-op | runbook documents it; a real-env drill is owed |
+| D-03 | Pre-release prod backup + restore | OPEN-op | needs prod; restore round-trip proven on a scratch container (P18b) |
+| L-01 | 100% i18n keys EN+AR | PASS✓ | `check-i18n` = 1787 keys (live run) |
+| L-02 | RTL VR all routes | PASS✓ | `rtl-a11y.spec.ts` EN + AR |
+| L-03 | Zero hardcoded strings | PASS✓ | i18n lint |
+| A-01 | axe zero Critical EN+AR | PASS✓ | `a11y.test.tsx` (wcag22aa) green on #147; e2e sweep on wcag21aa (bump = D-23) |
+| A-02 | Keyboard-only critical paths | PASS⧗ | keyboard nav tested; a manual attest is owed |
+| A-03 | DnD keyboard alternatives | **OPEN-build** | agenda alt Met (AC-044); the backlog **priority** keyboard reorder is unbuilt (AC-043) → D-23 |
+| O-01 | Serilog→Seq verified | PASS⧗ | Seq sink wired, PII masked; staging attest owed |
+| O-02 | Health `/healthz` `/readyz` 200 | PASS✓ | readiness checks (SQL/MinIO/Hangfire) |
+| OP-01 | Runbook updated | PASS✓ | `deploy/runbooks/README.md` (P18b) |
+| OP-02 | Rollback documented + tested ≤30 min | PASS⧗ | documented; a timed drill is owed |
+| OP-03 | docker-compose validated | PASS✓ | `up.sh` + prod overlay (P18a) |
+| SO-01 | Secretary UAT sign-off | OPEN-op | human |
+| SO-02 | Chairman sign-off | OPEN-op | human |
+| SO-03 | Security sign-off | OPEN-op | human |
+| SO-04 | QA-Lead sign-off | OPEN-op | human |
+
+_Gate 6 (Performance P-01–P-04) contributes no `[BLOCK]` gate (DoD §Performance is all supporting/`[SOFT]`)._
+
+**DoD dimensions:** Security scans DONE (gating clean; DAST deferred OQ-027; trivy-image report-only) · EN/AR+RTL DONE (1787 keys) · Runbook+rollback DONE (≤30-min path) · Backup/restore OPERATOR-OWED (round-trip proven; real standby + quarterly drill owed) · Observability+alerts OPERATOR-OWED (5 Seq alert rules = a runbook the operator wires) · WCAG 2.2 AA — per-surface axe automation DONE, formal AA sign-off OPERATOR-OWED · UAT+security sign-off OPERATOR-OWED (no record; cannot be fabricated).
+
+The open `[BLOCK]` set is compiled as the **operator go-live checklist** in the [status report](../progress/status-report.md) §Release Notes v1.0. Deferred engineering is tracked as **D-23** in the [deferred-work register](../execution/deferred-work-register.md).
 
 > P13-recording update (2026-07-09): Manual meeting-recording upload + presigned playback + delete (branch
 > `feat/p13-recording-upload`, FR-056 upload leg). **AC-073 (upload+playback) / AC-074 (delete) → Met.** File
