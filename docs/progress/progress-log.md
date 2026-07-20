@@ -12,6 +12,25 @@ Newest entries on top. Each entry: what was done, decisions applied, what's next
 
 ---
 
+### 2026-07-20 — P19 Final audit & release readiness — reports + CONDITIONAL NO-GO (ladder complete)
+
+**Slice:** `feat/P19-release-readiness` (off `main` after P18b #147 merged, `1f1eaea`). The last ladder slice. Per the P19 prompt: ran the [checkpoints.md](../execution/checkpoints.md) release gates + full [DoD](../execution/definition-of-done.md), produced the final acceptance-audit report (every `AC-###` → verdict, in [acceptance-audit.md](../validation/acceptance-audit.md) §Final Release-Readiness) and a release-notes summary ([status-report.md](status-report.md) §Release Notes v1.0). **Reports-only, decoupled from feature work (operator decision after a devil's-advocate review); P19 flips zero ACs** (stays 57 Met / 16 Partial / 1 Pending / 0 Not-met).
+
+**Verdict: CONDITIONAL NO-GO.** Release readiness is **operator-gated, not code-gated** — every `checkpoints.md` gate is a `[BLOCK]`, and the open ones are human/staging/deploy actions an execution agent cannot legitimately sign (UAT SO-01–04, F-03/F-05 staging, S-01 ASVS, S-03 DAST, S-08 TLS, D-02/D-03 prod backup, live Seq alerts, AC-004 Keycloak realm). Signing them would fabricate governance sign-offs — refused. The gate-run + go-live checklist are recorded in the two reports.
+
+**Devil's-advocate corrections that shaped this slice (verified directly, not asserted):**
+- **F-01 = OPEN, operator/live-leg-gated — NOT closeable by one build.** FR-034 already has Met ACs (AC-045/046), so AC-043 does not bear on F-01; F-01 is open on 6 *other* Must FRs (FR-019/022/025/027/040/044), all built code awaiting a live-leg, plus AC-004 (FR-013 is delivered + gated by S-07). An earlier draft's "AC-043 closes F-01" was wrong.
+- **PASS marks split** into artifact-grounded (i18n 1787, gating scanners green on #147) vs. verify-on-release-commit — no asserted-green in a governance report (the P17a discipline).
+- **F-04 recorded OPEN (flaky):** the `SqlAuditSink` coverage gate is nondeterministic (green→red on identical code across #147 runs — the D-18 tip-race retry branch covers only when a concurrent test hits the race). De-flake before sign-off. Surfaced live when the #147 docs commit's backend job flaked on coverage then passed on rerun.
+
+**Deferred follow-up recorded as D-23** (four buildable gaps: AC-043 keyboard reorder, AC-032/057 notifications, BL-016 validation l10n, wcag22aa e2e). Sub-agent-traced during planning, **not re-verified** — confirm before building.
+
+**Ladder complete: P1–P19 delivered (P14 deferred DEC-028).** Next work is operator go-live execution + the D-23 follow-up, not a new ladder slice.
+
+**Gates:** Keystone 1.0.0 validator 7/7 (G-PROGRESS green, AC cells bare); check-i18n 1787; docs-only (no code delta).
+
+---
+
 ### 2026-07-19 — P18 Deployment — P18a hardening (MERGED #146) + P18b backup/runbook
 
 **P18a (`feat/P18a-deploy-hardening`, MERGED PR #146 `7991f93`, all 9 CI checks green).** Three batches finalizing

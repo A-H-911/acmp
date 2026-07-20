@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.13.0
-updated: 2026-07-19
+version: 1.14.0
+updated: 2026-07-20
 owner: Claude Code execution agent
 generation: derived
 ---
@@ -9,6 +9,40 @@ generation: derived
 # Status Report — ACMP
 
 Derived snapshot of where the build is. Regenerated each update cycle from the [progress log](progress-log.md), the [acceptance audit](../validation/acceptance-audit.md), and the registers. This is the "where you are now" pointer referenced by [AGENTS.md](../../AGENTS.md).
+
+## Release Notes — v1.0 (P19, 2026-07-20)
+
+**Status: CONDITIONAL NO-GO — code-complete to its in-repo ceiling; not cleared to ship.** The full P19 gate-run is in the [acceptance audit](../validation/acceptance-audit.md) §Final Release-Readiness. Every `checkpoints.md` gate is a `[BLOCK]`; the **release Secretary is the sole authority to proceed**, only after the go-live checklist below is cleared and signed with evidence. **Acceptance: 74 ACs · 57 Met · 16 Partial · 1 Pending · 0 Not-met.**
+
+### Delivered (P1–P19)
+Single auditable bilingual (EN/AR) system of record for one Architecture Committee, on-prem, ≤20 users:
+- **Governance loop** — topic intake → backlog/kanban → prepare → agenda → meeting → attendance → live notes → voting → decision issuance → MoM approve/publish, end-to-end (P1–P9).
+- **Voting & decisions** — attributed ballots, per-ballot hash-chain (ADR-0030), SoD-gated issuance, immutable superseding, Decision→ADR promotion (P9, P11).
+- **Risks · dependencies · traceability** + impact graph (P10); **dashboards & reports** (P12).
+- **Webex** integration + meeting-recording upload/playback (Phase 2, P13); **Research & Knowledge** wiki/templates + global EN/AR search (P15).
+- **Audit** — every state change emits a hash-chained `AuditEvent`; nightly integrity verify (P16, audit slice).
+- **Security hardening** (P16) — strict CSP/HSTS, read-only containers, gating SAST/secret/dep/fs scans, audit & vote crypto.
+- **Deployment** (P18) — Docker secrets everywhere (ADR-0032), prod overlay, least-priv `acmp_svc` runtime login (ADR-0031/0032, binds the audit DENY), health/readiness, backup/restore/warm-standby scripts + runbook (ADR-0033).
+
+### Known limitations (explicit — nothing hidden by the reports-only P19)
+**Deferred engineering ([deferred-work register](../execution/deferred-work-register.md) D-23):** AC-043 keyboard priority reorder (backlog) · AC-032 reject→submitter + AC-057 Secretary SLA-breach notifications · BL-016 localized server-side validation messages (AC-030/049) · the `wcag22aa` e2e axe-tag bump. None changes shippability; all are additive.
+
+**Operator residuals (deploy-time, deployment.md §3.4):** TLS certs/topology (S-08) · C-CRYPTO Step B (API↔MinIO, API↔Seq in transit) · TDE (SQL at-rest — cert custody) · MinIO SSE (KES) · backup encryption · **OQ-040** SQL edition (Express/Web forecloses TDE + backup encryption — a security decision) · **AC-004/OQ-003** Keycloak realm idle-timeout + MFA · live Seq alert-rule wiring (5 rules) · least-priv login activation at prod deploy.
+
+**Accepted-deferred (OQ-recorded):** S-03 DAST/ZAP (OQ-027) · trivy container-image scan report-only · ClamAV file scanning opt-in (OQ-026) · Confidentiality ABAC feature (D-20).
+
+### Operator go-live checklist (open `[BLOCK]` items — must all clear before ship)
+1. **F-02** stories Done + QA-verified (QA Lead). **F-04** — de-flake the `SqlAuditSink` coverage gate (its D-18 tip-race retry branch covers nondeterministically; green→red on identical code across #147 runs) via a deterministic tip-race test or a rationale'd exclusion, so "zero flaky on last 3 runs" holds (Tech Lead).
+2. **F-03 / F-05** full governance-loop E2E green in **staging** (QA Lead + Secretary).
+3. **S-01** ASVS L2 review sheet signed; **S-03** DAST decision honored; **S-08** TLS enforced + valid cert.
+4. **S-09** audit immutability verified in staging (UPDATE/DELETE denied + hash-chain 0 broken).
+5. **D-02** rollback drill on staging ≤30 min; **D-03** pre-release prod backup + restore test.
+6. **A-02** keyboard-only critical-path pass; **A-03** — the backlog priority-reorder keyboard alt is a deferred build (D-23; accept or hold).
+7. **O-01** Seq pipeline + the 5 alert rules wired live.
+8. **AC-004** Keycloak realm idle-timeout + MFA policy set.
+9. **SO-01 Secretary UAT · SO-02 Chairman · SO-03 Security · SO-04 QA-Lead** sign-offs — the final proceed gate.
+
+_These sign-offs are human/operator actions; P19 does not and cannot self-certify them._
 
 ## Current position
 
