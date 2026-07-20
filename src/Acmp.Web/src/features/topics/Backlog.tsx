@@ -83,8 +83,10 @@ export function Backlog() {
     type: filters.type || undefined,
     urgency: filters.urgency || undefined,
     search: searchParam || undefined,
-    sortBy: SORT_PARAM[sortCol] ?? 'age',
-    sortDir,
+    // AC-043: the kanban reorders by priority, so its cards must arrive priority-ordered (ascending) for
+    // move-up/down to reflect the persisted order; the table/list keep the user's chosen column sort.
+    sortBy: view === 'kanban' ? 'priority' : (SORT_PARAM[sortCol] ?? 'age'),
+    sortDir: view === 'kanban' ? 'asc' : sortDir,
     page,
     pageSize: PAGE_SIZE,
   };

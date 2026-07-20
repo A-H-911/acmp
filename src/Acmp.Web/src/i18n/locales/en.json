@@ -1232,6 +1232,12 @@
     "age": "{{days}}d",
     "ageLabel": "{{days}} days old",
     "slaBreached": "Past its review SLA",
+    "reorder": {
+      "up": "Move {{key}} up in priority",
+      "down": "Move {{key}} down in priority",
+      "movedUp": "{{key}} moved up",
+      "movedDown": "{{key}} moved down"
+    },
     "empty": {
       "title": "No topics match these filters",
       "body": "No backlog items match the current filters. Clear the filters or submit a new topic to get started."

@@ -227,6 +227,20 @@ export function useAcceptTopic() {
   });
 }
 
+// AC-043 / FR-034: keyboard move-up/down reorder — a single ±1 priority delta within the topic's kanban column.
+export function useMoveTopicPriority() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, delta }: { topicId: string; delta: 1 | -1 }) =>
+      api<void>(`/topics/${topicId}/priority/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delta }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
+  });
+}
+
 export function useReturnTopic() {
   const qc = useQueryClient();
   return useMutation({

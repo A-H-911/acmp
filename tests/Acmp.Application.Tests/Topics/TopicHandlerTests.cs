@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
+using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
@@ -602,5 +603,79 @@ public class TopicHandlerTests
         topic.BeginTriage("kc-sec", "Sec", t0.AddDays(1));
 
         topic.SlaNotifiedAt.Should().BeNull();
+    }
+
+    // ---- MoveTopicPriorityHandler (AC-043) ----
+
+    private static MoveTopicPriorityHandler MovePriority(TopicsDbContext db, IAuditSink? audit = null, bool deny = false) =>
+        new(db, Authz(deny), Clock(new DateTimeOffset(2026, 3, 1, 9, 0, 0, TimeSpan.Zero)), audit ?? Substitute.For<IAuditSink>());
+
+    // A Submitted topic in the 'triage' bucket with a given key; all share Priority 0 and CreatedAt, so their
+    // deterministic order is by Key (the third tiebreak).
+    private static async Task<Topic> SeedSubmittedAsync(TopicsDbContext db, string key)
+    {
+        var t = Topic.Draft(key, "T", "D", "J", TopicType.ArchitectureDecision, TopicUrgency.Normal,
+            TopicSource.CommitteeMember, "kc-omar", "Omar", new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
+        t.Submit(new DateTimeOffset(2026, 2, 1, 9, 0, 0, TimeSpan.Zero));
+        db.Topics.Add(t);
+        await db.SaveChangesAsync();
+        return t;
+    }
+
+    [Fact]
+    public async Task Move_throws_not_found_for_an_unknown_topic()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var act = () => MovePriority(db).Handle(new MoveTopicPriorityCommand(Guid.NewGuid(), -1), default);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task Move_is_denied_without_BacklogPrioritize()
+    {
+        await using var db = NewDb(User("kc-member", "M"), Clock(default));
+        var t = await SeedSubmittedAsync(db, "TOP-2026-201");
+        var act = () => MovePriority(db, deny: true).Handle(new MoveTopicPriorityCommand(t.PublicId, -1), default);
+        await act.Should().ThrowAsync<ForbiddenAccessException>();
+    }
+
+    [Fact]
+    public async Task Move_rejects_a_decided_topic()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var t = await SeedTopicAsync(db, TopicStatus.Decided);
+        var act = () => MovePriority(db).Handle(new MoveTopicPriorityCommand(t.PublicId, -1), default);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Move_up_at_the_top_of_the_column_is_a_no_op()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");   // order by Key → a is first
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(a.PublicId, -1), default);
+
+        (await db.Topics.ToListAsync()).Should().OnlyContain(t => t.Priority == 0);   // no swap → no renumber
+    }
+
+    [Fact]
+    public async Task Move_down_swaps_the_neighbour_and_renumbers_the_column_contiguously()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+        await SeedSubmittedAsync(db, "TOP-2026-203");
+        var audit = Substitute.For<IAuditSink>();
+
+        // initial order by (Priority 0, CreatedAt, Key) = [201, 202, 203]. Move 201 DOWN → [202, 201, 203], 1..3.
+        await MovePriority(db, audit).Handle(new MoveTopicPriorityCommand(a.PublicId, 1), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        byKey["TOP-2026-202"].Should().Be(1);
+        byKey["TOP-2026-201"].Should().Be(2);
+        byKey["TOP-2026-203"].Should().Be(3);
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicReordered", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 }

@@ -91,7 +91,9 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
         var desc = !string.Equals(dir, "asc", StringComparison.OrdinalIgnoreCase);
         IEnumerable<Topic> ordered = by.ToLowerInvariant() switch
         {
-            "priority" => topics.OrderBy(t => t.Priority),
+            // AC-043: same deterministic tiebreak MoveTopicPriorityHandler renumbers by, so the displayed order
+            // matches persistence even while priorities are non-contiguous (default 0).
+            "priority" => topics.OrderBy(t => t.Priority).ThenBy(t => t.CreatedAt).ThenBy(t => t.Key),
             "title" => topics.OrderBy(t => t.Title),
             "status" => topics.OrderBy(t => t.Status),
             "urgency" => topics.OrderBy(t => t.Urgency),

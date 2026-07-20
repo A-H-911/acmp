@@ -13,7 +13,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { type TopicSummary, useAcceptTopic, useReturnTopic } from '../../api/topics';
+import { type TopicSummary, useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
 import { useMembers } from '../../api/members';
 import { bucketOf, moveAction, KANBAN_BUCKETS, BUCKET_TONE, initials, type KanbanBucket } from './topicMeta';
 import { Dialog } from '../../components/ui/Dialog';
@@ -34,8 +34,15 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
   const [live, setLive] = useState('');
   const liveRef = useRef(live);
   liveRef.current = live;
+  const movePriority = useMoveTopicPriority();
 
   const bucketLabel = (b: KanbanBucket) => t(`kanban.bucket.${b}`);
+
+  // AC-043 / FR-034: keyboard reorder within a column — a ±1 priority delta, announced via the live region.
+  const onReorder = (topic: TopicSummary, delta: 1 | -1) => {
+    movePriority.mutate({ topicId: topic.id, delta });
+    setLive(t(delta < 0 ? 'topics.reorder.movedUp' : 'topics.reorder.movedDown', { key: topic.key }));
+  };
 
   const requestMove = (topicId: string, to: KanbanBucket) => {
     const topic = rows.find((r) => r.id === topicId);
@@ -83,7 +90,7 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
               <span className="kb-count">{col.cards.length}</span>
             </div>
             <div className="kb-cards">
-              {col.cards.map((c) => (
+              {col.cards.map((c, i) => (
                 <Card
                   key={c.id}
                   topic={c}
@@ -91,6 +98,10 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
                   onDragStart={() => setDragId(c.id)}
                   onDragEnd={() => setDragId(null)}
                   onMoveKey={() => setMoveId(c.id)}
+                  reorderable={col.bucket !== 'done'}
+                  isFirst={i === 0}
+                  isLast={i === col.cards.length - 1}
+                  onReorder={onReorder}
                 />
               ))}
             </div>
@@ -119,8 +130,9 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
   );
 }
 
-function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey }: {
+function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable, isFirst, isLast, onReorder }: {
   topic: TopicSummary; dragging: boolean; onDragStart: () => void; onDragEnd: () => void; onMoveKey: () => void;
+  reorderable: boolean; isFirst: boolean; isLast: boolean; onReorder: (topic: TopicSummary, delta: 1 | -1) => void;
 }) {
   const { t } = useTranslation();
   const urgent = topic.urgency !== 'Normal';
@@ -146,6 +158,28 @@ function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey }: {
             they're distinguishable without splitting the column (design = 5 fixed buckets). */}
         {topic.status === 'Prepared' && <Tag tone="info">{t('topics.status.Prepared')}</Tag>}
         {urgent && <Icon name="warnTriangle" size={12} className="bk-urgent-ic" aria-label={t('topics.urgent')} />}
+        {reorderable && (
+          <span className="kb-reorder">
+            <button
+              type="button"
+              className="kb-reorder-btn"
+              disabled={isFirst}
+              aria-label={t('topics.reorder.up', { key: topic.key })}
+              onClick={() => onReorder(topic, -1)}
+            >
+              <Icon name="chevronUp" size={14} aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="kb-reorder-btn"
+              disabled={isLast}
+              aria-label={t('topics.reorder.down', { key: topic.key })}
+              onClick={() => onReorder(topic, 1)}
+            >
+              <Icon name="chevronDown" size={14} aria-hidden />
+            </button>
+          </span>
+        )}
       </div>
       <Link className="kb-card-title" to={`/topics/${topic.key}`}>{topic.title}</Link>
       <div className="kb-card-foot">

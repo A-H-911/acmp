@@ -6,16 +6,18 @@ import { renderWithAuth } from '../../test/render';
 import type { TopicSummary } from '../../api/topics';
 import type { Member } from '../../api/members';
 
-vi.mock('../../api/topics', () => ({ useAcceptTopic: vi.fn(), useReturnTopic: vi.fn() }));
-import { useAcceptTopic, useReturnTopic } from '../../api/topics';
+vi.mock('../../api/topics', () => ({ useAcceptTopic: vi.fn(), useReturnTopic: vi.fn(), useMoveTopicPriority: vi.fn() }));
+import { useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
 import { useMembers } from '../../api/members';
 
 const mockAccept = useAcceptTopic as unknown as Mock;
 const mockReturn = useReturnTopic as unknown as Mock;
+const mockMove = useMoveTopicPriority as unknown as Mock;
 const mockMembers = useMembers as unknown as Mock;
 let acceptMutate: Mock;
 let returnMutate: Mock;
+let moveMutate: Mock;
 
 const row = (over: Partial<TopicSummary>): TopicSummary => ({
   id: 'x', key: 'TOP-0', title: 'T', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal',
@@ -41,8 +43,10 @@ describe('Kanban (P5b)', () => {
   beforeEach(() => {
     acceptMutate = vi.fn();
     returnMutate = vi.fn();
+    moveMutate = vi.fn();
     mockAccept.mockReturnValue({ mutate: acceptMutate, isPending: false });
     mockReturn.mockReturnValue({ mutate: returnMutate, isPending: false });
+    mockMove.mockReturnValue({ mutate: moveMutate, isPending: false });
     mockMembers.mockReturnValue({ data: MEMBERS });
   });
 
@@ -103,5 +107,25 @@ describe('Kanban (P5b)', () => {
       expect.objectContaining({ topicId: 't1', mode: 'defer', reason: 'Needs a rollback plan first.' }),
       expect.anything(),
     );
+  });
+
+  it('reorders a topic within its column via the keyboard move buttons (AC-043)', async () => {
+    const user = userEvent.setup();
+    const rows = [
+      row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' }),
+      row({ id: 't2', key: 'TOP-2026-202', status: 'Triage' }),
+    ];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+
+    // The top card can move down (+1) but not up; move it down.
+    await user.click(screen.getByRole('button', { name: /Move TOP-2026-201 down/ }));
+    expect(moveMutate).toHaveBeenCalledWith({ topicId: 't1', delta: 1 });
+    expect(screen.getByRole('button', { name: /Move TOP-2026-201 up/ })).toBeDisabled();
+  });
+
+  it('offers no reorder controls in the immutable Done column (AC-043/AC-034)', () => {
+    const rows = [row({ id: 'd1', key: 'TOP-2026-301', status: 'Decided' })];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+    expect(screen.queryByRole('button', { name: /Move TOP-2026-301/ })).not.toBeInTheDocument();
   });
 });
