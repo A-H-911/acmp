@@ -10,6 +10,7 @@ namespace Acmp.Modules.Topics.Application.Internal;
 internal static class TopicNotifications
 {
     public const string CategoryTopicPrepared = "TopicPrepared";
+    public const string CategoryTopicRejected = "TopicRejected";
 
     public static Func<string, NotificationMessage> TopicPrepared(string topicKey)
     {
@@ -18,5 +19,15 @@ internal static class TopicNotifications
             $"Topic {topicKey} has been prepared and is ready for the agenda.",
             $"تم تجهيز الموضوع {topicKey} وأصبح جاهزًا لجدول الأعمال.");
         return recipient => new NotificationMessage(recipient, title, body, CategoryTopicPrepared, $"/topics/{topicKey}");
+    }
+
+    // AC-032: raised to the topic's submitter when their topic is rejected, so they learn the outcome and reason.
+    public static Func<string, NotificationMessage> TopicRejected(string topicKey, string reason)
+    {
+        var title = LocalizedString.Create("Your topic was rejected", "تم رفض موضوعك");
+        var body = LocalizedString.Create(
+            $"Topic {topicKey} was rejected. Reason: {reason}",
+            $"تم رفض الموضوع {topicKey}. السبب: {reason}");
+        return recipient => new NotificationMessage(recipient, title, body, CategoryTopicRejected, $"/topics/{topicKey}");
     }
 }

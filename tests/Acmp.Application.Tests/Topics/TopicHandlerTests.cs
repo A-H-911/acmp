@@ -456,7 +456,7 @@ public class TopicHandlerTests
         var user = User("kc-sec", "Sec");
         await using var db = NewDb(user, Clock(default));
 
-        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(Guid.NewGuid(), "Duplicate"), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -469,7 +469,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
 
-        var act = () => new RejectTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(deny: true), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(topic.PublicId, "Duplicate"), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
@@ -483,7 +483,7 @@ public class TopicHandlerTests
         await using var db = NewDb(user, Clock(default));
         var topic = await SeedTopicAsync(db, TopicStatus.Accepted);    // Reject allows Submitted/Triage only
 
-        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>())
+        var act = () => new RejectTopicHandler(db, Authz(), user, Clock(default), Substitute.For<IAuditSink>(), Substitute.For<INotificationChannel>())
             .Handle(new RejectTopicCommand(topic.PublicId, "Too late"), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -494,15 +494,21 @@ public class TopicHandlerTests
     {
         var user = User("kc-sec", "Sec");
         await using var db = NewDb(user, Clock(default));
-        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted);   // submitter = kc-omar, actor = kc-sec
         var audit = Substitute.For<IAuditSink>();
+        var notifications = Substitute.For<INotificationChannel>();
 
-        await new RejectTopicHandler(db, Authz(), user, Clock(default), audit)
+        await new RejectTopicHandler(db, Authz(), user, Clock(default), audit, notifications)
             .Handle(new RejectTopicCommand(topic.PublicId, "Duplicate of TOP-2026-001"), default);
 
         var stored = await db.Topics.Include(t => t.History).SingleAsync();
         stored.Status.Should().Be(TopicStatus.Rejected);
         stored.History.Should().Contain(h => h.ToStatus == TopicStatus.Rejected && h.Reason == "Duplicate of TOP-2026-001");
         await audit.Received(1).EmitEnrichedAsync("Topics.TopicRejected", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        // AC-032: the submitter (not the actor) is notified of the rejection.
+        await notifications.Received(1).PublishAsync(
+            Arg.Is<NotificationMessage>(m => m.RecipientUserId == "kc-omar" && m.Category == "TopicRejected"
+                && m.DeepLink == "/topics/" + topic.Key),
+            Arg.Any<CancellationToken>());
     }
 }

@@ -29,14 +29,17 @@ public sealed class RejectTopicHandler : IRequestHandler<RejectTopicCommand>
     private readonly ICurrentUser _user;
     private readonly IClock _clock;
     private readonly IAuditSink _audit;
+    private readonly INotificationChannel _notifications;
 
-    public RejectTopicHandler(ITopicsDbContext db, IResourceAuthorizer authz, ICurrentUser user, IClock clock, IAuditSink audit)
+    public RejectTopicHandler(ITopicsDbContext db, IResourceAuthorizer authz, ICurrentUser user, IClock clock,
+        IAuditSink audit, INotificationChannel notifications)
     {
         _db = db;
         _authz = authz;
         _user = user;
         _clock = clock;
         _audit = audit;
+        _notifications = notifications;
     }
 
     public async Task Handle(RejectTopicCommand request, CancellationToken ct)
@@ -51,5 +54,9 @@ public sealed class RejectTopicHandler : IRequestHandler<RejectTopicCommand>
         await _db.SaveChangesAsync(ct);
 
         await _audit.EmitEnrichedAsync("Topics.TopicRejected", nameof(Topic), topic.PublicId.ToString(), ct: ct);
+
+        // AC-032: notify the submitter their topic was rejected (skip if they rejected it themselves — no self-noise).
+        if (!string.Equals(topic.SubmittedBySub, sub, StringComparison.Ordinal))
+            await _notifications.PublishAsync(TopicNotifications.TopicRejected(topic.Key, request.Reason)(topic.SubmittedBySub), ct);
     }
 }
