@@ -45,3 +45,10 @@ Thumbs.db
 
 # Playwright MCP scratch artifacts (screenshots, snapshots)
 .playwright-mcp/
+
+# ── Tamheed package (planning store) ──────────────────
+# Single-writer lockfile — transient, never committed
+tamheed-package/data/.lock
+# handoff_emit's executor MCP config: machine-specific absolute path into the
+# local plugin cache; the tamheed plugin already registers the server locally
+/.mcp.json
