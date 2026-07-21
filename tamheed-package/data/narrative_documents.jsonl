@@ -1,0 +1,8 @@
+{"id":"DOC-001","doc_kind":"charter","title":"Project Charter — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"00-charter.md\"}}","last_referenced":null}
+{"id":"DOC-002","doc_kind":"executive-summary","title":"Executive Summary — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"01-executive-summary.md\"}}","last_referenced":null}
+{"id":"DOC-003","doc_kind":"architecture","title":"Architecture — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"architecture/architecture.md\"}}","last_referenced":null}
+{"id":"DOC-004","doc_kind":"technology-comparison","title":"Technology Comparison — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"architecture/technology-comparison.md\"}}","last_referenced":null}
+{"id":"DOC-005","doc_kind":"contributing","title":"Contributing — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"governance/contributing.md\"}}","last_referenced":null}
+{"id":"DOC-006","doc_kind":"governance","title":"Governance — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"governance/governance.md\"}}","last_referenced":null}
+{"id":"DOC-007","doc_kind":"naming","title":"Naming Conventions — ACMP","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"governance/naming-conventions.md\"}}","last_referenced":null}
+{"id":"DOC-008","doc_kind":"readme","title":"ACMP — execution ready package","lifecycle_status":"Approved","custom_attributes":"{\"v1\": {\"path\": \"README.md\"}}","last_referenced":null}

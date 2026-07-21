@@ -45,3 +45,6 @@ Thumbs.db
 
 # Playwright MCP scratch artifacts (screenshots, snapshots)
 .playwright-mcp/
+
+# Tamheed v2 package single-writer lock (transient)
+tamheed-package/data/.lock

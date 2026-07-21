@@ -1,0 +1,33 @@
+{"type_id":"acceptance-criterion","label":"Acceptance criterion","id_prefix":"AC-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"adr","label":"Architecture Decision Record","id_prefix":"ADR-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"assumption","label":"Assumption","id_prefix":"ASM-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"audit-verdict","label":"Audit verdict","id_prefix":"AV-","generation_class":"Continuous","template_ref":null,"custom_attributes":null}
+{"type_id":"constraint","label":"Constraint","id_prefix":"CON-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"convention","label":"Durable convention","id_prefix":"CONV-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"decision","label":"Decision","id_prefix":"DEC-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"defect","label":"Defect","id_prefix":"DEF-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"deferred-work","label":"Deferred work","id_prefix":"DW-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"dependency","label":"Dependency","id_prefix":"DEP-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"diagram","label":"Diagram","id_prefix":"DIA-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"document-section","label":"Document section","id_prefix":"SEC-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"execution-gate","label":"Execution gate","id_prefix":"GATE-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"execution-plan","label":"Execution plan (per slice)","id_prefix":"EP-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"experiment","label":"Experiment","id_prefix":"EXP-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"glossary-term","label":"Glossary term (extension example)","id_prefix":"GT-","generation_class":"On-request","template_ref":null,"custom_attributes":null}
+{"type_id":"hypothesis","label":"Hypothesis","id_prefix":"HYP-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"invariant","label":"Invariant","id_prefix":"INV-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"kpi","label":"KPI","id_prefix":"KPI-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"milestone","label":"Milestone","id_prefix":"MS-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"narrative-document","label":"Narrative document","id_prefix":"DOC-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"open-question","label":"Open question","id_prefix":"OQ-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"phase","label":"Phase","id_prefix":"PH-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"poc","label":"Proof of concept","id_prefix":"POC-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"progress-entry","label":"Progress entry","id_prefix":"PE-","generation_class":"Continuous","template_ref":null,"custom_attributes":null}
+{"type_id":"prompt","label":"Handoff prompt","id_prefix":"PRM-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"requirement","label":"Requirement (FR-/NFR-)","id_prefix":"FR-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"risk","label":"Risk","id_prefix":"RISK-","generation_class":"Always","template_ref":null,"custom_attributes":null}
+{"type_id":"scope-change","label":"Scope change","id_prefix":"SC-","generation_class":"Continuous","template_ref":null,"custom_attributes":null}
+{"type_id":"slice","label":"Slice","id_prefix":"SL-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"stakeholder","label":"Stakeholder","id_prefix":"STK-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"test","label":"Test","id_prefix":"TEST-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
+{"type_id":"wbs-item","label":"Work item","id_prefix":"WBS-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}

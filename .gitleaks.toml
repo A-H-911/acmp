@@ -12,6 +12,7 @@ paths = [
   '''deploy/\.env\.example''',           # placeholder config template (git-ignored real .env)
   '''.*\.md''',                          # docs may quote example values
   '''.*\.dc\.html''',                    # design mockups
+  '''tamheed-package/.*''',              # v2 planning package — JSONL copies of docs text (covered above as .md)
 ]
 regexes = [
   '''ChangeMe_[A-Za-z0-9#_]*''',         # .env.example / KC bootstrap placeholders
