@@ -13,10 +13,10 @@ name: Security
 on:
   push:
     branches: [ main ]
-    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**', 'tamheed-package/**', 'handoff/**' ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
   pull_request:
     branches: [ main ]
-    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**', 'tamheed-package/**', 'handoff/**' ]
+    paths-ignore: [ '*.md', '**/*.md', 'docs/**', 'ACMP product context/**', '.claude/**' ]
 
 concurrency:
   group: security-${{ github.ref }}
