@@ -1,26 +1,23 @@
 ---
 name: tamheed-migration-reverted
-description: The 2026-07-21 Tamheed v2 migration/cutover (PR #153) was fully REVERTED next day — docs/ (Keystone v1) is again the system of record; do not trust #153's cutover notes
-metadata:
+description: "SUPERSEDED HISTORY — the 2026-07-21 migration (PR #153) was reverted 2026-07-22, then RE-RUN the same day on plugin 2.2.0 with full cutover; see tamheed-v2-cutover-live for current state"
+metadata: 
+  node_type: memory
   type: project
+  originSessionId: 174359d8-3eae-475b-bb38-1f59599e103a
+  modified: 2026-07-22T02:25:53.399Z
 ---
 
-**The Tamheed migration was undone (2026-07-22).** PR #153 (`4433bd4`) migrated `docs/` into a
-Tamheed v2 store at `tamheed-package/` and cut over (AGENTS.md/CLAUDE.md rewired, docs/ frozen).
-The operator then ordered a full undo: reverted on `revert/tamheed-migration` and merged, restoring
-the tree byte-identical to `efabddb`.
+**Timeline of the Tamheed cutover (all 2026-07):**
+1. **07-21** PR #153 migrated `docs/` → `tamheed-package/` on plugin **2.1.0** + full cutover.
+2. **07-22 (morning)** Operator ordered a full revert (merged as #154, tree restored to `efabddb`).
+   The run itself had succeeded — the revert was an evaluation choice. Feedback for the Tamheed
+   owner was written to `findings_2.md` (repo root, git-excluded).
+3. **07-22 (later)** Operator ordered a fresh re-run on plugin **2.2.0** ("forget the memory and
+   findings_2.md, start from scratch, Full cutover"). 2.2.0 had fixed the findings (status_coerced
+   + title_fallbacks ledgers, semantic STATUS_MAP, id-column title exclusion, plugin-hosted
+   `.mcp.json` skip, stale-reference scan). The re-run completed with full cutover.
 
-**Why:** operator decision after evaluating the migrated store; the run itself succeeded (gates 7/7,
-fidelity clean) — the revert is a choice, not a failure. Feedback for the Tamheed owner lives in
-`findings_2.md` at the repo root (untracked, `.git/info/exclude`d).
-
-**How to apply:**
-- **`docs/` (Keystone v1) is the system of record again** — the old tracking protocol stands:
-  edit acceptance-audit/progress-log/status-report markdown, validate with the keystone
-  `1.0.0` `validate_package.py` (7/7). Ignore any Tamheed-cutover instructions found in the
-  history of AGENTS.md/CLAUDE.md or in merged-PR #153's description.
-- `tamheed-package/`, `handoff/`, root `.mcp.json` must NOT exist on main; the CI paths-ignore
-  entries for them were reverted too.
-- A re-migration, if ever ordered, is cheap and deterministic: the staged flow + the 15-row
-  status patch are documented in `findings_2.md` and in this session's plan file
-  (`~/.claude/plans/docs-mode-migrate-package-dir-lovely-dolphin.md`).
+**How to apply:** current state lives in [[tamheed-v2-cutover-live]] — `tamheed-package/` is the
+system of record; `docs/` is a frozen archive. Do not trust #153's or #154's descriptions of the
+tracking protocol; both are superseded.

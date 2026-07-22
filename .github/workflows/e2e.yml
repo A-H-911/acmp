@@ -15,6 +15,7 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
+      - 'tamheed-package/**'
   workflow_dispatch:
 
 # Supersede a stale in-flight run of the same PR; separate group from ci.yml.
