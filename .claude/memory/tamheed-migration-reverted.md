@@ -1,26 +1,36 @@
 ---
 name: tamheed-migration-reverted
-description: The 2026-07-21 Tamheed v2 migration/cutover (PR #153) was fully REVERTED next day — docs/ (Keystone v1) is again the system of record; do not trust #153's cutover notes
+description: Tamheed v2 migration attempted TWICE (2.1.0 PR #153, 2.2.0 PR #155) and fully REVERTED both times (2026-07-22) — docs/ (Keystone v1) is the system of record; do not re-migrate without an explicit operator order
 metadata:
   type: project
 ---
 
-**The Tamheed migration was undone (2026-07-22).** PR #153 (`4433bd4`) migrated `docs/` into a
-Tamheed v2 store at `tamheed-package/` and cut over (AGENTS.md/CLAUDE.md rewired, docs/ frozen).
-The operator then ordered a full undo: reverted on `revert/tamheed-migration` and merged, restoring
-the tree byte-identical to `efabddb`.
+**The Tamheed migration has been undone twice; `docs/` (Keystone v1) is the system of record.**
 
-**Why:** operator decision after evaluating the migrated store; the run itself succeeded (gates 7/7,
-fidelity clean) — the revert is a choice, not a failure. Feedback for the Tamheed owner lives in
-`findings_2.md` at the repo root (untracked, `.git/info/exclude`d).
+**Cycle 1 (plugin 2.1.0):** PR #153 (`4433bd4`, 2026-07-21) migrated `docs/` → `tamheed-package/`
++ full cutover. Reverted next morning (#154, tree restored byte-identical to `efabddb`).
+Feedback → `findings_2.md` (repo root, `.git/info/exclude`d).
+
+**Cycle 2 (plugin 2.2.0):** same day (2026-07-22) the operator ordered a from-scratch re-run —
+PR #155 (`eb23226`): zero-repair migration (2.2.0's status_coerced/title_fallbacks ledgers +
+status_map fixed the 2.1.0 findings; gates 7/7, fidelity clean, audit 62/11/1 preserved, all 9
+CI checks green) + full cutover. **The operator then ordered a full undo again** — reverted on
+`revert/tamheed-migration-2`, tree restored byte-identical to `410277e`. Feedback →
+`findings_3.md` (repo root, `.git/info/exclude`d; regression report on the 2.1.0 findings +
+new items: phase-status Draft asymmetry, handoff_emit stale-warning permanence/unconditional
+prompt rewrite, ledger noise, PE rows never synthesized from the v1 progress log).
+
+**Why:** operator choice both times, not tool failure — both runs succeeded mechanically.
 
 **How to apply:**
-- **`docs/` (Keystone v1) is the system of record again** — the old tracking protocol stands:
-  edit acceptance-audit/progress-log/status-report markdown, validate with the keystone
-  `1.0.0` `validate_package.py` (7/7). Ignore any Tamheed-cutover instructions found in the
-  history of AGENTS.md/CLAUDE.md or in merged-PR #153's description.
+- **The old tracking protocol stands:** edit acceptance-audit/progress-log/status-report
+  markdown, validate with the keystone `1.0.0` `validate_package.py` (7/7). Ignore
+  Tamheed-cutover instructions in the history of AGENTS.md/CLAUDE.md or PRs #153/#155.
 - `tamheed-package/`, `handoff/`, root `.mcp.json` must NOT exist on main; the CI paths-ignore
-  entries for them were reverted too.
-- A re-migration, if ever ordered, is cheap and deterministic: the staged flow + the 15-row
-  status patch are documented in `findings_2.md` and in this session's plan file
-  (`~/.claude/plans/docs-mode-migrate-package-dir-lovely-dolphin.md`).
+  entries for `tamheed-package/**` were reverted too.
+- **Do NOT re-run the migration on your own initiative** — twice ordered, twice undone;
+  treat any future migrate command as requiring a fresh explicit operator instruction.
+- A re-run, if ordered, is cheap and deterministic (~zero repair on 2.2.0+): staged flow +
+  operator decisions are documented in `findings_3.md` and the plan file
+  (`~/.claude/plans/docs-mode-migrate-package-dir-cosmic-rabbit.md`). Operator status choices
+  last time: Instrumented/Met→Implemented (KPIs), Living→Approved, PH-0..3→Approved via patch.
