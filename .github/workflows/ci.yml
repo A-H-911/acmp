@@ -12,8 +12,6 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
-      - 'tamheed-package/**'
-      - 'handoff/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -22,8 +20,6 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
-      - 'tamheed-package/**'
-      - 'handoff/**'
 
 # Supersede stale in-flight PR runs; never cancel a push-to-main run.
 concurrency:
