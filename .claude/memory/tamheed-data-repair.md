@@ -43,12 +43,31 @@ exactly — because **every check is row-level and the damage is column-level**.
   it preserves it (`tamheed_server.py:262` — the `DO UPDATE SET` clause touches only the
   columns you send, despite the docstring saying "send FULL rows").
 
-**Where it stands:** branch `fix/tamheed-data-repair`, plan at
-`~/.claude/plans/based-on-the-generated-wobbly-badger.md` (rev.3, operator-approved).
-**Task 0 + Task 1 done and committed** (`26ec872`, `bd20407`) — **zero package writes so
-far**. `tools/tamheed-repair/` holds five committed extractors and 411 reviewed payload
-rows in `reports/`. Tasks 2–9 do the writing and were gated on operator review of those
-payloads.
+**Where it stands: REPAIR LANDED on `fix/tamheed-data-repair`** (6 commits, `26ec872` →
+`f912951`; plan rev.3 at `~/.claude/plans/based-on-the-generated-wobbly-badger.md`).
+**Not yet merged — no PR opened.** Gates stayed 7/7 and audit evidence 73/1 after every
+batch; determinism re-proven (idle open/close ⇒ clean tree).
+
+Landed: `DEF-001`…`DEF-013` ledger · `DOC-053` roadmap recovered (11 sections, incl. the
+Legacy token map as `SEC-910`) · `DOC-054` crosswalk + "why the gates missed it" ·
+phase objective/exit_criteria/lifecycle · 8 deferred-work statuses corrected (Done 7 /
+Activated 1) + `activation_trigger` ×23 + true `D-` number prefixed on every title ·
+3 handoff prompts rewritten to v2 and re-emitted (`stale_references: []`) ·
+`DEC-029`→`SC-001`→`PH-4` · `SL-001`…`SL-019` · **125 dated progress entries**
+(106 authored / 14 inferred-from-body / 5 derived-from-git — zero fabricated) ·
+155 WBS rows de-truncated with hyphens restored + phase inherited · `tests.kind` ×50 ·
+`risks.risk_state` ×2 · 10 ADR-amendment trace edges. Null content columns 42 → 32;
+the 133-row WBS truncation spike is gone.
+
+**Still open, deliberately:** 78 `requirements.statement` still truncated + hyphen-stripped
+(same fallback path; needs a pass over functional.md + user-stories-mvp.md) · `DOC-048`
+Preamble still one 82 KB block burying 23 dated entries · `v_backlog` triaged on 23
+evidenced rows, 132 untouched · per-slice `work_bind` skipped (no information gain).
+
+**Judgement calls worth keeping:** `kpis.measure` written on **5 rows only** — the other 16
+carry *Cadence*, and writing that into `measure` would repeat `DEF-011` · `stakeholders.role`
+**not** written (v1 value is byte-identical to `name`) · an initial pass flipped 138 WBS rows
+to `Implemented` on assumption and was **reverted** — that is `DEF-010`, manufactured status.
 
 **How to apply:** repairs go **only** through MCP `entity_upsert` — `package_migrate`
 refuses to re-run once `data/` exists, and `packages` is absent from `ENTITY_TABLES` so the
