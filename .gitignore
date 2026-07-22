@@ -27,6 +27,9 @@ playwright-report/
 test-results/
 *.local
 
+# ── Tamheed package (transient single-writer lock) ────
+tamheed-package/data/.lock
+
 # ── Env & secrets (NEVER commit) ──────────────────────
 *.env
 !*.env.example
