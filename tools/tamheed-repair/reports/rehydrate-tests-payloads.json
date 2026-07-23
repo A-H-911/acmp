@@ -1,0 +1,302 @@
+[
+  {
+    "type": "test",
+    "id": "TEST-001",
+    "title": "KeycloakRoleClaimMapperTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-002",
+    "title": "MembershipFeatureTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-003",
+    "title": "MembershipApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-004",
+    "title": "PermissionMatrixTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-005",
+    "title": "AbacHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-006",
+    "title": "MembershipResolverTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-007",
+    "title": "SegregationOfDutiesTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-008",
+    "title": "ActionHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-009",
+    "title": "ActionsApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-010",
+    "title": "ActionActions.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-011",
+    "title": "VoteTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-012",
+    "title": "VoteHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-013",
+    "title": "VotesApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-014",
+    "title": "DecisionTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-015",
+    "title": "DecisionHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-016",
+    "title": "DecisionsApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-017",
+    "title": "DecisionPage.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-018",
+    "title": "TopicTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-019",
+    "title": "TopicHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-020",
+    "title": "TopicApplicationTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-021",
+    "title": "TopicApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-022",
+    "title": "SubmitTopic.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-023",
+    "title": "TopicAttachmentTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-024",
+    "title": "MinutesOfMeetingTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-025",
+    "title": "MinutesHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-026",
+    "title": "MinutesApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-027",
+    "title": "MeetingMinutes.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-028",
+    "title": "AgendaBuilder.test + MeetingHandlerTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-029",
+    "title": "NotificationHandlerTests + NotificationCenter.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-030",
+    "title": "ActionReminderSweepTests + CommitteeDirectoryTests",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-031",
+    "title": "JobsMonitorMapperTests + AdminJobsEndpointTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-032",
+    "title": "Backlog.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-033",
+    "title": "Kanban.test + topicMeta.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-034",
+    "title": "i18n direction.test.ts + theme.test.ts",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-035",
+    "title": "Accessibility axe render (jest axe WCAG 2.2 AA)",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-036",
+    "title": "TraceabilityTests + TraceabilityApiTests",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-037",
+    "title": "dashboardAgg.test + RoleDashboard.test",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-038",
+    "title": "ArchUnit.NET module boundary tests",
+    "kind": "Architecture"
+  },
+  {
+    "type": "test",
+    "id": "TEST-039",
+    "title": "Acmp.Migrations.Tests EF migration idempotency",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-040",
+    "title": "i18n key parity script (EN vs AR)",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-041",
+    "title": "core loop.spec E2E (Playwright)",
+    "kind": "E2E"
+  },
+  {
+    "type": "test",
+    "id": "TEST-042",
+    "title": "rtl a11y.spec + dnd and failures.spec E2E",
+    "kind": "E2E"
+  },
+  {
+    "type": "test",
+    "id": "TEST-043",
+    "title": "p12 dashboard vr.spec E2E visual regression",
+    "kind": "E2E"
+  },
+  {
+    "type": "test",
+    "id": "TEST-044",
+    "title": "Audit trail hash chain suite (AuditEvent immutability and integrity)",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-045",
+    "title": "Global search integration suite (grouped results, Arabic word breaker)",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-046",
+    "title": "Traceability panel component tests (FE display)",
+    "kind": "Unit"
+  },
+  {
+    "type": "test",
+    "id": "TEST-047",
+    "title": "k6 performance scenarios (dashboard, search, vote, upload)",
+    "kind": "E2E"
+  },
+  {
+    "type": "test",
+    "id": "TEST-048",
+    "title": "OWASP ZAP baseline DAST",
+    "kind": "E2E"
+  },
+  {
+    "type": "test",
+    "id": "TEST-049",
+    "title": "External adapter contract tests (Webex, Tarseem, Keystone via WireMock)",
+    "kind": "Integration"
+  },
+  {
+    "type": "test",
+    "id": "TEST-050",
+    "title": "Backup and restore runbook verification",
+    "kind": "Integration"
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "type": "phase",
+    "id": "PH-0",
+    "title": "Discovery & Validation",
+    "objective": "Turn the analysis workstreams (Keycloak claim mapping, MinIO/SQL provisioning, Webex licensing, Tarseem `doctor`, Arabic-FTS quality) into signed-off answers before coding; complete the planning package.",
+    "exit_criteria": "All PH-1-blocking `OQ-` resolved; branch strategy agreed; environments accessible.",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "phase",
+    "id": "PH-1",
+    "title": "MVP Governance",
+    "objective": "Deliver the complete architecture-governance loop: topic intake → backlog → agenda → meeting → voting → decision → action, with Keycloak identity (RBAC + per-topic ABAC), in-app notifications, full EN/AR + RTL, light/dark, append-only hash-chained audit, basic dashboards, FTS, and a typed traceability panel; plus risk creation and basic dependency recording.",
+    "exit_criteria": "All Must FRs implemented, tested, signed off; zero Sev-1; one full meeting cycle on the platform; staging stable ≥5 business days.",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "phase",
+    "id": "PH-2",
+    "title": "Governance Expansion",
+    "objective": "Full governance maturity: ADRs + Architecture Invariants, Research/Keystone import, Tarseem diagram sidecar + dependency-graph visualization, Templates + Knowledge wiki, the Webex adapter (notifications + recording/transcript), advanced traceability (impact analysis), expanded reporting, notification preferences + digests, Guest/Presenter access, CoI tracking, Gantt view, audit export + retention config.",
+    "exit_criteria": "Should FRs implemented + signed off; Tarseem sidecar stable 48h; zero Sev-1.",
+    "lifecycle_status": "Approved"
+  },
+  {
+    "type": "phase",
+    "id": "PH-3",
+    "title": "Research & Knowledge",
+    "objective": "AI-assisted transcript extraction (candidate-only, human-reviewed — OWASP LLM01), transcript FTS, email channel (when SMTP available), KPI/health dashboard, traceability-matrix export, invariant exception workflow, bulk topic ops, advanced analytics.",
+    "exit_criteria": "Committed Could FRs implemented + tested; AI off by default; privacy review signed off.",
+    "lifecycle_status": "Approved"
+  }
+]

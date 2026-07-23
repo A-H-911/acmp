@@ -1,0 +1,125 @@
+﻿PE-001|2026-06-25||a||Carry-forward findings resolved: logout UI control + CSP templating
+PE-002|2026-06-25||a||Review remediation: 6/6 healthy + full browser login/logout cycle
+PE-003|2026-06-25||a||Infra change-slice applied (post-P4, before P5). No P4/app rework.
+PE-004|2026-06-25|SL-004|a||P4 complete: claim→role mapping, policy + ABAC authorization, SoD, full Membership module, Users & Membership screen
+PE-005|2026-06-25|SL-003|a||P3 complete: design-system shell, role-filtered nav, OIDC wiring, states, accessible DnD
+PE-006|2026-06-25|SL-002|a||P2 verified: pattern already delivered by the P1 scaffold; closed with deferral notes
+PE-007|2026-06-25|SL-002|a||P2 review: closed the one blocker (pipeline/validator test coverage)
+PE-008|2026-06-25|SL-001|a||P1 scaffold complete (STOP point; report before P2)
+PE-009|2026-06-25||a||PH-0 kickoff
+PE-010|2026-06-26||a||Fixed: `acmp-web` access token had no `sub`, silently breaking JIT provisioning + subject identity
+PE-011|2026-06-26|SL-005|a||P5b PR4: Backlog kanban + accessible DnD (triage transitions) — final P5b slice
+PE-012|2026-06-26|SL-005|a||P5b PR3: Topic detail (read + discussion + history) wired to GET /api/topics/{key}
+PE-013|2026-06-26|SL-005|a||P5b PR2: Submit topic form (W1) wired to POST /api/topics
+PE-014|2026-06-26|SL-005|a||P5b PR1: Backlog read path (table + list views) wired to GET /api/topics
+PE-015|2026-06-26|SL-005|a||P5a backend complete: Topics module (domain → application → infrastructure → API), live-verified on real SQL Server
+PE-016|2026-06-26||a||Re-did the UI for fidelity against the LOCAL `/ACMP product context/*.dc.html`
+PE-017|2026-06-26||a||UI reconciled to the "ACMP product context" design across all built surfaces
+PE-018|2026-06-27|SL-005|a||Backlog (5 views incl. live calendar/timeline), filter chips, submit RTE bar, 5-tab topic detail
+PE-019|2026-06-27|SL-004|a||Users & Membership rebuilt to the updated design (rich directory + read-only user detail); unplanned affordances removed
+PE-020|2026-06-27|SL-003|a||Foundation fidelity pass vs updated `.dc.html` (Design System / ACMP shell / Navigation & IA)
+PE-021|2026-06-27|SL-006|a||P6 hardening: fixed the 3 live-pass findings + re-verified the full notification loop live (AR/RTL)
+PE-022|2026-06-27|SL-006|a||P6 live authenticated browser pass (rebuilt stack, real Keycloak PKCE, AR/RTL) + 2 pre-existing findings
+PE-023|2026-06-27|SL-006|a||P6 follow-up: /api/meetings + /api/notifications WebApplicationFactory integration tests
+PE-024|2026-06-27|SL-006|a||P6 follow-up: meeting-schedule flow (un-defers the new-meeting form) + server-implicit committee
+PE-025|2026-06-27|SL-006|a||P6e UI: notification center wired to the live feed + bell badge (closes the AC-051/053 loop)
+PE-026|2026-06-27|SL-006|a||P6d UI: live meeting workspace (the design's meeting tab) — agenda spine, attendance, discussion, actual-time
+PE-027|2026-06-27|SL-006|a||P6c UI: Agenda builder (the design's agenda tab) wired to the Meetings API + a meetings list
+PE-028|2026-06-27|SL-006|a||P6b backend: in-app Notifications module + the agenda-publish / meeting-schedule fan-out (AC-051/053 floor)
+PE-029|2026-06-27|SL-006|a||P6a backend complete: Meetings module (domain → application → infrastructure → API) + cross-module scheduler seam
+PE-030|2026-06-27|SL-005|a||Fixed every finding from the pre-advance P5 audit (all severities)
+PE-031|2026-06-28|SL-006|a||Full-page notification inbox: paging backend + page, mark-all, unread/all filter
+PE-032|2026-06-28|SL-006|a||Recording placeholder styled to the design recording empty-card anatomy
+PE-033|2026-06-28|SL-006|a||Read-only agenda viewer ported to the isOverview preview-card anatomy + head status-chip fix
+PE-034|2026-06-28|SL-006|a||Notes editor, action row, captured card to design anatomy + deferred concern
+PE-035|2026-06-29||a||Prove the database-enforced invariants the EF InMemory provider silently accepts
+PE-036|2026-06-29||a||Close the FE per-file gap to make every frontend file ≥95%
+PE-037|2026-06-29||a||Close the last backend gaps to make every file per-file-gate ready
+PE-038|2026-06-29||a||Failure-first coverage of the OIDC wiring, route guards, API client, and TanStack Query hooks
+PE-039|2026-06-29||a||Failure-first coverage of the 0%-covered Application handlers + validators
+PE-040|2026-06-29||a||Establish coverage measurement, exclusion basis, and slice plan
+PE-041|2026-06-29|SL-006|a||Schedule form: fix field rhythm/alignment, full-width Mode, design date + time control
+PE-042|2026-06-29|SL-006|a||Meetings list to design: Upcoming/Past split + List⇄Calendar toggle + month grid
+PE-043|2026-06-30|SL-006|a||Reconcile the bell popover + full inbox to ACMP.dc.html (branch `feat/p6b-notifications-ia`)
+PE-044|2026-06-30|SL-006|a||Refactor the meeting page into a SHELL + nested content surfaces (branch `feat/p6a-meeting-ia`)
+PE-045|2026-06-30|SL-004|a||Build the six non-Users admin tabs from `ACMP Administration.dc.html` (branch `feat/p4-admin-reconcile`)
+PE-046|2026-06-30|SL-003|a||Close the P3 forensic findings against `ACMP Usage Map` + `ACMP Design System` (branch `chore/p3-round2-reconcile`)
+PE-047|2026-06-30||a||Doc/code integrity fixes (one PR, branch `chore/doc-integrity` off `main`)
+PE-048|2026-06-30||a||Wire the hard coverage gate (global + per-file ≥95% lines, FE + BE) — the last slice
+PE-049|2026-06-30||a||Prove the live RTL flip and an automated axe sweep (last E2E slice)
+PE-050|2026-06-30||a||Cover the S4-deferred drag paths and the adversarial denial/validation cases
+PE-051|2026-06-30||a||Drive the whole governance loop through the real UI on the live stack
+PE-052|2026-06-30||a||Stand up Playwright against the real compose stack; prove the genuine auth round-trip
+PE-053|2026-07-01|SL-008|a||app-owned Hangfire + the due-soon/overdue/escalation sweep (W22; AC-054/055)
+PE-054|2026-07-01|SL-008|a||create a follow-up action from a decision (W13; Fork A backend expose + create form)
+PE-055|2026-07-01|SL-008|a||the action detail lifecycle buttons + independent Verify (W14; read→write, no backend change)
+PE-056|2026-07-01|SL-008|a||the `/actions` register + routed `/actions/:key` detail (read-only)
+PE-057|2026-07-01|SL-008|a||Actions bounded context: lifecycle + SoD-1 verify (W13/W14; AC-012/013)
+PE-058|2026-07-01|SL-007|a||the `/meetings/:key/minutes` tab, governed by isMinutes + denied
+PE-059|2026-07-01|SL-007|a||MoM 5-state lifecycle in the Meetings module (W10; AC-014/036/037/038)
+PE-060|2026-07-01|SL-007|a||reverse "entered language only" → MIRROR (en === ar)
+PE-061|2026-07-01|SL-007|a||`isDecision` screen + supersede dialog, with an additive `Title` on the aggregate
+PE-062|2026-07-01|SL-007|a||Decisions bounded context: W12 (issue) + decision half of W21 (supersede) (branch `feat/P7a-decisions-backend`)
+PE-063|2026-07-01||a||Unify the three divergent rich-text surfaces into one MarkdownEditor (branch `feat/dv-04-rich-text`)
+PE-064|2026-07-02|SL-001|a||F-1…F-28 from the adversarial P1–P9 audit (BL-066 + fidelity)
+PE-065|2026-07-02|SL-009|a||the `/votes/:key` screen + "Call vote" configure dialog (W11; AC-021…026 + AC-052)
+PE-066|2026-07-02|SL-009|a||the Vote aggregate + SoD-3 gate (W11; AC-021/022/023/024/025/026 + AC-015/016 + AC-052)
+PE-067|2026-07-02|SL-008|a||the AC-029 gate retrofit (OQ-045 resolved; closes the Actions module)
+PE-068|2026-07-02|SL-008|a||the designed Hangfire Job Monitor tab (AC-056; operator fork B)
+PE-069|2026-07-03|SL-010|a||the `/traceability/:type/:key` impact-graph UI (frontend; PR2 of 2)
+PE-070|2026-07-03|SL-010|a||the `/api/traceability/graph` transitive endpoint (backend; PR1 of 2)
+PE-071|2026-07-03|SL-010|a||the `/dependencies` register + the shared traceability panel + create dialogs (frontend only)
+PE-072|2026-07-03|SL-010|a||the `Dependencies` module: governed DPN edge + register/panel API (backend only)
+PE-073|2026-07-03|SL-010|a||the Traceability module + typed edges + widened decision-issue gate (backend only)
+PE-074|2026-07-03|SL-010|a||the /risks register + routed detail + create dialog (frontend only)
+PE-075|2026-07-03|SL-010|a||the Risk aggregate + Mitigations + W15 lifecycle (backend only)
+PE-076|2026-07-04|SL-011|a||"Convert to ADR" from an issued Decision — new IDecisionReader + ITraceabilityWriter seams, promote command, wired FE button + confirm dialog
+PE-077|2026-07-04|SL-011|a||Invariants tab on `/adrs`, `/invariants` register + `/invariants/:key` detail, Create-Invariant dialog (FE-only)
+PE-078|2026-07-04|SL-011|a||Architecture Invariant aggregate (AIV-YYYY-###); W18/W21 lifecycle, supersede-not-edit (backend)
+PE-079|2026-07-04|SL-011|a||the `/adrs` register, the MADR-lite detail, and the create dialog (FE-only)
+PE-080|2026-07-04|SL-011|a||new Governance module (ADRs); MADR-lite lifecycle, supersede-not-edit, W17/W21
+PE-081|2026-07-04|SL-010|a||operator-driven live visual review of the impact graph + the three create dialogs
+PE-082|2026-07-04|SL-010|a||fixed the 7 MAJOR + the MINOR fidelity/i18n cluster from the exhaustive P10 audit
+PE-083|2026-07-04|SL-010|a||the risk-exposure + dependency dashboards (frontend; the LAST P10 slice)
+PE-084|2026-07-05|SL-012|d|b3c1a45|P12 audit remediation — branch `fix/p12-audit-remediation`
+PE-085|2026-07-05|SL-012|d|6252134|P12-PR3 — Reports shell (FE) — branch `feat/P12-pr3-reports-shell`
+PE-086|2026-07-05|SL-012|d|4648b19|P12-PR2 — Role dashboards (FE) — branch `feat/P12-pr2-role-dashboards`
+PE-087|2026-07-05|SL-012|d|20a451b|P12-PR1 — Reporting thin registers (backend reads) — branch `feat/P12-pr1-report-reads`
+PE-088|2026-07-05|SL-011|d|6468fb7|P11 audit remediation — fidelity + robustness fixes across the Governance surfaces (branch `fix/p11-audit-remediation`)
+PE-089|2026-07-06||i||Keystone migration gap remediation — branch `fix/keystone-migration-gaps`
+PE-090|2026-07-06||i||Keystone package migration — branch `chore/keystone-package-migration`
+PE-091|2026-07-07|SL-013|i||P13 — Webex integration (Phase 2) — branch `feat/p13-webex-integration`
+PE-092|2026-07-09||i||CI hardening — hosted-runner scarcity & minute-burn — branch `ci/harden-runner-scarcity`
+PE-093|2026-07-09|SL-013|i||P13 audit remediation — Slice 2 (Webex hardening) — branch `fix/p13-audit-slice2`
+PE-094|2026-07-09|SL-013|i||P13 audit remediation — Slice 1 (recording tab + test integrity) — branch `fix/p13-audit-slice1`
+PE-095|2026-07-09||i||D-15 — Topic *Prepare* (Accepted→Prepared) UI affordance — Tier 3 (Complete) — branch `fix/d15-topic-prepare-ui`
+PE-096|2026-07-09|SL-013|i||P13-close — Webex integration + meeting recording, closed (Phase 2) — branch `feat/p13-recording-upload`
+PE-097|2026-07-09|SL-013|i||P13-recording — Meeting-recording upload · presigned playback · delete (Phase 2) — branch `feat/p13-recording-upload`
+PE-098|2026-07-11||i||Audit slice PR1 — same-transaction atomicity (step 4, NFR-042) — branch `feat/audit-infra`
+PE-099|2026-07-12||i||Audit slice — MERGED to `main` (PR #105)
+PE-100|2026-07-12||i||Audit slice PR4 — `/audit` register UI — branch `feat/audit-infra`
+PE-101|2026-07-12||i||Audit slice PR3 — Auditor read + on-demand verify API — branch `feat/audit-infra`
+PE-102|2026-07-12||i||Audit slice PR2 — migrate emit sites to EmitEnrichedAsync — branch `feat/audit-infra`
+PE-103|2026-07-13|SL-015|a||P15c-2 Research convert frontend (W16, FR-113/114/115)
+PE-104|2026-07-13|SL-015|a||P15c-1 Research convert backend (W16, FR-113/115)
+PE-105|2026-07-13||a||D-18 audit-append concurrency FIXED via serialization (ADR-0028)
+PE-106|2026-07-13|SL-015|a||P15b live pixel-VR (PASS) + audit-append race reproduced (D-18)
+PE-107|2026-07-13|SL-015|a||P15a + P15b (Research module: backend + UI)
+PE-108|2026-07-14|SL-015|a||P15e Knowledge UI: wiki + template management (FR-116/117/119)
+PE-109|2026-07-14|SL-015|a||P15d-2 Knowledge backend: Template (FR-119)
+PE-110|2026-07-14|SL-015|a||P15d-1 Knowledge backend: Document (FR-116/117)
+PE-111|2026-07-15|SL-015|a||P15 (Research & Knowledge) design-fidelity + i18n audit remediation
+PE-112|2026-07-15|SL-015|a||Register refresh: acceptance-audit + status-report reconciled to P15-complete
+PE-113|2026-07-15|SL-015|a||P15h Template pre-fill (FR-120) — the last P15 sub-slice
+PE-114|2026-07-15|SL-015|a||P15f/g Global Search (FR-143/144/145/118, AC-060/061; OQ-034 resolved)
+PE-115|2026-07-16|SL-016|a||P16 Batches B2b + B3 + B4: hardening completed (one PR) — branch `feat/P16-hardening-b2b-b3-b4`
+PE-116|2026-07-16|SL-016|a||P16 Batch 2 (PR2): scanners triaged → flipped to gating
+PE-117|2026-07-16|SL-016|a||P16 (Security hardening) — Batch 2: CI security gates + supply chain (PR1)
+PE-118|2026-07-16|SL-016|a||P16 (Security hardening, ASVS 5.0 L2) — Batch 1: Audit & vote crypto core
+PE-119|2026-07-17|SL-017|a||P17a (test hygiene) — ★ un-broke a critical Keystone gate that `main` shipped red ★
+PE-120|2026-07-17|SL-016|a||P16 MERGED (★ complete ★) + P14 deferred indefinitely (DEC-028)
+PE-121|2026-07-17|SL-016|a||P16-B3 follow-up: Keystone G-IDS gate fixed + SQL transit encrypted + doc corrections
+PE-122|2026-07-18|SL-017|a||P17b (final slice) — decision-issuance UI built → AC-014/015/016 Met, F-03 leg landed
+PE-123|2026-07-19|SL-018|a||P18 Deployment — P18a hardening (MERGED #146) + P18b backup/runbook
+PE-124|2026-07-20||a||D-23 closeable-gap follow-up — 5 items on one branch (AC-032/043/057 → Met)
+PE-125|2026-07-20|SL-019|a||P19 Final audit & release readiness — reports + CONDITIONAL NO-GO (ladder complete)

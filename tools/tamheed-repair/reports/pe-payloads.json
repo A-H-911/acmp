@@ -1,0 +1,1065 @@
+[
+  {
+    "type": "progress-entry",
+    "id": "PE-001",
+    "entry": "Carry-forward findings resolved: logout UI control + CSP templating",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5395}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-002",
+    "entry": "Review remediation: 6/6 healthy + full browser login/logout cycle",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5411}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-003",
+    "entry": "Infra change-slice applied (post-P4, before P5). No P4/app rework.",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5453}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-004",
+    "entry": "P4 complete: claim→role mapping, policy + ABAC authorization, SoD, full Membership module, Users & Membership screen",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5530}",
+    "slice_id": "SL-004",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-005",
+    "entry": "P3 complete: design-system shell, role-filtered nav, OIDC wiring, states, accessible DnD",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5635}",
+    "slice_id": "SL-003",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-006",
+    "entry": "P2 verified: pattern already delivered by the P1 scaffold; closed with deferral notes",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5702}",
+    "slice_id": "SL-002",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-007",
+    "entry": "P2 review: closed the one blocker (pipeline/validator test coverage)",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5746}",
+    "slice_id": "SL-002",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-008",
+    "entry": "P1 scaffold complete (STOP point; report before P2)",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5765}",
+    "slice_id": "SL-001",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-009",
+    "entry": "PH-0 kickoff",
+    "occurred_at": "2026-06-25",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5793}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-010",
+    "entry": "Fixed: `acmp-web` access token had no `sub`, silently breaking JIT provisioning + subject identity",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4935}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-011",
+    "entry": "P5b PR4: Backlog kanban + accessible DnD (triage transitions) — final P5b slice",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4971}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-012",
+    "entry": "P5b PR3: Topic detail (read + discussion + history) wired to GET /api/topics/{key}",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5023}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-013",
+    "entry": "P5b PR2: Submit topic form (W1) wired to POST /api/topics",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5063}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-014",
+    "entry": "P5b PR1: Backlog read path (table + list views) wired to GET /api/topics",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5121}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-015",
+    "entry": "P5a backend complete: Topics module (domain → application → infrastructure → API), live-verified on real SQL Server",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5195}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-016",
+    "entry": "Re-did the UI for fidelity against the LOCAL `/ACMP product context/*.dc.html`",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5270}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-017",
+    "entry": "UI reconciled to the \"ACMP product context\" design across all built surfaces",
+    "occurred_at": "2026-06-26",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 5337}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-018",
+    "entry": "Backlog (5 views incl. live calendar/timeline), filter chips, submit RTE bar, 5-tab topic detail",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4127}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-019",
+    "entry": "Users & Membership rebuilt to the updated design (rich directory + read-only user detail); unplanned affordances removed",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4207}",
+    "slice_id": "SL-004",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-020",
+    "entry": "Foundation fidelity pass vs updated `.dc.html` (Design System / ACMP shell / Navigation & IA)",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4291}",
+    "slice_id": "SL-003",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-021",
+    "entry": "P6 hardening: fixed the 3 live-pass findings + re-verified the full notification loop live (AR/RTL)",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4362}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-022",
+    "entry": "P6 live authenticated browser pass (rebuilt stack, real Keycloak PKCE, AR/RTL) + 2 pre-existing findings",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4404}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-023",
+    "entry": "P6 follow-up: /api/meetings + /api/notifications WebApplicationFactory integration tests",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4456}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-024",
+    "entry": "P6 follow-up: meeting-schedule flow (un-defers the new-meeting form) + server-implicit committee",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4497}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-025",
+    "entry": "P6e UI: notification center wired to the live feed + bell badge (closes the AC-051/053 loop)",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4545}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-026",
+    "entry": "P6d UI: live meeting workspace (the design's meeting tab) — agenda spine, attendance, discussion, actual-time",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4602}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-027",
+    "entry": "P6c UI: Agenda builder (the design's agenda tab) wired to the Meetings API + a meetings list",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4667}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-028",
+    "entry": "P6b backend: in-app Notifications module + the agenda-publish / meeting-schedule fan-out (AC-051/053 floor)",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4737}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-029",
+    "entry": "P6a backend complete: Meetings module (domain → application → infrastructure → API) + cross-module scheduler seam",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4810}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-030",
+    "entry": "Fixed every finding from the pre-advance P5 audit (all severities)",
+    "occurred_at": "2026-06-27",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4884}",
+    "slice_id": "SL-005",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-031",
+    "entry": "Full-page notification inbox: paging backend + page, mark-all, unread/all filter",
+    "occurred_at": "2026-06-28",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3997}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-032",
+    "entry": "Recording placeholder styled to the design recording empty-card anatomy",
+    "occurred_at": "2026-06-28",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4037}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-033",
+    "entry": "Read-only agenda viewer ported to the isOverview preview-card anatomy + head status-chip fix",
+    "occurred_at": "2026-06-28",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4068}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-034",
+    "entry": "Notes editor, action row, captured card to design anatomy + deferred concern",
+    "occurred_at": "2026-06-28",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 4102}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-035",
+    "entry": "Prove the database-enforced invariants the EF InMemory provider silently accepts",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3635}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-036",
+    "entry": "Close the FE per-file gap to make every frontend file ≥95%",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3681}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-037",
+    "entry": "Close the last backend gaps to make every file per-file-gate ready",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3721}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-038",
+    "entry": "Failure-first coverage of the OIDC wiring, route guards, API client, and TanStack Query hooks",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3764}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-039",
+    "entry": "Failure-first coverage of the 0%-covered Application handlers + validators",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3815}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-040",
+    "entry": "Establish coverage measurement, exclusion basis, and slice plan",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3858}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-041",
+    "entry": "Schedule form: fix field rhythm/alignment, full-width Mode, design date + time control",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3906}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-042",
+    "entry": "Meetings list to design: Upcoming/Past split + List⇄Calendar toggle + month grid",
+    "occurred_at": "2026-06-29",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3946}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-043",
+    "entry": "Reconcile the bell popover + full inbox to ACMP.dc.html (branch `feat/p6b-notifications-ia`)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3170}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-044",
+    "entry": "Refactor the meeting page into a SHELL + nested content surfaces (branch `feat/p6a-meeting-ia`)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3224}",
+    "slice_id": "SL-006",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-045",
+    "entry": "Build the six non-Users admin tabs from `ACMP Administration.dc.html` (branch `feat/p4-admin-reconcile`)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3292}",
+    "slice_id": "SL-004",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-046",
+    "entry": "Close the P3 forensic findings against `ACMP Usage Map` + `ACMP Design System` (branch `chore/p3-round2-reconcile`)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3342}",
+    "slice_id": "SL-003",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-047",
+    "entry": "Doc/code integrity fixes (one PR, branch `chore/doc-integrity` off `main`)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3402}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-048",
+    "entry": "Wire the hard coverage gate (global + per-file ≥95% lines, FE + BE) — the last slice",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3443}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-049",
+    "entry": "Prove the live RTL flip and an automated axe sweep (last E2E slice)",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3475}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-050",
+    "entry": "Cover the S4-deferred drag paths and the adversarial denial/validation cases",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3503}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-051",
+    "entry": "Drive the whole governance loop through the real UI on the live stack",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3543}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-052",
+    "entry": "Stand up Playwright against the real compose stack; prove the genuine auth round-trip",
+    "occurred_at": "2026-06-30",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3590}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-053",
+    "entry": "app-owned Hangfire + the due-soon/overdue/escalation sweep (W22; AC-054/055)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2587}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-054",
+    "entry": "create a follow-up action from a decision (W13; Fork A backend expose + create form)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2634}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-055",
+    "entry": "the action detail lifecycle buttons + independent Verify (W14; read→write, no backend change)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2674}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-056",
+    "entry": "the `/actions` register + routed `/actions/:key` detail (read-only)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2722}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-057",
+    "entry": "Actions bounded context: lifecycle + SoD-1 verify (W13/W14; AC-012/013)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2776}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-058",
+    "entry": "the `/meetings/:key/minutes` tab, governed by isMinutes + denied",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2857}",
+    "slice_id": "SL-007",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-059",
+    "entry": "MoM 5-state lifecycle in the Meetings module (W10; AC-014/036/037/038)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2906}",
+    "slice_id": "SL-007",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-060",
+    "entry": "reverse \"entered language only\" → MIRROR (en === ar)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2974}",
+    "slice_id": "SL-007",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-061",
+    "entry": "`isDecision` screen + supersede dialog, with an additive `Title` on the aggregate",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3002}",
+    "slice_id": "SL-007",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-062",
+    "entry": "Decisions bounded context: W12 (issue) + decision half of W21 (supersede) (branch `feat/P7a-decisions-backend`)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3067}",
+    "slice_id": "SL-007",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-063",
+    "entry": "Unify the three divergent rich-text surfaces into one MarkdownEditor (branch `feat/dv-04-rich-text`)",
+    "occurred_at": "2026-07-01",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 3132}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-064",
+    "entry": "F-1…F-28 from the adversarial P1–P9 audit (BL-066 + fidelity)",
+    "occurred_at": "2026-07-02",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2315}",
+    "slice_id": "SL-001",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-065",
+    "entry": "the `/votes/:key` screen + \"Call vote\" configure dialog (W11; AC-021…026 + AC-052)",
+    "occurred_at": "2026-07-02",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2361}",
+    "slice_id": "SL-009",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-066",
+    "entry": "the Vote aggregate + SoD-3 gate (W11; AC-021/022/023/024/025/026 + AC-015/016 + AC-052)",
+    "occurred_at": "2026-07-02",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2418}",
+    "slice_id": "SL-009",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-067",
+    "entry": "the AC-029 gate retrofit (OQ-045 resolved; closes the Actions module)",
+    "occurred_at": "2026-07-02",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2502}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-068",
+    "entry": "the designed Hangfire Job Monitor tab (AC-056; operator fork B)",
+    "occurred_at": "2026-07-02",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2541}",
+    "slice_id": "SL-008",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-069",
+    "entry": "the `/traceability/:type/:key` impact-graph UI (frontend; PR2 of 2)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1837}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-070",
+    "entry": "the `/api/traceability/graph` transitive endpoint (backend; PR1 of 2)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1893}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-071",
+    "entry": "the `/dependencies` register + the shared traceability panel + create dialogs (frontend only)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1949}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-072",
+    "entry": "the `Dependencies` module: governed DPN edge + register/panel API (backend only)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2014}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-073",
+    "entry": "the Traceability module + typed edges + widened decision-issue gate (backend only)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2097}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-074",
+    "entry": "the /risks register + routed detail + create dialog (frontend only)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2168}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-075",
+    "entry": "the Risk aggregate + Mitigations + W15 lifecycle (backend only)",
+    "occurred_at": "2026-07-03",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 2240}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-076",
+    "entry": "\"Convert to ADR\" from an issued Decision — new IDecisionReader + ITraceabilityWriter seams, promote command, wired FE button + confirm dialog",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1331}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-077",
+    "entry": "Invariants tab on `/adrs`, `/invariants` register + `/invariants/:key` detail, Create-Invariant dialog (FE-only)",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1383}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-078",
+    "entry": "Architecture Invariant aggregate (AIV-YYYY-###); W18/W21 lifecycle, supersede-not-edit (backend)",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1456}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-079",
+    "entry": "the `/adrs` register, the MADR-lite detail, and the create dialog (FE-only)",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1514}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-080",
+    "entry": "new Governance module (ADRs); MADR-lite lifecycle, supersede-not-edit, W17/W21",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1572}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-081",
+    "entry": "operator-driven live visual review of the impact graph + the three create dialogs",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1624}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-082",
+    "entry": "fixed the 7 MAJOR + the MINOR fidelity/i18n cluster from the exhaustive P10 audit",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1672}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-083",
+    "entry": "the risk-exposure + dependency dashboards (frontend; the LAST P10 slice)",
+    "occurred_at": "2026-07-04",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 1756}",
+    "slice_id": "SL-010",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-084",
+    "entry": "P12 audit remediation — branch `fix/p12-audit-remediation`",
+    "occurred_at": "2026-07-05",
+    "custom_attributes": "{\"date_provenance\": \"derived-from-git\", \"v1_line\": 1116, \"git_sha\": \"b3c1a45\"}",
+    "slice_id": "SL-012",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-085",
+    "entry": "P12-PR3 — Reports shell (FE) — branch `feat/P12-pr3-reports-shell`",
+    "occurred_at": "2026-07-05",
+    "custom_attributes": "{\"date_provenance\": \"derived-from-git\", \"v1_line\": 1167, \"git_sha\": \"6252134\"}",
+    "slice_id": "SL-012",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-086",
+    "entry": "P12-PR2 — Role dashboards (FE) — branch `feat/P12-pr2-role-dashboards`",
+    "occurred_at": "2026-07-05",
+    "custom_attributes": "{\"date_provenance\": \"derived-from-git\", \"v1_line\": 1200, \"git_sha\": \"4648b19\"}",
+    "slice_id": "SL-012",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-087",
+    "entry": "P12-PR1 — Reporting thin registers (backend reads) — branch `feat/P12-pr1-report-reads`",
+    "occurred_at": "2026-07-05",
+    "custom_attributes": "{\"date_provenance\": \"derived-from-git\", \"v1_line\": 1237, \"git_sha\": \"20a451b\"}",
+    "slice_id": "SL-012",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-088",
+    "entry": "P11 audit remediation — fidelity + robustness fixes across the Governance surfaces (branch `fix/p11-audit-remediation`)",
+    "occurred_at": "2026-07-05",
+    "custom_attributes": "{\"date_provenance\": \"derived-from-git\", \"v1_line\": 1288, \"git_sha\": \"6468fb7\"}",
+    "slice_id": "SL-011",
+    "phase_id": "PH-1"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-089",
+    "entry": "Keystone migration gap remediation — branch `fix/keystone-migration-gaps`",
+    "occurred_at": "2026-07-06",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1085}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-090",
+    "entry": "Keystone package migration — branch `chore/keystone-package-migration`",
+    "occurred_at": "2026-07-06",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1099}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-091",
+    "entry": "P13 — Webex integration (Phase 2) — branch `feat/p13-webex-integration`",
+    "occurred_at": "2026-07-07",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1060}",
+    "slice_id": "SL-013",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-092",
+    "entry": "CI hardening — hosted-runner scarcity & minute-burn — branch `ci/harden-runner-scarcity`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 975}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-093",
+    "entry": "P13 audit remediation — Slice 2 (Webex hardening) — branch `fix/p13-audit-slice2`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 988}",
+    "slice_id": "SL-013",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-094",
+    "entry": "P13 audit remediation — Slice 1 (recording tab + test integrity) — branch `fix/p13-audit-slice1`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1006}",
+    "slice_id": "SL-013",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-095",
+    "entry": "D-15 — Topic *Prepare* (Accepted→Prepared) UI affordance — Tier 3 (Complete) — branch `fix/d15-topic-prepare-ui`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1019}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-096",
+    "entry": "P13-close — Webex integration + meeting recording, closed (Phase 2) — branch `feat/p13-recording-upload`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1033}",
+    "slice_id": "SL-013",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-097",
+    "entry": "P13-recording — Meeting-recording upload · presigned playback · delete (Phase 2) — branch `feat/p13-recording-upload`",
+    "occurred_at": "2026-07-09",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 1044}",
+    "slice_id": "SL-013",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-098",
+    "entry": "Audit slice PR1 — same-transaction atomicity (step 4, NFR-042) — branch `feat/audit-infra`",
+    "occurred_at": "2026-07-11",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 958}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-099",
+    "entry": "Audit slice — MERGED to `main` (PR #105)",
+    "occurred_at": "2026-07-12",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 903}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-100",
+    "entry": "Audit slice PR4 — `/audit` register UI — branch `feat/audit-infra`",
+    "occurred_at": "2026-07-12",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 909}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-101",
+    "entry": "Audit slice PR3 — Auditor read + on-demand verify API — branch `feat/audit-infra`",
+    "occurred_at": "2026-07-12",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 925}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-102",
+    "entry": "Audit slice PR2 — migrate emit sites to EmitEnrichedAsync — branch `feat/audit-infra`",
+    "occurred_at": "2026-07-12",
+    "custom_attributes": "{\"date_provenance\": \"inferred-from-body\", \"v1_line\": 942}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-103",
+    "entry": "P15c-2 Research convert frontend (W16, FR-113/114/115)",
+    "occurred_at": "2026-07-13",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 816}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-104",
+    "entry": "P15c-1 Research convert backend (W16, FR-113/115)",
+    "occurred_at": "2026-07-13",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 831}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-105",
+    "entry": "D-18 audit-append concurrency FIXED via serialization (ADR-0028)",
+    "occurred_at": "2026-07-13",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 844}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-106",
+    "entry": "P15b live pixel-VR (PASS) + audit-append race reproduced (D-18)",
+    "occurred_at": "2026-07-13",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 873}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-107",
+    "entry": "P15a + P15b (Research module: backend + UI)",
+    "occurred_at": "2026-07-13",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 884}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-108",
+    "entry": "P15e Knowledge UI: wiki + template management (FR-116/117/119)",
+    "occurred_at": "2026-07-14",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 714}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-109",
+    "entry": "P15d-2 Knowledge backend: Template (FR-119)",
+    "occurred_at": "2026-07-14",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 751}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-110",
+    "entry": "P15d-1 Knowledge backend: Document (FR-116/117)",
+    "occurred_at": "2026-07-14",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 786}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-111",
+    "entry": "P15 (Research & Knowledge) design-fidelity + i18n audit remediation",
+    "occurred_at": "2026-07-15",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 542}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-112",
+    "entry": "Register refresh: acceptance-audit + status-report reconciled to P15-complete",
+    "occurred_at": "2026-07-15",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 604}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-113",
+    "entry": "P15h Template pre-fill (FR-120) — the last P15 sub-slice",
+    "occurred_at": "2026-07-15",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 631}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-114",
+    "entry": "P15f/g Global Search (FR-143/144/145/118, AC-060/061; OQ-034 resolved)",
+    "occurred_at": "2026-07-15",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 677}",
+    "slice_id": "SL-015",
+    "phase_id": "PH-2"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-115",
+    "entry": "P16 Batches B2b + B3 + B4: hardening completed (one PR) — branch `feat/P16-hardening-b2b-b3-b4`",
+    "occurred_at": "2026-07-16",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 335}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-116",
+    "entry": "P16 Batch 2 (PR2): scanners triaged → flipped to gating",
+    "occurred_at": "2026-07-16",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 421}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-117",
+    "entry": "P16 (Security hardening) — Batch 2: CI security gates + supply chain (PR1)",
+    "occurred_at": "2026-07-16",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 454}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-118",
+    "entry": "P16 (Security hardening, ASVS 5.0 L2) — Batch 1: Audit & vote crypto core",
+    "occurred_at": "2026-07-16",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 489}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-119",
+    "entry": "P17a (test hygiene) — ★ un-broke a critical Keystone gate that `main` shipped red ★",
+    "occurred_at": "2026-07-17",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 141}",
+    "slice_id": "SL-017",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-120",
+    "entry": "P16 MERGED (★ complete ★) + P14 deferred indefinitely (DEC-028)",
+    "occurred_at": "2026-07-17",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 227}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-121",
+    "entry": "P16-B3 follow-up: Keystone G-IDS gate fixed + SQL transit encrypted + doc corrections",
+    "occurred_at": "2026-07-17",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 272}",
+    "slice_id": "SL-016",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-122",
+    "entry": "P17b (final slice) — decision-issuance UI built → AC-014/015/016 Met, F-03 leg landed",
+    "occurred_at": "2026-07-18",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 94}",
+    "slice_id": "SL-017",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-123",
+    "entry": "P18 Deployment — P18a hardening (MERGED #146) + P18b backup/runbook",
+    "occurred_at": "2026-07-19",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 51}",
+    "slice_id": "SL-018",
+    "phase_id": "PH-4"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-124",
+    "entry": "D-23 closeable-gap follow-up — 5 items on one branch (AC-032/043/057 → Met)",
+    "occurred_at": "2026-07-20",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 15}"
+  },
+  {
+    "type": "progress-entry",
+    "id": "PE-125",
+    "entry": "P19 Final audit & release readiness — reports + CONDITIONAL NO-GO (ladder complete)",
+    "occurred_at": "2026-07-20",
+    "custom_attributes": "{\"date_provenance\": \"authored\", \"v1_line\": 32}",
+    "slice_id": "SL-019",
+    "phase_id": "PH-4"
+  }
+]
