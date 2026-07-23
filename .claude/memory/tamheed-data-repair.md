@@ -1,9 +1,31 @@
 ---
 name: tamheed-data-repair
-description: The v2.3 migration passed 7/7 gates while silently damaging register data at column level; repair is in flight on fix/tamheed-data-repair with Tasks 0-1 done
+description: v2.3 migration damage, the hand-repair, and the 2.4.0/2.5.0/2.5.1 parser-fix verification arc; carries the shrinking re-apply list for any future re-migration
 metadata:
   type: project
 ---
+
+**CURRENT (2026-07-23, plugin 2.5.1 verified):** the live package was re-populated on parser
+2.4.0 + swapped (`1dd50ba`), then 2.5.0 (`d050342`) and 2.5.1 verified via **runbook §8
+scratch-diff** (the method findings_6 proposed and 2.5.1 ships as first-class). 2.5.1 closes
+**all four findings_6 gaps**: DW prose-status carry (**23/23**, 4 `carried from prose cell`
+notes — D-02 `In progress→Activated` carries *silently* via the exact map), phase prose
+statuses (PH-0/PH-1 `complete→Implemented` both carry; PH-2/3 coerce to default Approved =
+live), emit-time strip of an identical body-leading H1, and **CSV force** (a hand-damaged
+`csv/*.csv` now comes back `emitted` on export — no more delete-workaround). D1 emit:
+all-unchanged, clean scan, plus a NEW `restated_content` advisory flagging AGENTS.md's
+hard-coded 62/11/1 tally + quoted invariants as drift-prone. **Re-apply list on any future
+re-migration is now just:** epic `effort` + span/leaf `phase_id`, the AC bind-then-approve
+pass, cosmetic `packages.name`. **New open blemish (findings_7 §C):** live FR-100/FR-107
+`custom_attributes.v1` still hold the escaped-pipe shear (G1 guard kept the hand-repair off
+that column; the 2.5.x parser snapshot is clean) — candidate repair = full-row upsert incl.
+corrected custom_attributes, **operator order needed**. §8 method lesson: the field diff must
+compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. Branch
+`fix/tamheed-data-repair` still has NO PR. Field reports: `findings_5/6/7.md` (git-excluded).
+
+---
+
+**History (2.3.0-era discovery + hand-repair):**
 
 **The Tamheed v2.3 migration (PR #157, `be63211`) passed every gate while damaging the
 register half of the package.** Gates read 7/7, counts matched, the audit rollup survived
