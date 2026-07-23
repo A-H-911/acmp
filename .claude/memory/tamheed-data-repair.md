@@ -16,10 +16,10 @@ live), emit-time strip of an identical body-leading H1, and **CSV force** (a han
 all-unchanged, clean scan, plus a NEW `restated_content` advisory flagging AGENTS.md's
 hard-coded 62/11/1 tally + quoted invariants as drift-prone. **Re-apply list on any future
 re-migration is now just:** epic `effort` + span/leaf `phase_id`, the AC bind-then-approve
-pass, cosmetic `packages.name`. **New open blemish (findings_7 §C):** live FR-100/FR-107
-`custom_attributes.v1` still hold the escaped-pipe shear (G1 guard kept the hand-repair off
-that column; the 2.5.x parser snapshot is clean) — candidate repair = full-row upsert incl.
-corrected custom_attributes, **operator order needed**. §8 method lesson: the field diff must
+pass, cosmetic `packages.name`. **findings_7 §C blemish CLOSED same day
+(operator-ordered, PE-130):** FR-100/FR-107 `custom_attributes.v1` repaired via full-row
+`entity_upsert` — custom_attributes must be passed as a **JSON string** (a dict fails with
+"type 'dict' is not supported"); verified in canonical JSONL against the frozen source. §8 method lesson: the field diff must
 compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. Branch
 `fix/tamheed-data-repair` still has NO PR. Field reports: `findings_5/6/7.md` (git-excluded).
 
