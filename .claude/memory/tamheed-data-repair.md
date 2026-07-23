@@ -28,8 +28,9 @@ release — §8's diff step is now the bundled `scripts/scratch_diff.py` (stdlib
 correctly, JSON-blob-inclusive, exit 1 = differences = normal); reconciled exactly (185=185)
 against the retired ad-hoc script, which additionally missed live-only rows in-band. Future
 §8 runs: migrate scratch → run the bundled tool with `--json` → bucket → delete scratch. §8 method lesson: the field diff must
-compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. Branch
-`fix/tamheed-data-repair` still has NO PR. Field reports: `findings_5/6/7.md` (git-excluded).
+compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. **PR #160 opened
+2026-07-23** (operator-ordered) — squash-merge awaits operator go-ahead; on merge, sync main
+and delete the branch. Field reports: `findings_5`–`findings_9` (git-excluded).
 
 ---
 
