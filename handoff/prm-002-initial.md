@@ -16,11 +16,11 @@ The package is the state; git is the evidence. Read the package through the `tam
 4. `entity_query("narrative-document")` — the document set. Start with the charter, the architecture narrative, and the roadmap (DOC-053, which carries the phase definitions, the P1 to P19 build-slice ladder, and the legacy token map).
 5. `entity_query("invariant")` — the 14 non-negotiables. `entity_query("constraint")` — the hard limits.
 6. `entity_query("slice")` and `entity_query("phase")` — where execution stands.
-7. `entity_query("defect")` — known package-data defects from the v2.3 migration, with severity and status.
+7. `entity_query("defect")` — the migration-defect record: what the first store migration damaged, what the parser upgrade and repair fixed, and what remains open.
 
 ## Where the project actually stands
 
-**The build ladder P1 through P19 is complete.** PH-0 and PH-1 are Implemented; PH-2 is substantially delivered with a Phase-2 backlog remainder; PH-3 has not started. **P14 (Tarseem diagrams) is deferred indefinitely by DEC-028 and is off the active ladder — do not start it without an explicit operator instruction.**
+**The build ladder P1 through P19 is complete.** PH-0 and PH-1 are Implemented; PH-2 is substantially delivered with a Phase-2 backlog remainder; PH-3 has not started. **P14 (Tarseem diagrams, SL-014) is deferred indefinitely by DEC-028 and is off the active ladder — do not start it without an explicit operator instruction.** It correctly has zero progress entries because it was never built.
 
 The acceptance rollup is 62 Met, 11 Partial, 1 Pending across 74 criteria (`entity_query("audit-verdict")`). The final release audit returned a conditional no-go pending operator go-live actions, not further build work.
 

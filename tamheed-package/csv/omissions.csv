@@ -1,0 +1,4 @@
+entity_type,reason
+experiment,PH-0 validation spikes are recorded in validation/ph0-validation.md rather than as EXP- plans.
+hypothesis,"No open decision-blocking hypotheses remain; PH-0 spikes resolved (Arabic-FTS, MinIO, Tarseem doctor)."
+poc,Feasibility captured in domain/webex-feasibility.md; no standalone POC- plans needed.

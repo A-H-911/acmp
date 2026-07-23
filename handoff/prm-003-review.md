@@ -16,7 +16,7 @@ Run `gate_run()` and report the verdict verbatim. All seven gates are critical: 
 
 Also report the audit evidence split. A narrated verdict is the graded party grading itself; list every one.
 
-**The gate set does not measure fidelity.** All seven gates are row-level: they confirm that a row exists, its identifier is well-formed, and its text is not a placeholder. They cannot see a column silently left empty, a title truncated at a fixed cap, or a value written into the wrong column of the right row — all three occurred in this package during the v2.3 migration and are recorded in the `defect` family. For a fidelity check run the column profiler under the repair tooling and diff it against the committed baseline.
+**The gate set does not measure fidelity.** All seven gates are row-level: they confirm that a row exists, its identifier is well-formed, and its text is not a placeholder. They cannot see a column silently left empty, a title truncated at a fixed cap, or a value written into the wrong column of the right row — all three occurred in this package's first store migration and are recorded in the `defect` family (repair history: `DOC-069`). For a fidelity check run the column profiler under the repair tooling and diff it against the committed baseline.
 
 ## C. Acceptance and design review
 

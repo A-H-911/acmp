@@ -16,8 +16,8 @@ Settled decisions are final. `entity_query("adr")` and `entity_query("decision")
 
 Two cautions specific to this package:
 
-- **The `DW-` identifiers do not match the historic `D-` numbers.** The migration renumbered by row position over an unsorted source, so `DW-015` is `D-16`, `DW-019` is `D-15`, `DW-021` is `D-22`, and `DW-022` is `D-20`. Each title now carries its true historic number as a prefix, and the full crosswalk is section `SEC-920` of `DOC-054`. Read it before acting on any `D-` reference found in the progress log, an ADR, or a commit message.
-- `DW-011` (Tarseem diagrams, slice P14) is deferred indefinitely by DEC-028. Its trigger is an explicit operator instruction and nothing else.
+- **The `DW-` identifiers map to the historic `D-` numbers by identity** (`DW-015` is `D-15`) since the parser-upgrade re-population of 2026-07-23. Older commit messages, ADRs and progress-log prose written before that date may reference the drifted 2.3.0-era mapping; the repair history is `DOC-069` and the defect record is the `defect` family.
+- `DW-011` (Tarseem diagrams, slice SL-014) is deferred indefinitely by DEC-028. Its trigger is an explicit operator instruction and nothing else.
 
 ## C. Advance a slice
 
@@ -31,6 +31,6 @@ Check the diff against every applicable invariant from `entity_query("invariant"
 
 ## E. Refresh the recorded state
 
-There is no status-report file to edit. The status rollup, the readiness rollup and the backlog are **derived views** over the package data — they update themselves when the underlying rows are correct. Refresh the human-readable surface with `export_html()`, which rewrites the committed review page.
+There is no status-report file to edit. The status rollup, the readiness rollup and the backlog are **derived views** over the package data — they update themselves when the underlying rows are correct. Refresh the human-readable surface with `export_html()`, which rewrites the committed review page and its CSV exports.
 
 Never hand-edit files under the package directory, and never edit the frozen `docs/` archive. The MCP tools are the only write path.
