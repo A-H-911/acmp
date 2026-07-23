@@ -18,8 +18,12 @@ hard-coded 62/11/1 tally + quoted invariants as drift-prone. **Re-apply list on 
 re-migration is now just:** epic `effort` + span/leaf `phase_id`, the AC bind-then-approve
 pass, cosmetic `packages.name`. **findings_7 §C blemish CLOSED same day
 (operator-ordered, PE-130):** FR-100/FR-107 `custom_attributes.v1` repaired via full-row
-`entity_upsert` — custom_attributes must be passed as a **JSON string** (a dict fails with
-"type 'dict' is not supported"); verified in canonical JSONL against the frozen source. §8 method lesson: the field diff must
+`entity_upsert`; verified byte-equal to the parser's serialization. **2.5.2 verified
+(2026-07-23, findings_8):** §8 diff fully clean incl. JSON blobs, UNEXPECTED empty; D-02
+carries with a semantic-alias note; coercion entries carry `basis` (PH-2/3 honestly labeled
+`default`); **dict custom_attributes now accepted on upsert** (the JSON-string caveat is
+obsolete). AGENTS.md ambient drift closed (tally, quoted invariants, stale DW/v_phase_exit
+caveat) → `restated_content: []` on emit. §8 method lesson: the field diff must
 compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. Branch
 `fix/tamheed-data-repair` still has NO PR. Field reports: `findings_5/6/7.md` (git-excluded).
 
