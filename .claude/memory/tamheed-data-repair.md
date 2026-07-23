@@ -23,7 +23,11 @@ pass, cosmetic `packages.name`. **findings_7 §C blemish CLOSED same day
 carries with a semantic-alias note; coercion entries carry `basis` (PH-2/3 honestly labeled
 `default`); **dict custom_attributes now accepted on upsert** (the JSON-string caveat is
 obsolete). AGENTS.md ambient drift closed (tally, quoted invariants, stale DW/v_phase_exit
-caveat) → `restated_content: []` on emit. §8 method lesson: the field diff must
+caveat) → `restated_content: []` on emit. **2.6.0 verified (findings_9):** tooling-only
+release — §8's diff step is now the bundled `scripts/scratch_diff.py` (stdlib, keyed
+correctly, JSON-blob-inclusive, exit 1 = differences = normal); reconciled exactly (185=185)
+against the retired ad-hoc script, which additionally missed live-only rows in-band. Future
+§8 runs: migrate scratch → run the bundled tool with `--json` → bucket → delete scratch. §8 method lesson: the field diff must
 compare JSON blobs too — findings_6's "byte-exact requirements" missed exactly this. Branch
 `fix/tamheed-data-repair` still has NO PR. Field reports: `findings_5/6/7.md` (git-excluded).
 
