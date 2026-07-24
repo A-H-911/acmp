@@ -10,7 +10,9 @@
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-ENV_FILE="$ROOT/deploy/.env"
+# ACMP_ENV_FILE lets a caller point this at a different env file (the PH-5 spike harness uses
+# it so it never has to clobber the operator's deploy/.env). Default order is unchanged.
+ENV_FILE="${ACMP_ENV_FILE:-$ROOT/deploy/.env}"
 [ -f "$ENV_FILE" ] || ENV_FILE="$ROOT/deploy/.env.example"
 SECRETS_DIR="$ROOT/deploy/secrets"
 mkdir -p "$SECRETS_DIR"
