@@ -34,9 +34,20 @@ write_secret() {  # name value
 
 # --- infra credentials (consumed by SQL Server / MinIO / Postgres / Keycloak) ---
 write_secret mssql_sa_password            "${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD}"
-write_secret minio_root_password          "${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}"
-write_secret kc_db_password               "${KC_DB_PASSWORD:?set KC_DB_PASSWORD}"
 write_secret kc_bootstrap_admin_password  "${KC_BOOTSTRAP_ADMIN_PASSWORD:?set KC_BOOTSTRAP_ADMIN_PASSWORD}"
+
+# MinIO is dev/e2e-only from PH-5 on (the cloud stack uses S3, ADR-0035) — write its secrets
+# only when a value is present, so a cloud deploy/.env need not carry them at all.
+if [ -n "${MINIO_ROOT_PASSWORD:-}" ]; then
+  write_secret minio_root_password        "$MINIO_ROOT_PASSWORD"
+fi
+# Keycloak's datastore credential. Pre-PH-5 (dev/e2e) this is the Postgres password; in the
+# cloud stack Keycloak persists to SQL Server (ADR-0036) under its own login, so the value is
+# written under BOTH names — kc_db_password for docker-compose.yml, keycloak_svc_password for
+# docker-compose.cloud.yml + the sqlserver-init CREATE LOGIN. One source value, no drift.
+KC_DB_PW="${ACMP_KC_DB_PASSWORD:-${KC_DB_PASSWORD:?set KC_DB_PASSWORD (or ACMP_KC_DB_PASSWORD)}}"
+write_secret kc_db_password               "$KC_DB_PW"
+write_secret keycloak_svc_password        "$KC_DB_PW"
 
 # --- app config-key secrets (AddKeyPerFile maps `__` -> `:`) ---
 # Runtime DB login: sa in dev/base; the prod overlay sets ACMP_DB_USER=acmp_svc + ACMP_DB_PASSWORD (P18a Batch 3).
@@ -46,7 +57,10 @@ DB_SERVER="${ACMP_DB_SERVER:-sqlserver}"; DB_NAME="${ACMP_DB_NAME:-Acmp}"; DB_TR
 if [ "$DB_USER" = "sa" ]; then DB_PW="$MSSQL_SA_PASSWORD"; else DB_PW="${ACMP_DB_PASSWORD:?set ACMP_DB_PASSWORD}"; fi
 write_secret ConnectionStrings__Acmp \
   "Server=${DB_SERVER};Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PW};TrustServerCertificate=${DB_TRUST};Encrypt=True"
-write_secret Minio__SecretKey             "$MINIO_ROOT_PASSWORD"
+# Object-storage secret key. Cloud (ADR-0035): the per-environment S3 IAM user's secret
+# emitted by deploy/aws/03-iam.sh. Dev/e2e: the bundled MinIO root password. Same config key
+# either way, so no application change is needed to switch backends.
+write_secret Minio__SecretKey             "${ACMP_S3_SECRET_KEY:-${MINIO_ROOT_PASSWORD:?set ACMP_S3_SECRET_KEY (cloud) or MINIO_ROOT_PASSWORD (dev)}}"
 
 # Prod least-priv (P18a Batch 3, ADR-0031): when the runtime login is acmp_svc (not sa), also provide its raw
 # password (sqlserver-init CREATE LOGIN) and a SEPARATE migrator connection string (sa) for the --migrate-only
