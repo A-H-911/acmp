@@ -1,0 +1,335 @@
+# ACMP CLOUD stack (PH-5 / SL-021, ADR-0034/0036/0037) — STANDALONE, not an overlay.
+#
+#   docker compose -f deploy/docker-compose.cloud.yml --env-file deploy/.env up -d
+#
+# WHY A SEPARATE FILE, not an overlay on docker-compose.yml:
+#   Compose overlays MERGE; they cannot REMOVE a service. The cloud topology deletes three
+#   services (keycloak-db/Postgres, minio, ngrok), so it cannot be expressed as an overlay.
+#   Keeping deploy/docker-compose.yml untouched also guarantees `main`'s e2e job — which runs
+#   `docker compose -f deploy/docker-compose.yml up --build` (.github/workflows/e2e.yml) —
+#   cannot regress because of cloud work. The two files describe two genuinely different
+#   topologies: self-hosted-everything (dev/e2e) vs cloud (ADR-0037).
+#
+# DELTAS vs the dev/e2e base:
+#   - keycloak-db (Postgres) DELETED  -> Keycloak persists to the ACMP SQL Server (ADR-0036).
+#   - minio           DELETED         -> Amazon S3 (ADR-0035; wiring completed in slice P22).
+#   - ngrok           DELETED         -> a real domain + Route 53 (ADR-0037).
+#   - MSSQL_PID       Developer->Express (DEF-014: Developer is not licensed for production).
+#   - Keycloak        start-dev -> start (production mode), hostname strict, behind nginx /kc/.
+#   - Ports           only `web` is published; SQL/Seq/KC/api stay on the compose network.
+#   - Limits          retuned for a 2 vCPU / 4 GiB t3.medium (the base overlay declared
+#                     cpus:"4", meaningless here). Budget below totals ~3.5 GiB, leaving room
+#                     for the host OS; a 4 GiB swapfile (P25 bootstrap) absorbs spikes.
+#
+# IMAGES: pulled from ECR (built in CI, slice P24) — do NOT `--build` on the box: `npm ci` +
+# `dotnet publish` need ~2 GiB each and will OOM a 4 GiB host that is also running SQL Server.
+# The `build:` blocks exist only so the U2/U3 spikes can run this file on a dev machine.
+name: acmp-cloud
+
+x-registry: &registry ${ACMP_REGISTRY:-acmp}
+x-tag: &tag ${ACMP_IMAGE_TAG:-latest}
+
+services:
+
+  # --- data tier --------------------------------------------------------------------------
+  sqlserver:
+    # Express edition (free production licence, DEF-014). Full-Text Search rides in via
+    # deploy/Dockerfile.sqlserver and is edition-independent (gate U3 proves it).
+    image: ${ACMP_REGISTRY:-acmp}/sqlserver-fts:${ACMP_IMAGE_TAG:-2022}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.sqlserver
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD_FILE: /run/secrets/mssql_sa_password   # ADR-0032 entrypoint shim
+      MSSQL_PID: Express                                       # DEF-014 — NOT Developer
+    secrets: [mssql_sa_password]
+    volumes:
+      - mssql-data:/var/opt/mssql
+      - ${ACMP_BACKUP_DIR:-/opt/acmp/backups}:/backups         # nightly .bak target (P23)
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$(cat /run/secrets/mssql_sa_password)\" -C -No -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+    deploy:
+      resources:
+        limits: { cpus: "1.5", memory: 2048M }   # 2 GiB is the documented container floor
+    restart: unless-stopped
+
+  # One-shot, runs as sa BEFORE anything else touches the databases (ADR-0031 + ADR-0036):
+  # creates the Acmp DB + least-priv acmp_svc, and the keycloak DB + keycloak_svc with a
+  # GUARDED READ_COMMITTED_SNAPSHOT. Must complete before Keycloak first starts — RCSI needs
+  # exclusive database access, which is impossible once Keycloak's pool is connected.
+  sqlserver-init:
+    image: ${ACMP_REGISTRY:-acmp}/sqlserver-fts:${ACMP_IMAGE_TAG:-2022}
+    entrypoint: ["bash", "/opt/init/sqlserver-init.sh"]
+    environment:
+      ACMP_DB_NAME: "${ACMP_DB_NAME:-Acmp}"
+      ACMP_DB_SERVER: "sqlserver"
+      ACMP_KC_DB_NAME: "${ACMP_KC_DB_NAME:-keycloak}"
+    volumes:
+      - ./scripts/sqlserver-init.sh:/opt/init/sqlserver-init.sh:ro
+    secrets: [mssql_sa_password, acmp_svc_password, keycloak_svc_password]
+    depends_on:
+      sqlserver: { condition: service_healthy }
+    restart: "no"
+
+  # One-shot: EF migrations + Hangfire schema as a PRIVILEGED principal, so the least-priv
+  # runtime never issues DDL (ADR-0031). `--migrate-only` migrates then exits 0.
+  db-migrate:
+    image: ${ACMP_REGISTRY:-acmp}/api:${ACMP_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      target: api
+    command: ["--migrate-only"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"
+      Authentication__Keycloak__RequireHttpsMetadata: "false"   # metadata not fetched here
+    secrets:
+      - source: ConnectionStrings__AcmpMigrator
+        target: ConnectionStrings__Acmp                          # AddKeyPerFile binds this name
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      sqlserver-init: { condition: service_completed_successfully }
+    restart: "no"
+
+  # --- identity ---------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
+    security_opt: ["no-new-privileges:true"]
+    # ADR-0032: KC's *_FILE support is unreliable, so a thin shim exports the secrets then
+    # execs kc.sh with `command` (exec => signals intact).
+    entrypoint: ["bash", "-c", "export KC_DB_PASSWORD=\"$(cat /run/secrets/keycloak_svc_password)\"; export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec /opt/keycloak/bin/kc.sh \"$@\"", "--"]
+    command: ["start", "--import-realm"]        # production mode (was start-dev in the base)
+    secrets: [keycloak_svc_password, kc_bootstrap_admin_password]
+    environment:
+      # ADR-0036 — Keycloak on the ACMP SQL Server, its own database, its own login.
+      # sendStringParametersAsUnicode=false is Keycloak's documented MSSQL performance default.
+      KC_DB: mssql
+      KC_DB_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=${ACMP_KC_DB_NAME:-keycloak};encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=false"
+      KC_DB_USERNAME: "${ACMP_KC_DB_USER:-keycloak_svc}"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_ENABLED: "true"                   # TLS terminates at nginx; KC speaks http inside
+      KC_PROXY_HEADERS: "xforwarded"
+      # Served same-origin under /kc by the web nginx (which STRIPS the prefix via a trailing
+      # slash on proxy_pass — Keycloak does not strip it itself). Issuer must match the SPA's
+      # VITE_OIDC_AUTHORITY byte-for-byte.
+      KC_HOSTNAME: "${KEYCLOAK_HOSTNAME}"
+      KC_HOSTNAME_STRICT: "true"                # production: no dynamic hostname resolution
+      JAVA_OPTS_KC_HEAP: "-Xms64m -Xmx320m"     # REQUIRED at this limit; the default heap OOMs
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      sqlserver-init: { condition: service_completed_successfully }   # RCSI before first start
+    healthcheck:
+      # KC 25+ exposes health on management port 9000; the image has bash but no curl/wget.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+    deploy:
+      resources:
+        limits: { cpus: "1", memory: 448M }
+    restart: unless-stopped
+
+  # Idempotent realm reconciliation (OQ-041): the bundled realm imports ONLY on first run, so
+  # committed realm changes never reach an existing DB. Re-applies client-scope assignments —
+  # and, from P26, the per-environment redirect URIs. Exits 0.
+  keycloak-config:
+    image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: ["bash", "-c", "export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec bash /opt/keycloak/reconcile.sh"]
+    secrets: [kc_bootstrap_admin_password]
+    environment:
+      KC_URL: "http://keycloak:8080"
+      ACMP_REALM: "acmp"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+    volumes:
+      - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
+    depends_on:
+      keycloak: { condition: service_healthy }
+    restart: "no"
+
+  # --- observability ----------------------------------------------------------------------
+  # Kept in BOTH environments. CON-001 requires ACMP to bundle its own observability, and
+  # removing it would mean overriding a Serilog WriteTo ARRAY ELEMENT by index in two apps
+  # (appsettings.json:13) — fragile config for ~256 MB. Trimmed instead.
+  seq:
+    image: datalust/seq@sha256:868a12e93ec0b8c993767a7dd4cd6c8ebc441511c79e4cfac66c911f62d4db65
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "false"
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: "${SEQ_FIRSTRUN_ADMINPASSWORDHASH:?set SEQ_FIRSTRUN_ADMINPASSWORDHASH}"
+      # Cap Seq's own retention so it cannot eat the 50 GB root volume (RISK-015).
+      SEQ_CACHE_SYSTEMRAMTARGET: "0.1"
+    ports: ["127.0.0.1:8341:80"]     # UI on loopback only — reach it over an SSM port-forward
+    volumes: [seq-data:/data]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+    restart: unless-stopped
+
+  # --- application ------------------------------------------------------------------------
+  api:
+    image: ${ACMP_REGISTRY:-acmp}/api:${ACMP_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      target: api
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      # Least-priv runtime (ADR-0031): db-migrate already ran DDL as sa.
+      Database__MigrateOnStartup: "false"
+      Hangfire__PrepareSchema: "false"
+      # Object storage. Slice P22 repoints these at S3 (ADR-0035) and makes the bucket name
+      # configurable (DEF-015); until then they are supplied by deploy/.env.
+      Minio__Endpoint: "${ACMP_S3_ENDPOINT:-s3.us-east-1.amazonaws.com}"
+      Minio__Region: "${AWS_REGION:-us-east-1}"
+      Minio__AccessKey: "${ACMP_S3_ACCESS_KEY}"
+      Minio__Secure: "true"
+      Storage__RecordingsBucket: "${ACMP_S3_BUCKET}"
+      # OIDC — issuer must equal the SPA's VITE_OIDC_AUTHORITY exactly. HTTPS enforced in cloud.
+      Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"
+      Authentication__Keycloak__RequireHttpsMetadata: "${ACMP_REQUIRE_HTTPS_METADATA:-true}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      OTEL_SERVICE_NAME: "acmp-api"
+      Webex__Enabled: "${WEBEX_ENABLED:-false}"          # OQ-062: off in UAT
+      Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
+      Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
+      Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
+      Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
+      Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
+      DataProtection__KeysPath: "/keys"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/keys"]
+    volumes:
+      # DISK-backed, deliberately not tmpfs: ASP.NET spools multipart uploads over 64 KB to
+      # Path.GetTempPath(), and a recording is capped at 2 GiB — a RAM-backed /tmp would OOM.
+      - api-tmp:/tmp
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      db-migrate: { condition: service_completed_successfully }
+      seq: { condition: service_started }
+      keycloak: { condition: service_started }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+    deploy:
+      resources:
+        limits: { cpus: "1.5", memory: 512M }
+    restart: unless-stopped
+
+  worker:
+    image: ${ACMP_REGISTRY:-acmp}/worker:${ACMP_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      target: worker
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey]
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      Hangfire__PrepareSchema: "false"
+      Minio__Endpoint: "${ACMP_S3_ENDPOINT:-s3.us-east-1.amazonaws.com}"
+      Minio__Region: "${AWS_REGION:-us-east-1}"
+      Minio__AccessKey: "${ACMP_S3_ACCESS_KEY}"
+      Minio__Secure: "true"
+      Storage__RecordingsBucket: "${ACMP_S3_BUCKET}"
+      # MUST match the api exactly — same Hangfire job graph.
+      Webex__Enabled: "${WEBEX_ENABLED:-false}"
+      Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
+      Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
+      Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
+      Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
+      ActionReminders__SweepCron: "${ACTION_REMINDERS_SWEEP_CRON:-0 6 * * *}"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp"]          # the worker takes no uploads, so RAM-backed /tmp is fine here
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      db-migrate: { condition: service_completed_successfully }
+      api: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+    restart: unless-stopped
+
+  web:
+    image: ${ACMP_REGISTRY:-acmp}/web:${ACMP_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        # Baked at BUILD time -> the web image is environment-specific (ADR-0037). CI tags
+        # web:<sha>-uat and web:<sha>-prod; never reuse one image across environments.
+        VITE_OIDC_AUTHORITY: "${KEYCLOAK_AUTHORITY}"
+        VITE_OIDC_CLIENT_ID: "acmp-web"
+    environment:
+      KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN}"     # CSP connect-src/frame-src (same origin here)
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=64m
+      # uid/gid/mode REQUIRED: a bare tmpfs inherits root:root 0755, envsubst then cannot write
+      # the rendered config, and nginx starts listening on NOTHING while reporting healthy.
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+    volumes:
+      # Let's Encrypt material, issued on the host via certbot --dns-route53 (slice P25).
+      # Mounted read-only; the 443 server block arrives with the cloud template in P25.
+      - ./nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "${ACMP_HTTP_PORT:-80}:8080"
+      - "${ACMP_HTTPS_PORT:-443}:8443"
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 64M }
+    restart: unless-stopped
+
+# Total memory limits: 2048 + 448 + 256 + 512 + 256 + 64 = 3584 MiB (~3.5 GiB) on a 4 GiB
+# t3.medium, leaving ~0.5 GiB for the host OS. The P25 bootstrap adds a 4 GiB swapfile as the
+# spike absorber (RISK-013). AC-084 asserts no OOM-kill during an e2e run.
+
+secrets:
+  mssql_sa_password:            { file: ./secrets/mssql_sa_password }
+  acmp_svc_password:            { file: ./secrets/acmp_svc_password }
+  keycloak_svc_password:        { file: ./secrets/keycloak_svc_password }
+  kc_bootstrap_admin_password:  { file: ./secrets/kc_bootstrap_admin_password }
+  ConnectionStrings__Acmp:          { file: ./secrets/ConnectionStrings__Acmp }
+  ConnectionStrings__AcmpMigrator:  { file: ./secrets/ConnectionStrings__AcmpMigrator }
+  Minio__SecretKey:             { file: ./secrets/Minio__SecretKey }
+
+volumes:
+  mssql-data:
+  seq-data:
+  api-tmp:      # scratch only — NOT in backup scope

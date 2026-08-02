@@ -1,0 +1,10 @@
+# Trivy fs scan suppressions (security.yml trivy-fs gate). Each entry is an advisory triaged as
+# not-applicable to ACMP, mirroring the npm-audit allowlist in scripts/check-npm-audit.mjs. Keep
+# this list SMALL and justified; prefer a real dependency upgrade whenever one exists.
+
+# React Router "RSC Mode CSRF Bypass" (react-router / react-router-dom). ACMP is a client-rendered
+# Vite SPA with NO React Server Components (src/auth/authConfig.ts: "no SSR here"), so the RSC
+# request path this advisory concerns does not exist. No react-router-dom release depends on the
+# patched react-router@8.3.0 (dom is still 7.x), so there is no clean forward fix. Triaged
+# 2026-08-02 (PH-5). Revisit when a patched react-router-dom line ships.
+GHSA-qwww-vcr4-c8h2
