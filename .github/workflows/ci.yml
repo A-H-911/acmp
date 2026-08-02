@@ -89,5 +89,8 @@ jobs:
         run: npm run test:cov
       - name: Build
         run: npm run build
-      - name: Audit
-        run: npm audit --audit-level=high
+      - name: Audit (High/Critical npm advisories; triaged allowlist)
+        # Was `npm audit --audit-level=high`, which has no triage mechanism. check-npm-audit.mjs
+        # blocks on every High/Critical EXCEPT advisories explicitly triaged as not-applicable to
+        # ACMP (each with a documented reason). Mirrors the .NET gate, scripts/check-vulns.mjs.
+        run: node ../../scripts/check-npm-audit.mjs
