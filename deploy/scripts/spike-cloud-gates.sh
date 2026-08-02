@@ -19,6 +19,12 @@
 #     restart with its data intact (AC-077). The browser PKCE leg is stage 3, see the tail.
 set -euo pipefail
 
+# WINDOWS/GIT-BASH NOTE: MSYS rewrites Unix-style paths into Windows paths before a native exe
+# (docker) sees them. That is REQUIRED for host paths (compose -f / --env-file) but WRONG for
+# in-container paths (/opt/mssql-tools18/bin/sqlcmd would become C:/Program Files/Git/opt/...).
+# So we do NOT disable conversion globally; only the in-container `docker exec` calls below are
+# prefixed with MSYS_NO_PATHCONV=1 (a no-op on Linux/macOS).
+
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PROJECT=acmpspike
 CF="$ROOT/deploy/docker-compose.cloud.yml"
@@ -30,9 +36,16 @@ log()  { printf '\n\033[1m[spike] %s\033[0m\n' "$*"; }
 ok()   { PASS=$((PASS+1)); printf '  \033[32mPASS\033[0m %s\n' "$*"; }
 bad()  { FAIL=$((FAIL+1)); printf '  \033[31mFAIL\033[0m %s\n' "$*"; }
 dc()   { docker compose -p "$PROJECT" -f "$CF" --env-file "$ENV_FILE" "$@"; }
+SA_PW=""   # populated right after the spike env file is written, below
+# exec by resolved container id with plain `docker exec` (no compose host-path args), so we can
+# safely disable MSYS path conversion for the in-container command target.
+dex()  { local svc="$1"; shift; MSYS_NO_PATHCONV=1 docker exec -i "$(dc ps -q "$svc")" "$@"; }
 sq()   { # run a query as sa inside the sqlserver container; prints the bare scalar
-  dc exec -T sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
-    -P "$(grep '^MSSQL_SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)" -C -No -h -1 -W -Q "SET NOCOUNT ON; $1" 2>/dev/null | tr -d '\r' | sed '/^$/d'
+  # Strip sqlcmd's informational "Changed database context/language" lines that a USE emits,
+  # or they pollute scalar reads (e.g. a COUNT parsed as "Changed database context...\n1").
+  dex sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+    -P "$SA_PW" -C -No -h -1 -W -Q "SET NOCOUNT ON; $1" 2>/dev/null \
+    | tr -d '\r' | sed -e '/^Changed database context/d' -e '/^Changed language/d' -e '/^$/d'
 }
 
 cleanup() {
@@ -77,6 +90,7 @@ ACMP_REQUIRE_HTTPS_METADATA=false
 WEBEX_ENABLED=false
 ACTION_REMINDERS_SWEEP_CRON="0 6 * * *"
 ENV
+SA_PW="$(grep '^MSSQL_SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)"
 # Secrets are file-backed (ADR-0032) and the compose file resolves them relative to deploy/,
 # so the spike must write into deploy/secrets. It is backed up and restored on exit.
 # deploy/.env is NOT touched: gen-secrets honours ACMP_ENV_FILE.
@@ -109,32 +123,44 @@ fts="$(sq "SELECT CAST(SERVERPROPERTY('IsFullTextInstalled') AS int);")"
 ar="$(sq "SELECT COUNT(*) FROM sys.fulltext_languages WHERE lcid = 1025;")"
 [ "${ar:-0}" -ge 1 ] && ok "Arabic word-breaker present (LCID 1025)" || bad "Arabic word-breaker (LCID 1025) missing"
 
-# End-to-end FTS proof: index an Arabic row and match it with CONTAINS.
+# End-to-end FTS proof: index an Arabic row and match it with CONTAINS. Each DDL step is its
+# OWN batch (a full-text catalog/index cannot be created in the same batch that defines the
+# table), and the PK carries a NAMED constraint so KEY INDEX has a known name.
 sq "IF DB_ID('ftsspike') IS NULL CREATE DATABASE ftsspike;" >/dev/null
-if sq "USE ftsspike;
-CREATE TABLE dbo.t (id int NOT NULL PRIMARY KEY, body nvarchar(400));
-INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهندسة المعمارية بشأن النظام');
-CREATE FULLTEXT CATALOG ftc AS DEFAULT;
-CREATE FULLTEXT INDEX ON dbo.t(body LANGUAGE 1025) KEY INDEX PK__t__3213E83F CHANGE_TRACKING AUTO;" >/dev/null 2>&1; then
-  sleep 8   # let the population crawl finish
+sq "USE ftsspike; IF OBJECT_ID('dbo.t') IS NULL CREATE TABLE dbo.t (id int NOT NULL CONSTRAINT pk_t PRIMARY KEY, body nvarchar(400));" >/dev/null
+sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM dbo.t) INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهندسة المعمارية بشأن النظام');" >/dev/null
+cat_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name='ftc') CREATE FULLTEXT CATALOG ftc AS DEFAULT;" 2>&1)"
+idx_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t')) CREATE FULLTEXT INDEX ON dbo.t(body LANGUAGE 1025) KEY INDEX pk_t WITH CHANGE_TRACKING AUTO;" 2>&1)"
+idx_cnt="$(sq "USE ftsspike; SELECT COUNT(*) FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t');")"
+if [ "${idx_cnt:-0}" -ge 1 ]; then
+  ok "Arabic full-text index created on dbo.t"
+  printf '  waiting for the full-text populate crawl'
+  for i in $(seq 1 15); do
+    pst="$(sq "SELECT FULLTEXTCATALOGPROPERTY('ftc','PopulateStatus');")"   # 0 = idle/done
+    [ "${pst:-1}" = "0" ] && { printf ' done\n'; break; }
+    printf '.'; sleep 3
+  done
   hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهندسة');")"
-  [ "${hit:-0}" -ge 1 ] && ok "Arabic CONTAINS() query matched an indexed row" \
-                        || bad "Arabic CONTAINS() returned no rows (got '$hit')"
+  case "$hit" in
+    ''|*[!0-9]*) bad "Arabic CONTAINS() query errored: ${hit:-<empty>}" ;;
+    *) [ "$hit" -ge 1 ] && ok "Arabic CONTAINS() matched the indexed row (hit=$hit)" \
+                        || bad "Arabic CONTAINS() returned 0 rows (populate may be slow)" ;;
+  esac
 else
-  bad "could not create the Arabic full-text index (see: dc logs sqlserver)"
+  bad "full-text index was not created — catalog err: ${cat_err:-none} | index err: ${idx_err:-none}"
 fi
 
 # =========================================================================================
 log "U2 — Keycloak 26 production mode on KC_DB=mssql"
-dc up -d sqlserver-init >/dev/null 2>&1 || true
-sleep 3
-rcsi="$(sq "SELECT CAST(DATABASEPROPERTYEX('keycloak','IsReadCommittedSnapshotOn') AS int);")"
-[ "$rcsi" = "1" ] && ok "keycloak DB has READ_COMMITTED_SNAPSHOT ON" || bad "RCSI = '$rcsi' (expected 1)"
-
-# Re-running init must be a clean no-op — this is the guard that stops every redeploy hanging.
-if dc up -d sqlserver-init >/dev/null 2>&1; then ok "sqlserver-init re-run is idempotent (guarded RCSI did not block)"
-else bad "sqlserver-init failed on re-run"; fi
-
+# Block until a one-shot container has exited before asserting on its effects.
+wait_oneshot() {
+  for _ in $(seq 1 40); do
+    s="$(docker inspect -f '{{.State.Status}}' "$(dc ps -aq "$1" | head -1)" 2>/dev/null || echo missing)"
+    [ "$s" = "exited" ] && return 0; sleep 2
+  done; return 1
+}
+# `up keycloak` runs its dependency sqlserver-init (which creates the keycloak DB + guarded
+# RCSI) first, then Keycloak itself. RCSI is asserted below, once the DB provably exists.
 dc up -d keycloak >/dev/null
 printf '  waiting for Keycloak (production mode, mssql)'
 kst=starting
@@ -149,12 +175,31 @@ else
   bad "Keycloak never became healthy — logs:"; dc logs --tail 40 keycloak; exit 1
 fi
 
+# RCSI is now reliable: sqlserver-init ran (as keycloak's dependency) and the DB exists.
+# sys.databases, not DATABASEPROPERTYEX — the latter has no such property and returns NULL.
+rcsi="$(sq "SELECT is_read_committed_snapshot_on FROM sys.databases WHERE name = 'keycloak';")"
+[ "$rcsi" = "1" ] && ok "keycloak DB has READ_COMMITTED_SNAPSHOT ON (the fixed guard fired)" || bad "RCSI = '$rcsi' (expected 1)"
+
 # Realm imported + schema really landed in SQL Server (not an embedded H2 fallback).
 tables="$(sq "SELECT COUNT(*) FROM keycloak.INFORMATION_SCHEMA.TABLES;")"
 [ "${tables:-0}" -gt 50 ] && ok "Keycloak schema is in SQL Server ($tables tables)" \
                           || bad "keycloak DB has only '$tables' tables — schema may not be on mssql"
 realm="$(sq "SELECT COUNT(*) FROM keycloak.dbo.REALM WHERE NAME = 'acmp';")"
 [ "${realm:-0}" = "1" ] && ok "realm 'acmp' imported" || bad "realm 'acmp' not found (got '$realm')"
+
+# The load-bearing idempotency test: re-run sqlserver-init NOW, while Keycloak's connection
+# pool is live against the keycloak DB. This is the exact condition under which an UNGUARDED
+# `ALTER DATABASE ... SET READ_COMMITTED_SNAPSHOT ON` would block/deadlock (it needs exclusive
+# access) and hang every redeploy. The DATABASEPROPERTYEX guard must make it a clean no-op.
+log "U2 — sqlserver-init idempotency with Keycloak connected (the RCSI guard)"
+dc up -d --force-recreate sqlserver-init >/dev/null 2>&1 || true
+if wait_oneshot sqlserver-init; then
+  ec2="$(docker inspect -f '{{.State.ExitCode}}' "$(dc ps -aq sqlserver-init | head -1)" 2>/dev/null || echo 1)"
+  [ "$ec2" = "0" ] && ok "init re-ran cleanly under a live Keycloak connection (guard held)" \
+                   || bad "init re-run exited $ec2 under a live connection"
+else
+  bad "init re-run HUNG under a live Keycloak connection — the RCSI guard is not working"
+fi
 
 # AC-077: a restart must preserve realm + users.
 log "U2 — restart persistence (AC-077)"
@@ -168,7 +213,7 @@ realm2="$(sq "SELECT COUNT(*) FROM keycloak.dbo.REALM WHERE NAME = 'acmp';")"
   || bad "realm did not survive restart (healthy=$kst realm=$realm2)"
 
 # OIDC discovery through Keycloak itself (the nginx /kc/ hop is exercised in stage 3).
-iss="$(dc exec -T keycloak sh -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /realms/acmp/.well-known/openid-configuration HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3; cat <&3' 2>/dev/null | tr ',' '\n' | grep -o '"issuer":"[^"]*"' | head -1)"
+iss="$(dex keycloak sh -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /realms/acmp/.well-known/openid-configuration HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3; cat <&3' 2>/dev/null | tr ',' '\n' | grep -o '"issuer":"[^"]*"' | head -1)"
 [ -n "$iss" ] && ok "OIDC discovery served: $iss" || bad "OIDC discovery document not served"
 
 # =========================================================================================

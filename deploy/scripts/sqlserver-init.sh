@@ -43,9 +43,12 @@ if [ -f "$KC_SECRET" ]; then
   # READ_COMMITTED "can lead to deadlocks during high load"). The GUARD is load-bearing, not
   # decoration: ALTER DATABASE ... SET RCSI needs EXCLUSIVE access, and this script re-runs on
   # every deploy — once Keycloak's connection pool is live, an unguarded ALTER blocks until
-  # those connections drop, hanging the deploy. DATABASEPROPERTYEX makes it fire only when the
-  # setting is actually off (i.e. first run).
-  $SQLCMD -Q "IF DATABASEPROPERTYEX('${KC_DB_NAME}','IsReadCommittedSnapshotOn') = 0
+  # those connections drop, hanging the deploy. So it must fire only on the FIRST run (RCSI off).
+  # Read the flag from sys.databases: DATABASEPROPERTYEX has NO 'IsReadCommittedSnapshotOn'
+  # property (it returns NULL, and `NULL = 0` is never true — the spike proved this would leave
+  # RCSI permanently OFF). WITH ROLLBACK IMMEDIATE is safe here because on the first run init
+  # completes BEFORE Keycloak starts, so there are no connections to roll back.
+  $SQLCMD -Q "IF (SELECT is_read_committed_snapshot_on FROM sys.databases WHERE name = '${KC_DB_NAME}') = 0
                 ALTER DATABASE [${KC_DB_NAME}] SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;"
 
   $SQLCMD -Q "IF SUSER_ID('${KC_USER}') IS NULL CREATE LOGIN ${KC_USER} WITH PASSWORD='${KC_PW}', CHECK_POLICY=OFF;"
@@ -58,7 +61,7 @@ if [ -f "$KC_SECRET" ]; then
 IF DATABASE_PRINCIPAL_ID('${KC_USER}') IS NULL CREATE USER ${KC_USER} FOR LOGIN ${KC_USER};
 IF IS_ROLEMEMBER('db_owner','${KC_USER}') = 0 ALTER ROLE db_owner ADD MEMBER ${KC_USER};"
 
-  rcsi="$($SQLCMD -h -1 -W -Q "SET NOCOUNT ON; SELECT DATABASEPROPERTYEX('${KC_DB_NAME}','IsReadCommittedSnapshotOn');")"
+  rcsi="$($SQLCMD -h -1 -W -Q "SET NOCOUNT ON; SELECT is_read_committed_snapshot_on FROM sys.databases WHERE name = '${KC_DB_NAME}';")"
   echo "sqlserver-init: ${KC_DB_NAME} ready (RCSI=${rcsi}; ${KC_USER} db_owner on ${KC_DB_NAME} only)."
 else
   echo "sqlserver-init: no keycloak_svc_password mounted — skipping the Keycloak database leg."
