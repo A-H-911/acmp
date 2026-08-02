@@ -31,7 +31,13 @@ server {
     # a style attribute. There is no SSR here (client-rendered Vite SPA) so no style attribute is ever
     # emitted, index.html carries none, and MarkdownView's DOMPurify allowlist excludes both `style` attrs
     # and `<style>` tags. Verified live: zero CSP violations (see docs/progress/progress-log.md, P16-B3).
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
+    # media-src: recording playback is a <video src> pointing at a presigned object URL. On-prem that URL is
+    # same-origin (proxied to MinIO below) so 'self' covers it and ${ACMP_MEDIA_ORIGIN} is empty. In cloud the
+    # URL is presigned straight to S3 (ADR-0035) and default-src 'self' would BLOCK it, so each environment
+    # supplies its object-store origin. That origin is NOT the configured endpoint: the Minio 6.0.3 SDK
+    # rewrites any Amazon host via AWSS3Endpoints (us-east-1 -> s3.amazonaws.com) and addresses the bucket
+    # path-style — pinned by MinioFileStoreCloudTests so this header cannot drift from what is signed.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; media-src 'self' ${ACMP_MEDIA_ORIGIN}; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
 
     # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
     # without mixed content. The trailing slash on proxy_pass strips /kc so KC (served at root) matches;
@@ -50,8 +56,16 @@ server {
     # MinIO 403s anything unsigned and never lists the bucket. No trailing slash on proxy_pass so the
     # /acmp-recordings/<object> path (the S3 bucket path) is preserved; Host is forwarded so the SigV4
     # signature validates against the host the app signed. chunked/buffering off per MinIO-behind-proxy guidance.
+    #
+    # The upstream is held in a VARIABLE on purpose. With a literal name nginx resolves it while LOADING the
+    # config and refuses to start when it does not exist — which is exactly the cloud stack (ADR-0035): no
+    # minio container, recordings presigned straight to S3, so this location is never taken there. A variable
+    # defers resolution to request time (hence the resolver — Docker's embedded DNS), leaving one image that
+    # boots in both topologies instead of two nginx templates to keep in step.
     location /acmp-recordings/ {
-        proxy_pass http://minio:9000;
+        resolver 127.0.0.11 ipv6=off valid=10s;
+        set $recordings_upstream "minio:9000";
+        proxy_pass http://$recordings_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         chunked_transfer_encoding off;

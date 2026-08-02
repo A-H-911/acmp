@@ -5,6 +5,7 @@ using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Acmp.Modules.Meetings.Application.Features.DeleteRecording;
 
@@ -19,19 +20,20 @@ public sealed record DeleteRecordingCommand(string MeetingKey) : IRequest, IAuth
 
 public sealed class DeleteRecordingHandler : IRequestHandler<DeleteRecordingCommand>
 {
-    public const string Bucket = "acmp-recordings";
-
     private readonly IMeetingsDbContext _db;
     private readonly IFileStore _files;
     private readonly ICurrentUser _user;
     private readonly IAuditSink _audit;
+    private readonly string _bucket;
 
-    public DeleteRecordingHandler(IMeetingsDbContext db, IFileStore files, ICurrentUser user, IAuditSink audit)
+    public DeleteRecordingHandler(IMeetingsDbContext db, IFileStore files, ICurrentUser user, IAuditSink audit,
+        IOptions<StorageOptions> storage)
     {
         _db = db;
         _files = files;
         _user = user;
         _audit = audit;
+        _bucket = storage.Value.RecordingsBucket;   // DEF-015: per-environment, never a const
     }
 
     public async Task Handle(DeleteRecordingCommand request, CancellationToken ct)
@@ -48,7 +50,7 @@ public sealed class DeleteRecordingHandler : IRequestHandler<DeleteRecordingComm
         // Delete the stored object only for an uploaded recording; best-effort (the reference is already cleared).
         if (objectKey is not null)
         {
-            try { await _files.DeleteAsync(Bucket, objectKey, ct); }
+            try { await _files.DeleteAsync(_bucket, objectKey, ct); }
             catch { /* ponytail: orphaned blob tolerated; a storage sweep can reclaim it if it ever matters */ }
         }
 

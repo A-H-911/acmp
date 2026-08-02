@@ -24,9 +24,15 @@ for env in "${ENVS[@]}"; do
     log "creating app user $APP_USER"
     aws iam create-user --user-name "$APP_USER" --tags $TAGS Key=Env,Value="$env" >/dev/null
   fi
+  # s3:AbortMultipartUpload is not padding: a recording is capped at 2 GiB and the Minio 6.0.3 SDK
+  # multiparts anything over 5 MiB. Its PutObjectPartAsync calls RemoveUploadAsync (= AbortMultipartUpload
+  # on the wire) when the uploaded part count does not match the expected one for a known-size stream —
+  # which is every upload we make. Without this action that abort returns AccessDenied and MASKS the real
+  # part failure. CreateMultipartUpload/UploadPart/CompleteMultipartUpload are all covered by s3:PutObject;
+  # ListParts is never issued by this SDK, so s3:ListMultipartUploadParts stays out.
   aws iam put-user-policy --user-name "$APP_USER" --policy-name s3-recordings --policy-document "$(cat <<JSON
 { "Version":"2012-10-17","Statement":[
-  {"Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject"],"Resource":"arn:aws:s3:::${rec}/*"},
+  {"Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject","s3:AbortMultipartUpload"],"Resource":"arn:aws:s3:::${rec}/*"},
   {"Effect":"Allow","Action":["s3:ListBucket","s3:GetBucketLocation"],"Resource":"arn:aws:s3:::${rec}"} ] }
 JSON
 )"
@@ -56,7 +62,7 @@ JSON
   {"Sid":"Route53Read","Effect":"Allow","Action":["route53:ListHostedZones","route53:GetChange"],"Resource":"*"},
   {"Sid":"Route53WriteThisHostOnly","Effect":"Allow","Action":"route53:ChangeResourceRecordSets","Resource":"arn:aws:route53:::hostedzone/${HOSTED_ZONE_ID}",
    "Condition":{"ForAllValues:StringEquals":{"route53:ChangeResourceRecordSetsNormalizedRecordNames":["${host}"],"route53:ChangeResourceRecordSetsRecordTypes":["A"]}}},
-  {"Sid":"S3Buckets","Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject","s3:ListBucket","s3:GetBucketLocation"],
+  {"Sid":"S3Buckets","Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject","s3:AbortMultipartUpload","s3:ListBucket","s3:GetBucketLocation"],
    "Resource":["arn:aws:s3:::${rec}","arn:aws:s3:::${rec}/*","arn:aws:s3:::${bak}","arn:aws:s3:::${bak}/*"]} ] }
 JSON
 )"

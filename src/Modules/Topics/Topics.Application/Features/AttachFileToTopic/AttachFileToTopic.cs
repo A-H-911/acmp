@@ -38,8 +38,6 @@ public sealed class AttachFileToTopicValidator : AbstractValidator<AttachFileToT
 
 public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopicCommand, TopicAttachmentDto>
 {
-    public const string Bucket = "acmp-topics";
-
     private readonly ITopicsDbContext _db;
     private readonly IResourceAuthorizer _authz;
     private readonly IFileStore _files;
@@ -47,10 +45,15 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
     private readonly IClock _clock;
     private readonly IAuditSink _audit;
     private readonly IFileContentInspector _inspector;
+    private readonly string _bucket;
 
     public AttachFileToTopicHandler(ITopicsDbContext db, IResourceAuthorizer authz, IFileStore files,
-        ICurrentUser user, IClock clock, IAuditSink audit, IFileContentInspector inspector)
+        ICurrentUser user, IClock clock, IAuditSink audit, IFileContentInspector inspector,
+        IOptions<StorageOptions> storage)
     {
+        // DEF-015: per-environment, never a const. The cloud stack points this at the SAME bucket as
+        // recordings (deploy/aws/02-s3.sh creates one per env); on-prem keeps the historical split.
+        _bucket = storage.Value.AttachmentsBucket;
         _db = db;
         _authz = authz;
         _files = files;
@@ -82,7 +85,7 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
         // could carry path/encoding tricks or break the presigned-URL signature. The original name is kept as
         // display metadata (attachment.FileName) only.
         var objectName = $"{topic.PublicId}/{Guid.NewGuid()}{ExtensionFor(request.ContentType)}";
-        var storageKey = await _files.UploadAsync(Bucket, objectName, request.Content, request.ContentType, ct);
+        var storageKey = await _files.UploadAsync(_bucket, objectName, request.Content, request.ContentType, ct);
 
         var attachment = topic.AddAttachment(request.FileName, request.ContentType, request.SizeBytes,
             storageKey, sub, name, _clock.UtcNow);

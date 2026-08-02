@@ -198,13 +198,17 @@ services:
       # Least-priv runtime (ADR-0031): db-migrate already ran DDL as sa.
       Database__MigrateOnStartup: "false"
       Hangfire__PrepareSchema: "false"
-      # Object storage. Slice P22 repoints these at S3 (ADR-0035) and makes the bucket name
-      # configurable (DEF-015); until then they are supplied by deploy/.env.
+      # Object storage on S3 (ADR-0035). Region is the SigV4 signing scope AND, against an Amazon
+      # host, what the SDK derives the request host from — see .env.cloud.example.
       Minio__Endpoint: "${ACMP_S3_ENDPOINT:-s3.us-east-1.amazonaws.com}"
       Minio__Region: "${AWS_REGION:-us-east-1}"
       Minio__AccessKey: "${ACMP_S3_ACCESS_KEY}"
       Minio__Secure: "true"
+      # ONE bucket per environment (deploy/aws/02-s3.sh) holds both; keys are namespaced by meeting key /
+      # topic id + GUID. Both names must be set — the old per-module constants ("acmp-topics") name no
+      # bucket AWS has, and the app's IAM policy grants no s3:CreateBucket to invent one (DEF-015).
       Storage__RecordingsBucket: "${ACMP_S3_BUCKET}"
+      Storage__AttachmentsBucket: "${ACMP_S3_BUCKET}"
       # OIDC — issuer must equal the SPA's VITE_OIDC_AUTHORITY exactly. HTTPS enforced in cloud.
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"
       Authentication__Keycloak__RequireHttpsMetadata: "${ACMP_REQUIRE_HTTPS_METADATA:-true}"
@@ -255,7 +259,11 @@ services:
       Minio__Region: "${AWS_REGION:-us-east-1}"
       Minio__AccessKey: "${ACMP_S3_ACCESS_KEY}"
       Minio__Secure: "true"
+      # ONE bucket per environment (deploy/aws/02-s3.sh) holds both; keys are namespaced by meeting key /
+      # topic id + GUID. Both names must be set — the old per-module constants ("acmp-topics") name no
+      # bucket AWS has, and the app's IAM policy grants no s3:CreateBucket to invent one (DEF-015).
       Storage__RecordingsBucket: "${ACMP_S3_BUCKET}"
+      Storage__AttachmentsBucket: "${ACMP_S3_BUCKET}"
       # MUST match the api exactly — same Hangfire job graph.
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
@@ -288,6 +296,10 @@ services:
         VITE_OIDC_CLIENT_ID: "acmp-web"
     environment:
       KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN}"     # CSP connect-src/frame-src (same origin here)
+      # CSP media-src: recordings are presigned straight to S3, so playback is CROSS-origin here and
+      # default-src 'self' would block the <video>. See .env.cloud.example for why this is s3.amazonaws.com
+      # and not ACMP_S3_ENDPOINT.
+      ACMP_MEDIA_ORIGIN: "${ACMP_MEDIA_ORIGIN:-https://s3.amazonaws.com}"
     read_only: true
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
