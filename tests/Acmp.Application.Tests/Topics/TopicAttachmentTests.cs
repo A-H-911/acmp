@@ -21,6 +21,11 @@ public class TopicAttachmentTests
     // Content sniffing (C-FILE-01) is covered by MimeFileContentInspectorTests; here it is a pass-through.
     private static readonly IFileContentInspector PassInspector = new PassThroughInspector();
 
+    // DEF-015: bucket names now come from configuration. Defaults reproduce the historical constants, so
+    // every existing assertion below still names the same bucket; the per-environment override is asserted
+    // by its own test.
+    private static readonly IOptions<StorageOptions> Buckets = Microsoft.Extensions.Options.Options.Create(new StorageOptions());
+
     private sealed class PassThroughInspector : IFileContentInspector
     {
         public bool ContentMatchesDeclared(Stream content, string declaredContentType) => true;
@@ -63,7 +68,7 @@ public class TopicAttachmentTests
         var audit = Substitute.For<IAuditSink>();
 
         var content = new MemoryStream(Encoding.UTF8.GetBytes("pdf-bytes"));
-        var dto = await new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, PassInspector)
+        var dto = await new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, PassInspector, Buckets)
             .Handle(new AttachFileToTopicCommand(submit.Id, "eval.pdf", "application/pdf", 9, content), CancellationToken.None);
 
         dto.FileName.Should().Be("eval.pdf");
@@ -71,6 +76,21 @@ public class TopicAttachmentTests
         stored.Attachments.Should().ContainSingle(a => a.FileName == "eval.pdf" && a.StorageKey.StartsWith("acmp-topics/"));
         await files.Received(1).UploadAsync("acmp-topics", Arg.Any<string>(), Arg.Any<Stream>(), "application/pdf", Arg.Any<CancellationToken>());
         await audit.Received(1).EmitEnrichedAsync("Topics.DocumentAttached", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+
+        // DEF-015 / AC-083: the same handler must write to whatever bucket the ENVIRONMENT configures. In
+        // cloud both storage options point at the one per-env bucket deploy/aws/02-s3.sh creates — an
+        // attachment must follow that, not the "acmp-topics" const it used to carry (which no cloud
+        // environment provisions, and the app's IAM policy grants no s3:CreateBucket to invent it).
+        var cloud = Microsoft.Extensions.Options.Options.Create(new StorageOptions
+        {
+            RecordingsBucket = "acmp-uat-recordings",
+            AttachmentsBucket = "acmp-uat-recordings",
+        });
+        await new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, PassInspector, cloud)
+            .Handle(new AttachFileToTopicCommand(submit.Id, "second.pdf", "application/pdf", 9,
+                new MemoryStream(Encoding.UTF8.GetBytes("pdf-bytes"))), CancellationToken.None);
+
+        await files.Received(1).UploadAsync("acmp-uat-recordings", Arg.Any<string>(), Arg.Any<Stream>(), "application/pdf", Arg.Any<CancellationToken>());
     }
 
     [Theory] // C-FILE-01: the object key is server-derived (guid + content-type extension), never the raw filename.
@@ -82,7 +102,7 @@ public class TopicAttachmentTests
     public async Task Object_key_uses_a_server_derived_extension(string contentType, string ext)
     {
         var (db, topicId, user, clock, files, audit) = await SetupTopicAsync();
-        var dto = await new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, PassInspector)
+        var dto = await new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, PassInspector, Buckets)
             .Handle(new AttachFileToTopicCommand(topicId, "orig name (1).x", contentType, 9, new MemoryStream(new byte[] { 1 })), CancellationToken.None);
 
         var stored = await db.Topics.Include(t => t.Attachments).SingleAsync();
@@ -97,7 +117,7 @@ public class TopicAttachmentTests
         var reject = Substitute.For<IFileContentInspector>();
         reject.ContentMatchesDeclared(Arg.Any<Stream>(), Arg.Any<string>()).Returns(false);
 
-        var handler = new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, reject);
+        var handler = new AttachFileToTopicHandler(db, Substitute.For<IResourceAuthorizer>(), files, user, clock, audit, reject, Buckets);
         await FluentActions.Awaiting(() => handler.Handle(
                 new AttachFileToTopicCommand(topicId, "a.pdf", "application/pdf", 9, new MemoryStream(new byte[] { 1 })), CancellationToken.None))
             .Should().ThrowAsync<FluentValidation.ValidationException>();

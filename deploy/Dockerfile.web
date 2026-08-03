@@ -34,11 +34,16 @@ LABEL org.opencontainers.image.title="ACMP Web" \
 # The explicit `USER 101` also makes the non-root guarantee visible to the Trivy Dockerfile scan (DS-0002),
 # which reads the Dockerfile text and cannot see the base image's baked-in USER.
 USER root
-# The CSP needs the Keycloak origin; it is templated at container start (nginx envsubst) so each
-# environment supplies its own origin with no rebuild. NGINX_ENVSUBST_FILTER restricts substitution
-# to KEYCLOAK_ORIGIN only, preserving nginx runtime vars ($host, $uri, $scheme).
+# The CSP needs the Keycloak origin and (P22) the object-store origin that recording playback is
+# presigned against; both are templated at container start (nginx envsubst) so each environment
+# supplies its own with no rebuild. NGINX_ENVSUBST_FILTER is a regex over VARIABLE NAMES and must
+# list every one the template uses — it exists to preserve nginx runtime vars ($host, $uri, $scheme),
+# but a template var missing from it is NOT left harmlessly alone: nginx then reads the surviving
+# ${NAME} as one of ITS variables and dies with `unknown "NAME" variable`. Both also carry a default
+# so the container still starts when compose supplies neither.
 ENV KEYCLOAK_ORIGIN="http://keycloak.localhost:8085" \
-    NGINX_ENVSUBST_FILTER="KEYCLOAK_ORIGIN"
+    ACMP_MEDIA_ORIGIN="" \
+    NGINX_ENVSUBST_FILTER="KEYCLOAK_ORIGIN|ACMP_MEDIA_ORIGIN"
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /web/dist /usr/share/nginx/html
 EXPOSE 8080

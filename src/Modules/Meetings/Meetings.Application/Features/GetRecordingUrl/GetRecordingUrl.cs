@@ -2,6 +2,7 @@
 using Acmp.Shared.Application.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Acmp.Modules.Meetings.Application.Features.GetRecordingUrl;
 
@@ -16,16 +17,17 @@ public sealed record GetRecordingUrlQuery(string Key) : IRequest<string?>, IAuth
 
 public sealed class GetRecordingUrlHandler : IRequestHandler<GetRecordingUrlQuery, string?>
 {
-    public const string Bucket = "acmp-recordings";
     private static readonly TimeSpan Ttl = TimeSpan.FromMinutes(10);
 
     private readonly IMeetingsDbContext _db;
     private readonly IFileStore _files;
+    private readonly string _bucket;
 
-    public GetRecordingUrlHandler(IMeetingsDbContext db, IFileStore files)
+    public GetRecordingUrlHandler(IMeetingsDbContext db, IFileStore files, IOptions<StorageOptions> storage)
     {
         _db = db;
         _files = files;
+        _bucket = storage.Value.RecordingsBucket;   // DEF-015: per-environment, never a const
     }
 
     public async Task<string?> Handle(GetRecordingUrlQuery request, CancellationToken ct)
@@ -37,6 +39,6 @@ public sealed class GetRecordingUrlHandler : IRequestHandler<GetRecordingUrlQuer
 
         return string.IsNullOrEmpty(objectKey)
             ? null
-            : await _files.GetPreSignedUrlAsync(Bucket, objectKey, Ttl, ct);
+            : await _files.GetPreSignedUrlAsync(_bucket, objectKey, Ttl, ct);
     }
 }

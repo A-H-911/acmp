@@ -265,6 +265,11 @@ services:
     environment:
       # CSP Keycloak origin, substituted into the nginx template at startup (runtime, no rebuild).
       KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN:-http://keycloak.localhost:8085}"
+      # CSP media-src for recording playback. Empty on-prem: presigned URLs are same-origin (MINIO_PUBLIC_ENDPOINT
+      # is the app host, proxied to MinIO by /acmp-recordings/) so 'self' already covers them. MUST stay
+      # DEFINED even when empty — an undefined var is left un-substituted by the nginx entrypoint and would
+      # land a literal ${ACMP_MEDIA_ORIGIN} in the header.
+      ACMP_MEDIA_ORIGIN: "${ACMP_MEDIA_ORIGIN:-}"
     # Container hardening (C-CON-001/002/003, D-21). nginx-unprivileged already runs as UID 101 and binds
     # 8080, so no capabilities are needed. Its packaged nginx.conf redirects every writable path into /tmp
     # (pid /tmp/nginx.pid; client_body/proxy/fastcgi/uwsgi/scgi _temp_path all under /tmp) and leaves
