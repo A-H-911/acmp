@@ -1,6 +1,6 @@
 # Multi-stage build for the React SPA served by nginx (docs/domain/deployment.md).
 # Base images digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
-FROM node:22-alpine@sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2 AS build
+FROM node:26-alpine@sha256:233761595746769ebfdb6090f44fc7cdf818ae0ce62d2b37e0367723b9823e36 AS build
 WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./
 RUN npm ci
