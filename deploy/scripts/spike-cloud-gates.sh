@@ -154,15 +154,30 @@ if [ "${idx_cnt:-0}" -ge 1 ]; then
   #     OBJECTPROPERTYEX(...,'TableFulltextPopulateStatus') — right database, right property.
   # A NULL/empty read is now LOUD ('!') instead of being indistinguishable from "busy", and a
   # crawl that never goes idle is reported as such rather than silently handing CONTAINS a race.
+  # (3) Waiting on "populate status is idle" ALONE is itself a race, and a nastier one: status 0
+  #     means "no population in progress", which is also true BEFORE the crawl has started, and
+  #     CHANGE_TRACKING AUTO queues the crawl asynchronously — the DDL above returns before the
+  #     FTS host picks up the work. Breaking on 0 could therefore exit on the first iteration in
+  #     under a second and hand CONTAINS the same race, which on a fast machine is WORSE than the
+  #     45s sleep it replaced. Gate on the row actually being INDEXED instead: TableFulltextItemCount
+  #     is "the number of rows that were successfully full-text indexed". Idle AND >=1 item, or keep
+  #     waiting. `0:0` (quiet but nothing indexed) is the not-started-yet state and is NOT success.
   printf '  waiting for the full-text populate crawl'
   pst=""
   for i in $(seq 1 40); do
-    pst="$(sq "USE ftsspike; SELECT OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus');")"
-    [ "$pst" = "0" ] && { printf ' idle\n'; break; }
-    case "$pst" in ''|NULL|*[!0-9]*) printf '!' ;; *) printf '.' ;; esac
+    pst="$(sq "USE ftsspike; SELECT CONCAT(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus'),':',OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextItemCount'));")"
+    case "$pst" in
+      0:0)             printf ',' ;;                        # idle but empty = crawl not started yet
+      0:[1-9]*)        printf ' indexed\n'; break ;;        # idle AND the row is searchable
+      ''|*NULL*)       printf '!' ;;                        # wrong DB / missing object — LOUD
+      *)               printf '.' ;;                        # populating
+    esac
     sleep 3
   done
-  [ "$pst" = "0" ] || { printf '\n'; bad "populate crawl never reported idle (last status: ${pst:-<empty>}); the CONTAINS below is racing it"; }
+  case "$pst" in
+    0:[1-9]*) : ;;
+    *) printf '\n'; bad "populate crawl never indexed the row (last status:itemcount = ${pst:-<empty>}); the CONTAINS below is racing it" ;;
+  esac
   hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهندسة');")"
   case "$hit" in
     ''|*[!0-9]*) bad "Arabic CONTAINS() query errored: ${hit:-<empty>}" ;;
