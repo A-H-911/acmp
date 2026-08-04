@@ -16,6 +16,23 @@ SQLCMD="/opt/mssql-tools18/bin/sqlcmd -S ${DB_SERVER} -U sa -C -No -b"
 
 # 1) database + server login (master scope)
 $SQLCMD -Q "IF DB_ID('${DB_NAME}') IS NULL CREATE DATABASE [${DB_NAME}];"
+
+# AUTO_CLOSE OFF is MANDATORY on Express and is NOT the model default we inherit — SQL Server
+# EXPRESS turns AUTO_CLOSE ON for user databases regardless of `model` (verified live: model
+# auto_close=0 while Acmp, keycloak and a scratch db were all 1). PH-5 moves us to Express
+# (DEF-014), so this arrives with the edition change and did not exist on the on-prem Developer
+# edition. With it ON the database shuts down whenever the last connection drops, and the damage
+# is not merely a slow first query: it TEARS DOWN THE FULL-TEXT POPULATION. The U3 spike proved
+# this end to end — an Arabic row stayed at populate-status 1 with 0 items indexed for over two
+# minutes and CONTAINS returned 0, because every poll connected, restarted the database and
+# killed the crawl it was measuring. Setting AUTO_CLOSE OFF took the same row to status 0 /
+# 1 item and CONTAINS = 1 within ~15 seconds. Global search (AC-060/AC-061) is built on those
+# indexes, so on Express this is the difference between search working and silently returning
+# nothing. Guarded so re-runs are a clean no-op; unlike RCSI this option needs no exclusive
+# access, so no ROLLBACK IMMEDIATE is required.
+$SQLCMD -Q "IF (SELECT is_auto_close_on FROM sys.databases WHERE name = '${DB_NAME}') = 1
+              ALTER DATABASE [${DB_NAME}] SET AUTO_CLOSE OFF;"
+
 $SQLCMD -Q "IF SUSER_ID('acmp_svc') IS NULL CREATE LOGIN acmp_svc WITH PASSWORD='${SVC_PW}', CHECK_POLICY=OFF;"
 
 # 2) db user + least-priv roles + acmp_app enrolment (database scope)
@@ -38,6 +55,13 @@ if [ -f "$KC_SECRET" ]; then
   KC_PW="$(cat "$KC_SECRET")"
 
   $SQLCMD -Q "IF DB_ID('${KC_DB_NAME}') IS NULL CREATE DATABASE [${KC_DB_NAME}];"
+
+  # Same Express AUTO_CLOSE trap as the app database above. Keycloak has no full-text index to
+  # lose, but an auto-closing database still pays a cold-start on the first connection after
+  # every idle period — on the UAT box, which is stopped and started on demand, that is the
+  # login path. Set it OFF for the same reason and with the same guard.
+  $SQLCMD -Q "IF (SELECT is_auto_close_on FROM sys.databases WHERE name = '${KC_DB_NAME}') = 1
+                ALTER DATABASE [${KC_DB_NAME}] SET AUTO_CLOSE OFF;"
 
   # READ_COMMITTED_SNAPSHOT is MANDATORY for Keycloak on SQL Server (its docs: the default
   # READ_COMMITTED "can lead to deadlocks during high load"). The GUARD is load-bearing, not

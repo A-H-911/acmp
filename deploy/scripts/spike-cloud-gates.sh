@@ -133,6 +133,13 @@ ar="$(sq "SELECT COUNT(*) FROM sys.fulltext_languages WHERE lcid = 1025;")"
 # OWN batch (a full-text catalog/index cannot be created in the same batch that defines the
 # table), and the PK carries a NAMED constraint so KEY INDEX has a known name.
 sq "IF DB_ID('ftsspike') IS NULL CREATE DATABASE ftsspike;" >/dev/null
+# AUTO_CLOSE OFF, and this is the whole reason U3 used to fail. SQL Server EXPRESS forces
+# AUTO_CLOSE ON for user databases (model is OFF — the edition overrides it), so the database
+# shut down every time sq() disconnected, which TORE DOWN the full-text population. The row sat
+# at status 1 / 0 items indefinitely and CONTAINS returned 0: each poll was killing the crawl it
+# was polling for. Mirrors the fix now applied to Acmp + keycloak in sqlserver-init.sh, so this
+# gate exercises the configuration we actually ship rather than a scratch database that differs.
+sq "ALTER DATABASE ftsspike SET AUTO_CLOSE OFF;" >/dev/null
 sq "USE ftsspike; IF OBJECT_ID('dbo.t') IS NULL CREATE TABLE dbo.t (id int NOT NULL CONSTRAINT pk_t PRIMARY KEY, body nvarchar(400));" >/dev/null
 sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM dbo.t) INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهندسة المعمارية بشأن النظام');" >/dev/null
 cat_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name='ftc') CREATE FULLTEXT CATALOG ftc AS DEFAULT;" 2>&1)"
@@ -165,12 +172,19 @@ if [ "${idx_cnt:-0}" -ge 1 ]; then
   printf '  waiting for the full-text populate crawl'
   pst=""
   for i in $(seq 1 40); do
-    pst="$(sq "USE ftsspike; SELECT CONCAT(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus'),':',OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextItemCount'));")"
+    # CAST is REQUIRED: OBJECTPROPERTYEX returns sql_variant (unlike FULLTEXTCATALOGPROPERTY,
+    # which returns int), and CONCAT on a raw sql_variant raises "Msg 257 ... Implicit conversion
+    # from data type sql_variant to varchar is not allowed". sqlcmd prints that on STDOUT, so
+    # sq()'s 2>/dev/null does NOT filter it and the error text arrives here looking like a value.
+    pst="$(sq "USE ftsspike; SELECT CONCAT(CAST(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus') AS int),':',CAST(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextItemCount') AS int));")"
+    # Default to LOUD, never to "probably fine". The catch-all used to print '.' for anything it
+    # did not recognise, which is exactly how a "Msg 257 ..." error string spent 80 seconds
+    # impersonating healthy progress. Only a literal <digits>:<digits> is treated as populating.
     case "$pst" in
-      0:0)             printf ',' ;;                        # idle but empty = crawl not started yet
-      0:[1-9]*)        printf ' indexed\n'; break ;;        # idle AND the row is searchable
-      ''|*NULL*)       printf '!' ;;                        # wrong DB / missing object — LOUD
-      *)               printf '.' ;;                        # populating
+      0:0)                 printf ',' ;;                    # idle but empty = crawl not started yet
+      0:[1-9]*)            printf ' indexed\n'; break ;;    # idle AND the row is searchable
+      [0-9]*:[0-9]*)       printf '.' ;;                    # genuinely populating
+      *)                   printf '!' ;;                    # empty / NULL / an ERROR — never silent
     esac
     sleep 3
   done
