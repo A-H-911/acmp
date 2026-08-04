@@ -29,6 +29,24 @@ set -a
 . "$ENV_FILE"
 set +a
 
+# DEF-020 preflight. Seq requires SEQ_FIRSTRUN_ADMINPASSWORDHASH to be a Base-64 salted hash and dies with
+# "The input is not a valid Base-64 string" on anything else -- including the literal CHANGE_ME that
+# .env.cloud.example ships. The reason this must fail HERE, loudly, is that it otherwise degrades silently:
+# api declares `depends_on: seq: {condition: service_started}`, and service_started is satisfied by a container
+# that started and then crashed, so a restart-looping Seq never blocks anything. The stack comes up fully
+# healthy -- api, web and keycloak all green -- with observability dead and no log aggregation, which is exactly
+# the state you cannot diagnose your way out of. Found on the first ever boot of the cloud stack (option C3).
+# Only validated when set: the on-prem .env.example leaves it commented out and runs Seq unauthenticated.
+if [ -n "${SEQ_FIRSTRUN_ADMINPASSWORDHASH:-}" ]; then
+  if ! printf '%s' "$SEQ_FIRSTRUN_ADMINPASSWORDHASH" | grep -Eq '^[A-Za-z0-9+/]+={0,2}$'; then
+    echo "gen-secrets: SEQ_FIRSTRUN_ADMINPASSWORDHASH is not valid Base-64 -- Seq will crash-loop." >&2
+    echo "  value: '$SEQ_FIRSTRUN_ADMINPASSWORDHASH'" >&2
+    echo "  Generate a real one:  docker run --rm datalust/seq config hash" >&2
+    echo "  Leave it unset to run Seq without authentication (dev/on-prem only)." >&2
+    exit 1
+  fi
+fi
+
 write_secret() {  # name value
   printf '%s' "$2" > "$SECRETS_DIR/$1"
   chmod 644 "$SECRETS_DIR/$1"   # readable by the non-root container UID that mounts it (dir is 0700 — see above)
