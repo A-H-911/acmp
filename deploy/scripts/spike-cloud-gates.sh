@@ -133,6 +133,13 @@ ar="$(sq "SELECT COUNT(*) FROM sys.fulltext_languages WHERE lcid = 1025;")"
 # OWN batch (a full-text catalog/index cannot be created in the same batch that defines the
 # table), and the PK carries a NAMED constraint so KEY INDEX has a known name.
 sq "IF DB_ID('ftsspike') IS NULL CREATE DATABASE ftsspike;" >/dev/null
+# AUTO_CLOSE OFF, and this is the whole reason U3 used to fail. SQL Server EXPRESS forces
+# AUTO_CLOSE ON for user databases (model is OFF — the edition overrides it), so the database
+# shut down every time sq() disconnected, which TORE DOWN the full-text population. The row sat
+# at status 1 / 0 items indefinitely and CONTAINS returned 0: each poll was killing the crawl it
+# was polling for. Mirrors the fix now applied to Acmp + keycloak in sqlserver-init.sh, so this
+# gate exercises the configuration we actually ship rather than a scratch database that differs.
+sq "ALTER DATABASE ftsspike SET AUTO_CLOSE OFF;" >/dev/null
 sq "USE ftsspike; IF OBJECT_ID('dbo.t') IS NULL CREATE TABLE dbo.t (id int NOT NULL CONSTRAINT pk_t PRIMARY KEY, body nvarchar(400));" >/dev/null
 sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM dbo.t) INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهندسة المعمارية بشأن النظام');" >/dev/null
 cat_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name='ftc') CREATE FULLTEXT CATALOG ftc AS DEFAULT;" 2>&1)"
@@ -140,12 +147,51 @@ idx_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes W
 idx_cnt="$(sq "USE ftsspike; SELECT COUNT(*) FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t');")"
 if [ "${idx_cnt:-0}" -ge 1 ]; then
   ok "Arabic full-text index created on dbo.t"
+  # This poll carried two defects that together made U3 fail 4/4 on 2026-08-03 with no diagnosis.
+  # (1) It called FULLTEXTCATALOGPROPERTY WITHOUT `USE ftsspike`. sq() connects with no -d, so the
+  #     query ran in master, where catalog 'ftc' does not exist — full-text catalogs are scoped to
+  #     the current database (CREATE FULLTEXT CATALOG: "unique among all catalog names in the
+  #     current database"). The function returned NULL, `${pst:-1}` masked NULL as "still
+  #     populating", the loop never broke, and the wait degenerated into a blind 45s sleep that
+  #     never observed the crawl at all. The CONTAINS below then simply RACED the populate — which
+  #     is why this passed on a fast/idle machine and failed on a loaded one. Not flaky: unobserved.
+  # (2) PopulateStatus is deprecated, and Microsoft warns that looping on the CATALOG-level property
+  #     "takes CPU cycles away from the database and full-text search processes, and causes
+  #     timeouts", directing callers to the TABLE-level property instead. So we now ask
+  #     OBJECTPROPERTYEX(...,'TableFulltextPopulateStatus') — right database, right property.
+  # A NULL/empty read is now LOUD ('!') instead of being indistinguishable from "busy", and a
+  # crawl that never goes idle is reported as such rather than silently handing CONTAINS a race.
+  # (3) Waiting on "populate status is idle" ALONE is itself a race, and a nastier one: status 0
+  #     means "no population in progress", which is also true BEFORE the crawl has started, and
+  #     CHANGE_TRACKING AUTO queues the crawl asynchronously — the DDL above returns before the
+  #     FTS host picks up the work. Breaking on 0 could therefore exit on the first iteration in
+  #     under a second and hand CONTAINS the same race, which on a fast machine is WORSE than the
+  #     45s sleep it replaced. Gate on the row actually being INDEXED instead: TableFulltextItemCount
+  #     is "the number of rows that were successfully full-text indexed". Idle AND >=1 item, or keep
+  #     waiting. `0:0` (quiet but nothing indexed) is the not-started-yet state and is NOT success.
   printf '  waiting for the full-text populate crawl'
-  for i in $(seq 1 15); do
-    pst="$(sq "SELECT FULLTEXTCATALOGPROPERTY('ftc','PopulateStatus');")"   # 0 = idle/done
-    [ "${pst:-1}" = "0" ] && { printf ' done\n'; break; }
-    printf '.'; sleep 3
+  pst=""
+  for i in $(seq 1 40); do
+    # CAST is REQUIRED: OBJECTPROPERTYEX returns sql_variant (unlike FULLTEXTCATALOGPROPERTY,
+    # which returns int), and CONCAT on a raw sql_variant raises "Msg 257 ... Implicit conversion
+    # from data type sql_variant to varchar is not allowed". sqlcmd prints that on STDOUT, so
+    # sq()'s 2>/dev/null does NOT filter it and the error text arrives here looking like a value.
+    pst="$(sq "USE ftsspike; SELECT CONCAT(CAST(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus') AS int),':',CAST(OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextItemCount') AS int));")"
+    # Default to LOUD, never to "probably fine". The catch-all used to print '.' for anything it
+    # did not recognise, which is exactly how a "Msg 257 ..." error string spent 80 seconds
+    # impersonating healthy progress. Only a literal <digits>:<digits> is treated as populating.
+    case "$pst" in
+      0:0)                 printf ',' ;;                    # idle but empty = crawl not started yet
+      0:[1-9]*)            printf ' indexed\n'; break ;;    # idle AND the row is searchable
+      [0-9]*:[0-9]*)       printf '.' ;;                    # genuinely populating
+      *)                   printf '!' ;;                    # empty / NULL / an ERROR — never silent
+    esac
+    sleep 3
   done
+  case "$pst" in
+    0:[1-9]*) : ;;
+    *) printf '\n'; bad "populate crawl never indexed the row (last status:itemcount = ${pst:-<empty>}); the CONTAINS below is racing it" ;;
+  esac
   hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهندسة');")"
   case "$hit" in
     ''|*[!0-9]*) bad "Arabic CONTAINS() query errored: ${hit:-<empty>}" ;;
