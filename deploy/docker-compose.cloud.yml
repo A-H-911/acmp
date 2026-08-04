@@ -285,7 +285,16 @@ services:
     restart: unless-stopped
 
   web:
-    image: ${ACMP_REGISTRY:-acmp}/web:${ACMP_IMAGE_TAG:-latest}
+    # web needs its OWN tag variable and cannot share ACMP_IMAGE_TAG with the others. ADR-0037
+    # bakes the OIDC authority into the bundle, so CI publishes web as <sha>-uat and <sha>-prod
+    # while api/worker/sqlserver-fts are environment-agnostic and published as plain <sha>. With a
+    # single shared tag, ACMP_IMAGE_TAG=<sha> resolves to acmp/web:<sha>, WHICH DOES NOT EXIST —
+    # verified against the live registry, which answers ImageNotFoundException for exactly that
+    # tag. The deploy would pull the other three and then fail on web, mid-deploy, on the box.
+    # DEF-019: P21 wrote this line before P24 chose per-environment web images, and the two were
+    # never reconciled; the comment immediately below already described the -uat/-prod scheme.
+    # Falls back to ACMP_IMAGE_TAG so local `build`-based use (no registry) keeps working.
+    image: ${ACMP_REGISTRY:-acmp}/web:${ACMP_WEB_TAG:-${ACMP_IMAGE_TAG:-latest}}
     build:
       context: ..
       dockerfile: deploy/Dockerfile.web
