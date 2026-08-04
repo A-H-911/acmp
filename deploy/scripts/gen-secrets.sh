@@ -37,8 +37,15 @@ set +a
 # healthy -- api, web and keycloak all green -- with observability dead and no log aggregation, which is exactly
 # the state you cannot diagnose your way out of. Found on the first ever boot of the cloud stack (option C3).
 # Only validated when set: the on-prem .env.example leaves it commented out and runs Seq unauthenticated.
+# The LENGTH check is not belt-and-braces, it is the half that actually bites. An alphabet-only check
+# passes any run of base64 characters, so the placeholder "unused" (6 chars, all legal) sailed through
+# and Seq crash-looped anyway on the very next boot -- the guard failed to catch the exact failure it
+# was written for. Base-64 is always a multiple of 4 characters, so length is what separates a real
+# hash from a word that happens to be spelled in the base64 alphabet.
 if [ -n "${SEQ_FIRSTRUN_ADMINPASSWORDHASH:-}" ]; then
-  if ! printf '%s' "$SEQ_FIRSTRUN_ADMINPASSWORDHASH" | grep -Eq '^[A-Za-z0-9+/]+={0,2}$'; then
+  seq_hash_len=$(printf '%s' "$SEQ_FIRSTRUN_ADMINPASSWORDHASH" | wc -c | tr -d ' ')
+  if ! printf '%s' "$SEQ_FIRSTRUN_ADMINPASSWORDHASH" | grep -Eq '^[A-Za-z0-9+/]+={0,2}$' \
+     || [ "$((seq_hash_len % 4))" -ne 0 ]; then
     echo "gen-secrets: SEQ_FIRSTRUN_ADMINPASSWORDHASH is not valid Base-64 -- Seq will crash-loop." >&2
     echo "  value: '$SEQ_FIRSTRUN_ADMINPASSWORDHASH'" >&2
     echo "  Generate a real one:  docker run --rm datalust/seq config hash" >&2
