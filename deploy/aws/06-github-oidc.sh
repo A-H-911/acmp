@@ -38,21 +38,27 @@ else
 fi
 
 # 2) The role CI assumes -------------------------------------------------------------------
-# Scoped to ONE repo. `sub` is restricted to the default branch and to tags: a pull request from a
-# fork runs with sub=repo:...:pull_request, which therefore cannot assume this role and cannot push
-# an image. That is the whole point — untrusted PR code must never reach a registry the servers pull
-# from. `aud` is pinned so a token minted for some other audience is refused.
+# Scoped to ONE repo and to EXACTLY ONE subject: a push to the default branch. `aud` is pinned too,
+# so a token minted for another audience is refused.
+#
+# StringEquals, not StringLike, and no wildcards — that is deliberate. An earlier revision also
+# allowed `:ref:refs/tags/*` and `:environment:*`, neither of which the publish job uses. The
+# environment entry was the dangerous one: a job that names ANY GitHub Environment gets
+# sub=repo:...:environment:NAME, so `environment:*` would let a subject other than a main-branch
+# push assume a role that can write to the registry the servers pull from — including environments
+# created later by anyone with write access, silently widening this grant with no change here.
+# Unused permissions are not free; they are the ones nobody re-reads. Add a subject when a workflow
+# actually needs one.
 TRUST="$(cat <<JSON
 { "Version": "2012-10-17", "Statement": [ {
   "Effect": "Allow",
   "Principal": { "Federated": "$OIDC_ARN" },
   "Action": "sts:AssumeRoleWithWebIdentity",
   "Condition": {
-    "StringEquals": { "${OIDC_HOST}:aud": "sts.amazonaws.com" },
-    "StringLike":   { "${OIDC_HOST}:sub": [
-        "repo:${GH_ORG}/${GH_REPO}:ref:refs/heads/main",
-        "repo:${GH_ORG}/${GH_REPO}:ref:refs/tags/*",
-        "repo:${GH_ORG}/${GH_REPO}:environment:*" ] }
+    "StringEquals": {
+      "${OIDC_HOST}:aud": "sts.amazonaws.com",
+      "${OIDC_HOST}:sub": "repo:${GH_ORG}/${GH_REPO}:ref:refs/heads/main"
+    }
   } } ] }
 JSON
 )"
