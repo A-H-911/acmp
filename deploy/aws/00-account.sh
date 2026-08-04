@@ -50,12 +50,15 @@ if aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET
   log "budget $BUDGET_NAME already exists (leaving as-is)"
 else
   log "creating budget $BUDGET_NAME at \$$BUDGET_LIMIT_USD/mo with 50/80/100% alerts"
-  budget_json="$(mktemp)"; notif_json="$(mktemp)"
-  cat > "$budget_json" <<JSON
+  # JSON is passed INLINE, never via a temp file. `mktemp` returns a POSIX path and a native Windows
+  # aws.exe cannot open file:///tmp/... — the first live run died exactly there, and `set -e` then took
+  # the budget ACTIONS below with it, leaving a provisioned account with NO spend guardrail at all.
+  budget_json="$(cat <<JSON
 { "BudgetName": "$BUDGET_NAME", "BudgetLimit": { "Amount": "$BUDGET_LIMIT_USD", "Unit": "USD" },
   "TimeUnit": "MONTHLY", "BudgetType": "COST" }
 JSON
-  cat > "$notif_json" <<JSON
+)"
+  notif_json="$(cat <<JSON
 [ { "Notification": { "NotificationType": "ACTUAL", "ComparisonOperator": "GREATER_THAN", "Threshold": 50 },
     "Subscribers": [ { "SubscriptionType": "SNS", "Address": "$TOPIC_ARN" } ] },
   { "Notification": { "NotificationType": "ACTUAL", "ComparisonOperator": "GREATER_THAN", "Threshold": 80 },
@@ -63,38 +66,63 @@ JSON
   { "Notification": { "NotificationType": "ACTUAL", "ComparisonOperator": "GREATER_THAN", "Threshold": 100 },
     "Subscribers": [ { "SubscriptionType": "SNS", "Address": "$TOPIC_ARN" } ] } ]
 JSON
+)"
   aws budgets create-budget --account-id "$ACCOUNT_ID" \
-    --budget "file://$budget_json" --notifications-with-subscribers "file://$notif_json"
-  rm -f "$budget_json" "$notif_json"
+    --budget "$budget_json" --notifications-with-subscribers "$notif_json"
+
 fi
 
 # 3b) Budget-action execution role + a Deny-new-spend policy (attached at 100%) ----------
 ACTION_ROLE="${PROJECT}-budget-action"
 if ! aws iam get-role --role-name "$ACTION_ROLE" >/dev/null 2>&1; then
   log "creating budget-action execution role $ACTION_ROLE"
-  trust="$(mktemp)"; cat > "$trust" <<'JSON'
+  trust="$(cat <<'JSON'
 { "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
   "Principal": { "Service": "budgets.amazonaws.com" }, "Action": "sts:AssumeRole" } ] }
 JSON
-  aws iam create-role --role-name "$ACTION_ROLE" --assume-role-policy-document "file://$trust" --tags $TAGS >/dev/null
+)"
+  aws iam create-role --role-name "$ACTION_ROLE" --assume-role-policy-document "$trust" --tags $TAGS >/dev/null
   aws iam attach-role-policy --role-name "$ACTION_ROLE" \
     --policy-arn arn:aws:iam::aws:policy/PowerUserAccess >/dev/null   # can apply policies + stop instances
-  rm -f "$trust"
+
 fi
 DENY_POLICY_ARN="arn:aws:iam::${ACCOUNT_ID}:policy/${PROJECT}-budget-deny-new-spend"
 if ! aws iam get-policy --policy-arn "$DENY_POLICY_ARN" >/dev/null 2>&1; then
   log "creating deny-new-spend policy (applied to acmp-admin at 100% budget)"
-  deny="$(mktemp)"; cat > "$deny" <<'JSON'
+  deny="$(cat <<'JSON'
 { "Version": "2012-10-17", "Statement": [ { "Effect": "Deny",
   "Action": [ "ec2:RunInstances", "ec2:AllocateAddress", "rds:CreateDBInstance" ],
   "Resource": "*" } ] }
 JSON
-  aws iam create-policy --policy-name "${PROJECT}-budget-deny-new-spend" --policy-document "file://$deny" >/dev/null
-  rm -f "$deny"
+)"
+  aws iam create-policy --policy-name "${PROJECT}-budget-deny-new-spend" --policy-document "$deny" >/dev/null
+
 fi
 
-log "budget actions: create these two in the console once (CLI create-budget-action needs the role ARN above):"
-log "  100% ACTUAL  -> APPLY_IAM_POLICY $DENY_POLICY_ARN to user $ADMIN_USER  (block new spend)"
-log "  100% FORECAST-> STOP_EC2_INSTANCES filtered by tag Project=ACMP        (emergency brake, RISK-022)"
-log "  role: $(aws iam get-role --role-name "$ACTION_ROLE" --query Role.Arn --output text 2>/dev/null || echo "$ACTION_ROLE")"
+# 3c) The 100% deny action, created HERE rather than left to console clicks. The earlier note claimed
+#     the CLI could not do this because it "needs the role ARN" — it needs exactly the ARN we just made,
+#     so there was never a reason for a human step. A guardrail that depends on someone remembering to
+#     click is a guardrail you find missing during the incident it existed for. Idempotent: skip if any
+#     APPLY_IAM_POLICY action already exists on this budget.
+ROLE_ARN="$(aws iam get-role --role-name "$ACTION_ROLE" --query Role.Arn --output text)"
+if aws budgets describe-budget-actions-for-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" \
+     --query "Actions[?ActionType=='APPLY_IAM_POLICY'].ActionId" --output text 2>/dev/null | grep -q .; then
+  log "budget deny-action already attached to $BUDGET_NAME"
+else
+  log "attaching 100%-ACTUAL deny action to $BUDGET_NAME"
+  aws budgets create-budget-action --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" \
+    --notification-type ACTUAL --action-type APPLY_IAM_POLICY \
+    --action-threshold '{"ActionThresholdValue":100,"ActionThresholdType":"PERCENTAGE"}' \
+    --definition "{\"IamActionDefinition\":{\"PolicyArn\":\"$DENY_POLICY_ARN\",\"Users\":[\"$ADMIN_USER\"]}}" \
+    --execution-role-arn "$ROLE_ARN" --approval-model AUTOMATIC \
+    --subscribers "[{\"SubscriptionType\":\"SNS\",\"Address\":\"$TOPIC_ARN\"}]" >/dev/null
+fi
+
+# The EC2 emergency brake (RISK-022) CANNOT be created here, and not because of the CLI:
+#   aws budgets create-budget-action --generate-cli-skeleton shows SsmActionDefinition as
+#   {ActionSubType, Region, InstanceIds} — a list of INSTANCE IDS. There is no tag filter, so the
+#   "filtered by tag Project=ACMP" this script used to print was never possible. It has to be created
+#   AFTER P25 launches instances, naming them, and RE-POINTED whenever an instance is replaced — which
+#   for the on-demand UAT box is a recurring chore, not a one-off. See AC-085.
+log "  EC2 auto-stop action: deferred to P25 — it takes explicit InstanceIds, not a tag filter."
 log "done. Enable AWS Cost Anomaly Detection in the console too (free)."

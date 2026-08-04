@@ -48,3 +48,6 @@ Thumbs.db
 
 # Playwright MCP scratch artifacts (screenshots, snapshots)
 .playwright-mcp/
+
+# P23 restore-drill scratch (deploy/scripts/spike-cloud-gates.sh U4)
+.spike-backups/

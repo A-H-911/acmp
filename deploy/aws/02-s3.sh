@@ -9,8 +9,8 @@ set -euo pipefail
 . "$(dirname "$0")/_common.sh"
 require_aws
 
-make_bucket() { # bucket-name
-  local b="$1"
+make_bucket() { # bucket-name [expire-current-after-days]
+  local b="$1" expire="${2:-}"
   if aws s3api head-bucket --bucket "$b" >/dev/null 2>&1; then
     log "bucket $b exists"
   else
@@ -30,17 +30,26 @@ make_bucket() { # bucket-name
   aws s3api put-bucket-encryption --bucket "$b" --server-side-encryption-configuration \
     '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}' >/dev/null
   aws s3api put-bucket-versioning --bucket "$b" --versioning-configuration Status=Enabled >/dev/null
+  # Recordings are the system of record for a meeting — nothing expires them. BACKUPS are different: a
+  # nightly .bak per database, uncompressed (Express rejects WITH COMPRESSION), uploaded forever would grow
+  # without bound on an account whose whole budget is ~$45/mo and whose 100%/120% budget actions cut access
+  # and stop instances. So the backup bucket alone expires CURRENT versions, on the same clock as the local
+  # BACKUP_RETENTION_DAYS prune in deploy/scripts/backup.sh.
+  local expire_rule=""
+  [ -n "$expire" ] && expire_rule=",
+       {\"ID\":\"expire-current\",\"Status\":\"Enabled\",\"Filter\":{},
+        \"Expiration\":{\"Days\":${expire}}}"
   aws s3api put-bucket-lifecycle-configuration --bucket "$b" --lifecycle-configuration \
-    '{"Rules":[
-       {"ID":"abort-incomplete-mpu","Status":"Enabled","Filter":{},
-        "AbortIncompleteMultipartUpload":{"DaysAfterInitiation":7}},
-       {"ID":"expire-noncurrent","Status":"Enabled","Filter":{},
-        "NoncurrentVersionExpiration":{"NoncurrentDays":90}}]}' >/dev/null
-  log "  $b: public-access blocked, SSE-S3, versioning on, mpu-abort 7d, noncurrent-expire 90d"
+    "{\"Rules\":[
+       {\"ID\":\"abort-incomplete-mpu\",\"Status\":\"Enabled\",\"Filter\":{},
+        \"AbortIncompleteMultipartUpload\":{\"DaysAfterInitiation\":7}},
+       {\"ID\":\"expire-noncurrent\",\"Status\":\"Enabled\",\"Filter\":{},
+        \"NoncurrentVersionExpiration\":{\"NoncurrentDays\":90}}${expire_rule}]}" >/dev/null
+  log "  $b: public-access blocked, SSE-S3, versioning on, mpu-abort 7d, noncurrent-expire 90d${expire:+, current-expire ${expire}d}"
 }
 
 for env in "${ENVS[@]}"; do
   make_bucket "$(bucket_for "$env")"
-  make_bucket "$(backup_bucket_for "$env")"
+  make_bucket "$(backup_bucket_for "$env")" "${BACKUP_RETENTION_DAYS:-30}"
 done
 log "done. Buckets are private; access is via the per-env IAM users created in 03-iam.sh."

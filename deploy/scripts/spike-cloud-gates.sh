@@ -80,7 +80,6 @@ ACMP_DB_NAME=Acmp
 ACMP_DB_USER=acmp_svc
 ACMP_DB_PASSWORD=SpikeSvc_2026#x
 ACMP_DB_TRUSTCERT=True
-ACMP_BACKUP_DIR=/tmp/acmp-spike-backups
 ACMP_S3_ENDPOINT=s3.us-east-1.amazonaws.com
 ACMP_S3_BUCKET=acmp-spike
 ACMP_S3_ACCESS_KEY=spike
@@ -90,6 +89,13 @@ ACMP_REQUIRE_HTTPS_METADATA=false
 WEBEX_ENABLED=false
 ACTION_REMINDERS_SWEEP_CRON="0 6 * * *"
 ENV
+# The backup dir must be visible to BOTH sides: the container writes the .bak (as uid 10001) and the
+# host-side scripts then list it. A bare /tmp path is NOT that on Docker Desktop — it resolves inside the
+# Linux VM, so the host never sees the file. Use a repo-local, Docker-shared path, world-writable because
+# the mssql user owns neither it nor this shell.
+if command -v cygpath >/dev/null 2>&1; then SPIKE_BAK="$(cygpath -m "$ROOT")/.spike-backups"; else SPIKE_BAK="$ROOT/.spike-backups"; fi
+mkdir -p "$SPIKE_BAK"; chmod 0777 "$SPIKE_BAK" 2>/dev/null || true
+echo "ACMP_BACKUP_DIR=$SPIKE_BAK" >> "$ENV_FILE"
 SA_PW="$(grep '^MSSQL_SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)"
 # Secrets are file-backed (ADR-0032) and the compose file resolves them relative to deploy/,
 # so the spike must write into deploy/secrets. It is backed up and restored on exit.
@@ -215,6 +221,62 @@ realm2="$(sq "SELECT COUNT(*) FROM keycloak.dbo.REALM WHERE NAME = 'acmp';")"
 # OIDC discovery through Keycloak itself (the nginx /kc/ hop is exercised in stage 3).
 iss="$(dex keycloak sh -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /realms/acmp/.well-known/openid-configuration HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3; cat <&3' 2>/dev/null | tr ',' '\n' | grep -o '"issuer":"[^"]*"' | head -1)"
 [ -n "$iss" ] && ok "OIDC discovery served: $iss" || bad "OIDC discovery document not served"
+
+# =========================================================================================
+# U4 (P23) — the backup/restore drill, on the database whose restore path is NEW. Keycloak used to be
+# backed up with pg_dump and restored with psql into a container that ADR-0036 deleted; it is now just
+# another SQL Server database. Three things are proved here without any AWS involvement:
+#   * BACKUP works on EXPRESS with no WITH COMPRESSION (the clause the old script used, which Express rejects);
+#   * restore.sh really replaces the database contents (3 -> 0 -> 3, AC-080's local half);
+#   * Keycloak comes back HEALTHY afterwards, i.e. the restored database is usable, not merely present.
+# A probe table is used rather than deleting realm rows: it measures the restore without fighting Keycloak's
+# own foreign keys, and it is dropped with the isolated stack.
+log "U4 — backup + restore drill on the keycloak database (Express, no COMPRESSION)"
+# WINDOWS: backup.sh/restore.sh run IN-CONTAINER paths (/opt/mssql-tools18/bin/sqlcmd). Under MSYS those are
+# rewritten to C:/Program Files/Git/opt/... before docker sees them — the first drill run failed with
+# `sh: C:/Program: not found`, not because of anything in the scripts. Turn conversion off for these
+# invocations and hand compose Windows-form HOST paths so -f/--env-file still resolve. No-op on Linux, which
+# is where these scripts actually run in production.
+if command -v cygpath >/dev/null 2>&1; then
+  CF_H="$(cygpath -w "$CF")"; EF_H="$(cygpath -w "$ENV_FILE")"
+else
+  CF_H="$CF"; EF_H="$ENV_FILE"
+fi
+DRILL_ENV=(env MSYS_NO_PATHCONV=1 COMPOSE="docker compose -p $PROJECT -f $CF_H --env-file $EF_H"
+           ACMP_ENV_FILE="$ENV_FILE" ACMP_BACKUP_DIR="$SPIKE_BAK" ACMP_DB_NAMES="keycloak")
+
+sq "IF OBJECT_ID('keycloak.dbo.acmp_restore_probe') IS NOT NULL DROP TABLE keycloak.dbo.acmp_restore_probe;
+    CREATE TABLE keycloak.dbo.acmp_restore_probe(id int);
+    INSERT INTO keycloak.dbo.acmp_restore_probe(id) VALUES (1),(2),(3);" >/dev/null
+n0="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
+[ "${n0:-0}" = "3" ] && ok "probe seeded: 3 rows" || bad "probe seed failed (got ${n0:-none})"
+
+DRILL_LOG="${TMPDIR:-/tmp}/acmp-spike-drill.log"
+if "${DRILL_ENV[@]}" bash "$ROOT/deploy/scripts/backup.sh" >"$DRILL_LOG" 2>&1; then
+  ok "backup.sh produced a .bak on Express with no COMPRESSION clause"
+else
+  bad "backup.sh failed on Express — check the BACKUP statement"; sed -n '1,12p;$p' "$DRILL_LOG" | sed 's/^/      | /'
+fi
+
+sq "DELETE FROM keycloak.dbo.acmp_restore_probe;" >/dev/null
+n1="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
+[ "${n1:-x}" = "0" ] && ok "probe emptied: 0 rows (the state a restore must undo)" || bad "probe not emptied (got ${n1:-none})"
+
+if "${DRILL_ENV[@]}" bash "$ROOT/deploy/scripts/restore.sh" >"$DRILL_LOG" 2>&1; then
+  n2="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
+  [ "${n2:-0}" = "3" ] && ok "restore.sh restored the database: 3 -> 0 -> 3" \
+                       || bad "restore.sh did not restore the rows (got ${n2:-none})"
+else
+  bad "restore.sh failed"; sed -n '1,12p;$p' "$DRILL_LOG" | sed 's/^/      | /'
+fi
+
+# The row count says the FILES came back. Only a healthy Keycloak says the DATABASE is usable.
+for i in $(seq 1 48); do
+  kst4="$(docker inspect -f '{{.State.Health.Status}}' "$(dc ps -q keycloak)" 2>/dev/null || echo starting)"
+  [ "$kst4" = "healthy" ] && break; sleep 5
+done
+[ "$kst4" = "healthy" ] && ok "Keycloak healthy again after its database was restored" \
+                        || bad "Keycloak did not come back healthy after restore (state=$kst4)"
 
 # =========================================================================================
 printf '\n\033[1m[spike] RESULT: %d passed, %d failed\033[0m\n' "$PASS" "$FAIL"
