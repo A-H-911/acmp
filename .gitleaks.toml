@@ -18,4 +18,5 @@ regexes = [
   '''CHANGE_ME''',
   '''Pr0be#Passw0rd!''',                 # AuditImmutabilityDbPermissionTests probe login (test-only)
   '''ChangeMe_KC#2026''',                # documented KC fresh-boot admin placeholder
+  '''ACMP_LIVE_S3_[A-Z_]+''',            # env-var NAMES in MinioFileStoreLiveS3Tests, not values
 ]
