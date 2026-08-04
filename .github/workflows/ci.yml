@@ -94,3 +94,102 @@ jobs:
         # blocks on every High/Critical EXCEPT advisories explicitly triaged as not-applicable to
         # ACMP (each with a documented reason). Mirrors the .NET gate, scripts/check-vulns.mjs.
         run: node ../../scripts/check-npm-audit.mjs
+
+  # ---------------------------------------------------------------------------------------
+  # Publish images to ECR (SL-024 / ADR-0037). Lives in THIS workflow rather than a separate
+  # one on purpose: `needs` is the only gate that makes publishing an untested commit
+  # structurally impossible. A second workflow would have to trigger on workflow_run and
+  # re-derive the SHA, which is more machinery for a weaker guarantee.
+  #
+  # Push-to-main only — a fork PR must never reach the registry the servers pull from. That is
+  # enforced twice: by the `if` here, and by the OIDC role's own `sub` condition, which does not
+  # match a pull_request token at all (deploy/aws/06-github-oidc.sh).
+  #
+  # No AWS access key exists anywhere in this repo. The role is assumed with a short-lived
+  # GitHub OIDC token, which is why this job needs id-token: write — granted per-job so the
+  # test jobs above cannot mint one.
+  publish:
+    needs: [ backend, frontend, compose ]
+    # The AWS_ROLE_ARN test is a self-enabling switch, not decoration: this job is merged before
+    # deploy/aws/06-github-oidc.sh has been run, and without it the very next push to main would
+    # go red on a missing role. It stays skipped until the variable is set, then starts publishing
+    # on its own with no second commit to remember.
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
+      && vars.AWS_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+
+      # Both authority URLs are repository VARIABLES, not secrets — they are public URLs. They are
+      # required rather than defaulted: VITE_OIDC_AUTHORITY is baked into the bundle at build time,
+      # so a wrong or empty value ships a web image that cannot log in, and it fails in the browser
+      # with nothing in the API logs. Fail here instead, where the message is readable.
+      - name: Require the per-environment authorities
+        run: |
+          : "${UAT:?set repository variable KEYCLOAK_AUTHORITY_UAT}"
+          : "${PROD:?set repository variable KEYCLOAK_AUTHORITY_PROD}"
+        env:
+          UAT: ${{ vars.KEYCLOAK_AUTHORITY_UAT }}
+          PROD: ${{ vars.KEYCLOAK_AUTHORITY_PROD }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v3
+
+      # api / worker / sqlserver-fts are environment-AGNOSTIC: one build, promoted between
+      # environments by digest. `web` is not — ADR-0037 bakes the OIDC authority in, so it is built
+      # twice and the two images are never interchangeable. That asymmetry is the whole reason the
+      # web tags carry an -uat/-prod suffix and the others do not.
+      - name: Build and push
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          push() { docker buildx build --push --provenance=false "$@"; }
+          push -f deploy/Dockerfile.backend  --target api    -t "$REG/acmp/api:$SHA" .
+          push -f deploy/Dockerfile.backend  --target worker -t "$REG/acmp/worker:$SHA" .
+          push -f deploy/Dockerfile.sqlserver               -t "$REG/acmp/sqlserver-fts:$SHA" deploy
+          push -f deploy/Dockerfile.web -t "$REG/acmp/web:$SHA-uat" \
+               --build-arg VITE_OIDC_AUTHORITY='${{ vars.KEYCLOAK_AUTHORITY_UAT }}' \
+               --build-arg VITE_OIDC_CLIENT_ID=acmp-web .
+          push -f deploy/Dockerfile.web -t "$REG/acmp/web:$SHA-prod" \
+               --build-arg VITE_OIDC_AUTHORITY='${{ vars.KEYCLOAK_AUTHORITY_PROD }}' \
+               --build-arg VITE_OIDC_CLIENT_ID=acmp-web .
+
+      # Record the immutable digests. A tag can be moved; a digest cannot, and promotion (P25+)
+      # deploys BY DIGEST so that "what UAT tested" and "what production runs" are the same bytes
+      # rather than the same label.
+      - name: Record digests
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          : > digests.env
+          for r in api worker sqlserver-fts; do
+            d=$(aws ecr describe-images --repository-name "acmp/$r" --image-ids imageTag="$SHA" \
+                  --query 'imageDetails[0].imageDigest' --output text)
+            echo "ACMP_DIGEST_$(echo "$r" | tr 'a-z-' 'A-Z_')=$d" >> digests.env
+          done
+          for e in uat prod; do
+            d=$(aws ecr describe-images --repository-name acmp/web --image-ids imageTag="$SHA-$e" \
+                  --query 'imageDetails[0].imageDigest' --output text)
+            echo "ACMP_DIGEST_WEB_$(echo "$e" | tr 'a-z' 'A-Z')=$d" >> digests.env
+          done
+          echo "ACMP_IMAGE_SHA=$SHA" >> digests.env
+          cat digests.env >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-digests-${{ github.sha }}
+          path: digests.env
+          retention-days: 90
