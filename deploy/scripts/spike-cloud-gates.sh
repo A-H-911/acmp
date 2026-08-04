@@ -140,12 +140,29 @@ idx_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes W
 idx_cnt="$(sq "USE ftsspike; SELECT COUNT(*) FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t');")"
 if [ "${idx_cnt:-0}" -ge 1 ]; then
   ok "Arabic full-text index created on dbo.t"
+  # This poll carried two defects that together made U3 fail 4/4 on 2026-08-03 with no diagnosis.
+  # (1) It called FULLTEXTCATALOGPROPERTY WITHOUT `USE ftsspike`. sq() connects with no -d, so the
+  #     query ran in master, where catalog 'ftc' does not exist — full-text catalogs are scoped to
+  #     the current database (CREATE FULLTEXT CATALOG: "unique among all catalog names in the
+  #     current database"). The function returned NULL, `${pst:-1}` masked NULL as "still
+  #     populating", the loop never broke, and the wait degenerated into a blind 45s sleep that
+  #     never observed the crawl at all. The CONTAINS below then simply RACED the populate — which
+  #     is why this passed on a fast/idle machine and failed on a loaded one. Not flaky: unobserved.
+  # (2) PopulateStatus is deprecated, and Microsoft warns that looping on the CATALOG-level property
+  #     "takes CPU cycles away from the database and full-text search processes, and causes
+  #     timeouts", directing callers to the TABLE-level property instead. So we now ask
+  #     OBJECTPROPERTYEX(...,'TableFulltextPopulateStatus') — right database, right property.
+  # A NULL/empty read is now LOUD ('!') instead of being indistinguishable from "busy", and a
+  # crawl that never goes idle is reported as such rather than silently handing CONTAINS a race.
   printf '  waiting for the full-text populate crawl'
-  for i in $(seq 1 15); do
-    pst="$(sq "SELECT FULLTEXTCATALOGPROPERTY('ftc','PopulateStatus');")"   # 0 = idle/done
-    [ "${pst:-1}" = "0" ] && { printf ' done\n'; break; }
-    printf '.'; sleep 3
+  pst=""
+  for i in $(seq 1 40); do
+    pst="$(sq "USE ftsspike; SELECT OBJECTPROPERTYEX(OBJECT_ID('dbo.t'),'TableFulltextPopulateStatus');")"
+    [ "$pst" = "0" ] && { printf ' idle\n'; break; }
+    case "$pst" in ''|NULL|*[!0-9]*) printf '!' ;; *) printf '.' ;; esac
+    sleep 3
   done
+  [ "$pst" = "0" ] || { printf '\n'; bad "populate crawl never reported idle (last status: ${pst:-<empty>}); the CONTAINS below is racing it"; }
   hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهندسة');")"
   case "$hit" in
     ''|*[!0-9]*) bad "Arabic CONTAINS() query errored: ${hit:-<empty>}" ;;
