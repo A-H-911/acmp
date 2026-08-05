@@ -115,8 +115,27 @@ public sealed class MinioFileStoreLiveS3Tests
         var store = Store();
         var key = $"acmp-live-probe/{Guid.NewGuid():N}.bin";
 
+        // REGRESSION TEST FOR DEF-021 -- CURRENTLY FAILS ON PURPOSE. Do not "fix" it by relaxing
+        // the assertion; it is red because the product is wrong, and it goes green when DEF-021 is.
+        //
+        // S3 genuinely refuses this write -- the AWS CLI answers, for this exact identity, bucket
+        // and action: "AccessDenied ... acmp-uat-app is not authorized to perform: s3:PutObject on
+        // arn:aws:s3:::acmp-prod-recordings/...", and an admin list-objects-v2 shows nothing was
+        // stored. Cross-environment isolation is INTACT (AC-083).
+        //
+        // What is broken is our adapter. Measured here against real S3: UploadAsync threw NOTHING,
+        // and ExistsAsync then returned TRUE for an object that does not exist. The Minio client as
+        // we configure it swallows permission errors on BOTH PutObject and StatObject, so a refused
+        // upload is reported to the caller as stored -- the API answers 201, the UI says success,
+        // and the file is not there. That also invalidates the assumption written in
+        // MinioFileStore.EnsureBucketAsync, that "PutObject immediately after is the real authority
+        // and its own failure surfaces to the caller". It does not.
+        //
+        // An existence check cannot be the fix: it inherits the same blindness (that was tried and
+        // reverted). The remedy is at the client layer -- the AWSSDK.S3 fallback that P22 deferred
+        // as "nothing observed requires it". Something now does.
         await FluentActions
             .Awaiting(() => store.UploadAsync(other, key, new MemoryStream([1, 2, 3]), "application/octet-stream"))
-            .Should().ThrowAsync<Exception>("this identity must not be able to write to the other environment");
+            .Should().ThrowAsync<Exception>("S3 refuses this write, so the store must not report success (DEF-021)");
     }
 }
