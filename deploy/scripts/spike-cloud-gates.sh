@@ -84,7 +84,6 @@ ACMP_S3_ENDPOINT=s3.us-east-1.amazonaws.com
 ACMP_S3_BUCKET=acmp-spike
 ACMP_S3_ACCESS_KEY=spike
 ACMP_S3_SECRET_KEY=spike
-SEQ_FIRSTRUN_ADMINPASSWORDHASH=unused-in-spike
 ACMP_REQUIRE_HTTPS_METADATA=false
 WEBEX_ENABLED=false
 ACTION_REMINDERS_SWEEP_CRON="0 6 * * *"
@@ -96,6 +95,12 @@ ENV
 if command -v cygpath >/dev/null 2>&1; then SPIKE_BAK="$(cygpath -m "$ROOT")/.spike-backups"; else SPIKE_BAK="$ROOT/.spike-backups"; fi
 mkdir -p "$SPIKE_BAK"; chmod 0777 "$SPIKE_BAK" 2>/dev/null || true
 echo "ACMP_BACKUP_DIR=$SPIKE_BAK" >> "$ENV_FILE"
+# A REAL Seq hash, generated rather than placeheld. This used to read "unused-in-spike" because these
+# gates never start Seq -- but gen-secrets.sh now validates the value (DEF-020) and a non-Base-64 string
+# aborts the whole run before U3 begins. Generating one is cheaper than weakening the guard, and it keeps
+# the spike exercising the same configuration path the real deployment uses.
+SPIKE_SEQ_HASH="$(printf 'SpikeSeq_2026#x' | docker run -i --rm datalust/seq config hash 2>/dev/null | tr -d '\r\n')"
+echo "SEQ_FIRSTRUN_ADMINPASSWORDHASH=${SPIKE_SEQ_HASH}" >> "$ENV_FILE"
 SA_PW="$(grep '^MSSQL_SA_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)"
 # Secrets are file-backed (ADR-0032) and the compose file resolves them relative to deploy/,
 # so the spike must write into deploy/secrets. It is backed up and restored on exit.
@@ -277,7 +282,23 @@ iss="$(dex keycloak sh -c 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /realms/
 #   * Keycloak comes back HEALTHY afterwards, i.e. the restored database is usable, not merely present.
 # A probe table is used rather than deleting realm rows: it measures the restore without fighting Keycloak's
 # own foreign keys, and it is dropped with the isolated stack.
-log "U4 — backup + restore drill on the keycloak database (Express, no COMPRESSION)"
+log "U4 prep — migrating the Acmp schema so the drill restores a REAL database"
+# AC-080 covers BOTH databases, and the Acmp leg is only meaningful against a MIGRATED schema.
+# restore.sh's post-restore sanity check queries decisions.decisions, which exists only after
+# db-migrate has run; the earlier gates start sqlserver + keycloak only, so the Acmp database they
+# leave behind is schema-less. Drilling that would have reported a green restore of an EMPTY
+# database -- a hollow pass. restore.sh was right to refuse it, and the fix belongs here.
+dc build api >/dev/null 2>&1 || bad "could not build the api image (needed for db-migrate)"
+dc up -d db-migrate >/dev/null 2>&1
+for i in $(seq 1 60); do
+  mst="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$(dc ps -aq db-migrate)" 2>/dev/null || echo "starting:")"
+  case "$mst" in exited:0) ok "Acmp schema migrated (db-migrate exit 0)"; break;;
+                 exited:*) bad "db-migrate failed ($mst)"; break;; esac
+  sleep 5
+done
+case "${mst:-}" in exited:0) ;; *) bad "db-migrate did not finish (state=${mst:-none})";; esac
+
+log "U4 — backup + restore drill on BOTH the Acmp and keycloak databases (Express, no COMPRESSION)"
 # WINDOWS: backup.sh/restore.sh run IN-CONTAINER paths (/opt/mssql-tools18/bin/sqlcmd). Under MSYS those are
 # rewritten to C:/Program Files/Git/opt/... before docker sees them — the first drill run failed with
 # `sh: C:/Program: not found`, not because of anything in the scripts. Turn conversion off for these
@@ -288,14 +309,24 @@ if command -v cygpath >/dev/null 2>&1; then
 else
   CF_H="$CF"; EF_H="$ENV_FILE"
 fi
+# AC-080 requires the 3->0->3 check for BOTH databases, not just Keycloak's. One backup pass covering
+# both is also what production actually does (backup.sh takes ACMP_DB_NAMES), so drilling them together
+# exercises the real shape rather than a simplified one. The Acmp database is the one that matters most:
+# Keycloak can in principle be re-imported from the realm export, but the committee's topics, decisions,
+# votes and audit chain exist nowhere else.
+DRILL_DBS="Acmp keycloak"
 DRILL_ENV=(env MSYS_NO_PATHCONV=1 COMPOSE="docker compose -p $PROJECT -f $CF_H --env-file $EF_H"
-           ACMP_ENV_FILE="$ENV_FILE" ACMP_BACKUP_DIR="$SPIKE_BAK" ACMP_DB_NAMES="keycloak")
+           ACMP_ENV_FILE="$ENV_FILE" ACMP_BACKUP_DIR="$SPIKE_BAK" ACMP_DB_NAMES="$DRILL_DBS")
 
-sq "IF OBJECT_ID('keycloak.dbo.acmp_restore_probe') IS NOT NULL DROP TABLE keycloak.dbo.acmp_restore_probe;
-    CREATE TABLE keycloak.dbo.acmp_restore_probe(id int);
-    INSERT INTO keycloak.dbo.acmp_restore_probe(id) VALUES (1),(2),(3);" >/dev/null
-n0="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
-[ "${n0:-0}" = "3" ] && ok "probe seeded: 3 rows" || bad "probe seed failed (got ${n0:-none})"
+seeded_ok=1
+for db in $DRILL_DBS; do
+  sq "IF OBJECT_ID('$db.dbo.acmp_restore_probe') IS NOT NULL DROP TABLE $db.dbo.acmp_restore_probe;
+      CREATE TABLE $db.dbo.acmp_restore_probe(id int);
+      INSERT INTO $db.dbo.acmp_restore_probe(id) VALUES (1),(2),(3);" >/dev/null
+  n0="$(sq "SELECT COUNT(*) FROM $db.dbo.acmp_restore_probe;")"
+  [ "${n0:-0}" = "3" ] || { bad "probe seed failed in $db (got ${n0:-none})"; seeded_ok=0; }
+done
+[ "$seeded_ok" = "1" ] && ok "probe seeded: 3 rows in EACH of $DRILL_DBS"
 
 DRILL_LOG="${TMPDIR:-/tmp}/acmp-spike-drill.log"
 if "${DRILL_ENV[@]}" bash "$ROOT/deploy/scripts/backup.sh" >"$DRILL_LOG" 2>&1; then
@@ -304,14 +335,22 @@ else
   bad "backup.sh failed on Express — check the BACKUP statement"; sed -n '1,12p;$p' "$DRILL_LOG" | sed 's/^/      | /'
 fi
 
-sq "DELETE FROM keycloak.dbo.acmp_restore_probe;" >/dev/null
-n1="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
-[ "${n1:-x}" = "0" ] && ok "probe emptied: 0 rows (the state a restore must undo)" || bad "probe not emptied (got ${n1:-none})"
+emptied_ok=1
+for db in $DRILL_DBS; do
+  sq "DELETE FROM $db.dbo.acmp_restore_probe;" >/dev/null
+  n1="$(sq "SELECT COUNT(*) FROM $db.dbo.acmp_restore_probe;")"
+  [ "${n1:-x}" = "0" ] || { bad "probe not emptied in $db (got ${n1:-none})"; emptied_ok=0; }
+done
+[ "$emptied_ok" = "1" ] && ok "probe emptied: 0 rows in EACH db (the state a restore must undo)"
 
 if "${DRILL_ENV[@]}" bash "$ROOT/deploy/scripts/restore.sh" >"$DRILL_LOG" 2>&1; then
-  n2="$(sq "SELECT COUNT(*) FROM keycloak.dbo.acmp_restore_probe;")"
-  [ "${n2:-0}" = "3" ] && ok "restore.sh restored the database: 3 -> 0 -> 3" \
-                       || bad "restore.sh did not restore the rows (got ${n2:-none})"
+  # Assert per database. A single aggregate check could pass on one database while the other silently
+  # came back empty -- and the Acmp one is the database whose loss cannot be reconstructed from anywhere.
+  for db in $DRILL_DBS; do
+    n2="$(sq "SELECT COUNT(*) FROM $db.dbo.acmp_restore_probe;")"
+    [ "${n2:-0}" = "3" ] && ok "restore.sh restored $db: 3 -> 0 -> 3" \
+                         || bad "restore.sh did not restore $db (got ${n2:-none})"
+  done
 else
   bad "restore.sh failed"; sed -n '1,12p;$p' "$DRILL_LOG" | sed 's/^/      | /'
 fi
