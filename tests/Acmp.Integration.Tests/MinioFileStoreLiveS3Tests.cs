@@ -80,10 +80,12 @@ public sealed class MinioFileStoreLiveS3Tests
             var url = await store.GetPreSignedUrlAsync(bucket, key, TimeSpan.FromMinutes(5));
 
             // The ORIGIN is load-bearing, not cosmetic: nginx's CSP media-src must allow exactly this host or
-            // playback is blocked in the browser with nothing in the API logs (the P22 finding). Minio 6.0.3
-            // rewrites any Amazon host through AWSS3Endpoints, mapping us-east-1 to the legacy global host.
-            // MinioFileStoreCloudTests asserts this offline; here it is confirmed against the real service.
-            new Uri(url).GetLeftPart(UriPartial.Authority).Should().Be("https://s3.amazonaws.com",
+            // playback is blocked in the browser with nothing in the API logs (the P22 finding). This value
+            // CHANGED with the 6.0.3 -> 6.0.5 upgrade: 6.0.3 rewrote any Amazon host through AWSS3Endpoints,
+            // mapping us-east-1 to the legacy global "s3.amazonaws.com" regardless of what was configured;
+            // 6.0.5 honours the configured endpoint. ACMP_MEDIA_ORIGIN was updated to match. This is the LIVE
+            // confirmation of it — MinioFileStoreCloudTests only pins the same expectation offline.
+            new Uri(url).GetLeftPart(UriPartial.Authority).Should().Be("https://s3.us-east-1.amazonaws.com",
                 "ACMP_MEDIA_ORIGIN and the CSP must name the host the SDK actually signs for");
 
             using var http = new HttpClient();
@@ -115,25 +117,22 @@ public sealed class MinioFileStoreLiveS3Tests
         var store = Store();
         var key = $"acmp-live-probe/{Guid.NewGuid():N}.bin";
 
-        // REGRESSION TEST FOR DEF-021 -- CURRENTLY FAILS ON PURPOSE. Do not "fix" it by relaxing
-        // the assertion; it is red because the product is wrong, and it goes green when DEF-021 is.
+        // REGRESSION TEST FOR DEF-021. It went red on Minio 6.0.3 and green on 6.0.5; if it ever goes
+        // red again the store has resumed reporting success for writes S3 refused, which is silent
+        // DATA LOSS -- the API answers 201, the UI says success, the file is not there.
         //
-        // S3 genuinely refuses this write -- the AWS CLI answers, for this exact identity, bucket
-        // and action: "AccessDenied ... acmp-uat-app is not authorized to perform: s3:PutObject on
-        // arn:aws:s3:::acmp-prod-recordings/...", and an admin list-objects-v2 shows nothing was
-        // stored. Cross-environment isolation is INTACT (AC-083).
+        // On 6.0.3, measured against real S3: UploadAsync threw NOTHING and ExistsAsync then returned
+        // TRUE for an object that does not exist. The client swallowed permission errors on BOTH
+        // PutObject and StatObject, which also falsified the assumption written in
+        // MinioFileStore.EnsureBucketAsync -- that "PutObject immediately after is the real authority
+        // and its own failure surfaces to the caller". A post-write existence guard was tried and
+        // REVERTED, because it inherits the same blindness and a guard that cannot fail is worse than
+        // none. The actual fix was the SDK upgrade, found by trying the cheapest rung first.
         //
-        // What is broken is our adapter. Measured here against real S3: UploadAsync threw NOTHING,
-        // and ExistsAsync then returned TRUE for an object that does not exist. The Minio client as
-        // we configure it swallows permission errors on BOTH PutObject and StatObject, so a refused
-        // upload is reported to the caller as stored -- the API answers 201, the UI says success,
-        // and the file is not there. That also invalidates the assumption written in
-        // MinioFileStore.EnsureBucketAsync, that "PutObject immediately after is the real authority
-        // and its own failure surfaces to the caller". It does not.
-        //
-        // An existence check cannot be the fix: it inherits the same blindness (that was tried and
-        // reverted). The remedy is at the client layer -- the AWSSDK.S3 fallback that P22 deferred
-        // as "nothing observed requires it". Something now does.
+        // S3 itself was always correct: the AWS CLI answers, for this exact identity, bucket and
+        // action, "AccessDenied ... acmp-uat-app is not authorized to perform: s3:PutObject on
+        // arn:aws:s3:::acmp-prod-recordings/...", and an admin list-objects-v2 showed nothing stored.
+        // So this doubles as the data-plane proof that cross-environment isolation holds (AC-083).
         await FluentActions
             .Awaiting(() => store.UploadAsync(other, key, new MemoryStream([1, 2, 3]), "application/octet-stream"))
             .Should().ThrowAsync<Exception>("S3 refuses this write, so the store must not report success (DEF-021)");

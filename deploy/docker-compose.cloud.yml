@@ -306,9 +306,9 @@ services:
     environment:
       KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN}"     # CSP connect-src/frame-src (same origin here)
       # CSP media-src: recordings are presigned straight to S3, so playback is CROSS-origin here and
-      # default-src 'self' would block the <video>. See .env.cloud.example for why this is s3.amazonaws.com
+      # default-src 'self' would block the <video>. Must equal the origin the SDK signs for — see .env.cloud.example (changed by the 6.0.5 upgrade, DEF-021)
       # and not ACMP_S3_ENDPOINT.
-      ACMP_MEDIA_ORIGIN: "${ACMP_MEDIA_ORIGIN:-https://s3.amazonaws.com}"
+      ACMP_MEDIA_ORIGIN: "${ACMP_MEDIA_ORIGIN:-https://s3.us-east-1.amazonaws.com}"
     read_only: true
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]

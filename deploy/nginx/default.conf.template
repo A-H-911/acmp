@@ -34,9 +34,11 @@ server {
     # media-src: recording playback is a <video src> pointing at a presigned object URL. On-prem that URL is
     # same-origin (proxied to MinIO below) so 'self' covers it and ${ACMP_MEDIA_ORIGIN} is empty. In cloud the
     # URL is presigned straight to S3 (ADR-0035) and default-src 'self' would BLOCK it, so each environment
-    # supplies its object-store origin. That origin is NOT the configured endpoint: the Minio 6.0.3 SDK
-    # rewrites any Amazon host via AWSS3Endpoints (us-east-1 -> s3.amazonaws.com) and addresses the bucket
-    # path-style — pinned by MinioFileStoreCloudTests so this header cannot drift from what is signed.
+    # supplies its object-store origin, which must equal the host the SDK actually SIGNS for. Since the
+    # Minio 6.0.3 -> 6.0.5 upgrade (DEF-021) that IS the configured endpoint; 6.0.3 rewrote any Amazon host
+    # via AWSS3Endpoints (us-east-1 -> the legacy global s3.amazonaws.com), so the two used to disagree and
+    # ACMP_MEDIA_ORIGIN changed with the upgrade. Pinned by MinioFileStoreCloudTests offline and confirmed
+    # live by MinioFileStoreLiveS3Tests, so this header cannot drift from what is signed.
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; media-src 'self' ${ACMP_MEDIA_ORIGIN}; connect-src 'self' ${KEYCLOAK_ORIGIN}; frame-src ${KEYCLOAK_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
 
     # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
