@@ -120,12 +120,22 @@ fi
 log "bringing the full stack up"
 dc up -d >/dev/null 2>&1
 
-log "waiting for health"
+# Wait for the long-running services AND the one-shots. Waiting on health alone is a race: the
+# first run of this gate reported a false failure because keycloak-config had not exited yet when
+# its exit code was read -- it only starts once Keycloak is healthy, so "5 healthy" does not imply
+# "the realm import has finished". Asserting on a container that is still running reads as a
+# product failure when it is a timing bug in the harness.
+log "waiting for health + the one-shots to finish"
 for i in $(seq 1 30); do
   sleep 10
   healthy=$(docker ps --filter "label=com.docker.compose.project=$PROJECT" --filter "health=healthy" -q | wc -l)
-  printf '  [%3ds] healthy=%s\n' $((i*10)) "$healthy"
-  [ "$healthy" -ge 5 ] && break
+  done_oneshots=0
+  for s in db-migrate sqlserver-init keycloak-config; do
+    [ "$(docker inspect "$PROJECT-$s-1" --format '{{.State.Status}}' 2>/dev/null)" = "exited" ] \
+      && done_oneshots=$((done_oneshots+1))
+  done
+  printf '  [%3ds] healthy=%s one-shots-finished=%s/3\n' $((i*10)) "$healthy" "$done_oneshots"
+  { [ "$healthy" -ge 5 ] && [ "$done_oneshots" -eq 3 ]; } && break
 done
 
 log "asserting the stack actually works (functional, not self-reported)"
