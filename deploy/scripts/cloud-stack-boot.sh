@@ -117,6 +117,28 @@ if [ "$sha" != "--local" ]; then
                              || bad "pull failed — a referenced tag does not exist (DEF-019 class)"
 fi
 
+# --- TLS fixture (SL-025 / AC-081) --------------------------------------------------------------
+# The cloud compose now mounts a 443 server block, and nginx REFUSES TO START when ssl_certificate
+# points at a file that is not there — so without a certificate this gate would fail at `up`, not at
+# an assertion. A self-signed cert is exactly what the real first boot uses before certbot runs.
+#
+# HONEST LIMIT, stated rather than papered over: this fixture proves the LISTENER, the headers and
+# the routing. It does NOT prove cert READABILITY, which is the failure a real Let's Encrypt file
+# would hit — privkey.pem is 0600 root:root behind symlinks into ../../archive/, and reproducing
+# that needs a root-capable Linux host with ownership-preserving bind mounts. On Docker Desktop the
+# bind mount does not preserve Unix ownership at all, so a green result here says nothing about it.
+# certbot-deploy-hook.sh owns that problem and Stage 2 is where it gets tested.
+CERTS=deploy/nginx/certs
+if [ ! -s "$CERTS/fullchain.pem" ]; then
+  log "generating a self-signed TLS fixture (nginx will not start without one)"
+  mkdir -p "$CERTS"
+  openssl req -x509 -newkey rsa:2048 -nodes -days 30 \
+    -subj "/CN=ACMP-BOOTGATE-SELF-SIGNED" \
+    -keyout "$CERTS/privkey.pem" -out "$CERTS/fullchain.pem" >/dev/null 2>&1 \
+    || { echo "openssl could not generate the fixture — cannot test the 443 listener"; exit 1; }
+  chmod 0644 "$CERTS/privkey.pem" "$CERTS/fullchain.pem" 2>/dev/null || true
+fi
+
 log "bringing the full stack up"
 dc up -d >/dev/null 2>&1
 
@@ -162,6 +184,50 @@ oom=0; for svc in sqlserver keycloak api worker web seq; do
   [ "$(docker inspect "$PROJECT-$svc-1" --format '{{.State.OOMKilled}}' 2>/dev/null)" = "true" ] && { bad "$svc was OOM-killed"; oom=1; }
 done
 [ "$oom" = "0" ] && ok "no container OOM-killed inside the 3584 MiB budget"
+
+# --- the 443 listener (SL-025 / AC-081) ---------------------------------------------------------
+# -k throughout: the fixture is self-signed on purpose. What is under test here is that the listener
+# ANSWERS and that its server block carries the right posture — trust is only observable from
+# outside against a real certificate, which is AC-081's on-box verification in Stage 2.
+log "asserting the 443 listener (AC-081)"
+TLSH="$WORK/tls-headers.txt"
+if curl -sk -o /dev/null -D "$TLSH" "https://localhost:18443/" 2>/dev/null; then
+  ok "TLS handshake succeeds and the 443 listener serves the SPA"
+
+  # HSTS is the header AC-081 names, and it is only meaningful over https — the 8080 block sets it
+  # too but browsers ignore it there, so THIS is the one that counts.
+  grep -qi '^strict-transport-security: *max-age=31536000; *includeSubDomains' "$TLSH" \
+    && ok "HSTS present on the HTTPS response" \
+    || bad "HSTS missing or wrong on the HTTPS response"
+
+  # All six, individually. nginx's add_header does not merge across server blocks, so the 443 block
+  # having SOME headers is no evidence it has the rest — this is exactly the trap the template
+  # comments warn about, and checking one header would not catch it.
+  for h in x-content-type-options x-frame-options referrer-policy permissions-policy content-security-policy; do
+    grep -qi "^${h}:" "$TLSH" && ok "443 block sets ${h}" || bad "443 block is MISSING ${h}"
+  done
+
+  # /kc/admin and the master realm must not be reachable now that 443 is public.
+  for path in /kc/admin/ /kc/realms/master/.well-known/openid-configuration; do
+    c=$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost:18443${path}" 2>/dev/null)
+    [ "$c" = "404" ] && ok "denied over TLS: ${path} ($c)" || bad "${path} returned $c over TLS — expected 404"
+  done
+
+  # The SPA's own realm must still work, or the deny rule has taken too much with it.
+  c=$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost:18443/kc/realms/acmp/.well-known/openid-configuration" 2>/dev/null)
+  [ "$c" = "200" ] && ok "the acmp realm is still reachable over TLS ($c)" || bad "acmp realm returned $c over TLS"
+
+  # /api/ must reach the API through the TLS block, not just serve the SPA fallback. Any
+  # API-originated status proves the proxy path; 502/504 means nginx could not reach the backend.
+  c=$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost:18443/api/topics" 2>/dev/null)
+  case "$c" in
+    502|503|504) bad "/api/ over TLS returned $c — nginx did not reach the api" ;;
+    "")          bad "/api/ over TLS returned nothing" ;;
+    *)           ok  "/api/ proxies to the api over TLS (HTTP $c)" ;;
+  esac
+else
+  bad "no TLS listener on 18443 — the 443 server block did not load"
+fi
 
 printf '\n\033[1m[boot] RESULT: %s passed, %s failed\033[0m\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1
