@@ -55,13 +55,32 @@ JSON
     aws iam attach-role-policy --role-name "$ROLE" \
       --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore >/dev/null   # SSM, no SSH
   fi
+  # ROUTE 53 SCOPE (P25/AC-081): the write grant now covers "_acme-challenge.<host>" and TXT as well
+  # as <host>/A. certbot's DNS-01 challenge writes a TXT record at _acme-challenge.<host>, so the
+  # original condition — <host> only, A only — failed BOTH clauses and denied issuance and renewal
+  # on the box. Verified before the change with `aws iam simulate-principal-policy`: implicitDeny.
+  # SL-025 requires an unattended `Persistent=true` renewal timer, i.e. renewal ON the box, i.e.
+  # exactly the denied path, so this is a required widening rather than a convenience. It stays
+  # narrow: one hosted zone, one host plus that host's challenge record, two record types.
+  #
+  # SSM/KMS: 08-bootstrap-box.sh reads the environment from a SecureString at /acmp/<env>/env.
+  # ssm:GetParameter is ALREADY allowed via AmazonSSMManagedInstanceCore (simulated: allowed) — the
+  # explicit statement here scopes it to this environment's own prefix rather than relying on a
+  # managed policy's broader grant, so uat cannot read prod's configuration. kms:Decrypt is added
+  # DEFENSIVELY and is UNVERIFIED: simulation reports implicitDeny, but it evaluates identity
+  # policies only, and the AWS-managed alias/aws/ssm key policy grants Decrypt to account principals
+  # via kms:ViaService — which simulation cannot see. The first real --with-decryption read on the
+  # box is the discriminating test. The ViaService condition means this key use is confined to SSM.
   aws iam put-role-policy --role-name "$ROLE" --policy-name acmp-runtime --policy-document "$(cat <<JSON
 { "Version":"2012-10-17","Statement":[
   {"Sid":"EcrAuth","Effect":"Allow","Action":"ecr:GetAuthorizationToken","Resource":"*"},
   {"Sid":"EcrPull","Effect":"Allow","Action":["ecr:BatchGetImage","ecr:GetDownloadUrlForLayer","ecr:BatchCheckLayerAvailability"],"Resource":"${ECR_PREFIX}/*"},
   {"Sid":"Route53Read","Effect":"Allow","Action":["route53:ListHostedZones","route53:GetChange"],"Resource":"*"},
   {"Sid":"Route53WriteThisHostOnly","Effect":"Allow","Action":"route53:ChangeResourceRecordSets","Resource":"arn:aws:route53:::hostedzone/${HOSTED_ZONE_ID}",
-   "Condition":{"ForAllValues:StringEquals":{"route53:ChangeResourceRecordSetsNormalizedRecordNames":["${host}"],"route53:ChangeResourceRecordSetsRecordTypes":["A"]}}},
+   "Condition":{"ForAllValues:StringEquals":{"route53:ChangeResourceRecordSetsNormalizedRecordNames":["${host}","_acme-challenge.${host}"],"route53:ChangeResourceRecordSetsRecordTypes":["A","TXT"]}}},
+  {"Sid":"SsmReadThisEnvsConfig","Effect":"Allow","Action":["ssm:GetParameter","ssm:GetParameters"],"Resource":"arn:aws:ssm:${REGION}:${ACCOUNT_ID}:parameter/${PROJECT}/${env}/*"},
+  {"Sid":"KmsDecryptSsmSecureStrings","Effect":"Allow","Action":"kms:Decrypt","Resource":"*",
+   "Condition":{"StringEquals":{"kms:ViaService":"ssm.${REGION}.amazonaws.com"}}},
   {"Sid":"S3Buckets","Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject","s3:AbortMultipartUpload","s3:ListBucket","s3:GetBucketLocation"],
    "Resource":["arn:aws:s3:::${rec}","arn:aws:s3:::${rec}/*","arn:aws:s3:::${bak}","arn:aws:s3:::${bak}/*"]} ] }
 JSON
