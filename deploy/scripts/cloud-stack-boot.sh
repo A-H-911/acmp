@@ -122,21 +122,35 @@ fi
 # points at a file that is not there — so without a certificate this gate would fail at `up`, not at
 # an assertion. A self-signed cert is exactly what the real first boot uses before certbot runs.
 #
-# HONEST LIMIT, stated rather than papered over: this fixture proves the LISTENER, the headers and
-# the routing. It does NOT prove cert READABILITY, which is the failure a real Let's Encrypt file
-# would hit — privkey.pem is 0600 root:root behind symlinks into ../../archive/, and reproducing
-# that needs a root-capable Linux host with ownership-preserving bind mounts. On Docker Desktop the
-# bind mount does not preserve Unix ownership at all, so a green result here says nothing about it.
-# certbot-deploy-hook.sh owns that problem and Stage 2 is where it gets tested.
+# WHAT THIS DOES AND DOES NOT COVER. It proves the listener, the headers and the routing — and,
+# empirically, cert READABILITY too. That last one was written off as untestable here on the
+# assumption that Docker Desktop does not preserve Unix modes across a bind mount. It does: the
+# first run of this gate failed with `cannot load certificate key: Permission denied`, because
+# openssl writes privkey.pem 0600 and nginx runs as UID 101 — the SAME failure a real Let's Encrypt
+# key produces. The assumption was wrong and the gate is stronger than claimed.
+#
+# Still NOT covered, and left to Stage 2: symlink dereference (Let's Encrypt's live/ -> archive/
+# indirection), which certbot-deploy-hook.sh handles, and certificate TRUST, which is only
+# observable from outside against a real CA-issued chain.
 CERTS=deploy/nginx/certs
 if [ ! -s "$CERTS/fullchain.pem" ]; then
   log "generating a self-signed TLS fixture (nginx will not start without one)"
   mkdir -p "$CERTS"
-  openssl req -x509 -newkey rsa:2048 -nodes -days 30 \
-    -subj "/CN=ACMP-BOOTGATE-SELF-SIGNED" \
-    -keyout "$CERTS/privkey.pem" -out "$CERTS/fullchain.pem" >/dev/null 2>&1 \
-    || { echo "openssl could not generate the fixture — cannot test the 443 listener"; exit 1; }
-  chmod 0644 "$CERTS/privkey.pem" "$CERTS/fullchain.pem" 2>/dev/null || true
+  # Generated INSIDE a container, not with the host's openssl. This gate already requires Docker, so
+  # that is no new dependency — and the host binary is not dependable: on this workstation `openssl`
+  # resolves to a PostgreSQL-bundled build whose OPENSSL_CONF points at a file that does not exist,
+  # so it cannot generate anything. A gate that only runs where the host toolchain happens to be
+  # healthy is not a gate. MSYS_NO_PATHCONV stops Git Bash rewriting the -subj argument into a path.
+  # The chmod MUST happen inside the container, in the same run. openssl creates privkey.pem mode
+  # 0600, and a `chmod` from Git Bash on an NTFS file under a Docker-shared mount does not propagate
+  # to what the container sees — so the host-side chmod silently did nothing and nginx failed with
+  # `cannot load certificate key: Permission denied`. That is not a Windows quirk to work around;
+  # it is the REAL failure mode a Let's Encrypt key hits (0600 root:root vs a container on UID 101),
+  # which means this fixture exercises cert readability rather than skipping it.
+  MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/$CERTS:/c" --entrypoint sh alpine/openssl -c \
+    'openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj "/CN=ACMP-BOOTGATE-SELF-SIGNED" \
+       -keyout /c/privkey.pem -out /c/fullchain.pem >/dev/null 2>&1 && chmod 0644 /c/privkey.pem /c/fullchain.pem' \
+    || { echo "could not generate the TLS fixture — cannot test the 443 listener"; exit 1; }
 fi
 
 log "bringing the full stack up"
