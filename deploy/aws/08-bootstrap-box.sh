@@ -111,6 +111,29 @@ else
   aws ecr get-login-password --region "__REGION__" | docker login --username AWS --password-stdin "__REGISTRY__"
 fi
 
+# --- TLS placeholder so first boot cannot deadlock ----------------------------------------------
+# The cloud stack mounts a 443 server block, and nginx REFUSES TO START if ssl_certificate points at
+# a file that is not there. certbot cannot run before the box is up, and the box cannot come up
+# without a certificate — so the first boot would deadlock on itself. A self-signed placeholder
+# breaks the cycle; certbot-deploy-hook.sh replaces it with the real chain and reloads nginx.
+#
+# The CN is deliberately alarming. A placeholder that looked like a normal certificate could sit
+# there for months: nginx serves it, the healthcheck passes, the stack reports healthy, and every
+# browser refuses the connection. Anyone running `openssl s_client` sees what this is immediately.
+install -d -m 0755 deploy/nginx/certs
+if [ ! -s deploy/nginx/certs/fullchain.pem ]; then
+  echo "no certificate yet — generating a self-signed PLACEHOLDER so nginx can start"
+  openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+    -subj "/CN=ACMP-PLACEHOLDER-DO-NOT-TRUST" \
+    -keyout deploy/nginx/certs/privkey.pem \
+    -out    deploy/nginx/certs/fullchain.pem >/dev/null 2>&1
+  # UID 101 is the nginx user inside the container; the bind mount preserves host ownership, so a
+  # root-owned 0600 key would be unreadable to nginx exactly as a real Let's Encrypt key would be.
+  chown 101:101 deploy/nginx/certs/privkey.pem deploy/nginx/certs/fullchain.pem
+  chmod 0640 deploy/nginx/certs/privkey.pem
+  chmod 0644 deploy/nginx/certs/fullchain.pem
+fi
+
 CF="-f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud"
 docker compose $CF pull
 docker compose $CF up -d
