@@ -35,11 +35,15 @@ host="$(host_for "$env_name")"
 name="${PROJECT}-${env_name}"
 profile="${PROJECT}-${env_name}-instance"
 
+# 01-network.sh creates the group as "<project>-<env>-web"; this lookup used to ask for
+# "<project>-<env>" and so died with "run 01-network.sh first" even when 01 HAD been run — a
+# misleading message pointing at the wrong script. The name here is the one 01 actually creates.
+sg_name="${PROJECT}-${env_name}-web"
 sg_id="${ACMP_SG_ID:-}"
 [ -n "$sg_id" ] || sg_id="$(aws ec2 describe-security-groups --region "$REGION" \
-  --filters "Name=group-name,Values=${PROJECT}-${env_name}" \
+  --filters "Name=group-name,Values=${sg_name}" \
   --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null)"
-[ -n "$sg_id" ] && [ "$sg_id" != "None" ] || die "no security group '${PROJECT}-${env_name}' — run 01-network.sh first"
+[ -n "$sg_id" ] && [ "$sg_id" != "None" ] || die "no security group '${sg_name}' — run 01-network.sh first (or set ACMP_SG_ID)"
 
 # --- idempotence: never launch a second instance for an environment ------------------------
 existing="$(aws ec2 describe-instances --region "$REGION" \
@@ -57,10 +61,19 @@ else
       --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
       --query 'Parameter.Value' --output text)"
   log "launching $name ($type, $ami, sg $sg_id, profile $profile)"
+  # CpuCredits=standard is a SPEND control, not a tuning knob (ADR-0034, ratified). T3 defaults to
+  # `unlimited`, which bills surplus CPU credits with NO ceiling — the one line item on this account
+  # that can exceed the $60 budget without anyone launching anything else. `standard` throttles
+  # instead of billing when the credit balance runs out, which is the correct failure mode here.
+  #
+  # 50 GB (not 30): docker-compose.cloud.yml already sizes Seq retention against "the 50 GB root
+  # volume (RISK-015)", and SQL Server + four images + local .bak files do not fit 30 GB. gp3
+  # baseline IOPS/throughput are size-independent, so this buys capacity only, at +$1.60/mo.
   instance_id="$(aws ec2 run-instances --region "$REGION" \
     --image-id "$ami" --instance-type "$type" --security-group-ids "$sg_id" \
     --iam-instance-profile "Name=$profile" \
-    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3,DeleteOnTermination=true,Encrypted=true}' \
+    --credit-specification 'CpuCredits=standard' \
+    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=50,VolumeType=gp3,DeleteOnTermination=true,Encrypted=true}' \
     --metadata-options 'HttpTokens=required,HttpEndpoint=enabled' \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name},{Key=Project,Value=ACMP},{Key=Environment,Value=$env_name}]" \
     --query 'Instances[0].InstanceId' --output text)"
@@ -68,9 +81,39 @@ else
   aws ec2 wait instance-running --region "$REGION" --instance-ids "$instance_id"
 fi
 
+# --- Elastic IP: the box must come back at the SAME address after a stop/start (AC-082) ----------
+# A stopped instance releases its auto-assigned public IPv4 and gets a different one on start, so
+# without this every start would need a Route 53 update before $host resolved again — new code on
+# the critical path of the very AC it exists to satisfy, plus a TTL wait inside the 10-minute budget.
+#
+# COST: AWS charges $0.005/hr for EVERY public IPv4 since 2024-02-01, auto-assigned or Elastic, and
+# associating an Elastic IP RELEASES the auto-assigned one — so while the instance runs this costs
+# nothing extra. The only delta is while the box is STOPPED, where an EIP keeps billing (~$3.65/mo).
+# That is the price of AC-082, and stopping UAT is itself the main cost lever, so it is worth it.
+#
+# Allocated HERE, at launch, per environment — never up front for both. An allocated-but-unassociated
+# EIP bills the same rate for an address doing nothing at all.
+eip_name="${PROJECT}-${env_name}"
+alloc_id="$(aws ec2 describe-addresses --region "$REGION" \
+  --filters "Name=tag:Name,Values=$eip_name" \
+  --query 'Addresses[0].AllocationId' --output text 2>/dev/null || echo None)"
+if [ -z "$alloc_id" ] || [ "$alloc_id" = "None" ]; then
+  log "allocating an Elastic IP for $env_name"
+  alloc_id="$(aws ec2 allocate-address --region "$REGION" --domain vpc \
+    --tag-specifications "ResourceType=elastic-ip,Tags=[{Key=Name,Value=$eip_name},{Key=Project,Value=ACMP},{Key=Environment,Value=$env_name}]" \
+    --query 'AllocationId' --output text)"
+else
+  log "reusing existing Elastic IP allocation $alloc_id for $env_name"
+fi
+# Idempotent: re-associating the same address with the same instance is a no-op re-bind, so a
+# re-run after an instance replacement re-points the address automatically.
+aws ec2 associate-address --region "$REGION" \
+  --instance-id "$instance_id" --allocation-id "$alloc_id" >/dev/null
+log "associated Elastic IP allocation $alloc_id with $instance_id"
+
 public_ip="$(aws ec2 describe-instances --region "$REGION" --instance-ids "$instance_id" \
   --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)"
-log "instance $instance_id  ip $public_ip  host $host"
+log "instance $instance_id  ip $public_ip (elastic)  host $host"
 
 # --- arm the EC2 half of the spend brake, pinned to every ACMP instance that exists ---------
 # Collected across BOTH environments so launching prod does not silently drop uat from the action.
@@ -103,11 +146,21 @@ log "spend brake armed against the live instance ids (OQ-064)"
 
 cat <<NEXT
 
-  NEXT (still manual, deliberately):
-    1. point DNS at it:   bash deploy/aws/05-route53.sh $env_name $public_ip
-    2. get the stack onto the box (P24 part 2), then:
-         deploy/scripts/promote-image.sh $env_name <commit-sha> /path/to/.env
-    3. issue TLS (AC-081):  certbot --dns-route53 -d $host
-    4. re-run THIS script after ANY instance replacement so the brake follows the new id.
-       A stale InstanceId does not error — it silently protects nothing.
+  NEXT (see deploy/runbooks/cloud-provisioning.md for the full path):
+    1. point DNS at it ONCE — the address is Elastic, so a stop/start no longer changes it
+       and this never needs re-running for this instance:
+         bash deploy/aws/05-route53.sh $env_name $public_ip
+    2. publish the environment to SSM (if not already done):
+         bash deploy/aws/09-put-env.sh $env_name /path/to/.env.cloud
+    3. bootstrap the box:
+         bash deploy/aws/08-bootstrap-box.sh $env_name <commit-sha>
+    4. issue TLS (AC-081), on the box, as root:
+         certbot certonly --dns-route53 -d $host \\
+           --deploy-hook /opt/acmp/deploy/scripts/certbot-deploy-hook.sh
+    5. re-run THIS script after ANY instance replacement so the brake follows the new id AND the
+       Elastic IP re-associates. A stale InstanceId does not error — it silently protects nothing.
+
+  COST: this instance bills ~\$30/mo running (t3.medium) + ~\$4 EBS + ~\$3.65 public IPv4.
+  Stop it when idle — stopped it costs only EBS + the Elastic IP (~\$7.65/mo). Do NOT leave two
+  environments running: 2 x t3.medium alone is ~\$76/mo against a \$60 budget.
 NEXT

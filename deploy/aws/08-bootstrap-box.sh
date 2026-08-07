@@ -41,11 +41,12 @@ instance_id="$(aws ec2 describe-instances --region "$REGION" \
 [ -n "$instance_id" ] && [ "$instance_id" != "None" ] || die "no RUNNING instance tagged $name — run 07-launch.sh first"
 log "target $instance_id ($env_name), pinning commit $sha"
 
-# The parameter path the box reads its environment from. Populate it once, out of band:
-#   aws ssm put-parameter --type SecureString --name /acmp/uat/env --value "$(cat my.env)"
+# The parameter path the box reads its environment from. Published by 09-put-env.sh, which strips
+# comments to fit the 4 KB Standard-tier limit (a raw .env.cloud is 5,483 B and does NOT fit) and
+# enforces the AC-083 Webex rule for uat.
 param="/acmp/${env_name}/env"
 aws ssm get-parameter --region "$REGION" --name "$param" --with-decryption >/dev/null 2>&1 \
-  || die "SSM parameter $param not found — create it (SecureString) with this environment's .env content first"
+  || die "SSM parameter $param not found — publish it first:  bash deploy/aws/09-put-env.sh $env_name <path-to-env-file>"
 
 # Heredoc is quoted so NOTHING here expands locally; the only interpolated values are the three
 # injected explicitly below. An unquoted heredoc would expand this host's variables into the
@@ -56,11 +57,27 @@ exec 2>&1
 command -v docker >/dev/null || { dnf install -y docker; systemctl enable --now docker; }
 docker compose version >/dev/null 2>&1 || {
   mkdir -p /usr/local/lib/docker/cli-plugins
-  curl -fsSL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+  # PINNED, not "latest". A bootstrap that silently picks up whatever compose released this morning
+  # is not reproducible: two boxes built from the same commit could run different compose versions,
+  # and "it worked last week" stops being evidence of anything. Bump this deliberately.
+  curl -fsSL https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-x86_64 \
     -o /usr/local/lib/docker/cli-plugins/docker-compose
   chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 }
 command -v git >/dev/null || dnf install -y git
+
+# 4 GiB swapfile (RISK-013). docker-compose.cloud.yml ALREADY states "The P25 bootstrap adds a 4 GiB
+# swapfile as the spike absorber" and budgets 3584 MiB of container limits against 4 GiB of RAM,
+# leaving ~512 MiB for the host. It did not exist. Without it a memory spike is resolved by the OOM
+# killer choosing a container rather than by swapping, and AC-084's headroom argument is fiction.
+# The fstab line matters as much as the swapon: AC-082 stop/start must come back with swap present.
+if ! swapon --show=NAME --noheadings 2>/dev/null | grep -q '^/swapfile$'; then
+  fallocate -l 4G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=4096 status=none
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+  swapon /swapfile
+  grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
 
 install -d -m 0755 /opt/acmp
 if [ -d /opt/acmp/.git ]; then git -C /opt/acmp fetch --all --tags --quiet; else git clone --quiet "__REPO__" /opt/acmp; fi
@@ -70,16 +87,102 @@ cd /opt/acmp
 # The .bak path DEF-017 requires: SQL Server writes the backup itself as uid 10001, and Docker
 # would otherwise create this mount root-owned 0755 and every BACKUP DATABASE would fail at 02:00
 # in a cron log while the deployment looks backed up.
-install -d -o 10001 -g 10001 -m 0755 /opt/acmp-backups
+#
+# THE PATH MATTERS. This used to create /opt/acmp-backups while the compose mount is
+# ${ACMP_BACKUP_DIR:-/opt/acmp/backups} — so Docker would have auto-created the REAL path
+# root-owned 0755 and reproduced DEF-017 exactly, in the very lines written to prevent it. The
+# directory this creates must be the directory the compose file mounts.
+install -d -o 10001 -g 10001 -m 0755 /opt/acmp/backups
 
 umask 077
 aws ssm get-parameter --name "__PARAM__" --with-decryption --query Parameter.Value --output text > deploy/.env.cloud
 ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud sh deploy/scripts/gen-secrets.sh
 
-aws ecr get-login-password --region "__REGION__" | docker login --username AWS --password-stdin "__REGISTRY__"
-docker compose -f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud pull
-docker compose -f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud up -d
-docker compose -f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud ps
+# ECR auth that does not expire mid-life. `get-login-password | docker login` mints a 12-HOUR token;
+# with restart: unless-stopped on every service, the first reboot or re-pull past that window fails
+# to authenticate with nothing having changed. The credential helper re-signs from the instance
+# profile on each pull instead. Scoped with credHelpers (not credsStore) so only this registry is
+# affected. Falls back loudly rather than silently if the package is unavailable.
+if command -v docker-credential-ecr-login >/dev/null 2>&1 || dnf install -y amazon-ecr-credential-helper; then
+  install -d -m 0700 /root/.docker
+  printf '{"credHelpers":{"__REGISTRY__":"ecr-login"}}\n' > /root/.docker/config.json
+else
+  echo "WARN: amazon-ecr-credential-helper unavailable — falling back to a 12h docker login token"
+  aws ecr get-login-password --region "__REGION__" | docker login --username AWS --password-stdin "__REGISTRY__"
+fi
+
+# --- TLS placeholder so first boot cannot deadlock ----------------------------------------------
+# The cloud stack mounts a 443 server block, and nginx REFUSES TO START if ssl_certificate points at
+# a file that is not there. certbot cannot run before the box is up, and the box cannot come up
+# without a certificate — so the first boot would deadlock on itself. A self-signed placeholder
+# breaks the cycle; certbot-deploy-hook.sh replaces it with the real chain and reloads nginx.
+#
+# The CN is deliberately alarming. A placeholder that looked like a normal certificate could sit
+# there for months: nginx serves it, the healthcheck passes, the stack reports healthy, and every
+# browser refuses the connection. Anyone running `openssl s_client` sees what this is immediately.
+install -d -m 0755 deploy/nginx/certs
+if [ ! -s deploy/nginx/certs/fullchain.pem ]; then
+  echo "no certificate yet — generating a self-signed PLACEHOLDER so nginx can start"
+  openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+    -subj "/CN=ACMP-PLACEHOLDER-DO-NOT-TRUST" \
+    -keyout deploy/nginx/certs/privkey.pem \
+    -out    deploy/nginx/certs/fullchain.pem >/dev/null 2>&1
+  # UID 101 is the nginx user inside the container; the bind mount preserves host ownership, so a
+  # root-owned 0600 key would be unreadable to nginx exactly as a real Let's Encrypt key would be.
+  chown 101:101 deploy/nginx/certs/privkey.pem deploy/nginx/certs/fullchain.pem
+  chmod 0640 deploy/nginx/certs/privkey.pem
+  chmod 0644 deploy/nginx/certs/fullchain.pem
+fi
+
+CF="-f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud"
+docker compose $CF pull
+docker compose $CF up -d
+
+# --- ASSERT the stack is actually up ------------------------------------------------------------
+# This used to run `docker compose ps` and let SSM's exit status decide. A stack where every
+# container was unhealthy still reported "bootstrap Success": printing state is not checking it.
+# Same silent-success family as DEF-017 (backups never written), DEF-018 (search returns nothing)
+# and DEF-020 (Seq crash-looping behind condition: service_started).
+# 15 minutes TOTAL across every service. This is a COLD box doing first-ever schema migration and
+# realm import, so it is deliberately more generous than AC-082's 10-minute stop/start budget —
+# that budget is a different measurement, taken later by an external probe against a warm box.
+DEADLINE=$(( $(date +%s) + 900 ))
+fail=0
+
+wait_healthy() {  # a service with a healthcheck must reach `healthy`; one without must be `running`
+  while [ "$(date +%s)" -lt "$DEADLINE" ]; do
+    cid="$(docker compose $CF ps -q "$1" 2>/dev/null || true)"
+    if [ -n "$cid" ]; then
+      st="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$cid" 2>/dev/null || echo unknown)"
+      case "$st" in healthy|running) echo "  OK    $1 ($st)"; return 0 ;; esac
+    fi
+    sleep 5
+  done
+  echo "  FAIL  $1 never became healthy (last: ${st:-absent})"; fail=1; return 1
+}
+
+wait_oneshot() {  # must have EXITED, and exited 0 — reading the code while it still runs is the
+  while [ "$(date +%s)" -lt "$DEADLINE" ]; do   # bug PE-154 recorded in the local boot gate
+    cid="$(docker compose $CF ps -aq "$1" 2>/dev/null || true)"
+    if [ -n "$cid" ]; then
+      st="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$cid" 2>/dev/null || echo unknown:x)"
+      case "$st" in
+        exited:0)  echo "  OK    $1 (exited 0)"; return 0 ;;
+        exited:*)  echo "  FAIL  $1 ($st)"; fail=1; return 1 ;;
+      esac
+    fi
+    sleep 5
+  done
+  echo "  FAIL  $1 never finished (last: ${st:-absent})"; fail=1; return 1
+}
+
+echo "--- asserting stack health (up to 10 min) ---"
+for s in sqlserver-init db-migrate keycloak-config; do wait_oneshot "$s" || true; done
+for s in sqlserver keycloak seq api worker web;     do wait_healthy "$s" || true; done
+
+docker compose $CF ps
+[ "$fail" -eq 0 ] || { echo "BOOTSTRAP FAILED — see the failures above"; exit 1; }
+echo "--- all services healthy and all one-shots exited 0 ---"
 REMOTE
 )"
 remote="${remote//__REPO__/$repo_url}"
@@ -91,7 +194,7 @@ remote="${remote//__REGISTRY__/${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com}"
 log "sending bootstrap via SSM (this takes several minutes on a cold box)"
 cmd_id="$(aws ssm send-command --region "$REGION" --instance-ids "$instance_id" \
   --document-name AWS-RunShellScript --comment "acmp bootstrap $env_name $sha" \
-  --parameters "commands=[$(printf '%s' "$remote" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')]" \
+  --parameters "commands=[$(printf '%s' "$remote" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')]" \
   --query 'Command.CommandId' --output text)"
 log "command $cmd_id — waiting"
 aws ssm wait command-executed --region "$REGION" --command-id "$cmd_id" --instance-id "$instance_id" 2>/dev/null || true
