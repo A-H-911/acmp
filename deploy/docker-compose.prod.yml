@@ -18,6 +18,15 @@ services:
 
   sqlserver:
     ports: !override []            # internal only; the app reaches it over the compose network
+    environment:
+      # DEF-014, second half. The base docker-compose.yml sets MSSQL_PID=Developer, which is correct
+      # for dev but is licensed by Microsoft for development/test ONLY — and this overlay is what makes
+      # that same file production. The cloud compose was switched to Express in P21; this path was not,
+      # so an on-prem production run still inherited Developer and stayed in violation. Express is the
+      # free production licence and its limits are satisfied here for the same reasons as in cloud:
+      # objects live in MinIO rather than the database (the 10 GB/DB cap is ample for governance rows),
+      # scheduling is Hangfire rather than SQL Agent, and Full-Text Search is edition-independent.
+      MSSQL_PID: Express
     volumes:
       # Nightly BACKUP DATABASE target (P18b). Bind-mounted to a host dir so deploy/scripts/backup.sh can copy the
       # .bak off-box (a named volume is not reachable by host scp/rsync). Kept OUT of the read-only exception set.
