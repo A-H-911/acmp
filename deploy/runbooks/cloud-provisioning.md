@@ -119,6 +119,19 @@ clones the repo at the pinned commit into `/opt/acmp`, creates `/opt/acmp/backup
 writes a **self-signed TLS placeholder** so nginx can start before certbot has ever run, pulls, and
 brings the stack up — then **asserts** every service reached `healthy` and every one-shot exited 0.
 
+**It refuses on image-tag drift.** The box checks out the sha you pass, but runs whatever
+`ACMP_IMAGE_TAG` / `ACMP_WEB_TAG` the SSM parameter pins — frozen at whatever was current when the
+environment was last published. The first rebuild ran `749071e` images against a `2ec8c14` checkout
+and nothing noticed. If the guard fires, re-publish the environment with this commit's tags (CI writes
+the **full 40-char sha**, and `web` carries the `-uat` / `-prod` suffix — DEF-019) and re-run:
+
+```bash
+# edit ACMP_IMAGE_TAG=<full-sha> and ACMP_WEB_TAG=<full-sha>-uat, then
+bash deploy/aws/09-put-env.sh uat <path-to-env-file>
+```
+
+A deliberate rollback to older images is `ACMP_ALLOW_TAG_DRIFT=1`.
+
 > ⚠ **The first run of this script is a test OF THE SCRIPT.** It had never executed before P25.
 > Expect it to be wrong somewhere and fix it there. DEF-019 and DEF-020 were both in deploy code
 > that was carefully written, reviewed, and never run.
@@ -176,11 +189,16 @@ created with a temporary password and `UPDATE_PASSWORD` pending.
 crontab -e     # base it on deploy/scripts/crontab.example, adjusting the checkout path
 ```
 
-> ⚠ **Set `ACMP_ENV_FILE` in the crontab.** `backup.sh` defaults to `deploy/.env`, which the cloud
-> bootstrap never creates (it writes `deploy/.env.cloud`), and it swallows the miss — so
-> `ACMP_BACKUP_BUCKET` ends up unset and the off-instance S3 copy is **silently skipped**, leaving
-> backups sharing fate with the box they back up (NFR-058). Tracked as **DEF-022**. Until that is
-> fixed, every cron line must carry `ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud`.
+`crontab.example` now sets `ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud` at the top — **keep that line.**
+It used to be absent, so `backup.sh` fell back to `deploy/.env` (a file the cloud bootstrap never
+writes), swallowed the miss, left `ACMP_BACKUP_BUCKET` unset and **silently skipped the off-instance
+S3 copy** while still reporting success — backups sharing fate with the box they back up, which is
+what NFR-058 exists to prevent. That was **DEF-022**. `backup.sh` now refuses to run instead of
+falling through to defaults, and names the skip in the log when there is genuinely no bucket, so the
+failure can no longer be silent from either end.
+
+**Verify the copy rather than assuming it** — run `deploy/scripts/backup.sh` once by hand and confirm
+objects appear under `s3://<backup-bucket>/sql/`. A cron line that has never been run is not evidence.
 
 One-time prerequisite from [cloud-backup-dr.md](cloud-backup-dr.md): confirm `/opt/acmp/backups`
 exists and is owned by uid 10001 — the bootstrap creates it, but verify before trusting a backup.

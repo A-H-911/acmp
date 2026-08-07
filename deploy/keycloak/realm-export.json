@@ -59,7 +59,7 @@
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:8088/*##http://localhost:5173/*##https://acmp.ngrok.dev/*##https://acmp.ngrok.app/*"
+        "post.logout.redirect.uris": "+"
       },
       "defaultClientScopes": ["basic", "profile", "email", "roles"],
       "protocolMappers": [

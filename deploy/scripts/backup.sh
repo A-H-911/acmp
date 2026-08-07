@@ -27,7 +27,24 @@ cd "$ROOT"
 # ACMP_ENV_FILE lets a drill point at its own env instead of the operator's (gen-secrets.sh convention),
 # so a restore rehearsal can never inherit production values by accident.
 ENV_FILE="${ACMP_ENV_FILE:-deploy/.env}"
-[ -f "$ENV_FILE" ] && set -a && . "$ENV_FILE" && set +a || true
+# DEF-022: this line used to end in `|| true`, and that swallow is what made a cloud backup lie. cron
+# sets no ACMP_ENV_FILE, so ENV_FILE defaulted to deploy/.env — a file the cloud bootstrap never
+# writes (it writes deploy/.env.cloud). The miss was swallowed, ACMP_BACKUP_BUCKET stayed unset, the
+# guard below went false and the off-instance copy was skipped ENTIRELY. The .bak files were still
+# written locally, so the run "succeeded" and the cron log was clean — while the backups never left
+# the box they were backing up, which is the one thing NFR-058 exists to prevent.
+#
+# So: refuse rather than fall through to defaults. The escape hatch is narrow and explicit — a caller
+# that has genuinely configured everything in the environment already has ACMP_BACKUP_BUCKET set, and
+# that is the only case where a missing file is not a misconfiguration.
+if [ -f "$ENV_FILE" ]; then
+  set -a; . "$ENV_FILE"; set +a
+elif [ -z "${ACMP_BACKUP_BUCKET:-}" ]; then
+  echo "backup: env file '$ENV_FILE' not found and ACMP_BACKUP_BUCKET is not set — refusing to run a" >&2
+  echo "        backup that would silently skip the off-instance copy (NFR-058, DEF-022). Set" >&2
+  echo "        ACMP_ENV_FILE to the environment file for this box (cloud: /opt/acmp/deploy/.env.cloud)." >&2
+  exit 1
+fi
 
 COMPOSE="${COMPOSE:-docker compose -f deploy/docker-compose.cloud.yml}"
 BACKUP_DIR="${ACMP_BACKUP_DIR:-/opt/acmp/backups}"
@@ -82,6 +99,10 @@ if [ -n "${ACMP_BACKUP_BUCKET:-}" ]; then
     echo "backup: ACMP_BACKUP_BUCKET is set but the aws CLI is missing — refusing to report success" >&2
     exit 1
   fi
+else
+  # SAY SO. The skip itself is legitimate (local-only drills), but DEF-022 was invisible precisely
+  # because it looked identical to a normal run in the log. A named skip cannot be mistaken for a copy.
+  log "NO OFF-INSTANCE COPY: ACMP_BACKUP_BUCKET is unset, so the .bak files exist ONLY on this box (NFR-058 unmet)."
 fi
 
 # 3) Legacy on-prem off-box copy to a warm-standby VM. There is no standby VM in the cloud topology (S3

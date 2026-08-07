@@ -35,6 +35,14 @@ after Keycloak is healthy and reconciles config idempotently via `kcadm` (`deplo
 **without touching users/passwords**. It runs on every `docker compose up` and exits 0; re-runs are no-ops.
 
 - **Add new critical config** by adding an `ensure_*` step to `reconcile.sh` (e.g. `ensure_default_scope`).
+- **Per-environment redirect URIs (DEF-023)** are reconciled the same way, by `ensure_web_origin`. The
+  committed `redirectUris` / `webOrigins` describe the **dev** topology only; a single shared realm file
+  cannot express a hostname that is per-environment by design, and mounting it verbatim in cloud made
+  Keycloak reject the SPA's `redirect_uri` — login impossible, every health check green. `reconcile.sh`
+  therefore **replaces** both lists from `ACMP_WEB_ORIGIN`, which **only `docker-compose.cloud.yml` sets**
+  (from `KEYCLOAK_ORIGIN`, the single browser-facing origin in the cloud topology). Unset ⇒ no-op ⇒ dev
+  unchanged. `post.logout.redirect.uris` needs no patching: it is the literal `+`, Keycloak's "whatever
+  `redirectUris` allows", which is environment-independent.
 - It reuses the Keycloak image (`bash` + `kcadm`, no `curl`/`jq`) — **no new runtime dependency** (CON-001).
 - **Not** `import --override` on boot: that would reset the bootstrap admin password / required-actions on
   every restart. Reconciliation is surgical instead. (See OQ-041 in `docs/decisions/open-question-register.md`.)

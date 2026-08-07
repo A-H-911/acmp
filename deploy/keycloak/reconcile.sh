@@ -36,4 +36,48 @@ ensure_default_scope() {
 # ABAC silently break. The realm-export now assigns `basic`, and this reconciles existing realms too.
 ensure_default_scope acmp-web basic
 
+# DEF-023: the bundled realm-export registers only the dev + ngrok hostnames, and the cloud compose
+# mounts it verbatim — so on a deployed box Keycloak answers `Invalid parameter: redirect_uri` and
+# NOBODY CAN LOG IN, while every health check stays green (Keycloak is running fine; it simply
+# refuses the one URI the SPA uses). A single shared realm file cannot express a hostname that is
+# per-environment by design — the same seam class as DEF-019's web image tag.
+#
+# So the origin is reconciled here instead, from ACMP_WEB_ORIGIN. Only docker-compose.cloud.yml sets
+# it (to KEYCLOAK_ORIGIN, which the cloud topology defines as the ONE browser-facing origin — the SPA
+# and Keycloak share it under /kc/, ADR-0037). The dev compose deliberately does NOT set it: there
+# KEYCLOAK_ORIGIN is keycloak.localhost:8085 while the SPA is on localhost:8088, so it is not the SPA
+# origin and using it would break dev. Unset => this block no-ops => dev is untouched.
+#
+# REPLACE, not append: a public client in cloud has no business accepting localhost redirects, and
+# assignment is what makes re-runs idempotent.
+ensure_web_origin() {
+  local origin="$1" cid before after
+  cid=$("$K" get clients -r "$REALM" -q "clientId=acmp-web" --fields id --format csv --noquotes | head -n1 | tr -d '\r')
+  if [[ -z "$cid" ]]; then
+    echo "[reconcile] ERROR: client 'acmp-web' not found in realm '$REALM'" >&2
+    return 1
+  fi
+  before=$("$K" get "clients/$cid" -r "$REALM" --fields redirectUris --format json | tr -d '\r\n ')
+  "$K" update "clients/$cid" -r "$REALM" \
+    -s "redirectUris=[\"${origin}/*\"]" \
+    -s "webOrigins=[\"${origin}\"]"
+  # Read back rather than trust the exit code — DEF-023 is a defect that every green check missed.
+  after=$("$K" get "clients/$cid" -r "$REALM" --fields redirectUris --format json | tr -d '\r\n ')
+  if [[ "$after" != *"${origin}/*"* ]]; then
+    echo "[reconcile] ERROR: redirectUris did not take. before=$before after=$after" >&2
+    return 1
+  fi
+  echo "[reconcile] acmp-web origin set to ${origin} (redirectUris=${origin}/*, webOrigins=${origin})."
+}
+
+# post.logout.redirect.uris is NOT set here. It lives in realm-export.json as the literal `+`, which
+# Keycloak reads as "whatever redirectUris allows" — environment-independent, so it needs no patching
+# and avoids kcadm's dotted-key path splitting entirely. Caveat: like every realm-export value it
+# reaches only a FIRST import, so a realm created before that edit keeps its old list until re-created.
+if [[ -n "${ACMP_WEB_ORIGIN:-}" ]]; then
+  ensure_web_origin "$ACMP_WEB_ORIGIN"
+else
+  echo "[reconcile] ACMP_WEB_ORIGIN unset — leaving acmp-web redirect URIs as imported (dev topology)."
+fi
+
 echo "[reconcile] done."

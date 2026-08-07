@@ -152,6 +152,11 @@ services:
       KC_URL: "http://keycloak:8080"
       ACMP_REALM: "acmp"
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      # DEF-023: the realm-export knows only the dev/ngrok hostnames, so without this the SPA's
+      # redirect_uri is rejected and nobody can log in. CLOUD-ONLY on purpose — here KEYCLOAK_ORIGIN
+      # IS the SPA's origin (same origin, /kc/ prefix, ADR-0037); in the dev compose it is a
+      # different host from the SPA, which is why that file must never pass this variable.
+      ACMP_WEB_ORIGIN: "${KEYCLOAK_ORIGIN}"
     volumes:
       - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
     depends_on:
