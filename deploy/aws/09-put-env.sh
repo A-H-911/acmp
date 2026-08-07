@@ -21,6 +21,11 @@
 # --tier Standard is passed EXPLICITLY so an oversized payload fails loudly here instead of quietly
 # becoming a billed Advanced parameter.
 set -euo pipefail
+# SSM parameter names start with "/", which MSYS/Git Bash rewrites into a Windows filesystem path
+# before the native aws.exe ever sees it — PutParameter then rejects it with "Parameter name must be
+# a fully qualified name", an error that says nothing about the actual cause. Harmless on Linux,
+# where the variable is simply ignored.
+export MSYS_NO_PATHCONV=1
 . "$(dirname "$0")/_common.sh"
 # NOTE: require_aws is deliberately NOT called here. Every check below is on the FILE, so an
 # operator can validate an env file offline — and a credentials error should never be what you get

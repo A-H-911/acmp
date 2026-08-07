@@ -20,7 +20,13 @@ batch="$(mktemp)"; cat > "$batch" <<JSON
   "ResourceRecordSet": { "Name": "$host.", "Type": "A", "TTL": 60,
     "ResourceRecords": [ { "Value": "$ip" } ] } } ] }
 JSON
+# MSYS/Git Bash rewrites bare path arguments for a native aws.exe, but NOT paths embedded in a
+# file:// URL — so `file:///tmp/tmp.XXXX` reaches the CLI as an MSYS path it cannot resolve and the
+# call dies with "Unable to load paramfile ... No such file or directory". cygpath gives the native
+# form; on Linux it does not exist and the path is already native, so this is a no-op there.
+batch_uri="$batch"
+command -v cygpath >/dev/null 2>&1 && batch_uri="$(cygpath -m "$batch")"
 cid="$(aws route53 change-resource-record-sets --hosted-zone-id "$HOSTED_ZONE_ID" \
-  --change-batch "file://$batch" --query ChangeInfo.Id --output text)"
+  --change-batch "file://$batch_uri" --query ChangeInfo.Id --output text)"
 rm -f "$batch"
 log "submitted change $cid — https://$host will resolve to $ip within ~60s"
