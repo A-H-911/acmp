@@ -21,6 +21,13 @@
 # user cannot be restricted by IAM policy at all (only an Organizations SCP could, and this is a
 # standalone account). If you are operating as root, the brake reads armed and constrains nobody.
 set -euo pipefail
+# The AL2023 AMI is resolved through an SSM public parameter whose name starts with "/", which
+# MSYS/Git Bash rewrites into a Windows path before the native aws.exe sees it — GetParameter then
+# answers ParameterNotFound for a parameter AWS publishes and maintains. Found by the AC-075 test:
+# the first launch of this script only succeeded because the caller happened to have the variable
+# exported in their shell, which is exactly the kind of undocumented manual step AC-075 forbids.
+# No file:// arguments are used here, so disabling conversion is safe; on Linux it is ignored.
+export MSYS_NO_PATHCONV=1
 . "$(dirname "$0")/_common.sh"
 require_aws
 

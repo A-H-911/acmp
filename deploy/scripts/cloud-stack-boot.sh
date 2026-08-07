@@ -243,5 +243,42 @@ else
   bad "no TLS listener on 18443 — the 443 server block did not load"
 fi
 
+# --- the login hand-off actually works (DEF-023) ------------------------------------------------
+# THE GAP THIS CLOSES: DEF-023 shipped an environment where all six containers were healthy, TLS was
+# valid, the issuer was correct and /api/ answered 401 — and no human could log in, because the realm
+# registered only the dev hostnames and Keycloak refused the SPA's redirect_uri. Every check we had
+# passed, because none of them exercised the authorization request itself.
+#
+# So drive the real thing: the exact authorization request the SPA builds (authConfig.ts —
+# `${origin}/auth/callback`, response_type=code, S256), through the real proxy, against the real
+# realm. Keycloak answers 400 + an error page for an unregistered redirect_uri and 200 + the login
+# form when it is registered, so this fails loudly on the defect and passes only on a fixable one.
+# The code_challenge is a fixed dummy: at this stage Keycloak validates its FORMAT, not its secret.
+#
+# WHY THIS IS A CURL AND NOT A BROWSER, which is a real limit of this gate: the published `web` image
+# is per-environment by design (ADR-0037 bakes VITE_OIDC_AUTHORITY into the bundle, DEF-019), so the
+# <sha>-uat image this gate pulls points the SPA at the UAT hostname no matter where it runs. A
+# browser here would drive the deployed UAT box, not this stack. What CAN be proven locally is the
+# half that actually broke — whether Keycloak accepts the redirect_uri for THIS origin — and that is
+# what this asserts. The SPA-side leg belongs on the deployed environment (AC-079).
+log "asserting the SPA can actually start a login (DEF-023)"
+AUTHZ="$WORK/authz.html"
+acode=$(curl -s -o "$AUTHZ" -w '%{http_code}' -G "http://localhost:18080/kc/realms/acmp/protocol/openid-connect/auth" \
+  --data-urlencode "client_id=acmp-web" \
+  --data-urlencode "redirect_uri=http://localhost:18080/auth/callback" \
+  --data-urlencode "response_type=code" \
+  --data-urlencode "scope=openid profile email" \
+  --data-urlencode "state=bootgate" \
+  --data-urlencode "nonce=bootgate" \
+  --data-urlencode "code_challenge=bootgatebootgatebootgatebootgatebootgateAAA" \
+  --data-urlencode "code_challenge_method=S256" 2>/dev/null)
+if grep -qi 'invalid parameter: *redirect_uri' "$AUTHZ" 2>/dev/null; then
+  bad "Keycloak REJECTED the SPA's redirect_uri — DEF-023 has regressed; nobody can log in (HTTP $acode)"
+elif [ "$acode" = "200" ] && grep -qi 'name="username"' "$AUTHZ" 2>/dev/null; then
+  ok "the authorization request is accepted and Keycloak serves the login form (HTTP $acode)"
+else
+  bad "the authorization request did not produce a login form (HTTP $acode) — see $AUTHZ"
+fi
+
 printf '\n\033[1m[boot] RESULT: %s passed, %s failed\033[0m\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1

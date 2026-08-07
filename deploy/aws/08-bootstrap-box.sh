@@ -31,6 +31,12 @@ set -euo pipefail
 # which sends you off publishing something that is already published. No file:// arguments are used
 # here, so disabling conversion is safe; on Linux the variable is ignored.
 export MSYS_NO_PATHCONV=1
+# The remote output is echoed back through the AWS CLI at the end of this script, and it contains
+# non-ASCII (docker compose emits "→" among others). On Windows the CLI's default cp1252 console
+# encoding cannot render that and dies with "'charmap' codec can't encode character '→'" —
+# killing the script AFTER a bootstrap that succeeded, so a green deployment reports as a failure.
+# Found by the AC-075 test. Harmless on Linux, where the locale is already UTF-8.
+export PYTHONIOENCODING=utf-8 PYTHONUTF8=1
 . "$(dirname "$0")/_common.sh"
 require_aws
 
@@ -50,8 +56,38 @@ log "target $instance_id ($env_name), pinning commit $sha"
 # comments to fit the 4 KB Standard-tier limit (a raw .env.cloud is 5,483 B and does NOT fit) and
 # enforces the AC-083 Webex rule for uat.
 param="/acmp/${env_name}/env"
-aws ssm get-parameter --region "$REGION" --name "$param" --with-decryption >/dev/null 2>&1 \
+env_body="$(aws ssm get-parameter --region "$REGION" --name "$param" --with-decryption \
+  --query Parameter.Value --output text 2>/dev/null)" \
   || die "SSM parameter $param not found — publish it first:  bash deploy/aws/09-put-env.sh $env_name <path-to-env-file>"
+
+# IMAGE-TAG DRIFT GUARD (found by the AC-075 rebuild). The box checks out the sha passed here, but it
+# RUNS whatever ACMP_IMAGE_TAG/ACMP_WEB_TAG the SSM parameter pins — and those were frozen when the
+# environment was last published. The first UAT rebuild therefore ran 749071e images against a 2ec8c14
+# checkout, and NOTHING detected it. Harmless on a deploy-scripts-only commit; on an app-code commit it
+# silently deploys the wrong build and every health check still passes. Same seam class as DEF-019.
+#
+# This is a GUARD rather than a runbook step on purpose: a runbook step is exactly what the operator
+# skips, and the drift is invisible once it has happened.
+#
+# Compared as a git-style prefix in both directions, because CI tags the FULL 40-char sha while this
+# script is routinely handed a short one. web is per-environment (DEF-019), hence the suffix.
+tag_of() { printf '%s\n' "$env_body" | tr -d '\r' | sed -n "s/^$1=//p" | head -n1; }
+prefix_match() { case "$1" in "$2"*) return 0;; esac; case "$2" in "$1"*) return 0;; esac; return 1; }
+
+img_tag="$(tag_of ACMP_IMAGE_TAG)"; web_tag="$(tag_of ACMP_WEB_TAG)"
+if [ "${ACMP_ALLOW_TAG_DRIFT:-0}" = "1" ]; then
+  log "WARNING: tag-drift guard DISABLED — deploying $sha with images $img_tag / $web_tag"
+elif ! prefix_match "$img_tag" "$sha" || ! prefix_match "${web_tag%-$env_name}" "$sha"; then
+  die "IMAGE-TAG DRIFT: $param pins ACMP_IMAGE_TAG=$img_tag and ACMP_WEB_TAG=$web_tag, but you asked to
+     deploy commit $sha. The box would check out $sha and RUN a different build, silently.
+     Re-publish the environment with the tags for this commit (the tags CI writes are the FULL sha,
+     and web carries the -$env_name suffix):
+       ACMP_IMAGE_TAG=<full-sha>  ACMP_WEB_TAG=<full-sha>-$env_name
+       bash deploy/aws/09-put-env.sh $env_name <path-to-env-file>
+     Deliberately deploying older images (a rollback) is ACMP_ALLOW_TAG_DRIFT=1."
+else
+  log "image tags match the commit ($img_tag / $web_tag)"
+fi
 
 # Heredoc is quoted so NOTHING here expands locally; the only interpolated values are the three
 # injected explicitly below. An unquoted heredoc would expand this host's variables into the

@@ -8,6 +8,13 @@
 # Adjust the path to your checkout. Output is appended to a log the operator reviews; a non-zero exit (SQL failure)
 # is where an alert hooks in (mail, Seq webhook, etc.).
 
+# ACMP_ENV_FILE IS LOAD-BEARING (DEF-022). Without it backup.sh defaults to deploy/.env, which exists
+# on-prem but NOT in cloud — the bootstrap writes deploy/.env.cloud. The miss used to be swallowed, so
+# ACMP_BACKUP_BUCKET stayed unset and the S3 copy was skipped while the run still reported success.
+# backup.sh now refuses instead of falling through, but set it here anyway: the refusal is the net,
+# not the plan. On-prem, point this at /opt/acmp/deploy/.env.
+ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud
+
 # Nightly full backup at 02:00
 0 2 * * *      cd /opt/acmp && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
 
