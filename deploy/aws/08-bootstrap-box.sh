@@ -31,6 +31,12 @@ set -euo pipefail
 # which sends you off publishing something that is already published. No file:// arguments are used
 # here, so disabling conversion is safe; on Linux the variable is ignored.
 export MSYS_NO_PATHCONV=1
+# The remote output is echoed back through the AWS CLI at the end of this script, and it contains
+# non-ASCII (docker compose emits "→" among others). On Windows the CLI's default cp1252 console
+# encoding cannot render that and dies with "'charmap' codec can't encode character '→'" —
+# killing the script AFTER a bootstrap that succeeded, so a green deployment reports as a failure.
+# Found by the AC-075 test. Harmless on Linux, where the locale is already UTF-8.
+export PYTHONIOENCODING=utf-8 PYTHONUTF8=1
 . "$(dirname "$0")/_common.sh"
 require_aws
 
