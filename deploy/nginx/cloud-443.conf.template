@@ -67,7 +67,31 @@ server {
         return 404;
     }
 
+    # /kc/ IS NOT OUR APPLICATION SURFACE, and it must not inherit the SPA's headers (DEF-023's second
+    # finding, assessed on the rebuilt box). The server-level add_headers above apply to everything
+    # proxied here, and two of them are actively wrong for Keycloak's own pages:
+    #
+    #   * script-src 'self' blocks the login theme's INLINE scripts — 7 CSP violations were observed
+    #     in the console on every login. The form still submits, so it is not fatal today, but the
+    #     theme is running degraded and anything script-driven (password-strength hints, the locale
+    #     switcher, WebAuthn) is one Keycloak release away from breaking with no error we would see.
+    #   * X-Frame-Options: DENY is emitted ON TOP of Keycloak's own SAMEORIGIN, and conflicting XFO
+    #     headers resolve to deny. The SPA sets automaticSilentRenew with no silent_redirect_uri, so
+    #     oidc-client-ts renews through a hidden same-origin iframe pointed HERE — which DENY blocks.
+    #     The symptom is not an error, it is users being logged out at token expiry instead of renewed.
+    #
+    # So Keycloak owns the two headers that describe ITS pages: it already sets X-Frame-Options
+    # SAMEORIGIN (which permits the same-origin renew iframe and nothing else), Referrer-Policy
+    # no-referrer, X-Content-Type-Options nosniff, and its own CSP. We keep only the two it does not
+    # set and that are transport-level rather than content-level.
+    #
+    # REMINDER, because it is the trap this file warns about at the top: add_header does not merge
+    # across levels, so THIS BLOCK'S add_headers replace the server-level set entirely for /kc/.
+    # Anything you want here must be listed here.
     location /kc/ {
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+
         proxy_pass http://keycloak:8080/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
