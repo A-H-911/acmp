@@ -202,7 +202,7 @@ jobs:
           done
           echo "ACMP_IMAGE_SHA=$SHA" >> digests.env
           cat digests.env >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: image-digests-${{ github.sha }}
           path: digests.env
