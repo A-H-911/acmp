@@ -93,8 +93,10 @@ async function probe(browser, username, expectedRole) {
     await page.waitForFunction(() => !document.querySelector('.login-cta'), null, { timeout: 45_000 });
     ok(`authenticated session established (landed on ${new URL(page.url()).pathname})`);
 
-    // Give the SPA's provisioning call a moment if it has not already landed.
-    if (!profile) await page.waitForTimeout(3_000);
+    // Poll rather than sleep a fixed interval. A flat 3s made the FIRST user — the one hitting a
+    // cold API after a deploy — look like a provisioning failure while the other three passed,
+    // which is a probe defect masquerading as a product defect.
+    for (let i = 0; i < 30 && !profile; i++) await page.waitForTimeout(1_000);
 
     if (!profile) {
       bad('no successful POST /api/members/me — JIT provisioning did not happen');
