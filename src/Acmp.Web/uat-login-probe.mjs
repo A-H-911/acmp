@@ -84,7 +84,12 @@ async function probe(browser, username, expectedRole) {
       await page.locator('#kc-form-buttons input[type=submit], button[type=submit]').first().click();
     }
 
-    await page.waitForURL((u) => new URL(u).origin === BASE && !u.includes('/realms/'), { timeout: 45_000 });
+    // Playwright hands the predicate a URL OBJECT, not a string — `u.includes` is not a function.
+    // And /auth/callback does NOT count as landed: the SPA is still exchanging the code there, so
+    // accepting it raced the JIT-provisioning call and made the first (coldest) user look like a
+    // failure. Wait for the route the SPA actually navigates to once the session exists.
+    await page.waitForURL((u) => u.origin === BASE && !u.pathname.startsWith('/kc/')
+      && !u.pathname.startsWith('/auth/') && u.pathname !== '/login', { timeout: 60_000 });
     await page.waitForFunction(() => !document.querySelector('.login-cta'), null, { timeout: 45_000 });
     ok(`authenticated session established (landed on ${new URL(page.url()).pathname})`);
 
@@ -102,6 +107,25 @@ async function probe(browser, username, expectedRole) {
     // DEF-023's second, unassessed observation: our nginx sets the CSP at SERVER level, so it also
     // applies to Keycloak's own login theme under /kc/. Report rather than assert — the login above
     // either worked or it did not, and that is the verdict. This tells us whether it is still noisy.
+    // Silent renew goes through a hidden SAME-ORIGIN iframe pointed at /kc/ (automaticSilentRenew,
+    // no silent_redirect_uri). Our nginx used to add X-Frame-Options: DENY there on top of
+    // Keycloak's SAMEORIGIN, which resolves to deny — so the renew would fail and the user would be
+    // logged out at token expiry instead of renewed. Drive the iframe rather than reason about it.
+    const framed = await page.evaluate(async (base) => {
+      const f = document.createElement('iframe');
+      f.style.display = 'none';
+      f.src = `${base}/kc/realms/acmp/protocol/openid-connect/login-status-iframe.html`;
+      const done = new Promise((res) => {
+        f.onload = () => { try { res(!!f.contentDocument?.body); } catch { res(false); } };
+        f.onerror = () => res(false);
+        setTimeout(() => res(false), 10_000);
+      });
+      document.body.appendChild(f);
+      return done;
+    }, BASE);
+    framed ? ok('the /kc/ silent-renew iframe loads (X-Frame-Options permits same-origin framing)')
+           : bad('the /kc/ iframe is BLOCKED — automaticSilentRenew cannot work; sessions will drop at token expiry');
+
     const csp = consoleErrors.filter((e) => /content security policy/i.test(e));
     console.log(csp.length ? `  \x1b[33mNOTE\x1b[0m ${csp.length} CSP console error(s): ${csp[0].slice(0, 160)}`
                            : '  \x1b[32mPASS\x1b[0m no CSP violations reported during the login round-trip');

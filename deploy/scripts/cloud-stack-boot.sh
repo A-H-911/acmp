@@ -231,6 +231,25 @@ if curl -sk -o /dev/null -D "$TLSH" "https://localhost:18443/" 2>/dev/null; then
   c=$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost:18443/kc/realms/acmp/.well-known/openid-configuration" 2>/dev/null)
   [ "$c" = "200" ] && ok "the acmp realm is still reachable over TLS ($c)" || bad "acmp realm returned $c over TLS"
 
+  # /kc/ MUST NOT INHERIT THE SPA's HEADERS (DEF-023's second finding). Our CSP's script-src 'self'
+  # blocks Keycloak's inline login-theme scripts, and our X-Frame-Options: DENY lands on top of
+  # Keycloak's SAMEORIGIN — conflicting XFO resolves to deny, which blocks the same-origin iframe
+  # automaticSilentRenew uses, dropping every session at token expiry with no error. The location
+  # block that fixes it is unguarded otherwise, and add_header's non-merging is easy to undo by
+  # accident: adding one header up at server level does nothing here, while removing this block's
+  # add_headers silently restores the whole broken set.
+  KCH="$WORK/kc-headers.txt"
+  curl -sk -o /dev/null -D "$KCH" "https://localhost:18443/kc/realms/acmp/.well-known/openid-configuration" 2>/dev/null
+  grep -qi '^content-security-policy:' "$KCH" \
+    && bad "/kc/ is emitting OUR Content-Security-Policy — it blocks Keycloak's inline theme scripts" \
+    || ok "/kc/ does not inherit the SPA's CSP"
+  grep -qi '^x-frame-options: *deny' "$KCH" \
+    && bad "/kc/ is emitting X-Frame-Options: DENY — the silent-renew iframe cannot load" \
+    || ok "/kc/ does not force X-Frame-Options DENY"
+  grep -qi '^strict-transport-security:' "$KCH" \
+    && ok "/kc/ still carries HSTS" \
+    || bad "/kc/ lost HSTS — add_header does not merge, so this block must list it"
+
   # /api/ must reach the API through the TLS block, not just serve the SPA fallback. Any
   # API-originated status proves the proxy path; 502/504 means nginx could not reach the backend.
   c=$(curl -sk -o /dev/null -w '%{http_code}' "https://localhost:18443/api/topics" 2>/dev/null)

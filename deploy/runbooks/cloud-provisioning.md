@@ -144,10 +144,25 @@ On the box, as root:
 
 ```bash
 dnf install -y certbot python3-certbot-dns-route53
-certbot certonly --dns-route53 -d uat.acmp.anas7ammo.dev \
+# --non-interactive + --agree-tos are REQUIRED, not optional polish: there is no inbound SSH, so this
+# step is delivered over `aws ssm send-command`, which has no TTY. Without them certbot blocks on the
+# terms-of-service prompt and the run dies with no certificate. Swap in -m <address> if you want
+# expiry mail; --register-unsafely-without-email declines it deliberately.
+certbot certonly --non-interactive --agree-tos --register-unsafely-without-email \
+  --dns-route53 -d uat.acmp.anas7ammo.dev \
   --deploy-hook /opt/acmp/deploy/scripts/certbot-deploy-hook.sh
 systemctl enable --now certbot-renew.timer     # ensure Persistent=true so a stopped box catches up
+systemctl is-enabled certbot-renew.timer       # certbot CLAIMS it did this; it does not. Check.
 ```
+
+> ⚠ **`certbot-deploy-hook.sh` must be executable in git** (`100755`). certbot `exec`s the hook
+> directly rather than through an interpreter, and refuses a non-executable one with *"hook command
+> deploy exists, but is not executable"* — **aborting the whole `certonly` run**. It was committed
+> `100644`, so the first attempt on a fresh box issued no certificate at all. The give-away is that
+> the SSM invocation still reports **Success**: without `set -e` the exit status is the *last*
+> command's, so `systemctl is-active` returning `active` masks a certbot that never ran. Fixed by
+> `git update-index --chmod=+x`; found by the AC-075 rebuild, and only because the check below is
+> phrased as "read the subject" rather than "did the command exit 0".
 
 DNS-01 is used because the security group allows **no inbound 80**, so HTTP-01 can never work. The
 instance role is scoped to write `<host>`/A **and** `_acme-challenge.<host>`/TXT in one hosted zone —

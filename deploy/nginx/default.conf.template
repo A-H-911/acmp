@@ -44,7 +44,17 @@ server {
     # Keycloak served same-origin over https under /kc (PR-C, ngrok-only): the SPA (https) reaches its IdP
     # without mixed content. The trailing slash on proxy_pass strips /kc so KC (served at root) matches;
     # X-Forwarded-* (with KC_PROXY_HEADERS=xforwarded) make KC emit https absolute URLs (issuer = /kc).
+    # KEPT IDENTICAL TO cloud-443.conf.template (DEF-023's second finding) — see the long note there.
+    # Keycloak's own pages must not inherit the SPA's CSP or X-Frame-Options: script-src 'self' blocks
+    # the login theme's inline scripts, and our DENY lands on top of Keycloak's SAMEORIGIN (conflicting
+    # XFO resolves to deny), which blocks the same-origin iframe automaticSilentRenew uses — dropping
+    # sessions at token expiry with no error. Keycloak already sets XFO, Referrer-Policy, nosniff and
+    # its own CSP for these pages. add_header does not merge, so this block replaces the server-level
+    # set for /kc/ entirely: whatever belongs here must be listed here.
     location /kc/ {
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+
         proxy_pass http://keycloak:8080/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
