@@ -11,6 +11,7 @@
 
 ## Standing rules & gotchas (read before editing)
 
+- [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) — GCM blocks forever; one command fixes it for good. Don't ask the operator to push.
 - [Run CI gates locally pre-push](ci-gates-run-locally-pre-push.md) — `dotnet test` ≠ CI green. Also `dotnet format --verify-no-changes` (**new `.cs` files need a UTF-8 BOM**) + `node scripts/check-coverage.mjs .` (≥95% per-file).
 - [Always stage .claude/memory in commits](always-stage-claude-memory-in-commits.md) — `.claude/memory/` **is** this memory directory and is repo-tracked; every commit includes it.
 - [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — standing goal ≥95% coverage FE+BE + adversarial E2E every flow; GO-gated slices.
