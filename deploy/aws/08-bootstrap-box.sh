@@ -107,6 +107,25 @@ docker compose version >/dev/null 2>&1 || {
 }
 command -v git >/dev/null || dnf install -y git
 
+# CRON IS NOT INSTALLED ON AMAZON LINUX 2023. Nothing in the base AMI provides crontab, so runbook
+# section 8 -- `crontab -e`, the ONLY thing that schedules deploy/scripts/backup.sh -- died with
+# `crontab: command not found` and the backup schedule simply never existed. The nightly and
+# every-4h backups NFR-057 (RPO <= 4h) and NFR-058 (off-instance copy) depend on are the entire
+# content of that step, so a box provisioned from the runbook was running with NO scheduled backup
+# at all while looking completely healthy.
+#
+# It hid the same way DEF-024 hid: the step was delivered over `aws ssm send-command`, whose command
+# list has no set -e, so `crontab` failing left the following commands running and the invocation
+# still reported Success. A manual backup.sh run in the same batch then succeeded and copied to S3,
+# which made the whole thing look verified -- the manual run WAS real, but it is evidence for
+# backup.sh, not for the schedule. Surfaced only once the invocation was run under `set -eu`.
+#
+# Installed here rather than documented in the runbook because everything else the deployment needs
+# (docker, compose, git) is a bootstrap prerequisite, and a documented prerequisite is what gets
+# skipped. enable --now so the daemon survives the AC-082 stop/start, like the swapfile's fstab entry.
+command -v crontab >/dev/null || dnf install -y cronie
+systemctl enable --now crond
+
 # 4 GiB swapfile (RISK-013). docker-compose.cloud.yml ALREADY states "The P25 bootstrap adds a 4 GiB
 # swapfile as the spike absorber" and budgets 3584 MiB of container limits against 4 GiB of RAM,
 # leaving ~512 MiB for the host. It did not exist. Without it a memory spike is resolved by the OOM
