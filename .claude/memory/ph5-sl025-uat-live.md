@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: f79e14d2-046a-4f4d-a818-420d4c0e3381
-  modified: 2026-08-07T15:30:47.472Z
+  modified: 2026-08-07T18:02:25.975Z
 ---
 
 **State as of 2026-08-07.** UAT is live at `https://uat.acmp.anas7ammo.dev`, instance
@@ -28,9 +28,22 @@ script. Passwords were rotated off the seed value; the probe tries the temp one 
   scripts **and** the `automaticSilentRenew` iframe. Both nginx templates now give `/kc/` its own block.
 - **DEF-022** — cron backups skipped the S3 copy. Fixed at both ends and evidenced by an `env -i` run.
 
-**Remaining:** **AC-075 Partial** — the provisioning *scripts* now pass with zero interventions; it
-needs one more from-scratch build carrying the DEF-024 fixes, and nothing known is in its way.
-**AC-076 Pending** (SL-027, the Playwright suite vs UAT). AC-079/081 now **Met**.
+**AC-075 is now Met** — a from-scratch build at `fca58f36` with zero interventions on instance
+`i-07ac28ac2fedab921` (the earlier ones are terminated). AC-079/081 Met too.
+
+**Two more defects found finishing the slice:**
+- **DEF-026** (Fixed) — **AL2023 ships no cron**, so runbook §8 (`crontab -e`) died and the backup
+  *schedule* never existed on any box. Now installed by `08-bootstrap-box.sh`. ⚠ It hid because
+  `aws ssm send-command` has **no `set -e`** — the invocation Success is the *last* command's.
+  **Always run SSM steps under `set -eu`** or their Success means nothing.
+- **DEF-027** (Open, SL-027) — **AC-076 cannot work as written**: the e2e `global-setup` needs the
+  master-realm token + admin API, and the 443 listener 404s both by design. Fix is a design choice:
+  SSM port-forward (no code) or an out-of-band seeder. **Never relax the deny** (AC-081 rests on it)
+  and **never add a password bypass to `seed-users.sh`** (CON-007/CON-009).
+
+**AC-084 Partial** — memory clean (no OOM, swap 20 MiB/4095), but its CPUCreditBalance alarm did not
+exist at all until now (armed in `07-launch.sh`; it trips on a fresh box, which is real — a new
+t3.medium has ~zero credits for ~2h), and **Keycloak runs at 96% of its 448 MiB cap**.
 
 **Gotchas learned here** (the PE-174 set still applies): the local boot gate **cannot** verify a
 browser login — the published `web` image bakes `VITE_OIDC_AUTHORITY` per environment (ADR-0037), so
