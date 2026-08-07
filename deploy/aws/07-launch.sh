@@ -151,6 +151,29 @@ else
 fi
 log "spend brake armed against the live instance ids (OQ-064)"
 
+# CPU-CREDIT ALARM (RSK-013, AC-084). AC-084 reads "the CPUCreditBalance alarm is not tripped" —
+# and until this was added, NO CloudWatch alarm existed in the account at all, so that clause was
+# vacuously true. An alarm that cannot trip is the same class of un-failable check as the health
+# probes that passed on a box nobody could log into (DEF-023), and it was worth more than the $0.10.
+#
+# This is a PERFORMANCE signal, not a cost one: the instance runs CpuCredits=standard (verified at
+# launch, and the reason the budget brake above exists), so exhausting credits throttles the box to
+# its 20% baseline rather than producing a surprise bill. There is deliberately no alarm ACTION —
+# v1 has no email (CON), the budget action already owns the spend blast radius, and what AC-084
+# needs is an alarm whose STATE can be read. put-metric-alarm is upsert-by-name, so re-runs are a
+# clean no-op and a replaced instance simply re-points the dimension.
+log "arming the CPUCreditBalance alarm for $instance_id (RSK-013 / AC-084)"
+aws cloudwatch put-metric-alarm --region "$REGION" \
+  --alarm-name "${name}-cpu-credits-low" \
+  --alarm-description "t3 CPU credits low on ${name}: the box is about to throttle to its baseline (RSK-013)." \
+  --namespace AWS/EC2 --metric-name CPUCreditBalance \
+  --dimensions "Name=InstanceId,Value=${instance_id}" \
+  --statistic Average --period 300 --evaluation-periods 2 \
+  --threshold 50 --comparison-operator LessThanThreshold \
+  --treat-missing-data notBreaching >/dev/null \
+  && log "CPUCreditBalance alarm armed (<50 credits for 2x5min)" \
+  || log "WARNING: could not arm the CPUCreditBalance alarm — AC-084's alarm clause has nothing to read"
+
 cat <<NEXT
 
   NEXT (see deploy/runbooks/cloud-provisioning.md for the full path):
