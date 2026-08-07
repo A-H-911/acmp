@@ -26,6 +26,11 @@
 #   * NOT the images -- those are pulled from ECR by the instance profile (P20), never built on the
 #     box; npm ci and dotnet publish need ~2 GiB each and would OOM a 4 GiB host.
 set -euo pipefail
+# The SSM parameter name starts with "/", which MSYS/Git Bash rewrites into a Windows path before
+# the native aws.exe sees it — the preflight then reports the parameter as MISSING when it exists,
+# which sends you off publishing something that is already published. No file:// arguments are used
+# here, so disabling conversion is safe; on Linux the variable is ignored.
+export MSYS_NO_PATHCONV=1
 . "$(dirname "$0")/_common.sh"
 require_aws
 
@@ -135,8 +140,12 @@ if [ ! -s deploy/nginx/certs/fullchain.pem ]; then
 fi
 
 CF="-f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud"
-docker compose $CF pull
-docker compose $CF up -d
+# --quiet-pull is not cosmetic. SSM caps StandardOutputContent at 24,000 characters, and Docker's
+# per-layer progress bars fill that entirely on a cold box — the first real run ended with
+# "--output truncated--" and the actual error scrolled out of reach, so the failure could only be
+# diagnosed by going back to the instance. Quiet pull keeps the tail of the log meaningful.
+docker compose $CF pull --quiet
+docker compose $CF up -d --quiet-pull
 
 # --- ASSERT the stack is actually up ------------------------------------------------------------
 # This used to run `docker compose ps` and let SSM's exit status decide. A stack where every
@@ -192,13 +201,38 @@ remote="${remote//__REGION__/$REGION}"
 remote="${remote//__REGISTRY__/${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com}"
 
 log "sending bootstrap via SSM (this takes several minutes on a cold box)"
+# --parameters must be REAL JSON from a file, not the CLI's shorthand `commands=[...]` form. The
+# shorthand parser splits on commas and newlines, so a multi-line script is torn apart before it
+# ever reaches the instance — the box then fails with "line 2: syntax error: unexpected end of
+# file", which reads like a bug in the script rather than in how it was transported.
+params="$(mktemp)"
+printf '%s' "$remote" | python3 -c 'import json,sys; print(json.dumps({"commands":[sys.stdin.read()]}))' > "$params"
+# MSYS does not rewrite paths inside a file:// URL, so hand the CLI the native form explicitly.
+params_uri="$params"
+command -v cygpath >/dev/null 2>&1 && params_uri="$(cygpath -m "$params")"
 cmd_id="$(aws ssm send-command --region "$REGION" --instance-ids "$instance_id" \
   --document-name AWS-RunShellScript --comment "acmp bootstrap $env_name $sha" \
-  --parameters "commands=[$(printf '%s' "$remote" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')]" \
+  --parameters "file://$params_uri" \
   --query 'Command.CommandId' --output text)"
+rm -f "$params"
 log "command $cmd_id — waiting"
-aws ssm wait command-executed --region "$REGION" --command-id "$cmd_id" --instance-id "$instance_id" 2>/dev/null || true
-status="$(aws ssm get-command-invocation --region "$REGION" --command-id "$cmd_id" --instance-id "$instance_id" --query Status --output text)"
+# `aws ssm wait command-executed` gives up after ~100 seconds (20 polls x 5s), and the `|| true`
+# that swallowed its timeout meant the NEXT line read a status that was not final yet. A cold-box
+# bootstrap installs Docker, clones, pulls four images, migrates a database and imports a realm —
+# it takes many minutes, so the wait ALWAYS expired and the script always reported "finished with
+# status InProgress" for a run that was proceeding perfectly well. Reporting a non-final state as a
+# result is the same defect PE-154 recorded in the local boot gate, one layer up.
+#
+# Poll to a genuinely terminal state instead, with a deadline generous enough for a cold box.
+status=""
+deadline=$(( $(date +%s) + 1500 ))
+while [ "$(date +%s)" -lt "$deadline" ]; do
+  status="$(aws ssm get-command-invocation --region "$REGION" --command-id "$cmd_id" \
+    --instance-id "$instance_id" --query Status --output text 2>/dev/null || echo Pending)"
+  case "$status" in Success|Failed|Cancelled|TimedOut) break ;; esac
+  sleep 15
+done
+[ -n "$status" ] || status=Unknown
 aws ssm get-command-invocation --region "$REGION" --command-id "$cmd_id" --instance-id "$instance_id" \
   --query StandardOutputContent --output text | tail -40
 [ "$status" = "Success" ] || die "bootstrap finished with status $status — see the output above"
