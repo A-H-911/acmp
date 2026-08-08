@@ -8,9 +8,24 @@ metadata:
   modified: 2026-08-07T18:02:25.975Z
 ---
 
-**State as of 2026-08-07.** UAT is live at `https://uat.acmp.anas7ammo.dev`, instance
-`i-05085d458d886dc08` (the old `i-0b632ed4ea0cd2a68` was terminated), Elastic IP `35.173.149.191`,
-**STOPPED** when idle (~$7.65/mo vs ~$38/mo). `export AWS_PROFILE=acmp-admin` on every AWS call.
+**State as of 2026-08-09.** UAT is live at `https://uat.acmp.anas7ammo.dev`, instance
+**`i-07ac28ac2fedab921`** — the ONLY instance in the account; `i-05085d458d886dc08` and
+`i-0b632ed4ea0cd2a68` are both terminated. Elastic IP `35.173.149.191`, **STOPPED** when idle
+(~$7.65/mo vs ~$38/mo). `export AWS_PROFILE=acmp-admin` on every AWS call.
+
+**AC-080 is Met (2026-08-09).** A cron-triggered backup was watched to fire and land off-instance.
+Two things made it real, and both generalise: ⚠ **append to the live crontab, never replace it** —
+`crontab.example` carries `ACMP_ENV_FILE=…` as an environment assignment applying to every line
+below it, so a standalone temp crontab makes `backup.sh` refuse and you prove the refusal, not the
+schedule. ⚠ **the .bak files cannot prove cron ran** — hand-run and cron-run artifacts are
+byte-identical; the evidence is crond's own `CROND[…]: (root) CMD (…)` journal line, and the S3
+check must run **from the laptop** (an `s3 ls` on the box shares fate with the box, which is the
+whole of NFR-058's first clause).
+
+**`session-manager-plugin` without admin rights.** winget/MSI wants Program Files and stalls on an
+invisible UAC prompt (`consent.exe`). Instead: AWS's `SessionManagerPlugin.zip` holds a nested
+`package.zip` whose `bin/session-manager-plugin.exe` runs standalone — `aws ssm start-session` only
+needs it on `PATH`. acmp-admin **does** hold `ssm:StartSession` (not just `SendCommand`).
 
 **Login works now.** All four seeded accounts (`chairman`/`secretary`/`member`/`auditor`) complete a
 real browser PKCE login and JIT-provision with the correct role. Re-run the proof any time with
@@ -37,9 +52,14 @@ script. Passwords were rotated off the seed value; the probe tries the temp one 
   `aws ssm send-command` has **no `set -e`** — the invocation Success is the *last* command's.
   **Always run SSM steps under `set -eu`** or their Success means nothing.
 - **DEF-027** (Open, SL-027) — **AC-076 cannot work as written**: the e2e `global-setup` needs the
-  master-realm token + admin API, and the 443 listener 404s both by design. Fix is a design choice:
-  SSM port-forward (no code) or an out-of-band seeder. **Never relax the deny** (AC-081 rests on it)
-  and **never add a password bypass to `seed-users.sh`** (CON-007/CON-009).
+  master-realm token + admin API, and the 443 listener 404s both by design. **Never relax the deny**
+  (AC-081 rests on it) and **never add a password bypass to `seed-users.sh`** (CON-007/CON-009).
+  ✅ **Remedy (b) is now measured viable, zero code:** port-forward box **port 80** (the nginx 8080
+  block has no `/kc/` deny) to `localhost:8085`, then `E2E_KEYCLOAK_URL=http://localhost:8085/kc`
+  while the browser still drives the public host. Through the tunnel: master realm **200**,
+  `/kc/admin/realms/acmp/users` **401** (reachable, just unauthenticated — `hostname strict` does
+  NOT block the admin REST API); the same paths on 443 stay **404**. Only blocker left is getting
+  `KC_BOOTSTRAP_ADMIN_PASSWORD` (a docker secret on the box) to the workstation.
 
 **AC-084 Partial** — memory clean (no OOM, swap 20 MiB/4095), but its CPUCreditBalance alarm did not
 exist at all until now (armed in `07-launch.sh`; it trips on a fresh box, which is real — a new
