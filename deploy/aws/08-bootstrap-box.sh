@@ -110,7 +110,7 @@ command -v git >/dev/null || dnf install -y git
 # CRON IS NOT INSTALLED ON AMAZON LINUX 2023. Nothing in the base AMI provides crontab, so runbook
 # section 8 -- `crontab -e`, the ONLY thing that schedules deploy/scripts/backup.sh -- died with
 # `crontab: command not found` and the backup schedule simply never existed. The nightly and
-# every-4h backups NFR-057 (RPO <= 4h) and NFR-058 (off-instance copy) depend on are the entire
+# every-4h backups NFR-056 (RPO <= 4h) and NFR-058 (off-instance copy) depend on are the entire
 # content of that step, so a box provisioned from the runbook was running with NO scheduled backup
 # at all while looking completely healthy.
 #

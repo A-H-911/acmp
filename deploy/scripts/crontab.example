@@ -1,6 +1,6 @@
 # ACMP backup schedule (P18b; cloud shape in P23). Install on the instance's deploy user:  crontab crontab.example
-# Nightly full backup + every-4h business-day backups so data loss never exceeds 4h (NFR-057 RPO); RTO <= 8h
-# (NFR-056) is met by restoring from the off-instance copy. backup.sh writes ONE .bak per stateful database
+# Nightly full backup + every-4h business-day backups so data loss never exceeds 4h (NFR-056 RPO); RTO <= 8h
+# (NFR-057) is met by restoring from the off-instance copy. backup.sh writes ONE .bak per stateful database
 # (Acmp AND keycloak — ADR-0036 put Keycloak on the same SQL Server) into ACMP_BACKUP_DIR, then copies them to
 # s3://$ACMP_BACKUP_BUCKET/sql/ via the instance profile (NFR-058: the copy must not share fate with the box).
 # See deploy/runbooks/cloud-backup-dr.md.
