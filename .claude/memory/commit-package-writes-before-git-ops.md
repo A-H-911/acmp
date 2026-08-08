@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: f79e14d2-046a-4f4d-a818-420d4c0e3381
-  modified: 2026-08-08T10:00:04.963Z
+  modified: 2026-08-08T11:20:06.914Z
 ---
 
 `tamheed-package/data/*.jsonl` is **git-tracked** (29 files). Tamheed writes canonical state
@@ -22,6 +22,12 @@ allocated the next free id from it.
 tamheed-package && git commit` immediately after**, before any branch operation. Batch writes
 into one package session where you can. Verifying against `tamheed-package/csv/` after a close is
 still worth doing, but for this reason, not because the tool is unreliable.
+
+**Sharper variant, cost me the file once:** `git rm --cached <f>` + adding `<f>` to
+`.git/info/exclude` does **not** protect it. The commit records a *deletion*, so the next
+`git reset --hard` applies that deletion and **removes the file from disk**. The nine excluded
+`findings_*.md` are safe only because they were *never* tracked — there is no deletion to apply.
+After restoring such a file, verify with an actual `git reset --hard` that it survives.
 
 **One real Tamheed defect** (reported upstream in `findings_10.md` §A, not patched): `_next_id`
 sorts ids as TEXT, so past 999 rows it returns `PE-1000` forever and `progress_update` /
