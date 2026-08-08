@@ -13,7 +13,7 @@ Claude Code auto-loads this file every session. It is intentionally thin: the st
 
 ## Tamheed progress tracking
 
-This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\Repos\acmp`). **The package is the record — when code and package disagree, fix the code or record a scope change; never let them drift.** The `tamheed` MCP server is provided by the installed tamheed plugin (no project-level .mcp.json entry needed). All package reads/writes go through the `tamheed` MCP tools; ready-made task prompts live in `tamheed-package/prompts/` (orient-resume, progress-sync, integrity-check, generate-report, slice-review) and the human review surface is `tamheed-package/review.html`.
+This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\Repos\acmp`). **The package is the record — when code and package disagree, fix the code or record a scope change; never let them drift.** **Package data lives in the git working tree** (C31): uncommitted package writes are destroyed by `git reset --hard` / `git checkout` / `git stash` exactly like uncommitted source — commit the package `data/` before branch operations. The `tamheed` MCP server is provided by the installed tamheed plugin (no project-level .mcp.json entry needed). All package reads/writes go through the `tamheed` MCP tools; ready-made task prompts live in `tamheed-package/prompts/` (orient-resume, progress-sync, integrity-check, generate-report, slice-review) and the human review surface is `tamheed-package/review.html`.
 
 ### Tool cheat-sheet (execution loop)
 
