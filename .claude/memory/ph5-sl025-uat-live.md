@@ -61,9 +61,33 @@ script. Passwords were rotated off the seed value; the probe tries the temp one 
   NOT block the admin REST API); the same paths on 443 stay **404**. Only blocker left is getting
   `KC_BOOTSTRAP_ADMIN_PASSWORD` (a docker secret on the box) to the workstation.
 
-**AC-084 Partial** — memory clean (no OOM, swap 20 MiB/4095), but its CPUCreditBalance alarm did not
-exist at all until now (armed in `07-launch.sh`; it trips on a fresh box, which is real — a new
-t3.medium has ~zero credits for ~2h), and **Keycloak runs at 96% of its 448 MiB cap**.
+**AC-084 Partial, one leg left (2026-08-09).** A real e2e run drove the box and memory was **sampled
+every 10s** (docker stats has no peak counter — an unsampled peak is lost): Keycloak peaked
+**441.9 / 448 MiB (98.6%) and HELD**, zero OOM, zero deaths, swap 46 MiB. The AC allows "raised **or
+shown to hold**", so this leg is done — but 6 MiB headroom is a standing risk; the slack to fund any
+raise is in `worker` (103.8/256) and `seq` (168.3/256).
+⚠ **A STOPPED t3 EARNS NO CPU CREDITS.** The handoff's "credits recovered while idle" is wrong — the
+alarm read OK only because a stopped instance publishes no datapoints. It returned to ALARM at ~9
+credits the moment the box started. Credits accrue 24/hr **only while running**, so this leg needs
+**~2 hours of running time before** the e2e run.
+
+**AC-085 leg 1 — the method that cannot work.** Arming a budget notification *below* current spend
+puts it in ALARM instantly and **delivers nothing**: no OK→ALARM transition means no notification.
+That is an un-failable check inverted — one that cannot *succeed*. A **2% threshold ($1.20 vs $1.065
+spent) is armed now** and will transition naturally; next session just **observes** both the ALARM
+state *and* a non-zero `NumberOfNotificationsPublished` on `acmp-budget-alerts`, then deletes it.
+State alone is not arrival.
+
+**DEF-028 (new, High)** — `SchedulePage.onSubmit` ends in a bare `return` over six conditions, and
+the `!chair` one has **no rendered error** (`chairError` tests the weaker `!effectiveChairId`). So
+Schedule can be silently inert: no request, no message, button still enabled. Fails core-loop on UAT
+(no `POST /api/meetings` ever reaches nginx) while **CI is green on the same spec**. Which condition
+tripped was not isolated; the loose thread is that `GET /api/members` appears nowhere in the access
+log while `POST /api/members/me` appears repeatedly.
+
+⚠ **The e2e suite seeds fixed-password `e2e-*` users** (password committed in `e2e/users.ts`) into
+whatever realm it points at — and UAT's 443 is open to `0.0.0.0/0`. **Delete them after every run**
+(done: HTTP 204 ×3). Its governance writes are hash-chained and **permanent**.
 
 **Gotchas learned here** (the PE-174 set still applies): the local boot gate **cannot** verify a
 browser login — the published `web` image bakes `VITE_OIDC_AUTHORITY` per environment (ADR-0037), so
