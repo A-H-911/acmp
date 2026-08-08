@@ -11,14 +11,16 @@ import { execFileSync } from 'node:child_process';
 const BLOCK = new Set(['high', 'critical']);
 
 // advisory GHSA id -> why it does not apply to ACMP. Keep this SMALL and justified; prefer a real
-// dependency fix whenever one exists. Revisit when react-router-dom ships a patched line.
-const ALLOW = new Map([
-  ['GHSA-qwww-vcr4-c8h2',
-    'React Router "RSC Mode CSRF" — ACMP is a client-rendered Vite SPA with NO React Server ' +
-    'Components (see src/auth/authConfig.ts: "no SSR here"), so the RSC request path this advisory ' +
-    'concerns does not exist. No react-router-dom release depends on the patched react-router@8.3.0 ' +
-    '(dom is still 7.x), so there is no clean forward fix. Triaged 2026-08-02 (PH-5).'],
-]);
+// dependency fix whenever one exists.
+//
+// EMPTY ON PURPOSE, 2026-08-08. The only entry was GHSA-qwww-vcr4-c8h2 (React Router "RSC Mode
+// CSRF"), triaged 2026-08-02 as not-applicable because ACMP is a client-rendered Vite SPA with no
+// React Server Components. The dependency bumps merged this window carried it away, and this
+// script's own stale-exception notice is what reported that — so the exception was removed rather
+// than left sitting. That notice is the reason to keep the allowlist a Map with reasons instead of
+// a bare ignore list: an exception nobody revisits eventually hides a live advisory that happens to
+// share its id.
+const ALLOW = new Map([]);
 
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';   // npm is a .cmd shim on Windows
 let raw;
