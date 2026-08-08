@@ -56,6 +56,10 @@ export function SchedulePage() {
   const activeMembers = useMemo(() => (members.data ?? []).filter((m) => m.isActive), [members.data]);
   const chairOptions = activeMembers.map((m) => ({ value: m.publicId, label: m.fullName }));
   const effectiveChairId = chairId || activeMembers.find((m) => m.role === 'Chairman')?.publicId || '';
+  // DEF-028: resolved ONCE, here, so the guard in onSubmit and the message below cannot disagree.
+  // chairError used to test `!effectiveChairId`, which is strictly weaker than this lookup — a
+  // state that satisfies one and not the other returned silently with nothing shown.
+  const chair = activeMembers.find((m) => m.publicId === effectiveChairId);
 
   const isOnline = mode !== 'InPerson';
   // Webex will own the join URL for an online meeting only when enabled AND an OAuth token exists.
@@ -64,7 +68,7 @@ export function SchedulePage() {
   const startIso = toIso(date, startTime);
   const endIso = toIso(date, endTime);
   const titleError = submitted && !title.trim() ? t('meetings.schedule.titleRequired') : undefined;
-  const chairError = submitted && !effectiveChairId ? t('meetings.schedule.chairRequired') : undefined;
+  const chairError = submitted && !chair ? t('meetings.schedule.chairRequired') : undefined;
   const dateError = submitted && !date ? t('meetings.schedule.dateRequired') : undefined;
   const windowError =
     submitted && startIso && endIso && endIso <= startIso ? t('meetings.schedule.windowInvalid') : undefined;
@@ -73,7 +77,6 @@ export function SchedulePage() {
 
   const onSubmit = () => {
     setSubmitted(true);
-    const chair = activeMembers.find((m) => m.publicId === effectiveChairId);
     if (!title.trim() || !chair || !date || !startIso || !endIso || endIso <= startIso) return;
 
     schedule.mutate(
@@ -211,7 +214,11 @@ export function SchedulePage() {
 
         <div className="mt-schedule-actions">
           <Button variant="secondary" onClick={cancel}>{t('meetings.cancel')}</Button>
-          <Button onClick={onSubmit} loading={schedule.isPending}>
+          {/* DEF-028: not submittable until the chair list has arrived. `disabled` rather than
+              `loading` — the button is not busy, the form is not ready, and the chair field already
+              says so. This is also what lets the e2e suite pass unchanged: Playwright waits for an
+              enabled button, so the race it used to lose simply cannot happen. */}
+          <Button onClick={onSubmit} loading={schedule.isPending} disabled={members.isLoading}>
             <Icon name="calendar" size={15} aria-hidden /> {t('meetings.schedule.confirm')}
           </Button>
         </div>
