@@ -59,7 +59,7 @@ On-prem, single-VM, Docker Compose (deployment.md). All commands run from the ch
 
 ## Backup
 
-- Automated by cron (`crontab.example`): nightly full + every-4h business-day (RPO ≤4h, NFR-057), off-box to the
+- Automated by cron (`crontab.example`): nightly full + every-4h business-day (RPO ≤4h, NFR-056), off-box to the
   standby (NFR-058). Manual run: `deploy/scripts/backup.sh`.
 - Covers **SQL Server** (`.bak`), **Keycloak Postgres** (`pg_dump`, ADR-0015), and **MinIO** objects (`mc mirror`).
   A SQL failure exits non-zero (hook your alerting to that). Verify a `.bak` appears in `ACMP_BACKUP_DIR`.
@@ -68,7 +68,7 @@ On-prem, single-VM, Docker Compose (deployment.md). All commands run from the ch
 
 `deploy/scripts/restore.sh [file.bak]` — RESTORE … WITH REPLACE, then verifies `decisions.decisions` has rows.
 DESTRUCTIVE (overwrites the live DB). Validated: seed → backup → delete → restore round-trips the data. RTO ≤8h
-(NFR-056). Quarterly restore test (NFR-058) — run `restore.sh` against a scratch stack and confirm the row count.
+(NFR-057). Quarterly restore test (NFR-058) — run `restore.sh` against a scratch stack and confirm the row count.
 
 ## Warm-standby promotion (primary failure)
 

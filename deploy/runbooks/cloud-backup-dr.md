@@ -4,7 +4,7 @@ Operating procedures for the AWS topology (ADR-0034 EC2 host, ADR-0035 S3 object
 SQL Server). The on-prem procedures in [README.md](README.md) still apply to the legacy stack; where the two
 differ, this file wins for anything running on EC2.
 
-Covers NFR-056 (RTO ≤ 8h), NFR-057 (RPO ≤ 4h), NFR-058 (off-instance copy), and AC-080.
+Covers NFR-056 (RPO ≤ 4h), NFR-057 (RTO ≤ 8h), NFR-058 (off-instance copy), and AC-080.
 
 ## What is backed up, and what is not
 

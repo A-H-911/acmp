@@ -25,4 +25,4 @@ for path in healthz readyz; do
 done
 
 log "4/4 standby is READY. MANUAL cutover remaining: repoint DNS / the org reverse proxy to this VM, then"
-log "     announce restoration to the committee (in-app notification). RTO budget: <= 8h (NFR-056)."
+log "     announce restoration to the committee (in-app notification). RTO budget: <= 8h (NFR-057)."
