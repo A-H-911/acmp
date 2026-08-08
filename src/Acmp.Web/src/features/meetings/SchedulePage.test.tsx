@@ -128,4 +128,35 @@ describe('SchedulePage (P6 / PR-B)', () => {
     expect(mutateSpy).not.toHaveBeenCalled();
     expect(screen.getByText('A meeting date is required.')).toBeInTheDocument();
   });
+
+  // DEF-028. The chair list arrives asynchronously, and the form used to accept a click before it
+  // did: onSubmit's `!chair` guard returned SILENTLY (no message, button still enabled), and the
+  // one error that would have explained it is DERIVED — so it vanished the instant the members
+  // query resolved, leaving a valid-looking form and a dead button. Invisible on localhost, where
+  // the query always wins the race; reproduced against the live UAT host, where it does not.
+  it('disables Schedule while the member list is still loading (DEF-028)', async () => {
+    (useMembers as unknown as Mock).mockReturnValue({ data: undefined, isLoading: true });
+    const user = userEvent.setup();
+    renderWithAuth(<SchedulePage />, { roles: ['secretary'] });
+    await fillRequired(user);
+
+    const submit = screen.getByRole('button', { name: 'Schedule' });
+    expect(submit).toBeDisabled();
+    await user.click(submit);
+    expect(mutateSpy).not.toHaveBeenCalled();
+  });
+
+  it('flags the chair when the list resolved but holds no chair to select (DEF-028)', async () => {
+    // The guard and the message must agree. chairError used to test `!effectiveChairId`, which is
+    // strictly weaker than the guard's `!chair` lookup, so a state satisfying one and not the other
+    // produced no feedback at all.
+    (useMembers as unknown as Mock).mockReturnValue({ data: [], isLoading: false });
+    const user = userEvent.setup();
+    renderWithAuth(<SchedulePage />, { roles: ['secretary'] });
+    await fillRequired(user);
+    await user.click(screen.getByRole('button', { name: 'Schedule' }));
+
+    expect(mutateSpy).not.toHaveBeenCalled();
+    expect(screen.getByText('A chair must be assigned.')).toBeInTheDocument();
+  });
 });
