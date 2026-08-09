@@ -48,12 +48,24 @@ code** — `getByRole('option', {name: 'E2E Member'})` matches two elements beca
 identity is the Keycloak `sub`, and audit rows are immutable, so re-seeding minted new subs and
 created a SECOND `CommitteeMember` for each. See **DEF-029**.
 
-**To close it:** deactivate the three ORPHANED member rows — the ones whose Keycloak user no longer
-exists — through the sanctioned path, `POST /api/members/{publicId}/deactivate`
-(`Policies.AdminUsers`) or Administration → Users & Membership. That is an ordinary governance
-action, not data repair. `activeMembers` filters on `isActive`, so it removes the ambiguity. Then
-re-run (recipe below). **This needs an account holding the Administrator role** — no such credential
-was available to the previous session, which is the only reason it is still open.
+**To close it**, deactivate exactly these three rows and nothing else. They were identified by
+matching every row's `keycloakUserId` against the subs still present in the realm — the two rows in
+each duplicated pair share display name, role *and* email, so **only the sub distinguishes them**.
+Do not re-derive this; it costs a box start, a tunnel and a browser probe.
+
+```
+POST /api/members/4126bdc9-b6d8-4963-9db3-2b8d1b4b5aa0/deactivate   # E2E Chairman  (orphan sub b0bf51fb…)
+POST /api/members/6432bcce-fe70-44d6-9265-9e8d03360849/deactivate   # E2E Member    (orphan sub aba62130…)
+POST /api/members/86815220-6154-4af9-a766-3bcfe3714896/deactivate   # E2E Secretary (orphan sub a309db7d…)
+```
+
+**KEEP** the live counterparts `efb37e41-…`, `c06dc05a-…` and `77d0faee-…`.
+
+`Policies.AdminUsers`, or Administration → Users & Membership in the UI. Deactivating a member is an
+ordinary governance action, not data repair. `activeMembers` filters on `isActive`, so this removes
+the ambiguity; then re-run (recipe below). **This needs an account holding the Administrator role —
+and role-mappings for all eight realm users show only `acmp-admin` has it.** No credential for it was
+available to the previous session, which is the only reason this is still open.
 
 ⚠ **Never delete the `e2e-*` accounts again — disable them** (`PUT …/users/{id}` with
 `{"enabled": false}`). That removes the login risk just as completely and preserves the `sub`.
