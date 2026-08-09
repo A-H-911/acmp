@@ -200,7 +200,15 @@ cat <<NEXT
     5. re-run THIS script after ANY instance replacement so the brake follows the new id AND the
        Elastic IP re-associates. A stale InstanceId does not error — it silently protects nothing.
 
-  COST: this instance bills ~\$30/mo running (t3.medium) + ~\$4 EBS + ~\$3.65 public IPv4.
-  Stop it when idle — stopped it costs only EBS + the Elastic IP (~\$7.65/mo). Do NOT leave two
-  environments running: 2 x t3.medium alone is ~\$76/mo against a \$60 budget.
+  COST: this instance bills ~\$30/mo running (t3.medium) + ~\$4 EBS + ~\$3.65 public IPv4;
+  ~\$7.65/mo stopped (EBS + Elastic IP). The budget is \$100/mo since 2026-08-09.
+
+  THE TWO ENVIRONMENTS ARE RUN DIFFERENTLY ON PURPOSE — do not "tidy" one to match the other:
+    prod  ALWAYS-ON. Stopping it is what makes cron inert (OQ-068): the 02:00 and 4-hourly
+          backups only fire while the box runs, and an always-on box is what makes NFR-056's
+          4h RPO true by design rather than by the \@reboot workaround. ~\$38/mo.
+    uat   STOPPED WHEN IDLE. Cheap and rebuildable; it carries the \@reboot backup precisely
+          because its schedule cannot be relied on. ~\$7.65/mo idle.
+  Steady state is therefore ~\$46/mo of \$100 — comfortable, but a SECOND always-on box would
+  put ~\$84/mo against the 80%% notification, so think before adding one.
 NEXT
