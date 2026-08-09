@@ -170,7 +170,17 @@ aws cloudwatch put-metric-alarm --region "$REGION" \
   --dimensions "Name=InstanceId,Value=${instance_id}" \
   --statistic Average --period 300 --evaluation-periods 2 \
   --threshold 50 --comparison-operator LessThanThreshold \
-  --treat-missing-data notBreaching >/dev/null \
+  --treat-missing-data notBreaching \
+  `# DEF-031: without --alarm-actions this alarm changes state and tells NOBODY. It was created` \
+  `# that way and sat silent, which is the same shape as DEF-030 (a control that looks armed on` \
+  `# every check while its notification path does not exist) and the same shape as the health` \
+  `# probes that passed on a box nobody could log into. An alarm with no action is a dashboard` \
+  `# widget, not a control. Reuses the budget-alerts topic deliberately: it already carries the` \
+  `# operator's CONFIRMED email subscription, so this needs no new infrastructure and no second` \
+  `# confirmation click. --ok-actions too, so recovery is visible and a stale ALARM in an inbox` \
+  `# does not get mentally filed as "still broken".` \
+  --alarm-actions "arn:aws:sns:${REGION}:${ACCOUNT_ID}:${PROJECT}-budget-alerts" \
+  --ok-actions "arn:aws:sns:${REGION}:${ACCOUNT_ID}:${PROJECT}-budget-alerts" >/dev/null \
   && log "CPUCreditBalance alarm armed (<50 credits for 2x5min)" \
   || log "WARNING: could not arm the CPUCreditBalance alarm — AC-084's alarm clause has nothing to read"
 
