@@ -14,6 +14,8 @@
 ## Standing rules & gotchas (read before editing)
 
 - [⚠ Absence needs an untruncated search](absence-claims-need-untruncated-search.md) — `tail`/`head`/`-m` in the pipeline means you may NOT claim "it isn't there". Cost a false lead in the permanent record; second occurrence of the shape.
+- [⚠ Immutable history → cleanup is asymmetric](immutable-history-cleanup-asymmetry.md) — DEF-029: deleting a Keycloak user ORPHANS its member rows forever. **Disable, never delete.**
+- [Write the handoff LAST](write-the-handoff-last.md) — a handoff written before the session's final verdict ships stale; stamp superseded ones with a ⛔ banner immediately.
 - [Localhost CI hides load races](localhost-ci-hides-load-races.md) — DEF-028: async-data races only appear against a real remote host, and **derived** error state erases its own evidence before the screenshot is taken.
 - [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) — GCM blocks forever; one command fixes it for good. Don't ask the operator to push.
 - [Run CI gates locally pre-push](ci-gates-run-locally-pre-push.md) — `dotnet test` ≠ CI green. Also `dotnet format --verify-no-changes` (**new `.cs` files need a UTF-8 BOM**) + `node scripts/check-coverage.mjs .` (≥95% per-file).
