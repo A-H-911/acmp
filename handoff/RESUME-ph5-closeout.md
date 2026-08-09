@@ -13,22 +13,23 @@ engineering remains. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it 
 ## Orient before touching anything
 
 1. `server_info()` → expect **2.7.1**. Then `package_open("tamheed-package")`, then `gate_run()` →
-   expect **7/7 ready**, audit evidence **103 evidenced / 12 narrated**.
-2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-115** (AC-076 Met), **AV-112** (AC-084 Met, supersedes AV-109), **AV-114** (AC-085, supersedes AV-110), **OQ-066** and **OQ-067**, and progress entries
-   **PE-184 … PE-193**.
+   expect **7/7 ready**, audit evidence **105 evidenced / 12 narrated**.
+2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-115** (AC-076 Met), **AV-112** (AC-084 Met, supersedes AV-109), **AV-117** (AC-085 - read this one, it CORRECTS the closing test), **DEF-030/031/032** (three controls that could not notify), **OQ-066** and **OQ-067**, and progress entries
+   **PE-184 … PE-197**.
 3. `git log --oneline -5` and `gh pr list`.
 4. **Close the package** (`package_close`) when done reading — it holds a single-writer lock, and
    **commit `tamheed-package/data` the moment it returns**.
 
 ## State
 
-- **UAT runs `155cc803` — current `main`.** Instance **`i-07ac28ac2fedab921`** is the only instance
+- **UAT runs `393e69e1`.** Instance **`i-07ac28ac2fedab921`** is the only instance
   in the account; Elastic IP **35.173.149.191**; `https://uat.acmp.anas7ammo.dev`. `/acmp/uat/env`
-  pins `ACMP_IMAGE_TAG=155cc803…` and `ACMP_WEB_TAG=155cc803…-uat`, so box, pins and `main` agree.
+  pins `ACMP_IMAGE_TAG=393e69e1…` and `ACMP_WEB_TAG=393e69e1…-uat`, so box and pins agree.
+  `main` is one governance-only commit ahead; no redeploy is needed for that.
 - **`export AWS_PROFILE=acmp-admin`** on every AWS call. Never operate as root.
 - Acceptance: **AC-075/076/077/078/079/080/081/082/083/084/086 Met** · **AC-085 Partial** (leg 1 only).
 - Open defects: **DEF-012** only (v_backlog residue — disclosed by design, no action).
-  DEF-027, DEF-028 and DEF-029 are all **Fixed**.
+  DEF-027 … DEF-032 are all **Fixed**.
 - Seeded accounts `chairman` / `secretary` / `member` / `auditor`, password `Uat_Acmp#2026_Rotated`.
   The three `e2e-*` accounts are **disabled**, not deleted — read DEF-029 before changing that.
 
@@ -52,14 +53,31 @@ ACTUAL notification now reads **ALARM** — a genuine OK→ALARM on real spend, 
 attempt could never produce. Arming a threshold *below* current spend goes ALARM instantly with no
 transition to notify on, so nothing is ever delivered — a check that cannot succeed.
 
-**All that is left is one observation, no action.** Check `NumberOfMessagesPublished` (or
-`NumberOfNotificationsDelivered`) on the `acmp-budget-alerts` topic against its zero baseline. One
-non-zero datapoint, together with the ALARM state already recorded, is arrival. **State alone is not
-arrival** — do not blur those. Then delete the temporary 2 % notification.
+⚠ **DO NOT use "NumberOfMessagesPublished is non-zero" — that test is INVALID** (AV-117 corrects
+AV-114/AV-116, which said it). Fixing DEF-031 and DEF-032 required publishing to this same topic:
+**six** messages were published on 2026-08-09, all from those tests, the last at 14:00Z. The metric
+is *already* non-zero, so following the old instruction would report leg 1 Met when no budget
+notification has ever arrived. That topic now carries **three** signal types — budget notifications,
+CloudWatch alarm transitions and backup failures — which is the price of reusing one topic.
 
-If it is still zero ~24 h after the crossing, *that* is the finding: a budget notification that
-changes state without ever publishing is a materially different defect from the one this AC exists
-to catch, and should be recorded as such rather than waited on indefinitely.
+**Use the email instead; it never degraded.** The three senders are trivially distinguishable:
+
+| signal | how it identifies itself |
+|---|---|
+| budget notification | from `budgets@costalerts.amazonaws.com`, naming `acmp-monthly` |
+| CPU-credit alarm | names `acmp-uat-cpu-credits-low` |
+| backup failure | subject `ACMP backup FAILED on <host>` |
+
+**Corroborate** with a publish datapoint in the 5-minute bucket containing the moment the 2.3 %
+notification flips OK→ALARM, with no alarm transition and no backup run in that window.
+**Baseline for future deltas: cumulative 6 as of 2026-08-09T14:05Z.** Then delete the 2 %
+notification. Current state: spend **$1.286** against the **$1.38** trigger, notification in OK.
+
+**State alone is not arrival** — that distinction is what caught DEF-030, so do not blur it. If the
+threshold flips and no budget email arrives, that is a finding in its own right, not a wait.
+
+If you want a cheap automated check back, create `acmp-ops-alerts`, repoint `ACMP_ALERT_TOPIC_ARN`
+and the alarm's actions at it, and leave `acmp-budget-alerts` carrying budget traffic only.
 
 ### AC-084 is Met — do NOT re-do it (AV-112)
 
@@ -112,6 +130,20 @@ that flag is for deliberate rollbacks only.
   cost a retraction; it is the second occurrence of the shape (PE-183 was the first).
 - **⚠ In a system with immutable history, cleanup is not symmetric with creation.** Deleting an
   upstream identity ORPHANS what it created downstream, permanently. That is DEF-029.
+- **⚠ For every control, ask SEPARATELY whether it can DETECT and whether it can TELL.** Four
+  instances in this project: DEF-023 (health probes green on a box nobody could log into), DEF-030
+  (budget notifications changing state while every publish was denied), DEF-031 (an alarm with
+  `AlarmActions: []`), DEF-032 (a backup regime that could not report its own failure). In all four
+  the *detect* half was tested and the *tell* half was asserted in a comment that made it look
+  verified. DEF-030 was found only because AWS emailed the account contact.
+- **⚠ When a verification test depends on a baseline, record the baseline as a NUMBER AND A
+  TIMESTAMP, never as a property like "zero" or "empty".** "Non-zero against a zero baseline"
+  embeds an assumption that nothing else will ever write there — and my own later fixes falsified
+  it, turning AC-085's closing test into one that passes for the wrong reason. No gate can catch
+  that: the gates check row integrity, not whether a stated test still discriminates.
+- **An env file sourced with `set -a` beats the command line.** `backup.sh` sources its env *after*
+  the process environment, so `FOO=bar backup.sh` is silently ignored for anything the file sets.
+  A "forced failure" drill built that way is a check that cannot fail. Override the *file*.
 - **`aws ssm send-command` has NO `set -e`.** The invocation status is the *last* command's, so a
   mid-list failure still reports Success. Send the whole script as ONE element under `set -eu`.
 - **MSYS mangles leading-slash AWS arguments.** `--name /acmp/uat/env` returns `ParameterNotFound`
