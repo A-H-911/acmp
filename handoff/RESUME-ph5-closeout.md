@@ -14,22 +14,24 @@ engineering remains. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it 
 
 1. `server_info()` → expect **2.7.1**. Then `package_open("tamheed-package")`, then `gate_run()` →
    expect **7/7 ready**, audit evidence **105 evidenced / 12 narrated**.
-2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-115** (AC-076 Met), **AV-112** (AC-084 Met, supersedes AV-109), **AV-117** (AC-085 - read this one, it CORRECTS the closing test), **DEF-030/031/032** (three controls that could not notify), **OQ-066** and **OQ-067**, and progress entries
-   **PE-184 … PE-197**.
+2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-115** (AC-076 Met), **AV-112** (AC-084 Met, supersedes AV-109), **AV-117** (AC-085 - read this one, it CORRECTS the closing test), **DEF-030/031/032** (three controls that could not notify), **OQ-066**/**OQ-067** (Approved) and **OQ-068** (PROPOSED - awaiting your decision), and progress entries
+   **PE-184 … PE-199**.
 3. `git log --oneline -5` and `gh pr list`.
 4. **Close the package** (`package_close`) when done reading — it holds a single-writer lock, and
    **commit `tamheed-package/data` the moment it returns**.
 
 ## State
 
-- **UAT runs `393e69e1`.** Instance **`i-07ac28ac2fedab921`** is the only instance
+- **UAT runs `87b4a8a8`.** Instance **`i-07ac28ac2fedab921`** is the only instance
   in the account; Elastic IP **35.173.149.191**; `https://uat.acmp.anas7ammo.dev`. `/acmp/uat/env`
-  pins `ACMP_IMAGE_TAG=393e69e1…` and `ACMP_WEB_TAG=393e69e1…-uat`, so box and pins agree.
-  `main` is one governance-only commit ahead; no redeploy is needed for that.
+  pins `ACMP_IMAGE_TAG=87b4a8a8…` and `ACMP_WEB_TAG=87b4a8a8…-uat`, so box and pins agree.
+  `main` (`fcb78c1`) is ahead by DEF-033's one-line fix plus governance commits. That fix is
+  **inert under cron** (the crontab supplies `ACMP_ENV_FILE`), so no redeploy is needed; it lands on
+  the next bootstrap.
 - **`export AWS_PROFILE=acmp-admin`** on every AWS call. Never operate as root.
 - Acceptance: **AC-075/076/077/078/079/080/081/082/083/084/086 Met** · **AC-085 Partial** (leg 1 only).
 - Open defects: **DEF-012** only (v_backlog residue — disclosed by design, no action).
-  DEF-027 … DEF-032 are all **Fixed**.
+  DEF-027 … DEF-033 are all **Fixed**.
 - Seeded accounts `chairman` / `secretary` / `member` / `auditor`, password `Uat_Acmp#2026_Rotated`.
   The three `e2e-*` accounts are **disabled**, not deleted — read DEF-029 before changing that.
 
