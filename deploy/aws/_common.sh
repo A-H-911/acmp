@@ -27,7 +27,13 @@ backup_bucket_for() { echo "${PROJECT}-$1-backups"; }
 TAGS="Key=Project,Value=ACMP Key=ManagedBy,Value=deploy-aws-scripts"
 
 # Spend controls (RISK-022). Ceiling used for the budget thresholds in 00-account.sh.
-BUDGET_LIMIT_USD="${ACMP_BUDGET_LIMIT_USD:-60}"
+# Raised 60 -> 100 on 2026-08-09 by operator decision, to fund an ALWAYS-ON production instance
+# alongside on-demand UAT. PH-5's exit criteria require both environments; prod always-on is ~$38/mo
+# and UAT stopped-when-idle ~$7.65/mo, so ~$46-50/mo of steady state would have sat permanently above
+# the old $60 budget's 80% notification and left no headroom before the 100% IAM-deny brake. Amends
+# the cost model ratified in ADR-0034. Prod is deliberately NOT stop-when-idle: an always-on box is
+# what makes the cron backup schedule correct by design rather than by OQ-068's @reboot workaround.
+BUDGET_LIMIT_USD="${ACMP_BUDGET_LIMIT_USD:-100}"
 ALERT_EMAIL="${ACMP_ALERT_EMAIL:-}"                   # set in your shell before running 00
 
 # --- helpers ---------------------------------------------------------------------------
