@@ -6,18 +6,16 @@
 
 ---
 
-Resume the PH-5 acceptance close-out on ACMP. UAT is live and running the current `main`. **Ten
-acceptance criteria are Met; two are Partial**, and neither remaining item is blocked on
-engineering. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it first.
+Resume the PH-5 acceptance close-out on ACMP. UAT is live and running the current `main`. **Eleven
+acceptance criteria are Met; one is Partial**, and the last one needs only an observation — no
+engineering remains. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it first.
 
 ## Orient before touching anything
 
 1. `server_info()` → expect **2.7.1**. Then `package_open("tamheed-package")`, then `gate_run()` →
-   expect **7/7 ready**, audit evidence **100 evidenced / 12 narrated**.
-2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-111** (AC-076,
-   supersedes AV-108), **AV-112** (AC-084 Met, supersedes AV-109), **AV-110** (AC-085, supersedes
-   AV-107), **DEF-029** (the live blocker), **OQ-066** and **OQ-067**, and progress entries
-   **PE-184 … PE-190**.
+   expect **7/7 ready**, audit evidence **103 evidenced / 12 narrated**.
+2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-115** (AC-076 Met), **AV-112** (AC-084 Met, supersedes AV-109), **AV-114** (AC-085, supersedes AV-110), **OQ-066** and **OQ-067**, and progress entries
+   **PE-184 … PE-193**.
 3. `git log --oneline -5` and `gh pr list`.
 4. **Close the package** (`package_close`) when done reading — it holds a single-writer lock, and
    **commit `tamheed-package/data` the moment it returns**.
@@ -28,56 +26,40 @@ engineering. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it first.
   in the account; Elastic IP **35.173.149.191**; `https://uat.acmp.anas7ammo.dev`. `/acmp/uat/env`
   pins `ACMP_IMAGE_TAG=155cc803…` and `ACMP_WEB_TAG=155cc803…-uat`, so box, pins and `main` agree.
 - **`export AWS_PROFILE=acmp-admin`** on every AWS call. Never operate as root.
-- Acceptance: **AC-075/077/078/079/080/081/082/083/084/086 Met** · **AC-076/085 Partial**.
-- Open defects: **DEF-012** (v_backlog residue — by design, no action) and **DEF-029** (below).
-  DEF-027 and DEF-028 are both **Fixed**.
+- Acceptance: **AC-075/076/077/078/079/080/081/082/083/084/086 Met** · **AC-085 Partial** (leg 1 only).
+- Open defects: **DEF-012** only (v_backlog residue — disclosed by design, no action).
+  DEF-027, DEF-028 and DEF-029 are all **Fixed**.
 - Seeded accounts `chairman` / `secretary` / `member` / `auditor`, password `Uat_Acmp#2026_Rotated`.
   The three `e2e-*` accounts are **disabled**, not deleted — read DEF-029 before changing that.
 
 ## Do these, in this order
 
-### 1. AC-076 → Met — one operator action, no code (~20 min)
+### AC-076 is Met — do NOT re-do it (AV-115)
 
-The DEF-028 fix is deployed and **verified on UAT**: the meeting-scheduling step that used to hang
-for 180 s now passes, and the whole run dropped from 3.8 min to 55.5 s. Auth (real PKCE) and
-RTL/a11y pass. Only the core-loop spec still fails, and **the cause is fixture data, not product
-code** — `getByRole('option', {name: 'E2E Member'})` matches two elements because
-`GET /api/members` returns 10 rows where 7 are expected.
+7 passed, 0 failed against live UAT: real Keycloak PKCE, the full core governance loop in 25.6 s,
+and RTL/a11y axe-clean in both languages. Closing it needed three defects fixed — DEF-027 (the AC's
+own stated method was impossible), DEF-028 (a real product race CI cannot see) and DEF-029 (orphaned
+member rows). All three are **Fixed**. The `/kc/` deny was re-verified live at 200/404/404, so
+AC-081 is intact.
 
-**Why:** a previous session DELETED the `e2e-*` Keycloak users on sound security grounds. App-side
-identity is the Keycloak `sub`, and audit rows are immutable, so re-seeding minted new subs and
-created a SECOND `CommitteeMember` for each. See **DEF-029**.
+⚠ **Never delete the `e2e-*` accounts — disable them** (`{"enabled": false}`). They are disabled now.
+Deleting them mints new Keycloak subs and permanently duplicates their member rows (DEF-029).
 
-**To close it**, deactivate exactly these three rows and nothing else. They were identified by
-matching every row's `keycloakUserId` against the subs still present in the realm — the two rows in
-each duplicated pair share display name, role *and* email, so **only the sub distinguishes them**.
-Do not re-derive this; it costs a box start, a tunnel and a browser probe.
+### 1. AC-085 leg 1 → Met — pure observation, no action (~1 day)
 
-```
-POST /api/members/4126bdc9-b6d8-4963-9db3-2b8d1b4b5aa0/deactivate   # E2E Chairman  (orphan sub b0bf51fb…)
-POST /api/members/6432bcce-fe70-44d6-9265-9e8d03360849/deactivate   # E2E Member    (orphan sub aba62130…)
-POST /api/members/86815220-6154-4af9-a766-3bcfe3714896/deactivate   # E2E Secretary (orphan sub a309db7d…)
-```
+Legs 2–5 are Met. **The transition has already happened** (AV-114): spend crossed $1.20 and the 2 %
+ACTUAL notification now reads **ALARM** — a genuine OK→ALARM on real spend, which is what the first
+attempt could never produce. Arming a threshold *below* current spend goes ALARM instantly with no
+transition to notify on, so nothing is ever delivered — a check that cannot succeed.
 
-**KEEP** the live counterparts `efb37e41-…`, `c06dc05a-…` and `77d0faee-…`.
+**All that is left is one observation, no action.** Check `NumberOfMessagesPublished` (or
+`NumberOfNotificationsDelivered`) on the `acmp-budget-alerts` topic against its zero baseline. One
+non-zero datapoint, together with the ALARM state already recorded, is arrival. **State alone is not
+arrival** — do not blur those. Then delete the temporary 2 % notification.
 
-`Policies.AdminUsers`, or Administration → Users & Membership in the UI. Deactivating a member is an
-ordinary governance action, not data repair. `activeMembers` filters on `isActive`, so this removes
-the ambiguity; then re-run (recipe below). **This needs an account holding the Administrator role —
-and role-mappings for all eight realm users show only `acmp-admin` has it.** No credential for it was
-available to the previous session, which is the only reason this is still open.
-
-⚠ **Never delete the `e2e-*` accounts again — disable them** (`PUT …/users/{id}` with
-`{"enabled": false}`). That removes the login risk just as completely and preserves the `sub`.
-
-### 2. AC-085 leg 1 → Met — pure observation, no action (~1 day)
-
-Legs 2–5 are Met. A **2 % ACTUAL notification is already armed and sitting in OK**
-($1.20 against $1.065 spent). It will transition on its own as ordinary spend crosses it.
-Check **both**: the 2.0 threshold reading ALARM **and** a non-zero `NumberOfNotificationsPublished`
-on the `acmp-budget-alerts` topic. **State alone is not arrival** — that distinction is the whole
-finding. Arming a threshold *below* current spend can never work: it goes ALARM instantly with no
-OK→ALARM transition, so nothing is ever delivered. Delete the 2 % notification once observed.
+If it is still zero ~24 h after the crossing, *that* is the finding: a budget notification that
+changes state without ever publishing is a materially different defect from the one this AC exists
+to catch, and should be recorded as such rather than waited on indefinitely.
 
 ### AC-084 is Met — do NOT re-do it (AV-112)
 
@@ -139,7 +121,18 @@ that flag is for deliberate rollbacks only.
   `file://` JSON; stdout caps at 24,000 chars (`--quiet-pull`).
 - **`python -c` with embedded newlines is broken here** — `python` is a pyenv-win `.bat` shim that
   mangles it. Put the script in a `.py` file. Also use `pwd -W`, not `pwd`, when handing a path to a
-  Windows binary from MSYS.
+  Windows binary from MSYS — **but NEVER put a `pwd -W` path on `PATH`**: it contains a drive-letter
+  colon, which is PATH's separator under MSYS, so appending it splits into garbage and every tool on
+  it silently disappears. Keep both spellings and do not interchange them. (This made
+  `session-manager-plugin` report MISSING while sitting right there on disk.)
+- **A tunnel opened by another process is not one you can rely on.** SSM sessions idle-time out, so a
+  script that needs a port-forward should open its **own** and kill it on a trap.
+- **Restarting the box can leave the SSM session worker wedged** (`document process failed
+  unexpectedly: ipc messaging received timeout signal`) while `send-command` keeps working perfectly.
+  `systemctl restart amazon-ssm-agent` clears it. The signal you happen to be watching is green while
+  the capability you need is dead — the same shape as health probes passing on an unreachable box.
+- **Python writing to this console dies on non-ASCII** (`cp1252`). Write files with
+  `encoding='utf-8'`; keep `→`/`—` out of anything you `print`.
 - **Never hand-edit files on the box.** A `chmod` there left the checkout dirty and the next
   bootstrap refused to `git checkout` over it. Rebuild rather than edit.
 - **The local cloud boot gate cannot verify a browser login** — the `web` image bakes
