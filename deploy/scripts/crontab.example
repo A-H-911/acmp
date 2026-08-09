@@ -5,8 +5,14 @@
 # s3://$ACMP_BACKUP_BUCKET/sql/ via the instance profile (NFR-058: the copy must not share fate with the box).
 # See deploy/runbooks/cloud-backup-dr.md.
 #
-# Adjust the path to your checkout. Output is appended to a log the operator reviews; a non-zero exit (SQL failure)
-# is where an alert hooks in (mail, Seq webhook, etc.).
+# Adjust the path to your checkout. Output is appended to a log for after-the-fact detail.
+#
+# FAILURES ARE ALERTED BY backup.sh ITSELF, not by cron. This comment used to say a non-zero exit "is
+# where an alert hooks in (mail, Seq webhook, etc.)" — a placeholder that was never filled, so a failed
+# nightly backup was SILENT for as long as this file has existed. cron cannot help here: the lines below
+# redirect stdout+stderr to a log, and Amazon Linux 2023 ships no MTA, so cron has nowhere to mail
+# anything even without the redirect. backup.sh now publishes failures to ACMP_ALERT_TOPIC_ARN from an
+# EXIT trap, and says so loudly in the log if that variable is unset or the publish is refused.
 
 # ACMP_ENV_FILE IS LOAD-BEARING (DEF-022). Without it backup.sh defaults to deploy/.env, which exists
 # on-prem but NOT in cloud — the bootstrap writes deploy/.env.cloud. The miss used to be swallowed, so

@@ -57,6 +57,54 @@ mkdir -p "$BACKUP_DIR"
 
 log() { printf '[backup %s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 
+# FAILURE ALERTING. The comment further down used to claim "cron alerts on the non-zero exit". It does
+# not, and never did: the crontab redirects stdout+stderr to /var/log/acmp-backup.log, and Amazon Linux
+# 2023 ships no MTA, so cron has nowhere to mail anything. A failed nightly backup was therefore SILENT
+# unless somebody thought to read the log -- the same shape as DEF-030 (a control whose notification path
+# does not exist) and DEF-031 (an alarm with no action). AC-080 is Met on a regime that runs UNATTENDED,
+# and an unattended regime that fails quietly is exactly what that AC exists to prevent.
+#
+# Skipped-but-LOUD when unconfigured, deliberately matching the ACMP_BACKUP_BUCKET treatment below:
+# DEF-022 was a capability that skipped itself in silence, and the fix for that is not to skip quietly
+# in a new place.
+ALERT_TOPIC="${ACMP_ALERT_TOPIC_ARN:-}"
+FAILED_CMD=""; FAILED_LINE=""
+trap 'FAILED_CMD=$BASH_COMMAND; FAILED_LINE=$LINENO' ERR
+
+alert_on_failure() {
+  rc=$?
+  trap - EXIT
+  [ "$rc" -eq 0 ] && exit 0
+  log "FAILED (exit $rc) at line ${FAILED_LINE:-?}: ${FAILED_CMD:-<unknown>}"
+  if [ -z "$ALERT_TOPIC" ]; then
+    log "NO FAILURE ALERT SENT: ACMP_ALERT_TOPIC_ARN is unset, so this failure is visible ONLY in this log."
+    exit "$rc"
+  fi
+  # The alert must never mask the original failure, so its own errors are caught and logged, and the
+  # script still exits with the backup's exit code.
+  if aws sns publish --region "${AWS_REGION:-us-east-1}" --topic-arn "$ALERT_TOPIC" \
+       --subject "ACMP backup FAILED on $(uname -n 2>/dev/null || echo unknown)" \
+       --message "ACMP backup failed.
+host      : $(uname -n 2>/dev/null || echo unknown)
+env file  : $ENV_FILE
+when      : $(date -u '+%Y-%m-%dT%H:%M:%SZ') UTC
+exit code : $rc
+failed at : line ${FAILED_LINE:-?} -- ${FAILED_CMD:-<unknown>}
+databases : $DB_NAMES
+bucket    : ${ACMP_BACKUP_BUCKET:-<unset - no off-instance copy>}
+
+The .bak files for this run may be absent or incomplete. Check the full log on the box:
+  sudo tail -50 /var/log/acmp-backup.log
+Runbook: deploy/runbooks/cloud-backup-dr.md" >/dev/null 2>&1; then
+    log "failure alert published to $ALERT_TOPIC"
+  else
+    log "ALERT PUBLISH FAILED to $ALERT_TOPIC -- the backup failure above is UNREPORTED. Check that the"
+    log "  instance role grants sns:Publish on that topic (deploy/aws/03-iam.sh, SnsPublishFailureAlerts)."
+  fi
+  exit "$rc"
+}
+trap alert_on_failure EXIT
+
 # 0) Preflight the backup mount. SQL Server writes the .bak ITSELF, from inside the container, as
 #    uid 10001 (mssql) — not as the user running this script. Docker auto-creates a missing bind source
 #    ROOT-OWNED 0755, so BACKUP then dies with the famously unhelpful
@@ -72,7 +120,9 @@ EOF
 fi
 
 # 1) SQL Server — one native .bak per stateful database, into the /backups bind-mount (= host $BACKUP_DIR).
-#    CRITICAL: any failure aborts the run (cron alerts on the non-zero exit). BACKUP requires
+#    CRITICAL: any failure aborts the run, and the EXIT trap above publishes it to ACMP_ALERT_TOPIC_ARN.
+#    (This line used to say "cron alerts on the non-zero exit" — it never did: the crontab redirects to
+#    a log file and AL2023 ships no MTA, so cron had nowhere to mail anything.) BACKUP requires
 #    sysadmin/db_backupoperator, so it connects as sa (password from the secret file), NOT as acmp_svc.
 #    A database that does not exist is a hard error, not a skip: silently backing up less than asked is
 #    exactly how a restore drill discovers there was never a keycloak backup.
