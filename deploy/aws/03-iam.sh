@@ -82,7 +82,9 @@ JSON
   {"Sid":"KmsDecryptSsmSecureStrings","Effect":"Allow","Action":"kms:Decrypt","Resource":"*",
    "Condition":{"StringEquals":{"kms:ViaService":"ssm.${REGION}.amazonaws.com"}}},
   {"Sid":"S3Buckets","Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject","s3:AbortMultipartUpload","s3:ListBucket","s3:GetBucketLocation"],
-   "Resource":["arn:aws:s3:::${rec}","arn:aws:s3:::${rec}/*","arn:aws:s3:::${bak}","arn:aws:s3:::${bak}/*"]} ] }
+   "Resource":["arn:aws:s3:::${rec}","arn:aws:s3:::${rec}/*","arn:aws:s3:::${bak}","arn:aws:s3:::${bak}/*"]},
+  {"Sid":"SnsPublishFailureAlerts","Effect":"Allow","Action":"sns:Publish",
+   "Resource":"arn:aws:sns:${REGION}:${ACCOUNT_ID}:${PROJECT}-budget-alerts"} ] }
 JSON
 )"
   if ! aws iam get-instance-profile --instance-profile-name "$ROLE" >/dev/null 2>&1; then
