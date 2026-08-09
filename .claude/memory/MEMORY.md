@@ -13,6 +13,8 @@
 
 ## Standing rules & gotchas (read before editing)
 
+- [★ Controls must DETECT **and** TELL](controls-must-detect-and-tell.md) — **five** instances here (DEF-023/030/031/032, OQ-068). The "tell" half is always asserted in a comment rather than tested. Check `AlarmActions`, check service-principal topic policies, force the transition.
+- [⚠ Baselines are numbers, not properties](baselines-as-numbers-not-properties.md) — "non-zero against a zero baseline" got falsified by my own later fixes and turned a real check into one that passes for the wrong reason. No gate can see it.
 - [⚠ Absence needs an untruncated search](absence-claims-need-untruncated-search.md) — `tail`/`head`/`-m` in the pipeline means you may NOT claim "it isn't there". Cost a false lead in the permanent record; second occurrence of the shape.
 - [⚠ Immutable history → cleanup is asymmetric](immutable-history-cleanup-asymmetry.md) — DEF-029: deleting a Keycloak user ORPHANS its member rows forever. **Disable, never delete.**
 - [Write the handoff LAST](write-the-handoff-last.md) — a handoff written before the session's final verdict ships stale; stamp superseded ones with a ⛔ banner immediately.

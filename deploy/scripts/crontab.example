@@ -26,3 +26,14 @@ ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud
 
 # Every 4 hours during business days (Sun-Thu 08:00, 12:00, 16:00, 20:00) to hold RPO <= 4h
 0 8,12,16,20 * * 0-4   cd /opt/acmp && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
+
+# FRESHNESS: answers "have backups STOPPED?", which the lines above cannot. backup.sh alerts when a
+# run FAILS; a run that never HAPPENS produces no failure and no alert (OQ-068). @reboot matters more
+# than the daily line here: on a box that is stopped when idle, boot is the moment somebody is present
+# and able to act, and it is the only moment a check is guaranteed to run at all. Deliberately NOT a
+# CloudWatch alarm — one would sit in ALARM permanently while the box is stopped, which is OQ-067's
+# trap (an alarm in its expected state is one that gets ignored).
+# Set ACMP_BACKUP_MAX_AGE_HOURS in the env file: ~26h for an always-on box, far higher for a box that
+# is deliberately stopped for days, or the check becomes the noise it exists to avoid.
+@reboot        cd /opt/acmp && sleep 120 && deploy/scripts/check-backup-freshness.sh >> /var/log/acmp-backup.log 2>&1
+0 9 * * *      cd /opt/acmp && deploy/scripts/check-backup-freshness.sh >> /var/log/acmp-backup.log 2>&1
