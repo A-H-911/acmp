@@ -1,4 +1,12 @@
-# Resume prompt — PH-5 / SL-025 (paste into a fresh session)
+# ⛔ SUPERSEDED — do NOT paste this into a session
+
+> **SUPERSEDED 2026-08-09 by [`RESUME-ph5-closeout.md`](RESUME-ph5-closeout.md). Kept as a record of
+> the SL-025 provisioning work only. Do not act on anything below — its state is three days stale
+> and several of its statements are now false.** In particular it predates AC-075/080/084 reaching
+> Met, predates DEF-026 through DEF-029 entirely, and predates the correction that a STOPPED t3
+> earns no CPU credits. Stamped after a stale handoff twice sent work to be redone in one session.
+
+# Resume prompt — PH-5 / SL-025 (historical)
 
 > Rewritten 2026-08-07 after the DEF-023 verification session. Everything below is also in the
 > package (PE-176/PE-177, DEF-022→025, AV-100/101/102).

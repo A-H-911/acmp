@@ -229,6 +229,29 @@ exists and is owned by uid 10001 — the bootstrap creates it, but verify before
 | Renewal actually works | `certbot renew --dry-run` on the box | AC-081 |
 | Stop → start ≤ 10 min | stop the instance, start it, then poll `https://<host>/api/...` from off the box until it answers | AC-082 |
 | Webex isolation | `aws ssm get-parameter --name /acmp/uat/env --with-decryption` → `WEBEX_ENABLED=false`, no credentials | AC-083 |
+| e2e run + no credit alarm | **warm the box ~2 h first** (see below), then run the suite and confirm `acmp-uat-cpu-credits-low` is `OK` | AC-084 |
+
+### ⚠ Warm the box for ~2 hours before any e2e run (AC-084, OQ-067)
+
+**A STOPPED t3 EARNS NO CPU CREDITS.** The alarm reads `OK` while the instance is stopped only
+because a stopped instance publishes no `CPUCreditBalance` datapoints at all — it is not evidence of
+a healthy balance, and it flips back to `ALARM` within minutes of a start. A `t3.medium` in
+`standard` mode earns 24 credits/hour **only while running**, and the net rate observed on this box
+is ~15–18/hour once its own idle draw is subtracted. From a cold start it therefore needs roughly
+**two hours** of running time before `acmp-uat-cpu-credits-low` can clear (measured 2026-08-09:
+~9 credits at boot → cleared at 50.09 after ~1h50m). A re-bootstrap *spends* credits, so warm up
+**after** deploying, not before.
+
+The e2e run itself is nearly free and is **not** what trips the alarm: measured `CPUCreditUsage`
+across the two 5-minute periods covering a full run was **0.426 and 0.498**, against **2.0 credits
+earned** in the same window — about a quarter of what the box earns while running it. The balance
+*rose* during the run. So the only thing that ever trips this alarm is cold-start warm-up.
+
+**Do not lower the threshold to make it green.** That was considered and rejected twice: it would
+rebuild the un-failable check the alarm exists to prevent. The alarm is telling the truth — during
+warm-up the box genuinely has no burst headroom and would be throttled to its 20% baseline under
+load. The condition is real, bounded, and self-resolving; the warm-up is the cost of the
+stop-when-idle operating model that keeps this environment inside its $60/month budget.
 
 **AC-082 must be measured with an EXTERNAL probe that reaches the API**, not with `compose ps` and
 not against `/`. `web` can be healthy while `api` is crash-looping — daemon-driven container
