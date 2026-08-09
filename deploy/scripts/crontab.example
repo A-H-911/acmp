@@ -1,4 +1,8 @@
-# ACMP backup schedule (P18b; cloud shape in P23). Install on the instance's deploy user:  crontab crontab.example
+# ACMP backup schedule (P18b; cloud shape in P23).
+#   CLOUD: installed for you — deploy/aws/08-bootstrap-box.sh runs `crontab -u root <this file>` on
+#          every bootstrap. This file is the source of truth; `crontab -e` edits on the box are
+#          DISCARDED on the next bootstrap, so make lasting changes here.
+#   ON-PREM: still manual (runbooks/README.md step 6) —  crontab deploy/scripts/crontab.example
 # Nightly full backup + every-4h business-day backups so data loss never exceeds 4h (NFR-056 RPO); RTO <= 8h
 # (NFR-057) is met by restoring from the off-instance copy. backup.sh writes ONE .bak per stateful database
 # (Acmp AND keycloak — ADR-0036 put Keycloak on the same SQL Server) into ACMP_BACKUP_DIR, then copies them to
@@ -26,6 +30,29 @@ ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud
 
 # Every 4 hours during business days (Sun-Thu 08:00, 12:00, 16:00, 20:00) to hold RPO <= 4h
 0 8,12,16,20 * * 0-4   cd /opt/acmp && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
+
+# AT BOOT (OQ-068 option (b), resolved 2026-08-09). The two schedules above only fire while the
+# instance RUNS, and this environment's operating model deliberately stops it when idle (ADR-0034),
+# so 02:00 and the 4-hourly slots are missed on almost every session and UAT is backed up only when
+# somebody happens to have the box up at the right minute. This line converts "usually never" into
+# "at least once per session" using the existing backup path unchanged. It does NOT deliver NFR-056's
+# 4h RPO on a stopped-when-idle box — nothing on the box can, since cron cannot run while the
+# instance is off. Production is always-on, where the schedules above hold on their own.
+#
+# THE SLEEP IS NOT A GUESS. backup.sh now ALERTS on failure (DEF-032), so firing before SQL Server is
+# healthy would email a failure that is really just impatience — and an alert that cries wolf at every
+# boot is the noise OQ-067 rejected. 10 minutes is this project's own budget for exactly this case:
+# AC-082 gives a WARM stop/start 10 minutes to come back, which is what a reboot is. (The bootstrap's
+# 15-minute deadline is a different measurement — a COLD box doing first-ever migration and realm
+# import.) Past AC-082's budget the stack is genuinely late, so a failure alert is a TRUE positive.
+# That is why this waits on a number rather than probing: the wait IS the assertion.
+#
+# ORDER IS LOAD-BEARING, AND THE SLEEPS ARE WHAT ENFORCE IT — not the order of lines in this file.
+# cron fires every @reboot entry at boot without sequencing them, so the only thing that makes the
+# freshness check run BEFORE this backup is 120s vs 600s. Keep that gap. If this backup ran first,
+# freshness would always pass, because the same boot just created the object it inspects — a check
+# that passes for the wrong reason (PE-197). Freshness must report the state we LEFT the box in.
+@reboot        cd /opt/acmp && sleep 600 && deploy/scripts/backup.sh >> /var/log/acmp-backup.log 2>&1
 
 # FRESHNESS: answers "have backups STOPPED?", which the lines above cannot. backup.sh alerts when a
 # run FAILS; a run that never HAPPENS produces no failure and no alert (OQ-068). @reboot matters more
