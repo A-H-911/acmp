@@ -44,6 +44,44 @@ if ! aws sns list-subscriptions-by-topic --topic-arn "$TOPIC_ARN" \
   log "SNS: confirm the subscription email just sent to $ALERT_EMAIL"
 fi
 
+# DEF-030 — WITHOUT THIS THE ENTIRE ALERT CHAIN IS SILENTLY DEAD. A new topic carries only AWS's
+# default policy: Principal {"AWS":"*"} gated on AWS:SourceOwner, which covers IAM principals in
+# this account. AWS Budgets publishes as the SERVICE principal budgets.amazonaws.com, which cannot
+# satisfy SourceOwner, so every budget notification is REJECTED at publish time. The failure is
+# invisible from the budget side: the notification still flips OK -> ALARM on a real threshold
+# crossing, so `describe-notifications-for-budget` shows a perfectly armed, firing alert while
+# NumberOfMessagesPublished on the topic stays at zero and no subscriber ever hears anything. AWS
+# reports it out-of-band, by emailing the account contact "we are unable to successfully publish to
+# this SNS topic" -- which is how it was finally caught, three days after the topic was created.
+# aws:SourceAccount is the confused-deputy guard: the topic ARN is guessable, and without it any
+# AWS customer's budget could publish into this alert channel.
+log "SNS: granting budgets.amazonaws.com permission to publish (DEF-030)"
+aws sns set-topic-attributes --topic-arn "$TOPIC_ARN" --attribute-name Policy \
+  --attribute-value "{
+    \"Version\": \"2012-10-17\",
+    \"Id\": \"${PROJECT}-budget-alerts-policy\",
+    \"Statement\": [
+      {
+        \"Sid\": \"DefaultAccountAccess\",
+        \"Effect\": \"Allow\",
+        \"Principal\": { \"AWS\": \"*\" },
+        \"Action\": [\"SNS:GetTopicAttributes\", \"SNS:SetTopicAttributes\", \"SNS:AddPermission\",
+                     \"SNS:RemovePermission\", \"SNS:DeleteTopic\", \"SNS:Subscribe\",
+                     \"SNS:ListSubscriptionsByTopic\", \"SNS:Publish\"],
+        \"Resource\": \"$TOPIC_ARN\",
+        \"Condition\": { \"StringEquals\": { \"AWS:SourceOwner\": \"$ACCOUNT_ID\" } }
+      },
+      {
+        \"Sid\": \"AllowBudgetsToPublish\",
+        \"Effect\": \"Allow\",
+        \"Principal\": { \"Service\": \"budgets.amazonaws.com\" },
+        \"Action\": \"SNS:Publish\",
+        \"Resource\": \"$TOPIC_ARN\",
+        \"Condition\": { \"StringEquals\": { \"aws:SourceAccount\": \"$ACCOUNT_ID\" } }
+      }
+    ]
+  }"
+
 # 3) Budget + notifications + actions ----------------------------------------------------
 BUDGET_NAME="${PROJECT}-monthly"
 if aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" >/dev/null 2>&1; then
