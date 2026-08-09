@@ -6,17 +6,18 @@
 
 ---
 
-Resume the PH-5 acceptance close-out on ACMP. UAT is live and running the current `main`. Nine
-acceptance criteria are Met; three are Partial. Full handoff: `handoff/RESUME-ph5-closeout.md` —
-read it first.
+Resume the PH-5 acceptance close-out on ACMP. UAT is live and running the current `main`. **Ten
+acceptance criteria are Met; two are Partial**, and neither remaining item is blocked on
+engineering. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it first.
 
 ## Orient before touching anything
 
 1. `server_info()` → expect **2.7.1**. Then `package_open("tamheed-package")`, then `gate_run()` →
-   expect **7/7 ready**, audit evidence **99 evidenced / 12 narrated**.
+   expect **7/7 ready**, audit evidence **100 evidenced / 12 narrated**.
 2. Read the reasoning rather than re-deriving it: **AV-106** (AC-080 Met), **AV-111** (AC-076,
-   supersedes AV-108), **AV-109** (AC-084), **AV-110** (AC-085, supersedes AV-107),
-   **DEF-029** (the live blocker), **OQ-066** and **OQ-067**, and progress entries **PE-184 … PE-189**.
+   supersedes AV-108), **AV-112** (AC-084 Met, supersedes AV-109), **AV-110** (AC-085, supersedes
+   AV-107), **DEF-029** (the live blocker), **OQ-066** and **OQ-067**, and progress entries
+   **PE-184 … PE-190**.
 3. `git log --oneline -5` and `gh pr list`.
 4. **Close the package** (`package_close`) when done reading — it holds a single-writer lock, and
    **commit `tamheed-package/data` the moment it returns**.
@@ -27,7 +28,7 @@ read it first.
   in the account; Elastic IP **35.173.149.191**; `https://uat.acmp.anas7ammo.dev`. `/acmp/uat/env`
   pins `ACMP_IMAGE_TAG=155cc803…` and `ACMP_WEB_TAG=155cc803…-uat`, so box, pins and `main` agree.
 - **`export AWS_PROFILE=acmp-admin`** on every AWS call. Never operate as root.
-- Acceptance: **AC-075/077/078/079/080/081/082/083/086 Met** · **AC-076/084/085 Partial**.
+- Acceptance: **AC-075/077/078/079/080/081/082/083/084/086 Met** · **AC-076/085 Partial**.
 - Open defects: **DEF-012** (v_backlog residue — by design, no action) and **DEF-029** (below).
   DEF-027 and DEF-028 are both **Fixed**.
 - Seeded accounts `chairman` / `secretary` / `member` / `auditor`, password `Uat_Acmp#2026_Rotated`.
@@ -57,24 +58,7 @@ was available to the previous session, which is the only reason it is still open
 ⚠ **Never delete the `e2e-*` accounts again — disable them** (`PUT …/users/{id}` with
 `{"enabled": false}`). That removes the login risk just as completely and preserves the `sub`.
 
-### 2. AC-084 → Met — needs a warm box, nothing else (~2 h of *running* time)
-
-Two of its three original objections are discharged (AV-109). The memory half is **shown to hold**:
-under a real e2e run Keycloak peaked at **441.9 MiB of its 448 MiB cap** with zero OOM events, zero
-container deaths, clean `dmesg` and 46 MiB of 4 GiB swap touched. The AC allows "raised **or shown to
-hold**". Record the 6 MiB margin as a standing risk; the slack to fund any raise is in `worker`
-(103.8/256) and `seq` (168.3/256), against a 3536/3584 MiB total.
-
-Only the alarm clause is left. ⚠ **A STOPPED t3 EARNS NO CPU CREDITS.** The old handoff said the
-balance recovered while idle — it did not; the alarm read OK only because a stopped instance
-publishes no datapoints, and it returns to ALARM within minutes of a start. Net accrual is
-~15–18/hr while running, and a re-bootstrap *spends* credits. So: start the box, leave it alone for
-about two hours until `acmp-uat-cpu-credits-low` reads OK, **then** drive the e2e run.
-**Do not lower the threshold** — rejected twice already, because it rebuilds the un-failable check.
-See **OQ-067**, which asks the better question: whether that alarm measures the right thing at all
-for a box that is stopped when idle.
-
-### 3. AC-085 leg 1 → Met — pure observation, no action (~1 day)
+### 2. AC-085 leg 1 → Met — pure observation, no action (~1 day)
 
 Legs 2–5 are Met. A **2 % ACTUAL notification is already armed and sitting in OK**
 ($1.20 against $1.065 spent). It will transition on its own as ordinary spend crosses it.
@@ -82,6 +66,20 @@ Check **both**: the 2.0 threshold reading ALARM **and** a non-zero `NumberOfNoti
 on the `acmp-budget-alerts` topic. **State alone is not arrival** — that distinction is the whole
 finding. Arming a threshold *below* current spend can never work: it goes ALARM instantly with no
 OK→ALARM transition, so nothing is ever delivered. Delete the 2 % notification once observed.
+
+### AC-084 is Met — do NOT re-do it (AV-112)
+
+Recorded here because an earlier draft of this file sent a session to close it after it was already
+closed. The alarm cleared on its own at 50.09 credits after ~1h50m of running, with **no threshold
+tuning**, and the run then held it OK throughout while the balance ROSE, 50.09 → 51.59. The number
+that settles it is usage, not balance: **0.426 and 0.498 credits** consumed in the two 5-minute
+periods covering the run, against **2.0 earned** in the same window. An e2e run costs about a
+quarter of what the box earns while running it — so the clause was never about e2e load at all, only
+about cold-start warm-up. ⚠ **A STOPPED t3 EARNS NO CPU CREDITS**; the alarm reads OK while stopped
+only because a stopped instance publishes no datapoints. Memory holds too: Keycloak 430.7 MiB of its
+448 cap, zero OOM, all six containers healthy. **Keycloak's ~17 MiB of headroom is a standing risk**,
+the thinnest in the stack against a 3536/3584 MiB limits total; the slack to fund any raise is in
+`worker` and `seq`. See **OQ-067** for the design question this raised.
 
 ## Running the suite against UAT (proven recipe)
 
