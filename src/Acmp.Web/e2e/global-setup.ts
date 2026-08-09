@@ -15,6 +15,57 @@ import { E2E_PASSWORD, E2E_USERS, type E2eUser } from './users';
 const KC_BASE = process.env.E2E_KEYCLOAK_URL ?? 'http://localhost:8085';
 const WEB_BASE = process.env.E2E_WEB_URL ?? 'http://localhost:8088';
 const REALM = 'acmp';
+
+/*
+ * PRODUCTION REFUSAL. PE-185 recorded, after the first UAT run, that "the governance rows the run
+ * wrote are hash-chained and immutable and REMAIN in the database permanently — acceptable for UAT,
+ * and exactly why the suite must stay incapable of pointing at production." That property was
+ * asserted in prose and never built: E2E_WEB_URL accepted any host, so a single environment
+ * variable stood between this suite and the production system of record.
+ *
+ * What a prod run would do is not recoverable by any cleanup. It seeds fixed-password accounts whose
+ * password is committed in e2e/users.ts, and core-loop.spec.ts then submits a topic and schedules a
+ * meeting — real governance rows. The audit chain is hash-chained and append-only (INV-005) and a
+ * CommitteeMember can be deactivated but never removed (DEF-029), so the accounts can be disabled
+ * afterwards while the rows they created stay in the record forever.
+ *
+ * Matched on the HOST of both URLs, not on a substring of either: a check like
+ * url.includes('acmp.anas7ammo.dev') passes the uat subdomain straight through, because the uat host
+ * CONTAINS the prod host. ACMP_E2E_ALLOW_PROD exists only so the refusal itself stays testable.
+ */
+const PROD_HOSTS = ['acmp.anas7ammo.dev'];
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).host.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function refuseProduction(): void {
+  if (process.env.ACMP_E2E_ALLOW_PROD === '1') {
+    console.warn('[e2e] production refusal DISABLED via ACMP_E2E_ALLOW_PROD=1');
+    return;
+  }
+  for (const [label, url] of [
+    ['E2E_WEB_URL', WEB_BASE],
+    ['E2E_KEYCLOAK_URL', KC_BASE],
+  ] as const) {
+    const host = hostOf(url);
+    if (host && PROD_HOSTS.includes(host)) {
+      throw new Error(
+        `[e2e] REFUSING TO RUN: ${label} points at the production host "${host}".\n` +
+          '      This suite seeds fixed-password accounts (password committed in e2e/users.ts) and\n' +
+          '      writes governance rows. ACMP audit events are hash-chained and append-only and a\n' +
+          '      member row can be deactivated but never deleted, so nothing it writes to production\n' +
+          '      can be undone. Run it against UAT, and verify production with deploy/scripts/smoke.sh.',
+      );
+    }
+  }
+}
+
+refuseProduction();
 const ADMIN_USER = process.env.KC_BOOTSTRAP_ADMIN_USERNAME ?? 'admin';
 const ADMIN_PASS = process.env.KC_BOOTSTRAP_ADMIN_PASSWORD ?? 'admin';
 
