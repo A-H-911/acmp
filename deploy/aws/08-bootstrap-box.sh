@@ -4,12 +4,17 @@
 #   bash deploy/aws/08-bootstrap-box.sh <uat|prod> <commit-sha>
 #
 # ############################################################################################
-# # UNVERIFIED. This script has NEVER RUN, because no instance exists yet. Everything below   #
-# # is reasoned from the live API shapes and the compose file, not observed. Treat its first  #
-# # run as a test OF THIS SCRIPT, not as a deployment. That warning is not boilerplate: the   #
-# # two worst defects of this phase, DEF-019 and DEF-020, were both in deploy code that had   #
-# # been carefully written, reviewed and never executed, and both would have surfaced         #
-# # mid-deploy on a paid box. Run it, expect it to be wrong somewhere, and fix it there.      #
+# # VERIFIED IN USE. This banner used to read "UNVERIFIED. This script has NEVER RUN, because #
+# # no instance exists yet" — true when written, false since the first real bootstrap, and    #
+# # left standing through several more (155cc803, 87b4a8a8, 37983180). A prominent warning    #
+# # that is no longer true is worse than none: it trains the reader to discount the banner,   #
+# # and the next genuinely unverified script inherits that discount.                          #
+# #                                                                                           #
+# # What the original warning got RIGHT, and is worth keeping: the two worst defects of this  #
+# # phase, DEF-019 and DEF-020, were both in deploy code that had been carefully written,     #
+# # reviewed and never executed. DEF-033 repeated it later in a different file. So the rule   #
+# # stands for any line you ADD here — a new line is unverified even in a verified script,    #
+# # and running it once on the box beats reading it twice.                                    #
 # ############################################################################################
 #
 # DELIVERY MECHANISM: SSM Run Command, not SSH (OQ-063). The instances have no inbound SSH rule
