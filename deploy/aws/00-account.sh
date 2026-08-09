@@ -85,7 +85,30 @@ aws sns set-topic-attributes --topic-arn "$TOPIC_ARN" --attribute-name Policy \
 # 3) Budget + notifications + actions ----------------------------------------------------
 BUDGET_NAME="${PROJECT}-monthly"
 if aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" >/dev/null 2>&1; then
-  log "budget $BUDGET_NAME already exists (leaving as-is)"
+  # RECONCILE THE LIMIT, do not just skip. This branch used to log "leaving as-is" and return, which
+  # made BUDGET_LIMIT_USD write-once: editing it in _common.sh changed nothing on an account that
+  # already had the budget, so source and live could disagree forever with every re-run reporting
+  # success. That is the same provision-but-never-reconcile shape as the crontab the bootstrap
+  # installed a daemon for but never scheduled -- the mechanism exists, the value it carries drifts.
+  #
+  # Only the AMOUNT is reconciled. Thresholds, actions and subscribers are left alone: they are
+  # created below and in 3b, and silently rewriting a spend guardrail's actions from a helper branch
+  # is exactly the kind of change nobody would notice. The four fields sent are the same four the
+  # create call sends, so the round-trip is lossless (CalculatedSpend is computed, not input).
+  current_limit="$(aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" \
+                     --query 'Budget.BudgetLimit.Amount' --output text)"
+  if [ "${current_limit%%.*}" = "${BUDGET_LIMIT_USD%%.*}" ]; then
+    log "budget $BUDGET_NAME exists at \$$current_limit/mo (matches)"
+  else
+    log "budget $BUDGET_NAME limit DRIFT: live \$$current_limit -> desired \$$BUDGET_LIMIT_USD; updating"
+    aws budgets update-budget --account-id "$ACCOUNT_ID" --new-budget "$(cat <<JSON
+{ "BudgetName": "$BUDGET_NAME", "BudgetLimit": { "Amount": "$BUDGET_LIMIT_USD", "Unit": "USD" },
+  "TimeUnit": "MONTHLY", "BudgetType": "COST" }
+JSON
+)"
+    log "budget $BUDGET_NAME now \$$BUDGET_LIMIT_USD/mo — RE-CHECK the 50/80/100% notification states,"
+    log "  because raising a limit can move a notification out of ALARM without anything else changing"
+  fi
 else
   log "creating budget $BUDGET_NAME at \$$BUDGET_LIMIT_USD/mo with 50/80/100% alerts"
   # JSON is passed INLINE, never via a temp file. `mktemp` returns a POSIX path and a native Windows
