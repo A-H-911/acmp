@@ -25,7 +25,21 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 ENV_FILE="${ACMP_ENV_FILE:-deploy/.env}"
-[ -f "$ENV_FILE" ] && { set -a; . "$ENV_FILE"; set +a; }
+# DEF-022 ALL OVER AGAIN, and it was in this file within an hour of being written. The first version
+# sourced the env file only `[ -f ]` it existed and otherwise carried on, so running without
+# ACMP_ENV_FILE on a cloud box — where the file is .env.cloud, not .env — left ACMP_BACKUP_BUCKET
+# empty and the script exited 0 reporting "nothing to check". A freshness check that reports nothing
+# to check is INDISTINGUISHABLE FROM HEALTHY, which makes it worse than absent: it is a control that
+# actively reassures while doing nothing. Refuse instead, exactly as backup.sh was fixed to.
+if [ -f "$ENV_FILE" ]; then
+  set -a; . "$ENV_FILE"; set +a
+elif [ -z "${ACMP_BACKUP_BUCKET:-}" ]; then
+  echo "check-backup-freshness: env file '$ENV_FILE' not found and ACMP_BACKUP_BUCKET is not set —" >&2
+  echo "        refusing to report 'nothing to check', which reads exactly like 'backups are fine'." >&2
+  echo "        Set ACMP_ENV_FILE (cloud: /opt/acmp/deploy/.env.cloud). The crontab sets it; this" >&2
+  echo "        refusal is the net, not the plan (DEF-022)." >&2
+  exit 1
+fi
 
 BUCKET="${ACMP_BACKUP_BUCKET:-}"
 TOPIC="${ACMP_ALERT_TOPIC_ARN:-}"
@@ -33,8 +47,11 @@ MAX_AGE_H="${ACMP_BACKUP_MAX_AGE_HOURS:-26}"
 log() { printf '[freshness %s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 
 if [ -z "$BUCKET" ]; then
-  log "ACMP_BACKUP_BUCKET is unset — nothing to check. (Local-only backups are not backups.)"
-  exit 0
+  # Also a refusal, not a shrug: an env file that exists but sets no bucket means local-only backups,
+  # which are not backups (NFR-058). Reporting "nothing to check" would hide that.
+  echo "check-backup-freshness: ACMP_BACKUP_BUCKET is unset in '$ENV_FILE' — there is no" >&2
+  echo "        off-instance copy to check, which is itself the finding (NFR-058)." >&2
+  exit 1
 fi
 
 # Newest object under sql/. --output text keeps this to one line per object; the last field is the key.
