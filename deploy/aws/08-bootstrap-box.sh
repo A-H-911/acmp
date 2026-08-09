@@ -240,7 +240,29 @@ wait_oneshot() {  # must have EXITED, and exited 0 — reading the code while it
   echo "  FAIL  $1 never finished (last: ${st:-absent})"; fail=1; return 1
 }
 
-echo "--- asserting stack health (up to 10 min) ---"
+# --- INSTALL THE SCHEDULE ITSELF, not just the daemon -------------------------------------------
+# Lines 126-127 install cronie and enable crond, and then the ONLY thing that actually schedules a
+# backup was left as a manual runbook step (`crontab deploy/scripts/crontab.example`, runbooks
+# README.md step 6 / cloud-provisioning.md section 8). That is DEF-026 half-fixed: the comment above
+# argues "a documented prerequisite is what gets skipped" and then documents this one. A box rebuilt
+# from this script alone has a running cron daemon and an EMPTY crontab, which looks identical to a
+# scheduled box from every angle except the one that matters.
+#
+# It also silently decided whether OQ-068's @reboot backup exists at all: editing crontab.example
+# without this line ships a schedule that never reaches any box.
+#
+# Root's crontab, because every line writes to /var/log/acmp-backup.log and drives docker. Idempotent
+# by construction — `crontab <file>` REPLACES the table rather than appending, so re-bootstrapping
+# converges instead of accumulating duplicate entries. The flip side, stated because it will surprise
+# somebody: any line hand-added on the box is DISCARDED on the next bootstrap. That is the intended
+# direction (the file is the source of truth) — put lasting changes in crontab.example, not in
+# `crontab -e`. Installed BEFORE the health assertions so a stack that comes up unhealthy still
+# leaves a box that is scheduled.
+crontab -u root deploy/scripts/crontab.example
+echo "--- backup schedule installed (root crontab) ---"
+crontab -u root -l | grep -E '^[0-9@]' || true
+
+echo "--- asserting stack health (up to 15 min) ---"
 for s in sqlserver-init db-migrate keycloak-config; do wait_oneshot "$s" || true; done
 for s in sqlserver keycloak seq api worker web;     do wait_healthy "$s" || true; done
 

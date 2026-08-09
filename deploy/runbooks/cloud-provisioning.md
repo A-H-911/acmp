@@ -198,13 +198,29 @@ created with a temporary password and `UPDATE_PASSWORD` pending.
 
 ---
 
-## 8. Install the backup schedule
+## 8. Verify the backup schedule
+
+**`08-bootstrap-box.sh` now installs this — there is nothing to do here by hand.** It runs
+`crontab -u root deploy/scripts/crontab.example` and prints the installed lines. This step used to say
+`crontab -e`, i.e. the daemon was provisioned by the bootstrap while the *schedule* — the only thing
+that actually causes a backup — was left to a human reading a runbook. A box rebuilt from the scripts
+alone therefore had `crond` running and an empty crontab, which is indistinguishable from a scheduled
+box until the day you need a backup. Same family as **DEF-026**.
+
+Confirm it rather than assuming it — the bootstrap prints the table, and on the box:
 
 ```bash
-crontab -e     # base it on deploy/scripts/crontab.example, adjusting the checkout path
+crontab -u root -l          # nightly 02:00, Sun-Thu 4-hourly, @reboot backup, @reboot + daily freshness
 ```
 
-`crontab.example` now sets `ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud` at the top — **keep that line.**
+The `@reboot` backup line exists because cron only runs while the instance runs, and this environment
+stops the box when idle — so the clock-based slots are missed on almost every session (**OQ-068**,
+resolved as option (b)). It sleeps 600s first: `backup.sh` alerts on failure, and firing before SQL
+Server is healthy would email impatience rather than a fault. It does **not** deliver NFR-056's 4h RPO
+on a stopped-when-idle box; nothing running *on* the box can, since cron cannot fire while the
+instance is off. Production is always-on, where the clock-based lines hold on their own.
+
+`crontab.example` also sets `ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud` at the top — **keep that line.**
 It used to be absent, so `backup.sh` fell back to `deploy/.env` (a file the cloud bootstrap never
 writes), swallowed the miss, left `ACMP_BACKUP_BUCKET` unset and **silently skipped the off-instance
 S3 copy** while still reporting success — backups sharing fate with the box they back up, which is
