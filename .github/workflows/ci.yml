@@ -82,6 +82,13 @@ jobs:
       - name: Cloud image tags match what CI publishes (DEF-019)
         run: node scripts/check-cloud-images.mjs
 
+      # Nothing in CI read the runbooks at all, so two doc defects sat there unnoticed: a stale
+      # budget ceiling in five places (the figure the alert thresholds and the IAM-deny brake are
+      # all derived from), and a cloud runbook telling operators to run the ON-PREM warm-standby
+      # failover script for a cloud rollback — which restores a backup over an intact database.
+      - name: Runbooks agree with the deployment (budget ceiling, cloud vs on-prem scripts)
+        run: node scripts/check-runbook-drift.mjs
+
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 15

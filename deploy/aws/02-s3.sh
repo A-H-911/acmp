@@ -32,7 +32,7 @@ make_bucket() { # bucket-name [expire-current-after-days]
   aws s3api put-bucket-versioning --bucket "$b" --versioning-configuration Status=Enabled >/dev/null
   # Recordings are the system of record for a meeting — nothing expires them. BACKUPS are different: a
   # nightly .bak per database, uncompressed (Express rejects WITH COMPRESSION), uploaded forever would grow
-  # without bound on an account whose whole budget is ~$45/mo and whose 100%/120% budget actions cut access
+  # without bound on an account whose whole budget is $100/mo and whose 100% budget actions cut access
   # and stop instances. So the backup bucket alone expires CURRENT versions, on the same clock as the local
   # BACKUP_RETENTION_DAYS prune in deploy/scripts/backup.sh.
   local expire_rule=""

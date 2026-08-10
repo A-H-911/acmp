@@ -4,8 +4,9 @@ The path from **no instance** to an **all-healthy stack on a real hostname with 
 This is the document AC-075 means by *"bootstrapped from the runbook"*.
 
 > **Scope.** EC2 + Docker Compose per ADR-0034, S3 per ADR-0035, Keycloak on SQL Server per
-> ADR-0036, two subdomain environments per ADR-0037. For backup/restore/DR see
-> [cloud-backup-dr.md](cloud-backup-dr.md). The on-prem runbook ([README.md](README.md)) is
+> ADR-0036, two subdomain environments per ADR-0037. Once the box exists, day-to-day operation —
+> start/stop, deploying a commit, alerts — is [cloud-operations.md](cloud-operations.md). For
+> backup/restore/DR see [cloud-backup-dr.md](cloud-backup-dr.md). The on-prem runbook ([README.md](README.md)) is
 > **superseded for anything on EC2** — its commands use `up.sh` and `docker-compose.prod.yml`,
 > which are the wrong files for a cloud box.
 
@@ -24,15 +25,21 @@ This is the document AC-075 means by *"bootstrapped from the runbook"*.
 | Public IPv4 / Elastic IP | $3.65 | $3.65 |
 | **Subtotal** | **~$38/mo** | **~$9/mo** |
 
-Budget is **$60/mo**, with an IAM-deny action at 100% and an EC2 stop action armed by `07-launch.sh`.
+Budget is **$100/mo**, with an IAM-deny action at 100% and an EC2 stop action armed by `07-launch.sh`
+— both at 100% ACTUAL, alongside 50/80/100% notifications. It was raised from $60 on 2026-08-09 to
+fund an always-on production box (amending ADR-0034); the two subtotals above are **~$47/mo of
+$100** in steady state.
 
 **Rules that keep it under the ceiling:**
 
-1. **Never leave two instances running.** 2 × t3.medium is ~$76/mo and blows the budget unaided.
+1. **Never leave two instances running _always-on_.** Prod always-on plus UAT started for a session
+   is the intended shape and fits. Two *always-on* t3.mediums is ~$84/mo, which sits above the 80%
+   notification with no headroom before the brake — think before adding one.
 2. **Stop UAT when idle.** Stopped it costs only EBS + Elastic IP (~$7.65/mo). This is what AC-082
    exists to make safe — the stop/start cycle is a cost control, not just an acceptance criterion.
+   The commands are in [cloud-operations.md](cloud-operations.md).
 3. **Do not launch prod until UAT is proven.** Saves ~$38/mo across P25 and P27.
-4. **Never create a NAT gateway.** ~$32/mo — over half the budget, for nothing this design needs.
+4. **Never create a NAT gateway.** ~$32/mo — a third of the budget, for nothing this design needs.
    The instance sits in a public subnet of the default VPC behind the IGW.
 5. Elastic IPs are allocated **at launch, per environment**. An allocated-but-unassociated address
    bills the same $0.005/hr for nothing.
@@ -45,7 +52,7 @@ ACMP brake. Do not read its alerts as the brake firing.
 ## 1. One-time landing zone (per account)
 
 ```bash
-bash deploy/aws/00-account.sh      # AS ROOT, once. IAM admin user, SNS, $60 budget, IAM deny brake
+bash deploy/aws/00-account.sh      # AS ROOT, once. IAM admin user, SNS, $100 budget, IAM deny brake
 # then switch to the acmp-admin profile for everything below
 bash deploy/aws/01-network.sh      # security groups: inbound 443 ONLY (no 22 — SSM; no 80 — DNS-01)
 bash deploy/aws/02-s3.sh           # recordings + backups buckets, BPA, SSE, versioning, lifecycle
@@ -267,7 +274,7 @@ earned** in the same window — about a quarter of what the box earns while runn
 rebuild the un-failable check the alarm exists to prevent. The alarm is telling the truth — during
 warm-up the box genuinely has no burst headroom and would be throttled to its 20% baseline under
 load. The condition is real, bounded, and self-resolving; the warm-up is the cost of the
-stop-when-idle operating model that keeps this environment inside its $60/month budget.
+stop-when-idle operating model that keeps this environment inside its $100/month budget.
 
 **AC-082 must be measured with an EXTERNAL probe that reaches the API**, not with `compose ps` and
 not against `/`. `web` can be healthy while `api` is crash-looping — daemon-driven container
