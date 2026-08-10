@@ -101,6 +101,21 @@ describe('MeetingsList (P6c)', () => {
     expect(screen.getByText('No meetings scheduled yet')).toBeInTheDocument();
   });
 
+  // An empty screen must offer the way forward, not only describe the absence. Every other register
+  // put a CTA in its empty state; Meetings did not, so a committee with no meetings yet saw a dead
+  // end. Scoped to the empty state's own status region so it cannot pass on the header button, which
+  // is always present and would make this assertion un-failable.
+  it('offers a way to schedule from the empty state, not just the header', () => {
+    result({ data: [] });
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+
+    // Scoped to the empty state's own status region. An unscoped query would match the header
+    // button, which is always rendered — the assertion would then pass with the empty state still
+    // offering nothing, which is precisely the bug.
+    const emptyRegion = screen.getByRole('status');
+    expect(within(emptyRegion).getByRole('button', { name: /schedule/i })).toBeInTheDocument();
+  });
+
   it('shows the loading state on first fetch', () => {
     result({ isLoading: true });
     renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
