@@ -73,7 +73,7 @@ public class MembershipResolverTests
     public async Task UserStreamProvider_returns_assigned_stream_codes()
     {
         await using var db = NewDb();
-        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهندسة"));
+        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهيكلة"));
         var platform = Stream.Create("platform", LocalizedString.Create("Platform", "المنصة"));
         db.Streams.AddRange(architecture, platform);
         var member = Member("kc-u");

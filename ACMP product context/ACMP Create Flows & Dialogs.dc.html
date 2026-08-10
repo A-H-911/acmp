@@ -264,7 +264,7 @@ class Component extends DCLogic {
     const entityMeta = {
       decision:{ label:L('Decision','قرار'), area:L('Decisions & ADRs','القرارات وسجلات القرار') },
       adr:{ label:L('ADR','سجل قرار'), area:L('Governance','الحوكمة') },
-      invariant:{ label:L('Invariant','ثابت معماري'), area:L('Governance','الحوكمة') },
+      invariant:{ label:L('Invariant','ثابت هيكلة'), area:L('Governance','الحوكمة') },
       action:{ label:L('Action','إجراء'), area:L('Actions','الإجراءات') },
       risk:{ label:L('Risk','مخاطرة'), area:L('Risks','المخاطر') },
       vote:{ label:L('Vote session','جلسة تصويت'), area:L('Decisions & ADRs','القرارات وسجلات القرار') },
@@ -290,7 +290,7 @@ class Component extends DCLogic {
         F('date',L('Effective date','تاريخ السريان'),L('18 Feb 2026','18 فبراير 2026'),{req:true}),
         F('text',L('Affected systems','الأنظمة المتأثرة'),L('Identity, Platform, Payments','الهوية، المنصة، المدفوعات'),{})
       ], hint:{ on:'rationale' } },
-      adr:{ title:L('Create an ADR','إنشاء سجل قرار'), sub:L('MADR-lite architecture decision record.','سجل قرار معماري بصيغة MADR المبسّطة.'), primary:L('Save ADR','حفظ السجل'), fields:[
+      adr:{ title:L('Create an ADR','إنشاء سجل قرار'), sub:L('MADR-lite architecture decision record.','سجل قرار هيكلة بصيغة MADR المبسّطة.'), primary:L('Save ADR','حفظ السجل'), fields:[
         F('text',L('Title','العنوان'),L('Keycloak as the standard IdP','Keycloak كموفّر هوية معياري'),{full:true,req:true}),
         F('select',L('Status','الحالة'),L('Proposed','مقترح'),{req:true}),
         F('select',L('Linked decision','القرار المرتبط'),'DECN-2026-008',{}),
@@ -298,7 +298,7 @@ class Component extends DCLogic {
         F('area',L('Decision','القرار'),L('Adopt Keycloak, realm-per-stream, as the standard identity provider.','اعتماد Keycloak، نطاق لكل مسار، كموفّر هوية معياري.'),{full:true,req:true}),
         F('area',L('Consequences','التبعات'),L('Positive: unified session handling. Negative: a dual-running migration window per stream.','إيجابي: توحيد إدارة الجلسات. سلبي: نافذة ترحيل مزدوجة لكل مسار.'),{full:true})
       ]},
-      invariant:{ title:L('Create an invariant','إنشاء ثابت معماري'), sub:L('A standing rule systems must never violate.','قاعدة دائمة يجب ألا تخالفها الأنظمة.'), primary:L('Save invariant','حفظ الثابت'), fields:[
+      invariant:{ title:L('Create an invariant','إنشاء ثابت هيكلة'), sub:L('A standing rule systems must never violate.','قاعدة دائمة يجب ألا تخالفها الأنظمة.'), primary:L('Save invariant','حفظ الثابت'), fields:[
         F('select',L('Category','الفئة'),L('Security','الأمن'),{req:true}),
         F('select',L('Scope','النطاق'),L('All committee-governed services','كل الخدمات الخاضعة للحوكمة'),{req:true}),
         F('area',L('Statement','النص'),L('Every committee-governed service must authenticate through the standard identity provider; no service may implement its own credential store.','يجب أن تُصادَق كل خدمة خاضعة للحوكمة عبر موفّر الهوية المعياري؛ ولا يجوز لأي خدمة بناء مخزن اعتماد خاص.'),{full:true,req:true}),
