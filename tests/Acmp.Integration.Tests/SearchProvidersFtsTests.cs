@@ -91,7 +91,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
         arabic.Should().NotContain(h => h.Key == "DECN-2026-902", "the unrelated risk decision must not match");
 
         // Arabic round-trips with no encoding corruption (AC-061 "no character encoding errors").
-        arabic.First(h => h.Key == "DECN-2026-901").Title.Ar.Should().Be("قرار معماري");
+        arabic.First(h => h.Key == "DECN-2026-901").Title.Ar.Should().Be("قرار هيكلة");
 
         // English query hits the same corpus via the English word-breaker (AC-061 "relevant English results").
         var english = await provider.SearchAsync("architecture", 10);
@@ -159,8 +159,8 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
             "INSERT INTO decisions.decisions (PublicId,[Key],TopicId,Outcome,Status,ChairOverride,CreatedAt,CreatedBy," +
             "title_en,title_ar,statement_en,statement_ar,rationale_en,rationale_ar) VALUES " +
             "(NEWID(),'DECN-2026-901',NEWID(),0,0,0,SYSDATETIMEOFFSET(),'seed'," +
-            "N'Architecture decision',N'قرار معماري'," +
-            "N'The architectural decision was issued after voting',N'تم إصدار القرار المعماري بعد التصويت'," +
+            "N'Architecture decision',N'قرار هيكلة'," +
+            "N'The architectural decision was issued after voting',N'تم إصدار قرار الهيكلة بعد التصويت'," +
             "N'Rationale',N'الأساس المنطقي للقرار')," +
             "(NEWID(),'DECN-2026-902',NEWID(),0,0,0,SYSDATETIMEOFFSET(),'seed'," +
             "N'Budget risk',N'مخاطر الميزانية'," +
@@ -174,25 +174,25 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
     private Task SeedTopicAsync() => _topics.Database.ExecuteSqlRawAsync(
         "INSERT INTO topics.topics (PublicId,[Key],Title,Description,Type,Urgency,Scope,Source,Status,Priority," +
         "SubmittedBySub,SubmittedByName,streams,systems,tags,CreatedAt,CreatedBy) VALUES " +
-        "(NEWID(),'TOP-2026-901',N'Architecture roadmap',N'خطة معمارية للجنة',0,0,0,0,0,0," +
+        "(NEWID(),'TOP-2026-901',N'Architecture roadmap',N'خطة هيكلة للجنة',0,0,0,0,0,0," +
         "'seed','Seed','[]','[]','[]',SYSDATETIMEOFFSET(),'seed')");
 
     private Task SeedAdrAsync() => _governance.Database.ExecuteSqlRawAsync(
         "INSERT INTO governance.adrs (PublicId,[Key],Status,title_en,title_ar,context_en,context_ar," +
         "decision_en,decision_ar,AuthorUserId,AuthorName,CreatedAt,CreatedBy) VALUES " +
-        "(NEWID(),'ADR-2026-901',0,N'Architecture record',N'سجل معماري',N'Context',N'سياق'," +
+        "(NEWID(),'ADR-2026-901',0,N'Architecture record',N'سجل هيكلة',N'Context',N'سياق'," +
         "N'Decision',N'قرار',' seed','Seed',SYSDATETIMEOFFSET(),'seed')");
 
     private Task SeedMinutesAsync() => _meetings.Database.ExecuteSqlRawAsync(
         "INSERT INTO meetings.minutes_of_meeting (PublicId,[Key],Version,MeetingId,MeetingKey,MeetingTitle,Status," +
         "summary_en,summary_ar,ApprovedBySoleAuthor,CreatedAt,CreatedBy) VALUES " +
         "(NEWID(),'MIN-2026-901',1,NEWID(),'MTG-2026-901',N'Meeting',0," +
-        "N'Architecture minutes summary',N'ملخص معماري',0,SYSDATETIMEOFFSET(),'seed')");
+        "N'Architecture minutes summary',N'ملخص هيكلة',0,SYSDATETIMEOFFSET(),'seed')");
 
     private Task SeedDocumentAsync() => _knowledge.Database.ExecuteSqlRawAsync(
         "INSERT INTO knowledge.documents (PublicId,[Key],Status,title_en,title_ar,body_en,body_ar,Category," +
         "OwnerUserId,Version,tags,CreatedAt,CreatedBy) VALUES " +
-        "(NEWID(),'DOC-2026-901',0,N'Architecture guide',N'دليل معماري',N'Body',N'محتوى',N'General'," +
+        "(NEWID(),'DOC-2026-901',0,N'Architecture guide',N'دليل هيكلة',N'Body',N'محتوى',N'General'," +
         "'seed',1,'[]',SYSDATETIMEOFFSET(),'seed')");
 
     // FTS population is asynchronous — querying before it settles yields false misses (the spike lesson).

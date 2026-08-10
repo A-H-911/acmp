@@ -367,7 +367,7 @@ class Component extends DCLogic {
 
     const t = {
       meetings:L('Agenda & Meetings','الأجندة والاجتماعات'), agendaBuilder:L('Agenda builder','منشئ الأجندة'),
-      mtgTitle:L('Weekly Architecture Committee','لجنة الهندسة الأسبوعية'), draft:L('Draft','مسودة'), mtgWhen:L('Wed 18 Feb 2026 · 10:00','الأربعاء 18 فبراير 2026 · 10:00'), length90:L('90-minute meeting','اجتماع 90 دقيقة'),
+      mtgTitle:L('Weekly Architecture Committee','لجنة الهيكلة الأسبوعية'), draft:L('Draft','مسودة'), mtgWhen:L('Wed 18 Feb 2026 · 10:00','الأربعاء 18 فبراير 2026 · 10:00'), length90:L('90-minute meeting','اجتماع 90 دقيقة'),
       preview:L('Preview','معاينة'), publishNotify:L('Publish & notify','نشر وإشعار'),
       timeBudget:L('Time budget','الوقت المخصّص'), min:L('min','دقيقة'), backlogPool:L('Backlog pool','مجمّع المواضيع'),
       scheduledTopics:L('Ready to schedule','جاهزة للجدولة'), searchTopics:L('Search topics…','بحث في المواضيع…'), add:L('Add','إضافة'),
@@ -389,7 +389,7 @@ class Component extends DCLogic {
       capturedHere:L('Captured on this item','ما سُجّل في هذا البند'),
       attendance:L('Attendance','الحضور'), quorum:L('Quorum met','اكتمل النصاب'),
       minutes:L('Minutes','المحضر'), minutesTitle:L('Minutes of Meeting','محضر الاجتماع'), state:L('State','الحالة'),
-      committeeName:L('Architecture Committee','لجنة الهندسة المعمارية'), minutesHeading:L('Minutes of Meeting','محضر الاجتماع'),
+      committeeName:L('Architecture Committee','لجنة الهيكلة'), minutesHeading:L('Minutes of Meeting','محضر الاجتماع'),
       reviewApprove:L('Review & approve','المراجعة والاعتماد'), reviewNote:L('As Chairman, approving will lock these minutes permanently and create an immutable, audit-logged record.','بصفتك رئيسًا، الاعتماد سيقفل المحضر نهائيًا وينشئ سجلًا غير قابل للتعديل.'),
       approveLock:L('Approve & lock','اعتماد وقفل'), requestChanges:L('Request changes','طلب تعديلات'),
       draftActions:L('Draft','المسودة'), sendForReview:L('Send for review','إرسال للمراجعة'), saveDraft:L('Save draft','حفظ المسودة'),
@@ -422,7 +422,7 @@ class Component extends DCLogic {
     };
 
     const pool = this.POOL_IDS.filter(k=>!agendaIds.includes(k)).map(k=>{ const x=this.TOPALL[k];
-      return { k, title:x[isRtl?'ar':'en'], type: x.type==='arch'?L('Arch. Decision','قرار معماري'):(x.type==='gov'?L('Governance','حوكمة'):L('Research','بحث')), urgent:x.urgent,
+      return { k, title:x[isRtl?'ar':'en'], type: x.type==='arch'?L('Arch. Decision','قرار هيكلة'):(x.type==='gov'?L('Governance','حوكمة'):L('Research','بحث')), urgent:x.urgent,
         bd: dragId===k?'var(--accent)':'var(--border)', opacity: dragId===k?'0.4':'1',
         aria:`${k}: ${x[isRtl?'ar':'en']}. ${L('Press M to add to agenda','اضغط M للإضافة للأجندة')}`,
         addAria:L('Add '+k+' to agenda','إضافة '+k+' للأجندة'),

@@ -475,7 +475,7 @@ class Component extends DCLogic {
       errorB:L('A network error interrupted the request. No data was lost — please retry.','حدث خطأ في الشبكة أثناء الطلب. لم تُفقد أي بيانات — يُرجى إعادة المحاولة.'),
       retry:L('Retry','إعادة المحاولة'), contact:L('Contact support','تواصل مع الدعم'),
       blocked:L('Blocked','محجوب'), crossStream:L('Cross-stream','عابر للمسارات'),
-      tabAdrs:L('ADRs','سجلات القرار'), tabInv:L('Architecture Invariants','الثوابت المعمارية'), tabVio:L('Violations','المخالفات'),
+      tabAdrs:L('ADRs','سجلات القرار'), tabInv:L('Architecture Invariants','ثوابت الهيكلة'), tabVio:L('Violations','المخالفات'),
       related:L('Related','العلاقات'), relatedSub:L('Traceability — both directions','التتبّع — بالاتجاهين'),
       openGraph:L('Open dependency graph','فتح مخطط الاعتماديات'), progress:L('Progress','التقدّم'),
       overdueWord:L('Overdue','متأخر'), exposureMatrix:L('Probability × Impact','الاحتمال × الأثر'),
@@ -778,15 +778,15 @@ class Component extends DCLogic {
       const related=[ rel('up','TOP-2026-014',L('Originating topic','الموضوع المنشئ')) ];
       if(r) related.push(rel(r.type==='supersedes'?'down':'up', r.k, r.type==='supersedes'?L('Supersedes','يستبدل'):L('Superseded by','مُستبدَل بـ')));
       return { k:a.k, title:a.title[lang], sub:a.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
-        facts:[ {label:L('Status','الحالة'),value:s.l}, {label:L('Format','الصيغة'),value:'MADR'}, {label:L('Version','الإصدار'),value:'v1'}, {label:L('Decided','تاريخ القرار'),value:L('18 Feb 2026','١٨ فبراير ٢٠٢٦')}, {label:L('Authority','الجهة'),value:L('Architecture Committee','لجنة الهندسة')}, {label:L('ADR ID','معرّف السجل'),value:a.k} ],
-        descLabel:L('Context & decision','السياق والقرار'), desc:L('Architecture Decision Records follow the MADR layout: context, considered options, decision outcome, and consequences. Status transitions are immutable and audit-logged; a superseding ADR links both directions.','تتبع سجلات القرار المعماري صيغة MADR: السياق، والخيارات المدروسة، ونتيجة القرار، والعواقب. انتقالات الحالة غير قابلة للتغيير ومسجّلة للتدقيق؛ ويرتبط السجل المُستبدِل بالاتجاهين.'),
+        facts:[ {label:L('Status','الحالة'),value:s.l}, {label:L('Format','الصيغة'),value:'MADR'}, {label:L('Version','الإصدار'),value:'v1'}, {label:L('Decided','تاريخ القرار'),value:L('18 Feb 2026','١٨ فبراير ٢٠٢٦')}, {label:L('Authority','الجهة'),value:L('Architecture Committee','لجنة الهيكلة')}, {label:L('ADR ID','معرّف السجل'),value:a.k} ],
+        descLabel:L('Context & decision','السياق والقرار'), desc:L('Architecture Decision Records follow the MADR layout: context, considered options, decision outcome, and consequences. Status transitions are immutable and audit-logged; a superseding ADR links both directions.','تتبع سجلات قرار الهيكلة صيغة MADR: السياق، والخيارات المدروسة، ونتيجة القرار، والعواقب. انتقالات الحالة غير قابلة للتغيير ومسجّلة للتدقيق؛ ويرتبط السجل المُستبدِل بالاتجاهين.'),
         related, graphLink:false };
     }
     if(sel.kind==='inv'){
       const iv=D.invRaw.find(x=>x.k===k); if(!iv) return null; const s=D.invStatus[iv.st]; const c=D.catMeta[iv.cat]; const has=iv.v>0;
       return { k:iv.k, title:iv.title[lang], sub:iv.title[isRtl?'en':'ar'], status:s.l, chip:this.chip(s.s), dot:this.dot(s.s), overdueBadge:false,
         facts:[ {label:L('Category','الفئة'),value:c.l}, {label:L('Scope','النطاق'),value:iv.scope[lang]}, {label:L('Status','الحالة'),value:s.l}, {label:L('Violations','المخالفات'),value:String(iv.v),color:has?'var(--st-danger-fg)':'var(--st-success-fg)'}, {label:L('Owner','المالك'),value:own('khalid')}, {label:L('Invariant ID','معرّف الثابت'),value:iv.k} ],
-        descLabel:L('Statement & rationale','النص والمبرّر'), desc:L('Architecture Invariants are always-true constraints the committee enforces across the estate. Violations are surfaced from automated checks and committee review; an open violation count above zero flags governance attention.','الثوابت المعمارية قيود صحيحة دائمًا تفرضها اللجنة عبر المنظومة. تظهر المخالفات من الفحوص الآلية ومراجعة اللجنة؛ وأي عدد مخالفات مفتوحة أكبر من صفر يستدعي انتباه الحوكمة.'),
+        descLabel:L('Statement & rationale','النص والمبرّر'), desc:L('Architecture Invariants are always-true constraints the committee enforces across the estate. Violations are surfaced from automated checks and committee review; an open violation count above zero flags governance attention.','ثوابت الهيكلة قيود صحيحة دائمًا تفرضها اللجنة عبر المنظومة. تظهر المخالفات من الفحوص الآلية ومراجعة اللجنة؛ وأي عدد مخالفات مفتوحة أكبر من صفر يستدعي انتباه الحوكمة.'),
         related: has?[ rel('down','SVC-Gateway',L('Violating service','خدمة مخالِفة')), rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ]:[ rel('rel','ADR-2026-003',L('Related ADR','سجل قرار مرتبط')) ], graphLink:false };
     }
     if(sel.kind==='decision'){
@@ -804,7 +804,7 @@ class Component extends DCLogic {
       const v=D.violationsRaw.find(x=>x.k===k); if(!v) return null; const sv=D.vioSev[v.sev]; const st=D.vioStatus[v.st];
       return { k:v.k, title:v.desc[lang], sub:v.desc[isRtl?'en':'ar'], status:st.l, chip:this.chip(st.s), dot:this.dot(st.s), overdueBadge:false,
         facts:[ {label:L('Severity','الخطورة'),value:sv.l,color:`var(--st-${sv.s}-fg)`}, {label:L('Status','الحالة'),value:st.l}, {label:L('Invariant','الثابت'),value:v.inv}, {label:L('Stream','المسار'),value:v.stream[lang]}, {label:L('Discovered','اكتُشف'),value:L('Automated check','فحص آلي')}, {label:L('Violation ID','معرّف المخالفة'),value:v.k} ],
-        descLabel:L('Detail & remediation','التفصيل والمعالجة'), desc:L('A violation records where a system breaches a standing architecture invariant. It is surfaced from automated checks or committee review, triaged by severity, and tracked to resolution or a recorded waiver with rationale.','تسجّل المخالفة موضع إخلال نظام بثابت معماري قائم. تُظهر من الفحوص الآلية أو مراجعة اللجنة، وتُصنّف حسب الخطورة، وتُتابع حتّى الحل أو إعفاء موثّق بمبرّر.'),
+        descLabel:L('Detail & remediation','التفصيل والمعالجة'), desc:L('A violation records where a system breaches a standing architecture invariant. It is surfaced from automated checks or committee review, triaged by severity, and tracked to resolution or a recorded waiver with rationale.','تسجّل المخالفة موضع إخلال نظام بثابت هيكلة قائم. تُظهر من الفحوص الآلية أو مراجعة اللجنة، وتُصنّف حسب الخطورة، وتُتابع حتّى الحل أو إعفاء موثّق بمبرّر.'),
         related:[ rel('up',v.inv,L('Violated invariant','الثابت المخالَف')), rel('rel','SVC-Gateway',L('Discovering service','الخدمة المكتشِفة')) ], graphLink:false };
     }
     return null;

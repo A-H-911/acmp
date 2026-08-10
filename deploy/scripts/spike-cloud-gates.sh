@@ -146,7 +146,7 @@ sq "IF DB_ID('ftsspike') IS NULL CREATE DATABASE ftsspike;" >/dev/null
 # gate exercises the configuration we actually ship rather than a scratch database that differs.
 sq "ALTER DATABASE ftsspike SET AUTO_CLOSE OFF;" >/dev/null
 sq "USE ftsspike; IF OBJECT_ID('dbo.t') IS NULL CREATE TABLE dbo.t (id int NOT NULL CONSTRAINT pk_t PRIMARY KEY, body nvarchar(400));" >/dev/null
-sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM dbo.t) INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهندسة المعمارية بشأن النظام');" >/dev/null
+sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM dbo.t) INSERT INTO dbo.t VALUES (1, N'قرار لجنة الهيكلة بشأن النظام');" >/dev/null
 cat_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name='ftc') CREATE FULLTEXT CATALOG ftc AS DEFAULT;" 2>&1)"
 idx_err="$(sq "USE ftsspike; IF NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t')) CREATE FULLTEXT INDEX ON dbo.t(body LANGUAGE 1025) KEY INDEX pk_t WITH CHANGE_TRACKING AUTO;" 2>&1)"
 idx_cnt="$(sq "USE ftsspike; SELECT COUNT(*) FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('dbo.t');")"
@@ -197,7 +197,7 @@ if [ "${idx_cnt:-0}" -ge 1 ]; then
     0:[1-9]*) : ;;
     *) printf '\n'; bad "populate crawl never indexed the row (last status:itemcount = ${pst:-<empty>}); the CONTAINS below is racing it" ;;
   esac
-  hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهندسة');")"
+  hit="$(sq "USE ftsspike; SELECT COUNT(*) FROM dbo.t WHERE CONTAINS(body, N'الهيكلة');")"
   case "$hit" in
     ''|*[!0-9]*) bad "Arabic CONTAINS() query errored: ${hit:-<empty>}" ;;
     *) [ "$hit" -ge 1 ] && ok "Arabic CONTAINS() matched the indexed row (hit=$hit)" \

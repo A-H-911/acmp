@@ -101,7 +101,7 @@ for (const mode of MODES) {
     // Register (isInvTab).
     await page.goto('/invariants');
     // The active governance tab is a nav item marked aria-current="page" (not role=tab).
-    await page.locator('[aria-current="page"]').filter({ hasText: /Architecture Invariants|الثوابت المعمارية/ }).waitFor({ timeout: 20_000 });
+    await page.locator('[aria-current="page"]').filter({ hasText: /Architecture Invariants|ثوابت الهيكلة/ }).waitFor({ timeout: 20_000 });
     await page.getByRole('cell', { name: /500ms|٥٠٠/ }).first().waitFor({ timeout: 20_000 });
     await shot(page, `p11d-invariants-register-${mode.name}`);
 
