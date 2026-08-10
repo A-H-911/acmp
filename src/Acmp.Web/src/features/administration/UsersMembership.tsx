@@ -99,8 +99,18 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
                 </span>
               ))
             )}
-            {/* Add-committee: editing lands with stream assignment (BL-024) — inert this phase. */}
-            <button type="button" className="adm-add" aria-label={t('admin.addCommittee')} disabled>
+            {/* Add-committee: editing lands with stream assignment (BL-024) — inert this phase.
+                It was already `disabled` and already dimmed by .adm-add:disabled, so it was never a
+                live-looking control. What it did not do was say WHY, so a reader saw a plus sign and
+                reasonably expected it to work. Every other inert affordance here carries an
+                explanatory `title` (topics.comingSoon, meetings.comingSoon); this one now does too. */}
+            <button
+              type="button"
+              className="adm-add"
+              aria-label={t('admin.addCommittee')}
+              title={t('admin.addCommitteeSoon')}
+              disabled
+            >
               <Icon name="plus" size={12} aria-hidden />
             </button>
           </span>
