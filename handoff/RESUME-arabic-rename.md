@@ -41,7 +41,26 @@ were never deployed. A redeploy is needed before anyone sees them — see §4.
 
 ---
 
-## 2. THE TASK — Batch C, the Arabic rename
+## 2. ✅ DONE 2026-08-10 — Batch C, the Arabic rename
+
+> **Landed in `1c7f2ba` (PR #218), recorded as `DEC-032`.** 28 files, 94 `معمار` + 57 `الهندسة`
+> occurrences retired, assert-zero gate at 0 residue, CI green on all 9 checks. **Do not redo it.**
+> The section below is kept as the brief that was executed, with two corrections it earned:
+>
+> - **The mapping in the approved plan was wrong for indefinite sources.** Definiteness is
+>   **preserved** — definite → `الهيكلة`, indefinite → bare `هيكلة`. Collapsing both (as the plan
+>   said) ships ungrammatical Arabic after `كل` and breaks adjective agreement. See `DEC-032`.
+> - **`spike-cloud-gates.sh:149`/`:200` no longer need manual coordination** — both now hold the
+>   *identical* string, so the FTS gate is self-consistent by construction.
+>
+> ⚠ **Still open, and it is a DATA task the rename could not reach:** streams are created by
+> admins through the UI, so prod may hold `الهندسة` in `Streams.NameAr` (or in Arabic-typed
+> topic/ADR titles). Nothing in `deploy/` seeds them — `seed-users.sh` creates Keycloak accounts
+> only and the app JIT-provisions members from the token `sub` — so there are probably zero rows,
+> but **query prod before calling the rename complete**. The login tagline reading
+> `منصة إدارة لجنة الهيكلة` next to a stream chip still reading the old term is the failure mode.
+
+### The brief, as executed
 
 Rename the Arabic term for "Architecture" from **الهندسة المعمارية** to **الهيكلة**, product-wide.
 
