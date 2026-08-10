@@ -18,7 +18,7 @@ and not run by the assistant.
 
 | # | Script | Creates | Idempotent |
 |---|--------|---------|:---:|
-| 00 | `00-account.sh` | `acmp-admin` IAM user, SNS alert topic, `$60`/mo budget + 50/80/100% alerts, budget-action role + deny-new-spend policy | ✓ |
+| 00 | `00-account.sh` | `acmp-admin` IAM user, SNS alert topic, `$100`/mo budget + 50/80/100% alerts, budget-action role + deny-new-spend policy | ✓ |
 | 01 | `01-network.sh` | one security group per env — **inbound 443 only** (SSM for admin, no SSH; DNS-01 so no port 80) | ✓ |
 | 02 | `02-s3.sh` | per-env `recordings` + `backups` buckets — block-public-access, SSE-S3, versioning, mpu-abort + noncurrent-expire lifecycle | ✓ |
 | 03 | `03-iam.sh` | per-env **app IAM user** (recordings-bucket-scoped, emits the S3 key) and **instance role/profile** (SSM + ECR pull + S3 + Route53 scoped to that env's record only) | ✓ |

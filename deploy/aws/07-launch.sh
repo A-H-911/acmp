@@ -70,7 +70,7 @@ else
   log "launching $name ($type, $ami, sg $sg_id, profile $profile)"
   # CpuCredits=standard is a SPEND control, not a tuning knob (ADR-0034, ratified). T3 defaults to
   # `unlimited`, which bills surplus CPU credits with NO ceiling — the one line item on this account
-  # that can exceed the $60 budget without anyone launching anything else. `standard` throttles
+  # that can exceed the $100 budget without anyone launching anything else. `standard` throttles
   # instead of billing when the credit balance runs out, which is the correct failure mode here.
   #
   # 50 GB (not 30): docker-compose.cloud.yml already sizes Seq retention against "the 50 GB root

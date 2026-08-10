@@ -1,8 +1,12 @@
 # ACMP Operations Runbook (P18)
 
-> **Running on AWS?** Backup, restore, rollback and the Keycloak `DATABASECHANGELOGLOCK` unwedge are in
-> [cloud-backup-dr.md](cloud-backup-dr.md) (PH-5 / P23). The procedures below describe the on-prem stack,
-> which ADR-0034/0035/0036 supersede for anything running on EC2.
+> **Running on AWS? None of the commands below apply.** Provisioning is
+> [cloud-provisioning.md](cloud-provisioning.md); starting/stopping an environment, deploying a commit
+> and reading its alerts are [cloud-operations.md](cloud-operations.md); backup, restore, rollback and
+> the Keycloak `DATABASECHANGELOGLOCK` unwedge are [cloud-backup-dr.md](cloud-backup-dr.md) (PH-5).
+> The procedures below describe the **on-prem** stack, which ADR-0034/0035/0036 supersede for anything
+> running on EC2 — including `promote.sh` in *Warm-standby promotion*, whose standby VM has no cloud
+> equivalent.
 
 On-prem, single-VM, Docker Compose (deployment.md). All commands run from the checkout root (`/opt/acmp`) as the
 `deploy` user. The stack is brought up with `deploy/scripts/up.sh` (which materializes Docker secrets first — a bare

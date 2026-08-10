@@ -88,11 +88,25 @@ its local half runs unattended in `deploy/scripts/spike-cloud-gates.sh` (gate U4
 
 Images are promoted by digest (ADR-0037), so a rollback is a re-point, not a rebuild:
 
+Run it **from your workstation**, not on the box — it re-points the environment's SSM parameter and
+then re-bootstraps:
+
 ```bash
-cd /opt/acmp
-deploy/scripts/promote.sh <previous-digest-or-tag>     # or set ACMP_IMAGE_TAG to the previous tag
-docker compose -f deploy/docker-compose.cloud.yml up -d
+bash deploy/aws/09-put-env.sh   <prod|uat> <env-file>   # with the PREVIOUS ACMP_IMAGE_TAG/ACMP_WEB_TAG
+bash deploy/aws/08-bootstrap-box.sh <prod|uat> <previous-full-sha>
 ```
+
+`deploy/scripts/promote-image.sh <uat|prod> <commit-sha>` pins an environment to a commit's images
+after **proving every one exists in ECR** (DEF-019), which is the check worth running before you
+re-point at anything. The full recipe, with a worked example, is in
+[cloud-operations.md](cloud-operations.md).
+
+> ⚠ **Not `promote.sh`** (the one in `deploy/scripts/` without the `-image` suffix). That is the
+> P18b **on-prem warm-standby** failover script:
+> it restores a backup and brings a *standby VM* up, and no standby VM exists in the cloud topology.
+> Running it here would restore a backup over an intact database during what is only an image
+> re-point. This line used to say exactly that; `scripts/check-runbook-drift.mjs` now fails CI if it
+> comes back.
 
 Roll the **database** back only if the bad release ran migrations. EF migrations here are forward-only, so
 that means `restore.sh` from the pre-deploy backup — take one before any release that carries a migration.
