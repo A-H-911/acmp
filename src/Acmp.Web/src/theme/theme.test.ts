@@ -41,6 +41,20 @@ describe('theme persistence', () => {
     expect(systemTheme()).toBe('light');
   });
 
+  it('falls back to light when matchMedia is unavailable', () => {
+    // The defensive path for jsdom and pre-matchMedia browsers. Worth a real test rather than a
+    // coverage-shaped one: without it systemTheme() throws during render, which would surface as a
+    // blank screen rather than as a missing browser API.
+    const original = window.matchMedia;
+    // @ts-expect-error deliberately removing the API to exercise the guard
+    delete window.matchMedia;
+    try {
+      expect(systemTheme()).toBe('light');
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
   it('reflects the applied theme on <html> WITHOUT persisting by default', () => {
     // An OS-derived theme must not be written to storage; doing so fabricates a preference the user
     // never expressed, and the app could then never follow the OS again.
