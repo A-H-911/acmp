@@ -2,9 +2,19 @@
 
 > Compacted 2026-08-05. One line per memory; detail lives in the topic files. Read the linked file before acting on anything below.
 
-## ★ Active work — PH-5 AWS cloud deployment
+## ★ Active work — PRODUCTION IS LIVE (2026-08-10)
 
-- [★ PH-5 / SL-025 — UAT is live and LOGIN WORKS](ph5-sl025-uat-live.md) — **START HERE.** Four browser logins prove it; DEF-022/023/024/025 all Fixed. **As of 2026-08-09: AC-075 and AC-076 are both Met; PH-5 is 11 Met / 1 Partial — only AC-085 leg 1 (a budget notification observed to ARRIVE) is open, and it is an observation wait, not work.** All 33 defects Fixed except DEF-012 (package-data). ⚠ **Instance is `i-07ac28ac2fedab921`** — the old `i-05085d458d886dc08` no longer exists; the box was replaced and the budget stop-action re-pointed itself, which is how AC-085 leg 4 got evidenced. Always read the live instance id from `describe-instances`, never from notes.
+- **★ START HERE: `handoff/RESUME-arabic-rename.md`** in the repo — the current resume prompt, written and verified 2026-08-10. Everything below is supporting detail.
+- **Production live** at https://acmp.anas7ammo.dev · `i-04d9717feea79204b` · EIP `52.23.105.56` · **always-on, running**. UAT `i-07ac28ac2fedab921` · EIP `35.173.149.191` · **stopped when idle**. The two differ ON PURPOSE — don't harmonise them.
+- **26 real committee members seeded on prod**; AC-079 **Met**. Budget raised **$60 → $100** to fund always-on prod (amends ADR-0034). PH-5 = **12 Met / 1 Partial** (only AC-085 leg 1). **DEF-012 is the only open defect** of 35; **zero** unresolved OQs.
+- ⚠ **Running prod images predate the DEF-034 + theme fixes** (`b66695c`) — redeploy needed before anyone sees them.
+- **Next task: the Arabic rename** (الهندسة المعمارية → الهيكلة, whole term family + design HTML, noun-in-إضافة form). Approved plan: `~/.claude/plans/c-users-ahammo-onedrive-desktop-acmp-use-crystalline-lemon.md`.
+- **Reaching Keycloak admin on a cloud box:** SSM port-forward to box port **80** — the 8443 listener 404s `/kc/admin` and `/kc/realms/master` by design (AC-081), the 8080 block does not, and inbound 80 is closed at the SG. `session-manager-plugin` at `/c/Program Files/Amazon/SessionManagerPlugin/bin`, **POSIX form on PATH only**.
+- [★ Substring checks bind to prose](substring-checks-bind-to-prose.md) — **three instances in one day**, incl. a WCAG gate that graded the light palette as dark for its whole life. Also: `git grep -c` counts LINES — assert ZERO, never a count.
+
+## PH-5 history (UAT)
+
+- [PH-5 / SL-025 — UAT is live and LOGIN WORKS](ph5-sl025-uat-live.md) — earlier UAT milestone. Four browser logins prove it; DEF-022/023/024/025 all Fixed. **As of 2026-08-09: AC-075 and AC-076 are both Met; PH-5 is 11 Met / 1 Partial — only AC-085 leg 1 (a budget notification observed to ARRIVE) is open, and it is an observation wait, not work.** All 33 defects Fixed except DEF-012 (package-data). ⚠ **Instance is `i-07ac28ac2fedab921`** — the old `i-05085d458d886dc08` no longer exists; the box was replaced and the budget stop-action re-pointed itself, which is how AC-085 leg 4 got evidenced. Always read the live instance id from `describe-instances`, never from notes.
 - [PH-5 AWS deployment](ph5-aws-deployment.md) — earlier history (P20–P24). P20–P24 done; cloud stack now **boot-proven end-to-end from the real ECR images**. Four silent defects found & fixed (DEF-018 Express `AUTO_CLOSE` kills FTS · DEF-019 unpublishable web tag · DEF-020 Seq placeholder · a guard that missed its own case). **Remaining is operator-gated:** AC-078 needs the app key, F=switch off root, G=P25 spend.
 - [⚠ Commit package writes before git ops](commit-package-writes-before-git-ops.md) — `tamheed-package/data` is git-TRACKED; `git reset --hard` destroys uncommitted package writes. (Supersedes the retracted "Tamheed loses writes" note — that was my own reset.)
 - [Tamheed stale .lock + PID reuse](tamheed-stale-lock-pid-reuse.md) — `package_open` fails constantly; the lock holds a **bare PID** and "is it alive?" **lies** (PID reuse). Check PID **+ process identity + StartTime ≤ lock mtime** before removing.

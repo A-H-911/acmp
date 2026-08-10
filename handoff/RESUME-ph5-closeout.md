@@ -1,3 +1,12 @@
+> ⛔ **SUPERSEDED 2026-08-10 — do NOT paste this into a session.**
+> Use [`RESUME-arabic-rename.md`](RESUME-arabic-rename.md) instead.
+>
+> Materially stale in ways that would send a reader to redo finished work or act on wrong numbers:
+> it says `/acmp/prod/env` does not exist (production is live and seeded with 26 members), quotes a
+> **$60** budget (raised to **$100** to fund an always-on prod), predates AC-076/AC-079/AC-084
+> reaching Met, and predates DEF-030…DEF-035. Its *gotchas* section is still accurate and has been
+> carried forward into the new file.
+
 # Resume prompt — PH-5 acceptance close-out (paste into a fresh session)
 
 > Rewritten 2026-08-09. Supersedes the earlier version of this file, which is stale in several
