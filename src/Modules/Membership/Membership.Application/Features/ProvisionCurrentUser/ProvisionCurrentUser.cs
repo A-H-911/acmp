@@ -48,6 +48,7 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
 
         var member = await _db.Members.FirstOrDefaultAsync(m => m.KeycloakUserId == sub, ct);
         var created = member is null;
+        var changed = false;
         if (member is null)
         {
             member = CommitteeMember.Provision(sub, displayName, email, role, _clock.UtcNow);
@@ -55,13 +56,23 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
         }
         else
         {
-            member.SyncFromClaims(displayName, email, role);
+            changed = member.SyncFromClaims(displayName, email, role);
         }
 
         await _db.SaveChangesAsync(ct);
 
-        await _audit.EmitEnrichedAsync(created ? "Membership.MemberProvisioned" : "Membership.ProfileSynced",
-            nameof(CommitteeMember), member.PublicId.ToString(), ct: ct);
+        // AUDIT ONLY A REAL CHANGE. The SPA calls this endpoint once per app mount (AuthProvider's
+        // useRef guard), so it fires on every full page load, refresh and login — and this emit used
+        // to be unconditional, writing a `ProfileSynced` row that described nothing. Because the
+        // chain is hash-chained and append-only (INV-005) those rows can never be removed, so the
+        // noise is permanent and buries the governance events the log exists for.
+        //
+        // `created` still always emits: provisioning is itself the event.
+        if (created || changed)
+        {
+            await _audit.EmitEnrichedAsync(created ? "Membership.MemberProvisioned" : "Membership.ProfileSynced",
+                nameof(CommitteeMember), member.PublicId.ToString(), ct: ct);
+        }
 
         return new MemberProfileDto(
             member.PublicId, member.FullName, member.Email, member.Role.ToString(),
