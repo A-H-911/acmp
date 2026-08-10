@@ -61,8 +61,16 @@
     "count": "{{count}} actions",
     "overdueCount": "{{count}} overdue",
     "newAction": "New action",
-    "newSoon": "Creating actions ships in a later slice.",
     "comingSoon": "Coming soon",
+    "source": { "Topic": "Topic", "Decision": "Decision", "Meeting": "Meeting" },
+    "raise": {
+      "title": "Raise an action from…",
+      "subtitle": "Every action is linked to the governance record it came from. Pick that record first.",
+      "typeLabel": "Source type",
+      "filterLabel": "Filter by title or ID",
+      "noneTitle": "Nothing to link to",
+      "noneBody": "No records of this type match. Try another type or clear the filter."
+    },
     "savedView": "My open actions",
     "filtersLabel": "Actions filters",
     "on": "ON",

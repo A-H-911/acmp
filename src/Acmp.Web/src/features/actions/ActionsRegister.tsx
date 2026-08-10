@@ -32,6 +32,8 @@ import { Button } from '../../components/ui/Button';
 import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, progressColor, initials, ACTION_STATUSES } from './actionMeta';
+import { RaiseActionFromDialog } from './RaiseActionFromDialog';
+import { CreateActionDialog, type ActionSource } from './CreateActionDialog';
 import './actions.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetActionsRegister.Sort).
@@ -49,6 +51,11 @@ export function ActionsRegister() {
   const [sortCol, setSortCol] = useState('due');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [page, setPage] = useState(1);
+  // Two-step create: pick the source artifact, then fill the action. `picked` doubles as the
+  // open-state for the second dialog, so the source is guaranteed non-null when it mounts —
+  // CreateActionDialog requires one and must not be handed a placeholder.
+  const [raiseOpen, setRaiseOpen] = useState(false);
+  const [picked, setPicked] = useState<ActionSource | null>(null);
 
   // Reset to page 1 on any filter/sort change.
   useEffect(() => {
@@ -99,9 +106,27 @@ export function ActionsRegister() {
             )}
           </div>
         </div>
-        {/* No create entry point here: an action is ALWAYS raised from a source artifact (a decision,
-            a meeting…), never standalone — so create lives on those pages, not the register (P8b2b). */}
+        {/* This used to read "no create entry point here" — an action is always raised FROM a source
+            artifact, so create lived only on those pages (P8b2b). That reasoning is still true, and it
+            is exactly why this is a TWO-STEP flow rather than a plain create: the source is chosen
+            first, then the action is filled in. The design specifies this CTA
+            (`primary: New action`, "ACMP Lists & Registers.dc.html") and the i18n key `actions.newAction`
+            was already written for it alongside `newSoon` = "Creating actions ships in a later slice" —
+            so the button was always intended and simply never wired. Operator decision, 2026-08-10. */}
+        <Button onClick={() => setRaiseOpen(true)}>
+          <Icon name="plus" size={15} aria-hidden /> {t('actions.newAction')}
+        </Button>
       </div>
+
+      <RaiseActionFromDialog
+        open={raiseOpen}
+        onClose={() => setRaiseOpen(false)}
+        onPicked={(source) => { setRaiseOpen(false); setPicked(source); }}
+      />
+      {/* Mounted only once a source exists, so `source` is never a placeholder. */}
+      {picked && (
+        <CreateActionDialog open onClose={() => setPicked(null)} source={picked} />
+      )}
 
       <div className="act-bar" role="search" aria-label={t('actions.filtersLabel')}>
         <FilterChip
