@@ -1,18 +1,73 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { applyTheme, getStoredTheme } from './theme';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { applyTheme, getStoredTheme, systemTheme } from './theme';
+
+/** Pretend the OS prefers dark (or not) for the duration of one test. */
+function stubPrefersDark(matches: boolean) {
+  const spy = vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes('prefers-color-scheme: dark') ? matches : false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) as unknown as MediaQueryList,
+  );
+  return spy;
+}
 
 // AC-042: theme preference persists across sessions (localStorage portion).
 describe('theme persistence', () => {
   beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
 
-  it('defaults to light when nothing is stored', () => {
-    expect(getStoredTheme()).toBe('light');
+  /*
+   * This used to assert `getStoredTheme() === 'light'` for an empty key — the default was baked into
+   * the reader, so "nothing chosen" and "chose light" were the same value and the OS could never be
+   * consulted. null is now a real third state.
+   */
+  it('reports null — not a default — when nothing is stored', () => {
+    expect(getStoredTheme()).toBeNull();
   });
 
-  it('persists and reflects the applied theme on <html>', () => {
+  it('reads the OS preference in both directions', () => {
+    stubPrefersDark(true);
+    expect(systemTheme()).toBe('dark');
+    vi.restoreAllMocks();
+    stubPrefersDark(false);
+    expect(systemTheme()).toBe('light');
+  });
+
+  it('reflects the applied theme on <html> WITHOUT persisting by default', () => {
+    // An OS-derived theme must not be written to storage; doing so fabricates a preference the user
+    // never expressed, and the app could then never follow the OS again.
     applyTheme('dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(localStorage.getItem('acmp-theme')).toBeNull();
+    expect(getStoredTheme()).toBeNull();
+  });
+
+  it('persists when the choice is explicit (AC-042)', () => {
+    applyTheme('dark', true);
     expect(localStorage.getItem('acmp-theme')).toBe('dark');
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(getStoredTheme()).toBe('dark');
+  });
+
+  it('an explicit choice survives and beats the OS in BOTH directions', () => {
+    // The interesting case is explicit-light on a dark machine: a one-way check would pass while
+    // the OS silently overrode the user.
+    applyTheme('light', true);
+    stubPrefersDark(true);
+    expect(getStoredTheme()).toBe('light');
+
+    localStorage.clear();
+    applyTheme('dark', true);
+    vi.restoreAllMocks();
+    stubPrefersDark(false);
     expect(getStoredTheme()).toBe('dark');
   });
 });

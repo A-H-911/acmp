@@ -15,9 +15,22 @@ import { resolve } from 'node:path';
 // Vitest runs with cwd = the web project root; tokens.css is the design-token SoT.
 const css = readFileSync(resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8');
 
-/** Pull `--name: #hex` declarations out of a single CSS rule block. */
+/*
+ * Pull `--name: #hex` declarations out of a single CSS rule block.
+ *
+ * MATCHED AS A RULE HEAD — selector followed by optional whitespace and `{` — not by plain indexOf.
+ * indexOf also matches the selector inside PROSE, and tokens.css line 4 documents
+ * `[data-theme="dark"]` in its own header comment. So `block('[data-theme="dark"]')` located that
+ * comment, took the next `{` — which opens `:root` — and returned the LIGHT palette. Every "dark"
+ * contrast case below has therefore been grading the light tokens since this file was written: a
+ * whole half of a WCAG gate, green for the wrong reason. Found 2026-08-10 by the sync assertion
+ * added for the OS-default palette, which compared dark against dark and got light.
+ */
 function block(selector: string): Record<string, string> {
-  const start = css.indexOf(selector);
+  const head = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`);
+  const found = head.exec(css);
+  if (!found) throw new Error(`contrast.test: no rule found for selector ${selector}`);
+  const start = found.index;
   const open = css.indexOf('{', start);
   const close = css.indexOf('}', open);
   const out: Record<string, string> = {};
@@ -28,6 +41,20 @@ function block(selector: string): Record<string, string> {
 }
 const LIGHT = block(':root');
 const DARK = { ...LIGHT, ...block('[data-theme="dark"]') }; // dark overrides the themeable subset
+
+/*
+ * The OS-default dark palette is a SECOND copy of the same tokens, inside
+ * `@media (prefers-color-scheme: dark)`, because plain CSS cannot share one declaration block across
+ * a media boundary. Two hand-maintained copies of a colour palette drift, and only one of them was
+ * reachable by the contrast checks below — so the copy most users would actually see could quietly
+ * fall out of AA while CI stayed green.
+ *
+ * Asserting they are IDENTICAL makes the duplication safe and extends every contrast case below to
+ * both blocks at once. Note `block()` matches on first-indexOf, and this selector contains the
+ * literal `[data-theme="dark"]` — it only resolves correctly because the media rule is placed AFTER
+ * the explicit one in tokens.css. Keep that order.
+ */
+const OS_DARK = block(':root:not([data-theme="light"]):not([data-theme="dark"])');
 
 function luminance(hex: string): number {
   let h = hex.replace('#', '');
@@ -67,6 +94,18 @@ const PAIRS: ReadonlyArray<readonly [string, string, number, string]> = [
   ['st-danger-fg', 'surface', TEXT, 'urgent urgency text, SLA-breached age'],
   ['primary-fg', 'primary', TEXT, 'avatar initials, primary buttons'],
 ];
+
+describe('OS-default dark palette stays in sync with the explicit one', () => {
+  it('parsed a real block (guards against a silent indexOf mismatch)', () => {
+    // If the selector ever stops matching, `block()` returns {} and the equality check below would
+    // pass vacuously — comparing nothing to nothing. Assert it found tokens first.
+    expect(Object.keys(OS_DARK).length).toBeGreaterThan(10);
+  });
+
+  it('is identical to [data-theme="dark"], so every contrast case covers both', () => {
+    expect(OS_DARK).toEqual(block('[data-theme="dark"]'));
+  });
+});
 
 describe('Topics token contrast (WCAG 2.2 AA)', () => {
   for (const [name, tokens] of [['light', LIGHT], ['dark', DARK]] as const) {
