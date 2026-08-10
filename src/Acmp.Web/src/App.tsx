@@ -91,7 +91,9 @@ export const appRoutes = createRoutesFromElements(
         <Route path="wiki" element={<WikiPage />} />
         <Route path="wiki/:key" element={<WikiPage />} />
         <Route path="templates" element={<TemplatesRegister />} />
-        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
+        {/* DEC-028 (2026-07-17): P14 deferred INDEFINITELY — ACMP ships no in-product diagram
+            renderer. The route stays so existing links do not 404, but it must not promise a phase. */}
+        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" deferred />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="search" element={<SearchPage />} />
 

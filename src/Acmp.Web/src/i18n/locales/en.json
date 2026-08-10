@@ -50,9 +50,9 @@
     "breadcrumb": "Breadcrumb",
     "reload": "Reload page",
     "comingSoon": "This area will be built in a later phase.",
-    "phase2Lead": "Available in a later release.",
-    "phase2Title": "Coming in Phase 2",
-    "phase2Body": "This area is planned for Phase 2 and isn’t available yet.",
+    "deferredLead": "Diagrams are maintained outside ACMP.",
+    "deferredTitle": "No in-product diagrams",
+    "deferredBody": "ACMP does not render diagrams. Keep them in your diagramming tool and link them from the topic, decision, or ADR they belong to.",
     "cancel": "Cancel",
     "close": "Close"
   },
