@@ -194,7 +194,7 @@
     }
   },
   "adrs": {
-    "title": "سجلات القرار والثوابت",
+    "title": "سجلات القرارات والثوابت",
     "count": "{{count}} سجل",
     "newAdr": "سجل قرار جديد",
     "tabsLabel": "سجلّات القرار",
@@ -1081,6 +1081,7 @@
     "votingEligible": "مؤهّل للتصويت",
     "observer": "مراقب",
     "addCommittee": "إضافة لجنة",
+    "addCommitteeSoon": "تحرير اللجان يأتي مع سجل المسارات (BL-024).",
     "viewUser": "عرض تفاصيل المستخدم",
     "status": { "active": "نشط", "invited": "مدعو", "disabled": "معطّل" },
     "emptyTitle": "لا أعضاء بعد",
