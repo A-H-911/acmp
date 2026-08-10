@@ -36,4 +36,25 @@ public sealed class CommitteeDirectory : ICommitteeDirectory
             .Select(m => new CommitteeRecipient(m.KeycloakUserId, m.FullName))
             .ToListAsync(ct);
     }
+
+    // NO Status filter, and that is the point — see the contract's comment. The audit register resolves
+    // actors through this, and a disabled member's past actions must still read as a person's name.
+    public async Task<IReadOnlyDictionary<string, string>> ResolveDisplayNamesAsync(
+        IReadOnlyCollection<string> userIds, CancellationToken ct = default)
+    {
+        if (userIds is null || userIds.Count == 0)
+            return new Dictionary<string, string>();
+
+        // Distinct so a page of audit rows by one actor issues one predicate, not one per row.
+        var ids = userIds.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToArray();
+        if (ids.Length == 0)
+            return new Dictionary<string, string>();
+
+        var rows = await _db.Members.AsNoTracking()
+            .Where(m => ids.Contains(m.KeycloakUserId))
+            .Select(m => new { m.KeycloakUserId, m.FullName })
+            .ToListAsync(ct);
+
+        return rows.ToDictionary(r => r.KeycloakUserId, r => r.FullName);
+    }
 }

@@ -19,6 +19,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useAuditRegister, type AuditEvent } from '../../api/audit';
 import { Table, type Column } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
@@ -149,15 +150,37 @@ function Actor({ row }: { row: AuditEvent }) {
       </span>
     );
   }
+  // Prefer the resolved person over the raw Keycloak subject. The column used to render the bare GUID
+  // as the name AND derive the avatar initials from it, so the log showed "2e"-style initials next to a
+  // 36-character id — not an audit control a human can read. The subject stays in `title` because it is
+  // the forensic identity: display names are neither unique nor stable, and the reviewer may need the id.
+  const display = row.actorName ?? row.actor;
   return (
-    <span className="aud-actor">
-      <span className="aud-avatar" aria-hidden="true">{actorInitials(row.actor)}</span>
+    <span className="aud-actor" title={row.actor}>
+      <span className="aud-avatar" aria-hidden="true">{actorInitials(display)}</span>
       <span className="aud-actor-lines">
-        <span className="aud-actor-name">{row.actor}</span>
-        {row.actorRole && <span className="aud-actor-role">{row.actorRole}</span>}
+        <span className="aud-actor-name">{display}</span>
+        {row.actorRole && <span className="aud-actor-role">{localizedRoles(row.actorRole, t)}</span>}
       </span>
     </span>
   );
+}
+
+// ActorRole arrives as the raw claim list, e.g. "Auditor,Administrator,Secretary". Rendering it verbatim
+// left untranslated English in an Arabic UI and no gate would ever notice: check-i18n compares KEYS only,
+// and this string is DATA, not a key. Unknown values pass through unchanged rather than becoming a
+// missing-translation marker — the audit log must never hide what it recorded.
+function localizedRoles(actorRole: string, t: TFunction): string {
+  return actorRole
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean)
+    .map((r) => {
+      const key = `role.${r.toLowerCase()}`;
+      const label = t(key);
+      return label === key ? r : label;
+    })
+    .join(' · ');
 }
 
 function Artifact({ row }: { row: AuditEvent; }) {
