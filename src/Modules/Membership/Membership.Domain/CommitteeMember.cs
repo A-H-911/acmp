@@ -47,13 +47,37 @@ public sealed class CommitteeMember : AuditableEntity
 
     // Refresh claims-derived fields on each login. Never touches ACMP-managed attributes (status,
     // voting eligibility, streams). A login on a pre-registered Invited record flips it to Active.
-    public void SyncFromClaims(string fullName, string email, CommitteeRole role)
+    //
+    // RETURNS WHETHER ANYTHING ACTUALLY CHANGED, and the caller audits only when it did. The audit
+    // chain is hash-chained and append-only (INV-005), so a no-op event is not merely noise — it can
+    // never be removed (DEF-029's asymmetry). The SPA calls this endpoint once per app mount, which
+    // means every full page load, refresh and login previously wrote a `Membership.ProfileSynced`
+    // row describing no change at all; a browsing session produced 14 of them in one minute. Left
+    // alone, real governance events end up buried in permanent no-op traffic.
+    //
+    // The comparison happens BEFORE assignment because assigning first makes every field equal to
+    // itself and the answer is always "unchanged" — the same shape as a baseline captured after the
+    // change it was meant to detect.
+    public bool SyncFromClaims(string fullName, string email, CommitteeRole role)
     {
-        FullName = fullName.Trim();
-        Email = email.Trim().ToLowerInvariant();
+        var name = fullName.Trim();
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        // Invited -> Active is a REAL state transition and must stay auditable even when the name,
+        // email and role are all identical to what is already stored.
+        var activating = Status == MembershipStatus.Invited;
+
+        var changed = !string.Equals(FullName, name, StringComparison.Ordinal)
+                      || !string.Equals(Email, normalizedEmail, StringComparison.Ordinal)
+                      || Role != role
+                      || activating;
+
+        FullName = name;
+        Email = normalizedEmail;
         Role = role;
-        if (Status == MembershipStatus.Invited)
+        if (activating)
             Status = MembershipStatus.Active;
+
+        return changed;
     }
 
     // AC-058: blocks ACMP access but keeps the record so votes/authorship/assignments stay attributed.
