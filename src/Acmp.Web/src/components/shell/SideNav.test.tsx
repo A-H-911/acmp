@@ -23,3 +23,30 @@ describe('SideNav role filtering (FR-024)', () => {
     expect(backlog.querySelector('[title="Read-only"]')).toBeTruthy();
   });
 });
+
+/*
+ * DEF-034. Both halves of that defect were invisible to the suite above, which only ever renders
+ * SINGLE-role principals — and for a single role `roles[0]` is right by coincidence. It took a real
+ * five-role user on production to expose it.
+ *
+ * The claim order below is deliberately hostile: 'auditor' first, which is exactly what Keycloak
+ * returned for that account, and exactly what the old code displayed.
+ */
+describe('SideNav "viewing as" badge (DEF-034)', () => {
+  it('shows the HIGHEST-PRIVILEGE role, not the first claim in the array', () => {
+    renderWithAuth(<SideNav />, { roles: ['auditor', 'secretary'] });
+    const badge = screen.getByText(/viewing as/i);
+    expect(badge).toHaveTextContent(/Secretary/i);
+    expect(badge).not.toHaveTextContent(/Auditor/i);
+  });
+
+  it('renders the TRANSLATED label, never a raw claim string', () => {
+    // The old key was `roles.${role}`; the locale defines `role.` (singular), so the lookup always
+    // missed and i18next fell through to its defaultValue — printing the bare lowercase claim.
+    // Asserting the capitalised label is what distinguishes a real translation from that fallback.
+    renderWithAuth(<SideNav />, { roles: ['auditor'] });
+    const badge = screen.getByText(/viewing as/i);
+    expect(badge).toHaveTextContent('Auditor');
+    expect(badge.textContent).not.toContain('auditor');
+  });
+});

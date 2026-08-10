@@ -45,3 +45,26 @@ export function rolesFromClaims(claims: readonly string[] | undefined): Committe
   }
   return [...found];
 }
+
+/*
+ * The single role to SHOW when a principal holds several — highest privilege wins.
+ *
+ * THE ORDER OF THE ARRAY IS NOT A PRIMARY ROLE, and three call sites used to assume it was. The set
+ * above is built by iterating raw claims, so `roles[0]` is whatever Keycloak happened to return
+ * first. It is correct by coincidence for a single-role account, which is why it survived until the
+ * first multi-role user logged in and the shell told a Secretary he was acting as an Auditor
+ * (DEF-034).
+ *
+ * COMMITTEE_ROLES is declared in the same order as the server's CommitteeRole enum (chairman=0 …
+ * guest=7), so scanning it reproduces CommitteeRoleResolver.PrimaryRole ("lowest enum wins")
+ * exactly. That equivalence is the reason this is safe to compute on the client at all — if the two
+ * orderings ever diverge, this silently disagrees with the server, so keep them together.
+ *
+ * Deliberately NOT read from MemberProfileDto.Role, which the server already computes correctly:
+ * the response of POST /api/members/me is discarded today, so consuming it would make the shell wait
+ * on an async call and render a placeholder on first paint, and would need PascalCase normalising.
+ * This is synchronous and exact.
+ */
+export function primaryRoleOf(roles: readonly CommitteeRole[]): CommitteeRole {
+  return COMMITTEE_ROLES.find((r) => roles.includes(r)) ?? 'guest';
+}
