@@ -100,7 +100,20 @@ export function MeetingsList() {
       ) : isError ? (
         <ErrorState title={t('meetings.error.title')} body={t('meetings.error.body')} onRetry={() => refetch()} />
       ) : !hasMeetings ? (
-        <EmptyState icon="calendar" title={t('meetings.empty.title')} body={t('meetings.empty.body')} />
+        // The empty screen must offer the way forward, not just describe the absence. Every other
+        // register does (Backlog, ADRs, Risks, Research, Templates, Dependencies); Meetings did not,
+        // so a committee with no meetings yet saw a dead end. Mirrors the header CTA above, which is
+        // ungated, so this adds no new permission surface.
+        <EmptyState
+          icon="calendar"
+          title={t('meetings.empty.title')}
+          body={t('meetings.empty.body')}
+          action={
+            <Button onClick={() => navigate('/meetings/new')}>
+              <Icon name="plus" size={15} aria-hidden /> {t('meetings.schedule.action')}
+            </Button>
+          }
+        />
       ) : view === 'calendar' ? (
         <MeetingsCalendar meetings={data ?? []} />
       ) : (
