@@ -1,3 +1,16 @@
+> # ⛔ SUPERSEDED — 2026-08-11
+> **Start from [`RESUME-day3-uat-regression.md`](RESUME-day3-uat-regression.md) instead.**
+>
+> The Batch C rename shipped (`DEC-032`, `1c7f2ba`) and production was redeployed onto it
+> (`PE-227`). Days 1–2 of the follow-on plan then landed as PRs #222–#230.
+>
+> **Most of the state below is now stale** — the PH-5 rollup, the defect counts, the "next task",
+> and §4's redeploy target all moved. Two things here are still worth reading and are NOT repeated
+> in the new file: **§5's gotchas** (Keycloak admin via SSM port-forward to box port 80, the
+> `session-manager-plugin` POSIX-path trap, `PYTHONIOENCODING`, never `sed -i` a CRLF file,
+> prod/UAT differing on purpose) and **§7's operator actions**, which include the exact path of the
+> orphaned scratchpad still holding live production secrets.
+
 # RESUME — Arabic term rename (Batch C), and everything else outstanding
 
 **Written 2026-08-10 at the end of the session that seeded production.** Every fact below was
