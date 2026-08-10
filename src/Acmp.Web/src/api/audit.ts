@@ -20,6 +20,11 @@ export interface AuditEvent {
   subjectType: string | null;
   subjectId: string | null;
   actor: string | null;
+  // Display name resolved server-side via ICommitteeDirectory (includes disabled members, so a
+  // departed member's past actions still read as a person). NULL when the subject has no member row
+  // — system/integration actors — so the UI must fall back to `actor`, which remains the forensic
+  // identity and is kept visible alongside the name.
+  actorName: string | null;
   actorRole: string | null;
   outcome: string | null;
   beforeJson: string | null;

@@ -1,5 +1,6 @@
 ﻿using Acmp.Shared.Application.Pagination;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,7 @@ public static class AuditEndpoints
         // aggregate name stored in SubjectType (v2 rows only); actor/action match across both row shapes via
         // COALESCE; from/to bound OccurredAt.
         group.MapGet("/", async (
-            AuditDbContext db, CancellationToken ct,
+            AuditDbContext db, ICommitteeDirectory directory, CancellationToken ct,
             string? entityType = null, string? actor = null, string? action = null,
             DateTimeOffset? from = null, DateTimeOffset? to = null,
             int page = 1, int pageSize = 25) =>
@@ -64,10 +65,31 @@ public static class AuditEndpoints
                     e.Action ?? e.EventType,
                     e.SubjectType, e.SubjectId,
                     e.ActorUserId ?? e.Subject, e.ActorRole, e.Outcome,
-                    e.BeforeJson, e.AfterJson, e.CorrelationId))
+                    e.BeforeJson, e.AfterJson, e.CorrelationId, null))
                 .ToListAsync(ct);
 
-            return Results.Ok(new PagedResult<AuditEventDto>(items, total, pg, size));
+            // Resolve actor subjects to people. The register previously rendered a bare Keycloak GUID in
+            // the "actor" column, which is not an audit control a human can read — a reviewer cannot tell
+            // who acted without a second lookup they have no UI for.
+            //
+            // Resolved through the ICommitteeDirectory port, never by reading Membership's tables (ADR-0001),
+            // and AFTER materialisation because the join is across a module boundary, not inside the query.
+            // ResolveDisplayNamesAsync deliberately includes DISABLED members: AC-058 keeps their records so
+            // historical attribution survives, so an active-only lookup would blank exactly the departed-member
+            // rows that matter most.
+            //
+            // Actor is KEPT alongside the name rather than replaced — the subject is the forensic identity and
+            // display names are neither unique nor stable.
+            var names = await directory.ResolveDisplayNamesAsync(
+                items.Select(i => i.Actor).Where(a => !string.IsNullOrWhiteSpace(a)).Select(a => a!).ToArray(), ct);
+
+            var enriched = items
+                .Select(i => i.Actor is not null && names.TryGetValue(i.Actor, out var name)
+                    ? i with { ActorName = name }
+                    : i)
+                .ToList();
+
+            return Results.Ok(new PagedResult<AuditEventDto>(enriched, total, pg, size));
         });
 
         // On-demand chain integrity check (AC-019). ponytail: full-scan verify — loads the whole ordered log
@@ -89,7 +111,12 @@ public static class AuditEndpoints
         long Sequence, DateTimeOffset OccurredAt, int HashVersion,
         string Action, string? SubjectType, string? SubjectId,
         string? Actor, string? ActorRole, string? Outcome,
-        string? BeforeJson, string? AfterJson, string? CorrelationId);
+        string? BeforeJson, string? AfterJson, string? CorrelationId,
+        // The actor's display name, resolved via ICommitteeDirectory. NULL when the subject has no member
+        // row (system/integration actors) or on a v1 row with no actor — the client must fall back to Actor,
+        // which is kept because the subject is the forensic identity; display names are neither unique nor
+        // stable. Appended last so the addition is additive for existing consumers.
+        string? ActorName = null);
 
     public sealed record AuditVerifyDto(bool IsValid, long? BrokenAtSequence, string? Reason);
 }

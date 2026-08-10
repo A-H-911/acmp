@@ -64,6 +64,14 @@ public class RiskHandlerTests
             Task.FromResult((IReadOnlyCollection<CommitteeRecipient>)_byRole.Values.SelectMany(x => x).ToList());
         public Task<IReadOnlyCollection<CommitteeRecipient>> GetActiveMembersInRoleAsync(string role, CancellationToken ct = default) =>
             Task.FromResult((IReadOnlyCollection<CommitteeRecipient>)(_byRole.TryGetValue(role, out var r) ? r : Array.Empty<CommitteeRecipient>()));
+        // Widened port (audit actor resolution). These fakes only exercise notification fan-out, so the
+        // roster they already hold is the right source; unknown ids are simply absent, as the contract says.
+        public Task<IReadOnlyDictionary<string, string>> ResolveDisplayNamesAsync(
+            IReadOnlyCollection<string> userIds, CancellationToken ct = default) =>
+            Task.FromResult((IReadOnlyDictionary<string, string>)_byRole.Values.SelectMany(x => x)
+                .Where(r => userIds.Contains(r.UserId))
+                .GroupBy(r => r.UserId)          // a member may hold several roles in this fake's map
+                .ToDictionary(g => g.Key, g => g.First().FullName));
     }
 
     private static RaiseRiskCommand RaiseCmd(string owner = "kc-owner", RiskLevel l = RiskLevel.Medium,
