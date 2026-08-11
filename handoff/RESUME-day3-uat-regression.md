@@ -133,10 +133,26 @@ an explicit *do not tune these* — that threshold has been rejected twice.
    *(Every AWS action this session ran as `acmp-admin`, never root.)*
 4. **Delete `C:\Users\ahammo\OneDrive\Desktop\acmp-users.csv`** (26 temp passwords, syncing to
    OneDrive) and the orphaned scratchpad holding prod secrets — see the superseded resume file §7.
-6. **⚠ `Streams.NameAr` on prod — IN SCOPE FOR DAY 3, NOT DONE.** The plan scopes this to item 2
-   ("worth one query against prod **while doing item 2**"), so it is a Day-3 gap, not a later day's
-   work. I attempted it and the **permission classifier blocked** the SSM command — it reads the SA
-   password secret and execs into the production database container. I did not work around it.
+6. **✅ `Streams.NameAr` on prod — DONE 2026-08-11, VERIFIED CLEAN (`PE-236`).**
+   **351 nvarchar/nchar columns across 83 tables, in BOTH the `Acmp` and `keycloak` databases, hold
+   neither half of the renamed term family.** `membership.streams` has **0 rows**, which also
+   confirms `BL-024` (stream creation has no UI). Run read-only by the operator, because the
+   permission classifier refuses that command shape and it was not worked around.
+
+   ⚠ **The column count is the load-bearing part of that evidence.** "Zero matches" and "the scan
+   looked at nothing" print identically, so the verdict is only admissible because the scan proves it
+   had a subject. Two earlier attempts were wrong: an unqualified `streams` returns *Invalid object
+   name* (every module owns a schema), and the first scan searched only `الهندسة` — but `DEC-032`
+   renamed a whole **term family**, so `الثابت المعماري` would have passed a check I was one step
+   from recording as Met. The final scan covers the `معمار` root too.
+
+   **Does not cover:** streams created through any future UI. Re-run if that ships.
+
+<details><summary>Original text (superseded)</summary>
+
+   The plan scopes this to item 2 ("worth one query against prod **while doing item 2**"), so it is
+   a Day-3 gap. I attempted it and the **permission classifier blocked** the SSM command — it reads
+   the SA password secret and execs into the production database container. Not worked around.
    The real target is **`membership.streams`**, column **`name_ar`**. Two corrections, both proven
    against the live database: the C# names `Streams.NameAr` do **not** exist in SQL, and the table is
    **not** in the default schema — an unqualified `streams` fails with *Invalid object name*, which
@@ -153,6 +169,8 @@ an explicit *do not tune these* — that threshold has been rejected twice.
 
    Note the `sh -c` wrapper: without it the `$(cat ...)` is evaluated on the **host**, where the
    secret does not exist, and sqlcmd fails with a misleading *Login failed for user sa*.
+
+</details>
 
    Easier alternative with no secrets: sign in and read Administration → المسارات.
 
