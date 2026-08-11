@@ -1,6 +1,6 @@
 # RESUME — ADR-0038 frontend, guest invite, and the deploy plumbing
 
-**Written 2026-08-11.** The backend is merged-pending on [PR #234]; everything below is what is
+**Written 2026-08-11.** The backend is **MERGED** (PR #234, `main` `729da88`); everything below is what is
 left. Read `SC-003` and `PE-248` in the package before starting — the design changed during
 implementation, for good reasons, and the ADR text still carries the original.
 
@@ -12,7 +12,7 @@ implementation, for good reasons, and the ADR text still carries the original.
 server_info() · package_open("tamheed-package") · gate_run()
 ```
 
-`ADR-0038` is **Approved**. `FR-156`–`159` and `AC-088`–`093` are **Pending**. Prod is current on
+`ADR-0038` is **Approved**. `AC-088`/`089`/`090`/`091`/`093` are **Partial** (backend evidenced, UI outstanding — AV-132..136); `AC-092` is **Pending**. Prod is current on
 `e403e18`; UAT is **stopped**.
 
 ---
@@ -21,7 +21,7 @@ server_info() · package_open("tamheed-package") · gate_run()
 
 | | |
 |---|---|
-| Branch | `feat/in-app-user-management` → **PR #234** |
+| Backend | **merged** — PR #234, `main` `729da88`, CI green |
 | Done | `FR-156` invite · `FR-157` role assignment + 4 guards · `FR-158` roster shows `Invited` |
 | Evidence | 1738 tests, per-file coverage **99.67%**, `dotnet format` clean |
 | Not done | **SPA**, `FR-159` guest invite, compose/secret plumbing |
