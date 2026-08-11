@@ -6,7 +6,13 @@ import { renderWithAuth } from '../test/render';
 import type { Member } from '../api/members';
 import type { SystemHealth } from '../api/systemHealth';
 
-vi.mock('../api/members', () => ({ useMembers: vi.fn() }));
+// The user-detail sub-state now includes the invite section (FR-156 / ADR-0038), so this module
+// mock must cover useInviteUser too — otherwise the detail assertion fails on an undefined hook
+// rather than on the sub-state behaviour it is actually about.
+vi.mock('../api/members', () => ({
+  useMembers: vi.fn(),
+  useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}));
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;
 
