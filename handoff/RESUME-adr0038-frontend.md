@@ -1,19 +1,22 @@
-# RESUME — ADR-0038 frontend, guest invite, and the deploy plumbing
+# RESUME — ADR-0038: role UI, guest invite, deploy plumbing
 
-**Written 2026-08-11.** The backend is **MERGED** (PR #234, `main` `729da88`); everything below is what is
-left. Read `SC-003` and `PE-248` in the package before starting — the design changed during
-implementation, for good reasons, and the ADR text still carries the original.
+**Rewritten 2026-08-11 at session end.** Backend **and** the invite UI are merged. This is the
+single authoritative entry point; earlier ACMP resume files are superseded history.
 
 ---
 
-## 0. Orient
+## 0. Orient (2 minutes, do not skip)
 
 ```
 server_info() · package_open("tamheed-package") · gate_run()
 ```
 
-`ADR-0038` is **Approved**. `AC-088`/`089`/`090`/`091`/`093` are **Partial** (backend evidenced, UI outstanding — AV-132..136); `AC-092` is **Pending**. Prod is current on
-`e403e18`; UAT is **stopped**.
+⚠ **If `package_open` fails on `.lock`**, check the PID properly before removing it — the lock holds
+a bare PID and "is it alive?" **lies** under PID reuse. Confirm the process does **not exist**, or
+that its identity and `StartTime` don't match, then delete `tamheed-package/data/.lock`.
+
+Read **`SC-003`** and **`SC-004`** before designing anything. Both record where the ADR text and the
+code legitimately diverged.
 
 ---
 
@@ -21,82 +24,88 @@ server_info() · package_open("tamheed-package") · gate_run()
 
 | | |
 |---|---|
-| Backend | **merged** — PR #234, `main` `729da88`, CI green |
-| Done | `FR-156` invite · `FR-157` role assignment + 4 guards · `FR-158` roster shows `Invited` |
-| Evidence | 1738 tests, per-file coverage **99.67%**, `dotnet format` clean |
-| Not done | **SPA**, `FR-159` guest invite, compose/secret plumbing |
+| `main` | `5edd633` · gates 7/7 · 124 evidenced verdicts |
+| Production | **live on `e403e18`**, smoke 10/10, bundle verified |
+| UAT | **stopped** (`i-07ac28ac2fedab921`) — start it from `cloud-operations.md` §1 |
+| Merged today | #232 Day 3 · #233 e2e hardening · #234 ADR-0038 backend · #235 invite UI |
+| Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness, fully classified) |
+
+**Done:** `FR-156` invite (backend **+ UI**) · `FR-157` role assignment (**backend only**) ·
+`FR-158` roster shows `Invited`.
+
+**Verdicts:** `AC-088`/`089`/`090`/`091`/`093` **Partial** (`AV-132`…`136`) — backend evidenced, UI
+outstanding. `AC-092` **Pending**.
 
 ---
 
-## 2. ⚠ Read this before touching the SPA
+## 2. ⚠ Two rules this session paid for repeatedly
 
-**Three times today the thing was already built.** Check before writing:
+**A. Check whether it is already built.** Three times a "new" thing already existed:
+`MembershipStatus.Invited` + `SyncFromClaims`; the `invited` badge and its EN/AR keys; `/session`'s
+full design reference. **Grep the domain enums, `i18n/locales/en.json`, and
+`ACMP product context/*.dc.html` before designing.**
 
-- `MembershipStatus.Invited` already existed, and `SyncFromClaims` already flipped a pre-registered
-  record to Active on first login. `SC-003` records why the ADR's separate "invite record" was
-  dropped.
-- **The `invited` badge already renders** — `STATUS_TONE.Invited = 'info'` in
-  `UsersMembership.tsx:24`, and both `admin.status.invited` keys exist (EN `"Invited"`, AR
-  `"مدعو"`). `DEF-038`'s visible half is closed by the backend filter change alone.
-- `ACMP Administration.dc.html` **§(8) USER DETAIL + INVITE** is the design reference: two fields
-  (*Email address*, *Full name*), primary action *Invite user / دعوة مستخدم*, and the `uStatus`
-  vocabulary. **Read it directly (INV-014); do not compose.**
+**B. An ADR citation in a test name is load-bearing, and no gate reads it.** `SC-004` exists because
+`ADR-0038` silently contradicted `ADR-0015` §Q3 (*"ACMP does NOT integrate the Keycloak Admin API in
+v1"*), and the only thing that caught it was a `describe` block string. **Before overriding any test
+whose name cites an ADR or AC, read that row.** If the code is right, record a `scope-change` —
+don't diverge quietly, and don't build the worse thing out of deference to the document.
 
 ---
 
-## 3. The SPA work
+## 3. Next: role-assignment UI (`FR-157` / `AC-089`, `AC-090`)
 
-**It must land whole.** `api/members.ts` mutations without the dialog are unused exports, and the
-frontend gate is **per-file ≥95%** — dead code fails CI. Mutations + dialog + i18n + tests in one
-commit.
+The backend is merged and tested. The UI is all that's missing.
 
-1. **`api/members.ts`** — `useInviteUser()` → `POST /members/invite`, `useAssignRoles()` →
-   `PUT /members/{publicId}/roles` with `{ roles, confirmedPrivileged }`. Invalidate `['members']`.
-   ⚠ Its header comment currently says *"Read-only in P3/P4 UI … there is no create/edit-role
-   mutation here"* — that becomes false; update it.
-2. **Invite dialog** to §(8). The temporary password comes back in the response and is shown
-   **once**: copy-to-clipboard, no re-fetch, and it must never be logged or written anywhere.
-3. **Role assignment** — the privileged-grant confirmation must send `confirmedPrivileged`. The
-   server refuses without it, so the dialog is a real gate, not decoration.
-4. **`admin.kc.note` banner is now partly false** — it tells the reader identities and roles are
-   managed in Keycloak. Reword to match what the app can now do.
-5. **i18n EN + AR for every new string.** `check-i18n` compares **keys only**, so a missing enum
-   value renders raw English and no gate catches it.
+- `useAssignRoles()` → `PUT /members/{publicId}/roles`, body `{ roles, confirmedPrivileged }`,
+  invalidate `['members']`. Follow `useInviteUser()` in `api/members.ts`.
+- **Granting Administrator or Chairman must send `confirmedPrivileged`.** The server refuses without
+  it, so the confirmation is a real gate — build it as one, not as a cosmetic dialog.
+- The server also refuses self-role-change and removing the last Administrator. **Surface those
+  refusals as messages**; do not pre-hide the control and call that the rule.
+- **`admin.kc.note` banner is now partly false** — it still tells the reader roles are managed in
+  Keycloak. Reword it.
+- **Must land whole**: mutations without UI are unused exports and the frontend gate is per-file
+  **≥95%** — dead code fails CI.
+- **i18n EN + AR together.** `check-i18n` compares **keys only**, so a missing value renders raw
+  English and no gate catches it.
 
 ## 4. `FR-159` / `AC-092` — guest invite
 
-Guest expiry is stored **ACMP-side** and enforced per request; the Keycloak user is disabled at
-expiry as defence in depth. `IIdentityProvider.DisableUserAsync` already exists.
-`ADR-0038` and `DEC-037` carry the rest; `/session` is built to
-`ACMP Navigation & IA.dc.html` **lines 304–347**.
+Expiry is stored **ACMP-side** and enforced per request; the Keycloak user is disabled at expiry as
+defence in depth. `IIdentityProvider.DisableUserAsync` already exists. `/session` is built to
+`ACMP Navigation & IA.dc.html` **lines 304–347** (`GUEST / PRESENTER SHELL`). See `DEC-037`.
 
 ## 5. Deploy plumbing
 
 `KeycloakAdmin__*` through `gen-secrets.sh` (file-backed, ADR-0032), both `.env` examples,
-`docker-compose.cloud.yml`, and `09-put-env.sh`. Options are `ValidateOnStart`, so a half-configured
-environment **stops the host at boot** — that is intended.
+`docker-compose.cloud.yml`, `09-put-env.sh`. Options are `ValidateOnStart`, so a half-configured
+environment **stops the host at boot** — intended.
 
 ---
 
 ## 6. ⚠ The obligation that is not optional
 
-**`ADR-0038` requires the minimum `realm-management` role set to be PROVEN on UAT** against a real
-realm — create-user, set-temporary-password, assign/remove realm roles, disable, logout.
-
-A stub transport cannot answer it, and **`realm-admin` is not the answer if a narrower grant is
-refused** — a refusal is a signal to read, not to widen. This is an unchecked box on PR #234.
+**Prove the minimum `realm-management` role set on UAT** — create-user, set-temporary-password,
+assign/remove realm roles, disable, logout. A stub transport cannot answer it, and **`realm-admin`
+is not the answer if a narrower grant is refused**; a refusal is a signal to read, not to widen.
+Unchecked box on PR #234.
 
 ---
 
-## 7. Gotchas that cost time today
+## 7. Gotchas that cost real time
 
 - **New `.cs` files need a UTF-8 BOM** or `dotnet format --verify-no-changes` fails on `CHARSET`.
 - `AddHttpClient<TClient, TImpl>` names the client after the **service** type — asking for the
   implementation name silently returns a default client with no `BaseAddress`.
-- **From Git Bash on Windows, `export MSYS_NO_PATHCONV=1`** before any `aws` call: an argument
-  starting with `/` is rewritten to a Windows path, and SSM answers `ParameterNotFound`, which looks
-  exactly like a missing IAM permission.
-- **Never `sed` the SSM env payload** — MSYS `sed` rewrites all 36 line endings while changing 2.
-  Edit in binary and assert the CR count is unchanged.
-- The e2e suite is now hardened against an accumulated database (`DEC-039`); **any new spec must be
-  page-aware and count-agnostic** — see `DEF-045`.
+- **`export MSYS_NO_PATHCONV=1` before any `aws` call from Git Bash.** An argument starting with `/`
+  is rewritten to a Windows path and SSM answers `ParameterNotFound` — which looks **exactly** like a
+  missing IAM permission. This nearly bought an unnecessary policy widening.
+- **Never `sed` the SSM env payload.** MSYS `sed` rewrote all 36 line endings while changing 2. Edit
+  in **binary** and assert the CR count is unchanged.
+- **The deployable sha is not HEAD.** `ci.yml` `paths-ignore` skips `*.md`, `docs/`, `.claude/`,
+  `tamheed-package/` — governance commits publish no images. Deploy the newest sha with ECR images.
+- **Write the package only from `main`.** `tamheed-package/data` is git-tracked; commit immediately.
+- **The e2e suite is hardened, and UAT is never reset (`DEC-039`).** Any new spec must be
+  **page-aware and count-agnostic** — see `DEF-045` for the four shapes that break.
+- **Prod and UAT differ on purpose.** Do not harmonise them.
