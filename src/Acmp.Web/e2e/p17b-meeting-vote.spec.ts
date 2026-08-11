@@ -18,7 +18,7 @@ import {
 test.describe('P17b — meeting-workspace vote (AC-021)', () => {
   test('a secretary configures + opens a vote from the workspace; config locks, only eligible voters are rostered', async ({ page, browser }) => {
     test.setTimeout(120_000);
-    const { bearer: secBearer } = await roleSession(page, 'secretary', 'Secretary');
+    const { bearer: secBearer, member: sec } = await roleSession(page, 'secretary', 'Secretary');
 
     const chairCtx = await browser.newContext();
     const memberCtx = await browser.newContext();
@@ -63,11 +63,18 @@ test.describe('P17b — meeting-workspace vote (AC-021)', () => {
       ]);
       expect(openRes.status()).toBe(204);
 
-      // Config is now locked (vote Open) and the roster is exactly the two eligible voters.
+      // Config is now locked (vote Open) and ONLY eligible voters are rostered.
+      //
+      // Asserted as "the eligible are in, the ineligible is out" rather than toHaveCount(2). The dialog
+      // pre-selects every eligible voter, so a fixed count only holds on a database seeded with exactly
+      // this suite's fixtures: measured on UAT there are FOUR active voting-eligible members (two seeded
+      // accounts alongside the two e2e ones), and rostering four of four is the CORRECT behaviour — the
+      // hard-coded 2 was the wrong half of that comparison. The Secretary is the known-ineligible actor
+      // in this scenario, so their absence is what actually carries the AC's word "only".
       await expect(page.getByText('Voting open')).toBeVisible();
-      await expect(page.locator('.voter-row')).toHaveCount(2);
       await expect(page.locator('.voter-row', { hasText: chair.fullName })).toBeVisible();
       await expect(page.locator('.voter-row', { hasText: mem.fullName })).toBeVisible();
+      await expect(page.locator('.voter-row', { hasText: sec.fullName })).toHaveCount(0);
     } finally {
       await chairCtx.close();
       await memberCtx.close();
