@@ -49,7 +49,8 @@ describe('UsersDirectory (AC-059)', () => {
     expect(screen.getByText('khalid@acmp.gov')).toBeInTheDocument();
     expect(screen.getByText('Secretary')).toBeInTheDocument();
     expect(screen.getByText('Auditor')).toBeInTheDocument();
-    // Roles are read-only — every row marks its source.
+    // The lock note survives ADR-0038: roles are writable now, but Keycloak is still where they
+    // live, and the directory row remains read-only — the editor is one level in, on the detail.
     expect(screen.getAllByText('from Keycloak')).toHaveLength(2);
   });
 
