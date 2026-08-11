@@ -31,8 +31,8 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     const mutate = invite();
     renderWithAuth(<InviteUserPanel />);
 
-    await userEvent.type(screen.getByLabelText('Email address'), '  new@acmp.gov  ');
-    await userEvent.type(screen.getByLabelText('Full name'), '  New Person  ');
+    await userEvent.type(screen.getByLabelText(/Email address/), '  new@acmp.gov  ');
+    await userEvent.type(screen.getByLabelText(/Full name/), '  New Person  ');
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
 
     expect(mutate).toHaveBeenCalledWith(
@@ -47,10 +47,10 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     const submit = screen.getByRole('button', { name: /send invitation/i });
 
     expect(submit).toBeDisabled();
-    await userEvent.type(screen.getByLabelText('Email address'), 'a@b.com');
+    await userEvent.type(screen.getByLabelText(/Email address/), 'a@b.com');
     expect(submit).toBeDisabled();
 
-    await userEvent.type(screen.getByLabelText('Full name'), 'A B');
+    await userEvent.type(screen.getByLabelText(/Full name/), 'A B');
     expect(submit).toBeEnabled();
   });
 
@@ -73,15 +73,15 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     mockUseInviteUser.mockReturnValue({ mutate, isPending: false, isError: false });
     renderWithAuth(<InviteUserPanel />);
 
-    await userEvent.type(screen.getByLabelText('Email address'), 'new@acmp.gov');
-    await userEvent.type(screen.getByLabelText('Full name'), 'New Person');
+    await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
+    await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
 
     expect(screen.getByText(INVITED.temporaryPassword)).toBeInTheDocument();
     // The form is GONE, not merely reset: leaving it live invites a second submission while a
     // credential is on screen, and the password would be lost behind the new result with no way
     // to recover it — there is no second chance to read it.
-    expect(screen.queryByLabelText('Email address')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Email address/)).not.toBeInTheDocument();
   });
 
   it('copies the password to the clipboard and confirms it', async () => {
@@ -91,8 +91,8 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     mockUseInviteUser.mockReturnValue({ mutate, isPending: false, isError: false });
     renderWithAuth(<InviteUserPanel />);
 
-    await userEvent.type(screen.getByLabelText('Email address'), 'new@acmp.gov');
-    await userEvent.type(screen.getByLabelText('Full name'), 'New Person');
+    await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
+    await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
     await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
@@ -105,14 +105,14 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     mockUseInviteUser.mockReturnValue({ mutate, isPending: false, isError: false });
     renderWithAuth(<InviteUserPanel />);
 
-    await userEvent.type(screen.getByLabelText('Email address'), 'new@acmp.gov');
-    await userEvent.type(screen.getByLabelText('Full name'), 'New Person');
+    await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
+    await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
     await userEvent.click(screen.getByRole('button', { name: /invite someone else/i }));
 
     // The credential is not recoverable once dismissed — which is the point of "shown once".
     expect(screen.queryByText(INVITED.temporaryPassword)).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Email address')).toHaveValue('');
+    expect(screen.getByLabelText(/Email address/)).toHaveValue('');
   });
 
   it('does not submit when the form is submitted with empty fields', async () => {

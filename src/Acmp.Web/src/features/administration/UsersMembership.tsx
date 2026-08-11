@@ -3,18 +3,20 @@
  * sections). The 7-tab strip and page header live in AdministrationPage; this file owns the directory
  * and the read-only user-detail drill-down.
  *
- * Behavior (read-only this phase, per ADR-0004/0015 — identities + roles come from Keycloak):
- *  - Membership editing affordances (committee × remove, dashed + add, voting-eligibility switch) are
- *    rendered to match the design but are INERT/disabled: stream assignment lands with BL-024 and
- *    voting eligibility with Voting (P9). The directory stays read-only (GET /api/members).
- *  - The row's view button opens an in-place, read-only user detail (state lifted to the container).
- *    The design's invite / "Provision via Keycloak" panel is intentionally NOT built: it conflicts
- *    with ADR-0015 (manual Keycloak provisioning, no in-app account creation) — OQ-042, resolved.
+ * Behavior:
+ *  - The DIRECTORY is read-only (GET /api/members). Membership editing affordances (committee ×
+ *    remove, dashed + add, voting-eligibility switch) are rendered to match the design but are
+ *    INERT/disabled: stream assignment lands with BL-024 and voting eligibility with Voting (P9).
+ *  - The row's view button opens an in-place user detail (state lifted to the container). That
+ *    detail is NO LONGER read-only: ADR-0038 supersedes ADR-0015 §Q3's "no Keycloak Admin API in
+ *    v1" clause (SC-004), so the detail hosts the invite section (FR-156) and the role assignment
+ *    (FR-157). Identity still lives in Keycloak — both write THROUGH to it.
  * Wired to GET /api/members (AC-059).
  */
 import { useTranslation } from 'react-i18next';
 import { useMembers, type Member } from '../../api/members';
 import { InviteUserPanel } from './InviteUserPanel';
+import { RoleAssignmentPanel } from './RoleAssignmentPanel';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Table, type Column } from '../../components/ui/Table';
@@ -158,6 +160,10 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
 
   return (
     <>
+      {/* This banner used to read "Roles are read-only — ACMP does not create accounts or edit
+          roles". Half of that is now false: ADR-0038 supersedes ADR-0015 §Q3 (SC-004) and the user
+          detail both invites and assigns. The still-true half — no self-registration, Keycloak as
+          the source of truth — is kept, because dropping it would lose a real constraint. */}
       <div className="adm-banner">
         <Icon name="infoCircle" size={17} aria-hidden />
         <div>
@@ -181,12 +187,18 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
 }
 
 /**
- * Read-only user detail (the design's user-detail panel, minus the invite section). Renders only data
- * the member API returns — Keycloak ID / last sign-in / provisioned date are omitted until the
- * directory exposes them. No editing, no invite (ADR-0015).
+ * User detail (the design's user-detail panel). Renders only data the member API returns — Keycloak
+ * ID / last sign-in / provisioned date are omitted until the directory exposes them — plus the two
+ * ADR-0038 write affordances at the foot: role assignment (FR-157) and invite (FR-156).
  */
 export function UserDetail({ member, isArabic, onBack }: { member: Member; isArabic: boolean; onBack: () => void }) {
   const { t } = useTranslation();
+  // The container holds the clicked member as a SNAPSHOT, so after a role change the head would keep
+  // showing the old role and the successful change would read as having failed. This re-reads the
+  // same ['members'] cache entry the directory already populated — free, and live after the
+  // assignment invalidates it.
+  const { data } = useMembers();
+  const current = data?.find((m) => m.publicId === member.publicId) ?? member;
   return (
     <section className="page">
       <div className="adm-detail-back">
@@ -199,19 +211,23 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
       <div className="adm-detail-card">
         <div className="adm-detail-head">
           <span className="adm-avatar adm-avatar-lg" aria-hidden="true">
-            {initials(member.fullName)}
+            {initials(current.fullName)}
           </span>
           <div style={{ minInlineSize: 0 }}>
-            <div className="adm-detail-name">{member.fullName}</div>
+            <div className="adm-detail-name">{current.fullName}</div>
             <div className="adm-email" dir="ltr">
-              {member.email}
+              {current.email}
             </div>
           </div>
           <span className="adm-detail-role">
-            <span className="adm-role-name">{t(`role.${member.role.toLowerCase()}`)}</span>
+            <span className="adm-role-name">{t(`role.${current.role.toLowerCase()}`)}</span>
+            {/* Was a padlock reading "Role is read-only — managed in Keycloak". That is no longer
+                true on THIS screen (FR-157 assigns it below), and a lock beside an editor is worse
+                than no note at all. Keycloak is still where the role LIVES, which is what the
+                replacement says. */}
             <span className="adm-lock">
-              <Icon name="lock" size={11} aria-hidden />
-              {t('admin.detail.roleReadonly')}
+              <Icon name="shieldUser" size={11} aria-hidden />
+              {t('admin.detail.roleSource')}
             </span>
           </span>
         </div>
@@ -219,27 +235,31 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
         <div className="adm-detail-facts">
           <div className="adm-fact">
             <div className="adm-fact-label">{t('admin.col.status')}</div>
-            <StatusChip tone={STATUS_TONE[member.status] ?? 'neutral'} label={t(`admin.status.${member.status.toLowerCase()}`)} size="sm" />
+            <StatusChip tone={STATUS_TONE[current.status] ?? 'neutral'} label={t(`admin.status.${current.status.toLowerCase()}`)} size="sm" />
           </div>
           <div className="adm-fact">
             <div className="adm-fact-label">{t('admin.detail.votingEligible')}</div>
-            <div className="adm-fact-value">{member.isVotingEligible ? t('admin.detail.yes') : t('admin.detail.no')}</div>
+            <div className="adm-fact-value">{current.isVotingEligible ? t('admin.detail.yes') : t('admin.detail.no')}</div>
           </div>
         </div>
       </div>
 
       <div className="adm-detail-card">
         <div className="adm-detail-section-head">{t('admin.detail.memberships')}</div>
-        {member.streams.length === 0 ? (
+        {current.streams.length === 0 ? (
           <div className="adm-detail-empty">{t('admin.detail.noMemberships')}</div>
         ) : (
-          member.streams.map((s) => (
+          current.streams.map((s) => (
             <div key={s.publicId} className="adm-detail-row">
               <span>{streamName(s, isArabic)}</span>
             </div>
           ))
         )}
       </div>
+
+      {/* FR-157 — role assignment. Keyed on the member so re-opening a different user starts from
+          THAT user's role rather than carrying the previous panel's selection. */}
+      <RoleAssignmentPanel key={current.publicId} member={current} />
 
       {/* §(8) places the invite section at the foot of the user detail view (FR-156). The server
           decides who may actually invite — Administrator or Secretary — so this is not gated here;

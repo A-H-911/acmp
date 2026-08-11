@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInviteUser, type InvitedUser } from '../../api/members';
+import { Button } from '../../components/ui/Button';
+import { Field, Input } from '../../components/ui/Field';
 import { Icon } from '../../components/icons';
 
 /*
@@ -53,30 +55,37 @@ export function InviteUserPanel() {
     return (
       <div className="adm-detail-card" data-testid="invite-result">
         <div className="adm-detail-section-head">{t('admin.invite.successTitle')}</div>
-        <p className="adm-detail-empty">{t('admin.invite.successBody', { name: invited.fullName })}</p>
+        <div className="adm-detail-form">
+          <p className="adm-detail-note">{t('admin.invite.successBody', { name: invited.fullName })}</p>
 
-        <div className="adm-fact">
-          <div className="adm-fact-label">{t('admin.invite.passwordLabel')}</div>
-          <div className="adm-fact-value">
-            <code dir="ltr">{invited.temporaryPassword}</code>
-            <button type="button" className="adm-back" onClick={copyPassword}>
-              {copied && <Icon name="check" size={13} aria-hidden />}
-              {copied ? t('admin.invite.copied') : t('admin.invite.copy')}
-            </button>
+          <div className="adm-fact">
+            <div className="adm-fact-label">{t('admin.invite.passwordLabel')}</div>
+            <div className="adm-invite-password">
+              <code dir="ltr">{invited.temporaryPassword}</code>
+              <Button variant="ghost" size="sm" onClick={copyPassword}>
+                {copied && <Icon name="check" size={13} aria-hidden />}
+                {copied ? t('admin.invite.copied') : t('admin.invite.copy')}
+              </Button>
+            </div>
           </div>
+
+          {/* Stated on screen, not just in a comment: the person reading it is the only one who can
+              act on it, and they get exactly one chance. */}
+          <p className="adm-detail-note">{t('admin.invite.passwordHint')}</p>
+
+          <Button variant="secondary" onClick={() => { setInvited(null); setCopied(false); }}>
+            {t('admin.invite.another')}
+          </Button>
         </div>
-
-        {/* Stated on screen, not just in a comment: the person reading it is the only one who can
-            act on it, and they get exactly one chance. */}
-        <p className="adm-detail-empty">{t('admin.invite.passwordHint')}</p>
-
-        <button type="button" className="adm-back" onClick={() => { setInvited(null); setCopied(false); }}>
-          {t('admin.invite.another')}
-        </button>
       </div>
     );
   }
 
+  // DEF-047: this shipped with the fields as bare `.adm-fact` blocks directly inside the card. The
+  // card carries no padding of its own — every other child block supplies it — so the labels sat
+  // flush against the border with unstyled browser inputs beside them, and the primary action used
+  // `.adm-back`, which is the borderless back-LINK style. Now a padded `.adm-detail-form` with the
+  // design system's Field/Input/Button, the same block the role editor above it uses.
   return (
     <form className="adm-detail-card" onSubmit={submit}>
       <div className="adm-detail-section-head">
@@ -84,42 +93,34 @@ export function InviteUserPanel() {
         {t('admin.invite.title')}
       </div>
 
-      <div className="adm-fact">
-        <label className="adm-fact-label" htmlFor="invite-email">
-          {t('admin.invite.email')}
-        </label>
-        <input
-          id="invite-email"
-          type="email"
-          dir="ltr"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+      <div className="adm-detail-form">
+        <Field label={t('admin.invite.email')} required>
+          {(p) => (
+            <Input {...p} type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          )}
+        </Field>
+
+        <Field label={t('admin.invite.fullName')} required>
+          {(p) => <Input {...p} type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
+        </Field>
+
+        <p className="adm-detail-note">
+          <Icon name="infoCircle" size={15} aria-hidden />
+          {t('admin.invite.note')}
+        </p>
+
+        {invite.isError && (
+          <p role="alert" className="field-error">
+            <Icon name="alertCircle" size={13} aria-hidden />
+            {t('admin.invite.error')}
+          </p>
+        )}
+
+        <Button type="submit" variant="primary" loading={invite.isPending} disabled={!canSubmit}>
+          <Icon name="send" size={15} aria-hidden />
+          {invite.isPending ? t('admin.invite.sending') : t('admin.invite.send')}
+        </Button>
       </div>
-
-      <div className="adm-fact">
-        <label className="adm-fact-label" htmlFor="invite-name">
-          {t('admin.invite.fullName')}
-        </label>
-        <input id="invite-name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-      </div>
-
-      <div className="adm-detail-empty">
-        <Icon name="infoCircle" size={15} aria-hidden />
-        {t('admin.invite.note')}
-      </div>
-
-      {invite.isError && (
-        <div role="alert" className="adm-detail-empty">
-          {t('admin.invite.error')}
-        </div>
-      )}
-
-      <button type="submit" className="adm-back" disabled={!canSubmit}>
-        <Icon name="send" size={15} aria-hidden />
-        {invite.isPending ? t('admin.invite.sending') : t('admin.invite.send')}
-      </button>
     </form>
   );
 }

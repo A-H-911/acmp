@@ -1064,8 +1064,8 @@
       "notifications": "Notification Settings"
     },
     "kc": {
-      "title": "Roles are read-only",
-      "note": "committee roles are sourced from Keycloak claims. ACMP does not create accounts or edit roles — there is no self-registration. Membership and voting eligibility are managed here."
+      "title": "Keycloak is the source of truth",
+      "note": "committee roles are sourced from Keycloak claims. Open a user to invite an account or change its role — ACMP writes both through to Keycloak, and there is still no self-registration. Membership and voting eligibility are managed here."
     },
     "filter": { "role": "Role", "status": "Status", "membership": "Membership" },
     "showing": "Showing {{count}} users",
@@ -1105,11 +1105,24 @@
     "detail": {
       "back": "Back to users",
       "memberships": "Committee & stream memberships",
-      "roleReadonly": "Role is read-only — managed in Keycloak",
+      "roleSource": "stored in Keycloak",
       "votingEligible": "Voting eligible",
       "yes": "Yes",
       "no": "No",
       "noMemberships": "No committee or stream memberships."
+    },
+    "assign": {
+      "title": "Committee role",
+      "label": "Committee role",
+      "note": "Saving replaces this person's committee roles in Keycloak and ends their open sessions, so the new role applies on their next request rather than up to an hour later.",
+      "save": "Save role",
+      "saved": "Role saved. {{name}} has been signed out, so the new role applies the moment they sign in again.",
+      "confirmTitle": "Grant {{role}}?",
+      "confirmBody": "{{role}} is a privileged role: it can administer the committee and change other people's access. Confirm that {{name}} should hold it.",
+      "confirmCta": "Grant this role",
+      "error": "The role could not be changed. Please try again.",
+      "errorSelf": "You cannot change your own roles. Another Administrator has to make this change.",
+      "errorLastAdmin": "Refused — the committee would be left with no Administrator. Grant Administrator to someone else first."
     },
     "health": {
       "overall": {
