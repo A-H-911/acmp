@@ -147,7 +147,7 @@ services:
     image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
     security_opt: ["no-new-privileges:true"]
     entrypoint: ["bash", "-c", "export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec bash /opt/keycloak/reconcile.sh"]
-    secrets: [kc_bootstrap_admin_password]
+    secrets: [kc_bootstrap_admin_password, KeycloakAdmin__ClientSecret]
     environment:
       KC_URL: "http://keycloak:8080"
       ACMP_REALM: "acmp"
@@ -159,6 +159,7 @@ services:
       ACMP_WEB_ORIGIN: "${KEYCLOAK_ORIGIN}"
     volumes:
       - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
+      - ./keycloak/admin-client.env:/opt/keycloak/admin-client.env:ro
     depends_on:
       keycloak: { condition: service_healthy }
     restart: "no"
@@ -196,7 +197,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: api
-    secrets: [ConnectionStrings__Acmp, Minio__SecretKey]
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret]
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -219,6 +220,18 @@ services:
       Authentication__Keycloak__RequireHttpsMetadata: "${ACMP_REQUIRE_HTTPS_METADATA:-true}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
       OTEL_SERVICE_NAME: "acmp-api"
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered, so the endpoints fail at composition rather than half-working. keycloak-config
+      # reconciles the client + its minimum grant on every boot regardless (DEF-049), and the secret
+      # is always written, so enabling this is a ONE-VARIABLE change.
+      # BaseUrl is the IN-CLUSTER address, not the public one: the admin API is deliberately NOT
+      # reachable through the public listener (AC-081), and the trailing slash is load-bearing —
+      # every adapter path is relative, so without it BaseAddress resolution drops the last segment.
+      # ⚠ The worker MUST carry identical values (ValidateOnStart stops a half-configured host).
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       Webex__Enabled: "${WEBEX_ENABLED:-false}"          # OQ-062: off in UAT
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
       Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
@@ -256,7 +269,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: worker
-    secrets: [ConnectionStrings__Acmp, Minio__SecretKey]
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret]
     environment:
       DOTNET_ENVIRONMENT: Production
       Hangfire__PrepareSchema: "false"
@@ -270,6 +283,18 @@ services:
       Storage__RecordingsBucket: "${ACMP_S3_BUCKET}"
       Storage__AttachmentsBucket: "${ACMP_S3_BUCKET}"
       # MUST match the api exactly — same Hangfire job graph.
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered, so the endpoints fail at composition rather than half-working. keycloak-config
+      # reconciles the client + its minimum grant on every boot regardless (DEF-049), and the secret
+      # is always written, so enabling this is a ONE-VARIABLE change.
+      # BaseUrl is the IN-CLUSTER address, not the public one: the admin API is deliberately NOT
+      # reachable through the public listener (AC-081), and the trailing slash is load-bearing —
+      # every adapter path is relative, so without it BaseAddress resolution drops the last segment.
+      # ⚠ The worker MUST carry identical values (ValidateOnStart stops a half-configured host).
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
       Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
@@ -365,6 +390,7 @@ secrets:
   ConnectionStrings__Acmp:          { file: ./secrets/ConnectionStrings__Acmp }
   ConnectionStrings__AcmpMigrator:  { file: ./secrets/ConnectionStrings__AcmpMigrator }
   Minio__SecretKey:             { file: ./secrets/Minio__SecretKey }
+  KeycloakAdmin__ClientSecret:  { file: ./secrets/KeycloakAdmin__ClientSecret }
 
 volumes:
   mssql-data:

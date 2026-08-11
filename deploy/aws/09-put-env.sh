@@ -71,6 +71,23 @@ if [ "$env_name" = "uat" ]; then
   fi
 fi
 
+# --- in-app user management preflight (ADR-0038, DW-024) ---------------------------------------
+# KeycloakAdminOptions is ValidateOnStart, so an environment that enables the feature without a real
+# secret does not degrade — it STOPS api AND worker at boot, and the box comes back unusable. That
+# is the right runtime behaviour and the wrong place to discover it: this is the last point before
+# the value reaches a machine, so the placeholder is refused HERE, with the reason.
+kc_admin_enabled="$(printf '%s\n' "$payload" | sed -n 's/^[[:space:]]*KEYCLOAK_ADMIN_ENABLED[[:space:]]*=[[:space:]]*//p' | tr -d '\r' | tail -1)"
+case "${kc_admin_enabled:-false}" in
+  false|False|FALSE) ;;
+  *)
+    kc_admin_secret="$(printf '%s\n' "$payload" | sed -n 's/^[[:space:]]*KEYCLOAK_ADMIN_CLIENT_SECRET[[:space:]]*=[[:space:]]*//p' | tr -d '\r' | tail -1)"
+    case "${kc_admin_secret:-}" in
+      ''|CHANGE_ME|ChangeMe_KCAdmin#2026)
+        die "KEYCLOAK_ADMIN_ENABLED is '${kc_admin_enabled}' but KEYCLOAK_ADMIN_CLIENT_SECRET is '${kc_admin_secret:-<unset>}' — ValidateOnStart would stop api and worker at boot. Set a real secret, or leave the feature off.";;
+    esac
+    ;;
+esac
+
 # --- size gate ----------------------------------------------------------------------------------
 # 4096 is the hard Standard-tier limit. Fail here with the number rather than letting put-parameter
 # return a less obvious error, or letting Intelligent-Tiering promote it to a billed Advanced tier.

@@ -98,7 +98,34 @@ if [ "$DB_USER" != "sa" ]; then
     "Server=${DB_SERVER};Database=${DB_NAME};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=${DB_TRUST};Encrypt=True"
 fi
 
+# --- Keycloak Admin service account (ADR-0038) ---
+# ALWAYS written, unlike the Webex block below, and the difference is not an inconsistency:
+#   - this secret IS mounted as a real compose secret (ADR-0032), and a compose `secrets:` entry
+#     whose file is missing fails the WHOLE stack — so a conditionally-written file would mean a
+#     conditionally-bootable deployment;
+#   - reconcile.sh sets the Keycloak client's secret FROM this file on every boot, so the client and
+#     the app agree whether or not the feature is switched on;
+#   - and that is what makes enabling in-app user management a ONE-VARIABLE change. KeycloakAdmin
+#     options are ValidateOnStart: a KeycloakAdmin__Enabled=true that arrives before its secret
+#     STOPS THE HOST at boot rather than degrading, and always-writing removes that ordering hazard.
+# An unused service-account secret is inert — nobody authenticates as a client the app never calls.
+#
+# NOT `:?` — an existing operator deploy/.env predates this variable, and failing hard would break a
+# working dev stack on `git pull`. Unset generates a random per-run value instead, which is SAFE
+# rather than a shortcut: reconcile.sh pushes this file's contents to the Keycloak client on every
+# boot, so a value nobody chose is still a value both sides agree on. There is deliberately no
+# literal fallback — a default credential in a script is a credential.
+if [ -z "${KEYCLOAK_ADMIN_CLIENT_SECRET:-}" ]; then
+  KEYCLOAK_ADMIN_CLIENT_SECRET="$(head -c 24 /dev/urandom | base64 | tr -d '\n=' | tr '+/' '-_')"
+  echo "gen-secrets: KEYCLOAK_ADMIN_CLIENT_SECRET unset — generated one for this run (set it in .env to pin it)."
+fi
+write_secret KeycloakAdmin__ClientSecret "$KEYCLOAK_ADMIN_CLIENT_SECRET"
+
 # --- Webex (only when enabled; otherwise the adapter is off and reads nothing — no empty files) ---
+# ⚠ DEF-050: these five files are written and MOUNTED BY NOTHING — no compose file declares them as
+# secrets, and the same values are passed to the app as plain `environment:` entries instead, which
+# is the delivery channel ADR-0032 exists to avoid. Left as-is here because fixing it is a Webex
+# change, not an ADR-0038 one; do NOT copy this block's shape.
 if [ "${WEBEX_ENABLED:-false}" = "true" ]; then
   write_secret Webex__BotToken            "${WEBEX_BOT_TOKEN:?set WEBEX_BOT_TOKEN}"
   write_secret Webex__WebhookSecret       "${WEBEX_WEBHOOK_SECRET:?set WEBEX_WEBHOOK_SECRET}"

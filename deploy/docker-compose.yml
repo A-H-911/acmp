@@ -158,12 +158,16 @@ services:
     entrypoint: ["bash", "-c", "export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec bash /opt/keycloak/reconcile.sh"]
     secrets:
       - kc_bootstrap_admin_password
+      # ADR-0038: reconcile SETS the service account client's secret from this file, so the
+      # client and the app always agree. The value flows one way only — never read back out.
+      - KeycloakAdmin__ClientSecret
     environment:
       KC_URL: "http://keycloak:8080"
       ACMP_REALM: "acmp"
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
     volumes:
       - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
+      - ./keycloak/admin-client.env:/opt/keycloak/admin-client.env:ro
     restart: "no"
 
   api:
@@ -176,6 +180,7 @@ services:
     secrets:
       - ConnectionStrings__Acmp
       - Minio__SecretKey
+      - KeycloakAdmin__ClientSecret
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -196,6 +201,16 @@ services:
       Authentication__Keycloak__RequireHttpsMetadata: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
       OTEL_SERVICE_NAME: "acmp-api"
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered at all, so the invite/role endpoints fail at composition rather than half-working.
+      # The client + its grant are reconciled by keycloak-config on every boot regardless (DEF-049),
+      # and the secret is always written (gen-secrets), so enabling this is a ONE-VARIABLE change.
+      # ⚠ The worker MUST carry identical values: it composes the same Membership module, and
+      # KeycloakAdminOptions is ValidateOnStart — Enabled=true without the secret STOPS the host.
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       # Webex adapter (P13, ADR-0005/0024). Default OFF — in-app is the sole channel (AC-071). Fill these via
       # .env to enable; the worker below MUST carry the identical values (same job graph). Secrets never committed.
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
@@ -320,11 +335,22 @@ services:
     secrets:
       - ConnectionStrings__Acmp
       - Minio__SecretKey
+      - KeycloakAdmin__ClientSecret
     environment:
       DOTNET_ENVIRONMENT: Production
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__Secure: "false"
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered at all, so the invite/role endpoints fail at composition rather than half-working.
+      # The client + its grant are reconciled by keycloak-config on every boot regardless (DEF-049),
+      # and the secret is always written (gen-secrets), so enabling this is a ONE-VARIABLE change.
+      # ⚠ The worker MUST carry identical values: it composes the same Membership module, and
+      # KeycloakAdminOptions is ValidateOnStart — Enabled=true without the secret STOPS the host.
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       # Webex config MUST match the API's exactly (same job graph). Fill via .env to enable (default off).
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
       Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
@@ -403,6 +429,8 @@ secrets:
     file: ./secrets/ConnectionStrings__Acmp
   Minio__SecretKey:
     file: ./secrets/Minio__SecretKey
+  KeycloakAdmin__ClientSecret:
+    file: ./secrets/KeycloakAdmin__ClientSecret
 
 volumes:
   mssql-data:
