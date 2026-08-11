@@ -24,11 +24,12 @@ code legitimately diverged.
 
 | | |
 |---|---|
-| `main` | `3bed1c4` · gates 7/7 · 127 evidenced verdicts |
+| `main` | `ce4cc2c` · gates 7/7 · 127 evidenced verdicts |
 | Production | **live on `e403e18`**, smoke 10/10, bundle verified |
 | UAT | **stopped** (`i-07ac28ac2fedab921`) — start it from `cloud-operations.md` §1 |
 | Merged | #232 Day 3 · #233 e2e hardening · #234 backend · #235 invite UI · **#236 role UI** |
-| Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness, fully classified) |
+| Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness) · `DEF-050` (Webex secrets via `environment:`) · **`DEF-051` (a failed reconcile is silent)** |
+| Open decisions | `OQ-069` (Secretary can't reach `/admin`) · `OQ-071` (automated grant test still owed) |
 
 **Done:** `FR-156` invite (backend + UI) · `FR-157` role assignment (**backend + UI**) ·
 `FR-158` roster shows `Invited`.
@@ -88,11 +89,29 @@ Expiry is stored **ACMP-side** and enforced per request; the Keycloak user is di
 defence in depth. `IIdentityProvider.DisableUserAsync` already exists. `/session` is built to
 `ACMP Navigation & IA.dc.html` **lines 304–347** (`GUEST / PRESENTER SHELL`). See `DEC-037`.
 
-## 5. Deploy plumbing
+## 5. ✅ Deploy plumbing — DONE (#237, `DW-024`)
 
-`KeycloakAdmin__*` through `gen-secrets.sh` (file-backed, ADR-0032), both `.env` examples,
-`docker-compose.cloud.yml`, `09-put-env.sh`. Options are `ValidateOnStart`, so a half-configured
-environment **stops the host at boot** — intended.
+The client is defined in **`reconcile.sh`, not `realm-export.json`** (`DEF-049`): Keycloak imports
+the bundled export **only on first run**, so a declaration there reaches a fresh stack and *never*
+prod or UAT. The secret settles it — it can only match `gen-secrets`' file by being *set from* it.
+
+- **The grant is `manage-users` and nothing else**, proven on UAT (`OQ-070`). It lives in
+  `deploy/keycloak/admin-client.env`, read by both the reconciler and the CI gate.
+- `check-realm-export.mjs` asserts the **exact** set with `realm-admin` forbidden; both failure
+  branches proven by forcing them. The reconciler **revokes** extras, so widening can't survive.
+- **Enabling is one variable.** The secret is always written; `09-put-env.sh` refuses
+  `ENABLED=true` + a placeholder secret before it reaches a box.
+
+⚠ **A green e2e is NOT evidence the client exists** — `DEF-051` means a failed reconcile leaves the
+stack fully healthy. Nothing yet asserts the post-conditions.
+
+## 5c. Next two steps, in order
+
+1. **`DEF-051`** — assert the reconcile post-conditions in `smoke.sh` (redirect URI, `basic` scope,
+   the client + its exact grant). Zero availability risk. The alternative — blocking `api` on the
+   sidecar — is an availability trade on a live always-on box and is **yours to decide**.
+2. **Deploy with `KEYCLOAK_ADMIN_ENABLED=true`** and evidence `AC-090` behaviourally: change a role,
+   then assert the user's next request no longer exercises the removed one.
 
 ---
 
@@ -105,12 +124,25 @@ settings to Secretary and contradicts permission-matrix row 27 (SoD-5). Options:
 requirements, move the affordances somewhere a Secretary can reach, or widen and accept the SoD
 consequence. **Do not just widen it.**
 
-## 6. ⚠ The obligation that is not optional
+## 6. ✅ The obligation — DISCHARGED on UAT (`OQ-070`)
 
-**Prove the minimum `realm-management` role set on UAT** — create-user, set-temporary-password,
-assign/remove realm roles, disable, logout. A stub transport cannot answer it, and **`realm-admin`
-is not the answer if a narrower grant is refused**; a refusal is a signal to read, not to widen.
-Unchecked box on PR #234.
+**The minimum set is one role: `manage-users`.** Proven 2026-08-12, in two runs, because one run
+proves sufficiency and not minimality:
+
+```
+{}             -> POST /users 403        (a grant is NECESSARY)
+{manage-users} -> 8/8 calls succeed      (SUFFICIENT)
+```
+
+A one-element sufficient set whose empty subset is refused is **minimal by construction**.
+
+⚠ **The obvious guess was wider.** `manage-users + view-realm` was the candidate, on the theory that
+the role-mapping calls need `view-realm` for `canMapRole`. **They do not.** Shipping it would have
+handed the service account a read over the entire realm configuration for nothing.
+
+Re-runnable: `node scripts/probe-keycloak-grant.mjs --base <url> --realm acmp --client acmp-admin-svc
+--secret <s>`. The operator chose *"both, UAT first"*, so the **automated** half is still owed —
+wrap the probe in a CI test against the bundled Keycloak so it can't decay.
 
 ---
 
