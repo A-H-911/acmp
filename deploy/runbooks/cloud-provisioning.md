@@ -10,9 +10,17 @@ This is the document AC-075 means by *"bootstrapped from the runbook"*.
 > **superseded for anything on EC2** — its commands use `up.sh` and `docker-compose.prod.yml`,
 > which are the wrong files for a cloud box.
 
-> **Who runs these.** All `deploy/aws/*.sh` scripts are **operator-run** from an IAM admin identity
-> (`acmp-admin`), never as root, never by CI, never by the assistant. They are idempotent
-> (check-then-create), so re-running is safe.
+> **Who runs these.** All `deploy/aws/*.sh` scripts are **operator-run by default** from an IAM admin
+> identity (`acmp-admin`), never as root and never by CI. The assistant runs them **only on explicit
+> operator delegation** — first exercised 2026-08-11 for the UAT deploy of `e403e18`. They are
+> idempotent (check-then-create), so re-running is safe.
+>
+> ⚠ **From Git Bash on Windows, export `MSYS_NO_PATHCONV=1` first.** MSYS rewrites any argument
+> beginning with `/`, so `--name /acmp/uat/env` reaches AWS as `C:/Program Files/Git/acmp/uat/env`.
+> SSM answers `ParameterNotFound` rather than `AccessDenied` for a name you cannot see, so this
+> presents as a **missing IAM permission** and very nearly bought an unnecessary policy widening.
+> Same family: `smoke.sh`'s S3 leg passes `--body $(mktemp)`, a POSIX path the Windows `aws.exe`
+> cannot open — that leg fails on Windows and passes on the box. Neither is an environment fault.
 
 ---
 
