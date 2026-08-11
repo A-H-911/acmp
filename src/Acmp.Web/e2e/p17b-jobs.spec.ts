@@ -60,6 +60,16 @@ async function pollRemindersAudit(request: APIRequestContext, bearer: string, ti
 
 test.describe('P17b — reminder jobs real-fire (AC-054 / AC-055)', () => {
   test('the Hangfire sweep fires on the real stack: due reminder + escalation + audit', async ({ page, browser }) => {
+    // This spec waits ~150s for a sweep, which is only survivable when the sweep is MINUTELY. That cron
+    // is an e2e-only override (.github/workflows/e2e.yml sets ACTION_REMINDERS_SWEEP_CRON='* * * * *');
+    // a deployed environment keeps the production default '0 6 * * *' — ONCE DAILY
+    // (deploy/docker-compose.cloud.yml). Against UAT the test is therefore structurally unpassable, and
+    // the right answer is NOT to give a deployed box a minutely production cron to satisfy a test.
+    // Skip loudly instead, so the AC-054/055 evidence stays on the CI run where the fire is genuine.
+    test.skip(
+      process.env.ACTION_REMINDERS_SWEEP_CRON !== '* * * * *',
+      'needs the e2e-only minutely sweep cron (ACTION_REMINDERS_SWEEP_CRON="* * * * *"); deployed environments sweep daily',
+    );
     test.setTimeout(200_000);
     const { bearer: secBearer, member: sec } = await roleSession(page, 'secretary', 'Secretary');
 

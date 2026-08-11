@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { loginAs } from './login';
 import { E2E_USERS } from './users';
-import { captureBearer } from './apiHelpers';
+import { captureBearer, meMember } from './apiHelpers';
 import {
-  apiMembers,
   apiCreateTopic,
   apiPreparedTopic,
   apiScheduleMeeting,
@@ -25,12 +24,28 @@ const secretaryName = `${E2E_USERS.secretary.firstName} ${E2E_USERS.secretary.la
 async function secretarySession(page: Page): Promise<{ bearer: string; secretary: ApiMember }> {
   await loginAs(page, 'secretary');
   const bearer = await captureBearer(page);
-  // Force JIT provisioning to complete before we read the directory — the SPA's POST /members/me
-  // is async on login, so the very first query can race it. The endpoint is idempotent.
-  await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
-  const me = (await apiMembers(page.request, bearer)).find((m) => m.role === 'Secretary');
-  if (!me) throw new Error('[e2e] secretary member not provisioned after login');
+  // meMember still forces JIT provisioning first (idempotent), so the original guard against racing
+  // the SPA's async login-time provision is preserved — but it matches the caller's OWN row by
+  // publicId instead of by role, which is not unique on an environment that is never reset.
+  const me = await meMember(page, bearer);
   return { bearer, secretary: me };
+}
+
+/**
+ * Open the kanban narrowed to ONE topic.
+ *
+ * A fresh stack shows every topic, so `.kb-card` for a just-created topic was always present. A
+ * long-lived environment is different: GetBacklog pages at 25 and the kanban sorts (Priority,
+ * CreatedAt, Key) ascending, so the newest priority-0 card sorts LAST and falls past the fold —
+ * `dragHtml5` then waits for a card that is never rendered and the test times out. Worse, the suite
+ * ratchets: every run creates more topics, so these tests passed earlier today and stopped passing
+ * a few runs later with no code change at all. Search matches Title OR Key, so the key is exact.
+ */
+async function kanbanFilteredTo(page: Page, key: string): Promise<void> {
+  await page.goto('/backlog');
+  await page.getByRole('button', { name: 'Kanban' }).click();
+  await page.locator('.bk-filters').getByRole('searchbox').fill(key); // 300 ms debounce → refetch at page 1
+  await expect(page.locator('.kb-card', { hasText: key })).toBeVisible();
 }
 
 test.describe('S6b-2 — native drag paths + failure-first', () => {
@@ -38,8 +53,7 @@ test.describe('S6b-2 — native drag paths + failure-first', () => {
     const { bearer } = await secretarySession(page);
     const topic = await apiCreateTopic(request, bearer, `S6b2 Kanban drag ${Date.now()}`);
 
-    await page.goto('/backlog');
-    await page.getByRole('button', { name: 'Kanban' }).click();
+    await kanbanFilteredTo(page, topic.key);
     const card = page.locator('.kb-card', { hasText: topic.key });
     const acceptedCol = page.locator('.kb-col').filter({ hasText: 'Accepted' });
     await dragHtml5(card, acceptedCol);
@@ -54,8 +68,7 @@ test.describe('S6b-2 — native drag paths + failure-first', () => {
     const { bearer } = await secretarySession(page);
     const topic = await apiCreateTopic(request, bearer, `S6b2 Kanban illegal ${Date.now()}`);
 
-    await page.goto('/backlog');
-    await page.getByRole('button', { name: 'Kanban' }).click();
+    await kanbanFilteredTo(page, topic.key);
     const card = page.locator('.kb-card', { hasText: topic.key });
     const scheduledCol = page.locator('.kb-col').filter({ hasText: 'Scheduled' });
     await dragHtml5(card, scheduledCol);

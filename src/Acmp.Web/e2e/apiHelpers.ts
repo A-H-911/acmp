@@ -50,8 +50,36 @@ export async function roleSession(
 ): Promise<{ bearer: string; member: ApiMember }> {
   await loginAs(page, role);
   const bearer = await captureBearer(page);
-  await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
-  const member = (await apiMembers(page.request, bearer)).find((m) => m.role === acmpRole);
-  if (!member) throw new Error(`[e2e] ${acmpRole} member not provisioned after ${role} login`);
+  const member = await meMember(page, bearer);
+  if (member.role !== acmpRole)
+    throw new Error(`[e2e] logged in as ${role} but the provisioned member is ${member.role}, not ${acmpRole}`);
   return { bearer, member };
+}
+
+/**
+ * The member row belonging to THE CALLER OF THIS BEARER, matched on publicId.
+ *
+ * This used to be `.find((m) => m.role === acmpRole)` — a lookup keyed on a property that is NOT
+ * UNIQUE — and it is why five specs failed against UAT while passing in CI. CI builds a fresh
+ * database every run, so exactly one Chairman row exists and picking "the Chairman" is
+ * unambiguous. A long-lived environment is different: DEF-029 means deleting a Keycloak user
+ * STRANDS its member row forever, and KeycloakUserId is uniquely indexed, so a re-created fixture
+ * user necessarily gets a SECOND row. Measured on UAT: E2E Chairman, Member and Secretary each
+ * held two rows with two distinct subs. `.find` then returned whichever came first, so a spec
+ * rostered one identity while its bearer carried the other — surfacing as a 409 whose body is
+ * indistinguishable from "you have already voted", and as reminders delivered to the orphan.
+ *
+ * POST /members/me is the authority: it provisions from the token's own claims and returns THAT
+ * row, so its publicId is the only identifier guaranteed to belong to this bearer. It stays
+ * idempotent, so it also keeps the pre-existing guard against racing the SPA's async login-time
+ * provision.
+ */
+export async function meMember(page: Page, bearer: string): Promise<ApiMember> {
+  const res = await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+  if (!res.ok()) throw new Error(`[e2e] provision self ${res.status()} ${await res.text()}`);
+  const { publicId } = (await res.json()) as { publicId: string };
+
+  const member = (await apiMembers(page.request, bearer)).find((m) => m.publicId === publicId);
+  if (!member) throw new Error(`[e2e] no member row for the caller (publicId ${publicId}) in GET /members`);
+  return member;
 }

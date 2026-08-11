@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { loginAs } from './login';
-import { captureBearer } from './apiHelpers';
-import { apiMembers, apiCreateTopic, type ApiMember } from './scenario';
+import { captureBearer, meMember } from './apiHelpers';
+import { apiCreateTopic, type ApiMember } from './scenario';
 
 /*
  * P17b — live real-stack leg for the traceability ACs (bin (a) of the P17b-0 triage):
@@ -28,11 +28,9 @@ const TRACE_PANEL = 'Traceability'; // TraceabilityPanel aside aria-label (trace
 async function secretarySession(page: Page): Promise<{ bearer: string; secretary: ApiMember }> {
   await loginAs(page, 'secretary');
   const bearer = await captureBearer(page);
-  // Force JIT provisioning before reading the directory (POST /members/me is idempotent) — same guard
-  // dnd-and-failures.spec uses to avoid racing the SPA's async login-time provision.
-  await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
-  const me = (await apiMembers(page.request, bearer)).find((m) => m.role === 'Secretary');
-  if (!me) throw new Error('[e2e] secretary member not provisioned after login');
+  // meMember provisions first (idempotent, same race guard as before) and resolves the caller's OWN
+  // row by publicId — role is not a unique key once an environment accumulates DEF-029 orphans.
+  const me = await meMember(page, bearer);
   return { bearer, secretary: me };
 }
 
