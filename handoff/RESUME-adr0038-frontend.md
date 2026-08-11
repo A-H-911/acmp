@@ -1,6 +1,6 @@
-# RESUME — ADR-0038: role UI, guest invite, deploy plumbing
+# RESUME — ADR-0038: guest invite, deploy plumbing
 
-**Rewritten 2026-08-11 at session end.** Backend **and** the invite UI are merged. This is the
+**Updated 2026-08-11 (second session).** Backend, invite UI **and role UI** are merged. This is the
 single authoritative entry point; earlier ACMP resume files are superseded history.
 
 ---
@@ -24,17 +24,22 @@ code legitimately diverged.
 
 | | |
 |---|---|
-| `main` | `5edd633` · gates 7/7 · 124 evidenced verdicts |
+| `main` | `3bed1c4` · gates 7/7 · 127 evidenced verdicts |
 | Production | **live on `e403e18`**, smoke 10/10, bundle verified |
 | UAT | **stopped** (`i-07ac28ac2fedab921`) — start it from `cloud-operations.md` §1 |
-| Merged today | #232 Day 3 · #233 e2e hardening · #234 ADR-0038 backend · #235 invite UI |
+| Merged | #232 Day 3 · #233 e2e hardening · #234 backend · #235 invite UI · **#236 role UI** |
 | Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness, fully classified) |
 
-**Done:** `FR-156` invite (backend **+ UI**) · `FR-157` role assignment (**backend only**) ·
+**Done:** `FR-156` invite (backend + UI) · `FR-157` role assignment (**backend + UI**) ·
 `FR-158` roster shows `Invited`.
 
-**Verdicts:** `AC-088`/`089`/`090`/`091`/`093` **Partial** (`AV-132`…`136`) — backend evidenced, UI
-outstanding. `AC-092` **Pending**.
+**Verdicts:** `AC-088` **Met** · `AC-089` **Met** · `AC-090` **Partial** · `AC-091`/`093` Partial ·
+`AC-092` **Pending**.
+
+⚠ **`AC-090` is blocked, not forgotten.** Its bar is behavioural — *"the subsequent request no longer
+exercises the removed role"* — and `KeycloakAdmin:Enabled` is **false in dev, CI and the e2e stack**,
+so `IIdentityProvider` is never registered and the endpoint **cannot execute anywhere today**. It
+needs §5 **and** §6 below. The same blocker is the residual on `AC-088`.
 
 ---
 
@@ -53,22 +58,29 @@ don't diverge quietly, and don't build the worse thing out of deference to the d
 
 ---
 
-## 3. Next: role-assignment UI (`FR-157` / `AC-089`, `AC-090`)
+## 3. ✅ Role-assignment UI — DONE (#236)
 
-The backend is merged and tested. The UI is all that's missing.
+`RoleAssignmentPanel` on the user detail. Three decisions worth not re-deriving:
 
-- `useAssignRoles()` → `PUT /members/{publicId}/roles`, body `{ roles, confirmedPrivileged }`,
-  invalidate `['members']`. Follow `useInviteUser()` in `api/members.ts`.
-- **Granting Administrator or Chairman must send `confirmedPrivileged`.** The server refuses without
-  it, so the confirmation is a real gate — build it as one, not as a cosmetic dialog.
-- The server also refuses self-role-change and removing the last Administrator. **Surface those
-  refusals as messages**; do not pre-hide the control and call that the rule.
-- **`admin.kc.note` banner is now partly false** — it still tells the reader roles are managed in
-  Keycloak. Reword it.
-- **Must land whole**: mutations without UI are unused exports and the frontend gate is per-file
-  **≥95%** — dead code fails CI.
-- **i18n EN + AR together.** `check-i18n` compares **keys only**, so a missing value renders raw
-  English and no gate catches it.
+- **One `Select`, not a multi-select.** The API takes a collection, but ACMP caches exactly one
+  `CommitteeRole` and `AC-091` forbids reading Keycloak at request time — the app *cannot* know a
+  multi-role set, so a multi-select would prefill a partial one and drop what it can't see. The
+  assignment **replaces** the person's roles, and the panel says so on screen.
+- **The confirm gate fires on "the set being SENT is privileged"**, mirroring the server — not on
+  "this person is gaining privilege". An Administrator moving to Chairman gains nothing and is still
+  refused without the flag.
+- **Nothing is pre-hidden.** Self-change and last-Administrator answer with the server's refusal.
+
+### ⚠ Two defects it uncovered in the invite that shipped the day before
+
+- **`DEF-046`** — `members.ts` sent its JSON body with **no `Content-Type`**, so minimal-API binding
+  answered **415**. The invite in #235 *never worked*. **No layer could have caught it**: every
+  backend test uses `PostAsJsonAsync`, which sets the header itself; the panel test mocks the hook
+  away; the api-layer test asserted the **body** and never the headers. *An assertion on a request's
+  body says nothing about whether the request is well-formed enough to be read.*
+- **`DEF-047`** — the invite panel rendered **edge-to-edge** with its primary action styled as body
+  text. A fully green suite described a broken-looking screen, because role/label queries resolve
+  perfectly against unstyled markup. **Found by rendering the real components in a browser.**
 
 ## 4. `FR-159` / `AC-092` — guest invite
 
@@ -83,6 +95,15 @@ defence in depth. `IIdentityProvider.DisableUserAsync` already exists. `/session
 environment **stops the host at boot** — intended.
 
 ---
+
+## 5b. `OQ-069` — an operator decision, not a code fix
+
+`FR-156` and `FR-157` both say "As an Administrator **or Secretary**" and the server honours it, but
+`App.tsx:100` gates `/admin` with `RequireRole ['administrator']`, so **a Secretary can reach
+neither control**. Widening the route exposes templates, health, streams, jobs and notification
+settings to Secretary and contradicts permission-matrix row 27 (SoD-5). Options: narrow the
+requirements, move the affordances somewhere a Secretary can reach, or widen and accept the SoD
+consequence. **Do not just widen it.**
 
 ## 6. ⚠ The obligation that is not optional
 
@@ -109,3 +130,13 @@ Unchecked box on PR #234.
 - **The e2e suite is hardened, and UAT is never reset (`DEC-039`).** Any new spec must be
   **page-aware and count-agnostic** — see `DEF-045` for the four shapes that break.
 - **Prod and UAT differ on purpose.** Do not harmonise them.
+- **A green suite is not a look.** Testing-library queries by role/label pass against completely
+  unstyled markup. Any new screen gets **rendered in a browser** — `npx vite` + a throwaway entry
+  that mounts the real components inside a `QueryClientProvider`, `?lang=ar` for RTL. That is how
+  `DEF-047` was found and how the `.adm-detail-card { overflow: hidden }` clip on the role
+  dropdown was caught **before** it shipped.
+- **`.adm-detail-card` has no padding and clips its children.** Child blocks supply their own
+  padding (`.adm-detail-form`), and anything that opens a popover needs `.adm-card-overflow`.
+- **An `afterEach` that calls `i18n.changeLanguage` must `cleanup()` FIRST** — the file's `afterEach`
+  runs before the setup file's auto-cleanup, so the language switch re-renders mounted components
+  outside `act()` and every test in the file warns, attributed to whichever one was running.
