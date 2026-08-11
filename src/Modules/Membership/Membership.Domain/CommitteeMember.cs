@@ -45,6 +45,30 @@ public sealed class CommitteeMember : AuditableEntity
         return member;
     }
 
+    // Admin pre-registration ahead of first login (ADR-0038 / SC-003), which is exactly what
+    // MembershipStatus.Invited was reserved for. The caller has ALREADY created the Keycloak account
+    // and passes back the subject id it returned, so unlike a blind pre-seed there is nothing to
+    // reconcile later — the identity is known at creation and SyncFromClaims flips the row to Active
+    // on first login through the existing path.
+    //
+    // Role is still NOT an admin-set field here: it arrives as the claims-derived cache's initial
+    // value, matching whatever realm roles were granted in Keycloak, and every later login refreshes
+    // it. Nothing about the claims-are-the-truth rule changes.
+    public static CommitteeMember PreRegister(string keycloakUserId, string fullName, string email, CommitteeRole role, DateTimeOffset now)
+    {
+        var member = new CommitteeMember
+        {
+            KeycloakUserId = keycloakUserId.Trim(),
+            FullName = fullName.Trim(),
+            Email = email.Trim().ToLowerInvariant(),
+            Role = role,
+            Status = MembershipStatus.Invited,
+            IsVotingEligible = DefaultVotingEligibility(role),
+        };
+        member.Raise(new CommitteeMemberProvisionedEvent(member.PublicId, member.Email, now));
+        return member;
+    }
+
     // Refresh claims-derived fields on each login. Never touches ACMP-managed attributes (status,
     // voting eligibility, streams). A login on a pre-registered Invited record flips it to Active.
     //
@@ -79,6 +103,20 @@ public sealed class CommitteeMember : AuditableEntity
 
         return changed;
     }
+
+    // Mirrors an in-app role assignment that has ALREADY been written to Keycloak (FR-157, ADR-0038).
+    //
+    // The type comment above still holds — role remains a claims-derived cache and the next login
+    // re-syncs it through SyncFromClaims. This seeds that cache with exactly the value the next token
+    // will carry, and it does so for two concrete reasons rather than convenience:
+    //   1. AUDIT. before/after are drained from the EF capture buffer by (subjectType, subjectId), so
+    //      an operation that changes nothing locally produces an audit row with NO values — and
+    //      AC-093 requires "what changed from and to". Without this the record would say a role
+    //      changed while being unable to say from what.
+    //   2. The roster would otherwise show the OLD role until that member next signed in, which reads
+    //      as the assignment having silently failed.
+    // Safe because the caller forces sign-out in the same operation, so the stale token cannot outlive it.
+    public void ApplyAssignedRole(CommitteeRole role) => Role = role;
 
     // AC-058: blocks ACMP access but keeps the record so votes/authorship/assignments stay attributed.
     public void Deactivate() => Status = MembershipStatus.Disabled;
