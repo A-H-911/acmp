@@ -22,14 +22,14 @@ and the plan text still carries the originals.
 
 | | |
 |---|---|
-| `main` | **`7ffa490`**, working tree clean, **0 open non-dependabot PRs** |
-| Landed this session | **#222–#230** — Days 1–2 plus the register corrections |
+| `main` | **`b340e62`**, working tree clean, **0 open non-dependabot PRs** |
+| Landed | **#222–#230** (Days 1–2) and **#232** (Day 3, `e403e18`) |
 | **Production** | `i-04d9717feea79204b` · **running** · https://acmp.anas7ammo.dev |
 | ⚠ **Prod is pinned to `1c7f2ba`** | **None of Days 1–2 is deployed.** SSM `/acmp/prod/env` still pins `ACMP_IMAGE_TAG=1c7f2ba…`. Everything merged since is invisible to the 26 users. |
 | **UAT** | `i-07ac28ac2fedab921` · **stopped** (stop-when-idle, by decision) |
 | Budget | spend **$2.097** of $100. The 2.3% trigger is **ACTUAL**, not forecast, so it fires on realised spend — **days away, not hours** |
-| Defects | 41 raised; **open: DEF-012, DEF-036, DEF-038, DEF-039, DEF-041** |
-| Package | `gate_run()` 7/7 · latest entries `PE-229`…`PE-231` |
+| Defects | 44 raised; **open: DEF-012, DEF-036, DEF-038, DEF-039, DEF-041** (unchanged — Day 3's three were raised *and* closed) |
+| Package | `gate_run()` 7/7 · latest entries `PE-232`/`PE-233` |
 
 ---
 
@@ -38,17 +38,52 @@ and the plan text still carries the originals.
 ```
 [x] 1. merge everything            #222-#227 merged; #221 recreated as #227
 [x] 2. package record on main      PE-229/230/231, DEF-036..041
-[ ] 3. DAY 3  <-- YOU ARE HERE
-[ ] 4. start UAT, deploy 7ffa490
+[x] 3. DAY 3                       #232 (e403e18) + PE-232/233, DEF-042/043/044
+[ ] 4. start UAT, deploy b340e62   <-- YOU ARE HERE
 [ ] 5. smoke.sh + E2E on UAT       the deployed-topology regression
 [ ] 6. prod deploy, only if 5 is green
 ```
+
+⚠ **Step 4 pins `b340e62`, not the `7ffa490` this file originally said.** Confirm CI's **publish**
+job ran for whichever sha you pin — a PR run shows `publish  skipping`, so the images come from the
+**main-push** run. `deploy/runbooks/cloud-operations.md` §2 step 1 is the ECR proof to run first.
 
 **Do not skip to 6.** The operator explicitly asked for a full regression on UAT before prod.
 
 ---
 
-## 3. THE TASK — Day 3
+## 3. ✅ DONE 2026-08-11 — Day 3 (#232, `e403e18`)
+
+Shipped as **`deploy/runbooks/cloud-operations.md`** — *not* `operations.md`: `runbooks/README.md`
+is already titled "ACMP Operations Runbook" and is **on-prem**, and two files named "operations" for
+different topologies is precisely how the `promote.sh` defect below happened. The `cloud-*.md` glob
+then covers it with no special case.
+
+The guard is **`scripts/check-runbook-drift.mjs`**, wired into the CI `deploy` job. It was written
+**first and run red (7 findings) before any fix**, so the sites were found mechanically rather than
+by eye — and it found **five** stale budget sites where this file predicted four.
+
+Three things reading caught that a numbers-only fix would have shipped broken:
+
+1. **The raise invalidated the *reasoning*, not just the figures.** `cloud-provisioning.md` rule 1
+   said *"never leave two instances running"* — which now contradicts the design, since prod is
+   always-on and UAT starts for a session. The real constraint is two **always-on** boxes (~$84/mo,
+   above the 80% notification). Rule 4's *"over half the budget"* is under a third of $100.
+2. **`02-s3.sh:35`** was not on anyone's list: stale `$45` *and* a claimed "120%" budget action that
+   does not exist — both are at 100% ACTUAL.
+3. **The stack self-starts**, verified *before* writing the start procedure (docker enabled at boot,
+   `restart: unless-stopped`, ECR credential helper rather than a 12h token). Had that been false, a
+   "start the box and wait" runbook would have reproduced the DEF-026 shape exactly.
+
+Also: `aws ec2 wait instance-running` returns while the box is still **booting**, so the recipe
+polls the SSM agent for `Online`; and the **2-hour warm-up** (`AC-084`/`OQ-067`) was carried into
+the start section, because step 5 is an E2E run on a just-started box that would otherwise run cold
+and fail falsely.
+
+⚠ **One in-scope item was NOT done — see §5.6.** The plan scoped the `Streams.NameAr` prod check to
+this day.
+
+<details><summary>Original task text (for reference)</summary>
 
 A new `deploy/runbooks/operations.md` that **fixes** the defects rather than documenting around
 them. All three were verified by direct inspection:
@@ -72,6 +107,8 @@ trips, `smoke.sh`, the crontab `diff`, reaching Keycloak admin via SSM port-forw
 **80**, and the two alerts that are **correct** after a restart (backup-freshness, CPU credits) with
 an explicit *do not tune these* — that threshold has been rejected twice.
 
+</details>
+
 ---
 
 ## 4. Decisions the operator owes you (do not guess)
@@ -89,13 +126,30 @@ an explicit *do not tune these* — that threshold has been rejected twice.
 
 1. **Webex UAT space + bot** — **blocks Day 4.** `OQ-062` does **not** ban Webex in UAT; it says
    *"off until a separate UAT space + bot exist"*. Creating them satisfies its own exit condition.
-2. **`Streams.NameAr` on prod** — still unverified. The Arabic rename (`DEC-032`) cannot reach
-   admin-entered data. Expected zero (stream creation has no UI — `BL-024`), but **expected ≠
-   verified**. Easiest path: sign in, read Administration → المسارات.
+2. **`Streams.NameAr` on prod** — see **item 6 below**, which supersedes this line with the real
+   table/column names and the exact query. The Arabic rename (`DEC-032`) cannot reach admin-entered
+   data.
 3. **MFA on `acmp-admin`, rotate its password, stop using root as the default profile.**
    *(Every AWS action this session ran as `acmp-admin`, never root.)*
 4. **Delete `C:\Users\ahammo\OneDrive\Desktop\acmp-users.csv`** (26 temp passwords, syncing to
    OneDrive) and the orphaned scratchpad holding prod secrets — see the superseded resume file §7.
+6. **⚠ `Streams.NameAr` on prod — IN SCOPE FOR DAY 3, NOT DONE.** The plan scopes this to item 2
+   ("worth one query against prod **while doing item 2**"), so it is a Day-3 gap, not a later day's
+   work. I attempted it and the **permission classifier blocked** the SSM command — it reads the SA
+   password secret and execs into the production database container. I did not work around it.
+   The real table is **`streams`** with column **`name_ar`** (the C# names `Streams.NameAr` do not
+   exist in SQL). Expected zero rows holding `الهندسة` because stream creation has no UI (`BL-024`)
+   — but **expected ≠ verified**, which is the entire point of the item. Run on the box:
+
+   ```bash
+   c=$(docker ps --format '{{.Names}}' | grep sqlserver | head -1)
+   docker exec "$c" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+     -P "$(cat /run/secrets/mssql_sa_password)" -C -No -d Acmp -h -1 -W \
+     -Q "SET NOCOUNT ON; SELECT code, name_ar FROM streams;"
+   ```
+
+   Easier alternative with no secrets: sign in and read Administration → المسارات.
+
 5. **`AC-085` leg 1** — when spend crosses **$2.30**, run
    `bash deploy/scripts/check-budget-notification.sh` and `audit_record` the **printed body**. The
    body is the evidence; a count is not. The SQS observer is already proven end-to-end.
