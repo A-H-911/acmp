@@ -137,16 +137,22 @@ an explicit *do not tune these* — that threshold has been rejected twice.
    ("worth one query against prod **while doing item 2**"), so it is a Day-3 gap, not a later day's
    work. I attempted it and the **permission classifier blocked** the SSM command — it reads the SA
    password secret and execs into the production database container. I did not work around it.
-   The real table is **`streams`** with column **`name_ar`** (the C# names `Streams.NameAr` do not
-   exist in SQL). Expected zero rows holding `الهندسة` because stream creation has no UI (`BL-024`)
-   — but **expected ≠ verified**, which is the entire point of the item. Run on the box:
+   The real target is **`membership.streams`**, column **`name_ar`**. Two corrections, both proven
+   against the live database: the C# names `Streams.NameAr` do **not** exist in SQL, and the table is
+   **not** in the default schema — an unqualified `streams` fails with *Invalid object name*, which
+   is exactly what the first attempt returned. Every ACMP module owns a schema
+   (`MembershipDbContext.Schema = "membership"`). Expected zero rows holding `الهندسة` because stream
+   creation has no UI (`BL-024`) — but **expected ≠ verified**, which is the entire point. On the box:
 
    ```bash
    c=$(docker ps --format '{{.Names}}' | grep sqlserver | head -1)
-   docker exec "$c" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+   docker exec "$c" sh -c '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
      -P "$(cat /run/secrets/mssql_sa_password)" -C -No -d Acmp -h -1 -W \
-     -Q "SET NOCOUNT ON; SELECT code, name_ar FROM streams;"
+     -Q "SET NOCOUNT ON; SELECT code, name_ar FROM membership.streams;"'
    ```
+
+   Note the `sh -c` wrapper: without it the `$(cat ...)` is evaluated on the **host**, where the
+   secret does not exist, and sqlcmd fails with a misleading *Login failed for user sa*.
 
    Easier alternative with no secrets: sign in and read Administration → المسارات.
 
