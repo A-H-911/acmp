@@ -6,12 +6,13 @@ import { renderWithAuth } from '../test/render';
 import type { Member } from '../api/members';
 import type { SystemHealth } from '../api/systemHealth';
 
-// The user-detail sub-state now includes the invite section (FR-156 / ADR-0038), so this module
-// mock must cover useInviteUser too — otherwise the detail assertion fails on an undefined hook
-// rather than on the sub-state behaviour it is actually about.
+// The user-detail sub-state now includes the invite section (FR-156) and the role editor (FR-157),
+// so this module mock must cover their hooks too — otherwise the detail assertion fails on an
+// undefined hook rather than on the sub-state behaviour it is actually about.
 vi.mock('../api/members', () => ({
   useMembers: vi.fn(),
   useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),
 }));
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;
@@ -71,7 +72,7 @@ describe('AdministrationPage — sub-tab container', () => {
 
   it('defaults to the Users directory', () => {
     renderPage();
-    expect(screen.getByText('Roles are read-only')).toBeInTheDocument();
+    expect(screen.getByText('Keycloak is the source of truth')).toBeInTheDocument();
     expect(screen.getByText('Khalid A')).toBeInTheDocument();
   });
 

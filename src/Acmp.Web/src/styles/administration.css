@@ -333,6 +333,11 @@
   color: var(--text);
 }
 .adm-detail-section-head {
+  /* The invite and role sections put an icon before the text; without this the glyph sits flush
+     against the first letter. Headings with no icon are unaffected. */
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 13px 18px;
   border-block-end: 1px solid var(--border);
   background: var(--subtle);
@@ -639,4 +644,61 @@
   margin-block-start: 12px;
   font-size: 12.5px;
   color: var(--st-danger-fg);
+}
+
+/* ============================ Role assignment (FR-157) ============================ */
+/* .adm-detail-card clips its children so the tinted section head stays inside the rounded corner.
+   The role editor opens an absolutely-positioned option list, and that clip would cut it in half —
+   so this card opts out and the head is given back its own top radius instead. */
+.adm-detail-card.adm-card-overflow {
+  overflow: visible;
+}
+.adm-card-overflow .adm-detail-section-head {
+  border-start-start-radius: var(--r-xl);
+  border-start-end-radius: var(--r-xl);
+}
+/* The card itself carries no padding — every other child block supplies its own (adm-detail-head,
+   adm-detail-facts, adm-detail-row). This is that block for the FORMS inside a detail card: the
+   role editor and the invite section, which shipped without one and rendered edge-to-edge
+   (DEF-047). */
+.adm-detail-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px 18px;
+}
+/* The help text under the picker is a full sentence, so the field takes the card's width up to a
+   readable measure rather than shrinking to the trigger. */
+.adm-detail-form .field {
+  align-self: stretch;
+  max-inline-size: 460px;
+}
+.adm-role-saved {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--st-success-fg);
+}
+.adm-detail-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  max-inline-size: 560px;
+}
+.adm-invite-password {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.adm-invite-password code {
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--subtle);
+  font-size: 13px;
 }
