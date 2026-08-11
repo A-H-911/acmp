@@ -6,7 +6,12 @@ import { UsersDirectory, UserDetail } from './UsersMembership';
 import { renderWithAuth } from '../../test/render';
 import type { Member } from '../../api/members';
 
-vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
+// UserDetail now renders InviteUserPanel (FR-156), which calls useInviteUser — so the module mock
+// has to cover it or the detail tests fail on an undefined hook rather than on anything real.
+vi.mock('../../api/members', () => ({
+  useMembers: vi.fn(),
+  useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}));
 import { useMembers } from '../../api/members';
 
 const mockUseMembers = useMembers as unknown as Mock;
@@ -128,8 +133,14 @@ describe('UsersDirectory (AC-059)', () => {
   });
 });
 
-describe('UserDetail (read-only, no invite per ADR-0015)', () => {
-  it('renders the read-only detail with memberships and no invite flow', async () => {
+// ⚠ THIS BLOCK USED TO ASSERT "no invite flow per ADR-0015", and that was CORRECT until today.
+// ADR-0015 §Q3 states plainly: "User provisioning is manual via the self-hosted Keycloak admin
+// console. ACMP does not integrate the Keycloak Admin API in v1." ADR-0038 (Approved 2026-08-11)
+// REVERSES that clause — the rest of ADR-0015, self-hosting Keycloak and bundling every runtime
+// dependency, is untouched and still holds. The assertion is therefore removed because the decision
+// behind it changed, not because it became inconvenient; SC-004 records the supersession.
+describe('UserDetail (invite section per ADR-0038, superseding ADR-0015 §Q3)', () => {
+  it('renders the read-only detail with memberships and the invite section', async () => {
     const onBack = vi.fn();
     renderWithAuth(<UserDetail member={MEMBERS[0]} isArabic={false} onBack={onBack} />, { roles: ['administrator'] });
 
@@ -137,7 +148,8 @@ describe('UserDetail (read-only, no invite per ADR-0015)', () => {
     expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
     expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
     expect(screen.getByText(/Role is read-only/)).toBeInTheDocument();
-    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
+    // §(8) puts the invite section at the foot of this view.
+    expect(screen.getByText('Invite a new user')).toBeInTheDocument();
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Back to users' }));

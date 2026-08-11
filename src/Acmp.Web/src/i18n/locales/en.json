@@ -1086,6 +1086,22 @@
     "status": { "active": "Active", "invited": "Invited", "disabled": "Disabled" },
     "emptyTitle": "No members yet",
     "emptyBody": "Members appear here after they first sign in through Keycloak.",
+    "invite": {
+      "title": "Invite a new user",
+      "email": "Email address",
+      "fullName": "Full name",
+      "note": "An invitation creates the account and lists the person as Invited. They have no role until one is assigned, so they can sign in but reach nothing.",
+      "send": "Send invitation",
+      "sending": "Inviting…",
+      "error": "The invitation could not be sent. Please try again.",
+      "successTitle": "User invited",
+      "successBody": "{{name}} has been added and is listed as Invited until they first sign in.",
+      "passwordLabel": "Temporary password",
+      "passwordHint": "Shown once and not stored anywhere. Give it to the person directly — they must change it when they first sign in.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "another": "Invite someone else"
+    },
     "detail": {
       "back": "Back to users",
       "memberships": "Committee & stream memberships",

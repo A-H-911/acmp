@@ -14,6 +14,7 @@
  */
 import { useTranslation } from 'react-i18next';
 import { useMembers, type Member } from '../../api/members';
+import { InviteUserPanel } from './InviteUserPanel';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Table, type Column } from '../../components/ui/Table';
@@ -239,6 +240,11 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
           ))
         )}
       </div>
+
+      {/* §(8) places the invite section at the foot of the user detail view (FR-156). The server
+          decides who may actually invite — Administrator or Secretary — so this is not gated here;
+          navModel.ts is explicit that the SPA does presentation gating only. */}
+      <InviteUserPanel />
     </section>
   );
 }
