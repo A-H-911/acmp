@@ -33,6 +33,10 @@ tamheed-package/data/.lock
 # ── Env & secrets (NEVER commit) ──────────────────────
 *.env
 !*.env.example
+# NOT a credential file despite the extension: the Keycloak service account's client id and its
+# proven minimum grant (ADR-0038 / OQ-070). It is KEY=value so the reconciler can source it and the
+# CI gate can parse it without jq — and it MUST be committed, because both read it.
+!deploy/keycloak/admin-client.env
 deploy/secrets/*
 !deploy/secrets/.gitkeep
 deploy/nginx/certs/*
