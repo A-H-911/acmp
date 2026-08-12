@@ -1730,6 +1730,28 @@
       "Guest": "Guest"
     }
   },
+  "session": {
+    "banner": "Presenter access — read-only, and expires after the meeting.",
+    "expires": "Expires {{at}}",
+    "presenterChip": "Presenter · Read-only",
+    "summaryLabel": "Topic summary",
+    "slotLabel": "Agenda slot",
+    "itemOf": "Item {{n}} of {{of}}",
+    "minutes": "{{count}} min",
+    "materialsLabel": "Materials for your slot",
+    "materialsEmpty": "No materials have been attached to your topic yet.",
+    "open": "Open",
+    "openFailed": "That file could not be opened. Your access may have ended.",
+    "loading": "Loading your session",
+    "none": {
+      "title": "You are not presenting",
+      "body": "This page shows the agenda slot you are presenting and its materials. Nothing is assigned to you right now."
+    },
+    "ended": {
+      "title": "Your access has ended",
+      "body": "Guest access expires after the meeting. Contact the Secretary of the Committee if you still need your session material."
+    }
+  },
   "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard." },
   "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." },
   "reports": {

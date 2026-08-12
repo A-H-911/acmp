@@ -46,6 +46,11 @@ public class ResearchConvertTests
         private readonly TopicSummary? _t;
         public FakeTopicReader(TopicSummary? t) => _t = t;
         public Task<TopicSummary?> GetSummaryAsync(Guid id, CancellationToken ct = default) => Task.FromResult(_t);
+        // FR-159 widened the port with the /session reads. This double exercises the RESEARCH
+        // conversion path, which uses neither, so they answer "nothing here" rather than pretending.
+        public Task<TopicBrief?> GetBriefAsync(Guid id, CancellationToken ct = default) => Task.FromResult<TopicBrief?>(null);
+        public Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
+            Task.FromResult<string?>(null);
     }
 
     private sealed class RecordingTraceWriter : ITraceabilityWriter
