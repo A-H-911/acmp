@@ -25,12 +25,12 @@ approved document and the code legitimately diverged, and *why the code was righ
 
 | | |
 |---|---|
-| `main` | `95c4ca3` · gates **7/7** · **132 evidenced verdicts** |
+| `main` | `fafefbf` · gates **7/7** · **132 evidenced verdicts** |
 | Verdicts | `AC-088`–`AC-092` **all Met** |
 | Production | **live on `e403e18`**, always-on · `i-04d9717feea79204b` · smoke 10/10 |
 | UAT | **stopped** · `i-07ac28ac2fedab921` — start from `deploy/runbooks/cloud-operations.md` §1 |
-| Open defects | `DEF-012` `DEF-036` `DEF-038` `DEF-039` `DEF-041` `DEF-045` `DEF-050` (7 of 51) |
-| Open questions | `OQ-069` `OQ-071` `OQ-074` — **all three need you, not code** |
+| Open defects | `DEF-012` `DEF-036` `DEF-038` `DEF-039` `DEF-041` `DEF-045` (6 of 52 — `DEF-050` and `DEF-052` Fixed) |
+| Open questions | `OQ-074` only — `OQ-069` and `OQ-071` resolved and built (`DEC-041`) |
 
 **ADR-0038 + ADR-0039 + ADR-0040 shipped** — #236 role UI · #237 deploy plumbing · #238 reconcile
 guard · #239 per-request revalidation · #240 guest-expiry sweep · **#241 guest-invite writer + guest
@@ -129,47 +129,39 @@ shape exactly. The allowlist is `POST /api/members/me`, `/api/session`, `/api/no
 
 ## 4. Everything else remaining, in order
 
-**1. Deploy with `KEYCLOAK_ADMIN_ENABLED=true`.** Invite and role assignment are merged, tested and
-**unreachable**: `IIdentityProvider` is registered only when configured, so both endpoints fail at
-composition in every environment. This is what converts `AC-088`/`AC-091`'s stated residual into an
-observation. Enabling is **one variable** — the secret is always written and `reconcile.sh` keeps the
-client and its grant converged on every boot. `09-put-env.sh` refuses `ENABLED=true` with a
-placeholder secret before it reaches a box.
+**DONE THIS SESSION and no longer on this list** — `OQ-069` (#246), `OQ-071` (#245), `DEF-050` (#243),
+`DW-025` (#244), all disposed of by `DEC-041` and recorded in the package. Read §3 before re-opening
+any of them; two were built against my recommendation and the reasoning is in `DEC-041`.
 
-**2. `OQ-071`'s automated grant test.** You chose *"both, UAT first"*; UAT is done (`OQ-070`), the
-automated half is owed. Wrap `scripts/probe-keycloak-grant.mjs` in CI so a **narrower** grant is
-proven *refused* — today's CI check only proves the configured grant is *applied*.
+**1. Deploy with `KEYCLOAK_ADMIN_ENABLED=true`.** Still the one thing gating real use. Invite, role
+assignment AND the guest-presenter invite are merged, tested and **unreachable**: `IIdentityProvider`
+is registered only when configured, so those endpoints fail at composition in every environment.
+Enabling is **one variable** — the secret is always written and `reconcile.sh` keeps the client and
+its grant converged on every boot. `09-put-env.sh` refuses `ENABLED=true` with a placeholder secret.
 
-**3. `DEF-051`'s remaining half — `up.sh`.** Measured, not assumed: `docker compose up --wait`
-**returns while a one-shot is still running**, so dev **and on-prem prod** cannot catch a failed
-realm reconcile, where the failure reproduces `DEF-023` exactly (nobody can log in, every health
-check green). The heavier fix — `depends_on: keycloak-config { condition:
-service_completed_successfully }` on `api`/`worker` — is **your availability call**: it turns a
-transient Keycloak hiccup into a refusal to start.
+**2. `DEF-051`'s remaining half — `up.sh`.** Measured, not assumed: `docker compose up --wait`
+returns while a one-shot is still mid-flight, so `up.sh` — dev **and on-prem prod** — cannot catch a
+failed realm reconcile. The cloud path already can (`08-bootstrap-box.sh`). CI now also runs the
+grant proof (§3), but that is the e2e stack, not `up.sh`.
 
-**4. `OQ-069` — an operator decision, not a code fix.** `FR-156`/`FR-157` say "Administrator **or
-Secretary**" and the server honours it, but `App.tsx:100` gates `/admin` with `RequireRole
-['administrator']`, so a Secretary reaches neither control. **Do not just widen the route** — it
-exposes templates, health, streams, jobs and notification settings, contradicting permission-matrix
-row 27 (SoD-5). Options: narrow the requirements, move the affordances, or widen and accept the SoD
-consequence.
+**3. `AC-093`** — Partial only because the hash-chained audit **content** has not been read back for
+a governed change. The rows exist and are asserted as rows; what is missing is a test that reads
+before/after out of the chain.
 
-**5. `DEF-050` — the Webex secrets.** Delivered as plain compose `environment:` variables while the
-five files `gen-secrets` writes for them are **mounted by nothing** — the channel `ADR-0032` exists
-to avoid. Found by reading it *as the precedent for ADR-0038's secret* and deliberately not copied.
-⚠ **Deployed exposure is unverified**: the real env comes from SSM, not the examples, so severity may
-be higher than recorded. Check before deciding.
+**4. `Streams.NameAr` on prod** — was in scope for Day 3 and is not done. Real table is
+`membership.streams`.`name_ar`; the C# names do not exist in SQL and every module owns a schema.
 
-**6. `AC-093`** — Partial only because the hash-chained audit **content** has not been read back for
-the invite/role actions. Needs an integration test that reads the row, not another emission assert.
+**5. `AC-085` leg 1** — an observation wait, not work. When spend crosses **$2.30**, run
+`deploy/scripts/check-budget-notification.sh` and `audit_record` the BODY (a count cannot
+discriminate on a shared topic — AV-118).
 
-**7. `Streams.NameAr` on prod** — was in scope for Day 3 and is not done. Real table is
-**`membership.streams`.`name_ar`** (every module owns a schema; the C# names don't exist in SQL).
+**6. `OQ-074`** — `DEC-037` says Chairman/Secretary may "preview" `/session` but never said *whose*
+view. Shipped as **their own** slot. A chosen presenter's view would be a second authorization path
+over somebody else's content; recorded rather than guessed at.
 
-**8. `AC-085` leg 1** — an observation wait, not work. When spend crosses **$2.30**, run
-`deploy/scripts/check-budget-notification.sh` and `audit_record` the printed body.
-
-**9. Older Partials** — `AC-003/004/005/006/007/009/010/011/033/034/041/048` predate this work.
+**7. A reschedule capability does not exist** (found while building `DW-025`). If one is ever built,
+it MUST call `IGuestWindowWriter` with the new `ScheduledEnd + GuestAccess.Grace`, or guest windows
+will silently point at the old date.
 
 ---
 
