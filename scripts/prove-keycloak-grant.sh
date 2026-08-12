@@ -65,17 +65,33 @@ echo "== leg 2: a NARROWER grant must be REFUSED — otherwise 'minimum' is unte
 login
 UID_SVC="$(svc_uid)"
 [ -n "$UID_SVC" ] || { echo "could not resolve the $CLIENT service-account user" >&2; exit 1; }
+RM_ID=$(kc get clients -r "$REALM" -q "clientId=realm-management" --fields id --format csv --noquotes | head -n1 | tr -d '')
+[ -n "$RM_ID" ] || { echo "could not resolve the realm-management client" >&2; exit 1; }
 
 # Strip every declared role, run the probe, and REQUIRE it to fail. Restored below in all cases.
+# VERIFIES THE GRANT, NOT THE PROBE. Re-running the probe here would be a third mutation pass over
+# the same fixed probe user, and its create call takes a DIFFERENT branch on the second run (409 ->
+# look the user up), so a failure there would say nothing about whether the grant came back. That is
+# exactly how the first version of this script failed CI: both legs passed and the restore check
+# reported failure for an unrelated reason. Reading the role mapping straight back is the same
+# post-condition check reconcile.sh makes about itself.
 restore() {
+  rc=$?
   echo "== restoring the declared grant"
   for r in $GRANT; do
     kc add-roles -r "$REALM" --uid "$UID_SVC" --cclientid realm-management --rolename "$r" >/dev/null 2>&1 || true
   done
-  probe >/dev/null && echo "   restored — the probe passes again." || {
-    echo "   ⚠ RESTORE FAILED: the service account no longer holds its grant. Re-run reconcile.sh." >&2
-    exit 1
-  }
+
+  have=$(kc get "users/$UID_SVC/role-mappings/clients/$RM_ID" -r "$REALM" --fields name --format csv --noquotes     | tr -d '' | grep -v '^$' | tr '
+' ' ')
+  for r in $GRANT; do
+    case " $have " in
+      *" $r "*) ;;
+      *) echo "   RESTORE FAILED: '$r' is missing (have: ${have:-none}). Re-run reconcile.sh." >&2; exit 1 ;;
+    esac
+  done
+  echo "   restored - the service account holds [$have] again."
+  return $rc
 }
 trap restore EXIT
 
