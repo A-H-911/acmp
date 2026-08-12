@@ -49,6 +49,11 @@ public class MeetingHandlerTests
         return u;
     }
 
+    // DW-025: these handlers now close a guest's access window when the slot it was granted for goes
+    // away. The behaviour itself is proven in GuestWindowTests / the API tests; here the port is a
+    // no-op stand-in so the existing assertions keep testing what they were written for.
+    private static IGuestWindowWriter NoWindows() => Substitute.For<IGuestWindowWriter>();
+
     private static IClock Clock(DateTimeOffset now)
     {
         var c = Substitute.For<IClock>();
@@ -129,7 +134,7 @@ public class MeetingHandlerTests
         timeboxed.Items.Single(i => i.TopicId == t1).TimeboxMinutes.Should().Be(30);
 
         var newPresenter = Guid.NewGuid();
-        var assigned = await new AssignPresenterHandler(db).Handle(new AssignPresenterCommand(meetingId, t1, newPresenter, "Noura P."), default);
+        var assigned = await new AssignPresenterHandler(db, NoWindows(), clock).Handle(new AssignPresenterCommand(meetingId, t1, newPresenter, "Noura P."), default);
         assigned.Items.Single(i => i.TopicId == t1).PresenterName.Should().Be("Noura P.");
     }
 
@@ -334,7 +339,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(Guid.NewGuid(), "Quorum lost"), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -347,7 +352,7 @@ public class MeetingHandlerTests
         var (db, meetingId, _) = await StartedMeetingAsync(user, clock);   // InProgress — Cancel allows Scheduled only
         await using var _ = db;
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "Too late"), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -360,7 +365,7 @@ public class MeetingHandlerTests
         var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
         await using var _ = db;
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "   "), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -374,7 +379,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         var audit = Substitute.For<IAuditSink>();
 
-        await new CancelMeetingHandler(db, clock, audit, user)
+        await new CancelMeetingHandler(db, clock, audit, user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "Quorum will not be met"), default);
 
         var meeting = await db.Meetings.SingleAsync();
@@ -391,7 +396,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(Guid.NewGuid(), Guid.NewGuid()), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Agenda not found*");
@@ -405,7 +410,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(meetingId, Guid.NewGuid()), default);   // unknown topic
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -418,7 +423,7 @@ public class MeetingHandlerTests
         var (db, meetingId, topic) = await StartedMeetingAsync(user, clock);   // agenda Locked at start
         await using var _ = db;
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(meetingId, topic), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();            // RequireEditable
@@ -434,7 +439,7 @@ public class MeetingHandlerTests
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, drop, "TOP-2026-001", "Drop", false, 15, Presenter, "P"), default);
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, keep, "TOP-2026-002", "Keep", false, 15, Presenter, "P"), default);
 
-        var agenda = await new RemoveAgendaItemHandler(db).Handle(new RemoveAgendaItemCommand(meetingId, drop), default);
+        var agenda = await new RemoveAgendaItemHandler(db, NoWindows(), clock).Handle(new RemoveAgendaItemCommand(meetingId, drop), default);
 
         agenda.Items.Should().ContainSingle().Which.TopicId.Should().Be(keep);
         agenda.Items.Single().Order.Should().Be(1);                           // renumbered from the gap
