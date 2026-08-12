@@ -1,10 +1,9 @@
 ﻿using Acmp.Modules.Membership.Application.Abstractions;
-using Acmp.Modules.Membership.Domain;
+using Acmp.Modules.Membership.Application.Internal;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Membership.Application.Features.InviteUser;
 
@@ -56,31 +55,15 @@ public sealed class InviteUserHandler : IRequestHandler<InviteUserCommand, Invit
 
     public async Task<InvitedUserDto> Handle(InviteUserCommand request, CancellationToken ct)
     {
-        var email = request.Email.Trim().ToLowerInvariant();
-
-        // Refuse a duplicate BEFORE touching Keycloak. Email is uniquely indexed where non-empty, so
-        // the insert would fail anyway — but only AFTER the account existed in Keycloak, leaving a
-        // real user behind for a request that reported failure.
-        if (await _db.Members.AnyAsync(m => m.Email == email, ct))
-            throw new InvalidOperationException($"A member with the email {email} already exists.");
-
-        var account = await _identity.CreateUserAsync(email, request.FullName, ct);
-
-        // Status=Invited with the subject id Keycloak just returned. First login flips it to Active
-        // through the existing SyncFromClaims path (SC-003) — there is no second creation path and
-        // nothing to reconcile, because the identity is known here rather than guessed.
-        //
-        // ORDER MATTERS AND THE FAILURE MODE IS DELIBERATE: if this insert fails after the account
-        // exists, what is left is a Keycloak user with NO member row, which JIT provisioning creates
-        // on first login (ADR-0004). The permanent damage in this system lives in the member row —
-        // DEF-029 means it can be disabled but never deleted — and no member row was written.
-        var member = CommitteeMember.PreRegister(account.SubjectId, request.FullName, email, CommitteeRole.Guest, _clock.UtcNow);
-        _db.Members.Add(member);
-        await _db.SaveChangesAsync(ct);
-
-        await _audit.EmitEnrichedAsync("Membership.UserInvited", nameof(CommitteeMember), member.PublicId.ToString(), ct: ct);
+        // NO ACCESS WINDOW: an ordinary invited member's access does not expire (FR-156). The guest
+        // presenter path passes one (FR-159) — same creation code, one differing argument, so the
+        // duplicate check, the Keycloak-then-local ordering and the audit cannot drift apart.
+        var (member, temporaryPassword) = await MemberInvitation.InviteAsync(
+            _db, _identity, _audit, _clock,
+            request.Email, request.FullName, CommitteeRole.Guest, accessExpiresAt: null,
+            auditAction: "Membership.UserInvited", ct);
 
         return new InvitedUserDto(
-            member.PublicId, member.FullName, member.Email, member.Status.ToString(), account.TemporaryPassword);
+            member.PublicId, member.FullName, member.Email, member.Status.ToString(), temporaryPassword);
     }
 }

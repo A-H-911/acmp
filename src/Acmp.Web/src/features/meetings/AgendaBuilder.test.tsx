@@ -19,6 +19,10 @@ vi.mock('../../api/meetings', () => ({
   useSetTimebox: vi.fn(),
   useAssignPresenter: vi.fn(),
   usePublishAgenda: vi.fn(),
+  // FR-159 — the row now carries a guest-presenter invite for a Secretary. Mocked here because
+  // this file mocks the whole api module; the invite's own behaviour is proven in
+  // GuestPresenterInvite.test.tsx against a real hook and a stubbed fetch.
+  useInviteGuestPresenter: vi.fn(() => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false })),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
 

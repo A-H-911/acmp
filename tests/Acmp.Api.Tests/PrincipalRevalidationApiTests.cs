@@ -86,7 +86,12 @@ public class PrincipalRevalidationApiTests
         await factory.SeedMembersAsync(("kc-guest", "Guest Presenter", CommitteeRole.Guest));
         await factory.SetRevalidationStateAsync("kc-guest", accessExpiresAt: DateTimeOffset.UtcNow.AddHours(1));
 
-        var response = await Client(factory, "Guest", "kc-guest").GetAsync(Endpoint);
+        // NOT `Endpoint` (/api/members) for this one case: ADR-0040 / SC-007 narrowed the directory
+        // so a Guest cannot read the committee roster. The assertion here is unchanged in substance —
+        // a guest INSIDE their window is served — and it now uses an endpoint the guest surface
+        // actually contains, so a pass still means "revalidation admitted them" rather than
+        // "some other gate happened not to fire".
+        var response = await Client(factory, "Guest", "kc-guest").GetAsync("/api/meetings");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }

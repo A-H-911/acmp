@@ -30,12 +30,17 @@ public class MembershipApiTests
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Theory] // AC-059: directory readable by any authenticated role
+    [Theory] // AC-059: directory readable by any authenticated COMMITTEE role
     [InlineData("Member")]
     [InlineData("Auditor")]
     [InlineData("Submitter")]
-    [InlineData("Guest")]
-    public async Task Directory_is_readable_by_every_role(string role)
+    // ⚠ GUEST WAS HERE AND WAS REMOVED DELIBERATELY (SC-007, authorized by DEC-040). AC-059 says
+    // "any authenticated user of any role", and it was written when every principal was a committee
+    // member. FR-159 creates the first EXTERNAL one, and its own wording is "their own session
+    // material and nothing else" — the directory is 26 people's names and email addresses. The
+    // narrowing is recorded rather than made silently; the refusal itself is proven in
+    // GuestSurfaceApiTests.
+    public async Task Directory_is_readable_by_every_committee_role(string role)
     {
         await using var factory = new AcmpWebApplicationFactory();
         await factory.SeedMembersAsync(("kc-dir", "Directory Member", CommitteeRole.Member));

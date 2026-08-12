@@ -85,6 +85,9 @@ app.UseAuthentication();
 // ADR-0039 — between authentication and authorization on purpose: the principal is known here,
 // and a stale or expired one must be refused BEFORE any policy or handler sees it.
 app.UseAcmpPrincipalRevalidation();
+// ADR-0040 / DEF-052 — a Guest reaches the guest surface and nothing else. After revalidation, so an
+// EXPIRED guest is refused as expired (401, not retryable) rather than as out-of-scope.
+app.UseAcmpGuestSurface();
 app.UseAuthorization();
 
 // After auth so the rate-limiter can partition by the caller's `sub` (see HardeningExtensions).
