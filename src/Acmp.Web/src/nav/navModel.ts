@@ -12,6 +12,7 @@ import type { IconName } from '../components/icons';
 export type AccessLevel = 'full' | 'view' | 'none';
 export type AreaKey =
   | 'session' | 'submit' | 'home' | 'backlog' | 'agenda' | 'decisions' | 'actions'
+  | 'members'
   | 'adrs' | 'risks' | 'deps' | 'research' | 'wiki' | 'templates' | 'diagrams'
   | 'reports' | 'audit' | 'admin';
 
@@ -41,6 +42,7 @@ export const AREAS: Record<AreaKey, NavArea> = {
   templates: { key: 'templates', labelKey: 'nav.templates', path: '/templates', icon: 'template' },
   diagrams: { key: 'diagrams', labelKey: 'nav.diagrams', path: '/diagrams', icon: 'diagram' },
   reports: { key: 'reports', labelKey: 'nav.reports', path: '/reports', icon: 'reports' },
+  members: { key: 'members', labelKey: 'nav.members', path: '/members', icon: 'usersGroup' },
   audit: { key: 'audit', labelKey: 'nav.audit', path: '/audit', icon: 'audit' },
   admin: { key: 'admin', labelKey: 'nav.admin', path: '/admin/users', icon: 'admin' },
 };
@@ -63,6 +65,10 @@ const ACCESS: Record<AreaKey, Partial<Record<CommitteeRole, AccessLevel>>> = {
   diagrams: { chairman: 'view', secretary: 'view', member: 'view', reviewer: 'view', auditor: 'view', guest: 'view' },
   reports: { chairman: 'full', secretary: 'full', member: 'view', reviewer: 'view', auditor: 'view', administrator: 'view' },
   audit: { auditor: 'full', chairman: 'view', secretary: 'view' },
+  // FR-156 / FR-157 read "Administrator OR Secretary" and the server has always honoured both;
+  // Administration is Administrator-only, so the roster + invite + role assignment live here instead
+  // (OQ-069, DEC-041; the design's matrix has no members area — divergence recorded as SC-008).
+  members: { administrator: 'full', secretary: 'full' },
   admin: { administrator: 'full' },
 };
 
@@ -73,7 +79,7 @@ const GROUPS: { labelKey: string | null; items: AreaKey[] }[] = [
   { labelKey: 'navGroup.governance', items: ['adrs', 'risks', 'deps'] },
   { labelKey: 'navGroup.knowledge', items: ['research', 'wiki', 'templates', 'diagrams'] },
   { labelKey: 'navGroup.insights', items: ['reports'] },
-  { labelKey: 'navGroup.system', items: ['audit', 'admin'] },
+  { labelKey: 'navGroup.system', items: ['members', 'audit', 'admin'] },
 ];
 
 const RANK: Record<AccessLevel, number> = { none: 0, view: 1, full: 2 };

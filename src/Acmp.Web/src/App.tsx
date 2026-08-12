@@ -9,6 +9,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import SessionPage from './features/session/SessionPage';
 import AdministrationPage from './pages/AdministrationPage';
+import MembersPage from './pages/MembersPage';
 import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
 import { TopicDetail } from './features/topics/TopicDetail';
@@ -101,6 +102,12 @@ export const appRoutes = createRoutesFromElements(
         <Route path="reports" element={<ReportsPage />} />
         <Route path="search" element={<SearchPage />} />
 
+        {/* OQ-069 / DEC-041 — the roster, invite and role assignment admit Administrator AND
+            Secretary, which is what FR-156/FR-157 say and what the API has always enforced. The
+            guard here is courtesy; the API is what refuses. */}
+        <Route path="members" element={<RequireRole roles={['administrator', 'secretary']} />}>
+          <Route index element={<MembersPage />} />
+        </Route>
         <Route path="admin" element={<RequireRole roles={['administrator']} />}>
           <Route index element={<Navigate to="/admin/users" replace />} />
           <Route path="users" element={<AdministrationPage />} />

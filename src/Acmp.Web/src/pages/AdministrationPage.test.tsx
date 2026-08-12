@@ -61,19 +61,28 @@ describe('AdministrationPage — sub-tab container', () => {
     mockUseRequeue.mockReset();
   });
 
-  it('renders all six sub-tabs, all navigable (design disables none; Templates moved to /templates)', () => {
+  it('renders the five remaining sub-tabs, all navigable (Templates → /templates, Users → /members)', () => {
     renderPage();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(6);
+    expect(tabs).toHaveLength(5);
     expect(tabs.filter((t) => (t as HTMLButtonElement).disabled)).toHaveLength(0);
     expect(screen.queryByRole('tab', { name: /Templates/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Users & Membership/ })).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('defaults to the Users directory', () => {
+  // ⚠ USERS LEFT THIS PAGE (OQ-069 → DEC-041, divergence recorded as SC-008). The design draws a
+  // Users tab here, but FR-156/FR-157 grant the capability to "an Administrator OR SECRETARY" and
+  // this route is Administrator-only, so half of each requirement was unreachable. The roster,
+  // invite and role editor now live on /members, which admits both — see MembersPage.test.tsx for
+  // the behaviour that moved, including the user-detail sub-state this file used to assert.
+  it('no longer hosts the users directory — it moved to /members', () => {
     renderPage();
-    expect(screen.getByText('Keycloak is the source of truth')).toBeInTheDocument();
-    expect(screen.getByText('Khalid A')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Users & Membership/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('Khalid A')).not.toBeInTheDocument();
+  });
+
+  it('defaults to System Health, the first remaining tab', () => {
+    renderPage();
+    expect(screen.getByRole('tab', { name: /System Health/ })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('switches to System Health and renders live + unmonitored service tiles', async () => {
@@ -124,15 +133,4 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getByText('3')).toBeInTheDocument(); // succeeded tile
   });
 
-  it('opening a user detail replaces the tabbed view (design userdetail sub-state)', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await user.click(screen.getByRole('button', { name: 'View user detail' }));
-    expect(screen.getByText('Back to users')).toBeInTheDocument();
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Back to users' }));
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getByText('Khalid A')).toBeInTheDocument();
-  });
 });
