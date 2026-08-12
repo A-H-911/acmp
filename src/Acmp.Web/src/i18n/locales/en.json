@@ -879,6 +879,7 @@
     "templates": "Templates",
     "diagrams": "Diagrams",
     "reports": "Reports",
+    "members": "Members",
     "audit": "Audit Trail",
     "admin": "Administration"
   },
@@ -1751,6 +1752,10 @@
       "title": "Your access has ended",
       "body": "Guest access expires after the meeting. Contact the Secretary of the Committee if you still need your session material."
     }
+  },
+  "members": {
+    "title": "Members",
+    "sub": "The committee roster. Invite a person, and grant or change their roles."
   },
   "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard." },
   "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." },
