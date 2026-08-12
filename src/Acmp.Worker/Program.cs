@@ -1,5 +1,6 @@
 ﻿using Acmp.Bootstrap;
 using Acmp.Modules.Actions.Application.Reminders;
+using Acmp.Modules.Membership.Application.Features.ExpireGuestAccess;
 using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Shared.Application.Abstractions;
 using Hangfire;
@@ -66,6 +67,18 @@ if (backgroundJobsEnabled)
     host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("topic-sla-sweep",
         sender => sender.Send(new SweepTopicSlaCommand(), CancellationToken.None),
         Cron.Daily());
+
+    // FR-159 / AC-092: close a guest presenter's access once their window has passed — locally, and
+    // in Keycloak so the login itself stops working.
+    //
+    // HOURLY, NOT DAILY, and that is not arbitrary: this is DEFENCE IN DEPTH behind ADR-0039's
+    // per-request revalidation, which already refuses an expired guest on their very next request.
+    // So the sweep never gates access; it only bounds how long a disabled-in-ACMP account can still
+    // LOG IN to Keycloak. Daily would leave that window up to 24 hours for no benefit, and anything
+    // finer would poll a table that is empty in the ordinary case.
+    host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("guest-access-expiry",
+        sender => sender.Send(new ExpireGuestAccessCommand(), CancellationToken.None),
+        Cron.Hourly());
 }
 
 host.Run();
