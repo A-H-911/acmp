@@ -16,6 +16,12 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
     public const string RolesHeader = "X-Test-Roles";
     public const string SubHeader = "X-Test-Sub";
 
+    // ADR-0039: the revalidation middleware compares the token's `iat` against the member's
+    // RolesChangedAt, so a test must be able to say "this token was issued BEFORE the change" —
+    // otherwise the refusal can only be unit-tested on the collaborator, which is exactly the
+    // evidence AC-090 rejects. Unix seconds; absent => issued now.
+    public const string IssuedAtHeader = "X-Test-Iat";
+
     public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
         : base(options, logger, encoder)
     {
@@ -33,6 +39,8 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
             new("name", sub),
             new("email", $"{sub}@acmp.gov"),
         };
+        if (Request.Headers.TryGetValue(IssuedAtHeader, out var iat))
+            claims.Add(new Claim("iat", iat.ToString()));
         foreach (var role in rolesHeader.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             claims.Add(new Claim(ClaimTypes.Role, role));
 

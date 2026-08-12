@@ -102,6 +102,23 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         await db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// ADR-0039: mutate a seeded member's revalidation state directly, so a test can put the member
+    /// into the condition it wants to FORCE a refusal from — a role change at a known instant, or a
+    /// closed access window — without driving the whole assignment flow to get there.
+    /// </summary>
+    public async Task SetRevalidationStateAsync(
+        string sub, DateTimeOffset? rolesChangedAt = null, DateTimeOffset? accessExpiresAt = null, bool disable = false)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        var member = await db.Members.FirstAsync(m => m.KeycloakUserId == sub);
+        if (rolesChangedAt is { } changed) member.ApplyAssignedRole(member.Role, changed);
+        if (accessExpiresAt is not null) member.SetAccessWindow(accessExpiresAt);
+        if (disable) member.Deactivate();
+        await db.SaveChangesAsync();
+    }
+
     // Seeds one lean v1 row (a system/authZ event — enriched columns null) and one enriched v2 row (a
     // governed state change), chained correctly off Genesis, so the /api/audit read tests exercise BOTH row
     // shapes deterministically (post-PR2 the API only ever produces v2 rows). Returns their hashes for chain
