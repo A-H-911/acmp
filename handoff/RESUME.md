@@ -38,9 +38,26 @@ code legitimately diverged, and *why the code was right*.
 **Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
 The remaining work is **not a new slice**; it is the list in §4.
 
-⚠ **The deployable sha is NOT HEAD.** `ci.yml` `paths-ignore` skips `*.md`, `docs/`, `.claude/`,
-`tamheed-package/`, so governance and handoff commits publish **no images**. `65e45d4` is the newest
-sha with ECR images and it is what both boxes run. Check ECR before pinning anything.
+⚠ **The deployable sha is NOT HEAD, and do not trust a number written here for it.** `ci.yml`
+`paths-ignore` skips `*.md`, `docs/`, `.claude/`, `tamheed-package/`, so governance and handoff
+commits publish **no images** — but a code commit landing after this file was written does. **Both
+boxes run `65e45d4`**; whether a *newer* published sha exists is a question for ECR, not for this
+sentence. Ask it directly, and remember `web` is a **separate, environment-suffixed** tag (ADR-0037,
+`DEF-019`) — `08-bootstrap-box.sh` refuses unless **both** pins resolve:
+
+```bash
+for r in api worker sqlserver-fts; do
+  aws ecr describe-images --region us-east-1 --repository-name "acmp/$r" \
+    --query 'sort_by(imageDetails,&imagePushedAt)[-1].{tag:imageTags[0],at:imagePushedAt}' --output text
+done
+aws ecr describe-images --region us-east-1 --repository-name acmp/web \
+  --query 'sort_by(imageDetails,&imagePushedAt)[-2:].{tag:imageTags[0],at:imagePushedAt}' --output text
+```
+
+⚠ **`main` CI can be slow or flaky on the push run even when the PR was green.** `#250`'s merge run
+hit the `backend` job's 25-minute timeout while the identical tree had passed in 5m31s on the PR, and
+the `sbom` job failed the Security workflow on a third-party download (`HTTP status=000`). Both were
+re-run. **Check `gh run list --branch main` before concluding `main` is red for a code reason.**
 
 ---
 
