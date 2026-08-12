@@ -89,6 +89,14 @@ jobs:
       - name: Runbooks agree with the deployment (budget ceiling, cloud vs on-prem scripts)
         run: node scripts/check-runbook-drift.mjs
 
+      # DEF-054. up.sh now asserts that keycloak-config converged, because `up --wait` returns while
+      # a one-shot is still mid-flight and dev + on-prem prod were therefore blind to a failed realm
+      # reconcile. That guard is itself in the "detects but does not TELL" family, so it is proven by
+      # FORCING each refusal against a stubbed docker — a guard that always returns 0 is
+      # indistinguishable from a working one on a healthy stack, which is the whole defect.
+      - name: The one-shot convergence guard actually refuses (DEF-054)
+        run: sh deploy/scripts/assert-oneshot.test.sh
+
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
