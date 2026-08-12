@@ -64,6 +64,12 @@ public static class MembershipInfrastructureExtensions
                 client.BaseAddress = new Uri(baseUrl);
                 client.Timeout = TimeSpan.FromSeconds(15);
             });
+
+            // ADR-0040 — the guest-presenter write port the Meetings module calls. Registered INSIDE
+            // this block on purpose: it cannot function without the identity provider above, and an
+            // unresolvable port fails the request at composition rather than creating a member row
+            // for a person with no account (DEF-029 makes that row permanent).
+            services.AddScoped<IGuestProvisioner, GuestProvisioner>();
         }
 
         services.AddMembershipApplication();

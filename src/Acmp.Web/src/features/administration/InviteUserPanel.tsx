@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useInviteUser, type InvitedUser } from '../../api/members';
 import { Button } from '../../components/ui/Button';
 import { Field, Input } from '../../components/ui/Field';
+import { InvitedCredential } from '../../components/ui/InvitedCredential';
 import { Icon } from '../../components/icons';
 
 /*
@@ -22,7 +23,6 @@ export function InviteUserPanel() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [invited, setInvited] = useState<InvitedUser | null>(null);
-  const [copied, setCopied] = useState(false);
   const invite = useInviteUser();
 
   const canSubmit = email.trim().length > 0 && fullName.trim().length > 0 && !invite.isPending;
@@ -42,12 +42,6 @@ export function InviteUserPanel() {
     );
   }
 
-  async function copyPassword() {
-    if (!invited) return;
-    await navigator.clipboard.writeText(invited.temporaryPassword);
-    setCopied(true);
-  }
-
   // The reveal REPLACES the form rather than sitting beside it. Leaving the form live invites a
   // second invite while a credential is still on screen, and the password would then be lost behind
   // the new result with no way to recover it.
@@ -58,22 +52,9 @@ export function InviteUserPanel() {
         <div className="adm-detail-form">
           <p className="adm-detail-note">{t('admin.invite.successBody', { name: invited.fullName })}</p>
 
-          <div className="adm-fact">
-            <div className="adm-fact-label">{t('admin.invite.passwordLabel')}</div>
-            <div className="adm-invite-password">
-              <code dir="ltr">{invited.temporaryPassword}</code>
-              <Button variant="ghost" size="sm" onClick={copyPassword}>
-                {copied && <Icon name="check" size={13} aria-hidden />}
-                {copied ? t('admin.invite.copied') : t('admin.invite.copy')}
-              </Button>
-            </div>
-          </div>
+          <InvitedCredential password={invited.temporaryPassword} />
 
-          {/* Stated on screen, not just in a comment: the person reading it is the only one who can
-              act on it, and they get exactly one chance. */}
-          <p className="adm-detail-note">{t('admin.invite.passwordHint')}</p>
-
-          <Button variant="secondary" onClick={() => { setInvited(null); setCopied(false); }}>
+          <Button variant="secondary" onClick={() => setInvited(null)}>
             {t('admin.invite.another')}
           </Button>
         </div>

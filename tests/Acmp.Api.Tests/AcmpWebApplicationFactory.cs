@@ -4,8 +4,10 @@ using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
+using Acmp.Modules.Membership.Application.Abstractions;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
+using Acmp.Modules.Membership.Infrastructure.Directory;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Research.Infrastructure.Persistence;
@@ -13,6 +15,7 @@ using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -30,6 +33,23 @@ namespace Acmp.Api.Tests;
 public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = "acmp-it-" + Guid.NewGuid();
+    // ⚠ MUST STAY PARAMETERLESS-CONSTRUCTIBLE. Several suites (the Webex ones) take this as an xUnit
+    // IClassFixture, and xUnit activates a fixture through its parameterless constructor — an
+    // optional parameter is not parameterless to that activator, and adding one failed 22 tests at
+    // construction time. Hence an init-only property set by the named factory below.
+    private bool UseIdentityProvider { get; init; }
+
+    /// <summary>
+    /// ADR-0040 / SC-005 — a factory whose host has a fake Keycloak, so the invite HAPPY PATH is
+    /// reachable from this harness at all. Deliberately not the default: an existing test asserts
+    /// that an invite FAILS at composition when no identity provider is configured, and that
+    /// assertion protects a real property (a member row with no account can never be deleted,
+    /// DEF-029).
+    /// </summary>
+    public static AcmpWebApplicationFactory WithIdentityProvider() => new() { UseIdentityProvider = true };
+
+    /// <summary>The fake, once the host is built — so a test can assert what Keycloak was asked to do.</summary>
+    public FakeIdentityProvider Identity => Services.GetRequiredService<FakeIdentityProvider>();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -90,6 +110,16 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
+
+            if (!UseIdentityProvider) return;
+
+            // Singleton so the recorded calls survive the request scope the test wants to inspect
+            // afterwards. GuestProvisioner is registered here too because the host registers it only
+            // alongside the real Keycloak client (ADR-0040) — a fake identity without the port would
+            // leave the guest-invite path uncomposable and prove nothing.
+            services.AddSingleton<FakeIdentityProvider>();
+            services.AddScoped<IIdentityProvider>(sp => sp.GetRequiredService<FakeIdentityProvider>());
+            services.AddScoped<IGuestProvisioner, GuestProvisioner>();
         });
     }
 

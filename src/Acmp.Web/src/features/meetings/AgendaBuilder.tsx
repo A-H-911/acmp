@@ -59,7 +59,9 @@ import { Select } from '../../components/ui/Select';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
+import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { agendaTone } from './agendaStatus';
+import { GuestPresenterInvite } from './GuestPresenterInvite';
 import './meetings.css';
 
 const TIMEBOX_STEP = 5;
@@ -79,6 +81,11 @@ export function AgendaBuilder() {
 
   const meeting = meetingQuery.data;
   const meetingId = meeting?.id;
+
+  // FR-159 — the invite is SECRETARY-only, narrower than the Chairman+Secretary pair that reaches
+  // this screen. Hiding it from the Chairman is courtesy; the server is what refuses him.
+  const auth = useAuth();
+  const canInviteGuest = hasRole(auth, 'secretary');
 
   // Mutations (all keyed to invalidate this meeting's detail).
   const addItem = useAddAgendaItem(key);
@@ -258,6 +265,14 @@ export function AgendaBuilder() {
                     onTimebox={onTimebox}
                     onPresenter={onPresenter}
                     onRemove={onRemove}
+                    guestInvite={canInviteGuest && meetingId && key ? (
+                      <GuestPresenterInvite
+                        meetingKey={key}
+                        meetingId={meetingId}
+                        topicId={item.topicId}
+                        topicKey={item.topicKey}
+                      />
+                    ) : null}
                     dragRef={dragItem}
                     onItemDrop={onItemDrop}
                   />
@@ -430,6 +445,7 @@ function AgendaItemRow({
   onRemove,
   dragRef,
   onItemDrop,
+  guestInvite,
 }: {
   item: AgendaItem;
   index: number;
@@ -440,6 +456,8 @@ function AgendaItemRow({
   onTimebox: (item: AgendaItem, dir: 1 | -1) => void;
   onPresenter: (item: AgendaItem, userId: string) => void;
   onRemove: (item: AgendaItem) => void;
+  /** FR-159 — built by the parent so this row stays unaware of auth and of the meeting's identity. */
+  guestInvite?: React.ReactNode;
   dragRef: React.MutableRefObject<AgendaItem | null>;
   onItemDrop: (target: AgendaItem) => void;
 }) {
@@ -503,6 +521,7 @@ function AgendaItemRow({
                 options={presenterOptions}
               />
             </span>
+            {guestInvite}
           </span>
         </div>
       </div>

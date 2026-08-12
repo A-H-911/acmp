@@ -689,16 +689,6 @@
   color: var(--text-2);
   max-inline-size: 560px;
 }
-.adm-invite-password {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-}
-.adm-invite-password code {
-  padding: 5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--subtle);
-  font-size: 13px;
-}
+/* The one-time credential block moved to components/ui/invited-credential.css when the guest-presenter
+   invite began sharing it: these rules only ever loaded on the administration route, so the shared
+   component rendered unstyled anywhere else. */

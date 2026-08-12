@@ -273,6 +273,36 @@ export function useAssignPresenter(key: string | undefined) {
   );
 }
 
+/** A guest presenter just invited onto a slot (FR-159 / AC-092). */
+export interface InvitedGuestPresenter {
+  publicId: string;
+  fullName: string;
+  email: string;
+  /** The instant the server itself enforces — the /session banner reads the same stored value. */
+  accessExpiresAt: string;
+  temporaryPassword: string;
+}
+
+/** FR-159 / AC-092 — invite a guest presenter onto an agenda slot. SECRETARY only (enforced
+ *  server-side by the command, not by hiding the control).
+ *
+ *  ⚠ THE TEMPORARY PASSWORD COMES BACK ONCE. It is never written to the query cache, storage or a
+ *  log — the calling panel holds it in component state for its own lifetime and it cannot be
+ *  re-read afterwards. "No email in v1" is a hard constraint, so handing it over IS the delivery. */
+export function useInviteGuestPresenter(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, topicId, email, fullName }: { meetingId: string; topicId: string; email: string; fullName: string }) =>
+      api<InvitedGuestPresenter>(`/meetings/${meetingId}/guest-presenters`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topicId, email, fullName }),
+      }),
+    // The slot now names the guest as its presenter, so the agenda must re-read.
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meetings', 'detail', key] }),
+  });
+}
+
 /** Publish & notify: flips each placed topic Prepared→Scheduled and fans out notifications
  *  server-side. Returns the published AgendaDto. */
 export function usePublishAgenda(key: string | undefined) {
