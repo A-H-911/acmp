@@ -58,10 +58,20 @@ export const appRoutes = createRoutesFromElements(
         {/* Legacy alias — keep deep links to /dashboard working; Home is now '/' (Usage Map §G). */}
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        {/* FR-159 / DEC-037 — the guest presenter surface. The route is open to any signed-in
-            user; the API is what restricts it to Guest + Chairman/Secretary, and a caller with no
-            slot simply sees the empty state. */}
-        <Route path="session" element={<SessionPage />} />
+        {/* FR-159 / DEC-037 — the guest presenter surface, restricted to Guest plus Chairman and
+            Secretary (preview). DEF-053: the API half always enforced this (both queries carry
+            AllowedRoles and SessionApiTests forces a 403 for the other five roles), but the route
+            did not, so a Member typing /session met "you are not presenting" — a true-sounding
+            answer to a question they were not allowed to ask. The API stays the authority; this
+            gate is what makes the refusal say what it means. */}
+        <Route
+          path="session"
+          element={
+            <RequireRole roles={['guest', 'chairman', 'secretary']}>
+              <SessionPage />
+            </RequireRole>
+          }
+        />
         <Route path="backlog" element={<Backlog />} />
         <Route path="backlog/submit" element={<SubmitTopic />} />
         <Route path="topics/:key" element={<TopicDetail />} />
