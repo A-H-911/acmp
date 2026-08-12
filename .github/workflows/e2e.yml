@@ -110,6 +110,20 @@ jobs:
           set -a; source ../../deploy/.env.example; set +a
           npm run e2e
 
+      # OQ-071 / OQ-070 / ADR-0038 — the minimum realm-management grant, proven on every run against
+      # a REAL Keycloak (same image, same realm export as UAT), not asserted from documentation.
+      # DEC-041 split the standing obligation: the ROLE-SET proof lives here, permanently and
+      # automatically; UAT keeps a reduced connectivity check for the deployed topology it alone has.
+      #
+      # AFTER the Playwright run on purpose: leg 2 temporarily strips the service account's grant to
+      # prove a narrower one is REFUSED, and nothing downstream should depend on that window. The
+      # script restores the grant on exit and re-verifies that the restore worked.
+      - name: Minimum Keycloak grant is sufficient AND necessary (OQ-071)
+        working-directory: .
+        run: |
+          set -a; . deploy/.env.example; set +a
+          bash scripts/prove-keycloak-grant.sh -f deploy/docker-compose.yml --env-file deploy/.env.example
+
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
