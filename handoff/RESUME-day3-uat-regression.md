@@ -1,3 +1,7 @@
+> ⛔ **SUPERSEDED — do not follow this file.** The single entry point is
+> [`handoff/RESUME.md`](RESUME.md) (2026-08-12). Kept for the reasoning it records, not for
+> its instructions or its state table, both of which are stale.
+
 # RESUME — Day 3, then the UAT regression, then prod
 
 **Written 2026-08-11 at the end of the session that landed Days 1–2.** Every fact below was

@@ -1,3 +1,7 @@
+> ⛔ **SUPERSEDED — do not follow this file.** The single entry point is
+> [`handoff/RESUME.md`](RESUME.md) (2026-08-12). Kept for the reasoning it records, not for
+> its instructions or its state table, both of which are stale.
+
 # RESUME — ADR-0038: guest invite, deploy plumbing
 
 **Updated 2026-08-12.** Backend, invite UI, role UI **and the deploy plumbing** are merged. This is
