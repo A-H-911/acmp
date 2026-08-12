@@ -21,4 +21,16 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <!-- SSH.NET <= 2025.1.0 (GHSA-q939-rpr3-3284, HIGH): ScpClient recursive download lets a malicious
+       SERVER write arbitrary files on the client via crafted SCP filenames. Patched in 2026.0.0.
+       Surfaces transitively through Testcontainers in the integration tests ONLY — it reaches no
+       shipped image, and ACMP is not an SCP client — so the practical exposure here is a CI runner
+       talking to the Docker-provisioned containers it started itself. Pinned rather than excluded
+       anyway: the gate blocks High/Critical by design (C-SUP-02 / OQ-027), and "it's only tests" is
+       exactly the argument that turns a blocking gate into an advisory one.
+       Scoped to the project that actually pulls it, so nothing else acquires an SSH client. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acmp.Integration.Tests'">
+    <PackageReference Include="SSH.NET" Version="2026.0.0" />
+  </ItemGroup>
+
 </Project>
