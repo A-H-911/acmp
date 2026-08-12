@@ -1,7 +1,7 @@
 # RESUME — ADR-0038: guest invite, deploy plumbing
 
-**Updated 2026-08-11 (second session).** Backend, invite UI **and role UI** are merged. This is the
-single authoritative entry point; earlier ACMP resume files are superseded history.
+**Updated 2026-08-12.** Backend, invite UI, role UI **and the deploy plumbing** are merged. This is
+the single authoritative entry point; earlier ACMP resume files are superseded history.
 
 ---
 
@@ -24,11 +24,11 @@ code legitimately diverged.
 
 | | |
 |---|---|
-| `main` | `ce4cc2c` · gates 7/7 · 127 evidenced verdicts |
+| `main` | `2a5ddde`+ · gates 7/7 · 127 evidenced verdicts |
 | Production | **live on `e403e18`**, smoke 10/10, bundle verified |
 | UAT | **stopped** (`i-07ac28ac2fedab921`) — start it from `cloud-operations.md` §1 |
-| Merged | #232 Day 3 · #233 e2e hardening · #234 backend · #235 invite UI · **#236 role UI** |
-| Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness) · `DEF-050` (Webex secrets via `environment:`) · **`DEF-051` (a failed reconcile is silent)** |
+| Merged | #234 backend · #235 invite UI · **#236 role UI · #237 deploy plumbing · #238 reconcile guard** |
+| Open defects | `DEF-012` (package data) · `DEF-045` (e2e harness) · `DEF-050` (Webex secrets via `environment:`) |
 | Open decisions | `OQ-069` (Secretary can't reach `/admin`) · `OQ-071` (automated grant test still owed) |
 
 **Done:** `FR-156` invite (backend + UI) · `FR-157` role assignment (**backend + UI**) ·
@@ -37,10 +37,10 @@ code legitimately diverged.
 **Verdicts:** `AC-088` **Met** · `AC-089` **Met** · `AC-090` **Partial** · `AC-091`/`093` Partial ·
 `AC-092` **Pending**.
 
-⚠ **`AC-090` is blocked, not forgotten.** Its bar is behavioural — *"the subsequent request no longer
-exercises the removed role"* — and `KeycloakAdmin:Enabled` is **false in dev, CI and the e2e stack**,
-so `IIdentityProvider` is never registered and the endpoint **cannot execute anywhere today**. It
-needs §5 **and** §6 below. The same blocker is the residual on `AC-088`.
+⚠ **`AC-090` is now UNBLOCKED but still unevidenced.** Its bar is behavioural — *"the subsequent
+request no longer exercises the removed role"*. §5 and §6 are both done, so everything it needs
+exists; what remains is to **deploy with `KEYCLOAK_ADMIN_ENABLED=true` and measure it** (§5c step 1).
+`KeycloakAdmin:Enabled` is still false everywhere, so the endpoint does not execute until you flip it.
 
 ---
 
@@ -102,16 +102,31 @@ prod or UAT. The secret settles it — it can only match `gen-secrets`' file by 
 - **Enabling is one variable.** The secret is always written; `09-put-env.sh` refuses
   `ENABLED=true` + a placeholder secret before it reaches a box.
 
-⚠ **A green e2e is NOT evidence the client exists** — `DEF-051` means a failed reconcile leaves the
-stack fully healthy. Nothing yet asserts the post-conditions.
+✅ **`DEF-051` fixed (#238) — and the client is now proven to exist.** CI logs, every run:
 
-## 5c. Next two steps, in order
+```
+[reconcile] creating client 'acmp-admin-svc'…
+[reconcile] 'acmp-admin-svc' is confidential, service-account-only, secret set from the mounted file
+[reconcile] realm-management grant is exactly: manage-users
+```
 
-1. **`DEF-051`** — assert the reconcile post-conditions in `smoke.sh` (redirect URI, `basic` scope,
-   the client + its exact grant). Zero availability risk. The alternative — blocking `api` on the
-   sidecar — is an availability trade on a live always-on box and is **yours to decide**.
-2. **Deploy with `KEYCLOAK_ADMIN_ENABLED=true`** and evidence `AC-090` behaviourally: change a role,
-   then assert the user's next request no longer exercises the removed one.
+⚠ **`up.sh` is known-unguarded** — `docker compose up --wait` **returns while a one-shot is still
+running** (measured, not assumed: the guard's first run caught it mid-flight). So dev **and on-prem
+prod** cannot catch a failed reconcile, where the failure reproduces `DEF-023` exactly — nobody can
+log in, every health check green. The heavier fix, `depends_on: keycloak-config
+{ condition: service_completed_successfully }` on `api`/`worker`, is **yours to decide**: it turns a
+transient Keycloak hiccup into a refusal to start.
+
+## 5c. Next, in order
+
+1. **Deploy with `KEYCLOAK_ADMIN_ENABLED=true`** and evidence `AC-090` behaviourally: change a role,
+   then assert the user's next request no longer exercises the removed one. Everything it needs is
+   now in place.
+2. **`FR-159`** guest invite (`AC-092` Pending).
+3. The **automated probe-based** grant test still owed from `OQ-071` (you chose "both, UAT first"):
+   wrap `probe-keycloak-grant.mjs` so a *narrower* grant is proven refused, not just that the
+   configured one is applied.
+4. `up.sh` / on-prem reconcile guard (above).
 
 ---
 
