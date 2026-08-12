@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 01449c66-99ef-4bad-b978-5afc8ccf49ef
-  modified: 2026-08-11T19:59:29.730Z
+  modified: 2026-08-12T14:00:14.802Z
 ---
 
 `DEF-047`: the invite panel shipped with both labels flush against the card border, unstyled browser
@@ -26,3 +26,28 @@ the real components with a stub `fetch`, visit `?lang=en` and `?lang=ar`, screen
 the harness. Look specifically for: padding on cards that carry none of their own, popovers inside
 `overflow: hidden`, icons in headings with no `gap`, and raw English in the Arabic render. Related:
 [[exact-design-fidelity-visual-loop]], [[web-visual-verify-cache-busting]].
+
+## ⚠ THE HARNESS MUST IMPORT ONLY WHAT THE ROUTE IMPORTS (FR-159, 2026-08-12)
+
+The harness itself lied the first time. It imported `styles/administration.css` because the component
+used `.adm-*` classes — and **only `AdministrationPage.tsx` imports that file**, so the same markup
+rendered from a *meetings* dialog would have shipped completely unstyled. The screenshot looked
+perfect. `DEF-047` again, one PR later, in a different disguise.
+
+Two rules fall out, and they are cheap:
+
+1. **A shared component owns its stylesheet.** `InvitedCredential` now imports
+   `invited-credential.css`; those rules were deleted from `administration.css` so there is nothing
+   left to drift. Reusing another feature's classes is a runtime dependency the type system, the
+   bundler and every test are all blind to.
+2. **Grep before you borrow a class.** `grep -rn "<stylesheet>.css" src` tells you which routes load
+   it. If the answer is not "the one I'm on", the styles are not there.
+
+## The same shape in behaviour, not just CSS (FR-159, 2026-08-12)
+
+`Dialog` re-ran its focus-trap effect whenever `onClose` changed identity — an inline arrow, so every
+render — and the cleanup restores focus to the pre-dialog element. Typing `nadia@vendor.example` into
+a dialog field stored **`n`**. Invisible for a year because every previous dialog was a confirmation
+with no text input, and invisible to tests because `userEvent.type` in jsdom does not lose focus the
+way a real browser does. Fixed **in `Dialog`** (read `onClose` through a ref, depend on `[open]`), not
+at the call site: every future caller with a field would have hit it.

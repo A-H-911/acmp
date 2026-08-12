@@ -25,17 +25,19 @@ approved document and the code legitimately diverged, and *why the code was righ
 
 | | |
 |---|---|
-| `main` | `b3326e8` · gates **7/7** · **130 evidenced verdicts** |
-| Verdicts | **79 Met · 14 Partial · 1 Pending** |
+| `main` | `95c4ca3` · gates **7/7** · **132 evidenced verdicts** |
+| Verdicts | `AC-088`–`AC-092` **all Met** |
 | Production | **live on `e403e18`**, always-on · `i-04d9717feea79204b` · smoke 10/10 |
 | UAT | **stopped** · `i-07ac28ac2fedab921` — start from `deploy/runbooks/cloud-operations.md` §1 |
 | Open defects | `DEF-012` `DEF-036` `DEF-038` `DEF-039` `DEF-041` `DEF-045` `DEF-050` (7 of 51) |
-| Open questions | `OQ-069` `OQ-071` (2 of 72) — **both need you, not code** |
+| Open questions | `OQ-069` `OQ-071` `OQ-074` — **all three need you, not code** |
 
-**ADR-0038 + ADR-0039 shipped this session** — #236 role UI · #237 deploy plumbing · #238 reconcile
-guard · #239 per-request revalidation · #240 guest-expiry sweep.
+**ADR-0038 + ADR-0039 + ADR-0040 shipped** — #236 role UI · #237 deploy plumbing · #238 reconcile
+guard · #239 per-request revalidation · #240 guest-expiry sweep · **#241 guest-invite writer + guest
+surface** · **#242 `/session`**.
 
-`AC-088` `AC-089` `AC-090` `AC-091` **Met** · `AC-092` **Partial** (one half left, see §3).
+`AC-088` `AC-089` `AC-090` `AC-091` `AC-092` **all Met**. `FR-159` is complete — see §3 for what
+it decided and what it deliberately left open. **The next work is operator action, not code (§4).**
 
 ---
 
@@ -65,72 +67,63 @@ candidate (`+ view-realm`), and no gate would have caught the wider grant.
 
 ---
 
-## 3. ★ NEXT SLICE — `FR-159` / `AC-092`: the guest-invite writer + `/session`
+## 3. ✅ `FR-159` / `AC-092` — DONE. Read this before touching guest access again.
 
-**This is the only thing between `AC-092` and Met.** The enforcement is done; the *user-visible half*
-is not.
+**Complete: #241 (writer + guest surface) and #242 (`/session`). `AC-092` is Met (`AV-144`).**
+`ADR-0040` was raised, approved in full as `DEC-040`, and implemented.
 
-### Already built — do NOT rebuild (rule D)
+### The three decisions, and the one the operator changed
 
-| Thing | Where |
-|---|---|
-| `AccessExpiresAt`, `SetAccessWindow(...)`, `HasExpired(now)` | `CommitteeMember` (migration shipped) |
-| **Per-request refusal** of an expired member → `401 access_expired` | `PrincipalRevalidationMiddleware` + `PrincipalRevalidator` |
-| **Hourly sweep** disabling past-window members locally **and** in Keycloak | `ExpireGuestAccessHandler`, registered `Cron.Hourly()` in `Acmp.Worker` |
-| Keycloak account creation + `DisableUserAsync` | `IIdentityProvider` / `KeycloakAdminClient` |
-| An invite that already creates at `CommitteeRole.Guest` | `InviteUserHandler` |
+1. **The invite is a MEETINGS use case over ONE Membership write port** (`IGuestProvisioner`).
+   The window comes from `Meeting.ScheduledEnd` and the slot is an `AgendaItem` — both Meetings-owned
+   — so the handler reads its own aggregate and crosses the boundary exactly once. The mirror shape
+   (Membership owning it) needs **two** crossings. ⚠ `ADR-0021` had **already** fixed this pattern
+   (primitive port in `Shared.Contracts`, implemented in the owning module's Infrastructure,
+   unauthorized at the port, two transactions accepted) and it forbids cross-module command sends.
+   **Read `ADR-0021` before designing any new seam** — it turned an open question into a lookup.
+2. **The window is `ScheduledEnd + 24h`** (`GuestAccess.Grace`, a named constant).
+   The ADR recommended *no* grace; the operator widened it after the cost was stated plainly:
+   refusal is per-request and **immediate**, so no grace hands a presenter a 401 **in the middle of
+   presenting** when a meeting overruns. Changing the duration is one constant.
+3. **A Guest reaches the guest surface and nothing else** — `GuestSurfaceMiddleware`, see below.
 
-The expiry boundary is decided in **one** place (`CommitteeMember.HasExpired`, exclusive) and read by
-three callers — the API, the sweep, and soon the banner. `DEC-037` requires banner and server to read
-the same value; keep it that way structurally rather than by convention.
+### ⚠ `DEF-052` — the finding that mattered most
 
-### What is missing
+**There was no read-side role gate anywhere in the API.** All 14 content groups are
+`.MapGroup(...).RequireAuthorization()` with **no policy**, and every named policy in
+`AuthorizationRegistration.Matrix` is a *write* capability. Any authenticated principal could read the
+entire governance record. Harmless while every principal was a committee member — and **the FR-159
+writer creates the first external one**, so the merge that added the writer is the merge that would
+have opened the record to an outsider. It shipped in the **same PR**, not a follow-up.
 
-**1. The writer — nothing sets `AccessExpiresAt`.**
+Enforced in **one deny-by-default middleware**, not a policy per group: an opt-in list protects only
+the endpoints somebody remembered to decorate, so every route added later is open — the `SC-005`
+shape exactly. The allowlist is `POST /api/members/me`, `/api/session`, `/api/notifications`, and
+**GET-only** `/api/meetings`, which is `navModel.ts`'s own `ACCESS` map, not a new judgement.
 
-`FR-159`: *"As a Secretary, I want to invite a guest presenter **from the meeting screen** with access
-that expires after the meeting."*
+### Scope changes recorded (read them before "fixing" what looks wrong)
 
-⚠ **The design question to settle first (ADR-0001):** the window comes from the meeting's
-`ScheduledEnd`, which is **Meetings-owned**. Membership must not read Meetings' tables. Options:
+- **`SC-006`** — `/session` omits the design's alt-language topic title. `Topic` has a single `Title`
+  and no bilingual field anywhere; the reference asks for data the system has never captured.
+- **`SC-007`** — `AC-059`'s "readable by any authenticated role" now **excludes Guest**. Caught by an
+  existing `[InlineData("Guest")]` citing the AC. The directory is 26 people's names and emails.
 
-- a cross-module contract in `Acmp.Shared.Contracts.Membership`/`Meetings` — the established pattern
-  (`ICommitteeDirectory`, `ITopicScheduler`, and the new `IPrincipalRevalidator` all look like this);
-- or the API endpoint orchestrates: query Meetings, then send the Membership command with an explicit
-  `AccessExpiresAt`. Thinner, but puts a two-step in an endpoint layer whose stated rule is "no
-  business logic, delegates to MediatR".
+### Two bugs no test could see, both found by opening the screen
 
-Prefer the contract. **It is a new architecture decision → raise an ADR row (Proposed) and stop for
-approval**, per the standing DoD.
+- **`Dialog` re-ran its focus trap whenever `onClose` changed identity** — an inline arrow, so every
+  render — and its cleanup restores focus. The **second keystroke** in any dialog text field went
+  elsewhere. Fixed **in `Dialog`** via a ref; every future caller with a field would have hit it.
+- **The credential block's styles lived in `administration.css`**, which only `/admin` imports, so the
+  same markup in a meetings dialog rendered **unstyled with every test green** — `DEF-047` again. A
+  shared component now owns its stylesheet. ⚠ **Grep which routes import a stylesheet before
+  borrowing its classes.**
 
-Also decide: does the window end *at* `ScheduledEnd`, or with a grace period? `DEC-037` says
-"expires after the meeting" — the boundary is already exclusive, so `ScheduledEnd` is defensible, but
-say so explicitly rather than leaving it implied.
+### Still open, deliberately
 
-Authorization: **Secretary** (`FR-159`), not the Administrator-or-Secretary pair `FR-156` uses.
-
-**2. `/session` — the guest surface.**
-
-Built to `ACMP product context/ACMP Navigation & IA.dc.html` **lines 304–347**
-(`GUEST / PRESENTER SHELL`). **Read the `.dc.html` directly with file tools, not the design MCP**
-(INV-014). `DEC-037` fixes the content: expiry banner, topic card (key, title, alt-language title,
-summary), agenda-slot card (meeting name, MTG key, "Item 3 of 6", a 15-minute time box), and
-"Materials for your slot" (deck + diagram, each openable). Copy is fixed too — *"Presenter access —
-read-only, and expires after the meeting"* / *"Presenter · Read-only"*.
-
-The banner **must read the same `AccessExpiresAt` the server enforces**. That is `AC-092`'s explicit
-requirement and the reason the value is stored once.
-
-Route: Guest **plus** Chairman/Secretary for preview, **enforced at the API and not only by the route
-guard** (`DEC-037`). `navModel.ts` already sets `ACCESS.session = { guest: 'full' }`.
-
-### Gates this slice must clear
-
-- **Frontend per-file coverage ≥95%** — mutations without UI are unused exports and **fail CI**, so
-  it must land whole.
-- **i18n EN *and* AR together** — `check-i18n` compares **keys only**, so a missing value renders raw
-  English and no gate catches it. Verify RTL in a browser (rule E).
-- Every guard proven by **forcing its refusal**, never by asserting a handler was called.
+- **`OQ-074`** — `DEC-037` says Chairman/Secretary may "preview" `/session` but not *whose* view.
+  Shipped as **their own** slot (what the caller-scoped read model gives for free). A chosen
+  presenter's view would be a second authorization path over somebody else's content.
+- **`DW-025`** — rescheduling a meeting does not move an already-written window.
 
 ---
 
