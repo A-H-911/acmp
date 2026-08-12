@@ -44,6 +44,13 @@ public static class MembershipInfrastructureExtensions
         // absent by configuration.
         services.AddScoped<IPrincipalRevalidator, PrincipalRevalidator>();
 
+        // DW-025 / DEC-041 — lets the module that owns a meeting close or move the access windows of
+        // the guests presenting at it. UNCONDITIONAL for the same reason as the revalidator above and
+        // deliberately NOT part of IGuestProvisioner: that port needs the identity provider and is
+        // registered only when it is configured, so folding this in would make CANCELLING A MEETING
+        // fail wherever in-app user management is off — which is every environment today.
+        services.AddScoped<IGuestWindowWriter, GuestWindowWriter>();
+
         // ADR-0038 — the application's first outbound WRITE to the identity provider. Registered
         // ONLY when configured, so an environment without the service-account credential cannot
         // invite or assign roles rather than failing at the first click. The options validator runs
