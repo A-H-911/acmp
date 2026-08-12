@@ -134,13 +134,30 @@ measurement** — the 30-minute observation has not been run.
 
 ## 4. Everything left, in order
 
-**1. `OQ-076` — an operator decision, and the highest-value item.** Accept max-lifespan and amend
+**1. ★ LOG IN TO PRODUCTION. Nobody has, since the release, and it is the only thing standing
+between "deployed" and "verified".** This is `DEF-023`'s lesson verbatim: six healthy containers, a
+valid certificate, a correct issuer and `/api/` answering 401 — and nobody could log in. The release
+put **two fail-closed middlewares** in front of every request on prod for the first time:
+`GuestSurfaceMiddleware` (deny-by-default) and `PrincipalRevalidationMiddleware`. ⚠ **A member with
+no role claim resolves to `Guest`** — measured on UAT — so any production account whose token lacks a
+role claim is now confined to the guest surface where it previously had read access. **It is an
+operator action:** `uat-login-probe.mjs` cannot reach prod (it carries UAT fixture passwords), so it
+needs a real human account. Sign in, confirm the dashboard renders with your own name and role, open
+`/members` and confirm the roster and the invite panel are there.
+
+*What is already proven and does not need re-checking:* `smoke.sh` passes · `/api/session/me` is 401
+not 404 · both reconcile logs read `realm-management grant is exactly: manage-users` · and the
+production admin-client credential chain works end to end — a `client_credentials` request with the
+pinned secret returns **200 with an access_token**, while a deliberately wrong secret returns **401
+`unauthorized_client`**, so the endpoint is genuinely checking (`PE-281`).
+
+**2. `OQ-076` — an operator decision.** Accept max-lifespan and amend
 `AC-004`'s wording, or build inactivity detection that **stops** `automaticSilentRenew` (small, and it
 makes the AC literally true). **Not** lowering `ssoSessionMaxLifespan` — that logs out *active* users
 on a fixed clock. Also fix `AC-090`'s text, which cites a "60-minute idle timeout" against a realm
 that says 30.
 
-**2. The 11 remaining Partials — one campaign, approach already agreed.** `AC-003` `AC-005` `AC-006`
+**3. The 11 remaining Partials — one campaign, approach already agreed.** `AC-003` `AC-005` `AC-006`
 `AC-007` `AC-009` `AC-010` `AC-011` `AC-033` `AC-034` `AC-041` `AC-048`. Nearly all are Partial for
 the *same* reason: proven by unit/handler tests with **no live leg**. `Acmp.Api.Tests` authenticates
 with `TestAuthHandler`, a synthetic scheme, and `RealJwtAuthTests` only covers the 401 fail-closed
@@ -152,32 +169,32 @@ stream and meeting-scope fixtures and are a second tranche. `AC-041` is a manual
 that needs promoting into CI. **`AC-048` (`beforeunload`) is probably unprovable** — Playwright
 auto-dismisses the native dialog — and Partial-with-a-recorded-reason is a legitimate outcome.
 
-**3. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as their
+**4. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as their
 own slot. ⚠ **New evidence:** `navModel.ts`'s ACCESS map grants `session` to **guest only**, so
 Chairman/Secretary are permitted on a page they have **no nav link to**. Answering has a nav
 consequence either way; `DEF-053` deliberately left the map alone rather than pre-empt it.
 
-**4. `DEF-038`** — the roster lists only members who have logged in. ⚠ **Partly overtaken:**
+**5. `DEF-038`** — the roster lists only members who have logged in. ⚠ **Partly overtaken:**
 `GetMembers` now returns Active **or** Invited, so anyone invited *through the app* appears. The
 residue is the 25 accounts seeded directly into Keycloak before that existed.
 
-**5. `Streams.NameAr` on prod** — still not done. Real table is `membership.streams`.`name_ar`; the
+**6. `Streams.NameAr` on prod** — still not done. Real table is `membership.streams`.`name_ar`; the
 C# names do not exist in SQL and every module owns a schema.
 
-**6. `DEF-055`** (low) — `09-put-env.sh` refuses `ENABLED=true` without a `KEYCLOAK_ADMIN_CLIENT_SECRET`
+**7. `DEF-055`** (low) — `09-put-env.sh` refuses `ENABLED=true` without a `KEYCLOAK_ADMIN_CLIENT_SECRET`
 and gives a reason that is **not** the real one (gen-secrets always writes the file, so ValidateOnStart
 would pass). The behaviour is defensible; the message and comment are wrong. Do **not** relax the
 `CHANGE_ME` branch.
 
-**7. Remaining defects** — `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3),
+**8. Remaining defects** — `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3),
 `DEF-041` (voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data
 residue in `v_backlog`), `DEF-045` (classified: harness causes, no product defect — but **cause 3 is
 still unfixed**, so a UAT e2e run is red for a known reason).
 
-**8. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
+**9. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
 **until** a UAT space exists", so the exit condition can never be met.
 
-**9. `AC-091`'s last clause, if you want it** — first login consuming the invite. Proving it live
+**10. `AC-091`'s last clause, if you want it** — first login consuming the invite. Proving it live
 needs the temporary password, which the probe refuses to print. A future probe could carry the value
 **in-process** from the invite response into a login without ever rendering it.
 
