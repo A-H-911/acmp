@@ -72,6 +72,10 @@ public class RiskHandlerTests
                 .Where(r => userIds.Contains(r.UserId))
                 .GroupBy(r => r.UserId)          // a member may hold several roles in this fake's map
                 .ToDictionary(g => g.Key, g => g.First().FullName));
+        // FR-159 widened the port with a subject-to-member lookup. These doubles exercise notification
+        // fan-out only, so there is no member to resolve and null is the honest answer.
+        public Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default) =>
+            Task.FromResult<CommitteeMemberRef?>(null);
     }
 
     private static RaiseRiskCommand RaiseCmd(string owner = "kc-owner", RiskLevel l = RiskLevel.Medium,

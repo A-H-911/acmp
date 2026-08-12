@@ -27,7 +27,30 @@ public interface ICommitteeDirectory
     // fall back to the raw id rather than assume a hit (system and integration actors have no member row).
     Task<IReadOnlyDictionary<string, string>> ResolveDisplayNamesAsync(
         IReadOnlyCollection<string> userIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// Who a Keycloak subject is on the ACMP side, or null when no member row exists.
+    /// </summary>
+    /// <remarks>
+    /// FR-159 / AC-092. A caller knows WHO is asking as a Keycloak subject (that is what the token
+    /// carries), but everything else in the system identifies a person by PublicId — including
+    /// <c>AgendaItem.PresenterUserId</c>. Without this, /session could not find the caller's own slot
+    /// without Meetings reading Membership's table.
+    ///
+    /// INCLUDES DISABLED AND INVITED MEMBERS, like ResolveDisplayNamesAsync and unlike the two active-only
+    /// lookups above: a guest presenter is <c>Invited</c> until their first login, so an active-only
+    /// answer would hide their own slot from them on the one visit that matters most.
+    /// </remarks>
+    Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default);
 }
+
+/// <summary>Who a subject is here: the id everything else identifies them by, and when their access ends.</summary>
+/// <param name="AccessExpiresAt">
+/// Null for every ordinary member. For a guest presenter it is THE value the API refusal
+/// (ADR-0039) and the expiry sweep read, so a banner rendered from it cannot disagree with the server
+/// — DEC-037 requires exactly that, and one column is the only structural way to guarantee it.
+/// </param>
+public sealed record CommitteeMemberRef(Guid PublicId, DateTimeOffset? AccessExpiresAt);
 
 // A notification recipient: the Keycloak subject (matches NotificationMessage.RecipientUserId and
 // ICurrentUser.UserId) plus a display name for any caller that needs it.

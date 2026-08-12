@@ -106,6 +106,7 @@ app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
+app.MapSessionEndpoints();
 app.MapMinutesEndpoints();
 app.MapDecisionEndpoints();
 app.MapVoteEndpoints();

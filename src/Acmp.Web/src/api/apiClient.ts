@@ -37,14 +37,31 @@ export function localizedValidationMessage(problem?: ProblemDetails): string | u
   return first.errorMessage ?? i18n.t('errors.generic', { defaultValue: problem?.title ?? '' });
 }
 
+/**
+ * Why the server refused an otherwise-valid token (ADR-0039). Sent as `X-Acmp-Auth-Reason` beside the
+ * 401, and the distinction is load-bearing rather than informational:
+ *  - `roles_changed` is fixed by getting a new token, which the SPA already does automatically;
+ *  - `access_expired` and `account_disabled` are NOT retryable, and renewing against a session that no
+ *    longer exists is a loop. AC-092 needs the page to SAY access has ended, not to spin.
+ */
+export type AuthRefusal = 'roles_changed' | 'access_expired' | 'account_disabled';
+
 export class ApiError extends Error {
   readonly status: number;
   readonly problem?: ProblemDetails;
-  constructor(status: number, problem?: ProblemDetails) {
+  /** Present only on a 401 the server explained. */
+  readonly authRefusal?: AuthRefusal;
+  constructor(status: number, problem?: ProblemDetails, authRefusal?: AuthRefusal) {
     super(problem?.title ?? `HTTP ${status}`);
     this.name = 'ApiError';
     this.status = status;
     this.problem = problem;
+    this.authRefusal = authRefusal;
+  }
+
+  /** True when no new token can help — the account's access has ended (AC-092). */
+  get isAccessEnded(): boolean {
+    return this.authRefusal === 'access_expired' || this.authRefusal === 'account_disabled';
   }
 }
 
@@ -75,7 +92,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch {
       // Non-JSON error body — fall back to the status code.
     }
-    throw new ApiError(res.status, problem);
+    const reason = res.headers.get('X-Acmp-Auth-Reason');
+    throw new ApiError(res.status, problem, (reason as AuthRefusal | null) ?? undefined);
   }
 
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);

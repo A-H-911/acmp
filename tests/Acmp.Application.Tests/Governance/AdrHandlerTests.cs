@@ -80,6 +80,10 @@ public class AdrHandlerTests
             Task.FromResult((IReadOnlyDictionary<string, string>)_all
                 .Where(r => userIds.Contains(r.UserId))
                 .ToDictionary(r => r.UserId, r => r.FullName));
+        // FR-159 widened the port with a subject-to-member lookup. These doubles exercise notification
+        // fan-out only, so there is no member to resolve and null is the honest answer.
+        public Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default) =>
+            Task.FromResult<CommitteeMemberRef?>(null);
     }
 
     private static IReadOnlyList<AdrOptionRequest> Opts() => new[]

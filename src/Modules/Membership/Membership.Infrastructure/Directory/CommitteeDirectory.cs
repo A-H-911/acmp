@@ -57,4 +57,18 @@ public sealed class CommitteeDirectory : ICommitteeDirectory
 
         return rows.ToDictionary(r => r.KeycloakUserId, r => r.FullName);
     }
+
+    // FR-159 — the subject-to-PublicId hop /session needs to find the caller's own agenda slot.
+    // No status filter, deliberately: a guest presenter is Invited until their first login, and that
+    // first login IS the visit where they need their slot.
+    public async Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(keycloakUserId))
+            return null;
+
+        return await _db.Members.AsNoTracking()
+            .Where(m => m.KeycloakUserId == keycloakUserId)
+            .Select(m => new CommitteeMemberRef(m.PublicId, m.AccessExpiresAt))
+            .FirstOrDefaultAsync(ct);
+    }
 }

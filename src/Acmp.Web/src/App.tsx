@@ -7,6 +7,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
+import SessionPage from './features/session/SessionPage';
 import AdministrationPage from './pages/AdministrationPage';
 import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
@@ -56,7 +57,10 @@ export const appRoutes = createRoutesFromElements(
         {/* Legacy alias — keep deep links to /dashboard working; Home is now '/' (Usage Map §G). */}
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
+        {/* FR-159 / DEC-037 — the guest presenter surface. The route is open to any signed-in
+            user; the API is what restricts it to Guest + Chairman/Secretary, and a caller with no
+            slot simply sees the empty state. */}
+        <Route path="session" element={<SessionPage />} />
         <Route path="backlog" element={<Backlog />} />
         <Route path="backlog/submit" element={<SubmitTopic />} />
         <Route path="topics/:key" element={<TopicDetail />} />
