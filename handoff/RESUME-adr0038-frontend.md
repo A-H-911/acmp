@@ -24,7 +24,7 @@ code legitimately diverged.
 
 | | |
 |---|---|
-| `main` | `2a5ddde`+ · gates 7/7 · 127 evidenced verdicts |
+| `main` | `e573f59` · gates 7/7 · 129 evidenced verdicts |
 | Production | **live on `e403e18`**, smoke 10/10, bundle verified |
 | UAT | **stopped** (`i-07ac28ac2fedab921`) — start it from `cloud-operations.md` §1 |
 | Merged | #234 backend · #235 invite UI · **#236 role UI · #237 deploy plumbing · #238 reconcile guard** |
@@ -34,13 +34,16 @@ code legitimately diverged.
 **Done:** `FR-156` invite (backend + UI) · `FR-157` role assignment (**backend + UI**) ·
 `FR-158` roster shows `Invited`.
 
-**Verdicts:** `AC-088` **Met** · `AC-089` **Met** · `AC-090` **Partial** · `AC-091`/`093` Partial ·
-`AC-092` **Pending**.
+**Verdicts:** `AC-088`/`089`/**`090`** **Met** · `AC-091`/`092`/`093` **Partial**.
 
-⚠ **`AC-090` is now UNBLOCKED but still unevidenced.** Its bar is behavioural — *"the subsequent
-request no longer exercises the removed role"*. §5 and §6 are both done, so everything it needs
-exists; what remains is to **deploy with `KEYCLOAK_ADMIN_ENABLED=true` and measure it** (§5c step 1).
-`KeycloakAdmin:Enabled` is still false everywhere, so the endpoint does not execute until you flip it.
+✅ **`AC-090` is MET, and literally so** (#239). It was not merely unevidenced — it was
+**unsatisfiable by construction**: authorization is token-driven, so a removed role survived a full
+access-token lifetime (**300s, measured**) and a forced sign-out cannot revoke a token in flight.
+`ADR-0039` fixed that. Evidence is a **refused request**, not a call-count.
+
+⚠ **The AC's own text still contains a wrong number** — it contrasts against a "60-minute idle
+timeout"; the realm's `ssoSessionIdleTimeout` is **1800 (30 min)**. Harmless now that the guarantee
+no longer depends on it, but don't reason from it.
 
 ---
 
@@ -83,11 +86,25 @@ don't diverge quietly, and don't build the worse thing out of deference to the d
   text. A fully green suite described a broken-looking screen, because role/label queries resolve
   perfectly against unstyled markup. **Found by rendering the real components in a browser.**
 
-## 4. `FR-159` / `AC-092` — guest invite
+## 4. `FR-159` / `AC-092` — guest invite (HALF DONE)
 
-Expiry is stored **ACMP-side** and enforced per request; the Keycloak user is disabled at expiry as
-defence in depth. `IIdentityProvider.DisableUserAsync` already exists. `/session` is built to
-`ACMP Navigation & IA.dc.html` **lines 304–347** (`GUEST / PRESENTER SHELL`). See `DEC-037`.
+✅ **Enforcement done.** `ADR-0039`'s per-request revalidation refuses an expired member on their
+**next request** (#239), and the hourly sweep disables them in Keycloak too (#240). The expiry
+boundary lives in ONE place (`CommitteeMember.HasExpired`), so the API, the sweep and the banner
+cannot disagree — `DEC-037` requires exactly that.
+
+⏳ **Remaining, and it is the user-visible half:**
+
+1. **Nothing sets `AccessExpiresAt`.** The guest invite from the meeting screen is the writer. It
+   needs the meeting's `ScheduledEnd`, which is **Meetings-owned** — so it wants a cross-module
+   contract (ADR-0001), *not* Membership reading Meetings' tables. `InviteUserCommand` already
+   creates at `CommitteeRole.Guest`; this is a sibling command with a window, Secretary-authorized.
+2. **`/session`** built to `ACMP Navigation & IA.dc.html` **lines 304–347** (`GUEST / PRESENTER
+   SHELL`) — expiry banner, topic card, agenda-slot card, "Materials for your slot". The banner
+   reads the same field the server enforces. See `DEC-037`.
+
+⚠ The sweep is **defence in depth, not the enforcement** — it never gates access, it only bounds how
+long a disabled-in-ACMP account can still *log in*. Don't rewrite it as the control.
 
 ## 5. ✅ Deploy plumbing — DONE (#237, `DW-024`)
 
@@ -119,14 +136,14 @@ transient Keycloak hiccup into a refusal to start.
 
 ## 5c. Next, in order
 
-1. **Deploy with `KEYCLOAK_ADMIN_ENABLED=true`** and evidence `AC-090` behaviourally: change a role,
-   then assert the user's next request no longer exercises the removed one. Everything it needs is
-   now in place.
-2. **`FR-159`** guest invite (`AC-092` Pending).
-3. The **automated probe-based** grant test still owed from `OQ-071` (you chose "both, UAT first"):
-   wrap `probe-keycloak-grant.mjs` so a *narrower* grant is proven refused, not just that the
-   configured one is applied.
-4. `up.sh` / on-prem reconcile guard (above).
+1. **`FR-159`'s writer + `/session`** — see §4. This is the only thing between `AC-092` and Met.
+2. **Deploy with `KEYCLOAK_ADMIN_ENABLED=true`.** No longer needed for `AC-090` (its guarantee is
+   ACMP-side now and proven where it is decided), but it is what makes invite/roles usable at all.
+3. The **automated probe-based** grant test owed from `OQ-071` (you chose "both, UAT first"): wrap
+   `probe-keycloak-grant.mjs` so a *narrower* grant is proven refused, not merely that the
+   configured one applies.
+4. `up.sh` / on-prem reconcile guard (§5).
+5. `OQ-069` — Secretary cannot reach `/admin`; an operator decision, not a code fix.
 
 ---
 
