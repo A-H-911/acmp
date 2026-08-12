@@ -1,3 +1,11 @@
+# ⛔ SUPERSEDED — do not use
+
+**This prompt is history.** Its work is DONE (FR-159 / AC-092 Met, `#241` + `#242`, plus the four
+`DEC-041` items in `#243`–`#246`). The durable kickoff prompt is **`handoff/prm-next.md`**; the
+single entry point is **`handoff/RESUME.md`**. Kept only for the reasoning it records.
+
+---
+
 # Kickoff prompt — FR-159 guest invite + /session
 
 Paste everything between the two `=====` lines into a fresh session.
