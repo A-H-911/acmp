@@ -118,7 +118,7 @@ public class UserManagementFeatureTests
         await db.SaveChangesAsync();
         var identity = Substitute.For<IIdentityProvider>();
 
-        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>())
+        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>(), Clock())
             .Handle(new AssignRolesCommand(self.PublicId, new[] { nameof(CommitteeRole.Chairman) }, true), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
@@ -135,7 +135,7 @@ public class UserManagementFeatureTests
         await db.SaveChangesAsync();
         var identity = Substitute.For<IIdentityProvider>();
 
-        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>())
+        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>(), Clock())
             .Handle(new AssignRolesCommand(target.PublicId, new[] { nameof(CommitteeRole.Administrator) }), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -153,7 +153,7 @@ public class UserManagementFeatureTests
         await db.SaveChangesAsync();
         var identity = Substitute.For<IIdentityProvider>();
 
-        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>())
+        var act = () => new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>(), Clock())
             .Handle(new AssignRolesCommand(onlyAdmin.PublicId, new[] { nameof(CommitteeRole.Member) }), default);
 
         // Without this, one edit locks everyone out of user management permanently and recovery
@@ -172,7 +172,7 @@ public class UserManagementFeatureTests
         await db.SaveChangesAsync();
         var identity = Substitute.For<IIdentityProvider>();
 
-        await new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>())
+        await new AssignRolesHandler(db, identity, actor, Substitute.For<IAuditSink>(), Clock())
             .Handle(new AssignRolesCommand(demoted.PublicId, new[] { nameof(CommitteeRole.Member) }), default);
 
         (await db.Members.SingleAsync(m => m.PublicId == demoted.PublicId)).Role.Should().Be(CommitteeRole.Member);
@@ -189,7 +189,7 @@ public class UserManagementFeatureTests
         var identity = Substitute.For<IIdentityProvider>();
         var audit = Substitute.For<IAuditSink>();
 
-        await new AssignRolesHandler(db, identity, actor, audit).Handle(
+        await new AssignRolesHandler(db, identity, actor, audit, Clock()).Handle(
             new AssignRolesCommand(target.PublicId, new[] { nameof(CommitteeRole.Reviewer), nameof(CommitteeRole.Chairman) }, true),
             default);
 
@@ -215,7 +215,7 @@ public class UserManagementFeatureTests
         var actor = User("kc-admin", "Administrator");
         await using var db = NewDb(actor);
 
-        var act = () => new AssignRolesHandler(db, Substitute.For<IIdentityProvider>(), actor, Substitute.For<IAuditSink>())
+        var act = () => new AssignRolesHandler(db, Substitute.For<IIdentityProvider>(), actor, Substitute.For<IAuditSink>(), Clock())
             .Handle(new AssignRolesCommand(Guid.NewGuid(), new[] { nameof(CommitteeRole.Member) }), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();

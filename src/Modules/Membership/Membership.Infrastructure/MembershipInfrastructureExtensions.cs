@@ -38,6 +38,12 @@ public static class MembershipInfrastructureExtensions
         // Cross-module roster lookup consumed by the Meetings notification fan-out (ADR-0001).
         services.AddScoped<ICommitteeDirectory, CommitteeDirectory>();
 
+        // ADR-0039 — the per-request veto the API host applies to an otherwise-valid token. Scoped,
+        // because it reads through the request's DbContext; registered UNCONDITIONALLY (unlike the
+        // identity provider below) since it is what makes AC-090 and AC-092 true and must never be
+        // absent by configuration.
+        services.AddScoped<IPrincipalRevalidator, PrincipalRevalidator>();
+
         // ADR-0038 — the application's first outbound WRITE to the identity provider. Registered
         // ONLY when configured, so an environment without the service-account credential cannot
         // invite or assign roles rather than failing at the first click. The options validator runs

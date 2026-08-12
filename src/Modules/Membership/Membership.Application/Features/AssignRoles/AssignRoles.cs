@@ -52,13 +52,15 @@ public sealed class AssignRolesHandler : IRequestHandler<AssignRolesCommand>
     private readonly IIdentityProvider _identity;
     private readonly ICurrentUser _user;
     private readonly IAuditSink _audit;
+    private readonly IClock _clock;
 
-    public AssignRolesHandler(IMembershipDbContext db, IIdentityProvider identity, ICurrentUser user, IAuditSink audit)
+    public AssignRolesHandler(IMembershipDbContext db, IIdentityProvider identity, ICurrentUser user, IAuditSink audit, IClock clock)
     {
         _db = db;
         _identity = identity;
         _user = user;
         _audit = audit;
+        _clock = clock;
     }
 
     public async Task Handle(AssignRolesCommand request, CancellationToken ct)
@@ -100,11 +102,17 @@ public sealed class AssignRolesHandler : IRequestHandler<AssignRolesCommand>
         // rather than a second, divergent interpretation of the same role set.
         var primary = CommitteeRoleResolver.PrimaryRole(request.Roles)
             ?? throw new InvalidOperationException("No recognised committee role in the requested set.");
-        member.ApplyAssignedRole(primary);
+        // ADR-0039: the timestamp is the half that actually enforces AC-090. Authorization reads
+        // roles from the TOKEN, so the mirrored Role above changes nothing about access on its own —
+        // it is the stamp, compared against the token's `iat` on every request, that refuses a token
+        // minted before this moment.
+        member.ApplyAssignedRole(primary, _clock.UtcNow);
         await _db.SaveChangesAsync(ct);
 
-        // AC-090 — take effect NOW. Roles reach the app through the token, so a REMOVED role would
-        // otherwise stay usable until the 60-minute idle timeout.
+        // Ends the Keycloak SESSION so no NEW token can be minted without re-authenticating. On its
+        // own this was never enough for AC-090 and the AC's old wording assumed it was: it cannot
+        // revoke a token already in flight, which stayed usable for a full access-token lifetime
+        // (measured at 300s). The stamp above closes that window; this closes the renewal path.
         await _identity.SignOutEverywhereAsync(member.KeycloakUserId, ct);
 
         // GUARD 4 — the actual control for the residual SoD risk DEC-038 records the operator

@@ -116,7 +116,44 @@ public sealed class CommitteeMember : AuditableEntity
     //   2. The roster would otherwise show the OLD role until that member next signed in, which reads
     //      as the assignment having silently failed.
     // Safe because the caller forces sign-out in the same operation, so the stale token cannot outlive it.
-    public void ApplyAssignedRole(CommitteeRole role) => Role = role;
+    // ADR-0039: stamping the CHANGE TIME is what makes AC-090 literally true. Authorization reads
+    // roles from the TOKEN (CurrentUserService.IsInRole -> ClaimsPrincipal), so without this an
+    // already-issued token keeps its old roles for up to a full access-token lifetime — measured at
+    // 300s on the live realm — and a forced Keycloak sign-out cannot revoke a token in flight.
+    // Comparing this against the token's `iat` lets the API refuse a token minted BEFORE the change.
+    //
+    // `now` is passed in rather than read here: a domain object that reads the clock cannot be
+    // tested at the boundary, and the boundary is exactly where this has to be right.
+    public void ApplyAssignedRole(CommitteeRole role, DateTimeOffset now)
+    {
+        Role = role;
+        RolesChangedAt = now;
+    }
+
+    /// <summary>
+    /// When this member's roles last changed in ACMP (ADR-0039). Null for a member whose roles have
+    /// never been assigned through the app — such a member's tokens are all "after" the last change,
+    /// so the check passes, which is the correct default rather than a special case.
+    /// </summary>
+    public DateTimeOffset? RolesChangedAt { get; private set; }
+
+    /// <summary>
+    /// When this member's access ends (ADR-0039 / AC-092). Null = no expiry, which is every ordinary
+    /// committee member. Set for a guest presenter, and it is the SINGLE value both the API and the
+    /// /session banner read — DEC-037 requires that they cannot disagree, and one column is the only
+    /// way to guarantee it.
+    /// </summary>
+    public DateTimeOffset? AccessExpiresAt { get; private set; }
+
+    /// <summary>Grants time-boxed access (FR-159). Passing null clears any expiry.</summary>
+    public void SetAccessWindow(DateTimeOffset? expiresAt) => AccessExpiresAt = expiresAt;
+
+    /// <summary>
+    /// True when the member's access window has closed. Exclusive of the instant itself: at exactly
+    /// `expiresAt` access has not yet expired, which matches "expires AFTER the meeting" and gives
+    /// the boundary test an unambiguous answer.
+    /// </summary>
+    public bool HasExpired(DateTimeOffset now) => AccessExpiresAt is { } end && now > end;
 
     // AC-058: blocks ACMP access but keeps the record so votes/authorship/assignments stay attributed.
     public void Deactivate() => Status = MembershipStatus.Disabled;

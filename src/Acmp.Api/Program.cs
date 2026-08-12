@@ -82,6 +82,9 @@ app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
+// ADR-0039 — between authentication and authorization on purpose: the principal is known here,
+// and a stale or expired one must be refused BEFORE any policy or handler sees it.
+app.UseAcmpPrincipalRevalidation();
 app.UseAuthorization();
 
 // After auth so the rate-limiter can partition by the caller's `sub` (see HardeningExtensions).
