@@ -22,6 +22,9 @@ function emptyApi() {
     if (url.includes('/notifications')) {
       return { jsonBody: { items: [], unreadCount: 0, total: 0, hasMore: false } };
     }
+    // 204 = "you hold no presenter slot", which is what the server sends every caller who is
+    // allowed onto /session but is not presenting. Distinct from the 403 the route now prevents.
+    if (url.includes('/session/')) return { status: 204 };
     if (url.includes('/members')) return { jsonBody: [] };
     // The home dashboard fans out to several registers; give each its real empty shape
     // (paged for topics/actions/risks, bare arrays for the rest) so the grid renders zeros.
@@ -71,6 +74,32 @@ describe('appRoutes guards', () => {
     expect(await screen.findByRole('heading', { name: i18n.t('admin.title') })).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('state.deniedTitle'))).not.toBeInTheDocument();
   });
+
+  /*
+   * DEF-053 — the other half of DEC-037, which asks for /session to be "restricted to Guest plus
+   * Chairman/Secretary (preview), enforced at the API AND NOT ONLY BY THE ROUTE GUARD". The API half
+   * shipped with #242 and SessionApiTests forces a 403 for these same five roles; the route half did
+   * not, so a Member typing /session was shown "you are not presenting" instead of being refused.
+   * The refusal is proven by FORCING it per role, not by asserting the guard was rendered.
+   */
+  it.each(['member', 'reviewer', 'auditor', 'administrator', 'submitter'] as const)(
+    'refuses /session to %s (DEF-053, DEC-037)',
+    async (role) => {
+      renderAt('/session', makeAuth([role]));
+      expect(await screen.findByText(i18n.t('state.deniedTitle'))).toBeInTheDocument();
+      // The page itself must not have mounted — its empty state would answer a different question.
+      expect(screen.queryByText(i18n.t('session.none.title'))).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(['guest', 'chairman', 'secretary'] as const)(
+    'admits %s to /session, where a caller with no slot gets the empty state (DEC-037)',
+    async (role) => {
+      renderAt('/session', makeAuth([role]));
+      expect(await screen.findByText(i18n.t('session.none.title'))).toBeInTheDocument();
+      expect(screen.queryByText(i18n.t('state.deniedTitle'))).not.toBeInTheDocument();
+    },
+  );
 
   it('shows the 404 page for an unknown route inside the shell', async () => {
     renderAt('/totally-unknown', makeAuth(['member']));
