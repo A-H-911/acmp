@@ -99,7 +99,8 @@ if [ "$DB_USER" != "sa" ]; then
 fi
 
 # --- Keycloak Admin service account (ADR-0038) ---
-# ALWAYS written, unlike the Webex block below, and the difference is not an inconsistency:
+# ALWAYS written — as the Webex block below now is too, for exactly these reasons (DEF-050 made them
+# match rather than leaving one of them an exception):
 #   - this secret IS mounted as a real compose secret (ADR-0032), and a compose `secrets:` entry
 #     whose file is missing fails the WHOLE stack — so a conditionally-written file would mean a
 #     conditionally-bootable deployment;
@@ -121,17 +122,41 @@ if [ -z "${KEYCLOAK_ADMIN_CLIENT_SECRET:-}" ]; then
 fi
 write_secret KeycloakAdmin__ClientSecret "$KEYCLOAK_ADMIN_CLIENT_SECRET"
 
-# --- Webex (only when enabled; otherwise the adapter is off and reads nothing — no empty files) ---
-# ⚠ DEF-050: these five files are written and MOUNTED BY NOTHING — no compose file declares them as
-# secrets, and the same values are passed to the app as plain `environment:` entries instead, which
-# is the delivery channel ADR-0032 exists to avoid. Left as-is here because fixing it is a Webex
-# change, not an ADR-0038 one; do NOT copy this block's shape.
+# --- Webex (DEF-050 fixed 2026-08-12) ---------------------------------------------------------
+# ALWAYS WRITTEN, EVEN WHEN WEBEX IS OFF — and that is the whole point rather than sloppiness.
+# These five are now real compose secrets mounted into api and worker, and a `secrets:` entry whose
+# FILE IS MISSING fails the entire stack, not just the feature. Writing them only under
+# WEBEX_ENABLED=true would mean the default configuration (Webex off, everywhere today) cannot boot.
+# Same reasoning, same shape as KeycloakAdmin__ClientSecret above.
+#
+# WHAT CHANGED AND WHY (DEF-050): these files used to be written under `if WEBEX_ENABLED=true` and
+# mounted by NOTHING, while the credentials themselves travelled to the app as plain compose
+# `environment:` entries — the one delivery channel ADR-0032 exists to avoid, because an environment
+# value is readable by `docker inspect`, sits in /proc/1/environ, and is captured by anything that
+# dumps container config. So the app read its Webex credentials from the rejected channel while the
+# chosen channel sat unused beside it, and five files containing real credentials were written on
+# every run for nobody to read. Verified 2026-08-12 against the DEPLOYED env in SSM: prod and UAT
+# both carry `WEBEX_ENABLED=false` and NO credential variables at all, so nothing was ever exposed
+# and nothing needed rotating — but the next person to enable Webex would have shipped one.
+#
+# NOT `:?` — an empty file is correct when the feature is off. KeyPerFile turns it into an empty
+# config value, exactly what the old `${WEBEX_BOT_TOKEN:-}` environment default produced, and the
+# adapter never reads it because Webex__Enabled is false. Failing hard here would break every stack
+# that legitimately runs without Webex, which is all of them.
+write_secret Webex__BotToken            "${WEBEX_BOT_TOKEN:-}"
+write_secret Webex__WebhookSecret       "${WEBEX_WEBHOOK_SECRET:-}"
+write_secret Webex__OAuthClientSecret   "${WEBEX_OAUTH_CLIENT_SECRET:-}"
+write_secret Webex__TokenEncryptionKey  "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+write_secret Webex__OAuthSetupKey       "${WEBEX_OAUTH_SETUP_KEY:-}"
+
+# Enabling Webex without its credentials is a configuration error worth catching at the last point
+# before a machine, not at the first webhook that fails to verify.
 if [ "${WEBEX_ENABLED:-false}" = "true" ]; then
-  write_secret Webex__BotToken            "${WEBEX_BOT_TOKEN:?set WEBEX_BOT_TOKEN}"
-  write_secret Webex__WebhookSecret       "${WEBEX_WEBHOOK_SECRET:?set WEBEX_WEBHOOK_SECRET}"
-  write_secret Webex__OAuthClientSecret   "${WEBEX_OAUTH_CLIENT_SECRET:?set WEBEX_OAUTH_CLIENT_SECRET}"
-  write_secret Webex__TokenEncryptionKey  "${WEBEX_TOKEN_ENCRYPTION_KEY:?set WEBEX_TOKEN_ENCRYPTION_KEY}"
-  write_secret Webex__OAuthSetupKey       "${WEBEX_OAUTH_SETUP_KEY:?set WEBEX_OAUTH_SETUP_KEY}"
+  : "${WEBEX_BOT_TOKEN:?WEBEX_ENABLED=true requires WEBEX_BOT_TOKEN}"
+  : "${WEBEX_WEBHOOK_SECRET:?WEBEX_ENABLED=true requires WEBEX_WEBHOOK_SECRET}"
+  : "${WEBEX_OAUTH_CLIENT_SECRET:?WEBEX_ENABLED=true requires WEBEX_OAUTH_CLIENT_SECRET}"
+  : "${WEBEX_TOKEN_ENCRYPTION_KEY:?WEBEX_ENABLED=true requires WEBEX_TOKEN_ENCRYPTION_KEY}"
+  : "${WEBEX_OAUTH_SETUP_KEY:?WEBEX_ENABLED=true requires WEBEX_OAUTH_SETUP_KEY}"
 fi
 
 printf 'gen-secrets: wrote %s secret file(s) to deploy/secrets/ from %s\n' \

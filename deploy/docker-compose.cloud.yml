@@ -197,7 +197,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: api
-    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret]
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret, Webex__BotToken, Webex__WebhookSecret, Webex__OAuthClientSecret, Webex__TokenEncryptionKey, Webex__OAuthSetupKey]
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -269,7 +269,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: worker
-    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret]
+    secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret, Webex__BotToken, Webex__WebhookSecret, Webex__OAuthClientSecret, Webex__TokenEncryptionKey, Webex__OAuthSetupKey]
     environment:
       DOTNET_ENVIRONMENT: Production
       Hangfire__PrepareSchema: "false"
@@ -391,6 +391,11 @@ secrets:
   ConnectionStrings__AcmpMigrator:  { file: ./secrets/ConnectionStrings__AcmpMigrator }
   Minio__SecretKey:             { file: ./secrets/Minio__SecretKey }
   KeycloakAdmin__ClientSecret:  { file: ./secrets/KeycloakAdmin__ClientSecret }
+  Webex__BotToken:  { file: ./secrets/Webex__BotToken }
+  Webex__WebhookSecret:  { file: ./secrets/Webex__WebhookSecret }
+  Webex__OAuthClientSecret:  { file: ./secrets/Webex__OAuthClientSecret }
+  Webex__TokenEncryptionKey:  { file: ./secrets/Webex__TokenEncryptionKey }
+  Webex__OAuthSetupKey:  { file: ./secrets/Webex__OAuthSetupKey }
 
 volumes:
   mssql-data:

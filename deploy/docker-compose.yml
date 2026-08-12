@@ -181,6 +181,11 @@ services:
       - ConnectionStrings__Acmp
       - Minio__SecretKey
       - KeycloakAdmin__ClientSecret
+      - Webex__BotToken
+      - Webex__WebhookSecret
+      - Webex__OAuthClientSecret
+      - Webex__TokenEncryptionKey
+      - Webex__OAuthSetupKey
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -214,16 +219,11 @@ services:
       # Webex adapter (P13, ADR-0005/0024). Default OFF — in-app is the sole channel (AC-071). Fill these via
       # .env to enable; the worker below MUST carry the identical values (same job graph). Secrets never committed.
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
-      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
-      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
       Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
       Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
       Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
-      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
-      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
-      Webex__OAuthSetupKey: "${WEBEX_OAUTH_SETUP_KEY:-}"
       # ASP.NET DataProtection key-ring lands on a writable tmpfs (the root FS is read-only below).
       # Ephemeral is fine: auth is bearer-token, so no protected payload must survive a restart.
       DataProtection__KeysPath: "/keys"
@@ -336,6 +336,11 @@ services:
       - ConnectionStrings__Acmp
       - Minio__SecretKey
       - KeycloakAdmin__ClientSecret
+      - Webex__BotToken
+      - Webex__WebhookSecret
+      - Webex__OAuthClientSecret
+      - Webex__TokenEncryptionKey
+      - Webex__OAuthSetupKey
     environment:
       DOTNET_ENVIRONMENT: Production
       Minio__Endpoint: "minio:9000"
@@ -353,15 +358,11 @@ services:
       KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       # Webex config MUST match the API's exactly (same job graph). Fill via .env to enable (default off).
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
-      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
-      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
       Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
       Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
       Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
-      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
-      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
       # W22 action-reminder sweep cron (ADR-0024). Safe default = daily 06:00 — absent the shell var this is
       # byte-identical to today, so production is unaffected. The e2e CI job (and the local real-fire run) sets
       # ACTION_REMINDERS_SWEEP_CRON='* * * * *' so the Hangfire sweep fires every minute and AC-054/055 can prove
@@ -431,6 +432,16 @@ secrets:
     file: ./secrets/Minio__SecretKey
   KeycloakAdmin__ClientSecret:
     file: ./secrets/KeycloakAdmin__ClientSecret
+  Webex__BotToken:
+    file: ./secrets/Webex__BotToken
+  Webex__WebhookSecret:
+    file: ./secrets/Webex__WebhookSecret
+  Webex__OAuthClientSecret:
+    file: ./secrets/Webex__OAuthClientSecret
+  Webex__TokenEncryptionKey:
+    file: ./secrets/Webex__TokenEncryptionKey
+  Webex__OAuthSetupKey:
+    file: ./secrets/Webex__OAuthSetupKey
 
 volumes:
   mssql-data:
