@@ -74,10 +74,26 @@ jobs:
           CF="-f deploy/docker-compose.yml --env-file deploy/.env.example"
           cid="$(docker compose $CF ps -aq keycloak-config)"
           [ -n "$cid" ] || { echo "keycloak-config container does not exist"; exit 1; }
+
+          # POLL until it has EXITED. Reading the exit code while the container still runs is the
+          # bug PE-154 recorded in the local boot gate, and 08-bootstrap-box.sh's wait_oneshot says
+          # so in as many words — I made it anyway on the first attempt, and this step's own first
+          # run reported `state=running:0`.
+          #
+          # WHICH ALSO ANSWERS THE QUESTION DEF-051 LEFT OPEN: `docker compose up --wait` returned
+          # while this one-shot was still mid-flight, so --wait offers NO guarantee about a one-shot
+          # at all — and deploy/scripts/up.sh, which ends in exactly that, therefore cannot catch a
+          # failed reconcile on dev or ON-PREM PROD. Measured, not assumed.
+          deadline=$(( $(date +%s) + 180 ))
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            state="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$cid")"
+            case "$state" in exited:*) break ;; esac
+            sleep 3
+          done
+
           echo "--- keycloak-config log ---"
           docker logs "$cid" 2>&1 || true
           echo "---------------------------"
-          state="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$cid")"
           [ "$state" = "exited:0" ] || { echo "keycloak-config did not converge (state=$state)"; exit 1; }
           echo "keycloak-config exited 0 — the realm matches what reconcile.sh asserts."
 
