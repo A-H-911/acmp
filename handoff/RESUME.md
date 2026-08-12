@@ -1,8 +1,9 @@
 # RESUME — ACMP
 
-**The single entry point. Rewritten 2026-08-12 at session end.** Every `handoff/RESUME-*.md` and
-every `handoff/prm-*.md` older than this file is ⛔ superseded history. This file is durably named so
-it never needs renaming again. The paste-able kickoff prompt is **`handoff/prm-next.md`**.
+**The single entry point. Rewritten 2026-08-12 at session end (second rewrite that day).** Every
+`handoff/RESUME-*.md` and every `handoff/prm-*.md` other than this file and `handoff/prm-next.md` is
+⛔ superseded history. This file is durably named so it never needs renaming again. The paste-able
+kickoff prompt is **`handoff/prm-next.md`** — edit that file, never add another `prm-*.md`.
 
 ---
 
@@ -15,11 +16,10 @@ server_info() · package_open("tamheed-package") · gate_run()
 ⚠ **If `package_open` fails on `.lock`**, check the PID *properly* before removing it — the lock holds
 a bare PID and "is it alive?" **lies** under PID reuse. Confirm the process does not exist, or that
 its identity and `StartTime` do not match the lock's mtime, then delete
-`tamheed-package/data/.lock`. It went stale twice in one session; never remove it reflexively.
+`tamheed-package/data/.lock`. Never remove it reflexively.
 
 Then read **§2**. Then read `SC-003` … `SC-008` — six records of where an approved document and the
-code legitimately diverged, and *why the code was right*. Two of them (`SC-007`, `SC-008`) were
-written in the last session and will bite the next person who "fixes" what looks wrong.
+code legitimately diverged, and *why the code was right*.
 
 ---
 
@@ -27,196 +27,202 @@ written in the last session and will bite the next person who "fixes" what looks
 
 | | |
 |---|---|
-| `main` | green · gates **7/7** · **132 evidenced verdicts / 12 narrated** |
-| Verdicts | **80 Met · 12 Partial · 1 Pending** over 93 ACs |
-| ⚠ Newest sha **with ECR images** | **`bcd8e96`** — later commits are `.md` / `tamheed-package/` only and publish nothing |
-| Production | **live**, always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
-| UAT | **stopped when idle** · `i-07ac28ac2fedab921` — start from `deploy/runbooks/cloud-operations.md` §1 |
-| Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-045` `DEF-053` `DEF-054` (7 of 54) |
-| Open questions | `OQ-074` only (everything else is `Deferred` by design) |
+| `main` | green · gates **7/7** · **136 evidenced verdicts / 12 narrated** |
+| Verdicts | **81 Met · 12 Partial · 0 Pending** over 93 ACs — **the Pending is gone** |
+| **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
+| **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
+| In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
+| Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-045` `DEF-055` (**6 of 55**) |
+| Open questions | `OQ-074` and `OQ-076` (everything else is `Deferred` by design or answered) |
 
-**Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`) and
-is off the ladder — it correctly has zero progress entries. The remaining work is **not a new slice**;
-it is the list in §4.
+**Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
+The remaining work is **not a new slice**; it is the list in §4.
+
+⚠ **The deployable sha is NOT HEAD.** `ci.yml` `paths-ignore` skips `*.md`, `docs/`, `.claude/`,
+`tamheed-package/`, so governance and handoff commits publish **no images**. `65e45d4` is the newest
+sha with ECR images and it is what both boxes run. Check ECR before pinning anything.
 
 ---
 
 ## 2. ⚠ Rules this project has paid for. Read them before you write code.
 
-**A. Read the implementation before calling something a defect.** Now **seven** instances; none was
-caught by a gate. It has also made defects *smaller* (`DEF-051`'s cloud half was always guarded) and,
-last session, made one **disappear**: `DW-025` was written on the premise that rescheduling a meeting
-strands a guest's window — **ACMP has no reschedule at all**, which three checks established in two
-minutes and which would have been "implemented" otherwise.
+**A. Read the implementation before calling something a defect.** Now **nine** instances; none was
+caught by a gate. Last session it made a task disappear (`DW-025`'s premise was false — ACMP has no
+reschedule). This session it killed a suspected defect in three minutes: the live invite probe showed
+an invited member's role resolves to `Guest`, which looked like the guest-expiry sweep would disable
+invitees — but `ExpireGuestAccess.cs:59` filters `AccessExpiresAt != null && < now`, and an invitee's
+window is null. **Read the predicate, not the doc comment that describes it.**
 
 **B. An ADR/AC citation in a test name is load-bearing, and no gate reads it** (`SC-004`, `SC-007`).
-Before overriding a test whose name or `InlineData` cites an ADR or AC, read that row. `SC-007` exists
-because an `[InlineData("Guest")]` citing `AC-059` caught a narrowing no gate could see. Supersede
-**narrowly** and record it.
+Before overriding a test whose name or `InlineData` cites an ADR or AC, read that row.
 
 **C. When an ADR names a specific seam, check the harness can reach it before approving** (`SC-005`).
-Run last session before `ADR-0040` was proposed, and it paid twice: the API harness registers no
-`IIdentityProvider` (a test asserts that absence *deliberately*), and the opt-in fix then broke 22
-Webex tests because they take the factory as an xUnit **class fixture**, which needs a parameterless
-constructor.
 
 **D. Check whether it is already built.** Grep the domain enums, `i18n/locales/en.json`, and
 `ACMP product context/*.dc.html` first.
 
-**E. A green suite is not a look.** `DEF-047` shipped a visibly broken panel with 8 tests green.
-Render new screens in a browser, **in both directions**. Last session this caught two things no test
-could: a `Dialog` focus-trap bug that swallowed every keystroke after the first, and a shared
-component whose styles lived in a stylesheet only `/admin` loads — `DEF-047` again in disguise. ⚠ The
+**E. A green suite is not a look.** Render new screens in a browser, **in both directions**. ⚠ The
 throwaway harness must import **only the stylesheets the real route imports**, or it lies to you.
 
 **F. Prove, don't assume.** `OQ-070`'s answer (`manage-users` **alone**) contradicted my own written
-candidate (`+ view-realm`), and no gate would have caught the wider grant. CI now proves it on every
-run (§3).
+candidate, and no gate would have caught the wider grant.
 
-**G. Verify the deployed state, not the file that describes it.** `DEF-050` said exposure was
-"probably nil" — inferred from `.env.example`. Reading SSM showed the truth *and* that the defect was
-narrower than recorded. A control that DETECTS but does not TELL is this project's most repeated bug
-class (`DEF-023`, `DEF-031`, `DEF-051`, now `DEF-054`).
+**G. Verify the DEPLOYED state, not the file that describes it.** This is the rule that paid best
+this session and it paid three times over — see §3.
+
+**H. ⚠ NEW — a measurement that indicts known-good code is measuring itself.** My line-ending check
+was `grep -c $'\r'`; the quoting was lost, it degraded to `grep -c ''`, and it returned the LINE
+COUNT for every file — reporting CRLF for `gen-secrets.sh`, which CI runs green every day. The tell
+was that it convicted something already proven innocent. Use `tr -cd '\r' | wc -c`, which cannot
+degrade that way. **And do not accept a single tool's negative as proof of absence:** the `Grep` tool
+returned "No files found" for `AccessExpires`, which is in the tree — PowerShell found it instantly.
 
 ---
 
-## 3. ✅ What shipped last session — read before touching any of it
+## 3. ✅ What shipped this session
 
-### `FR-159` / `AC-092` — guest presenters. **Met** (`AV-144`).
+### ★ The headline: production was 56 commits behind, and the handoff said otherwise
 
-`#241` the writer + guest surface, `#242` `/session`. `ADR-0040` approved as `DEC-040`.
+RESUME §4 item 1 used to say enabling in-app user management was "one variable". **It never was.**
+Three measurements, in the order rule G asks:
 
-- **The invite is a MEETINGS use case over ONE Membership write port** (`IGuestProvisioner`). It reads
-  `ScheduledEnd` from its own aggregate, so the boundary is crossed exactly once. The mirror shape
-  needs two. ⚠ **`ADR-0021` had already fixed this pattern** (primitive port in `Shared.Contracts`,
-  implemented in the owning module's Infrastructure, unauthorized at the port, two transactions
-  accepted) and it forbids cross-module command sends. **Read `ADR-0021` before designing any new
-  cross-module seam** — it turned an open architecture question into a lookup.
-- **The window is `ScheduledEnd + 24h`** (`GuestAccess.Grace`). The ADR recommended *no* grace; the
-  operator widened it because refusal is per-request and immediate, so no grace 401s a presenter
-  **mid-presentation** when a meeting overruns.
-- **`DEF-052`: there was no read-side role gate anywhere.** 14 content groups were
-  `RequireAuthorization()` with no policy and every named policy is a WRITE capability. Latent only
-  because no Guest had ever existed. Fixed **in the same merge** by `GuestSurfaceMiddleware` —
-  **deny-by-default, not a policy per group**, because an opt-in list silently exempts every route
-  added later. Allowlist = `POST /api/members/me`, `/api/session`, `/api/notifications`, GET-only
-  `/api/meetings`, which is `navModel.ts`'s own ACCESS map.
-- **`SC-006`** `/session` omits the design's alt-language topic title (no bilingual field exists in the
-  domain). **`SC-007`** `AC-059` narrowed to exclude Guest.
+1. SSM pinned `ACMP_IMAGE_TAG=e403e18…` on **both** prod and uat; `rev-list e403e18..bcd8e96` = **56**.
+2. `GET /api/session/me` answered **404** on prod and **401** after the deploy.
+3. **The decisive one:** `git show e403e18:deploy/keycloak/reconcile.sh` has **no `ensure_admin_client`**
+   (it arrived in `122f41d`/#237). Setting the flag on the old image would have booted a perfectly
+   healthy host authenticating as a Keycloak client **that did not exist**. Not a hypothesis — the
+   prod reconcile log for this deploy literally reads `creating client 'acmp-admin-svc'`.
 
-### The four `DEC-041` items — all built
+⚠ **One of my own probes was right for the wrong reason and is corrected in `OQ-075`:** I first used
+`/api/session`, which is the `MapGroup` **prefix**, not a route — it 404s on the new code too. The
+valid form is `/api/session/me`. The conclusion never rested on it, but a wrong evidence string in a
+resolved row is what the next reader repeats.
 
-| | |
-|---|---|
-| `DEF-050` `#243` | Webex credentials → mounted secrets. **Verified first**: prod and UAT carry one Webex line, `WEBEX_ENABLED=false`, zero credentials — nothing was exposed, nothing rotated. Narrower than recorded: cloud never used env delivery. |
-| `DW-025` `#244` | Guest windows follow the meeting: **cancel / item removal / slot reassignment close the window**. Reschedule does not exist. |
-| `OQ-071` `#245` | The minimum-grant proof is a **CI job on every run** — leg 1 sufficient, leg 2 strips the grant and **requires the 403**. |
-| `OQ-069` `#246` | Roster + invite + role assignment moved out of Administration into **`/members`** (Administrator **and** Secretary). `SC-008` records both `INV-014` divergences. |
+### The release itself (`OQ-075`, resolved)
 
-**Two were built against my recommendation** (`OQ-069`, `DW-025`). The reasoning that changed them is
-in `DEC-041` — read it before re-opening either.
+Backup **first and read back from S3** (`Acmp_20260812_173331.bak` + keycloak) → UAT → verify → prod.
+Both: three one-shots `exited 0`, six services healthy, `db-migrate` clean against the live database,
+`smoke.sh` PASSED, and both reconcile logs end **`realm-management grant is exactly: manage-users`** —
+`OQ-070`'s minimum grant now proven on **two deployed realms**, not only in CI.
 
-⚠ **`IGuestWindowWriter` is deliberately separate from `IGuestProvisioner`.** The provisioner needs the
-identity provider and is registered only when configured; folding the window writer in would make
-**cancelling a meeting fail** wherever in-app user management is off — which is every environment
-today.
+### The ADR-0038 write path ran for real, for the first time ever
 
-⚠ **A new advisory can turn `main` red with no code change.** `GHSA-q939-rpr3-3284` (SSH.NET, HIGH)
-landed mid-session and blocked every merge; found because a branch touching only a workflow file
-failed the *backend* gate. Pinned in `Directory.Build.props`, scoped to `Acmp.Integration.Tests`.
+`#250` adds `src/Acmp.Web/uat-invite-probe.mjs`. **No CI run could have done this:** `IIdentityProvider`
+is registered only when the flag is on, `deploy/.env.example` sets it **false**, so the seven-service
+e2e stack with a real Keycloak never even constructs the adapter, and every backend test uses
+`FakeIdentityProvider`. Measured on UAT: invite **200**, roles **204**, and `AC-093`'s audit row read
+back **out of the hash chain** (seq 1181, actor, subject, timestamp, **both** `beforeJson` and
+`afterJson`), chain intact including that row. **`AC-093` Met**; `AC-088`/`AC-091` re-evidenced live.
+
+### `DEF-053` `#248` · `DEF-054` `#249` — both Fixed
+
+`/session` carries `RequireRole {guest, chairman, secretary}`; `up.sh` asserts `keycloak-config`
+converged. Both proven by **forcing** the refusal: reverting `App.tsx` fails exactly the five denied
+roles and no others; neutering `assert-oneshot.sh`'s comparison fails exactly the two cases that
+depend on it. `assert-oneshot.sh` was extracted **because an inline check could not be tested** —
+`up.sh` runs `gen-secrets.sh`, which clobbers your live dev secrets.
+
+### `AC-004` — the last Pending now has evidence, and it is bad news (`OQ-076`)
+
+The live realm has `ssoSessionIdleTimeout=1800`, so the control is real. But `automaticSilentRenew:
+true` and **no app-side inactivity detection exists anywhere** — silent renew resets the SSO idle
+clock, so an open tab is **never idle**. The 30-minute timeout can only fire once the tab is closed,
+when there is no session to redirect. Same shape as `AC-090`. Recorded as **analysis, not
+measurement** — the 30-minute observation has not been run.
 
 ---
 
 ## 4. Everything left, in order
 
-**1. ★ Deploy with `KEYCLOAK_ADMIN_ENABLED=true`.** The single highest-value action, and it is
-**yours, not code**. Invite (`FR-156`), role assignment (`FR-157`) **and the guest-presenter invite
-(`FR-159`)** are all merged, tested and **unreachable**: `IIdentityProvider` is registered only when
-configured, so those endpoints fail at composition in every environment. Enabling is **one variable**
-— the secret is always written and `reconcile.sh` converges the client and its grant on every boot;
-`09-put-env.sh` refuses `ENABLED=true` with a placeholder secret. This converts `AC-088`/`AC-091`'s
-stated residual into an observation and unlocks `AC-090`'s behavioural leg.
+**1. `OQ-076` — an operator decision, and the highest-value item.** Accept max-lifespan and amend
+`AC-004`'s wording, or build inactivity detection that **stops** `automaticSilentRenew` (small, and it
+makes the AC literally true). **Not** lowering `ssoSessionMaxLifespan` — that logs out *active* users
+on a fixed clock. Also fix `AC-090`'s text, which cites a "60-minute idle timeout" against a realm
+that says 30.
 
-**2. `DEF-053` — the `/session` route guard.** Small and known: `DEC-037` says "enforced at the API
-**and not only by the route guard**". The API half is done and tested (403 for five roles); the route
-half was not built, so a non-guest sees the "you are not presenting" empty state instead of being
-turned away. Add `RequireRole roles={['guest','chairman','secretary']}` in `App.tsx` exactly as
-`/members` does, plus a route test; consider distinguishing 403 from 204 in `SessionPage`.
+**2. The 11 remaining Partials — one campaign, approach already agreed.** `AC-003` `AC-005` `AC-006`
+`AC-007` `AC-009` `AC-010` `AC-011` `AC-033` `AC-034` `AC-041` `AC-048`. Nearly all are Partial for
+the *same* reason: proven by unit/handler tests with **no live leg**. `Acmp.Api.Tests` authenticates
+with `TestAuthHandler`, a synthetic scheme, and `RealJwtAuthTests` only covers the 401 fail-closed
+paths — so no test anywhere drives a **real Keycloak token** through the role matrix.
+**The operator chose: CI E2E now, re-evidence on UAT later.** Suggested shape: one spec in the
+existing `e2e.yml` stack that, per role, forces a 403 on the forbidden endpoints and asserts the nav
+is absent — that covers `AC-005/006/007` with no fixtures. `AC-009/010/011/033/034` need ownership,
+stream and meeting-scope fixtures and are a second tranche. `AC-041` is a manual Playwright render
+that needs promoting into CI. **`AC-048` (`beforeunload`) is probably unprovable** — Playwright
+auto-dismisses the native dialog — and Partial-with-a-recorded-reason is a legitimate outcome.
 
-**3. `DEF-054` — `up.sh` cannot catch a failed realm reconcile.** Measured: `compose up --wait`
-returns while a one-shot is still mid-flight. CI and the cloud deploy are covered; **dev and on-prem
-prod are not**. Same shape as `DEF-023`/`DEF-051` — third occurrence of "detects but does not tell".
+**3. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as their
+own slot. ⚠ **New evidence:** `navModel.ts`'s ACCESS map grants `session` to **guest only**, so
+Chairman/Secretary are permitted on a page they have **no nav link to**. Answering has a nav
+consequence either way; `DEF-053` deliberately left the map alone rather than pre-empt it.
 
-**4. `AC-093` (Partial) — read the audit content back.** The rows exist and are asserted *as rows*;
-what is missing is a test that reads before/after **out of the hash chain** for a governed identity
-change.
+**4. `DEF-038`** — the roster lists only members who have logged in. ⚠ **Partly overtaken:**
+`GetMembers` now returns Active **or** Invited, so anyone invited *through the app* appears. The
+residue is the 25 accounts seeded directly into Keycloak before that existed.
 
-**5. `AC-004` (the only Pending) — session idle timeout.** No evidence recorded at all. Decide whether
-Keycloak's timeout is the control and prove it, or record why it cannot be driven.
+**5. `Streams.NameAr` on prod** — still not done. Real table is `membership.streams`.`name_ar`; the
+C# names do not exist in SQL and every module owns a schema.
 
-**6. The other 11 Partials** — `AC-003` `AC-005` `AC-006` `AC-007` `AC-009` `AC-010` `AC-011` `AC-033`
-`AC-034` `AC-041` `AC-048`. Nearly all are Partial for the *same* reason: proven by unit/handler tests
-with **no live or E2E leg**. `AC-041` (Arabic visual regression) rests on a manual Playwright render.
-Treat this as one campaign, not eleven tasks.
+**6. `DEF-055`** (low) — `09-put-env.sh` refuses `ENABLED=true` without a `KEYCLOAK_ADMIN_CLIENT_SECRET`
+and gives a reason that is **not** the real one (gen-secrets always writes the file, so ValidateOnStart
+would pass). The behaviour is defensible; the message and comment are wrong. Do **not** relax the
+`CHANGE_ME` branch.
 
-**7. `DEF-038` — the roster lists only members who have already logged in** (1 of 26 at observation).
-This matters more now that `/members` is the invite surface: an invited person is `Invited`, not
-`Active`, until first login.
-
-**8. `Streams.NameAr` on prod** — in scope for Day 3, not done. Real table is
-`membership.streams`.`name_ar`; the C# names do not exist in SQL and every module owns a schema.
-
-**9. `AC-085` leg 1** — an observation wait, not work. When spend crosses **$2.30**, run
-`deploy/scripts/check-budget-notification.sh` and `audit_record` **the body** (a count cannot
-discriminate on a shared topic — `AV-118`).
-
-**10. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as **their
-own** slot. A chosen presenter's view would be a second authorization path over somebody else's
-content.
-
-**11. Remaining defects** — `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3),
+**7. Remaining defects** — `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3),
 `DEF-041` (voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data
-residue in `v_backlog`), `DEF-045` (classified: harness causes, no product defect).
+residue in `v_backlog`), `DEF-045` (classified: harness causes, no product defect — but **cause 3 is
+still unfixed**, so a UAT e2e run is red for a known reason).
 
-**12. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
-**until** a UAT space exists", so the exit condition can never be met. Worth reconciling.
+**8. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
+**until** a UAT space exists", so the exit condition can never be met.
 
-**Not on this list, deliberately:** the ~45 `Deferred` open questions and the `DW-0xx` feature backlog
-are parked by design. If a reschedule capability is ever built, it **must** call `IGuestWindowWriter`
-with the new `ScheduledEnd + GuestAccess.Grace`.
+**9. `AC-091`'s last clause, if you want it** — first login consuming the invite. Proving it live
+needs the temporary password, which the probe refuses to print. A future probe could carry the value
+**in-process** from the invite response into a login without ever rendering it.
+
+**Not on this list, deliberately:** the ~45 `Deferred` open questions and the `DW-0xx` backlog are
+parked by design. If a reschedule capability is ever built, it **must** call `IGuestWindowWriter`.
 
 ---
 
 ## 5. Gotchas that cost real time
 
-- **The deployable sha is NOT HEAD** — `ci.yml` `paths-ignore` skips `*.md`, `docs/`, `.claude/`,
-  `tamheed-package/`, so governance and handoff commits publish **no images**.
 - **Deploy as `acmp-admin`, never root.** Root bypasses the budget IAM-deny brake (`AC-085` leg 5);
   `[default]` in `~/.aws/config` **is** root and its session expires.
+- **The deploy sequence that worked**, end to end: back up prod and **confirm the object in S3** →
+  start UAT and poll **SSM `PingStatus`** (`instance-running` is not readiness) → fetch
+  `/acmp/<env>/env`, re-pin both tags → `09-put-env.sh` → `08-bootstrap-box.sh <env> <full-sha>` →
+  `smoke.sh` → read the **`keycloak-config` log** back over SSM.
+- ⚠ **PowerShell joins arrays with SPACES.** `aws ssm get-parameter ... --output text` returns an
+  **array of lines**; `[IO.File]::WriteAllText(path, $array)` writes one space-joined line and would
+  have destroyed the env file. Use `($v -join "`n")` and verify the line count before publishing.
+- **`/acmp/*` env parameters are LF**, not CRLF — an older memory said CRLF and went stale the same
+  evening. `aws ssm get-parameter-history` settles it in one call.
+- **The keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD`** — the
+  entrypoint exports it for its own process only. Read `/run/secrets/kc_bootstrap_admin_password`.
 - **Use PowerShell for any `aws` call with a `/`-leading argument** — Git Bash rewrites `/acmp/prod/env`
-  into `C:/Program Files/Git/acmp/...` and SSM answers `ParameterNotFound`, which looks exactly like a
-  missing IAM permission while `describe-parameters` happily lists the same names. (`MSYS_NO_PATHCONV=1`
-  also works.)
-- **Write the Tamheed package only from `main`** — `tamheed-package/data` is git-tracked, so writing
-  from a feature branch fragments the record. `defect.fixed_by` is a **FOREIGN KEY**: put PR refs in
-  `custom_attributes` or the whole batch rolls back. `G-COMPLETE` also rejects `{{ }}` placeholders.
-- **A squash-merge folds branch-local governance commits into the merge commit** — local `main` then
-  "diverges" and a plain `git pull` conflicts on `data/*.jsonl`. Verify the rows survived
-  (`git show origin/main:tamheed-package/data/...`), then `git checkout -B main origin/main`.
-- **A compose `secrets:` entry whose file is MISSING fails the WHOLE stack** — so any secret you mount
-  must be written **unconditionally** by `gen-secrets`.
-- **New `.cs` files need a UTF-8 BOM**, and `.cs` must be **LF** — editing via a Python text-mode
-  rewrite silently converts to CRLF and `dotnet format --verify-no-changes` fails on `ENDOFLINE`.
+  into `C:/Program Files/Git/acmp/...`. (`MSYS_NO_PATHCONV=1` also works, and the `deploy/aws/*` scripts
+  already set it.)
+- **Windows `python3` cannot see Git Bash's `/tmp`** — pass Windows-style absolute paths when building
+  SSM `--parameters file://` payloads.
+- **Write the Tamheed package only from `main`** — `tamheed-package/data` is git-tracked.
+  `defect.fixed_by` is a **FOREIGN KEY**: put PR refs in `custom_attributes`.
+  `open_question.lifecycle_status` is a **CHECK** over
+  `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` — "Resolved" rolls the
+  batch back.
+- **`gh pr create --body` with backticks/quotes breaks under PowerShell** — always `--body-file`.
+  Same for `git commit -m` with a here-string: use `-F`.
+- **A compose `secrets:` entry whose file is MISSING fails the WHOLE stack.**
+- **New `.cs` files need a UTF-8 BOM**, and `.cs` must be **LF**.
 - **Never run `gen-secrets.sh` against the repo to test it** — `SECRETS_DIR` is hardcoded and it will
-  clobber the operator's live dev secrets. Copy the tree.
-- **`git status --porcelain` reports an untracked *directory*, not the files inside** — use `-uall`.
-- **`realm-export.json` reaches FRESH STACKS ONLY** — Keycloak never re-imports an existing realm.
-  `reconcile.sh` is the only seam that reaches prod/UAT.
-- **`.adm-detail-card` has no padding and clips its children**; anything opening a popover needs
-  `.adm-card-overflow`.
-- **`userEvent.setup()` installs its own clipboard stub** — define a clipboard spy *after* it.
+  clobber the operator's live dev secrets.
+- **`git status --porcelain` reports an untracked *directory*** — use `-uall`.
+- **`realm-export.json` reaches FRESH STACKS ONLY.** `reconcile.sh` is the only seam that reaches
+  prod/UAT.
 - **The Playwright E2E suite is NOT UAT-only** — `e2e.yml` runs the full 7-service stack with a real
-  Keycloak on every PR. UAT adds *deployed-topology* validation, not application logic.
+  Keycloak on every PR. ⚠ **But with `KEYCLOAK_ADMIN_ENABLED=false`**, so it never exercises the
+  ADR-0038 write path at all.
 - **Local `dotnet test` shows ~31 integration failures with Docker off** — Testcontainers, not a
-  regression. Verify the message rather than assuming either way.
+  regression.
 - **Prod and UAT differ on purpose.** Do not harmonise them.
