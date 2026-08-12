@@ -99,7 +99,8 @@ if [ "$DB_USER" != "sa" ]; then
 fi
 
 # --- Keycloak Admin service account (ADR-0038) ---
-# ALWAYS written, unlike the Webex block below, and the difference is not an inconsistency:
+# ALWAYS written — as the Webex block below now is too, for exactly these reasons (DEF-050 made them
+# match rather than leaving one of them an exception):
 #   - this secret IS mounted as a real compose secret (ADR-0032), and a compose `secrets:` entry
 #     whose file is missing fails the WHOLE stack — so a conditionally-written file would mean a
 #     conditionally-bootable deployment;
