@@ -54,6 +54,49 @@ jobs:
         working-directory: .
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example up -d --build --wait
 
+      # DEF-051. keycloak-config is a one-shot that nothing depends_on, so before this step a FAILED
+      # realm reconciliation left the stack fully healthy and CI green. That is not hypothetical: it
+      # fired on its first outing — after the ADR-0038 client was added to reconcile.sh, the e2e log
+      # showed the container Created and NOTHING ELSE, because compose only dumps a one-shot's stdout
+      # on the failure path. The run executed the reconciler and proved nothing about whether it
+      # converged, and a PR body claiming otherwise had to be corrected after merge.
+      #
+      # The exit code IS the convergence assertion: reconcile.sh reads its own post-conditions back
+      # (the acmp-web origin, and the service account's grant compared as an exact set) and returns
+      # non-zero if they did not take. So this asserts the outcome, not merely that a script ran.
+      #
+      # The log is printed UNCONDITIONALLY and on purpose — a green check that leaves no trace is
+      # what produced this defect. The `grant is exactly` line is the evidence a human can read.
+      - name: Realm reconciliation converged (DEF-051 — a silent reconcile is how DEF-023 shipped)
+        working-directory: .
+        run: |
+          set -euo pipefail
+          CF="-f deploy/docker-compose.yml --env-file deploy/.env.example"
+          cid="$(docker compose $CF ps -aq keycloak-config)"
+          [ -n "$cid" ] || { echo "keycloak-config container does not exist"; exit 1; }
+
+          # POLL until it has EXITED. Reading the exit code while the container still runs is the
+          # bug PE-154 recorded in the local boot gate, and 08-bootstrap-box.sh's wait_oneshot says
+          # so in as many words — I made it anyway on the first attempt, and this step's own first
+          # run reported `state=running:0`.
+          #
+          # WHICH ALSO ANSWERS THE QUESTION DEF-051 LEFT OPEN: `docker compose up --wait` returned
+          # while this one-shot was still mid-flight, so --wait offers NO guarantee about a one-shot
+          # at all — and deploy/scripts/up.sh, which ends in exactly that, therefore cannot catch a
+          # failed reconcile on dev or ON-PREM PROD. Measured, not assumed.
+          deadline=$(( $(date +%s) + 180 ))
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            state="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$cid")"
+            case "$state" in exited:*) break ;; esac
+            sleep 3
+          done
+
+          echo "--- keycloak-config log ---"
+          docker logs "$cid" 2>&1 || true
+          echo "---------------------------"
+          [ "$state" = "exited:0" ] || { echo "keycloak-config did not converge (state=$state)"; exit 1; }
+          echo "keycloak-config exited 0 — the realm matches what reconcile.sh asserts."
+
       - name: Install web deps
         run: npm ci
 
