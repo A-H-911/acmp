@@ -27,7 +27,7 @@ code legitimately diverged, and *why the code was right*.
 
 | | |
 |---|---|
-| `main` | green · gates **7/7** · **136 evidenced verdicts / 12 narrated** |
+| `main` | green (after two re-runs — see §5) · gates **7/7** · **136 evidenced / 12 narrated** |
 | Verdicts | **81 Met · 12 Partial · 0 Pending** over 93 ACs — **the Pending is gone** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
@@ -54,10 +54,18 @@ aws ecr describe-images --region us-east-1 --repository-name acmp/web \
   --query 'sort_by(imageDetails,&imagePushedAt)[-2:].{tag:imageTags[0],at:imagePushedAt}' --output text
 ```
 
-⚠ **`main` CI can be slow or flaky on the push run even when the PR was green.** `#250`'s merge run
-hit the `backend` job's 25-minute timeout while the identical tree had passed in 5m31s on the PR, and
-the `sbom` job failed the Security workflow on a third-party download (`HTTP status=000`). Both were
-re-run. **Check `gh run list --branch main` before concluding `main` is red for a code reason.**
+⚠ **`main`'s push run can fail for reasons that are not the code, and `#250`'s did — twice.** Attempt
+1: the `backend` job hit its 25-minute timeout. Attempt 2: **25 of 303 `Acmp.Api.Tests` failed with
+`HttpClient.Timeout of 100 seconds elapsing`** and the suite took 17m9s instead of ~5m — against an
+**in-process** `TestHost`, where a 100-second HTTP call means the runner was starved, not that
+anything was broken. Attempt 3 passed clean. Separately the `sbom` job failed the Security workflow
+on a third-party download (`HTTP status=000`); its re-run passed in 16s.
+
+**How it was established as environmental rather than assumed:** none of `17b6edf`, `65e45d4` or
+`69e865a` touches a **single `.cs` file** (they are `.tsx`, shell + workflow, and one `.mjs`), the
+`65e45d4` push run passed in 9m34s, and PR #250 had passed the identical tree in 5m31s. **Before
+concluding `main` is red for a code reason, check `gh run list --branch main` and ask what the
+failing commit actually changed** — a timeout is a symptom of the host, not a diagnosis of the code.
 
 ---
 
