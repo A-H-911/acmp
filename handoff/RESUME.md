@@ -28,11 +28,11 @@ code legitimately diverged, and *why the code was right*.
 | | |
 |---|---|
 | `main` | green (after two re-runs — see below) · gates **7/7** |
-| Verdicts | **84 Met · 9 Partial · 0 Pending** over 93 ACs — **140 evidenced / 12 narrated** |
+| Verdicts | **86 Met · 7 Partial · 0 Pending** over 93 ACs — **144 evidenced / 12 narrated** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
 | In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
-| Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` `DEF-056` (**6 of 56**) — `DEF-045` is **Fixed** |
+| Open defects | **`DEF-057`** (high) `DEF-056` `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` (**7 of 57**) |
 | Open questions | **`OQ-074` only** (everything else is `Deferred` by design or answered) |
 
 **Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
@@ -211,13 +211,19 @@ the matrix. **Agreed approach: CI E2E now, re-evidence on UAT later.**
   mutation leaves **no trace it was attempted**. `AC-006`'s audit clause had never been checked by
   anything. Pinned by a `test.fail()` case that **goes red the day `DEF-056` is fixed** — at which
   point delete that line and flip `AC-006`.
-- ☐ **Tranche B — `AC-009` `AC-010` `AC-011` `AC-033` `AC-034`.** Ownership, stream scope, presenter
-  scope, rejection immutability and the post-Accept lock. These **do** need fixtures.
-  **★ OPERATOR DECIDED (`PE-286`): ONE shared core-loop fixture, reused five ways** — an owned topic,
-  a stream assignment, an accepted-and-rejected pair, a meeting with a presenter slot — not five
-  independent setups. ⚠ **The accepted risk is coupling:** one broken fixture fails all five, and
-  shared state is where this suite historically breaks (`DEF-045`). **Scope every read to the run's
-  own stamp**, the way `ac043-reorder` does.
+- ◐ **Tranche B — `AC-033` `AC-034` Met (`#253`, `85068c9`); `AC-009` `AC-010` `AC-011` still open,
+  and the reasons are findings, not leftovers.** One shared fixture, per-run stamped.
+  - **`AC-009`** — the refusal half is proven; **the positive half is unreachable over HTTP.**
+    Post-Accept the policy switches from `TopicEdit` to `TopicTriage` (Secretary/Chairman only —
+    which is `AC-034`'s own rule), so the grant-on-accept Owner capability is never consulted for an
+    edit. The one pre-Accept status reachable after Accept is `Reopened`, and **`Topic.Reopen` has no
+    endpoint**. ⚠ Editing pre-Accept as the *submitter* would turn it green in one line and prove
+    submitter-authorization, not ownership. **Don't.** Honest next step: find whether any other `O`
+    row (`ActionCreate`, `RiskManage`, `AdrCreate`…) actually consults the grant — ⚠ `apiCreateAction`
+    records that `SourceId` has **no cross-module FK** (ADR-0001), so whether Actions can resolve a
+    Topic resource at all is genuinely open.
+  - **`AC-010`** — blocked by **`DEF-057` (high)**, below.
+  - **`AC-011`** — needs a Guest presenter; deferred with `AC-010`.
 - ☐ **Tranche C — `AC-003` `AC-041` `AC-048`.** A no-role-claim login (+ its `AuthEvent`); promoting
   the manual Arabic VR render into CI.
   **★ OPERATOR DECIDED (`PE-286`): `AC-048` ends as Partial with the reason recorded.** Assert what
@@ -248,7 +254,18 @@ and gives a reason that is **not** the real one (gen-secrets always writes the f
 would pass). The behaviour is defensible; the message and comment are wrong. Do **not** relax the
 `CHANGE_ME` branch.
 
-**8. Remaining defects** — **`DEF-056`** (the audit gap above; **the one with real content**),
+**8. Remaining defects** — ★ **`DEF-057` (HIGH, and the most substantive thing this campaign found):
+stream-scope ABAC is never evaluated and it FAILS OPEN.** `AuthorizationRegistration:64` registers
+`StreamScopeHandler` in DI; `:69` builds **every** policy with `CapabilityRequirement` and nothing
+else — so the requirement is in no policy and the handler is never invoked. A Member may write
+against a topic in any stream today. ⚠ **The shape is what hid it:** a reviewer asking "is stream
+scope implemented?" finds a handler, a DI registration, a marker interface on `Topic`, and four
+passing `AbacHandlerTests`. Every answer is yes; only the wiring is missing, and nothing asserts
+wiring. ⚠⚠ **DO NOT JUST WIRE IT.** No `Stream` can be created at all (`Stream.Create` has no caller,
+nothing seeds the table), and `Topic.cs:104` requires ≥1 affected stream to submit — so wiring alone
+takes the system from fails-open straight to **refusing every stream-bounded write**. Order: seed
+streams → reconcile topic-side values with `Stream.Code` → wire → then evidence `AC-010`.
+Then **`DEF-056`** (the audit gap above),
 `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3), `DEF-041`
 (voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data residue in
 `v_backlog`). ⚠ **`DEF-045` is now Fixed** — all four causes were addressed in code, and the row
