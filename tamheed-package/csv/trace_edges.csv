@@ -330,6 +330,10 @@ FR-153,ADR-0009,derives_from
 FR-153,ADR-0027,derives_from
 FR-154,ADR-0009,derives_from
 FR-155,ADR-0009,derives_from
+FR-156,ADR-0038,derives_from
+FR-157,ADR-0038,derives_from
+FR-158,ADR-0038,derives_from
+FR-159,ADR-0040,derives_from
 INV-001,ADR-0001,derives_from
 INV-001,ADR-0002,derives_from
 INV-002,ADR-0001,derives_from
@@ -487,8 +491,13 @@ TEST-002,FR-012,tests
 TEST-002,FR-013,tests
 TEST-002,FR-014,tests
 TEST-002,FR-020,tests
+TEST-002,FR-156,tests
+TEST-002,FR-157,tests
 TEST-003,FR-021,tests
 TEST-003,FR-024,tests
+TEST-003,FR-156,tests
+TEST-003,FR-157,tests
+TEST-003,FR-158,tests
 TEST-004,FR-018,tests
 TEST-004,FR-024,tests
 TEST-005,FR-019,tests
@@ -809,6 +818,7 @@ TEST-047,INV-003,tests
 TEST-048,INV-007,tests
 TEST-049,INV-013,tests
 TEST-050,INV-010,tests
+TEST-051,FR-159,tests
 WBS-1,FR-001,implements
 WBS-1,FR-003,implements
 WBS-1,FR-004,implements
