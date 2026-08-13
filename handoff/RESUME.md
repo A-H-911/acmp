@@ -28,7 +28,7 @@ and records **two approved ACs contradicting each other**.
 
 | | |
 |---|---|
-| `main` | **green** · `947fc1b` · gates **7/7** · tree clean, nothing unpushed |
+| `main` | **green** · gates **7/7** · tree clean, nothing unpushed ⚠ (no sha here on purpose — the commit that writes this file changes it) |
 | Verdicts | **87 Met · 6 Partial · 0 Pending** over 93 ACs — **148 evidenced / 12 narrated** |
 | **Production** | live, always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev · runs **`65e45d4`** |
 | ⚠ **Prod is UNUSED** | **0 topics · 0 streams · 0 member-stream links · 1 of 26 members has ever logged in.** The stack serves; the *product* has not been used. |
