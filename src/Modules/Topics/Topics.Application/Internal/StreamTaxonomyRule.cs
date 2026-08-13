@@ -1,4 +1,4 @@
-using Acmp.Shared.Contracts.Membership;
+﻿using Acmp.Shared.Contracts.Membership;
 using FluentValidation;
 
 namespace Acmp.Modules.Topics.Application.Internal;

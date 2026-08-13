@@ -31,7 +31,7 @@ public sealed class SearchApiTests
         type = "ArchitectureDecision",
         urgency = "Urgent",
         source = "CommitteeMember",
-        streams = new[] { "identity" },
+        streams = new[] { "core" },
         systems = Array.Empty<string>(),
         tags = Array.Empty<string>(),
     };

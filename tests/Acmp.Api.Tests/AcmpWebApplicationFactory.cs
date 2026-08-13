@@ -16,6 +16,7 @@ using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Domain.ValueObjects;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using MembershipStream = Acmp.Modules.Membership.Domain.Stream;
 
 namespace Acmp.Api.Tests;
 
@@ -50,6 +53,37 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
 
     /// <summary>The fake, once the host is built — so a test can assert what Keycloak was asked to do.</summary>
     public FakeIdentityProvider Identity => Services.GetRequiredService<FakeIdentityProvider>();
+
+    // ADR-0042 step 1's taxonomy. ⚠ SEEDED HERE BECAUSE THE HARNESS USES THE INMEMORY PROVIDER, WHICH
+    // NEVER RUNS MIGRATIONS — and the taxonomy is seeded BY a migration, so it exists in every real
+    // environment and in none of these tests. Without it the submit/update validators would refuse
+    // every topic, which is a property of the FIXTURE rather than of the code under test.
+    //
+    // ⚠ The WILDCARD is deliberately absent: StreamCatalog excludes it from the assignable set, so
+    // seeding it here could only mask a bug in that filter. Nothing in this harness needs it.
+    private static readonly (string Code, string En, string Ar)[] SeededStreams =
+    {
+        ("core", "Core", "الأساسي"),
+        ("communications", "Communications", "الاتصالات"),
+        ("smart-cities", "Smart Cities", "المدن الذكية"),
+        ("government", "Government", "الحكومي"),
+        ("shared-services", "Shared Services", "الخدمات المشتركة"),
+    };
+
+    // Seeded once per host, before any test runs: the taxonomy is reference data that is simply
+    // always there, not something an individual test opts into and can forget.
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        foreach (var (code, en, ar) in SeededStreams)
+            db.Streams.Add(MembershipStream.Create(code, LocalizedString.Create(en, ar)));
+        db.SaveChanges();
+
+        return host;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

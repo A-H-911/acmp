@@ -1,4 +1,4 @@
-namespace Acmp.Shared.Contracts.Membership;
+﻿namespace Acmp.Shared.Contracts.Membership;
 
 // Cross-module seam (ADR-0001, shaped per ADR-0021): the committee's stream taxonomy is Membership's
 // table, but TOPICS is where a submitted stream has to be validated — so the codes travel through a

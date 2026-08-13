@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using Acmp.Modules.Membership.Infrastructure.Directory;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +64,25 @@ public sealed class StreamTaxonomySeedTests
         // The other five are delivery streams. Stated as a count rather than "not the wildcard" so a
         // seed that quietly marked two rows fails here as well as at the database index.
         seeded.Where(s => !s.IsWildcard).Should().HaveCount(5);
+    }
+
+    // ADR-0042 clause (4)'s enforcement half, against real seeded data: the catalog Topics validates
+    // against must offer every delivery stream and NEVER the wildcard. Proven here rather than with a
+    // stubbed DbSet because the filter is a LINQ-to-SQL translation — an in-memory fake would exercise
+    // a different query provider and could pass while the real one returned the wildcard.
+    //
+    // ⚠ Contains/NotContain rather than an exact sequence: sibling tests in this class commit extra
+    // streams, and asserting the whole set would couple this test to their execution order.
+    [Fact]
+    public async Task StreamCatalog_offers_the_delivery_streams_and_never_the_wildcard()
+    {
+        await using var db = _fx.NewMembershipSql();
+
+        var assignable = await new StreamCatalog(db).GetAssignableStreamCodesAsync();
+
+        assignable.Should().Contain(
+            new[] { "core", "communications", "smart-cities", "government", "shared-services" });
+        assignable.Should().NotContain("all-streams");
     }
 
     // ⚠ The constraint is proven against a RAW INSERT, and that is the realistic threat rather than a

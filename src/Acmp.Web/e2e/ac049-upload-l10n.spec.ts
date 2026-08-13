@@ -18,7 +18,7 @@ async function fillSubmitForm(page: Page, title: string): Promise<void> {
   await page.getByRole('textbox', { name: 'Description', exact: true }).fill('AC-049 e2e description.');
   await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('AC-049 e2e justification.');
   const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-  await streams.fill('Platform');
+  await streams.fill('core');
   await streams.press('Enter');
 }
 

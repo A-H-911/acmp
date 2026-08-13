@@ -41,7 +41,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<void> {
   await post(request, bearer, '/api/topics', {
     title: 'Adopt Keycloak as the identity provider', description: 'Consolidate per-stream IdPs onto Keycloak.',
     justification: 'Cuts duplicated maintenance.', type: 'ArchitectureDecision', urgency: 'Normal',
-    source: 'CommitteeMember', streams: ['IAM'], systems: [], tags: [],
+    source: 'CommitteeMember', streams: ['core'], systems: [], tags: [],
   });
   const doc = await post(request, bearer, '/api/knowledge/documents', {
     title: L('Keycloak identity guide', 'دليل هوية كيكلوك'),
