@@ -18,6 +18,7 @@ import { rolesFromClaims, type CommitteeRole } from './roles';
 import { claimStringsFrom, displayNameFrom, initialsFrom, type OidcProfileLike } from './oidcProfile';
 import { api, setTokenGetter } from '../api/apiClient';
 import { setAuthStatus } from './authStatus';
+import { useIdleSignOut } from './useIdleSignOut';
 
 function OidcBridge({ children }: { children: ReactNode }) {
   const oidc = useOidc();
@@ -51,6 +52,21 @@ function OidcBridge({ children }: { children: ReactNode }) {
       oidc.events.removeSilentRenewError(onExpired);
     };
   }, [oidc.events]);
+  /*
+   * AC-004 / OQ-076 — sign out after 30 minutes of inactivity.
+   *
+   * ⚠ stopSilentRenew() COMES FIRST AND THAT ORDER IS THE WHOLE FIX. Keycloak's own
+   * ssoSessionIdleTimeout (1800s on the live realm) can never fire for an open tab, because
+   * automaticSilentRenew keeps touching Keycloak and each touch resets the SSO idle clock — so the
+   * only ceiling was ssoSessionMaxLifespan at ten hours, which fires whether the person was working
+   * or absent. Calling signoutRedirect() without stopping the renew leaves the next tick free to
+   * resurrect the session: the renew timer is keyed to token expiry and knows nothing about intent.
+   */
+  useIdleSignOut(oidc.isAuthenticated, () => {
+    oidc.stopSilentRenew();
+    setAuthStatus('idle_timeout');
+    void oidc.signoutRedirect();
+  });
   const value = useMemo<AcmpAuth>(() => {
     const profile = oidc.user?.profile as OidcProfileLike | undefined;
     const name = displayNameFrom(profile);

@@ -39,7 +39,16 @@ interface FakeOidc {
   };
   signinRedirect: () => void;
   signoutRedirect: () => void;
+  stopSilentRenew: () => void;
 }
+
+/*
+ * Call ORDER, not just call counts (AC-004 / OQ-076). The idle sign-out must stop the silent renew
+ * BEFORE it redirects: oidc-client-ts renews on a timer keyed to token expiry and knows nothing
+ * about our intent, so a signoutRedirect() with the renew still armed leaves the next tick free to
+ * resurrect the session. Two `toHaveBeenCalled` assertions cannot see that; a sequence can.
+ */
+const callOrder: string[] = [];
 
 let oidc: FakeOidc;
 const expiredHandlers: Array<() => void> = [];
@@ -82,8 +91,10 @@ beforeEach(() => {
       removeSilentRenewError: () => {},
     },
     signinRedirect: vi.fn(),
-    signoutRedirect: vi.fn(),
+    signoutRedirect: vi.fn(() => void callOrder.push('signoutRedirect')),
+    stopSilentRenew: vi.fn(() => void callOrder.push('stopSilentRenew')),
   };
+  callOrder.length = 0;
 });
 
 afterEach(() => {
@@ -285,5 +296,60 @@ describe('AuthProvider — OidcBridge (configured Keycloak)', () => {
       </AuthProvider>,
     );
     expect(screen.getByTestId('err')).toHaveTextContent('invalid_grant');
+  });
+
+  /*
+   * AC-004 / OQ-076 — the idle sign-out, wired end to end through OidcBridge.
+   *
+   * The hook's own timing is covered in useIdleSignOut.test.tsx. What can ONLY be checked here is
+   * the wiring: that the renew is suppressed, that it is suppressed BEFORE the redirect, and that
+   * the login page is told which of the three reasons brought the user back.
+   */
+  it('signs out after 30 idle minutes, stopping the silent renew BEFORE redirecting (AC-004)', () => {
+    vi.useFakeTimers();
+    try {
+      mockOidcEnabled = true;
+      stubFetch(() => ({ jsonBody: {} }));
+      oidc.isAuthenticated = true;
+      oidc.user = { access_token: 't', profile: { sub: 'u1', realm_access: { roles: ['Member'] } } };
+      render(
+        <AuthProvider>
+          <Probe />
+        </AuthProvider>,
+      );
+
+      act(() => void vi.advanceTimersByTime(30 * 60 * 1000 - 1));
+      expect(oidc.signoutRedirect).not.toHaveBeenCalled();
+
+      act(() => void vi.advanceTimersByTime(1));
+
+      // The ORDER is the fix. A renew still armed at redirect time resurrects the session.
+      expect(callOrder).toEqual(['stopSilentRenew', 'signoutRedirect']);
+      // And the reason survives the round-trip to Keycloak, so the login page can explain a logout
+      // the user did not ask for rather than showing a bare "signed out".
+      expect(sessionStorage.getItem('acmp:auth-status')).toBe('idle_timeout');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not idle-sign-out a visitor who is not authenticated', () => {
+    vi.useFakeTimers();
+    try {
+      mockOidcEnabled = true;
+      stubFetch(() => ({ jsonBody: {} }));
+      oidc.isAuthenticated = false;
+      render(
+        <AuthProvider>
+          <Probe />
+        </AuthProvider>,
+      );
+
+      act(() => void vi.advanceTimersByTime(60 * 60 * 1000));
+      expect(oidc.signoutRedirect).not.toHaveBeenCalled();
+      expect(callOrder).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
