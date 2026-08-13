@@ -13,9 +13,11 @@ PID and "is it alive?" LIES under PID reuse. Confirm the process does not exist,
 and StartTime do not match the lock's mtime, then delete tamheed-package/data/.lock. Never remove it
 reflexively.
 
-STATE: phases P1–P19 are COMPLETE. main is green at 947fc1b, gates 7/7, 87 Met / 6 Partial / 0
-Pending over 93 ACs, 148 evidenced verdicts. PRODUCTION IS LIVE on 65e45d4 with in-app user
-management ENABLED — but it is UNUSED: zero topics, zero streams, one of 26 members has ever logged
+STATE: phases P1–P19 are COMPLETE and main is green. ⚠ DO NOT TRUST A TALLY WRITTEN HERE — a
+hard-coded acceptance count goes stale on the first new verdict, and this block held one that was
+already wrong. Read the live numbers instead: gate_run() gives the gate verdict and the
+audit_evidence split, readiness_check("package") gives the blocking lists, and review.html#execution
+renders both. PRODUCTION IS LIVE with in-app user management ENABLED — but it is UNUSED: zero topics, zero streams, one of 26 members has ever logged
 in. UAT is stopped. There is NO new slice to start; §4 of the resume is the whole remaining list, in
 priority order, and every decision in it has already been taken and recorded.
 
