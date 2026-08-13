@@ -28,7 +28,7 @@ code legitimately diverged, and *why the code was right*.
 | | |
 |---|---|
 | `main` | green (after two re-runs — see below) · gates **7/7** |
-| Verdicts | **86 Met · 7 Partial · 0 Pending** over 93 ACs — **144 evidenced / 12 narrated** |
+| Verdicts | **86 Met · 7 Partial · 0 Pending** over 93 ACs — **147 evidenced / 12 narrated** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
 | In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
@@ -224,13 +224,29 @@ the matrix. **Agreed approach: CI E2E now, re-evidence on UAT later.**
     Topic resource at all is genuinely open.
   - **`AC-010`** — blocked by **`DEF-057` (high)**, below.
   - **`AC-011`** — needs a Guest presenter; deferred with `AC-010`.
-- ☐ **Tranche C — `AC-003` `AC-041` `AC-048`.** A no-role-claim login (+ its `AuthEvent`); promoting
-  the manual Arabic VR render into CI.
-  **★ OPERATOR DECIDED (`PE-286`): `AC-048` ends as Partial with the reason recorded.** Assert what
-  is provable — the `beforeunload` handler is registered while the form is dirty — and record that
-  the native dialog is not observable by any automation here. Playwright auto-dismisses it, so
-  "proving" it would demonstrate that the *harness* registered a listener, not that a user would see
-  anything. **Do not fight the harness for a Met.**
+- ◐ **Tranche C — assessed (`AV-157/158/159`, `PE-290`). It needed verdicts, not code:** all three
+  were mis-described by their own evidence strings, and reading them was the work.
+  - **`AC-048` — DONE, and this is the FINAL verdict.** Partial with the reason recorded (your
+    decision). The provable half was **already covered**: `SubmitTopic.test.tsx:186` dispatches a
+    cancelable `beforeunload` and asserts `defaultPrevented` — `preventDefault` is the *entire*
+    contribution a page can make. Only a rewording (mechanism, not the browser's rendering) could
+    change it, and that needs a scope-change row.
+  - **`AC-041`** — two named gaps: `vr-sweep.spec.ts` is **capture-only** (`page.screenshot({path})`,
+    no `toHaveScreenshot`, no baseline, **no assertion**), so "detected" is a human opening PNGs; and
+    `playwright.config.ts` has **one project, `chromium`**, so "Chrome *and Edge*" has never run.
+    ⚠ RTL is *not* unguarded — `rtl-a11y` asserts `dir`/`lang` + axe, and `rtl-logical-css.test.ts`
+    mechanically fails the build on asymmetric corner radii (the `wiki.css` defect). ⚠ **Before
+    committing pixel baselines, weigh that property-level guards have caught real defects here and
+    capture-only sweeps have caught none** — "guard the property, not the value".
+  - **`AC-003`** — resolved in the code, and it is the **deny** branch, not the Submitter fallback
+    the AC's parenthesis implies: `PrimaryRole(...) ?? throw new ForbiddenAccessException(...)`.
+    Fail-closed, which is the safer branch. Not flipped because (a) the throw is in the **handler**,
+    not `AuthorizationBehavior`, so the AC's `AuthEvent` clause is `DEF-056` arriving by a second
+    route, and (b) it is a reading, not a measurement. **The settling test is cheap and specified in
+    `AV-159`:** seed a user with **no** committee realm role (`seedUser` must make `realmRole`
+    optional), log in for real, assert `POST /members/me` → 403 and look for an audit row.
+    ⚠ Do not confuse this with the UAT observation that an *invited* member reads `Guest` — that is
+    the roster DTO for an existing row, a different code path.
 
 ⚠ **Before adding more seeded e2e users, re-check the absolute-count assertions.** A login provisions
 a `CommitteeMember` and any spec counting rows shifts under it — that is `DEF-045` cause 3. Checked
