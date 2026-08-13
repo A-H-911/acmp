@@ -28,8 +28,9 @@ code legitimately diverged, and *why the code was right*.
 | | |
 |---|---|
 | `main` | green (after two re-runs — see below) · gates **7/7** |
-| Verdicts | **86 Met · 7 Partial · 0 Pending** over 93 ACs — **147 evidenced / 12 narrated** |
+| Verdicts | **87 Met · 6 Partial · 0 Pending** over 93 ACs — **148 evidenced / 12 narrated** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
+| ⚠ **But prod is UNUSED** | **0 topics · 0 streams · 0 member-stream links · 1 of 26 members has ever logged in.** The stack is live; the *product* has not been used. Measured 2026-08-13. |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
 | In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
 | Open defects | **`DEF-057`** (high) `DEF-056` `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` (**7 of 57**) |
@@ -158,6 +159,22 @@ measurement** — the 30-minute observation has not been run.
 ---
 
 ## 4. Everything left, in order
+
+> ★ **Four decisions were taken on 2026-08-13 and are recorded in `DEC-042`. Three are UNBUILT —
+> they are instructions now, not options. Read `DEC-042` before starting any of them.**
+>
+> | | decision | state |
+> |---|---|---|
+> | `DEF-057` | **implement** stream scope (do not drop it) | ⚠ **blocked on the operator** for the stream names **and** member assignments |
+> | `AC-009`/`AC-034` | **AC-034 wins** | ✅ done — `SC-009`, `AV-160`, zero code |
+> | `DEF-056` | **build the `IAuthorizationMiddlewareResultHandler`** | ☐ unbuilt |
+> | `AC-011` | **turn `KEYCLOAK_ADMIN_ENABLED` on in CI's e2e stack** | ☐ unbuilt — ✓ the secret is already mounted in `docker-compose.yml` (163/183/338, declared 433), so it will not stop the hosts |
+>
+> Plus two I defaulted without asking: **`AC-003`** — write the cheap live test (seed a role-less
+> user, assert `POST /members/me` → 403); its audit clause rides on `DEF-056`. **`AC-041`** — prefer
+> property-level RTL guards over pixel baselines, and leave Edge unrun, unless the operator says
+> otherwise.
+
 
 **1. Sign in to production once — a sanity check, not a release gate.** ⚠ **This item used to be
 much bigger and it was overstated; the correction is `PE-285`.** It claimed a human login was "the
