@@ -27,12 +27,12 @@ code legitimately diverged, and *why the code was right*.
 
 | | |
 |---|---|
-| `main` | green (after two re-runs — see §5) · gates **7/7** · **136 evidenced / 12 narrated** |
-| Verdicts | **81 Met · 12 Partial · 0 Pending** over 93 ACs — **the Pending is gone** |
+| `main` | green (after two re-runs — see below) · gates **7/7** |
+| Verdicts | **83 Met · 10 Partial · 0 Pending** over 93 ACs — **139 evidenced / 12 narrated** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
 | In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
-| Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-045` `DEF-055` (**6 of 55**) |
+| Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` `DEF-056` (**6 of 56**) — `DEF-045` is **Fixed** |
 | Open questions | `OQ-074` and `OQ-076` (everything else is `Deferred` by design or answered) |
 
 **Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
@@ -182,17 +182,34 @@ makes the AC literally true). **Not** lowering `ssoSessionMaxLifespan` — that 
 on a fixed clock. Also fix `AC-090`'s text, which cites a "60-minute idle timeout" against a realm
 that says 30.
 
-**3. The 11 remaining Partials — one campaign, approach already agreed.** `AC-003` `AC-005` `AC-006`
-`AC-007` `AC-009` `AC-010` `AC-011` `AC-033` `AC-034` `AC-041` `AC-048`. Nearly all are Partial for
-the *same* reason: proven by unit/handler tests with **no live leg**. `Acmp.Api.Tests` authenticates
-with `TestAuthHandler`, a synthetic scheme, and `RealJwtAuthTests` only covers the 401 fail-closed
-paths — so no test anywhere drives a **real Keycloak token** through the role matrix.
-**The operator chose: CI E2E now, re-evidence on UAT later.** Suggested shape: one spec in the
-existing `e2e.yml` stack that, per role, forces a 403 on the forbidden endpoints and asserts the nav
-is absent — that covers `AC-005/006/007` with no fixtures. `AC-009/010/011/033/034` need ownership,
-stream and meeting-scope fixtures and are a second tranche. `AC-041` is a manual Playwright render
-that needs promoting into CI. **`AC-048` (`beforeunload`) is probably unprovable** — Playwright
-auto-dismisses the native dialog — and Partial-with-a-recorded-reason is a legitimate outcome.
+**3. The Partials campaign — Tranche A is DONE; B and C remain.** The shared gap, precisely:
+`PermissionMatrixTests` proves the deny matrix over 34 policies × 8 roles but never crosses HTTP;
+`Acmp.Api.Tests` crosses HTTP with a **synthetic `TestAuthHandler`**; `RealJwtAuthTests` boots the
+real scheme but only covers 401 fail-closed paths. So nothing drove a **real Keycloak token** through
+the matrix. **Agreed approach: CI E2E now, re-evidence on UAT later.**
+
+- ✅ **Tranche A — `AC-005`, `AC-007` Met; `AC-006` still Partial** (`#251`, `ff356c4`).
+  `e2e/role-matrix.spec.ts` + three seeded users. **No fixtures needed** — `AuthorizationBehavior` is
+  registered before `ValidationBehavior`/`TransactionBehavior`, so a random GUID reaches a genuine
+  role decision. Every denial is controlled by an allowed role **on the same route**.
+  ⚠ **It found `DEF-056` on its first run:** every write endpoint carries a per-endpoint
+  `RequireAuthorization(Policies.X)`, so ASP.NET 403s **before** MediatR and
+  `AuthorizationBehavior:39` — the only emitter of `Authorization.Forbidden` — never runs. A refused
+  mutation leaves **no trace it was attempted**. `AC-006`'s audit clause had never been checked by
+  anything. Pinned by a `test.fail()` case that **goes red the day `DEF-056` is fixed** — at which
+  point delete that line and flip `AC-006`.
+- ☐ **Tranche B — `AC-009` `AC-010` `AC-011` `AC-033` `AC-034`.** Ownership, stream scope, presenter
+  scope and the post-Accept lock. These **do** need fixtures (an owned topic, a stream assignment, a
+  meeting slot), so build on the core-loop helpers rather than the fixture-free shape above.
+- ☐ **Tranche C — `AC-003` `AC-041` `AC-048`.** A no-role-claim login (+ its `AuthEvent`); promoting
+  the manual Arabic VR render into CI. **`AC-048` (`beforeunload`) is probably unprovable** —
+  Playwright auto-dismisses the native dialog — and Partial-with-a-recorded-reason is the honest
+  outcome, not a harness fight.
+
+⚠ **Before adding more seeded e2e users, re-check the absolute-count assertions.** A login provisions
+a `CommitteeMember` and any spec counting rows shifts under it — that is `DEF-045` cause 3. Checked
+for Tranche A: the only remaining absolute count is `ac043-reorder`'s, scoped to its own fixtures by
+a per-run stamp.
 
 **4. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as their
 own slot. ⚠ **New evidence:** `navModel.ts`'s ACCESS map grants `session` to **guest only**, so
@@ -211,10 +228,14 @@ and gives a reason that is **not** the real one (gen-secrets always writes the f
 would pass). The behaviour is defensible; the message and comment are wrong. Do **not** relax the
 `CHANGE_ME` branch.
 
-**8. Remaining defects** — `DEF-039` (System Health renders a MinIO tile; the cloud moved to S3),
-`DEF-041` (voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data
-residue in `v_backlog`), `DEF-045` (classified: harness causes, no product defect — but **cause 3 is
-still unfixed**, so a UAT e2e run is red for a known reason).
+**8. Remaining defects** — **`DEF-056`** (the audit gap above; **the one with real content**),
+`DEF-039` (System Health renders a MinIO tile; the cloud moved to S3), `DEF-041`
+(voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data residue in
+`v_backlog`). ⚠ **`DEF-045` is now Fixed** — all four causes were addressed in code, and the row
+claiming cause 3 was outstanding was **stale**; I repeated it to the operator on 2026-08-12 before
+reading the two specs it described. What is left there is an observation, not a fix: the repaired
+suite has never run against a non-fresh environment, and CI rebuilds its database every run so it is
+blind to the class by construction.
 
 **9. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
 **until** a UAT space exists", so the exit condition can never be met.
