@@ -8,8 +8,9 @@
  *    (P5a decision); the form sends `source` and omits scope.
  *  - 4 topic types (canonical taxonomy) and Urgency Normal/Urgent/Critical — not the design's 3 + "low".
  *  - Description is a plain textarea — the design's rich-text toolbar is mock chrome; we store plain text.
- *  - Streams & systems are free-text token inputs (no committed stream registry in the web yet) rather than
- *    the design's fixed stream toggle-chips; revisit when a streams endpoint exists.
+ *  - Streams are the design's fixed toggle-chips over the seeded taxonomy (ADR-0042 step 1 created the
+ *    registry this was waiting on). SYSTEMS remain a free-text token input: no taxonomy exists for them,
+ *    and unlike streams they are not resolved by any authorization check.
  *  - Autosave persists the draft to localStorage (there is no server draft endpoint in P5); the indicator
  *    and "Save draft" reflect that. The unsaved-work guard (AC-047 useBlocker + AC-048 beforeunload) warns
  *    before leaving an unsubmitted topic — the draft is kept on the device either way.
@@ -25,6 +26,7 @@ import { Field, Input, Textarea } from '../../components/ui/Field';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
+import { StreamPicker } from '../../components/ui/StreamPicker';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { Icon, type IconName } from '../../components/icons';
 import { TemplatePicker } from '../templates/TemplatePicker';
@@ -351,15 +353,13 @@ export function SubmitTopic() {
             <p className="sub-sub">{t('submit.sec.scopeHelp')}</p>
             <Field label={t('submit.fStreams')} required error={errors.streams}>
               {(p) => (
-                <TokenInput
+                <StreamPicker
                   id={p.id}
                   ariaInvalid={p['aria-invalid']}
                   describedby={p['aria-describedby']}
                   values={form.streams}
                   onChange={(streams) => update({ streams })}
-                  placeholder={t('submit.fStreamsPh')}
                   ariaLabel={t('submit.fStreams')}
-                  removeLabel={(v) => t('topics.removeFilter', { label: v })}
                 />
               )}
             </Field>

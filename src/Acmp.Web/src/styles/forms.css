@@ -148,3 +148,23 @@
 .toggle input:focus-visible + .toggle-track { outline: 2px solid var(--focus); outline-offset: 2px; }
 .toggle input:disabled + .toggle-track { opacity: .5; }
 @media (prefers-reduced-motion: reduce) { .toggle-track, .toggle-knob { transition: none; } }
+
+/* Affected-streams picker — design "ACMP Backlog & Topic" → submit · scope (INV-014). Toggle chips
+   over the seeded taxonomy, replacing the free-text token input that stood in until a streams
+   endpoint existed (ADR-0042 step 1). Logical properties throughout so the row mirrors under RTL. */
+.stream-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.stream-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  block-size: 32px; padding-inline: 12px;
+  border: 1.5px solid var(--border-strong); border-radius: 8px;
+  background: var(--surface); color: var(--text-2);
+  font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+}
+.stream-chip:hover { border-color: var(--accent); }
+
+/* Selected state carries THREE cues — border, fill and a check glyph — not colour alone, so the
+   chosen streams stay distinguishable without colour perception (WCAG 1.4.1). */
+.stream-chip.is-on {
+  border-color: var(--accent); background: var(--primary-tint); color: var(--accent);
+}

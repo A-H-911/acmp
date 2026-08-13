@@ -30,6 +30,37 @@ export interface StreamRef {
   isWildcard: boolean;
 }
 
+/** Which of a stream's two names to show. Both are required server-side (guardrail 9). */
+export function streamName(s: Pick<StreamRef, 'nameEn' | 'nameAr'>, isArabic: boolean): string {
+  return isArabic ? s.nameAr : s.nameEn;
+}
+
+/**
+ * The committee's stream taxonomy (ADR-0042 step 1) — seeded reference data, not user-generated.
+ * Readable by any authenticated role, like the rest of the directory.
+ */
+export function useStreams() {
+  return useQuery({
+    queryKey: ['streams'],
+    queryFn: () => api<StreamRef[]>('/members/streams'),
+    // It changes when a migration runs, not while someone is filling in a form.
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * The streams a TOPIC may claim — everything except the wildcard (ADR-0042 clause 4), which says a
+ * PERSON is unrestricted and is meaningless as a property of a topic.
+ *
+ * ⚠ This filter is a display convenience, NOT the enforcement. The server rejects the wildcard and
+ * any unknown code in SubmitTopicValidator/UpdateTopicValidator; omitting it here only stops a user
+ * picking something that would be refused. A hidden option has never been what makes a rule true.
+ */
+export function useAssignableStreams() {
+  const query = useStreams();
+  return { ...query, data: query.data?.filter((s) => !s.isWildcard) };
+}
+
 export interface Member {
   publicId: string;
   /** The member's Keycloak subject — used to assign work (e.g. an action's OwnerUserId). */

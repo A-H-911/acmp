@@ -52,9 +52,9 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await page.getByRole('textbox', { name: 'Title', exact: true }).fill(title);
         await page.getByRole('textbox', { name: 'Description', exact: true }).fill('E2E description for the core-loop spec.');
         await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('E2E justification — exercises the full loop.');
-        const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-        await streams.fill('core');
-        await streams.press('Enter');
+        // ADR-0042 step 2: affected streams are toggle chips over the seeded taxonomy, not free text.
+        // The chip's accessible name is the DISPLAY name ("Core"); the value posted is the code ("core").
+        await page.getByRole('button', { name: 'Core', exact: true }).click();
 
         const [createRes] = await Promise.all([
           page.waitForResponse((r) => r.url().endsWith('/api/topics') && r.request().method() === 'POST'),

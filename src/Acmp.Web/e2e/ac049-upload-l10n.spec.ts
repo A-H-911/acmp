@@ -17,9 +17,9 @@ async function fillSubmitForm(page: Page, title: string): Promise<void> {
   await page.getByRole('textbox', { name: 'Title', exact: true }).fill(title);
   await page.getByRole('textbox', { name: 'Description', exact: true }).fill('AC-049 e2e description.');
   await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('AC-049 e2e justification.');
-  const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-  await streams.fill('core');
-  await streams.press('Enter');
+  // ADR-0042 step 2: affected streams are toggle chips over the seeded taxonomy, not free text.
+  // The chip's accessible name is the DISPLAY name ("Core"); the value posted is the code ("core").
+  await page.getByRole('button', { name: 'Core', exact: true }).click();
 }
 
 test.describe('AC-049 / AC-030 — locale-aware validation (BL-016)', () => {
