@@ -1,0 +1,27 @@
+{
+  /*
+   * The E2E specs were typechecked by NOTHING. `tsc -b --listFiles` listed zero files under e2e/,
+   * because tsconfig.app.json includes only "src" — and Playwright transpiles specs without type
+   * checking, so a type error in a spec surfaced (if at all) as a runtime failure in CI's e2e job,
+   * ten minutes and a full seven-service stack later.
+   *
+   * Adding this cost nothing to introduce: the whole directory already typechecks with ZERO errors,
+   * measured before writing the file rather than hoped for afterwards. It is wired into
+   * tsconfig.json's references, so `npm run build` — which CI runs on every PR — now covers it.
+   *
+   * Separate from tsconfig.app.json rather than widening its include, because the two have genuinely
+   * different environments: specs are Node + Playwright, the app is the browser + vite/client. The
+   * app must NOT gain Node globals just so its tests can be checked.
+   */
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    "composite": true,
+    "types": ["node"],
+    "jsx": "preserve",
+    // The specs are plain TS run by Playwright, never bundled, so the bundler-only affordance that
+    // lets source import a ".ts" path does not apply and would hide a genuinely wrong import here.
+    "allowImportingTsExtensions": false
+  },
+  "include": ["e2e", "playwright.config.ts", "uat-login-probe.mjs", "uat-invite-probe.mjs"]
+}
