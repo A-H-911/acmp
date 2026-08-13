@@ -82,6 +82,32 @@ export function useMembers() {
 }
 
 /**
+ * Assign a member's streams (BL-024 / ADR-0042 step 3). Administrator only — enforced server-side.
+ *
+ * ⚠ The body is a BARE ARRAY of stream PublicIds, not a wrapped object: that is what the minimal-API
+ * endpoint binds (`PUT /api/members/{publicId}/streams`). It REPLACES the member's assignments
+ * rather than adding to them, which is what makes deselecting a stream possible at all.
+ *
+ * ⚠ The server IGNORES unknown ids rather than refusing them (AssignStreamsHandler), so a caller
+ * that sent a stale id would see a silent partial save. This client only ever sends ids it just read
+ * from GET /members/streams, which is why that is tolerable here and would not be from a script.
+ */
+export function useAssignStreams() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ publicId, streamPublicIds }: { publicId: string; streamPublicIds: string[] }) =>
+      api<void>(`/members/${publicId}/streams`, {
+        method: 'PUT',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(streamPublicIds),
+      }),
+    // The roster renders each member's stream chips, so without this the directory keeps showing the
+    // old set and the change reads as having silently failed.
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members'] }),
+  });
+}
+
+/**
  * The invited account. `temporaryPassword` is returned by the server EXACTLY ONCE (AC-088).
  */
 export interface InvitedUser {

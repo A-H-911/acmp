@@ -15,6 +15,18 @@ import type { Member } from '../api/members';
  * components were MOVED, not redesigned, so the behaviour the design fixes must still hold.
  */
 vi.mock('../api/members', () => ({
+  // ADR-0042 step 3 — StreamAssignmentPanel's data + mutation. The panel renders for real; only its
+  // server calls are stubbed, so the chips these tests see are the chips an administrator sees.
+  streamName: (s: { nameEn: string; nameAr: string }, isArabic: boolean) => (isArabic ? s.nameAr : s.nameEn),
+  useStreams: () => ({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+  useAssignStreams: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false, isSuccess: false }),
   useMembers: vi.fn(),
   useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),

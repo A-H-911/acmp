@@ -692,3 +692,23 @@
 /* The one-time credential block moved to components/ui/invited-credential.css when the guest-presenter
    invite began sharing it: these rules only ever loaded on the administration route, so the shared
    component rendered unstyled anywhere else. */
+
+/* ADR-0042 step 3 — the "no stream assigned" warning in the assignment panel. Deliberately a WARNING
+   tone rather than the directory's neutral "Observer" chip: once step 7 wires stream scope, holding
+   no streams is not a status, it is an inability to write anything. */
+.adm-stream-warning {
+  display: flex; align-items: center; gap: 7px;
+  margin-block: 4px 2px; padding: 8px 11px;
+  border: 1px solid var(--st-warn-fg); border-radius: var(--r-md);
+  background: var(--st-warn-bg); color: var(--st-warn-fg);
+  font-size: 12.5px; font-weight: 600;
+}
+
+/* The wildcard reads differently from a delivery stream (DEC-043): unrestricted access is what an
+   auditor most needs to spot at a glance, and the state most easily granted by accident. Dashed so
+   it is distinguishable without relying on colour (WCAG 1.4.1). */
+.stream-chip.is-wildcard { border-style: dashed; }
+.stream-chip.is-wildcard.is-on {
+  border-style: solid; border-color: var(--st-warn-fg);
+  background: var(--st-warn-bg); color: var(--st-warn-fg);
+}

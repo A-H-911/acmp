@@ -11,6 +11,18 @@ import type { Member } from '../../api/members';
 // real. The panels' own behaviour is asserted against the wire in their own suites — this file is
 // the screen, so it only proves they are mounted.
 vi.mock('../../api/members', () => ({
+  // ADR-0042 step 3 — StreamAssignmentPanel's data + mutation. The panel renders for real; only its
+  // server calls are stubbed, so the chips these tests see are the chips an administrator sees.
+  streamName: (s: { nameEn: string; nameAr: string }, isArabic: boolean) => (isArabic ? s.nameAr : s.nameEn),
+  useStreams: () => ({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+  useAssignStreams: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false, isSuccess: false }),
   useMembers: vi.fn(),
   useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),
@@ -166,7 +178,9 @@ describe('UserDetail (invite + role assignment per ADR-0038, superseding ADR-001
 
     expect(screen.getByText('Back to users')).toBeInTheDocument();
     expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
-    expect(screen.getByText('Core')).toBeInTheDocument(); // his stream membership
+    // Scoped to the read-only memberships row (a <span>): the StreamAssignmentPanel below now
+    // renders 'Core' again as a toggle <button>, so an unscoped query matches both.
+    expect(screen.getByText('Core', { selector: 'span' })).toBeInTheDocument(); // his stream membership
     // ⚠ WAS `expect(screen.getByText(/Role is read-only/))`. The padlock said the role was managed
     // in Keycloak and could not be changed here; FR-157 changes it here. Keycloak is still where it
     // is STORED, which is all the replacement claims.
