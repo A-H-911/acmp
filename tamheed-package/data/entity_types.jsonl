@@ -23,7 +23,6 @@
 {"type_id":"phase","label":"Phase","id_prefix":"PH-","generation_class":"Always","template_ref":null,"custom_attributes":null}
 {"type_id":"poc","label":"Proof of concept","id_prefix":"POC-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
 {"type_id":"progress-entry","label":"Progress entry","id_prefix":"PE-","generation_class":"Continuous","template_ref":null,"custom_attributes":null}
-{"type_id":"prompt","label":"Handoff prompt","id_prefix":"PRM-","generation_class":"Conditional","template_ref":null,"custom_attributes":null}
 {"type_id":"requirement","label":"Requirement (FR-/NFR-)","id_prefix":"FR-","generation_class":"Always","template_ref":null,"custom_attributes":null}
 {"type_id":"risk","label":"Risk","id_prefix":"RISK-","generation_class":"Always","template_ref":null,"custom_attributes":null}
 {"type_id":"scope-change","label":"Scope change","id_prefix":"SC-","generation_class":"Continuous","template_ref":null,"custom_attributes":null}
