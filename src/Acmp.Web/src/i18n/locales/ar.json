@@ -1344,7 +1344,6 @@
     "fJustification": "لماذا الآن",
     "fJustificationPh": "مخاطر التقاعس، الاعتماديات، المواعيد النهائية…",
     "fStreams": "المسارات المتأثرة",
-    "fStreamsPh": "اكتب مسارًا واضغط Enter…",
     "fSystems": "الأنظمة المتأثرة",
     "fSystemsPh": "اكتب نظامًا واضغط Enter…",
     "dropFiles": "أفلت الملفات هنا أو انقر للرفع",
@@ -1942,7 +1941,6 @@
       "fJustification": "المبرر",
       "fJustificationPh": "لماذا هذا مهم الآن…",
       "fStreams": "المسارات المتأثرة",
-      "fStreamsPh": "أضف مسارًا ثم اضغط Enter…",
       "err": {
         "title": "العنوان مطلوب.",
         "description": "الوصف مطلوب.",

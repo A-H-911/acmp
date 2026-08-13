@@ -1344,7 +1344,6 @@
     "fJustification": "Why now",
     "fJustificationPh": "Risks of inaction, dependencies, deadlines…",
     "fStreams": "Affected streams",
-    "fStreamsPh": "Type a stream and press Enter…",
     "fSystems": "Affected systems",
     "fSystemsPh": "Type a system and press Enter…",
     "dropFiles": "Drop files here or click to upload",
@@ -1942,7 +1941,6 @@
       "fJustification": "Justification",
       "fJustificationPh": "Why this matters now…",
       "fStreams": "Affected streams",
-      "fStreamsPh": "Add a stream and press Enter…",
       "err": {
         "title": "A title is required.",
         "description": "A description is required.",
