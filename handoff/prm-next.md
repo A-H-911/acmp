@@ -13,62 +13,76 @@ PID and "is it alive?" LIES under PID reuse. Confirm the process does not exist,
 and StartTime do not match the lock's mtime, then delete tamheed-package/data/.lock. Never remove it
 reflexively.
 
-STATE: phases P1–P19 are COMPLETE. PRODUCTION AND UAT ARE BOTH LIVE ON main 65e45d4 WITH
-KEYCLOAK_ADMIN_ENABLED=true — invite, role assignment and the guest-presenter invite are reachable in
-production for the first time, and the ADR-0038 write path has now been exercised against a real
-Keycloak (AV-145/146/147). 81 Met / 12 Partial / 0 Pending over 93 ACs; 136 evidenced verdicts;
-gates 7/7. There is NO new slice to start — §4 of the resume is the whole remaining list, in order.
+STATE: phases P1–P19 are COMPLETE. main is green at 947fc1b, gates 7/7, 87 Met / 6 Partial / 0
+Pending over 93 ACs, 148 evidenced verdicts. PRODUCTION IS LIVE on 65e45d4 with in-app user
+management ENABLED — but it is UNUSED: zero topics, zero streams, one of 26 members has ever logged
+in. UAT is stopped. There is NO new slice to start; §4 of the resume is the whole remaining list, in
+priority order, and every decision in it has already been taken and recorded.
 
-READ §2 OF THE RESUME BEFORE WRITING CODE. Eight rules this project has already paid for. These four
-each changed an answer in the last session:
+READ §2 AND §3 OF THE RESUME BEFORE WRITING CODE. §3 is the finding that matters most and it is why
+this codebase needs a specific kind of suspicion:
 
-1. READ THE IMPLEMENTATION BEFORE CALLING SOMETHING A DEFECT. Nine instances, none caught by a gate.
-   Last session it killed a suspected defect in three minutes: the live probe showed an invited
-   member resolves to role Guest, which looked like the guest-expiry sweep would disable invitees —
-   until ExpireGuestAccess.cs:59 showed it filters on a non-null expiry. READ THE PREDICATE, NOT THE
-   DOC COMMENT THAT DESCRIBES IT.
-2. VERIFY THE DEPLOYED STATE, NOT THE FILE THAT DESCRIBES IT. This is the rule that paid best. The
-   handoff said enabling in-app user management was "one variable"; production turned out to be 56
-   commits behind AND its deployed reconcile.sh had no ensure_admin_client at all, so the flag would
-   have booted a healthy host authenticating as a client that did not exist. ⚠ And check your probe:
-   my own first probe hit /api/session, which is the MapGroup PREFIX and 404s on new code too. It was
-   right for the wrong reason. The valid form was /api/session/me.
-3. A MEASUREMENT THAT INDICTS KNOWN-GOOD CODE IS MEASURING ITSELF. `grep -c $'\r'` lost its quoting,
-   degraded to `grep -c ''`, and reported CRLF for every .sh in the repo — including one CI runs
-   green daily. Use `tr -cd '\r' | wc -c`. Also: do not accept ONE tool's negative as proof of
-   absence — the Grep tool returned "No files found" for a string that is in the tree.
-4. AN ADR/AC CITATION IN A TEST NAME OR InlineData IS LOAD-BEARING, AND NO GATE READS IT. If you are
-   about to change such a test, read the row first. Supersede narrowly and record it.
+★ FOUR AGGREGATE CAPABILITIES WITH NO WIRING WERE FOUND IN ONE SESSION, none by any gate —
+Topic.Reopen (no endpoint), Stream.Create (no caller), StreamScopeHandler (in DI, unit-tested four
+ways, IN NO POLICY — so an authorization control that FAILS OPEN), and Topic.SetScope (no caller).
+EVERY ONE PRESENTS AS IMPLEMENTED: the method exists, it is correct, its comment explains its
+purpose, and two are unit-tested and passing. The compiler does not care that a public method has no
+caller; the unit test calls it directly, which is exactly why it passes; coverage says it IS covered.
+SO: when you are told something is implemented, find the CALLER, not the definition. Recorded as
+DW-026, whose cheapest first step is asserting every IAuthorizationRequirement appears in at least
+one registered policy.
 
-BEFORE DESIGNING ANY CROSS-MODULE SEAM, READ ADR-0021. It already fixes the pattern — a primitive
-port in Acmp.Shared.Contracts, implemented in the OWNING module's Infrastructure, unauthorized at the
-port because the calling action is separately authorized, two transactions accepted. It also forbids
-sending another module's MediatR command. IGuestProvisioner, IGuestWindowWriter and
-IPrincipalRevalidator are the worked examples.
+Four more rules that each changed an answer recently:
+1. READ THE IMPLEMENTATION BEFORE CALLING SOMETHING A DEFECT — eleven instances. ⚠ IT APPLIES TO
+   REGISTER ROWS TOO: I repeated DEF-045's stale "cause 3 NOT FIXED" to the operator without reading
+   the two specs it described, and both were already fixed. A row feels pre-checked. It is not.
+2. VERIFY THE DEPLOYED STATE, NOT THE FILE DESCRIBING IT. Prod was 56 commits behind while the
+   handoff called enabling a flag "one variable". ⚠ And check your probe can tell the two states
+   apart: my own /api/session probe hit the MapGroup PREFIX, which 404s on new code too — right
+   conclusion, invalid evidence.
+3. A MEASUREMENT THAT INDICTS KNOWN-GOOD CODE IS MEASURING ITSELF, and A GREEN EXIT CODE CAN COME
+   FROM A BUILD THAT CHECKED NOTHING. `grep -c $'\r'` lost its quoting and reported CRLF for every
+   .sh in the repo; `tsc -b` reported exit 0 AND zero e2e files until --force. Count what the check
+   looked at.
+4. THE TEST MUST FAIL WITHOUT THE CHANGE. Every guard in the last session was mutation-checked —
+   reverting App.tsx failed exactly the five denied roles, and reversing two call ORDERS failed one
+   test each. A case that passes with and without the code under test is measuring nothing.
+
+BEFORE DESIGNING ANY CROSS-MODULE SEAM, READ ADR-0021: a primitive port in Acmp.Shared.Contracts,
+implemented in the OWNING module's Infrastructure, unauthorized at the port because the calling
+action is separately authorized, two transactions accepted; and it forbids sending another module's
+MediatR command. ⚠ This is live in §4 item 1 step 6: the OrgWide fact must reach authorization as a
+primitive bool on IStreamScopedResource, NOT as the TopicScope enum, because the contract lives in
+Shared.Contracts and the enum in Topics.Domain.
 
 TASK: work §4 of the resume in order.
-- Item 1 is OQ-076 and it is an OPERATOR DECISION, not code: AC-004 asks for an idle timeout, but
-  automaticSilentRenew means an open tab is never idle. Put the three options to me and wait.
-- Item 2 is the real work: eleven Partials that are nearly all Partial for the SAME reason — proven
-  by unit/handler tests with no live leg, because Acmp.Api.Tests authenticates with a synthetic
-  TestAuthHandler. I have ALREADY AGREED THE APPROACH: a CI E2E leg now (e2e.yml runs the full
-  seven-service stack with a real Keycloak on every PR), re-evidenced on UAT later. Treat it as ONE
-  campaign in tranches, not eleven tasks, and tell me the tranche boundaries before you start.
+
+- ITEM 1 is the big one: DEF-057 + DEF-058, an EIGHT-STEP SLICE whose design is already APPROVED
+  (ADR-0042; reasoning in PE-293 and DEC-042). Nothing is built. ⚠ THE ORDER IS LOAD-BEARING and
+  STEP 5 IS THE OUTAGE: all 26 existing members were seeded straight into Keycloak, so the new
+  invite-time stream field does not cover them — wiring the check before backfilling locks out the
+  whole committee. ⚠ Step 2 (topics pick from the taxonomy instead of free text) is cheapest RIGHT
+  NOW because production has zero topics, and that stops being true the first day anyone uses it.
+  Expect multiple PRs; do not try to land it as one change.
+- ITEMS 2–5 are smaller and independent: DEF-056's audit handler (which turns a deliberate
+  test.fail() in role-matrix.spec.ts red — delete that line and flip AC-006), the e2e flag for
+  AC-011, AC-003's cheap live test, and AC-041's instrument choice.
+- ITEM 6 is an operator call: deploying the idle sign-out, which is the ONLY product change published
+  but not deployed.
 
 Definition of Done (applies even though this prompt does not restate it):
-- unit + integration tests; each guard proven by FORCING its refusal, never by asserting a handler
-  was called — and check the test FAILS without the change, or it is measuring nothing
-- flip AC verdicts via audit_record with evidence — an evidenced verdict beats a narrated one, and
-  say plainly when something is ANALYSIS rather than a measurement
+- unit + integration tests; each guard proven by FORCING its refusal, and verified to FAIL without
+  the change — never by asserting a handler was called
+- flip AC verdicts via audit_record with evidence, and say plainly when something is ANALYSIS rather
+  than a measurement
 - authorization enforced server-side; AuditEvents emitted and asserted as ROWS
 - no hardcoded strings (EN + AR together — check-i18n compares KEYS only); verify RTL in a browser
-- no secrets in source, and never print a live credential into a session log — assert its SHAPE
+- no secrets in source, and never print a live credential — assert its SHAPE
 - progress_update + work_bind, then gate_run() and export_html(); write the package ONLY from main
   and commit immediately (tamheed-package/data is git-tracked)
 - conventional commits, small and reviewable; branch -> PR -> green CI -> squash-merge
-- register every finding that needs investigation or a decision as a Tamheed row AS YOU GO, not at
-  the end — including findings against your OWN work, and including CORRECTIONS to evidence you
-  yourself recorded (OQ-075 carries one)
+- register every finding needing investigation or a decision as a Tamheed row AS YOU GO — including
+  findings against your OWN work, and including CORRECTIONS to evidence you yourself recorded
 
 Report the state and your plan back to me before you start writing, then proceed. ultrathink
 

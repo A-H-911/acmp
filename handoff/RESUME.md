@@ -1,9 +1,9 @@
 # RESUME — ACMP
 
-**The single entry point. Rewritten 2026-08-12 at session end (second rewrite that day).** Every
-`handoff/RESUME-*.md` and every `handoff/prm-*.md` other than this file and `handoff/prm-next.md` is
-⛔ superseded history. This file is durably named so it never needs renaming again. The paste-able
-kickoff prompt is **`handoff/prm-next.md`** — edit that file, never add another `prm-*.md`.
+**The single entry point. Rewritten whole 2026-08-13 at session end.** Every `handoff/RESUME-*.md`
+and every `handoff/prm-*.md` other than this file and `handoff/prm-next.md` is ⛔ superseded history.
+This file is durably named. The paste-able kickoff prompt is **`handoff/prm-next.md`** — edit it,
+never add another `prm-*.md`.
 
 ---
 
@@ -18,8 +18,9 @@ a bare PID and "is it alive?" **lies** under PID reuse. Confirm the process does
 its identity and `StartTime` do not match the lock's mtime, then delete
 `tamheed-package/data/.lock`. Never remove it reflexively.
 
-Then read **§2**. Then read `SC-003` … `SC-008` — six records of where an approved document and the
-code legitimately diverged, and *why the code was right*.
+Then read **§2** (rules), **§3** (the finding), **§4** (the work). `SC-003`…`SC-009` record nine
+places an approved document and the code diverged and *why the code was right* — `SC-009` is newest
+and records **two approved ACs contradicting each other**.
 
 ---
 
@@ -27,24 +28,32 @@ code legitimately diverged, and *why the code was right*.
 
 | | |
 |---|---|
-| `main` | green (after two re-runs — see below) · gates **7/7** |
+| `main` | **green** · `947fc1b` · gates **7/7** · tree clean, nothing unpushed |
 | Verdicts | **87 Met · 6 Partial · 0 Pending** over 93 ACs — **148 evidenced / 12 narrated** |
-| **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
-| ⚠ **But prod is UNUSED** | **0 topics · 0 streams · 0 member-stream links · 1 of 26 members has ever logged in.** The stack is live; the *product* has not been used. Measured 2026-08-13. |
-| **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
-| In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
-| Open defects | **`DEF-057`** (high) `DEF-056` `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` (**7 of 57**) |
-| Open questions | **`OQ-074` only** (everything else is `Deferred` by design or answered) |
+| **Production** | live, always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev · runs **`65e45d4`** |
+| ⚠ **Prod is UNUSED** | **0 topics · 0 streams · 0 member-stream links · 1 of 26 members has ever logged in.** The stack serves; the *product* has not been used. |
+| **UAT** | **stopped** · `i-07ac28ac2fedab921` — start from `deploy/runbooks/cloud-operations.md` §1 |
+| In-app user management | **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
+| Open defects | `DEF-057`(high) `DEF-058` `DEF-056` `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` (**8 of 58**) |
+| Open questions | **`OQ-074` only** |
+| Deferred work | **`DW-026`** — the wiring guard (§3; the biggest generalizable finding here) |
 
-**Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
-The remaining work is **not a new slice**; it is the list in §4.
+**Phases `P1`–`P19` are COMPLETE.** `P14` deferred indefinitely (`DEC-028`). What remains is **not a
+new slice** — it is §4.
 
-⚠ **The deployable sha is NOT HEAD, and do not trust a number written here for it.** `ci.yml`
-`paths-ignore` skips `*.md`, `docs/`, `.claude/`, `tamheed-package/`, so governance and handoff
-commits publish **no images** — but a code commit landing after this file was written does. **Both
-boxes run `65e45d4`**; whether a *newer* published sha exists is a question for ECR, not for this
-sentence. Ask it directly, and remember `web` is a **separate, environment-suffixed** tag (ADR-0037,
-`DEF-019`) — `08-bootstrap-box.sh` refuses unless **both** pins resolve:
+### ⚠ Deployment: prod is behind by exactly ONE product change
+
+Prod runs `65e45d4`. The newest sha **with ECR images** is **`85068c9`**. Everything between them is
+tests, governance or docs **except one commit**:
+
+> **`e9b2155` — the 30-minute idle sign-out (`AC-004`)**: `AuthProvider.tsx`, `authStatus.ts`,
+> `useIdleSignOut.ts`, `LoginPage.tsx`, `en.json`, `ar.json`.
+
+Deploying is a small, well-scoped decision — not a 56-commit release like last time. ⚠ **Never trust
+a sha written in this file.** `ci.yml` `paths-ignore` skips `*.md`, `docs/`, `.claude/`,
+`tamheed-package/`, so governance commits publish nothing. Ask ECR — and `web` is a **separate,
+environment-suffixed** tag (`ADR-0037`, `DEF-019`); `08-bootstrap-box.sh` refuses unless **both**
+pins resolve:
 
 ```bash
 for r in api worker sqlserver-fts; do
@@ -55,351 +64,229 @@ aws ecr describe-images --region us-east-1 --repository-name acmp/web \
   --query 'sort_by(imageDetails,&imagePushedAt)[-2:].{tag:imageTags[0],at:imagePushedAt}' --output text
 ```
 
-⚠ **`main`'s push run can fail for reasons that are not the code, and `#250`'s did — twice.** Attempt
-1: the `backend` job hit its 25-minute timeout. Attempt 2: **25 of 303 `Acmp.Api.Tests` failed with
-`HttpClient.Timeout of 100 seconds elapsing`** and the suite took 17m9s instead of ~5m — against an
-**in-process** `TestHost`, where a 100-second HTTP call means the runner was starved, not that
-anything was broken. Attempt 3 passed clean. Separately the `sbom` job failed the Security workflow
-on a third-party download (`HTTP status=000`); its re-run passed in 16s.
-
-**How it was established as environmental rather than assumed:** none of `17b6edf`, `65e45d4` or
-`69e865a` touches a **single `.cs` file** (they are `.tsx`, shell + workflow, and one `.mjs`), the
-`65e45d4` push run passed in 9m34s, and PR #250 had passed the identical tree in 5m31s. **Before
-concluding `main` is red for a code reason, check `gh run list --branch main` and ask what the
-failing commit actually changed** — a timeout is a symptom of the host, not a diagnosis of the code.
-
 ---
 
-## 2. ⚠ Rules this project has paid for. Read them before you write code.
+## 2. ⚠ Rules this project has paid for. Read before writing code.
 
-**A. Read the implementation before calling something a defect.** Now **nine** instances; none was
-caught by a gate. Last session it made a task disappear (`DW-025`'s premise was false — ACMP has no
-reschedule). This session it killed a suspected defect in three minutes: the live invite probe showed
-an invited member's role resolves to `Guest`, which looked like the guest-expiry sweep would disable
-invitees — but `ExpireGuestAccess.cs:59` filters `AccessExpiresAt != null && < now`, and an invitee's
-window is null. **Read the predicate, not the doc comment that describes it.**
+**A. Read the implementation before calling something a defect.** Eleven instances; none caught by a
+gate. It has made defects vanish (`DW-025`), smaller, and *bigger* (`DEF-057`). ⚠ **It applies to
+REGISTER ROWS too** — `DEF-045`'s stale "cause 3 NOT FIXED" was repeated to the operator without
+reading the two specs it described. Both were already fixed.
 
 **B. An ADR/AC citation in a test name is load-bearing, and no gate reads it** (`SC-004`, `SC-007`).
-Before overriding a test whose name or `InlineData` cites an ADR or AC, read that row.
 
-**C. When an ADR names a specific seam, check the harness can reach it before approving** (`SC-005`).
+**C. When an ADR names a seam, check the harness can reach it before approving** (`SC-005`).
 
-**D. Check whether it is already built.** Grep the domain enums, `i18n/locales/en.json`, and
-`ACMP product context/*.dc.html` first.
+**D. Check whether it is already built.** ⚠ The operator's recollection of a topic-side "all streams"
+concept was **correct** (`TopicScope.OrgWide`) — checking it produced `DEF-058`.
 
-**E. A green suite is not a look.** Render new screens in a browser, **in both directions**. ⚠ The
-throwaway harness must import **only the stylesheets the real route imports**, or it lies to you.
+**E. A green suite is not a look.** Render new screens in a browser, in **both** directions. The
+throwaway harness must import **only** the stylesheets the real route imports.
 
-**F. Prove, don't assume.** `OQ-070`'s answer (`manage-users` **alone**) contradicted my own written
+**F. Prove, don't assume.** `OQ-070`'s answer (`manage-users` alone) contradicted the written
 candidate, and no gate would have caught the wider grant.
 
-**G. Verify the DEPLOYED state, not the file that describes it.** This is the rule that paid best
-this session and it paid three times over — see §3.
+**G. Verify the DEPLOYED state, not the file describing it.** Prod was 56 commits behind while the
+handoff called enabling a flag "one variable".
 
-**H. ⚠ NEW — a measurement that indicts known-good code is measuring itself.** My line-ending check
-was `grep -c $'\r'`; the quoting was lost, it degraded to `grep -c ''`, and it returned the LINE
-COUNT for every file — reporting CRLF for `gen-secrets.sh`, which CI runs green every day. The tell
-was that it convicted something already proven innocent. Use `tr -cd '\r' | wc -c`, which cannot
-degrade that way. **And do not accept a single tool's negative as proof of absence:** the `Grep` tool
-returned "No files found" for `AccessExpires`, which is in the tree — PowerShell found it instantly.
+**H. A measurement that indicts known-good code is measuring itself.** `grep -c $'\r'` lost its
+quoting, degraded to `grep -c ''`, and reported CRLF for every `.sh` including one CI runs green
+daily. Use `tr -cd '\r' | wc -c`. ⚠ **Never accept one tool's negative as proof of absence** — `Grep`
+returned "No files found" for a string PowerShell found instantly.
+
+**I. ⚠ A green exit code from a build that checked nothing.** `tsc -b` reported **exit 0 and zero e2e
+files** even after wiring them in; only `--force` showed the real 34. Incremental builds skip
+up-to-date projects. **Verify a guard covers what you think by counting what it looked at.**
+
+**J. ⚠ PowerShell 5.1 `Get-Content` reads ANSI; `WriteAllText` writes UTF-8.** A read-modify-write
+round-trip **corrupted `MEMORY.md`** (46 mojibake markers), and the console output is
+indistinguishable from a harmless rendering artefact. Check bytes: `grep -c 'Ã\|â€\|â˜'`. Splice in
+Bash, or pass `-Encoding UTF8` at both ends. Commit before any bulk rewrite.
+
+**K. ⚠ The test must fail without the change.** Everything this session was mutation-checked:
+reverting `App.tsx` failed exactly the 5 denied roles; neutering `assert-oneshot.sh` failed exactly
+the 2 dependent cases; removing `stopSilentRenew` **and** reversing its order each failed one test.
 
 ---
 
-## 3. ✅ What shipped this session
+## 3. ★ The finding to act on: FOUR unwired capabilities (`DW-026`)
 
-### ★ The headline: production was 56 commits behind, and the handoff said otherwise
+Found in one session, none by any gate:
 
-RESUME §4 item 1 used to say enabling in-app user management was "one variable". **It never was.**
-Three measurements, in the order rule G asks:
+| | what | consequence |
+|---|---|---|
+| `Topic.Reopen` | correct aggregate method, **no endpoint** | `AC-009`'s positive clause unreachable → `SC-009` narrowed an approved AC |
+| `Stream.Create` | factory, **no caller anywhere** | no stream can exist — half of `DEF-057` |
+| `StreamScopeHandler` | in DI, unit-tested 4 ways, **in no policy** | never evaluated, **FAILS OPEN** — `DEF-057`, high |
+| `Topic.SetScope` | **no caller**, no `Scope` on the command | `TopicScope.Platform`/`OrgWide` unreachable — `DEF-058` |
 
-1. SSM pinned `ACMP_IMAGE_TAG=e403e18…` on **both** prod and uat; `rev-list e403e18..bcd8e96` = **56**.
-2. `GET /api/session/me` answered **404** on prod and **401** after the deploy.
-3. **The decisive one:** `git show e403e18:deploy/keycloak/reconcile.sh` has **no `ensure_admin_client`**
-   (it arrived in `122f41d`/#237). Setting the flag on the old image would have booted a perfectly
-   healthy host authenticating as a Keycloak client **that did not exist**. Not a hypothesis — the
-   prod reconcile log for this deploy literally reads `creating client 'acmp-admin-svc'`.
+**Every one presents identically:** the method exists, is correct, its comment explains its purpose,
+and two are unit-tested and passing. Ask *"is this implemented?"* and every signal says yes. **The
+only thing missing is the wiring, and nothing in the build looks at wiring** — not the compiler, not
+the unit tests (they call it directly, which is *why* they pass), not coverage (the method **is**
+covered, by its own test).
 
-⚠ **One of my own probes was right for the wrong reason and is corrected in `OQ-075`:** I first used
-`/api/session`, which is the `MapGroup` **prefix**, not a route — it 404s on the new code too. The
-valid form is `/api/session/me`. The conclusion never rested on it, but a wrong evidence string in a
-resolved row is what the next reader repeats.
-
-### The release itself (`OQ-075`, resolved)
-
-Backup **first and read back from S3** (`Acmp_20260812_173331.bak` + keycloak) → UAT → verify → prod.
-Both: three one-shots `exited 0`, six services healthy, `db-migrate` clean against the live database,
-`smoke.sh` PASSED, and both reconcile logs end **`realm-management grant is exactly: manage-users`** —
-`OQ-070`'s minimum grant now proven on **two deployed realms**, not only in CI.
-
-### The ADR-0038 write path ran for real, for the first time ever
-
-`#250` adds `src/Acmp.Web/uat-invite-probe.mjs`. **No CI run could have done this:** `IIdentityProvider`
-is registered only when the flag is on, `deploy/.env.example` sets it **false**, so the seven-service
-e2e stack with a real Keycloak never even constructs the adapter, and every backend test uses
-`FakeIdentityProvider`. Measured on UAT: invite **200**, roles **204**, and `AC-093`'s audit row read
-back **out of the hash chain** (seq 1181, actor, subject, timestamp, **both** `beforeJson` and
-`afterJson`), chain intact including that row. **`AC-093` Met**; `AC-088`/`AC-091` re-evidenced live.
-
-### `DEF-053` `#248` · `DEF-054` `#249` — both Fixed
-
-`/session` carries `RequireRole {guest, chairman, secretary}`; `up.sh` asserts `keycloak-config`
-converged. Both proven by **forcing** the refusal: reverting `App.tsx` fails exactly the five denied
-roles and no others; neutering `assert-oneshot.sh`'s comparison fails exactly the two cases that
-depend on it. `assert-oneshot.sh` was extracted **because an inline check could not be tested** —
-`up.sh` runs `gen-secrets.sh`, which clobbers your live dev secrets.
-
-### `AC-004` — the last Pending now has evidence, and it is bad news (`OQ-076`)
-
-The live realm has `ssoSessionIdleTimeout=1800`, so the control is real. But `automaticSilentRenew:
-true` and **no app-side inactivity detection exists anywhere** — silent renew resets the SSO idle
-clock, so an open tab is **never idle**. The 30-minute timeout can only fire once the tab is closed,
-when there is no session to redirect. Same shape as `AC-090`. Recorded as **analysis, not
-measurement** — the 30-minute observation has not been run.
+⚠ **Cheapest first (`DW-026`):** assert every `IAuthorizationRequirement` type appears in at least one
+registered policy. A handful of lines, and it guards the fails-open case.
 
 ---
 
 ## 4. Everything left, in order
 
-> ★ **Four decisions were taken on 2026-08-13 and are recorded in `DEC-042`. Three are UNBUILT —
-> they are instructions now, not options. Read `DEC-042` before starting any of them.**
->
-> | | decision | state |
-> |---|---|---|
-> | `DEF-057` | **implement** stream scope (do not drop it) | ⚠ **planned, 6 steps — see below.** Names supplied; ⚠ **`ADR-0041` needs approval** and the free-text-vs-picker decision is open |
-> | `AC-009`/`AC-034` | **AC-034 wins** | ✅ done — `SC-009`, `AV-160`, zero code |
-> | `DEF-056` | **build the `IAuthorizationMiddlewareResultHandler`** | ☐ unbuilt |
-> | `AC-011` | **turn `KEYCLOAK_ADMIN_ENABLED` on in CI's e2e stack** | ☐ unbuilt — ✓ the secret is already mounted in `docker-compose.yml` (163/183/338, declared 433), so it will not stop the hosts |
->
-> ### ★ `DEF-057` + `DEF-058` — an APPROVED design and an **eight-step slice**, not a fix
->
-> **`ADR-0042` is Approved** (supersedes `ADR-0041`, Rejected-and-kept). Full reasoning in `PE-293`.
-> ⚠ **Anyone treating this as one change will land the seed without the parts that make it safe.**
->
-> ✓ **No design needed for two things.** `CommitteeWide = { Chairman, Secretary, Auditor,
-> Administrator }` **already bypasses** stream scope — the Chairman/Secretary worry is handled by
-> existing code. Stream-bounded = Member, Reviewer, Submitter, Guest (~26 of 27 prod users).
->
-> **The posture is FAIL-CLOSED with mandatory assignment.** No empty-set special case: forgetting to
-> assign someone **refuses** rather than permits. "Unrestricted" is said explicitly with a wildcard.
->
-> **THE ORDER IS LOAD-BEARING — any other order produces an outage or a control that cannot work:**
->
-> 1. **Seed 5 streams + a wildcard row.** `Stream.IsWildcard` is a **BOOLEAN COLUMN, never a magic
->    code** — a renamed stream would silently break the bypass, or a future one collide into
->    universal access. Names confirmed by the operator:
->    `core`/Core/الأساسي · `communications`/Communications/الاتصالات ·
->    `smart-cities`/Smart Cities/المدن الذكية · `government`/Government/الحكومي ·
->    `shared-services`/Shared Services/الخدمات المشتركة.
->    ⚠ For the wildcard reuse the committee's **own** wording — i18n already has
->    `reports.filter.allStreams` = "All streams" / "كل المسارات".
-> 2. **Topics PICK from the taxonomy**; the validator rejects free text. Without this the control
->    **cannot work** — the provider returns `Stream.Code` while topics carry typed strings.
->    ⚠ **Do it now: prod has 0 topics, so there is no migration. That stops being true on first use.**
->    Touches `SubmitTopicCommand`, its validator, `SubmitTopic.tsx`, `UpdateTopicCommand`, and every
->    test passing `streams: ['Platform']` — **including `apiCreateTopic`, used by every e2e fixture**.
-> 3. **Build the assignment UI** — it does not exist. `UsersMembership.tsx` displays streams; its own
->    header says assignment is **INERT** pending BL-024.
-> 4. **`FR-156`'s invite gains a REQUIRED stream field**, plus a loud "No stream assigned" roster
->    state and a self-explaining refusal as the backstop.
-> 5. **⚠ BACKFILL ALL 26 EXISTING MEMBERS.** They were seeded straight into Keycloak so step 4 does
->    not cover them. **Miss this and the whole committee is locked out the day the check lands.**
-> 6. **Fix `DEF-058`** (add `Scope` to `UpdateTopicCommand` + triage UI) and expose the OrgWide fact
->    to authz as a **primitive `bool` on `IStreamScopedResource`** — ⚠ **not** the `TopicScope` enum:
->    the contract is in `Shared.Contracts`, the enum in `Topics.Domain` (`ADR-0001`; `ADR-0021` is the
->    pattern). Platform/OrgWide topics then bypass stream scope.
-> 7. **Wire `StreamScopeRequirement`** into the stream-bounded write policies.
-> 8. **Evidence `AC-010`** ⚠ against a member assigned to a **different** stream than the topic —
->    never an unassigned one, whose refusal proves nothing about stream scope.
->
-> ⚠ **Accepted escalation path:** a Secretary can widen write access by elevating a topic's scope.
-> Deliberate, Secretary/Chairman-gated and audited.
->
-> Plus two I defaulted without asking: **`AC-003`** — write the cheap live test (seed a role-less
-> user, assert `POST /members/me` → 403); its audit clause rides on `DEF-056`. **`AC-041`** — prefer
-> property-level RTL guards over pixel baselines, and leave Edge unrun, unless the operator says
-> otherwise.
+### 1. ★ `DEF-057` + `DEF-058` — approved design, **eight-step slice**, nothing built
 
+**`ADR-0042` Approved** (supersedes `ADR-0041`, Rejected-and-kept). Reasoning: `PE-293`, `DEC-042`.
+⚠ **Treating this as one change lands the seed without the parts that make it safe.**
 
-**1. Sign in to production once — a sanity check, not a release gate.** ⚠ **This item used to be
-much bigger and it was overstated; the correction is `PE-285`.** It claimed a human login was "the
-only thing standing between deployed and verified", on two grounds. One was **wrong** and the other
-turned out to be **testable without a credential**.
+✓ **No design needed for two things.** `CommitteeWide = { Chairman, Secretary, Auditor, Administrator }`
+**already bypasses** stream scope — the Chairman/Secretary worry is handled by existing code.
+Stream-bounded = Member, Reviewer, Submitter, Guest (~26 of 27 prod users).
 
-- ✗ **Wrong:** *"a member with no role claim resolves to `Guest`, so prod accounts are confined to
-  the guest surface."* That was measured on an **invited** member — created through the FR-156 API
-  with no roles — and generalised to a population that has never taken that path. Measured on the
-  live realm: **27 realm users, 27 hold a committee role, zero hold none.** No production account is
-  exposed to it.
-- ✓ **Already tested, unauthenticated:** the real fear is `DEF-023` — healthy containers, valid cert,
-  and nobody able to log in because Keycloak refused the SPA's `redirect_uri`. Replayed the authorize
-  request with a real S256 PKCE challenge, using the config read out of the **served bundle**:
-  the real URI returns **200 and the actual login form**, a deliberately wrong one returns **400** and
-  Keycloak's error page. `redirectUris` and `webOrigins` read back correct.
+**Posture: FAIL-CLOSED with mandatory assignment.** No empty-set special case — forgetting to assign
+**refuses** rather than permits. "Unrestricted" is stated with a wildcard.
 
-**So what is left for you is one small thing:** sign in and confirm the dashboard renders with your
-own name and role, and that `/members` shows the roster and invite panel. Worth doing once — it is
-the only step no probe can take.
+**THE ORDER IS LOAD-BEARING. Any other order produces an outage or a control that cannot work.**
 
-⚠ **Do NOT log in as one of the 25 seeded accounts that have never signed in.** Their temporary
-password is known, but using it burns that person's credential and forces you to set a password on a
-real member's account. `PE-222` did that once under explicit instruction; it is not a routine check.
+1. **Seed 5 streams + a wildcard row.** `Stream.IsWildcard` is a **BOOLEAN COLUMN, never a magic
+   code** — a renamed stream would silently break the bypass, or a future one collide into universal
+   access. Operator-confirmed:
+   `core`/Core/الأساسي · `communications`/Communications/الاتصالات ·
+   `smart-cities`/Smart Cities/المدن الذكية · `government`/Government/الحكومي ·
+   `shared-services`/Shared Services/الخدمات المشتركة.
+   ⚠ For the wildcard reuse the committee's **own** wording — i18n already has
+   `reports.filter.allStreams` = "All streams" / "كل المسارات".
+2. **Topics PICK from the taxonomy**; the validator rejects free text. Without this the control
+   **cannot work** — the provider returns `Stream.Code` (lowercased) while topics carry typed strings,
+   so `"Smart Cities"` never matches `smart-cities`. ⚠ **Do it now: prod has 0 topics so there is no
+   migration — and that stops being true on first use.** Touches `SubmitTopicCommand`, its validator,
+   `SubmitTopic.tsx`, `UpdateTopicCommand`, and **every test passing `streams: ['Platform']`,
+   including `apiCreateTopic`, which every e2e fixture uses.**
+3. **Build the assignment UI** — it does not exist. `UsersMembership.tsx` displays streams; its own
+   header says assignment is **INERT** pending BL-024. Only Administrator-only
+   `PUT /api/members/{publicId}/streams` sits behind it.
+4. **`FR-156`'s invite gains a REQUIRED stream field**, plus a loud "No stream assigned" roster state
+   and a self-explaining refusal as the backstop.
+5. **⚠⚠ BACKFILL ALL 26 EXISTING MEMBERS.** They were seeded straight into Keycloak, so step 4 does
+   **not** cover them. **Miss this and the whole committee is locked out the day the check lands.**
+6. **Fix `DEF-058`** — add `Scope` to `UpdateTopicCommand` (metadata, already Secretary/Chairman-gated
+   post-Accept) + triage UI — and expose the OrgWide fact to authz as a **primitive `bool` on
+   `IStreamScopedResource`**. ⚠ **Not** the `TopicScope` enum: the contract lives in
+   `Shared.Contracts`, the enum in `Topics.Domain` (`ADR-0001`; `ADR-0021` is the pattern).
+   Platform/OrgWide topics then bypass stream scope.
+7. **Wire `StreamScopeRequirement`** into the stream-bounded write policies.
+8. **Evidence `AC-010`** ⚠ against a member assigned to a **different** stream than the topic — never
+   an unassigned one, whose refusal proves nothing about stream scope.
 
-*Also already proven, don't redo:* `smoke.sh` passes · `/api/session/me` is 401 not 404 · both
-reconcile logs read `realm-management grant is exactly: manage-users` · and the production
-admin-client credential chain works end to end — the pinned secret returns **200 with an
-access_token**, a wrong one returns **401 `unauthorized_client`** (`PE-281`).
+⚠ **Accepted escalation path:** a Secretary can widen write access by elevating a topic's scope.
+Deliberate, Secretary/Chairman-gated, audited.
 
-**2. ✅ `OQ-076` / `AC-004` — DONE (`#252`, `e9b2155`). The last Pending is gone.** Real inactivity
-detection: `useIdleSignOut` signs out after 30 idle minutes, and **`stopSilentRenew()` runs before
-`signoutRedirect()`** — a renew still armed resurrects the session, so the order *is* the fix and the
-test asserts the sequence. Mutation-tested both ways.
-⚠ **Still outstanding from that question, one line:** `AC-090`'s statement cites a "60-minute idle
-timeout" and the realm says **1800s**. Its verdict does not rest on the figure, but the text is wrong.
+### 2. `DEF-056` — build the `IAuthorizationMiddlewareResultHandler` (decided, `DEC-042`)
 
-**3. The Partials campaign — Tranche A is DONE; B and C remain.** The shared gap, precisely:
-`PermissionMatrixTests` proves the deny matrix over 34 policies × 8 roles but never crosses HTTP;
-`Acmp.Api.Tests` crosses HTTP with a **synthetic `TestAuthHandler`**; `RealJwtAuthTests` boots the
-real scheme but only covers 401 fail-closed paths. So nothing drove a **real Keycloak token** through
-the matrix. **Agreed approach: CI E2E now, re-evidence on UAT later.**
+A refused mutation leaves **no audit trace**: every write endpoint 403s at the ASP.NET policy layer
+**before** MediatR, and `AuthorizationBehavior:39` is the only emitter of `Authorization.Forbidden`.
+`SqlAuditSink` is innocent (it saves immediately).
 
-- ✅ **Tranche A — `AC-005`, `AC-007` Met; `AC-006` still Partial** (`#251`, `ff356c4`).
-  `e2e/role-matrix.spec.ts` + three seeded users. **No fixtures needed** — `AuthorizationBehavior` is
-  registered before `ValidationBehavior`/`TransactionBehavior`, so a random GUID reaches a genuine
-  role decision. Every denial is controlled by an allowed role **on the same route**.
-  ⚠ **It found `DEF-056` on its first run:** every write endpoint carries a per-endpoint
-  `RequireAuthorization(Policies.X)`, so ASP.NET 403s **before** MediatR and
-  `AuthorizationBehavior:39` — the only emitter of `Authorization.Forbidden` — never runs. A refused
-  mutation leaves **no trace it was attempted**. `AC-006`'s audit clause had never been checked by
-  anything. Pinned by a `test.fail()` case that **goes red the day `DEF-056` is fixed** — at which
-  point delete that line and flip `AC-006`.
-- ◐ **Tranche B — `AC-033` `AC-034` Met (`#253`, `85068c9`); `AC-009` `AC-010` `AC-011` still open,
-  and the reasons are findings, not leftovers.** One shared fixture, per-run stamped.
-  - **`AC-009`** — the refusal half is proven; **the positive half is unreachable over HTTP.**
-    Post-Accept the policy switches from `TopicEdit` to `TopicTriage` (Secretary/Chairman only —
-    which is `AC-034`'s own rule), so the grant-on-accept Owner capability is never consulted for an
-    edit. The one pre-Accept status reachable after Accept is `Reopened`, and **`Topic.Reopen` has no
-    endpoint**. ⚠ Editing pre-Accept as the *submitter* would turn it green in one line and prove
-    submitter-authorization, not ownership. **Don't.** Honest next step: find whether any other `O`
-    row (`ActionCreate`, `RiskManage`, `AdrCreate`…) actually consults the grant — ⚠ `apiCreateAction`
-    records that `SourceId` has **no cross-module FK** (ADR-0001), so whether Actions can resolve a
-    Topic resource at all is genuinely open.
-  - **`AC-010`** — blocked by **`DEF-057` (high)**, below.
-  - **`AC-011`** — needs a Guest presenter; deferred with `AC-010`.
-- ◐ **Tranche C — assessed (`AV-157/158/159`, `PE-290`). It needed verdicts, not code:** all three
-  were mis-described by their own evidence strings, and reading them was the work.
-  - **`AC-048` — DONE, and this is the FINAL verdict.** Partial with the reason recorded (your
-    decision). The provable half was **already covered**: `SubmitTopic.test.tsx:186` dispatches a
-    cancelable `beforeunload` and asserts `defaultPrevented` — `preventDefault` is the *entire*
-    contribution a page can make. Only a rewording (mechanism, not the browser's rendering) could
-    change it, and that needs a scope-change row.
-  - **`AC-041`** — two named gaps: `vr-sweep.spec.ts` is **capture-only** (`page.screenshot({path})`,
-    no `toHaveScreenshot`, no baseline, **no assertion**), so "detected" is a human opening PNGs; and
-    `playwright.config.ts` has **one project, `chromium`**, so "Chrome *and Edge*" has never run.
-    ⚠ RTL is *not* unguarded — `rtl-a11y` asserts `dir`/`lang` + axe, and `rtl-logical-css.test.ts`
-    mechanically fails the build on asymmetric corner radii (the `wiki.css` defect). ⚠ **Before
-    committing pixel baselines, weigh that property-level guards have caught real defects here and
-    capture-only sweeps have caught none** — "guard the property, not the value".
-  - **`AC-003`** — resolved in the code, and it is the **deny** branch, not the Submitter fallback
-    the AC's parenthesis implies: `PrimaryRole(...) ?? throw new ForbiddenAccessException(...)`.
-    Fail-closed, which is the safer branch. Not flipped because (a) the throw is in the **handler**,
-    not `AuthorizationBehavior`, so the AC's `AuthEvent` clause is `DEF-056` arriving by a second
-    route, and (b) it is a reading, not a measurement. **The settling test is cheap and specified in
-    `AV-159`:** seed a user with **no** committee realm role (`seedUser` must make `realmRole`
-    optional), log in for real, assert `POST /members/me` → 403 and look for an audit row.
-    ⚠ Do not confuse this with the UAT observation that an *invited* member reads `Guest` — that is
-    the roster DTO for an existing row, a different code path.
+⚠ **Two constraints, established before any code:** recover the failing policy name from
+`policy.Requirements` (`CapabilityRequirement` carries `PolicyName` — confirm **one**, not a merged
+set), and emit **only** on `authorizeResult.Forbidden` — never `Challenged` (the 401 path) and never
+success. Resolve the sink from `context.RequestServices`.
 
-⚠ **Before adding more seeded e2e users, re-check the absolute-count assertions.** A login provisions
-a `CommitteeMember` and any spec counting rows shifts under it — that is `DEF-045` cause 3. Checked
-for Tranche A: the only remaining absolute count is `ac043-reorder`'s, scoped to its own fixtures by
-a per-run stamp.
+**When it works, the `test.fail()` case in `e2e/role-matrix.spec.ts` goes RED on purpose.** Delete
+that line and flip **`AC-006`** to Met with it as the evidence.
 
-**4. `OQ-074`** — `DEC-037` never said *whose* view Chairman/Secretary "preview". Shipped as their
-own slot. ⚠ **New evidence:** `navModel.ts`'s ACCESS map grants `session` to **guest only**, so
-Chairman/Secretary are permitted on a page they have **no nav link to**. Answering has a nav
-consequence either way; `DEF-053` deliberately left the map alone rather than pre-empt it.
+### 3. `AC-011` — turn `KEYCLOAK_ADMIN_ENABLED` on in CI's e2e stack (decided, `DEC-042`)
 
-**5. `DEF-038`** — the roster lists only members who have logged in. ⚠ **Partly overtaken:**
-`GetMembers` now returns Active **or** Invited, so anyone invited *through the app* appears. The
-residue is the 25 accounts seeded directly into Keycloak before that existed.
+Unblocks far more than one AC: the **entire** ADR-0038 write path is registered only when the flag is
+on, so CI today runs seven services with a real Keycloak and **never constructs `IIdentityProvider`**.
+✓ **Verified safe:** `deploy/docker-compose.yml` already mounts `KeycloakAdmin__ClientSecret` into
+`keycloak-config`, `api` and `worker` (163/183/338) and declares the file (433). Prefer `e2e.yml`'s
+env (CI only) over `deploy/.env.example` (which changes dev too).
 
-**6. `Streams.NameAr` on prod** — still not done. Real table is `membership.streams`.`name_ar`; the
-C# names do not exist in SQL and every module owns a schema.
+### 4. `AC-003` — the cheap live test (defaulted, no decision needed)
 
-**7. `DEF-055`** (low) — `09-put-env.sh` refuses `ENABLED=true` without a `KEYCLOAK_ADMIN_CLIENT_SECRET`
-and gives a reason that is **not** the real one (gen-secrets always writes the file, so ValidateOnStart
-would pass). The behaviour is defensible; the message and comment are wrong. Do **not** relax the
-`CHANGE_ME` branch.
+Reading settled the behaviour: `PrimaryRole(...) ?? throw new ForbiddenAccessException(...)` — a
+role-less token is **denied**, fail-closed, which is the AC's first branch. What is missing is a
+measurement and the audit clause. Seed an e2e user with **no** committee realm role (`seedUser`
+requires one, so `realmRole` must become optional), log in for real, assert `POST /members/me` → 403
+and look for an audit row. ⚠ Its audit clause rides on `DEF-056`. ⚠ **Do not confuse this with the
+UAT observation that an *invited* member reads `Guest`** — that is the roster DTO for an existing
+row, a different code path.
 
-**8. Remaining defects** — ★ **`DEF-057` (HIGH, and the most substantive thing this campaign found):
-stream-scope ABAC is never evaluated and it FAILS OPEN.** `AuthorizationRegistration:64` registers
-`StreamScopeHandler` in DI; `:69` builds **every** policy with `CapabilityRequirement` and nothing
-else — so the requirement is in no policy and the handler is never invoked. A Member may write
-against a topic in any stream today. ⚠ **The shape is what hid it:** a reviewer asking "is stream
-scope implemented?" finds a handler, a DI registration, a marker interface on `Topic`, and four
-passing `AbacHandlerTests`. Every answer is yes; only the wiring is missing, and nothing asserts
-wiring. ⚠⚠ **DO NOT JUST WIRE IT.** No `Stream` can be created at all (`Stream.Create` has no caller,
-nothing seeds the table), and `Topic.cs:104` requires ≥1 affected stream to submit — so wiring alone
-takes the system from fails-open straight to **refusing every stream-bounded write**. Order: seed
-streams → reconcile topic-side values with `Stream.Code` → wire → then evidence `AC-010`.
-Then **`DEF-056`** (the audit gap above),
-`DEF-039` (System Health renders a MinIO tile; the cloud moved to S3), `DEF-041`
-(voting-eligibility toggle absent from the accessibility tree), `DEF-012` (package-data residue in
-`v_backlog`). ⚠ **`DEF-045` is now Fixed** — all four causes were addressed in code, and the row
-claiming cause 3 was outstanding was **stale**; I repeated it to the operator on 2026-08-12 before
-reading the two specs it described. What is left there is an observation, not a fix: the repaired
-suite has never run against a non-fresh environment, and CI rebuilds its database every run so it is
-blind to the class by construction.
+### 5. `AC-041` — decide the instrument (defaulted; overrule if you disagree)
 
-**9. `OQ-062` is stricter in code than in the decision** — a *permanent* UAT Webex ban vs "off
-**until** a UAT space exists", so the exit condition can never be met.
+`vr-sweep.spec.ts` is **capture-only** (`page.screenshot({path})`, no baseline, **no assertion**), so
+"detected" means a human opening PNGs; and `playwright.config.ts` has **one project, `chromium`**, so
+"Chrome *and Edge*" never ran. ⚠ RTL is **not** unguarded — `rtl-a11y` asserts `dir`/`lang` + axe, and
+`rtl-logical-css.test.ts` mechanically fails the build on asymmetric corner radii (the `wiki.css`
+defect only an Arabic reader sees). **Default: property-level guards over pixel baselines, Edge
+unrun** — property guards here have caught real defects; capture-only sweeps have caught none.
 
-**10. `AC-091`'s last clause, if you want it** — first login consuming the invite. Proving it live
-needs the temporary password, which the probe refuses to print. A future probe could carry the value
-**in-process** from the invite response into a login without ever rendering it.
+### 6. Deploy the idle sign-out — one product commit (`e9b2155`), operator's call. See §1.
 
-**Not on this list, deliberately:** the ~45 `Deferred` open questions and the `DW-0xx` backlog are
-parked by design. If a reschedule capability is ever built, it **must** call `IGuestWindowWriter`.
+### 7. Smaller, still open
+
+- **`AcceptTopic.cs`'s comment is now a FALSE LEAD** — it cites `AC-009` as the reason for
+  grant-on-accept, and `SC-009` removed that clause. Fix the comment.
+- **Is the Owner grant consulted by *anything* over HTTP?** Unverified. Other `O` rows
+  (`ActionCreate`, `RiskManage`, `AdrCreate`…) are topic-scoped and *may* — ⚠ but `apiCreateAction`
+  records that `SourceId` has **no cross-module FK** (`ADR-0001`), so whether Actions can resolve a
+  Topic resource at all is open. `DEF-057` proves a handler can be wired into nothing.
+- **`AC-090`'s text cites a "60-minute idle timeout"**; the realm says **1800s**. The verdict does not
+  rest on it; the number is wrong.
+- **`OQ-074`** — whose view do Chairman/Secretary "preview" on `/session`? Shipped as their own slot.
+  ⚠ `navModel.ts` grants `session` to **guest only**, so they have **no nav link** to a page they are
+  permitted on. Answering has a nav consequence either way.
+- **`DEF-038`** roster residue · **`DEF-039`** MinIO tile on an S3 cloud · **`DEF-041`**
+  voting-eligibility toggle absent from the a11y tree · **`DEF-055`** `09-put-env.sh`'s wrong refusal
+  message · **`DEF-012`** package-data residue.
+- **`OQ-062`** is stricter in code than in the decision — a *permanent* UAT Webex ban vs "off
+  **until** a UAT space exists", so the exit condition can never be met.
+- **★ Get one real user through one real flow on production.** Zero topics, one login. The stack is
+  proven; the product is not.
 
 ---
 
 ## 5. Gotchas that cost real time
 
-- **Deploy as `acmp-admin`, never root.** Root bypasses the budget IAM-deny brake (`AC-085` leg 5);
-  `[default]` in `~/.aws/config` **is** root and its session expires.
-- **The deploy sequence that worked**, end to end: back up prod and **confirm the object in S3** →
-  start UAT and poll **SSM `PingStatus`** (`instance-running` is not readiness) → fetch
-  `/acmp/<env>/env`, re-pin both tags → `09-put-env.sh` → `08-bootstrap-box.sh <env> <full-sha>` →
-  `smoke.sh` → read the **`keycloak-config` log** back over SSM.
-- ⚠ **PowerShell joins arrays with SPACES.** `aws ssm get-parameter ... --output text` returns an
-  **array of lines**; `[IO.File]::WriteAllText(path, $array)` writes one space-joined line and would
-  have destroyed the env file. Use `($v -join "`n")` and verify the line count before publishing.
-- **`/acmp/*` env parameters are LF**, not CRLF — an older memory said CRLF and went stale the same
-  evening. `aws ssm get-parameter-history` settles it in one call.
+- **Deploy as `acmp-admin`, never root** (root bypasses the budget IAM-deny brake, `AC-085` leg 5;
+  `[default]` **is** root and its session expires).
+- **The deploy sequence that worked:** back up prod and **confirm the object in S3** → start UAT and
+  poll **SSM `PingStatus`** (`instance-running` is not readiness) → fetch `/acmp/<env>/env`, re-pin
+  both tags → `09-put-env.sh` → `08-bootstrap-box.sh <env> <full-sha>` → `smoke.sh` → read the
+  **`keycloak-config` log** back over SSM.
+- ⚠ **PowerShell joins arrays with SPACES.** `aws … --output text` returns an **array of lines**;
+  `[IO.File]::WriteAllText(path, $array)` writes one space-joined line and would have **destroyed the
+  SSM env file**. Join with an explicit newline and verify the line count before publishing.
+- **`/acmp/*` env parameters are LF**, not CRLF — an older note said CRLF and went stale the same
+  evening; `aws ssm get-parameter-history` settles it in one call.
 - **The keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD`** — the
   entrypoint exports it for its own process only. Read `/run/secrets/kc_bootstrap_admin_password`.
-- **Use PowerShell for any `aws` call with a `/`-leading argument** — Git Bash rewrites `/acmp/prod/env`
-  into `C:/Program Files/Git/acmp/...`. (`MSYS_NO_PATHCONV=1` also works, and the `deploy/aws/*` scripts
-  already set it.)
-- **Windows `python3` cannot see Git Bash's `/tmp`** — pass Windows-style absolute paths when building
-  SSM `--parameters file://` payloads.
-- **Write the Tamheed package only from `main`** — `tamheed-package/data` is git-tracked.
-  `defect.fixed_by` is a **FOREIGN KEY**: put PR refs in `custom_attributes`.
-  `open_question.lifecycle_status` is a **CHECK** over
-  `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` — "Resolved" rolls the
-  batch back.
-- **`gh pr create --body` with backticks/quotes breaks under PowerShell** — always `--body-file`.
-  Same for `git commit -m` with a here-string: use `-F`.
+- **Use PowerShell for any `aws` call with a `/`-leading argument**, or `MSYS_NO_PATHCONV=1`.
+- **Windows `python3` cannot see Git Bash's `/tmp`** — use Windows-style absolute paths for SSM
+  `--parameters file://` payloads.
+- **Write the Tamheed package only from `main`.** `defect.fixed_by` is a **FK** (PR refs go in
+  `custom_attributes`); `open_question.lifecycle_status` is a **CHECK** over
+  `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` ("Resolved" rolls the
+  batch back); `decision` has **no `status` column** (it is `lifecycle_status`);
+  `deferred-work.invariant_at_stake` is a **FK**, not prose. ⚠ **FK ordering matters inside one
+  batch** — put the referenced row first or the whole batch rolls back.
+- **`gh pr create --body` and `git commit -m` with backticks or quotes break under PowerShell** —
+  always `--body-file` / `-F <file>`.
+- **`main`'s push run can fail for reasons that are not the code.** `#250`'s did twice — a 25-minute
+  `backend` timeout, then 25 tests failing on 100-second `HttpClient` timeouts against an
+  **in-process** TestHost (runner starvation). The third attempt passed clean. **Check what the
+  failing commit actually changed before concluding `main` is red for a code reason.**
 - **A compose `secrets:` entry whose file is MISSING fails the WHOLE stack.**
 - **New `.cs` files need a UTF-8 BOM**, and `.cs` must be **LF**.
-- **Never run `gen-secrets.sh` against the repo to test it** — `SECRETS_DIR` is hardcoded and it will
-  clobber the operator's live dev secrets.
+- **Never run `gen-secrets.sh` against the repo to test it** — `SECRETS_DIR` is hardcoded and it
+  clobbers the operator's live dev secrets. (This is *why* `assert-oneshot.sh` was extracted.)
 - **`git status --porcelain` reports an untracked *directory*** — use `-uall`.
-- **`realm-export.json` reaches FRESH STACKS ONLY.** `reconcile.sh` is the only seam that reaches
-  prod/UAT.
-- **The Playwright E2E suite is NOT UAT-only** — `e2e.yml` runs the full 7-service stack with a real
-  Keycloak on every PR. ⚠ **But with `KEYCLOAK_ADMIN_ENABLED=false`**, so it never exercises the
-  ADR-0038 write path at all.
+- **`realm-export.json` reaches FRESH STACKS ONLY.** `reconcile.sh` is the only seam to prod/UAT.
+- **The Playwright suite is NOT UAT-only** — `e2e.yml` runs the full 7-service stack with a real
+  Keycloak on every PR. ⚠ **But with `KEYCLOAK_ADMIN_ENABLED=false`**, so it never touches the
+  ADR-0038 write path (§4.3). ⚠ **e2e specs ARE now typechecked** (`tsconfig.e2e.json`, 34 files).
 - **Local `dotnet test` shows ~31 integration failures with Docker off** — Testcontainers, not a
   regression.
 - **Prod and UAT differ on purpose.** Do not harmonise them.
+- **7 stale branches exist** (`chore/design-update-round2`, `feat/audit-adr`, …) — all pre-date this
+  work; none are from it.
