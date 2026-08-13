@@ -22,6 +22,6 @@ public sealed class GetStreamsHandler : IRequestHandler<GetStreamsQuery, IReadOn
     public async Task<IReadOnlyList<StreamRefDto>> Handle(GetStreamsQuery request, CancellationToken ct) =>
         await _db.Streams.AsNoTracking()
             .OrderBy(s => s.Code)
-            .Select(s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar))
+            .Select(s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar, s.IsWildcard))
             .ToListAsync(ct);
 }

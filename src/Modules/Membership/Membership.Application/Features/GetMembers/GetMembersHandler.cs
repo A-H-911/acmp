@@ -14,7 +14,7 @@ public sealed class GetMembersHandler : IRequestHandler<GetMembersQuery, IReadOn
     {
         // Few streams for a single committee — load once and map in memory (no per-row join).
         var streams = await _db.Streams.AsNoTracking()
-            .ToDictionaryAsync(s => s.Id, s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar), ct);
+            .ToDictionaryAsync(s => s.Id, s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar, s.IsWildcard), ct);
 
         var query = _db.Members.AsNoTracking();
         if (!request.IncludeInactive)

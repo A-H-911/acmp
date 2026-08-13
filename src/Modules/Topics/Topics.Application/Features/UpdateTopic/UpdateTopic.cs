@@ -4,6 +4,7 @@ using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Membership;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,15 @@ public sealed record UpdateTopicCommand(
 
 public sealed class UpdateTopicValidator : AbstractValidator<UpdateTopicCommand>
 {
-    public UpdateTopicValidator()
+    public UpdateTopicValidator(IStreamCatalog streams)
     {
         RuleFor(x => x.TopicId).NotEmpty();
         RuleFor(x => x.Urgency).IsInEnum();
+        // ⚠ The same taxonomy rule as submit, and it is load-bearing here rather than symmetric
+        // tidiness: this endpoint writes Streams through Topic.AssignStreams exactly as submit does,
+        // so enforcing the taxonomy only on submit would leave free text reachable through an edit.
+        // ⚠ NOT NotEmpty — an empty list stays accepted here until DEF-059 lands (DEC-043, steps 6-7).
+        RuleFor(x => x.Streams).MustBeSeededStreams(streams);
     }
 }
 
