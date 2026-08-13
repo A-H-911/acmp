@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useInviteUser, type InvitedUser } from '../../api/members';
+import { useInviteUser, useStreams, type InvitedUser } from '../../api/members';
+import { MemberStreamChips } from './MemberStreamChips';
 import { Button } from '../../components/ui/Button';
 import { Field, Input } from '../../components/ui/Field';
 import { InvitedCredential } from '../../components/ui/InvitedCredential';
@@ -23,20 +24,33 @@ export function InviteUserPanel() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [invited, setInvited] = useState<InvitedUser | null>(null);
+  // ⚠ STARTS EMPTY, AND THE WILDCARD IS NEVER PRE-SELECTED (DEC-044). All 26 existing members begin
+  // on the wildcard via the step-5 backfill, so if new invites also defaulted to it stream scope
+  // would never restrict anyone and the whole control would be decorative. The inviter must choose.
+  const [streamIds, setStreamIds] = useState<string[]>([]);
   const invite = useInviteUser();
+  const { data: streams, isLoading: streamsLoading, isError: streamsError } = useStreams();
 
-  const canSubmit = email.trim().length > 0 && fullName.trim().length > 0 && !invite.isPending;
+  const toggleStream = (publicId: string) =>
+    setStreamIds((prev) =>
+      prev.includes(publicId) ? prev.filter((id) => id !== publicId) : [...prev, publicId]);
+
+  // ⚠ At least one stream is REQUIRED (ADR-0043 clause 2) — the server refuses without it, and an
+  // invite that skipped it would create a member who can write nothing once step 7 lands.
+  const canSubmit =
+    email.trim().length > 0 && fullName.trim().length > 0 && streamIds.length > 0 && !invite.isPending;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
     invite.mutate(
-      { email: email.trim(), fullName: fullName.trim() },
+      { email: email.trim(), fullName: fullName.trim(), streamPublicIds: streamIds },
       {
         onSuccess: (result) => {
           setInvited(result);
           setEmail('');
           setFullName('');
+          setStreamIds([]);
         },
       },
     );
@@ -83,6 +97,28 @@ export function InviteUserPanel() {
 
         <Field label={t('admin.invite.fullName')} required>
           {(p) => <Input {...p} type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required />}
+        </Field>
+
+        <Field label={t('admin.invite.streams')} required>
+          {() => (
+            <>
+              <p className="field-help">{t('admin.invite.streamsHelp')}</p>
+              {streamsLoading && <p className="field-help">{t('common.loading')}</p>}
+              {(streamsError || (!streamsLoading && !streams)) && (
+                <p className="field-error" role="alert">
+                  <Icon name="alertCircle" size={13} aria-hidden />{t('common.error')}
+                </p>
+              )}
+              {streams && (
+                <MemberStreamChips
+                  streams={streams}
+                  selected={streamIds}
+                  onToggle={toggleStream}
+                  ariaLabel={t('admin.invite.streams')}
+                />
+              )}
+            </>
+          )}
         </Field>
 
         <p className="adm-detail-note">

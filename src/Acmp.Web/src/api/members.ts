@@ -121,6 +121,9 @@ export interface InvitedUser {
 /**
  * Invite a user (FR-156). Administrator or Secretary only — enforced server-side.
  *
+ * ⚠ streamPublicIds is REQUIRED by the server (ADR-0043 clause 2): an invite with no stream
+ * would create a member who, once step 7 wires stream scope, can write nothing at all.
+ *
  * ⚠ The temporary password exists ONLY in this response. "No email in v1" is a hard constraint, so
  * the inviter reading it out is the delivery channel. It must never be logged, persisted, or put
  * anywhere it can be re-read: the 26-password CSV that had to be deleted by hand is the hazard this
@@ -130,7 +133,7 @@ export interface InvitedUser {
 export function useInviteUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { email: string; fullName: string }) =>
+    mutationFn: (body: { email: string; fullName: string; streamPublicIds: string[] }) =>
       api<InvitedUser>('/members/invite', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }),
     // The new member arrives at status Invited, so the roster must refetch to show it.
     onSuccess: () => qc.invalidateQueries({ queryKey: ['members'] }),

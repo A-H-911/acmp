@@ -4,7 +4,20 @@ import userEvent from '@testing-library/user-event';
 import { InviteUserPanel } from './InviteUserPanel';
 import { renderWithAuth } from '../../test/render';
 
-vi.mock('../../api/members', () => ({ useInviteUser: vi.fn() }));
+// ADR-0043 step 4 — the panel now reads the taxonomy for its REQUIRED stream field. Stubbed so this
+// suite stays query-free while rendering the REAL chips, which is what these tests then click.
+vi.mock('../../api/members', () => ({
+  useInviteUser: vi.fn(),
+  streamName: (s: { nameEn: string; nameAr: string }, isArabic: boolean) => (isArabic ? s.nameAr : s.nameEn),
+  useStreams: () => ({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
 import { useInviteUser } from '../../api/members';
 
 const mockUseInviteUser = useInviteUser as unknown as Mock;
@@ -33,15 +46,20 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
 
     await userEvent.type(screen.getByLabelText(/Email address/), '  new@acmp.gov  ');
     await userEvent.type(screen.getByLabelText(/Full name/), '  New Person  ');
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
 
     expect(mutate).toHaveBeenCalledWith(
-      { email: 'new@acmp.gov', fullName: 'New Person' },
+      { email: 'new@acmp.gov', fullName: 'New Person', streamPublicIds: ['s1'] },
       expect.anything(),
     );
   });
 
-  it('keeps submit disabled until both fields are filled', async () => {
+  // ⚠ THREE requirements now, not two. ADR-0043 clause (2) makes the stream REQUIRED: an invite
+  // without one creates a member who, once step 7 wires stream scope, can write nothing at all. The
+  // email+name step is asserted STILL DISABLED so the stream is proven to be doing the gating,
+  // rather than the test passing because the other two fields happened to be empty.
+  it('keeps submit disabled until email, name AND a stream are given', async () => {
     invite();
     renderWithAuth(<InviteUserPanel />);
     const submit = screen.getByRole('button', { name: /send invitation/i });
@@ -51,7 +69,36 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
     expect(submit).toBeDisabled();
 
     await userEvent.type(screen.getByLabelText(/Full name/), 'A B');
+    expect(submit).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
     expect(submit).toBeEnabled();
+  });
+
+  // ⚠ DEC-044: the wildcard is SELECTABLE but must never be pre-selected. All 26 existing members
+  // start on it via the step-5 backfill, so if invites defaulted to it too, stream scope would never
+  // restrict anyone and the control would be decorative.
+  it('offers the wildcard but leaves it unselected', () => {
+    invite();
+    renderWithAuth(<InviteUserPanel />);
+
+    expect(screen.getByRole('button', { name: 'All streams' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Core' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('can invite someone as unrestricted by choosing the wildcard', async () => {
+    const mutate = invite();
+    renderWithAuth(<InviteUserPanel />);
+
+    await userEvent.type(screen.getByLabelText(/Email address/), 'a@b.com');
+    await userEvent.type(screen.getByLabelText(/Full name/), 'A B');
+    await userEvent.click(screen.getByRole('button', { name: 'All streams' }));
+    await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { email: 'a@b.com', fullName: 'A B', streamPublicIds: ['sw'] },
+      expect.anything(),
+    );
   });
 
   it('shows a pending label while the invite is in flight', () => {
@@ -75,6 +122,7 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
 
     await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
     await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
 
     expect(screen.getByText(INVITED.temporaryPassword)).toBeInTheDocument();
@@ -93,6 +141,7 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
 
     await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
     await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
     await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
@@ -107,6 +156,7 @@ describe('InviteUserPanel (FR-156 / AC-088)', () => {
 
     await userEvent.type(screen.getByLabelText(/Email address/), 'new@acmp.gov');
     await userEvent.type(screen.getByLabelText(/Full name/), 'New Person');
+    await userEvent.click(screen.getByRole('button', { name: 'Core' }));
     await userEvent.click(screen.getByRole('button', { name: /send invitation/i }));
     await userEvent.click(screen.getByRole('button', { name: /invite someone else/i }));
 
