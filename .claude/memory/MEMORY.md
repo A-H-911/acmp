@@ -7,7 +7,7 @@
 
 > Detail lives in `handoff/RESUME.md` §3–§4 and in the package. These are pointers + the traps.
 
-- **★ START HERE: `handoff/RESUME.md`** — the single durably-named entry point. Kickoff prompt = **`handoff/prm-next.md`** (EDIT it, never add another `prm-*.md`). Every other `RESUME-*.md` / `prm-*.md` is ⛔ superseded.
+- **★ START HERE: `handoff/RESUME.md`** — the single durably-named entry point. Kickoff prompt = **`tamheed-package/prompts/prm-next.md`** (moved there by Tamheed v3.0.0, which made `<package>/prompts/` the single source; EDIT it, never add another `prm-*.md`). Every other `RESUME-*.md` / `prm-*.md` is ⛔ superseded.
 - **Prod** https://acmp.anas7ammo.dev · `i-04d9717feea79204b` · always-on. **UAT** `i-07ac28ac2fedab921` · stopped when idle. Both on **`65e45d4`** with **`KEYCLOAK_ADMIN_ENABLED=true`**. They differ ON PURPOSE. **Read instance ids from `describe-instances`, never from notes.**
 - ⚠ **PROD IS LIVE BUT UNUSED: 0 topics, 0 streams, 0 member-stream links, 1 of 26 members has ever logged in.** The stack serves; the product has not been used. Lowers `DEF-057`'s urgency, raises the value of one real user through one real flow.
 - ★★ **`DEC-042` — four decisions taken 2026-08-13. Three are UNBUILT and are INSTRUCTIONS, not options.** Read it before starting any of them. `DEF-057` implement (see below) · `AC-009`/`AC-034` → **AC-034 wins**, ✅ done via `SC-009`/`AV-160`, zero code · `DEF-056` build the `IAuthorizationMiddlewareResultHandler` · `AC-011` turn `KEYCLOAK_ADMIN_ENABLED` on in CI's e2e stack (✓ secret already mounted, `docker-compose.yml` 163/183/338).
