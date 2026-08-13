@@ -912,7 +912,8 @@
     "secureHandoff": "Secure OIDC handoff · Keycloak",
     "failedTitle": "Sign-in could not be completed",
     "signedOut": "You've been signed out.",
-    "sessionExpired": "Your session expired. Please log in again."
+    "sessionExpired": "Your session expired. Please log in again.",
+    "idleTimeout": "You were signed out after 30 minutes without activity. Please log in again."
   },
   "notif": {
     "title": "Notifications",

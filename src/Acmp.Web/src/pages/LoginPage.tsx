@@ -30,7 +30,14 @@ export function LoginPage() {
 
   const otherLang = i18n.language === 'ar' ? 'en' : 'ar';
   const themeLabel = t(theme === 'dark' ? 'common.light' : 'common.dark');
-  const isWarn = status === 'session_expired';
+  // An idle sign-out is a WARNING like an expiry, not an info like a deliberate logout: in both
+  // cases the user is back here without having asked to be, and the banner is the only place that
+  // explains why (AC-004 / OQ-076).
+  const isWarn = status === 'session_expired' || status === 'idle_timeout';
+  const statusKey =
+    status === 'session_expired' ? 'auth.sessionExpired'
+    : status === 'idle_timeout' ? 'auth.idleTimeout'
+    : 'auth.signedOut';
 
   return (
     <div className="login-shell">
@@ -48,7 +55,7 @@ export function LoginPage() {
         {status && (
           <div role="status" className={`login-status login-status-${isWarn ? 'warn' : 'info'}`}>
             <Icon name={isWarn ? 'risk' : 'logout'} size={17} aria-hidden />
-            <span>{t(isWarn ? 'auth.sessionExpired' : 'auth.signedOut')}</span>
+            <span>{t(statusKey)}</span>
           </div>
         )}
 
