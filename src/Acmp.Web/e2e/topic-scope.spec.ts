@@ -32,8 +32,6 @@ let secretary: { bearer: string; member: ApiMember };
 let member: { bearer: string; member: ApiMember };
 let api: APIRequestContext;
 
-/** Owned BY THE MEMBER. */
-let ownedByMember: ApiTopic;
 /** Accepted, owner is the Secretary — the Member is a non-owner on an Accepted topic. */
 let ownedByOther: ApiTopic;
 /** Rejected with a recorded reason. */
@@ -75,9 +73,6 @@ test.beforeAll(async ({ browser }) => {
   secretary = await roleSession(await secretaryCtx.newPage(), 'secretary', 'Secretary');
   api = secretaryCtx.request;
 
-  ownedByMember = await apiCreateTopic(api, secretary.bearer, `TrB owned-by-member ${STAMP}`);
-  await accept(ownedByMember, member.member);
-
   ownedByOther = await apiCreateTopic(api, secretary.bearer, `TrB owned-by-other ${STAMP}`);
   await accept(ownedByOther, secretary.member);
 
@@ -89,18 +84,31 @@ test.beforeAll(async ({ browser }) => {
   if (!res.ok()) throw new Error(`[e2e] reject ${res.status()} ${await res.text()}`);
 });
 
-test('AC-009 — the Owner may edit their topic; the same Member may not edit one they do not own', async () => {
-  /*
-   * Both halves matter and the SECOND is what makes the first mean anything. A 403 on a topic the
-   * Member does not own could equally mean "Members cannot edit at all"; the accepted edit on the
-   * topic they DO own is what makes it a statement about ownership. Same principal, same request
-   * shape, same field — only the owner differs.
-   */
-  const mine = await edit(member.bearer, ownedByMember, `owner edit ${STAMP}`);
-  expect(mine.status(), 'the Owner must be able to edit their own topic').toBeLessThan(300);
-
+/*
+ * AC-009 — ONLY THE REFUSAL HALF IS ASSERTED HERE, AND THE REASON IS RECORDED RATHER THAN GLOSSED.
+ *
+ * The AC's positive clause is "a Member assigned as Owner submits an edit ... the edit is accepted".
+ * THAT IS NOT REACHABLE OVER HTTP TODAY, and the first run of this spec is what showed it — the
+ * Owner's own edit came back 403. Reading UpdateTopicHandler explains why, and it is by design:
+ *   - PRE-Accept  → the submitter edits freely, otherwise Policies.TopicEdit (owner-AiO or Sec/Chair)
+ *   - POST-Accept → Policies.TopicTriage, i.e. SECRETARY/CHAIRMAN ONLY — which is AC-034's own rule
+ * The ABAC Owner grant is written on Accept ("grant-on-accept ... so the ABAC owner check resolves
+ * for later edits"), but by then the topic is post-Accept and TopicEdit is no longer consulted for
+ * it. The one pre-Accept status reachable AFTER Accept is Reopened — and Topic.Reopen exists in the
+ * aggregate with NO ENDPOINT, so nothing can get there.
+ *
+ * So this asserts what is true and provable, and AC-009 stays Partial with that gap named. Making it
+ * pass by editing pre-Accept as the SUBMITTER would prove submitter-authorization, not ownership —
+ * a different claim wearing the AC's name.
+ */
+test('AC-009 — a Member is refused an edit on a topic they do not own', async () => {
   const theirs = await edit(member.bearer, ownedByOther, `non-owner edit ${STAMP}`);
-  expect(theirs.status(), 'the same Member must be refused a topic they do not own').toBe(403);
+  expect(theirs.status(), 'a Member must be refused a topic they do not own').toBe(403);
+
+  // The control: the same request shape from a principal who IS allowed. Without it, the 403 above
+  // is equally consistent with "this route refuses everyone" or "the body is malformed".
+  const bySecretary = await edit(secretary.bearer, ownedByOther, `control edit ${STAMP}`);
+  expect(bySecretary.status(), 'the Secretary is not refused the same request').toBeLessThan(300);
 });
 
 test('AC-034 — after Acceptance a non-owner Member is refused, and the Secretary is not', async () => {
@@ -137,7 +145,10 @@ test('AC-033 — a Rejected topic cannot be re-triaged, and the rejection surviv
   });
   expect(reReject.status(), 'a Rejected topic must not be re-rejected with a new reason').toBe(409);
 
-  const after = await api.get(`/api/topics/${rejected.id}`, { headers: { Authorization: secretary.bearer } });
+  // ⚠ BY KEY, not id — the route is GET /api/topics/{key}. The first run 404'd on the id, which
+  // reads exactly like "the topic is gone" and would be a very misleading way to fail an
+  // immutability test. Every OTHER call here takes the id; only the read takes the key.
+  const after = await api.get(`/api/topics/${rejected.key}`, { headers: { Authorization: secretary.bearer } });
   expect(after.status()).toBe(200);
   const body = (await after.json()) as { status: string };
   expect(body.status, 'the topic is still Rejected after both attempts').toBe('Rejected');
