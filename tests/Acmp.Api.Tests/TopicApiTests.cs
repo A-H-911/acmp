@@ -68,7 +68,7 @@ public class TopicApiTests
     public async Task Submit_without_token_returns_401()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        var response = await Client(factory, roles: null).PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var response = await Client(factory, roles: null).PostAsJsonAsync("/api/topics", SubmitBody("core"));
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -76,7 +76,7 @@ public class TopicApiTests
     public async Task Auditor_cannot_submit_403()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        var response = await Client(factory, "Auditor").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var response = await Client(factory, "Auditor").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -88,13 +88,41 @@ public class TopicApiTests
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    // ADR-0042 clause (7) THROUGH THE REAL HOST. The unit tests prove the RULE with a fake catalog;
+    // this proves the WIRING — that IStreamCatalog actually resolves from the composed container and
+    // that the validator runs in the real MediatR pipeline. Those are different claims, and this
+    // session's whole theme is that a correct-but-unwired control passes every check except this one.
+    // "Platform" is the exact value every fixture carried before the taxonomy existed.
+    [Fact]
+    public async Task Submit_with_a_stream_outside_the_taxonomy_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+
+        var response = await Client(factory, "Member").PostAsJsonAsync("/api/topics", SubmitBody("Platform"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // ⚠ The wildcard is member-side only (ADR-0042 clause 4) — a topic may never claim it. Asserted
+    // over HTTP as well as in the unit tests because the exclusion lives in StreamCatalog, which the
+    // unit tests replace with a fake: only this path exercises the real filter.
+    [Fact]
+    public async Task Submit_with_the_wildcard_stream_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+
+        var response = await Client(factory, "Member").PostAsJsonAsync("/api/topics", SubmitBody("all-streams"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     [Fact] // W1 + backlog + detail round-trip over HTTP
     public async Task Submit_then_read_backlog_and_detail()
     {
         await using var factory = new AcmpWebApplicationFactory();
         var member = Client(factory, "Member", sub: "kc-omar");
 
-        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("identity", "platform"));
+        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core", "government"));
         submit.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await submit.Content.ReadFromJsonAsync<SubmitResult>();
         result!.Key.Should().Be("TOP-2026-001");
@@ -116,7 +144,7 @@ public class TopicApiTests
         await using var factory = new AcmpWebApplicationFactory();
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
-        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var owner = (await (await Client(factory, "Secretary").GetAsync("/api/members"))
@@ -138,7 +166,7 @@ public class TopicApiTests
         await using var factory = new AcmpWebApplicationFactory();
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
-        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var owner = (await (await Client(factory, "Secretary").GetAsync("/api/members"))
@@ -159,7 +187,7 @@ public class TopicApiTests
     public async Task Reject_without_a_reason_returns_400()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var response = await Client(factory, "Secretary").PostAsJsonAsync($"/api/topics/{topic!.Id}/reject", new { reason = "" });
@@ -171,7 +199,7 @@ public class TopicApiTests
     {
         await using var factory = new AcmpWebApplicationFactory();
         var member = Client(factory, "Member", sub: "kc-omar");
-        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var response = await member.PostAsJsonAsync($"/api/topics/{topic!.Id}/comments", new { reason = "Agreed; document rollback." });
@@ -182,7 +210,7 @@ public class TopicApiTests
     public async Task Secretary_rejects_a_submitted_topic_returns_204()
     {
         await using var factory = new AcmpWebApplicationFactory();
-        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
@@ -197,7 +225,7 @@ public class TopicApiTests
         await using var factory = new AcmpWebApplicationFactory();
         var app = WithFakeStore(factory);
         var member = Client(app, "Member", sub: "kc-omar");
-        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("identity"));
+        var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
         var form = new MultipartFormDataContent();

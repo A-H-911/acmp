@@ -53,7 +53,7 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await page.getByRole('textbox', { name: 'Description', exact: true }).fill('E2E description for the core-loop spec.');
         await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('E2E justification — exercises the full loop.');
         const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-        await streams.fill('Platform');
+        await streams.fill('core');
         await streams.press('Enter');
 
         const [createRes] = await Promise.all([

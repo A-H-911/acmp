@@ -4,6 +4,7 @@ using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Membership;
 using FluentValidation;
 using MediatR;
 
@@ -27,12 +28,15 @@ public sealed record SubmitTopicResult(Guid Id, string Key);
 
 public sealed class SubmitTopicValidator : AbstractValidator<SubmitTopicCommand>
 {
-    public SubmitTopicValidator()
+    // IStreamCatalog is Membership's taxonomy reaching Topics through a shared port (ADR-0001 /
+    // ADR-0021) — never a hard-coded list, because the taxonomy is seeded data that can grow.
+    public SubmitTopicValidator(IStreamCatalog streams)
     {
         RuleFor(x => x.Title).NotEmpty().MaximumLength(120);
         RuleFor(x => x.Description).NotEmpty();
         RuleFor(x => x.Justification).NotEmpty();
         RuleFor(x => x.Streams).NotEmpty().WithMessage("At least one affected stream is required.");
+        RuleFor(x => x.Streams).MustBeSeededStreams(streams);
         RuleFor(x => x.Type).IsInEnum();
         RuleFor(x => x.Urgency).IsInEnum();
         RuleFor(x => x.Source).IsInEnum();

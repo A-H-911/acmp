@@ -20,6 +20,14 @@ export interface StreamRef {
   code: string;
   nameEn: string;
   nameAr: string;
+  /**
+   * ADR-0042's "unrestricted" marker — a member holding this stream is not stream-bounded.
+   *
+   * ⚠ Read this FLAG, never compare `code` to a literal. The server marks the wildcard with a
+   * boolean column precisely so renaming or re-coding the row cannot silently break the meaning,
+   * and a client that string-matched would reintroduce exactly that fragility.
+   */
+  isWildcard: boolean;
 }
 
 export interface Member {

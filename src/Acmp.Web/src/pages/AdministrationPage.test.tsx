@@ -30,7 +30,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهيكلة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
 ];
 

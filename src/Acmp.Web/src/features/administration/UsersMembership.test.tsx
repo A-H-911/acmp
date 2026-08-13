@@ -27,7 +27,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهيكلة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
   {
     publicId: '2', keycloakUserId: 'kc-fixture', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',
@@ -166,7 +166,7 @@ describe('UserDetail (invite + role assignment per ADR-0038, superseding ADR-001
 
     expect(screen.getByText('Back to users')).toBeInTheDocument();
     expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
-    expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
+    expect(screen.getByText('Core')).toBeInTheDocument(); // his stream membership
     // ⚠ WAS `expect(screen.getByText(/Role is read-only/))`. The padlock said the role was managed
     // in Keycloak and could not be changed here; FR-157 changes it here. Keycloak is still where it
     // is STORED, which is all the replacement claims.

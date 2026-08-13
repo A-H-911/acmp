@@ -18,11 +18,18 @@ import { apiCreateTopic, type ApiMember, type ApiTopic } from './scenario';
  * where this suite historically breaks (DEF-045). Mitigated the way ac043-reorder does it — every
  * topic carries a per-run stamp, so nothing here reads a row another run created.
  *
- * ⚠ NOT IN THIS FILE, AND NOT BECAUSE IT WAS HARD. AC-010 (stream scope) is blocked by DEF-057:
- * StreamScopeRequirement is registered in DI and unit-tested but appears in NO policy, so it is
- * never evaluated and the control fails OPEN — and separately no Stream can be created at all. A
- * 403 is obtainable there, but only by a member holding no streams, which proves a different claim
- * than the AC makes. AC-011 needs a Guest presenter and is deferred with it.
+ * ⚠ NOT IN THIS FILE, AND NOT BECAUSE IT WAS HARD. AC-010 (stream scope) is still blocked by
+ * DEF-057: StreamScopeRequirement is registered in DI and unit-tested but appears in NO policy,
+ * so it is never evaluated and the control fails OPEN. It is wired in ADR-0042 step 7, and the
+ * AC-010 leg belongs here at step 8.
+ *
+ * ⚠ THE SECOND HALF OF THAT NOTE IS NOW STALE AND IS CORRECTED RATHER THAN DELETED, because the
+ * reasoning still matters: it used to read "no Stream can be created at all". ADR-0042 step 1
+ * seeded the taxonomy, so streams now EXIST — but that changes nothing about the AC yet, since
+ * no policy carries the requirement. ⚠ When step 8 lands, AC-010 must be evidenced against a
+ * member assigned to a DIFFERENT stream than the topic — never an unassigned one, whose refusal
+ * proves "a member with no streams is denied", a different claim from the one AC-010 makes.
+ * AC-011 needs a Guest presenter and is deferred with it.
  */
 
 const STAMP = Date.now();
@@ -53,7 +60,7 @@ function editBody(topic: ApiTopic, description: string) {
     description,
     justification: 'E2E setup justification.',
     urgency: 'Normal',
-    streams: ['Platform'],
+    streams: ['core'],
     systems: [],
     tags: [],
   };

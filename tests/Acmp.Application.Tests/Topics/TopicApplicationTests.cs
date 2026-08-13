@@ -7,6 +7,7 @@ using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Application.Internal;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
+using Acmp.Shared.Contracts.Membership;
 using FluentAssertions;
 
 namespace Acmp.Application.Tests.Topics;
@@ -20,40 +21,113 @@ public class TopicApplicationTests
     private static SubmitTopicCommand ValidSubmit() => new(
         "Adopt Keycloak", "Consolidate IAM.", "Fragmented auth is risky.",
         TopicType.ArchitectureDecision, TopicUrgency.Urgent, TopicSource.CommitteeMember,
-        new[] { "identity" }, Array.Empty<string>(), Array.Empty<string>());
+        new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+
+    // The seeded taxonomy (ADR-0042 step 1). Stated here independently of the migration: these tests
+    // are about the RULE, and a fake that fetched the real list would make them pass for the wrong
+    // reason on a database that had not been seeded.
+    private static readonly string[] Seeded =
+        { "core", "communications", "smart-cities", "government", "shared-services" };
+
+    private static SubmitTopicValidator SubmitValidator() => new(new FakeStreamCatalog(Seeded));
+    private static UpdateTopicValidator UpdateValidator() => new(new FakeStreamCatalog(Seeded));
+
+    // ⚠ Returns the ASSIGNABLE codes only - the real StreamCatalog filters the wildcard out at the
+    // source (ADR-0042 clause 4), so a fake that included it would test a contract nobody implements.
+    private sealed class FakeStreamCatalog : IStreamCatalog
+    {
+        private readonly IReadOnlyCollection<string> _codes;
+        public FakeStreamCatalog(IReadOnlyCollection<string> codes) => _codes = codes;
+        public Task<IReadOnlyCollection<string>> GetAssignableStreamCodesAsync(CancellationToken ct = default) =>
+            Task.FromResult(_codes);
+    }
 
     // ---- AC-030: required-field validation on submit ----
 
     [Fact]
-    public void Submit_is_valid_with_all_required_fields()
+    public async Task Submit_is_valid_with_all_required_fields()
     {
-        new SubmitTopicValidator().Validate(ValidSubmit()).IsValid.Should().BeTrue();
+        (await SubmitValidator().ValidateAsync(ValidSubmit())).IsValid.Should().BeTrue();
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Submit_requires_a_title(string title)
+    public async Task Submit_requires_a_title(string title)
     {
-        var result = new SubmitTopicValidator().Validate(ValidSubmit() with { Title = title });
+        var result = await SubmitValidator().ValidateAsync(ValidSubmit() with { Title = title });
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(SubmitTopicCommand.Title));
     }
 
     [Fact]
-    public void Submit_requires_description_justification_and_a_stream()
+    public async Task Submit_requires_description_justification_and_a_stream()
     {
-        var v = new SubmitTopicValidator();
-        v.Validate(ValidSubmit() with { Description = "" }).IsValid.Should().BeFalse();
-        v.Validate(ValidSubmit() with { Justification = "" }).IsValid.Should().BeFalse();
-        v.Validate(ValidSubmit() with { Streams = Array.Empty<string>() }).IsValid.Should().BeFalse();
+        var v = SubmitValidator();
+        (await v.ValidateAsync(ValidSubmit() with { Description = "" })).IsValid.Should().BeFalse();
+        (await v.ValidateAsync(ValidSubmit() with { Justification = "" })).IsValid.Should().BeFalse();
+        (await v.ValidateAsync(ValidSubmit() with { Streams = Array.Empty<string>() })).IsValid.Should().BeFalse();
     }
 
     [Fact]
-    public void Submit_rejects_an_overlong_title()
+    public async Task Submit_rejects_an_overlong_title()
     {
-        var result = new SubmitTopicValidator().Validate(ValidSubmit() with { Title = new string('x', 121) });
+        var result = await SubmitValidator().ValidateAsync(ValidSubmit() with { Title = new string('x', 121) });
         result.IsValid.Should().BeFalse();
+    }
+
+    // ---- ADR-0042 clause (7): affected streams come from the seeded taxonomy, never free text ----
+
+    [Fact] // the whole point: "Platform" is what topics carried before the taxonomy existed
+    public async Task Submit_rejects_a_stream_outside_the_taxonomy()
+    {
+        var result = await SubmitValidator().ValidateAsync(ValidSubmit() with { Streams = new[] { "Platform" } });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(SubmitTopicCommand.Streams));
+    }
+
+    // ⚠ One bad code among good ones must still fail. An "any match" rule would let free text ride
+    // along beside a real stream, and the topic would then carry a value ABAC can never resolve.
+    [Fact]
+    public async Task Submit_rejects_a_mixed_list_containing_an_unknown_stream()
+    {
+        var mixed = ValidSubmit() with { Streams = new[] { "core", "Platform" } };
+
+        (await SubmitValidator().ValidateAsync(mixed)).IsValid.Should().BeFalse();
+    }
+
+    // ⚠ THE WILDCARD IS MEMBER-SIDE ONLY (ADR-0042 clause 4). It says a PERSON is unrestricted; a
+    // topic claiming it would assert universal scope. Enforced by the catalog excluding it, so this
+    // fails for the same reason any unknown code does - which is exactly the intended design.
+    [Fact]
+    public async Task Submit_rejects_the_wildcard_stream()
+    {
+        var wildcard = ValidSubmit() with { Streams = new[] { "all-streams" } };
+
+        (await SubmitValidator().ValidateAsync(wildcard)).IsValid.Should().BeFalse();
+    }
+
+    // Case-insensitive on purpose: StreamScopeHandler intersects with OrdinalIgnoreCase, so "Core"
+    // authorizes identically to "core". Validating more strictly than the control that consumes the
+    // value would refuse input that would have worked.
+    [Fact]
+    public async Task Submit_accepts_a_seeded_stream_in_any_case()
+    {
+        var mixedCase = ValidSubmit() with { Streams = new[] { "Core", "SMART-CITIES" } };
+
+        (await SubmitValidator().ValidateAsync(mixedCase)).IsValid.Should().BeTrue();
+    }
+
+    // ⚠ The rule must hold on UPDATE too. Submit-only enforcement would leave PUT /api/topics/{id}
+    // writing free text through Topic.AssignStreams to the identical field (DEF-059's root cause).
+    [Fact]
+    public async Task Update_rejects_a_stream_outside_the_taxonomy()
+    {
+        var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", TopicUrgency.Normal,
+            new[] { "Platform" }, Array.Empty<string>(), Array.Empty<string>());
+
+        (await UpdateValidator().ValidateAsync(cmd)).IsValid.Should().BeFalse();
     }
 
     // ---- AC-031: reject/defer require a reason ----
@@ -104,27 +178,27 @@ public class TopicApplicationTests
     // ---- AC-034: edit command must identify the topic and carry a valid urgency ----
 
     [Fact]
-    public void Update_requires_a_topic_id()
+    public async Task Update_requires_a_topic_id()
     {
         var cmd = new UpdateTopicCommand(Guid.Empty, "T", "D", "J", TopicUrgency.Normal,
-            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
-        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeFalse();
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+        (await UpdateValidator().ValidateAsync(cmd)).IsValid.Should().BeFalse();
     }
 
     [Fact]
-    public void Update_rejects_an_out_of_range_urgency()
+    public async Task Update_rejects_an_out_of_range_urgency()
     {
         var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", (TopicUrgency)999,
-            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
-        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeFalse();
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+        (await UpdateValidator().ValidateAsync(cmd)).IsValid.Should().BeFalse();
     }
 
     [Fact]
-    public void Update_is_valid_with_an_identified_topic_and_known_urgency()
+    public async Task Update_is_valid_with_an_identified_topic_and_known_urgency()
     {
         var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", TopicUrgency.Critical,
-            new[] { "platform" }, Array.Empty<string>(), Array.Empty<string>());
-        new UpdateTopicValidator().Validate(cmd).IsValid.Should().BeTrue();
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+        (await UpdateValidator().ValidateAsync(cmd)).IsValid.Should().BeTrue();
     }
 
     // ---- AC-057: SLA aging ----

@@ -15,4 +15,7 @@ public sealed record MemberDto(
     bool IsVotingEligible,
     IReadOnlyList<StreamRefDto> Streams);
 
-public sealed record StreamRefDto(Guid PublicId, string Code, string NameEn, string NameAr);
+// IsWildcard is ADR-0042 clause (3)'s "unrestricted" marker, carried to the client as a FLAG rather
+// than left to be inferred from Code: the roster must show it distinctly (DEC-043) and the topic
+// picker must omit it, and both would silently break if either matched on the string "all-streams".
+public sealed record StreamRefDto(Guid PublicId, string Code, string NameEn, string NameAr, bool IsWildcard);

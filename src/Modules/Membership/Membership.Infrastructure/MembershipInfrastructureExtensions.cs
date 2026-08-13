@@ -38,6 +38,11 @@ public static class MembershipInfrastructureExtensions
         // Cross-module roster lookup consumed by the Meetings notification fan-out (ADR-0001).
         services.AddScoped<ICommitteeDirectory, CommitteeDirectory>();
 
+        // Cross-module stream taxonomy consumed by the Topics submit/update validators (ADR-0042
+        // clause 7). Registered UNCONDITIONALLY: it is what makes free-text streams impossible, and a
+        // validator whose dependency is missing by configuration would fail open at the boundary.
+        services.AddScoped<IStreamCatalog, StreamCatalog>();
+
         // ADR-0039 — the per-request veto the API host applies to an otherwise-valid token. Scoped,
         // because it reads through the request's DbContext; registered UNCONDITIONALLY (unlike the
         // identity provider below) since it is what makes AC-090 and AC-092 true and must never be
