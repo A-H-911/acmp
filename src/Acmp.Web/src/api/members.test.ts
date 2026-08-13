@@ -37,11 +37,13 @@ describe('useInviteUser (FR-156 / AC-088)', () => {
     const { wrapper } = makeQueryWrapper();
 
     const { result } = renderHook(() => useInviteUser(), { wrapper });
-    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person' });
+    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person', streamPublicIds: ['s1'] });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(String(spy.mock.calls.at(-1)![0])).toContain('/members/invite');
-    expect(lastBody(spy)).toEqual({ email: 'new@acmp.gov', fullName: 'New Person' });
+    // ⚠ streamPublicIds is REQUIRED server-side (ADR-0043 clause 2); a body without it is refused,
+    // so asserting the old two-field shape would have pinned a request that cannot succeed.
+    expect(lastBody(spy)).toEqual({ email: 'new@acmp.gov', fullName: 'New Person', streamPublicIds: ['s1'] });
     expect(result.current.data?.temporaryPassword).toBe('T3mp-Pass');
   });
 
@@ -54,7 +56,7 @@ describe('useInviteUser (FR-156 / AC-088)', () => {
     const { wrapper } = makeQueryWrapper();
 
     const { result } = renderHook(() => useInviteUser(), { wrapper });
-    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person' });
+    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person', streamPublicIds: ['s1'] });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(lastHeaders(spy)['Content-Type']).toBe('application/json');
@@ -66,7 +68,7 @@ describe('useInviteUser (FR-156 / AC-088)', () => {
     const invalidate = vi.spyOn(client, 'invalidateQueries');
 
     const { result } = renderHook(() => useInviteUser(), { wrapper });
-    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person' });
+    result.current.mutate({ email: 'new@acmp.gov', fullName: 'New Person', streamPublicIds: ['s1'] });
 
     // Without this the roster keeps its cached list and the invited person is invisible until a
     // manual refresh — which reads exactly like the invite having failed.
@@ -78,7 +80,7 @@ describe('useInviteUser (FR-156 / AC-088)', () => {
     const { wrapper } = makeQueryWrapper();
 
     const { result } = renderHook(() => useInviteUser(), { wrapper });
-    result.current.mutate({ email: 'dupe@acmp.gov', fullName: 'Dupe Person' });
+    result.current.mutate({ email: 'dupe@acmp.gov', fullName: 'Dupe Person', streamPublicIds: ['s1'] });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { streamName, useAssignStreams, useStreams, type Member } from '../../api/members';
+import { useAssignStreams, useStreams, type Member } from '../../api/members';
 import { ApiError } from '../../api/apiClient';
 import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/icons';
+import { MemberStreamChips } from './MemberStreamChips';
 
 /*
  * BL-024 / ADR-0042 step 3 — assign a member's streams from inside ACMP.
@@ -26,13 +27,12 @@ import { Icon } from '../../components/icons';
  * It is rendered DISTINCTLY (DEC-043) — unrestricted access is what an auditor most needs to spot at
  * a glance, and the state most easily granted by accident.
  *
- * The chips deliberately reuse `.stream-chip` from the topic picker rather than sharing a component:
- * the visual contract is the part worth keeping identical, while the behaviour differs (the wildcard
- * is included, the selection is saved rather than submitted with a form).
+ * The chips live in MemberStreamChips, extracted when InviteUserPanel (step 4) became the second
+ * member-side caller. They are NOT StreamPicker: that one hides the wildcard, because it serves the
+ * topic side where an 'all streams' claim would be meaningless.
  */
 export function StreamAssignmentPanel({ member }: { member: Member }) {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const { t } = useTranslation();
   const { data: streams, isLoading, isError } = useStreams();
   const assign = useAssignStreams();
 
@@ -83,23 +83,12 @@ export function StreamAssignmentPanel({ member }: { member: Member }) {
               </p>
             )}
 
-            <div className="stream-picker" role="group" aria-label={t('admin.streams.title')}>
-              {streams.map((s) => {
-                const on = selected.includes(s.publicId);
-                return (
-                  <button
-                    key={s.publicId}
-                    type="button"
-                    className={`stream-chip ${on ? 'is-on' : ''} ${s.isWildcard ? 'is-wildcard' : ''}`}
-                    aria-pressed={on}
-                    onClick={() => toggle(s.publicId)}
-                  >
-                    {on && <Icon name="check" size={13} strokeWidth={2.6} aria-hidden />}
-                    {streamName(s, isArabic)}
-                  </button>
-                );
-              })}
-            </div>
+            <MemberStreamChips
+              streams={streams}
+              selected={selected}
+              onToggle={toggle}
+              ariaLabel={t('admin.streams.title')}
+            />
 
             {error && (
               <p className="field-error" role="alert">

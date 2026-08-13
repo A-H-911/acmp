@@ -64,7 +64,7 @@ public class UserManagementFeatureTests
         var audit = Substitute.For<IAuditSink>();
 
         var result = await new InviteUserHandler(db, identity, Clock(), audit)
-            .Handle(new InviteUserCommand("New@ACMP.gov", "New Person"), default);
+            .Handle(new InviteUserCommand("New@ACMP.gov", "New Person", Array.Empty<Guid>()), default);
 
         result.TemporaryPassword.Should().Be("temp-Pass-123");
         result.Status.Should().Be(nameof(MembershipStatus.Invited));
@@ -87,7 +87,7 @@ public class UserManagementFeatureTests
         var identity = Substitute.For<IIdentityProvider>();
 
         var act = () => new InviteUserHandler(db, identity, Clock(), Substitute.For<IAuditSink>())
-            .Handle(new InviteUserCommand("KC-EXISTING@acmp.gov", "Someone Else"), default);
+            .Handle(new InviteUserCommand("KC-EXISTING@acmp.gov", "Someone Else", Array.Empty<Guid>()), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         // The point of checking BEFORE calling out: the insert would fail on the unique index anyway,
@@ -100,11 +100,25 @@ public class UserManagementFeatureTests
     [InlineData("not-an-email", "Name")]
     [InlineData("a@b.com", "")]
     public void Invite_validator_rejects_bad_input(string email, string fullName) =>
-        new InviteUserValidator().Validate(new InviteUserCommand(email, fullName)).IsValid.Should().BeFalse();
+        new InviteUserValidator().Validate(new InviteUserCommand(email, fullName, new[] { Guid.NewGuid() })).IsValid.Should().BeFalse();
 
     [Fact]
     public void Invite_validator_accepts_an_email_and_a_name() =>
-        new InviteUserValidator().Validate(new InviteUserCommand("a@b.com", "A B")).IsValid.Should().BeTrue();
+        new InviteUserValidator().Validate(new InviteUserCommand("a@b.com", "A B", new[] { Guid.NewGuid() })).IsValid.Should().BeTrue();
+
+    // ⚠ ADR-0043 clause (2): the stream field is REQUIRED, and that is what makes the fail-closed
+    // posture survivable. An invite with no stream creates a member who can write NOTHING once step 7
+    // wires the requirement — the exact lockout the whole ordering exists to prevent.
+    [Fact]
+    public void Invite_requires_at_least_one_stream()
+    {
+        var noStreams = new InviteUserCommand("a@b.com", "A B", Array.Empty<Guid>());
+
+        var result = new InviteUserValidator().Validate(noStreams);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(InviteUserCommand.StreamPublicIds));
+    }
 
     // ---- AssignRoles guards (FR-157 / AC-089) ----
 

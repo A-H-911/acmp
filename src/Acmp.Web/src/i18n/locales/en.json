@@ -1089,6 +1089,8 @@
     "emptyTitle": "No members yet",
     "emptyBody": "Members appear here after they first sign in through Keycloak.",
     "invite": {
+      "streams": "Streams",
+      "streamsHelp": "Choose at least one. Streams bound what this member may write; pick âAll streamsâ only if they genuinely work across every stream.",
       "title": "Invite a new user",
       "email": "Email address",
       "fullName": "Full name",
