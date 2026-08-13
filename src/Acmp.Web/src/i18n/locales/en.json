@@ -1051,7 +1051,7 @@
       "users": "Users, roles, and committee membership",
       "templates": "Standardized templates for topics, ADRs, minutes, and research",
       "health": "Live status of core services and integrations",
-      "streams": "Delivery streams and their committee owners",
+      "streams": "Delivery streams configured for this committee",
       "roles": "Read-only reference — roles & capabilities are defined in Keycloak",
       "jobs": "Background job queues, schedules, and recent runs (Hangfire)",
       "notifications": "Delivery channels and per-event default notifications"
@@ -1194,18 +1194,15 @@
         "adrPublished": "ADR published"
       }
     },
-    "templates": {
-      "emptyTitle": "No templates yet",
-      "emptyBody": "Topic, ADR, minutes, decision, and research templates are managed here in a later phase."
-    },
     "streams": {
       "title": "Stream memberships",
       "help": "Streams bound what this member may write. Choose âAll streamsâ only when they genuinely work across every stream.",
       "noneWarning": "No stream assigned â this member will not be able to create or edit anything.",
       "save": "Save streams",
       "saved": "Streams updated for {{name}}.",
-      "emptyTitle": "No streams configured",
-      "emptyBody": "Delivery streams and their committee owners land with the stream registry (BL-024)."
+      "col": { "stream": "Stream", "code": "Code" },
+      "emptyTitle": "No streams",
+      "emptyBody": "No streams are configured yet."
     },
     "jobs": {
       "stat": {

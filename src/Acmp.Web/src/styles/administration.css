@@ -110,6 +110,10 @@
   flex-direction: column;
   gap: 3px;
 }
+/* The shared primary-name treatment for an admin table row — despite the name it is not role-only:
+   the users directory, the roles reference and the streams reference all lead their row with it, and
+   the design draws all three identically (`.ttl`). Reused deliberately rather than duplicated under
+   a per-tab selector; rename it if a fourth caller makes "role" actively misleading. */
 .adm-role-name {
   font-size: 13px;
   font-weight: 600;
@@ -712,3 +716,14 @@
   border-style: solid; border-color: var(--st-warn-fg);
   background: var(--st-warn-bg); color: var(--st-warn-fg);
 }
+
+/* ======================= Streams reference (Admin → Streams) ======================= */
+/* The design's stream row leads with a 9px accent square, then the name. The wildcard's square is
+   hollow + dashed — the same convention as `.stream-chip.is-wildcard` above, so unrestricted scope
+   is recognisable wherever it appears and is distinguishable without relying on colour. */
+.adm-stream-ref { display: inline-flex; align-items: center; gap: 10px; }
+.adm-stream-dot {
+  inline-size: 9px; block-size: 9px; border-radius: 3px;
+  background: var(--accent); flex: 0 0 auto;
+}
+.adm-stream-dot.is-wildcard { background: transparent; border: 1.5px dashed var(--accent); }
