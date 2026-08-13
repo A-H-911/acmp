@@ -123,6 +123,27 @@ describe('StreamAssignmentPanel (ADR-0042 step 3)', () => {
     expect(await screen.findByText(/Something went wrong/i)).toBeInTheDocument();
   });
 
+  // ⚠ A save that succeeded must SAY it succeeded. Without this the only feedback is the button
+  // going disabled again, which is indistinguishable from a change that never applied.
+  it('confirms a completed save, naming the member', () => {
+    mockAssign.mockReturnValue({ mutateAsync, isPending: false, isError: false, isSuccess: true });
+    render(<StreamAssignmentPanel member={member([CORE])} />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(/Streams updated for Omar H/i);
+  });
+
+  // ...and must NOT claim success while the administrator has unsaved edits on screen.
+  it('withdraws the confirmation once the selection is edited again', async () => {
+    const user = userEvent.setup();
+    mockAssign.mockReturnValue({ mutateAsync, isPending: false, isError: false, isSuccess: true });
+    render(<StreamAssignmentPanel member={member([CORE])} />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Government' }));
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   // Loading and failure must SAY so rather than render an empty chip row: an administrator would
   // otherwise read "this committee has no streams" and conclude there is nothing to assign.
   it('says it is loading rather than showing an empty chip row', () => {
