@@ -42,7 +42,7 @@ public sealed class StreamBackfillMigrationTests
     [Fact]
     public async Task Backfill_assigns_the_wildcard_only_to_members_holding_no_streams()
     {
-        var connectionString = await NewDatabaseAsync("adr0043_backfill");
+        var connectionString = await NewDatabaseAsync();
 
         long coreStreamId;
         await using (var db = NewContext(connectionString))
@@ -106,7 +106,7 @@ public sealed class StreamBackfillMigrationTests
     [Fact]
     public async Task Backfill_fails_loudly_when_the_database_has_no_wildcard_stream()
     {
-        var connectionString = await NewDatabaseAsync("adr0043_nowildcard");
+        var connectionString = await NewDatabaseAsync();
 
         await using (var db = NewContext(connectionString))
         {
@@ -166,9 +166,13 @@ public sealed class StreamBackfillMigrationTests
 
     // ---- helpers ----
 
-    private async Task<string> NewDatabaseAsync(string prefix)
+    // ⚠ The name is built from a literal and a Guid, with NO parameter, and that is not a style
+    // choice: Semgrep's csharp-sqli taint analysis treats a method parameter reaching CommandText as
+    // untrusted input, and CREATE DATABASE cannot take a bound parameter. Suppressing the rule would
+    // work and would also train the next reader to suppress it; removing the taint source does not.
+    private async Task<string> NewDatabaseAsync()
     {
-        var name = $"{prefix}_{Guid.NewGuid():N}"[..48];
+        var name = $"adr0043_{Guid.NewGuid():N}";
         await using var master = new SqlConnection(_fx.ConnectionString);
         await master.OpenAsync();
         await using var cmd = master.CreateCommand();
