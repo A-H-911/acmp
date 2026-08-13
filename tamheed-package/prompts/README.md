@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v3.2.1)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -31,6 +31,7 @@ file is a paste-ready prompt for a Claude Code session. Two kinds live here:
 | Refresh + read the human report | `generate-report.md` |
 | Unattended execution — the repeated prompt | `loop-iteration.md` |
 | Unattended execution — the brake (read FIRST) | `loop-guard.md` |
+| Something project-specific | any other `.md` here — project prompts are operator-authored, purpose-named; read the folder |
 
 ## Semi-auto style (you drive)
 
@@ -54,6 +55,17 @@ conditions — read it before starting any loop). Drive it either way:
 The loop halts itself — never restarts itself — on any guard condition: a degraded gate,
 non-convergence, a needed scope change, a blocking readiness failure at a close, a
 defect spike, empty iterations, or any store error. You resolve, you restart.
+
+## One session at a time
+
+The package has a **single-writer lock** (`data/.lock`). Two sessions pasting prompts
+concurrently will collide: the second `package_open` refuses, naming the holder (pid,
+host, taken_at). After a crash or a plugin reload the refusal may be a **stale lock** —
+verify before clearing, with both discriminators: the named pid must belong to a live
+process that plausibly IS an agent session, **and** that process must have started
+*before* the lock's `taken_at` (a process younger than the lock cannot hold it). Only
+when both say stale, delete `data/.lock`. Never auto-clear; when unsure, ask the other
+session's operator.
 
 ## The standing rules
 
