@@ -1,91 +1,177 @@
 # Kickoff prompt — the durable one
 
 Paste everything between the two `=====` lines into a fresh session. This file is durably named:
-when the work changes, edit it — do not create a new `prm-*.md`.
+when the work changes, **edit it — do not create a new `prm-*.md`**.
 
-=====================================================================================
+=====
 
-Read handoff/RESUME.md end to end before doing anything, then orient:
-server_info(), package_open("tamheed-package"), gate_run().
+Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else,
+then orient:
 
-If package_open fails on a .lock, check the PID PROPERLY before removing it — the lock holds a bare
-PID and "is it alive?" LIES under PID reuse. Confirm the process does not exist, or that its identity
-and StartTime do not match the lock's mtime, then delete tamheed-package/data/.lock. Never remove it
-reflexively.
+```
+server_info()                      # expect tamheed 3.2.1, schema 4, root = C:\Users\ahammo\Repos\acmp
+package_open("tamheed-package")
+gate_run()                         # expect 7/7 ready:true
+```
 
-STATE: phases P1–P19 are COMPLETE and main is green. ⚠ DO NOT TRUST A TALLY WRITTEN HERE — a
-hard-coded acceptance count goes stale on the first new verdict, and this block held one that was
-already wrong. Read the live numbers instead: gate_run() gives the gate verdict and the
-audit_evidence split, readiness_check("package") gives the blocking lists, and review.html#execution
-renders both. PRODUCTION IS LIVE with in-app user management ENABLED — but it is UNUSED: zero topics, zero streams, one of 26 members has ever logged
-in. UAT is stopped. There is NO new slice to start; §4 of the resume is the whole remaining list, in
-priority order, and every decision in it has already been taken and recorded.
+**If `package_open` refuses on a `.lock`, do NOT clear it reflexively.** Use both discriminators
+(`prompts/README.md` §"One session at a time" encodes them): the named pid must be a LIVE process that
+plausibly IS an agent session, **and** it must have started BEFORE the lock's `taken_at`. Either one
+failing proves staleness — a process younger than the lock cannot hold it. This has fired on every
+plugin reload; once the pid was alive but was `conhost.exe` started a day after the lock, so a naive
+"is it alive?" check would have stopped the session dead.
 
-READ §2 AND §3 OF THE RESUME BEFORE WRITING CODE. §3 is the finding that matters most and it is why
-this codebase needs a specific kind of suspicion:
+## Where things stand
 
-★ FOUR AGGREGATE CAPABILITIES WITH NO WIRING WERE FOUND IN ONE SESSION, none by any gate —
-Topic.Reopen (no endpoint), Stream.Create (no caller), StreamScopeHandler (in DI, unit-tested four
-ways, IN NO POLICY — so an authorization control that FAILS OPEN), and Topic.SetScope (no caller).
-EVERY ONE PRESENTS AS IMPLEMENTED: the method exists, it is correct, its comment explains its
-purpose, and two are unit-tested and passing. The compiler does not care that a public method has no
-caller; the unit test calls it directly, which is exactly why it passes; coverage says it IS covered.
-SO: when you are told something is implemented, find the CALLER, not the definition. Recorded as
-DW-026, whose cheapest first step is asserting every IAuthorizationRequirement appears in at least
-one registered policy.
+`main` is green at **`0421b76`**, clean, pushed. Gates **7/7**. **12 open defects.** Six ACs are not
+Met: `AC-003`, `AC-006`, `AC-010`, `AC-011`, `AC-041`, `AC-048`.
 
-Four more rules that each changed an answer recently:
-1. READ THE IMPLEMENTATION BEFORE CALLING SOMETHING A DEFECT — eleven instances. ⚠ IT APPLIES TO
-   REGISTER ROWS TOO: I repeated DEF-045's stale "cause 3 NOT FIXED" to the operator without reading
-   the two specs it described, and both were already fixed. A row feels pre-checked. It is not.
-2. VERIFY THE DEPLOYED STATE, NOT THE FILE DESCRIBING IT. Prod was 56 commits behind while the
-   handoff called enabling a flag "one variable". ⚠ And check your probe can tell the two states
-   apart: my own /api/session probe hit the MapGroup PREFIX, which 404s on new code too — right
-   conclusion, invalid evidence.
-3. A MEASUREMENT THAT INDICTS KNOWN-GOOD CODE IS MEASURING ITSELF, and A GREEN EXIT CODE CAN COME
-   FROM A BUILD THAT CHECKED NOTHING. `grep -c $'\r'` lost its quoting and reported CRLF for every
-   .sh in the repo; `tsc -b` reported exit 0 AND zero e2e files until --force. Count what the check
-   looked at.
-4. THE TEST MUST FAIL WITHOUT THE CHANGE. Every guard in the last session was mutation-checked —
-   reverting App.tsx failed exactly the five denied roles, and reversing two call ORDERS failed one
-   test each. A case that passes with and without the code under test is measuring nothing.
+**Production runs `65e45d4` and is UNUSED** — zero topics, zero streams held by members, one of 26
+members has ever signed in. **Nothing merged in this stream is deployed.** `e9b2155` (30-minute idle
+sign-out, `AC-004`) is published but NOT deployed — `DEC-044`, deliberately.
 
-BEFORE DESIGNING ANY CROSS-MODULE SEAM, READ ADR-0021: a primitive port in Acmp.Shared.Contracts,
-implemented in the OWNING module's Infrastructure, unauthorized at the port because the calling
-action is separately authorized, two transactions accepted; and it forbids sending another module's
-MediatR command. ⚠ This is live in §4 item 1 step 6: the OrgWide fact must reach authorization as a
-primitive bool on IStreamScopedResource, NOT as the TopicScope enum, because the contract lives in
-Shared.Contracts and the enum in Topics.Domain.
+⚠ **Do not trust any tally written into a prompt or a note.** Read the live numbers: `gate_run()` for
+gates and the audit_evidence split, `readiness_check("package")` for the blocking lists,
+`review.html#execution` for both. A hard-coded count is stale on the first new verdict, and one in
+this very file already was.
 
-TASK: work §4 of the resume in order.
+## THE MAIN WORK — `ADR-0043`, steps 5–8 of 8
 
-- ITEM 1 is the big one: DEF-057 + DEF-058, an EIGHT-STEP SLICE whose design is already APPROVED
-  (ADR-0042; reasoning in PE-293 and DEC-042). Nothing is built. ⚠ THE ORDER IS LOAD-BEARING and
-  STEP 5 IS THE OUTAGE: all 26 existing members were seeded straight into Keycloak, so the new
-  invite-time stream field does not cover them — wiring the check before backfilling locks out the
-  whole committee. ⚠ Step 2 (topics pick from the taxonomy instead of free text) is cheapest RIGHT
-  NOW because production has zero topics, and that stops being true the first day anyone uses it.
-  Expect multiple PRs; do not try to land it as one change.
-- ITEMS 2–5 are smaller and independent: DEF-056's audit handler (which turns a deliberate
-  test.fail() in role-matrix.spec.ts red — delete that line and flip AC-006), the e2e flag for
-  AC-011, AC-003's cheap live test, and AC-041's instrument choice.
-- ITEM 6 is an operator call: deploying the idle sign-out, which is the ONLY product change published
-  but not deployed.
+⚠ **Read `ADR-0043`, not `ADR-0042`.** 0042 is **Superseded**: its context claimed Guest is
+stream-bounded, which `permission-role-matrix` E.1 contradicts. All seven decision clauses carried
+over verbatim.
 
-Definition of Done (applies even though this prompt does not restate it):
-- unit + integration tests; each guard proven by FORCING its refusal, and verified to FAIL without
-  the change — never by asserting a handler was called
-- flip AC verdicts via audit_record with evidence, and say plainly when something is ANALYSIS rather
-  than a measurement
-- authorization enforced server-side; AuditEvents emitted and asserted as ROWS
-- no hardcoded strings (EN + AR together — check-i18n compares KEYS only); verify RTL in a browser
-- no secrets in source, and never print a live credential — assert its SHAPE
-- progress_update + work_bind, then gate_run() and export_html(); write the package ONLY from main
-  and commit immediately (tamheed-package/data is git-tracked)
-- conventional commits, small and reviewable; branch -> PR -> green CI -> squash-merge
-- register every finding needing investigation or a decision as a Tamheed row AS YOU GO — including
-  findings against your OWN work, and including CORRECTIONS to evidence you yourself recorded
+Stream-scope authorization is **specified, registered in DI, unit-tested, and in NO policy — so it
+fails open today.** `DEF-057`. The slice closes that. **The order is load-bearing**; the operator has
+already decided every open question (`DEC-043`, `DEC-044`).
 
-Report the state and your plan back to me before you start writing, then proceed. ultrathink
+**Shipped: 1** seed taxonomy (`9be9415`) · **2** topic picker, server + UI (`06e1e6f`, `61ed33a`) ·
+**3** assignment UI (`71283ad`) · **4** invite requires a stream (`af98621`).
 
-=====================================================================================
+### Step 5 — the backfill migration ⚠ THE IRREVERSIBLE ONE
+
+An **EF data migration** (`DEC-044`) assigning the **wildcard** to every member holding no streams.
+Idempotent. This is the step `ADR-0043` marks as the *certain* negative consequence: skip or botch it
+and the whole committee is locked out the day step 7 lands.
+
+⚠⚠ **`DEF-062` — my own recorded warning about this was INVERTED, read the row.** The migration is a
+**no-op in every fresh environment**, because a migration only touches rows existing when it runs:
+`Api.Tests` uses InMemory and never migrates; `Integration.Tests` migrates an empty DB; e2e migrates
+fresh then JIT-provisions members *afterwards*, and `ProvisionCurrentUser` assigns no streams. Only
+prod/UAT (which already hold 26 rows) are reached. **Consequence: at step 7 every e2e fixture is
+stream-bounded with zero streams and will be refused every guarded write — the whole core loop, not
+one test.** Give fixtures real streams at step 7 (where `apiHelpers`/`roleSession` provision the
+member), and **NOT the wildcard**, which would restore the vacuous-pass problem by another route.
+
+### Step 6 — `DEF-058` + `DEF-059`
+
+`DEF-058`: `Topic.SetScope` has no caller — add `Scope` to `UpdateTopicCommand` and surface it in
+triage, so `Platform`/`OrgWide` stop being unreachable enum values. `DeriveScope()` already preserves
+an elevated scope; that guard is why elevation is safe to add.
+
+`DEF-059` (operator chose BOTH halves): guard `Topic.AssignStreams` so a live topic can never be
+emptied, **plus** `NotEmpty` on `UpdateTopicCommand.Streams` — the guard goes in the **shared aggregate
+method**, since patching only the named caller leaves its siblings broken. And make
+`StreamScopeHandler` require an explicit `AffectsAllStreams` declaration rather than inferring
+"unscoped" from an empty list; that second half is what stops Actions/Risks/ADRs inheriting a
+universal grant when they implement `IStreamScopedResource`.
+
+⚠ `AffectsAllStreams` must be a **primitive bool on the port**, never the `TopicScope` enum —
+`IStreamScopedResource` lives in `Acmp.Shared.Contracts`, the enum in `Topics.Domain` (`ADR-0001`;
+`ADR-0021` is the pattern).
+
+### Step 7 — wire the requirement
+
+Put `StreamScopeRequirement` into the stream-bounded write policies.
+
+⚠ **`DEF-060`: express the scoped set POSITIVELY** — `Member`/`Reviewer`/`Submitter`, per E.1 — never
+as "everyone not in the `CommitteeWide` bypass list". Treating a *bypass* list's complement as the
+scoped set is what wrongly swept Guest in, and it would refuse FR-159 guest presenters their one write
+capability (`DiagramAttach`). E.3 bounds a guest by a **time window**, not by streams. Expressing it
+positively removes the whole class, not just this instance.
+
+### Step 8 — evidence `AC-010`
+
+⚠ Against a member assigned to a **DIFFERENT stream than the topic** — never an unassigned one, whose
+refusal proves "a member with no streams is denied", a different claim. `topic-scope.spec.ts` is where
+it belongs; its header already carries this warning.
+
+## Independent of the slice
+
+- **`DEF-056`** — a refused mutation is NOT audited. Every write 403s at the ASP.NET policy layer
+  *before* MediatR, and `AuthorizationBehavior:39` is the only emitter. Build the
+  `IAuthorizationMiddlewareResultHandler`; emit **only** on `Forbidden`, never `Challenged`. A
+  deliberate `test.fail()` in `role-matrix.spec.ts` goes RED the day it is fixed — delete that line and
+  flip `AC-006`.
+- **`AC-011`** — turn `KEYCLOAK_ADMIN_ENABLED=true` on in CI's e2e stack (the secret is already
+  mounted; `docker-compose.yml` 163/183/338).
+- **`AC-041`** — operator OVERRULED my recommendation: **add the Edge project** to
+  `playwright.config.ts`, which has only chromium today, so the AC's "Chrome and Edge" has never been
+  true. Scoped to browser coverage; property guards still beat pixel baselines.
+- **`AC-003`** — a cheap live test.
+
+## Two unmerged branches and a stash
+
+- **`fix/e2e-agenda-publish-race`** (`2e91b9d`) — fixes `DEF-061`'s race by awaiting the presenter
+  POST. ⚠ **NOT type-checked or run** (the headless session that wrote it had `tsc` and e2e blocked).
+  Verify, then merge.
+- **`fix/admin-streams-tab-live`** (`0dff8ec`) — makes Administration → Streams read the seeded
+  taxonomy instead of the now-false "No streams configured" empty state. Its author chose a
+  **partial-fidelity composition** (2 of the design's 5 columns, because the endpoint sources only
+  one) and declared it — that call is worth your review before merge. A `stash@{0}` from this branch
+  still exists; check it before dropping.
+
+## Standing traps — each of these has cost real time here
+
+1. **Find the CALLER, not the definition.** Four aggregate capabilities were correct, unit-tested, and
+   wired into nothing (`DW-026`). The compiler doesn't care; the unit test calls it directly, which is
+   *why* it passes; coverage says it's covered. ⚠ Coverage catches unread **state** but never an
+   uncalled **method**.
+2. **Read the implementation before calling it a defect — and that applies to REGISTER ROWS too.**
+   Rows read as pre-checked. They are not: `DEF-062` and `DEF-061` were both wrong in my own hand.
+3. **A measurement that indicts known-good code is measuring itself.** A computed 1px border indicted
+   two pre-existing rules; a hover probe reported "0 dimmed" from the wrong selector *and* wrong
+   property. Read the CSS/predicate before believing the probe.
+4. **A green exit code can come from a build that checked nothing.** A mutation that fails to COMPILE
+   runs zero tests and looks exactly like "the test doesn't discriminate". Confirm the mutant built.
+5. **The test must fail without the change.** Every guard here is mutation-checked, with the *attribution*
+   named — which tests fail, and which correctly stay green.
+6. **⚠ NEVER write Arabic via `\uXXXX` + `.encode().decode('unicode_escape')`** — that reads UTF-8 as
+   Latin-1 and destroys it, while leaving the English half perfect so nothing looks wrong (`DEF-064`,
+   7 values shipped broken to main). Write literal UTF-8. And `check-i18n.mjs` compares **key sets, not
+   values**, so "parity OK" is true and meaningless — no gate can see mojibake.
+7. **`.cs` files need a UTF-8 BOM and LF**; the Write tool adds neither, and Python round-trips strip
+   the BOM. The format gate catches it — don't suppress its output, which is how a failing check reads
+   as a passing one.
+8. **One tool's negative is not proof of absence** — a grep returned nothing for a pattern that was
+   there.
+
+## Definition of done (applies even though this prompt does not restate it)
+
+Unit + integration tests, each guard proven by FORCING its refusal and verified to FAIL without the
+change · flip AC verdicts via `audit_record` with evidence, and say plainly when something is ANALYSIS
+rather than a measurement · authorization enforced server-side, `AuditEvent`s asserted as ROWS · no
+hardcoded strings, EN + AR together, RTL verified in a browser · no secrets, never print a live
+credential · `progress_update` + `work_bind`, then `gate_run()` and `export_html()`; **write the
+package only from `main` and commit immediately** (`tamheed-package/data` is git-tracked) ·
+conventional commits, small and reviewable · branch → PR → green CI → squash-merge · **register every
+finding as a Tamheed row AS YOU GO — including findings against your own work, and corrections to
+evidence you yourself recorded.**
+
+Report the state and your plan before writing, then proceed.
+
+=====
+
+## Not part of the paste — one open item for the operator
+
+**The tamheed acceptance series (`findings_13`–`findings_16`) is complete except §6.** The
+CLAUDE.md Recording-obligations note has been proven to **transfer** into two independent fresh
+contexts — both paraphrased it correctly and surfaced the obligation unprompted. What is still
+unproven is whether a fresh session **discharges** it (actually writes the rows) rather than listing
+it.
+
+Neither instrument I can run settles it: a delegated agent defers package writes to its parent, and a
+headless `claude -p` run cannot reach the MCP tools under any permission mode I am willing to use.
+**Only an interactive fresh session can close §6** — paste a small real task into a normal Claude Code
+window, say nothing about recording, and see whether the `DEF-`/`progress_update`/`work_bind` rows
+appear.
