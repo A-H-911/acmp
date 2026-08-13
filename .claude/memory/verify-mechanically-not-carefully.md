@@ -51,3 +51,17 @@ that way. A measurement that convicts something already proven innocent is measu
 
 Related: [[baselines-as-numbers-not-properties]], [[tamheed-data-repair]],
 [[absence-claims-need-untruncated-search]].
+
+⚠ **AND IT IS NOT ONLY PYTHON — `Get-Content` DOES IT TOO, AND SILENTLY.** 2026-08-13: compacting
+`MEMORY.md` with `$lines = Get-Content $p` … `[System.IO.File]::WriteAllText($p, ...)` **corrupted the
+file** — 46 mojibake markers. Windows PowerShell 5.1's `Get-Content` reads as **ANSI/cp1252** unless
+you pass `-Encoding UTF8`, and `WriteAllText` writes **UTF-8** — so a read-modify-write round-trip
+re-encodes every non-ASCII character in a file full of `—`, `★` and `⚠`.
+
+**The tell was in the console output and I nearly dismissed it as a rendering artefact**, because
+cp1252 consoles genuinely do mangle `—` on display. They are indistinguishable by eye. Check the
+bytes: `grep -c 'Ã\|â€\|â˜' <file>` — non-zero means the FILE is wrong, not the terminal.
+
+Do the splice in **Bash** (`head`/`tail`/`cat`), or pass `-Encoding UTF8` on both ends. And commit
+before a bulk rewrite: `git checkout --` restored it in one command precisely because the last good
+version was committed.
