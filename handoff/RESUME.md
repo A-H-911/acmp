@@ -28,12 +28,12 @@ code legitimately diverged, and *why the code was right*.
 | | |
 |---|---|
 | `main` | green (after two re-runs — see below) · gates **7/7** |
-| Verdicts | **83 Met · 10 Partial · 0 Pending** over 93 ACs — **139 evidenced / 12 narrated** |
+| Verdicts | **84 Met · 9 Partial · 0 Pending** over 93 ACs — **140 evidenced / 12 narrated** |
 | **Production** | ★ **LIVE ON `65e45d4`** · always-on · `i-04d9717feea79204b` · https://acmp.anas7ammo.dev |
 | **UAT** | **also on `65e45d4`** · `i-07ac28ac2fedab921` · **stopped when idle** — start from `deploy/runbooks/cloud-operations.md` §1 |
 | In-app user management | ★ **ENABLED on both** (`KEYCLOAK_ADMIN_ENABLED=true`, pinned 32-char secret) |
 | Open defects | `DEF-012` `DEF-038` `DEF-039` `DEF-041` `DEF-055` `DEF-056` (**6 of 56**) — `DEF-045` is **Fixed** |
-| Open questions | `OQ-074` and `OQ-076` (everything else is `Deferred` by design or answered) |
+| Open questions | **`OQ-074` only** (everything else is `Deferred` by design or answered) |
 
 **Phases `P1`–`P19` are COMPLETE.** `P14` (Tarseem diagrams) is deferred indefinitely (`DEC-028`).
 The remaining work is **not a new slice**; it is the list in §4.
@@ -188,11 +188,12 @@ reconcile logs read `realm-management grant is exactly: manage-users` · and the
 admin-client credential chain works end to end — the pinned secret returns **200 with an
 access_token**, a wrong one returns **401 `unauthorized_client`** (`PE-281`).
 
-**2. `OQ-076` — an operator decision.** Accept max-lifespan and amend
-`AC-004`'s wording, or build inactivity detection that **stops** `automaticSilentRenew` (small, and it
-makes the AC literally true). **Not** lowering `ssoSessionMaxLifespan` — that logs out *active* users
-on a fixed clock. Also fix `AC-090`'s text, which cites a "60-minute idle timeout" against a realm
-that says 30.
+**2. ✅ `OQ-076` / `AC-004` — DONE (`#252`, `e9b2155`). The last Pending is gone.** Real inactivity
+detection: `useIdleSignOut` signs out after 30 idle minutes, and **`stopSilentRenew()` runs before
+`signoutRedirect()`** — a renew still armed resurrects the session, so the order *is* the fix and the
+test asserts the sequence. Mutation-tested both ways.
+⚠ **Still outstanding from that question, one line:** `AC-090`'s statement cites a "60-minute idle
+timeout" and the realm says **1800s**. Its verdict does not rest on the figure, but the text is wrong.
 
 **3. The Partials campaign — Tranche A is DONE; B and C remain.** The shared gap, precisely:
 `PermissionMatrixTests` proves the deny matrix over 34 policies × 8 roles but never crosses HTTP;
@@ -211,12 +212,19 @@ the matrix. **Agreed approach: CI E2E now, re-evidence on UAT later.**
   anything. Pinned by a `test.fail()` case that **goes red the day `DEF-056` is fixed** — at which
   point delete that line and flip `AC-006`.
 - ☐ **Tranche B — `AC-009` `AC-010` `AC-011` `AC-033` `AC-034`.** Ownership, stream scope, presenter
-  scope and the post-Accept lock. These **do** need fixtures (an owned topic, a stream assignment, a
-  meeting slot), so build on the core-loop helpers rather than the fixture-free shape above.
+  scope, rejection immutability and the post-Accept lock. These **do** need fixtures.
+  **★ OPERATOR DECIDED (`PE-286`): ONE shared core-loop fixture, reused five ways** — an owned topic,
+  a stream assignment, an accepted-and-rejected pair, a meeting with a presenter slot — not five
+  independent setups. ⚠ **The accepted risk is coupling:** one broken fixture fails all five, and
+  shared state is where this suite historically breaks (`DEF-045`). **Scope every read to the run's
+  own stamp**, the way `ac043-reorder` does.
 - ☐ **Tranche C — `AC-003` `AC-041` `AC-048`.** A no-role-claim login (+ its `AuthEvent`); promoting
-  the manual Arabic VR render into CI. **`AC-048` (`beforeunload`) is probably unprovable** —
-  Playwright auto-dismisses the native dialog — and Partial-with-a-recorded-reason is the honest
-  outcome, not a harness fight.
+  the manual Arabic VR render into CI.
+  **★ OPERATOR DECIDED (`PE-286`): `AC-048` ends as Partial with the reason recorded.** Assert what
+  is provable — the `beforeunload` handler is registered while the form is dirty — and record that
+  the native dialog is not observable by any automation here. Playwright auto-dismisses it, so
+  "proving" it would demonstrate that the *harness* registered a listener, not that a user would see
+  anything. **Do not fight the harness for a Met.**
 
 ⚠ **Before adding more seeded e2e users, re-check the absolute-count assertions.** A login provisions
 a `CommitteeMember` and any spec counting rows shifts under it — that is `DEF-045` cause 3. Checked
