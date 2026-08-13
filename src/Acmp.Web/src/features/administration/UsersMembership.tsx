@@ -6,7 +6,9 @@
  * Behavior:
  *  - The DIRECTORY is read-only (GET /api/members). Membership editing affordances (committee ×
  *    remove, dashed + add, voting-eligibility switch) are rendered to match the design but are
- *    INERT/disabled: stream assignment lands with BL-024 and voting eligibility with Voting (P9).
+ *    INERT/disabled. ⚠ STREAM ASSIGNMENT IS NO LONGER INERT — it landed with ADR-0042 step 3, but in
+ *    the USER DETAIL (StreamAssignmentPanel), not on these directory affordances, which stay inert.
+ *    Voting eligibility still lands with Voting (P9).
  *  - The row's view button opens an in-place user detail (state lifted to the container). That
  *    detail is NO LONGER read-only: ADR-0038 supersedes ADR-0015 §Q3's "no Keycloak Admin API in
  *    v1" clause (SC-004), so the detail hosts the invite section (FR-156) and the role assignment
@@ -17,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useMembers, type Member } from '../../api/members';
 import { InviteUserPanel } from './InviteUserPanel';
 import { RoleAssignmentPanel } from './RoleAssignmentPanel';
+import { StreamAssignmentPanel } from './StreamAssignmentPanel';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Table, type Column } from '../../components/ui/Table';
@@ -260,6 +263,11 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
       {/* FR-157 — role assignment. Keyed on the member so re-opening a different user starts from
           THAT user's role rather than carrying the previous panel's selection. */}
       <RoleAssignmentPanel key={current.publicId} member={current} />
+
+      {/* BL-024 / ADR-0042 step 3 — stream assignment. Keyed for the same reason as the role panel.
+          It sits AFTER the role panel deliberately: which streams someone needs only makes sense
+          once you know their role, and CommitteeWide roles bypass stream scope entirely. */}
+      <StreamAssignmentPanel key={`streams-${current.publicId}`} member={current} />
 
       {/* §(8) places the invite section at the foot of the user detail view (FR-156). The server
           decides who may actually invite — Administrator or Secretary — so this is not gated here;

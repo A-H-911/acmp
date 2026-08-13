@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMembers, useInviteUser, useAssignRoles } from './members';
+import { useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams } from './members';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /** The headers of the most recent fetch call. */
@@ -131,5 +131,48 @@ describe('useAssignRoles (FR-157 / AC-089)', () => {
     result.current.mutate({ publicId: 'self', roles: ['Member'], confirmedPrivileged: false });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useStreams / useAssignStreams (BL-024 / ADR-0042 step 3)', () => {
+  it('reads the committee taxonomy from the members area', async () => {
+    const spy = stubFetch(() => ({ jsonBody: [] }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useStreams(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(spy.mock.calls.at(-1)![0])).toContain('/members/streams');
+  });
+
+  // ⚠ THE BODY IS A BARE ARRAY, not a wrapped object. The minimal-API endpoint binds
+  // `IReadOnlyList<Guid> streamPublicIds` directly, so a hook that sent `{ streamPublicIds: [...] }`
+  // would bind to an empty list and silently CLEAR the member's streams instead of setting them —
+  // a wrong-shape body that succeeds is far worse here than one that 400s.
+  it('PUTs a bare array of stream ids, replacing the assignment', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useAssignStreams(), { wrapper });
+    result.current.mutate({ publicId: 'm-1', streamPublicIds: ['s1', 's2'] });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(spy.mock.calls.at(-1)![0])).toContain('/members/m-1/streams');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('PUT');
+    expect(lastHeaders(spy)['Content-Type']).toBe('application/json');
+    expect(lastBody(spy)).toEqual(['s1', 's2']);
+  });
+
+  // Clearing every stream must reach the server as an empty array — it is a legitimate correction,
+  // and a hook that skipped the call would leave the roster showing streams the member no longer has.
+  it('sends an empty array when every stream is cleared', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useAssignStreams(), { wrapper });
+    result.current.mutate({ publicId: 'm-1', streamPublicIds: [] });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(lastBody(spy)).toEqual([]);
   });
 });
