@@ -159,22 +159,34 @@ measurement** — the 30-minute observation has not been run.
 
 ## 4. Everything left, in order
 
-**1. ★ LOG IN TO PRODUCTION. Nobody has, since the release, and it is the only thing standing
-between "deployed" and "verified".** This is `DEF-023`'s lesson verbatim: six healthy containers, a
-valid certificate, a correct issuer and `/api/` answering 401 — and nobody could log in. The release
-put **two fail-closed middlewares** in front of every request on prod for the first time:
-`GuestSurfaceMiddleware` (deny-by-default) and `PrincipalRevalidationMiddleware`. ⚠ **A member with
-no role claim resolves to `Guest`** — measured on UAT — so any production account whose token lacks a
-role claim is now confined to the guest surface where it previously had read access. **It is an
-operator action:** `uat-login-probe.mjs` cannot reach prod (it carries UAT fixture passwords), so it
-needs a real human account. Sign in, confirm the dashboard renders with your own name and role, open
-`/members` and confirm the roster and the invite panel are there.
+**1. Sign in to production once — a sanity check, not a release gate.** ⚠ **This item used to be
+much bigger and it was overstated; the correction is `PE-285`.** It claimed a human login was "the
+only thing standing between deployed and verified", on two grounds. One was **wrong** and the other
+turned out to be **testable without a credential**.
 
-*What is already proven and does not need re-checking:* `smoke.sh` passes · `/api/session/me` is 401
-not 404 · both reconcile logs read `realm-management grant is exactly: manage-users` · and the
-production admin-client credential chain works end to end — a `client_credentials` request with the
-pinned secret returns **200 with an access_token**, while a deliberately wrong secret returns **401
-`unauthorized_client`**, so the endpoint is genuinely checking (`PE-281`).
+- ✗ **Wrong:** *"a member with no role claim resolves to `Guest`, so prod accounts are confined to
+  the guest surface."* That was measured on an **invited** member — created through the FR-156 API
+  with no roles — and generalised to a population that has never taken that path. Measured on the
+  live realm: **27 realm users, 27 hold a committee role, zero hold none.** No production account is
+  exposed to it.
+- ✓ **Already tested, unauthenticated:** the real fear is `DEF-023` — healthy containers, valid cert,
+  and nobody able to log in because Keycloak refused the SPA's `redirect_uri`. Replayed the authorize
+  request with a real S256 PKCE challenge, using the config read out of the **served bundle**:
+  the real URI returns **200 and the actual login form**, a deliberately wrong one returns **400** and
+  Keycloak's error page. `redirectUris` and `webOrigins` read back correct.
+
+**So what is left for you is one small thing:** sign in and confirm the dashboard renders with your
+own name and role, and that `/members` shows the roster and invite panel. Worth doing once — it is
+the only step no probe can take.
+
+⚠ **Do NOT log in as one of the 25 seeded accounts that have never signed in.** Their temporary
+password is known, but using it burns that person's credential and forces you to set a password on a
+real member's account. `PE-222` did that once under explicit instruction; it is not a routine check.
+
+*Also already proven, don't redo:* `smoke.sh` passes · `/api/session/me` is 401 not 404 · both
+reconcile logs read `realm-management grant is exactly: manage-users` · and the production
+admin-client credential chain works end to end — the pinned secret returns **200 with an
+access_token**, a wrong one returns **401 `unauthorized_client`** (`PE-281`).
 
 **2. `OQ-076` — an operator decision.** Accept max-lifespan and amend
 `AC-004`'s wording, or build inactivity detection that **stops** `automaticSilentRenew` (small, and it
