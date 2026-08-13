@@ -170,39 +170,49 @@ measurement** — the 30-minute observation has not been run.
 > | `DEF-056` | **build the `IAuthorizationMiddlewareResultHandler`** | ☐ unbuilt |
 > | `AC-011` | **turn `KEYCLOAK_ADMIN_ENABLED` on in CI's e2e stack** | ☐ unbuilt — ✓ the secret is already mounted in `docker-compose.yml` (163/183/338, declared 433), so it will not stop the hosts |
 >
-> ### ★ `DEF-057` — the plan is **six** steps, not three (`PE-292`, `ADR-0041`)
+> ### ★ `DEF-057` + `DEF-058` — an APPROVED design and an **eight-step slice**, not a fix
 >
-> Streams supplied by the operator: **Core · Communications · Smart Cities · Government · Shared Services**.
+> **`ADR-0042` is Approved** (supersedes `ADR-0041`, Rejected-and-kept). Full reasoning in `PE-293`.
+> ⚠ **Anyone treating this as one change will land the seed without the parts that make it safe.**
 >
-> ✓ **Two things you do NOT need to design.** `CommitteeWide = { Chairman, Secretary, Auditor,
-> Administrator }` **already bypasses stream scope unconditionally** — the operator's worry about
-> the Chairman and Secretary is handled by existing code. And stream-bounded means Member, Reviewer,
-> Submitter, Guest — ~26 of 27 prod users.
+> ✓ **No design needed for two things.** `CommitteeWide = { Chairman, Secretary, Auditor,
+> Administrator }` **already bypasses** stream scope — the Chairman/Secretary worry is handled by
+> existing code. Stream-bounded = Member, Reviewer, Submitter, Guest (~26 of 27 prod users).
 >
-> 1. **`ADR-0041` (Proposed) — an empty assigned-stream set SUCCEEDS.** Today it falls through to
->    **deny**, and `Topic.cs:104` requires ≥1 stream to submit, so wiring while nobody holds a stream
->    denies every stream-bounded write everywhere. ⚠ This is a **fail-open default chosen on purpose**;
->    it needs operator approval before the wiring lands. It is also what makes seeding safe.
-> 2. **Seed the five streams** (migration `InsertData`), code + EN + AR. ⚠ **Arabic must be confirmed
->    by the operator first** — `Stream.Name` is a bilingual `LocalizedString` and user-facing.
-> 3. **⚠ OPEN DECISION — free text vs picker.** `MembershipAbacProviders` returns `s.Code`
->    (lowercased); a topic's streams are **whatever the submitter typed**. `"Smart Cities"` will never
->    match `smart-cities`. Fixing it properly means topics select from the taxonomy — touching
->    `SubmitTopicCommand`, its validator, `SubmitTopic.tsx`, `UpdateTopicCommand`, and **every test
->    passing `streams: ['Platform']`, including `apiCreateTopic` which every e2e fixture uses**. This
->    is a product decision and a multi-PR slice.
-> 4. **Build the stream-assignment UI** — the operator asked to move members between streams from the
->    app. ⚠ It does **not** exist: `UsersMembership.tsx` displays streams and its own header says
->    assignment is **INERT** pending BL-024. Only the Administrator-only
->    `PUT /api/members/{publicId}/streams` exists behind it.
-> 5. **Wire `StreamScopeRequirement`** into the stream-bounded write policies — **only after 1–4**.
-> 6. **Evidence `AC-010`** — ⚠ only against a member who IS assigned; under `ADR-0041` a refusal from
->    an unassigned member proves nothing.
+> **The posture is FAIL-CLOSED with mandatory assignment.** No empty-set special case: forgetting to
+> assign someone **refuses** rather than permits. "Unrestricted" is said explicitly with a wildcard.
 >
-> ⚠ **Recommended against, though the operator permitted it:** do **not** randomly distribute the 26
-> real members. Prod has 0 topics and 1 login, so nobody is blocked; under `ADR-0041` unassigned is
-> safe; and random assignment writes false statements about real people into an auditable record.
-> Seed streams, assign nobody, ship the UI, let the Administrator assign deliberately.
+> **THE ORDER IS LOAD-BEARING — any other order produces an outage or a control that cannot work:**
+>
+> 1. **Seed 5 streams + a wildcard row.** `Stream.IsWildcard` is a **BOOLEAN COLUMN, never a magic
+>    code** — a renamed stream would silently break the bypass, or a future one collide into
+>    universal access. Names confirmed by the operator:
+>    `core`/Core/الأساسي · `communications`/Communications/الاتصالات ·
+>    `smart-cities`/Smart Cities/المدن الذكية · `government`/Government/الحكومي ·
+>    `shared-services`/Shared Services/الخدمات المشتركة.
+>    ⚠ For the wildcard reuse the committee's **own** wording — i18n already has
+>    `reports.filter.allStreams` = "All streams" / "كل المسارات".
+> 2. **Topics PICK from the taxonomy**; the validator rejects free text. Without this the control
+>    **cannot work** — the provider returns `Stream.Code` while topics carry typed strings.
+>    ⚠ **Do it now: prod has 0 topics, so there is no migration. That stops being true on first use.**
+>    Touches `SubmitTopicCommand`, its validator, `SubmitTopic.tsx`, `UpdateTopicCommand`, and every
+>    test passing `streams: ['Platform']` — **including `apiCreateTopic`, used by every e2e fixture**.
+> 3. **Build the assignment UI** — it does not exist. `UsersMembership.tsx` displays streams; its own
+>    header says assignment is **INERT** pending BL-024.
+> 4. **`FR-156`'s invite gains a REQUIRED stream field**, plus a loud "No stream assigned" roster
+>    state and a self-explaining refusal as the backstop.
+> 5. **⚠ BACKFILL ALL 26 EXISTING MEMBERS.** They were seeded straight into Keycloak so step 4 does
+>    not cover them. **Miss this and the whole committee is locked out the day the check lands.**
+> 6. **Fix `DEF-058`** (add `Scope` to `UpdateTopicCommand` + triage UI) and expose the OrgWide fact
+>    to authz as a **primitive `bool` on `IStreamScopedResource`** — ⚠ **not** the `TopicScope` enum:
+>    the contract is in `Shared.Contracts`, the enum in `Topics.Domain` (`ADR-0001`; `ADR-0021` is the
+>    pattern). Platform/OrgWide topics then bypass stream scope.
+> 7. **Wire `StreamScopeRequirement`** into the stream-bounded write policies.
+> 8. **Evidence `AC-010`** ⚠ against a member assigned to a **different** stream than the topic —
+>    never an unassigned one, whose refusal proves nothing about stream scope.
+>
+> ⚠ **Accepted escalation path:** a Secretary can widen write access by elevating a topic's scope.
+> Deliberate, Secretary/Chairman-gated and audited.
 >
 > Plus two I defaulted without asking: **`AC-003`** — write the cheap live test (seed a role-less
 > user, assert `POST /members/me` → 403); its audit clause rides on `DEF-056`. **`AC-041`** — prefer
