@@ -47,14 +47,22 @@ public sealed class StreamTaxonomySeedTests
         seeded.Should().OnlyContain(s => s.Name.En.Length > 0 && s.Name.Ar.Length > 0);
     }
 
-    [Fact] // exactly one row may claim "unrestricted", and it is the one the design names
+    // Exactly one row may claim "unrestricted", and it is the one the design names.
+    // ⚠ Materialised first and filtered IN MEMORY on purpose. `Where(s => s.IsWildcard)` against the
+    // DbSet is translated to SQL and never executes the property, so it proves the COLUMN filters
+    // while saying nothing about whether the flag survives materialisation — and the step-7 ABAC
+    // reader will read the property, not the column. Both halves have to hold, so both are asserted.
+    [Fact]
     public async Task ExactlyOneSeededStream_IsTheWildcard()
     {
         await using var db = _fx.NewMembershipSql();
 
-        var wildcards = await db.Streams.AsNoTracking().Where(s => s.IsWildcard).ToListAsync();
+        var seeded = await db.Streams.AsNoTracking().Where(s => s.CreatedBy == SeededBy).ToListAsync();
 
-        wildcards.Should().ContainSingle().Which.Code.Should().Be("all-streams");
+        seeded.Where(s => s.IsWildcard).Should().ContainSingle().Which.Code.Should().Be("all-streams");
+        // The other five are delivery streams. Stated as a count rather than "not the wildcard" so a
+        // seed that quietly marked two rows fails here as well as at the database index.
+        seeded.Where(s => !s.IsWildcard).Should().HaveCount(5);
     }
 
     // ⚠ The constraint is proven against a RAW INSERT, and that is the realistic threat rather than a
