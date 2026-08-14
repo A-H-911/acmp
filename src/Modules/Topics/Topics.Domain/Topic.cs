@@ -63,6 +63,12 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public IReadOnlyCollection<string> AffectedStreams => _streams.AsReadOnly();
     Guid ITopicScopedResource.TopicId => PublicId;
 
+    // ADR-0043 clause (5): a Platform or OrgWide topic affects everything, so no stream's members own
+    // it and stream scope does not bound writes to it. Computed from this module's own enum and
+    // exposed to the shared kernel as a PRIMITIVE — the contract must not reference TopicScope
+    // (ADR-0001 module boundary; ADR-0021 is the pattern).
+    public bool AffectsAllStreams => Scope is TopicScope.Platform or TopicScope.OrgWide;
+
     // Factory — creates a Draft. Drafts may be incomplete (the form autosaves as the user types);
     // completeness is enforced at Submit (AC-030). Submitter attribution is fixed here.
     public static Topic Draft(string key, string title, string description, string justification,
@@ -226,7 +232,28 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     }
 
     // Metadata (streams/systems/tags/urgency/scope) stays editable post-Accept until Decided (AC-034).
-    public void AssignStreams(IEnumerable<string> streams) { EnsureMutable(); ReplaceStrings(_streams, streams); }
+
+    // ⚠ THE GUARD IS HERE, IN THE AGGREGATE, RATHER THAN IN THE ONE VALIDATOR THAT PROMPTED IT
+    // (DEF-059, DEC-043). Submit enforces "at least one stream" (line 104) and ran once; update did
+    // not, so PUT /api/topics/{id} with an empty list could leave a LIVE topic affecting nothing —
+    // and StreamScopeHandler read exactly that state as "unscoped" and granted every stream-bounded
+    // member write access to it. An invariant asserted at one entry point and absent at the other is
+    // the shape this codebase keeps paying for; patching the named caller would have left every
+    // sibling caller of AssignStreams able to do the same thing.
+    //
+    // A DRAFT MAY STILL HOLD NONE, and that is not a hole: the form autosaves as the user types, so
+    // a draft is incomplete by design and Submit is the gate it must pass (AC-030). Nothing
+    // authorizes against a draft — it is not yet live work.
+    public void AssignStreams(IEnumerable<string> streams)
+    {
+        EnsureMutable();
+        var next = new List<string>();
+        ReplaceStrings(next, streams);
+        if (next.Count == 0 && Status != TopicStatus.Draft)
+            throw new InvalidOperationException("A submitted topic must affect at least one stream.");
+        ReplaceStrings(_streams, next);
+    }
+
     public void AssignSystems(IEnumerable<string> systems) { EnsureMutable(); ReplaceStrings(_systems, systems); }
     public void SetTags(IEnumerable<string> tags) { EnsureMutable(); ReplaceStrings(_tags, tags); }
     public void SetUrgency(TopicUrgency urgency) { EnsureMutable(); Urgency = urgency; }

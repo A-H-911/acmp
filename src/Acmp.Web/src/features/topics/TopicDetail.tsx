@@ -14,7 +14,7 @@
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
 import { useContext, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic, type TopicDetail as Topic } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
@@ -100,6 +100,7 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const fmt = useDateFmt();
   const urgent = topic.urgency !== 'Normal';
   const prepare = usePrepareTopic(topic.key);
+  const navigate = useNavigate();
   const [prepareErr, setPrepareErr] = useState<string | null>(null);
   // W4 (AC-035): move an Accepted topic into the agenda pool. Show-and-enforce — the button is offered
   // for any Accepted topic and the backend 403s a non-owner/non-Secretary, surfaced inline.
@@ -148,7 +149,13 @@ function DetailHeader({ topic }: { topic: Topic }) {
         <Button disabled title={t('topics.comingSoon')}>
           <Icon name="calendar" size={15} aria-hidden /> {t('detail.addAgenda')}
         </Button>
-        <Button variant="secondary" disabled title={t('topics.comingSoon')}>{t('detail.edit')}</Button>
+        {/* AC-034: live as of DEC-045. Shown for every non-immutable topic and NOT role-gated here —
+            the server decides what this actor may change (the submitter edits their own pre-Accept
+            topic; a Secretary edits metadata after). Hiding it by role would also hide it from the
+            owner, who is resolved per-topic by ABAC rather than by any claim the SPA can read. */}
+        {!['Decided', 'Closed', 'Converted'].includes(topic.status) && (
+          <Button variant="secondary" onClick={() => navigate(`/topics/${topic.key}/edit`)}>{t('detail.edit')}</Button>
+        )}
         {prepareErr && <span className="dt-prepare-err" role="alert">{prepareErr}</span>}
       </div>
     </div>

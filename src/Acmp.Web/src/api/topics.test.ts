@@ -7,6 +7,7 @@ import {
   useAcceptTopic,
   useReturnTopic,
   usePrepareTopic,
+  useUpdateTopic,
   useMoveTopicPriority,
   useAddTopicComment,
   useUploadTopicAttachment,
@@ -154,6 +155,48 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'prepared'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // AC-034 / DEF-058. The endpoint REPLACES, so every editable field must go out on every save —
+  // and `scope` must be absent unless the editor changed it, because the server reads a missing
+  // scope as "leave it alone" and only then skips the triage authorization.
+  it('useUpdateTopic PUTs the whole editable topic and invalidates detail + backlog', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useUpdateTopic('TOP-2026-001'), { wrapper });
+
+    result.current.mutate({
+      topicId: 'abc',
+      edit: {
+        title: 'T', description: 'D', justification: 'J', urgency: 'Urgent',
+        streams: ['core'], systems: ['Auth'], tags: ['iam'], scope: 'OrgWide',
+      },
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(urlOf(spy)).toBe('/api/topics/abc');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('PUT');
+    expect(lastBody(spy)).toEqual({
+      title: 'T', description: 'D', justification: 'J', urgency: 'Urgent',
+      streams: ['core'], systems: ['Auth'], tags: ['iam'], scope: 'OrgWide',
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+  });
+
+  it('useUpdateTopic surfaces a refusal rather than reporting success', async () => {
+    stubFetch(() => ({ status: 403 }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useUpdateTopic('TOP-2026-001'), { wrapper });
+
+    result.current.mutate({
+      topicId: 'abc',
+      edit: { title: 'T', description: 'D', justification: 'J', urgency: 'Normal', streams: ['core'], systems: [], tags: [], scope: 'OrgWide' },
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBeInstanceOf(ApiError);
   });
 
   it('useReturnTopic routes reject vs defer to different endpoints/bodies', async () => {

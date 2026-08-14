@@ -101,7 +101,7 @@ public static class TopicEndpoints
         group.MapPut("/{id:guid}", async (Guid id, UpdateTopicBody body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new UpdateTopicCommand(id, body.Title, body.Description, body.Justification,
-                body.Urgency, body.Streams, body.Systems, body.Tags), ct);
+                body.Urgency, body.Streams, body.Systems, body.Tags, body.Scope), ct);
             return Results.NoContent();
         });
 
@@ -130,6 +130,10 @@ public static class TopicEndpoints
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
     public sealed record MoveBody(int Delta);
+    // Scope is nullable and OMITTING IT MEANS "leave it alone", which is what makes this safe to add
+    // to an existing body: a caller that does not know about scope cannot silently reset an elevated
+    // topic back to a derived value (DEF-058).
     public sealed record UpdateTopicBody(string Title, string Description, string Justification,
-        TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags);
+        TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags,
+        TopicScope? Scope = null);
 }

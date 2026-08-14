@@ -130,6 +130,36 @@ public class TopicApplicationTests
         (await UpdateValidator().ValidateAsync(cmd)).IsValid.Should().BeFalse();
     }
 
+    // DEF-059 / DEC-043 half one, the boundary half. The aggregate refuses the same thing for every
+    // caller; this rule is what turns the refusal into a 400 naming the field rather than a 409 from
+    // a domain exception. It is deliberately a SECOND expression of the invariant, not a duplicate:
+    // remove the aggregate guard and a sibling caller can still empty a topic.
+    [Fact]
+    public async Task Update_rejects_an_empty_stream_list()
+    {
+        var cmd = new UpdateTopicCommand(Guid.NewGuid(), "T", "D", "J", TopicUrgency.Normal,
+            Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>());
+
+        var result = await UpdateValidator().ValidateAsync(cmd);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle("the taxonomy rule stays silent on an empty list, or one mistake reports two errors")
+            .Which.PropertyName.Should().Be(nameof(UpdateTopicCommand.Streams));
+    }
+
+    // Scope is optional — omitting it means "leave it alone" — but a supplied one must be a real
+    // member of the enum, or an unmapped integer reaches Topic.SetScope.
+    [Fact]
+    public async Task Update_accepts_no_scope_and_rejects_an_undefined_one()
+    {
+        UpdateTopicCommand With(TopicScope? scope) => new(Guid.NewGuid(), "T", "D", "J", TopicUrgency.Normal,
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>(), scope);
+
+        (await UpdateValidator().ValidateAsync(With(null))).IsValid.Should().BeTrue();
+        (await UpdateValidator().ValidateAsync(With(TopicScope.OrgWide))).IsValid.Should().BeTrue();
+        (await UpdateValidator().ValidateAsync(With((TopicScope)99))).IsValid.Should().BeFalse();
+    }
+
     // ---- AC-031: reject/defer require a reason ----
 
     [Fact]
