@@ -22,6 +22,9 @@ public sealed class FakeIdentityProvider : IIdentityProvider
     public ConcurrentBag<string> SignedOut { get; } = new();
     public ConcurrentDictionary<string, IReadOnlyCollection<string>> Roles { get; } = new();
 
+    /// <summary>The realm as a test wants it seen (SC-011). Empty unless a test populates it.</summary>
+    public List<IdentityAccount> Accounts { get; } = new();
+
     public Task<InvitedAccount> CreateUserAsync(string email, string fullName, CancellationToken ct = default)
     {
         Created.Add((email, fullName));
@@ -46,4 +49,7 @@ public sealed class FakeIdentityProvider : IIdentityProvider
         Disabled.Add(subjectId);
         return Task.CompletedTask;
     }
+
+    public Task<IReadOnlyList<IdentityAccount>> ListUsersAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<IdentityAccount>>(Accounts.ToArray());
 }

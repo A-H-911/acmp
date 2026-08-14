@@ -17,7 +17,8 @@ public sealed class Stream : AuditableEntity
     // renamed or re-coded, or hand universal access to a future stream that collided with the string.
     // Set only by the Membership_StreamTaxonomy_ADR0042 seed: the wildcard is a seeded singleton (a
     // filtered unique index enforces "at most one"), so there is deliberately no runtime factory for
-    // it. ⚠ Nothing READS this yet — the reader is UserStreamProvider, in ADR-0042 step 7 (DW-026).
+    // it. Read by UserStreamProvider (DW-026) and by the DEC-046 reconciliation, which grants exactly
+    // this stream to the member rows it creates (DEF-071).
     public bool IsWildcard { get; private set; }
 
     public static Stream Create(string code, LocalizedString name) =>

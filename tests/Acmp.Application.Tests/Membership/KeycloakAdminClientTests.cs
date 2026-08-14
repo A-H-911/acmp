@@ -185,6 +185,77 @@ public class KeycloakAdminClientTests
             .Should().ThrowAsync<Exception>();
     }
 
+    // ---- ListUsersAsync (SC-011) — the port's one READ ----
+
+    [Fact]
+    public async Task ListUsers_returns_each_account_with_the_realm_roles_it_holds()
+    {
+        var client = Client(req => req.RequestUri!.AbsolutePath switch
+        {
+            var p when p.EndsWith("/token") => Token(),
+            var p when p.EndsWith("/role-mappings/realm") => Json(
+                """[{"id":"r1","name":"default-roles-acmp"},{"id":"r2","name":"Reviewer"}]"""),
+            _ => Json(
+                """[{"id":"kc-1","username":"a@acmp.gov","email":"a@acmp.gov","firstName":"Aisha","lastName":"Noor","enabled":true}]"""),
+        });
+
+        var accounts = await client.ListUsersAsync();
+
+        var account = accounts.Should().ContainSingle().Subject;
+        account.SubjectId.Should().Be("kc-1");
+        account.Email.Should().Be("a@acmp.gov");
+        account.FullName.Should().Be("Aisha Noor", "the adapter rejoins what CreateUserAsync's SplitName took apart");
+        account.Enabled.Should().BeTrue();
+        // Raw and unmapped, Keycloak's own composite included: deciding which of these is a committee
+        // role is the application's job, and a port that pre-filtered would hide an unrecognised one.
+        account.RealmRoles.Should().BeEquivalentTo(new[] { "default-roles-acmp", "Reviewer" });
+    }
+
+    // ⚠ THE ONE WITH TEETH. Keycloak's own default is max=100 and it applies SILENTLY, so a single
+    // call is a listing that becomes wrong at 101 accounts while still reporting success — and a
+    // reconciliation that cannot see an account is exactly the failure it exists to fix (DEF-065).
+    [Fact]
+    public async Task ListUsers_keeps_paging_while_a_page_comes_back_full()
+    {
+        var pagesRequested = new List<string>();
+        var client = Client(req =>
+        {
+            if (req.RequestUri!.AbsolutePath.EndsWith("/token")) return Token();
+            if (req.RequestUri.AbsolutePath.EndsWith("/role-mappings/realm")) return Json("[]");
+
+            pagesRequested.Add(req.RequestUri.Query);
+            // A FULL first page (100), then a short one — the only signal that there is more.
+            var full = req.RequestUri.Query.Contains("first=0");
+            var count = full ? 100 : 3;
+            var users = Enumerable.Range(0, count).Select(i =>
+                $$"""{"id":"kc-{{(full ? i : 100 + i)}}","username":"u{{i}}","email":"","firstName":"","lastName":"","enabled":true}""");
+            return Json("[" + string.Join(",", users) + "]");
+        });
+
+        var accounts = await client.ListUsersAsync();
+
+        accounts.Should().HaveCount(103, "a full page means there may be more, and stopping there would lose the rest");
+        pagesRequested.Should().HaveCount(2);
+        pagesRequested[1].Should().Contain("first=100", "the second page must start where the first ended");
+    }
+
+    [Fact]
+    public async Task ListUsers_falls_back_to_the_username_when_an_account_carries_no_name()
+    {
+        var client = Client(req => req.RequestUri!.AbsolutePath switch
+        {
+            var p when p.EndsWith("/token") => Token(),
+            var p when p.EndsWith("/role-mappings/realm") => Json("[]"),
+            _ => Json("""[{"id":"kc-2","username":"seeded@acmp.gov","email":"seeded@acmp.gov","enabled":false}]"""),
+        });
+
+        var account = (await client.ListUsersAsync()).Should().ContainSingle().Subject;
+
+        // A member row with an EMPTY display name is a roster line nobody can identify.
+        account.FullName.Should().Be("seeded@acmp.gov");
+        account.Enabled.Should().BeFalse("a disabled account is carried, not filtered — the caller reports the skip");
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _responder;
