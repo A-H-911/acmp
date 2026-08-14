@@ -12,7 +12,7 @@
 //
 // Usage: node scripts/check-coverage.mjs [searchRoot=.] [threshold=95]
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const root = process.argv[2] ?? '.';
 const THRESHOLD = Number(process.argv[3] ?? 95);
@@ -30,7 +30,46 @@ function findReports(dir) {
   return out;
 }
 
-const reports = findReports(root);
+/*
+ * ⚠ NEWEST REPORT PER TEST PROJECT, NOT ALL OF THEM (DEF-069). `dotnet test --collect` writes a NEW
+ * timestamped directory on every run instead of replacing the last one, and this script used to sum
+ * every report it could find. So running the gate locally twice scored an edited file against its
+ * OLD self, and the worst historical reading won: it kept indicting a file at 50% after the only
+ * coverable code had been MOVED OUT of it, which is what finally made the measurement suspect rather
+ * than the code. A stale gate does not merely waste time — it DIRECTS work, and two changes were
+ * made to satisfy that false reading before the reading itself was doubted.
+ *
+ * CI never saw it, because a fresh checkout has no TestResults at all. That is exactly why the fix
+ * belongs here rather than in a documented cleanup step: the gate is wrong only for the person
+ * following this project's own advice to run it before pushing, and telling them to remember
+ * `rm -rf` relies on the attention that already failed.
+ *
+ * Keyed on the TestResults parent (one per test project), so a solution-wide run still measures
+ * every project — it just measures each one ONCE, at its latest run.
+ */
+function newestPerProject(all) {
+  const latest = new Map();
+  for (const file of all) {
+    // ⚠ dirname TWICE, not a path split on a hand-written separator class. The first attempt used
+    // /[\/]/, which matches forward slashes only — and node's join() produces BACKSLASHES on
+    // Windows, so every key collapsed to the empty string, every report landed in one bucket, and
+    // the gate silently discarded four of five legitimate per-project reports and reported 84.70%.
+    // It announced "ignoring 4 superseded report(s)", which is the only reason it was diagnosable.
+    const project = dirname(dirname(file)); // .../<project>/TestResults/<guid>/coverage.cobertura.xml
+    const mtime = statSync(file).mtimeMs;
+    const held = latest.get(project);
+    if (!held || mtime > held.mtime) latest.set(project, { file, mtime });
+  }
+  return [...latest.values()].map((v) => v.file);
+}
+
+const allReports = findReports(root);
+const reports = newestPerProject(allReports);
+if (allReports.length > reports.length) {
+  console.log(
+    `[check-coverage] ignoring ${allReports.length - reports.length} superseded report(s) from earlier runs (DEF-069)`,
+  );
+}
 if (reports.length === 0) {
   console.error(`[check-coverage] no coverage.cobertura.xml found under ${root}`);
   process.exit(1);
