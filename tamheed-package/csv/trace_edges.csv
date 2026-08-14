@@ -91,8 +91,8 @@ ADR-0021,ADR-0001,relates_to
 ADR-0022,ADR-0001,relates_to
 ADR-0022,ADR-0003,relates_to
 ADR-0026,ADR-0009,relates_to
-ADR-0027,FR-151,supersedes
-ADR-0027,FR-153,supersedes
+ADR-0027,FR-151,relates_to
+ADR-0027,FR-153,relates_to
 ADR-0028,ADR-0026,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
