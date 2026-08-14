@@ -21,7 +21,7 @@ proves staleness — a process younger than the lock cannot hold it.
 
 ## Where things stand
 
-`main` is green at **`618c568`** plus the commit carrying this rewrite, clean and pushed. Gates
+`main` is green at **`8a8d8a8`** plus the commit carrying this rewrite, clean and pushed. Gates
 **7/7**. (`git log --oneline -3` is the authority; a sha written into a prompt is stale by one commit
 the moment the prompt itself is committed.)
 
@@ -43,33 +43,39 @@ control is wired, runs, and is evidenced. `AC-010` and `AC-034` are Met. The eig
 Every item below was decided by the operator on 2026-08-14. Read `DEC-046` and `DEC-047` before
 starting any of them; the rejected options and their reasons are on those rows.
 
-### 1. The `DEF-065` reconciliation — the ONLY thing blocking a deploy
+### 1. The `DEF-065` reconciliation — ✅ BUILT AND MERGED (#275, `9508eef`). **DO NOT REBUILD IT.**
 
-~25 Keycloak accounts have never signed in, so they have no `committee_members` row. The step-5
-backfill cannot reach a row that does not exist, and once stream scope deploys each of them is
-refused every guarded write from their first login. `DEC-046` chose to **reconcile Keycloak accounts
-into `committee_members`** rather than rely on `ADR-0043` clause (2)'s roster backstop.
+`ReconcileIdentityAccountsCommand` + `POST /api/members/reconcile` (Administrator only) creates a
+`committee_members` row for every identity account holding none **and grants it the wildcard in the
+same operation** — `DEF-071`'s missing clause, and only for rows that run creates. `SC-011` records
+the port widening: `IIdentityProvider` gained `ListUsersAsync`, its first READ. `DEF-071` is **Fixed**.
 
-⚠⚠ **READ `DEF-071` FIRST — the decision is right and its mechanism is one clause short.**
-`Program.cs:133` applies migrations **at boot**, before the first request. Reconciliation is an
-application feature, so it runs on a host that is already up: the deploy carrying it runs the
-backfill FIRST, against the same ~1 row. Reconciling afterwards creates ~25 rows holding **zero
-streams** — `DEF-065`'s exact outcome by another route.
+⚠⚠ **`DEF-065` AND `DEF-038` ARE STILL OPEN ON PURPOSE, AND THE DEPLOY IS STILL BLOCKED.** The code
+existing is not the fix; the command **running against production** is. Closing them on merge would
+repeat this stream's own recorded trap — *correct, proven and evidenced is not the same as
+production being safe to deploy into*. **`DEF-065` is the deploy-blocker tracker.** Its row carries
+the ordered discharge steps; the short version:
 
-So the command **must assign the wildcard to the rows it creates**, doing what the backfill would
-have done had they existed — and **only** to those. An administrator may have deliberately narrowed
-someone to one stream, and widening that on a reconciliation run would silently hand them universal
-write access. The step-5 backfill already encodes this asymmetry with `NOT EXISTS`; do the same.
+1. `KEYCLOAK_ADMIN_ENABLED=true` **and** a real `KEYCLOAK_ADMIN_CLIENT_SECRET` — two variables, not
+   one (`DEC-047` d3), and `09-put-env.sh` refuses a placeholder.
+2. Deploy. **No Keycloak grant change is needed** — see below.
+3. `POST /api/members/reconcile` as an Administrator **immediately** after, and **read the returned
+   partition** (`identityAccounts = created + alreadyProvisioned + skippedDisabled +
+   skippedNoCommitteeRole + skippedDuplicateEmail`) rather than assuming it ran.
 
-⚠ **`IIdentityProvider` has NO read operation.** Its four methods are all writes, and its own comment
-says the narrowness is deliberate — *"no general-purpose call-Keycloak escape hatch, so the blast
-radius of the service-account credential is bounded by this interface"*. Listing realm users is a
-FIFTH method on an `ADR-0038`-governed port. A bounded read is defensible (a read cannot mutate the
-identity provider) but it is a real widening of a surface narrowed on purpose — record it, don't slip
-it in.
+⚠ **The Administrator token has no CLI path** — the service account is not a committee member, so its
+token cannot satisfy `Policies.AdminUsers`. Sign in to the SPA as an Administrator and take the
+bearer token from devtools.
 
-This also answers **`DEF-038`** by a route that row never offered: reconciling creates the rows, so
-the roster shows them as ordinary members and no parallel Keycloak listing is needed.
+⚠ **The residual, deliberate:** anyone who signs in *between* steps 2 and 3 gets a JIT row with no
+streams that the command will not touch, and falls back to `ADR-0043` clause (2). Prod has ONE
+sign-in in its whole history, so the window is minutes wide. `Reconcile_leaves_a_pre_existing_member_holding_NO_streams_alone`
+pins that as intended — **do not "fix" it** to wildcard any zero-stream member: an administrator can
+clear streams deliberately and `member_streams` has no provenance column to tell the two apart.
+
+⚠ **`ListUsersAsync` has NO live coverage** — e2e runs with `KEYCLOAK_ADMIN_ENABLED=false`, so the
+adapter is proven against a stub transport and one hand-run probe, never by CI. **`AC-011` is what
+would change that**, and it is the same gap that let `DEF-066` survive two whole steps.
 
 ### 2. `DEF-041` — voting eligibility
 
@@ -108,6 +114,15 @@ not a config flag: the check itself differs between MinIO's `/minio/health/live`
 
 ## Standing traps — every one of these has cost real time here
 
+0. **⚠ MEASURE THE PERMISSION BEFORE YOU DESIGN AROUND IT.** Scoping the reconciliation, the tempting
+   shape was to read roles by listing users per role (`GET /roles/{name}/users`) — six calls instead
+   of one per user. A throwaway Keycloak 26.0, granted **exactly** `admin-client.env`'s
+   `{manage-users}` and nothing else, answered in ninety seconds: `GET /users` → **200**,
+   `GET /users/{id}/role-mappings/realm` → **200**, `GET /roles/{name}/users` → **403**. The clever
+   shape is the one the minimal grant refuses, and it would have failed **in production only** —
+   `DEF-066`'s class exactly. Standing up a throwaway realm is cheap; assuming a grant is not.
+   `probe-keycloak-grant.mjs` call 9 keeps that claim re-verifiable rather than asserted in a comment.
+
 1. **Read the implementation before calling it a defect — and that applies to REGISTER ROWS.** Rows
    read as pre-checked; they are not. `DEF-062`, `DEF-061`, `DEF-065` and `DEF-071` were each wrong
    or incomplete in my own hand, and each was corrected only by reading the code underneath.
@@ -144,6 +159,18 @@ not a config flag: the check itself differs between MinIO's `/minio/health/live`
    attribution named — which test fails, and which correctly stays green.
 9. **Find the CALLER, not the definition.** Coverage catches unread state but never an uncalled
    method. `PUT /api/topics/{id}` had NO SPA caller at all until `ca3bf05`.
+9b. **An endpoint policy on a command that already carries `AllowedRoles` proves NOTHING in a test.**
+   Removing `.RequireAuthorization(Policies.AdminUsers)` from the new reconcile endpoint left all
+   nine API tests **green** — `AuthorizationBehavior` enforces the same matrix. What such a test
+   proves is the RULE, not the policy. That is `DEF-056` seen from the other side, and it means every
+   per-endpoint policy added today ships a **403 nobody audits** until `DEF-056` lands.
+9c. **A mutation nothing catches is a decision nobody recorded.** The reconciliation's "only rows it
+   creates" rule survived four mutants, but the *plausible* wrong version — wildcard any member
+   holding zero streams — was caught by nothing, because no test carried a pre-existing zero-stream
+   member. Ask of every deliberate asymmetry: **which test fails if someone later "fixes" it?**
+9d. **⚠ THE LSP DIAGNOSTICS PANEL CAN BE STALE.** Mid-session it reported a duplicate migration file
+   and a missing test helper — neither existed on disk, `git status` was clean, and the helper was at
+   `AcmpWebApplicationFactory.cs:174`. Same shape as trap 5: check the file before believing the tool.
 10. **`.cs` files need a UTF-8 BOM and LF**; the Write tool adds neither, `dotnet ef` rewrites the
     model snapshot as CRLF, and the format gate catches both. ⚠ `gh pr create --body` and
     `git commit -m` with backticks break under PowerShell — always `--body-file` / `-F <file>`.
@@ -166,9 +193,17 @@ Report the state and your plan before writing, then proceed.
 
 ## Not part of the paste — notes for the operator
 
-**The deploy is gated on one thing.** `ADR-0043` is complete and proven, but *stream scope being
-correct, running and evidenced is not the same as production being safe to deploy into*. `DEF-065`
-plus `DEF-071` are that gap. Nothing else in the queue blocks a deploy.
+**The deploy is gated on one thing, and it is now an OPERATOR ACTION rather than unwritten code.**
+`DEF-071` is Fixed and the reconciliation is merged (#275) with its guards mutation-proven and a leg
+on real SQL Server. What remains is running it: two environment variables, a deploy, and one
+authenticated POST — the three steps on the `DEF-065` row. Until that happens `DEF-065` and `DEF-038`
+stay Open and the deploy stays blocked, which is the honest state rather than a bookkeeping one.
+
+**No UI was built for it, deliberately.** `ACMP Administration.dc.html` gives that screen exactly one
+primary action ("Invite user") and no sync control, and this is a one-time pre-deploy remediation —
+a permanent button would be an `INV-014` deviation on a screen that HAS a reference, for a need that
+does not recur (new members arrive through the invite flow, which already requires a stream). If you
+would rather have the button, that is a scope call and needs a `DEC-`.
 
 **The tamheed acceptance series (`findings_13`–`findings_16`) is still open on §6 only.** The
 CLAUDE.md Recording-obligations note has been proven to TRANSFER into fresh contexts; what is
