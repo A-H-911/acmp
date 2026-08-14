@@ -55,3 +55,11 @@ Thumbs.db
 
 # P23 restore-drill scratch (deploy/scripts/spike-cloud-gates.sh U4)
 .spike-backups/
+
+# ── Tamheed v3→v4 migration backup ────────────────────
+# package_migrate keeps the pre-migration store here. NOT committed: the v3 data
+# is already in git history at 967e75d (the commit immediately before the
+# migration), so a second 3.9 MB copy would be permanent weight for a backup the
+# repo already holds. Recover with:
+#   git show 967e75d:tamheed-package/data/<file>.jsonl
+tamheed-package/data-v3-backup/

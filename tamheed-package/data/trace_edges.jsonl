@@ -90,8 +90,8 @@
 {"from_id":"ADR-0022","to_id":"ADR-0001","relation":"relates_to"}
 {"from_id":"ADR-0022","to_id":"ADR-0003","relation":"relates_to"}
 {"from_id":"ADR-0026","to_id":"ADR-0009","relation":"relates_to"}
-{"from_id":"ADR-0027","to_id":"FR-151","relation":"supersedes"}
-{"from_id":"ADR-0027","to_id":"FR-153","relation":"supersedes"}
+{"from_id":"ADR-0027","to_id":"FR-151","relation":"relates_to"}
+{"from_id":"ADR-0027","to_id":"FR-153","relation":"relates_to"}
 {"from_id":"ADR-0028","to_id":"ADR-0026","relation":"relates_to"}
 {"from_id":"FR-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"FR-001","to_id":"ADR-0013","relation":"derives_from"}
