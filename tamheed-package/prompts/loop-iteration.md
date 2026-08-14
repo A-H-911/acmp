@@ -19,13 +19,17 @@ Execute ONE iteration against the `tamheed-package` Tamheed package, no pauses:
    order. No open items → `stop=backlog-empty`.
 4. Execute acceptance-criteria-first: failing test → implement → green. Bounded to
    this one work item.
-5. Sync (the recording obligations, no exceptions): `progress_update` per unit;
-   `audit_record` with evidence per verified `AC-`; `work_bind` the commit; discovered
-   defects → `DEF-` rows; out-of-scope finds → `DW-` rows. A needed `scope-change` is
-   NOT yours to make — that is a stop condition.
-6. Close: if the slice's criteria all look Met, `readiness_check("slice", "<SL-x>")` —
-   a blocking failure is a stop condition (force needs a human). Then `gate_run()` and
-   `package_close()`.
+5. Sync (the recording obligations, no exceptions): `progress_update` per unit
+   (event_type "work-done", subject_id the `WBS-`, actor "agent:<session>");
+   `audit_record` per verified `AC-` with evidence plus `verified_by: "agent"`,
+   `verification_method: "auto-test"`, `against_commit`; `work_bind` the commit;
+   discovered defects → `DEF-` rows; out-of-scope finds → `DW-` rows. A needed
+   `scope-change` is NOT yours to make — that is a stop condition.
+6. Close: set the finished `wbs-item` to `lifecycle_status: "Review"` (done-claimed;
+   `Implemented` is the verified state, and readiness counts Review as open). If the
+   slice's criteria all look Met, `readiness_check("slice", "<SL-x>")` — a blocking
+   failure is a stop condition (force or a waiver needs a human). Then `gate_run()`
+   and `package_close()`.
 7. End with EXACTLY this block (the loop driver parses it; one line, fixed order):
 
    `ITERATION: wbs=<WBS-x|none> slice=<SL-x|none> acs_moved=<n> gate=<pass|fail> ready=<true|false|n/a> stop=<none|reason>`

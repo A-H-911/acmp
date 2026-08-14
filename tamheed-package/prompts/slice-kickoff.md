@@ -16,12 +16,17 @@ Kick off the next slice of the `tamheed-package` Tamheed package:
    `entity_query("acceptance-criterion")`, and the invariants in force
    (`entity_query("invariant")`).
 4. Propose a bounded, acceptance-criteria-first plan: per `AC-`, the failing test you
-   will write, the implementation step, and the PASS/FAIL observable. **STOP for
+   will write, the implementation step, and the pass/fail observable. **STOP for
    operator approval before writing any code.**
-5. After approval, per unit of work: failing test → implement → `progress_update` →
-   `audit_record` with evidence → `work_bind` the commit.
+5. After approval, per unit of work: failing test → implement → `progress_update`
+   (event_type "work-done", subject_id the `WBS-`/`AC-`, actor "agent:<session>") →
+   `audit_record` with evidence plus its chain (`verified_by`, `verification_method`,
+   `against_commit`) → `work_bind` the commit.
 6. Anything discovered along the way follows the recording obligations: defect →
    `defect` row FIRST; out-of-scope → `deferred-work` row with a trigger; deviation →
-   `scope-change` row FIRST.
-7. When the slice looks done: run the slice-review prompt (it ends with
+   `scope-change` row FIRST; genuine ambiguity → an `OQ-` row plus a
+   `[NEEDS-CLARIFICATION: OQ-NNN]` marker at the spot — never assume.
+7. When the slice looks done: set the finished `wbs-item` rows to
+   `lifecycle_status: "Review"` (done-claimed; `Implemented` means verified, and
+   readiness counts Review as open), then run the slice-review prompt (it ends with
    `readiness_check("slice", "<SL-x>")`).

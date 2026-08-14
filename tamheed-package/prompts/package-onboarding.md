@@ -24,7 +24,10 @@ Onboard yourself onto the `tamheed-package` Tamheed package from zero:
    traceability flow, phase readiness. The prompts folder (`tamheed-package/prompts/`) is
    the situation playbook — know what's in it.
 7. The obligations: read the "Recording obligations" table in this project's CLAUDE.md
-   note — every one of them binds you from the first minute.
+   note — every one of them binds you from the first minute. On genuine ambiguity,
+   never assume: create an `OQ-` row (owner + due_by) and put
+   `[NEEDS-CLARIFICATION: OQ-NNN]` at the exact ambiguous spot (G-COMPLETE fails
+   markers with no live `OQ-` behind them).
 8. Report back: five lines — what this project is, the load-bearing invariants, the
    active phase/slice, the gate + readiness verdicts, and what you'd work on first.
    STOP for confirmation before writing anything.
