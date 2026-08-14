@@ -30,7 +30,14 @@ export async function apiMembers(request: APIRequestContext, bearer: string): Pr
 }
 
 /** Create a topic via the API (stays in Triage); returns its id/key/title. */
-export async function apiCreateTopic(request: APIRequestContext, bearer: string, title: string): Promise<ApiTopic> {
+// `streams` defaults to the taxonomy's 'core' so every existing caller is unchanged; AC-010's leg
+// passes a DIFFERENT seeded stream, which is the only variable its discrimination needs.
+export async function apiCreateTopic(
+  request: APIRequestContext,
+  bearer: string,
+  title: string,
+  streams: string[] = ['core'],
+): Promise<ApiTopic> {
   const create = await request.post('/api/topics', {
     headers: { Authorization: bearer, ...JSON_HEADERS },
     data: {
@@ -38,7 +45,7 @@ export async function apiCreateTopic(request: APIRequestContext, bearer: string,
       title,
       description: 'E2E setup topic.',
       justification: 'E2E setup justification.',
-      streams: ['core'],
+      streams,
       systems: [],
       urgency: 'Normal',
       source: 'CommitteeMember',
