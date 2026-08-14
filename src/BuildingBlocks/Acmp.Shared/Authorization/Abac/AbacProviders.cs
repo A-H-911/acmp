@@ -7,7 +7,7 @@
 // The streams a principal is assigned to (docs/domain/permission-role-matrix.md §E.1).
 public interface IUserStreamProvider
 {
-    Task<IReadOnlyCollection<string>> GetAssignedStreamsAsync(string userId, CancellationToken ct = default);
+    Task<AssignedStreams> GetAssignedStreamsAsync(string userId, CancellationToken ct = default);
 }
 
 // The per-topic relationship capabilities a principal holds on a topic (docs/domain/permission-role-matrix.md §D).

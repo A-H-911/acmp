@@ -5,6 +5,24 @@ namespace Acmp.Shared.Authorization.Abac;
 
 // docs/domain/permission-role-matrix.md §E.1 stream scope for WRITE actions. Read is committee-wide by settled decision
 // (README §C, OQ-AUTH-001 = read-visible/write-scoped) so this constrains mutation only.
+/// <summary>
+/// A principal's stream assignment: the stream codes they hold, and whether any of them is the
+/// wildcard that makes them unrestricted (ADR-0043 clause 3).
+/// </summary>
+/// <remarks>
+/// ⚠ ONE VALUE RATHER THAN A SECOND PORT METHOD, deliberately. The wildcard flag lives in the same
+/// row as the code — <c>UserStreamProvider</c> already joins member_streams to streams — so asking
+/// for it separately would be a second database round-trip per authorization for a column the first
+/// query had in hand, and a second thing every future implementer must remember to honour.
+/// <para>
+/// ⚠ <c>IsUnrestricted</c> IS A FLAG FROM A COLUMN, NEVER A CODE COMPARISON. ADR-0043 clause (3)
+/// forbids matching on the code: a magic string in an authorization control breaks silently when the
+/// stream is renamed or re-coded, and would hand universal access to any future stream that collided
+/// with it. The database enforces at most one wildcard row through a filtered unique index.
+/// </para>
+/// </remarks>
+public sealed record AssignedStreams(IReadOnlyCollection<string> Codes, bool IsUnrestricted);
+
 public sealed class StreamScopeRequirement : IAuthorizationRequirement
 {
 }
@@ -51,16 +69,20 @@ public sealed class StreamScopeHandler : AuthorizationHandler<StreamScopeRequire
         if (userId is null)
             return;
 
-        // ⚠ STILL MISSING, AND STEP 7 CANNOT SHIP WITHOUT IT (DW-026): the WILDCARD is not read here.
-        // ADR-0043 clause (3) expresses "unrestricted" as a member holding the stream whose
-        // Stream.IsWildcard column is set, and the ADR-0043 step-5 backfill has just assigned exactly
-        // that to every member who held nothing. This method returns stream CODES, so a wildcard
-        // holder's "all-streams" simply fails to intersect and they would be REFUSED — the opposite
-        // of what the backfill was for. Honouring it needs a new signal on IUserStreamProvider
-        // (never a code comparison — clause (3) forbids matching the magic string), which lands with
-        // the wiring in step 7 where it is testable end to end.
         var assigned = await _streams.GetAssignedStreamsAsync(userId);
-        if (resource.AffectedStreams.Intersect(assigned, StringComparer.OrdinalIgnoreCase).Any())
+
+        // ADR-0043 clause (3): "unrestricted" is a member holding the wildcard STREAM, read from its
+        // IsWildcard column rather than matched by code (DW-026). The step-5 backfill assigned exactly
+        // that to every member who held nothing, so without this line the backfill would have the
+        // opposite of its intended effect — a wildcard holder's "all-streams" simply fails to
+        // intersect any topic, and the people the backfill was meant to protect would be refused.
+        if (assigned.IsUnrestricted)
+        {
+            context.Succeed(requirement);
+            return;
+        }
+
+        if (resource.AffectedStreams.Intersect(assigned.Codes, StringComparer.OrdinalIgnoreCase).Any())
             context.Succeed(requirement);
     }
 }

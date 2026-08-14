@@ -17,12 +17,19 @@ public sealed class UserStreamProvider : IUserStreamProvider
 
     public UserStreamProvider(IMembershipDbContext db) => _db = db;
 
-    public async Task<IReadOnlyCollection<string>> GetAssignedStreamsAsync(string userId, CancellationToken ct = default) =>
-        await _db.Members.AsNoTracking()
+    // ⚠ CODE AND WILDCARD FLAG COME FROM THE SAME ROW IN ONE QUERY. They are two facts about the same
+    // assignment, and splitting them into two port calls would cost a second round-trip per
+    // authorization for a column this join already touches (ADR-0043 clause 3, DW-026).
+    public async Task<AssignedStreams> GetAssignedStreamsAsync(string userId, CancellationToken ct = default)
+    {
+        var rows = await _db.Members.AsNoTracking()
             .Where(m => m.KeycloakUserId == userId)
             .SelectMany(m => m.Streams)
-            .Join(_db.Streams, a => a.StreamId, s => s.Id, (a, s) => s.Code)
+            .Join(_db.Streams, a => a.StreamId, s => s.Id, (a, s) => new { s.Code, s.IsWildcard })
             .ToListAsync(ct);
+
+        return new AssignedStreams(rows.Select(r => r.Code).ToList(), rows.Any(r => r.IsWildcard));
+    }
 }
 
 public sealed class TopicCapabilityResolver : ITopicCapabilityResolver
