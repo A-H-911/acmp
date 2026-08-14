@@ -71,11 +71,21 @@ if [ "$env_name" = "uat" ]; then
   fi
 fi
 
-# --- in-app user management preflight (ADR-0038, DW-024) ---------------------------------------
-# KeycloakAdminOptions is ValidateOnStart, so an environment that enables the feature without a real
-# secret does not degrade — it STOPS api AND worker at boot, and the box comes back unusable. That
-# is the right runtime behaviour and the wrong place to discover it: this is the last point before
-# the value reaches a machine, so the placeholder is refused HERE, with the reason.
+# --- in-app user management preflight (ADR-0038, DW-024, DEF-055) ------------------------------
+# WHAT THIS ACTUALLY ENFORCES: no GUESSABLE OR PLACEHOLDER credential reaches a machine. reconcile.sh
+# pushes this value to the Keycloak client, so shipping a published literal like CHANGE_ME would have
+# both sides agree on a credential anyone can read. This is the last point before the value reaches a
+# machine, so it is refused HERE.
+#
+# ⚠ IT DOES NOT ENFORCE "the host would not boot", AND THE MESSAGE USED TO SAY SO (DEF-055). For the
+# ABSENT case that claim was simply false: gen-secrets.sh writes KeycloakAdmin__ClientSecret
+# UNCONDITIONALLY, generating a random value when the variable is unset, compose mounts it as a real
+# secret, and AddKeyPerFile binds it — so ValidateOnStart PASSES and the host boots fine. An operator
+# told the wrong reason looks in the wrong place.
+#
+# The behaviour is deliberately UNCHANGED (DEC-047): an unpinned secret silently rotates on every
+# boot, so pinning one is what an operator wants regardless. The honest cost, now stated out loud, is
+# that enabling this feature in a deployed environment is TWO variables, not one.
 kc_admin_enabled="$(printf '%s\n' "$payload" | sed -n 's/^[[:space:]]*KEYCLOAK_ADMIN_ENABLED[[:space:]]*=[[:space:]]*//p' | tr -d '\r' | tail -1)"
 case "${kc_admin_enabled:-false}" in
   false|False|FALSE) ;;
@@ -83,7 +93,7 @@ case "${kc_admin_enabled:-false}" in
     kc_admin_secret="$(printf '%s\n' "$payload" | sed -n 's/^[[:space:]]*KEYCLOAK_ADMIN_CLIENT_SECRET[[:space:]]*=[[:space:]]*//p' | tr -d '\r' | tail -1)"
     case "${kc_admin_secret:-}" in
       ''|CHANGE_ME|ChangeMe_KCAdmin#2026)
-        die "KEYCLOAK_ADMIN_ENABLED is '${kc_admin_enabled}' but KEYCLOAK_ADMIN_CLIENT_SECRET is '${kc_admin_secret:-<unset>}' — ValidateOnStart would stop api and worker at boot. Set a real secret, or leave the feature off.";;
+        die "KEYCLOAK_ADMIN_ENABLED is '${kc_admin_enabled}' but KEYCLOAK_ADMIN_CLIENT_SECRET is '${kc_admin_secret:-<unset>}' — this environment must pin a real secret, because reconcile.sh pushes this value to the Keycloak client and a placeholder would publish the credential. Enabling the feature is TWO variables, not one: set KEYCLOAK_ADMIN_CLIENT_SECRET to a strong value (an unset one is generated fresh on every boot, so it would not stay valid), or leave the feature off.";;
     esac
     ;;
 esac
