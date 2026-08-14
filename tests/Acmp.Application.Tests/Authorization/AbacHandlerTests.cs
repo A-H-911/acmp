@@ -21,7 +21,7 @@ public class AbacHandlerTests
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "Test", ClaimTypes.Name, ClaimTypes.Role));
     }
 
-    private sealed record StubTopic(Guid TopicId, IReadOnlyCollection<string> AffectedStreams)
+    private sealed record StubTopic(Guid TopicId, IReadOnlyCollection<string> AffectedStreams, bool AffectsAllStreams = false)
         : ITopicScopedResource, IStreamScopedResource;
 
     private static async Task<bool> Evaluate(IAuthorizationHandler handler, IAuthorizationRequirement req, ClaimsPrincipal user, object? resource)
@@ -72,15 +72,51 @@ public class AbacHandlerTests
         await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
+    // DEF-059 / DEC-043 half two. This test previously asserted the OPPOSITE — that an empty stream
+    // set is allowed — which is the fail-open it was written to describe: PUT /api/topics/{id} could
+    // empty a live topic, and every stream-bounded member then passed scope on it. "Unscoped" is now
+    // DECLARED, so an empty set means "affects nothing anyone holds" and denies.
     [Fact]
-    public async Task Resource_with_no_affected_streams_is_allowed_for_a_member()
+    public async Task Resource_with_no_affected_streams_is_denied_for_a_member()
+    {
+        var streams = Substitute.For<IUserStreamProvider>();
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new[] { "stream-a" });
+        var handler = new StreamScopeHandler(streams);
+        var resource = new StubTopic(Guid.NewGuid(), Array.Empty<string>());
+
+        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), resource)).Should().BeFalse();
+    }
+
+    // ADR-0043 clause (5): a Platform/OrgWide topic affects everything, so it belongs to no single
+    // stream's members. The declaration is what grants — note the streams here are ones the member
+    // does NOT hold, so the intersect would refuse and only AffectsAllStreams can be the reason.
+    [Fact]
+    public async Task Resource_that_declares_it_affects_all_streams_is_allowed_for_a_member()
+    {
+        var streams = Substitute.For<IUserStreamProvider>();
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new[] { "stream-a" });
+        var handler = new StreamScopeHandler(streams);
+        var resource = new StubTopic(Guid.NewGuid(), new[] { "stream-b" }, AffectsAllStreams: true);
+
+        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), resource)).Should().BeTrue();
+        await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    // DEF-060: Guest is in NEITHER the committee-wide bypass list NOR §E.1's scoped set, and the
+    // handler now states the scoped set positively — so a guest presenter keeps the one write
+    // capability §E.3 grants them, bounded by their time window instead of by streams. Expressed as
+    // the complement of the bypass list, this case was silently refused.
+    [Theory]
+    [InlineData(AcmpRoles.Guest)]
+    [InlineData(AcmpRoles.Auditor)]
+    [InlineData(AcmpRoles.Administrator)]
+    public async Task A_role_outside_the_stream_bounded_set_is_never_stream_scoped(string role)
     {
         var streams = Substitute.For<IUserStreamProvider>();
         var handler = new StreamScopeHandler(streams);
-        // Nothing to intersect -> the write is not stream-bounded (line 37-40); never asks for assignments.
-        var resource = new StubTopic(Guid.NewGuid(), Array.Empty<string>());
+        var resource = new StubTopic(Guid.NewGuid(), new[] { "stream-b" });
 
-        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), resource)).Should().BeTrue();
+        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", role), resource)).Should().BeTrue();
         await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 

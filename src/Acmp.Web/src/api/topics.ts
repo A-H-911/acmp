@@ -271,6 +271,43 @@ export function usePrepareTopic(key: string | undefined) {
   });
 }
 
+/** The editable half of a topic (AC-034). `scope` is omitted unless the editor changed it. */
+export interface TopicEdit {
+  title: string;
+  description: string;
+  justification: string;
+  urgency: string;
+  streams: string[];
+  systems: string[];
+  tags: string[];
+  scope?: string;
+}
+
+/**
+ * AC-034 edit (PUT /api/topics/{id}) — the caller this command had never had. Every field the
+ * endpoint accepts is sent on every save, because PUT REPLACES: omitting `systems` would clear it.
+ * `scope` is the one exception and is deliberately absent unless changed — the server reads a missing
+ * scope as "leave it alone" and only then skips the triage check (DEF-058).
+ *
+ * The field-level locks (content frozen after Acceptance, metadata until Decided) are enforced by the
+ * aggregate; the form disables what it must not send, and the server is what makes it true.
+ */
+export function useUpdateTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, edit }: { topicId: string; edit: TopicEdit }) =>
+      api<void>(`/topics/${topicId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(edit),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+    },
+  });
+}
+
 /** Post a discussion comment (BL-033). Body field is `reason` (the endpoint's ReasonBody). */
 export function useAddTopicComment(key: string | undefined) {
   const qc = useQueryClient();

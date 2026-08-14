@@ -1423,6 +1423,20 @@
       "confirm": "Return topic"
     }
   },
+  "topicEdit": {
+    "title": "Edit {{key}}",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "saveError": "Couldn’t save the changes. Check the form and try again.",
+    "lockedContent": "The title, description and justification are locked once a topic is accepted. Streams, systems, scope and urgency can still be changed.",
+    "lockedAll": "This topic is {{status}} and can no longer be edited. Supersede the linked decision instead.",
+    "fScope": "Scope",
+    "fScopeHelp": "Platform and organization-wide topics are actionable by any member, not only the streams they name.",
+    "err": {
+      "title": "A title is required.",
+      "streams": "Choose at least one affected stream."
+    }
+  },
   "detail": {
     "notFoundTitle": "Topic not found",
     "notFoundBody": "This topic doesn’t exist or may have been removed.",

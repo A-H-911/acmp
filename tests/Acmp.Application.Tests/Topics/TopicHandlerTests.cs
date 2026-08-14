@@ -260,6 +260,69 @@ public class TopicHandlerTests
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }
 
+    // DEF-058: the caller that makes Platform/OrgWide reachable at all. Before this, DeriveScope was
+    // the only writer and could produce nothing but SingleStream/MultiStream.
+    [Fact]
+    public async Task Update_elevates_the_scope_under_TopicTriage_and_audits_it_separately()
+    {
+        var user = User("kc-sec", "Sec");
+        await using var db = NewDb(user, Clock(default));
+        var topic = await SeedTopicAsync(db, TopicStatus.Triage, submitterSub: "kc-omar");
+        var authz = Authz();
+        var audit = Substitute.For<IAuditSink>();
+
+        await new UpdateTopicHandler(db, authz, user, audit).Handle(
+            new UpdateTopicCommand(topic.PublicId, "T", "D", "J", TopicUrgency.Normal,
+                new[] { "identity" }, Array.Empty<string>(), Array.Empty<string>(), TopicScope.OrgWide), default);
+
+        var stored = await db.Topics.SingleAsync();
+        stored.Scope.Should().Be(TopicScope.OrgWide);
+        stored.AffectsAllStreams.Should().BeTrue("clause (5) makes an OrgWide topic actionable by any stream-bounded member");
+        await authz.Received(1).EnsureAsync(Arg.Any<object>(), Policies.TopicTriage, Arg.Any<CancellationToken>());
+        // A widening of write access is findable on its own verb, not buried inside "topic updated".
+        await audit.Received(1).EmitEnrichedAsync("Topics.TopicScopeChanged", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    // ⚠ THE ESCALATION THIS GATE EXISTS FOR. Pre-Accept, a submitter editing their OWN topic passes
+    // no ABAC check at all — so without a separate gate on scope, the submitter of any topic could
+    // elevate it to OrgWide and hand every stream-bounded member write access to it.
+    [Fact]
+    public async Task A_submitter_editing_their_own_topic_still_cannot_elevate_its_scope()
+    {
+        var user = User("kc-omar", "Omar H.");           // IS the submitter
+        await using var db = NewDb(user, Clock(default));
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted, submitterSub: "kc-omar");
+        var authz = Authz(deny: true);
+
+        var act = () => new UpdateTopicHandler(db, authz, user, Substitute.For<IAuditSink>()).Handle(
+            new UpdateTopicCommand(topic.PublicId, "T", "D", "J", TopicUrgency.Normal,
+                new[] { "identity" }, Array.Empty<string>(), Array.Empty<string>(), TopicScope.Platform), default);
+
+        await act.Should().ThrowAsync<ForbiddenAccessException>();
+        await authz.Received(1).EnsureAsync(Arg.Any<object>(), Policies.TopicTriage, Arg.Any<CancellationToken>());
+        (await db.Topics.SingleAsync()).Scope.Should().NotBe(TopicScope.Platform);
+    }
+
+    // Omitting Scope means "leave it alone", which is what lets an existing caller keep working
+    // without silently resetting an elevated topic — and it must not cost an authorization check.
+    [Fact]
+    public async Task Update_without_a_scope_leaves_it_untouched_and_never_asks_for_triage()
+    {
+        var user = User("kc-omar", "Omar H.");
+        await using var db = NewDb(user, Clock(default));
+        var topic = await SeedTopicAsync(db, TopicStatus.Submitted, submitterSub: "kc-omar");
+        topic.SetScope(TopicScope.Platform);
+        await db.SaveChangesAsync();
+        var authz = Authz();
+
+        await new UpdateTopicHandler(db, authz, user, Substitute.For<IAuditSink>()).Handle(
+            new UpdateTopicCommand(topic.PublicId, "T", "D", "J", TopicUrgency.Normal,
+                new[] { "identity" }, Array.Empty<string>(), Array.Empty<string>()), default);
+
+        (await db.Topics.SingleAsync()).Scope.Should().Be(TopicScope.Platform);
+        await authz.DidNotReceive().EnsureAsync(Arg.Any<object>(), Policies.TopicTriage, Arg.Any<CancellationToken>());
+    }
+
     // ---- DeferTopicHandler ----
 
     [Fact]

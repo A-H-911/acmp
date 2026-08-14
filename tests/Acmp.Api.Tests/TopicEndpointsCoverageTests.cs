@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Acmp.Modules.Membership.Domain.Enums;
 using FluentAssertions;
 
@@ -179,4 +180,59 @@ public class TopicEndpointsCoverageTests
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    // DEF-059 half one, over HTTP: the empty list is refused at the boundary with a 400 naming the
+    // field, rather than reaching the aggregate and surfacing as a 409 nobody can act on.
+    [Fact]
+    public async Task Emptying_a_topics_streams_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topic = await (await Client(factory, "Member", sub: "kc-submitter")
+            .PostAsJsonAsync("/api/topics", SubmitBody()))
+            .Content.ReadFromJsonAsync<SubmitResult>();
+
+        var response = await Client(factory, "Member", sub: "kc-submitter").PutAsJsonAsync(
+            $"/api/topics/{topic!.Id}", UpdateBody(streams: Array.Empty<string>()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // DEF-058 over HTTP, both halves of the gate in one pair. Elevating scope widens write access to
+    // every stream-bounded member (ADR-0043 clause 5), so it is a triage act wherever it happens —
+    // including on the pre-Accept path, where a submitter editing their OWN topic otherwise passes
+    // no authorization check at all.
+    [Fact]
+    public async Task The_submitter_cannot_elevate_their_own_topics_scope_but_the_secretary_can()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topic = await (await Client(factory, "Member", sub: "kc-submitter")
+            .PostAsJsonAsync("/api/topics", SubmitBody()))
+            .Content.ReadFromJsonAsync<SubmitResult>();
+
+        var asSubmitter = await Client(factory, "Member", sub: "kc-submitter").PutAsJsonAsync(
+            $"/api/topics/{topic!.Id}", UpdateBody(scope: "OrgWide"));
+        asSubmitter.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var asSecretary = await Client(factory, "Secretary", sub: "kc-sec").PutAsJsonAsync(
+            $"/api/topics/{topic.Id}", UpdateBody(scope: "OrgWide"));
+        asSecretary.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Read it back: a 204 proves the request was accepted, not that the value landed. Platform
+        // and OrgWide were unreachable enum values before this endpoint carried Scope (DEF-058).
+        var detail = await Client(factory, "Member", sub: "kc-submitter")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{topic.Key}");   // detail is keyed by TOP-YYYY-###
+        detail.GetProperty("scope").GetString().Should().Be("OrgWide");
+    }
+
+    private static object UpdateBody(string[]? streams = null, string? scope = null) => new
+    {
+        title = "Adopt Keycloak",
+        description = "Updated description.",
+        justification = "Clearer justification.",
+        urgency = "Normal",
+        streams = streams ?? new[] { "core" },
+        systems = Array.Empty<string>(),
+        tags = Array.Empty<string>(),
+        scope,
+    };
 }
