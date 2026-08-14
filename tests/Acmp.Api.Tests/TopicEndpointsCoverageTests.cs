@@ -40,7 +40,7 @@ public class TopicEndpointsCoverageTests
     // Shared setup: submit a topic as a Member, then accept it as Secretary (Submitted → Accepted).
     // AcceptTopicHandler calls BeginTriage() then Accept() in one shot (W2 + W3 rollup).
     // Secretary role satisfies Policies.TopicTriage directly (no ABAC needed).
-    private static async Task<(Guid TopicId, AcmpWebApplicationFactory Factory)>
+    private static async Task<(Guid TopicId, string Key, AcmpWebApplicationFactory Factory)>
         CreateAcceptedTopicAsync()
     {
         var factory = new AcmpWebApplicationFactory();
@@ -60,7 +60,7 @@ public class TopicEndpointsCoverageTests
             $"/api/topics/{topic!.Id}/accept",
             new { ownerId = owner.PublicId, ownerName = "Owner One" });
 
-        return (topic.Id, factory);
+        return (topic.Id, topic.Key, factory);
     }
 
     // ---- DeferTopicBody ----------------------------------------------------------------
@@ -68,7 +68,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // FluentValidation: Reason.NotEmpty → 400; covers DeferTopicBody binding
     public async Task Defer_empty_reason_returns_400()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             var response = await Client(factory, "Secretary").PostAsJsonAsync(
@@ -82,7 +82,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // W20: DeferTopicBody happy path — Accepted topic deferred with reason → 204
     public async Task Secretary_defers_accepted_topic_returns_204()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             var response = await Client(factory, "Secretary").PostAsJsonAsync(
@@ -98,7 +98,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // W4: /prepare lambda — Secretary has TopicEdit directly; Accepted → Prepared → 204
     public async Task Secretary_prepares_accepted_topic_returns_204()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             // No RequireAuthorization policy on /prepare; handler gates via IResourceAuthorizer
@@ -224,9 +224,51 @@ public class TopicEndpointsCoverageTests
         detail.GetProperty("scope").GetString().Should().Be("OrgWide");
     }
 
-    private static object UpdateBody(string[]? streams = null, string? scope = null) => new
+    // AC-034 LITERALLY, over HTTP: an ACCEPTED topic, a Member who is NOT its Owner, an attempt to
+    // edit the description → 403. Every prior piece of evidence for this AC was handler-level
+    // (PermissionMatrixTests / TopicHandlerTests), which is a different claim: those construct the
+    // authorization decision directly, while this one travels the real pipeline the AC describes.
+    // ⚠ THE ACTOR IS A NON-OWNER MEMBER, not an unassigned one and not the submitter — a refusal of
+    // either would prove something else. kc-owner is the Owner; kc-other is a Member with no
+    // relationship to this topic at all.
+    [Fact]
+    public async Task A_member_who_is_not_the_owner_is_refused_editing_an_accepted_topic()
     {
-        title = "Adopt Keycloak",
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
+        await using var _ = factory;
+
+        var response = await Client(factory, "Member", sub: "kc-other").PutAsJsonAsync(
+            $"/api/topics/{topicId}", UpdateBody(title: "Rewritten after the fact"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    // The other half of the same AC clause: the Secretary MAY edit metadata after Acceptance, while
+    // the content stays locked. Asserted by reading the topic back — a 204 says the request was
+    // accepted, not that the aggregate honoured the lock.
+    [Fact]
+    public async Task After_acceptance_the_secretary_edits_metadata_and_the_content_stays_locked()
+    {
+        var (topicId, key, factory) = await CreateAcceptedTopicAsync();
+        await using var _ = factory;
+        var before = await Client(factory, "Secretary", sub: "kc-sec")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{key}");
+        var originalTitle = before.GetProperty("title").GetString();
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec").PutAsJsonAsync(
+            $"/api/topics/{topicId}", UpdateBody(title: "Rewritten after the fact", streams: new[] { "government" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var after = await Client(factory, "Secretary", sub: "kc-sec")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{key}");
+        after.GetProperty("title").GetString().Should().Be(originalTitle, "content is locked against retroactive modification");
+        after.GetProperty("streams").EnumerateArray().Select(s => s.GetString())
+            .Should().BeEquivalentTo(new[] { "government" }, "metadata stays editable after Acceptance");
+    }
+
+    private static object UpdateBody(string[]? streams = null, string? scope = null, string title = "Adopt Keycloak") => new
+    {
+        title,
         description = "Updated description.",
         justification = "Clearer justification.",
         urgency = "Normal",
