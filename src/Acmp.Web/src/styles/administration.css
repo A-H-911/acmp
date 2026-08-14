@@ -199,6 +199,15 @@
   border-radius: var(--r-full);
   background: var(--border-strong);
   flex: 0 0 auto;
+  /* DEF-041 — the switch is a real <button> now, and this rule was written when it was an inert
+     <span>: a hard-coded not-allowed cursor would tell a Chairman or Secretary that the control they
+     are allowed to use is forbidden. The cursor follows the SAME attribute the handler does, so the
+     two cannot drift apart. Padding is zeroed because a UA button has some by default and the knob
+     is sized against these exact 38x22 box dimensions. */
+  padding: 0;
+  cursor: pointer;
+}
+.adm-switch[aria-disabled='true'] {
   cursor: not-allowed;
 }
 .adm-switch[aria-checked='true'] {
