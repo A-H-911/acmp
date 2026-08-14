@@ -27,6 +27,7 @@ vi.mock('../api/members', () => ({
     isError: false,
   }),
   useAssignStreams: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false, isSuccess: false }),
+  useSetVotingEligibility: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useMembers: vi.fn(),
   useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),

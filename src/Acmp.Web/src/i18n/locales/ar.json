@@ -1130,6 +1130,7 @@
     "observer": "مراقب",
     "addCommittee": "إضافة لجنة",
     "addCommitteeSoon": "تحرير اللجان يأتي مع سجل المسارات (BL-024).",
+    "votingEligibleLocked": "يمكن لرئيس اللجنة أو أمين السر فقط تغيير الأهلية للتصويت.",
     "viewUser": "عرض تفاصيل المستخدم",
     "status": {
       "active": "نشط",

@@ -7,6 +7,7 @@ using Acmp.Modules.Membership.Application.Features.GetStreams;
 using Acmp.Modules.Membership.Application.Features.InviteUser;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
 using Acmp.Modules.Membership.Application.Features.ReconcileIdentityAccounts;
+using Acmp.Modules.Membership.Application.Features.SetVotingEligibility;
 using Acmp.Shared.Authorization;
 using MediatR;
 
@@ -21,6 +22,13 @@ public static class MembershipEndpoints
     // ConfirmedPrivileged carries guard 2's explicit acknowledgement from the UI to the server —
     // the server refuses without it, so the confirmation is a real gate rather than a dialog.
     public sealed record AssignRolesRequest(IReadOnlyCollection<string> Roles, bool ConfirmedPrivileged = false);
+
+    /// <summary>The desired state, sent explicitly rather than toggled server-side (DEF-041).</summary>
+    /// <remarks>
+    /// A "flip it" endpoint would make two clicks racing each other produce whichever order the
+    /// server saw last, with no way for either caller to know what they set.
+    /// </remarks>
+    public sealed record VotingEligibilityRequest(bool IsVotingEligible);
 
     public static IEndpointRouteBuilder MapMembershipEndpoints(this IEndpointRouteBuilder app)
     {
@@ -51,6 +59,18 @@ public static class MembershipEndpoints
             Guid publicId, AssignRolesRequest body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new AssignRolesCommand(publicId, body.Roles, body.ConfirmedPrivileged), ct);
+            return Results.NoContent();
+        });
+
+        // DEF-041 / DEC-046 d4 — who may vote. CHAIRMAN OR SECRETARY, and the gate is the command's
+        // own AllowedRoles rather than a per-endpoint policy: AuthorizationBehavior enforces it (the
+        // invite and roles endpoints above rely on the same thing), a new policy would need a new
+        // permission-matrix row, and an endpoint-layer 403 is the one nobody audits (DEF-056).
+        // ⚠ Administrator is EXCLUDED on purpose — SoD-5 keeps that role out of committee content.
+        group.MapPut("/{publicId:guid}/voting-eligibility", async (
+            Guid publicId, VotingEligibilityRequest body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new SetVotingEligibilityCommand(publicId, body.IsVotingEligible), ct);
             return Results.NoContent();
         });
 

@@ -16,7 +16,13 @@ import { Backlog } from '../features/topics/Backlog';
 import type { Member } from '../api/members';
 import type { TopicSummary } from '../api/topics';
 
-vi.mock('../api/members', () => ({ useMembers: vi.fn() }));
+// useSetVotingEligibility is the directory's voting switch (DEF-041). Stubbed rather than omitted:
+// the component calls the hook unconditionally, so a missing export fails at render — which is a
+// mock gap, not an accessibility finding.
+vi.mock('../api/members', () => ({
+  useMembers: vi.fn(),
+  useSetVotingEligibility: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}));
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;
 

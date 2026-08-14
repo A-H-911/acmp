@@ -39,3 +39,29 @@ Two more things this session, same file:
 - **Semgrep `csharp-sqli` taints a method PARAMETER reaching `CommandText`.** A test DB name built
   from a literal + `Guid` is clean; the same string passed in as an argument is blocking. Remove
   the taint source rather than adding `// nosemgrep`.
+
+---
+
+**The same question, one layer out: "has this call ever been PERMITTED by the real grant?"**
+(2026-08-14, SC-011 / PR #275.) Widening `IIdentityProvider` with a read raised the identical
+shape of risk: the handler tests fake the port, so a Keycloak permission failure is invisible until
+production. Standing up a **throwaway Keycloak 26.0** (`docker run … start-dev`, one realm, one
+confidential client granted **exactly** `admin-client.env`'s `{manage-users}` and nothing else)
+answered it in ninety seconds:
+
+| call | status |
+|---|---|
+| `GET /users?first=&max=` | **200** |
+| `GET /users/{id}/role-mappings/realm` | **200** |
+| `GET /roles/{name}/users` — the "fewer calls" inversion | **403** |
+
+**The clever shape is the one the minimal grant refuses.** Reading roles by listing users per role
+is six calls instead of one per user, and it would have failed *in production only* — `DEF-066`'s
+class exactly. The adapter therefore reads role mappings per user because that is what the grant
+allows, and `probe-keycloak-grant.mjs` gained call 9 so the claim stays re-verifiable rather than
+asserted in a comment. **The port widened; the credential did not.**
+
+**How to apply:** a throwaway realm/container is cheap and gives a real answer. Any time a design
+depends on a permission you have not personally seen succeed under the *exact* production grant,
+measure it before building around it — and record the shape that was REFUSED, because that is the
+one a later "optimisation" will reach for.

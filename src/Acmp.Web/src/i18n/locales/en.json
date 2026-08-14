@@ -1084,6 +1084,7 @@
     "observer": "Observer",
     "addCommittee": "Add committee",
     "addCommitteeSoon": "Committee editing lands with the stream registry (BL-024).",
+    "votingEligibleLocked": "Only the Chairman or the Secretary can change voting eligibility.",
     "viewUser": "View user detail",
     "status": { "active": "Active", "invited": "Invited", "disabled": "Disabled" },
     "emptyTitle": "No members yet",
