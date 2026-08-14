@@ -31,6 +31,10 @@ public sealed class StreamBackfillMigrationTests
     // backfill with NO wildcard row in it.
     private const string BeforeTaxonomySeed = "20260812093823_Membership_PrincipalRevalidation_ADR0039";
 
+    // The taxonomy seed is also the last state in which member_streams.StreamId is still an IDENTITY,
+    // which is what makes an assignment naming no real stream reachable.
+    private const string BeforeTheRebuild = "20260813125628_Membership_StreamTaxonomy_ADR0042";
+
     private const string WildcardCode = "all-streams";
 
     private readonly SqlBackstopFixture _fx;
@@ -128,6 +132,42 @@ public sealed class StreamBackfillMigrationTests
             // the operator to the wrong file.
             (await migrate.Should().ThrowAsync<Exception>())
                 .Which.Message.Should().Contain("wildcard");
+        }
+    }
+
+    // The rebuild's own guard (DEF-066). member_streams has no foreign key to streams, and the
+    // identity column being removed generated 1, 2, 3… — so a row naming a stream that does not exist
+    // is possible. Copying it forward would scope that member to a wrong stream once step 7 lands,
+    // which is worse than scoping them to none, so the rebuild refuses rather than carrying it.
+    [Fact]
+    public async Task Rebuild_refuses_to_carry_an_assignment_pointing_at_no_stream()
+    {
+        var connectionString = await NewDatabaseAsync();
+
+        await using (var db = NewContext(connectionString))
+        {
+            await MigrateToAsync(db, BeforeTheRebuild);
+
+            db.Members.Add(CommitteeMember.Provision(
+                "sub-orphan", "Orphan Holder", "orphan@acmp.gov", CommitteeRole.Member, _fx.Clock.UtcNow));
+            await db.SaveChangesAsync();
+            var memberId = await db.Members.Where(m => m.KeycloakUserId == "sub-orphan").Select(m => m.Id).SingleAsync();
+
+            // IDENTITY_INSERT because at this migration the column still IS an identity — which is the
+            // very state that makes a StreamId nobody chose possible in the first place.
+            await db.Database.ExecuteSqlRawAsync(
+                "SET IDENTITY_INSERT membership.member_streams ON; " +
+                "INSERT INTO membership.member_streams (CommitteeMemberId, StreamId) VALUES ({0}, 999999); " +
+                "SET IDENTITY_INSERT membership.member_streams OFF;",
+                memberId);
+        }
+
+        await using (var migrated = NewContext(connectionString))
+        {
+            var migrate = () => MigrateToAsync(migrated, target: null);
+
+            (await migrate.Should().ThrowAsync<Exception>())
+                .Which.Message.Should().Contain("member_streams");
         }
     }
 

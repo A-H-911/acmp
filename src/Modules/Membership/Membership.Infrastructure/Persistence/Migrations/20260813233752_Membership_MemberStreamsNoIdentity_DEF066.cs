@@ -25,6 +25,19 @@ public partial class Membership_MemberStreamsNoIdentity_DEF066 : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.Sql("""
+        -- ⚠ REFUSE TO CARRY A ROW THAT POINTS AT NO STREAM, rather than copying it faithfully. The
+        -- identity this migration removes generated 1, 2, 3…, and member_streams has NO foreign key
+        -- to streams — so a row written while the column was an identity, or inserted by hand, can
+        -- name an Id that no stream has. UserStreamProvider inner-joins, so today such a row is
+        -- merely invisible; once step 7 wires StreamScopeRequirement it would silently scope a member
+        -- to whatever stream happens to hold that Id. A WRONG scope is worse than an absent one, and
+        -- copying it forward is what would make it permanent. Deleting them silently is not the
+        -- alternative: an assignment is authorization data, so the deployment stops and says so.
+        IF EXISTS (
+            SELECT 1 FROM membership.member_streams ms
+            WHERE NOT EXISTS (SELECT 1 FROM membership.streams s WHERE s.Id = ms.StreamId))
+            THROW 50000, 'DEF-066 rebuild: membership.member_streams holds rows whose StreamId matches no membership.streams row. There is no foreign key, so these were written by the identity column this migration removes, or by hand. Resolve them — reassign or delete — before re-running; carrying them forward would scope those members to the wrong stream once StreamScopeRequirement is wired.', 1;
+
         CREATE TABLE membership.member_streams_rebuild (
             CommitteeMemberId bigint NOT NULL,
             StreamId bigint NOT NULL,
