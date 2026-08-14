@@ -21,7 +21,7 @@ proves staleness — a process younger than the lock cannot hold it.
 
 ## Where things stand
 
-`main` is green at **`8a8d8a8`** plus the commit carrying this rewrite, clean and pushed. Gates
+`main` is green at **`01f74c2`** plus the commit carrying this rewrite, clean and pushed. Gates
 **7/7**. (`git log --oneline -3` is the authority; a sha written into a prompt is stale by one commit
 the moment the prompt itself is committed.)
 
@@ -77,13 +77,20 @@ clear streams deliberately and `member_streams` has no provenance column to tell
 adapter is proven against a stub transport and one hand-run probe, never by CI. **`AC-011` is what
 would change that**, and it is the same gap that let `DEF-066` survive two whole steps.
 
-### 2. `DEF-041` — voting eligibility
+### 2. `DEF-041` — voting eligibility — ✅ FIXED AND MERGED (#276, `8f200f1`)
 
-`DEC-046`: **Chairman or Secretary** may change it — *not* Administrator, which would cross SoD-5.
+Chairman or Secretary, Administrator excluded under SoD-5. `SetVotingEligibilityCommand` +
+`PUT /api/members/{publicId}/voting-eligibility` + an operable button in the directory row + a
+`Membership.VotingEligibilityChanged` audit row + a refusal for a non-Active member (`AC-058`).
 
-⚠ The toggle on `/admin/users` renders but is **absent from the accessibility tree entirely** — it is
-not a disabled control, it is not a control. So this is a real control + a capability gate + an audit
-row, not enabling what is already drawn. `CommitteeMember.SetVotingEligibility` exists in the domain.
+⚠ Two corrections worth carrying. The row's claim that the toggle was "absent from the accessibility
+tree entirely" was **wrong** — it rendered as a `span` with `role="switch"` and `aria-disabled`, i.e.
+a *disabled switch*: inoperable, but present. And **the design contradicted the reasonable guess
+about placement**: `UsersMembership.tsx`'s own header says editing lands in the user detail (which is
+how `ADR-0042` step 3 placed stream assignment), but the `.dc.html` draws the toggle as an operable
+button **in the directory row**, and defines a `voteEligible` label in the user-detail strings that
+nothing renders. Following the code comment would have been an `INV-014` deviation reached by
+careful reasoning from a stale comment.
 
 ### 3. `DEF-039` — the System Health object-store tile
 
@@ -113,6 +120,18 @@ not a config flag: the check itself differs between MinIO's `/minio/health/live`
 - **`DEF-012`** — `v_backlog` residue; unevidenced WBS items stay Approved by design.
 
 ## Standing traps — every one of these has cost real time here
+
+00. **⚠ RUN `gate_run()` AFTER WRITING TO THE PACKAGE, NOT ONLY BEFORE** (`DEF-072`, mine). Quoting a
+   `.dc.html`'s template syntax verbatim into a progress entry trips `G-COMPLETE` — its
+   unfinished-work screen includes an empty-mustache pattern, so a faithfully quoted design fragment
+   and an unfinished document are the same thing to it. **Code-span every quoted fragment**; the
+   screen strips code spans first, and that escape is documented in the server source. ⚠ The bite:
+   `progress_entries` is **append-only**, so two of the three failing rows could not be edited — the
+   repair was `package_close` → a whole-file `git checkout` of `progress_entries.jsonl` → `package_open`
+   (the store is a fresh in-memory SQLite rebuilt from JSONL) → re-append. Had the session closed on
+   the merge, `main` would carry a red critical gate with immutable failing rows. ⚠ And the first
+   version of `DEF-072`'s own title spelled out the marker words it described and was caught by the
+   same screen: **describing a pattern counts as writing it.**
 
 0. **⚠ MEASURE THE PERMISSION BEFORE YOU DESIGN AROUND IT.** Scoping the reconciliation, the tempting
    shape was to read roles by listing users per role (`GET /roles/{name}/users`) — six calls instead
