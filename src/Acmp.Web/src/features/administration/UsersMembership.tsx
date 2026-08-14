@@ -16,7 +16,8 @@
  * Wired to GET /api/members (AC-059).
  */
 import { useTranslation } from 'react-i18next';
-import { useMembers, type Member } from '../../api/members';
+import { useMembers, useSetVotingEligibility, type Member } from '../../api/members';
+import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { InviteUserPanel } from './InviteUserPanel';
 import { RoleAssignmentPanel } from './RoleAssignmentPanel';
 import { StreamAssignmentPanel } from './StreamAssignmentPanel';
@@ -54,6 +55,13 @@ export function UsersDirectory({ onView }: { onView: (m: Member) => void }) {
 
 function Directory({ members, isArabic, onView }: { members: Member[]; isArabic: boolean; onView: (m: Member) => void }) {
   const { t } = useTranslation();
+  const auth = useAuth();
+  const setVoting = useSetVotingEligibility();
+  // Presentation gating only — SetVotingEligibilityCommand.AllowedRoles is what actually refuses,
+  // and it refuses Administrator too (SoD-5). navModel.ts says the same in as many words.
+  const canSetVoting = hasRole(auth, 'chairman', 'secretary');
+  const onSetVoting = (publicId: string, isVotingEligible: boolean) =>
+    setVoting.mutate({ publicId, isVotingEligible });
 
   const columns: Column<Member>[] = [
     {
@@ -121,15 +129,33 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
             </button>
           </span>
           <span className="adm-vote">
-            <span
+            {/* DEF-041 / DEC-046 d4 — LIVE for Chairman and Secretary, and this is what the design
+                always drew: `<button onClick="{{ u.toggleVote }}" role="switch">`, an operable
+                button in the ROW. What shipped from P4 was a <span role="switch" aria-disabled>,
+                which is a real accessibility-tree node but has no handler and no tabindex, so it
+                was unreachable by mouse, keyboard and screen reader alike.
+                ⚠ ADMINISTRATOR IS NOT IN THIS LIST and that is not an oversight: SoD-5 keeps that
+                role out of committee content, and who may vote is content. The server refuses it
+                (SetVotingEligibilityCommand.AllowedRoles) — hiding it here is presentation gating
+                only, exactly as navModel.ts says.
+                The DESIRED STATE is sent, never "toggle": two clicks racing would otherwise land on
+                whichever order the server saw last. */}
+            <button
+              type="button"
               className="adm-switch"
               role="switch"
               aria-checked={m.isVotingEligible}
-              aria-disabled="true"
+              aria-disabled={canSetVoting ? undefined : 'true'}
               aria-label={t('admin.votingEligible')}
+              title={canSetVoting ? undefined : t('admin.votingEligibleLocked')}
+              onClick={
+                canSetVoting
+                  ? () => onSetVoting(m.publicId, !m.isVotingEligible)
+                  : undefined
+              }
             >
               <span className="adm-knob" aria-hidden="true" />
-            </span>
+            </button>
             <span className={m.isVotingEligible ? 'adm-vote-on' : 'adm-vote-off'}>{t('admin.votingEligible')}</span>
           </span>
         </span>

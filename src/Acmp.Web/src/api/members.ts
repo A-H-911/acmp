@@ -108,6 +108,32 @@ export function useAssignStreams() {
 }
 
 /**
+ * Set a member's voting eligibility — Chairman or Secretary (DEF-041 / DEC-046 d4).
+ *
+ * ⚠ The DESIRED STATE is sent, never a "toggle" instruction. Two clicks racing each other would
+ * otherwise resolve to whichever order the server happened to see last, and neither caller could
+ * tell what they had set.
+ *
+ * ⚠ Administrator is refused by the server (SoD-5 keeps that role out of committee content), so a
+ * 403 here is the matrix working rather than a bug. Hiding the control for other roles is
+ * presentation gating only — the API is what enforces it.
+ */
+export function useSetVotingEligibility() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ publicId, isVotingEligible }: { publicId: string; isVotingEligible: boolean }) =>
+      api<void>(`/members/${publicId}/voting-eligibility`, {
+        method: 'PUT',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ isVotingEligible }),
+      }),
+    // The directory renders the switch from this data, so without the refetch the control springs
+    // back to its old position and the change reads as having failed.
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members'] }),
+  });
+}
+
+/**
  * The invited account. `temporaryPassword` is returned by the server EXACTLY ONCE (AC-088).
  */
 export interface InvitedUser {

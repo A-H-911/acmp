@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams } from './members';
+import { useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams, useSetVotingEligibility } from './members';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /** The headers of the most recent fetch call. */
@@ -176,5 +176,48 @@ describe('useStreams / useAssignStreams (BL-024 / ADR-0042 step 3)', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(lastBody(spy)).toEqual([]);
+  });
+});
+
+describe('useSetVotingEligibility (DEF-041 / DEC-046 d4)', () => {
+  // ⚠ THE DESIRED STATE IS ON THE WIRE, NOT A TOGGLE INSTRUCTION. Two clicks racing each other
+  // would otherwise resolve to whichever order the server happened to see last, and neither caller
+  // could tell what they had set. Asserting the BODY is what pins that — a URL-only assertion
+  // passes just as well against a "flip it" endpoint.
+  it('PUTs the requested state to the member voting-eligibility route', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useSetVotingEligibility(), { wrapper });
+    result.current.mutate({ publicId: 'm-9', isVotingEligible: false });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(spy.mock.calls.at(-1)![0])).toContain('/members/m-9/voting-eligibility');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('PUT');
+    expect(lastHeaders(spy)['Content-Type']).toBe('application/json');
+    expect(lastBody(spy)).toEqual({ isVotingEligible: false });
+  });
+
+  it('carries the true direction too — granting a vote, not only removing one', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useSetVotingEligibility(), { wrapper });
+    result.current.mutate({ publicId: 'm-9', isVotingEligible: true });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(lastBody(spy)).toEqual({ isVotingEligible: true });
+  });
+
+  // A 403 is the matrix working (the server refuses Administrator under SoD-5), so the hook must
+  // surface it as an error rather than resolving and letting the switch look as if it moved.
+  it('surfaces a refusal as an error', async () => {
+    stubFetch(() => ({ status: 403, jsonBody: { title: 'Forbidden' } }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useSetVotingEligibility(), { wrapper });
+    result.current.mutate({ publicId: 'm-9', isVotingEligible: true });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
