@@ -23,17 +23,18 @@ plugin reload; once the pid was alive but was `conhost.exe` started a day after 
 
 ## Where things stand
 
-`main` is green at **`0421b76`**, clean, pushed. Gates **7/7**. **12 open defects.** Six ACs are not
-Met: `AC-003`, `AC-006`, `AC-010`, `AC-011`, `AC-041`, `AC-048`.
+`main` is green at **`1a95697`**, clean, pushed. Gates **7/7**. Read the live numbers — `gate_run()`
+for gates and the audit_evidence split, `readiness_check("package")` for the blocking lists. A
+hard-coded tally in a prompt is stale on the first new verdict, and one in this very file already was.
 
-**Production runs `65e45d4` and is UNUSED** — zero topics, zero streams held by members, one of 26
-members has ever signed in. **Nothing merged in this stream is deployed.** `e9b2155` (30-minute idle
-sign-out, `AC-004`) is published but NOT deployed — `DEC-044`, deliberately.
+**Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
+**Nothing merged in this stream is deployed.**
 
-⚠ **Do not trust any tally written into a prompt or a note.** Read the live numbers: `gate_run()` for
-gates and the audit_evidence split, `readiness_check("package")` for the blocking lists,
-`review.html#execution` for both. A hard-coded count is stale on the first new verdict, and one in
-this very file already was.
+⚠ **`DEF-065`: the step-5 backfill reaches about ONE production row, not 26.** The 26 are KEYCLOAK
+accounts; a `committee_members` row is written only by first login or an app invite, and `DEF-038`
+measured the live roster listing 1 of 26. The other ~25 arrive later with zero streams and would be
+refused the day step 7 deploys. **A migration cannot see Keycloak** — three options on the row, and
+the choice is the operator's, at the step-7 DEPLOY.
 
 ## THE MAIN WORK — `ADR-0043`, steps 5–8 of 8
 
@@ -48,49 +49,51 @@ already decided every open question (`DEC-043`, `DEC-044`).
 **Shipped: 1** seed taxonomy (`9be9415`) · **2** topic picker, server + UI (`06e1e6f`, `61ed33a`) ·
 **3** assignment UI (`71283ad`) · **4** invite requires a stream (`af98621`).
 
-### Step 5 — the backfill migration ⚠ THE IRREVERSIBLE ONE
+### Steps 5 and 6 are DONE — do not redo them
 
-An **EF data migration** (`DEC-044`) assigning the **wildcard** to every member holding no streams.
-Idempotent. This is the step `ADR-0043` marks as the *certain* negative consequence: skip or botch it
-and the whole committee is locked out the day step 7 lands.
+**Step 5** (`0464979`, PR #266) — the backfill migration, idempotent, and it **throws when no wildcard
+row exists**, because the ADR-0042 seed skips a pre-existing `all-streams` code and a silent no-op
+backfill *is* the lockout. It carries `Membership_MemberStreamsNoIdentity_DEF066` immediately before
+it: **`DEF-066` — stream assignment had NEVER worked against a real database**, because
+`member_streams.StreamId` shipped as an IDENTITY column. That made steps 3 and 4 non-functional as
+shipped. EF cannot scaffold the fix, so the table is rebuilt by hand; the rebuild also **refuses to
+carry a row whose StreamId matches no stream** (no FK exists, and a wrong scope is worse than none).
 
-⚠⚠ **`DEF-062` — my own recorded warning about this was INVERTED, read the row.** The migration is a
-**no-op in every fresh environment**, because a migration only touches rows existing when it runs:
-`Api.Tests` uses InMemory and never migrates; `Integration.Tests` migrates an empty DB; e2e migrates
-fresh then JIT-provisions members *afterwards*, and `ProvisionCurrentUser` assigns no streams. Only
-prod/UAT (which already hold 26 rows) are reached. **Consequence: at step 7 every e2e fixture is
-stream-bounded with zero streams and will be refused every guarded write — the whole core loop, not
-one test.** Give fixtures real streams at step 7 (where `apiHelpers`/`roleSession` provision the
-member), and **NOT the wildcard**, which would restore the vacuous-pass problem by another route.
+**Step 6** (`ca3bf05`, PR #267) — `DEF-058`, both halves of `DEF-059`, `DEF-060`'s positive scoped
+set, and the **AC-034 edit flow** the operator added by `DEC-045`/`SC-010`. `AC-034` is now **Met**
+(`AV-161`, live HTTP leg in `d21cb9f` / PR #268).
 
-### Step 6 — `DEF-058` + `DEF-059`
+### Step 7 — wire the requirement ⚠ READ `DEF-068` FIRST
 
-`DEF-058`: `Topic.SetScope` has no caller — add `Scope` to `UpdateTopicCommand` and surface it in
-triage, so `Platform`/`OrgWide` stop being unreachable enum values. `DeriveScope()` already preserves
-an elevated scope; that guard is why elevation is safe to add.
+⚠⚠ **`DEF-062`'s blast-radius warning is WRONG, and `DEF-068` measured why.** It predicted the whole
+e2e core loop would go red. It will not: **every e2e caller of a `TopicEdit`-gated route is a
+Secretary**, who bypasses stream scope. The fixture-streams work `DEF-062` called mandatory is not
+needed to keep the suite green — only to evidence `AC-010`. `DEF-062` reasoned from ROLES; the answer
+was in CALL SITES.
 
-`DEF-059` (operator chose BOTH halves): guard `Topic.AssignStreams` so a live topic can never be
-emptied, **plus** `NotEmpty` on `UpdateTopicCommand.Streams` — the guard goes in the **shared aggregate
-method**, since patching only the named caller leaves its siblings broken. And make
-`StreamScopeHandler` require an explicit `AffectsAllStreams` declaration rather than inferring
-"unscoped" from an empty list; that second half is what stops Actions/Risks/ADRs inheriting a
-universal grant when they implement `IStreamScopedResource`.
+⚠ **The real landmine is `PermissionMatrixTests`.** It evaluates every policy against
+`StubTopic : ITopicScopedResource`, which does **not** implement `IStreamScopedResource` — and
+ASP.NET never invokes a two-parameter handler when the resource is not of its type. The moment
+`TopicEdit` carries the requirement, **every `TopicEdit` cell flips to Deny, Chairman included**.
+**Do not fix that by making the stub implement the interface.** The stub is the messenger: the same
+shape refuses any call site passing a non-stream-scoped resource. Decide the general rule.
 
-⚠ `AffectsAllStreams` must be a **primitive bool on the port**, never the `TopicScope` enum —
-`IStreamScopedResource` lives in `Acmp.Shared.Contracts`, the enum in `Topics.Domain` (`ADR-0001`;
-`ADR-0021` is the pattern).
+⚠ **The wildcard is still not read** (`DW-026`). `UserStreamProvider` returns stream CODES, so a
+member holding the wildcard the step-5 backfill just assigned would be REFUSED — the opposite of what
+the backfill was for. `Stream.IsWildcard` is one column away in the same query, so prefer widening the
+existing call over adding a second round-trip. Never match on the code (`ADR-0043` clause 3).
 
-### Step 7 — wire the requirement
-
-Put `StreamScopeRequirement` into the stream-bounded write policies.
-
-⚠ **`DEF-060`: express the scoped set POSITIVELY** — `Member`/`Reviewer`/`Submitter`, per E.1 — never
-as "everyone not in the `CommitteeWide` bypass list". Treating a *bypass* list's complement as the
-scoped set is what wrongly swept Guest in, and it would refuse FR-159 guest presenters their one write
-capability (`DiagramAttach`). E.3 bounds a guest by a **time window**, not by streams. Expressing it
-positively removes the whole class, not just this instance.
+⚠ **`DEF-060`: the scoped set is already positive** (`Member`/`Reviewer`/`Submitter`) — keep it that
+way. And `Policies.TopicSubmit` is endpoint-level with no resource, so submitting against an unheld
+stream stays unscoped; decide whether that matters rather than assuming.
 
 ### Step 8 — evidence `AC-010`
+
+⚠ **The discrimination is reachable through `PrepareTopic` and essentially nowhere else** (`DEF-068`).
+`UpdateTopic` pre-Accept skips authorization for the submitter and refuses a non-owner Member on the
+CAPABILITY check *before* streams are consulted; post-Accept it uses `TopicTriage`, not `TopicEdit`.
+`PrepareTopic` is `TopicEdit` on an ACCEPTED topic, where grant-on-accept makes `CapabilityRequirement`
+succeed for an owning Member — leaving stream scope as the only thing that can decide the outcome.
 
 ⚠ Against a member assigned to a **DIFFERENT stream than the topic** — never an unassigned one, whose
 refusal proves "a member with no streams is denied", a different claim. `topic-scope.spec.ts` is where
@@ -109,6 +112,12 @@ it belongs; its header already carries this warning.
   `playwright.config.ts`, which has only chromium today, so the AC's "Chrome and Edge" has never been
   true. Scoped to browser coverage; property guards still beat pixel baselines.
 - **`AC-003`** — a cheap live test.
+
+## Also open
+
+- **`DEF-067`** — `DecisionPage.test.tsx` fails intermittently under `test:cov` (passes alone, passes
+  under plain `vitest run`). Pre-existing: re-run with all source changes STASHED and it still failed.
+  Fix by awaiting the settled state, never by a retry or a timeout.
 
 ## Two unmerged branches and a stash
 
