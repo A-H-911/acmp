@@ -9,10 +9,36 @@ Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` be
 then orient:
 
 ```
-server_info()                      # expect tamheed 3.2.1, schema 4, root = C:\Users\ahammo\Repos\acmp
+server_info()                      # expect tamheed 4.1.0, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
-gate_run()                         # expect 7/7 ready:true
+gate_run()                         # expect 7/7 ready:true  (G-REL is now a real gate, and passes)
+readiness_check("package")         # expect ready:FALSE — correct, not a bug (see below)
 ```
+
+⚠⚠ **THE STORE IS v4 NOW** (migrated `7123a1b`; backup = git `967e75d`, `data-v3-backup/` gitignored).
+What changed under you:
+
+- **`defects` and `deferred_work` no longer have `status` — it is `lifecycle_status`.** So is
+  `open_questions`. `stakeholders.name` is now `title`.
+- **`entity_upsert` requires FULL rows** — a partial update is refused outright (`NOT NULL
+  constraint failed … INSERT evaluates NOT NULL before conflict resolution`). ⚠ **And the store
+  holds TRUNCATED risk titles** (exactly 200 chars, residual v2.3 damage), so rebuilding a row from
+  what `entity_query` just returned **re-commits the truncation and calls it a fix**. Read
+  `data/*.jsonl` when a field may be damaged. ⚠ Omitting `custom_attributes` still PRESERVES the
+  `v1` blob — verified, not assumed.
+- **New obligations** in the tool-owned note (root `CLAUDE.md` now *imports*
+  `tamheed-package/CLAUDE.md` rather than restating it): an `OQ-` row for genuine ambiguity,
+  `WVR-` waivers that are **operator-only — you never author one**, `lifecycle_status` Review
+  (done-claimed) vs Implemented (verified), and **typed `progress_update` with a `correction`
+  event** — which is the thing `DEF-072` needed and could not have.
+- **`readiness_check("package")` is ready:false and that is the honest state**, not a regression:
+  5 unmet ACs and `DEF-065` block a close. `gate_run` 7/7 and readiness ready:false are not in
+  conflict — the gates are mechanical, readiness is lifecycle.
+- Risk `probability`/`impact` are **NULL** (v3 M/H/L stashed in `custom_attributes.v3_*`); the v4
+  scale was never established, so they were left null rather than invented.
+
+**The first liveness sweep is done** (`ae9291f`) — `risk-liveness` now passes. Read **`findings_17.md`**
+before the next sweep: it holds what looks *wrong* rather than unpopulated, and what is left for you.
 
 **If `package_open` refuses on a `.lock`, do NOT clear it reflexively.** Use both discriminators
 (`prompts/README.md` §"One session at a time"): the named pid must be a LIVE process that plausibly
