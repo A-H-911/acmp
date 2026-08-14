@@ -21,7 +21,7 @@ proves staleness — a process younger than the lock cannot hold it.
 
 ## Where things stand
 
-`main` is green at **`01f74c2`** plus the commit carrying this rewrite, clean and pushed. Gates
+`main` is green at **`bede9bf`** plus the commit carrying this rewrite, clean and pushed. Gates
 **7/7**. (`git log --oneline -3` is the authority; a sha written into a prompt is stale by one commit
 the moment the prompt itself is committed.)
 
@@ -91,6 +91,14 @@ how `ADR-0042` step 3 placed stream assignment), but the `.dc.html` draws the to
 button **in the directory row**, and defines a `voteEligible` label in the user-detail strings that
 nothing renders. Following the code comment would have been an `INV-014` deviation reached by
 careful reasoning from a stale comment.
+
+⚠⚠ **AND THE SUITE COULD NOT SEE THE REGRESSION IT SHIPPED** (`#277`, `e31f7ac`). Turning the `span`
+into a `button` left `.adm-switch`'s hard-coded `cursor: not-allowed` in place — telling *exactly the
+two roles allowed to use the control* that it is forbidden. Component tests, axe and CI all run in
+**JSDOM, which does not render**. **If a change is visual, look at it**: a throwaway page importing
+only the real route's stylesheets, served over http (`file:` is blocked), measured in the browser.
+⚠ The full-page screenshot then showed a stray shape that the DOM proved absent — **a screenshot is
+evidence about pixels, not elements; when they disagree, measure.**
 
 ### 3. `DEF-039` — the System Health object-store tile
 
