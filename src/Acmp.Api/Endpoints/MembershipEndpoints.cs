@@ -6,6 +6,7 @@ using Acmp.Modules.Membership.Application.Features.GetMembers;
 using Acmp.Modules.Membership.Application.Features.GetStreams;
 using Acmp.Modules.Membership.Application.Features.InviteUser;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
+using Acmp.Modules.Membership.Application.Features.ReconcileIdentityAccounts;
 using Acmp.Shared.Authorization;
 using MediatR;
 
@@ -59,6 +60,16 @@ public static class MembershipEndpoints
             await sender.Send(new DeactivateMemberCommand(publicId), ct);
             return Results.NoContent();
         }).RequireAuthorization(Policies.AdminUsers);
+
+        // DEC-046 / DEF-065 — create a member row, holding the wildcard stream, for every identity
+        // account that has none. Administrator only, and Administrator is not stream-bounded, so this
+        // stays reachable in the very deploy that starts refusing unassigned members.
+        //
+        // POST because it creates rows, and it is idempotent in the way that matters: a second run
+        // finds those rows already provisioned and creates nothing.
+        group.MapPost("/reconcile", async (ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new ReconcileIdentityAccountsCommand(), ct)))
+            .RequireAuthorization(Policies.AdminUsers);
 
         group.MapPut("/{publicId:guid}/streams", async (Guid publicId, IReadOnlyList<Guid> streamPublicIds, ISender sender, CancellationToken ct) =>
         {
