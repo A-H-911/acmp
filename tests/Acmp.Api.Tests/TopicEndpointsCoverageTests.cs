@@ -266,6 +266,58 @@ public class TopicEndpointsCoverageTests
             .Should().BeEquivalentTo(new[] { "government" }, "metadata stays editable after Acceptance");
     }
 
+    // ---- stream scope (ADR-0043 step 7, DEF-057) ---------------------------------------
+    //
+    // ⚠ PrepareTopic IS THE PATH, AND IT IS ESSENTIALLY THE ONLY ONE (DEF-068). The other TopicEdit
+    // call sites cannot discriminate: UpdateTopic pre-Accept skips authorization entirely for the
+    // submitter and refuses a non-owner Member on the CAPABILITY check BEFORE streams are consulted,
+    // and post-Accept it uses TopicTriage, not TopicEdit. PrepareTopic is TopicEdit on an ACCEPTED
+    // topic, where grant-on-accept makes CapabilityRequirement succeed for the owning Member — so
+    // stream scope is the only thing left that can decide the outcome, which is what makes the pair
+    // below a test of stream scope rather than of ownership.
+    //
+    // ⚠ THE MEMBER HOLDS A STREAM THROUGHOUT — a DIFFERENT one, never none. A member with no streams
+    // is refused too, but that proves "unassigned is denied", a different claim (ADR-0043 negative
+    // consequence 4). The control run is the same member, same topic, same request, with only the
+    // assignment changed.
+
+    [Fact]
+    public async Task An_owner_assigned_to_another_stream_is_refused_and_the_same_owner_in_stream_is_allowed()
+    {
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();   // the topic affects "core"
+        await using var _f = factory;
+        var asOwner = Client(factory, "Member", sub: "kc-owner");
+
+        await factory.AssignStreamsAsync("kc-owner", "government");
+        var outOfScope = await asOwner.PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        outOfScope.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "the owner holds government and the topic affects core, so stream scope must refuse");
+
+        // The control. Without it the 403 above is equally consistent with "the owner grant never
+        // resolved" or "this route refuses every Member" — neither of which is stream scope.
+        await factory.AssignStreamsAsync("kc-owner", "core");
+        var inScope = await asOwner.PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        inScope.StatusCode.Should().Be(HttpStatusCode.NoContent,
+            "the identical request succeeds once the owner holds the topic's stream — so the refusal was stream scope and nothing else");
+    }
+
+    // A committee-wide role is not stream-bounded at all (permission-role-matrix E.1), so the
+    // Secretary keeps working with no assignment whatsoever — which is what keeps the core loop and
+    // every existing spec green (DEF-068).
+    [Fact]
+    public async Task A_secretary_holding_no_streams_is_not_stream_scoped()
+    {
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
+        await using var _f = factory;
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec")
+            .PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
     private static object UpdateBody(string[]? streams = null, string? scope = null, string title = "Adopt Keycloak") => new
     {
         title,

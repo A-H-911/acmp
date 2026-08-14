@@ -54,6 +54,29 @@ public static class AuthorizationRegistration
         (Policies.AdminConfig,          new[] { Administrator }, Array.Empty<string>()),
     };
 
+    /// <summary>
+    /// The policies that additionally carry <see cref="StreamScopeRequirement"/> — ADR-0043 step 7,
+    /// closing DEF-057, where the handler was registered, unit-tested, and in no policy at all.
+    /// </summary>
+    /// <remarks>
+    /// ⚠ ONE ENTRY, AND THE SHORTNESS IS THE FINDING RATHER THAN AN OVERSIGHT. permission-role-matrix
+    /// §E.1 bounds a Member/Reviewer/Submitter to "topics intersecting their assigned streams", and
+    /// Policies.TopicEdit is the only policy that is BOTH stream-bounded and evaluated with a
+    /// resource: TopicTriage and BacklogPrioritize allow Chairman/Secretary only, who bypass;
+    /// TopicSubmit is endpoint-level with no resource; DiagramAttach has no EnsureAsync call site.
+    /// <para>
+    /// ⚠ ADDING A POLICY HERE IS NOT A FREE CHOICE — READ DEF-068 FIRST. StreamScopeHandler is
+    /// AuthorizationHandler&lt;TRequirement, TResource&gt;, which ASP.NET NEVER invokes when the
+    /// resource is absent or is not an IStreamScopedResource. The requirement then goes unsatisfied
+    /// and the policy refuses EVERYONE, the Chairman included. That is fail-closed, which is
+    /// ADR-0043's stated posture and is the safe direction — but it is a 403 no message explains, so
+    /// a policy belongs here only when EVERY call site passes a stream-scoped aggregate. Today that
+    /// means: never used with `.RequireAuthorization(...)` at endpoint level, and every
+    /// IResourceAuthorizer.EnsureAsync call passes Topic.
+    /// </para>
+    /// </remarks>
+    public static readonly IReadOnlySet<string> StreamScoped = new HashSet<string> { Policies.TopicEdit };
+
     public static IServiceCollection AddAcmpAuthorization(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RoleMappingOptions>(configuration.GetSection(RoleMappingOptions.SectionName));
@@ -66,7 +89,12 @@ public static class AuthorizationRegistration
         services.AddAuthorization(options =>
         {
             foreach (var (policy, allow, owner) in Matrix)
-                options.AddPolicy(policy, p => p.AddRequirements(new CapabilityRequirement(policy, allow, owner)));
+                options.AddPolicy(policy, p =>
+                {
+                    p.AddRequirements(new CapabilityRequirement(policy, allow, owner));
+                    if (StreamScoped.Contains(policy))
+                        p.AddRequirements(new StreamScopeRequirement());
+                });
         });
 
         return services;

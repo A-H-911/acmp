@@ -91,7 +91,23 @@ public class PermissionMatrixTests
         switch (verdict)
         {
             case 'A':
-                withoutResource.Should().BeTrue($"{role} holds {policy} outright");
+                // ⚠ A STREAM-SCOPED POLICY IS RESOURCE-ONLY, AND THAT IS ASSERTED RATHER THAN WORKED
+                // AROUND (DEF-068). StreamScopeHandler is AuthorizationHandler<TRequirement,
+                // TResource>, so ASP.NET cannot invoke it without a resource and the requirement is
+                // never satisfied — Policies.TopicEdit therefore refuses EVERYONE when evaluated
+                // resourcelessly, the Chairman included. That is fail-closed, which is ADR-0043's
+                // posture, and it is exactly why AuthorizationRegistration.StreamScoped may only
+                // list policies whose every call site passes a stream-scoped aggregate. Asserting it
+                // here turns the trap into a guarded property instead of a comment somebody remembers.
+                if (AuthorizationRegistration.StreamScoped.Contains(policy))
+                {
+                    withoutResource.Should().BeFalse($"{policy} is stream-scoped, so it cannot be decided without a resource");
+                    withOwnedResource.Should().BeTrue($"{role} holds {policy} outright once a resource is supplied");
+                }
+                else
+                {
+                    withoutResource.Should().BeTrue($"{role} holds {policy} outright");
+                }
                 break;
             case 'O':
                 withoutResource.Should().BeFalse($"{role} needs a relationship for {policy}");
@@ -127,6 +143,8 @@ public class PermissionMatrixTests
         delegations.HasActiveDelegationAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(false);
         var streams = Substitute.For<IUserStreamProvider>();
+        streams.GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new AssignedStreams(new[] { InScopeStream }, IsUnrestricted: false));
 
         services.AddSingleton(capabilities);
         services.AddSingleton(delegations);
@@ -141,5 +159,25 @@ public class PermissionMatrixTests
             new[] { new Claim(ClaimTypes.NameIdentifier, "user-1"), new Claim(ClaimTypes.Role, role) },
             authenticationType: "Test", nameType: ClaimTypes.Name, roleType: ClaimTypes.Role));
 
-    private sealed record StubTopic(Guid TopicId) : ITopicScopedResource;
+    // ⚠ IT MUST IMPLEMENT IStreamScopedResource NOW THAT Policies.TopicEdit CARRIES
+    // StreamScopeRequirement, and the reason is worth stating because "make the stub satisfy the new
+    // requirement" is the wrong lesson to take from it (DEF-068). StreamScopeHandler is
+    // AuthorizationHandler<TRequirement, TResource>: ASP.NET never invokes it when the resource is
+    // not of that type, so the requirement goes unsatisfied and the policy refuses EVERYONE — this
+    // test failed on the Chairman and Secretary ALLOW cells, not just the owner ones. The same shape
+    // refuses any production call site that passes a non-stream-scoped resource, which is why
+    // AuthorizationRegistration.StreamScoped carries the rule for adding a policy to that set.
+    //
+    // ⚠ AffectedStreams MATCHES what the principal holds, deliberately. This test is about the
+    // CAPABILITY matrix (§C) — A / AiO / Deny per role — and stream scope is an orthogonal dimension
+    // (§E.1). Handing the principal a stream the topic does not affect would make every stream-bounded
+    // cell fail for a reason this test does not claim to be about; stream scope has its own tests.
+    private sealed record StubTopic(Guid TopicId)
+        : ITopicScopedResource, IStreamScopedResource
+    {
+        public IReadOnlyCollection<string> AffectedStreams => new[] { InScopeStream };
+        public bool AffectsAllStreams => false;
+    }
+
+    private const string InScopeStream = "core";
 }

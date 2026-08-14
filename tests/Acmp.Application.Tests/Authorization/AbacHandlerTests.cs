@@ -48,7 +48,7 @@ public class AbacHandlerTests
     public async Task Member_in_scope_is_allowed_and_out_of_scope_is_denied()
     {
         var streams = Substitute.For<IUserStreamProvider>();
-        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new[] { "stream-a" });
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new AssignedStreams(new[] { "stream-a" }, IsUnrestricted: false));
         var handler = new StreamScopeHandler(streams);
 
         var inScope = new StubTopic(Guid.NewGuid(), new[] { "stream-a", "stream-b" });
@@ -80,7 +80,7 @@ public class AbacHandlerTests
     public async Task Resource_with_no_affected_streams_is_denied_for_a_member()
     {
         var streams = Substitute.For<IUserStreamProvider>();
-        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new[] { "stream-a" });
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new AssignedStreams(new[] { "stream-a" }, IsUnrestricted: false));
         var handler = new StreamScopeHandler(streams);
         var resource = new StubTopic(Guid.NewGuid(), Array.Empty<string>());
 
@@ -94,7 +94,7 @@ public class AbacHandlerTests
     public async Task Resource_that_declares_it_affects_all_streams_is_allowed_for_a_member()
     {
         var streams = Substitute.For<IUserStreamProvider>();
-        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new[] { "stream-a" });
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>()).Returns(new AssignedStreams(new[] { "stream-a" }, IsUnrestricted: false));
         var handler = new StreamScopeHandler(streams);
         var resource = new StubTopic(Guid.NewGuid(), new[] { "stream-b" }, AffectsAllStreams: true);
 
@@ -118,6 +118,22 @@ public class AbacHandlerTests
 
         (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", role), resource)).Should().BeTrue();
         await streams.DidNotReceive().GetAssignedStreamsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    // ADR-0043 clause (3) / DW-026. The step-5 backfill assigned the WILDCARD to every member who
+    // held nothing, so a handler that ignored the flag would refuse exactly the people the backfill
+    // exists to protect. ⚠ The assigned CODE here deliberately does not intersect the topic, so only
+    // the flag can be what allows it — and the flag comes from the column, never from the code.
+    [Fact]
+    public async Task A_member_holding_the_wildcard_is_unrestricted()
+    {
+        var streams = Substitute.For<IUserStreamProvider>();
+        streams.GetAssignedStreamsAsync("u", Arg.Any<CancellationToken>())
+            .Returns(new AssignedStreams(new[] { "all-streams" }, IsUnrestricted: true));
+        var handler = new StreamScopeHandler(streams);
+        var resource = new StubTopic(Guid.NewGuid(), new[] { "stream-b" });
+
+        (await Evaluate(handler, new StreamScopeRequirement(), Principal("u", AcmpRoles.Member), resource)).Should().BeTrue();
     }
 
     // ---- Capability ownership scoped to the target topic (docs/10 §D, AC-009 / AC-011) ----

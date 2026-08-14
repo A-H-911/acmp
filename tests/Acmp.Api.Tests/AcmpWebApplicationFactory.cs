@@ -167,6 +167,23 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     /// <summary>
+    /// Assign a seeded member to streams by CODE (ADR-0043 step 7). Codes rather than ids because the
+    /// authorization control keys on Stream.Code, so a test that passed ids could drift from the value
+    /// the handler actually intersects.
+    /// </summary>
+    public async Task AssignStreamsAsync(string sub, params string[] codes)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        var member = await db.Members.FirstAsync(m => m.KeycloakUserId == sub);
+        var ids = await db.Streams.Where(s => codes.Contains(s.Code)).Select(s => s.Id).ToListAsync();
+        if (ids.Count != codes.Length)
+            throw new InvalidOperationException($"[test] unknown stream code in [{string.Join(", ", codes)}]");
+        member.AssignStreams(ids);
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// ADR-0039: mutate a seeded member's revalidation state directly, so a test can put the member
     /// into the condition it wants to FORCE a refusal from — a role change at a known instant, or a
     /// closed access window — without driving the whole assignment flow to get there.
