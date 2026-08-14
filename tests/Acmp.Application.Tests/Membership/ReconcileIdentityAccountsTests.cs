@@ -78,6 +78,36 @@ public class ReconcileIdentityAccountsTests
         member.Streams.Select(s => s.StreamId).Should().NotContain(wildcardId);
     }
 
+    // ⚠ THE RESIDUAL, PINNED AS INTENDED BEHAVIOUR RATHER THAN LEFT AS AN ACCIDENT — and it is the
+    // ONE case the test above cannot discriminate. A member who signs in BETWEEN the stream-scope
+    // deploy and this run holds a JIT row with NO streams, and this command leaves it alone, because
+    // it is no longer a row this run creates. Read cold that looks like the bug the command exists to
+    // fix, so the next person will be tempted to "correct" it to "wildcard any member holding zero
+    // streams" — which is wrong for a reason that is invisible from the data: an administrator can
+    // clear a member's streams deliberately, and member_streams carries no provenance column to tell
+    // the two apart. The remedy for the person in this window is ADR-0043 clause (2)'s roster
+    // backstop, not a widening here that would silently re-grant everyone an administrator revoked.
+    [Fact]
+    public async Task Reconcile_leaves_a_pre_existing_member_holding_NO_streams_alone()
+    {
+        await using var db = NewDb();
+        await SeedStreamsAsync(db);
+        // Exactly what JIT provisioning produces: CommitteeMember.Provision touches no stream
+        // collection (ADR-0004), so this row arrives holding nothing.
+        db.Members.Add(CommitteeMember.Provision("kc-jit", "Signed In First", "jit@acmp.gov", CommitteeRole.Member, Now));
+        await db.SaveChangesAsync();
+
+        var identity = Realm(Account("kc-jit", "jit@acmp.gov", "Signed In First", "Member"));
+
+        var result = await Handler(db, identity).Handle(new ReconcileIdentityAccountsCommand(), default);
+
+        result.Created.Should().Be(0);
+        result.AlreadyProvisioned.Should().Be(1);
+        var member = await db.Members.AsNoTracking().SingleAsync(m => m.KeycloakUserId == "kc-jit");
+        member.Streams.Should().BeEmpty(
+            "the rule is 'only the rows this run creates', not 'any member holding no streams' — the second would re-widen anyone an administrator deliberately cleared, and nothing in the data distinguishes them");
+    }
+
     // ---- the refusals ----
 
     [Fact]
