@@ -121,8 +121,18 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await expect(page.locator('.mt-agenda-list')).toContainText(topic.key);
 
         // Every agenda item needs a presenter before the agenda can be published (domain invariant).
+        // Nothing in the UI gates publish on the assignment landing — the button is enabled on
+        // items.length alone (AgendaBuilder.tsx:216) — so publish could reach the server before the
+        // presenter POST committed and come back 409. Wait for the assignment, same as every other
+        // step in this spec.
         await page.getByRole('button', { name: `Presenter for ${topic.key}` }).click();
-        await page.getByRole('option', { name: memberName, exact: true }).click();
+        const [presRes] = await Promise.all([
+          page.waitForResponse(
+            (r) => r.url().includes(`/agenda/items/${topic.id}/presenter`) && r.request().method() === 'POST',
+          ),
+          page.getByRole('option', { name: memberName, exact: true }).click(),
+        ]);
+        expect(presRes.status()).toBe(200);
 
         await page.getByRole('button', { name: 'Publish & notify' }).first().click();
         const pubDialog = page.getByRole('dialog');
