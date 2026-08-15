@@ -27,6 +27,7 @@
 {"type_id":"requirement","label":"Requirement (FR-/NFR-)","id_prefix":"FR-","generation_class":"Always","custom_attributes":null}
 {"type_id":"risk","label":"Risk","id_prefix":"RISK-","generation_class":"Always","custom_attributes":null}
 {"type_id":"scope-change","label":"Scope change","id_prefix":"SC-","generation_class":"Continuous","custom_attributes":null}
+{"type_id":"skill","label":"Skill (SKL-, distilled from lessons)","id_prefix":"SKL-","generation_class":"On-request","custom_attributes":null}
 {"type_id":"slice","label":"Slice","id_prefix":"SL-","generation_class":"Conditional","custom_attributes":null}
 {"type_id":"stakeholder","label":"Stakeholder","id_prefix":"STK-","generation_class":"Conditional","custom_attributes":null}
 {"type_id":"test","label":"Test","id_prefix":"TEST-","generation_class":"Conditional","custom_attributes":null}
