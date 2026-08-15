@@ -33,5 +33,25 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    /*
+     * AC-101 says "on Chrome AND Edge", and until now playwright.config.ts declared exactly one
+     * project, so Edge had NEVER run (AV-158 gap 2).
+     *
+     * ⚠ SCOPED WITH testMatch RATHER THAN RUN WHOLE, deliberately. A bare second project doubles a
+     * 78-test suite that already drives a seven-service stack through a real Keycloak — paying ~4
+     * minutes of CI on every PR to re-prove things the AC never asked about a second browser for.
+     * What the AC asks is that RTL artifacts are absent on both engines, so Edge runs exactly the
+     * RTL surfaces: the bilingual visual sweep and the RTL/a11y pass.
+     *
+     * ⚠ `channel: 'msedge'` USES THE REAL EDGE BINARY, not Chromium wearing a user-agent — which is
+     * the only version of this that could ever find an engine difference. That is also why e2e.yml
+     * must install it: `playwright install --with-deps chromium` alone leaves every Edge test dying
+     * at launch instead of failing informatively.
+     */
+    {
+      name: 'msedge',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      testMatch: /(vr-sweep|rtl-a11y)\.spec\.ts/,
+    },
   ],
 });
