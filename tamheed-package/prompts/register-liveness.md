@@ -61,14 +61,18 @@ is the only wrong answer.
     real edges — `derives_from` the deciding DEC-/ADR-, `implements` from its slice/
     work item, `tests` from its test. `relates_to` only when nothing typed fits.
 14. **Lessons awaiting confirmation** (`lessons-confirmed`): walk each Proposed `LL-`
-    row WITH the operator — this is their interview, not yours. Per lesson they say:
-    **Approve** (set Approved + `confirmed_by`; ask whether to **pin** it into the
-    CLAUDE.md note — pinned lessons always render), **Reject** (kept as evidence),
-    or **refine** (upsert a successor `LL-`, supersede the old). Approved content is
-    immutable afterward — to flip `pinned` or supersede later, RE-READ the row and
-    resend it byte-identical (full-row upserts; a re-typed row is how content gets
-    corrupted). **STOP for the operator's words on every lesson — you never
-    self-approve.**
+    row WITH the operator — this is their interview, not yours; the store ENFORCES it
+    (an approving upsert without `"operator_confirm": true` is refused, in every
+    mode). Per lesson they say: **Approve** — then RE-READ the row and resend it
+    byte-identical on content with `lifecycle_status: "Approved"`, `confirmed_by`
+    (their attribution — it lands WITH the approval, never later), the pin decision,
+    and `"operator_confirm": true` (their words are the flag; the server records the
+    typed audit event itself); **Reject** (kept as evidence); or **refine** (upsert a
+    successor `LL-`, supersede the old — the transition write may change NOTHING
+    else, the guard refuses content drift). When several Approved lessons share a
+    theme, offer PROMOTION: point the operator at `skill-promote.md` — the
+    distillation ceremony is its own interview. **STOP for the operator's words on
+    every lesson — you never self-approve, mechanically.**
 15. Close the sweep: `progress_update([{"entry": "liveness sweep: <per-family tally —
     resolved / carried / escalated / awaiting operator>", "event_type": "note",
     "actor": "agent:<session>"}])`, then `readiness_check("package")` again and report

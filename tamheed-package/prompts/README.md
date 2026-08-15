@@ -1,9 +1,9 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.3.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
 
-- **Stock scenarios** (this file and the 15 named below) — shipped by tamheed, refreshed
+- **Stock scenarios** (this file and the 16 named below) — shipped by tamheed, refreshed
   on upgrade; if you hand-edit one, later refreshes report it `diverged` and never
   overwrite without `force`. Since v4.1 the tool tells the two divergence kinds
   apart against its shipped stock history: a file byte-equal to an OLDER release's
@@ -37,6 +37,7 @@ file is a paste-ready prompt for a Claude Code session. Two kinds live here:
 | Closing out a release | `release-close-out.md` |
 | Deferred-work triggers may have fired | `replan-deferred.md` |
 | Readiness advisories piling up (the amber list) | `register-liveness.md` — run it on a cadence, not only at close |
+| Distilling confirmed lessons into a reusable skill | `skill-promote.md` — the operator-interview ceremony (project or user level) |
 | Read-only trust audit of the package | `integrity-check.md` |
 | Refresh + read the human report | `generate-report.md` |
 | Unattended execution — the repeated prompt | `loop-iteration.md` |
@@ -93,5 +94,8 @@ every multi-row repair with an independent verifier: re-read the JSONL and re-de
 expected value from its source before calling the repair done. When execution teaches
 something durable, record a `lesson` row (`LL-`, born Proposed) — only lessons the
 OPERATOR approves bind future sessions (rendered into the CLAUDE.md note, pinned first);
-the agent never approves its own lesson. The package is the record — when code and package disagree, fix the code
+the agent never approves its own lesson — the store REFUSES an approving or promoting
+upsert without `"operator_confirm": true`, your words, in every mode; Approved lessons
+with a shared theme can be distilled into a SKILL (`skill-promote.md`) that Claude Code
+loads natively — promoted lessons graduate out of the note, the skill file carries them. The package is the record — when code and package disagree, fix the code
 or record the change; never let them drift.

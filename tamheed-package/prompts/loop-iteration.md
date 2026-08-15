@@ -32,4 +32,4 @@ Execute ONE iteration against the `tamheed-package` Tamheed package, no pauses:
    and `package_close()`.
 7. End with EXACTLY this block (the loop driver parses it; one line, fixed order):
 
-   `ITERATION: wbs=<WBS-x|none> slice=<SL-x|none> acs_moved=<n> gate=<pass|fail> ready=<true|false|n/a> stop=<none|reason>`
+   `ITERATION: wbs=<WBS-x|none> slice=<SL-x|none> acs_moved=<n> gate=<pass|fail> ready=<true|false|n/a> stop=<none|reason> lessons_pending=<n>`

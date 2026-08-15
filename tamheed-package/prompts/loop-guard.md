@@ -22,6 +22,12 @@ Stop conditions (evaluate at the start of every iteration and before closing a s
 7. Any store error (locked, stale tree, refused batch) — never retry around the
    single-writer or stale-tree guards.
 
+Standing rule, not a stop condition: **the loop NEVER carries
+`"operator_confirm": true`** — recording lessons (born Proposed) is encouraged;
+approving or promoting them is the operator's interview, and the store refuses the
+transition without their flag in every mode. Proposed lessons accumulate; the
+ITERATION line's `lessons_pending` count keeps the queue visible.
+
 On stop: record the reason as a final `progress_update` (event_type "escalation" —
 this is the one write that is always allowed), `package_close()`, and emit the
 ITERATION block with `stop=<reason>`
