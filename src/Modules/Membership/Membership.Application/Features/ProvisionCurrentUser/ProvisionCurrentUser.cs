@@ -59,7 +59,47 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
             changed = member.SyncFromClaims(displayName, email, role);
         }
 
-        await _db.SaveChangesAsync(ct);
+        // DEF-075 — TWO CONCURRENT FIRST-LOGINS FOR ONE SUBJECT BOTH REACH THE INSERT. The existence
+        // check above and this write are not atomic, so two requests that both find no row both Add,
+        // and the unique index IX_committee_members_KeycloakUserId refuses the loser. That surfaced as
+        // a 500 on an endpoint the SPA and the e2e helpers both document as IDEMPOTENT, and it can
+        // only ever happen on a subject's FIRST provisioning — every later call takes the sync path
+        // below, where nothing is inserted.
+        //
+        // ⚠ THE LOSER'S RE-READ IS GUARANTEED TO FIND THE WINNER, and that is why this recovers rather
+        // than retries blindly. SQL Server does not fail the second insert immediately: it BLOCKS on
+        // the winner's exclusive key lock and only raises the duplicate once that transaction has
+        // COMMITTED. So by the time we are in this catch, the winning row exists and is committed, and
+        // a read in our own transaction sees it under READ COMMITTED.
+        //
+        // ⚠ AND THE TRANSACTION IS STILL USABLE, which is the fact the whole shape depends on: a unique
+        // violation aborts the STATEMENT, not the transaction (XACT_ABORT is off), so the ambient
+        // transaction this command opened is intact and TransactionBehavior still commits it normally.
+        // Nothing partial was written either — the failed insert was a single statement — which matters
+        // because MARS disables EF's savepoints and there would be no clean point to roll back to.
+        // Proven against a REAL SQL Server in ProvisionCurrentUserConcurrencyTests, not on the InMemory
+        // provider, which does not enforce unique indexes and would let this pass while broken (DEF-066).
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException) when (created)
+        {
+            // Added -> Detached. Without this the retry re-submits the same doomed INSERT.
+            _db.Members.Remove(member);
+
+            var winner = await _db.Members.FirstOrDefaultAsync(m => m.KeycloakUserId == sub, ct);
+
+            // NOT the race we diagnosed — some other write failure wearing the same exception type.
+            // Rethrown so it stays as loud as it was, rather than being absorbed by a recovery path
+            // that happens to be nearby.
+            if (winner is null) throw;
+
+            member = winner;
+            created = false;
+            changed = member.SyncFromClaims(displayName, email, role);
+            await _db.SaveChangesAsync(ct);
+        }
 
         // AUDIT ONLY A REAL CHANGE. The SPA calls this endpoint once per app mount (AuthProvider's
         // useRef guard), so it fires on every full page load, refresh and login — and this emit used
