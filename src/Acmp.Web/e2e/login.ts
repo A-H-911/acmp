@@ -24,3 +24,45 @@ export async function loginAs(page: Page, role: E2eRole): Promise<void> {
   await page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 30_000 });
   await expect(page.locator('.login-cta')).toHaveCount(0);
 }
+
+/**
+ * The same real PKCE round-trip for an account the APPLICATION created (ADR-0038 / ADR-0040), rather
+ * than one global-setup seeded.
+ *
+ * ⚠ WHY loginAs CANNOT BE REUSED, and it is a property of the product rather than of the harness:
+ * KeycloakAdminClient sets the invited account's password with `temporary: true`, so Keycloak
+ * interrupts the round-trip with its UPDATE PASSWORD required action. loginAs would sit waiting for a
+ * dashboard that the update form is standing in front of, and time out 30 seconds later saying
+ * nothing about why. Handling the interruption here keeps that fact in one place and named.
+ *
+ * The caller supplies `newPassword` because the temporary one is revealed exactly once and stored
+ * nowhere (AC-088) — there is no way to look it up again afterwards.
+ */
+export async function loginWithTemporaryPassword(
+  page: Page,
+  username: string,
+  temporaryPassword: string,
+  newPassword: string,
+): Promise<void> {
+  await page.goto('/');
+  await page.locator('.login-cta').click();
+
+  await page.waitForURL(/\/realms\/acmp\/protocol\/openid-connect\/auth/, { timeout: 30_000 });
+  await page.locator('#username').fill(username);
+  await page.locator('#password').fill(temporaryPassword);
+  await page.locator('#kc-login').click();
+
+  // Keycloak's update-password form. Asserted rather than probed: if this never appears the account
+  // was NOT created with a temporary credential, which is a finding about the invite path and should
+  // fail loudly here instead of being skipped past.
+  const newField = page.locator('#password-new');
+  await newField.waitFor({ state: 'visible', timeout: 30_000 });
+  await newField.fill(newPassword);
+  await page.locator('#password-confirm').fill(newPassword);
+  await page.locator('#kc-form-buttons button[type=submit], #kc-login').first().click();
+
+  // ⚠ NOT waitForURL('/') LIKE loginAs. A guest's landing route is not the committee dashboard, and
+  // pinning one here would couple this helper to a navigation decision (DEC-048 d4) that has nothing
+  // to do with logging in. Leaving Keycloak's origin behind is the actual post-condition.
+  await page.waitForURL((url) => !url.href.includes('/realms/acmp/'), { timeout: 30_000 });
+}

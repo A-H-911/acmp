@@ -32,6 +32,23 @@ jobs:
       # fire on the real stack (R4a). Compose interpolation takes shell env over --env-file, so the worker gets
       # minutely HERE while deploy/.env.example and production keep the daily 0 6 * * * default (docker-compose.yml).
       ACTION_REMINDERS_SWEEP_CRON: '* * * * *'
+      # AC-011 / DEC-042 — TURN THE ADR-0038 WRITE PATH ON IN CI. IIdentityProvider and
+      # IGuestProvisioner are registered ONLY when this is true, so until now CI ran seven services
+      # with a genuine Keycloak and never constructed either: invite, role assignment, forced sign-out,
+      # guest disable and the guest-presenter flow were reachable only by the manual UAT probe. That is
+      # the same shape of blindness that let DEF-066 survive two shipped steps.
+      #
+      # SET HERE RATHER THAN IN deploy/.env.example, which DEC-042 preferred as the narrower option:
+      # this changes CI only, while dev and production keep the false default. Same mechanism as the
+      # sweep cron above — compose interpolation takes shell env over --env-file, verified by rendering
+      # `docker compose config` with it set and reading KeycloakAdmin__Enabled back as "true".
+      #
+      # ⚠ NO SECRET IS NEEDED HERE and that is not an oversight: gen-secrets.sh writes
+      # KeycloakAdmin__ClientSecret UNCONDITIONALLY (a compose secret whose file is missing fails the
+      # whole stack), .env.example pins a non-placeholder value, and reconcile.sh converges the Keycloak
+      # client from that same file on presence rather than on this flag. So the identity side already
+      # existed on every run; only the app-side DI registration was off.
+      KEYCLOAK_ADMIN_ENABLED: 'true'
     defaults:
       run:
         working-directory: src/Acmp.Web
