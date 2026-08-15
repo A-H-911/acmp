@@ -37,8 +37,22 @@ What changed under you:
 - Risk `probability`/`impact` are **NULL** (v3 M/H/L stashed in `custom_attributes.v3_*`); the v4
   scale was never established, so they were left null rather than invented.
 
-**The first liveness sweep is done** (`ae9291f`) — `risk-liveness` now passes. Read **`findings_17.md`**
-before the next sweep: it holds what looks *wrong* rather than unpopulated, and what is left for you.
+**Two liveness sweeps are done** (`ae9291f`, then the 4.2.0 repairs). Read **`findings_18.md`** first,
+then `findings_17.md`. Three of findings_17's items are now CLOSED — the risk scale (C3), the
+truncated titles (A4) and the dropped milestone statuses (A5) — all recovered from data the
+migration had already stashed, none of it judged.
+
+⚠⚠ **Two traps from those sweeps, and both are about trusting your own instruments:**
+
+1. **A generated payload must be PASTED, not RE-TYPED.** Building the upsert from `data/*.jsonl`
+   (rather than `entity_query`) is necessary and was done — then I transcribed the generator's
+   output by hand and flipped one risk's probability. **The hand is the untrusted transport.** What
+   caught it was not care — care missed it — but a verifier that re-read the JSONL afterwards and
+   re-derived every value from the stash. **End any N-row repair with that re-read.**
+2. **A hollow `pass` is worse than an `indeterminate`.** `risk-liveness` "passed" last session only
+   because `probability`/`impact` were null, so no row could satisfy its *high-X* predicate. With
+   the scale recovered it correctly **fails**, naming six rows. An `indeterminate` announces itself;
+   a rule that cannot discriminate reports green.
 
 **If `package_open` refuses on a `.lock`, do NOT clear it reflexively.** Use both discriminators
 (`prompts/README.md` §"One session at a time"): the named pid must be a LIVE process that plausibly

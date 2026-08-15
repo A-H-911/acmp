@@ -58,3 +58,30 @@ is null on every v2.3-imported row. **It measures bookkeeping, not open question
 
 Detail + what is left for the operator: **`findings_17.md`**. See also
 [[verify-mechanically-not-carefully]], [[tamheed-data-repair]].
+
+---
+
+## 4.2.0 (2026-08-15) — three findings_17 items closed, two traps learned
+
+`open-questions-resolved` **72 → 1** (`OQ-074`) on the 4.2.0 rule fix — B1 was a correct diagnosis.
+Closed: **C3** (risk scale, `low|medium|high`, recovered from `custom_attributes.v3_*`), **A4**
+(11 truncated titles restored from `custom_attributes.v1.Risk`), **A5** (six milestone statuses
+stashed as `custom_attributes.v3_status`, blob **merged** not replaced). C2 re-verified: omitting
+`custom_attributes` preserves the blob across 34 full-row upserts.
+
+⚠⚠ **A GENERATED PAYLOAD MUST BE PASTED, NOT RE-TYPED.** C1 says build from the JSONL — done — but
+I then hand-transcribed the generator's output into the tool call and flipped `RISK-012`'s
+probability from `high` to `medium`. **The hand is the untrusted transport.** Care did not catch it;
+a verifier that re-read the JSONL and re-derived every value from the stash did, in one line.
+**End any N-row repair with that independent re-read.**
+
+⚠⚠ **A HOLLOW `pass` IS WORSE THAN AN `indeterminate`.** `risk-liveness` flipped to `pass` when I
+populated owners — but `probability`/`impact` were null, so **no row could satisfy its
+high-probability/high-impact predicate**; it passed because it could not fail. With the scale
+recovered it correctly **fails**, naming `RISK-013/016/017/018/019/020`. An `indeterminate`
+announces itself; a rule that cannot discriminate reports green. Recorded as a typed `correction`
+event against `PE-335` — the v4 mechanism `DEF-072` needed and could not have.
+
+⚠ **Customising a stock prompt opts it out of every future refresh, silently and permanently.**
+4.2.0 changed `slice-review.md`; `refresh_stock` correctly skipped ours because it is customised, so
+it now lags. Three files are in that state (`orient-resume`, `integrity-check`, `slice-review`).
