@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.1)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
