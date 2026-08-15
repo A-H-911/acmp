@@ -17,6 +17,7 @@
 {"type_id":"hypothesis","label":"Hypothesis","id_prefix":"HYP-","generation_class":"Conditional","custom_attributes":null}
 {"type_id":"invariant","label":"Invariant","id_prefix":"INV-","generation_class":"Conditional","custom_attributes":null}
 {"type_id":"kpi","label":"KPI","id_prefix":"KPI-","generation_class":"Conditional","custom_attributes":null}
+{"type_id":"lesson","label":"Lesson learned (LL-)","id_prefix":"LL-","generation_class":"Continuous","custom_attributes":null}
 {"type_id":"milestone","label":"Milestone","id_prefix":"MS-","generation_class":"Conditional","custom_attributes":null}
 {"type_id":"narrative-document","label":"Narrative document","id_prefix":"DOC-","generation_class":"Always","custom_attributes":null}
 {"type_id":"open-question","label":"Open question","id_prefix":"OQ-","generation_class":"Always","custom_attributes":null}
