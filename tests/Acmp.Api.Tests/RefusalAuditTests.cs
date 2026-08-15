@@ -31,11 +31,25 @@ public class RefusalAuditTests
         return client;
     }
 
+    // ⚠ `Action ?? EventType`, AND THE COALESCE IS THE POINT RATHER THAN DEFENSIVE STYLE. The store holds
+    // two row shapes: IAuditSink.EmitAsync writes a LEAN v1 row (EventType set, the enriched Action column
+    // NULL) and EmitEnrichedAsync writes a v2 row (both set). Every authorization refusal in this codebase
+    // - the pre-existing AuthorizationBehavior one included - takes the v1 path, so selecting Action alone
+    // returns null for exactly the rows these tests exist to find.
+    //
+    // THAT IS NOT A HYPOTHETICAL: this file's first version did select Action alone, and both positive
+    // tests failed against a working emitter while the log printed the row being written. An assertion
+    // reading the wrong column is indistinguishable from the feature being absent - and it fails LOUDLY
+    // only by luck here; the two NotContain controls below passed VACUOUSLY the whole time, because a
+    // collection of nulls contains no string whatever the code does.
+    //
+    // /api/audit normalizes identically (`(e.Action ?? e.EventType) == action`), so this asserts the value
+    // a reader actually sees rather than a column that happens to be populated.
     private static async Task<IReadOnlyList<string>> ActionsAsync(AcmpWebApplicationFactory factory)
     {
         using var scope = factory.Services.CreateScope();
         var audit = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
-        return await audit.AuditEvents.Select(e => e.Action).ToListAsync();
+        return await audit.AuditEvents.Select(e => e.Action ?? e.EventType).ToListAsync();
     }
 
     [Fact] // AC-006 — the refusal AND the record, asserted as a ROW rather than as an emission
