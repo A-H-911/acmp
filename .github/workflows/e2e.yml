@@ -162,9 +162,15 @@ jobs:
         if: ${{ failure() }}
         working-directory: .
         run: |
-          echo "===== api (the service the specs talk to) ====="
-          docker compose -f deploy/docker-compose.yml logs --no-color --tail 4000 api
-          echo "===== all services ====="
+          # ⚠ NO --tail ON THE API LOG, AND THAT IS THE CORRECTION RATHER THAN THE ORIGINAL FIX.
+          # The first attempt at this raised 200 to 4000, which is choosing a bigger magic number for
+          # a question the number cannot answer: you do not know how far back the failure is until you
+          # have found it, and 4000 api lines still began eight minutes into a suite whose failure was
+          # in the first minute. A tail is the wrong instrument here. The whole log is a few MB and the
+          # step only runs on failure.
+          echo "===== api (the service the specs talk to) — FULL log ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color api
+          echo "===== all services (tail) ====="
           docker compose -f deploy/docker-compose.yml logs --no-color --tail 2000
 
       - name: Tear down the stack
