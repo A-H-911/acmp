@@ -38,40 +38,47 @@ count is stale on the first new write, and one in this very file already was.
   except `DEF-039`. Do not redo any of it.
 - **Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
   **Nothing in this stream is deployed.**
-- **9 open defects**: `DEF-012`, `DEF-038`, `DEF-039`, `DEF-056`, `DEF-065`, `DEF-067`, and three
-  opened 2026-08-15 — `DEF-073` (fixed, awaiting merge), `DEF-074` (fixed, awaiting merge),
-  `DEF-075` (**START HERE**, see §3).
-- **5 unmet ACs**: `AC-003`, `AC-006`, `AC-011`, `AC-041`, `AC-048`.
+- **6 open defects**: `DEF-012`, `DEF-038`, `DEF-039`, `DEF-056`, `DEF-065`, `DEF-067`. Four more were
+  opened AND fixed on 2026-08-15 — `DEF-073`, `DEF-074`, `DEF-075`, `DEF-076` — all merged.
+- **4 unmet ACs**: `AC-003`, `AC-006`, `AC-041`, `AC-048`. ✅ **`AC-011` is MET** (`AV-163`).
 - `DW-026` is **Activated** (approved to build), `DW-028` is new and Open.
 
 ### ⭐ Where the 2026-08-15 session stopped, and why
 
-**`AC-011` is BUILT and its PR is RED on one spec — deliberately left that way.** PR **#278**
-(`feat/ac011-keycloak-admin-e2e`) turns `KEYCLOAK_ADMIN_ENABLED` on in CI (`DEC-042`) and adds the
-live guest-presenter leg. Everything else in CI is green; `e2e` fails in that spec's `beforeAll` on
-**`DEF-075`**, a real product defect the leg exposed. **Do not "fix" the spec to make it pass.**
+**`AC-011` IS MET (`AV-163`) — proven live, both clauses measured.** Everything below is DONE and
+merged; do not redo any of it. What is left is `DEC-052` d4's approved queue, in §3.
 
-- ✅ **`DEF-075` IS FIXED AND MERGED** (`3a27fef`, PR #279, ten checks green). ⚠ My analysis on that
-  row was **wrong and is corrected there**: a unique violation aborts the STATEMENT, not the
-  transaction, and SQL Server blocks the loser until the winner COMMITS — so the fix is a small local
-  recovery, not a retry above `TransactionBehavior`.
-- ⭐ **`DEF-076` IS NOW THE BLOCKER, and it is the best thing this leg produced.** With the guest
-  finally able to sign in, `GET /api/session/me` answered **403 to the one principal
-  `GetMySessionQuery` explicitly allows**. `MemberInvitation.InviteAsync` calls `CreateUserAsync` and
-  nothing else — **it never assigns a Keycloak realm role** — so an invited guest exists in Keycloak
-  as nobody while `committee_members` says Guest with a timed window. FR-159's guest presenter has
-  never been able to use the surface built for them, and only a live login could show it.
-  ⚠ **It needs an operator decision plus an `SC-` row, not a line of code**: assigning the role for
-  every invite would change FR-156, whose inert-until-assigned design is what `AssignRoles` exists
-  for. Option (a) on the row — assign on the GUEST path only — is the narrow reading of `ADR-0040`.
-  ⚠ It also flipped `role-matrix.spec.ts`'s deliberate `test.fail()` for `AC-006` to
-  **"Expected to fail, but passed"** — a role-less guest's refusals DO reach `AuthorizationBehavior`.
-  That marker is meant to flip when `DEF-056` lands; do not read this run as `DEF-056` being done.
-- `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
-  detectors + the Edge project, **not** pixel baselines). ⚠ `AC-048` also needs slice binding, so do
-  the narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
-- ⚠ `AC-003` needs **its own emitter**: `AV-159` shows its 403 is thrown in the HANDLER, so the
-  `IAuthorizationMiddlewareResultHandler` that `DEF-056` will register **cannot** catch it.
+Turning ONE flag on (`KEYCLOAK_ADMIN_ENABLED`, `DEC-042`) exposed **four defects nothing else could
+see**, all now Fixed and merged:
+
+| | | |
+|---|---|---|
+| `DEF-073` | a guest could read **every meeting in the committee** — this AC's own second clause answering 200 | #278 `567da16` |
+| `DEF-074` | the e2e failure dump could not reach the failure it explains | #278 `567da16` |
+| `DEF-075` | JIT provisioning check-then-insert race — `POST /api/members/me` was not idempotent | #279 `3a27fef` |
+| `DEF-076` | **high** — an invited guest got NO Keycloak realm role, so FR-159's guest could never use the surface built for them | #280 `fc824a5` (`SC-012`) |
+
+The leg itself merged as #281 `1598ac0`; `AC-011` flipped on CI run `31895092054`.
+
+⚠ **Two near-misses worth carrying, both an assertion passing for the wrong reason.** (1) The expiry
+test first passed its `401` check while measuring nothing — `page.request` does **not** attach the
+`Authorization` header, so the call was merely *unauthenticated*, and only the
+`X-Acmp-Auth-Reason: access_expired` assertion told the two apart. Asserting the status alone would
+have flipped this AC on a test that never exercised the expiry path. (2) A mutant appeared to
+**survive** and was not believed: the patch targeted a string that does not exist in the file, so it
+never applied. **A surviving mutant you have not verified is not a test result.**
+
+⚠ `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
+detectors + the Edge project, **not** pixel baselines). `AC-048` also needs slice binding, so do the
+narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
+
+⚠ `AC-003` needs **its own emitter**: `AV-159` shows its 403 is thrown in the HANDLER, so the
+`IAuthorizationMiddlewareResultHandler` that `DEF-056` will register **cannot** catch it.
+
+⚠ `role-matrix.spec.ts`'s deliberate `test.fail()` for `AC-006` flipped to *"Expected to fail, but
+passed"* while `DEF-076` was open, because a role-less guest's refusals DO reach
+`AuthorizationBehavior`. That marker is meant to flip when **`DEF-056`** lands. **Do not read a green
+`AC-006` as `DEF-056` being done** — verify the emitter exists.
 
 ## §2 — Why `readiness_check` says `ready:false`, and why that is right
 
