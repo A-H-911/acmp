@@ -58,18 +58,18 @@ export async function loginWithTemporaryPassword(
   const newField = page.locator('#password-new');
   await newField.waitFor({ state: 'visible', timeout: 30_000 });
   await newField.fill(newPassword);
+  // ⚠ SUBMIT THE FORM, DO NOT HUNT FOR ITS BUTTON. Two runs were spent guessing at Keycloak's markup
+  // for this one control — first `#kc-form-buttons button[type=submit]`, then the same with
+  // `input[type=submit]` — and both matched NOTHING and waited out the hook, which reads as "the login
+  // is slow" rather than "that selector is wrong". The fills above always succeeded, so the form was
+  // there and correct every time; only my idea of its submit control was not.
+  //
+  // Pressing Enter in a text input submits the owning form natively, so this depends on the form
+  // EXISTING rather than on the theme's choice of <input type=submit> vs <button>, on a container id,
+  // or on a label. That is one assumption instead of three, and it is the one already proven by the
+  // fills. The right lesson from a selector that matched nothing is to stop needing the selector.
   await page.locator('#password-confirm').fill(newPassword);
-
-  // ⚠ `input[type=submit]` FIRST, AND NOT `#kc-login`. Keycloak's update-password form submits with an
-  // <input type="submit"> inside #kc-form-buttons, so a `button[type=submit]` selector matches nothing
-  // and simply waits until the hook times out — which reads as "the login is slow" and is not. The
-  // first run of this helper failed exactly that way, and the giveaway was that the two fills ABOVE
-  // had already succeeded: the form was there and correct, only the submit selector was wrong. Both
-  // element kinds are listed because the theme uses a <button> on some Keycloak versions.
-  await page
-    .locator('#kc-form-buttons input[type=submit], #kc-form-buttons button[type=submit]')
-    .first()
-    .click();
+  await page.locator('#password-confirm').press('Enter');
 
   // ⚠ NOT waitForURL('/') LIKE loginAs. A guest's landing route is not the committee dashboard, and
   // pinning one here would couple this helper to a navigation decision (DEC-048 d4) that has nothing
