@@ -1,5 +1,14 @@
 # findings_20 — v4.4.0 upgrade
 
+> ✅ **CLOSED IN v4.4.1 (2026-08-16).** §1 is fixed — verified in source, not in the changelog.
+> The offending clause is gone, and the remedy went further than the one requested: the note is now
+> **computed per run** rather than asserted per mode. `package_migrate` diffs `PRAGMA table_info`
+> against the rows actually in the JSONL and emits a **`columns_added`** map naming exactly which
+> files will show as modified and why (`tamheed_server.py:2120-2148`, commented `findings_20 (plan
+> 037)`). That closes the forward-looking half — a derived statement cannot go stale the way an
+> asserted one does. §2/§3 status below is unchanged: §2 verified closed at 4.4.0, **§3 still
+> UNVERIFIED**. Read this file as history.
+
 2026-08-16. **One item, and it is minor** — a clause in `package_migrate`'s own report that is not
 true. Reported anyway because it is a false statement in tool output, and because the same wording
 will front every future registry-sync. The rest of this upgrade was clean, and two findings_19 fixes
