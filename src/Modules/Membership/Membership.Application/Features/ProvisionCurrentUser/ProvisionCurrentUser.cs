@@ -51,6 +51,16 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
         // FAIL-CLOSED IS THE CHOSEN BRANCH: the AC offers deny OR a configured minimum default role,
         // and there is no configurable default and no Submitter fallback in this system. Denying is
         // the safer of the two branches the AC permits.
+        //
+        // ⚠ THIS IS THE SECOND RECORD OF THE EVENT, NOT THE FIRST, AND SAYING SO HERE IS THE POINT.
+        // AuthenticationExtensions.MapKeycloakRolesAsync already emits `Authentication.NoRoleClaim`
+        // at OnTokenValidated — the AC's own moment ("when they complete SSO login") — so the audit
+        // clause does not rest on this line. AV-159 claimed no row was written for a role-less login;
+        // it had searched only for emitters of `Authorization.Forbidden` and read their absence as
+        // the absence of any record. What this adds is the REFUSAL of a specific request, which the
+        // authentication-time row does not describe, and it is reachable from a test where that seam
+        // is not (SC-005: the API harness authenticates with a synthetic scheme, so OnTokenValidated
+        // never fires there).
         var sub = _user.UserId!;
 
         var resolved = CommitteeRoleResolver.PrimaryRole(_user.Roles);

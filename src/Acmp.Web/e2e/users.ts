@@ -11,7 +11,14 @@ export interface E2eUser {
   readonly firstName: string;
   readonly lastName: string;
   readonly email: string;
-  readonly realmRole: string; // matches a role in realm-export.json
+  /**
+   * The committee realm role to assign, matching a role in realm-export.json.
+   *
+   * OPTIONAL, and the absence is a FIXTURE STATE RATHER THAN A GAP: AC-003 is about what the system
+   * does with a validated token that carries no ACMP role claim at all, so an account with no
+   * committee role is the subject under test, not a half-seeded user.
+   */
+  readonly realmRole?: string;
 }
 
 /*
@@ -39,3 +46,24 @@ export const E2E_USERS: Record<
 };
 
 export type E2eRole = keyof typeof E2E_USERS;
+
+/*
+ * AC-003's subject — a REAL Keycloak account holding NO committee realm role.
+ *
+ * ⚠ DELIBERATELY OUTSIDE E2E_USERS, so it is not a member of E2eRole. loginAs() waits for the
+ * committee dashboard and for the login CTA to disappear; this account is REFUSED provisioning, and
+ * giving it a name that typechecks against loginAs would invite exactly the helper whose
+ * post-conditions do not hold for it. Keeping it out of the union makes that a compile error instead
+ * of a 30-second timeout that says nothing about the cause.
+ *
+ * ⚠ AND IT IS SAFE AGAINST THE DEF-045 HAZARD NOTED ABOVE, which is why this list may grow here at
+ * all: the hazard is that a login PROVISIONS a CommitteeMember and shifts absolute counts in other
+ * specs. This login's provisioning call is refused, so no member row is ever created — the one
+ * seeded user in this file that cannot move any count.
+ */
+export const E2E_ROLELESS_USER: E2eUser = {
+  username: 'e2e-roleless',
+  firstName: 'E2E',
+  lastName: 'Roleless',
+  email: 'e2e-roleless@acmp.test',
+};

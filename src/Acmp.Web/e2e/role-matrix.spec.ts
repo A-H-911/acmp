@@ -103,27 +103,25 @@ test.describe('Role matrix through a REAL Keycloak token (AC-005 / AC-006 / AC-0
   });
 
   /*
-   * AC-006's SECOND CLAUSE — "with an audit event emitted" — AND IT DOES NOT HOLD (DEF-056).
+   * AC-006's SECOND CLAUSE — "with an audit event emitted". THIS NOW HOLDS (DEF-056 fixed).
    *
-   * This is `test.fail()` on purpose: it PASSES while the gap exists and FAILS THE DAY SOMEONE FIXES
-   * IT, which is the only form that both keeps CI honest and refuses to let the gap go quiet. It is
-   * not a skip — a skip says "we didn't look".
+   * WHAT THE FIRST RUN MEASURED, and it is why this case exists at all: the refusals above all
+   * returned 403, and GET /api/audit?action=Authorization.Forbidden returned status 200 with an
+   * EMPTY items array — right query shape, no rows. The cause was layering, not the sink: every
+   * write endpoint carries a per-endpoint .RequireAuthorization(Policies.X), so ASP.NET's
+   * authorization middleware short-circuits with 403 BEFORE MediatR, and AuthorizationBehavior — at
+   * the time the only place in the codebase that emitted Authorization.Forbidden — never ran.
    *
-   * WHAT THE FIRST RUN MEASURED: the refusals above all returned 403, and
-   * GET /api/audit?action=Authorization.Forbidden returned status 200 with an EMPTY items array —
-   * right query shape, no rows. The cause is layering, not the sink: every write endpoint carries a
-   * per-endpoint .RequireAuthorization(Policies.X), so ASP.NET's authorization middleware
-   * short-circuits with 403 BEFORE MediatR, and AuthorizationBehavior — the only place in the
-   * codebase that emits Authorization.Forbidden — never runs. SqlAuditSink is innocent: EmitAsync
-   * does Add + SaveChangesAsync immediately, so a row would persist even outside a transaction.
+   * ⚠ THIS CASE CARRIED A `test.fail(true, ...)` UNTIL THE FIX LANDED, AND THE SHAPE IS WORTH
+   * KEEPING IN MIND rather than just deleting: it PASSED while the gap existed and went RED the day
+   * someone closed it, so the gap could never go quiet and the fix could not land unnoticed. A skip
+   * would have said "we didn't look". What now proves the fix is the same assertion, unmarked.
    *
-   * The refusal itself is correct and is proven by the test above. What is missing is the RECORD of
-   * it: an Auditor attempting to mutate governance data currently leaves no trace that the attempt
-   * happened. ⚠ WHEN DEF-056 IS FIXED this test goes red — delete the `test.fail()` line, and flip
-   * AC-006 to Met with this as the evidence.
+   * The emitter is AuditingAuthorizationResultHandler, an IAuthorizationMiddlewareResultHandler —
+   * ONE seam that covers every endpoint the authorization middleware forbids, including ones added
+   * later, rather than a policy each route must remember to opt into.
    */
-  test('AC-006 — a refused mutation leaves an Authorization.Forbidden row (DEF-056: it does not)', async ({ browser, request }) => {
-    test.fail(true, 'DEF-056 — the endpoint-policy layer 403s before MediatR, so nothing emits the event');
+  test('AC-006 — a refused mutation leaves an Authorization.Forbidden row', async ({ browser, request }) => {
     const auditor = await bearerFor(browser, 'auditor');
 
     const denied = await post(request, auditor, CALLS.topicSubmit);
