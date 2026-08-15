@@ -68,6 +68,33 @@ have flipped this AC on a test that never exercised the expiry path. (2) A mutan
 **survive** and was not believed: the patch targeted a string that does not exist in the file, so it
 never applied. **A surviving mutant you have not verified is not a test result.**
 
+### ⏸ `DEF-056` + `AC-003` are STARTED, on `feat/def-056-refusal-audit`, and NOT merged
+
+Both emitters are written and building; **neither is proven**, so the branch is parked rather than
+merged — an unproven audit emitter is worse than none, because it makes a reader believe refusals are
+recorded. Pick it up there rather than starting over.
+
+- `AuditingAuthorizationResultHandler` records the policy-layer 403s that short-circuit before
+  MediatR. **Forbidden only, never Challenged.** `CancellationToken.None` deliberately, so a client
+  hanging up mid-refusal still leaves the record.
+- `ProvisionCurrentUser` emits before its own `ForbiddenAccessException` — the middleware handler
+  **structurally cannot** catch that one, because the request *passes* authorization and is refused
+  inside the handler.
+- `RefusalAuditTests` asserts both as ROWS, plus two controls (unauthenticated → no row; allowed
+  caller → no row).
+
+⚠ **THE BLOCKER, measured not guessed.** Both positive tests fail with an **empty** audit table. A
+temporary `if (true)` probe in the handler still produced no row → **it never runs in that harness**.
+The refused response has an **empty body** — the framework's bare forbid, not ProblemDetails — so the
+authorization middleware genuinely refused. **Next thread to pull:**
+`IAuthorizationMiddlewareResultHandler` does not resolve from `Program.cs`'s top-level statements NOR
+from `Acmp.Api.Tests`, yet resolves fine in a file beside the implementation in the same project.
+Registration currently routes through an extension method for that reason. Until that is understood,
+whether the handler is registered at all is **unverified**.
+
+⚠ Consider that the real proof for `DEF-056` may be **e2e**, not the API harness: the defect was
+found by the live leg, and `PermissionMatrixTests` never goes through HTTP.
+
 ⚠ `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
 detectors + the Edge project, **not** pixel baselines). `AC-048` also needs slice binding, so do the
 narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
