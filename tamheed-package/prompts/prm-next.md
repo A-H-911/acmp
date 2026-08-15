@@ -118,51 +118,72 @@ it by closing rows.
 it lists every open risk by construction. `DEC-050` d2 decided a full traceability pass. **Read that
 row first — it is a risk REVIEW, not data entry.**
 
-## §3 — ⭐ THE QUEUE (`DEC-049`, `DEC-050`). Start here.
+## §3 — ⭐ THE QUEUE. Start here. (`DEC-052` d4 approved ALL of it.)
 
-All operator-decided. **Read the `DEC-` row before starting an item**; the rejected options and their
-reasons are on it. Do not re-litigate.
+All operator-decided. **Read the `DEC-` row before starting an item** — the rejected options and the
+reasons are on it. Do not re-litigate. This is a **multi-session** queue and was recorded as one
+rather than attempted in one sitting.
 
-### Build track — in this order, and the order is reasoned
+### 1. `DEF-056` + `AC-003` — STARTED, PARKED, NOT MERGED. Pick it up, do not restart it.
 
-1. ~~**`AC-011`**~~ ✅ **DONE AND MET (`AV-163`)** — see §1. Do not redo it. It did exactly what
-   `DEC-049` predicted: turning the flag on broke things, and the four defects that fell out were
-   worth more than the AC.
-2. **`AC-041`** — add the Edge project to `playwright.config.ts` (chromium-only today, so the AC's
-   "Chrome and Edge" has never been true), **and** the property-level detectors `DEC-051` chose over
-   pixel baselines — `e2e/vr-sweep.spec.ts` is capture-only with **no assertion of any kind**, so the
-   AC's verb "detected" is currently performed by a human opening PNGs. ⚠ Adding the Edge project is
-   not one line: `e2e.yml` installs **chromium only**, so without `msedge` added there every Edge
-   test dies at launch. · **`AC-003`** — cheap, but needs its own emitter (see §1). · **`AC-048`** —
-   scope now KNOWN: **not a build item at all**, supersede it (`DEC-051`), folded into the binding
-   pass.
-3. **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
-   actually runs (MinIO on-prem, S3 on cloud). ⚠ Needs an environment-aware **probe**, not a config
-   flag — the check itself differs between MinIO's `/minio/health/live` and S3.
-4. **`DEF-056`** — a refused mutation is NOT audited. Every write 403s at the ASP.NET policy layer
-   *before* MediatR, and `AuthorizationBehavior:39` is the only emitter. Build the
-   `IAuthorizationMiddlewareResultHandler`; emit **only** on `Forbidden`, never `Challenged`. Flips
-   **`AC-006`**. ⚠ A deliberate `test.fail()` in `role-matrix.spec.ts` goes RED the day it lands —
-   delete that line.
-5. **`DW-026`** — the architecture test (a public aggregate method with no production caller).
-   **LAST, deliberately:** its allowlist must be seeded with the gaps that exist *when it is
-   written*, and every build above may add or remove uncalled methods. **Start with the narrow
-   policy-coverage check** — every `IAuthorizationRequirement` appears in at least one registered
-   policy. A handful of lines, and it guards the only fails-open case.
+Branch **`feat/def-056-refusal-audit`**. Both emitters are written and building; **neither is proven**,
+which is exactly why it is not merged — an unproven audit emitter is worse than none, because it makes
+a reader believe refusals are recorded. The full state is in §1; the one-line summary is that the
+handler **never runs** in the API test harness and the reason is not yet understood.
 
-Plus **`DEF-067`** (⚠ fix by awaiting the settled state — **never** a timeout or a retry, both hide a
-real regression the day one occurs) and **`DEF-012`**.
+**Start by settling the resolution boundary** (§1 has the measurements): if
+`IAuthorizationMiddlewareResultHandler` cannot be named from `Program.cs` or the test project, then
+whether the registration takes effect at all is unverified, and every other question is downstream of
+that. ⚠ Strongly consider that the real proof is **e2e**, not the API harness: this defect was found
+by the live leg, `PermissionMatrixTests` never goes through HTTP, and `role-matrix.spec.ts` already
+carries the `test.fail()` marker that flips the day it lands. **Delete that line when it does.**
 
-### Package track — parallel, no CI
+Flips **`AC-006`**, and `AC-003` rides with it — but note they need **two** emitters, not one: see §1.
 
-- **Full AC binding, all 20** (`DEC-050` d1... see `acs-slice-bound`). ⚠ An Approved AC's content is
-  **immutable**, so any needing a different binding must be **superseded** — which mints new ids and
+### 2. `AC-041` — property detectors + the Edge project (`DEC-051`)
+
+Two gaps, not one. `e2e/vr-sweep.spec.ts` is **capture-only** — `page.screenshot()` into `vr-out/`, no
+`toHaveScreenshot`, no baseline, **no assertion of any kind** — so the AC's verb "detected" is
+performed by a human opening PNGs. `DEC-051` chose **property-level detectors** in the style of
+`src/test/rtl-logical-css.test.ts` over pixel baselines, on this project's own measured experience
+that the property guard catches real defects while the capture sweep has caught none.
+
+⚠ Adding the Edge project is **not one line**: `e2e.yml` installs **chromium only**, so without
+`msedge` added there every Edge test dies at launch rather than failing informatively.
+
+### 3. Package track — no CI cycles at all, and the cheapest after a long session
+
+- **Full AC binding, all 20** (`DEC-050` d1 — see `acs-slice-bound`). ⚠ An Approved AC's content is
+  **immutable**, so any needing a different binding must be **superseded**, which mints new ids and
   moves verdict history onto rows that did not earn it. Row by row; supersede only where the binding
   genuinely changes scope.
-- **`risks-discharged`, all 23** (`DEC-050` d2). ⚠ Several PH-0 risks need a judgement about whether
-  they are still live at all — `RISK-005`'s subject was deferred indefinitely by `DEC-028`. Where
-  nothing genuinely discharges a risk, **retire or accept it explicitly**; pointing it at a
-  convenient AC to clear the rule is the manufactured-status failure recorded as `DEF-010`.
+- ⚠ **`AC-048` folds in here.** `DEC-051` settled it: **not a build item at all** — its Partial is
+  final as written (no automation can prove a browser showed a human a dialog), so it is **superseded
+  and narrowed to the mechanism**. It also needs slice binding, so do the narrowing and the binding in
+  **ONE** supersession, or its successor id is minted twice.
+- **`risks-discharged`, all 23** (`DEC-050` d2). ⚠ It is a risk **REVIEW**, not data entry. Several
+  PH-0 risks need a judgement about whether they are still live — `RISK-005`'s subject was deferred
+  indefinitely by `DEC-028`. Where nothing genuinely discharges a risk, **retire or accept it
+  explicitly**; pointing it at a convenient AC to clear the rule is the manufactured-status failure
+  recorded as `DEF-010`.
+
+### 4. `DEF-039` + the two minor defects
+
+- **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
+  actually runs (MinIO on-prem, S3 on cloud). ⚠ Needs an environment-aware **probe**, not a config
+  flag — the check itself differs between MinIO's `/minio/health/live` and S3.
+- **`DEF-067`** — `DecisionPage.test.tsx` fails intermittently under `test:cov` only. ⚠ Fix by
+  **awaiting the settled state** (`findBy*`/`waitFor`) — **never** a timeout or a retry, both of which
+  hide a genuine regression the day one occurs.
+- **`DEF-012`** — `v_backlog` residue; a derived-view artifact of the v2.3 import.
+
+### 5. `DW-026` — the architecture test. LAST, deliberately.
+
+A public aggregate method with no production caller. Its allowlist must be seeded with the gaps that
+exist **when it is written**, and every build above may add or remove uncalled methods — seeding it
+first guarantees a stale allowlist on the day it merges. **Start with the narrow policy-coverage
+check**: every `IAuthorizationRequirement` appears in at least one registered policy. A handful of
+lines, and it guards the only fails-open case. (It has now fired **five** times.)
 
 ## §4 — The deploy: the only thing blocking production, and it is OPERATOR ACTION
 
@@ -192,6 +213,18 @@ not touch (it is no longer a row that run creates) and falls back to `ADR-0043` 
 - New: `OQ-` rows for genuine ambiguity, **`WVR-` waivers that are operator-only — never author
   one**, `lifecycle_status` **Review** (done-claimed) vs **Implemented** (verified), and typed
   `progress_update` with a **`correction` event** — correct via a new entry, never by editing.
+- ⚠ **THE CHECK CONSTRAINTS REJECT PLAUSIBLE VALUES, AND THE ERROR IS THE ONLY DOCUMENTATION.** Three
+  upserts were rejected in a row on 2026-08-15 for guessing these; the store tells you the allowed set
+  when it refuses, so read the error rather than trying another synonym:
+  - `audit_record` → `verified_by` is **`human` | `agent` | `ci`** (not a person's or model's name),
+    and `verification_method` is **`auto-test` | `manual` | `inspection`** (not a prose description —
+    put that in `evidence`).
+  - `defect.lifecycle_status` is **`Open` | `In-progress` | `Fixed` | `Won't-fix` | `Duplicate`** —
+    **not** `Implemented`, which is the *work-item* vocabulary.
+  - `progress_update.event_type` is **`work-done` | `verdict-recorded` | `transition` |
+    `forced-override` | `gate-decision` | `escalation` | `correction` | `note`**.
+  - A batch that violates one constraint **rolls back entirely** (`applied: 0`), so a rejected
+    multi-row upsert leaves no partial state — re-send the whole batch once corrected.
 - Root `CLAUDE.md` now **imports** `tamheed-package/CLAUDE.md` (tool-owned, auto-refreshed) instead
   of restating it.
 - ⚠ Three stock prompts are **customised** and therefore **never auto-refreshed**:
@@ -246,6 +279,37 @@ not touch (it is no longer a row that run creates) and falls back to `ADR-0043` 
 14. ⚠ **A GENERATED payload must be PASTED, not RE-TYPED.** The generator was right; I retyped its
     output and flipped a value. **The hand is the untrusted transport.** End any N-row repair with an
     independent re-read that re-derives each value from its source — care will not catch it.
+25. ⚠⚠ **AN ASSERTION THAT PASSES FOR THE WRONG REASON IS THE MOST EXPENSIVE KIND OF GREEN**, and it
+    happened TWICE on 2026-08-15. (a) The `AC-011` expiry test asserted `401` and passed — while
+    measuring nothing, because `page.request` does **not** attach the `Authorization` header, so the
+    call was merely *unauthenticated*, which also answers 401. Only the second assertion
+    (`X-Acmp-Auth-Reason: access_expired`) told "refused because expired" from "refused because
+    anonymous". **Asserting the status alone would have flipped an AC on a test that never exercised
+    the path.** (b) A mutant appeared to **SURVIVE** — which would have meant the guard was
+    worthless — and the patch had simply targeted a string that does not exist in the file, so it
+    never applied. **A surviving mutant you have not verified is not a test result.** Check the
+    mutation landed AND compiled before believing either outcome.
+26. **WHEN YOU FORK A HELPER, FORK ITS POST-CONDITIONS.** `loginWithTemporaryPassword` was modelled on
+    `loginAs` but waited only to leave Keycloak's origin, not for the SPA to be signed in — so the
+    next navigation raced `ProtectedRoute`, was bounced to `/login`, and issued no authenticated
+    request at all. That surfaced two functions away as `waitForRequest timed out`, saying nothing
+    about the login. `loginAs` asserts the CTA is gone for exactly that reason; the copy dropped the
+    assertion that made the original correct.
+27. **A TIMEOUT IS A SYMPTOM; THE CALL LOG SAYS WHICH.** Two failures wore the identical face
+    (`"beforeAll" hook timeout`) with completely different causes. Playwright prints *what it was
+    waiting for* and *which line* — and because the lines ABOVE had already succeeded, one ruled
+    itself out as slowness and pointed at a single wrong selector. ⚠ Raising the timeout first would
+    have bought a slower failure in the same place and confirmed the wrong story.
+28. **TWO WRONG GUESSES AT THE SAME ELEMENT MEANS STOP GUESSING.** Two runs were spent on Keycloak's
+    update-password submit control (`button[type=submit]`, then `input[type=submit]`); both matched
+    nothing. Pressing **Enter** in a text input submits the owning form natively — one assumption (the
+    form exists, already proven by the fills above) instead of three (element kind, container id,
+    label). **The right answer to a selector that matches nothing is often to stop needing it.**
+29. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** It is session-scoped, so a
+    pointer into it is a dangling reference the moment the session ends — and it does not fail loudly,
+    it is simply a path that is not there. Four defect rows were closed citing scratchpad snapshots;
+    the durable copies are now `handoff/def-title-snapshots/` (corrected in `PE-357`, not by editing
+    the rows). Repository or package, never scratchpad.
 15. **Omitting `custom_attributes` PRESERVES it; sending it REPLACES the whole blob.** Merge, never
     overwrite.
 16. **Run `gate_run()` AFTER writing, not only before.** Quoting a design file's template syntax into
@@ -298,15 +362,28 @@ Report the state and your plan before writing, then proceed.
 
 ## Not part of the paste — notes for the operator
 
-**Three interview rounds are now recorded** as `DEC-046`/`047` (the first queue), `DEC-048` (the four
-reserved items), and `DEC-049`/`050` (build all four candidates, the full AC binding, the full risk
-traceability pass, both minor defects, and the branch audit). Nothing is carried in anyone's head.
+**Five interview rounds are now recorded** — `DEC-046`/`047` (the first queue), `DEC-048` (the four
+reserved items), `DEC-049`/`050` (build all four candidates, the full AC binding, the full risk
+traceability pass, both minor defects, the branch audit), `DEC-051` (the two items that reading the
+verdict rows proved were NOT build items), and `DEC-052` (`DEF-076` guest-path-only + `SC-012`, the
+PR split, the live-expiry standard for `AC-011`, and approval of the whole remaining queue). Nothing
+is carried in anyone's head.
+
+⚠ **On two of those the operator OVERRULED my recommendation, and both are marked as such on the
+row** — `DEC-049` d3 (the full AC binding, over accepting package-scope-only verification) and
+`DEC-052` d3 (a live expiry for `AC-011`'s window, over composing the verdict from two proofs). The
+second one was right in a way worth remembering: building it is what exposed the 401-that-meant-
+unauthenticated (trap 25a).
+
+**A branch is parked, deliberately: `feat/def-056-refusal-audit`.** It is NOT abandoned work and NOT
+mergeable as-is — see §3 item 1. An unproven audit emitter is worse than none.
 
 **Field reports:** `findings_17.md` (the v4 migration + first liveness sweep) and `findings_18.md`
 (the 4.2.0 repairs, the row I corrupted by re-typing, and the hollow-pass finding). Read 18 first.
 
-**Stale branches — audited 2026-08-15.** `scaffold/ph0-p1-foundation` is deleted (0 unique commits,
-empty tree diff). The other six all hold unique commits and were deliberately NOT deleted:
+**Stale branches — audited 2026-08-15, unchanged since.** `scaffold/ph0-p1-foundation` is deleted (0
+unique commits, empty tree diff). The other six all hold unique commits and were deliberately NOT
+deleted:
 `chore/design-update-round2` (1), `chore/docs-v8-local-design` (1), `docs/defer-p14-tarseem` (1),
 `feat/audit-adr` (2), `feat/budget-notification-observer` (2), `feat/p13-webex-integration` (**13
 commits, 124 files**). They still carry `DEF-064`'s broken `ar.json`, but that is guarded now —
