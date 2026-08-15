@@ -27,6 +27,27 @@ describe('navModel role filtering', () => {
     expect(keys).toContain('audit');
   });
 
+  /*
+   * AC-006's FIRST CLAUSE — "the submit button is not rendered". The AC has three clauses and the
+   * other two (403, and an audit event emitted) are proven live in e2e/role-matrix.spec.ts; this is
+   * the presentation half, and it had no assertion of its own while the verdict was about to claim
+   * all three.
+   *
+   * ⚠ ASSERTED AS AN ABSENCE FROM buildNav RATHER THAN BY RENDERING A PAGE, because that is where
+   * the decision actually lives: ACCESS.submit lists secretary/member/submitter and an absent role
+   * resolves to 'none'. A jsdom render could only agree with whatever the model already said. The
+   * mutation that breaks this is adding `auditor` to ACCESS.submit, and this is the test that fails.
+   *
+   * The mutating controls on the action/decision pages are covered separately — ActionActions
+   * "renders nothing for a role with no manage/verify rights", and ActionPage mocks an Auditor for
+   * exactly this reason.
+   */
+  it('never offers the auditor a submit CTA (AC-006 — the submit button is not rendered)', () => {
+    const keys = buildNav(['auditor']).flatMap((g) => g.items.map((i) => i.key));
+    expect(keys).not.toContain('submit');
+    expect(accessFor('submit', ['auditor'])).toBe('none');
+  });
+
   it('marks view-only areas without granting full access', () => {
     const nav = buildNav(['reviewer']);
     const backlog = nav.flatMap((g) => g.items).find((i) => i.key === 'backlog');
