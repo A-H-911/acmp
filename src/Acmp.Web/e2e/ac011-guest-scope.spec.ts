@@ -43,6 +43,15 @@ let guestBearer: string;
 let accessExpiresAt: string;
 
 test.beforeAll(async ({ browser }) => {
+  // TWO full PKCE round-trips (the Secretary's, then the guest's — the second including Keycloak's
+  // forced password change) plus seven API calls, against a real seven-service stack. The 60s default
+  // is a per-TEST budget and this setup honestly exceeds it.
+  //
+  // ⚠ RAISED ONLY AFTER THE REAL CAUSE OF THE FIRST TIMEOUT WAS FOUND AND FIXED — a submit selector
+  // that matched nothing and waited out the clock. Raising this first would have bought a slower
+  // failure in the same place and read as "the login is slow", which it was not.
+  test.setTimeout(180_000);
+
   const secretaryCtx = await browser.newContext();
   secretary = await roleSession(await secretaryCtx.newPage(), 'secretary', 'Secretary');
   api = secretaryCtx.request;

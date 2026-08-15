@@ -59,7 +59,17 @@ export async function loginWithTemporaryPassword(
   await newField.waitFor({ state: 'visible', timeout: 30_000 });
   await newField.fill(newPassword);
   await page.locator('#password-confirm').fill(newPassword);
-  await page.locator('#kc-form-buttons button[type=submit], #kc-login').first().click();
+
+  // ⚠ `input[type=submit]` FIRST, AND NOT `#kc-login`. Keycloak's update-password form submits with an
+  // <input type="submit"> inside #kc-form-buttons, so a `button[type=submit]` selector matches nothing
+  // and simply waits until the hook times out — which reads as "the login is slow" and is not. The
+  // first run of this helper failed exactly that way, and the giveaway was that the two fills ABOVE
+  // had already succeeded: the form was there and correct, only the submit selector was wrong. Both
+  // element kinds are listed because the theme uses a <button> on some Keycloak versions.
+  await page
+    .locator('#kc-form-buttons input[type=submit], #kc-form-buttons button[type=submit]')
+    .first()
+    .click();
 
   // ⚠ NOT waitForURL('/') LIKE loginAs. A guest's landing route is not the committee dashboard, and
   // pinning one here would couple this helper to a navigation decision (DEC-048 d4) that has nothing
