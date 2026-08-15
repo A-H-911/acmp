@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 7f0a7303-5ece-41a2-9f0e-cb8560e23cb5
-  modified: 2026-08-14T18:49:16.522Z
+  modified: 2026-08-15T19:07:25.384Z
 ---
 
 **Migrated 2026-08-14, tamheed 4.1.0 (`7123a1b`).** 4.1.0 refuses a v3 store at open. Backup was
@@ -85,3 +85,38 @@ event against `PE-335` — the v4 mechanism `DEF-072` needed and could not have.
 ⚠ **Customising a stock prompt opts it out of every future refresh, silently and permanently.**
 4.2.0 changed `slice-review.md`; `refresh_stock` correctly skipped ours because it is customised, so
 it now lags. Three files are in that state (`orient-resume`, `integrity-check`, `slice-review`).
+
+---
+
+## 4.3.0 (2026-08-15) — the `lesson` family, and one dangerous tool warning
+
+**Order matters: `package_migrate` FIRST.** A package created before 4.3.0 has no `lesson` row in
+its type registry, so a lesson write fails on the registry FK. `package_migrate("tamheed-package")`
+previews **`mode: "registry-sync"`, `entity_types_added: ["lesson"]`** — a pure append, no backup
+taken, no data transform. Applied diff was literally two lines.
+
+⚠⚠ **`handoff_emit` MUST AIM AT `tamheed-package`, NOT THE REPO ROOT — AND THE ROOT-AIMED WARNING IS
+ACTIVELY DANGEROUS.** The marker-managed span lives in `tamheed-package/CLAUDE.md`
+(`tamheed:note vN` … `/tamheed:note`). Aimed at the repo root, `handoff_emit` matched the project's
+**own unmarked `## Tamheed progress tracking` heading** — the *import* prose — reported it as a "v1
+note", and advised **deleting that section and re-running**. Following that would delete the passage
+explaining why the note is imported rather than restated, which exists *because* a duplicated copy
+went two generations stale. **The fix is the target directory, not the file.** Recorded in `PE-364`;
+probably a tamheed bug (heading-match without requiring the markers).
+
+**The `lesson` schema** (`db/migrations/002_lessons.sql`): `title`+`statement` NOT NULL, `kind` is
+**`improve|sustain`**, plus `context`/`recommendation`/`rationale`/`category`/`impact_if_followed`/
+`impact_if_ignored`; `lifecycle_status` **`Proposed|Approved|Rejected|Superseded|Obsolete`** — **no
+Draft, no Deferred** (an undecided lesson should keep nagging). Edges: **`learned_from`** is locked
+to `lesson →` {`defect`,`decision`,`risk`,`slice`,`wbs-item`,`progress-entry`}; write one with
+`entity_upsert({type:"trace-edge", from_id, to_id, relation})` — `trace-edge` is upsertable even
+though it is not in `entity_types.jsonl`. Same-batch endpoints are visible to the FK.
+
+⚠ **`trg_lessons_immutable` freezes `confirmed_by`/`confirmed_at` too** — so **approval + attribution
++ pin must go in ONE upsert**. Approve first and the attribution can never be added.
+⚠ **And the approving write itself is unguarded**: the trigger fires only when OLD is *already*
+Approved, so content drift on the write that approves is accepted **silently**. Save a pre-image and
+verify byte-identity after — this is [[an-absence-needs-a-proven-instrument]]'s sibling and is
+exactly what **`LL-001`** (Approved + **pinned**, `learned_from → PE-336`) tells you to do. Pinned
+lessons render in the tool-owned note under *"Lessons (operator-confirmed — these bind every
+session)"*.
