@@ -38,9 +38,11 @@ on purpose, because the last one written into this file went stale the same day.
   except `DEF-039`. Do not redo any of it.
 - **Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
   **Nothing in this stream is deployed.**
-- **6 open defects**: `DEF-012`, `DEF-038`, `DEF-039`, `DEF-056`, `DEF-065`, `DEF-067`. Four more were
-  opened AND fixed on 2026-08-15 — `DEF-073`, `DEF-074`, `DEF-075`, `DEF-076` — all merged.
-- **4 unmet ACs**: `AC-003`, `AC-006`, `AC-041`, `AC-048`. ✅ **`AC-011` is MET** (`AV-163`).
+- **Open defects and unmet ACs: READ THEM LIVE** — `entity_query("defect", status="Open")` and the
+  `acs-met` rule in `readiness_check("package")`. Both moved on 2026-08-15 and a tally written here
+  goes stale on the first write; this file has already carried a stale one twice. As of the last
+  session `DEF-056` is **Fixed** and `AC-003`/`AC-006` are **Met**, leaving `acs-met` blocked on
+  `AC-041` and `AC-048` only, and `DEF-065` still the sole high/critical.
 - `DW-026` is **Activated** (approved to build), `DW-028` is new and Open.
 
 ### ⭐ Where the 2026-08-15 session stopped, and why
@@ -68,44 +70,45 @@ have flipped this AC on a test that never exercised the expiry path. (2) A mutan
 **survive** and was not believed: the patch targeted a string that does not exist in the file, so it
 never applied. **A surviving mutant you have not verified is not a test result.**
 
-### ⏸ `DEF-056` + `AC-003` are STARTED, on `feat/def-056-refusal-audit`, and NOT merged
+### ✅ `DEF-056` + `AC-003` are DONE — merged as `ded2378` (PR #282). Do not redo any of it.
 
-Both emitters are written and building; **neither is proven**, so the branch is parked rather than
-merged — an unproven audit emitter is worse than none, because it makes a reader believe refusals are
-recorded. Pick it up there rather than starting over.
+`DEF-056` is **Fixed**; `AC-006` is **Met** (`AV-164`) and `AC-003` is **Met** (`AV-165`), both by
+**live legs**. The `test.fail()` marker in `role-matrix.spec.ts` is deleted and its audit case now
+passes unmarked; `e2e/ac003-roleless-login.spec.ts` drives a real Keycloak account with **no**
+committee realm role through the genuine PKCE round-trip.
 
-- `AuditingAuthorizationResultHandler` records the policy-layer 403s that short-circuit before
-  MediatR. **Forbidden only, never Challenged.** `CancellationToken.None` deliberately, so a client
-  hanging up mid-refusal still leaves the record.
-- `ProvisionCurrentUser` emits before its own `ForbiddenAccessException` — the middleware handler
-  **structurally cannot** catch that one, because the request *passes* authorization and is refused
-  inside the handler.
-- `RefusalAuditTests` asserts both as ROWS, plus two controls (unauthenticated → no row; allowed
-  caller → no row).
+⚠⚠ **THE PARKED BRANCH'S "MEASURED BLOCKER" WAS NOT REAL, AND THAT IS THE LESSON WORTH CARRYING.**
+This file used to say, with confidence, that both positive tests failed against an empty audit table
+and that an `if (true)` probe proved the handler never ran. **The rows were being written the whole
+time** — the failing run's own log printed `AuditEvent Authorization.Forbidden … seq=1` *inside* the
+test that failed. The helper selected `AuditEvent.Action`, and `IAuditSink.EmitAsync` writes a **lean
+v1 row**: `EventType` set, the enriched `Action` column **null**. Every authorization refusal in this
+codebase takes that path. `/api/audit` normalises `(Action ?? EventType)`; the test did not.
 
-⚠ **THE BLOCKER, measured not guessed.** Both positive tests fail with an **empty** audit table. A
-temporary `if (true)` probe in the handler still produced no row → **it never runs in that harness**.
-The refused response has an **empty body** — the framework's bare forbid, not ProblemDetails — so the
-authorization middleware genuinely refused. **Next thread to pull:**
-`IAuthorizationMiddlewareResultHandler` does not resolve from `Program.cs`'s top-level statements NOR
-from `Acmp.Api.Tests`, yet resolves fine in a file beside the implementation in the same project.
-Registration currently routes through an extension method for that reason. Until that is understood,
-whether the handler is registered at all is **unverified**.
+- ⚠ Its two `NotContain` **controls were passing VACUOUSLY** — a collection of nulls contains no
+  string whatever the code does. The controls were green from the day they were written.
+- ⚠ The companion mystery, `IAuthorizationMiddlewareResultHandler` "does not resolve from
+  `Program.cs`", was a **missing `using`**: the type lives in
+  `Microsoft.AspNetCore.Authorization.Policy`, which is not a Web SDK implicit using. A compile-time
+  namespace fact had been written up as a runtime DI mystery.
+- **Generalisable: an absence is only evidence if the instrument is proven present.** This is trap
+  25b arriving through a probe instead of a mutant. Re-derive an inherited blocker; never inherit it
+  as data. Cost of re-deriving here: one test run.
 
-⚠ Consider that the real proof for `DEF-056` may be **e2e**, not the API harness: the defect was
-found by the live leg, and `PermissionMatrixTests` never goes through HTTP.
+⚠ **`AV-159` was also wrong, and it was mine** — it claimed no audit row is written for a role-less
+login, having searched only for emitters of `Authorization.Forbidden`. `Authentication.NoRoleClaim`
+is emitted at `OnTokenValidated`, the AC's own moment. Corrected in `PE-359`, not by editing the row.
 
 ⚠ `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
 detectors + the Edge project, **not** pixel baselines). `AC-048` also needs slice binding, so do the
 narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
 
-⚠ `AC-003` needs **its own emitter**: `AV-159` shows its 403 is thrown in the HANDLER, so the
-`IAuthorizationMiddlewareResultHandler` that `DEF-056` will register **cannot** catch it.
-
-⚠ `role-matrix.spec.ts`'s deliberate `test.fail()` for `AC-006` flipped to *"Expected to fail, but
-passed"* while `DEF-076` was open, because a role-less guest's refusals DO reach
-`AuthorizationBehavior`. That marker is meant to flip when **`DEF-056`** lands. **Do not read a green
-`AC-006` as `DEF-056` being done** — verify the emitter exists.
+✅ Both `AC-003` notes that used to sit here are **discharged** and are kept only as a warning about
+their shape. `AC-003` did get its own emitter in `ProvisionCurrentUser`, but the premise was wrong:
+`AV-159` said no audit row was written for a role-less login, and `Authentication.NoRoleClaim` had
+been emitting one at `OnTokenValidated` all along. The `test.fail()` marker is deleted and the case
+passes unmarked. **The transferable half is that both notes were confident, specific, and false —
+written by me, from a search that ruled out one emitter and concluded the family was absent.**
 
 ## §2 — Why `readiness_check` says `ready:false`, and why that is right
 
@@ -124,21 +127,13 @@ All operator-decided. **Read the `DEC-` row before starting an item** — the re
 reasons are on it. Do not re-litigate. This is a **multi-session** queue and was recorded as one
 rather than attempted in one sitting.
 
-### 1. `DEF-056` + `AC-003` — STARTED, PARKED, NOT MERGED. Pick it up, do not restart it.
+### 1. ✅ `DEF-056` + `AC-003` — DONE (`ded2378`, PR #282). Nothing left here; see §1.
 
-Branch **`feat/def-056-refusal-audit`**. Both emitters are written and building; **neither is proven**,
-which is exactly why it is not merged — an unproven audit emitter is worse than none, because it makes
-a reader believe refusals are recorded. The full state is in §1; the one-line summary is that the
-handler **never runs** in the API test harness and the reason is not yet understood.
+The branch `feat/def-056-refusal-audit` is **deleted**, local and origin, with `-D` deliberately: its
+one commit was cherry-picked *and then corrected*, so its tree diff is non-empty by design and `-d`
+would have refused for a reason that says nothing about whether the work shipped.
 
-**Start by settling the resolution boundary** (§1 has the measurements): if
-`IAuthorizationMiddlewareResultHandler` cannot be named from `Program.cs` or the test project, then
-whether the registration takes effect at all is unverified, and every other question is downstream of
-that. ⚠ Strongly consider that the real proof is **e2e**, not the API harness: this defect was found
-by the live leg, `PermissionMatrixTests` never goes through HTTP, and `role-matrix.spec.ts` already
-carries the `test.fail()` marker that flips the day it lands. **Delete that line when it does.**
-
-Flips **`AC-006`**, and `AC-003` rides with it — but note they need **two** emitters, not one: see §1.
+**The queue now starts at item 2.**
 
 ### 2. `AC-041` — property detectors + the Edge project (`DEC-051`)
 
@@ -237,12 +232,26 @@ not touch (it is no longer a row that run creates) and falls back to `ADR-0043` 
 ### A — Before you call something broken
 
 1. **Read the implementation first — and that applies to REGISTER ROWS.** Rows read as pre-checked;
-   they are not. `DEF-062`, `DEF-061`, `DEF-065`, `DEF-071` and `DEF-041` were each wrong or
-   imprecise in my own hand, corrected only by reading the code underneath.
+   they are not. `DEF-062`, `DEF-061`, `DEF-065`, `DEF-071`, `DEF-041` and `AV-159` were each wrong
+   or imprecise in my own hand, corrected only by reading the code underneath. ⚠ `AV-159`'s shape is
+   the one to memorise: **"I searched for X and found none" rules out X, never the family.** It
+   searched for emitters of `Authorization.Forbidden`, found none, and concluded nothing recorded a
+   role-less login — while `Authentication.NoRoleClaim` had been emitting one all along.
+1b. ⚠⚠ **AN ABSENCE IS ONLY EVIDENCE IF THE INSTRUMENT IS PROVEN PRESENT — AND THIS IS THE ONE THAT
+   COST A WHOLE SESSION.** A parked branch handed over a confident, specific blocker: *"both positive
+   tests fail with an empty audit table; an `if (true)` probe still produced no row → the handler
+   never runs."* Every word of the conclusion was false. The rows were being written the whole time,
+   and the failing run's **own log printed them**. The test helper read `AuditEvent.Action`, which is
+   **null on the lean v1 rows** `EmitAsync` writes. Its two `NotContain` **controls passed
+   VACUOUSLY** for the same reason — a collection of nulls contains no string whatever the code does.
+   **Inherit a blocker as a hypothesis, never as data; re-derive it.** Cost of re-deriving: one test
+   run. Same family as trap 25b (a mutant that "survived" because the patch never applied) and as the
+   hollow-pass finding (trap 11).
 2. **A measurement that indicts known-good code is measuring itself.** The coverage gate scored a
    file after its code had moved out (`DEF-069`).
 3. **The LSP diagnostics panel can be stale** — it reported a duplicate migration and a missing test
-   helper; neither existed. Check the file before believing the tool.
+   helper; neither existed, and it did it again on 2026-08-15 with two phantom `CS0103`s in Meetings
+   while the very same build succeeded. Check the file, or just build, before believing the tool.
 
 ### B — What your tests structurally cannot see
 
@@ -259,8 +268,9 @@ not touch (it is no longer a row that run creates) and falls back to `ADR-0043` 
 7. **A requirement typed to a RESOURCE is invisible wherever that resource type is absent**
    (`DEF-068`) — endpoint-level evaluation, a different aggregate, a test stub.
 8. **An endpoint policy over a command that already carries `AllowedRoles` proves NOTHING in a
-   test** — deleting it left all nine API tests green. It also means every per-endpoint policy ships
-   a **403 nobody audits** until `DEF-056` lands.
+   test** — deleting it left all nine API tests green. It also meant every per-endpoint policy shipped
+   a **403 nobody audited**; `DEF-056` closed that half (`ded2378`), but the first sentence still
+   stands and is the reusable one.
 
 ### C — Proving things
 
@@ -375,8 +385,9 @@ row** — `DEC-049` d3 (the full AC binding, over accepting package-scope-only v
 second one was right in a way worth remembering: building it is what exposed the 401-that-meant-
 unauthenticated (trap 25a).
 
-**A branch is parked, deliberately: `feat/def-056-refusal-audit`.** It is NOT abandoned work and NOT
-mergeable as-is — see §3 item 1. An unproven audit emitter is worse than none.
+**No branch is parked any more.** `feat/def-056-refusal-audit` shipped as PR #282 (`ded2378`) and was
+deleted local and origin. Its recorded blocker turned out not to exist — the emitters had always
+worked and a test read the wrong column; the full account is in §1 and on the `DEF-056` row.
 
 **Field reports:** `findings_17.md` (the v4 migration + first liveness sweep) and `findings_18.md`
 (the 4.2.0 repairs, the row I corrupted by re-typing, and the hollow-pass finding). Read 18 first.
