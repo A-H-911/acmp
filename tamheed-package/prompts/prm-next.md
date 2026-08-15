@@ -30,8 +30,8 @@ count is stale on the first new write, and one in this very file already was.
 
 ## §1 — What is true right now
 
-`main` is green at **`f51fb0e`** plus the commit carrying this rewrite, clean and pushed.
-(`git log --oneline -3` is the authority.)
+`main` is green, clean and pushed. (`git log --oneline -5` is the authority — no hash is quoted here
+on purpose, because the last one written into this file went stale the same day.)
 
 - **The store is Tamheed v4** (server 4.2.1). See §5 for what that changed under you.
 - **`ADR-0043` stream scope is COMPLETE**, and so is everything the `DEC-046`/`047` queue asked for
@@ -83,8 +83,8 @@ passed"* while `DEF-076` was open, because a role-less guest's refusals DO reach
 ## §2 — Why `readiness_check` says `ready:false`, and why that is right
 
 `gate_run` 7/7 and readiness `false` are not in conflict: the gates are **mechanical**, readiness is
-**lifecycle**. It is blocked on `acs-met` (the five above), `defects-closed` (`DEF-065`) and
-`risks-discharged`. That is the honest state of a package whose work is not finished — do not "fix"
+**lifecycle**. It is blocked on `acs-met` (the four above), `defects-closed` (`DEF-065` — the deploy
+tracker, and the ONLY high/critical one left) and `risks-discharged`. That is the honest state of a package whose work is not finished — do not "fix"
 it by closing rows.
 
 ⚠ **`risks-discharged` is blocking AND cannot discriminate** (0 of 23 rows have `discharged_by`), so
@@ -98,13 +98,9 @@ reasons are on it. Do not re-litigate.
 
 ### Build track — in this order, and the order is reasoned
 
-1. ~~**`AC-011`** — `KEYCLOAK_ADMIN_ENABLED=true` in CI's e2e stack.~~ **DONE, in PR #278, and it
-   did exactly what `DEC-049` said it would: it broke something.** The flag is on at job level in
-   `e2e.yml` (the narrower option; verified by rendering `docker compose config`, not assumed), the
-   live guest leg is written, and turning the path on immediately exposed **two** defects nothing
-   else could see — `DEF-073` (a guest presenter could read EVERY meeting; fixed in the same PR, all
-   five guards mutation-proven) and **`DEF-075`** (JIT provisioning check-then-insert race; **now the
-   first item — see §1**). ⚠ The verdict is **NOT** flipped: it flips on a green run, not a merge.
+1. ~~**`AC-011`**~~ ✅ **DONE AND MET (`AV-163`)** — see §1. Do not redo it. It did exactly what
+   `DEC-049` predicted: turning the flag on broke things, and the four defects that fell out were
+   worth more than the AC.
 2. **`AC-041`** — add the Edge project to `playwright.config.ts` (chromium-only today, so the AC's
    "Chrome and Edge" has never been true), **and** the property-level detectors `DEC-051` chose over
    pixel baselines — `e2e/vr-sweep.spec.ts` is capture-only with **no assertion of any kind**, so the
