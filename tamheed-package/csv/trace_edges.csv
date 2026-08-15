@@ -352,6 +352,7 @@ INV-012,ADR-0001,derives_from
 INV-013,ADR-0002,derives_from
 INV-014,ADR-0012,derives_from
 LL-001,PE-336,learned_from
+LL-002,PE-369,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
