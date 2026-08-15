@@ -18,10 +18,14 @@ import { apiMembers, type ApiMember } from './scenario';
  * session is the only token source — so we reuse the header the SPA already sends rather than
  * reverse-engineering oidc-client-ts storage. Must be called on an authenticated page.
  */
-export async function captureBearer(page: Page): Promise<string> {
+export async function captureBearer(page: Page, path = '/backlog'): Promise<string> {
+  // ⚠ THE PATH IS A PARAMETER BECAUSE NOT EVERY PRINCIPAL CAN REACH /backlog. A guest presenter is
+  // refused every topic route by GuestSurfaceMiddleware (ADR-0040), so their token has to be captured
+  // off a page they are actually allowed to load — /session. The default keeps every existing caller
+  // unchanged.
   const [req] = await Promise.all([
     page.waitForRequest((r) => r.url().includes('/api/') && !!r.headers()['authorization'], { timeout: 20_000 }),
-    page.goto('/backlog'),
+    page.goto(path),
   ]);
   const auth = req.headers()['authorization'];
   if (!auth) throw new Error('[e2e] no Authorization header captured from an /api request');

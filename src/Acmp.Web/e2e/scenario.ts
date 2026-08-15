@@ -83,12 +83,22 @@ export interface ApiMeeting {
   key: string;
 }
 
-/** Schedule a meeting via the API (single-day window); returns its id/key. */
+/**
+ * Schedule a meeting via the API (single-day window); returns its id/key.
+ *
+ * `scheduledStart`/`scheduledEnd` default to the original fixed future slot, so every existing caller
+ * is unchanged. They are overridable because AC-011's meeting-window leg needs a meeting that has
+ * ALREADY ENDED — a guest invited onto it is expired on arrival, which is the only way to observe the
+ * window being enforced without waiting a day. ScheduleMeeting validates only that the end follows the
+ * start, so a past-dated meeting is legitimately creatable.
+ */
 export async function apiScheduleMeeting(
   request: APIRequestContext,
   bearer: string,
   title: string,
   chair: ApiMember,
+  scheduledStart = '2026-09-01T14:00:00.000Z',
+  scheduledEnd = '2026-09-01T15:00:00.000Z',
 ): Promise<ApiMeeting> {
   const res = await request.post('/api/meetings', {
     headers: { Authorization: bearer, ...JSON_HEADERS },
@@ -96,8 +106,8 @@ export async function apiScheduleMeeting(
       title,
       chairUserId: chair.publicId,
       chairName: chair.fullName,
-      scheduledStart: '2026-09-01T14:00:00.000Z',
-      scheduledEnd: '2026-09-01T15:00:00.000Z',
+      scheduledStart,
+      scheduledEnd,
       type: 'Regular',
       mode: 'InPerson',
     },
