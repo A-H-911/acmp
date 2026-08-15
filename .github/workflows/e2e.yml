@@ -149,10 +149,23 @@ jobs:
           path: src/Acmp.Web/playwright-report
           retention-days: 7
 
+      # ⚠ --tail 200 WAS TOO SHORT TO CONTAIN THE FAILURE IT EXISTS TO EXPLAIN. On the AC-011 run the
+      # spec failed at 13:06 and this step ran at 13:12, so 200 lines across nine services covered only
+      # the last ~15 seconds — the 500 that failed the job was already off the top, and the dump showed
+      # healthy traffic instead. That is DEF-051's lesson in a second place: a diagnostic that reports
+      # something other than the failure is worse than none, because it reads like evidence.
+      #
+      # The api service is dumped SEPARATELY and first: it is the one that answers the requests the
+      # specs assert on, and interleaving it with eight other services is what made 200 lines cover
+      # seconds. The combined dump is kept after it for cross-service ordering.
       - name: Stack logs on failure
         if: ${{ failure() }}
         working-directory: .
-        run: docker compose -f deploy/docker-compose.yml logs --no-color --tail 200
+        run: |
+          echo "===== api (the service the specs talk to) ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color --tail 4000 api
+          echo "===== all services ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color --tail 2000
 
       - name: Tear down the stack
         if: ${{ always() }}
