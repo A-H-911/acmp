@@ -73,6 +73,15 @@ export async function loginWithTemporaryPassword(
 
   // ⚠ NOT waitForURL('/') LIKE loginAs. A guest's landing route is not the committee dashboard, and
   // pinning one here would couple this helper to a navigation decision (DEC-048 d4) that has nothing
-  // to do with logging in. Leaving Keycloak's origin behind is the actual post-condition.
+  // to do with logging in.
   await page.waitForURL((url) => !url.href.includes('/realms/acmp/'), { timeout: 30_000 });
+
+  // ⚠ LEAVING KEYCLOAK IS NOT THE SAME AS BEING SIGNED IN, and treating it as the post-condition cost
+  // a full CI cycle. oidc-client-ts still has to complete the callback and store the token after the
+  // redirect lands, so a navigation issued straight afterwards races ProtectedRoute, gets bounced to
+  // /login, and issues NO authenticated request at all — which surfaces two functions later as
+  // "waitForRequest timed out", saying nothing about the login. loginAs asserts this same condition
+  // for the same reason. The CTA exists only on /login, so its ABSENCE is the signal, and it does not
+  // assume which route a guest lands on.
+  await expect(page.locator('.login-cta')).toHaveCount(0, { timeout: 30_000 });
 }
