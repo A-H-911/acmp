@@ -60,7 +60,16 @@ is the only wrong answer.
 13. **Unwired requirements** (`requirements-wired`): every listed requirement gets its
     real edges — `derives_from` the deciding DEC-/ADR-, `implements` from its slice/
     work item, `tests` from its test. `relates_to` only when nothing typed fits.
-14. Close the sweep: `progress_update([{"entry": "liveness sweep: <per-family tally —
+14. **Lessons awaiting confirmation** (`lessons-confirmed`): walk each Proposed `LL-`
+    row WITH the operator — this is their interview, not yours. Per lesson they say:
+    **Approve** (set Approved + `confirmed_by`; ask whether to **pin** it into the
+    CLAUDE.md note — pinned lessons always render), **Reject** (kept as evidence),
+    or **refine** (upsert a successor `LL-`, supersede the old). Approved content is
+    immutable afterward — to flip `pinned` or supersede later, RE-READ the row and
+    resend it byte-identical (full-row upserts; a re-typed row is how content gets
+    corrupted). **STOP for the operator's words on every lesson — you never
+    self-approve.**
+15. Close the sweep: `progress_update([{"entry": "liveness sweep: <per-family tally —
     resolved / carried / escalated / awaiting operator>", "event_type": "note",
     "actor": "agent:<session>"}])`, then `readiness_check("package")` again and report
     the advisory delta plus everything now awaiting operator words (promotions,

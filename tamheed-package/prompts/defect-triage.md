@@ -25,4 +25,7 @@ BEFORE the fix, so the record survives even if the session dies mid-repair:
    `work_bind` the fix commit to the `DEF-` and the `AC-`; flip the `DEF-` status
    (full-row upsert); `progress_update` the whole event (event_type "work-done",
    subject_id the `DEF-` id, actor "agent:<session>").
-7. `gate_run()` — report the verdict delta.
+7. Did this defect teach a durable lesson (a class of mistake, not this one
+   instance)? Record a `lesson` row (`LL-`, born Proposed, kind improve) +
+   `learned_from` edge to the `DEF-` — the operator confirms later.
+8. `gate_run()` — report the verdict delta.

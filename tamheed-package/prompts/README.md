@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.2.1)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.3.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -90,5 +90,8 @@ field? Repair from `data/*.jsonl` (or the backup), never from `entity_query` out
 full-row upsert rebuilt from a truncated query round-trip re-commits the damage. PASTE a
 generated repair payload, never re-type it (the hand is the untrusted transport), and end
 every multi-row repair with an independent verifier: re-read the JSONL and re-derive each
-expected value from its source before calling the repair done. The package is the record — when code and package disagree, fix the code
+expected value from its source before calling the repair done. When execution teaches
+something durable, record a `lesson` row (`LL-`, born Proposed) — only lessons the
+OPERATOR approves bind future sessions (rendered into the CLAUDE.md note, pinned first);
+the agent never approves its own lesson. The package is the record — when code and package disagree, fix the code
 or record the change; never let them drift.

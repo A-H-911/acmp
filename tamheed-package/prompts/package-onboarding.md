@@ -18,7 +18,10 @@ Onboard yourself onto the `tamheed-package` Tamheed package from zero:
 4. The shape of the work: `entity_query("phase")` and `entity_query("slice")` in
    order; `entity_query("wbs-item")` for the open backlog; `trace_query` from the MVP
    requirements to see how needs → decisions → work → tests connect.
-5. Where it stands: `gate_run()`, `readiness_check("package")`, the last 10
+5. The lessons: `entity_query("lesson", status="Approved")` — operator-confirmed
+   lessons BIND you (the pinned ones also sit in this project's CLAUDE.md note);
+   read them before writing code.
+   Where it stands: `gate_run()`, `readiness_check("package")`, the last 10
    `progress-entry` / `audit-verdict` rows, and open `defect`/`deferred-work` rows.
 6. The surfaces: `export_html()` and skim `review.html` — overview chips, the
    traceability flow, phase readiness. The prompts folder (`tamheed-package/prompts/`) is

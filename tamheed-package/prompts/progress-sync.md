@@ -25,9 +25,14 @@ Sync the `tamheed-package` Tamheed package with the work just completed:
    `scope-change` row FIRST (Proposed, with `scope_adds`/`scope_modifies`/
    `scope_removes` delta edges to the affected rows); only after operator approval
    apply the mutation it authorizes and set the `SC-` Merged.
-6. Any requirement created during this work gets its trace edges (`derives_from` /
+6. Did this work teach something durable — a mistake whose fix future sessions must
+   know, or a practice worth repeating? Record it NOW: a `lesson` row (`LL-`, born
+   Proposed; kind improve|sustain, statement + impact_if_ignored) + a
+   `learned_from` edge to its source. The operator confirms later; only Approved
+   lessons bind future sessions.
+7. Any requirement created during this work gets its trace edges (`derives_from` /
    `implements` / `tests`) in the SAME sync — `work_bind` stamps commits, it does
    NOT wire traceability. Edge endpoints must respect the endpoint rules — G-REL
    now FAILS `gate_run` on violating edges; `relates_to` is the escape hatch.
-7. `gate_run()` — report the verdict delta (including `requirements_unwired`),
+8. `gate_run()` — report the verdict delta (including `requirements_unwired`),
    then `package_close()`.

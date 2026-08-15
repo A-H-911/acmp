@@ -30,6 +30,10 @@ Register every piece of drift between reality and the `tamheed-package` Tamheed 
    - a requirement created during execution → wire its trace edges (`derives_from` /
      `implements` / `tests`) NOW — `work_bind` stamps commits, it does NOT wire
      traceability (`gate_run`'s `requirements_unwired` advisory lists the strays);
+   - something durable was learned (a mistake's root fix, a practice that worked) →
+     a `lesson` row (`LL-`, born Proposed; kind improve|sustain, statement + the
+     impacts) + a `learned_from` edge to the source (`DEF-`/`DEC-`/`RISK-`/`SL-`/
+     `WBS-`/`PE-`) — the operator confirms later; only Approved lessons bind;
    - genuine ambiguity about what happened or what was intended → an `OQ-` row
      (owner + due_by) and a `[NEEDS-CLARIFICATION: OQ-NNN]` marker at the exact
      ambiguous spot — never a guessed record.
