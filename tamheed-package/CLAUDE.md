@@ -21,6 +21,10 @@ This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\
 
 If you cannot record (lock held, package missing), STOP and tell the operator — do not proceed unrecorded.
 
+### Lessons (operator-confirmed — these bind every session)
+
+- **LL-001** [improve, pinned] When a repair payload has been generated from canonical source data, PASTE it into the tool call — never re-type or re-transcribe it. The hand is the untrusted transport: re-typ...
+
 ### Tool cheat-sheet (execution loop)
 
 - `progress_update(entries=[{entry, event_type?, subject_id?, actor?, corrects?, phase_id?, slice_id?}])` — append TYPED progress (correct via a `correction` event, never edit)
