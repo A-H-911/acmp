@@ -66,7 +66,30 @@ silently and permanently.** Three files are in that state today.
 - findings_17 **C2 re-verified on 4.2.0**: omitting `custom_attributes` still preserves the blob.
   Zero rows lost their stash across 34 full-row upserts.
 
-## Still operator-reserved (unchanged from findings_17 §E)
+## 3. ⚠ Populating the scale turned `risk-liveness` from a HOLLOW PASS into a real finding
 
-`DW-027` close · `DW-026` build-or-carry · `OQ-074` answer · owners for `RISK-013`…`024` · binding
-the 20 unbound ACs. These need your words; nothing in this run touched them.
+Last session's sweep moved `risk-liveness` `indeterminate` → `pass` and I reported that as the
+outcome. **That pass was hollow.** The rule tests *open **high-probability/high-impact** risks
+missing an owner* — and with `probability`/`impact` null on every row, **no row could satisfy the
+"high" predicate**, so nothing could ever be flagged. It passed because it could not fail.
+
+With the scale recovered it went **`pass` → `fail`**, naming six rows:
+
+> `RISK-013`, `RISK-016`, `RISK-017`, `RISK-018`, `RISK-019`, `RISK-020`
+
+That is the instrument working for the first time, not a regression — and it is the same lesson
+findings_17 B2 made about `risks-discharged`, now demonstrated from the other side: **a rule that
+cannot discriminate is not a green light, and its green is the most misleading state it has.** An
+`indeterminate` at least announces itself; a hollow `pass` looks like health.
+
+**It also sharpens the operator ask.** findings_17 §E said "assign owners to `RISK-013`…`024`" —
+twelve rows. The rule now says which six actually carry high probability or high impact. Those are
+the ones where nobody monitoring is a real exposure; the other six can be carried.
+
+---
+
+## Still operator-reserved (refined from findings_17 §E)
+
+`DW-027` close · `DW-026` build-or-carry · `OQ-074` answer · **owners for the six `risk-liveness`
+names above** (was: all of `RISK-013`…`024`) · binding the 20 unbound ACs. These need your words;
+nothing in this run touched them.
