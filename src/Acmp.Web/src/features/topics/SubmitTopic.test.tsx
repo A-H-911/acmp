@@ -208,6 +208,28 @@ describe('SubmitTopic (P5b)', () => {
     expect(evt.defaultPrevented).toBe(true); // guard prevented the unload
   });
 
+  /*
+   * AC-094's SECOND CLAUSE (narrowed from AC-048 by SC-014 under DEC-051 d1). The registration half
+   * is proven directly above; until this test existed, "removed when clean" was asserted by NOTHING,
+   * and the AC would have been recorded Met on half its statement — the same one-clause-of-several
+   * failure AC-006 was caught on.
+   *
+   * ⚠ IT GUARDS A REAL PROPERTY, not tidiness: a handler that survives the form going clean blocks
+   * navigation the user never dirtied, and `preventDefault` on beforeunload is exactly the thing a
+   * user cannot dismiss by any in-page action.
+   */
+  it('removes the beforeunload guard once the form is clean again', async () => {
+    const user = userEvent.setup();
+    setup();
+    const title = screen.getByLabelText(/Title/);
+    await user.type(title, 'Dirty draft');
+    await user.clear(title); // hasContent -> false, so the effect cleanup runs
+
+    const evt = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(evt);
+    expect(evt.defaultPrevented).toBe(false); // the handler was removed, not merely inert
+  });
+
   it('formats attachment sizes in KB and MB', async () => {
     const user = userEvent.setup();
     setup();
