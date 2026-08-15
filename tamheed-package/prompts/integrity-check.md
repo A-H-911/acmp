@@ -17,5 +17,14 @@ Run a read-only integrity check on the `tamheed-package` Tamheed package:
 5. Check staleness: compare the freshness line in a fresh `export_html()` against
    `git log -1` — if git is ahead of the package's recorded activity, the package
    is stale; recommend a progress sync.
-6. Report: gate verdict, count anomalies, trace gaps, narrated verdicts, staleness
-   — then `package_close()`. Change NOTHING in this run.
+6. **Verify any recent repair**: if rows were repaired since the last check (a scale
+   recovery, a title restore), re-read the affected `data/*.jsonl` and re-derive each
+   expected value independently from its source — the `custom_attributes.v3_*` stash,
+   the `v1` blob, `data-v3-backup/`. **A repair whose only check is the hand that typed
+   it is unverified.** Report mismatches as findings; fix nothing in this run.
+   ⚠ This step exists because it has already caught a real one: a risk-scale recovery
+   built correctly by script was then re-typed by hand into the tool call and one row's
+   probability was flipped (findings_18 §1). Care did not catch it; this re-derivation
+   did, in one line.
+7. Report: gate verdict, count anomalies, trace gaps, narrated verdicts, staleness,
+   repair-verification mismatches — then `package_close()`. Change NOTHING in this run.

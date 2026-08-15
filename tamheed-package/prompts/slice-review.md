@@ -1,10 +1,11 @@
-# Slice / phase completion review
+# Slice completion review
 
-Paste this when a slice or phase of `tamheed-package` is believed complete.
+Paste this when a slice of `tamheed-package` is believed complete.
+(A PHASE exit is `phase-close.md` — conflating the two is how a phase ships without its gate.)
 
 ---
 
-Review the just-completed slice/phase of the `tamheed-package` Tamheed package:
+Review the just-completed slice of the `tamheed-package` Tamheed package:
 
 1. `package_open("tamheed-package")`. Identify the slice: `entity_query("slice")` and its
    bound ACs (`trace_query("<SL-x>", direction="in")`).

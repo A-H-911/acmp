@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.2.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.2.1)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -10,7 +10,11 @@ file is a paste-ready prompt for a Claude Code session. Two kinds live here:
   stock is `stale-stock` (you never customised it) — `handoff_emit` with
   `refresh_stock=true` updates ONLY those; a `customized` file is never touched by
   refresh (per-file acceptance stays delete + re-emit; `force` still overwrites
-  ALL diverged).
+  ALL diverged). ⚠ Customizing a stock prompt therefore opts it out of every future
+  refresh, silently and permanently — the emission warning names how far the stock
+  has since moved (`stock_last_changed`); to carry a release's improvements into a
+  customized copy, hand-merge: the bundled `stock-history.json` holds every
+  release's body, so extract the current one and diff against your copy.
 - **Your project prompts** — any other filename. Operator-owned; tamheed never touches
   them. Name them by purpose, kebab-case (`kickoff.md`, `phase3-resume.md`). Files named
   `prm-NNN-<kind>.md` with a `<!-- converted … -->` header are legacy prompts converted
@@ -83,5 +87,8 @@ BEFORE moving on; verdicts carry evidence and its chain (`verified_by`,
 `verification_method`, `against_commit`); done-claimed is `Review`, verified is
 `Implemented`; `readiness_check` runs before anything is declared done. Repairing a damaged
 field? Repair from `data/*.jsonl` (or the backup), never from `entity_query` output — a
-full-row upsert rebuilt from a truncated query round-trip re-commits the damage. The package is the record — when code and package disagree, fix the code
+full-row upsert rebuilt from a truncated query round-trip re-commits the damage. PASTE a
+generated repair payload, never re-type it (the hand is the untrusted transport), and end
+every multi-row repair with an independent verifier: re-read the JSONL and re-derive each
+expected value from its source before calling the repair done. The package is the record — when code and package disagree, fix the code
 or record the change; never let them drift.

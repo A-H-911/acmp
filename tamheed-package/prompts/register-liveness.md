@@ -27,7 +27,9 @@ is the only wrong answer.
    the assumption to `Rejected`.
 5. **Risks** (`risk-liveness`): every open high-probability/high-impact risk gets an
    `owner` and a `response_strategy` (avoid|mitigate|transfer|accept) — no owner means
-   nobody monitors.
+   nobody monitors. Prerequisite: the rule reads the scale — with `probability`/`impact`
+   unpopulated on every open risk it reports `indeterminate`, not pass (it cannot
+   measure); populate the scale per governance.md first.
 6. **Hypotheses** (`hypotheses-measurable`): past Draft without `metric` + `threshold`
    — set both NOW (the number is decided BEFORE the experiment runs) or send the
    hypothesis back to Draft honestly.
