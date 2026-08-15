@@ -41,7 +41,19 @@ export default defineConfig({
      * 78-test suite that already drives a seven-service stack through a real Keycloak — paying ~4
      * minutes of CI on every PR to re-prove things the AC never asked about a second browser for.
      * What the AC asks is that RTL artifacts are absent on both engines, so Edge runs exactly the
-     * RTL surfaces: the bilingual visual sweep and the RTL/a11y pass.
+     * RTL surfaces.
+     *
+     * ⚠⚠ `vr-sweep` IS NAMED HERE BUT CANNOT MATCH IN CI, AND THAT IS NOT AN OVERSIGHT — it is
+     * `.gitignore`d (`src/Acmp.Web/.gitignore`: "the ad-hoc sweep driver … kept local so they never
+     * commit or run in CI", PR #57). So the file exists only on a developer's machine, where this
+     * pattern DOES give it Edge coverage, and in CI this project resolves to rtl-a11y alone. It is
+     * measurable rather than assumed: the local projection is 86 tests and CI collects 82 — exactly
+     * vr-sweep's 2 tests times 2 projects.
+     *
+     * ⚠ THE CONSEQUENCE IS BIGGER THAN THIS CONFIG AND IS TRACKED SEPARATELY: AC-101's own "when a
+     * visual regression test captures every page" has NO instrument in CI at all, which is why the
+     * property-level guard in src/test/rtl-physical-direction.test.ts is not a supplement to the
+     * sweep — it is the only mechanical RTL detection the pipeline actually runs.
      *
      * ⚠ `channel: 'msedge'` USES THE REAL EDGE BINARY, not Chromium wearing a user-agent — which is
      * the only version of this that could ever find an engine difference. That is also why e2e.yml
