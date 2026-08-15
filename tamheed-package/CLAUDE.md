@@ -1,6 +1,6 @@
 
 ## Tamheed progress tracking
-<!-- tamheed:note v3 -->
+<!-- tamheed:note v4 -->
 
 This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\Repos\acmp`). **The package is the record — when code and package disagree, fix the code or record a scope change; never let them drift.** **Package data lives in the git working tree** (C31): uncommitted package writes are destroyed by `git reset --hard` / `git checkout` / `git stash` exactly like uncommitted source — commit the package `data/` before branch operations. The `tamheed` MCP server is provided by the installed tamheed plugin (no project-level .mcp.json entry needed). All package reads/writes go through the `tamheed` MCP tools; ready-made task prompts live in `tamheed-package/prompts/` — start with `tamheed-package/prompts/README.md`, the operator guide (which prompt for which situation, semi-auto vs fully-auto); the human review surface is `tamheed-package/review.html`.
 
@@ -12,6 +12,7 @@ This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\
 | you find needed work that is out of scope | `entity_upsert` a `deferred-work` row (`DW-`) with an activation trigger |
 | you deviate from the approved plan in any way | a `scope-change` row (`SC-`) FIRST, `decision_ref` naming the deciding `DEC-`/`ADR-`, delta edges (`scope_adds`/`scope_modifies`/`scope_removes`) naming the affected rows — after approval, apply the row changes and set the `SC-` to Merged |
 | you hit genuine ambiguity | an `open-question` row (`OQ-`, with owner + due_by) and `[NEEDS-CLARIFICATION: OQ-NNN]` at the exact spot — NEVER assume |
+| execution teaches you something durable (a mistake's fix, a practice worth repeating) | `entity_upsert` a `lesson` row (`LL-`, born Proposed; kind improve\|sustain, statement + impacts) + a `learned_from` edge to the source — the OPERATOR confirms later; only Approved lessons bind |
 | you finish a unit of work | `progress_update(...)` — event_type `work-done`, `subject_id`, your `actor` string, phase/slice ids |
 | you believe a slice/wbs-item is complete | set its `lifecycle_status` to **Review** (done-claimed) — `Implemented` means VERIFIED and is readiness-guarded |
 | you verify an acceptance criterion | `audit_record(...)` with evidence + `verified_by` + `verification_method` + `against_commit` — never Met without proof |
