@@ -38,10 +38,31 @@ count is stale on the first new write, and one in this very file already was.
   except `DEF-039`. Do not redo any of it.
 - **Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
   **Nothing in this stream is deployed.**
-- **6 open defects**: `DEF-012`, `DEF-038`, `DEF-039`, `DEF-056`, `DEF-065`, `DEF-067`.
-- **5 unmet ACs**: `AC-003`, `AC-006`, `AC-011`, `AC-041`, `AC-048`. Every one is now covered by the
-  queue in §3, so `acs-met` can finally go green.
+- **9 open defects**: `DEF-012`, `DEF-038`, `DEF-039`, `DEF-056`, `DEF-065`, `DEF-067`, and three
+  opened 2026-08-15 — `DEF-073` (fixed, awaiting merge), `DEF-074` (fixed, awaiting merge),
+  `DEF-075` (**START HERE**, see §3).
+- **5 unmet ACs**: `AC-003`, `AC-006`, `AC-011`, `AC-041`, `AC-048`.
 - `DW-026` is **Activated** (approved to build), `DW-028` is new and Open.
+
+### ⭐ Where the 2026-08-15 session stopped, and why
+
+**`AC-011` is BUILT and its PR is RED on one spec — deliberately left that way.** PR **#278**
+(`feat/ac011-keycloak-admin-e2e`) turns `KEYCLOAK_ADMIN_ENABLED` on in CI (`DEC-042`) and adds the
+live guest-presenter leg. Everything else in CI is green; `e2e` fails in that spec's `beforeAll` on
+**`DEF-075`**, a real product defect the leg exposed. **Do not "fix" the spec to make it pass.**
+
+- **`DEF-075` is the next piece of work, and the operator has already chosen the approach**: fix the
+  product **in its own PR first**, then let #278 go green over it. A narrow **retry above
+  `TransactionBehavior`** — one attempt, duplicate-key only. Everything needed to write it is on the
+  row, including why the obvious in-handler catch is wrong (the ambient transaction is doomed once
+  `SaveChanges` throws, and MARS disables savepoints) and the two facts that make the design work:
+  `AmbientTransaction.RollbackAsync` sets `Current = null`, so a retry restarts cleanly, and the EF
+  **change tracker must be cleared** or the retry re-inserts the same pending row.
+- `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
+  detectors + the Edge project, **not** pixel baselines). ⚠ `AC-048` also needs slice binding, so do
+  the narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
+- ⚠ `AC-003` needs **its own emitter**: `AV-159` shows its 403 is thrown in the HANDLER, so the
+  `IAuthorizationMiddlewareResultHandler` that `DEF-056` will register **cannot** catch it.
 
 ## §2 — Why `readiness_check` says `ready:false`, and why that is right
 
@@ -61,16 +82,21 @@ reasons are on it. Do not re-litigate.
 
 ### Build track — in this order, and the order is reasoned
 
-1. **`AC-011`** — `KEYCLOAK_ADMIN_ENABLED=true` in CI's e2e stack. **First for a reason:** it is the
-   only item that gives `ListUsersAsync` and the whole `ADR-0038` invite path live coverage, which
-   de-risks the `DEF-065` deploy *itself*. Proving the reconciliation's read path before production
-   runs it beats proving it after. The secret is already mounted in `docker-compose.yml` — **locate
-   it rather than trusting a line number.** Expect it to break something; that is the point, and it
-   is the same gap that let `DEF-066` survive two shipped steps.
+1. ~~**`AC-011`** — `KEYCLOAK_ADMIN_ENABLED=true` in CI's e2e stack.~~ **DONE, in PR #278, and it
+   did exactly what `DEC-049` said it would: it broke something.** The flag is on at job level in
+   `e2e.yml` (the narrower option; verified by rendering `docker compose config`, not assumed), the
+   live guest leg is written, and turning the path on immediately exposed **two** defects nothing
+   else could see — `DEF-073` (a guest presenter could read EVERY meeting; fixed in the same PR, all
+   five guards mutation-proven) and **`DEF-075`** (JIT provisioning check-then-insert race; **now the
+   first item — see §1**). ⚠ The verdict is **NOT** flipped: it flips on a green run, not a merge.
 2. **`AC-041`** — add the Edge project to `playwright.config.ts` (chromium-only today, so the AC's
-   "Chrome and Edge" has never been true). Decided long ago, never built; roughly doubles e2e
-   runtime and that cost is accepted. · **`AC-003`** — a cheap live test. · **`AC-048`** — ⚠ scope
-   UNKNOWN: **read the row before scoping it.**
+   "Chrome and Edge" has never been true), **and** the property-level detectors `DEC-051` chose over
+   pixel baselines — `e2e/vr-sweep.spec.ts` is capture-only with **no assertion of any kind**, so the
+   AC's verb "detected" is currently performed by a human opening PNGs. ⚠ Adding the Edge project is
+   not one line: `e2e.yml` installs **chromium only**, so without `msedge` added there every Edge
+   test dies at launch. · **`AC-003`** — cheap, but needs its own emitter (see §1). · **`AC-048`** —
+   scope now KNOWN: **not a build item at all**, supersede it (`DEC-051`), folded into the binding
+   pass.
 3. **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
    actually runs (MinIO on-prem, S3 on cloud). ⚠ Needs an environment-aware **probe**, not a config
    flag — the check itself differs between MinIO's `/minio/health/live` and S3.
@@ -201,6 +227,19 @@ not touch (it is no longer a row that run creates) and falls back to `ADR-0043` 
     refuses a branch whose commits are unreachable even when its TREE is identical — the
     squash-merge signature. Use the three-dot tree diff.
 21. **`rm -rf tests/*/TestResults` before trusting a local coverage run** (`DEF-069`; CI is fine).
+22. ⚠ **`gh pr checks --watch` AND `gh run watch` BOTH REPORTED SUCCESS ON RUNS THAT HAD NOT
+    FINISHED** — the first exited **0** after a TLS handshake timeout while `e2e` was still pending,
+    the second returned while the run was still `in_progress`. Believing either would have flipped an
+    AC verdict on a run that never completed. **Poll the `status` field until it reads `completed`,
+    then read `conclusion`** — this is trap 12 arriving through the tooling rather than the tests.
+23. ⚠ **NEVER `git checkout -- .` WITH UNCOMMITTED WORK IN THE TREE — including during mutation
+    testing.** Reverting each mutant that way destroyed the implementation it was testing, because
+    the implementation had not been committed yet. **Commit first, then mutate against the commit.**
+    It is the same lesson the package data already carries (C31), and source is no different.
+24. ⚠ **A LOG TAIL IS THE WRONG INSTRUMENT FOR A FAILURE WHOSE DISTANCE YOU DO NOT KNOW**
+    (`DEF-074`). `--tail 200` across nine services covered ~15 seconds for a failure six minutes
+    back, and printed healthy 200s — misleading rather than absent. Raising it to 4000 was the same
+    mistake with a bigger number. **Dump the api log with no tail at all.**
 
 ## §7 — Definition of done
 
