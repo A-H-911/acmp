@@ -38,7 +38,14 @@ async function shot(page: Page, name: string): Promise<void> {
 // submit/accept/prepare/schedule actions, all Success, actor = the acting Secretary).
 async function seedAuditActivity(request: APIRequestContext, bearer: string): Promise<void> {
   const members = await apiMembers(request, bearer);
-  const owner = members[0];
+  // ⚠ NAMED, NOT POSITIONAL — and users.ts asked for exactly this re-check the next time the user list
+  // grew. GET /api/members is OrderBy(FullName) with no role filter, so members[0] is whichever member
+  // happens to sort first among those that have signed in by now. ac011-guest-scope runs before this
+  // file (alphabetical, workers: 1) and creates a real guest presenter called "E2E Guest ...", which
+  // sorts ahead of "E2E Member" and "E2E Secretary" — so the positional pick could hand this fixture a
+  // GUEST and then make them the owner of four topics and the CHAIR of a meeting. The four sibling VR
+  // specs already resolve by role; this was the one that did not.
+  const owner = members.find((m) => m.role === 'Secretary') ?? members[0];
   for (let i = 1; i <= 4; i++) {
     await apiPreparedTopic(request, bearer, `Audit trail sample topic ${i}`, owner);
   }

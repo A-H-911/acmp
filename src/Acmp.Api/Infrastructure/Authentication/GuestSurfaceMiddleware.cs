@@ -45,6 +45,13 @@ public sealed class GuestSurfaceMiddleware
     // Agenda is 'view' for Guest in the design's role matrix — READ only. The mutating meeting routes
     // carry Chairman/Secretary policies of their own; this keeps the outer gate from depending on
     // that, so a route that ever loses its policy is still not writable by a guest.
+    //
+    // ⚠ REACHING THESE ROUTES IS NOT THE SAME AS SEEING EVERY ROW ON THEM, and conflating the two was
+    // DEF-073: this entry admits the PREFIX, so for a while a guest could list and read every meeting
+    // the committee had ever scheduled — AC-011's "any action outside that meeting scope" answering
+    // 200. The row-level half is enforced where a meeting can actually be identified, in
+    // GetMeetings/GetMeetingDetail via GuestPresenterScope; a path gate has no database and cannot
+    // turn a display key into a meeting, so it could never have done this itself.
     private const string ReadOnlyMeetings = "/api/meetings";
 
     public async Task InvokeAsync(HttpContext context)
@@ -75,15 +82,19 @@ public sealed class GuestSurfaceMiddleware
     }
 
     // Guest AND NOTHING ELSE. A principal who also holds a committee role is an insider who happens
-    // to be listed as a guest somewhere, and must not be locked out of their own committee; roles are
-    // claims from Keycloak and cannot be self-assigned, so this cannot be used to escape the gate.
+    // to be listed as a guest somewhere, and must not be locked out of their own committee.
+    //
+    // ⚠ THE PREDICATE ITSELF MOVED TO AcmpRoles AND IS NOT REPEATED HERE (DEF-073). This gate decides
+    // WHICH PATHS a guest may reach; the Meetings read handlers decide WHICH ROWS they may see, and
+    // while each owned its own idea of "is this a guest" the two could disagree — which is how
+    // /api/meetings stayed committee-wide after this gate was written to close exactly that hole.
     private static bool IsGuestOnly(HttpContext context)
     {
         var user = context.User;
-        if (user?.Identity?.IsAuthenticated != true || !user.IsInRole(AcmpRoles.Guest))
+        if (user?.Identity?.IsAuthenticated != true)
             return false;
 
-        return !AcmpRoles.All.Any(role => role != AcmpRoles.Guest && user.IsInRole(role));
+        return AcmpRoles.IsGuestOnly(user.IsInRole);
     }
 }
 

@@ -8,6 +8,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Membership;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -127,13 +128,15 @@ public class MeetingRecordingTests
     [Fact]
     public async Task Detail_projects_recording_by_source()
     {
-        var (db, _) = NewDb();
+        var (db, user) = NewDb();
         SeedMeeting(db, "MTG-2026-010").AttachUploadedRecording("acmp-recordings/k", "a.mp4", "video/mp4", 12);
         SeedMeeting(db, "MTG-2026-011").AttachRecording("https://webex/play", "https://webex/dl", 600);
         SeedMeeting(db, "MTG-2026-012"); // no recording
         await db.SaveChangesAsync();
 
-        var handler = new GetMeetingDetailHandler(db);
+        // DEF-073: the caller is a committee member (the substitute reports no roles), so the guest
+        // scoping is inactive here and the directory is never consulted.
+        var handler = new GetMeetingDetailHandler(db, Substitute.For<ICommitteeDirectory>(), user);
         (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-010"), default))!.Recording!.Source.Should().Be("Uploaded");
         var w = (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-011"), default))!.Recording!;
         w.Source.Should().Be("Webex");

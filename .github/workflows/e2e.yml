@@ -32,6 +32,23 @@ jobs:
       # fire on the real stack (R4a). Compose interpolation takes shell env over --env-file, so the worker gets
       # minutely HERE while deploy/.env.example and production keep the daily 0 6 * * * default (docker-compose.yml).
       ACTION_REMINDERS_SWEEP_CRON: '* * * * *'
+      # AC-011 / DEC-042 — TURN THE ADR-0038 WRITE PATH ON IN CI. IIdentityProvider and
+      # IGuestProvisioner are registered ONLY when this is true, so until now CI ran seven services
+      # with a genuine Keycloak and never constructed either: invite, role assignment, forced sign-out,
+      # guest disable and the guest-presenter flow were reachable only by the manual UAT probe. That is
+      # the same shape of blindness that let DEF-066 survive two shipped steps.
+      #
+      # SET HERE RATHER THAN IN deploy/.env.example, which DEC-042 preferred as the narrower option:
+      # this changes CI only, while dev and production keep the false default. Same mechanism as the
+      # sweep cron above — compose interpolation takes shell env over --env-file, verified by rendering
+      # `docker compose config` with it set and reading KeycloakAdmin__Enabled back as "true".
+      #
+      # ⚠ NO SECRET IS NEEDED HERE and that is not an oversight: gen-secrets.sh writes
+      # KeycloakAdmin__ClientSecret UNCONDITIONALLY (a compose secret whose file is missing fails the
+      # whole stack), .env.example pins a non-placeholder value, and reconcile.sh converges the Keycloak
+      # client from that same file on presence rather than on this flag. So the identity side already
+      # existed on every run; only the app-side DI registration was off.
+      KEYCLOAK_ADMIN_ENABLED: 'true'
     defaults:
       run:
         working-directory: src/Acmp.Web
@@ -132,10 +149,29 @@ jobs:
           path: src/Acmp.Web/playwright-report
           retention-days: 7
 
+      # ⚠ --tail 200 WAS TOO SHORT TO CONTAIN THE FAILURE IT EXISTS TO EXPLAIN. On the AC-011 run the
+      # spec failed at 13:06 and this step ran at 13:12, so 200 lines across nine services covered only
+      # the last ~15 seconds — the 500 that failed the job was already off the top, and the dump showed
+      # healthy traffic instead. That is DEF-051's lesson in a second place: a diagnostic that reports
+      # something other than the failure is worse than none, because it reads like evidence.
+      #
+      # The api service is dumped SEPARATELY and first: it is the one that answers the requests the
+      # specs assert on, and interleaving it with eight other services is what made 200 lines cover
+      # seconds. The combined dump is kept after it for cross-service ordering.
       - name: Stack logs on failure
         if: ${{ failure() }}
         working-directory: .
-        run: docker compose -f deploy/docker-compose.yml logs --no-color --tail 200
+        run: |
+          # ⚠ NO --tail ON THE API LOG, AND THAT IS THE CORRECTION RATHER THAN THE ORIGINAL FIX.
+          # The first attempt at this raised 200 to 4000, which is choosing a bigger magic number for
+          # a question the number cannot answer: you do not know how far back the failure is until you
+          # have found it, and 4000 api lines still began eight minutes into a suite whose failure was
+          # in the first minute. A tail is the wrong instrument here. The whole log is a few MB and the
+          # step only runs on failure.
+          echo "===== api (the service the specs talk to) — FULL log ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color api
+          echo "===== all services (tail) ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color --tail 2000
 
       - name: Tear down the stack
         if: ${{ always() }}
