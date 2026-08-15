@@ -192,10 +192,17 @@ test('AC-011 — a guest whose meeting window has already passed is refused, liv
   const latePage = await lateCtx.newPage();
   await loginWithTemporaryPassword(latePage, lateEmail, late.temporaryPassword, GUEST_NEW_PASSWORD);
 
-  // ⚠ ASSERTED THROUGH A REQUEST THE PAGE MAKES, not through a captured bearer. Keycloak still issues
-  // this person a perfectly valid token — it knows nothing about ACMP's window — so the refusal is
-  // ACMP's alone, applied per request by the ADR-0039 revalidation middleware.
-  const refused = await latePage.request.get('/api/session/me');
+  // ⚠ THE BEARER IS CAPTURED AND SENT DELIBERATELY, AND THE FIRST VERSION OF THIS TEST DID NOT DO IT.
+  // page.request does not attach the Authorization header — the SPA adds that in JS — so an
+  // unauthenticated call ALSO answers 401, and the status assertion below passed while proving
+  // nothing. Only the reason-header assertion caught it. Keycloak still issues this person a
+  // perfectly valid token, since it knows nothing about ACMP's window, so the refusal has to be
+  // ACMP's own: a request that carries a good token and is refused anyway, per request, by the
+  // ADR-0039 revalidation middleware.
+  const lateBearer = await captureBearer(latePage, '/session');
+  const refused = await latePage.request.get('/api/session/me', {
+    headers: { Authorization: lateBearer },
+  });
   expect(refused.status(), 'an elapsed guest window must refuse at the API, not merely in the banner')
     .toBe(401);
   expect(refused.headers()['x-acmp-auth-reason'], 'and refused AS an expiry, not as a scope decision')
