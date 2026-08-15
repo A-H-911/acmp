@@ -33,6 +33,12 @@ builder.Services.AddAcmpModules(builder.Configuration);
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
 
+// DEF-056 / AC-006 — the policy layer short-circuits with 403 BEFORE MediatR, so AuthorizationBehavior
+// (the only other emitter of Authorization.Forbidden) never runs for a per-endpoint policy refusal, and
+// those denials left no audit row at all. Registered here rather than inside AddAcmpAuthorization
+// because it is an ASP.NET pipeline concern and the shared kernel has no business owning one.
+builder.Services.AddAcmpAuthorizationAuditing();
+
 // P16-B4: proportional rate limiting (C-API-03) + read-only-FS-safe DataProtection key-ring (C-CON-003).
 builder.Services.AddAcmpRateLimiting(builder.Configuration);
 builder.Services.AddAcmpDataProtection(builder.Configuration);

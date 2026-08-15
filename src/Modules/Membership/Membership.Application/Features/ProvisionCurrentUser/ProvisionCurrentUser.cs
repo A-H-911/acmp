@@ -39,10 +39,30 @@ public sealed class ProvisionCurrentUserHandler : IRequestHandler<ProvisionCurre
         if (!_user.IsAuthenticated || string.IsNullOrEmpty(_user.UserId))
             throw new UnauthorizedAccessException("Authentication required.");
 
-        var role = CommitteeRoleResolver.PrimaryRole(_user.Roles)
-            ?? throw new ForbiddenAccessException("No committee role is assigned to this account.");
-
+        // AC-003 — "the system denies access ... and an AuthEvent is emitted to the audit log".
+        //
+        // ⚠ EMITTED HERE, AND IT CANNOT BE THE DEF-056 MIDDLEWARE'S JOB. That handler records refusals
+        // made by the ASP.NET authorization layer, and this one is not: the request passes the policy
+        // (this endpoint carries no capability policy — a caller must be able to provision themselves
+        // before they have any role at all), reaches the handler, and is refused HERE because the token
+        // carries no ACMP role claim to resolve. AV-159 named this "DEF-056's family arriving by a
+        // second route", and a single fix for both would have left this clause quietly unmet.
+        //
+        // FAIL-CLOSED IS THE CHOSEN BRANCH: the AC offers deny OR a configured minimum default role,
+        // and there is no configurable default and no Submitter fallback in this system. Denying is
+        // the safer of the two branches the AC permits.
         var sub = _user.UserId!;
+
+        var resolved = CommitteeRoleResolver.PrimaryRole(_user.Roles);
+        if (resolved is null)
+        {
+            await _audit.EmitAsync("Authorization.Forbidden", sub,
+                new { request = nameof(ProvisionCurrentUserCommand), reason = "no-committee-role", held = _user.Roles },
+                ct);
+            throw new ForbiddenAccessException("No committee role is assigned to this account.");
+        }
+
+        var role = resolved.Value;
         var displayName = _user.DisplayName ?? _user.UserName ?? _user.Email ?? sub;
         var email = _user.Email ?? string.Empty;
 
