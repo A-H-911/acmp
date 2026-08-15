@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.1.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.2.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -81,5 +81,7 @@ The **Recording obligations** table in this project's `CLAUDE.md` note binds eve
 session, prompted or not: defects, deferred work, and scope changes are registered
 BEFORE moving on; verdicts carry evidence and its chain (`verified_by`,
 `verification_method`, `against_commit`); done-claimed is `Review`, verified is
-`Implemented`; `readiness_check` runs before anything is declared done. The package is the record — when code and package disagree, fix the code
+`Implemented`; `readiness_check` runs before anything is declared done. Repairing a damaged
+field? Repair from `data/*.jsonl` (or the backup), never from `entity_query` output — a
+full-row upsert rebuilt from a truncated query round-trip re-commits the damage. The package is the record — when code and package disagree, fix the code
 or record the change; never let them drift.
