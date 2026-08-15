@@ -51,13 +51,22 @@ count is stale on the first new write, and one in this very file already was.
 live guest-presenter leg. Everything else in CI is green; `e2e` fails in that spec's `beforeAll` on
 **`DEF-075`**, a real product defect the leg exposed. **Do not "fix" the spec to make it pass.**
 
-- **`DEF-075` is the next piece of work, and the operator has already chosen the approach**: fix the
-  product **in its own PR first**, then let #278 go green over it. A narrow **retry above
-  `TransactionBehavior`** — one attempt, duplicate-key only. Everything needed to write it is on the
-  row, including why the obvious in-handler catch is wrong (the ambient transaction is doomed once
-  `SaveChanges` throws, and MARS disables savepoints) and the two facts that make the design work:
-  `AmbientTransaction.RollbackAsync` sets `Current = null`, so a retry restarts cleanly, and the EF
-  **change tracker must be cleared** or the retry re-inserts the same pending row.
+- ✅ **`DEF-075` IS FIXED AND MERGED** (`3a27fef`, PR #279, ten checks green). ⚠ My analysis on that
+  row was **wrong and is corrected there**: a unique violation aborts the STATEMENT, not the
+  transaction, and SQL Server blocks the loser until the winner COMMITS — so the fix is a small local
+  recovery, not a retry above `TransactionBehavior`.
+- ⭐ **`DEF-076` IS NOW THE BLOCKER, and it is the best thing this leg produced.** With the guest
+  finally able to sign in, `GET /api/session/me` answered **403 to the one principal
+  `GetMySessionQuery` explicitly allows**. `MemberInvitation.InviteAsync` calls `CreateUserAsync` and
+  nothing else — **it never assigns a Keycloak realm role** — so an invited guest exists in Keycloak
+  as nobody while `committee_members` says Guest with a timed window. FR-159's guest presenter has
+  never been able to use the surface built for them, and only a live login could show it.
+  ⚠ **It needs an operator decision plus an `SC-` row, not a line of code**: assigning the role for
+  every invite would change FR-156, whose inert-until-assigned design is what `AssignRoles` exists
+  for. Option (a) on the row — assign on the GUEST path only — is the narrow reading of `ADR-0040`.
+  ⚠ It also flipped `role-matrix.spec.ts`'s deliberate `test.fail()` for `AC-006` to
+  **"Expected to fail, but passed"** — a role-less guest's refusals DO reach `AuthorizationBehavior`.
+  That marker is meant to flip when `DEF-056` lands; do not read this run as `DEF-056` being done.
 - `DEC-051` settled `AC-048` (supersede, narrow to the mechanism) and `AC-041` (property-level
   detectors + the Edge project, **not** pixel baselines). ⚠ `AC-048` also needs slice binding, so do
   the narrowing and the binding in **ONE** supersession — otherwise its successor id is minted twice.
