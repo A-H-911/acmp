@@ -2,6 +2,8 @@
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Contracts.Membership;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,12 +20,33 @@ public sealed record GetMeetingDetailQuery(string Key) : IRequest<MeetingDetailD
 public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQuery, MeetingDetailDto?>
 {
     private readonly IMeetingsDbContext _db;
+    private readonly ICommitteeDirectory _directory;
+    private readonly ICurrentUser _currentUser;
 
-    public GetMeetingDetailHandler(IMeetingsDbContext db) => _db = db;
+    public GetMeetingDetailHandler(IMeetingsDbContext db, ICommitteeDirectory directory, ICurrentUser currentUser)
+    {
+        _db = db;
+        _directory = directory;
+        _currentUser = currentUser;
+    }
 
     public async Task<MeetingDetailDto?> Handle(GetMeetingDetailQuery request, CancellationToken ct)
     {
+        // DEF-073 / AC-011 — null for a committee member, the caller's own meetings for a guest.
+        var visible = await GuestPresenterScope.MeetingIdsAsync(_db, _directory, _currentUser, ct);
+
         var meeting = await _db.Meetings.AsNoTracking().FirstOrDefaultAsync(m => m.Key == request.Key, ct);
+
+        // 403 AND NOT 404, for the reason GuestSurfaceMiddleware already argues about the paths it
+        // blocks: the guest IS authenticated and the meeting does exist, so "not found" would send the
+        // SPA down a missing-resource path for what is an authorization answer — and AC-011 says 403.
+        //
+        // ⚠ A MISSING KEY TAKES THE SAME ANSWER, DELIBERATELY. Answering 404 for an unknown key and 403
+        // for a known one turns this route into an existence oracle for a guest, who can no longer see
+        // the list that would have told them. One answer for both leaves nothing to probe.
+        if (visible is not null && (meeting is null || !visible.Contains(meeting.PublicId)))
+            throw new ForbiddenAccessException("This meeting is outside your guest session's scope.");
+
         if (meeting is null) return null;
 
         var agenda = await _db.Agendas.AsNoTracking().FirstOrDefaultAsync(a => a.MeetingId == meeting.PublicId, ct);
