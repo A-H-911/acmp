@@ -117,8 +117,11 @@ jobs:
       - name: Install web deps
         run: npm ci
 
-      - name: Install Playwright (chromium)
-        run: npx playwright install --with-deps chromium
+      # AC-101 requires Chrome AND Edge. `msedge` is a real browser CHANNEL, not a bundled engine, so
+      # it needs its own install line — without it every Edge-scoped test dies at launch rather than
+      # failing informatively, which reads as a broken suite instead of a missing browser.
+      - name: Install Playwright (chromium + msedge)
+        run: npx playwright install --with-deps chromium msedge
 
       - name: Run E2E (seeds Keycloak users, then drives the real PKCE login)
         env:
