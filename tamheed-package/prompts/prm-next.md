@@ -78,7 +78,54 @@ control is wired, runs, and is evidenced. `AC-010` and `AC-034` are Met. The eig
 **Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
 **Nothing in this stream is deployed.**
 
-## THE MAIN WORK — the operator's queue (`DEC-046`, `DEC-047`)
+## ⭐ THE CURRENT QUEUE — `DEC-049` + `DEC-050` (2026-08-15). START HERE.
+
+Everything below this block is history that explains *why*; this is *what next*. All of it is
+operator-decided — do not re-litigate, and read the `DEC-` row before starting an item.
+
+**Build track, in this order (the order is reasoned, not arbitrary):**
+
+1. **`AC-011`** — `KEYCLOAK_ADMIN_ENABLED=true` in CI's e2e stack. **First for a reason:** it is the
+   only item that gives `ListUsersAsync` and the whole `ADR-0038` invite path live coverage, which
+   de-risks the `DEF-065` deploy *itself*. Proving the reconciliation's read path before production
+   runs it beats proving it after. Expect it to break something — that is the point.
+2. **`AC-041`** (add the Edge project to `playwright.config.ts` — decided long ago, never built;
+   roughly doubles e2e runtime and that cost is accepted) · **`AC-003`** (cheap live test) ·
+   **`AC-048`** (⚠ scope UNKNOWN — **read the row before scoping it**).
+3. **`DEF-039`** — environment-aware object-store probe (MinIO vs S3). Small; matters once deployed.
+4. **`DEF-056`** — audit the refused mutation → flips **`AC-006`**. A deliberate `test.fail()` in
+   `role-matrix.spec.ts` goes RED the day it lands; delete that line.
+5. **`DW-026`** — the architecture test. **LAST, deliberately:** its allowlist must be seeded with the
+   gaps that exist *when it is written*, and every build above may add or remove uncalled methods.
+   Start with the narrow policy-coverage check (every `IAuthorizationRequirement` appears in at least
+   one registered policy) — a handful of lines, and it guards the only fails-open case.
+
+**Also decided:** fix **`DEF-067`** (await the settled state — **never** a timeout or retry) and
+**`DEF-012`**. Steps 1–4 together make **every unmet AC** addressed, so `acs-met` can finally go green.
+
+**Package track (parallel, no CI):**
+
+- **Full AC binding** — all 20. ⚠ An Approved AC's content is IMMUTABLE, so any needing a different
+  binding must be **superseded**, which mints new ids and moves verdict history onto rows that did
+  not earn it. Row by row; supersede only where the binding genuinely changes scope.
+- **`risks-discharged` full traceability pass** — all 23. ⚠ This is a risk **review**, not data entry:
+  several PH-0 risks need a judgement about whether they are still live (`RISK-005`'s subject was
+  deferred indefinitely by `DEC-028`). Where nothing genuinely discharges a risk, **retire or accept
+  it explicitly** — pointing it at a convenient AC is the manufactured-status failure (`DEF-010`).
+
+**Branches — audited 2026-08-15, and the audit changed the answer.** Only `scaffold/ph0-p1-foundation`
+was safe (0 unique commits, empty tree diff) and is deleted. **The other six all hold unique commits**
+and must not be deleted on the `ar.json` hazard alone. ⚠ `git branch -d` refused the empty one because
+its commits are unreachable from main though its TREE was identical — the squash-merge signature.
+**Ancestry is the wrong test for "already shipped"; use the three-dot tree diff.**
+
+**The deploy** is still only your three steps — now with `deploy/RECONCILE-RUNBOOK.md` and
+`scripts/verify-reconcile.mjs`, which reports **INCOMPLETE** rather than "verified" if it was not
+given a connection string to actually check the database.
+
+---
+
+## History — the earlier queue (`DEC-046`, `DEC-047`)
 
 Every item below was decided by the operator on 2026-08-14. Read `DEC-046` and `DEC-047` before
 starting any of them; the rejected options and their reasons are on those rows.
