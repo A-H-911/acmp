@@ -78,6 +78,41 @@ services:
       retries: 12
       start_period: 20s
 
+  # One-shot bucket provisioning (DEF-078). Idempotent, exits 0.
+  #
+  # ⚠ THIS EXISTS BECAUSE THE READINESS FIX MADE A HIDDEN CONTRACT VISIBLE, and the contract was always
+  # there — only production honoured it. On cloud, deploy/aws/02-s3.sh creates the buckets out of band and
+  # the app's IAM policy deliberately grants no s3:CreateBucket (ADR-0035). This stack got away with never
+  # provisioning them because MinioFileStore.EnsureBucketAsync creates a bucket lazily on first UPLOAD, and
+  # the old readiness probe only asked whether the MinIO daemon was alive — a question a fresh stack always
+  # answered yes to. Now that /readyz asks whether the app can reach ITS buckets, "created on first write"
+  # is genuinely not ready, and e2e proved it by refusing to start the stack.
+  #
+  # Provisioning here rather than weakening the check is the point: dev/e2e now mirrors the production
+  # precondition instead of silently depending on a lazy-create path that production cannot use.
+  #
+  # Same pinned digest as the minio server above — that image already ships /usr/bin/mc, so this adds no new
+  # supply-chain surface and nothing further to pin (C-SUP-01).
+  minio-init:
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: ["/bin/sh", "-c"]
+    # Bucket names track StorageOptions' defaults (acmp-recordings / acmp-topics). --ignore-existing keeps
+    # this safe to re-run on an existing volume.
+    command:
+      - >
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$(cat /run/secrets/minio_root_password)" &&
+        mc mb --ignore-existing local/acmp-recordings &&
+        mc mb --ignore-existing local/acmp-topics
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+    secrets:
+      - minio_root_password
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
   # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
   # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/domain/deployment.md, ADR-0015).
@@ -255,6 +290,11 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # DEF-078: the buckets must EXIST before the api starts, because /readyz now probes them and the
+      # container healthcheck gates on /readyz. Without this the api is correctly unhealthy on a fresh
+      # stack and nothing that depends on it ever starts.
+      minio-init:
+        condition: service_completed_successfully
       keycloak:
         # service_started, not _healthy: JwtBearer fetches OIDC metadata lazily on first request
         # (with retry), so the api need not block boot on Keycloak's slower readiness.
