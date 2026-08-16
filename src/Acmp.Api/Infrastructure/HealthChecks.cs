@@ -44,12 +44,33 @@ public static class ReadinessChecks
                 sp.GetRequiredService<IOptions<StorageOptions>>()),
             HealthStatus.Unhealthy, ready));
 
-        // Hangfire: the storage's monitoring API answers only when the schema + connection are healthy.
+        /*
+         * Hangfire: the storage's monitoring API answers only when the schema + connection are healthy.
+         *
+         * ⚠ THIS TOOK ITS STORAGE FROM THE STATIC `JobStorage.Current` AND THEREFORE FAILED 100% OF THE TIME
+         * IN THIS PROCESS. `AddAcmpHangfireStorage` calls `AddHangfire`, which registers JobStorage in DI;
+         * the STATIC is only assigned when a Hangfire SERVER starts, and the API is deliberately
+         * enqueue-only — the server runs in Acmp.Worker (ADR-0024). So the check reported
+         * "Current JobStorage instance has not been initialized yet" on every request, in every environment,
+         * since it was written. Nobody saw it because nothing consumed /readyz: the container healthcheck
+         * probed /healthz (DEF-079), which evaluates no checks at all.
+         *
+         * Resolved from DI instead, which is also what makes it testable — JobStorage is abstract.
+         */
         hc.Add(new HealthCheckRegistration("hangfire",
-            _ => new HangfireHealthCheck(), HealthStatus.Unhealthy, ready));
+            sp => new HangfireHealthCheck(sp.GetRequiredService<JobStorage>()), HealthStatus.Unhealthy, ready));
 
-        // Seq: best-effort ping (degraded-only). Override via HealthChecks:SeqUrl.
-        var seqUrl = (configuration["HealthChecks:SeqUrl"] ?? "http://seq:5341").TrimEnd('/') + "/health";
+        /*
+         * Seq: best-effort ping (degraded-only). Override via HealthChecks:SeqUrl.
+         *
+         * ⚠ THE DEFAULT POINTED AT 5341, WHICH IS THE INGESTION PORT, NOT THE UI — so this check answered
+         * HTTP 404 and reported Degraded forever, in every environment, alongside the hangfire failure above.
+         * The compose healthcheck for the seq container itself gets this right (`http://localhost/health`,
+         * port 80), so the two disagreed and only the wrong one was in the app. Degraded-only means it never
+         * made /readyz fail, which is exactly why it survived: a check whose failure changes nothing is a
+         * check nobody investigates.
+         */
+        var seqUrl = (configuration["HealthChecks:SeqUrl"] ?? "http://seq").TrimEnd('/') + "/health";
         hc.Add(new HealthCheckRegistration("seq",
             sp => new HttpHealthCheck(sp.GetRequiredService<IHttpClientFactory>(), seqUrl, degradedOnFailure: true),
             HealthStatus.Degraded, ready));
@@ -152,20 +173,29 @@ internal sealed class ObjectStoreHealthCheck(IMinioClient client, IOptions<Stora
     }
 }
 
-[ExcludeFromCodeCoverage]
-internal sealed class HangfireHealthCheck : IHealthCheck
+/*
+ * ⚠ NOT [ExcludeFromCodeCoverage] any more, and the reason is the bug it used to hide. Taking JobStorage from
+ * DI rather than the static `JobStorage.Current` is what makes this substitutable, and a single test with a
+ * fake storage would have caught a check that failed 100% of the time in the API process from the day it was
+ * written. "Un-unit-assertable external plumbing" was true of the static version and was the thing to fix, not
+ * a reason to stop testing it.
+ */
+internal sealed class HangfireHealthCheck(JobStorage storage) : IHealthCheck
 {
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var stats = JobStorage.Current.GetMonitoringApi().GetStatistics();
-            return Task.FromResult(HealthCheckResult.Healthy($"servers={stats.Servers}"));
+            var stats = storage.GetMonitoringApi().GetStatistics();
+            // Servers=0 is CORRECT here and must not be treated as a failure: the API enqueues and the worker
+            // processes (ADR-0024), so the API can be perfectly healthy with no server registered. What this
+            // check proves is that the Hangfire schema and connection answer at all.
+            return Task.FromResult(HealthCheckResult.Healthy($"servers={stats.Servers}, enqueued={stats.Enqueued}"));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(HealthCheckResult.Unhealthy(ex.Message));
+            return Task.FromResult(HealthCheckResult.Unhealthy($"hangfire storage unreachable: {ex.Message}"));
         }
     }
 }
