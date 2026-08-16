@@ -1143,7 +1143,7 @@
       "service": {
         "application": "Application (API)",
         "sqlServer": "SQL Server",
-        "minio": "MinIO object storage",
+        "objectStore": "Object storage",
         "seq": "Seq logging",
         "hangfire": "Background jobs (Hangfire)",
         "webex": "Webex / Tarseem"

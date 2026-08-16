@@ -1193,7 +1193,7 @@
       "service": {
         "application": "التطبيق (API)",
         "sqlServer": "SQL Server",
-        "minio": "تخزين MinIO",
+        "objectStore": "تخزين الكائنات",
         "seq": "تسجيل Seq",
         "hangfire": "المهام الخلفية (Hangfire)",
         "webex": "Webex / ترسيم"
