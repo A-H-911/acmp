@@ -513,6 +513,8 @@
 {"from_id":"SC-013","to_id":"SL-028","relation":"scope_adds"}
 {"from_id":"SC-014","to_id":"AC-048","relation":"scope_modifies"}
 {"from_id":"SC-014","to_id":"AC-094","relation":"scope_adds"}
+{"from_id":"SC-015","to_id":"AC-101","relation":"scope_modifies"}
+{"from_id":"SC-015","to_id":"AC-108","relation":"scope_adds"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}

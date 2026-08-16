@@ -514,6 +514,8 @@ SC-013,AC-107,scope_adds
 SC-013,SL-028,scope_adds
 SC-014,AC-048,scope_modifies
 SC-014,AC-094,scope_adds
+SC-015,AC-101,scope_modifies
+SC-015,AC-108,scope_adds
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
