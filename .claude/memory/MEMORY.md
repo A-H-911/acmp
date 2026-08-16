@@ -3,6 +3,16 @@
 > Compacted 2026-08-15 (4th). One line per memory; detail lives in the topic files and in the
 > Tamheed package (`prm-next.md` is the kickoff). Read the linked file before acting.
 
+## ★ Tamheed 4.4.1 · **`readiness_check` is `ready:TRUE`** · prod DEPLOYED and reconciled
+
+- ⭐⭐ **EVERY BLOCKING RULE PASSES** (2026-08-17) — decisions/adrs/acs-met/defects-closed/risks-discharged, gates 7/7. ⚠ **"Ready" means BLOCKING only**: `defects-minor` (`DEF-038`, `DEF-080`) and `deferred-work-reviewed` (19 `DW-`) still fail and still need a human.
+- ⭐ **PROD IS DEPLOYED** — moved `65e45d4` (08-12) → `b3be4d1`, 3 migrations applied, `/readyz` went **503 → 200 Healthy**. `DEF-065` discharged: reconcile returned `created:25, alreadyProvisioned:2` of 27; DB re-read confirms `committee_members` **1 → 27**. ⚠ **The adoption clock (`RISK-007`) starts 2026-08-17** — the old "0 topics, 1 sign-in" stat measured a platform that *couldn't admit its users*, not users declining it.
+- ⚠⚠ **I BROKE `main` BY SKIPPING THE PR** — `DEF-039` went direct to main; its label rename broke `AdministrationPage.test.tsx`. **Three compounding misses, any one of which would have caught it: (1) I grepped the i18n KEY (`minio`) after renaming the LABEL — a clean scan for the wrong token is indistinguishable from a clean codebase; (2) I ran only the file I touched; (3) no PR = no net.** Fixed via PR #287.
+- ⚠ **`git commit -m` with backticks silently deleted words from THREE messages today.** The rule was already recorded: **always `-F <file>`**.
+- ★★ **`LL-003` Approved + PINNED** — open the interview the moment a decision or action is the operator's; never surface a blocker and stand still. Do the homework first, ask simply with examples, **show the entity WITH its id**. Sits beside `LL-001`/`LL-002` in the auto-loaded note.
+- ★ **Risk review done, 12 dispositions.** ⚠ `mitigated` clears `risks-discharged` **even with `discharged_by` NULL** — so all 13 could have been cleared by assertion (`DEF-010`'s trap). Four were **measured**, three verdicts flipped: `RISK-014` credits are `standard`; `RISK-018` separate IAM profiles; `RISK-022` budget notifies at 4 thresholds via SNS (**checked subscribers — a budget with no subscriber still bills silently**); `RISK-020` both stacks pin Express, no drift.
+- ★ **`RISK-017`: an absence of exposure you don't control is not a control.** Admin console already 404'd — but from *Keycloak's* behaviour, not nginx. Built the deny (PR #287) and **proved it both ways with a stub upstream**: 4 admin paths → 404, 3 SPA paths → 200. Without the stub every path returns 502 and the table reads "blocked", proving nothing.
+
 ## ★ Tamheed 4.4.1 · `acs-met` PASSES · the build queue is DONE · the deploy waits on an OPERATOR RUN
 
 > **START HERE: `tamheed-package/prompts/prm-next.md`** — the durable kickoff, fully self-contained
