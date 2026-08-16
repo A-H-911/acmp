@@ -1,4 +1,4 @@
-using Acmp.Api.Infrastructure;
+﻿using Acmp.Api.Infrastructure;
 using Acmp.Shared.Application.Abstractions;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
