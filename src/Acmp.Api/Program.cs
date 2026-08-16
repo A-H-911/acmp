@@ -107,7 +107,39 @@ if (!app.Environment.IsProduction())
 }
 
 app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.Contains("ready") });
+/*
+ * DEF-078. /readyz used to answer with the DEFAULT writer, whose entire body is the aggregate status word —
+ * measured on production as literally "Unhealthy". Every check already builds a description naming what broke
+ * ("object-storage bucket 'x' unreachable: ..."), and all of it was discarded at the last step. That is the
+ * "tell" half of a control missing while the "detect" half worked: production sat 503 for three days and the
+ * endpoint that knew why would not say, so diagnosing it required reading source and running commands on the
+ * box.
+ *
+ * ⚠ Safe to emit: /readyz is NOT externally reachable — nginx proxies `location /api/` without stripping the
+ * prefix and has no health block, so this is internal to the compose network (the compose healthcheck and an
+ * operator with a shell). The descriptions name dependencies, never credentials.
+ */
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = h => h.Tags.Contains("ready"),
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                error = e.Value.Exception?.Message,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+            }),
+        });
+    },
+});
 
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();

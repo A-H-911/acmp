@@ -71,6 +71,31 @@ jobs:
         working-directory: .
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example up -d --build --wait
 
+      # DEF-078. When --wait fails, compose says only "container acmp-api-1 is unhealthy" and stops. That
+      # sentence names the symptom and withholds every fact needed to act on it: WHICH readiness check failed,
+      # and why. Diagnosing the first occurrence cost a full CI round-trip that produced no new information,
+      # which is the same defect DEF-051 records one step up the file and DEF-074 records for the e2e dump —
+      # a failure report that cannot reach the failure it explains.
+      #
+      # ⚠ This step is only useful because /readyz was ALSO given a response writer in the same change. With
+      # the default writer its whole body is the aggregate status word — measured on production as literally
+      # "Unhealthy" — so dumping it would have produced a diagnostic containing no diagnosis, which is the very
+      # defect this step exists to fix. `|| true` throughout: this must never itself fail and mask the real
+      # error, and it only runs when the bring-up already failed.
+      - name: Why is the API unhealthy (diagnostics on failure only)
+        if: ${{ failure() }}
+        working-directory: .
+        run: |
+          echo "=== container states ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example ps || true
+          echo "=== /readyz, with the per-check descriptions ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example \
+            exec -T api curl -sS -o - -w '\nHTTP %{http_code}\n' http://localhost:8080/readyz || true
+          echo "=== api log (tail) ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example logs --tail=120 api || true
+          echo "=== minio-init log (buckets provisioned?) ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example logs minio-init || true
+
       # DEF-051. keycloak-config is a one-shot that nothing depends_on, so before this step a FAILED
       # realm reconciliation left the stack fully healthy and CI green. That is not hypothetical: it
       # fired on its first outing — after the ADR-0038 client was added to reconcile.sh, the e2e log
