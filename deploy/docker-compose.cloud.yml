@@ -253,11 +253,22 @@ services:
       seq: { condition: service_started }
       keycloak: { condition: service_started }
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      # DEF-079. This probed /healthz, which Program.cs maps with `Predicate = _ => false` — it selects ZERO
+      # registered checks, so it returned 200 as long as the process could accept a TCP connection. The
+      # container therefore reported "Up 3 days (healthy)" on production while its own /readyz was returning
+      # 503, and that is precisely why DEF-078 went unnoticed: the one indicator anyone looks at was wired to
+      # the endpoint that knows nothing.
+      #
+      # ⚠ SEQUENCING (DEC-056 d2): this line may only point at /readyz once the object-store probe is fixed.
+      # Repointing while /readyz is still 503 would mark the api container unhealthy the moment it applied and
+      # risk restart churn on a live stack — which is why the probe fix ships in the same PR, ahead of this.
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 12
-      start_period: 45s
+      # /readyz reaches SQL Server, Hangfire and object storage, so it legitimately needs longer to first
+      # succeed than an endpoint that evaluated nothing. Widened so a cold start is not read as a failure.
+      start_period: 90s
     deploy:
       resources:
         limits: { cpus: "1.5", memory: 512M }

@@ -50,4 +50,13 @@
     <ProjectReference Include="..\Acmp.Bootstrap\Acmp.Bootstrap.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      DEF-078: ObjectStoreHealthCheck is internal but must be unit-assertable. Exposing internals to the test
+      project is preferred over making the type public - the readiness checks are composition detail, not API
+      surface, and widening them to be testable would be letting the test dictate the design.
+    -->
+    <InternalsVisibleTo Include="Acmp.Api.Tests" />
+  </ItemGroup>
+
 </Project>

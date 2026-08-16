@@ -262,11 +262,17 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      # DEF-079 — same blind control as the cloud stack: /healthz is mapped with `Predicate = _ => false` and
+      # evaluates NO checks, so it could only fail if the process stopped answering TCP. Fixed here too rather
+      # than only where it was measured; leaving the on-prem compose on /healthz would reintroduce the defect
+      # on the next on-prem deployment and make the two files disagree for no reason.
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 40s
+      # Widened with the switch to /readyz: it reaches SQL Server, Hangfire and object storage, so first
+      # success legitimately takes longer than an endpoint that evaluated nothing.
+      start_period: 90s
 
   web:
     build:
