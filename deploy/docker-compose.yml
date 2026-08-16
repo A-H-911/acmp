@@ -78,6 +78,41 @@ services:
       retries: 12
       start_period: 20s
 
+  # One-shot bucket provisioning (DEF-078). Idempotent, exits 0.
+  #
+  # ⚠ THIS EXISTS BECAUSE THE READINESS FIX MADE A HIDDEN CONTRACT VISIBLE, and the contract was always
+  # there — only production honoured it. On cloud, deploy/aws/02-s3.sh creates the buckets out of band and
+  # the app's IAM policy deliberately grants no s3:CreateBucket (ADR-0035). This stack got away with never
+  # provisioning them because MinioFileStore.EnsureBucketAsync creates a bucket lazily on first UPLOAD, and
+  # the old readiness probe only asked whether the MinIO daemon was alive — a question a fresh stack always
+  # answered yes to. Now that /readyz asks whether the app can reach ITS buckets, "created on first write"
+  # is genuinely not ready, and e2e proved it by refusing to start the stack.
+  #
+  # Provisioning here rather than weakening the check is the point: dev/e2e now mirrors the production
+  # precondition instead of silently depending on a lazy-create path that production cannot use.
+  #
+  # Same pinned digest as the minio server above — that image already ships /usr/bin/mc, so this adds no new
+  # supply-chain surface and nothing further to pin (C-SUP-01).
+  minio-init:
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: ["/bin/sh", "-c"]
+    # Bucket names track StorageOptions' defaults (acmp-recordings / acmp-topics). --ignore-existing keeps
+    # this safe to re-run on an existing volume.
+    command:
+      - >
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$(cat /run/secrets/minio_root_password)" &&
+        mc mb --ignore-existing local/acmp-recordings &&
+        mc mb --ignore-existing local/acmp-topics
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+    secrets:
+      - minio_root_password
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
   # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
   # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/domain/deployment.md, ADR-0015).
@@ -255,6 +290,11 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # DEF-078: the buckets must EXIST before the api starts, because /readyz now probes them and the
+      # container healthcheck gates on /readyz. Without this the api is correctly unhealthy on a fresh
+      # stack and nothing that depends on it ever starts.
+      minio-init:
+        condition: service_completed_successfully
       keycloak:
         # service_started, not _healthy: JwtBearer fetches OIDC metadata lazily on first request
         # (with retry), so the api need not block boot on Keycloak's slower readiness.
@@ -262,11 +302,17 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      # DEF-079 — same blind control as the cloud stack: /healthz is mapped with `Predicate = _ => false` and
+      # evaluates NO checks, so it could only fail if the process stopped answering TCP. Fixed here too rather
+      # than only where it was measured; leaving the on-prem compose on /healthz would reintroduce the defect
+      # on the next on-prem deployment and make the two files disagree for no reason.
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 40s
+      # Widened with the switch to /readyz: it reaches SQL Server, Hangfire and object storage, so first
+      # success legitimately takes longer than an endpoint that evaluated nothing.
+      start_period: 90s
 
   web:
     build:
@@ -310,8 +356,13 @@ services:
       # serves every security header; without them it silently serves nothing.
       - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
     depends_on:
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     ports:
       # nginx-unprivileged listens on 8080 (non-root, C-CON-001); host port 8088 unchanged.
       - "8088:8080"
@@ -385,8 +436,13 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   # Optional inbound ingress for the Webex recording-ready webhook (P13, ADR-0024). Opt-in: `--profile ngrok`.
