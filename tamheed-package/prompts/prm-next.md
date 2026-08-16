@@ -9,11 +9,17 @@ Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` be
 then orient:
 
 ```
-server_info()                      # expect tamheed 4.2.1, root = C:\Users\ahammo\Repos\acmp
+server_info()                      # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
 gate_run()                         # expect 7/7 ready:true
 readiness_check("package")         # expect ready:FALSE — correct, not a bug (see §2)
 ```
+
+⚠ **THE BUILD QUEUE IS DONE — do not start §3's items expecting unbuilt work.** `AC-041`, `DW-026`'s
+narrow check and `DEF-067` are merged; `DEF-012` is dispositioned. **What is actually left:**
+**`DEF-039`** (and `DEF-078` gates it, needing an operator `curl`), the **13-row risk review**,
+`DEF-038`/`DEF-077`, `DW-028`, and **two commands only the operator can run** (§4). Sections 2–5 are
+kept as the RECORD of how each item was settled — read them for the reasoning, not as a worklist.
 
 **If `package_open` refuses on a `.lock`, do NOT clear it reflexively — but do not assume it is real
 either.** A plugin reload orphans the lock every time, so this is common. Both discriminators
@@ -23,8 +29,10 @@ practice the pid simply does not exist — check that first, and other live proc
 because a lock is held by *the pid it names*.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers:
-`gate_run()`, `readiness_check("package")`, `entity_query("defect", status="Open")`. A hard-coded
-count is stale on the first new write, and one in this very file already was.
+`gate_run()`, `readiness_check("package")`, `entity_query("defect", lifecycle_status="Open")`. A
+hard-coded count is stale on the first new write, and this file has carried a stale one **three**
+times. (Note the column: v4 renamed `status` → `lifecycle_status` on defects/DW/OQs — the old
+spelling was in this block until 2026-08-16 and would simply not filter.)
 
 ---
 
@@ -33,17 +41,22 @@ count is stale on the first new write, and one in this very file already was.
 `main` is green, clean and pushed. (`git log --oneline -5` is the authority — no hash is quoted here
 on purpose, because the last one written into this file went stale the same day.)
 
-- **The store is Tamheed v4** (server 4.2.1). See §5 for what that changed under you.
+- **The store is Tamheed v4** (server 4.4.1 — `lesson`/`LL-` and `skill`/`SKL-` families exist, and
+  approving a lesson refuses without `operator_confirm: true`). See §5 for what v4 changed under you.
 - **`ADR-0043` stream scope is COMPLETE**, and so is everything the `DEC-046`/`047` queue asked for
   except `DEF-039`. Do not redo any of it.
 - **Production runs `65e45d4` and is UNUSED** — zero topics, one of 26 members has ever signed in.
   **Nothing in this stream is deployed.**
-- **Open defects and unmet ACs: READ THEM LIVE** — `entity_query("defect", status="Open")` and the
-  `acs-met` rule in `readiness_check("package")`. Both moved on 2026-08-15 and a tally written here
-  goes stale on the first write; this file has already carried a stale one twice. As of the last
-  session `DEF-056` is **Fixed** and `AC-003`/`AC-006` are **Met**, leaving `acs-met` blocked on
-  `AC-041` and `AC-048` only, and `DEF-065` still the sole high/critical.
-- `DW-026` is **Activated** (approved to build), `DW-028` is new and Open.
+- **Open defects and unmet ACs: READ THEM LIVE** — `entity_query("defect", lifecycle_status="Open")`
+  and `readiness_check("package")`. **Do not trust a tally written here: this file has now carried a
+  stale one three times.** The shape as of 2026-08-16 — verify it, do not assume it:
+  **`acs-met` PASSES**, and the only blocking failures are `defects-closed` (`DEF-065`, `DEF-078` —
+  both waiting on an **operator run**, not on code) and `risks-discharged` (13 rows).
+- **⭐ THE BUILD QUEUE IS DONE.** `AC-041` (#283), `DW-026`'s narrow check (#284) and `DEF-067` (#285)
+  are all merged; `DEF-012` is dispositioned (`DEC-055`). §2–§5 below are kept as the RECORD of how
+  each was settled — **read them for the reasoning, do not re-execute them.**
+- `DW-026` stays **Activated**: the narrow check shipped, the full call-graph walk did not.
+  `DW-028` is Open and untouched. `DW-029` is new (see §4).
 
 ### ⭐ Where the 2026-08-15 session stopped, and why
 
@@ -113,13 +126,22 @@ written by me, from a search that ruled out one emitter and concluded the family
 ## §2 — Why `readiness_check` says `ready:false`, and why that is right
 
 `gate_run` 7/7 and readiness `false` are not in conflict: the gates are **mechanical**, readiness is
-**lifecycle**. It is blocked on `acs-met` (the four above), `defects-closed` (`DEF-065` — the deploy
-tracker, and the ONLY high/critical one left) and `risks-discharged`. That is the honest state of a package whose work is not finished — do not "fix"
-it by closing rows.
+**lifecycle**. That is the honest state of a package whose work is not finished — do not "fix" it by
+closing rows.
 
-⚠ **`risks-discharged` is blocking AND cannot discriminate** (0 of 23 rows have `discharged_by`), so
-it lists every open risk by construction. `DEC-050` d2 decided a full traceability pass. **Read that
-row first — it is a risk REVIEW, not data entry.**
+**As of 2026-08-16 `acs-met` PASSES.** Three blocking failures remain, and **two of them are not
+code**:
+
+| blocking rule | what it is waiting for |
+|---|---|
+| `defects-closed` → `DEF-065` | the **operator's deploy run** (`deploy/RECONCILE-RUNBOOK.md`) |
+| `defects-closed` → `DEF-078` | the **operator's `curl` against live `/api/readyz`** — see §4 |
+| `risks-discharged` | the 13-row risk **review** below |
+
+⚠ **`risks-discharged` used to be non-discriminating and now is not.** It listed every open risk by
+construction while 0 rows had `discharged_by`; a 2026-08-15 pass disposed 8 of 21 on evidence, so the
+rule now discriminates and the 13 it still names are real. `DEC-050` d2 decided a full traceability
+pass. **Read that row first — it is a risk REVIEW, not data entry.**
 
 ## §3 — ⭐ THE QUEUE. Start here. (`DEC-052` d4 approved ALL of it.)
 
@@ -146,39 +168,72 @@ that the property guard catches real defects while the capture sweep has caught 
 ⚠ Adding the Edge project is **not one line**: `e2e.yml` installs **chromium only**, so without
 `msedge` added there every Edge test dies at launch rather than failing informatively.
 
-### 3. Package track — no CI cycles at all, and the cheapest after a long session
+### 3. ✅ Package track — DONE except the risk review. `acs-slice-bound` and `acs-met` both PASS.
 
-- **Full AC binding, all 20** (`DEC-050` d1 — see `acs-slice-bound`). ⚠ An Approved AC's content is
-  **immutable**, so any needing a different binding must be **superseded**, which mints new ids and
-  moves verdict history onto rows that did not earn it. Row by row; supersede only where the binding
-  genuinely changes scope.
-- ⚠ **`AC-048` folds in here.** `DEC-051` settled it: **not a build item at all** — its Partial is
-  final as written (no automation can prove a browser showed a human a dialog), so it is **superseded
-  and narrowed to the mechanism**. It also needs slice binding, so do the narrowing and the binding in
-  **ONE** supersession, or its successor id is minted twice.
-- **`risks-discharged`, all 23** (`DEC-050` d2). ⚠ It is a risk **REVIEW**, not data entry. Several
-  PH-0 risks need a judgement about whether they are still live — `RISK-005`'s subject was deferred
+- ✅ **Full AC binding, all 20** — done under `SC-013`; `acs-slice-bound` went 20 → 0. ⚠ **The
+  immutability trap is real and was navigated, not avoided**: `trg_acceptance_criteria_immutable`
+  freezes `slice_id` along with the title on an Approved/Implemented row, so a *rebinding* is a
+  supersession. Where the statement was **byte-identical** the existing verdict was carried onto the
+  successor; where it was not, it was re-audited. Do not assume a carried verdict — read `SC-013`.
+- ✅ **`AC-048` → `AC-094`**, narrowed to the mechanism in ONE supersession as `DEC-051` required.
+  ⚠ **Marking the predecessor `Superseded` changed nothing** — `acs-met` filters on
+  `retired_in IS NULL`, so a superseded AC keeps blocking until `retired_in` is **set**. Same for
+  `AC-101`→`AC-108` and the retired `AC-084`.
+- ⏳ **`risks-discharged` — THE ONE PACKAGE ITEM LEFT** (`DEC-050` d2). A 2026-08-15 pass disposed
+  **8 of 21 on evidence**; **13 remain**. ⚠ It is a risk **REVIEW**, not data entry. Several PH-0
+  risks need a judgement about whether they are still live — `RISK-005`'s subject was deferred
   indefinitely by `DEC-028`. Where nothing genuinely discharges a risk, **retire or accept it
   explicitly**; pointing it at a convenient AC to clear the rule is the manufactured-status failure
   recorded as `DEF-010`.
 
-### 4. `DEF-039` + the two minor defects
+### 4. `DEF-039` — the only unbuilt item left. The other two are settled; read why.
 
-- **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
+- ⏳ **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
   actually runs (MinIO on-prem, S3 on cloud). ⚠ Needs an environment-aware **probe**, not a config
   flag — the check itself differs between MinIO's `/minio/health/live` and S3.
-- **`DEF-067`** — `DecisionPage.test.tsx` fails intermittently under `test:cov` only. ⚠ Fix by
-  **awaiting the settled state** (`findBy*`/`waitFor`) — **never** a timeout or a retry, both of which
-  hide a genuine regression the day one occurs.
-- **`DEF-012`** — `v_backlog` residue; a derived-view artifact of the v2.3 import.
+  ⚠⚠ **`DEF-078` GATES THIS, and it needs the operator, not you:** the object-store readiness probe
+  may already be returning **503 on cloud**, which would change what the tile must display. Nobody has
+  measured it. **The unblocking command is one line and only the operator can run it:**
+  `curl -sS -o /dev/null -w '%{http_code}' https://<host>/api/readyz`. Building the tile against an
+  unmeasured backend is how you ship a green light over a red service.
+- ✅ **`DEF-067` — FIXED in PR #285, AND THIS ENTRY USED TO PRESCRIBE THE WRONG FIX.** It said, in
+  bold: *fix by awaiting the settled state (`findBy*`/`waitFor`) — never a timeout*. **That was
+  wrong, and it is left visible here rather than deleted so the file's history cannot re-teach it.**
+  `findBy*`/`waitFor` were applied **first** and the failure **persisted** — which is how the real
+  cause was reached instead of assumed: `Test timed out in 5000ms`, failing at ~5090ms with the test
+  still **executing**. A second, unrelated test then tripped the same ceiling, making it a **class**
+  (interaction-heavy component tests under v8 coverage instrumentation), fixed once in
+  `vitest.config.ts`. It is **not** the anti-pattern the entry warned about: a timeout hides a *race*
+  by giving a racy assertion more chances to get lucky, and there is no race here — every assertion
+  still runs and still fails if the behaviour breaks. **A defect row's predicted cause is a
+  hypothesis, not evidence. Re-measure before following one.**
+- ✅ **`DEF-012` — WON'T-FIX (`DEC-055`), and the rule that would have "fixed" it was UNSOUND.**
+  The operator had overruled the close at `DEC-054` d4; shown two facts they did not have, they
+  delegated the re-decision. **(1)** All **155** `wbs_items` sit in `v_backlog` and not one carries a
+  `slice_id` — there is no residue, there is the whole register. **(2)** The only mechanical per-item
+  rule — *a leaf closes when every requirement it names is `Implemented`* — **closes `WBS-20.4`, the
+  EMAIL ADAPTER**, on the strength of the `Implemented` `FR-130`, while *no email in v1* is a **hard
+  constraint**. No filter repairs that, so **zero** WBS rows were written.
+  ⚠ **THE REAL CAUSE RE-FRAMES EVERY STATUS IN THIS PACKAGE:** of 222 requirements, **exactly the 60
+  with an acceptance criterion are `Implemented` and exactly the 162 without one are `Approved`** —
+  because a requirement advances *only* through the AC auto-advance trigger. **Requirement status
+  measures whether anyone WROTE an AC, not whether the thing was built**, and `v_backlog` reports that
+  faithfully. Closing the WBS rows would have made the view read clean while **hiding** the gap the
+  `execution_state_note` discloses. Remediation carried as **`DW-029`** (162 requirements; conditional
+  trigger — activate when requirement status must be *authoritative* rather than indicative).
 
-### 5. `DW-026` — the architecture test. LAST, deliberately.
+### 5. ✅ `DW-026` — the narrow check SHIPPED (#284). The row stays **Activated**, and that is correct.
 
-A public aggregate method with no production caller. Its allowlist must be seeded with the gaps that
-exist **when it is written**, and every build above may add or remove uncalled methods — seeding it
-first guarantees a stale allowlist on the day it merges. **Start with the narrow policy-coverage
-check**: every `IAuthorizationRequirement` appears in at least one registered policy. A handful of
-lines, and it guards the only fails-open case. (It has now fired **five** times.)
+The narrow policy-coverage check is merged: `tests/Acmp.Architecture.Tests/AuthorizationCoverageTests.cs`
+builds the **real** container via `AddAcmpAuthorization`, walks `AuthorizationRegistration.RegisteredPolicies`,
+and asserts every reflected `IAuthorizationRequirement` appears in at least one registered policy —
+guarding the fails-open case. It was deliberately sequenced **last** so its allowlist was seeded
+against the finished tree, not a moving one.
+
+⚠ **`DW-026` is NOT Done: the broader subject — a public aggregate method with no production caller —
+is still unguarded.** `SetVotingEligibility` sat uncalled from P4 until PR #276, which is the **fifth**
+time this has fired. The full call-graph walk is the remaining work; keep the row Activated until it
+exists, and do not let the merged narrow check read as coverage of the general case.
 
 ## §4 — The deploy: the only thing blocking production, and it is OPERATOR ACTION
 
