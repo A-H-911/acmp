@@ -135,7 +135,7 @@ code**:
 | blocking rule | what it is waiting for |
 |---|---|
 | `defects-closed` → `DEF-065` | the **operator's deploy run** (`deploy/RECONCILE-RUNBOOK.md`) |
-| `defects-closed` → `DEF-078` | the **operator's `curl` against live `/api/readyz`** — see §4 |
+| `defects-closed` → `DEF-078` | a readiness measurement **from inside the container network** — see §4 |
 | `risks-discharged` | the 13-row risk **review** below |
 
 ⚠ **`risks-discharged` used to be non-discriminating and now is not.** It listed every open risk by
@@ -191,11 +191,25 @@ that the property guard catches real defects while the capture sweep has caught 
 - ⏳ **`DEF-039`** — the System Health object-store tile. `DEC-047`: bind it to what the environment
   actually runs (MinIO on-prem, S3 on cloud). ⚠ Needs an environment-aware **probe**, not a config
   flag — the check itself differs between MinIO's `/minio/health/live` and S3.
-  ⚠⚠ **`DEF-078` GATES THIS, and it needs the operator, not you:** the object-store readiness probe
-  may already be returning **503 on cloud**, which would change what the tile must display. Nobody has
-  measured it. **The unblocking command is one line and only the operator can run it:**
-  `curl -sS -o /dev/null -w '%{http_code}' https://<host>/api/readyz`. Building the tile against an
+  ⚠⚠ **`DEF-078` GATES THIS**, and its readiness verdict is still **unmeasured** — the probe may be
+  returning **503 on cloud**, which changes what the tile must display. Building the tile against an
   unmeasured backend is how you ship a green light over a red service.
+
+  ⚠⚠ **DO NOT USE `curl https://<host>/api/readyz`. THIS FILE CARRIED THAT COMMAND AND IT IS WRONG —
+  it cannot measure anything on any host, ever.** Measured 2026-08-16: health is mapped at the **API
+  root** (`Program.cs:109-110`) while nginx proxies `location /api/` **without stripping the prefix**
+  (`cloud-443.conf.template:118`), so the API receives the literal `/api/readyz` and returns **404**.
+  ⚠ **And the obvious correction is worse than the error:** bare `https://<host>/readyz` returns
+  **200** — serving `index.html` through the SPA `try_files` fallback. **A status-code-only check on
+  `/readyz` passes with the API stone dead.** `deploy/scripts/smoke.sh:81-105` documents both traps in
+  its own comments; the runbooks still carry the stale instruction.
+
+  **What to actually run** — external signal: `bash deploy/scripts/smoke.sh acmp.anas7ammo.dev`, or one
+  curl to `/api/members` expecting **401** (200 = security failure, 404 = SPA fallback, 502/504 = API
+  down). **Prod already measures 401 + `WWW-Authenticate: Bearer`, so the API is alive.** For the
+  readiness verdict itself, `/readyz` is reachable **only inside the container network**, so it needs
+  SSM: `docker exec <api> curl -sS -o - -w '%{http_code}' http://localhost:8080/readyz`.
+  ⚠ **`uat.acmp.anas7ammo.dev` is a STOPPED instance** — start it first or measure prod.
 - ✅ **`DEF-067` — FIXED in PR #285, AND THIS ENTRY USED TO PRESCRIBE THE WRONG FIX.** It said, in
   bold: *fix by awaiting the settled state (`findBy*`/`waitFor`) — never a timeout*. **That was
   wrong, and it is left visible here rather than deleted so the file's history cannot re-teach it.**
