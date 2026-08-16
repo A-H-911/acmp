@@ -31,7 +31,9 @@ criteria remain.
 - **Login works.** All four seeded accounts complete a real browser PKCE login and JIT-provision with
   the correct role. Re-prove it any time:
   `node src/Acmp.Web/uat-login-probe.mjs https://uat.acmp.anas7ammo.dev`.
-  Passwords are rotated off the seed value — the probe tries the temp one, then `Uat_Acmp#2026_Rotated`.
+  Passwords are rotated off the seed value — the probe tries the temp one, then the rotated one, which
+  it reads from **`ACMP_UAT_PASSWORD`**. ⚠ That value was written out here in plaintext until
+  2026-08-16 and has been scrubbed from all five tracked files that carried it.
 - Acceptance: **AC-077/078/079/080/081/082/083/086 Met** · **AC-075/084 Partial** · **AC-076 Pending**.
 - `/acmp/uat/env` in SSM survives termination. It is pinned to `02c1ce7` images.
 
