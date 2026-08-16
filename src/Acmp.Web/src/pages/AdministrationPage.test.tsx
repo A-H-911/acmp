@@ -109,8 +109,15 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getByText('All core systems operational')).toBeInTheDocument();
     expect(screen.getByText('SQL Server')).toBeInTheDocument();
     expect(screen.getAllByText('Operational').length).toBeGreaterThan(0);
-    // A service with no registered check is honest about it, not shown as down.
-    expect(screen.getByText('MinIO object storage')).toBeInTheDocument();
+    // A service with no registered check is honest about it, not shown as down. This fixture reports
+    // only api + sqlserver, so the object-store tile is legitimately unmonitored here.
+    //
+    // ⚠ WAS 'MinIO object storage' UNTIL DEF-039 RENAMED THE LABEL to 'Object storage' (the cloud stack
+    // runs S3, so a MinIO-labelled tile was wrong where it mattered most). This assertion broke, and the
+    // way it was missed is the transferable part: the rename was checked by grepping for the i18n KEY
+    // (`minio`), which found nothing — while this test asserts the rendered LABEL. A clean scan that
+    // searches for the wrong token is indistinguishable from a clean codebase.
+    expect(screen.getByText('Object storage')).toBeInTheDocument();
     expect(screen.getAllByText('Monitoring not configured').length).toBeGreaterThan(0);
   });
 
