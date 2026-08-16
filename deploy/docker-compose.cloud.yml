@@ -319,7 +319,10 @@ services:
     depends_on:
       sqlserver: { condition: service_healthy }
       db-migrate: { condition: service_completed_successfully }
-      api: { condition: service_healthy }
+      # ⚠ service_started, not service_healthy — /readyz reaches SQL/Hangfire/object storage, so gating
+      # startup on it turns a dependency blip into a full outage (DEF-079 follow-up). Signal kept,
+      # interlock dropped.
+      api: { condition: service_started }
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 256M }
@@ -371,7 +374,10 @@ services:
       - "${ACMP_HTTP_PORT:-80}:8080"
       - "${ACMP_HTTPS_PORT:-443}:8443"
     depends_on:
-      api: { condition: service_healthy }
+      # ⚠ service_started, not service_healthy — /readyz reaches SQL/Hangfire/object storage, so gating
+      # startup on it turns a dependency blip into a full outage (DEF-079 follow-up). Signal kept,
+      # interlock dropped.
+      api: { condition: service_started }
     healthcheck:
       # Probes BOTH listeners. The old check hit 8080 only, so "healthy" said nothing about TLS.
       # --no-check-certificate is deliberate: on first boot the cert is the self-signed placeholder

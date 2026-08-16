@@ -356,8 +356,13 @@ services:
       # serves every security header; without them it silently serves nothing.
       - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
     depends_on:
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     ports:
       # nginx-unprivileged listens on 8080 (non-root, C-CON-001); host port 8088 unchanged.
       - "8088:8080"
@@ -431,8 +436,13 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   # Optional inbound ingress for the Webex recording-ready webhook (P13, ADR-0024). Opt-in: `--profile ngrok`.
