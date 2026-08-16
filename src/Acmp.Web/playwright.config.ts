@@ -43,12 +43,20 @@ export default defineConfig({
      * What the AC asks is that RTL artifacts are absent on both engines, so Edge runs exactly the
      * RTL surfaces.
      *
-     * ⚠⚠ `vr-sweep` IS NAMED HERE BUT CANNOT MATCH IN CI, AND THAT IS NOT AN OVERSIGHT — it is
-     * `.gitignore`d (`src/Acmp.Web/.gitignore`: "the ad-hoc sweep driver … kept local so they never
-     * commit or run in CI", PR #57). So the file exists only on a developer's machine, where this
-     * pattern DOES give it Edge coverage, and in CI this project resolves to rtl-a11y alone. It is
-     * measurable rather than assumed: the local projection is 86 tests and CI collects 82 — exactly
-     * vr-sweep's 2 tests times 2 projects.
+     * ⚠⚠ `vr-sweep` USED TO BE NAMED HERE AND IS DELIBERATELY GONE (DEF-077). It is `.gitignore`d
+     * ("the ad-hoc sweep driver … kept local so they never commit or run in CI", PR #57), so naming it
+     * made this config reference a file CI can never have: the local projection was 86 tests and CI
+     * collected 82 — exactly vr-sweep's 2 tests times 2 projects. A test-count discrepancy with no
+     * stated cause is the kind of thing someone later "fixes" by committing the sweep, which would put
+     * an ASSERTION-FREE screenshot driver into the gating suite.
+     *
+     * ⚠ REMOVING THE REFERENCE DOES NOT REMOVE THE GAP, and the gap is the real content of DEF-077:
+     * AC-101's "a visual regression test captures every page" still has NO instrument in CI. The
+     * property-level guard in `src/test/rtl-physical-direction.test.ts` is not a supplement to the
+     * sweep — it is the only mechanical RTL detection the pipeline actually runs. To run the sweep
+     * locally on Edge, invoke it directly:
+     *     npx playwright test vr-sweep --project=chromium
+     * (it writes PNGs to e2e/vr-out/ for a human to open; it asserts nothing).
      *
      * ⚠ THE CONSEQUENCE IS BIGGER THAN THIS CONFIG AND IS TRACKED SEPARATELY: AC-101's own "when a
      * visual regression test captures every page" has NO instrument in CI at all, which is why the
@@ -63,7 +71,7 @@ export default defineConfig({
     {
       name: 'msedge',
       use: { ...devices['Desktop Edge'], channel: 'msedge' },
-      testMatch: /(vr-sweep|rtl-a11y)\.spec\.ts/,
+      testMatch: /rtl-a11y\.spec\.ts/,
     },
   ],
 });
