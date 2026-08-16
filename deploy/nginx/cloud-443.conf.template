@@ -88,6 +88,32 @@ server {
     # REMINDER, because it is the trap this file warns about at the top: add_header does not merge
     # across levels, so THIS BLOCK'S add_headers replace the server-level set entirely for /kc/.
     # Anything you want here must be listed here.
+    # RISK-017: the Keycloak admin console and the master-realm token endpoint must not be reachable
+    # from the internet. They ALREADY answer 404 today — measured 2026-08-17 on /kc/admin/,
+    # /kc/admin/master/console/ and /kc/realms/master/protocol/openid-connect/token — but that 404 is
+    # produced by KEYCLOAK'S OWN BEHAVIOUR, not by anything in this repository. A Keycloak upgrade or a
+    # hostname-configuration change could turn it into a 200 with no file here objecting, and nobody
+    # would learn of it until someone went looking. This block makes the refusal a control WE own.
+    #
+    # ⚠ A REGEX LOCATION, DELIBERATELY: nginx evaluates regex locations BEFORE prefix ones, so this wins
+    # over `location /kc/` below without depending on ordering within the file.
+    #
+    # ⚠ 404 RATHER THAN 403, also deliberately: 403 confirms the path exists and is guarded, which tells
+    # a scanner where the admin console lives. 404 says nothing.
+    #
+    # ⚠ WHAT THIS DOES NOT BREAK, verified rather than assumed before writing it: the ADR-0038 admin
+    # client uses KeycloakAdmin__BaseUrl = http://keycloak:8080/ (docker-compose.cloud.yml:232 — "the
+    # IN-CLUSTER address, not the public one"), and kcadm.sh runs inside the Keycloak container against
+    # localhost:8080. Both are container-to-container and never traverse nginx. The SPA is unaffected:
+    # it uses the `acmp` realm, and /kc/realms/acmp/.well-known/openid-configuration still answers 200.
+    #
+    # ⚠ WHAT IT DOES COST, so nobody rediscovers it during an incident: the Keycloak admin console is no
+    # longer reachable from a browser. Reach it through an SSM port-forward to the box instead — there
+    # is no SSH, so SSM is already the admin path for everything else here.
+    location ~ ^/kc/(admin|realms/master)(/|$) {
+        return 404;
+    }
+
     location /kc/ {
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
         add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
