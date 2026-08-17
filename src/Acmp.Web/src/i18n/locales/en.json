@@ -1365,7 +1365,7 @@
     "fSystems": "Affected systems",
     "fSystemsPh": "Type a system and press Enter…",
     "dropFiles": "Drop files here or click to upload",
-    "dropHint": "PDF, PNG, SVG, DOCX · up to 25 MB",
+    "dropHint": "PDF, PNG, JPEG, SVG, DOCX · up to 50 MB",
     "guardTitle": "Leave without submitting?",
     "guardBody": "This topic hasn’t been submitted to the committee. Your draft is saved on this device, so you can finish it later.",
     "keepEditing": "Keep editing",
