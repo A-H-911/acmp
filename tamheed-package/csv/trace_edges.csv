@@ -84,6 +84,10 @@ AC-072,FR-056,verifies
 AC-072,FR-057,verifies
 AC-073,FR-056,verifies
 AC-074,FR-056,verifies
+AC-109,FR-160,verifies
+AC-110,FR-161,verifies
+AC-111,FR-162,verifies
+AC-112,FR-045,verifies
 ADR-0017,ADR-0012,relates_to
 ADR-0019,ADR-0008,relates_to
 ADR-0020,ADR-0019,relates_to
@@ -99,7 +103,9 @@ DEF-080,DEC-056,relates_to
 DEF-081,DEF-080,relates_to
 DEF-083,DEF-081,relates_to
 DEF-084,DW-026,relates_to
+DEF-085,DEF-084,relates_to
 DW-029,DEF-012,relates_to
+DW-030,FR-030,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
 FR-002,ADR-0002,derives_from
@@ -340,6 +346,9 @@ FR-156,ADR-0038,derives_from
 FR-157,ADR-0038,derives_from
 FR-158,ADR-0038,derives_from
 FR-159,ADR-0040,derives_from
+FR-160,DEC-057,derives_from
+FR-161,DEC-057,derives_from
+FR-162,DEC-057,derives_from
 INV-001,ADR-0001,derives_from
 INV-001,ADR-0002,derives_from
 INV-002,ADR-0001,derives_from
@@ -359,6 +368,8 @@ INV-013,ADR-0002,derives_from
 INV-014,ADR-0012,derives_from
 LL-001,PE-336,learned_from
 LL-002,PE-369,learned_from
+LL-004,PE-415,learned_from
+LL-005,PE-418,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -522,6 +533,13 @@ SC-014,AC-048,scope_modifies
 SC-014,AC-094,scope_adds
 SC-015,AC-101,scope_modifies
 SC-015,AC-108,scope_adds
+SC-016,AC-109,scope_adds
+SC-016,AC-110,scope_adds
+SC-016,AC-111,scope_adds
+SC-016,AC-112,scope_adds
+SC-016,FR-160,scope_adds
+SC-016,FR-161,scope_adds
+SC-016,FR-162,scope_adds
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

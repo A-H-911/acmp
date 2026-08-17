@@ -83,6 +83,10 @@
 {"from_id":"AC-072","to_id":"FR-057","relation":"verifies"}
 {"from_id":"AC-073","to_id":"FR-056","relation":"verifies"}
 {"from_id":"AC-074","to_id":"FR-056","relation":"verifies"}
+{"from_id":"AC-109","to_id":"FR-160","relation":"verifies"}
+{"from_id":"AC-110","to_id":"FR-161","relation":"verifies"}
+{"from_id":"AC-111","to_id":"FR-162","relation":"verifies"}
+{"from_id":"AC-112","to_id":"FR-045","relation":"verifies"}
 {"from_id":"ADR-0017","to_id":"ADR-0012","relation":"relates_to"}
 {"from_id":"ADR-0019","to_id":"ADR-0008","relation":"relates_to"}
 {"from_id":"ADR-0020","to_id":"ADR-0019","relation":"relates_to"}
@@ -98,7 +102,9 @@
 {"from_id":"DEF-081","to_id":"DEF-080","relation":"relates_to"}
 {"from_id":"DEF-083","to_id":"DEF-081","relation":"relates_to"}
 {"from_id":"DEF-084","to_id":"DW-026","relation":"relates_to"}
+{"from_id":"DEF-085","to_id":"DEF-084","relation":"relates_to"}
 {"from_id":"DW-029","to_id":"DEF-012","relation":"relates_to"}
+{"from_id":"DW-030","to_id":"FR-030","relation":"relates_to"}
 {"from_id":"FR-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"FR-001","to_id":"ADR-0013","relation":"derives_from"}
 {"from_id":"FR-002","to_id":"ADR-0002","relation":"derives_from"}
@@ -339,6 +345,9 @@
 {"from_id":"FR-157","to_id":"ADR-0038","relation":"derives_from"}
 {"from_id":"FR-158","to_id":"ADR-0038","relation":"derives_from"}
 {"from_id":"FR-159","to_id":"ADR-0040","relation":"derives_from"}
+{"from_id":"FR-160","to_id":"DEC-057","relation":"derives_from"}
+{"from_id":"FR-161","to_id":"DEC-057","relation":"derives_from"}
+{"from_id":"FR-162","to_id":"DEC-057","relation":"derives_from"}
 {"from_id":"INV-001","to_id":"ADR-0001","relation":"derives_from"}
 {"from_id":"INV-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"INV-002","to_id":"ADR-0001","relation":"derives_from"}
@@ -358,6 +367,8 @@
 {"from_id":"INV-014","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"LL-001","to_id":"PE-336","relation":"learned_from"}
 {"from_id":"LL-002","to_id":"PE-369","relation":"learned_from"}
+{"from_id":"LL-004","to_id":"PE-415","relation":"learned_from"}
+{"from_id":"LL-005","to_id":"PE-418","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
@@ -521,6 +532,13 @@
 {"from_id":"SC-014","to_id":"AC-094","relation":"scope_adds"}
 {"from_id":"SC-015","to_id":"AC-101","relation":"scope_modifies"}
 {"from_id":"SC-015","to_id":"AC-108","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"AC-109","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"AC-110","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"AC-111","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"AC-112","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"FR-160","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"FR-161","relation":"scope_adds"}
+{"from_id":"SC-016","to_id":"FR-162","relation":"scope_adds"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
