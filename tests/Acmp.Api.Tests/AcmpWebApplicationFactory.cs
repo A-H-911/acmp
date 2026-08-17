@@ -12,6 +12,8 @@ using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Research.Infrastructure.Persistence;
 using Acmp.Modules.Risks.Infrastructure.Persistence;
+using Acmp.Modules.Topics.Domain;
+using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
@@ -164,6 +166,45 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         foreach (var (sub, name, role) in members)
             db.Members.Add(CommitteeMember.Provision(sub, name, $"{sub}@acmp.gov", role, DateTimeOffset.UtcNow));
         await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seed a topic already walked to <c>Decided</c>, and return its public id (FR-160 / AC-109).
+    /// </summary>
+    /// <remarks>
+    /// ⚠ THIS EXISTS BECAUSE <c>Decided</c> IS NOT REACHABLE OVER HTTP IN A TEST. A decision only
+    /// advances a topic through <c>TopicDecisionRecorder.MarkDecidedAsync</c>, which SILENTLY RETURNS
+    /// unless the topic is already <c>InCommittee</c> — and reaching that needs the whole meetings
+    /// flow (schedule → publish agenda → conduct). Building that fixture to exercise one endpoint
+    /// would be a large, fragile setup whose failures would look like close bugs.
+    ///
+    /// The walk uses the REAL aggregate transitions in their real order rather than writing a status
+    /// column, so a topic seeded here is one the domain agrees is Decided — if any guard in that chain
+    /// changes, this throws instead of quietly producing an impossible row.
+    /// </remarks>
+    public async Task<Guid> SeedDecidedTopicAsync(string ownerSub = "kc-omar", string ownerName = "Omar H.")
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TopicsDbContext>();
+        var now = DateTimeOffset.UtcNow;
+
+        var topic = Topic.Draft(
+            $"TOP-2026-{Random.Shared.Next(100, 999)}", "Adopt Keycloak", "Consolidate IAM.",
+            "Fragmented auth is risky.", TopicType.ArchitectureDecision, TopicUrgency.Normal,
+            TopicSource.CommitteeMember, ownerSub, ownerName,
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+
+        topic.Submit(now);
+        topic.BeginTriage(ownerSub, ownerName, now);
+        topic.Accept(Guid.NewGuid(), ownerName, ownerSub, ownerName, now);
+        topic.MarkPrepared(ownerSub, ownerName, now);
+        topic.Schedule(Guid.NewGuid(), ownerSub, ownerName, now);
+        topic.EnterCommittee(ownerSub, ownerName, now);
+        topic.Decide(ownerSub, ownerName, now);
+
+        db.Topics.Add(topic);
+        await db.SaveChangesAsync();
+        return topic.PublicId;
     }
 
     /// <summary>

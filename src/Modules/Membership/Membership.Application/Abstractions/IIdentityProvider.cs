@@ -55,6 +55,24 @@ public interface IIdentityProvider
     /// </remarks>
     Task DisableUserAsync(string subjectId, CancellationToken ct = default);
 
+    /// <summary>Re-enables a disabled account so the login works again (SC-017).</summary>
+    /// <remarks>
+    /// THE FIFTH WRITE, and the one the port's own header said would need its own decision — so it
+    /// got one: SC-017, recorded BEFORE this line existed, exactly as SC-011 was for the read.
+    ///
+    /// It exists because the expiry sweep disables the KEYCLOAK ACCOUNT and not merely the local row
+    /// (ExpireGuestAccess), and FR-162/AC-111 require a reactivated guest to actually sign in. None
+    /// of the other four writes can undo that: CreateUserAsync refuses a duplicate, SetRealmRolesAsync
+    /// and SignOutEverywhereAsync never touch the enabled flag, and DisableUserAsync is the wrong
+    /// direction. Without this a reactivated guest comes back Active-but-unable-to-log-in, which reads
+    /// as repaired and is not.
+    ///
+    /// ⚠ The blast-radius guarantee the narrowness protects is UNCHANGED: this is the exact inverse of
+    /// DisableUserAsync, so the service account gains no capability class it did not already hold. A
+    /// delete, or a password write, would not follow from this precedent.
+    /// </remarks>
+    Task EnableUserAsync(string subjectId, CancellationToken ct = default);
+
     /// <summary>
     /// Every account in the realm, with the realm roles each one holds (SC-011).
     /// </summary>

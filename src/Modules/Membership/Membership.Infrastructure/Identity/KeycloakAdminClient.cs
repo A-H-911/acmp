@@ -110,6 +110,16 @@ public sealed class KeycloakAdminClient : IIdentityProvider
         res.EnsureSuccessStatusCode();
     }
 
+    // SC-017 — the fifth write, and the exact inverse of the one above. The sweep disables the
+    // Keycloak account, so reactivation has to re-enable it or the member returns Active with a dead
+    // login (FR-162, AC-111).
+    public async Task EnableUserAsync(string subjectId, CancellationToken ct = default)
+    {
+        await AuthenticateAsync(ct);
+        var res = await _http.PutAsJsonAsync($"admin/realms/{_options.Realm}/users/{subjectId}", new { enabled = true }, ct);
+        res.EnsureSuccessStatusCode();
+    }
+
     // SC-011 — the one READ on this port. Feeds the DEC-046 reconciliation, which has to find the
     // accounts that have NO committee_members row (DEF-065).
     public async Task<IReadOnlyList<IdentityAccount>> ListUsersAsync(CancellationToken ct = default)

@@ -183,6 +183,75 @@ public class TopicApiTests
         (await detail.Content.ReadFromJsonAsync<TopicRow>())!.Status.Should().Be("Prepared");
     }
 
+    // FR-045 / AC-112 — reopen over HTTP. Rejected is reachable straight from Submitted, so this
+    // exercises the real route, policy and handler end to end.
+    //
+    // ⚠ The CLOSED branch of Reopen is NOT reachable from here, and neither is POST /close: both need
+    // a topic at Decided, and TopicDecisionRecorder.MarkDecidedAsync SILENTLY RETURNS unless the topic
+    // is InCommittee, which requires the whole meetings flow (schedule → publish agenda → conduct).
+    // Both are covered at the handler level instead — including the Closed→Reopened branch — and the
+    // gap is named here rather than left for someone to discover.
+    [Fact]
+    public async Task Secretary_reopens_a_rejected_topic_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
+        var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        (await sec.PostAsJsonAsync($"/api/topics/{topic!.Id}/reject", new { reason = "out of committee scope" }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var reopened = await sec.PostAsJsonAsync($"/api/topics/{topic.Id}/reopen",
+            new { reason = "new regulatory guidance changes the assessment" });
+        reopened.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await sec.GetAsync($"/api/topics/{topic.Key}");
+        (await detail.Content.ReadFromJsonAsync<TopicRow>())!.Status.Should().Be("Reopened");
+    }
+
+    // FR-161 / AC-110 — a deferred topic comes back. Accept auto-triages, and Defer accepts an
+    // Accepted topic, so the whole round trip is reachable over HTTP.
+    [Fact]
+    public async Task Secretary_returns_a_deferred_topic_to_triage_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
+
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
+        var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
+        var owner = (await (await Client(factory, "Secretary").GetAsync("/api/members"))
+            .Content.ReadFromJsonAsync<List<MemberRow>>())!.Single(m => m.Role == nameof(CommitteeRole.Member));
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        (await sec.PostAsJsonAsync($"/api/topics/{topic!.Id}/accept", new { ownerId = owner.PublicId, ownerName = "Owner One" }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await sec.PostAsJsonAsync($"/api/topics/{topic.Id}/defer",
+            new { reason = "awaiting vendor confirmation", revisitOn = (DateTimeOffset?)null }))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var reactivated = await sec.PostAsync($"/api/topics/{topic.Id}/reactivate", null);
+        reactivated.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await sec.GetAsync($"/api/topics/{topic.Key}");
+        (await detail.Content.ReadFromJsonAsync<TopicRow>())!.Status.Should().Be("Triage");
+    }
+
+    // FR-160 / AC-109 — close over HTTP. The topic is seeded already Decided because that status is
+    // not reachable through the API (see SeedDecidedTopicAsync); everything from the route down is
+    // the real pipeline.
+    [Fact]
+    public async Task Secretary_closes_a_decided_topic_returns_204()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topicId = await factory.SeedDecidedTopicAsync();
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        var closed = await sec.PostAsync($"/api/topics/{topicId}/close", null);
+
+        closed.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
     [Fact] // AC-031
     public async Task Reject_without_a_reason_returns_400()
     {
