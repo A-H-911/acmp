@@ -216,6 +216,14 @@ status.
     FINISHED.** Poll the `status` field until it reads `completed`, then read `conclusion`.
     ⚠ GitHub's API also returns intermittent **503**s — a polling loop must distinguish "API failed"
     from "checks settled", or it will read an empty result as success.
+23b. ⚠⚠ **`$?` AFTER A PIPE IS THE EXIT CODE OF THE LAST COMMAND IN THE PIPE, NOT YOUR GATE'S.**
+    `dotnet format --verify-no-changes | tail -3; echo "EXIT=$?"` printed **EXIT=0** while the real
+    exit was **2** — an `IDE0161` failure on an EF-generated migration that CI would have rejected.
+    The pipe had reported `tail`'s success as the gate's. Redirect to a file and read `$?` on the
+    bare command (`cmd > /tmp/out 2>&1; echo $?`), or use `PIPESTATUS`. This is trap 12 ("a green
+    exit code can come from a run that checked nothing") arriving through the SHELL rather than the
+    test runner, and it is the same family as trap 23 above — trusting a wrapper's verdict instead
+    of the thing it wrapped.
 24. ⚠ **NEVER `git checkout -- .` WITH UNCOMMITTED WORK IN THE TREE**, including during mutation
     testing. **Commit first, then mutate against the commit.**
 25. ⚠ **`gh pr merge --delete-branch` can MERGE REMOTELY AND STILL FAIL LOCALLY.** On 2026-08-17 it
