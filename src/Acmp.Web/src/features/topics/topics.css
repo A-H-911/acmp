@@ -881,21 +881,3 @@
 .kb-return { display: flex; flex-direction: column; gap: var(--sp-3); margin-block-start: var(--sp-2); }
 .kb-return-mode { border: 0; margin: 0; padding: 0; display: flex; gap: var(--sp-4); }
 .kb-return-mode legend { padding: 0; font-size: 12.5px; font-weight: 600; margin-block-end: var(--sp-2); }
-
-/* reopen dialog (AC-112) — logical properties only; a physical left/right here fails the RTL detector */
-.dt-reopen-label {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  margin-block-end: var(--sp-2);
-}
-.dt-reopen-input {
-  inline-size: 100%;
-  padding: var(--sp-2);
-  font: inherit;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2);
-  resize: vertical;
-}
