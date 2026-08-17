@@ -19,6 +19,7 @@ public sealed class FakeIdentityProvider : IIdentityProvider
 {
     public ConcurrentBag<(string Email, string FullName)> Created { get; } = new();
     public ConcurrentBag<string> Disabled { get; } = new();
+    public ConcurrentBag<string> Enabled { get; } = new();
     public ConcurrentBag<string> SignedOut { get; } = new();
     public ConcurrentDictionary<string, IReadOnlyCollection<string>> Roles { get; } = new();
 
@@ -47,6 +48,15 @@ public sealed class FakeIdentityProvider : IIdentityProvider
     public Task DisableUserAsync(string subjectId, CancellationToken ct = default)
     {
         Disabled.Add(subjectId);
+        return Task.CompletedTask;
+    }
+
+    // SC-017. Recorded separately from Disabled rather than removing from it, so a test can assert
+    // the enable ACTUALLY HAPPENED instead of inferring it from an absence — an absence is only
+    // evidence if the instrument is proven present.
+    public Task EnableUserAsync(string subjectId, CancellationToken ct = default)
+    {
+        Enabled.Add(subjectId);
         return Task.CompletedTask;
     }
 

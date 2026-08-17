@@ -271,6 +271,61 @@ export function usePrepareTopic(key: string | undefined) {
   });
 }
 
+/**
+ * FR-161 (AC-110): return a Deferred topic to Triage. THE AFFORDANCE IS THE REQUIREMENT HERE — the
+ * revisit date was already written by Defer and already rendered on the topic detail, so before this
+ * the product displayed a date it gave no way to act on. That is D-15's shape exactly (a transition
+ * shipped backend-only, core loop still broken, every backend test green), which is why AC-110
+ * carries a UI clause that this hook alone does not satisfy.
+ */
+export function useReactivateTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (topicId: string) => api<void>(`/topics/${topicId}/reactivate`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-160 (AC-109): close a Decided topic. Without it Decided was a permanent resting state and the
+ * committee's open list grew without bound. Show-and-enforce, like prepare: the button renders for a
+ * Decided topic and the backend refuses the wrong role.
+ */
+export function useCloseTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (topicId: string) => api<void>(`/topics/${topicId}/close`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-045 (AC-112): reopen a Closed or Rejected topic. The justification is MANDATORY — the server
+ * refuses an empty one (FR-044's rule for rejection and deferral), so the dialog requires it rather
+ * than letting the request fail.
+ */
+export function useReopenTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, reason }: { topicId: string; reason: string }) =>
+      api<void>(`/topics/${topicId}/reopen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
 /** The editable half of a topic (AC-034). `scope` is omitted unless the editor changed it. */
 export interface TopicEdit {
   title: string;

@@ -1327,6 +1327,19 @@
       "button": "Mark prepared",
       "error": "Couldn’t mark this topic prepared. Try again.",
       "forbidden": "You don’t have permission to prepare this topic."
+    },
+    "reactivate": {
+      "button": "Return to triage"
+    },
+    "close": {
+      "button": "Close topic"
+    },
+    "reopen": {
+      "button": "Reopen",
+      "title": "Reopen this topic",
+      "subtitle": "The topic returns to triage. Say why it is being reopened — the reason is recorded permanently.",
+      "label": "Reason for reopening",
+      "confirm": "Reopen topic"
     }
   },
   "submit": {

@@ -130,16 +130,32 @@ public sealed class AggregateReachabilityTests
      */
     private static readonly HashSet<string> Allowed = new(StringComparer.Ordinal)
     {
-        // DEF-084: topic lifecycle transitions that exist on the aggregate with no endpoint or handler
-        // reaching them. FR-level capabilities built ahead of their surface.
-        "Acmp.Modules.Topics.Domain.Topic::Close/3",
+        // ⚠ FOUR ENTRIES WERE REMOVED HERE BY SC-016, AND THE REMOVAL IS THE DELIVERABLE — NOT THE
+        // CODE THAT MADE IT POSSIBLE. Topic::Close/3, Topic::Reactivate/3, Topic::Reopen/4 and
+        // CommitteeMember::Reactivate/0 are now reached by CloseTopicHandler, ReactivateTopicHandler,
+        // ReopenTopicHandler and ReactivateMemberHandler. If any of those handlers is ever deleted or
+        // stops calling its transition, THIS TEST FAILS — which is the whole point of taking the
+        // entries out rather than leaving them as harmless no-ops.
+        //
+        // DW-030: FR-030 (topic conversion) is Approved, traced to WBS-5.7 + TEST-018, and DEFERRED
+        // rather than abandoned. These two are its future readers. ⚠ NEITHER SATISFIES FR-030 AS
+        // WRITTEN — Convert records no reason, Reclassify records no reason and raises no event, and
+        // nothing creates the typed original->converted link the requirement demands — so wiring them
+        // is a feature, not a follow-up. Read DW-030 before touching either; do not re-raise them as
+        // a new finding.
         "Acmp.Modules.Topics.Domain.Topic::Convert/3",
-        "Acmp.Modules.Topics.Domain.Topic::Reactivate/3",
         "Acmp.Modules.Topics.Domain.Topic::Reclassify/2",
-        "Acmp.Modules.Topics.Domain.Topic::Reopen/4",
-        // DEF-084: membership lifecycle + delegation predicates with no production caller.
+        // DEC-057 d3: these two are UNCALLABLE BY CONSTRUCTION, not forgotten, so they are permanent
+        // entries rather than open findings. Both enforcement points evaluate the window inside an EF
+        // Where/AnyAsync — ExpireGuestAccess and DelegationResolver — where a domain method cannot be
+        // translated to SQL, and PrincipalRevalidator works on an anonymous projection with no
+        // aggregate to call. The tell is the sibling TopicCapabilityGrant::IsActiveAt, which is NOT
+        // listed here because it IS called: it filters an already-materialised list.
+        //
+        // They stay because they are the readable canonical spec for a rule the SQL duplicates, and
+        // their unit tests pin the boundary semantics. PredicateAgreementTests is what stops the two
+        // copies drifting apart — delete these and that guard loses its subject.
         "Acmp.Modules.Membership.Domain.CommitteeMember::HasExpired/1",
-        "Acmp.Modules.Membership.Domain.CommitteeMember::Reactivate/0",
         "Acmp.Modules.Membership.Domain.Delegation::IsActiveAt/1",
     };
 

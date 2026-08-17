@@ -540,6 +540,8 @@ SC-016,AC-112,scope_adds
 SC-016,FR-160,scope_adds
 SC-016,FR-161,scope_adds
 SC-016,FR-162,scope_adds
+SC-017,AC-111,scope_modifies
+SC-017,FR-162,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

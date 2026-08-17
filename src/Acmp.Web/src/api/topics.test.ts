@@ -7,6 +7,9 @@ import {
   useAcceptTopic,
   useReturnTopic,
   usePrepareTopic,
+  useReactivateTopic,
+  useCloseTopic,
+  useReopenTopic,
   useUpdateTopic,
   useMoveTopicPriority,
   useAddTopicComment,
@@ -154,6 +157,52 @@ describe('topic mutations', () => {
     // the pool key is what unblocks the agenda builder (D-15) — assert all three invalidations
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'prepared'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // FR-160 / FR-161 / FR-045 — the lifecycle exits (AC-109, AC-110, AC-112). Each asserts the URL,
+  // the verb and the invalidations: a mutation that hits the right endpoint but refreshes nothing
+  // leaves the user staring at the pre-transition status, which is indistinguishable from a failure.
+  it('useReactivateTopic POSTs to the reactivate endpoint and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReactivateTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate('abc');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reactivate');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  it('useCloseTopic POSTs to the close endpoint and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useCloseTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate('abc');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/close');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  it('useReopenTopic POSTs the justification the server requires', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReopenTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', reason: 'new regulatory guidance' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reopen');
+    expect((init as RequestInit).method).toBe('POST');
+    // the reason travels as `reason` because the endpoint binds ReasonBody (FR-044's mandatory-reason rule)
+    expect(lastBody(spy)).toEqual({ reason: 'new regulatory guidance' });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });
 

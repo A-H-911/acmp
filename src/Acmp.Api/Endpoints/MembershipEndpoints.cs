@@ -6,6 +6,7 @@ using Acmp.Modules.Membership.Application.Features.GetMembers;
 using Acmp.Modules.Membership.Application.Features.GetStreams;
 using Acmp.Modules.Membership.Application.Features.InviteUser;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
+using Acmp.Modules.Membership.Application.Features.ReactivateMember;
 using Acmp.Modules.Membership.Application.Features.ReconcileIdentityAccounts;
 using Acmp.Modules.Membership.Application.Features.SetVotingEligibility;
 using Acmp.Shared.Authorization;
@@ -81,6 +82,21 @@ public static class MembershipEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.AdminUsers);
 
+        // FR-162 / AC-111 / DEF-085 — the counterpart of deactivate. Without it a disabled member was
+        // locked out permanently: re-inviting throws on the duplicate email and the Keycloak user can
+        // never be deleted (DEF-029).
+        //
+        // The body is optional, and its ABSENCE means "clear the access window" rather than "leave it
+        // alone" — a returning guest is re-admitted as an ordinary member unless the caller supplies a
+        // new expiry. Leaving it alone is the one behaviour that must not exist, because an expired
+        // window refuses the member independently of Status (ADR-0039).
+        group.MapPost("/{publicId:guid}/reactivate", async (
+            Guid publicId, ReactivateMemberBody? body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReactivateMemberCommand(publicId, body?.AccessExpiresAt), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.AdminUsers);
+
         // DEC-046 / DEF-065 — create a member row, holding the wildcard stream, for every identity
         // account that has none. Administrator only, and Administrator is not stream-bounded, so this
         // stays reachable in the very deploy that starts refusing unassigned members.
@@ -106,4 +122,12 @@ public static class MembershipEndpoints
 
         return app;
     }
+
+    /// <param name="AccessExpiresAt">
+    /// The member's access window after reactivation. NULL (or no body at all) CLEARS it, which is
+    /// the ordinary re-admission; supply an instant to re-window a guest for another meeting. The
+    /// window is always written, because an expired one refuses the member independently of Status
+    /// (ADR-0039) and leaving it stale is the Active-but-refused state AC-111 forbids.
+    /// </param>
+    public sealed record ReactivateMemberBody(DateTimeOffset? AccessExpiresAt);
 }

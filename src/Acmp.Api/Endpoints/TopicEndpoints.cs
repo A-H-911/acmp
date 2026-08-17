@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Application.Features.AcceptTopic;
 using Acmp.Modules.Topics.Application.Features.AddTopicComment;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
+using Acmp.Modules.Topics.Application.Features.CloseTopic;
 using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
@@ -8,7 +9,9 @@ using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
 using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
+using Acmp.Modules.Topics.Application.Features.ReactivateTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
+using Acmp.Modules.Topics.Application.Features.ReopenTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain.Enums;
@@ -73,6 +76,29 @@ public static class TopicEndpoints
         group.MapPost("/{id:guid}/defer", async (Guid id, DeferTopicBody body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new DeferTopicCommand(id, body.Reason, body.RevisitOn), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-161 / AC-110 — the way BACK from Deferred. Before this the revisit date recorded above
+        // was displayed on the topic detail and could never be acted on.
+        group.MapPost("/{id:guid}/reactivate", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReactivateTopicCommand(id), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-160 / AC-109 — the terminal transition. Without it Decided was a permanent resting state.
+        group.MapPost("/{id:guid}/close", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new CloseTopicCommand(id), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-045 / AC-112 — approved in the original plan, traced to WBS-5.7, never built until now.
+        // Reuses ReasonBody: the justification is mandatory, as it is for reject and defer (FR-044).
+        group.MapPost("/{id:guid}/reopen", async (Guid id, ReasonBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReopenTopicCommand(id, body.Reason), ct);
             return Results.NoContent();
         }).RequireAuthorization(Policies.TopicTriage);
 

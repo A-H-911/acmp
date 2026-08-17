@@ -16,8 +16,12 @@
 import { useContext, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic, type TopicDetail as Topic } from '../../api/topics';
+import {
+  useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, type TopicDetail as Topic,
+} from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
+import { Dialog } from '../../components/ui/Dialog';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { Tag, Badge } from '../../components/ui/Chip';
@@ -100,8 +104,24 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const fmt = useDateFmt();
   const urgent = topic.urgency !== 'Normal';
   const prepare = usePrepareTopic(topic.key);
+  const reactivate = useReactivateTopic(topic.key);
+  const close = useCloseTopic(topic.key);
+  const reopen = useReopenTopic(topic.key);
   const navigate = useNavigate();
   const [prepareErr, setPrepareErr] = useState<string | null>(null);
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
+
+  // FR-160/FR-161/FR-045 — the lifecycle EXITS. Each of these transitions existed on the aggregate
+  // with no caller (DEF-084): a Decided topic could never be closed, a Deferred one never came back,
+  // and a Rejected or Closed one could never be reopened. Same show-and-enforce rule as prepare —
+  // the button is offered on the right status and the backend refuses the wrong role.
+  const onLifecycle = (run: () => void) => {
+    setPrepareErr(null);
+    run();
+  };
+  const lifecycleError = (e: unknown) =>
+    setPrepareErr(e instanceof ApiError && e.status === 403 ? t('topics.prepare.forbidden') : t('topics.prepare.error'));
   // W4 (AC-035): move an Accepted topic into the agenda pool. Show-and-enforce — the button is offered
   // for any Accepted topic and the backend 403s a non-owner/non-Secretary, surfaced inline.
   const onPrepare = () => {
@@ -146,6 +166,30 @@ function DetailHeader({ topic }: { topic: Topic }) {
             <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.prepare.button')}
           </Button>
         )}
+        {/* AC-110 — the affordance the revisit date never had. */}
+        {topic.status === 'Deferred' && (
+          <Button
+            onClick={() => onLifecycle(() => reactivate.mutate(topic.id, { onError: lifecycleError }))}
+            loading={reactivate.isPending}
+          >
+            <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.reactivate.button')}
+          </Button>
+        )}
+        {/* AC-109 — Decided was a permanent resting state until this existed. */}
+        {topic.status === 'Decided' && (
+          <Button
+            onClick={() => onLifecycle(() => close.mutate(topic.id, { onError: lifecycleError }))}
+            loading={close.isPending}
+          >
+            <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.close.button')}
+          </Button>
+        )}
+        {/* AC-112 / FR-045 — approved in the original plan, unbuilt until now. */}
+        {(topic.status === 'Rejected' || topic.status === 'Closed') && (
+          <Button onClick={() => { setReopenReason(''); setReopenOpen(true); }}>
+            <Icon name="warnTriangle" size={15} aria-hidden /> {t('topics.reopen.button')}
+          </Button>
+        )}
         <Button disabled title={t('topics.comingSoon')}>
           <Icon name="calendar" size={15} aria-hidden /> {t('detail.addAgenda')}
         </Button>
@@ -157,6 +201,45 @@ function DetailHeader({ topic }: { topic: Topic }) {
           <Button variant="secondary" onClick={() => navigate(`/topics/${topic.key}/edit`)}>{t('detail.edit')}</Button>
         )}
         {prepareErr && <span className="dt-prepare-err" role="alert">{prepareErr}</span>}
+        {/*
+          AC-112 — the justification is MANDATORY (FR-044's rule), so the confirm stays disabled
+          until one is typed rather than letting the server refuse a request the UI could have
+          prevented.
+        */}
+        <Dialog
+          open={reopenOpen}
+          onClose={() => setReopenOpen(false)}
+          icon={<Icon name="warnTriangle" size={20} aria-hidden />}
+          title={t('topics.reopen.title')}
+          description={t('topics.reopen.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setReopenOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={reopen.isPending}
+                disabled={reopenReason.trim().length === 0}
+                onClick={() =>
+                  onLifecycle(() =>
+                    reopen.mutate(
+                      { topicId: topic.id, reason: reopenReason.trim() },
+                      { onSuccess: () => setReopenOpen(false), onError: lifecycleError },
+                    ))}
+              >
+                {t('topics.reopen.confirm')}
+              </Button>
+            </>
+          }
+        >
+          <label className="dt-reopen-label" htmlFor="reopen-reason">{t('topics.reopen.label')}</label>
+          <textarea
+            id="reopen-reason"
+            className="dt-reopen-input"
+            rows={3}
+            value={reopenReason}
+            onChange={(e) => setReopenReason(e.target.value)}
+          />
+        </Dialog>
       </div>
     </div>
   );
