@@ -192,6 +192,38 @@ public class TopicLifecycleExitTests
         (await db.Topics.SingleAsync()).Status.Should().Be(TopicStatus.Reopened);
     }
 
+    [Fact]
+    public async Task Close_reports_an_unknown_topic_as_not_found()
+    {
+        var (user, clock) = (User(), Clock());
+        await using var db = NewDb(user, clock);
+
+        var act = () => new CloseTopicHandler(db, Authorizer(), user, clock, Substitute.For<IAuditSink>())
+            .Handle(new CloseTopicCommand(Guid.NewGuid()), CancellationToken.None);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task Reactivate_reports_an_unknown_topic_as_not_found()
+    {
+        var (user, clock) = (User(), Clock());
+        await using var db = NewDb(user, clock);
+
+        var act = () => new ReactivateTopicHandler(db, Authorizer(), user, clock, Substitute.For<IAuditSink>())
+            .Handle(new ReactivateTopicCommand(Guid.NewGuid()), CancellationToken.None);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public void Close_requires_a_topic_id()
+        => new CloseTopicValidator().Validate(new CloseTopicCommand(Guid.Empty)).IsValid.Should().BeFalse();
+
+    [Fact]
+    public void Reactivate_requires_a_topic_id()
+        => new ReactivateTopicValidator().Validate(new ReactivateTopicCommand(Guid.Empty)).IsValid.Should().BeFalse();
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]

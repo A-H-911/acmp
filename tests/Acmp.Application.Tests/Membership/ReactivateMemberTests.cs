@@ -154,6 +154,11 @@ public class ReactivateMemberTests
     }
 
     [Fact]
+    public void Reactivate_requires_a_member_id()
+        => new ReactivateMemberValidator().Validate(new ReactivateMemberCommand(Guid.Empty)).IsValid
+            .Should().BeFalse();
+
+    [Fact]
     public void Only_an_administrator_may_reactivate()
         => new ReactivateMemberCommand(Guid.NewGuid()).AllowedRoles
             .Should().ContainSingle().Which.Should().Be(nameof(CommitteeRole.Administrator));

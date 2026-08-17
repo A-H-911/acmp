@@ -78,6 +78,40 @@ public class MembershipApiTests
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
+    // FR-162 / AC-111 / DEF-085 — the counterpart of deactivate, over HTTP. Before this endpoint a
+    // disabled member was locked out permanently: re-invite throws on the duplicate email and the
+    // Keycloak user can never be deleted.
+    [Fact]
+    public async Task Administrator_can_reactivate_a_deactivated_member()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        await factory.SeedMembersAsync(("kc-bob", "Bob", CommitteeRole.Member));
+        var admin = Client(factory, "Administrator", sub: "kc-admin");
+
+        var members = await (await admin.GetAsync("/api/members")).Content.ReadFromJsonAsync<List<MemberRow>>();
+        var bob = members!.Single(m => m.Role == nameof(CommitteeRole.Member));
+
+        (await admin.PostAsync($"/api/members/{bob.PublicId}/deactivate", null))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var response = await admin.PostAsync($"/api/members/{bob.PublicId}/reactivate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        // Read it back rather than trusting the 204 — the whole defect was a state that LOOKED fixed.
+        var after = await (await admin.GetAsync("/api/members")).Content.ReadFromJsonAsync<List<MemberRow>>();
+        after!.Single(m => m.PublicId == bob.PublicId).Status.Should().Be(nameof(MembershipStatus.Active));
+    }
+
+    [Theory] // same admin-only boundary as deactivate (AC-005 / AC-006)
+    [InlineData("Submitter")]
+    [InlineData("Member")]
+    public async Task Non_admin_cannot_reactivate_member_403(string role)
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var response = await Client(factory, role).PostAsync($"/api/members/{Guid.NewGuid()}/reactivate", null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact] // AC-002: claim -> role, end to end over HTTP
     public async Task Provision_me_returns_role_from_claims()
     {
