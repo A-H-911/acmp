@@ -231,10 +231,17 @@ function DetailHeader({ topic }: { topic: Topic }) {
             </>
           }
         >
-          <label className="dt-reopen-label" htmlFor="reopen-reason">{t('topics.reopen.label')}</label>
+          {/*
+            The design system's own `.field-label` / `.textarea`, NOT bespoke classes. The first
+            version hand-rolled both and the visual check caught two defects a green suite could
+            not: `var(--radius-2)` does not exist so the corners fell back to SQUARE against a
+            rounded system, and without `min-inline-size: 0` the textarea collapsed to 34px inside
+            the dialog's flex body. `.textarea` already carries both, plus focus and invalid states.
+          */}
+          <label className="field-label" htmlFor="reopen-reason">{t('topics.reopen.label')}</label>
           <textarea
             id="reopen-reason"
-            className="dt-reopen-input"
+            className="textarea"
             rows={3}
             value={reopenReason}
             onChange={(e) => setReopenReason(e.target.value)}
