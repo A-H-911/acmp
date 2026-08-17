@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Submit a topic (P5b, W1) — matches the "ACMP Backlog & Topic" design (submit screen).
  * Composes the shared library (Breadcrumb, Field/Input/Textarea, Button, Dialog, Icon).
  * Wired to POST /api/topics (+ per-file POST /{id}/attachments on success).
@@ -41,7 +41,10 @@ const TYPES: { v: string; icon: IconName }[] = [
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
 const STEPS = ['type', 'justification', 'scope', 'attachments', 'urgency'];
 const MAX_TITLE = 120;
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
+// MUST track TopicAttachmentOptions.MaxSizeBytes (AC-049's 50 MB default). This constant is an
+// ENFORCED client cap, not a hint: files above it are rejected before upload, so a value below the
+// server's makes the server's default unreachable through the UI - which is exactly what 25 MB did.
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const DRAFT_KEY = 'acmp-topic-draft-v1';
 const SOURCE_DEFAULT = 'CommitteeMember';
 
