@@ -73,6 +73,6 @@ public sealed class PublishAgendaHandler : IRequestHandler<PublishAgendaCommand,
         await MeetingNotifications.FanOutAsync(_directory, _notifications,
             MeetingNotifications.AgendaPublished(meeting.Title, meeting.Key, meeting.ScheduledStart), ct);
 
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
 using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
@@ -97,7 +98,7 @@ public class GuestMeetingScopeTests
         new(db, dir, user);
 
     private static GetMeetingDetailHandler Detail(MeetingsDbContext db, ICommitteeDirectory dir, ICurrentUser user) =>
-        new(db, dir, user);
+        new(db, dir, user, TopicConfidentialityStub.SeesEverything());
 
     /*
      * ASSERTED FIRST AND ON PURPOSE — the AC-010 lesson. If the guest could reach NOTHING, every

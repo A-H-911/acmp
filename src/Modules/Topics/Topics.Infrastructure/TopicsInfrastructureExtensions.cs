@@ -45,6 +45,11 @@ public static class TopicsInfrastructureExtensions
         // for the mission→source-topic traceability edge.
         services.AddScoped<ITopicReader, TopicReader>();
 
+        // Cross-module read seam consumed by Meetings, Traceability and Dependencies (ADR-0001, SL-030 /
+        // FR-163): which topics the caller must not see, so each can redact the key+title snapshot it froze
+        // into its own schema. Scoped, because the answer is about the CALLER and dies with the request.
+        services.AddScoped<ITopicConfidentiality, TopicConfidentialityReader>();
+
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 
         services.AddTopicsApplication();
