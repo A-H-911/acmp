@@ -44,9 +44,10 @@ and `DW-030`; `DEC-060` created `PH-6` to hold the work.
   and `WBS-22.1`/`.2`/`.4` are `Implemented`. §2 is now a record of what was built and of the ONE
   thing that needs the operator: **`SC-021`, Proposed**. Everything else in the slice is finished.
 - **`readiness_check("package")` now returns `ready:TRUE`.** `acs-met` and `defects-closed` both
-  pass; the build window that held `AC-114` open is closed. ⚠ **The three advisories that still fail
-  are the same three that always did** — `defects-minor` (`DEF-086`–`DEF-089`),
-  `deferred-work-reviewed` (22 rows) and `acs-slice-bound` (`AC-109`–`AC-112`). None is a task.
+  pass; the build window that held `AC-114` open is closed. ⚠ **FOUR advisories fail, and none is a
+  task** — `defects-minor` (`DEF-086`–`DEF-089`), `deferred-work-reviewed` (22 rows),
+  `acs-slice-bound` (`AC-109`–`AC-112`), and `lessons-confirmed`, which fails because **`LL-007` is
+  Proposed and waiting on your interview** (§2). The first three are the long-standing ones.
   ⚠ Slice-scope `readiness_check("slice","SL-030")` is still **false**, deliberately: `wbs-done`
   counts `Review` as open, and `WBS-22`/`WBS-22.3` are parked at `Review` until `SC-021` is ruled on.
   That is honest, not a regression — do not green it by promoting them.
@@ -112,9 +113,13 @@ directions** (`LL-006`):
    /`ToTitle` are the same create-time topic snapshots, read by three read-all handlers — and the
    **Reports** surface `AC-114` names is what loads that register. Built here on that reading.
 
-`SC-021` records both. **`WBS-22` and `WBS-22.3` are parked at `Review` until you rule on it** — that
+`SC-021` records both, with `scope_modifies` edges onto `WBS-22.3` and `AC-114` so an approval can be
+applied mechanically. **`WBS-22` and `WBS-22.3` are parked at `Review` until you rule on it** — that
 is why slice readiness is false. Approve it and they go `Implemented`; reject the Dependencies half
 and that fix reverts while `DEF-090` becomes a `DW-` row. Nothing else depends on the answer.
+
+**`LL-007` is also Proposed and needs the same interview:** a checker that reports success may have
+had nothing to check — see the `DEF-091` note below, which is the instance it generalises.
 
 **Also fixed on the way:** `DEF-091` — the branch had been **RED since `ecfd63f`**, ten commits, with
 `npm run build` failing on 13 TypeScript errors while `vitest` stayed green (it transpiles, it does

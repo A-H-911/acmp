@@ -571,6 +571,9 @@ SC-020,FR-134,scope_modifies
 SC-020,FR-149,scope_modifies
 SC-020,FR-154,scope_modifies
 SC-020,FR-155,scope_modifies
+SC-021,AC-114,scope_modifies
+SC-021,DEF-090,relates_to
+SC-021,WBS-22.3,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
