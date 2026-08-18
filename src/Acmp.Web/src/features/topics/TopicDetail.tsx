@@ -196,7 +196,7 @@ function DetailHeader({ topic }: { topic: Topic }) {
             the design system and the verified PR #289 button pattern (INV-014). */}
         {topic.status === 'Decided' && (
           <Button onClick={() => { setConvertReason(''); setConvertType(''); setConvertOpen(true); }}>
-            <Icon name="research" size={15} aria-hidden /> {t('topics.convert.button')}
+            <Icon name="refresh" size={15} aria-hidden /> {t('topics.convert.button')}
           </Button>
         )}
         {/* AC-112 / FR-045 — approved in the original plan, unbuilt until now. */}
@@ -271,7 +271,7 @@ function DetailHeader({ topic }: { topic: Topic }) {
         <Dialog
           open={convertOpen}
           onClose={() => setConvertOpen(false)}
-          icon={<Icon name="research" size={20} aria-hidden />}
+          icon={<Icon name="refresh" size={20} aria-hidden />}
           title={t('topics.convert.title')}
           description={t('topics.convert.subtitle')}
           footer={
@@ -298,28 +298,39 @@ function DetailHeader({ topic }: { topic: Topic }) {
             </>
           }
         >
-          <label className="field-label" htmlFor="convert-type">{t('topics.convert.typeLabel')}</label>
-          <select
-            id="convert-type"
-            className="input"
-            value={convertType}
-            onChange={(e) => setConvertType(e.target.value)}
-          >
-            <option value="">{t('topics.convert.typePlaceholder')}</option>
-            {/* The current type is excluded: converting a topic to what it already is is refused by
-                the server, so offering it would be an option that can only fail. */}
-            {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
-              <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
-            ))}
-          </select>
-          <label className="field-label" htmlFor="convert-reason">{t('topics.convert.label')}</label>
-          <textarea
-            id="convert-reason"
-            className="textarea"
-            rows={3}
-            value={convertReason}
-            onChange={(e) => setConvertReason(e.target.value)}
-          />
+          {/*
+            Each label+control is wrapped in `.field`, the design system's own grouping class, because
+            `.field + .field { margin-block-start: var(--sp-4) }` is what separates consecutive fields.
+            The reopen dialog omits it and looks fine only because it has a SINGLE field — with two,
+            the visual check showed the second label sitting flush against the select above it. Found
+            by looking at it; JSDOM reports both labels present either way.
+          */}
+          <div className="field">
+            <label className="field-label" htmlFor="convert-type">{t('topics.convert.typeLabel')}</label>
+            <select
+              id="convert-type"
+              className="input"
+              value={convertType}
+              onChange={(e) => setConvertType(e.target.value)}
+            >
+              <option value="">{t('topics.convert.typePlaceholder')}</option>
+              {/* The current type is excluded: converting a topic to what it already is is refused by
+                  the server, so offering it would be an option that can only fail. */}
+              {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+                <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="convert-reason">{t('topics.convert.label')}</label>
+            <textarea
+              id="convert-reason"
+              className="textarea"
+              rows={3}
+              value={convertReason}
+              onChange={(e) => setConvertReason(e.target.value)}
+            />
+          </div>
         </Dialog>
       </div>
     </div>
