@@ -12,6 +12,7 @@ using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.ReactivateTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
+using Acmp.Modules.Topics.Application.Features.SetTopicConfidentiality;
 using Acmp.Modules.Topics.Application.Features.ReopenTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
@@ -112,6 +113,17 @@ public static class TopicEndpoints
             return Results.Created($"/api/topics/{result.Key}", result);
         }).RequireAuthorization(Policies.TopicTriage);
 
+        // FR-163 / C-AUTHZ-04: classify or declassify. Chairman + Secretary only (DEC-063 d2), gated
+        // by AllowedRoles on the command AND the endpoint policy — the same two roles TopicTriage
+        // carries. ⚠ Deliberately NOT Policies.TopicEdit: that policy now carries
+        // ConfidentialityRequirement, so routing declassification through it would make lifting a
+        // classification depend on being able to see the topic — circular for the case that matters.
+        group.MapPut("/{id:guid}/confidentiality", async (Guid id, ConfidentialityBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new SetTopicConfidentialityCommand(id, body.Restricted), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
         // W4: mark prepared — ABAC (Owner/Secretary) enforced in the handler.
         group.MapPost("/{id:guid}/prepare", async (Guid id, ISender sender, CancellationToken ct) =>
         {
@@ -166,6 +178,9 @@ public static class TopicEndpoints
     // FR-030: ReasonBody is not reused here — conversion needs the TARGET TYPE as well, and the reason is
     // about why the type is changing rather than why a transition was refused.
     public sealed record ConvertBody(TopicType TargetType, string Reason);
+    // PUT, not POST: setting a classification is idempotent and the body carries the DESIRED state
+    // rather than an action, so a repeated call is a no-op instead of a second event.
+    public sealed record ConfidentialityBody(bool Restricted);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
     public sealed record MoveBody(int Delta);
