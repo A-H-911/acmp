@@ -31,3 +31,8 @@ public sealed record TopicClosedEvent(Guid TopicPublicId, string Key, DateTimeOf
 public sealed record TopicConvertedEvent(Guid TopicPublicId, string Key, DateTimeOffset OccurredOn) : IDomainEvent;
 
 public sealed record TopicPriorityChangedEvent(Guid TopicPublicId, string Key, int Priority, DateTimeOffset OccurredOn) : IDomainEvent;
+
+// FR-163 / C-AUTHZ-04: a topic's confidentiality classification changed. Carries the NEW state rather
+// than a "restricted"/"declassified" pair so a subscriber cannot mistake one for the other, and the
+// actor because a classification change is the kind of act an auditor asks "who" about first.
+public sealed record TopicRestrictedEvent(Guid TopicPublicId, string Key, bool IsRestricted, string ActorSub, DateTimeOffset OccurredOn) : IDomainEvent;

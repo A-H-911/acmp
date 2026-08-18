@@ -36,3 +36,24 @@ public interface IStreamScopedResource
     /// </remarks>
     bool AffectsAllStreams { get; }
 }
+
+// C-AUTHZ-04 / FR-163: the artifact carries a confidentiality classification. A Restricted artifact is
+// readable only by the committee-wide readers named in DEC-063 d1 (Chairman, Secretary, Auditor), its
+// Owner, and holders of an explicit per-topic capability grant.
+public interface IConfidentialResource
+{
+    /// <summary>
+    /// True when this artifact is classified Restricted and its visibility is narrowed accordingly.
+    /// </summary>
+    /// <remarks>
+    /// ⚠ A PRIMITIVE bool, and it must stay one — the same reason AffectsAllStreams is (ADR-0001 /
+    /// ADR-0021): a Confidentiality enum would live in Topics.Domain, and referencing it from the
+    /// shared kernel would invert the dependency those ADRs exist to keep drawn.
+    /// <para>
+    /// ⚠ CONFIDENTIALITY NARROWS, NEVER WIDENS (SEC-304). False must mean "apply the normal rules",
+    /// never "grant" — so every consumer reads this as an additional restriction on top of whatever
+    /// access the principal already had, and never as a reason to allow something otherwise refused.
+    /// </para>
+    /// </remarks>
+    bool IsRestricted { get; }
+}
