@@ -137,13 +137,14 @@ public sealed class AggregateReachabilityTests
         // stops calling its transition, THIS TEST FAILS — which is the whole point of taking the
         // entries out rather than leaving them as harmless no-ops.
         //
-        // DW-030: FR-030 (topic conversion) is Approved, traced to WBS-5.7 + TEST-018, and DEFERRED
-        // rather than abandoned. These two are its future readers. ⚠ NEITHER SATISFIES FR-030 AS
-        // WRITTEN — Convert records no reason, Reclassify records no reason and raises no event, and
-        // nothing creates the typed original->converted link the requirement demands — so wiring them
-        // is a feature, not a follow-up. Read DW-030 before touching either; do not re-raise them as
-        // a new finding.
-        "Acmp.Modules.Topics.Domain.Topic::Convert/3",
+        // DW-032 (was part of DW-030): Reclassify changes Type/Source pre-Accept and is the Secretary's
+        // triage-time correction path. It is NOT part of FR-030 and never was: SC-018 scoped FR-030 to the
+        // CONVERT direction, and the two guards are DISJOINT — Convert requires Decided, Reclassify forbids
+        // anything past Triage — so no topic is ever a candidate for both. Read DW-032 before touching it;
+        // do not re-raise it as a new finding.
+        // ⚠ Topic::Convert/3 WAS listed here and is GONE, not edited: FR-030 shipped, Convert now takes a
+        // reason (arity 4), and this key is name+arity — a stale Convert/3 entry would silently allowlist a
+        // method that no longer exists while the real one went unguarded.
         "Acmp.Modules.Topics.Domain.Topic::Reclassify/2",
         // DEC-057 d3: these two are UNCALLABLE BY CONSTRUCTION, not forgotten, so they are permanent
         // entries rather than open findings. Both enforcement points evaluate the window inside an EF

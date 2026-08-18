@@ -3,6 +3,7 @@ using Acmp.Modules.Topics.Application.Features.AddTopicComment;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
 using Acmp.Modules.Topics.Application.Features.CloseTopic;
 using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
+using Acmp.Modules.Topics.Application.Features.ConvertTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
@@ -102,6 +103,15 @@ public static class TopicEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.TopicTriage);
 
+        // FR-030 / AC-113 (SC-018): convert a Decided topic to a different type. Returns 201 with the
+        // SUCCESSOR's key — the response body describes the new artifact, not the retired one, which is why
+        // this is Created rather than NoContent like the other lifecycle transitions.
+        group.MapPost("/{id:guid}/convert", async (Guid id, ConvertBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new ConvertTopicCommand(id, body.TargetType, body.Reason), ct);
+            return Results.Created($"/api/topics/{result.Key}", result);
+        }).RequireAuthorization(Policies.TopicTriage);
+
         // W4: mark prepared — ABAC (Owner/Secretary) enforced in the handler.
         group.MapPost("/{id:guid}/prepare", async (Guid id, ISender sender, CancellationToken ct) =>
         {
@@ -153,6 +163,9 @@ public static class TopicEndpoints
 
     public sealed record AcceptTopicBody(Guid OwnerId, string OwnerName);
     public sealed record ReasonBody(string Reason);
+    // FR-030: ReasonBody is not reused here — conversion needs the TARGET TYPE as well, and the reason is
+    // about why the type is changing rather than why a transition was refused.
+    public sealed record ConvertBody(TopicType TargetType, string Reason);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
     public sealed record MoveBody(int Delta);
