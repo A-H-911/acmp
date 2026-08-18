@@ -1,4 +1,6 @@
-﻿using Acmp.Modules.Decisions.Infrastructure.Persistence;
+﻿using NSubstitute;
+using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Search;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Search;
@@ -28,6 +30,16 @@ namespace Acmp.Integration.Tests;
 // query executes end-to-end. Docker-gated, like MinioFileStoreTests.
 public sealed class SearchProvidersFtsTests : IAsyncLifetime
 {
+    // FR-163: these suites assert SEARCH ENGINE behaviour (FTS vs LIKE, blank-query short-circuit),
+    // not confidentiality. A permissive scope keeps them measuring the engine.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private readonly IFutureDockerImage _image = new ImageFromDockerfileBuilder()
         .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "deploy")
         .WithDockerfile("Dockerfile.sqlserver")
@@ -106,7 +118,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
         // columns/languages valid), which the InMemory suite can never prove.
         ISearchProvider[] providers =
         {
-            new TopicSearchProvider(_topics),
+            new TopicSearchProvider(_topics, SeesEverything()),
             new AdrSearchProvider(_governance),
             new MinutesSearchProvider(_meetings),
             new DocumentSearchProvider(_knowledge),
