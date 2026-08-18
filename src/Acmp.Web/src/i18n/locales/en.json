@@ -1775,6 +1775,8 @@
     "scheduledTopics": "Prepared",
     "searchTopics": "Search topics…",
     "urgent": "Urgent",
+    "restrictedKey": "Restricted",
+    "restrictedTitle": "Restricted topic",
     "add": "Add",
     "addTopic": "Add {{key}} to the agenda",
     "poolEmpty": {

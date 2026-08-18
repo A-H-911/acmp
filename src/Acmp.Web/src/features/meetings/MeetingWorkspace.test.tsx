@@ -92,6 +92,41 @@ describe('MeetingWorkspace (P6d)', () => {
     (useRecordActualTime as unknown as Mock).mockReturnValue({ mutate: recordSpy, isPending: false });
   });
 
+  // FR-163 / AC-114 — the server redacts a restricted topic's snapshot to EMPTY key and title so the
+  // placeholder can be localized here rather than shipped as an English string from C#. These assert the
+  // SPA turns the blank into a readable label instead of rendering a hole.
+  it('shows a localized placeholder where a restricted agenda item was redacted', () => {
+    setup({
+      ...MEETING,
+      agenda: {
+        ...MEETING.agenda!,
+        items: [
+          { ...MEETING.agenda!.items[0], topicKey: '', topicTitle: '', urgent: false },
+          MEETING.agenda!.items[1],
+        ],
+      },
+    });
+
+    expect(screen.getAllByText('Restricted topic').length).toBeGreaterThan(0);
+    expect(screen.getByText('Restricted')).toBeInTheDocument();
+    // The twin: the sibling item is untouched, so this is measuring the placeholder and not a blank page.
+    expect(screen.getByText('Event streaming spike')).toBeInTheDocument();
+  });
+
+  it('gives the redacted active item a non-empty accessible name', () => {
+    setup({
+      ...MEETING,
+      agenda: {
+        ...MEETING.agenda!,
+        items: [{ ...MEETING.agenda!.items[0], topicKey: '', topicTitle: '', urgent: false }],
+      },
+    });
+
+    // aria-label={item.topicTitle} would have become aria-label="" here, and an empty accessible name
+    // is a WCAG failure that no snapshot or text query would ever have shown.
+    expect(screen.getByRole('region', { name: 'Restricted topic' })).toBeInTheDocument();
+  });
+
   it('renders the live header, elapsed timer, agenda spine, active item, and attendance', () => {
     setup();
     // F-3: the meeting-title H1 is owned by the MeetingPage shell (this workspace renders in its

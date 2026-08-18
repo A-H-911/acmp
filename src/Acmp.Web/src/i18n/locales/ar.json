@@ -1775,6 +1775,8 @@
     "scheduledTopics": "مُهيّأ",
     "searchTopics": "بحث في المواضيع…",
     "urgent": "عاجل",
+    "restrictedKey": "مُقيَّد",
+    "restrictedTitle": "موضوع مُقيَّد",
     "add": "إضافة",
     "addTopic": "أضف {{key}} إلى جدول الأعمال",
     "poolEmpty": {
