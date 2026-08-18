@@ -119,15 +119,13 @@ describe('EditTopic (AC-034)', () => {
   it('offers the confidentiality toggle to a secretary and posts the flipped state', async () => {
     setup({}, ['secretary']);
 
-    // ⚠ The accessible name is the FIELD LABEL, because Field associates its <label> with the
-    // control's id — so a screen reader announces "Confidentiality, not pressed", and the visible
-    // text carries the human-readable state. Both are asserted; querying by the visible text alone
-    // would have silently depended on the label association NOT existing.
-    const toggle = screen.getByRole('button', { name: /confidentiality/i });
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    expect(toggle).toHaveTextContent(/not restricted/i);
+    // A segmented pair, like the scope and urgency pickers — so each option is its own button with
+    // its own name and its own pressed state, and the group carries the field label.
+    expect(screen.getByRole('button', { name: /not restricted/i })).toHaveAttribute('aria-pressed', 'true');
+    const restrict = screen.getByRole('button', { name: /^restricted$/i });
+    expect(restrict).toHaveAttribute('aria-pressed', 'false');
 
-    await userEvent.click(toggle);
+    await userEvent.click(restrict);
 
     expect(classifyMutate).toHaveBeenCalledWith({ topicId: TOPIC.id, restricted: true });
   });
@@ -135,9 +133,8 @@ describe('EditTopic (AC-034)', () => {
   it('shows the toggle as pressed for an already-restricted topic', () => {
     setup({ restricted: true }, ['secretary']);
 
-    const toggle = screen.getByRole('button', { name: /confidentiality/i });
-    expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    expect(toggle).toHaveTextContent(/^\s*Restricted\s*$/);
+    expect(screen.getByRole('button', { name: /^restricted$/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /not restricted/i })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('does not offer the confidentiality toggle to a member', () => {
@@ -145,7 +142,8 @@ describe('EditTopic (AC-034)', () => {
 
     // DEC-063 d2 excludes the OWNER on purpose — a plain Member must not be able to hide a topic
     // from the committee, so the control is not offered even on their own topic.
-    expect(screen.queryByRole('button', { name: /confidentiality/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: /confidentiality/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /not restricted/i })).not.toBeInTheDocument();
   });
 
   it('does not offer the scope control to a member', () => {

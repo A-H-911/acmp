@@ -232,20 +232,37 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
           {mayClassify && (
             <Field label={t('topicEdit.fRestricted')} help={t('topicEdit.fRestrictedHelp')}>
               {(p) => (
-                <button
-                  type="button"
-                  id={p.id}
-                  className={`sub-card ${topic.restricted ? 'selected' : ''}`}
-                  // ⚠ COERCED. aria-pressed={undefined} OMITS THE ATTRIBUTE, which silently
-                  // downgrades this from a toggle to a plain button for a screen reader — the state
-                  // simply stops being announced. Caught by a test whose fixture predated the field.
-                  aria-pressed={topic.restricted === true}
-                  disabled={setConfidentiality.isPending}
-                  onClick={() => setConfidentiality.mutate({ topicId: topic.id, restricted: !topic.restricted })}
-                >
-                  <Icon name="lock" size={15} aria-hidden />{' '}
-                  {topic.restricted ? t('topicEdit.restrictedOn') : t('topicEdit.restrictedOff')}
-                </button>
+                // ⚠ A TWO-CARD GROUP, NOT A LONE .sub-card. The visual check caught the first
+                // version: .sub-card is sized by its .sub-cards grid parent, so standalone it
+                // collapsed to 43px in RTL and wrapped its own label — the DW-031 shape, a class
+                // reused outside the context it was built for. This is the same segmented pattern
+                // the scope and urgency pickers use, and it reads better besides: two explicit
+                // options beat one toggle whose label changes under you.
+                // ⚠ `.sub-cards` ALONE — it is already a 2-column grid. `.sub-cards-2` does not
+                // exist, and an undefined class does nothing silently, which is the same failure
+                // mode as the undefined custom property DW-031 records. Checked before writing it.
+                <div className="sub-cards" id={p.id} role="group" aria-label={t('topicEdit.fRestricted')}>
+                  {/* ⚠ COERCED once, here. With `restricted` absent, `restricted === v` is false for
+                      BOTH cards and the control renders with no selection at all — a segmented
+                      picker that shows nothing selected reads as broken, not as "unset". Same
+                      failure family as the aria-pressed omission this replaced. */}
+                  {[false, true].map((v) => (
+                    <button
+                      key={String(v)}
+                      type="button"
+                      className={`sub-card ${(topic.restricted ?? false) === v ? 'selected' : ''}`}
+                      aria-pressed={(topic.restricted ?? false) === v}
+                      disabled={setConfidentiality.isPending}
+                      onClick={() => setConfidentiality.mutate({ topicId: topic.id, restricted: v })}
+                    >
+                      {/* ⚠ NO ICON. .sub-card is flex-direction: column, so a child icon pushes
+                          the label onto a second line — which is exactly how it rendered before the
+                          visual check. The scope and urgency pickers are text-only for the same
+                          reason; the lock icon lives on the DETAIL badge, where it belongs. */}
+                      {v ? t('topicEdit.restrictedOn') : t('topicEdit.restrictedOff')}
+                    </button>
+                  ))}
+                </div>
               )}
             </Field>
           )}
