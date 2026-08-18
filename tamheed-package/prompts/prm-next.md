@@ -15,13 +15,14 @@ gate_run()                         # expect 7/7 ready:true
 readiness_check("package")         # expect ready:TRUE — every BLOCKING rule passes
 ```
 
-⚠ **"Ready" means BLOCKING only.** Three advisories fail on purpose and each needs a human, not a
-fix: `deferred-work-reviewed` (19 `DW-` rows), `acs-slice-bound` (`AC-109`–`AC-112`), and
-`lessons-confirmed` (`LL-004`, `LL-005` await the operator's interview).
+⚠ **"Ready" means BLOCKING only.** TWO advisories fail on purpose and neither is a task:
+`deferred-work-reviewed` (16 `DW-` rows whose triggers have not fired) and `acs-slice-bound`
+(`AC-109`–`AC-112`, accepted by `DEC-058 d3`). `lessons-confirmed` now PASSES — all five lessons are
+Approved and pinned.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers:
 `gate_run()`, `readiness_check("package")`, `entity_query("defect", lifecycle_status="Open")`. A
-hard-coded count is stale on the first new write, and this file has now carried a stale one **four**
+hard-coded count is stale on the first new write, and this file has now carried a stale one **five**
 times — the fourth time it also told the reader to expect `ready:false` when readiness had been
 `true` for a day. If you find this section wrong again, **fix the file in the same session**.
 
@@ -33,65 +34,70 @@ exist — check that first.
 
 ---
 
-## §1 — What is true right now (2026-08-17)
+## §1 — What is true right now (2026-08-18)
 
 `main` is green, clean and pushed. (`git log --oneline -5` is the authority — no hash is quoted here
 on purpose, because the last one written into this file went stale the same day.)
 
+- **THE ENGINEERING QUEUE IS EMPTY.** Everything raised in the 2026-08-17/18 stream has been built,
+  merged and recorded. There is no pending work item, no parked branch, and nothing waiting on the
+  operator. **If you are here to "continue", the honest first move is to ASK what to work on** —
+  do not invent a task from the registers.
 - **The ladder is COMPLETE.** `P1`–`P19` shipped; all 28 slices are `Implemented` except `SL-014`
   (P14 Tarseem, `Deferred` by `DEC-028` — operator-reopen only). **There is no active slice**, so
-  `slice-kickoff.md` does not apply to anything on this list.
+  `slice-kickoff.md` applies to nothing on this list.
 - **Every phase is closed except `PH-3`, and that one is closed-by-refusal on purpose.** `PH-5` was
   closed 2026-08-17. ⚠ `PH-3` stays `Approved` because `wbs-done` fails on **`WBS-20`**, open
   deliberately: `WBS-20.4` is the email adapter and *no email in v1* is a hard constraint
   (`DEC-055`). **Do not "repair" PH-3 to make the statuses look uniform** — that is the manufactured
   -status move `DEF-010` records.
 - **PRODUCTION IS DEPLOYED AND RECONCILED.** `/readyz` returns 200 Healthy on all four checks;
-  `committee_members` went 1 → 27. ⚠ **The adoption clock (`RISK-007`) starts 2026-08-17** — the old
+  `committee_members` went 1 → 27. ⚠ **The adoption clock (`RISK-007`) started 2026-08-17** — the old
   "0 topics, 1 sign-in" statistic measured a platform that could not admit its users.
 - **ZERO open defects of any severity.** `defects-closed` and `defects-minor` both pass.
-- **The store is Tamheed v4** (server 4.4.1 — `lesson`/`LL-` and `skill`/`SKL-` families exist, and
-  approving a lesson refuses without `operator_confirm: true`). See §4 for what v4 changed.
+- **Five lessons are Approved and PINNED** (`LL-001`…`LL-005`) and bind every session via the
+  tool-owned note in `tamheed-package/CLAUDE.md`. Read them; they are short and each cost real time.
+- **The store is Tamheed v4** (server 4.4.1). See §4 for what v4 changed under you.
 
-### What shipped most recently
+### What shipped in the last stream, so you do not redo it
 
-**`DEC-057` — `DEF-084`'s eight unreachable aggregate methods were THREE different problems**, and
-reading all eight in source before asking is what made that visible:
+**`DEC-057` — `DEF-084`'s eight unreachable aggregate methods were THREE different problems**, which
+only became visible by reading all eight in source rather than trusting the row:
 
-1. **Four were wired** (PR #289, `SC-016`): `Topic::Close` (`FR-160`/`AC-109`), `Topic::Reactivate`
-   (`FR-161`/`AC-110`), `Topic::Reopen` (`FR-045`/`AC-112`) and `CommitteeMember::Reactivate`
-   (`FR-162`/`AC-111`). Their entries were **deleted** from the `AggregateReachabilityTests`
-   allowlist, so the `DW-026` guard now FAILS if any handler stops calling its transition.
-2. **Two were deferred explicitly** as **`DW-030`** — `Convert`/`Reclassify` are the future readers of
-   `FR-030`, which is Approved and traced. Marking them merely "deliberately unexposed" would have
-   abandoned an approved requirement silently.
-3. **Two are permanent allowlist entries** (`DEC-057 d3`) — `HasExpired` and `IsActiveAt` are
-   **uncallable by construction**: both enforcement points evaluate the window inside an EF
-   `Where`/`AnyAsync`, where a domain method cannot be translated to SQL. `PredicateAgreementTests`
-   proves the domain copy and the SQL copy agree, mutation-verified.
+1. **Four wired** (PR #289): `Topic::Close`/`Reactivate`/`Reopen` + `CommitteeMember::Reactivate`
+   (`FR-160`/`161`/`162` + the long-approved `FR-045`; `AC-109`–`AC-112` Met). ⚠ **The allowlist
+   REMOVAL is the deliverable, not the code** — the `DW-026` guard now FAILS if a handler stops
+   calling its transition.
+2. **Two deferred** as `DW-030` — `FR-030` is Approved and traced, so "deliberately unexposed" would
+   have retired an approved requirement silently.
+3. **Two are uncallable by construction** and stay allowlisted: both enforcement points evaluate the
+   window inside an EF `Where`/`AnyAsync`. `PredicateAgreementTests` guards the duplication.
 
-⚠ **`DEF-085` was the one that mattered**: `Deactivate()` had two callers including the HOURLY guest
-sweep, `Reactivate()` had none, and re-inviting throws on the duplicate email — so a disabled member
-was **permanently locked out**. The sweep also disables the **Keycloak account**, so `SC-017` widened
-`IIdentityProvider` with a fifth write (`EnableUserAsync`), recorded BEFORE the code exactly as
-`SC-011` was.
+⚠ **`DEF-085` was the one that mattered**: a disabled member was **permanently locked out** —
+`Deactivate()` had two callers incl. the hourly guest sweep, `Reactivate()` had none, re-invite
+throws on the duplicate email, and delete is forbidden. `SC-017` widened `IIdentityProvider` with a
+fifth write (`EnableUserAsync`), recorded BEFORE the code as `SC-011` was.
 
-## §2 — The live queue
+**`DEC-058` / `DW-017`** (PR #290): owned-child audit rows carried **empty before/after** —
+`Finding`/`Recommendation` were `BaseEntity` and `AuditCapture` only walks
+`Entries<AuditableEntity>()`. INV-005 held, so every naive check passed for months.
 
-**Nothing here is a build task.** The engineering queue is empty; what remains needs the operator.
+**`DW-031`** (PR #291) and **`DEC-059` / `DW-009`** (PR #292): both were CHECKS that found real bugs —
+see traps A-1c and E-28.
 
-| Item | What it needs |
+## §2 — What is actually left
+
+**Nothing that is agent work.** Two advisories fail, both deliberately, and neither is a task:
+
+| Advisory | Why it fails, and why that is correct |
 |---|---|
-| **`DW-017`** | Real unbuilt work whose trigger FIRED and was missed. Owned-child audit rows (`Finding`/`Recommendation`) carry **empty before/after** — the audit says *that* something happened, not *what* changed. Needs a migration + interceptor change, or a deliberate re-deferral. |
-| **`DW-009`** | Trigger fired, but the engineering premise dissolved: it assumed an on-prem MinIO volume that could fill, and the stack now uses S3 with budget alerts. What remains is an operator READ of the ops-config half. |
-| **`DW-031`** | The three new topic-detail buttons + reopen dialog were TESTED but never LOOKED AT. JSDOM does not render. Run the stack, look at both locales. |
-| **`LL-004`, `LL-005`** | Proposed lessons awaiting the operator's interview. Only Approved lessons bind. |
-| **`AC-109`–`AC-112`** | Bound to no slice, so invisible to phase/slice exit views. Binding them means deciding whether to create a slice for post-ladder work — a plan-structure call. |
-| **The other 16 `DW-` rows** | Reviewed row by row on 2026-08-17 (`PE-412`/`PE-414`); **none of their triggers has fired**. They stay Open correctly, and `deferred-work-reviewed` keeps failing — that is the rule working, not a problem to clear. |
+| `deferred-work-reviewed` (16 rows) | Every remaining `DW-` has a trigger that has **not fired** — Phase 2/3 features, a disproven CSP rationale, an indefinitely-deferred P14. ⚠ **Do not close one to make the advisory green**; the rule is advisory precisely because a human judges prose triggers, and a register holding legitimate deferred work fails it forever. |
+| `acs-slice-bound` (`AC-109`–`AC-112`) | Accepted by `DEC-058 d3`. They verify at package scope; the only loss is visibility in phase/slice exit views, and no phase remains to exit. Creating a slice would need a new phase (the NOT-NULL FK that made `DEC-029` create `PH-4`). |
 
-⚠ **Do not close a `DW-` row to make the advisory green.** The rule is advisory precisely because a
-human judges each trigger; closing legitimately-deferred Phase 2/3 features would be manufactured
-status.
+**The one genuinely large thing on the horizon is `DW-029`** — 162 requirements with no acceptance
+criterion. It is not a chore: it is why requirement status measures whether anyone *wrote* an AC
+rather than whether something was *built* (§3). It is sized like the original AC-authoring effort and
+deserves its own planning conversation, not a tail-end pickup.
 
 ## §3 — The two registers that will mislead you
 
@@ -150,6 +156,14 @@ status.
    string whatever the code does. **Inherit a blocker as a hypothesis, never as data.**
 2. **A measurement that indicts known-good code is measuring itself.** The coverage gate scored a
    file after its code had moved out (`DEF-069`).
+1c. ⚠⚠ **"IT IS ONLY DISPLAY COPY" IS A HYPOTHESIS, AND IT WAS WRONG.** The topic upload hint read
+   *"up to 25 MB"* while `TopicAttachmentOptions` allowed **50 MB**, and a source comment even called
+   the 25 the design's display copy — so it was reported to the operator as a cosmetic one-line i18n
+   fix with **"no behaviour change"**. It was not: `SubmitTopic.tsx:44` held an **ENFORCED** client cap
+   and rejected larger files BEFORE upload, so `AC-049`'s 50 MB default was **unreachable through the
+   UI**. Changing only the text would have made the copy promise more than the app accepts — a lie in
+   the opposite direction. **Grep for the number before calling a string cosmetic** (`DEC-059`).
+
 3. **The LSP diagnostics panel can be stale** — phantom `CS0103`s while the same build succeeded.
    Check the file, or just build, before believing the tool.
 
@@ -195,6 +209,11 @@ status.
     verdict at all**, so the gate fires precisely when you do the right thing and write criteria
     before code. Record a **`Pending`** verdict carrying the measured not-built state. It does NOT
     make `acs-met` pass, and must not be "fixed" by upgrading the verdict.
+16b. ⚠ **`MEMORY.md` HAS A READ LIMIT AND TRUNCATES SILENTLY.** Past ~17KB everything after the cut
+    is dropped when the index loads, and **nothing announces it** — entries at the end are simply
+    invisible to every future session. It reached 27KB before being caught. Keep it one line per
+    entry with detail in topic files; an over-long index is strictly worse than a short one.
+
 17. ⚠ `progress_entries` is **append-only** — two bad rows could not be edited and the repair was a
     whole-file git rollback.
 
@@ -231,6 +250,16 @@ status.
     local `main` held a commit that origin/main had never seen. The working tree silently reverted to
     pre-feature `main`, which LOOKS like the work was lost. **Check `gh pr view --json state` before
     reacting**; then verify content is present in `origin/main` and `git reset --hard origin/main`.
+28. ⚠⚠ **AN UNDEFINED CSS CUSTOM PROPERTY FAILS SILENTLY — AND THE FIX IS USUALLY A CLASS THAT
+    ALREADY EXISTS.** `border-radius: var(--radius-2)` shipped square corners against a uniformly
+    rounded system, because **`--radius-2` does not exist** (the token is `--control-radius`) and an
+    unknown custom property does not warn — it falls back to the initial value. The same hand-rolled
+    field also collapsed to **34px** inside a flex dialog for want of `min-inline-size: 0`. Both
+    vanished by deleting the bespoke CSS and using `.field-label` / `.textarea`, which already carried
+    the radius, the `min-inline-size`, AND focus + invalid states the hand-rolled pair lacked.
+    **Grep `styles/` for an existing class before writing a new one**, and grep `tokens.css` for a
+    variable before using it (`DW-031`).
+
 26. **A LOG TAIL IS THE WRONG INSTRUMENT FOR A FAILURE WHOSE DISTANCE YOU DO NOT KNOW** (`DEF-074`).
     Dump the api log with no tail at all.
 27. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** It is session-scoped, so a
