@@ -247,4 +247,80 @@ public class TopicVisibilityTests
             byQuery.Should().Equal(byPredicate, "the SQL predicate and the in-memory check are one control");
         }
     }
+
+    // ---- the cross-module egress port (SL-030 / AC-114) ----------------------------------------------
+
+    private static TopicConfidentialityReader Port(TopicsDbContext db, ICurrentUser user, params Guid[] granted) =>
+        new(db, new TopicVisibility(user, Capabilities(granted)));
+
+    [Theory]
+    [InlineData(AcmpRoles.Chairman)]
+    [InlineData(AcmpRoles.Secretary)]
+    [InlineData(AcmpRoles.Auditor)]
+    public async Task The_port_hides_nothing_from_a_committee_wide_reader(string role)
+    {
+        var user = User(role);
+        await using var db = await Seeded(user, Clock(), Restricted("TOP-2026-040"), Open("TOP-2026-041"));
+
+        (await Port(db, user).GetHiddenTopicIdsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task The_port_hides_the_restricted_topics_and_only_those()
+    {
+        var user = User(AcmpRoles.Member);
+        var secret = Restricted("TOP-2026-040");
+        var open = Open("TOP-2026-041");
+        await using var db = await Seeded(user, Clock(), secret, open);
+
+        var hidden = await Port(db, user).GetHiddenTopicIdsAsync();
+
+        hidden.Should().ContainSingle().Which.Should().Be(secret.PublicId);
+        // An unrestricted topic must never enter the hidden set: the redaction consumers apply it to
+        // EVERY snapshot they hold, so a false positive here blanks the whole committee's agendas.
+        hidden.Should().NotContain(open.PublicId);
+    }
+
+    [Fact]
+    public async Task A_grantee_is_not_hidden_from_their_own_restricted_topic()
+    {
+        var user = User(AcmpRoles.Member);
+        var mine = Restricted("TOP-2026-040");
+        var theirs = Restricted("TOP-2026-041");
+        await using var db = await Seeded(user, Clock(), mine, theirs);
+
+        var hidden = await Port(db, user, mine.PublicId).GetHiddenTopicIdsAsync();
+
+        hidden.Should().ContainSingle().Which.Should().Be(theirs.PublicId);
+    }
+
+    [Fact]
+    public async Task The_hidden_set_is_exactly_the_complement_of_VisibleTo()
+    {
+        // ⚠ THIS IS THE PROPERTY THE PORT EXISTS TO PRESERVE. The hidden set is DERIVED from VisibleTo by
+        // subtraction rather than written as a fourth predicate, so that the rule keeps one expression.
+        // If someone ever rewrites the reader as a hand-rolled Where, this is what fails.
+        var user = User(AcmpRoles.Member);
+        var mine = Restricted("TOP-2026-040");
+        var theirs = Restricted("TOP-2026-041");
+        var open = Open("TOP-2026-042");
+        await using var db = await Seeded(user, Clock(), mine, theirs, open);
+
+        var scope = await new TopicVisibility(user, Capabilities(mine.PublicId)).ResolveAsync();
+        var visible = db.Topics.VisibleTo(scope).Select(t => t.PublicId).ToHashSet();
+        var everything = db.Topics.Select(t => t.PublicId).ToHashSet();
+
+        var hidden = await Port(db, user, mine.PublicId).GetHiddenTopicIdsAsync();
+
+        hidden.Should().BeEquivalentTo(everything.Except(visible));
+    }
+
+    [Fact]
+    public async Task The_port_returns_empty_when_no_topic_is_restricted_at_all()
+    {
+        var user = User(AcmpRoles.Member);
+        await using var db = await Seeded(user, Clock(), Open("TOP-2026-040"), Open("TOP-2026-041"));
+
+        (await Port(db, user).GetHiddenTopicIdsAsync()).Should().BeEmpty();
+    }
 }
