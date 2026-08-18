@@ -5,10 +5,10 @@ using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Modules.Traceability.Domain.Enums;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
-using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
