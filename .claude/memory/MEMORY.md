@@ -1,33 +1,76 @@
 # Memory Index — ACMP
 
-> Compacted 2026-08-17 (5th). One line per memory; detail lives in topic files and the package.
+> Compacted 2026-08-18 (6th). One line per memory; detail lives in topic files and the package.
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ Tamheed 4.4.1 · `ready:TRUE` · **the ladder AND the engineering queue are both empty**
+## ★ 2026-08-18 · **PH-6 is OPEN** · `SL-029` shipped · `SL-030` (confidentiality) NOT started
 
-> ⚠ **READ THE LIVE NUMBERS, NOT THIS FILE** — `gate_run()` + `readiness_check("package")`. This index
-> and `prm-next.md` have EACH gone stale four times. **`tamheed-package/prompts/prm-next.md` is the
-> kickoff**, current as of 2026-08-17; its §5 traps section is the best thing in the repo to read.
+> ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. Package readiness is
+> deliberately whatever the current batch makes it; `acs-met` failing on exactly your batch's Pending
+> ACs is the EXPECTED build-window state, not a regression.
 
-- ⭐⭐ **2026-08-17: ZERO open defects of any severity; every phase closed except `PH-3`; nothing on the queue is agent work.** `lessons-confirmed` now passes. Two advisories fail deliberately: `deferred-work-reviewed` (16 `DW-`, triggers unfired — closing them would manufacture status) and `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **`PH-3` stays Approved on purpose** — `WBS-20.4` is the email adapter vs a hard constraint; do not "repair" it to match the others.
-- ⭐ **`DEC-057`: `DEF-084`'s eight unreachable methods were THREE problems, not one** — reading all eight in source is what showed it. Four wired (PR #289 `d71dc30`: `Topic::Close`/`Reactivate`/`Reopen` + `CommitteeMember::Reactivate`; `AC-109`–`AC-112` Met; `FR-045`/`160`/`161`/`162` auto-advanced). Two deferred as `DW-030` (`FR-030` is Approved+traced — "deliberately unexposed" would have retired it silently). Two are **uncallable by construction** — both enforcement points evaluate the window inside an EF `Where`/`AnyAsync`. ⚠ **The allowlist REMOVAL is the deliverable, not the code**: the `DW-026` guard now FAILS if a handler stops calling its transition.
-- ⭐ **`DEF-085` (high): a disabled member was PERMANENTLY LOCKED OUT.** `Deactivate()` had two callers incl. the hourly guest sweep, `Reactivate()` none, re-invite **throws** on duplicate email, delete is forbidden. The sweep also disables the **Keycloak account** → `SC-017` added a fifth `IIdentityProvider` write (`EnableUserAsync`), recorded BEFORE the code as `SC-011` was. ⚠ `AccessExpiresAt` is now ALWAYS written: `PrincipalRevalidator` refuses an expired window **independently of Status**, so a Status-only fix yields Active-but-refused.
-- ⭐ **`DW-017` DONE** (PR #290 `b2950f2`): owned-child audit rows carried **empty before/after** — `Finding`/`Recommendation` were `BaseEntity` and `AuditCapture` only walks `Entries<AuditableEntity>()`. INV-005 held, so naive checks passed for months. ⚠ **Re-subjecting the emit to the CHILD is load-bearing** (the capture drains by `(subjectType, subjectId)`), and **the mutant WAS the proof of the defect** — until it failed, the empty before/after had only been read in code, never observed.
-- ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND, NOT YOUR GATE** — `dotnet format --verify-no-changes | tail; echo $?` printed **0** while the real exit was **2**, hiding a failure CI would have caught. Redirect to a file, read `$?` bare.
-- ⚠⚠ **`gh pr merge` CAN MERGE REMOTELY AND STILL FAIL LOCALLY** — after squash-merging #289 it aborted on "Not possible to fast-forward" and the tree reverted to pre-feature `main`, which **looks exactly like lost work**. Check `gh pr view --json state` first.
-- ★★ **`LL-004` + `LL-005` Approved + PINNED** — five pinned lessons now bind every session via the auto-loaded note. `LL-004`: a package-write commit **cannot cite itself** (19 of 25 "unbound" commits were false positives) — classify by path, never count. `LL-005`: **sweep the requirement register BEFORE offering the operator a disposition**; skipping it cost the operator a repeated decision.
-- ⭐ **`DW-009` + `DW-031` CLOSED 2026-08-18 — BOTH WERE *CHECKS* THAT FOUND REAL BUGS.** `DW-031`: `var(--radius-2)` **does not exist**, so the reopen textarea shipped square corners (an undefined CSS custom property does not warn — it falls back) and collapsed to 34px without `min-inline-size: 0`; fixed by DELETING the bespoke CSS for `.field-label`/`.textarea`, which already existed (#291). `DW-009` (`DEC-059`, #292): the "up to 25 MB" hint was **NOT display copy** — `SubmitTopic.tsx:44` ENFORCED it, making `AC-049`'s 50 MB unreachable through the UI; the operator's refusal to close the row is what exposed it. ⭐⭐ **THE ENGINEERING QUEUE IS NOW EMPTY** — ask what to work on; do not invent a task from the registers.
+- ⭐⭐ **The queue is no longer empty.** Operator activated `DW-020` + `DW-029` + `DW-030` on 2026-08-18.
+  `PH-6` created (`DEC-060`), `SL-029` (FR-030 conversion) **Implemented** and merged (#293 + #294);
+  **`SL-030` — Confidentiality ABAC + full egress redaction — is planned but NOT built.** Plan file:
+  `~/.claude/plans/shimmying-humming-mochi.md`. WS-3's AC pipeline (108 requirements) also untouched.
+- ⭐⭐ [**A proxy is not the artifact — `LL-006`, Proposed, awaiting the operator**](package-mechanics-proven-2026-08-18.md)
+  Four proxies said BUILT about code that was not, each failing while correcting the previous one:
+  the `mvp`/Phase attribute (~30 of "53 unbuilt" were shipped), then a register row + a **filename**.
+  ⚠ **`Timeline.tsx` and `Calendar.tsx` are deliberate honest SHELLS** — present, routed,
+  well-commented, and empty ("no bars are drawn"). `DW-001` was right; my "correction" was wrong.
+  Requirement ids cited in source comments are a strong but **positive-only** instrument, and one
+  citation was a **deferral note** (`InvariantStatus.cs:7`).
+- ⭐ **The sweep found what no gate could:** 4 requirements unbuilt with NO record anywhere
+  (`DW-033`–`DW-036`: FR-032 configurable columns, FR-134 digest, FR-154 audit export, FR-155
+  retention); an operator decision living only in a code comment (`DEC-062`, FR-108/109); a deferral
+  whose blocker had silently cleared (`DW-037`, FR-035 — P6 shipped); and 2 divergences
+  (`DEF-088` FR-097 missing its Tarseem half, `DEF-089` FR-142 CSV yes/PNG no). **24 requirements are
+  now `Deferred`** — register reads 64 Implemented / 137 Approved / 24 Deferred, and for the first time
+  those three labels mean different things.
+- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met`
+  counts by `retired_in` and **ignores `lifecycle_status`** (a Deferred AC still counts, so ACs for
+  unbuilt work block readiness forever); `entity_upsert` **preserves omitted nullable fields** but
+  requires every NOT NULL one; **slice-scope `wbs-done` is vacuous for all 28 old slices**
+  (`slice_id` NULL on all 155 — `DEF-087`), which also **breaks AC→slice derivation**; `G-TRACE` needs
+  three legs where the advisory needs one.
+- ⚠⚠ **Trap 25 fired exactly as written** — `gh pr merge` squash-merged #293 **remotely** then aborted
+  locally; the tree reverted to pre-feature `main` and looked like lost work. `gh pr view --json state`
+  said MERGED. ⚠ **And my own verification grep counted my comment text** and nearly read a deleted
+  allowlist entry as surviving — match quoted entries, not the substring.
+- ⭐ **FR-030 shipped:** Convert takes a reason (**no schema change** — `TopicStatusEvent` always
+  carried one), successor linked by `ConvertedTo` **appended as 17** (RelType persists as `int`;
+  inserting would remap every stored row). Carry-over stayed honest because `AddComment` takes
+  author+timestamp and `AddAttachment` takes `storageKey`. **The `Convert/3` allowlist deletion was the
+  deliverable.** The visual check again found a real defect (`.field` wrappers) — third time.
 
+## ★ Tamheed 4.4.1 · earlier state (ladder P1–P19 complete; superseded by PH-6 above)
+
+- ⚠ **`PH-3` stays `Approved` ON PURPose** — `WBS-20.4` is the email adapter vs a hard constraint
+  (`DEC-055`). Do **not** "repair" it to look uniform; that is the manufactured-status move `DEF-010`
+  records. `PH-0`–`PH-2`, `PH-4`, `PH-5` are Implemented.
+- Two advisories fail deliberately and are **not tasks**: `deferred-work-reviewed` (triggers unfired —
+  closing a row to green it manufactures status) and `acs-slice-bound` (`AC-109`–`AC-112`, accepted by
+  `DEC-058 d3`). `AC-113` IS slice-bound, so it did not grow that list.
+- **Five lessons Approved + PINNED** (`LL-001`…`LL-005`) bind every session via the auto-loaded note.
+  ⚠ `LL-006` is **Proposed and needs the operator's interview** — see above.
+- `DEC-057`/`DEF-084`: eight unreachable methods were **three** problems — four wired (#289), two
+  deferred (`DW-030`), two uncallable by construction. `DEF-085`: a disabled member was permanently
+  locked out; `SC-017` added `EnableUserAsync`. `DW-017` (#290): owned-child audit rows carried empty
+  before/after. `DW-031` (#291) + `DW-009` (#292) were **checks that found real bugs**.
+- ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — `dotnet format ... | tail; echo $?` printed 0
+  while the real exit was 2. Fired again this session: reading it bare caught a real `IMPORTS` failure.
+- **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks, `committee_members`
+  1 → 27. The `RISK-007` adoption clock started 2026-08-17.
 ## Earlier 2026-08 — durable findings only (superseded state removed)
 
 > Most of this section's old contents were either SUPERSEDED (a deploy that has since happened) or
 > promoted into `prm-next.md` §5, which is now the single place traps live. Kept here: the findings
 > with their own topic file, and the facts that re-frame how the register reads.
 
-- ★★★ [**`DEF-078`: prod `/readyz` was 503 and TWO blind controls hid it**](a-green-control-can-be-blind.md) — ⚠ **the command the defect row prescribed could not measure anything**: `/api/readyz` is 404 by construction and bare `/readyz` returns 200 serving `index.html` via the SPA fallback, so *a status-only check passes with the API stone dead*. `DEF-079`: the container read `Up (healthy)` from a healthcheck whose predicate evaluates ZERO checks. `DEF-081`: gitleaks passed 153 commits because `.gitleaks.toml` allowlisted **every markdown file by path** — I claimed "no gate exists", that was false, and checking it produced the better finding.
+- ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — the defect row's own prescribed command could not measure anything (`/readyz` returns 200 via the SPA fallback with the API dead); a healthcheck evaluated ZERO checks; gitleaks passed 153 commits because `.gitleaks.toml` allowlisted every markdown file.
 - ★★ [**`DEF-056`'s "measured blocker" WAS NOT REAL**](an-absence-needs-a-proven-instrument.md) — rows were written all along; the helper read `AuditEvent.Action`, **NULL on the v1 rows every refusal writes**, and its two `NotContain` controls passed **VACUOUSLY**. **An absence is only evidence if the instrument is proven present.** `AV-159` was wrong the same way.
-- ⚠⚠ [**THE STORE IS v4 + the 4.4.x lesson mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`; `entity_upsert` needs **FULL rows** built from the JSONL, not a query; `WVR-` is operator-only; progress has a `correction` event. ⚠ `handoff_emit` must target **`tamheed-package`**. Approving a lesson **refuses without `operator_confirm: true`**, demands `confirmed_by` on that write, and **rejects content drift** — byte-identical or supersede.
+- ⚠⚠ [**v4 store + 4.4.x lesson mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`; build payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event. Approving a lesson **refuses without `operator_confirm: true`** and rejects content drift.
 - ★★ **`DW-029` re-frames every status in the package**: of 222 requirements, **exactly the 60 with an AC are Implemented and exactly the 162 without one are Approved**, because a requirement advances ONLY via the AC auto-advance trigger. **So requirement status measures whether anyone WROTE an AC, not whether it was built** — and `v_backlog` reports that faithfully. `DEF-012` is Won't-fix (`DEC-055`): the one mechanical rule that would have "fixed" it closes `WBS-20.4`, the **email adapter**, against a hard constraint.
 - ⚠ **A defect row's predicted cause is a HYPOTHESIS, not evidence** (`DEF-067`) — its row forbade the fix that worked, and the real cause was test *duration*. Same family: `DEF-084` reported eight methods as one finding; they were three. Read the implementation, including when the row reads pre-checked.
 - ⚠ **Read `ADR-0043`, NOT `ADR-0042`** — 0042 is Superseded: it wrongly claimed Guest is stream-bounded (E.3 bounds a guest by a TIME WINDOW). All 7 clauses carried over verbatim. ADR-0043 steps 1–8 all shipped; `AC-010` Met.
@@ -35,12 +78,16 @@
 - **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json` — merging one now fails `check-i18n` loudly): `chore/design-update-round2`, `chore/docs-v8-local-design`, `feat/budget-notification-observer`, `feat/p13-webex-integration`, `docs/defer-p14-tarseem`, `feat/audit-adr`.
 - **Tamheed acceptance series `findings_13`–`findings_16` complete except §6:** the CLAUDE.md obligations note demonstrably TRANSFERS to fresh contexts; whether a fresh session DISCHARGES it is unproven. Only an **interactive** fresh session can close it.
 
-## Shipped, reference only (detail in the package / RESUME §3)
+## Shipped, reference only (detail in the package)
 
-- **ADR-0039 `AC-090`** (#239) — was **unsatisfiable by construction** (token-driven authz let a removed role survive 300s, measured); now per-request revalidation in middleware. ⚠ **An unknown subject must be ALLOWED** — ADR-0004 provisions JIT, so failing closed refuses every first login. Seam = `IPrincipalRevalidator`; window = `AccessExpiresAt`.
-- **`DEF-052`: there was NO read-side role gate anywhere** — every named policy is a WRITE capability. Fixed by `GuestSurfaceMiddleware`, **deny-by-default rather than a policy per group**, because an opt-in list silently exempts every route added later.
-- **Guest-expiry sweep** (#240) hourly. ⚠ Predicate is `AccessExpiresAt != null && < now`, so **an invited member (role `Guest`, null window) is NOT swept**.
-- **`DW-025`'s premise was FALSE and I wrote it: ACMP HAS NO RESCHEDULE.** If one is built it MUST call `IGuestWindowWriter`.
+- **ADR-0039 `AC-090`** (#239) was unsatisfiable by construction; now per-request revalidation.
+  ⚠ **An unknown subject must be ALLOWED** — ADR-0004 provisions JIT, so failing closed refuses every
+  first login. Seam `IPrincipalRevalidator`; window `AccessExpiresAt`.
+- **`DEF-052`: there was NO read-side role gate anywhere** — every named policy is a WRITE capability.
+  Fixed by `GuestSurfaceMiddleware`, deny-by-default rather than a policy per group. ⚠ **This is the
+  fact `SL-030` turns on: no topic read path calls `IAuthorizationService` at all.**
+- Guest-expiry sweep (#240) hourly. ⚠ Predicate is `AccessExpiresAt != null && < now`, so an invited
+  member (role `Guest`, null window) is **not** swept. **ACMP has no reschedule** (`DW-025`).
 
 ## Standing rules & gotchas (read before editing)
 
@@ -72,9 +119,5 @@
 ## Completed ladder P1–P19 + PH-5 (reference only — do not re-open)
 
 - [PH-5 / SL-025 — UAT is live and LOGIN WORKS](ph5-sl025-uat-live.md) · [PH-5 AWS deployment](ph5-aws-deployment.md) · [P19 release readiness + D-23](p19-release-readiness.md) · [P18 deployment](p18-deployment.md) · [P17b decision-issuance UI](p17a-test-hygiene.md) · [P17/P18/P19 slice notes](next-p17-p18-p19.md)
-- [P16 hardening B2b/B3/B4](p16-hardening-b2b-b3-b4.md) · [P16b CI security gates](p16b-ci-security-gates.md) · [P16a audit & vote crypto](p16a-audit-vote-crypto.md)
-- [P15 Research & Knowledge](p15-research-knowledge-plan.md) · [P15 audit remediation](p15-audit-remediation.md) · [P15f/g search](p15f-search-progress.md)
-- [P13 Webex](p13-webex-integration-plan.md) · [P13 audit remediation](p13-audit-remediation.md) · [P13 recording upload](p13-recording-upload.md) · [Webex coverage-gate exclusion](webex-coverage-gate-async-exclusion.md)
-- [P12 Dashboards & Reports](p12-dashboards-reports-plan.md) · [P11 ADRs & Invariants](p11-adrs-invariants-plan.md) · [P10 Risks/Deps/Traceability](p10-risks-deps-traceability-plan.md)
-- [P9 Voting](p9-voting-plan.md) · [P8 Actions](p8-actions-plan.md) · [P7 Minutes & Decisions](p7-minutes-decisions-plan.md) · [P6a meeting IA](p6a-meeting-ia-plan.md) · [P6b notifications IA](p6b-notifications-ia-plan.md)
+- Ladder plans (reference): [P16 hardening](p16-hardening-b2b-b3-b4.md) · [P16b CI gates](p16b-ci-security-gates.md) · [P16a audit/vote crypto](p16a-audit-vote-crypto.md) · [P12 dashboards](p12-dashboards-reports-plan.md) · [P11 ADRs/invariants](p11-adrs-invariants-plan.md) · [P10 risks/deps](p10-risks-deps-traceability-plan.md) · [P9 voting](p9-voting-plan.md) · [P8 actions](p8-actions-plan.md) · [P7 minutes](p7-minutes-decisions-plan.md) · [P6a meetings](p6a-meeting-ia-plan.md) · [P6b notifications](p6b-notifications-ia-plan.md)
 - [Audit slice (AC-017)](audit-slice-literal-ac017.md) · [Topic Prepare UI (D-15)](topic-prepare-ui-gap-d15.md) · [Keystone package migration](keystone-package-migration.md) · [Keystone gap remediation](keystone-migration-gap-remediation.md)
