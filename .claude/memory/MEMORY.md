@@ -17,7 +17,7 @@
 - ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND, NOT YOUR GATE** — `dotnet format --verify-no-changes | tail; echo $?` printed **0** while the real exit was **2**, hiding a failure CI would have caught. Redirect to a file, read `$?` bare.
 - ⚠⚠ **`gh pr merge` CAN MERGE REMOTELY AND STILL FAIL LOCALLY** — after squash-merging #289 it aborted on "Not possible to fast-forward" and the tree reverted to pre-feature `main`, which **looks exactly like lost work**. Check `gh pr view --json state` first.
 - ★★ **`LL-004` + `LL-005` Approved + PINNED** — five pinned lessons now bind every session via the auto-loaded note. `LL-004`: a package-write commit **cannot cite itself** (19 of 25 "unbound" commits were false positives) — classify by path, never count. `LL-005`: **sweep the requirement register BEFORE offering the operator a disposition**; skipping it cost the operator a repeated decision.
-- ⚠ **Open and NOT mine:** `DW-009` (needs the operator's ops-config read) · `DW-031` (the new topic-detail buttons are **tested but never looked at** — JSDOM does not render).
+- ⭐ **`DW-009` + `DW-031` CLOSED 2026-08-18 — BOTH WERE *CHECKS* THAT FOUND REAL BUGS.** `DW-031`: `var(--radius-2)` **does not exist**, so the reopen textarea shipped square corners (an undefined CSS custom property does not warn — it falls back) and collapsed to 34px without `min-inline-size: 0`; fixed by DELETING the bespoke CSS for `.field-label`/`.textarea`, which already existed (#291). `DW-009` (`DEC-059`, #292): the "up to 25 MB" hint was **NOT display copy** — `SubmitTopic.tsx:44` ENFORCED it, making `AC-049`'s 50 MB unreachable through the UI; the operator's refusal to close the row is what exposed it. ⭐⭐ **THE ENGINEERING QUEUE IS NOW EMPTY** — ask what to work on; do not invent a task from the registers.
 
 ## Earlier 2026-08 — durable findings only (superseded state removed)
 
@@ -38,10 +38,8 @@
 ## Shipped, reference only (detail in the package / RESUME §3)
 
 - **ADR-0039 `AC-090`** (#239) — was **unsatisfiable by construction** (token-driven authz let a removed role survive 300s, measured); now per-request revalidation in middleware. ⚠ **An unknown subject must be ALLOWED** — ADR-0004 provisions JIT, so failing closed refuses every first login. Seam = `IPrincipalRevalidator`; window = `AccessExpiresAt`.
-- **ADR-0040 `FR-159` guest presenters** (#241/#242, `DEC-040`) — window = `ScheduledEnd + 24h`, widened by the operator so no grace 401s a presenter mid-presentation. Invite = a **Meetings** use case over ONE Membership port. **`ADR-0021` already fixed that pattern — read it before any cross-module seam.**
 - **`DEF-052`: there was NO read-side role gate anywhere** — every named policy is a WRITE capability. Fixed by `GuestSurfaceMiddleware`, **deny-by-default rather than a policy per group**, because an opt-in list silently exempts every route added later.
 - **Guest-expiry sweep** (#240) hourly. ⚠ Predicate is `AccessExpiresAt != null && < now`, so **an invited member (role `Guest`, null window) is NOT swept**.
-- **`SC-005`: an ADR named a seam its own tests could not reach** (`OnTokenValidated`; the API harness uses a synthetic scheme). **Check the harness can reach a named seam before approving the ADR.** Still true in 4.3.0 — it is why `AC-003` needed a live leg.
 - **`DW-025`'s premise was FALSE and I wrote it: ACMP HAS NO RESCHEDULE.** If one is built it MUST call `IGuestWindowWriter`.
 
 ## Standing rules & gotchas (read before editing)
