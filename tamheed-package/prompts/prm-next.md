@@ -5,282 +5,236 @@ when the work changes, **edit it — do not create a new `prm-*.md`.**
 
 =====
 
-Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else,
-then orient:
+Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else.
+
+⚠⚠ **ORIENT IN THIS ORDER — THE BRANCH BEFORE THE PACKAGE. THIS IS NOT THE USUAL ORDER AND THE
+REASON IS NEW.** There is unmerged work on a feature branch, and **the package rows for it live on
+that branch, not on `main`** (`AC-114` is absent from `main`). The package data is git-tracked (C31),
+so the store loads whatever the working tree holds. Open the package while on `main`, then check out
+the branch, and the next `entity_upsert` **refuses the whole batch** with *"data/ changed on disk
+since this session loaded it"*. That refusal is the tool working; it happened on 2026-08-18 and cost
+a close/merge/reopen cycle.
 
 ```
-server_info()                      # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
+git checkout feat/sl-030-confidentiality     # FIRST — see the warning above
+server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
-gate_run()                         # expect 7/7 ready:true
-readiness_check("package")         # expect ready:TRUE — every BLOCKING rule passes
+gate_run()                                   # expect 7/7
+readiness_check("package")                   # expect ready:FALSE — see §1, this is CORRECT
 ```
 
-⚠ **"Ready" means BLOCKING only.** TWO advisories fail on purpose and neither is a task:
-`deferred-work-reviewed` (16 `DW-` rows whose triggers have not fired) and `acs-slice-bound`
-(`AC-109`–`AC-112`, accepted by `DEC-058 d3`). `lessons-confirmed` now PASSES — all five lessons are
-Approved and pinned.
-
-⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers:
-`gate_run()`, `readiness_check("package")`, `entity_query("defect", lifecycle_status="Open")`. A
-hard-coded count is stale on the first new write, and this file has now carried a stale one **five**
-times — the fourth time it also told the reader to expect `ready:false` when readiness had been
-`true` for a day. If you find this section wrong again, **fix the file in the same session**.
-
-**If `package_open` refuses on a `.lock`, do NOT clear it reflexively — but do not assume it is real
-either.** A plugin reload orphans the lock every time. Both discriminators (`prompts/README.md`): the
-named pid must be a LIVE process that plausibly IS an agent session, **and** it must have started
-BEFORE the lock's `taken_at`. Either failing proves staleness. In practice the pid simply does not
-exist — check that first.
+⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
+file has carried a stale one **five** times. If you find this section wrong again, **fix it in the
+same session.**
 
 ---
 
-## §1 — What is true right now (2026-08-18)
+## §1 — What is true right now (2026-08-19)
 
-`main` is green, clean and pushed. (`git log --oneline -5` is the authority — no hash is quoted here
-on purpose, because the last one written into this file went stale the same day.)
+**`PH-6` IS OPEN AND THERE IS ACTIVE, UNFINISHED WORK.** The `P1`–`P19` ladder is complete and every
+earlier phase is closed except `PH-3` (frozen deliberately — `WBS-20.4` is the email adapter against
+a hard constraint; **do not "repair" it**). On 2026-08-18 the operator activated `DW-020`, `DW-029`
+and `DW-030`; `DEC-060` created `PH-6` to hold the work.
 
-- **THE ENGINEERING QUEUE IS EMPTY.** Everything raised in the 2026-08-17/18 stream has been built,
-  merged and recorded. There is no pending work item, no parked branch, and nothing waiting on the
-  operator. **If you are here to "continue", the honest first move is to ASK what to work on** —
-  do not invent a task from the registers.
-- **The ladder is COMPLETE.** `P1`–`P19` shipped; all 28 slices are `Implemented` except `SL-014`
-  (P14 Tarseem, `Deferred` by `DEC-028` — operator-reopen only). **There is no active slice**, so
-  `slice-kickoff.md` applies to nothing on this list.
-- **Every phase is closed except `PH-3`, and that one is closed-by-refusal on purpose.** `PH-5` was
-  closed 2026-08-17. ⚠ `PH-3` stays `Approved` because `wbs-done` fails on **`WBS-20`**, open
-  deliberately: `WBS-20.4` is the email adapter and *no email in v1* is a hard constraint
-  (`DEC-055`). **Do not "repair" PH-3 to make the statuses look uniform** — that is the manufactured
-  -status move `DEF-010` records.
-- **PRODUCTION IS DEPLOYED AND RECONCILED.** `/readyz` returns 200 Healthy on all four checks;
-  `committee_members` went 1 → 27. ⚠ **The adoption clock (`RISK-007`) started 2026-08-17** — the old
-  "0 topics, 1 sign-in" statistic measured a platform that could not admit its users.
-- **ZERO open defects of any severity.** `defects-closed` and `defects-minor` both pass.
-- **Five lessons are Approved and PINNED** (`LL-001`…`LL-005`) and bind every session via the
-  tool-owned note in `tamheed-package/CLAUDE.md`. Read them; they are short and each cost real time.
-- **The store is Tamheed v4** (server 4.4.1). See §4 for what v4 changed under you.
+- **`SL-029` (FR-030 topic conversion) is DONE** — merged as `bcc3d00` (#293) + `b065a29` (#294),
+  `AC-113` Met, slice `Implemented`. Do not reopen it.
+- **`SL-030` (Confidentiality ABAC, FR-163) is HALF BUILT on `feat/sl-030-confidentiality`** —
+  10 commits, pushed, **no PR yet**. §2 is the remaining work.
+- **`readiness_check("package")` returns `ready:false` ON PURPOSE.** `acs-met` fails on **exactly
+  `AC-114`** and nothing else. That is the documented build-window state: an acceptance criterion
+  written before its evidence is a readiness liability by design. ⚠ **Never resolve it by upgrading
+  the verdict.** Reconcile the failing id list against your batch — an id you did not expect is a
+  real finding.
+- **`defects-minor` now fails on `DEF-086`–`DEF-089`.** All four came from the DW-029 sweep and are
+  low/medium. Carrying them is legal; silence is not. They are not blockers.
+- **`deferred-work-reviewed` is at 22 rows** and `acs-slice-bound` still lists `AC-109`–`AC-112`
+  (accepted by `DEC-058 d3`). Both fail deliberately and neither is a task.
+- **Six lessons are Approved and PINNED** (`LL-001`…`LL-006`) and bind every session via the
+  tool-owned note. `LL-006` is new and is the theme of the last session — read it first.
 
-### What shipped in the last stream, so you do not redo it
+## §2 — The active work: finish `SL-030`
 
-**`DEC-057` — `DEF-084`'s eight unreachable aggregate methods were THREE different problems**, which
-only became visible by reading all eight in source rather than trusting the row:
+**What is BUILT and mutation-proven** (do not rebuild any of it):
 
-1. **Four wired** (PR #289): `Topic::Close`/`Reactivate`/`Reopen` + `CommitteeMember::Reactivate`
-   (`FR-160`/`161`/`162` + the long-approved `FR-045`; `AC-109`–`AC-112` Met). ⚠ **The allowlist
-   REMOVAL is the deliverable, not the code** — the `DW-026` guard now FAILS if a handler stops
-   calling its transition.
-2. **Two deferred** as `DW-030` — `FR-030` is Approved and traced, so "deliberately unexposed" would
-   have retired an approved requirement silently.
-3. **Two are uncallable by construction** and stay allowlisted: both enforcement points evaluate the
-   window inside an EF `Where`/`AnyAsync`. `PredicateAgreementTests` guards the duplication.
-
-⚠ **`DEF-085` was the one that mattered**: a disabled member was **permanently locked out** —
-`Deactivate()` had two callers incl. the hourly guest sweep, `Reactivate()` had none, re-invite
-throws on the duplicate email, and delete is forbidden. `SC-017` widened `IIdentityProvider` with a
-fifth write (`EnableUserAsync`), recorded BEFORE the code as `SC-011` was.
-
-**`DEC-058` / `DW-017`** (PR #290): owned-child audit rows carried **empty before/after** —
-`Finding`/`Recommendation` were `BaseEntity` and `AuditCapture` only walks
-`Entries<AuditableEntity>()`. INV-005 held, so every naive check passed for months.
-
-**`DW-031`** (PR #291) and **`DEC-059` / `DW-009`** (PR #292): both were CHECKS that found real bugs —
-see traps A-1c and E-28.
-
-## §2 — What is actually left
-
-**Nothing that is agent work.** Two advisories fail, both deliberately, and neither is a task:
-
-| Advisory | Why it fails, and why that is correct |
+| Piece | Where |
 |---|---|
-| `deferred-work-reviewed` (16 rows) | Every remaining `DW-` has a trigger that has **not fired** — Phase 2/3 features, a disproven CSP rationale, an indefinitely-deferred P14. ⚠ **Do not close one to make the advisory green**; the rule is advisory precisely because a human judges prose triggers, and a register holding legitimate deferred work fails it forever. |
-| `acs-slice-bound` (`AC-109`–`AC-112`) | Accepted by `DEC-058 d3`. They verify at package scope; the only loss is visibility in phase/slice exit views, and no phase remains to exit. Creating a slice would need a new phase (the NOT-NULL FK that made `DEC-029` create `PH-4`). |
+| `Topic.IsRestricted`, `Restrict`/`Declassify`, `TopicRestrictedEvent`, migration | `Topics.Domain/Topic.cs`, `Migrations/20260818193742_Topics_AddIsRestricted.cs` |
+| `IConfidentialResource` contract (a **declared primitive**, ADR-0001/0021) | `Acmp.Shared/Authorization/Abac/AbacResources.cs` |
+| `ConfidentialityRequirement` + handler, registered on **`TopicEdit` only** | `Abac/ConfidentialityRequirement.cs`, `AuthorizationRegistration.cs` |
+| Read predicate + per-request scope resolver | `Topics.Application/Internal/TopicVisibilityQuery.cs`, `Abstractions/ITopicVisibility.cs` |
+| Applied to: `GetBacklog`, `GetTopicDetail` (**404 not 403**), `TopicSearchProvider` (before `.Take`), `TopicReader` ×3, `TopicStreamReader` | those files |
+| Classify command + `PUT /api/topics/{id}/confidentiality` | `Features/SetTopicConfidentiality/`, `TopicEndpoints.cs` |
+| SPA badge + segmented classify control, EN/AR | `TopicDetail.tsx`, `EditTopic.tsx`, `topics.css` |
 
-**The one genuinely large thing on the horizon is `DW-029`** — 162 requirements with no acceptance
-criterion. It is not a chore: it is why requirement status measures whether anyone *wrote* an AC
-rather than whether something was *built* (§3). It is sized like the original AC-authoring effort and
-deserves its own planning conversation, not a tail-end pickup.
+**WHAT IS NOT BUILT — the egress redaction, and it is a real leak, not a formality.**
+A Restricted topic placed on an agenda **still leaks its title to every member who reads that
+meeting.** Data already copied out of the topic is untouched by the predicate:
+
+1. **`AgendaItem.TopicKey` / `TopicTitle`** — frozen into the Meetings schema at agenda-build time
+   (`Meetings.Domain/AgendaItem.cs:18-19`). The projection choke point is
+   `Meetings.Application/Internal/MeetingMapping.cs`; also check `GetMySession` and the published
+   agenda/minutes paths.
+2. **`Relationship.SourceTitle` / `TargetTitle`** — frozen into Traceability; read side is
+   `GetArtifactRelationships` and `GetImpactGraph`.
+3. **Notification bodies** — `Topics.Application/Internal/TopicNotifications.cs`. ⚠ These are
+   persisted at **publish** time, not read time, so the builders must take a restriction flag; there
+   is nothing to redact later.
+
+⚠⚠ **THE RULE IS ALREADY SETTLED AND MUST NOT BE RELAXED: REDACT AT PROJECTION TIME, NEVER BY
+MUTATING A STORED SNAPSHOT.** `INV-005` makes published minutes and issued decisions immutable, and
+`AgendaItem` freezes its snapshot by design. Rewriting those rows would break the immutability the
+audit design rests on.
+
+⚠ Meetings must not read Topics' tables (ADR-0001). Add a **read port** (Topics implements, Meetings
+consumes) returning restriction per key, and **batch it per meeting** — not per agenda item.
+
+**Then:** flip `AC-114` to `Met` with evidence, `readiness_check("slice", "SL-030")`, set the slice
+`Implemented`, `work_bind`, `gate_run()`, `export_html()`, PR → green CI → squash-merge.
+
+**Also still open, and NOT part of this slice:** `DW-029`'s acceptance-criterion programme —
+108 v1 requirements with no AC. Batched, multi-session, and it needs its own conversation.
 
 ## §3 — The two registers that will mislead you
 
 - **Requirement status measures whether anyone WROTE an acceptance criterion, not whether the thing
-  was built.** Of 222 requirements, exactly the 60 with an AC are `Implemented` and exactly the 162
-  without one are `Approved` — because a requirement advances ONLY via the AC auto-advance trigger.
-  Everything downstream inherits that, including `v_backlog` listing all 155 `wbs_items` as open
-  (`DEF-012`, closed Won't-fix under `DEC-055`). Remediation is carried as **`DW-029`**.
-- **`DEF-012`'s "obvious" fix was UNSOUND and was tried.** *A leaf closes when every requirement it
-  names is Implemented* closes `WBS-20.4` — the email adapter — on the strength of the Implemented
-  `FR-130`, while *no email in v1* is a hard constraint. **No filter repairs that**, so zero of the
-  155 rows were written.
+  was built.** A requirement advances only via the AC auto-advance trigger, so one with no AC can
+  never leave `Approved` however well it shipped. Live: **64 `Implemented` / 137 `Approved` /
+  24 `Deferred`** — and since 2026-08-18 those three finally denote different things.
+- ⚠ **The `mvp` / Phase attributes record the ORIGINAL scoping and the ladder outgrew them.** Of the
+  53 `mvp=0` requirements once described as "deliberately not built", **about 30 are built and
+  shipped**. `SC-020` reclassified only the **24 verified absent from source**. See `LL-006`.
+- **`DEF-012` is Won't-fix** (`DEC-055`): the one mechanical rule that would "fix" `v_backlog` closes
+  `WBS-20.4`, the email adapter, against a hard constraint.
 
-## §4 — What the v4 store changed under you
+## §4 — Traps. Every one has cost real time here.
 
-- `defects`, `deferred_work`, `open_questions`: **`status` → `lifecycle_status`**.
-  `stakeholders.name` → `title`.
-- **`entity_upsert` requires FULL rows** — a partial update is refused outright.
-- ⚠ **SOME COLUMNS THAT LOOK LIKE FREE TEXT ARE FOREIGN KEYS.** Known: `defect.fixed_by`,
-  `open_question.resolved_by` (takes the deciding `DEC-` id, not a person), and — found the hard way
-  on 2026-08-17 — **`deferred_work.invariant_at_stake`, which references `invariants.id`**. That one
-  is the nastiest of the three because the column NAME reads like a description field and because
-  `DW-027`/`DW-028` both put their invariant prose in the TITLE, so the register offers no example of
-  the column used correctly. Put prose in `custom_attributes`.
-- **`WVR-` waivers are operator-only — never author one.** `lifecycle_status` **Review**
-  (done-claimed) vs **Implemented** (verified). Typed `progress_update` has a **`correction`** event —
-  correct via a new entry, never by editing.
-- ⚠ **THE CHECK CONSTRAINTS REJECT PLAUSIBLE VALUES, AND THE ERROR IS THE ONLY DOCUMENTATION.**
-  - `audit_record` → `verified_by` is **`human` | `agent` | `ci`**, `verification_method` is
-    **`auto-test` | `manual` | `inspection`** (prose goes in `evidence`).
-  - `defect.lifecycle_status` is **`Open` | `In-progress` | `Fixed` | `Won't-fix` | `Duplicate`**.
-  - `progress_update.event_type` is **`work-done` | `verdict-recorded` | `transition` |
-    `forced-override` | `gate-decision` | `escalation` | `correction` | `note`**.
-  - A batch that violates one constraint **rolls back entirely** (`applied: 0`) — re-send the WHOLE
-    batch corrected, never a patch of the failing row.
-- ⚠ Three stock prompts are **customised** and never auto-refreshed: `orient-resume.md`,
-  `integrity-check.md`, `slice-review.md`.
+### A — Before you call something broken, or built
 
-## §5 — Traps. Every one of these has cost real time here.
-
-### A — Before you call something broken
-
-1. **Read the implementation first — and that applies to REGISTER ROWS.** Rows read as pre-checked;
-   they are not. `DEF-062`, `DEF-061`, `DEF-065`, `DEF-071`, `DEF-041` and `AV-159` were each wrong
-   or imprecise in my own hand, corrected only by reading the code underneath. ⚠ `AV-159`'s shape is
-   the one to memorise: **"I searched for X and found none" rules out X, never the family.** It
-   searched for emitters of `Authorization.Forbidden`, found none, and concluded nothing recorded a
-   role-less login — while `Authentication.NoRoleClaim` had been emitting one all along.
-   ⚠ Same family, 2026-08-17: `DEF-084` reported eight methods as one finding; reading all eight
-   showed **three different root causes** with three different correct dispositions.
-1b. ⚠⚠ **AN ABSENCE IS ONLY EVIDENCE IF THE INSTRUMENT IS PROVEN PRESENT — AND THIS ONE COST A WHOLE
-   SESSION.** A parked branch handed over a confident blocker: *"both positive tests fail with an
-   empty audit table."* Every word was false. The rows were being written the whole time, and the
-   failing run's **own log printed them**. The helper read `AuditEvent.Action`, **null on the lean v1
-   rows**. Its two `NotContain` **controls passed VACUOUSLY** — a collection of nulls contains no
-   string whatever the code does. **Inherit a blocker as a hypothesis, never as data.**
-2. **A measurement that indicts known-good code is measuring itself.** The coverage gate scored a
-   file after its code had moved out (`DEF-069`).
-1c. ⚠⚠ **"IT IS ONLY DISPLAY COPY" IS A HYPOTHESIS, AND IT WAS WRONG.** The topic upload hint read
-   *"up to 25 MB"* while `TopicAttachmentOptions` allowed **50 MB**, and a source comment even called
-   the 25 the design's display copy — so it was reported to the operator as a cosmetic one-line i18n
-   fix with **"no behaviour change"**. It was not: `SubmitTopic.tsx:44` held an **ENFORCED** client cap
-   and rejected larger files BEFORE upload, so `AC-049`'s 50 MB default was **unreachable through the
-   UI**. Changing only the text would have made the copy promise more than the app accepts — a lie in
-   the opposite direction. **Grep for the number before calling a string cosmetic** (`DEC-059`).
-
-3. **The LSP diagnostics panel can be stale** — phantom `CS0103`s while the same build succeeded.
-   Check the file, or just build, before believing the tool.
+1. **Read the implementation.** Rows read as pre-checked; they are not. `DEF-062/061/065/071/041`
+   and `AV-159` were each wrong in my own hand. ⚠ `AV-159`'s shape: **"I searched for X and found
+   none" rules out X, never the family.**
+1b. ⚠⚠ **AN ABSENCE IS ONLY EVIDENCE IF THE INSTRUMENT IS PROVEN PRESENT.** A parked branch once
+   handed over *"both positive tests fail with an empty audit table"* — every word false. The helper
+   read a NULL column and its two `NotContain` controls passed **vacuously**.
+1c. ⚠⚠ **`LL-006` — A PROXY IS NOT THE ARTIFACT, AND IT FAILED FOUR TIMES IN ONE SESSION, EACH TIME
+   INSIDE THE CORRECTION OF THE LAST.** A register attribute, then a register row, then a **filename**,
+   then a filename again. ⚠ **`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY
+   SHELLS** — present, routed, well-commented, and drawing nothing; their own headers say so. Check
+   **both** directions: the sweep also found `FR-032` unbuilt inside the "presumed built" group.
+   Requirement ids cited in source comments are strong evidence of being BUILT, but the instrument is
+   **positive-only** and one citation was a **deferral note** (`InvariantStatus.cs:7`).
+2. **A measurement that indicts known-good code is measuring itself.** ⚠ Fired again 2026-08-18:
+   `grep -c "Convert/3"` returned 2 and nearly read a deleted allowlist entry as surviving — the hits
+   were the **comment explaining the deletion**. Match the quoted entry, not the substring.
+3. **The LSP diagnostics panel is stale constantly** — it fired **four** times last session, once for
+   a file that did not exist and repeatedly for symbols added on the current branch. **Build before
+   believing it.**
 
 ### B — What your tests structurally cannot see
 
 4. **THE PROVIDER YOU TEST ON DECIDES WHAT CAN PASS.** `DEF-066`: assigning a stream had **never**
-   worked on a real database — four green suites over a feature that could not work once. Ask: *has
-   this ever run against SQL Server?*
-5. **JSDOM DOES NOT RENDER.** Component tests, axe and CI cannot see a visual regression. If a change
-   is visual, **look at it**: throwaway page importing only the real route's stylesheets, served over
-   **http** (`file:` is blocked). ⚠ A screenshot is evidence about **pixels, not elements**.
-   (`DW-031` is this trap, open, right now.)
-6. **Coverage catches unread state but never an uncalled method** — `DW-026`'s whole subject, now
-   fired six times.
+   worked on a real database under four green suites. `Acmp.Application.Tests` and `Acmp.Api.Tests`
+   are **EF InMemory**; only `Acmp.Integration.Tests` is real SQL Server, and
+   `SearchProvidersFtsTests` is the **only** place any `FREETEXT` branch executes.
+5. **JSDOM DOES NOT RENDER.** If a change is visual, **look at it**: a throwaway page importing only
+   `main.tsx`'s stylesheets and the real components, served over **http**. ⚠ Last session this found
+   **three** defects no suite could: a standalone `.sub-card` collapsing to 43px in RTL, an icon
+   forcing a label onto a second line, and `aria-pressed={undefined}` **omitting the attribute**,
+   silently demoting a toggle to a plain button. ⚠ A portaled `Dialog` escapes a wrapper `div`, so
+   set `dir` on **`<html>`** as the app does — otherwise the RTL reading is a harness artifact.
+5b. ⚠ **AN UNDEFINED CSS *CLASS* IS AS SILENT AS AN UNDEFINED CUSTOM PROPERTY.** `.sub-cards-2` does
+   not exist (only `.sub-cards`, already 2-column, and `.sub-cards-3`). Grep `styles/` for a class and
+   `tokens.css` for a variable **before** writing either (`DW-031`).
+6. **Coverage catches unread state but never an uncalled method** — `DW-026`, fired seven times.
 7. **A requirement typed to a RESOURCE is invisible wherever that resource type is absent**
-   (`DEF-068`).
-8. **An endpoint policy over a command that already carries `AllowedRoles` proves NOTHING in a test.**
+   (`DEF-068`). ⚠ This fired again on `SL-030`: adding `ConfidentialityRequirement` to a policy broke
+   **every** `Topic.Edit` cell until the test's `StubTopic` implemented the new contract. **A policy
+   may join a `*Scoped` set only if EVERY call site passes a matching aggregate** — which is why
+   `TopicTriage` is excluded (endpoint-level on `/close`, `/reopen`, `/reactivate`, `/convert`).
 
 ### C — Proving things
 
 9. **The test must fail without the change.** Mutation-check every guard and name which test fails.
 10. **A mutation nothing catches is a decision nobody recorded.**
-11. **A HOLLOW PASS IS WORSE THAN AN `indeterminate`.** A rule that cannot fail is not a green light.
-    ⚠ The constructive version, 2026-08-17: `defects-closed` was `indeterminate` at PH-5 scope
-    (0 of 84 defects carry `found_in`). It was not treated as a pass — the question was answered from
-    the SUPERSET instead: package-scope `defects-closed` and `defects-minor` both pass, so zero open
-    defects exist anywhere, and a rule that cannot discriminate cannot hide one in an empty set.
-12. **A green exit code can come from a run that checked nothing.** Confirm a mutant actually
-    COMPILED, and **reconcile test COUNTS**.
+11. **A HOLLOW PASS IS WORSE THAN AN `indeterminate`.** ⚠ Slice-scope `defects-closed` is
+   `indeterminate` (0 of 88 defects carry `found_in`). Answer from the **superset** instead:
+   package-scope `defects-closed` passes, so no open critical/high defect exists anywhere.
+12. **A green exit code can come from a run that checked nothing.** Confirm the mutant **COMPILED**
+   — a mutation run that silently failed to apply reports a clean pass.
 
 ### D — Writing to the package
 
 13. **Build payloads from `data/*.jsonl`, never from `entity_query` output** — v4 needs FULL rows and
-    the store holds **truncated** ones.
-14. ⚠ **A GENERATED payload must be PASTED, not RE-TYPED** (`LL-001`). End any N-row repair with an
-    independent re-read that re-derives each value from its source. ⚠ Where a paste is structurally
-    impossible — an MCP call whose arguments must be composed — the verifier is MANDATORY: hash a
-    pre-image before the write and assert byte-identity after. Done for `DEF-084`/`DEF-085` on
-    2026-08-17 (2393 and 2391 chars, both identical).
+   the store holds **truncated** ones.
+13b. ⚠ **PROVEN 2026-08-18: OMITTING A NULLABLE FIELD *PRESERVES* IT; NOT NULL FIELDS ARE REQUIRED.**
+   `{type, id, lifecycle_status}` alone is refused (`NOT NULL constraint failed: requirements.kind`),
+   but sending only the NOT NULL columns preserves `statement`, `priority`, `rationale`,
+   `verification_method`, `custom_attributes` **byte-identically**. A status-only requirement update
+   needs just `id, kind, title, mvp, lifecycle_status, source_kind, source_span, introduced_in`.
+14. ⚠ **A GENERATED payload must be PASTED, not RE-TYPED** (`LL-001`). Where composition is
+   unavoidable, **hash a pre-image and assert byte-identity after** — done twice last session over
+   24 requirements and 4 WBS items, both identical.
 15. **Omitting `custom_attributes` PRESERVES it; sending it REPLACES the whole blob.**
-16. **Run `gate_run()` AFTER writing, not only before.** ⚠ **Creating an acceptance criterion ahead of
-    its build turns `G-PROGRESS` RED**: the view (`db/schema.sql:867`) fails any active AC with **no
-    verdict at all**, so the gate fires precisely when you do the right thing and write criteria
-    before code. Record a **`Pending`** verdict carrying the measured not-built state. It does NOT
-    make `acs-met` pass, and must not be "fixed" by upgrading the verdict.
-16b. ⚠ **`MEMORY.md` HAS A READ LIMIT AND TRUNCATES SILENTLY.** Past ~17KB everything after the cut
-    is dropped when the index loads, and **nothing announces it** — entries at the end are simply
-    invisible to every future session. It reached 27KB before being caught. Keep it one line per
-    entry with detail in topic files; an over-long index is strictly worse than a short one.
-
-17. ⚠ `progress_entries` is **append-only** — two bad rows could not be edited and the repair was a
-    whole-file git rollback.
+16. **Run `gate_run()` AFTER writing.** ⚠ Creating an AC ahead of its build turns `G-PROGRESS` RED —
+   record a verdict in the same session (`Pending`, or `Partial` when part is genuinely done).
+16b. ⚠ **`G-TRACE` WANTS THREE LEGS WHERE THE ADVISORY WANTS ONE.** A new `mvp=1` requirement must
+   link to a **decision-or-ADR**, a **wbs-item-or-slice**, AND a **test**. Wiring two clears
+   `requirements_unwired` while `G-TRACE` stays red, which reads like the fix not working.
+16c. ⚠ **`acs-met` COUNTS BY `retired_in`, AND IGNORES `lifecycle_status` ENTIRELY.** A `Deferred` AC
+   still counts; only retirement removes one. So **writing ACs for unbuilt work holds readiness false
+   forever** — this is why `DW-029` cannot be executed as one bulk pass.
+16d. ⚠ **SLICE-SCOPE `wbs-done` IS VACUOUS FOR EVERY PRE-EXISTING SLICE** (`DEF-087`): all 155
+   `wbs_items` have `slice_id` NULL, so the rule returns zero rows for all 28 closed slices. It also
+   **breaks the obvious AC→slice derivation**. New WBS rows must set `slice_id`.
+16e. ⚠ **`RELATION_RULES` REFUSE PLAUSIBLE EDGES.** `lesson --learned_from--> deferred-work` is
+   rejected (allowed targets: decision, defect, progress-entry, risk, slice, wbs-item). The error is
+   the only documentation, and **the whole batch rolls back** — re-send the entire corrected batch.
+17. ⚠ `progress_entries` is **append-only** — correct via a `correction` event, never an edit.
+17b. ⚠⚠ **BRANCH TOPOLOGY IS PACKAGE TOPOLOGY (C31).** The package lives in the git working tree. Do
+   package writes on the branch you will merge, and **merge `main` in FIRST** when the branch predates
+   a package-only commit. Commit `tamheed-package/data` immediately after every write batch.
 
 ### E — Environment
 
 18. **`.cs` files need a UTF-8 BOM and LF**; the Write tool adds neither. ⚠ `git status --porcelain`
-    **collapses untracked directories**, so a BOM-fixer that reads it will silently skip every new
-    file in a new folder — use `-uall`.
-19. ⚠ **`gh pr create --body` and `git commit -m` with backticks break under PowerShell** — use
-    `--body-file` / `-F`.
-20. **Never write Arabic as unicode escapes** (`DEF-064`) — write literal UTF-8. `check-i18n.mjs`
-    compares KEY SETS, not values.
-21. **Ancestry is the wrong test for "is this branch's work already shipped."** Use the three-dot
-    tree diff.
-22. **`rm -rf tests/*/TestResults` before trusting a local coverage run** (`DEF-069`; CI is fine).
-    ⚠ The coverage gate is **per-file ≥95%**, and the line new handlers most often miss is the
-    **validator** — a feature whose test never constructs `XValidator` lands at ~94%.
-23. ⚠ **`gh pr checks --watch` AND `gh run watch` BOTH REPORTED SUCCESS ON RUNS THAT HAD NOT
-    FINISHED.** Poll the `status` field until it reads `completed`, then read `conclusion`.
-    ⚠ GitHub's API also returns intermittent **503**s — a polling loop must distinguish "API failed"
-    from "checks settled", or it will read an empty result as success.
-23b. ⚠⚠ **`$?` AFTER A PIPE IS THE EXIT CODE OF THE LAST COMMAND IN THE PIPE, NOT YOUR GATE'S.**
-    `dotnet format --verify-no-changes | tail -3; echo "EXIT=$?"` printed **EXIT=0** while the real
-    exit was **2** — an `IDE0161` failure on an EF-generated migration that CI would have rejected.
-    The pipe had reported `tail`'s success as the gate's. Redirect to a file and read `$?` on the
-    bare command (`cmd > /tmp/out 2>&1; echo $?`), or use `PIPESTATUS`. This is trap 12 ("a green
-    exit code can come from a run that checked nothing") arriving through the SHELL rather than the
-    test runner, and it is the same family as trap 23 above — trusting a wrapper's verdict instead
-    of the thing it wrapped.
-24. ⚠ **NEVER `git checkout -- .` WITH UNCOMMITTED WORK IN THE TREE**, including during mutation
-    testing. **Commit first, then mutate against the commit.**
-25. ⚠ **`gh pr merge --delete-branch` can MERGE REMOTELY AND STILL FAIL LOCALLY.** On 2026-08-17 it
-    squash-merged #289, then aborted its local step with *"Not possible to fast-forward"* because
-    local `main` held a commit that origin/main had never seen. The working tree silently reverted to
-    pre-feature `main`, which LOOKS like the work was lost. **Check `gh pr view --json state` before
-    reacting**; then verify content is present in `origin/main` and `git reset --hard origin/main`.
-28. ⚠⚠ **AN UNDEFINED CSS CUSTOM PROPERTY FAILS SILENTLY — AND THE FIX IS USUALLY A CLASS THAT
-    ALREADY EXISTS.** `border-radius: var(--radius-2)` shipped square corners against a uniformly
-    rounded system, because **`--radius-2` does not exist** (the token is `--control-radius`) and an
-    unknown custom property does not warn — it falls back to the initial value. The same hand-rolled
-    field also collapsed to **34px** inside a flex dialog for want of `min-inline-size: 0`. Both
-    vanished by deleting the bespoke CSS and using `.field-label` / `.textarea`, which already carried
-    the radius, the `min-inline-size`, AND focus + invalid states the hand-rolled pair lacked.
-    **Grep `styles/` for an existing class before writing a new one**, and grep `tokens.css` for a
-    variable before using it (`DW-031`).
+   collapses untracked directories — use `-uall`.
+18b. ⚠ `dotnet ef migrations add` rewrites the model snapshot as **CRLF** against this LF repo.
+   Normalise the migration, its Designer and the snapshot to **BOM + LF** before building.
+19. ⚠ `gh pr create --body` and `git commit -m` with backticks break under PowerShell — use
+   `--body-file` / `-F <file>`. ⚠ A `git commit -F -` **heredoc on stdin** can trip the
+   no-verify guard hook; write the message to a file instead.
+22. ⚠ The coverage gate is **per-file ≥95%**, and the line a new feature most often misses is the
+   **validator**. `rm -rf tests/*/TestResults` before trusting a local run (`DEF-069`).
+23. ⚠ **`gh pr checks --watch` AND `gh run watch` BOTH REPORT SUCCESS ON UNFINISHED RUNS.** Poll the
+   `status` field until `completed`, then read `conclusion`; treat a 503 as **unknown**, never success.
+23b. ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND, NOT YOUR GATE'S.** Fired again 2026-08-18:
+   reading it bare caught a real `IMPORTS` failure `dotnet format` would have hidden behind `tail`.
+   Redirect to a file and read `$?` on the bare command.
+24. ⚠ **NEVER `git checkout -- .` WITH UNCOMMITTED WORK.** Commit first, then mutate against the commit.
+25. ⚠⚠ **`gh pr merge --delete-branch` CAN MERGE REMOTELY AND STILL FAIL LOCALLY.** It did again on
+   #293: squash-merged, then aborted with *"Not possible to fast-forward"*, leaving the tree on a
+   pre-feature `main` that **looks exactly like lost work**. Check `gh pr view --json state` first,
+   verify the content is in `origin/main` **by content, not ancestry**, then `git reset --hard`.
+26. **A log tail is the wrong instrument for a failure whose distance you do not know** (`DEF-074`).
+27. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** Repository or package, never
+   scratchpad.
+28. ⚠ Delete throwaway visual-verify harnesses before committing — `vr-out/` is gitignored but a
+   `vr-*.tsx` in `src/` is not, and it would ship.
 
-26. **A LOG TAIL IS THE WRONG INSTRUMENT FOR A FAILURE WHOSE DISTANCE YOU DO NOT KNOW** (`DEF-074`).
-    Dump the api log with no tail at all.
-27. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** It is session-scoped, so a
-    pointer into it is a dangling reference the moment the session ends. Repository or package, never
-    scratchpad.
+## §5 — Definition of done
 
-## §6 — Definition of done
+Unit + integration tests, each guard proven by **forcing its refusal** and verified to fail without
+the change · flip AC verdicts via `audit_record` with evidence, `verified_by`, `verification_method`
+and `against_commit`, and say plainly when something is ANALYSIS rather than measurement ·
+authorization enforced server-side, `AuditEvent`s asserted as **ROWS** · no hardcoded strings, EN + AR
+together, RTL verified · **if it is visual, look at it** · no secrets · `progress_update` +
+`work_bind`, then `gate_run()` and `export_html()`; **commit `tamheed-package/data` immediately** ·
+conventional commits, small and reviewable · branch → PR → green CI → squash-merge ·
+**register every finding as a Tamheed row AS YOU GO — including findings against your own work.**
 
-Unit + integration tests, each guard proven by FORCING its refusal and verified to FAIL without the
-change · flip AC verdicts via `audit_record` with evidence, and say plainly when something is
-ANALYSIS rather than a measurement · authorization enforced server-side, `AuditEvent`s asserted as
-ROWS · no hardcoded strings, EN + AR together, RTL verified · **if it is visual, look at it** · no
-secrets, never print a live credential · `progress_update` + `work_bind`, then `gate_run()` and
-`export_html()`; **commit `tamheed-package/data` immediately** (it is git-tracked, and a branch
-operation destroys uncommitted package writes exactly like source) · conventional commits, small and
-reviewable · branch → PR → green CI → squash-merge · **register every finding as a Tamheed row AS YOU
-GO — including findings against your own work, and corrections to evidence you yourself recorded.**
-
-⚠ **Before offering the operator a disposition for a capability, sweep the requirement register for
-it first** (`LL-005`). "Record it as deliberately unexposed" silently retires an Approved requirement
-when one exists, and the operator cannot see that unless you checked.
+⚠ Before offering the operator a disposition for a capability, **sweep the requirement register
+first** (`LL-005`). ⚠ Scope changes, waivers and `force` are the operator's alone, and the interview
+runs **every** time (`LL-002`) — plan approval is not scope-change approval.
 
 Report the state and your plan before writing, then proceed.
 
