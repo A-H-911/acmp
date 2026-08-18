@@ -310,6 +310,52 @@ public class TopicApiTests
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    // FR-163 / C-AUTHZ-04 (DEC-063 d2) — classify over HTTP, and the refusal is the half that matters.
+    [Fact]
+    public async Task Secretary_classifies_a_topic_and_a_member_cannot()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
+        var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
+
+        // A Member is refused even though they submitted it: DEC-063 d2 excludes the Owner precisely
+        // so a plain Member cannot hide a topic from the committee.
+        var asMember = await Client(factory, "Member", sub: "kc-omar")
+            .PutAsJsonAsync($"/api/topics/{topic!.Id}/confidentiality", new { restricted = true });
+        asMember.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var asSecretary = await Client(factory, "Secretary", sub: "kc-sec")
+            .PutAsJsonAsync($"/api/topics/{topic.Id}/confidentiality", new { restricted = true });
+        asSecretary.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // ⚠ THE POINT OF THE WHOLE CONTROL, ASSERTED END TO END: once classified, a Member who holds no
+    // grant must not see the topic in the backlog AND must get 404 — not 403 — by key. A 403 would
+    // confirm the topic exists, which is the fact the classification protects.
+    [Fact]
+    public async Task A_restricted_topic_is_hidden_from_a_non_grantee_and_its_key_returns_404()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
+        var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
+
+        await Client(factory, "Secretary", sub: "kc-sec")
+            .PutAsJsonAsync($"/api/topics/{topic!.Id}/confidentiality", new { restricted = true });
+
+        var outsider = Client(factory, "Member", sub: "kc-nobody");
+        var backlog = await (await outsider.GetAsync("/api/topics")).Content.ReadFromJsonAsync<Backlog>();
+        backlog!.Total.Should().Be(0, "the total must not announce a topic the caller may not see");
+        backlog.Items.Should().BeEmpty();
+
+        var byKey = await outsider.GetAsync($"/api/topics/{topic.Key}");
+        byKey.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // The Secretary still sees it — otherwise the assertions above would pass against a topic that
+        // simply vanished, which is a different bug wearing the same result.
+        var asSecretary = await Client(factory, "Secretary", sub: "kc-sec").GetAsync($"/api/topics/{topic.Key}");
+        asSecretary.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     [Fact] // AC-031
     public async Task Reject_without_a_reason_returns_400()
     {

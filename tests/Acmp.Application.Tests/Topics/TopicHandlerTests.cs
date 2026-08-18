@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.DeferTopic;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
 using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
@@ -8,7 +9,6 @@ using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
 using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
-using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;

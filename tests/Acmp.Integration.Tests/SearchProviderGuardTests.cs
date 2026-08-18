@@ -1,6 +1,4 @@
-﻿using NSubstitute;
-using Acmp.Modules.Topics.Application.Abstractions;
-using Acmp.Modules.Decisions.Infrastructure.Persistence;
+﻿using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Search;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Search;
@@ -8,11 +6,13 @@ using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Knowledge.Infrastructure.Search;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Search;
+using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Search;
 using Acmp.Shared.Contracts.Search;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 
 namespace Acmp.Integration.Tests;
 

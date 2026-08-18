@@ -1,5 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.GetBacklog;
-using Acmp.Modules.Topics.Application.Abstractions;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;

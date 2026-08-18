@@ -1,6 +1,4 @@
-﻿using NSubstitute;
-using Acmp.Modules.Topics.Application.Abstractions;
-using Acmp.Modules.Decisions.Infrastructure.Persistence;
+﻿using Acmp.Modules.Decisions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Search;
 using Acmp.Modules.Governance.Infrastructure.Persistence;
 using Acmp.Modules.Governance.Infrastructure.Search;
@@ -8,6 +6,7 @@ using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Knowledge.Infrastructure.Search;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Search;
+using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Search;
 using Acmp.Shared.Application.Abstractions;
@@ -17,6 +16,7 @@ using DotNet.Testcontainers.Images;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using Testcontainers.MsSql;
 
 namespace Acmp.Integration.Tests;
