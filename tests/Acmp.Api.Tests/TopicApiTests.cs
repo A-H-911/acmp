@@ -2,7 +2,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Acmp.Modules.Membership.Domain.Enums;
+using Acmp.Modules.Traceability.Domain.Enums;
+using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -277,6 +280,20 @@ public class TopicApiTests
         var row = await detail.Content.ReadFromJsonAsync<ConvertedRow>();
         row!.Type.Should().Be("EnhancementInnovation");
         row.Status.Should().Be("Submitted", "the successor re-enters the pipeline for triage");
+
+        // ⚠ THE TYPED LINK, ASSERTED AS A ROW IN THE REAL TRACEABILITY STORE. Every other test of this
+        // feature substitutes ITraceabilityWriter, so they prove the handler CALLS the port and nothing
+        // more — the edge FR-030 actually demands could be absent and they would all still pass. This
+        // reads the Traceability module's own DbContext (the factory gives it a SEPARATE database from
+        // Topics, so it must be resolved, never assumed to share Topics' store).
+        using var scope = factory.Services.CreateScope();
+        var trace = scope.ServiceProvider.GetRequiredService<TraceabilityDbContext>();
+        var edge = await trace.Relationships.SingleAsync(r => r.TargetId == created.Id);
+        edge.RelType.Should().Be(RelationshipType.ConvertedTo);
+        edge.SourceType.Should().Be(ArtifactType.Topic);
+        edge.TargetType.Should().Be(ArtifactType.Topic);
+        edge.SourceId.Should().Be(topicId, "the edge runs original -> successor; reversed, both panels would name the successor as the origin");
+        edge.IsActive.Should().BeTrue();
     }
 
     [Fact] // FR-030: the reason is mandatory, refused at the boundary rather than by the aggregate
