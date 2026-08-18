@@ -18,7 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic, type TopicDetail as Topic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, type TopicDetail as Topic,
 } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { Dialog } from '../../components/ui/Dialog';
@@ -29,7 +29,7 @@ import { Button } from '../../components/ui/Button';
 import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
-import { statusTone, initials } from './topicMeta';
+import { statusTone, initials, TOPIC_TYPE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import './topics.css';
@@ -111,6 +111,10 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const [prepareErr, setPrepareErr] = useState<string | null>(null);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
+  const convert = useConvertTopic(topic.key);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertReason, setConvertReason] = useState('');
+  const [convertType, setConvertType] = useState('');
 
   // FR-160/FR-161/FR-045 — the lifecycle EXITS. Each of these transitions existed on the aggregate
   // with no caller (DEF-084): a Decided topic could never be closed, a Deferred one never came back,
@@ -184,6 +188,17 @@ function DetailHeader({ topic }: { topic: Topic }) {
             <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.close.button')}
           </Button>
         )}
+        {/* AC-113 / FR-030 — convert to another type. Shares the Decided status with Close, so this
+            header carries two lifecycle actions at once; the crowding was checked in a browser, not
+            just in JSDOM. No .dc.html covers a topic-type conversion affordance (the Usage Map maps
+            topic detail to "ACMP Backlog & Topic.dc.html", whose only "convert" hits are the
+            research→topic and decision→ADR flows), so this is a NO-REFERENCE COMPOSITION built from
+            the design system and the verified PR #289 button pattern (INV-014). */}
+        {topic.status === 'Decided' && (
+          <Button onClick={() => { setConvertReason(''); setConvertType(''); setConvertOpen(true); }}>
+            <Icon name="research" size={15} aria-hidden /> {t('topics.convert.button')}
+          </Button>
+        )}
         {/* AC-112 / FR-045 — approved in the original plan, unbuilt until now. */}
         {(topic.status === 'Rejected' || topic.status === 'Closed') && (
           <Button onClick={() => { setReopenReason(''); setReopenOpen(true); }}>
@@ -245,6 +260,65 @@ function DetailHeader({ topic }: { topic: Topic }) {
             rows={3}
             value={reopenReason}
             onChange={(e) => setReopenReason(e.target.value)}
+          />
+        </Dialog>
+        {/*
+          AC-113 / FR-030. BOTH inputs are mandatory: the target type (there is no sensible default —
+          defaulting would let a mis-click retire a Decided topic into the wrong type) and the reason,
+          which the requirement names explicitly. Same design-system classes as the reopen dialog —
+          `.field-label` / `.textarea` / `.input`, never bespoke CSS (DW-031).
+        */}
+        <Dialog
+          open={convertOpen}
+          onClose={() => setConvertOpen(false)}
+          icon={<Icon name="research" size={20} aria-hidden />}
+          title={t('topics.convert.title')}
+          description={t('topics.convert.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setConvertOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={convert.isPending}
+                disabled={convertType === '' || convertReason.trim().length === 0}
+                onClick={() =>
+                  onLifecycle(() =>
+                    convert.mutate(
+                      { topicId: topic.id, targetType: convertType, reason: convertReason.trim() },
+                      {
+                        // The topic under the user is now Converted and terminal, so staying here
+                        // would show a dead record. Navigate to the successor the server just made.
+                        onSuccess: (created) => { setConvertOpen(false); navigate(`/topics/${created.key}`); },
+                        onError: lifecycleError,
+                      },
+                    ))}
+              >
+                {t('topics.convert.confirm')}
+              </Button>
+            </>
+          }
+        >
+          <label className="field-label" htmlFor="convert-type">{t('topics.convert.typeLabel')}</label>
+          <select
+            id="convert-type"
+            className="input"
+            value={convertType}
+            onChange={(e) => setConvertType(e.target.value)}
+          >
+            <option value="">{t('topics.convert.typePlaceholder')}</option>
+            {/* The current type is excluded: converting a topic to what it already is is refused by
+                the server, so offering it would be an option that can only fail. */}
+            {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+              <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+            ))}
+          </select>
+          <label className="field-label" htmlFor="convert-reason">{t('topics.convert.label')}</label>
+          <textarea
+            id="convert-reason"
+            className="textarea"
+            rows={3}
+            value={convertReason}
+            onChange={(e) => setConvertReason(e.target.value)}
           />
         </Dialog>
       </div>

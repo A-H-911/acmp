@@ -61,6 +61,9 @@ public class TopicApiTests
 
     private sealed record SubmitResult(Guid Id, string Key);
     private sealed record TopicRow(string Key, string Title, string Status);
+    // FR-030 needs the TYPE as well; a separate shape rather than widening TopicRow, which several
+    // other tests deserialize and which has no reason to grow a field only one of them reads.
+    private sealed record ConvertedRow(string Key, string Status, string Type);
     private sealed record Backlog(List<TopicRow> Items, int Total);
     private sealed record MemberRow(Guid PublicId, string Role);
 
@@ -250,6 +253,44 @@ public class TopicApiTests
         var closed = await sec.PostAsync($"/api/topics/{topicId}/close", null);
 
         closed.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // FR-030 / AC-113 — convert over HTTP. Same seeding reason as close: Decided is not reachable
+    // through the API. Unlike the other lifecycle transitions this returns 201 with the SUCCESSOR's
+    // key, because the artifact the caller should look at next is the new topic, not the retired one.
+    [Fact]
+    public async Task Secretary_converts_a_decided_topic_returns_201_with_the_successor()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topicId = await factory.SeedDecidedTopicAsync();
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        var response = await sec.PostAsJsonAsync($"/api/topics/{topicId}/convert",
+            new { targetType = "EnhancementInnovation", reason = "research concluded" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await response.Content.ReadFromJsonAsync<SubmitResult>();
+        created!.Key.Should().NotBeNullOrWhiteSpace();
+
+        // The successor is a real, readable topic of the requested type — not just an id in a body.
+        var detail = await sec.GetAsync($"/api/topics/{created.Key}");
+        var row = await detail.Content.ReadFromJsonAsync<ConvertedRow>();
+        row!.Type.Should().Be("EnhancementInnovation");
+        row.Status.Should().Be("Submitted", "the successor re-enters the pipeline for triage");
+    }
+
+    [Fact] // FR-030: the reason is mandatory, refused at the boundary rather than by the aggregate
+    public async Task Convert_without_a_reason_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topicId = await factory.SeedDecidedTopicAsync();
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec")
+            .PostAsJsonAsync($"/api/topics/{topicId}/convert",
+                new { targetType = "EnhancementInnovation", reason = "" });
+
+        // 400, not 500: the validator catches it before Topic.RequireReason throws.
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact] // AC-031

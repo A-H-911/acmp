@@ -326,6 +326,30 @@ export function useReopenTopic(key: string | undefined) {
   });
 }
 
+/**
+ * FR-030 / AC-113: convert a Decided topic to a different type. Unlike the other lifecycle mutations
+ * this RETURNS the successor's key — the caller navigates to the new topic, because the one the user
+ * was looking at has just been retired to Converted and is no longer the live artifact.
+ */
+export function useConvertTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, targetType, reason }: { topicId: string; targetType: string; reason: string }) =>
+      api<{ id: string; key: string }>(`/topics/${topicId}/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetType, reason }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+      // The successor is a brand-new topic and the original now carries a ConvertedTo edge, so the
+      // traceability panel on BOTH is stale.
+      qc.invalidateQueries({ queryKey: ['traceability'] });
+    },
+  });
+}
+
 /** The editable half of a topic (AC-034). `scope` is omitted unless the editor changed it. */
 export interface TopicEdit {
   title: string;

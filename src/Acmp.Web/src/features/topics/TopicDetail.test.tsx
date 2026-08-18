@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -18,10 +18,11 @@ vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => '
 vi.mock('../../api/topics', () => ({
   useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(),
   usePrepareTopic: vi.fn(), useReactivateTopic: vi.fn(), useCloseTopic: vi.fn(), useReopenTopic: vi.fn(),
+  useConvertTopic: vi.fn(),
 }));
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic,
 } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
@@ -31,12 +32,14 @@ const mockPrepare = usePrepareTopic as unknown as Mock;
 const mockReactivate = useReactivateTopic as unknown as Mock;
 const mockClose = useCloseTopic as unknown as Mock;
 const mockReopen = useReopenTopic as unknown as Mock;
+const mockConvert = useConvertTopic as unknown as Mock;
 let mutate: Mock;
 let uploadMutate: Mock;
 let prepareMutate: Mock;
 let reactivateMutate: Mock;
 let closeMutate: Mock;
 let reopenMutate: Mock;
+let convertMutate: Mock;
 
 const TOPIC: Topic = {
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
@@ -88,6 +91,9 @@ describe('TopicDetail (P5b)', () => {
     mockReopen.mockReset();
     reopenMutate = vi.fn();
     mockReopen.mockReturnValue({ mutate: reopenMutate, isPending: false });
+    mockConvert.mockReset();
+    convertMutate = vi.fn();
+    mockConvert.mockReturnValue({ mutate: convertMutate, isPending: false });
   });
 
   // FR-160 / FR-161 / FR-045 — the lifecycle exits. Each button is gated on the ONE status its
@@ -132,6 +138,52 @@ describe('TopicDetail (P5b)', () => {
     await userEvent.click(confirm);
     expect(reopenMutate).toHaveBeenCalledWith(
       { topicId: 'g1', reason: 'new regulatory guidance' }, expect.anything());
+  });
+
+  // AC-113 / FR-030. Both inputs are mandatory and the confirm stays disabled until BOTH are given —
+  // asserted separately, because a test that types only the reason would pass against a dialog that
+  // had forgotten to gate on the type, and a mis-clicked convert retires a Decided topic irreversibly.
+  it('offers Convert type only on a Decided topic', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    setup();
+    expect(screen.getByRole('button', { name: /Convert type/i })).toBeInTheDocument();
+  });
+
+  it('does not offer Convert type on a non-Decided topic', () => {
+    result({ data: TOPIC }); // Scheduled
+    setup();
+    expect(screen.queryByRole('button', { name: /Convert type/i })).not.toBeInTheDocument();
+  });
+
+  it('requires BOTH a target type and a reason before a conversion can be confirmed', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Convert type/i }));
+
+    const confirm = screen.getByRole('button', { name: /Convert topic/i });
+    expect(confirm).toBeDisabled();
+
+    // Reason alone is not enough.
+    await userEvent.type(screen.getByLabelText(/Reason for converting/i), 'research concluded');
+    expect(confirm).toBeDisabled();
+
+    await userEvent.selectOptions(screen.getByLabelText(/Convert to/i), 'ResearchDiscovery');
+    expect(confirm).toBeEnabled();
+
+    await userEvent.click(confirm);
+    expect(convertMutate).toHaveBeenCalledWith(
+      { topicId: 'g1', targetType: 'ResearchDiscovery', reason: 'research concluded' }, expect.anything());
+  });
+
+  it('omits the topic\'s current type from the conversion choices', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } }); // type = ArchitectureDecision
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Convert type/i }));
+
+    const options = within(screen.getByLabelText(/Convert to/i)).getAllByRole('option');
+    // placeholder + the three OTHER types; offering the current one is an option that can only fail.
+    expect(options).toHaveLength(4);
+    expect(options.map((o: HTMLElement) => (o as HTMLOptionElement).value)).not.toContain('ArchitectureDecision');
   });
 
   it('renders the header and overview from the detail DTO', () => {
