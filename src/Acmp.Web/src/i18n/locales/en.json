@@ -669,7 +669,8 @@
       "DerivedFrom": "Derived from",
       "Implements": "Implements",
       "Blocks": "Blocks",
-      "Resolves": "Resolves"
+      "Resolves": "Resolves",
+      "ConvertedTo": "Converted to"
     },
     "picker": {
       "type": "Type",
@@ -1340,6 +1341,15 @@
       "subtitle": "The topic returns to triage. Say why it is being reopened — the reason is recorded permanently.",
       "label": "Reason for reopening",
       "confirm": "Reopen topic"
+    },
+    "convert": {
+      "button": "Convert type",
+      "title": "Convert this topic to another type",
+      "subtitle": "This topic is closed as Converted and a new topic of the type you choose is created, carrying its attachments and discussion. The two stay linked.",
+      "typeLabel": "Convert to",
+      "typePlaceholder": "Choose a type…",
+      "label": "Reason for converting",
+      "confirm": "Convert topic"
     }
   },
   "submit": {

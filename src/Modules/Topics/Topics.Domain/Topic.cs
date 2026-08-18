@@ -204,10 +204,15 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         Raise(new TopicClosedEvent(PublicId, Key, now));
     }
 
-    public void Convert(string actorSub, string actorName, DateTimeOffset now)
+    // W17 / FR-030: convert a Decided topic to a different type. This is the SOURCE side only — it
+    // retires the original; the handler creates the successor and links the two. The reason is required
+    // and lands in the status history, which is why no schema change was needed: TopicStatusEvent has
+    // always carried a Reason and Transition has always accepted one — this call simply passed null.
+    public void Convert(string reason, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Decided);
-        Transition(TopicStatus.Converted, null, actorSub, actorName, now);
+        RequireReason(reason, "A conversion reason is required.");
+        Transition(TopicStatus.Converted, reason.Trim(), actorSub, actorName, now);
         Raise(new TopicConvertedEvent(PublicId, Key, now));
     }
 

@@ -15,6 +15,7 @@ public sealed class TopicLifecycleTests
     private static readonly DateTimeOffset Now = new(2026, 3, 10, 10, 0, 0, TimeSpan.Zero);
     private const string ActorSub = "kc-khalid";
     private const string ActorName = "Khalid A.";
+    private const string ConvertReason = "Research concluded; this needs an architecture decision.";
     private const string OwnerActorSub = "kc-omar";
     private const string OwnerActorName = "Omar H.";
     private static readonly Guid OwnerId = Guid.NewGuid();
@@ -101,7 +102,7 @@ public sealed class TopicLifecycleTests
     {
         var t = Decided();
 
-        t.Convert(ActorSub, ActorName, Now);
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         t.Status.Should().Be(TopicStatus.Converted);
     }
@@ -111,10 +112,49 @@ public sealed class TopicLifecycleTests
     {
         var t = Decided();
 
-        t.Convert(ActorSub, ActorName, Now);
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         t.History.Should().Contain(h =>
             h.FromStatus == TopicStatus.Decided && h.ToStatus == TopicStatus.Converted);
+    }
+
+    // ---- FR-030: the reason is the requirement's own words ("recording the conversion reason") ----
+
+    [Fact]
+    public void Convert_records_the_reason_on_the_history_row()
+    {
+        var t = Decided();
+
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
+
+        // The reason must survive into the record, not merely be accepted as an argument. Before FR-030
+        // this call passed null into Transition's reason slot, so the row existed with an empty Reason —
+        // which is exactly the shape a caller could not distinguish from "no reason was given".
+        t.History.Should().Contain(h =>
+            h.ToStatus == TopicStatus.Converted && h.Reason == ConvertReason);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Convert_without_a_reason_is_refused(string reason)
+    {
+        var t = Decided();
+
+        var act = () => t.Convert(reason, ActorSub, ActorName, Now);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*reason*");
+        t.Status.Should().Be(TopicStatus.Decided, "a refused conversion must not retire the topic");
+    }
+
+    [Fact]
+    public void Convert_trims_the_recorded_reason()
+    {
+        var t = Decided();
+
+        t.Convert("  spaced out  ", ActorSub, ActorName, Now);
+
+        t.History.Should().Contain(h => h.ToStatus == TopicStatus.Converted && h.Reason == "spaced out");
     }
 
     [Fact]
@@ -124,7 +164,7 @@ public sealed class TopicLifecycleTests
         var expectedPublicId = t.PublicId;
         var expectedKey = t.Key;
 
-        t.Convert(ActorSub, ActorName, Now);
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         var evt = t.DomainEvents.OfType<TopicConvertedEvent>().Should().ContainSingle().Subject;
         evt.TopicPublicId.Should().Be(expectedPublicId);
@@ -149,7 +189,7 @@ public sealed class TopicLifecycleTests
     {
         var t = Accepted(); // status = Accepted, not Decided
 
-        var act = () => t.Convert(ActorSub, ActorName, Now);
+        var act = () => t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*Accepted*");
     }
@@ -169,7 +209,7 @@ public sealed class TopicLifecycleTests
     {
         var t = NewDraft();
 
-        var act = () => t.Convert(ActorSub, ActorName, Now);
+        var act = () => t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*Draft*");
     }
@@ -191,7 +231,7 @@ public sealed class TopicLifecycleTests
     public void Converted_topic_is_immutable_to_metadata_edits()
     {
         var t = Decided();
-        t.Convert(ActorSub, ActorName, Now);
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         var act = () => t.SetUrgency(TopicUrgency.Critical);
 
@@ -213,7 +253,7 @@ public sealed class TopicLifecycleTests
     public void Converted_topic_blocks_AddAttachment_as_immutable()
     {
         var t = Decided();
-        t.Convert(ActorSub, ActorName, Now);
+        t.Convert(ConvertReason, ActorSub, ActorName, Now);
 
         var act = () => t.AddAttachment("x.pdf", "application/pdf", 500, "key/x", OwnerActorSub, OwnerActorName, Now);
 

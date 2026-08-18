@@ -10,6 +10,7 @@ import {
   useReactivateTopic,
   useCloseTopic,
   useReopenTopic,
+  useConvertTopic,
   useUpdateTopic,
   useMoveTopicPriority,
   useAddTopicComment,
@@ -204,6 +205,27 @@ describe('topic mutations', () => {
     // the reason travels as `reason` because the endpoint binds ReasonBody (FR-044's mandatory-reason rule)
     expect(lastBody(spy)).toEqual({ reason: 'new regulatory guidance' });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // AC-113 / FR-030. Unlike the other lifecycle mutations this one READS the response: the server
+  // creates a successor topic and the caller navigates to it, so a hook that swallowed the body
+  // would leave the UI stranded on a topic that is now terminal.
+  it('useConvertTopic POSTs the target type and reason, and returns the successor key', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { id: 'new-guid', key: 'TOP-2026-777' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useConvertTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', targetType: 'ArchitectureDecision', reason: 'research concluded' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/convert');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ targetType: 'ArchitectureDecision', reason: 'research concluded' });
+    expect(result.current.data).toEqual({ id: 'new-guid', key: 'TOP-2026-777' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+    // both topics' traceability panels gained the ConvertedTo edge
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['traceability'] });
   });
 
   // AC-034 / DEF-058. The endpoint REPLACES, so every editable field must go out on every save —
