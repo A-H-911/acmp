@@ -23,6 +23,8 @@ export interface TopicSummary {
   ageDays: number;
   slaBreached: boolean;
   createdAt: string;
+  /** FR-163 / C-AUTHZ-04. Only ever true on a row the caller is already allowed to see. */
+  restricted: boolean;
 }
 
 export interface PagedResult<T> {
@@ -197,6 +199,8 @@ export interface TopicDetail {
   ageDays: number;
   slaBreached: boolean;
   createdAt: string;
+  /** FR-163 / C-AUTHZ-04. Only ever true on a row the caller is already allowed to see. */
+  restricted: boolean;
   revisitOn: string | null;
   history: TopicHistoryEntry[];
   comments: TopicComment[];
@@ -346,6 +350,29 @@ export function useConvertTopic(key: string | undefined) {
       // The successor is a brand-new topic and the original now carries a ConvertedTo edge, so the
       // traceability panel on BOTH is stale.
       qc.invalidateQueries({ queryKey: ['traceability'] });
+    },
+  });
+}
+
+/**
+ * FR-163 / C-AUTHZ-04 (DEC-063 d2). PUT the DESIRED state rather than POSTing an action, so a repeat
+ * is a no-op instead of a second classification event.
+ *
+ * Invalidates the BACKLOG as well as the detail because classifying can remove the topic from other
+ * people's lists — the caller's own view may look unchanged while everyone else's changed.
+ */
+export function useSetTopicConfidentiality(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, restricted }: { topicId: string; restricted: boolean }) =>
+      api<void>(`/topics/${topicId}/confidentiality`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restricted }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
     },
   });
 }

@@ -146,6 +146,13 @@ function DetailHeader({ topic }: { topic: Topic }) {
               <Icon name="warnTriangle" size={12} aria-hidden /> {t(`topics.urgency.${topic.urgency}`)}
             </span>
           )}
+          {/* FR-163 / C-AUTHZ-04. ⚠ ICON + TEXT, never colour alone (WCAG 1.4.1 / NFR-034): the whole
+              point of this badge is that a reader must not have to infer "restricted" from a hue. */}
+          {topic.restricted && (
+            <span className="dt-restricted">
+              <Icon name="lock" size={12} aria-hidden /> {t('topics.restricted.badge')}
+            </span>
+          )}
         </div>
         <h1 className="dt-title">{topic.title}</h1>
         <div className="dt-meta">

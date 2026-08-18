@@ -21,7 +21,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useUpdateTopic, type TopicDetail } from '../../api/topics';
+import { useTopicDetail, useUpdateTopic, useSetTopicConfidentiality, type TopicDetail } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { Field, Input, Textarea } from '../../components/ui/Field';
@@ -30,6 +30,7 @@ import { Button } from '../../components/ui/Button';
 import { StreamPicker } from '../../components/ui/StreamPicker';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
+import { Icon } from '../../components/icons';
 import './topics.css';
 
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
@@ -77,6 +78,7 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
   const { t } = useTranslation();
   const auth = useAuth();
   const update = useUpdateTopic(topicKey);
+  const setConfidentiality = useSetTopicConfidentiality(topicKey);
 
   const [form, setForm] = useState<FormState>({
     title: topic.title,
@@ -97,6 +99,11 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
   // Show-and-enforce: the server is the gate (Policies.TopicTriage), and it 403s a non-triage role
   // that sends a changed scope. Hiding the control keeps a Member from being offered a refusal.
   const mayChangeScope = hasRole(auth, 'secretary', 'chairman');
+  // FR-163 / C-AUTHZ-04 (DEC-063 d2). Same two roles as the scope gate, and gated for the same
+  // reason: the server refuses anyone else, and offering the control to a Member would be offering
+  // them a refusal. ⚠ The OWNER is deliberately not included, even though they often recognise
+  // sensitivity first — letting them classify would let a plain Member hide a topic from the committee.
+  const mayClassify = hasRole(auth, 'secretary', 'chairman');
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -215,6 +222,30 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
                     </button>
                   ))}
                 </div>
+              )}
+            </Field>
+          )}
+          {/* ⚠ OUTSIDE the `disabled={allLocked}` semantics of the other fields by intent: this
+              posts through its OWN endpoint rather than the topic PUT, because classification must
+              stay possible on a Decided/Closed/Converted topic. An archived sensitive topic that
+              could never be declassified is the failure the domain exemption exists to prevent. */}
+          {mayClassify && (
+            <Field label={t('topicEdit.fRestricted')} help={t('topicEdit.fRestrictedHelp')}>
+              {(p) => (
+                <button
+                  type="button"
+                  id={p.id}
+                  className={`sub-card ${topic.restricted ? 'selected' : ''}`}
+                  // ⚠ COERCED. aria-pressed={undefined} OMITS THE ATTRIBUTE, which silently
+                  // downgrades this from a toggle to a plain button for a screen reader — the state
+                  // simply stops being announced. Caught by a test whose fixture predated the field.
+                  aria-pressed={topic.restricted === true}
+                  disabled={setConfidentiality.isPending}
+                  onClick={() => setConfidentiality.mutate({ topicId: topic.id, restricted: !topic.restricted })}
+                >
+                  <Icon name="lock" size={15} aria-hidden />{' '}
+                  {topic.restricted ? t('topicEdit.restrictedOn') : t('topicEdit.restrictedOff')}
+                </button>
               )}
             </Field>
           )}

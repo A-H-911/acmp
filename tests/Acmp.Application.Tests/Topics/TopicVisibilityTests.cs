@@ -203,10 +203,15 @@ public class TopicVisibilityTests
     }
 
     [Fact]
-    public async Task Detail_by_key_is_served_to_a_grantee()
+    public async Task Detail_by_key_is_served_to_a_grantee_with_its_materials()
     {
         var (user, clock) = (User(AcmpRoles.Member), Clock());
         var restricted = Restricted("TOP-2026-021");
+        // A restricted topic's ATTACHMENTS are the most sensitive thing it carries, so the grantee
+        // path is asserted to return them rather than merely to return a non-null envelope. This also
+        // covers the attachment projection, which no other detail case exercises.
+        restricted.AddAttachment("finding.pdf", "application/pdf", 2048, "topics/TOP-2026-021/finding.pdf",
+            "kc-omar", "Omar H.", Now);
         await using var db = await Seeded(user, clock, restricted);
         var visibility = new TopicVisibility(user, Capabilities(restricted.PublicId));
 
@@ -214,6 +219,8 @@ public class TopicVisibilityTests
             .Handle(new GetTopicDetailQuery("TOP-2026-021"), CancellationToken.None);
 
         detail.Should().NotBeNull();
+        detail!.Restricted.Should().BeTrue("the badge needs the flag on the wire");
+        detail.Attachments.Should().ContainSingle().Which.FileName.Should().Be("finding.pdf");
     }
 
     [Fact]

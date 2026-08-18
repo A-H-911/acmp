@@ -60,6 +60,7 @@ public sealed class GetTopicDetailHandler : IRequestHandler<GetTopicDetailQuery,
             t.Comments.OrderBy(c => c.PostedAt)
                 .Select(c => new TopicCommentDto(c.PublicId, c.Body, c.AuthorName, c.PostedAt)).ToList(),
             t.Attachments.OrderBy(a => a.UploadedAt)
-                .Select(a => new TopicAttachmentDto(a.PublicId, a.FileName, a.ContentType, a.SizeBytes, a.UploadedByName, a.UploadedAt)).ToList());
+                .Select(a => new TopicAttachmentDto(a.PublicId, a.FileName, a.ContentType, a.SizeBytes, a.UploadedByName, a.UploadedAt)).ToList(),
+            t.IsRestricted);
     }
 }
