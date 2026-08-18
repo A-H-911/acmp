@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Domain;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
@@ -27,7 +28,17 @@ public class TopicReaderTests
     }
 
     private static TopicReader Reader(TopicsDbContext db, IFileStore? files = null) =>
-        new(db, files ?? Substitute.For<IFileStore>(), Options.Create(new StorageOptions()));
+        new(db, files ?? Substitute.For<IFileStore>(), Options.Create(new StorageOptions()), SeesEverything());
+
+    // FR-163: this suite asserts the READER's projections and its scoping-by-ids, not confidentiality.
+    // A permissive scope keeps it measuring what it claims to; the narrowing has its own suites.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
 
     private static Topic NewTopic(string key = "TOP-2026-009", string title = "Auth study", string description = "desc") =>
         Topic.Draft(key, title, description, "just",
