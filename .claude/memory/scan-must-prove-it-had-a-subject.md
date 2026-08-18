@@ -42,3 +42,26 @@ claim also needs an untruncated search ([[absence-claims-need-untruncated-search
 JSON/SSM/console encoding, and return text as UTF-16LE hex rather than trusting rendered
 glyphs. Wrap the container query in `sh -c '...'` or `$(cat /run/secrets/…)` is evaluated
 on the **host** and fails as a misleading *Login failed for user sa*.
+
+## 2026-08-19 — the strongest instance yet: a typechecker with zero inputs (`LL-007`, `DEF-091`)
+
+`npx tsc --noEmit -p tsconfig.json` inside `src/Acmp.Web` **exits 0 while checking nothing.** That
+file is solution-style — `"files": []` plus three `references` — so tsc resolves zero inputs and
+succeeds. It blessed a tree carrying **13 type errors** that had been failing `npm run build` for
+**ten commits** on `feat/sl-030-confidentiality`.
+
+⚠ **`vitest` cannot cover for it.** It transpiles per file and never typechecks, so **1241 passing
+tests** certified code that would not compile. Two green instruments, zero real coverage.
+
+**Use `npm run build` (`tsc -b && vite build` — exactly what CI runs) or `-p tsconfig.app.json`.**
+
+**How to prove any gate has a subject:** inject a deliberate fault, confirm the tool FAILS, remove it.
+Thirty seconds. Doing that here is what separated "my change broke this" from "this was already
+broken" — I also stashed and re-measured, getting 13 both with and without my changes.
+
+⚠ **Honest about the discovery:** I did not catch this by applying the principle. vitest failed on a
+change tsc had just approved, and I went looking. Had the two agreed, the false green would have
+shipped inside a PR body asserting a typecheck that never ran.
+
+Same family, same session: `grep -c $''` reported CRs on a pure-LF file — and a control file with
+exactly one CR line reported **two**. The instrument was degraded to `grep -c ''`.
