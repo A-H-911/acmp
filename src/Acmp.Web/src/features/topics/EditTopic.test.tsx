@@ -36,6 +36,7 @@ let mutateAsync: Mock;
 let classifyMutate: Mock;
 
 const TOPIC: Topic = {
+  restricted: false,
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
   justification: 'Reduce auth sprawl and audit cost.', type: 'ArchitectureDecision', status: 'Submitted', urgency: 'Urgent',
   scope: 'MultiStream', source: 'CommitteeMember', streams: ['core', 'government'], systems: ['Auth Service'], tags: ['iam'],

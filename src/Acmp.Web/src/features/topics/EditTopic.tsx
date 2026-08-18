@@ -30,7 +30,6 @@ import { Button } from '../../components/ui/Button';
 import { StreamPicker } from '../../components/ui/StreamPicker';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
-import { Icon } from '../../components/icons';
 import './topics.css';
 
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
