@@ -24,41 +24,45 @@
   ignores `lifecycle_status`, so it holds readiness false FOREVER — trap 16c), so **a part-verified
   requirement gets a `DW-` row, not an AC**. The cheap candidate filter is **exhausted**: grepping tests
   for requirement ids returns zero, because every requirement a test names already has an AC.
-- ⭐⭐ **Batch 13's classifying rule, worth reusing: surface that DOES NOT EXIST can be excluded by name
-  in a Met verdict; surface that EXISTS but is unproven CANNOT.** That one line decided all five
-  candidates. `NFR-043` names four span types — Webex/Tarseem are Phase 2 and genuinely absent, but EF
-  Core and Hangfire run in production, so the missing instrumentation is a partial (`DW-062`), not a
-  footnote. ⚠ **`src/Acmp.Worker` has NO OpenTelemetry package at all** — the host that runs the jobs.
-- ⭐⭐⚠ **`DW-064` — the divergence was in a CODE COMMENT the whole time.** `deploy/Dockerfile.web` bakes
-  `VITE_OIDC_AUTHORITY` into the SPA bundle at build time and **says so in its own words**, so promoting
-  one web image across environments is impossible — exactly what `NFR-053` forbids. The same file
-  templates the nginx CSP origins at container START via envsubst *and comments that this is so each
-  environment needs no rebuild*. **The principle was understood and applied one layer down.** Nothing
-  failed because there was no AC to fail — the programme's whole premise in one file.
+- ⭐⭐⚠ **`LL-005` MUST SWEEP `adrs`, `decisions` AND `open_questions` — NOT JUST `requirements`.** Batch 13
+  swept the requirement register thoroughly, then offered the operator a build for `NFR-053`. They took it.
+  **`ADR-0037` (Approved, ratified) decides that exact thing**, and its consequences name the fix as deferred
+  under **`OQ-061`**. One file-read — a bare ADR id in a docker-compose COMMENT — separated that from
+  reversing an Approved ADR's decision clause. Resolved by `SC-023`: `NFR-053` NARROWED, nothing built.
+- ⭐⭐ **Classifying rule worth reusing: surface that DOES NOT EXIST can be excluded by name in a Met
+  verdict; surface that EXISTS but is unproven CANNOT.** That line decided all five batch-13 candidates.
 - ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006` again). The
-  `NFR-021` census read as a **38-command server-side-validation hole** — the shape of a critical
-  security finding. All four commands that actually carry scalar input are guarded **in the domain**:
-  `SetTimebox` clamps 5..120, `MoveItem` bounds-checks the target index, `RecordActualMinutes` floors
-  negatives at 0, `DeleteRecording` uses its string only as an EF equality predicate. **Filing off the
-  census alone would have been wrong.** ⚠ Also: searching for validator *files* returns **1**; validators
-  are co-located in feature files and there are **78**. Third instrument was the first honest one.
+  `NFR-021` census read as a **38-command server-side-validation hole** — the shape of a critical security
+  finding. All four commands carrying scalar input are guarded **in the domain** (`SetTimebox` clamps 5..120,
+  `MoveItem` bounds-checks, `RecordActualMinutes` floors at 0, `DeleteRecording` is an EF equality predicate).
+  ⚠ Searching for validator *FILES* returns **1**; they are co-located and there are **78**.
+- ⚠⚠ [**Coverage must be UNIONED across per-project reports, never summed**](verify-mechanically-not-carefully.md)
+  — summing reported **20%** for a file the gate correctly scored **100%**. Trap 2 exactly: the measurement
+  indicting known-good code was the broken thing. `check-coverage.mjs` unions; believe it over your own script.
+- ⚠⚠ **HANGFIRE'S `JobStorage.Current` + `GlobalJobFilters` ARE PROCESS-GLOBAL** and a second
+  `BackgroundJobServer` in one process does not reliably pick up work — a filter test passed ALONE and
+  reported **zero spans** in the full suite, which reads exactly like a broken filter. ⚠ Hangfire also never
+  hands a filter the job's own exception: it wraps it in `JobPerformanceException` with a fixed message, so
+  record `InnerException` or every failed job gets an identical useless tag.
+- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE.** Measured: web 51 MB, worker 245 MB, api 257 MB,
+  **sqlserver-fts 3.62 GB** (its base alone is 1.67 GB). The minimal-base clause fails on a DIFFERENT set —
+  api/worker are Debian `aspnet:8.0`, web genuinely is alpine. Operator disposition pending; **do not change a
+  base image to close it.**
+- ⚠ **`findings_21.md` = the `DEF-093` maintainer report.** It found a second defect: **`corrects` is written
+  by `progress_update`, rendered by `export_html`, and read by NOTHING else** — no gate, no readiness rule, no
+  view. That is why appending a correction never cleared `G-COMPLETE`.
+
 - ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — **nine** requirements built on one
   side only, each invisible *because* it had no AC to fail. The list lives in `prm-next.md` §2b; worst
   was **`NFR-025`** (`DEF-094`), a **Must** security requirement divergent on BOTH clauses.
 - ⭐⭐⚠ [**`LL-007` — a green checker may have had NOTHING to check**](scan-must-prove-it-had-a-subject.md)
-  Fired **seven+ times on my own instruments**: `tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits
-  0 over ZERO files** (solution-style config), blessing 13 type errors that had failed `npm run build`
-  for ten commits (`DEF-091`); a grep scoped to a directory that does not exist; a check swallowed by
-  `|| true`; a scanner regex matching TypeScript `>=`; a cwd-relative gate path CI would have resolved to
-  nothing; a validator-FILE search returning 1 where 78 exist. `vitest` transpiles, it does NOT
-  typecheck — **use `npm run build` or `-p tsconfig.app.json`. Widen the instrument and prove it has a
-  subject before believing ANY empty result.**
-- ⭐⭐ **`SL-030` MERGED** (#295 → `1a52dba`). `AC-114` Met (`AV-192`); design record is `prm-next.md`
-  §2 — do not re-litigate or rebuild it. ⚠ **`SC-021` is Merged but `WBS-22.3` STILL READS "notification
-  bodies"**: the operator chose plain approval over the text-rewriting variant, so **the SC row + its
-  `scope_modifies` edges ARE the correction**. Follow the edge; do not "tidy" that row. ⚠
-  **`MoveTopicPriority` is deliberately UNFILTERED** (Chairman/Secretary-only gate; filtering would
-  corrupt the renumbering) — reading it killed a false alarm.
+  Fired **seven+ times on my own instruments** — full list in `prm-next.md` §1. ⚠ The one that costs most:
+  `tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits 0 over ZERO files** (solution-style config) and
+  blessed 13 type errors for ten commits (`DEF-091`). `vitest` transpiles, it does NOT typecheck — **use
+  `npm run build` or `-p tsconfig.app.json`.**
+- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`); design record is `prm-next.md` §2. ⚠ **`SC-021` is Merged
+  but `WBS-22.3` STILL READS "notification bodies"** — the SC row + its `scope_modifies` edges ARE the
+  correction; do not "tidy" it. ⚠ **`MoveTopicPriority` is deliberately UNFILTERED.**
 - ⭐ **`LL-006` (a proxy is not the artifact) is Approved + pinned.** ⚠ `Timeline.tsx` and
   `Calendar.tsx` are deliberate honest SHELLS. Requirement ids in source comments are **positive-only**.
 - ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met`
