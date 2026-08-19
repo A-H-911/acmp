@@ -7,20 +7,11 @@ when the work changes, **edit it — do not create a new `prm-*.md`.**
 
 Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else.
 
-⚠⚠ **ORIENT IN THIS ORDER — THE BRANCH BEFORE THE PACKAGE. THIS IS NOT THE USUAL ORDER AND THE
-REASON IS NEW.** There is unmerged work on a feature branch, and **the package rows for it live on
-that branch, not on `main`** (`AC-114` is absent from `main`). The package data is git-tracked (C31),
-so the store loads whatever the working tree holds. Open the package while on `main`, then check out
-the branch, and the next `entity_upsert` **refuses the whole batch** with *"data/ changed on disk
-since this session loaded it"*. That refusal is the tool working; it happened on 2026-08-18 and cost
-a close/merge/reopen cycle.
-
 ```
-git checkout feat/sl-030-confidentiality     # FIRST — see the warning above
 server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
 gate_run()                                   # expect 7/7
-readiness_check("package")                   # expect ready:TRUE — see §1
+readiness_check("package")                   # expect ready:TRUE
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
@@ -31,37 +22,28 @@ same session.**
 
 ## §1 — What is true right now (2026-08-19)
 
-**`PH-6` IS OPEN. BOTH ITS SLICES ARE BUILT; ONE OPERATOR DECISION IS OUTSTANDING** (`SC-021`, §2).
-The `P1`–`P19` ladder is complete and every
-earlier phase is closed except `PH-3` (frozen deliberately — `WBS-20.4` is the email adapter against
-a hard constraint; **do not "repair" it**). On 2026-08-18 the operator activated `DW-020`, `DW-029`
-and `DW-030`; `DEC-060` created `PH-6` to hold the work.
+**`PH-6` IS COMPLETE. THERE IS NO ACTIVE BUILD.** `P1`–`P19` is complete and every phase is closed
+except `PH-3`, frozen deliberately (`WBS-20.4` is the email adapter against a hard constraint —
+**do not "repair" it**). `DEC-060` created `PH-6` for the work the operator activated on 2026-08-18;
+both of its slices are now `Implemented`.
 
-- **`SL-029` (FR-030 topic conversion) is DONE** — merged as `bcc3d00` (#293) + `b065a29` (#294),
-  `AC-113` Met, slice `Implemented`. Do not reopen it.
-- **`SL-030` (Confidentiality ABAC, FR-163) is BUILT, including the egress redaction** —
-  `AC-114` is `Met` (`AV-192`), the slice and `WBS-22`/`WBS-22.3` sit at **Review** (done-claimed),
-  and `WBS-22.1`/`.2`/`.4` are `Implemented`. §2 is now a record of what was built and of the ONE
-  thing that needs the operator: **`SC-021`, Proposed**. Everything else in the slice is finished.
-- **`readiness_check("package")` now returns `ready:TRUE`.** `acs-met` and `defects-closed` both
-  pass; the build window that held `AC-114` open is closed. ⚠ **FOUR advisories fail, and none is a
-  task** — `defects-minor` (`DEF-086`–`DEF-089`), `deferred-work-reviewed` (22 rows),
-  `acs-slice-bound` (`AC-109`–`AC-112`), and `lessons-confirmed`, which fails because **`LL-007` is
-  Proposed and waiting on your interview** (§2). The first three are the long-standing ones.
-  ⚠ Slice-scope `readiness_check("slice","SL-030")` is still **false**, deliberately: `wbs-done`
-  counts `Review` as open, and `WBS-22`/`WBS-22.3` are parked at `Review` until `SC-021` is ruled on.
-  That is honest, not a regression — do not green it by promoting them.
-- **`defects-minor` fails on `DEF-086`–`DEF-089`.** All four came from the DW-029 sweep and are
-  low/medium. Carrying them is legal; silence is not. They are not blockers. **`DEF-090` and
-  `DEF-091` are both `Fixed`** — 091 was the high one, and clearing it is why `defects-closed` passes.
-- **`deferred-work-reviewed` is at 22 rows** and `acs-slice-bound` still lists `AC-109`–`AC-112`
-  (accepted by `DEC-058 d3`). Both fail deliberately and neither is a task.
-- **Six lessons are Approved and PINNED** (`LL-001`…`LL-006`) and bind every session via the
-  tool-owned note. `LL-006` is new and is the theme of the last session — read it first.
+- **`SL-029` (FR-030 topic conversion)** — merged as `bcc3d00` (#293) + `b065a29` (#294), `AC-113` Met.
+- **`SL-030` (Confidentiality ABAC + egress redaction, FR-163)** — `AC-114` Met (`AV-192`), slice and
+  all of `WBS-22.*` `Implemented`, shipped in **#295**. §2 is the design record. **Do not reopen either.**
+- **`readiness_check("package")` is `ready:TRUE`** and `gate_run()` is 7/7.
+- **Three advisories fail and NONE is a task** — `defects-minor` (`DEF-086`–`DEF-089`, all low/medium
+  from the DW-029 sweep), `deferred-work-reviewed` (22 rows — triggers unfired; closing one to green it
+  manufactures status), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`).
+- ⚠ **Slice-scope `defects-closed` is `indeterminate`, not a pass** — 0 of 90 defect rows carry
+  `found_in` (`DEF-087`). Answer from the **superset**: package-scope `defects-closed` passes, so no
+  open critical/high defect exists anywhere.
+- **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`), binding every session via the
+  tool-owned note. `LL-007` is the newest: **a checker that reports success may have had nothing to
+  check** — it came out of `DEF-091` and it is the reason §4's trap 22b exists.
 
-## §2 — `SL-030` is BUILT. What it is, and the one thing left.
+## §2 — What `SL-030` built (reference only — do NOT rebuild)
 
-**All of it is mutation-proven — do not rebuild any of it.** Read `AV-192` for the full evidence.
+**All of it is mutation-proven.** Read `AV-192` for the full evidence.
 
 | Piece | Where |
 |---|---|
@@ -113,22 +95,28 @@ directions** (`LL-006`):
    /`ToTitle` are the same create-time topic snapshots, read by three read-all handlers — and the
    **Reports** surface `AC-114` names is what loads that register. Built here on that reading.
 
-`SC-021` records both, with `scope_modifies` edges onto `WBS-22.3` and `AC-114` so an approval can be
-applied mechanically. **`WBS-22` and `WBS-22.3` are parked at `Review` until you rule on it** — that
-is why slice readiness is false. Approve it and they go `Implemented`; reject the Dependencies half
-and that fix reverts while `DEF-090` becomes a `DW-` row. Nothing else depends on the answer.
-
-**`LL-007` is also Proposed and needs the same interview:** a checker that reports success may have
-had nothing to check — see the `DEF-091` note below, which is the instance it generalises.
+**`SC-021` is APPROVED and Merged** (operator, 2026-08-19; both halves). ⚠ **THE DELTA LIVES IN THE
+SC ROW, NOT IN `WBS-22.3`.** The operator was offered a variant that would rewrite `WBS-22.3`'s title
+and note first and chose the plain approval instead, so **that row still reads "notification bodies"**
+and `SC-021` plus its `scope_modifies` edges (→ `WBS-22.3`, → `AC-114`) are the record of the
+correction. **Follow the edge; do not read the unedited row as drift**, and do not "tidy" it.
 
 **Also fixed on the way:** `DEF-091` — the branch had been **RED since `ecfd63f`**, ten commits, with
 `npm run build` failing on 13 TypeScript errors while `vitest` stayed green (it transpiles, it does
-not typecheck). ⚠ **And the first typecheck I ran REPORTED SUCCESS WHILE CHECKING NOTHING:**
-`tsc --noEmit -p tsconfig.json` exits 0 because that file is solution-style — `"files": []` plus
-project references. **Use `npm run build` or `-p tsconfig.app.json`.**
+not typecheck). See trap 22b — this is what `LL-007` generalises.
 
-**Also still open, and NOT part of this slice:** `DW-029`'s acceptance-criterion programme —
-108 v1 requirements with no AC. Batched, multi-session, and it needs its own conversation.
+## §2b — What is NEXT
+
+**Nothing is mid-flight. The next move is the operator's**, and there are two candidates:
+
+1. **`DW-029`'s acceptance-criterion programme** — 108 v1 requirements with no AC. Batched,
+   multi-session, and it needs its own conversation. ⚠ **It cannot be run as one bulk pass**: `acs-met`
+   counts by `retired_in` and ignores `lifecycle_status`, so every AC written ahead of its evidence
+   holds package readiness false until that evidence exists (trap 16c).
+2. **Go-live actions**, which are operator-side, not a slice.
+
+⚠ Before proposing anything else, **sweep the requirement register first** (`LL-005`) and read the
+implementation before calling anything unbuilt (`LL-006`).
 
 ## §3 — The two registers that will mislead you
 
