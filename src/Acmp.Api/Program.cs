@@ -3,6 +3,7 @@ using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
 using Acmp.Bootstrap;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Infrastructure.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
@@ -75,8 +76,30 @@ if (backgroundJobsEnabled)
 }
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
+//
+// NFR-043 / DW-062: the requirement asks that every inbound request be traced with spans for the HTTP
+// handler, the DB query, Hangfire job dispatch and outbound HTTP calls. Until DW-062 only the first existed
+// — a trace showed that a handler was entered and nothing about what it waited on. The four sources below
+// are one per named span kind, in that order.
+//   AspNetCore  — the inbound handler span (the trace root).
+//   SqlClient   — one span per command sent to SQL Server. This is EF Core's actual DB call; the separate
+//                 EF Core instrumentation spans the ORM operation instead, which hides the statement that
+//                 the latency question is really about.
+//   AcmpTelemetry.SourceName — Hangfire job DISPATCH, emitted in-process by the enqueue seam. There is no
+//                 stable OpenTelemetry.Instrumentation.Hangfire (newest is 1.17.0-beta.1) and it spans job
+//                 EXECUTION rather than the enqueue this requirement names, so an ActivitySource is both
+//                 the smaller and the more accurate instrument. AddSource is what makes it exported —
+//                 without this line the spans are created and silently dropped.
+//   HttpClient  — outbound calls (the Webex adapter, ADR-0023).
+// Sampling is left at the SDK default (parent-based, always-on), which is the 100% NFR-043 asks for at this
+// traffic volume; setting a sampler here would only narrow it.
 builder.Services.AddOpenTelemetry()
-    .WithTracing(t => t.AddAspNetCoreInstrumentation().AddOtlpExporter())
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddSqlClientInstrumentation()
+        .AddSource(AcmpTelemetry.SourceName)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
     .WithMetrics(m => m.AddAspNetCoreInstrumentation().AddOtlpExporter());
 
 builder.Services.AddEndpointsApiExplorer();
