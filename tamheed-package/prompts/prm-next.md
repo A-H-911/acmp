@@ -36,9 +36,9 @@ against a hard constraint — **do not "repair" it**). `PH-6` (`DEC-060`) holds 
 its two build slices are `Implemented`, and **`SL-031` is `Approved` and IN PROGRESS** — that is §2b,
 and it is where you start.
 
-**You are on `main`, clean, nothing unpushed.** ⚠ **Check for an OPEN PR before assuming otherwise** —
-batch 13 left **#297** (Hangfire job-execution spans) open; if it merged, its content is on `main`, and if it
-did not, read its checks before touching `src/Acmp.Bootstrap`.
+**You are on `main`, clean, nothing unpushed, and CI on `main` is green.** There is no feature branch —
+batch 13's two PRs both merged: **#296 → `57e019d`** and **#297 → `a6261bf`**, each verified on `origin/main`
+BY CONTENT rather than by ancestry (trap 25).
 
 ### What batch 13 landed (2026-08-19/20) — reference, do not redo
 
@@ -47,8 +47,10 @@ did not, read its checks before touching `src/Acmp.Bootstrap`.
   `AC-134` NFR-053 (config externalization, as narrowed).
 - **`SC-023` Merged** — `NFR-053` was NARROWED to match `ADR-0037`. Its text now excludes the SPA bundle's
   OIDC build args BY NAME. `DW-064` closed by reconciliation, not construction; nothing was built.
-- **PR #296 merged (`57e019d`)** — DB / outbound-HTTP / job-dispatch spans + the worker's first-ever
-  OpenTelemetry registration. **PR #297** is the job-EXECUTION filter.
+- **PR #296 (`57e019d`)** — DB / outbound-HTTP / job-dispatch spans + the worker's first-ever OpenTelemetry
+  registration. **PR #297 (`a6261bf`)** — Hangfire job-EXECUTION spans via a hand-rolled `IServerFilter`.
+  ⚠ That second one satisfies **no requirement clause** — `NFR-043` covers dispatch only and was already Met.
+  It exists because the operator chose it over the prerelease instrumentation package. Do not look for an AC.
 - **`findings_21.md`** — the `DEF-093` maintainer report. It found a SECOND defect: the `corrects` column is
   written by `progress_update` and rendered by `export_html` and **read by nothing else**, so a correction
   entry changes no gate, no readiness rule and no view. That is why appending `PE-470` never cleared anything.
