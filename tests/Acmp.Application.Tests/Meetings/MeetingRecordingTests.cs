@@ -158,8 +158,47 @@ public class MeetingRecordingTests
         files.GetPreSignedUrlAsync("acmp-recordings", "acmp-recordings/MTG-2026-001/abc.mp4", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
             .Returns("https://minio.test/signed");
 
-        var url = await new GetRecordingUrlHandler(db, files, Buckets).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+        var url = await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>()).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
         url.Should().Be("https://minio.test/signed");
+    }
+
+    // NFR-025 / AC-122 / DEF-094 - "all access to transcript content shall generate an audit log entry",
+    // which was 0% before this: the handler emitted nothing at all. Minting a presigned URL IS the access
+    // event, because the URL is a bearer-less capability good for its whole TTL.
+    [Fact]
+    public async Task Minting_a_playback_url_writes_an_access_audit_row()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);
+        meeting.AttachUploadedRecording("acmp-recordings/MTG-2026-001/abc.mp4", "a.mp4", "video/mp4", 10);
+        await db.SaveChangesAsync();
+
+        var files = Substitute.For<IFileStore>();
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns("https://minio.test/signed");
+        var audit = Substitute.For<IAuditSink>();
+
+        await new GetRecordingUrlHandler(db, files, Buckets, audit)
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingAccessed", "Meeting",
+            meeting.PublicId.ToString(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // The row must mean "a capability was handed out", not "someone asked" - a 404 grants nothing.
+    public async Task A_meeting_with_no_recording_writes_no_access_audit_row()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);          // seeded WITHOUT AttachUploadedRecording
+        await db.SaveChangesAsync();
+
+        var audit = Substitute.For<IAuditSink>();
+        var url = await new GetRecordingUrlHandler(db, Substitute.For<IFileStore>(), Buckets, audit)
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        url.Should().BeNull();
+        await audit.DidNotReceive().EmitEnrichedAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // DEF-015: the bucket was a const on each handler, so UAT and production would have written to the same
@@ -177,7 +216,7 @@ public class MeetingRecordingTests
 
         await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector, envBucket)
             .Handle(new UploadRecordingCommand(meeting.Key, "a.mp4", "video/mp4", 4, new MemoryStream(Encoding.UTF8.GetBytes("mp4-bytes"))), CancellationToken.None);
-        await new GetRecordingUrlHandler(db, files, envBucket)
+        await new GetRecordingUrlHandler(db, files, envBucket, Substitute.For<IAuditSink>())
             .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
         await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), envBucket)
             .Handle(new DeleteRecordingCommand(meeting.Key), CancellationToken.None);
@@ -194,7 +233,7 @@ public class MeetingRecordingTests
         var meeting = SeedMeeting(db);
         var files = Substitute.For<IFileStore>();
 
-        var url = await new GetRecordingUrlHandler(db, files, Buckets).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+        var url = await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>()).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
 
         url.Should().BeNull();
         await files.DidNotReceive().GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
