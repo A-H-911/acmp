@@ -101,6 +101,10 @@ public static class AcmpCompositionRoot
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
+            // DW-062 follow-on: an OTel span per job EXECUTION. Registered on BOTH hosts because this is the
+            // shared configuration, but it can only ever fire where a Hangfire SERVER runs — the API is
+            // enqueue-only, so there the filter is inert rather than wrong.
+            .UseFilter(new HangfireJobTracingFilter())
             .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
             {
                 SchemaName = "HangFire",
