@@ -30,6 +30,11 @@ public class AuditEventEnrichmentTests
         e.BeforeJson.Should().Be("{\"S\":\"A\"}");
         e.AfterJson.Should().Be("{\"S\":\"B\"}");
         e.CorrelationId.Should().Be("trace-abc");
+        // FR-151 / AC-116 names EIGHT fields and this case asserted seven; the timestamp was the
+        // unasserted one. It is not decorative - the audit chain and every "who did what WHEN"
+        // question read it, and UTC is part of the requirement, not an implementation detail.
+        e.OccurredAt.Should().Be(At);
+        e.OccurredAt.Offset.Should().Be(TimeSpan.Zero, "FR-151 requires the timestamp in UTC");
         // Legacy columns mirror action/actor so pre-enrichment readers still work.
         e.EventType.Should().Be("Topics.Accepted");
         e.Subject.Should().Be("kc-42");
