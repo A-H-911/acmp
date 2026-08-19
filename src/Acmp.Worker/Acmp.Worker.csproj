@@ -21,6 +21,21 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <!-- Docker-secrets config source (/run/secrets -> config keys, ADR-0032). First-party. -->
     <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="8.0.0" />
+    <!-- OpenTelemetry (ADR-0014 / DW-062). This host had NO tracing at all, so the process that actually
+         EXECUTES the background jobs emitted nothing while the API it enqueues from was traced.
+         DELIBERATELY NOT OpenTelemetry.Instrumentation.AspNetCore: this host serves no HTTP, so an inbound
+         request instrumentation has nothing to instrument. Everything listed here is host-agnostic —
+         Extensions.Hosting works off the generic host, and SqlClient/Http span the DB and outbound calls the
+         jobs themselves make.
+         ⚠ Do NOT justify that exclusion by the base image, the way the Serilog note above does. That note
+         is STALE and was checked while writing this one: deploy/Dockerfile.backend's `worker` target builds
+         FROM mcr.microsoft.com/dotnet/aspnet:8.0, not the slim dotnet/runtime:8.0 it describes, and this
+         project already resolves a Microsoft.AspNetCore.App framework reference transitively through
+         Acmp.Bootstrap regardless of what is listed here. See DEF-095. -->
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.17.0" />
   </ItemGroup>
 
   <ItemGroup>
