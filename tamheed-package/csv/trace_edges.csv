@@ -98,6 +98,11 @@ ADR-0026,ADR-0009,relates_to
 ADR-0027,FR-151,relates_to
 ADR-0027,FR-153,relates_to
 ADR-0028,ADR-0026,relates_to
+DEC-064,DW-020,relates_to
+DEC-064,DW-029,relates_to
+DEC-064,DW-030,relates_to
+DEC-064,DW-037,relates_to
+DEC-064,DW-038,relates_to
 DEF-079,DEF-078,relates_to
 DEF-080,DEC-056,relates_to
 DEF-081,DEF-080,relates_to
@@ -574,6 +579,7 @@ SC-020,FR-155,scope_modifies
 SC-021,AC-114,scope_modifies
 SC-021,DEF-090,relates_to
 SC-021,WBS-22.3,scope_modifies
+SC-022,FR-097,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

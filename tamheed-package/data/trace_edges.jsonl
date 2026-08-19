@@ -97,6 +97,11 @@
 {"from_id":"ADR-0027","to_id":"FR-151","relation":"relates_to"}
 {"from_id":"ADR-0027","to_id":"FR-153","relation":"relates_to"}
 {"from_id":"ADR-0028","to_id":"ADR-0026","relation":"relates_to"}
+{"from_id":"DEC-064","to_id":"DW-020","relation":"relates_to"}
+{"from_id":"DEC-064","to_id":"DW-029","relation":"relates_to"}
+{"from_id":"DEC-064","to_id":"DW-030","relation":"relates_to"}
+{"from_id":"DEC-064","to_id":"DW-037","relation":"relates_to"}
+{"from_id":"DEC-064","to_id":"DW-038","relation":"relates_to"}
 {"from_id":"DEF-079","to_id":"DEF-078","relation":"relates_to"}
 {"from_id":"DEF-080","to_id":"DEC-056","relation":"relates_to"}
 {"from_id":"DEF-081","to_id":"DEF-080","relation":"relates_to"}
@@ -573,6 +578,7 @@
 {"from_id":"SC-021","to_id":"AC-114","relation":"scope_modifies"}
 {"from_id":"SC-021","to_id":"DEF-090","relation":"relates_to"}
 {"from_id":"SC-021","to_id":"WBS-22.3","relation":"scope_modifies"}
+{"from_id":"SC-022","to_id":"FR-097","relation":"scope_modifies"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
