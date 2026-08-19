@@ -12,7 +12,7 @@ namespace Acmp.Modules.Topics.Domain;
 // Never an EF navigation to another module, so the modular-monolith boundary holds (ADR-0001).
 // Implements the shared ABAC contracts so the platform authorization handlers can scope writes by
 // stream and by per-topic ownership (docs/domain/permission-role-matrix.md §E).
-public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource
+public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource, IConfidentialResource
 {
     private readonly List<string> _streams = new();
     private readonly List<string> _systems = new();
@@ -68,6 +68,12 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     // exposed to the shared kernel as a PRIMITIVE — the contract must not reference TopicScope
     // (ADR-0001 module boundary; ADR-0021 is the pattern).
     public bool AffectsAllStreams => Scope is TopicScope.Platform or TopicScope.OrgWide;
+
+    // C-AUTHZ-04 / FR-163 (DEC-063). A Restricted topic is readable only by Chairman/Secretary/Auditor,
+    // its Owner, and holders of an explicit per-topic capability grant — and is excluded from list
+    // surfaces and search for everyone else. A plain bool, not a level enum: the control names exactly
+    // one classification. ponytail: a Confidentiality enum is the upgrade path if a second tier appears.
+    public bool IsRestricted { get; private set; }
 
     // Factory — creates a Draft. Drafts may be incomplete (the form autosaves as the user types);
     // completeness is enforced at Submit (AC-030). Submitter attribution is fixed here.
@@ -263,6 +269,29 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public void SetTags(IEnumerable<string> tags) { EnsureMutable(); ReplaceStrings(_tags, tags); }
     public void SetUrgency(TopicUrgency urgency) { EnsureMutable(); Urgency = urgency; }
     public void SetScope(TopicScope scope) { EnsureMutable(); Scope = scope; }
+
+    // FR-163: classify / declassify. Chairman + Secretary only (DEC-063 d2) — enforced at the
+    // application boundary, as every other role rule on this aggregate is.
+    //
+    // ⚠ DELIBERATELY EXEMPT FROM EnsureMutable, and this is the load-bearing part. EnsureMutable
+    // blocks every field edit once a topic is Decided/Closed/Converted. Applying it here would make an
+    // archived sensitive topic PERMANENTLY undeclassifiable — the classification could be set while the
+    // topic was live and could never be lifted afterwards, which is precisely when a declassification
+    // request arrives. Classification is metadata ABOUT the record, not a change TO the decided record,
+    // so the immutability EnsureMutable protects (AC-034) is not what is at stake.
+    public void Restrict(string actorSub, string actorName, DateTimeOffset now)
+    {
+        if (IsRestricted) return;               // idempotent: re-restricting is not an event
+        IsRestricted = true;
+        Raise(new TopicRestrictedEvent(PublicId, Key, true, actorSub, now));
+    }
+
+    public void Declassify(string actorSub, string actorName, DateTimeOffset now)
+    {
+        if (!IsRestricted) return;
+        IsRestricted = false;
+        Raise(new TopicRestrictedEvent(PublicId, Key, false, actorSub, now));
+    }
 
     // W3: backlog prioritization ordinal.
     public void SetPriority(int priority, DateTimeOffset now)

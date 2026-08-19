@@ -11,6 +11,7 @@ import {
   useCloseTopic,
   useReopenTopic,
   useConvertTopic,
+  useSetTopicConfidentiality,
   useUpdateTopic,
   useMoveTopicPriority,
   useAddTopicComment,
@@ -226,6 +227,24 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
     // both topics' traceability panels gained the ConvertedTo edge
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['traceability'] });
+  });
+
+  // FR-163 / C-AUTHZ-04. PUT of the desired STATE, not a POST of an action, so a repeat is a no-op
+  // rather than a second classification event. Invalidates the BACKLOG as well as the detail because
+  // classifying removes the topic from other people's lists.
+  it('useSetTopicConfidentiality PUTs the desired state and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useSetTopicConfidentiality('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', restricted: true });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/confidentiality');
+    expect((init as RequestInit).method).toBe('PUT');
+    expect(lastBody(spy)).toEqual({ restricted: true });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });
 
   // AC-034 / DEF-058. The endpoint REPLACES, so every editable field must go out on every save —

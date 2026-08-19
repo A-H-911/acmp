@@ -371,6 +371,8 @@ LL-001,PE-336,learned_from
 LL-002,PE-369,learned_from
 LL-004,PE-415,learned_from
 LL-005,PE-418,learned_from
+LL-006,DEC-062,learned_from
+LL-006,PE-435,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -569,6 +571,9 @@ SC-020,FR-134,scope_modifies
 SC-020,FR-149,scope_modifies
 SC-020,FR-154,scope_modifies
 SC-020,FR-155,scope_modifies
+SC-021,AC-114,scope_modifies
+SC-021,DEF-090,relates_to
+SC-021,WBS-22.3,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

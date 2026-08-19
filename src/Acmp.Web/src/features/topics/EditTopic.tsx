@@ -21,7 +21,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useUpdateTopic, type TopicDetail } from '../../api/topics';
+import { useTopicDetail, useUpdateTopic, useSetTopicConfidentiality, type TopicDetail } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { Field, Input, Textarea } from '../../components/ui/Field';
@@ -77,6 +77,7 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
   const { t } = useTranslation();
   const auth = useAuth();
   const update = useUpdateTopic(topicKey);
+  const setConfidentiality = useSetTopicConfidentiality(topicKey);
 
   const [form, setForm] = useState<FormState>({
     title: topic.title,
@@ -97,6 +98,11 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
   // Show-and-enforce: the server is the gate (Policies.TopicTriage), and it 403s a non-triage role
   // that sends a changed scope. Hiding the control keeps a Member from being offered a refusal.
   const mayChangeScope = hasRole(auth, 'secretary', 'chairman');
+  // FR-163 / C-AUTHZ-04 (DEC-063 d2). Same two roles as the scope gate, and gated for the same
+  // reason: the server refuses anyone else, and offering the control to a Member would be offering
+  // them a refusal. ⚠ The OWNER is deliberately not included, even though they often recognise
+  // sensitivity first — letting them classify would let a plain Member hide a topic from the committee.
+  const mayClassify = hasRole(auth, 'secretary', 'chairman');
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -212,6 +218,47 @@ function EditForm({ topic, topicKey, onDone }: { topic: TopicDetail; topicKey?: 
                       onClick={() => set({ scope: s })}
                     >
                       {t(`invariants.scope.${s}`)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </Field>
+          )}
+          {/* ⚠ OUTSIDE the `disabled={allLocked}` semantics of the other fields by intent: this
+              posts through its OWN endpoint rather than the topic PUT, because classification must
+              stay possible on a Decided/Closed/Converted topic. An archived sensitive topic that
+              could never be declassified is the failure the domain exemption exists to prevent. */}
+          {mayClassify && (
+            <Field label={t('topicEdit.fRestricted')} help={t('topicEdit.fRestrictedHelp')}>
+              {(p) => (
+                // ⚠ A TWO-CARD GROUP, NOT A LONE .sub-card. The visual check caught the first
+                // version: .sub-card is sized by its .sub-cards grid parent, so standalone it
+                // collapsed to 43px in RTL and wrapped its own label — the DW-031 shape, a class
+                // reused outside the context it was built for. This is the same segmented pattern
+                // the scope and urgency pickers use, and it reads better besides: two explicit
+                // options beat one toggle whose label changes under you.
+                // ⚠ `.sub-cards` ALONE — it is already a 2-column grid. `.sub-cards-2` does not
+                // exist, and an undefined class does nothing silently, which is the same failure
+                // mode as the undefined custom property DW-031 records. Checked before writing it.
+                <div className="sub-cards" id={p.id} role="group" aria-label={t('topicEdit.fRestricted')}>
+                  {/* ⚠ COERCED once, here. With `restricted` absent, `restricted === v` is false for
+                      BOTH cards and the control renders with no selection at all — a segmented
+                      picker that shows nothing selected reads as broken, not as "unset". Same
+                      failure family as the aria-pressed omission this replaced. */}
+                  {[false, true].map((v) => (
+                    <button
+                      key={String(v)}
+                      type="button"
+                      className={`sub-card ${(topic.restricted ?? false) === v ? 'selected' : ''}`}
+                      aria-pressed={(topic.restricted ?? false) === v}
+                      disabled={setConfidentiality.isPending}
+                      onClick={() => setConfidentiality.mutate({ topicId: topic.id, restricted: v })}
+                    >
+                      {/* ⚠ NO ICON. .sub-card is flex-direction: column, so a child icon pushes
+                          the label onto a second line — which is exactly how it rendered before the
+                          visual check. The scope and urgency pickers are text-only for the same
+                          reason; the lock icon lives on the DETAIL badge, where it belongs. */}
+                      {v ? t('topicEdit.restrictedOn') : t('topicEdit.restrictedOff')}
                     </button>
                   ))}
                 </div>

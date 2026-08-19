@@ -15,6 +15,28 @@ public interface ITopicCapabilityResolver
 {
     Task<IReadOnlyCollection<TopicCapabilityType>> GetCapabilitiesAsync(
         string userId, Guid topicId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Every topic the principal holds an active capability on, in ONE call (FR-163, SC-019).
+    /// </summary>
+    /// <remarks>
+    /// ⚠ THIS EXISTS BECAUSE THE PER-RESOURCE METHOD CANNOT BE USED FOR LIST FILTERING. Confidentiality
+    /// must exclude Restricted topics from the backlog, the kanban, the agenda pool, the dashboards,
+    /// the reports and search — all pages of topics. <c>GetCapabilitiesAsync</c> answers for ONE topic
+    /// and issues a database round-trip per call with no caching, so asking it per row is an N+1 over
+    /// every page the committee ever loads.
+    /// <para>
+    /// Returning ids rather than a predicate keeps the Topics module able to compose the result into a
+    /// SQL-translatable <c>Where</c> without reaching across the module boundary into Membership's
+    /// tables (ADR-0001) — Membership answers "which topics", Topics decides what to do with that.
+    /// </para>
+    /// <para>
+    /// ponytail: the id set travels as an IN clause. At ≤20 users and ≤500 topics/year that is the
+    /// right shape; if a member ever holds thousands of grants, move the join server-side behind a
+    /// read model rather than widening this port again.
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyCollection<Guid>> GetGrantedTopicIdsAsync(string userId, CancellationToken ct = default);
 }
 
 // Whether the principal holds an active (in-window) delegation for a capability/policy (docs/domain/permission-role-matrix.md §E.3).

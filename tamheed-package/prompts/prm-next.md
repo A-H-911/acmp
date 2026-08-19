@@ -7,20 +7,11 @@ when the work changes, **edit it — do not create a new `prm-*.md`.**
 
 Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else.
 
-⚠⚠ **ORIENT IN THIS ORDER — THE BRANCH BEFORE THE PACKAGE. THIS IS NOT THE USUAL ORDER AND THE
-REASON IS NEW.** There is unmerged work on a feature branch, and **the package rows for it live on
-that branch, not on `main`** (`AC-114` is absent from `main`). The package data is git-tracked (C31),
-so the store loads whatever the working tree holds. Open the package while on `main`, then check out
-the branch, and the next `entity_upsert` **refuses the whole batch** with *"data/ changed on disk
-since this session loaded it"*. That refusal is the tool working; it happened on 2026-08-18 and cost
-a close/merge/reopen cycle.
-
 ```
-git checkout feat/sl-030-confidentiality     # FIRST — see the warning above
 server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
 gate_run()                                   # expect 7/7
-readiness_check("package")                   # expect ready:FALSE — see §1, this is CORRECT
+readiness_check("package")                   # expect ready:TRUE
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
@@ -31,30 +22,28 @@ same session.**
 
 ## §1 — What is true right now (2026-08-19)
 
-**`PH-6` IS OPEN AND THERE IS ACTIVE, UNFINISHED WORK.** The `P1`–`P19` ladder is complete and every
-earlier phase is closed except `PH-3` (frozen deliberately — `WBS-20.4` is the email adapter against
-a hard constraint; **do not "repair" it**). On 2026-08-18 the operator activated `DW-020`, `DW-029`
-and `DW-030`; `DEC-060` created `PH-6` to hold the work.
+**`PH-6` IS COMPLETE. THERE IS NO ACTIVE BUILD.** `P1`–`P19` is complete and every phase is closed
+except `PH-3`, frozen deliberately (`WBS-20.4` is the email adapter against a hard constraint —
+**do not "repair" it**). `DEC-060` created `PH-6` for the work the operator activated on 2026-08-18;
+both of its slices are now `Implemented`.
 
-- **`SL-029` (FR-030 topic conversion) is DONE** — merged as `bcc3d00` (#293) + `b065a29` (#294),
-  `AC-113` Met, slice `Implemented`. Do not reopen it.
-- **`SL-030` (Confidentiality ABAC, FR-163) is HALF BUILT on `feat/sl-030-confidentiality`** —
-  10 commits, pushed, **no PR yet**. §2 is the remaining work.
-- **`readiness_check("package")` returns `ready:false` ON PURPOSE.** `acs-met` fails on **exactly
-  `AC-114`** and nothing else. That is the documented build-window state: an acceptance criterion
-  written before its evidence is a readiness liability by design. ⚠ **Never resolve it by upgrading
-  the verdict.** Reconcile the failing id list against your batch — an id you did not expect is a
-  real finding.
-- **`defects-minor` now fails on `DEF-086`–`DEF-089`.** All four came from the DW-029 sweep and are
-  low/medium. Carrying them is legal; silence is not. They are not blockers.
-- **`deferred-work-reviewed` is at 22 rows** and `acs-slice-bound` still lists `AC-109`–`AC-112`
-  (accepted by `DEC-058 d3`). Both fail deliberately and neither is a task.
-- **Six lessons are Approved and PINNED** (`LL-001`…`LL-006`) and bind every session via the
-  tool-owned note. `LL-006` is new and is the theme of the last session — read it first.
+- **`SL-029` (FR-030 topic conversion)** — merged as `bcc3d00` (#293) + `b065a29` (#294), `AC-113` Met.
+- **`SL-030` (Confidentiality ABAC + egress redaction, FR-163)** — `AC-114` Met (`AV-192`), slice and
+  all of `WBS-22.*` `Implemented`, shipped in **#295**. §2 is the design record. **Do not reopen either.**
+- **`readiness_check("package")` is `ready:TRUE`** and `gate_run()` is 7/7.
+- **Three advisories fail and NONE is a task** — `defects-minor` (`DEF-086`–`DEF-089`, all low/medium
+  from the DW-029 sweep), `deferred-work-reviewed` (22 rows — triggers unfired; closing one to green it
+  manufactures status), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`).
+- ⚠ **Slice-scope `defects-closed` is `indeterminate`, not a pass** — 0 of 90 defect rows carry
+  `found_in` (`DEF-087`). Answer from the **superset**: package-scope `defects-closed` passes, so no
+  open critical/high defect exists anywhere.
+- **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`), binding every session via the
+  tool-owned note. `LL-007` is the newest: **a checker that reports success may have had nothing to
+  check** — it came out of `DEF-091` and it is the reason §4's trap 22b exists.
 
-## §2 — The active work: finish `SL-030`
+## §2 — What `SL-030` built (reference only — do NOT rebuild)
 
-**What is BUILT and mutation-proven** (do not rebuild any of it):
+**All of it is mutation-proven.** Read `AV-192` for the full evidence.
 
 | Piece | Where |
 |---|---|
@@ -62,37 +51,72 @@ and `DW-030`; `DEC-060` created `PH-6` to hold the work.
 | `IConfidentialResource` contract (a **declared primitive**, ADR-0001/0021) | `Acmp.Shared/Authorization/Abac/AbacResources.cs` |
 | `ConfidentialityRequirement` + handler, registered on **`TopicEdit` only** | `Abac/ConfidentialityRequirement.cs`, `AuthorizationRegistration.cs` |
 | Read predicate + per-request scope resolver | `Topics.Application/Internal/TopicVisibilityQuery.cs`, `Abstractions/ITopicVisibility.cs` |
-| Applied to: `GetBacklog`, `GetTopicDetail` (**404 not 403**), `TopicSearchProvider` (before `.Take`), `TopicReader` ×3, `TopicStreamReader` | those files |
+| Applied to `GetBacklog`, `GetTopicDetail` (**404 not 403**), `TopicSearchProvider` (before `.Take`), `TopicReader` ×3, `TopicStreamReader` | those files |
 | Classify command + `PUT /api/topics/{id}/confidentiality` | `Features/SetTopicConfidentiality/`, `TopicEndpoints.cs` |
 | SPA badge + segmented classify control, EN/AR | `TopicDetail.tsx`, `EditTopic.tsx`, `topics.css` |
+| **Egress port** `ITopicConfidentiality` + `TopicConfidentialityReader` | `Acmp.Shared/Contracts/Topics/`, `Topics.Infrastructure/Persistence/` |
+| **Agenda masking** (in place) | `Meetings.Application/Internal/MeetingMapping.cs`, `GetMeetingDetail` |
+| **Edge dropping** (relationships + dependencies) | `GetArtifactRelationships`, `Dependencies.Application/Internal/DependencyVisibility.cs` ×3 handlers |
+| **Localized redaction placeholder**, EN/AR + aria | `AgendaBuilder.tsx`, `MeetingWorkspace.tsx`, `meetings.restrictedKey`/`restrictedTitle` |
 
-**WHAT IS NOT BUILT — the egress redaction, and it is a real leak, not a formality.**
-A Restricted topic placed on an agenda **still leaks its title to every member who reads that
-meeting.** Data already copied out of the topic is untouched by the predicate:
+### The design decisions, so nobody re-litigates them
 
-1. **`AgendaItem.TopicKey` / `TopicTitle`** — frozen into the Meetings schema at agenda-build time
-   (`Meetings.Domain/AgendaItem.cs:18-19`). The projection choke point is
-   `Meetings.Application/Internal/MeetingMapping.cs`; also check `GetMySession` and the published
-   agenda/minutes paths.
-2. **`Relationship.SourceTitle` / `TargetTitle`** — frozen into Traceability; read side is
-   `GetArtifactRelationships` and `GetImpactGraph`.
-3. **Notification bodies** — `Topics.Application/Internal/TopicNotifications.cs`. ⚠ These are
-   persisted at **publish** time, not read time, so the builders must take a restriction flag; there
-   is nothing to redact later.
+- **The port answers with the WHOLE hidden set, not "which of these ids".** `GetDependenciesRegister`
+  pages and reports a total, so the filter must compose before `CountAsync`/`Skip` — the page does not
+  exist yet when the question is asked. A `Guid[]` becomes an IN clause.
+- **The hidden set is DERIVED from `VisibleTo` by subtraction**, so the visibility rule still has
+  exactly one expression. `The_hidden_set_is_exactly_the_complement_of_VisibleTo` guards that.
+- **Two shapes, for a structural reason.** Agenda items are **masked in place** (the slot means
+  something without its topic — order, time-box, "item N of M"). Edges are **dropped** (an edge IS a
+  pointer; a blanked endpoint enters `ImpactGraphComposer`'s BFS as a node keyed on an empty Guid).
+- **Both endpoints are filtered, not just the far one.** That is what makes a hidden focus
+  response-identical to a nonexistent id — there is **no separate focus guard** anywhere, by design.
+- **`TopicId` survives masking on purpose.** The SPA keys agenda rows by it; blanking it collides two
+  masked rows onto one React key. It leaks nothing — topics are read by KEY, which already 404s, and
+  no read-by-guid route exists.
+- **Key and title go out EMPTY, never the word "Restricted".** A server-side English string breaks the
+  EN+AR guardrail. The SPA localizes the blank **and substitutes it into the aria-labels** — an empty
+  accessible name is a WCAG failure no text query would surface.
+- **`MoveTopicPriority` is deliberately NOT filtered** and says so in a comment: `BacklogPrioritize`
+  admits Chairman/Secretary only, both committee-wide readers, and filtering would renumber the column
+  as if hidden topics were absent — corrupting the order for the people entitled to see them.
 
-⚠⚠ **THE RULE IS ALREADY SETTLED AND MUST NOT BE RELAXED: REDACT AT PROJECTION TIME, NEVER BY
-MUTATING A STORED SNAPSHOT.** `INV-005` makes published minutes and issued decisions immutable, and
-`AgendaItem` freezes its snapshot by design. Rewriting those rows would break the immutability the
-audit design rests on.
+### ⚠ THE ONE THING THAT NEEDS YOU: `SC-021`, Proposed
 
-⚠ Meetings must not read Topics' tables (ADR-0001). Add a **read port** (Topics implements, Meetings
-consumes) returning restriction per key, and **batch it per meeting** — not per agenda item.
+The 2026-08-19 sweep read each surface instead of trusting the list, and **the list was wrong in both
+directions** (`LL-006`):
 
-**Then:** flip `AC-114` to `Met` with evidence, `readiness_check("slice", "SL-030")`, set the slice
-`Implemented`, `work_bind`, `gate_run()`, `export_html()`, PR → green CI → squash-merge.
+1. **Notification bodies are NOT a leak and nothing was built for them.** `TopicNotifications.cs`
+   builds three messages and **none carries a topic TITLE** — only the KEY — and every recipient set
+   is the Secretary roster or the topic's own submitter, i.e. committee-wide readers or the owner.
+   `MeetingNotifications`/`MinutesNotifications` interpolate the **meeting** title. The earlier
+   instruction that "the builders must take a restriction flag" was mistaken.
+2. **The Dependencies module was a FOURTH surface nobody listed** (`DEF-090`). `Dependency.FromTitle`
+   /`ToTitle` are the same create-time topic snapshots, read by three read-all handlers — and the
+   **Reports** surface `AC-114` names is what loads that register. Built here on that reading.
 
-**Also still open, and NOT part of this slice:** `DW-029`'s acceptance-criterion programme —
-108 v1 requirements with no AC. Batched, multi-session, and it needs its own conversation.
+**`SC-021` is APPROVED and Merged** (operator, 2026-08-19; both halves). ⚠ **THE DELTA LIVES IN THE
+SC ROW, NOT IN `WBS-22.3`.** The operator was offered a variant that would rewrite `WBS-22.3`'s title
+and note first and chose the plain approval instead, so **that row still reads "notification bodies"**
+and `SC-021` plus its `scope_modifies` edges (→ `WBS-22.3`, → `AC-114`) are the record of the
+correction. **Follow the edge; do not read the unedited row as drift**, and do not "tidy" it.
+
+**Also fixed on the way:** `DEF-091` — the branch had been **RED since `ecfd63f`**, ten commits, with
+`npm run build` failing on 13 TypeScript errors while `vitest` stayed green (it transpiles, it does
+not typecheck). See trap 22b — this is what `LL-007` generalises.
+
+## §2b — What is NEXT
+
+**Nothing is mid-flight. The next move is the operator's**, and there are two candidates:
+
+1. **`DW-029`'s acceptance-criterion programme** — 108 v1 requirements with no AC. Batched,
+   multi-session, and it needs its own conversation. ⚠ **It cannot be run as one bulk pass**: `acs-met`
+   counts by `retired_in` and ignores `lifecycle_status`, so every AC written ahead of its evidence
+   holds package readiness false until that evidence exists (trap 16c).
+2. **Go-live actions**, which are operator-side, not a slice.
+
+⚠ Before proposing anything else, **sweep the requirement register first** (`LL-005`) and read the
+implementation before calling anything unbuilt (`LL-006`).
 
 ## §3 — The two registers that will mislead you
 
@@ -205,6 +229,13 @@ consumes) returning restriction per key, and **batch it per meeting** — not pe
    no-verify guard hook; write the message to a file instead.
 22. ⚠ The coverage gate is **per-file ≥95%**, and the line a new feature most often misses is the
    **validator**. `rm -rf tests/*/TestResults` before trusting a local run (`DEF-069`).
+22b. ⚠⚠ **THE SPA TYPECHECK HAS TWO ENTRY POINTS AND ONE OF THEM CHECKS NOTHING.**
+   `npx tsc --noEmit -p tsconfig.json` **exits 0 over a tree that does not compile**, because
+   `src/Acmp.Web/tsconfig.json` is solution-style: `"files": []` plus project references. A clean scan
+   with no subject (`DEF-091`). `vitest` will not catch it either — it transpiles per file and never
+   typechecks, so 1241 tests passed over 13 real type errors for ten commits. **Use `npm run build`
+   (`tsc -b && vite build`, exactly what CI runs) or `-p tsconfig.app.json`, and prove your checker has
+   a subject by injecting a deliberate error and watching the count move.**
 23. ⚠ **`gh pr checks --watch` AND `gh run watch` BOTH REPORT SUCCESS ON UNFINISHED RUNS.** Poll the
    `status` field until `completed`, then read `conclusion`; treat a 503 as **unknown**, never success.
 23b. ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND, NOT YOUR GATE'S.** Fired again 2026-08-18:

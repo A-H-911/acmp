@@ -4,6 +4,7 @@ using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Exceptions;
 using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Contracts.Topics;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,12 +23,15 @@ public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQu
     private readonly IMeetingsDbContext _db;
     private readonly ICommitteeDirectory _directory;
     private readonly ICurrentUser _currentUser;
+    private readonly ITopicConfidentiality _confidentiality;
 
-    public GetMeetingDetailHandler(IMeetingsDbContext db, ICommitteeDirectory directory, ICurrentUser currentUser)
+    public GetMeetingDetailHandler(IMeetingsDbContext db, ICommitteeDirectory directory,
+        ICurrentUser currentUser, ITopicConfidentiality confidentiality)
     {
         _db = db;
         _directory = directory;
         _currentUser = currentUser;
+        _confidentiality = confidentiality;
     }
 
     public async Task<MeetingDetailDto?> Handle(GetMeetingDetailQuery request, CancellationToken ct)
@@ -51,13 +55,22 @@ public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQu
 
         var agenda = await _db.Agendas.AsNoTracking().FirstOrDefaultAsync(a => a.MeetingId == meeting.PublicId, ct);
 
+        // FR-163 / AC-114 — THE ONLY READ-ALL PATH THAT PROJECTS AN AGENDA. AllowedRoles is empty here, so a
+        // plain Member opens this; every other MeetingMapping agenda caller is Chairman/Secretary-gated and
+        // uses ToDtoForEditor. AgendaItem froze the topic's key and title at build time, so without this the
+        // meeting hands a Restricted topic's title to the whole committee.
+        //
+        // ⚠ RESOLVED ONCE PER MEETING, NEVER PER ITEM — one cross-module call for the whole agenda. Asking
+        // per item would be an N+1 over every meeting the committee ever opens.
+        var hidden = (await _confidentiality.GetHiddenTopicIdsAsync(ct)).ToHashSet();
+
         return new MeetingDetailDto(
             meeting.PublicId, meeting.Key, meeting.Title, meeting.CommitteeId,
             meeting.ScheduledStart, meeting.ScheduledEnd, meeting.Status.ToString(),
             meeting.Type.ToString(), meeting.Mode.ToString(),
             meeting.Location, meeting.JoinUrl, meeting.ChairUserId, meeting.ChairName,
             meeting.StartedAt, meeting.HeldAt,
-            agenda is null ? null : MeetingMapping.ToDto(agenda),
+            agenda is null ? null : MeetingMapping.ToDto(agenda, hidden),
             meeting.Attendees.OrderBy(a => a.Name).Select(MeetingMapping.ToDto).ToList(),
             meeting.Discussions.Select(MeetingMapping.ToDto).ToList(),
             BuildRecording(meeting));

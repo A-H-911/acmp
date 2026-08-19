@@ -37,17 +37,25 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
 
     private readonly ITopicsDbContext _db;
     private readonly IClock _clock;
+    private readonly ITopicVisibility _visibility;
 
-    public GetBacklogHandler(ITopicsDbContext db, IClock clock)
+    public GetBacklogHandler(ITopicsDbContext db, IClock clock, ITopicVisibility visibility)
     {
         _db = db;
         _clock = clock;
+        _visibility = visibility;
     }
 
     public async Task<PagedResult<TopicSummaryDto>> Handle(GetBacklogQuery request, CancellationToken ct)
     {
         // History drives "time in current status" for the SLA aging badge (AC-057).
         var query = _db.Topics.AsNoTracking().Include(t => t.History).AsQueryable();
+
+        // C-AUTHZ-04 / FR-163. THIS ONE LINE COVERS FIVE PRODUCT SURFACES: the backlog list, the
+        // kanban, the agenda pool (GET /topics?status=Prepared), the role dashboards and the reports
+        // all read through this handler. Applied FIRST, before every filter and long before paging, so
+        // a Restricted topic can never be counted into a total the caller may not see.
+        query = query.VisibleTo(await _visibility.ResolveAsync(ct));
 
         if (request.Statuses is { Count: > 0 })
             query = query.Where(t => request.Statuses.Contains(t.Status));
@@ -105,5 +113,5 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
     private static TopicSummaryDto Map(Topic t, DateTimeOffset now) => new(
         t.PublicId, t.Key, t.Title, t.Type.ToString(), t.Status.ToString(), t.Urgency.ToString(),
         t.Scope.ToString(), t.AffectedStreams.ToList(), t.OwnerId, t.OwnerName, t.Priority, t.TimesDeferred,
-        TopicAging.AgeDays(t.CreatedAt, now), TopicAging.IsBreaching(t, now), t.CreatedAt);
+        TopicAging.AgeDays(t.CreatedAt, now), TopicAging.IsBreaching(t, now), t.CreatedAt, t.IsRestricted);
 }

@@ -77,6 +77,28 @@ public static class AuthorizationRegistration
     /// </remarks>
     public static readonly IReadOnlySet<string> StreamScoped = new HashSet<string> { Policies.TopicEdit };
 
+    /// <summary>
+    /// Policies that additionally carry <see cref="ConfidentialityRequirement"/> (C-AUTHZ-04 / FR-163).
+    /// </summary>
+    /// <remarks>
+    /// ⚠ THE SAME DEF-068 RULE APPLIES, AND IT EXCLUDES THE POLICY YOU WOULD REACH FOR FIRST.
+    /// ConfidentialityHandler is a two-parameter handler, so ASP.NET never invokes it without an
+    /// IConfidentialResource, and the policy would then refuse EVERYONE including the Chairman.
+    /// <para>
+    /// <c>Policies.TopicEdit</c> qualifies: its group is bare and every call site is
+    /// <c>IResourceAuthorizer.EnsureAsync(topic, ...)</c> inside UpdateTopicHandler.
+    /// <c>Policies.TopicTriage</c> DOES NOT, and must never be added: it is applied with
+    /// <c>.RequireAuthorization(Policies.TopicTriage)</c> at endpoint level on /close, /reopen,
+    /// /reactivate and /convert, where there is no resource at all.
+    /// </para>
+    /// <para>
+    /// The read side is NOT covered here and cannot be — no topic read path calls IAuthorizationService.
+    /// Exclusion from lists, detail and search is a query predicate; see ConfidentialityRequirement's
+    /// header. Two mechanisms, one control.
+    /// </para>
+    /// </remarks>
+    public static readonly IReadOnlySet<string> ConfidentialityScoped = new HashSet<string> { Policies.TopicEdit };
+
     public static IServiceCollection AddAcmpAuthorization(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RoleMappingOptions>(configuration.GetSection(RoleMappingOptions.SectionName));
@@ -85,6 +107,7 @@ public static class AuthorizationRegistration
         // ABAC handlers are scoped: they depend on the module-implemented resolvers (DbContext-backed).
         services.AddScoped<IAuthorizationHandler, CapabilityHandler>();
         services.AddScoped<IAuthorizationHandler, StreamScopeHandler>();
+        services.AddScoped<IAuthorizationHandler, ConfidentialityHandler>();
 
         services.AddAuthorization(options =>
         {
@@ -94,6 +117,8 @@ public static class AuthorizationRegistration
                     p.AddRequirements(new CapabilityRequirement(policy, allow, owner));
                     if (StreamScoped.Contains(policy))
                         p.AddRequirements(new StreamScopeRequirement());
+                    if (ConfidentialityScoped.Contains(policy))
+                        p.AddRequirements(new ConfidentialityRequirement());
                 });
         });
 

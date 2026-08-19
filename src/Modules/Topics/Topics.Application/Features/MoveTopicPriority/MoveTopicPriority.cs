@@ -52,6 +52,13 @@ public sealed class MoveTopicPriorityHandler : IRequestHandler<MoveTopicPriority
         if (topic.Status is TopicStatus.Decided or TopicStatus.Closed or TopicStatus.Converted)
             throw new InvalidOperationException("A decided topic cannot be reordered.");
 
+        // C-AUTHZ-04 / FR-163: this full-table load is deliberately NOT visibility-filtered, and the
+        // reason is the gate above it. Policies.BacklogPrioritize allows Chairman and Secretary ONLY,
+        // and both are committee-wide readers (DEC-063 d1) — so nobody who reaches this line could be
+        // shielded from anything in the column. Filtering here would be worse than useless: it would
+        // renumber the column as if the hidden topics were absent, corrupting the order for the very
+        // people entitled to see them. If BacklogPrioritize is ever widened, this comment is wrong and
+        // the filter becomes necessary.
         var bucket = TopicBuckets.BucketOf(topic.Status);
         var column = (await _db.Topics.ToListAsync(ct))
             .Where(t => TopicBuckets.BucketOf(t.Status) == bucket)

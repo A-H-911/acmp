@@ -5,6 +5,7 @@ using Acmp.Modules.Dependencies.Domain;
 using Acmp.Modules.Dependencies.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Pagination;
+using Acmp.Shared.Contracts.Topics;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,12 +32,21 @@ public sealed class GetDependenciesRegisterHandler
     : IRequestHandler<GetDependenciesRegisterQuery, PagedResult<DependencySummaryDto>>
 {
     private readonly IDependenciesDbContext _db;
+    private readonly ITopicConfidentiality _confidentiality;
 
-    public GetDependenciesRegisterHandler(IDependenciesDbContext db) => _db = db;
+    public GetDependenciesRegisterHandler(IDependenciesDbContext db, ITopicConfidentiality confidentiality)
+    {
+        _db = db;
+        _confidentiality = confidentiality;
+    }
 
     public async Task<PagedResult<DependencySummaryDto>> Handle(GetDependenciesRegisterQuery request, CancellationToken ct)
     {
-        var query = _db.Dependencies.AsNoTracking().AsQueryable();
+        // FR-163 / AC-114 — composed FIRST, ahead of every filter, the sort, CountAsync and Skip/Take. The
+        // total below is the number this control must also narrow: a register that hides the row but keeps
+        // counting it reports a total nobody can reconcile, and AC-114 says absent from their totals.
+        var query = _db.Dependencies.AsNoTracking()
+            .WithoutHiddenTopics(await _confidentiality.GetHiddenTopicIdsAsync(ct));
 
         // Removed is excluded by default; an explicit Status filter (incl. Removed) overrides that.
         query = request.Status is { } status

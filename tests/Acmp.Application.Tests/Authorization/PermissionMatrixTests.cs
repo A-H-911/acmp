@@ -172,11 +172,22 @@ public class PermissionMatrixTests
     // CAPABILITY matrix (§C) — A / AiO / Deny per role — and stream scope is an orthogonal dimension
     // (§E.1). Handing the principal a stream the topic does not affect would make every stream-bounded
     // cell fail for a reason this test does not claim to be about; stream scope has its own tests.
+    // ⚠ THIS STUB MUST IMPLEMENT EVERY RESOURCE CONTRACT THE REGISTERED POLICIES CARRY, and the
+    // consequence of forgetting one is not a narrow miss. When FR-163 added ConfidentialityRequirement
+    // to Policies.TopicEdit, this record still implemented only the two older contracts — so ASP.NET
+    // could not invoke the two-parameter ConfidentialityHandler, the requirement went unsatisfied, and
+    // EVERY TopicEdit cell failed including the Chairman's 'A'. That is the DEF-068 shape reproducing
+    // itself in the fixture rather than in production, which is where it should surface.
+    //
+    // IsRestricted is FALSE here on purpose: this suite asserts the ROLE matrix, and a restricted
+    // resource would narrow every cell and stop it measuring what it claims to. The narrowing itself is
+    // asserted in the confidentiality suites.
     private sealed record StubTopic(Guid TopicId)
-        : ITopicScopedResource, IStreamScopedResource
+        : ITopicScopedResource, IStreamScopedResource, IConfidentialResource
     {
         public IReadOnlyCollection<string> AffectedStreams => new[] { InScopeStream };
         public bool AffectsAllStreams => false;
+        public bool IsRestricted => false;
     }
 
     private const string InScopeStream = "core";

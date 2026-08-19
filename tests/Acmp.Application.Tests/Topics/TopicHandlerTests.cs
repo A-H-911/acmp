@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.DeferTopic;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
 using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
@@ -26,6 +27,17 @@ namespace Acmp.Application.Tests.Topics;
 // collections, the owned child tables, and the key counter, plus the submit → backlog → detail flow.
 public class TopicHandlerTests
 {
+    // FR-163: these suites assert BACKLOG filtering, sorting and paging — not confidentiality, which
+    // has its own suites. A permissive scope keeps them measuring what they claim to; a restrictive one
+    // would silently change what every case here is testing.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     // The context's clock stamps CreatedAt/UpdatedAt — share it with the handler so aging is deterministic.
     private static TopicsDbContext NewDb(ICurrentUser user, IClock clock) =>
         new(new DbContextOptionsBuilder<TopicsDbContext>().UseInMemoryDatabase("topics-" + Guid.NewGuid()).Options,
@@ -88,13 +100,13 @@ public class TopicHandlerTests
 
         // SLA aging: Urgent (7-day threshold) submitted 9 days ago → breaching (AC-057).
         var later = now.AddDays(9);
-        var backlog = await new GetBacklogHandler(db, Clock(later)).Handle(new GetBacklogQuery(), CancellationToken.None);
+        var backlog = await new GetBacklogHandler(db, Clock(later), SeesEverything()).Handle(new GetBacklogQuery(), CancellationToken.None);
         backlog.Total.Should().Be(1);
         backlog.Items[0].Key.Should().Be(result.Key);
         backlog.Items[0].SlaBreached.Should().BeTrue();
         backlog.Items[0].AgeDays.Should().Be(9);
 
-        var detail = await new GetTopicDetailHandler(db, Clock(later)).Handle(new GetTopicDetailQuery(result.Key), CancellationToken.None);
+        var detail = await new GetTopicDetailHandler(db, Clock(later), SeesEverything()).Handle(new GetTopicDetailQuery(result.Key), CancellationToken.None);
         detail.Should().NotBeNull();
         detail!.Streams.Should().BeEquivalentTo("identity", "platform");
         detail.Tags.Should().BeEquivalentTo("SecurityArch");

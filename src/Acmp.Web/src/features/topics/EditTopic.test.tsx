@@ -26,14 +26,17 @@ vi.mock('../../api/members', async (importOriginal) => ({
   }),
 }));
 
-vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useUpdateTopic: vi.fn() }));
-import { useTopicDetail, useUpdateTopic } from '../../api/topics';
+vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useUpdateTopic: vi.fn(), useSetTopicConfidentiality: vi.fn() }));
+import { useTopicDetail, useUpdateTopic, useSetTopicConfidentiality } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
 const mockUpdate = useUpdateTopic as unknown as Mock;
+const mockClassify = useSetTopicConfidentiality as unknown as Mock;
 let mutateAsync: Mock;
+let classifyMutate: Mock;
 
 const TOPIC: Topic = {
+  restricted: false,
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
   justification: 'Reduce auth sprawl and audit cost.', type: 'ArchitectureDecision', status: 'Submitted', urgency: 'Urgent',
   scope: 'MultiStream', source: 'CommitteeMember', streams: ['core', 'government'], systems: ['Auth Service'], tags: ['iam'],
@@ -62,6 +65,9 @@ describe('EditTopic (AC-034)', () => {
     mockDetail.mockReset();
     mutateAsync = vi.fn().mockResolvedValue(undefined);
     mockUpdate.mockReturnValue({ mutateAsync, isPending: false });
+    mockClassify.mockReset();
+    classifyMutate = vi.fn();
+    mockClassify.mockReturnValue({ mutate: classifyMutate, isPending: false });
   });
 
   // The whole point of the slice: PUT /api/topics/{id} had no caller at all, so nothing proved the
@@ -108,6 +114,39 @@ describe('EditTopic (AC-034)', () => {
   // Elevating scope widens write access to every stream-bounded member (ADR-0043 clause 5), so it is
   // a triage act. The server is the gate; not rendering the control keeps a Member from being
   // offered a button that can only ever 403.
+  // FR-163 / C-AUTHZ-04 (DEC-063 d2). Both halves asserted: the control appears for the two roles that
+  // may classify, and is ABSENT for everyone else. Presence alone would pass against a control offered
+  // to a Member, who would then be handed a 403 the UI could have prevented.
+  it('offers the confidentiality toggle to a secretary and posts the flipped state', async () => {
+    setup({}, ['secretary']);
+
+    // A segmented pair, like the scope and urgency pickers — so each option is its own button with
+    // its own name and its own pressed state, and the group carries the field label.
+    expect(screen.getByRole('button', { name: /not restricted/i })).toHaveAttribute('aria-pressed', 'true');
+    const restrict = screen.getByRole('button', { name: /^restricted$/i });
+    expect(restrict).toHaveAttribute('aria-pressed', 'false');
+
+    await userEvent.click(restrict);
+
+    expect(classifyMutate).toHaveBeenCalledWith({ topicId: TOPIC.id, restricted: true });
+  });
+
+  it('shows the toggle as pressed for an already-restricted topic', () => {
+    setup({ restricted: true }, ['secretary']);
+
+    expect(screen.getByRole('button', { name: /^restricted$/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /not restricted/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('does not offer the confidentiality toggle to a member', () => {
+    setup({}, ['member']);
+
+    // DEC-063 d2 excludes the OWNER on purpose — a plain Member must not be able to hide a topic
+    // from the committee, so the control is not offered even on their own topic.
+    expect(screen.queryByRole('group', { name: /confidentiality/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /not restricted/i })).not.toBeInTheDocument();
+  });
+
   it('does not offer the scope control to a member', () => {
     setup({}, ['member']);
 

@@ -18,6 +18,7 @@ const NOW = new Date('2026-06-24T09:00:00Z');
 
 function topic(p: Partial<TopicSummary>): TopicSummary {
   return {
+    restricted: false,
     id: 'id', key: 'TOP-2026-001', title: 't', type: 'ArchitectureDecision', status: 'Triage',
     urgency: 'Normal', scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null,
     priority: 0, timesDeferred: 0, ageDays: 1, slaBreached: false, createdAt: NOW.toISOString(), ...p,

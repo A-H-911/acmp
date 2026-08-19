@@ -1,48 +1,59 @@
 # Memory Index — ACMP
 
-> Compacted 2026-08-18 (6th). One line per memory; detail lives in topic files and the package.
+> Compacted 2026-08-19 (7th). One line per memory; detail lives in topic files and the package.
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-18 · **PH-6 is OPEN** · `SL-029` shipped · `SL-030` (confidentiality) NOT started
+## ★ 2026-08-19 · **PH-6 both slices BUILT** · `SL-030` green in **PR #295** · `SC-021` needs the operator
 
 > ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. Package readiness is
 > deliberately whatever the current batch makes it; `acs-met` failing on exactly your batch's Pending
 > ACs is the EXPECTED build-window state, not a regression.
 
-- ⭐⭐ **The queue is no longer empty.** Operator activated `DW-020` + `DW-029` + `DW-030` on 2026-08-18.
-  `PH-6` created (`DEC-060`), `SL-029` (FR-030 conversion) **Implemented** and merged (#293 + #294);
-  **`SL-030` — Confidentiality ABAC + full egress redaction — is planned but NOT built.** Plan file:
-  `~/.claude/plans/shimmying-humming-mochi.md`. WS-3's AC pipeline (108 requirements) also untouched.
-- ⭐⭐ [**A proxy is not the artifact — `LL-006`, Proposed, awaiting the operator**](package-mechanics-proven-2026-08-18.md)
-  Four proxies said BUILT about code that was not, each failing while correcting the previous one:
-  the `mvp`/Phase attribute (~30 of "53 unbuilt" were shipped), then a register row + a **filename**.
-  ⚠ **`Timeline.tsx` and `Calendar.tsx` are deliberate honest SHELLS** — present, routed,
-  well-commented, and empty ("no bars are drawn"). `DW-001` was right; my "correction" was wrong.
-  Requirement ids cited in source comments are a strong but **positive-only** instrument, and one
-  citation was a **deferral note** (`InvariantStatus.cs:7`).
-- ⭐ **The sweep found what no gate could:** 4 requirements unbuilt with NO record anywhere
-  (`DW-033`–`DW-036`: FR-032 configurable columns, FR-134 digest, FR-154 audit export, FR-155
-  retention); an operator decision living only in a code comment (`DEC-062`, FR-108/109); a deferral
-  whose blocker had silently cleared (`DW-037`, FR-035 — P6 shipped); and 2 divergences
-  (`DEF-088` FR-097 missing its Tarseem half, `DEF-089` FR-142 CSV yes/PNG no). **24 requirements are
-  now `Deferred`** — register reads 64 Implemented / 137 Approved / 24 Deferred, and for the first time
-  those three labels mean different things.
+- ⭐⭐ **`SL-030` IS BUILT AND `AC-114` IS `Met` (`AV-192`).** PR **#295**, all 9 CI checks green,
+  **NOT merged** — `SC-021` is Proposed and one half of the PR reverts if the operator rejects it.
+  Package readiness is now **`ready:true`**. `WBS-22` + `WBS-22.3` sit at **Review**, deliberately, so
+  slice readiness stays honestly false rather than manufactured green. WS-3's AC pipeline (108
+  requirements, `DW-029`) is still untouched and needs its own conversation.
+- ⭐⭐ **The egress sweep corrected the PLAN in BOTH directions (`LL-006` again).**
+  **Notification bodies were never a leak** — `TopicNotifications` interpolates only the topic KEY,
+  never a title, and every recipient is the Secretary roster or the submitter. The plan's "builders
+  must take a restriction flag" was simply wrong. **Dependencies was a 4th surface nobody listed**
+  (`DEF-090`) — same create-time snapshots, and the **Reports** surface `AC-114` names loads that very
+  register. ⚠ **`MoveTopicPriority` is deliberately UNFILTERED** and says so: its gate is
+  Chairman/Secretary-only and filtering would corrupt the renumbering. Reading it killed a false alarm.
+- ⭐⭐⚠ [**A green checker may have had NOTHING to check — `LL-007`, Proposed**](scan-must-prove-it-had-a-subject.md)
+  `npx tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits 0 while checking zero files** — that
+  file is solution-style (`"files": []` + references). It blessed a tree with **13 type errors that had
+  been failing `npm run build` for TEN COMMITS** (`DEF-091`, high). `vitest` never sees them: it
+  transpiles, it does not typecheck, so 1241 green tests certified code that would not compile.
+  **Use `npm run build` or `-p tsconfig.app.json`.** I did not catch this by being careful — vitest
+  caught it and I went looking.
+- ⭐ **`SL-030` design, so it is not re-litigated:** one narrow port `ITopicConfidentiality` (NOT a
+  method on `ITopicReader` — that handle mints pre-signed URLs). It answers with the **whole hidden
+  set** because the dependency register **pages and totals**, so the filter must compose before
+  `CountAsync`/`Skip`. Hidden set is **derived from `VisibleTo` by subtraction** → one expression of the
+  rule. **Agenda items masked in place** (the slot means something); **edges dropped** (an edge is a
+  pointer, and a blank endpoint enters the BFS as an empty-Guid node). **Both endpoints filtered**, so a
+  hidden focus is response-identical to a nonexistent id — no focus guard anywhere. **`TopicId` survives
+  masking**: the SPA keys rows by it, and topics are read by KEY, which already 404s.
+- ⭐ **`LL-006` (a proxy is not the artifact) is now Approved + pinned**, joined by `LL-007` (Proposed).
+  ⚠ **`Timeline.tsx` and `Calendar.tsx` are deliberate honest SHELLS** — routed, commented, drawing
+  nothing. Requirement ids in source comments are a **positive-only** instrument, and one was a
+  *deferral* note (`InvariantStatus.cs:7`). Detail: [package-mechanics-proven-2026-08-18.md](package-mechanics-proven-2026-08-18.md)
+- ⭐ **The DW-029 sweep found what no gate could:** `DW-033`–`DW-036` (unbuilt, no record anywhere),
+  `DEC-062` (an operator decision living only in a code comment), `DW-037` (blocker silently cleared),
+  `DEF-088`/`DEF-089` (divergences). **24 requirements are now `Deferred`** and the three status labels
+  finally mean different things.
 - ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met`
   counts by `retired_in` and **ignores `lifecycle_status`** (a Deferred AC still counts, so ACs for
   unbuilt work block readiness forever); `entity_upsert` **preserves omitted nullable fields** but
   requires every NOT NULL one; **slice-scope `wbs-done` is vacuous for all 28 old slices**
   (`slice_id` NULL on all 155 — `DEF-087`), which also **breaks AC→slice derivation**; `G-TRACE` needs
   three legs where the advisory needs one.
-- ⚠⚠ **Trap 25 fired exactly as written** — `gh pr merge` squash-merged #293 **remotely** then aborted
-  locally; the tree reverted to pre-feature `main` and looked like lost work. `gh pr view --json state`
-  said MERGED. ⚠ **And my own verification grep counted my comment text** and nearly read a deleted
-  allowlist entry as surviving — match quoted entries, not the substring.
-- ⭐ **FR-030 shipped:** Convert takes a reason (**no schema change** — `TopicStatusEvent` always
-  carried one), successor linked by `ConvertedTo` **appended as 17** (RelType persists as `int`;
-  inserting would remap every stored row). Carry-over stayed honest because `AddComment` takes
-  author+timestamp and `AddAttachment` takes `storageKey`. **The `Convert/3` allowlist deletion was the
-  deliverable.** The visual check again found a real defect (`.field` wrappers) — third time.
+- ⚠⚠ **Trap 25:** `gh pr merge` can squash-merge **remotely** then abort locally, leaving a tree that
+  looks like lost work. Check `gh pr view --json state` first, verify by CONTENT, then `git reset --hard`.
+  ⚠ A verification grep can count **your own comment text** — match quoted entries, not substrings.
 
 ## ★ Tamheed 4.4.1 · earlier state (ladder P1–P19 complete; superseded by PH-6 above)
 
@@ -119,5 +130,6 @@
 ## Completed ladder P1–P19 + PH-5 (reference only — do not re-open)
 
 - [PH-5 / SL-025 — UAT is live and LOGIN WORKS](ph5-sl025-uat-live.md) · [PH-5 AWS deployment](ph5-aws-deployment.md) · [P19 release readiness + D-23](p19-release-readiness.md) · [P18 deployment](p18-deployment.md) · [P17b decision-issuance UI](p17a-test-hygiene.md) · [P17/P18/P19 slice notes](next-p17-p18-p19.md)
-- Ladder plans (reference): [P16 hardening](p16-hardening-b2b-b3-b4.md) · [P16b CI gates](p16b-ci-security-gates.md) · [P16a audit/vote crypto](p16a-audit-vote-crypto.md) · [P12 dashboards](p12-dashboards-reports-plan.md) · [P11 ADRs/invariants](p11-adrs-invariants-plan.md) · [P10 risks/deps](p10-risks-deps-traceability-plan.md) · [P9 voting](p9-voting-plan.md) · [P8 actions](p8-actions-plan.md) · [P7 minutes](p7-minutes-decisions-plan.md) · [P6a meetings](p6a-meeting-ia-plan.md) · [P6b notifications](p6b-notifications-ia-plan.md)
+- Ladder plans (reference only, superseded by the package's slice rows): `p16-*`, `p12-*`, `p11-*`,
+  `p10-*`, `p9-*`, `p8-*`, `p7-*`, `p6a-*`, `p6b-*` in this directory.
 - [Audit slice (AC-017)](audit-slice-literal-ac017.md) · [Topic Prepare UI (D-15)](topic-prepare-ui-gap-d15.md) · [Keystone package migration](keystone-package-migration.md) · [Keystone gap remediation](keystone-migration-gap-remediation.md)

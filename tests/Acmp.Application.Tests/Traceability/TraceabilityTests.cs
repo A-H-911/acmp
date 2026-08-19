@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Traceability.Application.Features.CreateRelationship;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Traceability.Application.Features.CreateRelationship;
 using Acmp.Modules.Traceability.Application.Features.DeactivateRelationship;
 using Acmp.Modules.Traceability.Application.Features.GetArtifactRelationships;
 using Acmp.Modules.Traceability.Domain;
@@ -175,7 +176,7 @@ public class TraceabilityTests
 
         await using var db2 = Db(name, User(), Clock(Now));
 
-        var topicPanel = await new GetArtifactRelationshipsHandler(db2)
+        var topicPanel = await new GetArtifactRelationshipsHandler(db2, TopicConfidentialityStub.SeesEverything())
             .Handle(new GetArtifactRelationshipsQuery(ArtifactType.Topic, topicId), default);
         topicPanel.Outgoing.Should().ContainSingle();
         topicPanel.Incoming.Should().BeEmpty();
@@ -187,7 +188,7 @@ public class TraceabilityTests
         outEdge.OtherKey.Should().Be("DECN-2026-007");
         outEdge.OtherTitle.Should().Be("Approve gateway");
 
-        var decisionPanel = await new GetArtifactRelationshipsHandler(db2)
+        var decisionPanel = await new GetArtifactRelationshipsHandler(db2, TopicConfidentialityStub.SeesEverything())
             .Handle(new GetArtifactRelationshipsQuery(ArtifactType.Decision, decisionId), default);
         decisionPanel.Outgoing.Should().BeEmpty();
         decisionPanel.Incoming.Should().ContainSingle();
@@ -211,7 +212,7 @@ public class TraceabilityTests
                 .Handle(new DeactivateRelationshipCommand(id), default);
 
         await using var db2 = Db(name, User(), Clock(Now));
-        var panel = await new GetArtifactRelationshipsHandler(db2)
+        var panel = await new GetArtifactRelationshipsHandler(db2, TopicConfidentialityStub.SeesEverything())
             .Handle(new GetArtifactRelationshipsQuery(ArtifactType.Topic, topicId), default);
         panel.Outgoing.Should().BeEmpty();
     }

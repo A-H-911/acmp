@@ -54,6 +54,20 @@ public sealed class TopicCapabilityResolver : ITopicCapabilityResolver
 
         return grants.Where(g => g.IsActiveAt(now)).Select(g => g.Capability).Distinct().ToList();
     }
+
+    // FR-163 / SC-019. Same shape as above minus the topic filter, so the whole grant set for one
+    // principal costs ONE round-trip instead of one per topic on the page. IsActiveAt is still applied
+    // in memory, exactly as the per-topic method does — a grant whose window has closed must not keep
+    // a Restricted topic visible.
+    public async Task<IReadOnlyCollection<Guid>> GetGrantedTopicIdsAsync(string userId, CancellationToken ct = default)
+    {
+        var now = _clock.UtcNow;
+        var grants = await _db.TopicCapabilities.AsNoTracking()
+            .Join(_db.Members.Where(m => m.KeycloakUserId == userId), g => g.CommitteeMemberId, m => m.Id, (g, _) => g)
+            .ToListAsync(ct);
+
+        return grants.Where(g => g.IsActiveAt(now)).Select(g => g.TopicId).Distinct().ToList();
+    }
 }
 
 // Grant-on-accept (W2): Topics calls this when an owner is assigned so the per-topic Owner relationship

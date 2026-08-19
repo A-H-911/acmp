@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
@@ -199,7 +200,7 @@ public class MeetingHandlerTests
 
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("InProgress");
         detail.Agenda!.Status.Should().Be("Locked");
         scheduler.Entered.Should().ContainSingle().Which.Should().Be(topic);
@@ -221,7 +222,7 @@ public class MeetingHandlerTests
         await new MarkAttendanceHandler(db, clock, Substitute.For<IAuditSink>(), user)
             .Handle(new MarkAttendanceCommand(meetingId, member, "Omar H.", AttendanceRole.Member, AttendanceStatus.Present, true), default);
 
-        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Attendance.Should().ContainSingle(a => a.UserId == member && a.Status == "Present");
     }
 
@@ -240,7 +241,7 @@ public class MeetingHandlerTests
         await new CaptureDiscussionHandler(db, clock, user).Handle(new CaptureDiscussionCommand(meetingId, topic, "Consensus on direction."), default);
         await new RecordActualTimeHandler(db).Handle(new RecordActualTimeCommand(meetingId, topic, 12, AgendaItemOutcome.Discussed), default);
 
-        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Discussions.Should().ContainSingle(d => d.TopicId == topic && d.Body == "Consensus on direction.");
         detail.Agenda!.Items.Single().ActualMinutes.Should().Be(12);
         detail.Agenda.Items.Single().Outcome.Should().Be("Discussed");
@@ -333,7 +334,7 @@ public class MeetingHandlerTests
 
         await new EndMeetingHandler(db, clock, audit, user).Handle(new EndMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("Held");
         detail.Agenda!.Status.Should().Be("Closed");
         await audit.Received(1).EmitEnrichedAsync("Meetings.MeetingHeld", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());

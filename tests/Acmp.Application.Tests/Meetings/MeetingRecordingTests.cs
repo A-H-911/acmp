@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Acmp.Application.Tests.Shared;
 using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
@@ -136,7 +137,7 @@ public class MeetingRecordingTests
 
         // DEF-073: the caller is a committee member (the substitute reports no roles), so the guest
         // scoping is inactive here and the directory is never consulted.
-        var handler = new GetMeetingDetailHandler(db, Substitute.For<ICommitteeDirectory>(), user);
+        var handler = new GetMeetingDetailHandler(db, Substitute.For<ICommitteeDirectory>(), user, TopicConfidentialityStub.SeesEverything());
         (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-010"), default))!.Recording!.Source.Should().Be("Uploaded");
         var w = (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-011"), default))!.Recording!;
         w.Source.Should().Be("Webex");
