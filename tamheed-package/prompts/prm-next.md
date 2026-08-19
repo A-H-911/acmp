@@ -10,8 +10,10 @@ Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` be
 ```
 server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
-gate_run()                                   # expect 6/7 - G-COMPLETE red on EXACTLY [PE-469]. See §1.
-readiness_check("package")                   # expect ready:FALSE - DEF-093. See §1.
+gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
+                                             # REAL finding - read its failure list, it names the token.
+readiness_check("package")                   # blocking rules should all pass; advisories will fail and
+                                             # that is normal. ready:FALSE = a real blocker, go read it.
 git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
 ```
 
@@ -67,20 +69,31 @@ BY CONTENT rather than by ancestry (trap 25).
   all of `WBS-22.*` `Implemented`, merged as **#295 → `1a52dba`**. §2 is the design record.
   **Do not reopen either slice.**
 
-### ⚠⚠ Two blocking states that are CORRECT, not regressions
+### ✅ THE MECHANICAL GUARANTEE IS BACK — the old "never report gates green" rule is RETIRED
 
-- **`gate_run()` CAN NEVER RETURN 7/7 AGAIN.** `G-COMPLETE` fails permanently on exactly
-  `[{id: PE-469, column: entry}]` — `DEF-093`. `G-COMPLETE` scans text for placeholder markers in entity
-  `title` AND progress `entry`; `PE-469` is the note that DOCUMENTS that rule and quotes the token while
-  doing so. The journal is **append-only**: `entity_upsert` refuses it, and an appended `correction`
-  (`PE-470`) does NOT satisfy the scan. No tool an agent has can clear it.
-  **NEVER report "7/7" or "gates green". Reconcile the failure LIST every run** — an id you did not
-  expect in it is a REAL finding hiding behind a known one. Disposition (operator, 2026-08-19): raise
-  with the tamheed maintainer; it is a gate/journal design conflict, not bad data.
-- **`readiness_check("package")` is `ready:FALSE`.** `defects-closed` fails on **`DEF-093`**, which is
-  HIGH severity because a mechanical gate that can never go green defeats the gate. An open high defect
-  blocks readiness BY DESIGN. **`acs-met` PASSES** — that is the number the DW-029 programme must keep
-  passing, and it is the one to watch.
+**`gate_run()` returns 7/7 and `readiness_check("package")` is `ready:TRUE`** on tamheed **4.4.2**
+(2026-08-20). `DEF-093` is **Fixed upstream, with ZERO data changes to this package** — `PE-469`'s text is
+untouched and still quotes the token; the screen simply no longer reads it. `G-COMPLETE` now exempts the
+append-only report columns (`progress_entries.entry`, `audit_verdicts.evidence`) and skips
+`Superseded`/`Obsolete` rows.
+
+⚠ **The old standing instruction — "never report gates green, reconcile the failure LIST instead" — is
+RETIRED by operator decision.** It existed only because the guarantee was gone. **A red gate is now a real
+finding again; report it as one.** Still reconcile the list when one IS red — that habit was never the
+problem.
+
+⚠⚠ **THE TOKEN RULE CHANGED IN ONE DIRECTION ONLY, and getting this backwards re-creates the bug.**
+**Journal text is now EXEMPT** — a progress entry or verdict evidence may quote marker tokens freely, so
+describing why a scan fired is finally safe. **ENTITY rows are still fully screened** — `title`,
+`statement`, `description`, every live row of every family. There, name the concept or wrap the token in
+backticks (`_strip_code` runs first, and the escape is verified working).
+
+⚠ **This was VERIFIED, not taken on trust, and the check that mattered was not the green one.** An
+exemption that turns a permanently-red gate green could equally have made it **vacuous** (`LL-007`).
+Injecting a marker into a LIVE entity title made `G-COMPLETE` fail and **name the matched token**; the
+backticked form passed; the row was restored and the whole package re-verified byte-identical. **If you
+ever doubt a gate, that experiment is three tool calls and it is the only thing that separates "green
+because fixed" from "green because blind".**
 
 ### The advisories — none is a task
 
@@ -89,11 +102,12 @@ ADDS a row every time it finds a partial, and closing one to green it manufactur
 added three**), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read them live; the
 row COUNT is deliberately not written here because it moves every batch.**
 
-⚠ **Slice-scope `defects-closed` is `indeterminate` and the old superset argument NO LONGER WORKS.**
-0 of 93 defect rows carry `found_in` (`DEF-087`), so the slice-scope rule cannot discriminate — and
-package-scope `defects-closed` now FAILS too, on `DEF-093`. Earlier sessions answered "the superset
-passes, so nothing is open anywhere"; **that sentence is now false.** The honest answer is: exactly two
-defects are open, `DEF-087` (medium, vacuous rule) and `DEF-093` (high, the gate deadlock).
+⚠ **Slice-scope `defects-closed` is `indeterminate`** — almost no defect row carries `found_in`
+(`DEF-087`), so the slice-scope rule cannot discriminate. Package-scope `defects-closed` **passes** again
+now that `DEF-093` is Fixed, so the superset argument works once more — but it only ever ruled out
+**critical/high**. Open **medium/low** defects are real and sit in the `defects-minor` advisory: currently
+`DEF-087`, `DEF-095`, `DEF-096`. **Read that advisory; do not read a green `defects-closed` as "nothing is
+open".**
 
 **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`) and bind every session via the tool-owned
 note. `LL-007` — **a checker that reports success may have had nothing to check** — keeps firing on my OWN
@@ -256,13 +270,12 @@ have been wrong. Read the implementation — in BOTH directions.
 
 ### ⚠ Two package facts that will bite you
 
-- **`G-COMPLETE` IS PERMANENTLY RED on `[PE-469]`** (`DEF-093`) and cannot be cleared by any tool an
-  agent has — the journal is append-only and a correction does not satisfy the scan. **Do not report
-  "7/7" or "gates green".** Reconcile the failure list every run; an id you did not expect in it is a
-  REAL finding hiding behind a known one. Disposition: raise with the tamheed maintainer.
-- **G-COMPLETE scans text for placeholder markers**, in entity `title` AND progress `entry`. Describing
-  placeholder-shaped work will trip it. Name the concept, never the token — that is how `PE-469` became
-  unfixable.
+- **`G-COMPLETE` IS GREEN AGAIN** (tamheed 4.4.2, `DEF-093` Fixed). Report a red gate as the real finding
+  it now is. The old "never say green" rule is retired — see §1.
+- **G-COMPLETE still screens EVERY LIVE ENTITY ROW** — `title`, `statement`, `description` — for
+  placeholder markers, and now NAMES the matched token in the failure. **Journal text is exempt**
+  (`progress_entries.entry`, `audit_verdicts.evidence`), so a progress note explaining why a scan fired is
+  safe. In an entity row, name the concept or backtick the token.
 
 ## §3 — The two registers that will mislead you
 
@@ -485,7 +498,8 @@ squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the 
 - **`DEF-095`** — the worker csproj cites a base image it does not use. `DEF-096` shows the intent was real,
   but the base that comment names still would not work (the worker resolves an AspNetCore framework
   reference transitively). Repair direction is the operator's.
-- **`DEF-093`** — written up for the tamheed maintainer as **`findings_21.md`**. Not yet sent anywhere.
+- ~~`DEF-093`~~ — **CLOSED.** `findings_21.md` was acted on: tamheed 4.4.2 fixed it upstream with zero
+  data changes. Kept as the worked example of reporting a tool defect precisely enough to be fixed.
 - **`DW-065`** — `NFR-043` has never been observed as an actual trace. Needs a running stack, like the ops
   group in `PE-485`.
 

@@ -6,17 +6,22 @@
 
 ## ★ 2026-08-19 · **`SL-030` MERGED** · **`SL-031` OPEN — the DW-029 AC programme is the active work**
 
-> ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. Package readiness is
-> deliberately whatever the current batch makes it; `acs-met` failing on exactly your batch's Pending
-> ACs is the EXPECTED build-window state, not a regression.
+> ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. `acs-met` failing on exactly
+> your batch's Pending ACs is the EXPECTED build-window state, not a regression.
 
-- ⭐⭐⚠ **`gate_run()` CAN NEVER RETURN 7/7 AGAIN, and `readiness_check` is `ready:FALSE`** — both from
-  `DEF-093`: `G-COMPLETE` scans text for placeholder markers in entity `title` AND progress `entry`, and
-  `PE-469` — the note documenting that rule — quotes the token. The journal is **append-only**;
-  `entity_upsert` refuses it and an appended `correction` does NOT clear the scan. **Never report
-  "gates green"; reconcile the failure LIST** (`[PE-469]`) — an unexpected id is a real finding hiding
-  behind a known one. Operator's call: raise with the tamheed maintainer. **Name the concept, never the
-  token**, or you create another unfixable row.
+- ✅⚠ **`DEF-093` IS FIXED (tamheed 4.4.2, 2026-08-20) — `gate_run()` IS 7/7 AND `readiness` IS
+  `ready:TRUE`.** ⚠ **The old "never report gates green" rule is RETIRED** (operator, 2026-08-20): a red gate
+  is a REAL finding again. Fixed UPSTREAM with **zero data changes** — `PE-469`'s text is untouched, just no
+  longer screened. ⚠⚠ **THE TOKEN RULE CHANGED IN ONE DIRECTION ONLY:** journal text
+  (`progress_entries.entry`, `audit_verdicts.evidence`) is now **exempt**, so a progress note may quote
+  marker tokens freely — but **every live ENTITY row is still screened** (`title`/`statement`/`description`),
+  so there, name the concept or backtick the token. Failures now NAME the matched token.
+- ⭐⭐⚠ **AN EXEMPTION THAT GREENS A GATE CAN ALSO BLIND IT — prove teeth before believing green**
+  (`LL-007`). Injecting a marker into a LIVE entity title made `G-COMPLETE` fail and name it; the backticked
+  form passed; the row was restored byte-identically. **Three tool calls, and it is the only thing separating
+  "green because fixed" from "green because blind".** `findings_21.md` is the worked example of reporting a
+  tool defect precisely enough that it got fixed — its §2 (`corrects` had no consumer) is now a collapsed
+  "Corrected entries" fold in `review.html`.
 - ⭐⭐ **`DW-029` is running as `SL-031`.** ⚠ **`prm-next.md` NO LONGER CARRIES THE TALLIES — batch 13
   deleted them and left the measuring command instead, after the file went stale an eighth time. Do not
   re-introduce a number here either; measure it.** Verdicts run `AC-115`…`AC-132`. ⚠ **THE METHOD
@@ -48,9 +53,6 @@
   **sqlserver-fts 3.62 GB** (its base alone is 1.67 GB). The minimal-base clause fails on a DIFFERENT set —
   api/worker are Debian `aspnet:8.0`, web genuinely is alpine. Operator disposition pending; **do not change a
   base image to close it.**
-- ⚠ **`findings_21.md` = the `DEF-093` maintainer report.** It found a second defect: **`corrects` is written
-  by `progress_update`, rendered by `export_html`, and read by NOTHING else** — no gate, no readiness rule, no
-  view. That is why appending a correction never cleared `G-COMPLETE`.
 
 - ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — **nine** requirements built on one
   side only, each invisible *because* it had no AC to fail. The list lives in `prm-next.md` §2b; worst
@@ -81,8 +83,6 @@
   while the real exit was 2. Redirect to a file and read `$?` on the bare command.
 - **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks, `committee_members`
   1 → 27. The `RISK-007` adoption clock started 2026-08-17.
-- `DEC-057`/`DEF-084`, `DEF-085`/`SC-017`, `DW-017`, `DW-031`, `DW-009` — all landed (#289–#292); detail
-  in the package. The reusable part: **`DEF-084` reported eight methods as ONE finding; they were three.**
 
 ## Earlier 2026-08 — durable findings only (superseded state removed)
 
@@ -97,7 +97,6 @@
 - ⚠ **Read `ADR-0043`, NOT `ADR-0042`** — 0042 is Superseded: it wrongly claimed Guest is stream-bounded (E.3 bounds a guest by a TIME WINDOW). All 7 clauses carried over verbatim; steps 1–8 shipped, `AC-010` Met.
 - ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — `member_streams.StreamId` was an IDENTITY column and four suites were green over it. See [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: `PermissionMatrixTests` evaluates cells with **no resource**, and a 2-param handler is never invoked without one — **a stream-scoped policy is RESOURCE-ONLY**.
 - **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json` — merging one now fails `check-i18n` loudly): `chore/design-update-round2`, `chore/docs-v8-local-design`, `feat/budget-notification-observer`, `feat/p13-webex-integration`, `docs/defer-p14-tarseem`, `feat/audit-adr`.
-- **Tamheed acceptance series `findings_13`–`findings_16` complete except §6:** the CLAUDE.md obligations note demonstrably TRANSFERS to fresh contexts; whether a fresh session DISCHARGES it is unproven. Only an **interactive** fresh session can close it.
 
 ## Shipped, reference only (detail in the package)
 
