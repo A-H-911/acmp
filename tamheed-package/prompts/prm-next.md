@@ -196,10 +196,14 @@ have been wrong. Read the implementation — in BOTH directions.
 
 ### What is queued
 
-- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13 the
-  ones with neither an AC nor a `DW-` row are: `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039
-  050 061`. ⚠ **Derive this list, do not trust it** — it is the `Approved` Must-priority non-functional
-  ids minus every id named in a `deferred-work` row. Four are known-hard and were excluded from batch 13
+- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13:
+  `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039 050 061`.
+  ⚠ **DERIVE THIS LIST, DO NOT TRUST IT — AND MIND THE SECOND SUBTRACTION.** The rule is: the `Approved`
+  Must-priority non-functional ids, minus every id named in a `deferred-work` row, **minus the
+  ops/runtime group `PE-485` names** (`NFR-015 017 044 052 062`), which is uncovered by any `DW-` row but
+  is separately blocked on a RUNNING STACK and is not code-verifiable. The first subtraction alone yields
+  **twenty**, not fifteen. ⚠ This correction was itself found by RUNNING the rule against the written
+  list rather than trusting that the two agreed — they were authored in the same edit and did not. Four are known-hard and were excluded from batch 13
   on purpose: `NFR-018` needs a DAST scan and a penetration test, `NFR-019` needs a TLS scan against a
   running stack, `NFR-023`'s own text defers to an org security policy that has never been confirmed
   (operator-blocked), and `NFR-038` rides on `P14`, deferred indefinitely by `DEC-028`. `NFR-031`–`034`
