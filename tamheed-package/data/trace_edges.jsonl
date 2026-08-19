@@ -579,6 +579,10 @@
 {"from_id":"SC-021","to_id":"DEF-090","relation":"relates_to"}
 {"from_id":"SC-021","to_id":"WBS-22.3","relation":"scope_modifies"}
 {"from_id":"SC-022","to_id":"FR-097","relation":"scope_modifies"}
+{"from_id":"SC-023","to_id":"ADR-0037","relation":"relates_to"}
+{"from_id":"SC-023","to_id":"DW-064","relation":"scope_modifies"}
+{"from_id":"SC-023","to_id":"NFR-053","relation":"scope_modifies"}
+{"from_id":"SC-023","to_id":"OQ-061","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
