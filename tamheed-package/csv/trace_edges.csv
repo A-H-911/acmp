@@ -580,6 +580,10 @@ SC-021,AC-114,scope_modifies
 SC-021,DEF-090,relates_to
 SC-021,WBS-22.3,scope_modifies
 SC-022,FR-097,scope_modifies
+SC-023,ADR-0037,relates_to
+SC-023,DW-064,scope_modifies
+SC-023,NFR-053,scope_modifies
+SC-023,OQ-061,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
