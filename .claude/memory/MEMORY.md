@@ -4,69 +4,64 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-19 · **PH-6 COMPLETE — `SL-030` MERGED (#295 → `1a52dba`)** · queue empty again
+## ★ 2026-08-19 · **`SL-030` MERGED** · **`SL-031` OPEN — the DW-029 AC programme is the active work**
 
 > ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. Package readiness is
 > deliberately whatever the current batch makes it; `acs-met` failing on exactly your batch's Pending
 > ACs is the EXPECTED build-window state, not a regression.
 
+- ⭐⭐⚠ **`gate_run()` CAN NEVER RETURN 7/7 AGAIN, and `readiness_check` is `ready:FALSE`** — both from
+  `DEF-093`: `G-COMPLETE` scans text for placeholder markers in entity `title` AND progress `entry`, and
+  `PE-469` — the note documenting that rule — quotes the token. The journal is **append-only**;
+  `entity_upsert` refuses it and an appended `correction` does NOT clear the scan. **Never report
+  "gates green"; reconcile the failure LIST** (`[PE-469]`) — an unexpected id is a real finding hiding
+  behind a known one. Operator's call: raise with the tamheed maintainer. **Name the concept, never the
+  token**, or you create another unfixable row.
+- ⭐⭐ **`DW-029` is running as `SL-031`.** 226 requirements → **82 Implemented / 119 no-AC / 25 Deferred**;
+  **16 Met verdicts** written (`AC-115`…`AC-130`). ⚠ **THE METHOD MATTERS MORE THAN THE COUNT:** never
+  leave a Pending/Partial AC (`acs-met` counts by `retired_in` and ignores `lifecycle_status`, so it
+  holds readiness false FOREVER — trap 16c), so **a part-verified requirement gets a `DW-` row, not an
+  AC**. The cheap candidate filter is **exhausted**: grepping tests for requirement ids returns zero,
+  because every requirement a test names already has an AC.
+- ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — six requirements built on one side only,
+  every one invisible *because* it had no AC to fail: `DW-038` FR-142, `DW-039` FR-117, `DW-040` FR-037,
+  `DW-041` NFR-030, `DW-042` NFR-035 (since built), `DW-061` NFR-063. Worst was **`NFR-025`**
+  (`DEF-094`): a **Must** security requirement divergent on BOTH clauses — recording URLs reached any
+  member, and reads were never audited. Built as written, not reworded.
+- ⚠⚠ **`LL-007` fired FIVE more times on my own instruments in one session** — a grep scoped to
+  `features/knowledge/` (doesn't exist), one swallowed by `|| true`, a scanner regex matching TypeScript
+  `>=`, and a gate whose path was cwd-relative so CI would have scanned nothing. **Widen the instrument
+  and prove it has a subject before believing ANY empty result.**
 - ⭐⭐ **`SL-030` MERGED** (#295 → `1a52dba`, verified on `origin/main` BY CONTENT per trap 25).
-  `AC-114` Met (`AV-192`), slice + all `WBS-22.*` `Implemented`, **package AND slice readiness
-  `ready:true`**, gate 7/7. **`PH-6` is complete and nothing is mid-flight.** Next is the operator's
-  call: `DW-029`'s 108-requirement AC programme (⚠ **cannot be one bulk pass** — `acs-met` counts by
-  `retired_in`, so ACs written ahead of evidence hold readiness false), or go-live actions.
+  `AC-114` Met (`AV-192`), slice + all `WBS-22.*` `Implemented`. ⚠ The readiness/gate numbers this
+  bullet used to quote are **superseded by the `DEF-093` bullets above** — read them live, never here.
 - ⚠⚠ **`SC-021` is Merged but `WBS-22.3` STILL READS "notification bodies".** The operator was
   offered the variant that rewrites the row text and chose plain approval, so **the SC row + its
   `scope_modifies` edges ARE the correction**. Follow the edge; do **not** "tidy" that row — it is
   the as-approved plan text, not drift.
-- ⭐⭐ **The egress sweep corrected the PLAN in BOTH directions (`LL-006` again).**
-  **Notification bodies were never a leak** — `TopicNotifications` interpolates only the topic KEY,
-  never a title, and every recipient is the Secretary roster or the submitter. The plan's "builders
-  must take a restriction flag" was simply wrong. **Dependencies was a 4th surface nobody listed**
-  (`DEF-090`) — same create-time snapshots, and the **Reports** surface `AC-114` names loads that very
-  register. ⚠ **`MoveTopicPriority` is deliberately UNFILTERED** and says so: its gate is
-  Chairman/Secretary-only and filtering would corrupt the renumbering. Reading it killed a false alarm.
-- ⭐⭐⚠ [**A green checker may have had NOTHING to check — `LL-007`, Proposed**](scan-must-prove-it-had-a-subject.md)
-  `npx tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits 0 while checking zero files** — that
-  file is solution-style (`"files": []` + references). It blessed a tree with **13 type errors that had
-  been failing `npm run build` for TEN COMMITS** (`DEF-091`, high). `vitest` never sees them: it
-  transpiles, it does not typecheck, so 1241 green tests certified code that would not compile.
-  **Use `npm run build` or `-p tsconfig.app.json`.** I did not catch this by being careful — vitest
-  caught it and I went looking.
-- ⭐ **`SL-030` design, so it is not re-litigated:** one narrow port `ITopicConfidentiality` (NOT a
-  method on `ITopicReader` — that handle mints pre-signed URLs). It answers with the **whole hidden
-  set** because the dependency register **pages and totals**, so the filter must compose before
-  `CountAsync`/`Skip`. Hidden set is **derived from `VisibleTo` by subtraction** → one expression of the
-  rule. **Agenda items masked in place** (the slot means something); **edges dropped** (an edge is a
-  pointer, and a blank endpoint enters the BFS as an empty-Guid node). **Both endpoints filtered**, so a
-  hidden focus is response-identical to a nonexistent id — no focus guard anywhere. **`TopicId` survives
-  masking**: the SPA keys rows by it, and topics are read by KEY, which already 404s.
-- ⭐ **`LL-006` (a proxy is not the artifact) is now Approved + pinned**, joined by `LL-007` (Proposed).
-  ⚠ **`Timeline.tsx` and `Calendar.tsx` are deliberate honest SHELLS** — routed, commented, drawing
-  nothing. Requirement ids in source comments are a **positive-only** instrument, and one was a
-  *deferral* note (`InvariantStatus.cs:7`). Detail: [package-mechanics-proven-2026-08-18.md](package-mechanics-proven-2026-08-18.md)
-- ⭐ **The DW-029 sweep found what no gate could:** `DW-033`–`DW-036` (unbuilt, no record anywhere),
-  `DEC-062` (an operator decision living only in a code comment), `DW-037` (blocker silently cleared),
-  `DEF-088`/`DEF-089` (divergences). **24 requirements are now `Deferred`** and the three status labels
-  finally mean different things.
+- ⭐ **The egress sweep corrected the plan in BOTH directions** (`LL-006`): notification bodies were
+  never a leak, Dependencies was an unlisted 4th surface (`DEF-090`). ⚠ **`MoveTopicPriority` is
+  deliberately UNFILTERED** — its gate is Chairman/Secretary-only and filtering would corrupt the
+  renumbering. Reading it killed a false alarm.
+- ⭐⭐⚠ [**`LL-007` — a green checker may have had NOTHING to check**](scan-must-prove-it-had-a-subject.md)
+  `tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits 0 over ZERO files** (solution-style config)
+  and blessed 13 type errors that had failed `npm run build` for ten commits (`DEF-091`). `vitest`
+  transpiles, it does not typecheck. **Use `npm run build` or `-p tsconfig.app.json`.**
+- ⭐ **`SL-030`'s design decisions live in `prm-next.md` §2** — do not re-litigate them.
+- ⭐ **`LL-006` (a proxy is not the artifact) is Approved + pinned.** ⚠ `Timeline.tsx` and
+  `Calendar.tsx` are deliberate honest SHELLS. Requirement ids in source comments are **positive-only**.
 - ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met`
-  counts by `retired_in` and **ignores `lifecycle_status`** (a Deferred AC still counts, so ACs for
-  unbuilt work block readiness forever); `entity_upsert` **preserves omitted nullable fields** but
-  requires every NOT NULL one; **slice-scope `wbs-done` is vacuous for all 28 old slices**
-  (`slice_id` NULL on all 155 — `DEF-087`), which also **breaks AC→slice derivation**; `G-TRACE` needs
-  three legs where the advisory needs one.
-- ⚠⚠ **Trap 25:** `gh pr merge` can squash-merge **remotely** then abort locally, leaving a tree that
-  looks like lost work. Check `gh pr view --json state` first, verify by CONTENT, then `git reset --hard`.
-  ⚠ A verification grep can count **your own comment text** — match quoted entries, not substrings.
+  ignores `lifecycle_status`; `entity_upsert` preserves omitted nullable fields but requires NOT NULL
+  ones; slice-scope `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
+- ⚠ **Trap 25:** `gh pr merge` can merge **remotely** then abort locally, looking like lost work —
+  check `gh pr view --json state`, verify by CONTENT. A verification grep can count your own comment.
 
 ## ★ Tamheed 4.4.1 · earlier state (ladder P1–P19 complete; superseded by PH-6 above)
 
-- ⚠ **`PH-3` stays `Approved` ON PURPose** — `WBS-20.4` is the email adapter vs a hard constraint
-  (`DEC-055`). Do **not** "repair" it to look uniform; that is the manufactured-status move `DEF-010`
-  records. `PH-0`–`PH-2`, `PH-4`, `PH-5` are Implemented.
-- Two advisories fail deliberately and are **not tasks**: `deferred-work-reviewed` (triggers unfired —
-  closing a row to green it manufactures status) and `acs-slice-bound` (`AC-109`–`AC-112`, accepted by
-  `DEC-058 d3`). `AC-113` IS slice-bound, so it did not grow that list.
+- ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
+  (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records.
+- ⚠ **Advisory state moves every batch — READ IT LIVE**, never from a written tally. `prm-next.md` §1
+  carries the current shape and the reasons; two advisories fail deliberately and are not tasks.
 - **Five lessons Approved + PINNED** (`LL-001`…`LL-005`) bind every session via the auto-loaded note.
   ⚠ `LL-006` is **Proposed and needs the operator's interview** — see above.
 - `DEC-057`/`DEF-084`: eight unreachable methods were **three** problems — four wired (#289), two

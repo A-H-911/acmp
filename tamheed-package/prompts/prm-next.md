@@ -11,7 +11,7 @@ Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` be
 server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
 gate_run()                                   # expect 7/7
-readiness_check("package")                   # expect ready:TRUE
+readiness_check("package")                   # expect ready:FALSE - DEF-093, see §1
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
@@ -22,7 +22,8 @@ same session.**
 
 ## §1 — What is true right now (2026-08-19)
 
-**`PH-6` IS COMPLETE. THERE IS NO ACTIVE BUILD.** `P1`–`P19` is complete and every phase is closed
+**`PH-6`'S TWO BUILD SLICES ARE DONE; `SL-031` IS OPEN AND IS THE ACTIVE WORK** (§2b).
+The build ladder is finished — what remains is the register programme, not a feature. `P1`–`P19` is complete and every phase is closed
 except `PH-3`, frozen deliberately (`WBS-20.4` is the email adapter against a hard constraint —
 **do not "repair" it**). `DEC-060` created `PH-6` for the work the operator activated on 2026-08-18;
 both of its slices are now `Implemented`.
@@ -30,16 +31,29 @@ both of its slices are now `Implemented`.
 - **`SL-029` (FR-030 topic conversion)** — merged as `bcc3d00` (#293) + `b065a29` (#294), `AC-113` Met.
 - **`SL-030` (Confidentiality ABAC + egress redaction, FR-163)** — `AC-114` Met (`AV-192`), slice and
   all of `WBS-22.*` `Implemented`, shipped in **#295**. §2 is the design record. **Do not reopen either.**
-- **`readiness_check("package")` is `ready:TRUE`** and `gate_run()` is 7/7.
-- **Three advisories fail and NONE is a task** — `defects-minor` (`DEF-086`–`DEF-089`, all low/medium
-  from the DW-029 sweep), `deferred-work-reviewed` (22 rows — triggers unfired; closing one to green it
-  manufactures status), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`).
+- ⚠⚠ **`gate_run()` IS NOT 7/7 AND CANNOT BE.** `G-COMPLETE` fails permanently on exactly
+  `[{id: PE-469, column: entry}]` — `DEF-093`, an append-only journal entry that quotes a placeholder
+  marker while documenting the rule about them. No tool an agent has can clear it. **Never report
+  "gates green"; reconcile the failure LIST instead** — an unexpected id in it is a real finding hiding
+  behind a known one.
+- ⚠⚠ **`readiness_check("package")` IS `ready:FALSE`, AND THAT IS CORRECT.** `defects-closed` fails on
+  **`DEF-093`** — the same gate deadlock, recorded at HIGH severity because a mechanical gate that can
+  never go green defeats the gate. An open high defect blocks readiness BY DESIGN, so this is the
+  register working, not a regression. It clears when `DEF-093` does. Everything else blocking passes,
+  including `acs-met`.
+- **Three advisories fail and NONE is a task** — `defects-minor` (now just **`DEF-087`**, the vacuous
+  slice-scope `wbs-done`), `deferred-work-reviewed` (**43 rows**, up from 22 — the DW-029 programme
+  deliberately ADDS rows, and closing one to green it manufactures status), and `acs-slice-bound`
+  (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read these live** — the numbers move every batch.
 - ⚠ **Slice-scope `defects-closed` is `indeterminate`, not a pass** — 0 of 90 defect rows carry
   `found_in` (`DEF-087`). Answer from the **superset**: package-scope `defects-closed` passes, so no
   open critical/high defect exists anywhere.
 - **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`), binding every session via the
-  tool-owned note. `LL-007` is the newest: **a checker that reports success may have had nothing to
-  check** — it came out of `DEF-091` and it is the reason §4's trap 22b exists.
+  tool-owned note. `LL-007` is the newest — **a checker that reports success may have had nothing to
+  check** — and it fired **five more times** on 2026-08-19, every time on my own instrument: a grep
+  scoped to the wrong directory, an inline check swallowed by `|| true`, a scanner whose regex matched
+  TypeScript comparison operators, and a gate whose path was cwd-relative so CI would have scanned
+  nothing. **Widen the instrument and prove it has a subject before believing any empty result.**
 
 ## §2 — What `SL-030` built (reference only — do NOT rebuild)
 
@@ -105,18 +119,55 @@ correction. **Follow the edge; do not read the unedited row as drift**, and do n
 `npm run build` failing on 13 TypeScript errors while `vitest` stayed green (it transpiles, it does
 not typecheck). See trap 22b — this is what `LL-007` generalises.
 
-## §2b — What is NEXT
+## §2b — What is NEXT: the DW-029 acceptance-criterion programme
 
-**Nothing is mid-flight. The next move is the operator's**, and there are two candidates:
+**`SL-031` is OPEN and this is the active work.** `PH-6`'s two build slices are done; this is the
+register programme the operator activated on 2026-08-19 (`DEC-064 d5`).
 
-1. **`DW-029`'s acceptance-criterion programme** — 108 v1 requirements with no AC. Batched,
-   multi-session, and it needs its own conversation. ⚠ **It cannot be run as one bulk pass**: `acs-met`
-   counts by `retired_in` and ignores `lifecycle_status`, so every AC written ahead of its evidence
-   holds package readiness false until that evidence exists (trap 16c).
-2. **Go-live actions**, which are operator-side, not a slice.
+**Live position (read it, do not trust this line):** 226 requirements — **82 Implemented, 119 Approved
+with no AC, 25 Deferred**. The 119 are the target. Of the Must-priority remainder, **47** are left.
 
-⚠ Before proposing anything else, **sweep the requirement register first** (`LL-005`) and read the
-implementation before calling anything unbuilt (`LL-006`).
+### The method — follow it, it was expensive to learn
+
+1. **Never leave a Pending or Partial AC.** `acs-met` counts by `retired_in` and IGNORES
+   `lifecycle_status`, so an AC written ahead of its evidence holds package readiness false **forever**
+   (trap 16c). Write the AC and record the verdict IN THE SAME BATCH.
+2. **A part-verified requirement gets a `DW-` row, NOT an acceptance criterion.** This is settled and is
+   why `DW-041`, `DW-042`, `DW-043`…`DW-061` exist. Do not "helpfully" add the missing ACs.
+3. **Verify the WHOLE criterion, not the convenient part.** Both NFRs in batch 1 carried a `Target:`
+   clause stronger than the tests that existed; the batch BUILT the missing control rather than writing
+   an AC around what happened to be tested.
+4. **Label the method honestly.** `auto-test` where a test proves it, `inspection` where you read
+   config. Say what is NOT claimed — several verdicts here name a clause they deliberately do not cover.
+5. **The cheap filter is exhausted.** Selecting candidates by grepping tests for requirement ids returns
+   ZERO, because every requirement a test names already HAS an AC. Do not hunt for a cleverer one; each
+   remaining requirement needs its source read.
+
+### ⚠ The programme's real yield is PARTIALS, not verdicts
+
+Six requirements were found built-on-one-side-only, every one invisible in the register **because it had
+no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030` (`DW-041`),
+`NFR-035` (`DW-042`, since BUILT and closed) and `NFR-063` (`DW-061`). `NFR-025` was worse — a **Must**
+security requirement divergent on both clauses, fixed under `DEF-094`.
+
+### What is queued
+
+- **22 code-verifiable Must-priority NFRs** — the highest-value remaining batches.
+- **18 performance NFRs are already recorded** as `DW-043`…`DW-060`, one row each. ⚠ Three carry a
+  WARNING rather than a sizing — `DW-057`, `DW-058`, `DW-054` — read those before measuring anything.
+- **The ops/runtime group is unfinished.** The operator asked for it to be verified against a RUNNING
+  STACK and **no stack was started** — see `PE-485` for exactly what is settled and what is not.
+- `DW-041` (manual WCAG pass) and `DW-061` (mobile notice) are small and self-contained.
+
+### ⚠ Two package facts that will bite you
+
+- **`G-COMPLETE` IS PERMANENTLY RED on `[PE-469]`** (`DEF-093`) and cannot be cleared by any tool an
+  agent has — the journal is append-only and a correction does not satisfy the scan. **Do not report
+  "7/7" or "gates green".** Reconcile the failure list every run; an id you did not expect in it is a
+  REAL finding hiding behind a known one. Disposition: raise with the tamheed maintainer.
+- **G-COMPLETE scans text for placeholder markers**, in entity `title` AND progress `entry`. Describing
+  placeholder-shaped work will trip it. Name the concept, never the token — that is how `PE-469` became
+  unfixable.
 
 ## §3 — The two registers that will mislead you
 
