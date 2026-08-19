@@ -490,18 +490,34 @@ prompt and memory writes go **straight to `main`** (both CI workflows path-ignor
 `.claude/**`, so they cannot redden anything). **Anything touching CODE goes branch → PR → green CI →
 squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the examples.
 
-⚠ **THE OPERATOR'S OPEN ITEMS, carried forward so they are not lost.** None is an agent decision:
-- **`DEF-096`** — `NFR-054`'s 500 MB cap is **unsatisfiable** for `sqlserver-fts` (3.62 GB; its base alone
-  is 1.67 GB), and the minimal-base clause fails separately on api and worker. Two clauses, disjoint image
-  sets. Dispositions are in the row; **do not change any base image to close it** — alpine is musl, and SQL
-  Server client libs and globalization are exactly what breaks.
-- **`DEF-095`** — the worker csproj cites a base image it does not use. `DEF-096` shows the intent was real,
-  but the base that comment names still would not work (the worker resolves an AspNetCore framework
-  reference transitively). Repair direction is the operator's.
-- ~~`DEF-093`~~ — **CLOSED.** `findings_21.md` was acted on: tamheed 4.4.2 fixed it upstream with zero
-  data changes. Kept as the worked example of reporting a tool defect precisely enough to be fixed.
-- **`DW-065`** — `NFR-043` has never been observed as an actual trace. Needs a running stack, like the ops
-  group in `PE-485`.
+## §6 — THE CARRIED LIST. This section IS the list; nothing is carried in conversation.
+
+Operator decision, 2026-08-20: carried items live HERE, reconciled against the live register, because the
+previous list existed only in chat and had gone **five-sixths stale** (`PE-500`). **Reconcile this section
+whenever you close one — a list nobody maintains is worse than no list.**
+
+**Open, and the operator's alone:**
+- **`SC-024` — Proposed, awaiting verbatim text approval.** Narrows `NFR-054` so both clauses match what
+  ships. ⚠ **It RELAXES a security-adjacent clause** — dropping the alpine/distroless prescription makes
+  Debian `aspnet:8.0` compliant. The row spells the trade-off out and says to REJECT it if the stricter
+  standard should be kept. Closes `DEF-096` when Merged.
+- **`DEF-095`** — the worker csproj cites a base image it does not use. `DEF-096` established the intent was
+  real, but the base that comment names still would not work (the worker resolves an AspNetCore framework
+  reference transitively). Repair direction is the operator's. ⚠ **Do not change a base image to close
+  anything here** — alpine is musl, and SQL Server client libs and globalization are what break.
+- **`DW-065`** — `NFR-043` has never been OBSERVED as an actual trace. Needs a running stack, like the ops
+  group in `PE-485`. ⚠ Several of the `DW-043`…`DW-060` performance rows are measured FROM that trace data.
+- **`DEF-087`** — the third row in the `defects-minor` advisory: almost no defect row carries `found_in`, so
+  slice-scope `defects-closed` is permanently `indeterminate`.
+
+**Closed 2026-08-20 — do not re-carry these** (`PE-500`, each verified individually):
+`DEF-093` (fixed upstream in 4.4.2; `findings_21.md` is the worked example of reporting a tool defect
+precisely enough to get it fixed) · `DW-026`, `DW-027` (Done) · `OQ-074` (resolved 2026-08-15, `DEC-048
+d4`) · risk owners (**0 of 23** risks lack one; the advisory passes) · "the 20 unbound ACs" (**no reading
+gives 20** — slice-unbound is 4, never-`work_bind`'d is 79, no-trace-edge is 33) · the three customized
+prompts' hand-merge (**nothing to merge**: 4.4.x touched none of them; `orient-resume` is 100% and
+`slice-review` 99% identical to stock once the `{package}` placeholder is normalised, and `integrity-check`
+is a strict SUPERSET of 4.2.1 stock).
 
 Report the state and your plan before writing, then proceed.
 
