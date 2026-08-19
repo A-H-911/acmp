@@ -4,17 +4,21 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-19 · **PH-6 both slices BUILT** · `SL-030` green in **PR #295** · `SC-021` needs the operator
+## ★ 2026-08-19 · **PH-6 COMPLETE — `SL-030` MERGED (#295 → `1a52dba`)** · queue empty again
 
 > ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. Package readiness is
 > deliberately whatever the current batch makes it; `acs-met` failing on exactly your batch's Pending
 > ACs is the EXPECTED build-window state, not a regression.
 
-- ⭐⭐ **`SL-030` IS BUILT AND `AC-114` IS `Met` (`AV-192`).** PR **#295**, all 9 CI checks green,
-  **NOT merged** — `SC-021` is Proposed and one half of the PR reverts if the operator rejects it.
-  Package readiness is now **`ready:true`**. `WBS-22` + `WBS-22.3` sit at **Review**, deliberately, so
-  slice readiness stays honestly false rather than manufactured green. WS-3's AC pipeline (108
-  requirements, `DW-029`) is still untouched and needs its own conversation.
+- ⭐⭐ **`SL-030` MERGED** (#295 → `1a52dba`, verified on `origin/main` BY CONTENT per trap 25).
+  `AC-114` Met (`AV-192`), slice + all `WBS-22.*` `Implemented`, **package AND slice readiness
+  `ready:true`**, gate 7/7. **`PH-6` is complete and nothing is mid-flight.** Next is the operator's
+  call: `DW-029`'s 108-requirement AC programme (⚠ **cannot be one bulk pass** — `acs-met` counts by
+  `retired_in`, so ACs written ahead of evidence hold readiness false), or go-live actions.
+- ⚠⚠ **`SC-021` is Merged but `WBS-22.3` STILL READS "notification bodies".** The operator was
+  offered the variant that rewrites the row text and chose plain approval, so **the SC row + its
+  `scope_modifies` edges ARE the correction**. Follow the edge; do **not** "tidy" that row — it is
+  the as-approved plan text, not drift.
 - ⭐⭐ **The egress sweep corrected the PLAN in BOTH directions (`LL-006` again).**
   **Notification bodies were never a leak** — `TopicNotifications` interpolates only the topic KEY,
   never a title, and every recipient is the Secretary roster or the submitter. The plan's "builders
