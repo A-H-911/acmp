@@ -16,11 +16,15 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale tally **seven** times — and **twice of those were on 2026-08-19, written and
+file has carried a stale tally **eight** times — and **three of those were on 2026-08-19, written and
 then invalidated within the SAME session** by the very work the session was doing: it said
-`readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false. A prompt that restates a
-number is a prompt that will lie to you. **Point at the live check, do not quote it.** If you find this
-section wrong again, **fix it in the same session and bump this count.**
+`readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false, and its requirement tally
+went stale the moment batch 13 recorded two verdicts. A prompt that restates a number is a prompt that
+will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
+**fix it in the same session and bump this count.**
+
+⚠ The eighth fix (batch 13) stopped patching the numbers and **deleted them**, replacing each with the
+command that measures it. A tally you can re-type is a tally that will go stale again; a command cannot.
 
 ---
 
@@ -56,9 +60,10 @@ and it is where you start.
 
 ### The advisories — none is a task
 
-`defects-minor` (just **`DEF-087`**), `deferred-work-reviewed` (**43 open rows** — the DW-029 programme
-deliberately ADDS rows, and closing one to green it manufactures status), `acs-slice-bound`
-(`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read them live; they move every batch.**
+`defects-minor` (just **`DEF-087`**), `deferred-work-reviewed` (**grows on purpose — the DW-029 programme
+ADDS a row every time it finds a partial, and closing one to green it manufactures status; batch 13 alone
+added three**), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read them live; the
+row COUNT is deliberately not written here because it moves every batch.**
 
 ⚠ **Slice-scope `defects-closed` is `indeterminate` and the old superset argument NO LONGER WORKS.**
 0 of 93 defect rows carry `found_in` (`DEF-087`), so the slice-scope rule cannot discriminate — and
@@ -142,8 +147,13 @@ not typecheck). See trap 22b — this is what `LL-007` generalises.
 **`SL-031` is OPEN and this is the active work.** `PH-6`'s two build slices are done; this is the
 register programme the operator activated on 2026-08-19 (`DEC-064 d5`).
 
-**Live position (read it, do not trust this line):** 226 requirements — **82 Implemented, 119 Approved
-with no AC, 25 Deferred**. The 119 are the target. Of the Must-priority remainder, **47** are left.
+**Live position — MEASURE IT, there is deliberately no number here.** The register moves every batch, so
+this file no longer carries a copy. Read it with `entity_query("requirement", columns=["id","kind",
+"priority","lifecycle_status"], limit=250)` and count by `lifecycle_status`: `Approved` means **no AC was
+ever written** and is the programme's target set; `Implemented` means an AC exists and its verdict
+carried the requirement forward; `Deferred` is out of scope. Cross-reference the `Approved` ids against
+`entity_query("deferred-work")` to see which are already carried by a `DW-` row — the remainder is the
+work.
 
 ### The method — follow it, it was expensive to learn
 
@@ -163,17 +173,39 @@ with no AC, 25 Deferred**. The 119 are the target. Of the Must-priority remainde
 
 ### ⚠ The programme's real yield is PARTIALS, not verdicts
 
-Six requirements were found built-on-one-side-only, every one invisible in the register **because it had
-no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030` (`DW-041`),
-`NFR-035` (`DW-042`, since BUILT and closed) and `NFR-063` (`DW-061`). `NFR-025` was worse — a **Must**
+Nine requirements have been found built-on-one-side-only, every one invisible in the register **because
+it had no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030`
+(`DW-041`), `NFR-035` (`DW-042`, since BUILT and closed), `NFR-063` (`DW-061`), and from batch 13
+`NFR-043` (`DW-062`), `NFR-010` (`DW-063`) and `NFR-053` (`DW-064`). `NFR-025` was worse — a **Must**
 security requirement divergent on both clauses, fixed under `DEF-094`.
+
+⚠ **Batch 13's `DW-064` is the sharpest one yet, and the divergence was written in a COMMENT the whole
+time.** `deploy/Dockerfile.web` bakes `VITE_OIDC_AUTHORITY` into the SPA bundle at build time and says so
+in its own words, so promoting one web image between environments is impossible — the exact operation
+`NFR-053` forbids. The same file templates the nginx CSP origins at container START via envsubst and
+comments that this is so each environment supplies its own with no rebuild. **The principle was
+understood and applied one layer down.** Nothing failed, because there was no AC to fail.
+
+⚠ **Batch 13's most important result was a defect that was NOT filed** — the counterweight to the above.
+A census for `NFR-021` read as a 38-command server-side-validation hole, the shape of a critical security
+finding. Reading the four commands that actually carry scalar input showed all four guarded in the
+DOMAIN instead: `SetTimebox` clamps to 5..120, `MoveItem` bounds-checks the target index,
+`RecordActualMinutes` floors negatives at 0, `DeleteRecording` uses its string only as an EF equality
+predicate. **The property held; only the MECHANISM was non-uniform.** Filing off the census alone would
+have been wrong. Read the implementation — in BOTH directions.
 
 ### What is queued
 
-- **20 code-verifiable Must-priority NFRs, none yet carried by a `DW-` row** — the highest-value
-  remaining batches, and the natural next work: `NFR-010 018 019 021 023 026 027 028 031 032 033 034
-  037 038 039 043 049 050 053 061`. (47 Must remain in total; 22 of those are already covered by a
-  deferred-work row and 5 by §2b's partials.)
+- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13 the
+  ones with neither an AC nor a `DW-` row are: `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039
+  050 061`. ⚠ **Derive this list, do not trust it** — it is the `Approved` Must-priority non-functional
+  ids minus every id named in a `deferred-work` row. Four are known-hard and were excluded from batch 13
+  on purpose: `NFR-018` needs a DAST scan and a penetration test, `NFR-019` needs a TLS scan against a
+  running stack, `NFR-023`'s own text defers to an org security policy that has never been confirmed
+  (operator-blocked), and `NFR-038` rides on `P14`, deferred indefinitely by `DEC-028`. `NFR-031`–`034`
+  are the WCAG group and want a browser, not a reader.
+- **Batch 13 closed five of the original twenty**: `NFR-021` (`AC-131`) and `NFR-049` (`AC-132`) Met;
+  `NFR-043`, `NFR-010` and `NFR-053` partial, recorded as `DW-062`/`DW-063`/`DW-064`.
 - **18 performance NFRs are already recorded** as `DW-043`…`DW-060`, one row each. ⚠ Three carry a
   WARNING rather than a sizing — `DW-057`, `DW-058`, `DW-054` — read those before measuring anything.
 - **The ops/runtime group is unfinished.** The operator asked for it to be verified against a RUNNING
@@ -194,8 +226,8 @@ security requirement divergent on both clauses, fixed under `DEF-094`.
 
 - **Requirement status measures whether anyone WROTE an acceptance criterion, not whether the thing
   was built.** A requirement advances only via the AC auto-advance trigger, so one with no AC can
-  never leave `Approved` however well it shipped. At this writing: **82 `Implemented` / 119 `Approved` /
-  25 `Deferred`** — ⚠ **a number that MOVES EVERY BATCH; re-measure it, never quote this line.**
+  never leave `Approved` however well it shipped. ⚠ **The three counts MOVE EVERY BATCH and are
+  deliberately absent from this file — measure them (§2b says how), never quote a written one.**
   Since 2026-08-18 the three labels finally denote different things.
 - ⚠ **The `mvp` / Phase attributes record the ORIGINAL scoping and the ladder outgrew them.** Of the
   53 `mvp=0` requirements once described as "deliberately not built", **about 30 are built and
