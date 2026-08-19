@@ -28,7 +28,7 @@ command that measures it. A tally you can re-type is a tally that will go stale 
 
 ---
 
-## §1 — What is true right now (2026-08-19)
+## §1 — What is true right now (2026-08-20)
 
 **THE BUILD LADDER IS FINISHED. THE ACTIVE WORK IS A REGISTER PROGRAMME, NOT A FEATURE.** `P1`–`P19`
 is complete; every phase is closed except `PH-3`, frozen deliberately (`WBS-20.4` is the email adapter
@@ -36,7 +36,29 @@ against a hard constraint — **do not "repair" it**). `PH-6` (`DEC-060`) holds 
 its two build slices are `Implemented`, and **`SL-031` is `Approved` and IN PROGRESS** — that is §2b,
 and it is where you start.
 
-**You are on `main`, clean, nothing unpushed, and CI on `main` is green.** There is no feature branch.
+**You are on `main`, clean, nothing unpushed.** ⚠ **Check for an OPEN PR before assuming otherwise** —
+batch 13 left **#297** (Hangfire job-execution spans) open; if it merged, its content is on `main`, and if it
+did not, read its checks before touching `src/Acmp.Bootstrap`.
+
+### What batch 13 landed (2026-08-19/20) — reference, do not redo
+
+- **Four ACs Met**: `AC-131` NFR-021 (server-side validation, no concatenated SQL, gating SAST), `AC-132`
+  NFR-049 (happy + failure path per canonical workflow), `AC-133` NFR-043 (all four span kinds instrumented),
+  `AC-134` NFR-053 (config externalization, as narrowed).
+- **`SC-023` Merged** — `NFR-053` was NARROWED to match `ADR-0037`. Its text now excludes the SPA bundle's
+  OIDC build args BY NAME. `DW-064` closed by reconciliation, not construction; nothing was built.
+- **PR #296 merged (`57e019d`)** — DB / outbound-HTTP / job-dispatch spans + the worker's first-ever
+  OpenTelemetry registration. **PR #297** is the job-EXECUTION filter.
+- **`findings_21.md`** — the `DEF-093` maintainer report. It found a SECOND defect: the `corrects` column is
+  written by `progress_update` and rendered by `export_html` and **read by nothing else**, so a correction
+  entry changes no gate, no readiness rule and no view. That is why appending `PE-470` never cleared anything.
+- **New rows**: `DW-062` Done · `DW-063` (NFR-010 not configuration-driven) · `DW-065` (no trace ever
+  OBSERVED) · `DEF-095` (worker csproj cites a base image it does not use) · `DEF-096` (see below).
+- **`NFR-054` MEASURED, not estimated** (`DW-059` Done, `DEF-096` open): web 51.1 MB, worker 245 MB, api
+  257 MB, **sqlserver-fts 3.62 GB**. The 500 MB cap fails on the database image by **7.2x and cannot be made
+  to pass** — its base alone is 1.67 GB. The minimal-base clause fails on a DIFFERENT set (api and worker are
+  Debian `aspnet:8.0`, web genuinely is alpine). **Two clauses, disjoint image sets, one operator disposition
+  needed.**
 
 - **`SL-029` (FR-030 topic conversion)** — merged as `bcc3d00` (#293) + `b065a29` (#294), `AC-113` Met.
 - **`SL-030` (Confidentiality ABAC + egress redaction, FR-163)** — `AC-114` Met (`AV-192`), slice and
@@ -72,11 +94,21 @@ passes, so nothing is open anywhere"; **that sentence is now false.** The honest
 defects are open, `DEF-087` (medium, vacuous rule) and `DEF-093` (high, the gate deadlock).
 
 **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`) and bind every session via the tool-owned
-note. `LL-007` is the newest — **a checker that reports success may have had nothing to check** — and it
-fired **five more times on 2026-08-19, every one on my own instrument**: a grep scoped to a directory
-that does not exist, a check swallowed by `|| true`, a scanner regex that matched TypeScript `>=`, and a
-gate whose path was cwd-relative so CI would have scanned nothing. **Widen the instrument and prove it
-has a subject before believing ANY empty result.**
+note. `LL-007` — **a checker that reports success may have had nothing to check** — keeps firing on my OWN
+instruments: a grep scoped to a directory that does not exist, a check swallowed by `|| true`, a scanner
+regex that matched TypeScript `>=`, a cwd-relative gate path, a search for validator FILES that returned 1
+where 78 exist, and a coverage check that SUMMED per-project reports and reported 20% for a file at 100%.
+**Widen the instrument and prove it has a subject before believing ANY empty result — and when a measurement
+indicts known-good code, suspect the measurement first.**
+
+⚠⚠ **`LL-005` FIRED FROM AN ANGLE IT HAD NOT BEFORE, AND IT NEARLY COST AN ADR.** The lesson says to sweep
+the register before asking the operator to dispose of a capability. Batch 13 swept the REQUIREMENT register
+thoroughly and never swept the **decision** or **open-question** registers — then offered the operator a
+"build it now" option for `NFR-053`. They took it. **`ADR-0037` (Approved, ratified) decides that exact thing
+in its decision clause, and its consequences name the very fix as deferred under `OQ-061`.** One file-read
+— noticing a bare ADR reference in a docker-compose COMMENT — separated that from implementing a change
+that reverses an Approved ADR. **SWEEP `adrs`, `decisions` AND `open_questions`, NOT JUST `requirements`,
+BEFORE WRITING A `DW-` ROW OR OFFERING THE OPERATOR AN OPTION.**
 
 ## §2 — What `SL-030` built (reference only — do NOT rebuild)
 
@@ -198,6 +230,10 @@ have been wrong. Read the implementation — in BOTH directions.
 
 - **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13:
   `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039 050 061`.
+  ⚠ **`NFR-027` IS NOT A FRESH READ — see `PE-493`.** Three rows name it and NONE covers it: `SC-019` and
+  `DEF-086` mention it only to DISTINGUISH it, and `DEF-094` fixed the ADJACENT `NFR-025` by narrowing the
+  recording role gate and adding read auditing. **Its subject matter was actively changed**, so read the code
+  at its current state, not at whatever a pre-`DEF-094` reading would have found. A mention is not a coverage.
   ⚠ **DERIVE THIS LIST, DO NOT TRUST IT — AND MIND THE SECOND SUBTRACTION.** The rule is: the `Approved`
   Must-priority non-functional ids, minus every id named in a `deferred-work` row, **minus the
   ops/runtime group `PE-485` names** (`NFR-015 017 044 052 062`), which is uncovered by any `DW-` row but
@@ -327,6 +363,38 @@ have been wrong. Read the implementation — in BOTH directions.
    package writes on the branch you will merge, and **merge `main` in FIRST** when the branch predates
    a package-only commit. Commit `tamheed-package/data` immediately after every write batch.
 
+### D2 — Batch 13's additions
+
+32. ⚠⚠ **SWEEP `adrs`, `decisions` AND `open_questions` — NOT JUST `requirements`.** `LL-005` is usually
+   read as "check the requirement register". Batch 13 did exactly that, thoroughly, and still offered the
+   operator a build that would have reversed **`ADR-0037`'s decision clause**, whose own consequences name
+   the fix as deferred under **`OQ-061`**. What caught it was reading `docker-compose.cloud.yml` before
+   writing code and seeing a bare ADR id in a COMMENT. **Sweep all three registers before writing a `DW-`
+   row or putting an option in front of the operator.**
+33. ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY.** The `NFR-021` census read
+   as a **38-command server-side-validation hole** — the shape of a critical security finding. All four
+   commands that actually carry scalar input are guarded **in the domain** instead (`SetTimebox` clamps
+   5..120, `MoveItem` bounds-checks the index, `RecordActualMinutes` floors at 0, `DeleteRecording` uses its
+   string only as an EF equality predicate). Filing off the census alone would have been wrong.
+34. ⚠⚠ **COVERAGE MUST BE UNIONED ACROSS PER-PROJECT REPORTS, NEVER SUMMED.** A file appears in several
+   projects' cobertura reports, unexecuted in most. Summing reported **20%** for a file the gate correctly
+   scored **100%**. `check-coverage.mjs` says it unions; believe it over your own ad-hoc script. Trap 2's
+   exact shape — the measurement indicting known-good code was the broken thing.
+35. ⚠⚠ **HANGFIRE'S `JobStorage.Current` AND `GlobalJobFilters` ARE PROCESS-GLOBAL, and a second
+   `BackgroundJobServer` in one process does not reliably pick up work.** A filter test that ran a real
+   in-memory server passed ALONE and reported **zero spans** in the full suite — which reads exactly like a
+   broken filter. If you need a real Hangfire server, expect that; a test green alone and red in the suite is
+   worse than no test. `WebexJobDeadLetterTests` already owns the serialized collection.
+36. ⚠ **HANGFIRE NEVER HANDS A FILTER THE JOB'S OWN EXCEPTION** — it wraps it in a `JobPerformanceException`
+   whose message is the same fixed sentence every time. Record `InnerException`, or every failed job gets an
+   identical, useless error tag.
+37. ⚠ **A PACKAGE THAT DOES THE JOB MAY NOT BE SHIPPABLE.** `OpenTelemetry.Instrumentation.Hangfire` has
+   never had a stable release (`1.17.0-beta.1`). Check for a stable version BEFORE designing around a
+   package, and treat "prerelease dependency in a production image" as the operator's call.
+38. ⚠ **DO NOT PUSH TO A BRANCH WITH CI IN FLIGHT.** For `pull_request` events GitHub evaluates
+   `paths-ignore` against the WHOLE PR diff, so once a PR touches `src/` even a package-only commit re-runs
+   everything and cancels the in-flight e2e. Batch 13 cost itself a full ~20-minute e2e cycle this way.
+
 ### E — Environment
 
 18. **`.cs` files need a UTF-8 BOM and LF**; the Write tool adds neither. ⚠ `git status --porcelain`
@@ -402,11 +470,22 @@ runs **every** time (`LL-002`) — plan approval is not scope-change approval.
   (`NFR-051`'s 48-hour feed latency, `NFR-042`'s every-entity scope, `NFR-035`'s attribute strings).
   A verdict that quietly covers less than its criterion is the failure this programme exists to end.
 
-⚠ **A note on branching, disclosed rather than hidden.** This session landed several commits —
-including CODE (`NFR-025`'s build, the new CI gate) — **directly on `main`**, not through a PR. `main`
-is green and every commit is small and reviewable, but that deviates from the stated
-branch → PR → green CI → squash-merge convention. If the operator wants that convention enforced for
-the remaining DW-029 batches, ask them; do not assume either way.
+✅ **BRANCHING IS SETTLED — stop asking.** Operator decision, 2026-08-20: **split by content.** Package,
+prompt and memory writes go **straight to `main`** (both CI workflows path-ignore `tamheed-package/**` and
+`.claude/**`, so they cannot redden anything). **Anything touching CODE goes branch → PR → green CI →
+squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the examples.
+
+⚠ **THE OPERATOR'S OPEN ITEMS, carried forward so they are not lost.** None is an agent decision:
+- **`DEF-096`** — `NFR-054`'s 500 MB cap is **unsatisfiable** for `sqlserver-fts` (3.62 GB; its base alone
+  is 1.67 GB), and the minimal-base clause fails separately on api and worker. Two clauses, disjoint image
+  sets. Dispositions are in the row; **do not change any base image to close it** — alpine is musl, and SQL
+  Server client libs and globalization are exactly what breaks.
+- **`DEF-095`** — the worker csproj cites a base image it does not use. `DEF-096` shows the intent was real,
+  but the base that comment names still would not work (the worker resolves an AspNetCore framework
+  reference transitively). Repair direction is the operator's.
+- **`DEF-093`** — written up for the tamheed maintainer as **`findings_21.md`**. Not yet sent anywhere.
+- **`DW-065`** — `NFR-043` has never been observed as an actual trace. Needs a running stack, like the ops
+  group in `PE-485`.
 
 Report the state and your plan before writing, then proceed.
 
