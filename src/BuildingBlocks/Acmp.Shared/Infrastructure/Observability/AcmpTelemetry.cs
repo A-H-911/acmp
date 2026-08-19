@@ -43,4 +43,30 @@ public static class AcmpTelemetry
         activity?.SetTag("acmp.job.type", jobType.Name);
         return activity;
     }
+
+    /// <summary>
+    /// Starts a span covering one Hangfire job EXECUTION, or returns null when nothing is listening.
+    /// </summary>
+    /// <remarks>
+    /// The counterpart to <see cref="StartJobDispatch"/>: dispatch is what an inbound request does (NFR-043),
+    /// execution is what the worker does later, in another process, under its own trace. ActivityKind.Consumer
+    /// is the receiving half of the producer/consumer pair — a job is work taken off a queue, not a nested
+    /// operation of whatever enqueued it.
+    /// <para>
+    /// ⚠ These two spans are NOT parented to each other. Hangfire serializes a job as type + method + arguments
+    /// and carries no header the way a message broker does, so there is nowhere to put a W3C traceparent
+    /// without changing the serialized job payload. Linking them would need trace context persisted alongside
+    /// the job — deliberately out of scope here, and the reason the execution span stands alone.
+    /// </para>
+    /// </remarks>
+    public static Activity? StartJobExecution(string jobType, string method, string jobId)
+    {
+        var activity = Source.StartActivity($"hangfire.execute {jobType}.{method}", ActivityKind.Consumer);
+        activity?.SetTag("messaging.system", "hangfire");
+        activity?.SetTag("messaging.operation", "process");
+        activity?.SetTag("acmp.job.type", jobType);
+        activity?.SetTag("acmp.job.method", method);
+        activity?.SetTag("acmp.job.id", jobId);
+        return activity;
+    }
 }
