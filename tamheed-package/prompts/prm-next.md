@@ -60,6 +60,29 @@ and it is where you start.
 batch 14's two PRs both merged: **#298 → `4e5ebd0`** and **#299 → `59effb8`**, each verified on `origin/main`
 BY CONTENT rather than by ancestry (trap 25). Batch 13's were **#296 → `57e019d`** and **#297 → `a6261bf`**.
 
+### ✅ BATCH 20 (2026-08-20) — **`SL-031` IS `Review`. THE `DW-029` PROGRAMME IS DONE-CLAIMED.**
+
+**Operator end condition, set in the 2026-08-20 interview: done when only externally-blocked requirements
+remain.** Met. Derived with the corrected rule, **TWO** remain and neither is closable by any work in this
+repository: **`NFR-018`** (external OWASP ASVS 5.0 L2 assessment) and **`NFR-038`** (rides Tarseem, whose
+`P14` was deferred indefinitely by `DEC-028`, and which has no endpoint in the product at all).
+⚠ `Review` means **done-CLAIMED, not verified** — `readiness_check` counts it as open, correctly.
+
+- **`NFR-023` CLOSED** (`AC-139`, batch 19) after `SC-027` removed its `[unverified]` marker on your
+  confirmation (`DEC-065`). ⚠ **Three numbers that look contradictory and are not:** the requirement says
+  8 h, `OQ-003` says 60 min, the realm and app both say **30 min**. The Target states **ceilings**, so a
+  product 16× stricter satisfies it. New: **`DW-073`** — the absolute ceiling is satisfied by a **Keycloak
+  default nobody chose**; `realm-export.json` sets neither session key.
+- **`DEF-100` + `DW-074` — `NFR-019` KEPT, NOT NARROWED.** Measured: app↔SQL encrypted (`Encrypt=True`),
+  Tarseem has no endpoint, **app↔Keycloak and nginx↔api are plaintext `http` on the Docker network in every
+  environment**. The public edge is right (`ssl_protocols TLSv1.2 TLSv1.3`). ⚠ **The operator REJECTED
+  narrowing it** — ordinary TLS and mTLS are different questions and `OQ-024` settled only the second. So
+  `NFR-019` stays Approved and **unverifiable with no AC**, exactly where `NFR-054` sits behind `DW-066`,
+  and **`DEF-100` stays OPEN deliberately.** Second time this session a relaxation was declined.
+- ⚠ **My TLS search was wrong first:** scoped `--include=*.conf` when the real files are `.conf.template`,
+  so it returned "TLS configured nowhere". The control proved the **pattern** and not the **file selection**
+  — `LL-009` with the broken half unexamined.
+
 ### What batch 18 landed (2026-08-20) — `DEF-099` FIXED, `NFR-028` CLOSED
 
 - ✅ **`DEF-099` Fixed** (#300 → `1da0e05`, 10/10 checks). `readiness` is `ready:TRUE` again.
@@ -431,8 +454,17 @@ have been wrong. Read the implementation — in BOTH directions.
   ✅ **`NFR-027` IS CLOSED** (`AC-135`/`AV-213` Met, batch 14) — the read-it-at-its-current-state warning that
   stood here is spent. It was right, though, and the shape generalises: three rows named `NFR-027` and none
   covered it, because `DEF-094` had changed its *adjacent* requirement. **A mention is not a coverage.**
-  ⚠ **DERIVE THIS LIST, DO NOT TRUST IT — AND MIND THE SECOND SUBTRACTION.** The rule, in three steps: the
-  `Approved` Must-priority non-functional ids; **minus** every id named anywhere in a `deferred-work` row;
+  ⚠⚠ **THE RULE ITSELF WAS BROKEN AND BATCH 20 FIXED IT — READ THIS BEFORE RUNNING IT.** It used to say
+  *minus every id **named anywhere** in a `deferred-work` row*. That **conflates a MENTION with a COVERAGE**.
+  Writing `DW-074` with the phrase *"the `NFR-018` ASVS assessment"* in its activation trigger made `NFR-018`
+  vanish from the candidate set, though nothing about it had changed. **The loose rule silently SHRINKS the
+  worklist every time a row cross-references a requirement — so the better the register's prose gets at
+  linking things, the more requirements quietly disappear, and a well-cross-referenced register would
+  eventually report itself finished.** It is the same sentence this file already carries about `NFR-027`
+  (*"A mention is not a coverage"*), arriving from the deferred-work side.
+  ⚠ **DERIVE THIS LIST, DO NOT TRUST IT.** The corrected rule, in three steps: the
+  `Approved` Must-priority non-functional ids; **minus** every id named in a `deferred-work` row's **TITLE**
+  (i.e. the row is ABOUT it), never merely mentioned in its body;
   **minus** the ops/runtime group `PE-485` names (`NFR-015 017 044 052 062`), which no `DW-` row covers but
   which is separately blocked on a RUNNING STACK and is not code-verifiable. ⚠ **No intermediate count is
   written here on purpose — every one that ever was went stale, twice within a single session.** Run all

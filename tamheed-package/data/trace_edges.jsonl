@@ -110,6 +110,7 @@
 {"from_id":"DEF-085","to_id":"DEF-084","relation":"relates_to"}
 {"from_id":"DW-029","to_id":"DEF-012","relation":"relates_to"}
 {"from_id":"DW-030","to_id":"FR-030","relation":"relates_to"}
+{"from_id":"DW-074","to_id":"DEF-100","relation":"relates_to"}
 {"from_id":"FR-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"FR-001","to_id":"ADR-0013","relation":"derives_from"}
 {"from_id":"FR-002","to_id":"ADR-0002","relation":"derives_from"}
