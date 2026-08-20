@@ -246,6 +246,12 @@ have been wrong. Read the implementation — in BOTH directions.
 
 - **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13:
   `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039 050 061`.
+  ⚠ **`NFR-028` HAS A HEAD START — see `PE-501`.** Its TRACE half is done: SQL query PARAMETER values are
+  not emitted (the experimental flag is implicitly false and nothing opts in), but `db.query.text` IS on
+  every DB span, which is safe only because `AC-131` established universal parameterization. **One residual
+  is open and is honest:** EF Core can inline constants, so a value could in principle land in the statement
+  text — unobservable without a captured trace (`DW-065`). The **Serilog half** (`SensitiveDataMaskingEnricher`,
+  and the no-names/emails/vote-content claim) is UNREAD. Do not write a verdict covering only the trace half.
   ⚠ **`NFR-027` IS NOT A FRESH READ — see `PE-493`.** Three rows name it and NONE covers it: `SC-019` and
   `DEF-086` mention it only to DISTINGUISH it, and `DEF-094` fixed the ADJACENT `NFR-025` by narrowing the
   recording role gate and adding read auditing. **Its subject matter was actively changed**, so read the code
