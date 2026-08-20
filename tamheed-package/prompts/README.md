@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.1)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.2)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -62,8 +62,8 @@ conditions — read it before starting any loop). Drive it either way:
 
 - an **in-session loop** (e.g. Claude Code `/loop`) re-pasting loop-iteration;
 - an **external harness** starting a fresh session per iteration and parsing the final
-  `ITERATION: wbs=… slice=… acs_moved=… gate=… ready=… stop=…` line to decide
-  continue/stop.
+  `ITERATION: wbs=… slice=… acs_moved=… gate=… ready=… stop=… lessons_pending=…`
+  line to decide continue/stop (and to watch the operator-interview queue grow).
 
 The loop halts itself — never restarts itself — on any guard condition: a degraded gate,
 non-convergence, a needed scope change, a blocking readiness failure at a close, a
@@ -95,7 +95,11 @@ expected value from its source before calling the repair done. When execution te
 something durable, record a `lesson` row (`LL-`, born Proposed) — only lessons the
 OPERATOR approves bind future sessions (rendered into the CLAUDE.md note, pinned first);
 the agent never approves its own lesson — the store REFUSES an approving or promoting
-upsert without `"operator_confirm": true`, your words, in every mode; Approved lessons
+upsert without `"operator_confirm": true`, your words, in every mode. Entity prose is
+screened for placeholder tokens (G-COMPLETE): to QUOTE a token like `TODO` in prose,
+wrap it in backticks; journal text (progress entries, verdict evidence) is exempt —
+reports are never "unfinished" — and a `correction` entry collapses its target under
+itself in review.html. Approved lessons
 with a shared theme can be distilled into a SKILL (`skill-promote.md`) that Claude Code
 loads natively — promoted lessons graduate out of the note, the skill file carries them. The package is the record — when code and package disagree, fix the code
 or record the change; never let them drift.
