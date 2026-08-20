@@ -502,17 +502,29 @@ Operator decision, 2026-08-20: carried items live HERE, reconciled against the l
 previous list existed only in chat and had gone **five-sixths stale** (`PE-500`). **Reconcile this section
 whenever you close one — a list nobody maintains is worse than no list.**
 
+**Ready to do — the operator has already decided; just execute:**
+- **`DEF-095` — DIRECTION APPROVED 2026-08-20: correct the COMMENT only.** Rewrite the worker csproj note to
+  state the real reason for the granular Serilog packages (fewer packages in a headless host) and DROP the
+  base-image claim; the `worker` target is `FROM dotnet/aspnet:8.0`, and the AspNetCore framework reference
+  resolves transitively anyway. One comment, no behaviour change, closes `DEF-095`. It is a source edit, so
+  **branch → PR → green CI → squash-merge**. ⚠ Do NOT change the base image — that is `DW-066`, not this.
+
 **Open, and the operator's alone:**
-- **`SC-024` — Proposed, awaiting verbatim text approval.** Narrows `NFR-054` so both clauses match what
-  ships. ⚠ **It RELAXES a security-adjacent clause** — dropping the alpine/distroless prescription makes
-  Debian `aspnet:8.0` compliant. The row spells the trade-off out and says to REJECT it if the stricter
-  standard should be kept. Closes `DEF-096` when Merged.
-- **`DEF-095`** — the worker csproj cites a base image it does not use. `DEF-096` established the intent was
-  real, but the base that comment names still would not work (the worker resolves an AspNetCore framework
-  reference transitively). Repair direction is the operator's. ⚠ **Do not change a base image to close
-  anything here** — alpine is musl, and SQL Server client libs and globalization are what break.
-- **`DW-065`** — `NFR-043` has never been OBSERVED as an actual trace. Needs a running stack, like the ops
-  group in `PE-485`. ⚠ Several of the `DW-043`…`DW-060` performance rows are measured FROM that trace data.
+- **`DW-066` — migrate api and worker to an alpine/distroless base.** `NFR-054`'s minimal-base clause, KEPT
+  rather than relaxed: `SC-024` first proposed softening it and **the operator rejected that**, so the
+  divergence is tracked work. ⚠ **The edit is two `FROM` lines; the RISK is not the edit** — alpine is musl,
+  and this app does SQL Server native interop plus Arabic/English culture-aware work. **Full e2e leg, and
+  verify Arabic FREETEXT end to end**; a green unit suite proves nothing here.
+- ⚠ **`NFR-054` IS STILL NOT VERIFIABLE and that is correct.** `SC-024` fixed only the SIZE clause. With the
+  minimal-base clause intact, api and worker still diverge, so **no AC can record Met until `DW-066` lands**.
+  **If you find the four measured image sizes and reach for an acceptance criterion — stop.** They prove one
+  clause of two, and a verdict citing them would look thoroughly evidenced while covering half the
+  requirement. That is the exact failure this programme exists to end.
+- **`DW-065` + `NFR-028`'s residual + the ops group (`NFR-015 017 044 052 062`, `PE-485`) ALL CONVERGE ON ONE
+  MISSING THING: a running stack.** Operator decision 2026-08-20: **keep carrying them, do not start a stack
+  at the tail of a session.** One supervised stack batch would close all three at once, and this project's
+  memory warns hardest about exactly that operation — so it deserves its own fresh context. ⚠ Several of the
+  `DW-043`…`DW-060` performance rows are measured FROM that same trace data.
 - **`DEF-087`** — the third row in the `defects-minor` advisory: almost no defect row carries `found_in`, so
   slice-scope `defects-closed` is permanently `indeterminate`.
 
