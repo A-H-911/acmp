@@ -379,6 +379,7 @@
 {"from_id":"LL-006","to_id":"PE-435","relation":"learned_from"}
 {"from_id":"LL-008","to_id":"DEF-098","relation":"learned_from"}
 {"from_id":"LL-009","to_id":"PE-508","relation":"learned_from"}
+{"from_id":"LL-010","to_id":"PE-525","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
