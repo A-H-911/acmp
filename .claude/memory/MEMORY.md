@@ -4,66 +4,61 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★★ 2026-08-20 (later) · **THE DISPOSITION SESSION — v1 GOT BIGGER** · `gate` 7/7 · `ready:TRUE`
+## ★★ 2026-08-20 (later) · **THE DISPOSITION SESSION — v1 GOT BIGGER**
 
 - ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
-  **refused an interview** because the slate cited ~40 records by id alone. `LL-011` (Proposed). Anything
-  they read to DECIDE must carry each record's full text inline, generated from the JSONL. ⭐ The fix found
-  **`DEF-082` does not exist** though 3 records cite it as real and fixed — `G-IDS` checks FKs, **not ids in prose**.
-- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows are `Activated`** (`DEC-067`/`SC-029`) — **against my
-  recommendation to carry them**; the rows record it as an override. `DW-028 032 033 035 036 038 039 040 061 063 068 069`.
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.**
-  Found via `DEC-064` d2 (Approved 2026-08-19, *"DW-037 is ACTIVATED"*) that **never reached the row**, while
-  `SC-020` had marked `FR-035` `Deferred`. Fixed by `SC-028`; three more of the same shape caught **before**
-  writing (`FR-032 154 155`). **Activating a `DW-` row → check its requirement in the same breath.**
-- ✅ **`assumptions-current` FIXED — it now FAILS instead of `indeterminate`**, naming `ASM-011`. ⚠ the field
-  is a **FUTURE due date**; more will redden as dates pass — **that is the control working, don't clear them.**
-  ⛔ `DEF-087`, the other blind control, **untouched — needs its own clean context.**
-- ⚠ **`deferred-work-reviewed` CANNOT go green from reviewing** — its predicate selects `Open`, **`Activated`**
-  and `Scheduled` alike. Activating twelve left the same 53 listed.
-- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore that `ADR-0022` (Approved) removed**; `DEC-020`/`ADR-0003`/
-  `OQ-040` still assume it. Operator: *record it, change nothing.* Found only by **keyword** sweep (`LL-008`, 4th).
-- ⚠ **`DW-052`'s premise is wrong** — caps are **50 MB / 2 GB**, not `NFR-011`'s 100 MB, nothing overrides them.
+  **refused an interview** because the slate cited ~40 records by id alone. `LL-011`, **Approved+pinned**
+  (11 lessons bind). Anything they read to DECIDE carries each record's full text inline, generated from
+  the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it as real and fixed —
+  `G-IDS` checks FKs, **not ids in prose**. Operator chose to carry the gap (`DEF-101`), not reconstruct.
+- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows `Activated`** (`DEC-067`/`SC-029`) — **against my
+  recommendation**, recorded as an override. Nine remain unscheduled by intent.
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES
+  THEM.** Found via `DEC-064` d2 (*"DW-037 is ACTIVATED"*) that **never reached the row** while `SC-020`
+  had marked `FR-035` `Deferred`. Fixed by `SC-028`; three more caught **before** writing.
+  **Activating a `DW-` row → check its requirement in the same breath.**
+- ✅ **`assumptions-current` FIXED — it FAILS now** (`ASM-011`, overdue on purpose). ⚠ the field is a
+  **FUTURE due date**; more will redden — **that is the control working, don't clear them.**
+  ⚠ **`deferred-work-reviewed` CANNOT go green from reviewing** — it selects `Open`+`Activated`+`Scheduled`.
+- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` (Approved) removed**; `DEC-020`/`ADR-0003`/
+  `OQ-040` still assume it. Operator: *record it, change nothing.* Keyword sweep only (`LL-008`, 4th).
+- ⚠ **`DW-052`'s premise is wrong** — caps are **50 MB / 2 GB**, not `NFR-011`'s 100 MB.
   ⚠ **`DW-037`'s data claim was half wrong** — `Topic.Schedule` does NOT persist the meeting id
   (`TopicScheduledEvent` has **zero consumers**); the calendar must read from the **Meetings** API.
-- ⚠ Flagged, operator's call: `ASM-001` should not read `Approved` (struck through, *"RESOLVED — FALSE"*);
-  `DEF-092`'s truncation extends to **4 assumption titles**; `DW-029` still `Open` though its programme ran.
+- ⚠ **I reported "four" truncated assumption titles; it was EIGHT.** I measured inside the twelve rows I
+  was already editing. **Measuring inside the set you are holding is not measuring the register.** All 8
+  repaired; `DEF-092` widened. `ASM-001` → `Superseded`; `DW-029` → `Done`.
 
-## ★ 2026-08-20 · **THE DW-029 PROGRAMME IS CLOSED** · `gate` 7/7 · `readiness ready:TRUE`
+## ★ 2026-08-20 · **THE DW-029 PROGRAMME IS CLOSED** · durable bits only
 
-> ▶ **START AT `tamheed-package/prompts/prm-next.md`** — §6's START HERE was rewritten by the disposition
-> session; read it before acting on §1 or §4. ⚠ **Read the prose, not just the ids.**
-
-- ✅ **`SL-031` Implemented, `PH-6` closed — EVERY PHASE IS `Implemented` EXCEPT `PH-3`**, which stays
-  `Approved` on purpose (`WBS-20.4` is the email adapter vs a hard constraint, `DEC-055`; "repairing" it is
-  the manufactured-status move `DEF-010` records). `SL-014` is `Deferred` (`P14`, `DEC-028`).
-- ⚠⚠ **THE CANDIDATE RULE WAS BROKEN: "named ANYWHERE in a DW row" CONFLATES A MENTION WITH A COVERAGE.**
-  My own `DW-074` prose mentioning "the `NFR-018` ASVS assessment" made `NFR-018` vanish from the worklist.
-  **A well-cross-referenced register would eventually report itself finished.** Fixed to TITLE-named.
-- ⚠⚠ **`DEF-099` — OTLP traces had NEVER reached Seq in ANY environment** (bare `/ingest/otlp` + the
-  exporter's gRPC default → 404; the worker had **no `OTEL_` vars at all**). Fixed, #300. ⭐ **THE
-  DISCRIMINATOR IS THE REUSABLE PART:** events grew 679→739 while DB spans sat at **exactly 72** — same host,
-  port and container, log path delivering, trace path not. **Verify observability by sending traffic and
-  asserting spans MOVE, never by a clean boot.**
-- ⭐⭐ **Three lessons added and pinned (10 now bind).** `LL-008` sweep by KEYWORD not just id — an id-only
-  sweep returned **0 hits for 6 of 7** candidates and missed a ratified ADR. `LL-009` two instruments
-  agreeing is ONE when they share a mechanism. `LL-010` if a requirement says X is the single source for Y,
-  **check X exists before measuring Y**.
+- ✅ **EVERY PHASE IS `Implemented` EXCEPT `PH-3`**, which stays `Approved` on purpose (`WBS-20.4` is the
+  email adapter vs a hard constraint, `DEC-055`; "repairing" it is the manufactured-status move `DEF-010`
+  records). `SL-014` is `Deferred` (`P14`, `DEC-028`). **`PH-7`/`SL-032` now hold the live build work.**
+- ⚠⚠ **A MENTION IS NOT A COVERAGE.** "named ANYWHERE in a DW row" made `NFR-018` vanish from a worklist
+  because another row's prose mentioned it. **A well-cross-referenced register would report itself
+  finished.** Match on TITLE, not prose.
+- ⚠⚠ **`DEF-099` — OTLP traces had NEVER reached Seq in ANY environment.** ⭐ **The discriminator is the
+  reusable part:** events grew 679→739 while DB spans sat at **exactly 72** — same host, port, container;
+  log path delivering, trace path not. **Verify observability by sending traffic and asserting spans
+  MOVE, never by a clean boot.**
+- ⭐ **`LL-008`** sweep by KEYWORD not just id (an id-only sweep returned **0 hits for 6 of 7**).
+  **`LL-009`** two instruments agreeing is ONE when they share a mechanism. **`LL-010`** if a requirement
+  says X is the single source for Y, **check X exists before measuring Y**.
 - ⚠ **COUNT THE REQUIREMENT'S CLAUSES BEFORE YOU COUNT YOUR FINDINGS** — twice, strong evidence covered
-  two-thirds of a three-part requirement and nearly carried a `Met` (`NFR-037`, `NFR-033`).
-- ⚠ **The operator declined to relax a requirement TWICE** (`SC-024`, `DEC-066`). **The register is kept as
-  a statement of the TARGET, not the status quo — do not offer a narrowing as the easy path.**
-- ⚠⚠ **I put an UNMEASURED number in a commit message** (`46821d6`: "11/17"; real split **10/18**) after a
-  `tail` cut the output off screen. Caught only by re-measuring before the handoff. **A number entering a
-  durable artifact must come from output visible in the same breath.**
-- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the tool's token limit** (~82 KB); `columns` does not
-  narrow the payload. Count from `data/requirements.jsonl`.
+  two-thirds of a three-part requirement and nearly carried a `Met`.
+- ⚠ **The operator declined to relax a requirement TWICE.** The register states the **TARGET**, not the
+  status quo — never offer a narrowing as the easy path.
+- ⚠⚠ **A number entering a durable artifact must come from output visible in the same breath** — an
+  unmeasured count reached a commit message, which cannot be amended.
+- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the tool's token limit**; `columns` does not narrow it.
+  Count from `data/requirements.jsonl`.
 - ⚠ **Running a stack here:** `docker ps` empty does NOT mean safe — 5 populated volumes exist and
   `dev-up.sh` is `up -d --build`, the documented breaker. Isolated project, FRESH volumes, tag an existing
   CI image to skip the 3.62 GB FTS build, `sqlserver`+`seq` healthy first, then `down -v` and remove the tag.
 - ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`, `scope_changes.decision_ref/
-  description`, `slices.title/objective`, `phases.title`. Nullable fields preserved by omission.
-  **Approving a lesson is NOT an edit** — content must come back byte-identical.
+  description/iteration`, `slices.title/objective/phase_id`, `phases.title`. Nullable fields preserved by
+  omission. ⚠ **CHECK constraints:** `verified_by IN (human|agent|ci)`, `verification_method IN
+  (auto-test|manual|inspection)`, `progress.event_type` is a fixed set (no `decision-made`).
 
 ## ★ batches 14+15 — only what the head above does not repeat
 

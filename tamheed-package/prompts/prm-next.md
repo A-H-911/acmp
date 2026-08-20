@@ -511,6 +511,32 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
+### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
+
+**`PH-7` → `SL-032`** holds the four small activated rows, ordered by `DEC-068` d1.
+✅ **`WBS-23.1` / `DW-061` DONE** — the mobile notice, merged as PR #301 (`78b5ca2`), `AC-140` Met
+(`AV-218`). ▶ **Next three, in order: `WBS-23.2` (`DW-040`, card-level drag-to-reprioritize — the
+ordinal, its guard and its audit are already built and tested, only the GESTURE is missing),
+`WBS-23.3` (`DW-038`, PNG chart export — a canvas draw and a download, blocked on nothing),
+`WBS-23.4` (`DW-032`, reach `Topic.Reclassify` — the domain method exists and is deliberately
+unreachable).**
+
+⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
+**five** open items when `SL-032` was created and names **four** now. The same rule returns **zero rows
+for all 28 closed slices**. That is the first slice-scope readiness rule in this package that has ever
+tracked progress instead of passing over an empty set — keep new work items carrying `slice_id`.
+
+⚠ **`AC-140` covers the NOTICE clause of `NFR-063` ONLY.** The *no-broken-layout* clause is
+deliberately NOT claimed — assessing 52 routes as unbroken is a visual judgement no automated check
+performs. Both the criterion and `DW-061`'s closure note say so. Do not read that row as covering it.
+
+⚠ **Watch the backend applock test.** The first CI run on #301 failed `AuditAtomicityTests.
+Concurrent_commands_all_commit_without_forking_the_audit_chain` with *"audit-chain applock not
+acquired"*, and the re-run passed on **identical backend code**. That is two observations of one commit
+range disagreeing with itself. **If it recurs, file a defect** — the audit chain is hash-linked and
+therefore inherently serialising, which `DW-053` already names as the shape where throughput surprises
+you. Do not label it flaky on the strength of one more green.
+
 ### Open, and the operator's alone
 
 - **`DW-066`** — migrate api and worker to an alpine/distroless base (`NFR-054`'s minimal-base clause,
@@ -544,6 +570,32 @@ recovery is `down -v`, destroying all five.
 3. Bring up `sqlserver` + `seq` **alone** and confirm healthy **before** the api.
 4. Tear down `down -v` (yours, not the dev stack's) and **remove the tag**, so a later `up` cannot silently
    reuse a stale image. Then verify all five dev volumes are still there.
+
+### ⚠⚠ TWO THINGS FROM THE FIRST `SL-032` BUILD — both cost a CI cycle, both generalise
+
+**1. COMMITTING TO `main` IS NOT PUBLISHING TO `main`.** The branching rule says package writes go
+straight to `main`, and I followed it faithfully for **ten commits** — and never pushed. So `main` was
+ten ahead locally, the feature branch inherited all ten, and `gh pr merge --squash` folded **every
+package commit plus the web change into ONE commit** titled after the web feature. No content was lost
+(verified by stat); ten commit messages were. ⚠ **After a package commit on `main`, PUSH.** Check with
+`git rev-list --left-right --count HEAD...origin/main` before branching — a non-zero left number means
+the next branch will carry work that is not its own.
+
+⚠ Trap 25 also fired on that merge exactly as written: merged **remotely**, aborted **locally**,
+working tree left looking like pre-feature `main`. The documented recovery worked — verify the content
+is in `origin/main` **by content, not ancestry**, then reconcile. ⚠ And back up `tamheed-package/data`
+first: C31 means uncommitted package writes die to `reset --hard`, and there were some.
+
+**2. ⚠⚠ ARABIC MORPHOLOGY BITES TEST ASSERTIONS, NOT JUST UI COPY — AND THE FAILURE MESSAGE HIDES IT.**
+A Playwright assertion looked for a literal Arabic substring. CI reported it **missing from a received
+string that visibly appears to contain it**. It genuinely was absent: the preposition `لـ` absorbs the
+alef of the definite article `ال`, so the phrase renders contracted and the standalone spelling occurs
+nowhere. `DEC-032` already records this rule — **Arabic morphology is a RULE, not a string
+substitution** — but records it about *renaming UI copy*. A test assertion is a nastier venue, because
+the diff output makes it look like a tooling fault. **Never assert a hand-picked Arabic fragment.
+Assert the PROPERTY** — a run of `[؀-ۿ]` proves the bundle resolved, survives every
+rewording, and pairs with a key-echo check. Verify any such regex discriminates: it must match AR, and
+**not** match EN, and **not** match the literal key path.
 
 ### ⚠ NEW LESSON, and it changes how you write for the operator
 
