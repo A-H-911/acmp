@@ -162,6 +162,30 @@ public class MeetingRecordingTests
         url.Should().Be("https://minio.test/signed");
     }
 
+    // NFR-027 - "time-limited, <= 1 h expiry". Until this test the ceiling was a VALUE, not a property:
+    // every other test here passes Arg.Any<TimeSpan>(), so raising Ttl to FromHours(4) broke nothing.
+    // A presigned URL is a bearer-less capability for its whole TTL, so the ceiling is the control.
+    [Fact]
+    public async Task Playback_url_expiry_stays_inside_the_one_hour_ceiling()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);
+        meeting.AttachUploadedRecording("acmp-recordings/MTG-2026-001/abc.mp4", "a.mp4", "video/mp4", 10);
+        await db.SaveChangesAsync();
+
+        TimeSpan? captured = null;
+        var files = Substitute.For<IFileStore>();
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(ci => { captured = ci.ArgAt<TimeSpan>(2); return "https://minio.test/signed"; });
+
+        await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>())
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        captured.Should().NotBeNull("the handler must pass an explicit expiry, never the store's default");
+        captured!.Value.Should().BePositive("a zero or negative expiry would be signed as already dead");
+        captured.Value.Should().BeLessThanOrEqualTo(TimeSpan.FromHours(1), "NFR-027 caps presigned URLs at 1 h");
+    }
+
     // NFR-025 / AC-122 / DEF-094 - "all access to transcript content shall generate an audit log entry",
     // which was 0% before this: the handler emitted nothing at all. Minting a presigned URL IS the access
     // event, because the URL is a bearer-less capability good for its whole TTL.
