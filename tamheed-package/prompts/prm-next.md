@@ -60,6 +60,39 @@ and it is where you start.
 batch 14's two PRs both merged: **#298 → `4e5ebd0`** and **#299 → `59effb8`**, each verified on `origin/main`
 BY CONTENT rather than by ancestry (trap 25). Batch 13's were **#296 → `57e019d`** and **#297 → `a6261bf`**.
 
+### What batch 15 landed (2026-08-20) — and it CHANGES WHAT "NEXT" MEANS
+
+- ⚠⚠ **THE READER-CLOSABLE PHASE OF THE `DW-029` PROGRAMME IS EXHAUSTED.** Running the three-step rule
+  after `DW-069` leaves **NINE**: `NFR-018 019 023 028 031 032 033 034 038` — and **not one of them can be
+  closed by reading code.** They need, respectively: a DAST scan and a penetration test; a TLS scan against a
+  running stack; an org security policy that has never been confirmed (operator-blocked); a captured trace
+  (`DW-065`, and the operator has already decided to carry it with the stack batch); a browser, four times
+  over, for the WCAG group; and `P14`, deferred indefinitely by `DEC-028`. **Do not open this file looking
+  for another requirement to read.** The next batches are a *stack* batch, a *browser* batch and a *scanner*
+  batch, each of which deserves its own fresh context.
+- **`NFR-039` → `DW-069`, and the finding is not the one that was expected.** `prm-next` queued it saying
+  "read `ar.json` before concluding its stakeholder clause makes it a partial". The read moved the answer
+  somewhere else: **clause one is unmet, and proving it needs no Arabic at all.** `README.md` §G is 22
+  English terms whose own heading says the EN↔AR pairing is *"finalized in design handoff"*; the design
+  handoff (line 113) says the shared glossary is *"see `/docs/README §G`"*. **Each names the other and
+  neither contains one Arabic character** — measured, with a control (the same pattern finds 1889 Arabic
+  lines in `ar.json`). `DOC-049` is EN-only too and says the pairing lives elsewhere. **The single source of
+  canonical bilingual terms is a circular pointer between two English documents.**
+- ⚠⚠ **76 DIVERGENCES, AND REPORTING THAT NUMBER WOULD HAVE BEEN THE `NFR-021` CENSUS MISTAKE AGAIN.**
+  1037 short EN labels compared, 76 with more than one AR rendering. **Arabic adjectives agree in gender**,
+  so `Accepted` describing a risk and describing a recommendation are *correctly* different — collapsing
+  them would be the bug. Split by shared stem: **55 morphological (presumed correct), 21 lexical**. ⚠ And
+  even the 21 is a CANDIDATE set: `Open` splits adjective-vs-verb correctly, and `Minutes` splits on a
+  **broken plural** no suffix-stripper can relate. Strongest single candidate, deliberately NOT filed as a
+  defect: `Urgency` renders on topics as the word for *importance*.
+- ⚠ **`NFR-039`'S TARGET PRESUMES A DETECTOR THAT DOES NOT EXIST** — "0 inconsistencies **detected**".
+  `check-i18n.mjs` compares KEY SETS plus a mojibake value scan; neither half can see one EN term with two AR
+  renderings. `DEF-037` is the proof and its own row says so — found by a human walking production.
+  **`LL-007`'s shape sitting inside a requirement's acceptance target rather than inside an instrument.**
+- ✅ **Two positive results.** `DEC-032`'s rename WORKED — the `app.committee` / `meetings.mom.committee`
+  split it recorded is closed, both now reading the same string. And the measuring instrument was proven
+  against a **real historical positive**: re-injecting `DEF-037`'s pre-fix pair verbatim makes it fire.
+
 ### What batch 14 landed (2026-08-20) — reference, do not redo
 
 - **Two requirements CLOSED, both AC-written-and-Met in the same batch.** `NFR-027` (`AC-135`/`AV-213`,
@@ -270,12 +303,19 @@ work.
 
 ### ⚠ The programme's real yield is PARTIALS, not verdicts
 
-TWELVE requirements have been found built-on-one-side-only, every one invisible in the register **because
+THIRTEEN requirements have been found partly-unbuilt, every one invisible in the register **because
 it had no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030`
 (`DW-041`), `NFR-035` (`DW-042`, since BUILT and closed), `NFR-063` (`DW-061`), and from batch 13
 `NFR-043` (`DW-062`), `NFR-010` (`DW-063`), `NFR-053` (`DW-064`) and `NFR-054` (`DW-066`); and from batch 14
-`NFR-061` (`DW-067`) and `NFR-037` (`DW-068`). `NFR-025` was worse — a **Must**
+`NFR-061` (`DW-067`) and `NFR-037` (`DW-068`); and from batch 15 `NFR-039` (`DW-069`). `NFR-025` was worse — a **Must**
 security requirement divergent on both clauses, fixed under `DEF-094`.
+
+⚠ **`NFR-039` (`DW-069`) is a THIRTEENTH of a different shape, and it is worth distinguishing.** The other
+twelve are *built on one side only* — the thing exists, half of it works. `NFR-039`'s first clause names a
+**governing artifact that was never created at all**: the EN⇔AR glossary its second clause is supposed to be
+measured against. That is not a half-built feature, it is a **missing ruler**, and it is why its second clause
+is undecidable rather than merely unverified. When you meet a requirement of the form *"X shall be the single
+source for Y"*, **check that X exists before measuring anything about Y.**
 
 ⚠ **Batch 14's `DW-068` is the one that nearly slipped through, and the near-miss is the lesson.** `NFR-037`'s
 date side is genuinely, thoroughly built — 31 locale-aware `Intl.DateTimeFormat` call sites, zero
@@ -301,11 +341,12 @@ have been wrong. Read the implementation — in BOTH directions.
 
 ### What is queued
 
-- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** Running the rule after
-  batch 14 gives **TEN**: `NFR-018 019 023 028 031 032 033 034 038 039` — and **`NFR-039` is the only one of
-  those a reader can close.** Every other one is blocked on a scanner, a stack, a browser or a deferred phase.
-  Batch 14 removed five: `NFR-027` and `NFR-050` Met, `NFR-037` partial (`DW-068`), `NFR-061` partial
-  (`DW-067`), and `NFR-026` out of the Approved set via `SC-026`.
+- ⚠⚠ **THERE IS NO CODE-VERIFIABLE MUST NFR LEFT. Running the rule after batch 15 gives NINE —
+  `NFR-018 019 023 028 031 032 033 034 038` — and every one is blocked on something outside a reader's
+  reach.** Batch 14 removed five (`NFR-027`, `NFR-050` Met; `NFR-037`, `NFR-061` partial; `NFR-026`
+  Deferred) and batch 15 removed the last one (`NFR-039` → `DW-069`). **Re-run the rule anyway** — that is
+  the point of stating it as a rule — but expect nine, and expect all nine to need a stack, a browser, a
+  scanner, an external policy or an undeferred `P14`.
   ⚠⚠ **THE FIRST DRAFT OF THIS VERY BULLET WAS WRONG, WHICH IS THE POINT OF THE WARNING ABOVE IT.** It listed
   eleven ids, carrying `NFR-061` and adding a note that you must remember to subtract `DW-067` yourself. You do
   not: `DW-067` is a `deferred-work` row naming `NFR-061`, so the FIRST subtraction already removes it. The
@@ -586,12 +627,8 @@ whenever you close one — a list nobody maintains is worse than no list.**
   item; move each one down to the closed list as you finish it.)*
 
 **Ready to do — nobody's decision is needed, it is just unread:**
-- **`NFR-039` — the glossary requirement, the last code-verifiable Must NFR a reader can close.** Scoped but
-  deliberately not read in batch 14. `README.md` §G (line 167) is the glossary. The mechanical half is a
-  duplicate-Arabic-translation check over `ar.json`; the judgement half is its own Verification clause, which
-  ends `[unverified — confirm reviewer availability]`. ⚠ **Read `ar.json` first.** Concluding "stakeholder
-  clause ⇒ partial" without reading it is filing off a proxy (`LL-006`), and the mechanical half may well be
-  Met on its own terms.
+- *(empty — `NFR-039` was the last entry and batch 15 read it. See `DW-069`; the answer was that its
+  glossary does not exist, which is why nothing here replaced it.)*
 
 **Open, and the operator's alone:**
 - **`DW-066` — migrate api and worker to an alpine/distroless base.** `NFR-054`'s minimal-base clause, KEPT
@@ -615,6 +652,13 @@ whenever you close one — a list nobody maintains is worse than no list.**
 - **`DW-067`** (`NFR-061`, browser matrix) and **`DW-068`** (`NFR-037`, number formatting) — both new in
   batch 14, both real work rather than recording gaps. `DW-068` is the cheaper of the two by a wide margin:
   the app already contains two working Arabic-Indic number formatters to copy.
+- **`DW-069`** (`NFR-039`, the missing bilingual glossary) — new in batch 15, and **the one row in the
+  programme a reader of code categorically cannot close.** ⚠ Its cheapest first step is worth doing alone
+  and needs no Arabic reader: **build the glossary as an actual bilingual artifact**, outside the frozen
+  `docs/` archive, with the owner `DOC-049` already names (`lead-secretary`). The 22 EN terms exist and
+  `DEC-032` already decides the headline AR term. Until that artifact exists, clause two is not merely
+  unverified — there is no canonical answer to compare against, so it is **undecidable**, and any i18n
+  terminology gate built first would have nothing to test against.
 
 **Closed 2026-08-20 by batch 14 — do not re-carry these:**
 `DEF-095` (#298 → `4e5ebd0`, comment corrected, base image untouched) · `DEF-097` (#299 → `59effb8`, the

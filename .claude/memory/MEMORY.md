@@ -4,90 +4,98 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-20 · **batch 14 done** · **`SL-031` still OPEN — the DW-029 AC programme is the active work**
+## ★ 2026-08-20 · **batches 14+15 done** · **THE READER-CLOSABLE PHASE OF `DW-029` IS EXHAUSTED**
+
+> ⚠ **READ THE LIVE NUMBERS.** `gate_run()` 7/7, `readiness ready:TRUE`, `defects-minor` = **`DEF-087` alone**.
+
+- ⚠⚠ **THERE IS NO CODE-VERIFIABLE MUST NFR LEFT.** The rule now yields **NINE** —
+  `NFR-018 019 023 028 031 032 033 034 038` — and every one needs a **stack**, a **browser**, a **scanner**,
+  an unconfirmed **org policy**, or an undeferred `P14`. **Do not open `prm-next` hunting another requirement
+  to read.** The next batches are a stack batch, a browser batch and a scanner batch, each wanting its own
+  fresh context. `SL-031` stays `Approved` — done-claiming it would be manufactured status.
+- ⭐⭐ **`NFR-039` (`DW-069`): WHEN A REQUIREMENT SAYS "X SHALL BE THE SINGLE SOURCE FOR Y", CHECK THAT X
+  EXISTS BEFORE MEASURING ANYTHING ABOUT Y.** `README.md` §G says the EN⇔AR pairing is *"finalized in design
+  handoff"*; the design handoff says the glossary is *"see `/docs/README §G`"*. **Each names the other and
+  neither holds one Arabic character.** A **missing ruler**, not a half-built feature — which is why the
+  second clause is *undecidable*, not merely unverified.
+- ⚠⚠ **76 divergences, and reporting that number would have repeated the `NFR-021` census mistake.**
+  **Arabic adjectives agree in gender**, so `Accepted` on a risk vs a recommendation is *correctly* two
+  strings. Split by stem: **55 morphological (correct), 21 lexical** — and the 21 is still a CANDIDATE set
+  (`Open` splits adjective/verb; `Minutes` splits on a **broken plural**). Trap 33 in its purest form.
+- ⚠ **`check-i18n.mjs` CANNOT SEE `NFR-039`'s property** — it compares KEY sets plus a mojibake value scan.
+  `DEF-037` (one EN term, two AR renderings) was found by a human walking production. `LL-007`'s shape living
+  inside a **requirement's own acceptance target**.
+- ⭐⭐⚠ **AN ID-ONLY REGISTER SWEEP IS A SCAN WITH NO SUBJECT — now `LL-008`, pinned.** Batch 14: id sweep
+  **ZERO hits for six of seven** candidates; the keyword sweep found `ADR-0035` (ratified) replacing the
+  MinIO that `NFR-027` still mandated (`DEF-098`). Batch 15 repeated it: **1 id hit vs 24 keyword hits**, and
+  three of the 23 extras decided the batch. **Neither pair of rows names the other's id.**
+- ⭐⭐ **TWO INSTRUMENTS AGREEING IS ONE INSTRUMENT when they share a mechanism — now `LL-009`, pinned.**
+  Two scanners returned the identical 13 sites / 7 files, both blind to C# **target-typed `new(`**.
+  Full write-up in [[scan-must-prove-it-had-a-subject]]. Companion: **zero `AlterColumn` across 47
+  migrations** is *implausible*, not clean — widening found a missed `DropIndex`.
+- ⭐⭐ **A DERIVATION IS A COMPUTATION, NOT A FACT YOU CAN UPDATE.** I re-derived correctly on arrival, then
+  produced the next list by **subtracting my own edits** from it and got it wrong. **Run the three steps.**
+  ⚠ Related and repeated three times in one session: **an id-and-status verifier cannot see a stale
+  INSTRUCTION or a PROSE NUMBER.** All 68 (then 124) ids verified live while the file still carried wrong
+  counts. **Read the prose; the mechanical pass is the easy half.**
+- ⚠ **`NFR-037` nearly got `Met` on two-thirds of itself** (→ `DW-068`): 31 locale-aware date sites, but the
+  SPA has **exactly two** `Intl.NumberFormat` sites and the requirement says *"date, time, **and number**"*.
+  **Count the requirement's clauses before you count your findings.**
+- ⚠ **A comment-only `.csproj` edit BROKE THE BUILD** — XML forbids `--` inside a comment (`MSB4025`, 0.05 s,
+  before compiling anything). ⚠ **`DEF-097`:** two test classes registering a **process-global**
+  `ActivityListener` recorded each other's spans — 1 failure in 8 runs. Fixed by serializing both into the
+  existing `DisableParallelization` collection and **proven by FORCING the overlap**: 5 fail without, 1133
+  pass with.
+- ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title`, `defects.severity`, `scope_changes.decision_ref`,
+  `scope_changes.description`. Nullable fields (`custom_attributes`, `found_in`) are **preserved by omission**.
+  **Hash the pre-image and re-check after** (`LL-001`). ⚠ **Approving a lesson is NOT an edit** — the store
+  refuses an approving upsert whose content drifted; approve what was RECORDED, or supersede first.
 
 > ⚠ **READ THE LIVE NUMBERS.** `gate_run()` 7/7 and `readiness ready:TRUE` after batch 14; `defects-minor`
 > is down to **`DEF-087` alone**. Never quote a tally from here or from `prm-next.md` — measure it.
 
-- ⭐⭐⚠ **AN ID-ONLY REGISTER SWEEP IS A SCAN WITH NO SUBJECT.** `LL-005`/trap 32 say sweep `adrs`,
-  `decisions`, `open_questions` before disposing of anything. Batch 14 did — **by id** — and got **ZERO hits
-  for six of seven candidates**. The **keyword** sweep then found `ADR-0035` (Approved, ratified) replacing
-  self-hosted MinIO with S3, which `NFR-027` still mandated by name (`DEF-098`). **Neither row names the
-  other's id**, so no id sweep could ever have found it. Fixed by `SC-025`; `AC-135` Met.
-- ⭐⭐ **TWO INSTRUMENTS AGREEING IS ONE INSTRUMENT when they share a mechanism.** Two scanners for
-  notification leaks returned the identical 13 sites / 7 files and were both blind to the same two builders
-  (C# **target-typed `new(`** — the type name never appears at the call site). Full write-up in
-  [[scan-must-prove-it-had-a-subject]]. Companion: a census reporting **zero `AlterColumn` across 47
-  migrations** is *implausible*, not clean — widening found a missed `DropIndex`.
-- ⭐⭐ **A DERIVATION IS A COMPUTATION, NOT A FACT YOU CAN UPDATE.** I re-derived the candidate list on
-  arrival (correct, 15), then produced the post-batch list by **subtracting my own four** from it — and got it
-  wrong, carrying `NFR-061` that `DW-067` already removes. Re-running the rule gives **10**. Caught in-session;
-  the account is written into `prm-next.md` §2b in place. **Run the three steps; never adjust the last answer.**
-- ⚠ **`NFR-037` NEARLY GOT A `Met` VERDICT ON TWO THIRDS OF ITSELF.** 31 locale-aware date call sites, zero
-  `toLocaleDateString`, no bare ISO string — genuinely convincing. The SPA has **exactly two**
-  `Intl.NumberFormat` sites, and the requirement says *"date, time, **and number**"*. → `DW-068`.
-  **Count the requirement's clauses before you count your findings.**
-- ⚠ **A COMMENT-ONLY `.csproj` EDIT BROKE THE BUILD** — XML forbids `--` inside a comment; MSBuild rejected
-  the project file (`MSB4025`) in 0.05 s, before compiling anything. No test suite could have seen it.
-- ⚠ **`DEF-097`: TWO TEST CLASSES REGISTERING A PROCESS-GLOBAL `ActivityListener`** on one source, each
-  asserting `ContainSingle()`, recorded each other's spans — **1 failure in 8 full-suite runs**, the worst
-  frequency a flake can have. Fixed by serializing both into the existing `DisableParallelization` collection,
-  and **proven by FORCING the overlap** (400 ms held listeners): **5 fail without, 1133 pass with**.
-  A green suite over a timing flake is worth nothing.
-- ⚠ **`entity_upsert` NOT NULL columns, learned by experiment:** `defects.title`, `defects.severity`,
-  `scope_changes.decision_ref`, `scope_changes.description` are all required on UPDATE. Everything nullable
-  (`custom_attributes`, `found_in`) is **preserved by omission** — re-confirmed on six rows this batch.
-  **Hash the pre-image and re-check after** (`LL-001`); all six round-tripped byte-identical.
-- **Next up: `NFR-039`** — the last code-verifiable Must NFR a reader can close. `README.md` §G (line 167) is
-  the glossary. ⚠ **Read `ar.json` before concluding its stakeholder-review clause makes it a partial** —
-  that inference without the read is `LL-006` exactly.
 
-## ★ 2026-08-19/20 · batch 13 — compacted, durable findings only
+- **Next: a STACK batch, a BROWSER batch, a SCANNER batch.** `DW-065` + `NFR-028`'s residual + the ops group
+  (`NFR-015 017 044 052 062`, `PE-485`) all converge on one missing thing — a running stack — and the
+  operator has decided to keep carrying them rather than start one at a session's tail. `DW-041` (manual
+  WCAG) and `DW-067` (`NFR-061` browsers) want a browser. `DW-066` (alpine/distroless) is operator-only and
+  its **risk is musl, not the two `FROM` lines** — full e2e leg, verify Arabic FREETEXT end to end.
+## ★ batch 13 (2026-08-19/20) — compacted; full record in `prm-next.md` §1
 
-- ✅⚠ **`DEF-093` FIXED upstream (tamheed 4.4.2) — `gate_run()` 7/7 and `readiness ready:TRUE` are the NORM.**
-  The old "never report gates green" rule is **RETIRED** (operator, 2026-08-20): a red gate is a REAL finding.
-  ⚠⚠ **The token rule changed in ONE direction only:** journal text (`progress_entries.entry`,
-  `audit_verdicts.evidence`) is **exempt**; **every live ENTITY row is still screened** (`title`/`statement`/
-  `description`) — there, name the concept or backtick the token. Failures now NAME the matched token.
+- ✅⚠ **`DEF-093` FIXED upstream (tamheed 4.4.2) — 7/7 and `ready:TRUE` are the NORM; the old "never report
+  gates green" rule is RETIRED.** ⚠⚠ **The token rule changed in ONE direction:** journal text
+  (`progress_entries.entry`, `audit_verdicts.evidence`) is **exempt**; **every live ENTITY row is still
+  screened** (`title`/`statement`/`description`) — there, name the concept or backtick the token.
 - ⭐⭐⚠ **AN EXEMPTION THAT GREENS A GATE CAN ALSO BLIND IT** (`LL-007`). Injecting a marker into a LIVE
   entity title made `G-COMPLETE` fail and name it; the backticked form passed; the row was restored
-  byte-identically. **Three tool calls, and the only thing separating "green because fixed" from
-  "green because blind".**
-- ⭐⭐⚠ **`LL-005` MUST SWEEP `adrs`, `decisions` AND `open_questions` — NOT JUST `requirements`.** Batch 13
-  swept requirements thoroughly, then offered a build for `NFR-053`. **`ADR-0037` (Approved, ratified) decides
-  that exact thing**, deferring the fix under `OQ-061`. One file-read — a bare ADR id in a docker-compose
-  COMMENT — separated that from reversing an Approved ADR. Resolved by `SC-023`; nothing built.
-  (Batch 14 then showed the **id-only** version of this sweep is itself blind — see the section above.)
-- ⭐⭐ **Classifying rule worth reusing: surface that DOES NOT EXIST can be excluded BY NAME in a `Met`
-  verdict; surface that EXISTS but is unproven CANNOT.** Decided all five batch-13 candidates, and both of
-  batch 14's exclusions (`NFR-027` transcripts, `NFR-026` AI extraction).
+  byte-identically. Three tool calls, and the only thing separating "green because fixed" from "green
+  because blind".
+- ⭐⭐ **Classifying rule, used in every batch since: surface that DOES NOT EXIST can be excluded BY NAME in
+  a `Met` verdict; surface that EXISTS but is unproven CANNOT.** Decided `NFR-027`'s transcripts and
+  `NFR-026`'s AI extraction.
 - ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — the `NFR-021`
   census read as a 38-command validation hole; all four commands carrying scalar input are guarded **in the
   domain**. Searching for validator *FILES* returns **1**; there are **78**. ⚠ A defect row's predicted cause
   is a HYPOTHESIS (`DEF-067`) — its row forbade the fix that worked.
 - ⚠⚠ **HANGFIRE'S `JobStorage.Current` + `GlobalJobFilters` ARE PROCESS-GLOBAL**; a second
   `BackgroundJobServer` in one process does not reliably pick up work. ⚠ Hangfire never hands a filter the
-  job's own exception — it wraps it in `JobPerformanceException` with a fixed message, so record
-  `InnerException`. (Batch 14 found the **listener** is global too — `DEF-097`.)
-- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE.** web 51 MB, worker 245 MB, api 257 MB,
-  **sqlserver-fts 3.62 GB**. `SC-024` narrowed the SIZE clause; the operator **REJECTED** relaxing the
-  minimal-base clause, so that half is **`DW-066`**. **Do not change a base image to close it.**
-- ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — **twelve** requirements built on one side
-  only, each invisible *because* it had no AC to fail. List in `prm-next.md` §2b; worst was **`NFR-025`**
-  (`DEF-094`), a **Must** security requirement divergent on BOTH clauses.
-- ⚠ **THE METHOD MATTERS MORE THAN THE COUNT:** never leave a Pending/Partial AC (`acs-met` counts by
-  `retired_in` and ignores `lifecycle_status`, so it holds readiness false FOREVER — trap 16c), so **a
-  part-verified requirement gets a `DW-` row, not an AC**.
-- ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (solution-style config) and
-  blessed 13 type errors for ten commits (`DEF-091`). `vitest` transpiles, it does NOT typecheck — **use
-  `npm run build` or `-p tsconfig.app.json`.**
+  job's own exception — record `InnerException` or every failed job gets an identical useless tag.
+- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE** (sqlserver-fts **3.62 GB**, base alone 1.67 GB).
+  `SC-024` narrowed the SIZE clause; the operator **REJECTED** relaxing the minimal-base clause → **`DW-066`**.
+  **Do not change a base image to close it.**
+- ⚠ **THE METHOD: never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores
+  `lifecycle_status`, so it holds readiness false FOREVER. **A part-verified requirement gets a `DW-` row.**
+- ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (solution-style config),
+  blessing 13 type errors for ten commits (`DEF-091`). `vitest` transpiles, it does NOT typecheck — use
+  `npm run build` or `-p tsconfig.app.json`.
+- ⚠ **Coverage must be UNIONED across per-project reports, never summed** — believe `check-coverage.mjs`
+  over your own script. ⚠ **Trap 25:** `gh pr merge` can merge remotely then abort locally; verify by
+  CONTENT. ⚠ **Trap 38:** do not push to a branch with CI in flight.
 - ⭐ **`SL-030` MERGED** (#295 → `1a52dba`); design record is `prm-next.md` §2. ⚠ `SC-021` is Merged but
   `WBS-22.3` still reads "notification bodies" — the SC row IS the correction; do not "tidy" it.
-  ⚠ `MoveTopicPriority` is deliberately UNFILTERED. ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS, and
-  requirement ids in source comments are **positive-only** evidence.
-- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met` ignores
-  `lifecycle_status`; `entity_upsert` preserves omitted nullable fields but requires NOT NULL ones;
-  slice-scope `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
+  ⚠ `MoveTopicPriority` is deliberately UNFILTERED. ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS.
+- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — slice-scope
+  `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
 
 ## ★ Earlier state — durable facts only
 
@@ -101,22 +109,19 @@
 
 ## Earlier 2026-08 — durable findings only
 
-> Traps live in `prm-next.md` §5. Kept here: findings with their own topic file, and facts that
-> re-frame how the register reads.
-
 - ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck that
   evaluated ZERO checks; gitleaks passing 153 commits over an allowlist covering every markdown file.
-  ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded — it wrongly claimed Guest is stream-bounded).
+  ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded).
 - ★★ [**`DEF-056`'s "measured blocker" WAS NOT REAL**](an-absence-needs-a-proven-instrument.md) — the helper
-  read `AuditEvent.Action`, **NULL on the v1 rows**, and its two `NotContain` controls passed **VACUOUSLY**.
-  **An absence is only evidence if the instrument is proven present.**
-- ⚠⚠ [**v4 store + 4.4.x lesson mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`;
-  build payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event. Approving a lesson
+  read a column that is NULL on the rows it was counting, and its two `NotContain` controls passed
+  **VACUOUSLY**. **An absence is only evidence if the instrument is proven present.**
+- ⚠⚠ [**v4 store + 4.4.x mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`; build
+  payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event; approving a lesson
   **refuses without `operator_confirm: true`**.
-- ★★ **`DW-029` re-frames every status in the package**: a requirement advances ONLY via the AC auto-advance
-  trigger, so **requirement status measures whether anyone WROTE an AC, not whether it was built**. `DEF-012`
-  is Won't-fix (`DEC-055`): the one mechanical rule that would "fix" `v_backlog` closes `WBS-20.4`, the
-  **email adapter**, against a hard constraint.
+- ★★ **`DW-029` re-frames every status in the package**: a requirement advances ONLY via the AC
+  auto-advance trigger, so **requirement status measures whether anyone WROTE an AC, not whether it was
+  built**. `DEF-012` is Won't-fix (`DEC-055`) — the one mechanical rule that would "fix" `v_backlog` closes
+  `WBS-20.4`, the **email adapter**, against a hard constraint.
 - ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — see
   [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: **a stream-scoped policy is RESOURCE-ONLY**.
 - **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json`):
@@ -159,6 +164,8 @@
 
 ## Completed ladder P1–P19 + PH-5 (reference only — do not re-open)
 
-- [PH-5 / SL-025 — UAT is live and LOGIN WORKS](ph5-sl025-uat-live.md) · [PH-5 AWS deployment](ph5-aws-deployment.md) · [P19 release readiness + D-23](p19-release-readiness.md) · [P18 deployment](p18-deployment.md) · [P17b decision-issuance UI](p17a-test-hygiene.md) · [P17/P18/P19 slice notes](next-p17-p18-p19.md)
-- Ladder plans `p6a-*`…`p16-*` in this directory — superseded by the package's slice rows.
-- [Audit slice (AC-017)](audit-slice-literal-ac017.md) · [Topic Prepare UI (D-15)](topic-prepare-ui-gap-d15.md) · [Keystone package migration](keystone-package-migration.md) · [Keystone gap remediation](keystone-migration-gap-remediation.md)
+Topic files in this directory carry the detail: `ph5-sl025-uat-live`, `ph5-aws-deployment`,
+`p19-release-readiness`, `p18-deployment`, `p17a-test-hygiene`, `next-p17-p18-p19`,
+`audit-slice-literal-ac017`, `topic-prepare-ui-gap-d15`, `keystone-package-migration`,
+`keystone-migration-gap-remediation`, and the `p6a-*`…`p16-*` ladder plans (superseded by the
+package's slice rows).
