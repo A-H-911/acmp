@@ -586,6 +586,9 @@
 {"from_id":"SC-024","to_id":"DEF-096","relation":"scope_modifies"}
 {"from_id":"SC-024","to_id":"DW-059","relation":"relates_to"}
 {"from_id":"SC-024","to_id":"NFR-054","relation":"scope_modifies"}
+{"from_id":"SC-025","to_id":"DEF-098","relation":"scope_modifies"}
+{"from_id":"SC-025","to_id":"NFR-027","relation":"scope_modifies"}
+{"from_id":"SC-026","to_id":"NFR-026","relation":"scope_modifies"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
