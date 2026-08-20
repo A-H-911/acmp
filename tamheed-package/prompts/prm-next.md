@@ -490,14 +490,26 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
   mechanical fix closes `WBS-20.4`, the email adapter, against a hard constraint — the `DEF-012`/`DEC-055`
   trap. **Do not fold it into a broad session.**
 
-**THREE THINGS FLAGGED AND LEFT FOR THE OPERATOR — the next session should raise them:**
-1. **`ASM-001` should not read `Approved`.** Its own statement is struck through and reads *"RESOLVED —
-   FALSE (`ADR-0015`)"*; the mitigation shipped. It wants `Superseded` or `Obsolete`.
-2. **`DEF-092`'s truncation is wider than its row says** — four assumption TITLES are cut at exactly 200
-   chars (`ASM-004 006 008 011`), statements intact. Widen that row rather than filing a duplicate.
-3. **`DW-029` is still `Open`** though its programme ran and was accepted. Under `DEC-064` d1's own
-   precedent it has a case for `Done` — but it ran to a stated end condition rather than evidencing all
-   162, and that distinction is the operator's.
+**ALSO SETTLED IN THE SAME INTERVIEW — all three flagged items were dispositioned, not carried:**
+1. ✅ **`ASM-001` → `Superseded`.** Its statement is struck through and reads *"RESOLVED — FALSE
+   (`ADR-0015`)"*; it had been sitting at `Approved` — a settled question wearing a live assumption's status.
+2. ✅ **`DEF-092` widened AND the assumption half REPAIRED.** ⚠⚠ **I told the operator "four" and it was
+   EIGHT** (`ASM-001 004 006 008 011 014 015 016`). **I measured inside the twelve rows I happened to be
+   editing instead of across the register — measuring inside the set you are already holding is not
+   measuring the register.** All eight titles restored from their statements after verifying the
+   precondition (every statement starts with its truncated title; 8 undamaged rows already have
+   title == statement). ⚠ `ASM-017` deliberately untouched — its 73-char title is real prose, and a
+   mechanical "title differs from statement" rule would have destroyed it. **The requirement half is
+   unchanged:** `NFR-006`, `FR-032`, `FR-153` have title AND statement cut, so no intact source exists.
+3. ✅ **`DW-029` → `Done`**, under `DEC-064` d1's precedent (closed because the work SHIPPED). ⚠ Its
+   trigger now states what Done does NOT mean: criteria were never written for all 162, it ran to the
+   operator's end condition, and **its structural point still stands** — requirement status measures
+   whether anyone WROTE a criterion. Making that authoritative needs a NEW row, not reopening this one.
+4. ✅ **`LL-011` Approved and PINNED** — eleven lessons now bind; `lessons-confirmed` passes.
+   ✅ **`DEF-082` carried, NOT reconstructed** (operator's call): a plausible reconstruction from
+   second-hand narrative reads exactly like a record. `DEF-101` documents the honest gap.
+5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
+   **all 53 open rows carry a recorded human judgement for the first time.**
 
 ### Open, and the operator's alone
 
