@@ -52,6 +52,7 @@
     "goToDashboard": "Go to dashboard",
     "skipToContent": "Skip to main content",
     "breadcrumb": "Breadcrumb",
+    "mobileNotice": "ACMP is not optimized for small screens. Use a tablet or desktop for the full experience.",
     "reload": "Reload page",
     "comingSoon": "This area will be built in a later phase.",
     "deferredLead": "Diagrams are maintained outside ACMP.",
