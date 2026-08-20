@@ -240,6 +240,14 @@ services:
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
       Authentication__Keycloak__RequireHttpsMetadata: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      # ⚠ DEF-099 — WITHOUT THIS LINE NOT ONE TRACE EVER REACHED Seq, in any environment, silently.
+      # The .NET OTLP exporter defaults to grpc, which posts the endpoint VERBATIM; Seq answers 404 on
+      # /ingest/otlp and 200 on /ingest/otlp/v1/traces. http/protobuf makes the SDK append the signal
+      # path (/v1/traces, /v1/metrics), so one base endpoint serves both. The SDK swallows export
+      # failures unless its self-diagnostic log is on, which is why this survived since the
+      # instrumentation shipped. ⚠ VERIFY A CHANGE HERE BY SENDING TRAFFIC AND ASSERTING THE SPAN
+      # COUNT MOVES — a clean start-up proves nothing, which is exactly how this was missed.
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "acmp-api"
       # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
       # registered at all, so the invite/role endpoints fail at composition rather than half-working.
@@ -394,6 +402,14 @@ services:
       - Webex__OAuthSetupKey
     environment:
       DOTNET_ENVIRONMENT: Production
+      # ⚠ DEF-099 — the worker had NO OTEL_ vars at all while Program.cs registers an OTLP exporter and
+      # its own comment says "Endpoint from the same OTEL_* env vars the API reads". Compose environment
+      # is PER-SERVICE and inherits nothing, so the exporter fell back to the SDK default
+      # http://localhost:4317 — nothing listens there inside this container. The job-EXECUTION spans
+      # (PR #297) and the DB/HTTP spans (PR #296) were produced and dropped.
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "acmp-worker"
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__Secure: "false"
