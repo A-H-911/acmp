@@ -54,8 +54,24 @@ test.describe('NFR-063 — not-optimized-for-mobile notice', () => {
     // dir lives on <html> (i18n/index.ts applyDirection), which is what the app really sets.
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(notice).toBeVisible();
-    // Assert real Arabic rather than a key echo: a deleted key renders 'common.mobileNotice'.
-    await expect(notice).toContainText('الشاشات الصغيرة');
+
+    /*
+     * ASSERT THE PROPERTY — "real Arabic renders" — NOT A HAND-PICKED FRAGMENT.
+     *
+     * ⚠ THE FIRST VERSION OF THIS ASSERTION FAILED IN CI AND THE REASON IS WORTH KEEPING.
+     * It looked for the substring 'الشاشات الصغيرة', which appears to be right there in the
+     * sentence. It is not: the string renders 'للشاشات الصغيرة', because the preposition لـ
+     * absorbs the alef of the definite article ال. The standalone form الشاشات never occurs.
+     * That is the same grammar rule DEC-032 records for the الهيكلة term family — Arabic
+     * morphology is a RULE, not a string substitution — and it bites test assertions exactly
+     * as it bites renames.
+     *
+     * So this checks the script range instead: any run of Arabic characters proves the AR
+     * bundle resolved, and survives every future rewording of the sentence. Paired with the
+     * key-echo check, which is the failure mode that would otherwise render "a notice" and
+     * satisfy a laxer assertion.
+     */
+    await expect(notice).toContainText(/[؀-ۿ]{3,}/);
     await expect(notice).not.toContainText('common.mobileNotice');
 
     await page.setViewportSize(DESKTOP);
