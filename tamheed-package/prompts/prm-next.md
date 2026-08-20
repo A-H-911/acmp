@@ -8,7 +8,7 @@ when the work changes, **edit it — do not create a new `prm-*.md`.**
 Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else.
 
 ```
-server_info()                                # expect tamheed 4.4.1, root = C:\Users\ahammo\Repos\acmp
+server_info()                                # expect tamheed 4.4.2, root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
 gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
                                              # REAL finding - read its failure list, it names the token.
@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale tally **eight** times — and **three of those were on 2026-08-19, written and
+file has carried a stale tally **nine** times — and **three of those were on 2026-08-19, written and
 then invalidated within the SAME session** by the very work the session was doing: it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false, and its requirement tally
 went stale the moment batch 13 recorded two verdicts. A prompt that restates a number is a prompt that
@@ -27,6 +27,15 @@ will lie to you. **Point at the live check, do not quote it.** If you find this 
 
 ⚠ The eighth fix (batch 13) stopped patching the numbers and **deleted them**, replacing each with the
 command that measures it. A tally you can re-type is a tally that will go stale again; a command cannot.
+
+⚠ **The NINTH fix was different and is worth copying.** It was not found by tripping over a wrong number
+mid-task — it was found by **reading this file end to end** before handing it to a fresh session, which
+surfaced **nine** wrong statements at once: a stale tool version, four row states that had since changed,
+three tallies, and a **section heading that contradicted its own body** (`SC-021` was labelled "needs you,
+Proposed" three lines above a paragraph saying it was Merged). A fresh session would have acted on the
+heading. **Before you hand this file on, re-read the WHOLE thing and re-verify every row state it asserts
+against the live register** — batch 13's pass checked 19 of them mechanically and found zero mismatches
+only AFTER the nine fixes.
 
 ---
 
@@ -57,12 +66,15 @@ BY CONTENT rather than by ancestry (trap 25).
   written by `progress_update` and rendered by `export_html` and **read by nothing else**, so a correction
   entry changes no gate, no readiness rule and no view. That is why appending `PE-470` never cleared anything.
 - **New rows**: `DW-062` Done · `DW-063` (NFR-010 not configuration-driven) · `DW-065` (no trace ever
-  OBSERVED) · `DEF-095` (worker csproj cites a base image it does not use) · `DEF-096` (see below).
-- **`NFR-054` MEASURED, not estimated** (`DW-059` Done, `DEF-096` open): web 51.1 MB, worker 245 MB, api
-  257 MB, **sqlserver-fts 3.62 GB**. The 500 MB cap fails on the database image by **7.2x and cannot be made
-  to pass** — its base alone is 1.67 GB. The minimal-base clause fails on a DIFFERENT set (api and worker are
-  Debian `aspnet:8.0`, web genuinely is alpine). **Two clauses, disjoint image sets, one operator disposition
-  needed.**
+  OBSERVED) · `DW-066` (alpine/distroless migration) · `DEF-095` (open) · `DEF-096` (Fixed by `SC-024`).
+- **`NFR-054` MEASURED, then DISPOSITIONED** (`DW-059` Done, `DEF-096` Fixed, `SC-024` Merged): web 51.1 MB,
+  worker 245 MB, api 257 MB, **sqlserver-fts 3.62 GB**. The 500 MB cap failed on the database image by
+  **7.2x and could not be made to pass** — its base alone is 1.67 GB. `SC-024` narrowed the SIZE clause only.
+  ⚠ **The operator was offered the easy path and REJECTED it:** the first proposal also softened the
+  minimal-base clause, which would have made Debian `aspnet:8.0` compliant and closed everything with zero
+  work. They declined, so that half became **`DW-066`** — tracked work, not a relaxed rule. See §6.
+- **tamheed upgraded 4.4.1 → 4.4.2 and `DEF-093` is FIXED** — see the next section. The old "never report
+  gates green" rule is retired.
 
 - **`SL-029` (FR-030 topic conversion)** — merged as `bcc3d00` (#293) + `b065a29` (#294), `AC-113` Met.
 - **`SL-030` (Confidentiality ABAC + egress redaction, FR-163)** — `AC-114` Met (`AV-192`), slice and
@@ -97,7 +109,7 @@ because fixed" from "green because blind".**
 
 ### The advisories — none is a task
 
-`defects-minor` (just **`DEF-087`**), `deferred-work-reviewed` (**grows on purpose — the DW-029 programme
+`defects-minor` (currently **`DEF-087`** and **`DEF-095`**), `deferred-work-reviewed` (**grows on purpose — the DW-029 programme
 ADDS a row every time it finds a partial, and closing one to green it manufactures status; batch 13 alone
 added three**), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read them live; the
 row COUNT is deliberately not written here because it moves every batch.**
@@ -105,9 +117,8 @@ row COUNT is deliberately not written here because it moves every batch.**
 ⚠ **Slice-scope `defects-closed` is `indeterminate`** — almost no defect row carries `found_in`
 (`DEF-087`), so the slice-scope rule cannot discriminate. Package-scope `defects-closed` **passes** again
 now that `DEF-093` is Fixed, so the superset argument works once more — but it only ever ruled out
-**critical/high**. Open **medium/low** defects are real and sit in the `defects-minor` advisory: currently
-`DEF-087`, `DEF-095`, `DEF-096`. **Read that advisory; do not read a green `defects-closed` as "nothing is
-open".**
+**critical/high**. Open **medium/low** defects are real and sit in the `defects-minor` advisory. **Read that
+advisory live; do not read a green `defects-closed` as "nothing is open".**
 
 **Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`) and bind every session via the tool-owned
 note. `LL-007` — **a checker that reports success may have had nothing to check** — keeps firing on my OWN
@@ -166,7 +177,7 @@ BEFORE WRITING A `DW-` ROW OR OFFERING THE OPERATOR AN OPTION.**
   admits Chairman/Secretary only, both committee-wide readers, and filtering would renumber the column
   as if hidden topics were absent — corrupting the order for the people entitled to see them.
 
-### ⚠ THE ONE THING THAT NEEDS YOU: `SC-021`, Proposed
+### ✅ `SC-021` — Merged. Nothing here needs you; this is the record of a correction.
 
 The 2026-08-19 sweep read each surface instead of trusting the list, and **the list was wrong in both
 directions** (`LL-006`):
@@ -221,10 +232,10 @@ work.
 
 ### ⚠ The programme's real yield is PARTIALS, not verdicts
 
-Nine requirements have been found built-on-one-side-only, every one invisible in the register **because
+TEN requirements have been found built-on-one-side-only, every one invisible in the register **because
 it had no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030`
 (`DW-041`), `NFR-035` (`DW-042`, since BUILT and closed), `NFR-063` (`DW-061`), and from batch 13
-`NFR-043` (`DW-062`), `NFR-010` (`DW-063`) and `NFR-053` (`DW-064`). `NFR-025` was worse — a **Must**
+`NFR-043` (`DW-062`), `NFR-010` (`DW-063`), `NFR-053` (`DW-064`) and `NFR-054` (`DW-066`). `NFR-025` was worse — a **Must**
 security requirement divergent on both clauses, fixed under `DEF-094`.
 
 ⚠ **Batch 13's `DW-064` is the sharpest one yet, and the divergence was written in a COMMENT the whole
@@ -316,9 +327,10 @@ have been wrong. Read the implementation — in BOTH directions.
 2. **A measurement that indicts known-good code is measuring itself.** ⚠ Fired again 2026-08-18:
    `grep -c "Convert/3"` returned 2 and nearly read a deleted allowlist entry as surviving — the hits
    were the **comment explaining the deletion**. Match the quoted entry, not the substring.
-3. **The LSP diagnostics panel is stale constantly** — it fired **four** times last session, once for
-   a file that did not exist and repeatedly for symbols added on the current branch. **Build before
-   believing it.**
+3. **The LSP diagnostics panel is stale constantly** — it fired repeatedly again in batch 13, including a
+   full screen of errors for `Topic.IsRestricted` and friends that had been merged and green for days, and
+   twice for `vr-*.tsx` files that do not exist and were never tracked. **Build before believing it**; the
+   build is the arbiter and it took ten seconds to settle every one.
 
 ### B — What your tests structurally cannot see
 
@@ -347,8 +359,9 @@ have been wrong. Read the implementation — in BOTH directions.
 9. **The test must fail without the change.** Mutation-check every guard and name which test fails.
 10. **A mutation nothing catches is a decision nobody recorded.**
 11. **A HOLLOW PASS IS WORSE THAN AN `indeterminate`.** ⚠ Slice-scope `defects-closed` is
-   `indeterminate` (0 of 88 defects carry `found_in`). Answer from the **superset** instead:
-   package-scope `defects-closed` passes, so no open critical/high defect exists anywhere.
+   `indeterminate` — almost no defect row carries `found_in` (`DEF-087`). The **superset** answers only
+   part: package-scope `defects-closed` passing rules out open **critical/high** and says nothing about
+   medium/low, which live in the `defects-minor` advisory. Read both.
 12. **A green exit code can come from a run that checked nothing.** Confirm the mutant **COMPILED**
    — a mutation run that silently failed to apply reports a clean pass.
 
@@ -447,6 +460,12 @@ have been wrong. Read the implementation — in BOTH directions.
 26. **A log tail is the wrong instrument for a failure whose distance you do not know** (`DEF-074`).
 27. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** Repository or package, never
    scratchpad.
+27b. ⚠ **A PLUGIN RELOAD ORPHANS THE PACKAGE LOCK.** `/reload-plugins` kills the MCP server process while
+   `data/.lock` still names its pid, so the next `package_open` refuses with "another writer owns this
+   package". **Do not just delete it.** The operator guide's two discriminators decide: an **identity**
+   failure (the named pid is not running) OR an **ordering** failure (the process started AFTER the lock's
+   `taken_at`). Either one proves staleness. On Windows check with PowerShell — `Get-Process -Id <pid>` —
+   because Git Bash mangles `tasklist /FI` into a path. Then remove it deliberately and say why.
 28. ⚠ Delete throwaway visual-verify harnesses before committing — `vr-out/` is gitignored but a
    `vr-*.tsx` in `src/` is not, and it would ship.
 29. ⚠⚠ **A SCRIPT'S PATHS MUST NOT BE cwd-RELATIVE — CI RUNS IT FROM SOMEWHERE ELSE.** `ci.yml`'s
@@ -475,8 +494,9 @@ together, RTL verified · **if it is visual, look at it** · no secrets · `prog
 conventional commits, small and reviewable · branch → PR → green CI → squash-merge ·
 **register every finding as a Tamheed row AS YOU GO — including findings against your own work.**
 
-⚠ Before offering the operator a disposition for a capability, **sweep the requirement register
-first** (`LL-005`). ⚠ Scope changes, waivers and `force` are the operator's alone, and the interview
+⚠ Before offering the operator a disposition for a capability, **sweep `adrs`, `decisions` AND
+`open_questions` as well as `requirements`** (`LL-005`, and trap 32 — sweeping only the requirement register
+is what nearly reversed an Approved ADR). ⚠ Scope changes, waivers and `force` are the operator's alone, and the interview
 runs **every** time (`LL-002`) — plan approval is not scope-change approval.
 
 ### ⚠ Rules specific to the DW-029 programme (§2b) — they override habit
