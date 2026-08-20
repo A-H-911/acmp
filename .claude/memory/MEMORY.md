@@ -4,63 +4,45 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-20 · **batches 14–18** · `gate` 7/7, `readiness` `ready:TRUE`
+## ★ 2026-08-20 · **THE DW-029 PROGRAMME IS CLOSED** · `gate` 7/7 · `readiness ready:TRUE`
 
-- ⭐⭐ **`DEF-099` FIXED (#300 → `1da0e05`) — and it had TWO disjoint causes, the second visible only while
-  fixing the first.** api: bare endpoint + gRPC default → 404. **worker: NO `OTEL_` vars AT ALL**, so its
-  exporter fell back to `http://localhost:4317`; its own comment claimed the endpoint came from "the same
-  `OTEL_*` env vars the API reads" — **compose env is PER-SERVICE and inherits nothing.** `NFR-028` then
-  closed (`AC-138`), having been **deliberately held back** in batch 17: Met "no PII in traces" while no
-  trace arrived would have been **true for the wrong reason.** ⚠ `DW-065` is still `Open` and its **title is
-  now wrong** ("never been observed") — fix the title, keep the status.
-- ⚠⚠ **The original finding: OTLP traces had NEVER reached Seq in any environment.** Both compose files set the bare
-  `/ingest/otlp` endpoint and **`OTEL_EXPORTER_OTLP_PROTOCOL` is set NOWHERE**; the .NET exporter defaults
-  to **gRPC**, which posts the endpoint verbatim. Live: `POST /ingest/otlp` → **404**,
-  `POST /ingest/otlp/v1/traces` → **200**. The SDK swallows export failures silently.
-- ⭐⭐ **THE DISCRIMINATOR IS THE REUSABLE PART.** Under shipped config, 8 `/readyz` calls grew Seq's events
-  **679 → 739** while DB spans stayed at **exactly 72**, newest timestamp frozen. Same host, port and
-  container — **log path delivers, trace path does not.** A count alone proves nothing. **Verify any fix by
-  sending traffic and asserting spans MOVE, never by a clean boot.** This is also the real explanation of
-  `DW-065`: not "nobody looked" — **nothing ever arrived**. `AC-133` rests on spans that never land.
-- ⭐ **`NFR-028` evidence, now Met:** every SQL literal arrives as `?` and the decisive case is **not a
-  parameter** — the healthcheck's `SELECT 1` arrives as `SELECT ?`, so SqlClient sanitizes **literals**.
-  Log half: **24** logging sites in all of `src` (680 files), none naming a person, email, vote or content.
-  ⚠ The masking enricher matches by property NAME and covers **email but not names or vote content** — two
-  of three hold by CONVENTION, so the census is load-bearing and the enricher is only defence in depth.
-- ⚠ **HOW TO RUN A STACK HERE — copy this exactly.** `docker ps` empty but **5 populated volumes** exist and
-  `dev-up.sh` is `up -d --build`, the documented breaker. Use an **isolated project on FRESH volumes**, same
-  compose + env file so the config under test is the shipped one; **tag an existing CI image** to the name
-  compose expects to skip the 3.62 GB FTS build; bring up `sqlserver`+`seq` ALONE and confirm healthy first;
-  tear down `down -v` and **remove the tag** so a later `up` cannot reuse a stale image.
-- ⭐ **`NFR-034` Met (`AC-137`) — the "browser batch" closed WITHOUT a browser.** ⚠ **`axe-core` was already
-  a dependency** with three uncatalogued a11y artifacts including a **live Playwright sweep in both locales**.
-  What separates the WCAG four is **what each instrument can DO**: axe **never presses a key** (`DW-070`);
-  it passes on **3 routes of 52** (`DW-071`); the contrast gate covers **one of two thresholds and none of
-  four states** (`DW-072`). **Check what exists before believing a "needs a browser" label.**
-- ⭐⭐ **`NFR-039` → `DW-069`, now `LL-010` (pinned): when a requirement says X is the single source for Y,
-  CHECK X EXISTS BEFORE MEASURING Y.** The glossary is a **circular pointer between two English documents**
-  — clause two is *undecidable*, not unverified. ⚠ 76 AR divergences, but **Arabic adjectives agree in
-  gender**: 55 morphological (correct), 21 lexical, and even those are candidates.
-- ⭐⭐ **`LL-008` (pinned): sweep registers by KEYWORD, not just id.** Batch 14: **0 id hits for 6 of 7**;
-  the keyword sweep found `ADR-0035` (ratified) replacing the MinIO `NFR-027` still mandated. Batch 15:
-  **1 id hit vs 24 keyword hits**, three of the extras decided the batch.
-- ⭐⭐ **`LL-009` (pinned): two instruments agreeing is ONE instrument when they share a mechanism.** Two
-  scanners, identical 13/7, both blind to C# **target-typed `new(`**. See [[scan-must-prove-it-had-a-subject]].
-  Fired again in batch 17: I read Seq for **flat dotted** property names and got zero — Seq nests them
-  (`db`→`query`→`text`), so "no spans" was my reader, not the stack.
-- ⚠⚠ **A BROKEN MEASUREMENT PRINTED A CONFIDENT WRONG VERDICT.** An inline `python -c` inside `$(...)`
-  fails silently on this shell — both sides returned empty, compared equal, and printed "shipped config does
-  NOT export" before any evidence existed. **Trap 2.** Use a script FILE that prints count, max and the wall
-  clock together so a silent failure cannot look like a result.
-- ⚠ **A comment-only `.csproj` edit BROKE THE BUILD** (XML forbids `--` in a comment; `MSB4025`, 0.05 s).
-  ⚠ **`DEF-097`:** two classes registering a **process-global** `ActivityListener` recorded each other's
-  spans — 1 in 8 runs; fixed by serializing both, **proven by FORCING the overlap** (5 fail without, 1133
-  with). ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`,
-  `scope_changes.decision_ref/description`; nullable fields preserved by omission; **approving a lesson is
-  NOT an edit** — content must come back byte-identical.
-- ⭐⭐ **A DERIVATION IS A COMPUTATION, NOT A FACT YOU CAN UPDATE** — and **an id-and-status verifier cannot
-  see a stale INSTRUCTION or a PROSE NUMBER.** All 124 ids verified live while the file still carried wrong
-  counts. **Read the prose; the mechanical pass is the easy half.**
+> ▶ **START AT `tamheed-package/prompts/prm-next.md` — it was rewritten end to end on 2026-08-20** (783 →
+> 498 lines) because its spine was obsolete. §6 names the next work. ⚠ **Read the prose, not just the ids.**
+
+- ✅ **`SL-031` Implemented, `PH-6` closed — EVERY PHASE IS `Implemented` EXCEPT `PH-3`**, which stays
+  `Approved` on purpose (`WBS-20.4` is the email adapter vs a hard constraint, `DEC-055`; "repairing" it is
+  the manufactured-status move `DEF-010` records). `SL-014` is `Deferred` (`P14`, `DEC-028`).
+- ▶ **NEXT WORK, chosen by the operator 2026-08-20:** (1) disposition the **13 actionable** deferred-work
+  rows — 53 are open and `deferred-work-reviewed` has NEVER been judged; (2) fix **both** blind controls.
+  ⚠ `DEF-087`'s own row warns its fix must NOT be mechanical (the obvious rule closes `WBS-20.4`) — give it
+  clean context. `assumptions-current` is a judgement per assumption, not a field to populate.
+- ⚠⚠ **THE CANDIDATE RULE WAS BROKEN: "named ANYWHERE in a DW row" CONFLATES A MENTION WITH A COVERAGE.**
+  My own `DW-074` prose mentioning "the `NFR-018` ASVS assessment" made `NFR-018` vanish from the worklist.
+  **A well-cross-referenced register would eventually report itself finished.** Fixed to TITLE-named.
+- ⚠⚠ **`DEF-099` — OTLP traces had NEVER reached Seq in ANY environment** (bare `/ingest/otlp` + the
+  exporter's gRPC default → 404; the worker had **no `OTEL_` vars at all**). Fixed, #300. ⭐ **THE
+  DISCRIMINATOR IS THE REUSABLE PART:** events grew 679→739 while DB spans sat at **exactly 72** — same host,
+  port and container, log path delivering, trace path not. **Verify observability by sending traffic and
+  asserting spans MOVE, never by a clean boot.**
+- ⭐⭐ **Three lessons added and pinned (10 now bind).** `LL-008` sweep by KEYWORD not just id — an id-only
+  sweep returned **0 hits for 6 of 7** candidates and missed a ratified ADR. `LL-009` two instruments
+  agreeing is ONE when they share a mechanism. `LL-010` if a requirement says X is the single source for Y,
+  **check X exists before measuring Y**.
+- ⚠ **COUNT THE REQUIREMENT'S CLAUSES BEFORE YOU COUNT YOUR FINDINGS** — twice, strong evidence covered
+  two-thirds of a three-part requirement and nearly carried a `Met` (`NFR-037`, `NFR-033`).
+- ⚠ **The operator declined to relax a requirement TWICE** (`SC-024`, `DEC-066`). **The register is kept as
+  a statement of the TARGET, not the status quo — do not offer a narrowing as the easy path.**
+- ⚠⚠ **I put an UNMEASURED number in a commit message** (`46821d6`: "11/17"; real split **10/18**) after a
+  `tail` cut the output off screen. Caught only by re-measuring before the handoff. **A number entering a
+  durable artifact must come from output visible in the same breath.**
+- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the tool's token limit** (~82 KB); `columns` does not
+  narrow the payload. Count from `data/requirements.jsonl`.
+- ⚠ **Running a stack here:** `docker ps` empty does NOT mean safe — 5 populated volumes exist and
+  `dev-up.sh` is `up -d --build`, the documented breaker. Isolated project, FRESH volumes, tag an existing
+  CI image to skip the 3.62 GB FTS build, `sqlserver`+`seq` healthy first, then `down -v` and remove the tag.
+- ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`, `scope_changes.decision_ref/
+  description`, `slices.title/objective`, `phases.title`. Nullable fields preserved by omission.
+  **Approving a lesson is NOT an edit** — content must come back byte-identical.
 
 ## ★ batches 14+15 — detail folded into the head above; only what is not repeated there
 
