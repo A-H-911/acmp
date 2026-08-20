@@ -378,6 +378,8 @@ LL-004,PE-415,learned_from
 LL-005,PE-418,learned_from
 LL-006,DEC-062,learned_from
 LL-006,PE-435,learned_from
+LL-008,DEF-098,learned_from
+LL-009,PE-508,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from

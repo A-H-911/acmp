@@ -18,12 +18,21 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale tally **nine** times — and **three of those were on 2026-08-19, written and
-then invalidated within the SAME session** by the very work the session was doing: it said
+file has carried a stale tally **ten** times — and **four of those were written and then invalidated
+within the SAME session** by the very work the session was doing: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false, and its requirement tally
 went stale the moment batch 13 recorded two verdicts. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠ **THE TENTH (batch 14) IS THE MOST INSTRUCTIVE, BECAUSE THE MECHANICAL CHECK PASSED.** After reconciling
+this file I extracted every governance id it references — 68 across nine families — and verified all 68 live:
+zero dangling, zero status mismatches. **The file still contained three wrong statements**, because none of
+them is an id or a status: a `⚠ read this requirement carefully` instruction for a requirement that batch had
+just closed, and two prose counts ("the first subtraction alone yields twenty", "five of the original
+twenty"). ⚠⚠ **An id-and-status verifier cannot see a stale INSTRUCTION or a PROSE NUMBER — and a prose
+number is exactly what this section is about.** The fix was to delete every intermediate count and leave the
+three-step rule. **When you re-verify this file, read the prose; the mechanical pass is the easy half.**
 
 ⚠ The eighth fix (batch 13) stopped patching the numbers and **deleted them**, replacing each with the
 command that measures it. A tally you can re-type is a tally that will go stale again; a command cannot.
@@ -313,21 +322,20 @@ have been wrong. Read the implementation — in BOTH directions.
   is open and is honest:** EF Core can inline constants, so a value could in principle land in the statement
   text — unobservable without a captured trace (`DW-065`). The **Serilog half** (`SensitiveDataMaskingEnricher`,
   and the no-names/emails/vote-content claim) is UNREAD. Do not write a verdict covering only the trace half.
-  ⚠ **`NFR-027` IS NOT A FRESH READ — see `PE-493`.** Three rows name it and NONE covers it: `SC-019` and
-  `DEF-086` mention it only to DISTINGUISH it, and `DEF-094` fixed the ADJACENT `NFR-025` by narrowing the
-  recording role gate and adding read auditing. **Its subject matter was actively changed**, so read the code
-  at its current state, not at whatever a pre-`DEF-094` reading would have found. A mention is not a coverage.
-  ⚠ **DERIVE THIS LIST, DO NOT TRUST IT — AND MIND THE SECOND SUBTRACTION.** The rule is: the `Approved`
-  Must-priority non-functional ids, minus every id named in a `deferred-work` row, **minus the
-  ops/runtime group `PE-485` names** (`NFR-015 017 044 052 062`), which is uncovered by any `DW-` row but
-  is separately blocked on a RUNNING STACK and is not code-verifiable. The first subtraction alone yields
-  **twenty**, not fifteen. ⚠ This correction was itself found by RUNNING the rule against the written
-  list rather than trusting that the two agreed — they were authored in the same edit and did not. Four are known-hard and were excluded from batch 13
+  ✅ **`NFR-027` IS CLOSED** (`AC-135`/`AV-213` Met, batch 14) — the read-it-at-its-current-state warning that
+  stood here is spent. It was right, though, and the shape generalises: three rows named `NFR-027` and none
+  covered it, because `DEF-094` had changed its *adjacent* requirement. **A mention is not a coverage.**
+  ⚠ **DERIVE THIS LIST, DO NOT TRUST IT — AND MIND THE SECOND SUBTRACTION.** The rule, in three steps: the
+  `Approved` Must-priority non-functional ids; **minus** every id named anywhere in a `deferred-work` row;
+  **minus** the ops/runtime group `PE-485` names (`NFR-015 017 044 052 062`), which no `DW-` row covers but
+  which is separately blocked on a RUNNING STACK and is not code-verifiable. ⚠ **No intermediate count is
+  written here on purpose — every one that ever was went stale, twice within a single session.** Run all
+  three steps. Four are known-hard and were excluded from batch 13
   on purpose: `NFR-018` needs a DAST scan and a penetration test, `NFR-019` needs a TLS scan against a
   running stack, `NFR-023`'s own text defers to an org security policy that has never been confirmed
   (operator-blocked), and `NFR-038` rides on `P14`, deferred indefinitely by `DEC-028`. `NFR-031`–`034`
   are the WCAG group and want a browser, not a reader.
-- **Batch 13 closed five of the original twenty**: `NFR-021` (`AC-131`) and `NFR-049` (`AC-132`) Met;
+- **Batch 13 closed five**: `NFR-021` (`AC-131`) and `NFR-049` (`AC-132`) Met;
   `NFR-043`, `NFR-010` and `NFR-053` partial, recorded as `DW-062`/`DW-063`/`DW-064`.
 - **18 performance NFRs are already recorded** as `DW-043`…`DW-060`, one row each. ⚠ Three carry a
   WARNING rather than a sizing — `DW-057`, `DW-058`, `DW-054` — read those before measuring anything.
