@@ -18,13 +18,22 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale tally **ten** times, and an **eleventh** wrong number escaped into a commit
-message instead. **Four of the ten were written and then invalidated within the SAME session** by the
-very work that session was doing: on 2026-08-19 it said
-`readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false, and its requirement tally
-went stale the moment batch 13 recorded two verdicts. A prompt that restates a number is a prompt that
+file has carried a stale statement **eleven** times, and **two** unmeasured assertions have escaped into
+commit messages, which cannot be amended. **Five of the eleven were written and then invalidated within
+the SAME session** by the very work that session was doing: on 2026-08-19 it said
+`readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
+went stale the moment batch 13 recorded two verdicts; and on 2026-08-20 §1's *"`assumptions-current`
+reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was made false by the
+disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE TWELFTH IS THE MOST EMBARRASSING, BECAUSE IT HAPPENED IN THE SESSION WHOSE OWN FINDINGS ARE
+ABOUT THIS.** Commit `a2066ba` asserts *"readiness ready:TRUE"* about the state after twelve activations.
+Only `gate_run()` was run after those writes; the last `readiness_check` preceded every one of them. The
+assertion was later verified true — **and it was still unmeasured when written.** ⚠ **An assertion that
+happens to be correct is still an unmeasured assertion**, and "it came out right" is the reasoning that
+lets the practice rot. It was caught by a review pass, not by me. Same breath, or don't write it.
 
 ⚠⚠ **THE ELEVENTH DID NOT REACH THIS FILE — IT REACHED A COMMIT MESSAGE, WHICH CANNOT BE AMENDED.**
 Commit `46821d6` states the deferred-work triage split as *"out of scope 11 / blocked on a stack 17"*. The real
@@ -179,6 +188,12 @@ themselves within days of being written.
 - ⚠ **`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY SHELLS** — routed, well-commented,
   drawing nothing; their own headers say so. Requirement ids in source comments are **positive-only**
   evidence: one such citation was a *deferral* note.
+  ⚠⚠ **BUT `Calendar.tsx` IS NO LONGER IN THIS "DO NOT REBUILD" SECTION'S SPIRIT.** `DW-037` is
+  **`Activated`** (`SC-028`) and `FR-035` is back to `Approved`: filling that shell is **live, approved
+  work**. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
+  prohibition. ⚠ Build it against the **Meetings** API (`MeetingDetailDto.ScheduledStart` +
+  `AgendaItemDto.TopicId`); `Topic.Schedule` discards the meeting id into an unconsumed event.
+  `Timeline.tsx` is unchanged — `FR-036`/`DW-001` stay deferred, since topics still carry no planned span.
 - **Real accessibility instruments already exist and are easy to miss:** `axe-core` is a dependency, and
   there is a jsdom axe test over 5 surfaces, a **live Playwright axe sweep in BOTH locales** with the full
   `wcag22aa` tag set, and a token-contrast test computing real WCAG luminance over 20 pairs in two
@@ -195,6 +210,10 @@ themselves within days of being written.
 - ⚠ **The `mvp` / Phase attributes record the ORIGINAL scoping and the ladder outgrew them.** Of the
   53 `mvp=0` requirements once described as "deliberately not built", **about 30 are built and
   shipped**. `SC-020` reclassified only the **24 verified absent from source**. See `LL-006`.
+  ⚠ **`Deferred` is no longer a one-way label.** Four of `SC-020`'s 24 have since come back to
+  `Approved` — `FR-035` via `SC-028`, and `FR-032`, `FR-154`, `FR-155` via `SC-029` — because their
+  deferred-work rows were activated and **a requirement labelled not-in-v1 beside `Activated` work is a
+  contradiction nothing in the package can see.** Measure the Deferred set; do not assume it only grows.
 - **`DEF-012` is Won't-fix** (`DEC-055`): the one mechanical rule that would "fix" `v_backlog` closes
   `WBS-20.4`, the email adapter, against a hard constraint.
 
@@ -211,8 +230,11 @@ themselves within days of being written.
 1c. ⚠⚠ **`LL-006` — A PROXY IS NOT THE ARTIFACT, AND IT FAILED FOUR TIMES IN ONE SESSION, EACH TIME
    INSIDE THE CORRECTION OF THE LAST.** A register attribute, then a register row, then a **filename**,
    then a filename again. ⚠ **`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY
-   SHELLS** — present, routed, well-commented, and drawing nothing; their own headers say so. Check
-   **both** directions: the sweep also found `FR-032` unbuilt inside the "presumed built" group.
+   SHELLS** — present, routed, well-commented, and drawing nothing; their own headers say so. (⚠ Status
+   note, so this is not misread as a prohibition: `Calendar.tsx`'s row `DW-037` is now **`Activated`** —
+   see §2. The LESSON here is about the file's existence proving nothing, not about the work being off
+   limits.) Check **both** directions: the sweep also found `FR-032` unbuilt inside the "presumed built"
+   group — and `FR-032` is now `Approved` with `DW-033` `Activated`, so that example has moved too.
    Requirement ids cited in source comments are strong evidence of being BUILT, but the instrument is
    **positive-only** and one citation was a **deferral note** (`InvariantStatus.cs:7`).
 2. **A measurement that indicts known-good code is measuring itself.** ⚠ Fired again 2026-08-18:
