@@ -15,6 +15,11 @@ namespace Acmp.Application.Tests.Webex;
 //
 // The span tests below cover NFR-043's Hangfire job-dispatch clause (DW-062). This seam is the only place an
 // ACMP request hands work to Hangfire, so it is the only place a dispatch span can come from.
+// ⚠ SERIALISED (DEF-097). Listen() registers a PROCESS-GLOBAL ActivityListener on the ACMP source, and so
+// does HangfireJobTracingFilterTests. Run in parallel, each records the other's span and ContainSingle()
+// fails - observed as this class recording "hangfire.execute SampleJob.RunAsync". AcmpTelemetry has exactly
+// two StartActivity sites and exactly two test classes listen, so serialising both closes the leak.
+[Collection(HangfireServerCollection.Name)]
 public class HangfireWebexJobSchedulerTests
 {
     private static readonly Expression<Func<WebexSendJob, Task>> Call =

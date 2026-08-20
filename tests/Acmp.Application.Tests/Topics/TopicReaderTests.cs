@@ -99,6 +99,29 @@ public class TopicReaderTests
         url.Should().Be("https://storage.example/presigned");
     }
 
+    // NFR-027 - "time-limited, <= 1 h expiry". The second of the two pre-sign call sites in the product;
+    // the test above and every other one here pass Arg.Any<TimeSpan>(), so UrlLifetime was unguarded.
+    [Fact]
+    public async Task GetMaterialUrl_expiry_stays_inside_the_one_hour_ceiling()
+    {
+        await using var db = Db();
+        var topic = NewTopic();
+        var attachment = topic.AddAttachment("deck.pdf", "application/pdf", 2048, "key-1", "kc-sec", "Secretary", Now);
+        db.Topics.Add(topic);
+        await db.SaveChangesAsync();
+
+        TimeSpan? captured = null;
+        var files = Substitute.For<IFileStore>();
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), "key-1", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(ci => { captured = ci.ArgAt<TimeSpan>(2); return "https://storage.example/presigned"; });
+
+        await Reader(db, files).GetMaterialUrlAsync(topic.PublicId, attachment.PublicId);
+
+        captured.Should().NotBeNull("the reader must pass an explicit expiry, never the store's default");
+        captured!.Value.Should().BePositive("a zero or negative expiry would be signed as already dead");
+        captured.Value.Should().BeLessThanOrEqualTo(TimeSpan.FromHours(1), "NFR-027 caps presigned URLs at 1 h");
+    }
+
     [Fact] // THE SCOPE IS THE LOOKUP: another topic's attachment is not reachable by id
     public async Task GetMaterialUrl_refuses_an_attachment_that_belongs_to_a_different_topic()
     {
