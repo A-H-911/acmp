@@ -12,8 +12,9 @@ server_info()                                # expect tamheed 4.4.2, root = C:\U
 package_open("tamheed-package")
 gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
                                              # REAL finding - read its failure list, it names the token.
-readiness_check("package")                   # blocking rules should all pass; advisories will fail and
-                                             # that is normal. ready:FALSE = a real blocker, go read it.
+readiness_check("package")                   # ⚠ ready:FALSE RIGHT NOW, and CORRECTLY: DEF-099 (high, open)
+                                             # blocks defects-closed. Read it; do NOT soften it to go green.
+                                             # Advisories failing is normal.
 git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
 ```
 
@@ -59,6 +60,55 @@ and it is where you start.
 **You are on `main`, clean, nothing unpushed, and CI on `main` is green.** There is no feature branch —
 batch 14's two PRs both merged: **#298 → `4e5ebd0`** and **#299 → `59effb8`**, each verified on `origin/main`
 BY CONTENT rather than by ancestry (trap 25). Batch 13's were **#296 → `57e019d`** and **#297 → `a6261bf`**.
+
+### ⚠⚠ BATCH 17 (2026-08-20) — `readiness` IS `ready:FALSE` ON PURPOSE. READ `DEF-099` FIRST.
+
+**`DEF-099` (high, OPEN) blocks `defects-closed`. That is the mechanism working, not a regression** — do
+not "repair" it and do not soften the severity to green the gate.
+
+- ⚠⚠ **OTLP TRACES HAVE NEVER REACHED Seq IN ANY ENVIRONMENT.** Both compose files set
+  `OTEL_EXPORTER_OTLP_ENDPOINT` to the bare `/ingest/otlp` and **neither sets
+  `OTEL_EXPORTER_OTLP_PROTOCOL`, which is set nowhere in the repository.** The .NET exporter defaults to
+  **gRPC**, which posts the endpoint verbatim. Probed live: `POST /ingest/otlp` → **404**,
+  `POST /ingest/otlp/v1/traces` → **200**. The SDK swallows export failures unless self-diagnostics are on.
+- **THE DISCRIMINATOR, and it is the reusable part:** under shipped config, 8 `/readyz` calls grew Seq's
+  event count **679 → 739** while the DB span count stayed at **exactly 72** with an unchanged newest-span
+  timestamp. Same host, same port, same container — **the log path delivers and the trace path does not.**
+  A count alone would have proved nothing. **Verify any fix the same way: send traffic, assert spans MOVE.**
+- **This is the real explanation of `DW-065`.** That row says no trace was ever OBSERVED and has been read
+  as nobody having looked. **Nobody could have looked.** `AC-133` (NFR-043) rests on spans that never arrive.
+- ✅ **`NFR-028`'s residual IS SETTLED** — the thing `PE-501` said only a captured trace could settle. Every
+  literal arrives as `?`, and the decisive case is **not a parameter**: the healthcheck's `SELECT 1` — a
+  compile-time constant — arrives as `SELECT ?`. So SqlClient sanitizes **literals**, not just parameters.
+  ✅ Its **Serilog half is done too and needed no stack**: **24** logging call sites in all of `src` (680
+  files, two counting methods agreeing on receiver breadth) and **not one** names a person, email, vote or
+  content. ⚠ **No verdict was recorded, deliberately** — "no PII reaches the traces" while `DEF-099` means no
+  trace reaches anything would be a Met verdict resting on a pipeline that does not deliver.
+- ⚠ **HOW THE STACK WAS RUN, because the next stack batch should copy it exactly.** `docker ps` showed no
+  ACMP containers but `docker volume ls` showed **five populated volumes** and containers exited 3 weeks ago
+  — the dev-stack rebuild pitfall, live. `dev-up.sh` is `up -d --build`, the exact breaker. Instead: an
+  **isolated project on FRESH volumes**, same compose file and env file, so the config under test was the
+  shipped one while the dev stack's data was **structurally unreachable rather than merely avoided**. Tag an
+  existing CI image to the name compose expects to skip the 3.62 GB FTS build. Bring up `sqlserver` + `seq`
+  ALONE and confirm healthy before the api. Tear down with `down -v` (yours, not the dev stack's) and
+  **remove the tag** so a later `up` cannot silently reuse a stale image.
+
+### What batch 16 landed (2026-08-20) — the browser batch, which closed without a browser
+
+- **`NFR-034` → `AC-137`/`AV-215` Met.** WCAG 1.4.1 asks which CHANNELS carry meaning, which source answers
+  exhaustively. All three named indicators carry localized text; `StatusChip` marks its dot `aria-hidden`;
+  the risk matrix is `role="img"` with a localized `aria-label`. 64 toned elements over 124 components.
+- ⚠ **Check what exists before believing a "needs a browser" label.** `axe-core` was ALREADY a dependency
+  and three a11y artifacts existed uncatalogued: a jsdom axe test (5 surfaces), a **live Playwright axe
+  sweep in BOTH locales** with the full `wcag22aa` tag set, and a token-contrast test computing real WCAG
+  luminance. What separates the four requirements is **what each instrument can DO**, not whether one exists.
+- **`DW-070`** (`NFR-031`) — the DnD keyboard alternative exists and `target-size` is enforced on it, but
+  "100% operable via keyboard" has **no instrument**: axe is static analysis and **never presses a key**.
+- **`DW-071`** (`NFR-032`) — the instrument its Target names passes, on **3 routes of 52**. Coverage, not
+  capability. The 3 are deliberately adversarial, which raises the zero's value without changing 6%.
+- **`DW-072`** (`NFR-033`) — a genuinely good gate (real luminance maths, 20 pairs, 2 palettes, an OS-dark
+  sync check, its own anti-vacuity guard) that covers **one of two thresholds and none of four states**.
+  All 20 pairs are 4.5:1; none is 3:1; none is hover/focus/disabled. The `NFR-037` shape one batch later.
 
 ### What batch 15 landed (2026-08-20) — and it CHANGES WHAT "NEXT" MEANS
 
@@ -652,6 +702,14 @@ whenever you close one — a list nobody maintains is worse than no list.**
 - **`DW-067`** (`NFR-061`, browser matrix) and **`DW-068`** (`NFR-037`, number formatting) — both new in
   batch 14, both real work rather than recording gaps. `DW-068` is the cheaper of the two by a wide margin:
   the app already contains two working Arabic-Indic number formatters to copy.
+- ⚠⚠ **`DEF-099` (high, OPEN) — OTLP traces reach nothing, in every environment.** One environment variable
+  in two compose files (`OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf` on api and worker). It is a source edit,
+  so **branch → PR → green CI → squash-merge**. ⚠ **Verify by the discriminator, not by a clean start-up:**
+  send traffic and assert the DB span count MOVES. A green boot proves nothing — that is how this survived
+  since the instrumentation shipped. Closing it also unblocks `NFR-028` (whose evidence is already gathered,
+  see batch 17) and re-frames `DW-065`.
+- **`DW-070`/`DW-071`/`DW-072`** (`NFR-031`/`032`/`033`) — the WCAG group after batch 16. `DW-072` is the
+  cheapest by far: more rows in an existing table, no browser and no new technique.
 - **`DW-069`** (`NFR-039`, the missing bilingual glossary) — new in batch 15, and **the one row in the
   programme a reader of code categorically cannot close.** ⚠ Its cheapest first step is worth doing alone
   and needs no Arabic reader: **build the glossary as an actual bilingual artifact**, outside the frozen
