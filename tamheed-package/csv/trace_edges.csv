@@ -593,6 +593,7 @@ SC-024,NFR-054,scope_modifies
 SC-025,DEF-098,scope_modifies
 SC-025,NFR-027,scope_modifies
 SC-026,NFR-026,scope_modifies
+SC-027,NFR-023,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
