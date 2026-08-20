@@ -382,6 +382,7 @@ LL-006,PE-435,learned_from
 LL-008,DEF-098,learned_from
 LL-009,PE-508,learned_from
 LL-010,PE-525,learned_from
+LL-011,PE-555,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -595,6 +596,8 @@ SC-025,DEF-098,scope_modifies
 SC-025,NFR-027,scope_modifies
 SC-026,NFR-026,scope_modifies
 SC-027,NFR-023,scope_modifies
+SC-028,DW-037,scope_modifies
+SC-028,FR-035,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
