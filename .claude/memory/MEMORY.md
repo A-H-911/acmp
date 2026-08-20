@@ -4,10 +4,16 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-20 · **batches 14–17** · ⚠⚠ **`readiness` IS `ready:FALSE` — AND CORRECTLY SO**
+## ★ 2026-08-20 · **batches 14–18** · `gate` 7/7, `readiness` `ready:TRUE`
 
-- ⚠⚠ **`DEF-099` (high, OPEN) BLOCKS `defects-closed`. That is the mechanism working — do not soften it.**
-  **OTLP traces have NEVER reached Seq in any environment.** Both compose files set the bare
+- ⭐⭐ **`DEF-099` FIXED (#300 → `1da0e05`) — and it had TWO disjoint causes, the second visible only while
+  fixing the first.** api: bare endpoint + gRPC default → 404. **worker: NO `OTEL_` vars AT ALL**, so its
+  exporter fell back to `http://localhost:4317`; its own comment claimed the endpoint came from "the same
+  `OTEL_*` env vars the API reads" — **compose env is PER-SERVICE and inherits nothing.** `NFR-028` then
+  closed (`AC-138`), having been **deliberately held back** in batch 17: Met "no PII in traces" while no
+  trace arrived would have been **true for the wrong reason.** ⚠ `DW-065` is still `Open` and its **title is
+  now wrong** ("never been observed") — fix the title, keep the status.
+- ⚠⚠ **The original finding: OTLP traces had NEVER reached Seq in any environment.** Both compose files set the bare
   `/ingest/otlp` endpoint and **`OTEL_EXPORTER_OTLP_PROTOCOL` is set NOWHERE**; the .NET exporter defaults
   to **gRPC**, which posts the endpoint verbatim. Live: `POST /ingest/otlp` → **404**,
   `POST /ingest/otlp/v1/traces` → **200**. The SDK swallows export failures silently.
@@ -16,11 +22,11 @@
   container — **log path delivers, trace path does not.** A count alone proves nothing. **Verify any fix by
   sending traffic and asserting spans MOVE, never by a clean boot.** This is also the real explanation of
   `DW-065`: not "nobody looked" — **nothing ever arrived**. `AC-133` rests on spans that never land.
-- ⭐ **`NFR-028`'s residual SETTLED by observation.** Every SQL literal arrives as `?`, and the decisive case
-  is **not a parameter** — the healthcheck's `SELECT 1` arrives as `SELECT ?`, so SqlClient sanitizes
-  **literals**. Serilog half too: **24** logging sites in all of `src` (680 files), none naming a person,
-  email, vote or content. ⚠ **No verdict recorded on purpose** — Met "no PII in traces" while no trace
-  arrives is a verdict resting on a dead pipeline.
+- ⭐ **`NFR-028` evidence, now Met:** every SQL literal arrives as `?` and the decisive case is **not a
+  parameter** — the healthcheck's `SELECT 1` arrives as `SELECT ?`, so SqlClient sanitizes **literals**.
+  Log half: **24** logging sites in all of `src` (680 files), none naming a person, email, vote or content.
+  ⚠ The masking enricher matches by property NAME and covers **email but not names or vote content** — two
+  of three hold by CONVENTION, so the census is load-bearing and the enricher is only defence in depth.
 - ⚠ **HOW TO RUN A STACK HERE — copy this exactly.** `docker ps` empty but **5 populated volumes** exist and
   `dev-up.sh` is `up -d --build`, the documented breaker. Use an **isolated project on FRESH volumes**, same
   compose + env file so the config under test is the shipped one; **tag an existing CI image** to the name

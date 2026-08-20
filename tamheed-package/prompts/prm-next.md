@@ -12,9 +12,8 @@ server_info()                                # expect tamheed 4.4.2, root = C:\U
 package_open("tamheed-package")
 gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
                                              # REAL finding - read its failure list, it names the token.
-readiness_check("package")                   # ⚠ ready:FALSE RIGHT NOW, and CORRECTLY: DEF-099 (high, open)
-                                             # blocks defects-closed. Read it; do NOT soften it to go green.
-                                             # Advisories failing is normal.
+readiness_check("package")                   # ready:TRUE again (DEF-099 Fixed in #300). Advisories failing
+                                             # is normal. ready:FALSE = a real blocker, go read it.
 git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
 ```
 
@@ -61,10 +60,25 @@ and it is where you start.
 batch 14's two PRs both merged: **#298 → `4e5ebd0`** and **#299 → `59effb8`**, each verified on `origin/main`
 BY CONTENT rather than by ancestry (trap 25). Batch 13's were **#296 → `57e019d`** and **#297 → `a6261bf`**.
 
-### ⚠⚠ BATCH 17 (2026-08-20) — `readiness` IS `ready:FALSE` ON PURPOSE. READ `DEF-099` FIRST.
+### What batch 18 landed (2026-08-20) — `DEF-099` FIXED, `NFR-028` CLOSED
 
-**`DEF-099` (high, OPEN) blocks `defects-closed`. That is the mechanism working, not a regression** — do
-not "repair" it and do not soften the severity to green the gate.
+- ✅ **`DEF-099` Fixed** (#300 → `1da0e05`, 10/10 checks). `readiness` is `ready:TRUE` again.
+- ⚠⚠ **IT HAD A SECOND HALF NOBODY HAD SEEN, VISIBLE ONLY WHILE FIXING THE FIRST.** The api cause was the
+  bare endpoint plus the gRPC default. **The worker had NO `OTEL_` variables at all** — its `Program.cs`
+  registers an exporter and its own comment says the endpoint comes from *"the same `OTEL_*` env vars the
+  API reads"*. **Compose environment is PER-SERVICE and inherits nothing**, so it fell back to the SDK
+  default `http://localhost:4317`. Same defect, two disjoint causes. That comment is the `DEF-095` shape:
+  a note asserting a mechanism that does not exist.
+- ✅ **`NFR-028` CLOSED** (`AC-138`/`AV-216`). Held back deliberately in batch 17 — a Met verdict saying no
+  PII reaches the traces, while no trace reached anything, would have been **true for the wrong reason and
+  indistinguishable from the real thing** to every later reader.
+- ⚠ **`DW-065` IS STILL `Open` AND ITS TITLE IS NOW WRONG.** It says NFR-043 *"has never been observed as an
+  actual trace"* — traces have now been observed, and `DEF-099` was why they never had been. Its actual ask
+  (trace completeness across **all module endpoints**) is genuinely not done: the observed traffic was
+  unauthenticated. **`Open` is the right status; the title is stale. Fix the title in the next batch** —
+  it is the register asserting something untrue, which is the class this programme exists to end.
+
+### ⚠ BATCH 17 (2026-08-20) — how `DEF-099` was found
 
 - ⚠⚠ **OTLP TRACES HAVE NEVER REACHED Seq IN ANY ENVIRONMENT.** Both compose files set
   `OTEL_EXPORTER_OTLP_ENDPOINT` to the bare `/ingest/otlp` and **neither sets
@@ -702,12 +716,10 @@ whenever you close one — a list nobody maintains is worse than no list.**
 - **`DW-067`** (`NFR-061`, browser matrix) and **`DW-068`** (`NFR-037`, number formatting) — both new in
   batch 14, both real work rather than recording gaps. `DW-068` is the cheaper of the two by a wide margin:
   the app already contains two working Arabic-Indic number formatters to copy.
-- ⚠⚠ **`DEF-099` (high, OPEN) — OTLP traces reach nothing, in every environment.** One environment variable
-  in two compose files (`OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf` on api and worker). It is a source edit,
-  so **branch → PR → green CI → squash-merge**. ⚠ **Verify by the discriminator, not by a clean start-up:**
-  send traffic and assert the DB span count MOVES. A green boot proves nothing — that is how this survived
-  since the instrumentation shipped. Closing it also unblocks `NFR-028` (whose evidence is already gathered,
-  see batch 17) and re-frames `DW-065`.
+- ⚠ **`DW-065`'s TITLE IS STALE — fix it first, it is a one-row edit.** It asserts NFR-043 has never been
+  observed as an actual trace. It has been now (`DEF-099` was the reason it never had been). Its ask —
+  completeness across **all module endpoints** — is genuinely undone, so `Open` is right and only the title
+  is wrong. ✅ `DEF-099` itself is **Fixed** (#300 → `1da0e05`) and `NFR-028` is **closed** (`AC-138`).
 - **`DW-070`/`DW-071`/`DW-072`** (`NFR-031`/`032`/`033`) — the WCAG group after batch 16. `DW-072` is the
   cheapest by far: more rows in an existing table, no browser and no new technique.
 - **`DW-069`** (`NFR-039`, the missing bilingual glossary) — new in batch 15, and **the one row in the
