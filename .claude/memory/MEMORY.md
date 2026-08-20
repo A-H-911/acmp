@@ -4,18 +4,39 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
+## ★★ 2026-08-20 (later) · **THE DISPOSITION SESSION — v1 GOT BIGGER** · `gate` 7/7 · `ready:TRUE`
+
+- ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
+  **refused an interview** because the slate cited ~40 records by id alone. `LL-011` (Proposed). Anything
+  they read to DECIDE must carry each record's full text inline, generated from the JSONL. ⭐ The fix found
+  **`DEF-082` does not exist** though 3 records cite it as real and fixed — `G-IDS` checks FKs, **not ids in prose**.
+- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows are `Activated`** (`DEC-067`/`SC-029`) — **against my
+  recommendation to carry them**; the rows record it as an override. `DW-028 032 033 035 036 038 039 040 061 063 068 069`.
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.**
+  Found via `DEC-064` d2 (Approved 2026-08-19, *"DW-037 is ACTIVATED"*) that **never reached the row**, while
+  `SC-020` had marked `FR-035` `Deferred`. Fixed by `SC-028`; three more of the same shape caught **before**
+  writing (`FR-032 154 155`). **Activating a `DW-` row → check its requirement in the same breath.**
+- ✅ **`assumptions-current` FIXED — it now FAILS instead of `indeterminate`**, naming `ASM-011`. ⚠ the field
+  is a **FUTURE due date**; more will redden as dates pass — **that is the control working, don't clear them.**
+  ⛔ `DEF-087`, the other blind control, **untouched — needs its own clean context.**
+- ⚠ **`deferred-work-reviewed` CANNOT go green from reviewing** — its predicate selects `Open`, **`Activated`**
+  and `Scheduled` alike. Activating twelve left the same 53 listed.
+- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore that `ADR-0022` (Approved) removed**; `DEC-020`/`ADR-0003`/
+  `OQ-040` still assume it. Operator: *record it, change nothing.* Found only by **keyword** sweep (`LL-008`, 4th).
+- ⚠ **`DW-052`'s premise is wrong** — caps are **50 MB / 2 GB**, not `NFR-011`'s 100 MB, nothing overrides them.
+  ⚠ **`DW-037`'s data claim was half wrong** — `Topic.Schedule` does NOT persist the meeting id
+  (`TopicScheduledEvent` has **zero consumers**); the calendar must read from the **Meetings** API.
+- ⚠ Flagged, operator's call: `ASM-001` should not read `Approved` (struck through, *"RESOLVED — FALSE"*);
+  `DEF-092`'s truncation extends to **4 assumption titles**; `DW-029` still `Open` though its programme ran.
+
 ## ★ 2026-08-20 · **THE DW-029 PROGRAMME IS CLOSED** · `gate` 7/7 · `readiness ready:TRUE`
 
-> ▶ **START AT `tamheed-package/prompts/prm-next.md` — it was rewritten end to end on 2026-08-20** (783 →
-> 498 lines) because its spine was obsolete. §6 names the next work. ⚠ **Read the prose, not just the ids.**
+> ▶ **START AT `tamheed-package/prompts/prm-next.md`** — §6's START HERE was rewritten by the disposition
+> session; read it before acting on §1 or §4. ⚠ **Read the prose, not just the ids.**
 
 - ✅ **`SL-031` Implemented, `PH-6` closed — EVERY PHASE IS `Implemented` EXCEPT `PH-3`**, which stays
   `Approved` on purpose (`WBS-20.4` is the email adapter vs a hard constraint, `DEC-055`; "repairing" it is
   the manufactured-status move `DEF-010` records). `SL-014` is `Deferred` (`P14`, `DEC-028`).
-- ▶ **NEXT WORK, chosen by the operator 2026-08-20:** (1) disposition the **13 actionable** deferred-work
-  rows — 53 are open and `deferred-work-reviewed` has NEVER been judged; (2) fix **both** blind controls.
-  ⚠ `DEF-087`'s own row warns its fix must NOT be mechanical (the obvious rule closes `WBS-20.4`) — give it
-  clean context. `assumptions-current` is a judgement per assumption, not a field to populate.
 - ⚠⚠ **THE CANDIDATE RULE WAS BROKEN: "named ANYWHERE in a DW row" CONFLATES A MENTION WITH A COVERAGE.**
   My own `DW-074` prose mentioning "the `NFR-018` ASVS assessment" made `NFR-018` vanish from the worklist.
   **A well-cross-referenced register would eventually report itself finished.** Fixed to TITLE-named.
@@ -44,21 +65,17 @@
   description`, `slices.title/objective`, `phases.title`. Nullable fields preserved by omission.
   **Approving a lesson is NOT an edit** — content must come back byte-identical.
 
-## ★ batches 14+15 — detail folded into the head above; only what is not repeated there
+## ★ batches 14+15 — only what the head above does not repeat
 
-- ⚠ **THE READER-CLOSABLE PHASE OF `DW-029` IS EXHAUSTED.** The rule now yields **NINE**
-  (`NFR-018 019 023 028 031 032 033 034 038`) and every one needs a stack, a browser, a scanner, an
-  unconfirmed org policy or an undeferred `P14`. After batch 16 and 17, `NFR-034` is Met and `NFR-031`/`032`/
-  `033` have `DW-` rows, so **re-run the rule rather than trusting this sentence.** `SL-031` stays `Approved`.
-- ⚠ **`NFR-037` nearly got `Met` on two-thirds of itself** (→ `DW-068`): 31 locale-aware date sites, but the
-  SPA has **exactly two** `Intl.NumberFormat` sites and the requirement says *"date, time, **and number**"*.
-  **Count the requirement's clauses before you count your findings.**
-- **Next: a SCANNER batch** (`NFR-018` DAST + pentest, `NFR-019` TLS scan) and the remaining stack items —
-  `NFR-052` single-command startup, the ops group (`NFR-015 017 044 052 062`, `PE-485`), and several of the
-  `DW-043`…`DW-060` performance rows measured from trace data, **which needs `DEF-099` fixed first.**
-  `DW-066` (alpine/distroless) is operator-only and its **risk is musl, not the two `FROM` lines**.
+- ⚠ **THE READER-CLOSABLE PHASE OF `DW-029` IS EXHAUSTED** — what remains needs a stack, a browser, a
+  scanner, an unconfirmed org policy or an undeferred `P14`. **Re-run the rule rather than trusting any
+  written list.** Remaining reader-closable: `NFR-018` (external ASVS L2) and `NFR-038` (rides `P14`).
+- **Still open, needing a stack or a scanner:** `NFR-018` DAST + pentest, `NFR-019` TLS scan, `NFR-052`
+  single-command startup, the ops group (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`
+  measured from trace data — **`DEF-099` is fixed so traces now arrive.** `DW-066` (alpine/distroless) is
+  operator-only and its **risk is musl, not the two `FROM` lines**.
 
-## ★ batch 13 — compacted; full record in `prm-next.md` §1
+## ★ batch 13 — compacted; fuller record in `prm-next.md`
 
 - ✅⚠ **`DEF-093` fixed upstream (4.4.2) — the old "never report gates green" rule is RETIRED.** ⚠⚠ The token
   rule changed in ONE direction: **journal text is exempt; every live ENTITY row is still screened**
@@ -67,21 +84,20 @@
   `Met` verdict; surface that EXISTS but is unproven CANNOT.**
 - ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — the `NFR-021`
   census read as a 38-command validation hole; all four commands carrying scalar input are guarded **in the
-  domain**. Validator *FILES* returns **1**; there are **78**. ⚠ A defect row's predicted cause is a
-  HYPOTHESIS (`DEF-067`).
-- ⚠ **THE METHOD: never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores
-  `lifecycle_status`. **A part-verified requirement gets a `DW-` row.**
+  domain**. ⚠ A defect row's predicted cause is a HYPOTHESIS (`DEF-067`).
+- ⚠ **Never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores `lifecycle_status`,
+  so an AC ahead of its evidence holds readiness false **forever**. **A part-verified requirement gets a
+  `DW-` row, not an AC.**
 - ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (`DEF-091`); `vitest` does
   NOT typecheck — use `npm run build` or `-p tsconfig.app.json`.
 - ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE** (sqlserver-fts **3.62 GB**). `SC-024` narrowed the
   SIZE clause; the operator **REJECTED** relaxing minimal-base → **`DW-066`**. **Do not change a base image.**
 - ⚠⚠ **Hangfire's `JobStorage.Current` + `GlobalJobFilters` are PROCESS-GLOBAL**; it never hands a filter the
   job's own exception — record `InnerException`.
-- ⚠ **Coverage must be UNIONED, never summed.** ⚠ **Trap 25:** `gh pr merge` can merge remotely then abort
-  locally — verify by CONTENT. ⚠ **Trap 38:** never push to a branch with CI in flight.
-- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`). ⚠ `SC-021` is Merged but `WBS-22.3` still reads "notification
-  bodies" — the SC row IS the correction. ⚠ `MoveTopicPriority` is deliberately UNFILTERED.
-  ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS.
+- ⚠ **Coverage must be UNIONED, never summed.** ⚠ **`gh pr merge` can merge remotely then abort locally** —
+  verify by CONTENT. ⚠ **Never push to a branch with CI in flight.**
+- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`). ⚠ `MoveTopicPriority` is deliberately UNFILTERED.
+  ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS — `Calendar.tsx`'s work is now `Activated`.
 - ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — slice-scope
   `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
 
@@ -89,8 +105,8 @@
 
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records.
-- **Nine lessons are Approved + PINNED** (`LL-001`…`LL-009`) and bind every session via the auto-loaded
-  note. Nothing is awaiting an operator interview.
+- **Ten lessons Approved + PINNED** (`LL-001`…`LL-010`) bind every session via the auto-loaded note.
+  ⚠ **`LL-011` is Proposed and awaiting the operator's interview** — it does not bind until they approve.
 - ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — redirect to a file and read `$?` on the bare command.
 - **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks. `RISK-007` adoption clock
   started 2026-08-17.
@@ -100,16 +116,14 @@
 - ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck that
   evaluated ZERO checks; gitleaks passing 153 commits over an allowlist covering every markdown file.
   ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded).
-- ★★ [**`DEF-056`'s "measured blocker" WAS NOT REAL**](an-absence-needs-a-proven-instrument.md) — the helper
-  read a column that is NULL on the rows it was counting, and its two `NotContain` controls passed
-  **VACUOUSLY**. **An absence is only evidence if the instrument is proven present.**
+- ★★ [**An absence needs a proven instrument**](an-absence-needs-a-proven-instrument.md) — `DEF-056`'s
+  "measured blocker" was not real: the helper read a column that is NULL on the rows it counted, and its
+  two `NotContain` controls passed **VACUOUSLY**.
 - ⚠⚠ [**v4 store + 4.4.x mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`; build
   payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event; approving a lesson
   **refuses without `operator_confirm: true`**.
-- ★★ **`DW-029` re-frames every status in the package**: a requirement advances ONLY via the AC
-  auto-advance trigger, so **requirement status measures whether anyone WROTE an AC, not whether it was
-  built**. `DEF-012` is Won't-fix (`DEC-055`) — the one mechanical rule that would "fix" `v_backlog` closes
-  `WBS-20.4`, the **email adapter**, against a hard constraint.
+- ★★ **Requirement status measures whether anyone WROTE an AC, not whether it was built** — a requirement
+  advances only via the AC auto-advance trigger. `DEF-012` is Won't-fix (`DEC-055`).
 - ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — see
   [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: **a stream-scoped policy is RESOURCE-ONLY**.
 - **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json`):
@@ -120,18 +134,17 @@
 
 - **ADR-0039 `AC-090`** (#239): per-request revalidation. ⚠ **An unknown subject must be ALLOWED** —
   ADR-0004 provisions JIT, so failing closed refuses every first login. Seam `IPrincipalRevalidator`.
-- **`DEF-052`: there is NO read-side role gate** — every named policy is a WRITE capability; no topic
-  read path calls `IAuthorizationService` at all. Fixed by `GuestSurfaceMiddleware`, deny-by-default.
-- Guest-expiry sweep (#240) hourly. ⚠ Predicate is `AccessExpiresAt != null && < now`, so an invited
-  member (role `Guest`, null window) is **not** swept. **ACMP has no reschedule** (`DW-025`).
+- **`DEF-052`: there is NO read-side role gate** — every named policy is a WRITE capability. Fixed by
+  `GuestSurfaceMiddleware`, deny-by-default. Guest-expiry sweep (#240) hourly; its predicate is
+  `AccessExpiresAt != null && < now`, so an **invited** member (role `Guest`, null window) is not swept.
 
 ## Standing rules & gotchas (read before editing)
 
-- [★ Read the implementation before calling it a defect](read-before-calling-it-a-defect.md) — **ten** instances; never caught by a gate. It has made defects smaller, made one **disappear**, and twice killed one in minutes. **Read the predicate, not the doc comment describing it** — and read the guard, not the count of guards.
-- [★ The InMemory provider hides DB refusals](inmemory-provider-hides-db-refusals.md) — **`DEF-066`: stream assignment had NEVER worked on SQL Server**, and ADR-0043 shipped on top of it with four suites green. Always ask "has this write ever run against SQL Server?" ⚠ Only `Acmp.Integration.Tests` is real SQL Server; `Acmp.Api.Tests` and `Acmp.Application.Tests` are EF InMemory.
-- [★ Controls must DETECT **and** TELL](controls-must-detect-and-tell.md) — **nine** instances; the "tell" half is normally the untested one. The `DEF-066` migration guards are the first actually **mutation-tested** rather than asserted in a comment.
-- [★ Verify mechanically, not carefully](verify-mechanically-not-carefully.md) — `entity_upsert` replaces FULL rows; the JSONL flushes on EVERY write, so git HEAD is a live baseline. ⚠ **A measurement that indicts known-good code is measuring itself.** `/acmp/*` env params are **LF**. ⚠ PowerShell: always `--body-file` / `-F <file>`, never `-m` with backticks.
-- ⚠ **PowerShell joins arrays with SPACES.** `aws ... --output text` returns an **array of lines**; `[IO.File]::WriteAllText(path,$array)` writes one space-joined line and would have **destroyed the SSM env file**. Use `($v -join "`n")` and verify the line count before publishing.
+- [★ Read the implementation before calling it a defect](read-before-calling-it-a-defect.md) — **ten** instances, never caught by a gate. **Read the predicate, not the doc comment describing it**; read the guard, not the count of guards.
+- [★ The InMemory provider hides DB refusals](inmemory-provider-hides-db-refusals.md) — `DEF-066`: stream assignment had **NEVER** worked on SQL Server under four green suites. Always ask "has this write ever run against SQL Server?" ⚠ Only `Acmp.Integration.Tests` is real SQL Server.
+- [★ Controls must DETECT **and** TELL](controls-must-detect-and-tell.md) — **nine** instances; the "tell" half is normally the untested one.
+- [★ Verify mechanically, not carefully](verify-mechanically-not-carefully.md) — `entity_upsert` replaces FULL rows; the JSONL flushes on EVERY write, so git HEAD is a live baseline. ⚠ **A measurement that indicts known-good code is measuring itself.** ⚠ PowerShell: always `--body-file` / `-F <file>`, never `-m` with backticks.
+- ⚠ **PowerShell joins arrays with SPACES** — `[IO.File]::WriteAllText(path,$array)` writes one space-joined line and nearly **destroyed the SSM env file**. Join explicitly and verify the line count.
 - ⚠ **`open_question.lifecycle_status` is a CHECK** over `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` — "Resolved" rolls the whole batch back. `defect.fixed_by` is a **FK**; PR refs go in `custom_attributes`.
 - ⚠ **Env one-offs:** the keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD` (read `/run/secrets/kc_bootstrap_admin_password`); Windows `python3` cannot see Git Bash's `/tmp`.
 - [⚠ Baselines are numbers, not properties](baselines-as-numbers-not-properties.md) — a count-based test on a shared topic can never discriminate.
@@ -140,7 +153,7 @@
 - [Write the handoff LAST](write-the-handoff-last.md) — it found `DEF-053`/`DEF-054` last time. Stamp superseded files with ⛔ immediately.
 - [Commit package writes before git ops](commit-package-writes-before-git-ops.md) · [Tamheed stale .lock + PID reuse](tamheed-stale-lock-pid-reuse.md) · [Tamheed data repair](tamheed-data-repair.md) · [migration history](tamheed-migration-reverted.md)
 - [Localhost CI hides load races](localhost-ci-hides-load-races.md) · [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) · [Run CI gates locally pre-push](ci-gates-run-locally-pre-push.md) · [Always stage .claude/memory in commits](always-stage-claude-memory-in-commits.md)
-- [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — ≥95% FE+BE + adversarial E2E. ⚠ **The Playwright suite is NOT UAT-only** (`e2e.yml` runs 7 services with a real Keycloak per PR) **but runs with `KEYCLOAK_ADMIN_ENABLED=false`**, so it never touches the ADR-0038 write path.
+- [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — ≥95% FE+BE + adversarial E2E. ⚠ Playwright is **NOT UAT-only** (7 services + real Keycloak per PR) **but runs `KEYCLOAK_ADMIN_ENABLED=false`**, so it never touches the ADR-0038 write path.
 - [E2E local run (non-destructive)](e2e-local-run-nondestructive.md) — **`-p acmpe2e` ONLY**, never `npm run e2e:up`. · [Dev-stack rebuild pitfall](dev-stack-rebuild-pitfall.md) — **never `up --build`** the long-lived dev stack.
 - [Exact design fidelity + visual loop](exact-design-fidelity-visual-loop.md) · [A green suite is not a look](a-green-suite-is-not-a-look.md) — ⚠ the throwaway harness must import **only** the stylesheets the real route imports.
 - [Design: breadcrumb spacing](breadcrumb-spacing-rule.md) · [i18n parity ≠ completeness](i18n-parity-not-completeness.md) · [Web visual-verify cache busting](web-visual-verify-cache-busting.md)

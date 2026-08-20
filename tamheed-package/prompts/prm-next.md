@@ -58,6 +58,11 @@ only AFTER the nine fixes.
 
 ## §1 — What is true right now (2026-08-20)
 
+> ⚠⚠ **A LATER SESSION ON 2026-08-20 RAN THE DEFERRED-WORK DISPOSITION AND CHANGED THE SHAPE OF v1.**
+> Twelve rows are now `Activated`, four requirements returned to `Approved`, and one of the two blind
+> controls is fixed. **Read §6's START HERE before acting on anything in §1 or §4** — this section
+> describes the state the disposition session began from, not the state you are in.
+
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
 `DW-029` acceptance-criterion programme that replaced it ran **twenty batches** and was accepted by the
 operator on 2026-08-20. **`SL-031` is `Implemented`, `PH-6` is closed, and every phase is `Implemented`
@@ -109,15 +114,18 @@ in the product at all). That is the operator's stated end condition for the prog
 
 ### The advisories — none is a task, and two are BLIND
 
-`defects-minor` (**`DEF-087`** and **`DEF-100`**, both carried deliberately), `deferred-work-reviewed`
-(grows on purpose), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`).
+`defects-minor` (carried deliberately — **read the live list, it grew on 2026-08-20**),
+`deferred-work-reviewed` (grows on purpose), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`),
+and `assumptions-current`, which **now fails on purpose** — see below.
 
-⚠⚠ **TWO READINESS RULES STRUCTURALLY CANNOT FAIL, and the operator has asked for both to be fixed.**
-`assumptions-current` reports `indeterminate` because **0 of 17** assumption rows carry a
-`validation_date`. Slice-scope `defects-closed` is permanently `indeterminate` because almost no defect
-row carries `found_in` (`DEF-087`) — `readiness_check` now says so in its own note. **A rule that cannot
-fail is not a green light**; this is the shape the whole session kept finding in instruments, living
-inside the package's own controls. See §6.
+⚠⚠ **ONE OF THE TWO BLIND CONTROLS IS FIXED; THE OTHER IS NOT.** ✅ `assumptions-current` no longer reports
+`indeterminate` — twelve rows were dated on 2026-08-20 and it now **fails**, naming the genuinely overdue
+one. ⚠ **The field is a FUTURE re-validation DUE date**, so more will go red as dates pass: **that is the
+control working, and clearing a date to restore the amber would be re-blinding it.** ⛔ Slice-scope
+`defects-closed` and `wbs-done` are STILL permanently `indeterminate` because almost no defect row carries
+`found_in` and 155 of 164 `wbs_items` have a NULL `slice_id` (`DEF-087`) — `readiness_check` says so in its
+own note. **A rule that cannot fail is not a green light**; this is the shape this project keeps finding in
+instruments, living inside the package's own controls. See §6.
 
 ### The mechanical guarantee, and the token rule
 
@@ -419,35 +427,55 @@ squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the 
 
 **Reconcile this section whenever you close one — a list nobody maintains is worse than no list.**
 
-### ▶ START HERE — the operator chose this work in the 2026-08-20 interview
+### ▶ START HERE — ⚠ THE 2026-08-20 DISPOSITION SESSION HAPPENED. Read this before planning anything.
 
-**1. The 13 ACTIONABLE deferred-work rows.** The `deferred-work-reviewed` advisory asks a human whether
-each activation trigger fired, and it has **never** been done for 53 open rows. Batch 21 grouped them by
-what actually blocks them, because severity cannot answer "did the trigger fire" and what a row waits for
-can. **Re-run the grouping rather than trusting these ids** — but expect:
+**Item 1 of the old list — the deferred-work disposition — IS DONE, and it went differently than the
+bucket table predicted.** The whole slate is a published artifact carrying the full canonical text of every
+record it cites; the register carries `PE-556`, `PE-558`, `DEC-067`, `SC-028` and `SC-029`.
 
-| Bucket | Count | Triggers can have fired? |
-|---|---|---|
-| A — out of scope by hard constraint / deferred phase (Webex, AI extraction, email, Tarseem) | **10** | No |
-| B — blocked on a running stack / production observation (mostly the P95 set) | **18** | No |
-| C — blocked on a browser (the WCAG group, browser matrix) | **8** | No |
-| D — blocked on the operator or an external party | **4** | Only by them |
-| **E — ACTIONABLE NOW in this repository** | **13** | **Yes — this is the work** |
+⚠ **The batch-21 bucket table that used to sit here was DELETED, not updated.** Re-deriving the grouping
+produced a different split on **twelve** of its ids, because the right axis is **who adjudicates**, not
+where the work lives — the demand-triggered rows are adjudicable *immediately*, by the operator, and
+belong nowhere near a bucket labelled "no". Re-derive again if you need it; do not restore a table.
 
-**Bucket E:** `DW-004 DW-006 DW-007 DW-008 DW-010 DW-022 DW-028 DW-033 DW-035 DW-048 DW-052 DW-063 DW-073`.
-⚠ **One known misfile, stated rather than hidden:** `DW-066` (alpine/distroless) sits in bucket C and does
-not belong there. **A slate with one acknowledged error is usable; one with an unknown error rate is not.**
-⚠ These are DISPOSITIONS, not builds — the question per row is *did its trigger fire*, and that is the
-operator's judgement. Bring them a slate, not 13 separate questions.
+**WHAT THE OPERATOR DECIDED, and the two that matter most are counter-intuitive:**
+- ⚠⚠ **ALL TWELVE demand-triggered rows are `Activated`** (`DEC-067` / `SC-029`) — `DW-028 032 033 035 036
+  038 039 040 061 063 068 069`. **This was AGAINST my recommendation to carry them**, and the rows record
+  it as an override, not agreement. **v1 is materially larger than it was.** Three requirements returned
+  `Deferred`→`Approved` in the same delta (`FR-032`, `FR-154`, `FR-155`) — mandatory, not tidying, see below.
+- **`DW-037` was already activated a day earlier and nobody applied it** — `DEC-064` d2, Approved
+  2026-08-19, reads *"DW-037 is ACTIVATED… It becomes real work"*, and the row still read `Open`. `SC-028`
+  applied it and returned `FR-035` to `Approved`.
 
-**2. Fix BOTH blind controls** (operator, 2026-08-20 — they chose "fix both" over the cheaper option).
-- **`assumptions-current`** — 0 of 17 assumption rows carry a `validation_date`, so the rule cannot
-  discriminate and reports `indeterminate` forever. ⚠ **This is a judgement per assumption** — when does
-  each stop being safe to believe — **not a field to populate mechanically.**
-- **`DEF-087`** — almost no defect row carries `found_in`, and 155 of 164 `wbs_items` have a NULL
-  `slice_id`, so slice-scope `defects-closed` and `wbs-done` are permanently blind. ⚠⚠ **Its own row warns
-  this must NOT be done mechanically:** the obvious rule closes `WBS-20.4`, the email adapter, against a
-  hard constraint — the `DEF-012`/`DEC-055` trap. **This deserves its own clean context.**
+⚠⚠ **THE STRUCTURAL LESSON, and it will fire again: A REQUIREMENT'S `lifecycle_status` AND ITS `DW-` ROW'S
+`lifecycle_status` ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.** No gate, no readiness rule, no view.
+So a requirement reading `Deferred` (= not in v1) beside an `Activated` row for the same work is invisible
+and simply sits. Found once, then found three more times in the same session by checking BEFORE writing.
+**Whenever you activate a `DW-` row, check its requirement's status in the same breath.**
+
+⚠ **`deferred-work-reviewed` CANNOT GO GREEN FROM REVIEWING** — read the predicate, don't assume it: it
+selects `Open` **`Activated`** and `Scheduled` alike, with no "reviewed" field. Only *closing* removes a
+row. Activating twelve left the advisory listing the same 53. **A review's deliverable is the recorded
+judgement, not a colour change**, and the advisory staying red afterwards is correct.
+
+**Item 2 — the blind controls — is HALF done.**
+- ✅ **`assumptions-current` now DISCRIMINATES.** Twelve rows dated; it moved `indeterminate` → `fail`,
+  naming **`ASM-011`** alone — the urgency SLA thresholds whose own text says they must be validated with
+  the committee after the PH-1 pilot, which shipped long ago. ⚠ **The field is a FUTURE re-validation DUE
+  date** (read the rule's SQL, not its description), so more will go red as dates pass. **That is the
+  control working — do NOT clear dates to restore the amber.** Nine rows correctly carry no date.
+- ⛔ **`DEF-087` IS UNTOUCHED and still needs its own clean context.** Its own row warns the obvious
+  mechanical fix closes `WBS-20.4`, the email adapter, against a hard constraint — the `DEF-012`/`DEC-055`
+  trap. **Do not fold it into a broad session.**
+
+**THREE THINGS FLAGGED AND LEFT FOR THE OPERATOR — the next session should raise them:**
+1. **`ASM-001` should not read `Approved`.** Its own statement is struck through and reads *"RESOLVED —
+   FALSE (`ADR-0015`)"*; the mitigation shipped. It wants `Superseded` or `Obsolete`.
+2. **`DEF-092`'s truncation is wider than its row says** — four assumption TITLES are cut at exactly 200
+   chars (`ASM-004 006 008 011`), statements intact. Widen that row rather than filing a duplicate.
+3. **`DW-029` is still `Open`** though its programme ran and was accepted. Under `DEC-064` d1's own
+   precedent it has a case for `Done` — but it ran to a stated end condition rather than evidencing all
+   162, and that distinction is the operator's.
 
 ### Open, and the operator's alone
 
@@ -483,7 +511,44 @@ recovery is `down -v`, destroying all five.
 4. Tear down `down -v` (yours, not the dev stack's) and **remove the tag**, so a later `up` cannot silently
    reuse a stale image. Then verify all five dev volumes are still there.
 
-### Closed 2026-08-20 — do not re-carry these
+### ⚠ NEW LESSON, and it changes how you write for the operator
+
+**`LL-011` (Proposed — needs the operator's confirmation interview): AN IDENTIFIER IS A POINTER, NOT A
+REFERENCE.** The first version of the disposition slate cited ~40 records by id alone and asked the
+operator to rule on them. **They refused the interview on exactly that ground.** An id is an index into a
+store the reader may not have open, so citing one hands the retrieval work to the person the artifact
+exists to serve, at the moment they are deciding. Ids *read* as precision and are genuinely traceable —
+for the agent, which can resolve every one in a tool call. The asymmetry is invisible from this side.
+**Any artifact the operator reads to DECIDE must carry each cited record's own text where it cites it**,
+quoted from the JSONL by a generator, never paraphrased and never re-typed. The test is mechanical: could
+a reader who has never opened this package adjudicate every question using only the artifact?
+
+⭐ **The remediation found a defect no gate can see.** Making the generator resolve every identifier in
+every quoted record and fail loudly on the unresolvable turned up **`DEF-082`, which does not exist** —
+yet two defect rows and a progress entry cite it as a real, diagnosed, fixed defect and restate its root
+causes. The register runs 1–100 with **82 the only gap**. `G-IDS` passes because it checks foreign keys
+and the entity index, **not identifiers embedded in prose**. Filed as `DEF-101`; the row is NOT
+reconstructed, because writing a defect after the fact from second-hand narrative is close enough to
+manufacturing a status that it is the operator's call. **Closing the reference graph over an artifact is a
+cheap instrument no gate provides, and it found this on its first run.**
+
+### Closed 2026-08-20 (later session) — do not re-carry these
+
+The deferred-work disposition (`PE-556`, `PE-558`) · `DW-037`'s unapplied activation (`SC-028`) · the
+`assumptions-current` blind control (12 dates, `PE-557`) · the twelve demand rows (`DEC-067`, `SC-029`).
+**New rows to know:** `DEF-101` (missing `DEF-082`), `DEF-102` (`NFR-013` mandates a columnstore that
+`ADR-0022` removed — operator chose *record it, change nothing*; the cluster also includes `DEC-020`,
+`ADR-0003` and `OQ-040`, which all still assume it), `LL-011`, `SC-028`, `SC-029`, `DEC-067`.
+
+⚠ **`DW-052`'s premise is WRONG and its "closeable today" half is not closeable** — the upload options
+carry **50 MB** and **2 GB**, not `NFR-011`'s 100 MB, and nothing overrides either. An AC over the
+validators would verify the wrong numbers.
+⚠ **`DW-037`'s data claim was half wrong**: `Topic.Schedule` does **not** persist the meeting id — it
+raises `TopicScheduledEvent`, which has **zero consumers**, and `Topic` has no such column. The calendar
+work is genuinely unblocked but **must read from the Meetings API** (`MeetingDetailDto.ScheduledStart` +
+`AgendaItemDto.TopicId`), never from the Topics API the row names.
+
+### Closed earlier 2026-08-20 — do not re-carry these
 
 `DEF-093` · `DEF-095` (#298) · `DEF-097` (#299) · `DEF-098` (by reconciliation, `SC-025`) · `DEF-099`
 (#300 — the OTLP export defect) · `DW-026`, `DW-027`, `DW-059`, `DW-062`, `DW-064` · `OQ-074` ·
