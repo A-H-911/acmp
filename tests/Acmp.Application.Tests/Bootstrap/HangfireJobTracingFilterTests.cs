@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Acmp.Application.Tests.Webex;
 using Acmp.Bootstrap;
 using Acmp.Shared.Infrastructure.Observability;
 using FluentAssertions;
@@ -22,6 +23,9 @@ namespace Acmp.Application.Tests.Bootstrap;
 // ⚠ WHAT THAT COSTS, stated rather than hidden: these prove the filter's LOGIC, not its REGISTRATION.
 // That Hangfire actually calls it is carried by the .UseFilter line in AddAcmpHangfireStorage and verified
 // by inspection only — the same class of gap as the AddSource line in each host's Program.cs.
+// ⚠ SERIALISED (DEF-097) - see the note on HangfireWebexJobSchedulerTests. The listener this class
+// registers is process-global, so running beside the other listening class makes both flaky.
+[Collection(HangfireServerCollection.Name)]
 public class HangfireJobTracingFilterTests
 {
     public sealed class SampleJob
