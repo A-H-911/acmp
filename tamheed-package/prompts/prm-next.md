@@ -48,8 +48,36 @@ its two build slices are `Implemented`, and **`SL-031` is `Approved` and IN PROG
 and it is where you start.
 
 **You are on `main`, clean, nothing unpushed, and CI on `main` is green.** There is no feature branch —
-batch 13's two PRs both merged: **#296 → `57e019d`** and **#297 → `a6261bf`**, each verified on `origin/main`
-BY CONTENT rather than by ancestry (trap 25).
+batch 14's two PRs both merged: **#298 → `4e5ebd0`** and **#299 → `59effb8`**, each verified on `origin/main`
+BY CONTENT rather than by ancestry (trap 25). Batch 13's were **#296 → `57e019d`** and **#297 → `a6261bf`**.
+
+### What batch 14 landed (2026-08-20) — reference, do not redo
+
+- **Two requirements CLOSED, both AC-written-and-Met in the same batch.** `NFR-027` (`AC-135`/`AV-213`,
+  `auto-test`) and `NFR-050` (`AC-136`/`AV-214`, `inspection`). Both verdicts name what they do NOT claim.
+- **`DEF-095` Fixed** (#298). ⚠ The comment-only edit **broke the build on the first attempt** — XML forbids
+  `--` inside a comment and MSBuild rejected the project file at parse time (`MSB4025`) in 0.05 s. No test
+  suite could have seen it. If you edit a `.csproj` comment, build it.
+- **`DEF-097` Fixed** (#299) — `HangfireJobTracingFilterTests` and `HangfireWebexJobSchedulerTests` each
+  registered a **process-global** `ActivityListener` on the same source and each asserted `ContainSingle()`,
+  so overlapping windows made them record each other's spans. Reproduced **once in eight** full-suite runs.
+  Both are now in the existing `DisableParallelization` collection. ⚠ **The fix was PROVEN, not observed:**
+  holding each listener open 400 ms forces the overlap — **5 tests fail without the attributes, 1133 pass
+  with them.** A green suite over a timing flake is worth nothing.
+- **`DEF-098` Fixed by reconciliation, and it is the batch's most transferable finding.** `NFR-027` mandated
+  *self-hosted MinIO* by name; **`ADR-0035` (Approved, RATIFIED 2026-07-24) replaced it with Amazon S3.**
+  ⚠⚠ **An id-only register sweep returned ZERO hits for six of the seven candidates and could never have
+  found this — `NFR-027` says "MinIO", `ADR-0035` says "MinIO", and NEITHER row names the other's id.**
+  Trap 32 from the requirement side. **Sweep by KEYWORD as well as by id.**
+- **`SC-025` Merged** — `NFR-027`'s storage parenthetical now reads *"the configured object store
+  (self-hosted MinIO on-prem, Amazon S3 in cloud environments per `ADR-0035`)"*, every other character
+  byte-identical. **`SC-026` Merged** — `NFR-026` moved `Approved` → `Deferred`, no text change.
+- **Two new partials: `DW-067`** (`NFR-061` — Playwright runs chromium + msedge only, **2 of 8 cells and
+  1 of 3 engines**; no WebKit at all) and **`DW-068`** (`NFR-037` — dates are fully locale-aware across
+  31 call sites, but the SPA has **exactly TWO** `Intl.NumberFormat` sites, so the *number* third of the
+  requirement is unbuilt).
+- ⚠ **`NFR-037` NEARLY GOT A Met VERDICT.** Its date evidence was strong enough to carry one. What stopped
+  it was reading the requirement's own words — *"all date, time, **and number** formats"*.
 
 ### What batch 13 landed (2026-08-19/20) — reference, do not redo
 
@@ -66,7 +94,7 @@ BY CONTENT rather than by ancestry (trap 25).
   written by `progress_update` and rendered by `export_html` and **read by nothing else**, so a correction
   entry changes no gate, no readiness rule and no view. That is why appending `PE-470` never cleared anything.
 - **New rows**: `DW-062` Done · `DW-063` (NFR-010 not configuration-driven) · `DW-065` (no trace ever
-  OBSERVED) · `DW-066` (alpine/distroless migration) · `DEF-095` (open) · `DEF-096` (Fixed by `SC-024`).
+  OBSERVED) · `DW-066` (alpine/distroless migration) · `DEF-095` (Fixed by batch 14, #298) · `DEF-096` (Fixed by `SC-024`).
 - **`NFR-054` MEASURED, then DISPOSITIONED** (`DW-059` Done, `DEF-096` Fixed, `SC-024` Merged): web 51.1 MB,
   worker 245 MB, api 257 MB, **sqlserver-fts 3.62 GB**. The 500 MB cap failed on the database image by
   **7.2x and could not be made to pass** — its base alone is 1.67 GB. `SC-024` narrowed the SIZE clause only.
@@ -109,7 +137,7 @@ because fixed" from "green because blind".**
 
 ### The advisories — none is a task
 
-`defects-minor` (currently **`DEF-087`** and **`DEF-095`**), `deferred-work-reviewed` (**grows on purpose — the DW-029 programme
+`defects-minor` (after batch 14, **`DEF-087`** alone), `deferred-work-reviewed` (**grows on purpose — the DW-029 programme
 ADDS a row every time it finds a partial, and closing one to green it manufactures status; batch 13 alone
 added three**), `acs-slice-bound` (`AC-109`–`AC-112`, accepted by `DEC-058 d3`). ⚠ **Read them live; the
 row COUNT is deliberately not written here because it moves every batch.**
@@ -232,11 +260,19 @@ work.
 
 ### ⚠ The programme's real yield is PARTIALS, not verdicts
 
-TEN requirements have been found built-on-one-side-only, every one invisible in the register **because
+TWELVE requirements have been found built-on-one-side-only, every one invisible in the register **because
 it had no AC to fail**: `FR-142` (`DW-038`), `FR-117` (`DW-039`), `FR-037` (`DW-040`), `NFR-030`
 (`DW-041`), `NFR-035` (`DW-042`, since BUILT and closed), `NFR-063` (`DW-061`), and from batch 13
-`NFR-043` (`DW-062`), `NFR-010` (`DW-063`), `NFR-053` (`DW-064`) and `NFR-054` (`DW-066`). `NFR-025` was worse — a **Must**
+`NFR-043` (`DW-062`), `NFR-010` (`DW-063`), `NFR-053` (`DW-064`) and `NFR-054` (`DW-066`); and from batch 14
+`NFR-061` (`DW-067`) and `NFR-037` (`DW-068`). `NFR-025` was worse — a **Must**
 security requirement divergent on both clauses, fixed under `DEF-094`.
+
+⚠ **Batch 14's `DW-068` is the one that nearly slipped through, and the near-miss is the lesson.** `NFR-037`'s
+date side is genuinely, thoroughly built — 31 locale-aware `Intl.DateTimeFormat` call sites, zero
+`toLocaleDateString` anywhere, no non-Gregorian calendar, no bare ISO string found. That is a *convincing*
+body of evidence, and it covers **two thirds of a three-part requirement**. The SPA has exactly **two**
+`Intl.NumberFormat` sites. **Evidence that is strong is not the same as evidence that is complete — count the
+requirement's clauses before you count your findings.**
 
 ⚠ **Batch 13's `DW-064` is the sharpest one yet, and the divergence was written in a COMMENT the whole
 time.** `deploy/Dockerfile.web` bakes `VITE_OIDC_AUTHORITY` into the SPA bundle at build time and says so
@@ -255,8 +291,22 @@ have been wrong. Read the implementation — in BOTH directions.
 
 ### What is queued
 
-- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** After batch 13:
-  `NFR-018 019 023 026 027 028 031 032 033 034 037 038 039 050 061`.
+- **The code-verifiable Must-priority NFRs are the highest-value remaining batches.** Running the rule after
+  batch 14 gives **TEN**: `NFR-018 019 023 028 031 032 033 034 038 039` — and **`NFR-039` is the only one of
+  those a reader can close.** Every other one is blocked on a scanner, a stack, a browser or a deferred phase.
+  Batch 14 removed five: `NFR-027` and `NFR-050` Met, `NFR-037` partial (`DW-068`), `NFR-061` partial
+  (`DW-067`), and `NFR-026` out of the Approved set via `SC-026`.
+  ⚠⚠ **THE FIRST DRAFT OF THIS VERY BULLET WAS WRONG, WHICH IS THE POINT OF THE WARNING ABOVE IT.** It listed
+  eleven ids, carrying `NFR-061` and adding a note that you must remember to subtract `DW-067` yourself. You do
+  not: `DW-067` is a `deferred-work` row naming `NFR-061`, so the FIRST subtraction already removes it. The
+  error came from PREDICTING the new list from the old one instead of re-running the rule — in the same session
+  that had already re-run it once and found it correct. **Run the three-step derivation. Do not adjust a
+  previous answer.**
+  ⚠ **`NFR-039` WAS NOT READ THIS BATCH** — it was scoped and deliberately left. `README.md` §G (line 167)
+  is the glossary, its mechanical half is a duplicate-AR-translation check over `ar.json`, and its own
+  Verification clause ends `[unverified — confirm reviewer availability]` and wants an Arabic-speaking
+  stakeholder. **Read `ar.json` before assuming that clause makes it a partial — that assumption would be
+  filing off a proxy (`LL-006`).**
   ⚠ **`NFR-028` HAS A HEAD START — see `PE-501`.** Its TRACE half is done: SQL query PARAMETER values are
   not emitted (the experimental flag is implicitly false and nothing opts in), but `db.query.text` IS on
   every DB span, which is safe only because `AC-131` established universal parameterization. **One residual
@@ -523,11 +573,16 @@ previous list existed only in chat and had gone **five-sixths stale** (`PE-500`)
 whenever you close one — a list nobody maintains is worse than no list.**
 
 **Ready to do — the operator has already decided; just execute:**
-- **`DEF-095` — DIRECTION APPROVED 2026-08-20: correct the COMMENT only.** Rewrite the worker csproj note to
-  state the real reason for the granular Serilog packages (fewer packages in a headless host) and DROP the
-  base-image claim; the `worker` target is `FROM dotnet/aspnet:8.0`, and the AspNetCore framework reference
-  resolves transitively anyway. One comment, no behaviour change, closes `DEF-095`. It is a source edit, so
-  **branch → PR → green CI → squash-merge**. ⚠ Do NOT change the base image — that is `DW-066`, not this.
+- *(empty — `DEF-095` was the only entry and batch 14 executed it. Do not leave this heading holding a stale
+  item; move each one down to the closed list as you finish it.)*
+
+**Ready to do — nobody's decision is needed, it is just unread:**
+- **`NFR-039` — the glossary requirement, the last code-verifiable Must NFR a reader can close.** Scoped but
+  deliberately not read in batch 14. `README.md` §G (line 167) is the glossary. The mechanical half is a
+  duplicate-Arabic-translation check over `ar.json`; the judgement half is its own Verification clause, which
+  ends `[unverified — confirm reviewer availability]`. ⚠ **Read `ar.json` first.** Concluding "stakeholder
+  clause ⇒ partial" without reading it is filing off a proxy (`LL-006`), and the mechanical half may well be
+  Met on its own terms.
 
 **Open, and the operator's alone:**
 - **`DW-066` — migrate api and worker to an alpine/distroless base.** `NFR-054`'s minimal-base clause, KEPT
@@ -545,8 +600,18 @@ whenever you close one — a list nobody maintains is worse than no list.**
   at the tail of a session.** One supervised stack batch would close all three at once, and this project's
   memory warns hardest about exactly that operation — so it deserves its own fresh context. ⚠ Several of the
   `DW-043`…`DW-060` performance rows are measured FROM that same trace data.
-- **`DEF-087`** — the third row in the `defects-minor` advisory: almost no defect row carries `found_in`, so
-  slice-scope `defects-closed` is permanently `indeterminate`.
+- **`DEF-087`** — after batch 14 closed `DEF-095`, `DEF-097` and `DEF-098`, this is now the **only** row in
+  the `defects-minor` advisory: almost no defect row carries `found_in`, so slice-scope `defects-closed` is
+  permanently `indeterminate`.
+- **`DW-067`** (`NFR-061`, browser matrix) and **`DW-068`** (`NFR-037`, number formatting) — both new in
+  batch 14, both real work rather than recording gaps. `DW-068` is the cheaper of the two by a wide margin:
+  the app already contains two working Arabic-Indic number formatters to copy.
+
+**Closed 2026-08-20 by batch 14 — do not re-carry these:**
+`DEF-095` (#298 → `4e5ebd0`, comment corrected, base image untouched) · `DEF-097` (#299 → `59effb8`, the
+global-`ActivityListener` flake, fix proven with a forced overlap) · `DEF-098` (closed by reconciliation via
+`SC-025`; nothing was built) · `NFR-027` (`AC-135` Met) · `NFR-050` (`AC-136` Met) · `NFR-026` (`Deferred`
+via `SC-026`, out of the programme's target set).
 
 **Closed 2026-08-20 — do not re-carry these** (`PE-500`, each verified individually):
 `DEF-093` (fixed upstream in 4.4.2; `findings_21.md` is the worked example of reporting a tool defect

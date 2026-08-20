@@ -1,102 +1,127 @@
 # Memory Index — ACMP
 
-> Compacted 2026-08-19 (8th). One line per memory; detail lives in topic files and the package.
+> Compacted 2026-08-20 (9th). One line per memory; detail lives in topic files and the package.
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★ 2026-08-19 · **`SL-030` MERGED** · **`SL-031` OPEN — the DW-029 AC programme is the active work**
+## ★ 2026-08-20 · **batch 14 done** · **`SL-031` still OPEN — the DW-029 AC programme is the active work**
 
-> ⚠ **READ THE LIVE NUMBERS** — `gate_run()` + `readiness_check("package")`. `acs-met` failing on exactly
-> your batch's Pending ACs is the EXPECTED build-window state, not a regression.
+> ⚠ **READ THE LIVE NUMBERS.** `gate_run()` 7/7 and `readiness ready:TRUE` after batch 14; `defects-minor`
+> is down to **`DEF-087` alone**. Never quote a tally from here or from `prm-next.md` — measure it.
 
-- ✅⚠ **`DEF-093` IS FIXED (tamheed 4.4.2, 2026-08-20) — `gate_run()` IS 7/7 AND `readiness` IS
-  `ready:TRUE`.** ⚠ **The old "never report gates green" rule is RETIRED** (operator, 2026-08-20): a red gate
-  is a REAL finding again. Fixed UPSTREAM with **zero data changes** — `PE-469`'s text is untouched, just no
-  longer screened. ⚠⚠ **THE TOKEN RULE CHANGED IN ONE DIRECTION ONLY:** journal text
-  (`progress_entries.entry`, `audit_verdicts.evidence`) is now **exempt**, so a progress note may quote
-  marker tokens freely — but **every live ENTITY row is still screened** (`title`/`statement`/`description`),
-  so there, name the concept or backtick the token. Failures now NAME the matched token.
-- ⭐⭐⚠ **AN EXEMPTION THAT GREENS A GATE CAN ALSO BLIND IT — prove teeth before believing green**
-  (`LL-007`). Injecting a marker into a LIVE entity title made `G-COMPLETE` fail and name it; the backticked
-  form passed; the row was restored byte-identically. **Three tool calls, and it is the only thing separating
-  "green because fixed" from "green because blind".** `findings_21.md` is the worked example of reporting a
-  tool defect precisely enough that it got fixed — its §2 (`corrects` had no consumer) is now a collapsed
-  "Corrected entries" fold in `review.html`.
-- ⭐⭐ **`DW-029` is running as `SL-031`.** ⚠ **`prm-next.md` NO LONGER CARRIES THE TALLIES — batch 13
-  deleted them and left the measuring command instead, after the file went stale an eighth time. Do not
-  re-introduce a number here either; measure it.** Verdicts run `AC-115`…`AC-132`. ⚠ **THE METHOD
-  MATTERS MORE THAN THE COUNT:** never leave a Pending/Partial AC (`acs-met` counts by `retired_in` and
-  ignores `lifecycle_status`, so it holds readiness false FOREVER — trap 16c), so **a part-verified
-  requirement gets a `DW-` row, not an AC**. The cheap candidate filter is **exhausted**: grepping tests
-  for requirement ids returns zero, because every requirement a test names already has an AC.
+- ⭐⭐⚠ **AN ID-ONLY REGISTER SWEEP IS A SCAN WITH NO SUBJECT.** `LL-005`/trap 32 say sweep `adrs`,
+  `decisions`, `open_questions` before disposing of anything. Batch 14 did — **by id** — and got **ZERO hits
+  for six of seven candidates**. The **keyword** sweep then found `ADR-0035` (Approved, ratified) replacing
+  self-hosted MinIO with S3, which `NFR-027` still mandated by name (`DEF-098`). **Neither row names the
+  other's id**, so no id sweep could ever have found it. Fixed by `SC-025`; `AC-135` Met.
+- ⭐⭐ **TWO INSTRUMENTS AGREEING IS ONE INSTRUMENT when they share a mechanism.** Two scanners for
+  notification leaks returned the identical 13 sites / 7 files and were both blind to the same two builders
+  (C# **target-typed `new(`** — the type name never appears at the call site). Full write-up in
+  [[scan-must-prove-it-had-a-subject]]. Companion: a census reporting **zero `AlterColumn` across 47
+  migrations** is *implausible*, not clean — widening found a missed `DropIndex`.
+- ⭐⭐ **A DERIVATION IS A COMPUTATION, NOT A FACT YOU CAN UPDATE.** I re-derived the candidate list on
+  arrival (correct, 15), then produced the post-batch list by **subtracting my own four** from it — and got it
+  wrong, carrying `NFR-061` that `DW-067` already removes. Re-running the rule gives **10**. Caught in-session;
+  the account is written into `prm-next.md` §2b in place. **Run the three steps; never adjust the last answer.**
+- ⚠ **`NFR-037` NEARLY GOT A `Met` VERDICT ON TWO THIRDS OF ITSELF.** 31 locale-aware date call sites, zero
+  `toLocaleDateString`, no bare ISO string — genuinely convincing. The SPA has **exactly two**
+  `Intl.NumberFormat` sites, and the requirement says *"date, time, **and number**"*. → `DW-068`.
+  **Count the requirement's clauses before you count your findings.**
+- ⚠ **A COMMENT-ONLY `.csproj` EDIT BROKE THE BUILD** — XML forbids `--` inside a comment; MSBuild rejected
+  the project file (`MSB4025`) in 0.05 s, before compiling anything. No test suite could have seen it.
+- ⚠ **`DEF-097`: TWO TEST CLASSES REGISTERING A PROCESS-GLOBAL `ActivityListener`** on one source, each
+  asserting `ContainSingle()`, recorded each other's spans — **1 failure in 8 full-suite runs**, the worst
+  frequency a flake can have. Fixed by serializing both into the existing `DisableParallelization` collection,
+  and **proven by FORCING the overlap** (400 ms held listeners): **5 fail without, 1133 pass with**.
+  A green suite over a timing flake is worth nothing.
+- ⚠ **`entity_upsert` NOT NULL columns, learned by experiment:** `defects.title`, `defects.severity`,
+  `scope_changes.decision_ref`, `scope_changes.description` are all required on UPDATE. Everything nullable
+  (`custom_attributes`, `found_in`) is **preserved by omission** — re-confirmed on six rows this batch.
+  **Hash the pre-image and re-check after** (`LL-001`); all six round-tripped byte-identical.
+- **Next up: `NFR-039`** — the last code-verifiable Must NFR a reader can close. `README.md` §G (line 167) is
+  the glossary. ⚠ **Read `ar.json` before concluding its stakeholder-review clause makes it a partial** —
+  that inference without the read is `LL-006` exactly.
+
+## ★ 2026-08-19/20 · batch 13 — compacted, durable findings only
+
+- ✅⚠ **`DEF-093` FIXED upstream (tamheed 4.4.2) — `gate_run()` 7/7 and `readiness ready:TRUE` are the NORM.**
+  The old "never report gates green" rule is **RETIRED** (operator, 2026-08-20): a red gate is a REAL finding.
+  ⚠⚠ **The token rule changed in ONE direction only:** journal text (`progress_entries.entry`,
+  `audit_verdicts.evidence`) is **exempt**; **every live ENTITY row is still screened** (`title`/`statement`/
+  `description`) — there, name the concept or backtick the token. Failures now NAME the matched token.
+- ⭐⭐⚠ **AN EXEMPTION THAT GREENS A GATE CAN ALSO BLIND IT** (`LL-007`). Injecting a marker into a LIVE
+  entity title made `G-COMPLETE` fail and name it; the backticked form passed; the row was restored
+  byte-identically. **Three tool calls, and the only thing separating "green because fixed" from
+  "green because blind".**
 - ⭐⭐⚠ **`LL-005` MUST SWEEP `adrs`, `decisions` AND `open_questions` — NOT JUST `requirements`.** Batch 13
-  swept the requirement register thoroughly, then offered the operator a build for `NFR-053`. They took it.
-  **`ADR-0037` (Approved, ratified) decides that exact thing**, and its consequences name the fix as deferred
-  under **`OQ-061`**. One file-read — a bare ADR id in a docker-compose COMMENT — separated that from
-  reversing an Approved ADR's decision clause. Resolved by `SC-023`: `NFR-053` NARROWED, nothing built.
-- ⭐⭐ **Classifying rule worth reusing: surface that DOES NOT EXIST can be excluded by name in a Met
-  verdict; surface that EXISTS but is unproven CANNOT.** That line decided all five batch-13 candidates.
-- ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006` again). The
-  `NFR-021` census read as a **38-command server-side-validation hole** — the shape of a critical security
-  finding. All four commands carrying scalar input are guarded **in the domain** (`SetTimebox` clamps 5..120,
-  `MoveItem` bounds-checks, `RecordActualMinutes` floors at 0, `DeleteRecording` is an EF equality predicate).
-  ⚠ Searching for validator *FILES* returns **1**; they are co-located and there are **78**.
-- ⚠⚠ [**Coverage must be UNIONED across per-project reports, never summed**](verify-mechanically-not-carefully.md)
-  — summing reported **20%** for a file the gate correctly scored **100%**. Trap 2 exactly: the measurement
-  indicting known-good code was the broken thing. `check-coverage.mjs` unions; believe it over your own script.
-- ⚠⚠ **HANGFIRE'S `JobStorage.Current` + `GlobalJobFilters` ARE PROCESS-GLOBAL** and a second
-  `BackgroundJobServer` in one process does not reliably pick up work — a filter test passed ALONE and
-  reported **zero spans** in the full suite, which reads exactly like a broken filter. ⚠ Hangfire also never
-  hands a filter the job's own exception: it wraps it in `JobPerformanceException` with a fixed message, so
-  record `InnerException` or every failed job gets an identical useless tag.
-- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE.** Measured: web 51 MB, worker 245 MB, api 257 MB,
-  **sqlserver-fts 3.62 GB** (its base alone is 1.67 GB). The minimal-base clause fails on a DIFFERENT set —
-  api/worker are Debian `aspnet:8.0`, web genuinely is alpine. Operator disposition pending; **do not change a
-  base image to close it.**
-
-- ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — **nine** requirements built on one
-  side only, each invisible *because* it had no AC to fail. The list lives in `prm-next.md` §2b; worst
-  was **`NFR-025`** (`DEF-094`), a **Must** security requirement divergent on BOTH clauses.
-- ⭐⭐⚠ [**`LL-007` — a green checker may have had NOTHING to check**](scan-must-prove-it-had-a-subject.md)
-  Fired **seven+ times on my own instruments** — full list in `prm-next.md` §1. ⚠ The one that costs most:
-  `tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` **exits 0 over ZERO files** (solution-style config) and
+  swept requirements thoroughly, then offered a build for `NFR-053`. **`ADR-0037` (Approved, ratified) decides
+  that exact thing**, deferring the fix under `OQ-061`. One file-read — a bare ADR id in a docker-compose
+  COMMENT — separated that from reversing an Approved ADR. Resolved by `SC-023`; nothing built.
+  (Batch 14 then showed the **id-only** version of this sweep is itself blind — see the section above.)
+- ⭐⭐ **Classifying rule worth reusing: surface that DOES NOT EXIST can be excluded BY NAME in a `Met`
+  verdict; surface that EXISTS but is unproven CANNOT.** Decided all five batch-13 candidates, and both of
+  batch 14's exclusions (`NFR-027` transcripts, `NFR-026` AI extraction).
+- ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — the `NFR-021`
+  census read as a 38-command validation hole; all four commands carrying scalar input are guarded **in the
+  domain**. Searching for validator *FILES* returns **1**; there are **78**. ⚠ A defect row's predicted cause
+  is a HYPOTHESIS (`DEF-067`) — its row forbade the fix that worked.
+- ⚠⚠ **HANGFIRE'S `JobStorage.Current` + `GlobalJobFilters` ARE PROCESS-GLOBAL**; a second
+  `BackgroundJobServer` in one process does not reliably pick up work. ⚠ Hangfire never hands a filter the
+  job's own exception — it wraps it in `JobPerformanceException` with a fixed message, so record
+  `InnerException`. (Batch 14 found the **listener** is global too — `DEF-097`.)
+- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE.** web 51 MB, worker 245 MB, api 257 MB,
+  **sqlserver-fts 3.62 GB**. `SC-024` narrowed the SIZE clause; the operator **REJECTED** relaxing the
+  minimal-base clause, so that half is **`DW-066`**. **Do not change a base image to close it.**
+- ⭐⭐ **The programme's real yield is PARTIALS, not verdicts** — **twelve** requirements built on one side
+  only, each invisible *because* it had no AC to fail. List in `prm-next.md` §2b; worst was **`NFR-025`**
+  (`DEF-094`), a **Must** security requirement divergent on BOTH clauses.
+- ⚠ **THE METHOD MATTERS MORE THAN THE COUNT:** never leave a Pending/Partial AC (`acs-met` counts by
+  `retired_in` and ignores `lifecycle_status`, so it holds readiness false FOREVER — trap 16c), so **a
+  part-verified requirement gets a `DW-` row, not an AC**.
+- ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (solution-style config) and
   blessed 13 type errors for ten commits (`DEF-091`). `vitest` transpiles, it does NOT typecheck — **use
   `npm run build` or `-p tsconfig.app.json`.**
-- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`); design record is `prm-next.md` §2. ⚠ **`SC-021` is Merged
-  but `WBS-22.3` STILL READS "notification bodies"** — the SC row + its `scope_modifies` edges ARE the
-  correction; do not "tidy" it. ⚠ **`MoveTopicPriority` is deliberately UNFILTERED.**
-- ⭐ **`LL-006` (a proxy is not the artifact) is Approved + pinned.** ⚠ `Timeline.tsx` and
-  `Calendar.tsx` are deliberate honest SHELLS. Requirement ids in source comments are **positive-only**.
-- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met`
-  ignores `lifecycle_status`; `entity_upsert` preserves omitted nullable fields but requires NOT NULL
-  ones; slice-scope `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
-- ⚠ **Trap 25:** `gh pr merge` can merge **remotely** then abort locally, looking like lost work —
-  check `gh pr view --json state`, verify by CONTENT. A verification grep can count your own comment.
+- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`); design record is `prm-next.md` §2. ⚠ `SC-021` is Merged but
+  `WBS-22.3` still reads "notification bodies" — the SC row IS the correction; do not "tidy" it.
+  ⚠ `MoveTopicPriority` is deliberately UNFILTERED. ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS, and
+  requirement ids in source comments are **positive-only** evidence.
+- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `acs-met` ignores
+  `lifecycle_status`; `entity_upsert` preserves omitted nullable fields but requires NOT NULL ones;
+  slice-scope `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
 
-## ★ Earlier state — superseded by the section above; durable facts only
+## ★ Earlier state — durable facts only
 
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records.
 - **Seven lessons are Approved + PINNED** (`LL-001`…`LL-007`) and bind every session via the auto-loaded
   note. Nothing is awaiting an operator interview.
-- ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — `dotnet format ... | tail; echo $?` printed 0
-  while the real exit was 2. Redirect to a file and read `$?` on the bare command.
-- **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks, `committee_members`
-  1 → 27. The `RISK-007` adoption clock started 2026-08-17.
+- ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — redirect to a file and read `$?` on the bare command.
+- **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks. `RISK-007` adoption clock
+  started 2026-08-17.
 
-## Earlier 2026-08 — durable findings only (superseded state removed)
+## Earlier 2026-08 — durable findings only
 
-> Everything else was promoted into `prm-next.md` §5, now the single place traps live. Kept here: the
-> findings with their own topic file, and the facts that re-frame how the register reads.
+> Traps live in `prm-next.md` §5. Kept here: findings with their own topic file, and facts that
+> re-frame how the register reads.
 
-- ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — the defect row's own prescribed command could not measure anything (`/readyz` returns 200 via the SPA fallback with the API dead); a healthcheck evaluated ZERO checks; gitleaks passed 153 commits because `.gitleaks.toml` allowlisted every markdown file.
-- ★★ [**`DEF-056`'s "measured blocker" WAS NOT REAL**](an-absence-needs-a-proven-instrument.md) — rows were written all along; the helper read `AuditEvent.Action`, **NULL on the v1 rows every refusal writes**, and its two `NotContain` controls passed **VACUOUSLY**. **An absence is only evidence if the instrument is proven present.** `AV-159` was wrong the same way.
-- ⚠⚠ [**v4 store + 4.4.x lesson mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`; build payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event. Approving a lesson **refuses without `operator_confirm: true`**.
-- ★★ **`DW-029` re-frames every status in the package**: a requirement advances ONLY via the AC auto-advance trigger, so **requirement status measures whether anyone WROTE an AC, not whether it was built** — and `v_backlog` reports that faithfully. `DEF-012` is Won't-fix (`DEC-055`): the one mechanical rule that would have "fixed" it closes `WBS-20.4`, the **email adapter**, against a hard constraint.
-- ⚠ **A defect row's predicted cause is a HYPOTHESIS, not evidence** (`DEF-067`) — its row forbade the fix that worked, and the real cause was test *duration*. Read the implementation, including when the row reads pre-checked.
-- ⚠ **Read `ADR-0043`, NOT `ADR-0042`** — 0042 is Superseded: it wrongly claimed Guest is stream-bounded (E.3 bounds a guest by a TIME WINDOW). All 7 clauses carried over verbatim; steps 1–8 shipped, `AC-010` Met.
-- ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — `member_streams.StreamId` was an IDENTITY column and four suites were green over it. See [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: `PermissionMatrixTests` evaluates cells with **no resource**, and a 2-param handler is never invoked without one — **a stream-scoped policy is RESOURCE-ONLY**.
-- **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json` — merging one now fails `check-i18n` loudly): `chore/design-update-round2`, `chore/docs-v8-local-design`, `feat/budget-notification-observer`, `feat/p13-webex-integration`, `docs/defer-p14-tarseem`, `feat/audit-adr`.
+- ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck that
+  evaluated ZERO checks; gitleaks passing 153 commits over an allowlist covering every markdown file.
+  ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded — it wrongly claimed Guest is stream-bounded).
+- ★★ [**`DEF-056`'s "measured blocker" WAS NOT REAL**](an-absence-needs-a-proven-instrument.md) — the helper
+  read `AuditEvent.Action`, **NULL on the v1 rows**, and its two `NotContain` controls passed **VACUOUSLY**.
+  **An absence is only evidence if the instrument is proven present.**
+- ⚠⚠ [**v4 store + 4.4.x lesson mechanics**](tamheed-v4-and-liveness.md) — `status` → `lifecycle_status`;
+  build payloads from the JSONL; `WVR-` operator-only; progress has a `correction` event. Approving a lesson
+  **refuses without `operator_confirm: true`**.
+- ★★ **`DW-029` re-frames every status in the package**: a requirement advances ONLY via the AC auto-advance
+  trigger, so **requirement status measures whether anyone WROTE an AC, not whether it was built**. `DEF-012`
+  is Won't-fix (`DEC-055`): the one mechanical rule that would "fix" `v_backlog` closes `WBS-20.4`, the
+  **email adapter**, against a hard constraint.
+- ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — see
+  [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: **a stream-scoped policy is RESOURCE-ONLY**.
+- **Stale branches** (all pre-date `4c1b356`, so they carry `DEF-064`'s broken `ar.json`):
+  `chore/design-update-round2`, `chore/docs-v8-local-design`, `feat/budget-notification-observer`,
+  `feat/p13-webex-integration`, `docs/defer-p14-tarseem`, `feat/audit-adr`.
 
 ## Shipped, reference only (detail in the package)
 
@@ -115,8 +140,7 @@
 - [★ Verify mechanically, not carefully](verify-mechanically-not-carefully.md) — `entity_upsert` replaces FULL rows; the JSONL flushes on EVERY write, so git HEAD is a live baseline. ⚠ **A measurement that indicts known-good code is measuring itself.** `/acmp/*` env params are **LF**. ⚠ PowerShell: always `--body-file` / `-F <file>`, never `-m` with backticks.
 - ⚠ **PowerShell joins arrays with SPACES.** `aws ... --output text` returns an **array of lines**; `[IO.File]::WriteAllText(path,$array)` writes one space-joined line and would have **destroyed the SSM env file**. Use `($v -join "`n")` and verify the line count before publishing.
 - ⚠ **`open_question.lifecycle_status` is a CHECK** over `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` — "Resolved" rolls the whole batch back. `defect.fixed_by` is a **FK**; PR refs go in `custom_attributes`.
-- ⚠ **The keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD`** — the entrypoint exports it for its own process only. Read `/run/secrets/kc_bootstrap_admin_password`.
-- ⚠ **Windows `python3` cannot see Git Bash's `/tmp`** — pass Windows-style absolute paths when building SSM `--parameters file://` payloads.
+- ⚠ **Env one-offs:** the keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD` (read `/run/secrets/kc_bootstrap_admin_password`); Windows `python3` cannot see Git Bash's `/tmp`.
 - [⚠ Baselines are numbers, not properties](baselines-as-numbers-not-properties.md) — a count-based test on a shared topic can never discriminate.
 - [⚠ Immutable history → cleanup is asymmetric](immutable-history-cleanup-asymmetry.md) — deleting a Keycloak user ORPHANS its member rows forever. **Disable, never delete.**
 - [A static file cannot configure a live realm](a-static-file-cannot-configure-a-live-realm.md) — `realm-export.json` reaches **fresh stacks only**; `reconcile.sh` is the only seam to prod/UAT.

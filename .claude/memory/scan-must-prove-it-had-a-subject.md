@@ -65,3 +65,34 @@ shipped inside a PR body asserting a typecheck that never ran.
 
 Same family, same session: `grep -c $''` reported CRs on a pure-LF file — and a control file with
 exactly one CR line reported **two**. The instrument was degraded to `grep -c ''`.
+
+## 2026-08-20 — two instruments AGREEING is not corroboration when they share a blind spot (batch 14)
+
+Verifying `NFR-027`'s *"URL never embedded in logs or notifications"* clause, three scanners in a row:
+
+1. line-based `grep -rn "NotificationMessage("` → **13 sites, 7 files.**
+2. a multi-line-aware C# argument parser → **the same 13 sites, the same 7 files.**
+
+Two independent instruments, identical answer. That reads exactly like corroboration. Both were
+**blind to the same two builder files**: `ActionNotifications.cs` and `RiskNotifications.cs` use C#
+**target-typed `new(`**, where the type is inferred from the return type — so the string
+`NotificationMessage(` never appears at the construction site at all.
+
+3. The version that worked **inverted the question**: scan every builder *file* for absolute URLs,
+   storage reachability and non-relative link helpers. It found **all 10 files, 19 link expressions**,
+   and flagged a synthetic control carrying a signed S3 URL.
+
+**The transferable bit:** when two instruments agree, ask whether they share a *mechanism* — both of
+mine keyed on the type name at the call site. Agreement between two greps is one grep. Prefer an
+instrument whose subject is the **file set** (countable, assertable) over one whose subject is a
+**syntactic pattern** (silently narrowable).
+
+⚠ Same session, the migration census for `NFR-050`: version one searched five EF operation names and
+reported **1 hit and ZERO `AlterColumn` across 47 migrations**. Zero `AlterColumn` in a schema that
+size is not a clean result, it is an **implausible** one — that implausibility, not a failure, is what
+prompted widening to twelve operations plus raw `Sql(...)` bodies, which found a `DropIndex` the first
+version had missed. **Interrogate a clean result that is *too* clean.**
+
+⚠ And the inverse, same session: a scanner that *refuses* to report. The migration scanner asserts it
+parsed an `Up()` in every file and fails otherwise, so a parse failure can never masquerade as clean —
+the [[a-green-control-can-be-blind]] pattern written into the tool rather than remembered.
