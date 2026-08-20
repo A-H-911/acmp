@@ -93,7 +93,7 @@
 
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records.
-- **Seven lessons are Approved + PINNED** (`LL-001`…`LL-007`) and bind every session via the auto-loaded
+- **Nine lessons are Approved + PINNED** (`LL-001`…`LL-009`) and bind every session via the auto-loaded
   note. Nothing is awaiting an operator interview.
 - ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — redirect to a file and read `$?` on the bare command.
 - **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks. `RISK-007` adoption clock

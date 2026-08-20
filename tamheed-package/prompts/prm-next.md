@@ -157,7 +157,8 @@ now that `DEF-093` is Fixed, so the superset argument works once more — but it
 **critical/high**. Open **medium/low** defects are real and sit in the `defects-minor` advisory. **Read that
 advisory live; do not read a green `defects-closed` as "nothing is open".**
 
-**Seven lessons are Approved and PINNED** (`LL-001`…`LL-007`) and bind every session via the tool-owned
+**Nine lessons are Approved and PINNED** (`LL-001`…`LL-009`, the last two added by batch 14) and bind
+every session via the tool-owned
 note. `LL-007` — **a checker that reports success may have had nothing to check** — keeps firing on my OWN
 instruments: a grep scoped to a directory that does not exist, a check swallowed by `|| true`, a scanner
 regex that matched TypeScript `>=`, a cwd-relative gate path, a search for validator FILES that returned 1
