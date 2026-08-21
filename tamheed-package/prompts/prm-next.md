@@ -65,12 +65,13 @@ only AFTER the nine fixes.
 
 ---
 
-## §1 — What is true right now (2026-08-20)
+## §1 — The state the 2026-08-20 disposition session began from (⚠ superseded in part — see §6)
 
-> ⚠⚠ **A LATER SESSION ON 2026-08-20 RAN THE DEFERRED-WORK DISPOSITION AND CHANGED THE SHAPE OF v1.**
-> Twelve rows are now `Activated`, four requirements returned to `Approved`, and one of the two blind
-> controls is fixed. **Read §6's START HERE before acting on anything in §1 or §4** — this section
-> describes the state the disposition session began from, not the state you are in.
+> ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
+> BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
+> of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
+> already merged. **Go to §6 — read `▶▶ DO THIS FIRST` and `▶ WHERE THE BUILD WORK STANDS` before
+> acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
 `DW-029` acceptance-criterion programme that replaced it ran **twenty batches** and was accepted by the
@@ -449,7 +450,7 @@ squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the 
 
 **Reconcile this section whenever you close one — a list nobody maintains is worse than no list.**
 
-### ▶ START HERE — ⚠ THE 2026-08-20 DISPOSITION SESSION HAPPENED. Read this before planning anything.
+### ⚠ WHAT THE 2026-08-20 DISPOSITION SESSION DID — context, not the next action (that is above)
 
 **Item 1 of the old list — the deferred-work disposition — IS DONE, and it went differently than the
 bucket table predicted.** The whole slate is a published artifact carrying the full canonical text of every
@@ -505,37 +506,87 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
    trigger now states what Done does NOT mean: criteria were never written for all 162, it ran to the
    operator's end condition, and **its structural point still stands** — requirement status measures
    whether anyone WROTE a criterion. Making that authoritative needs a NEW row, not reopening this one.
-4. ✅ **`LL-011` Approved and PINNED** — eleven lessons now bind; `lessons-confirmed` passes.
+4. ✅ **`LL-011` Approved and PINNED**; `lessons-confirmed` passes. ⚠ **`LL-007` AND `LL-012` ARE NOW
+   `Superseded` BY `LL-013`** (operator, 2026-08-21: merge them). The store REFUSES an in-place edit of an
+   approved lesson — *"approved/promoted lessons are immutable: supersede, never edit"* — so a merge is
+   always a new row superseding the old ones. **Count the binding lessons, do not quote a number.**
    ✅ **`DEF-082` carried, NOT reconstructed** (operator's call): a plausible reconstruction from
    second-hand narrative reads exactly like a record. `DEF-101` documents the honest gap.
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
+### ▶▶ DO THIS FIRST — the CSP spike for `WBS-23.3` (2026-08-21)
+
+**The operator chose a SPIKE over installing. Do not add the dependency until the spike answers.**
+
+`DW-038`/`FR-142` wants PNG chart export. ⚠⚠ **ITS ROW SAYS "draw the chart to a canvas and hand the
+browser a download… It is NOT blocked on anything." BOTH HALVES ARE FALSE.** There is no canvas:
+`OQ-022` is **Approved** — *"no chart library — charts are CSS primitives (`rpt-*` renderers)"*, resolved
+by `ADR-0022`. All five card kinds (`bars`, `columns`, `stack`, `stat`, `matrix`) are DOM/CSS. Nothing
+installed can rasterise them; Playwright is dev-only and cannot ship.
+
+**THE SPIKE, and it is the whole decision:** every library in this family renders via an SVG
+`foreignObject` carrying inline styles, and the shipped CSP is **`style-src 'self'` with NO
+`unsafe-inline`** (`deploy/nginx/cloud-443.conf.template:56` and `default.conf.template:42`;
+`img-src 'self' data:` IS allowed, so the data URL is fine — the styles are the risk). **`vite preview`
+will NOT tell you, because nginx applies the CSP, not Vite.** Serve the built app with the real header
+and try the technique on one report card *before* anything reaches `package.json`.
+
+⚠ **If it needs `style-src 'unsafe-inline'`, STOP and ask.** `DW-022` already investigated that exact
+header and concluded `style-src 'self'` ships as-is; widening it reverses a recorded finding.
+
+**THE DEPENDENCY EVALUATION IS DONE — do not redo it.** Measured 2026-08-21 from the registry:
+
+| package | version | licence | runtime deps | unpacked | weekly | last published |
+|---|---|---|---|---|---|---|
+| **`modern-screenshot`** ← pick | 4.7.0 | MIT | **none** | **186 KB** | 2.06M | **2026-04-16** |
+| `html-to-image` | 1.11.13 | MIT | none | 315 KB | 5.18M | 2025-04-19 (stale) |
+| `dom-to-image-more` | 3.10.2 | MIT | — | 977 KB | — | — |
+| `html2canvas` | 1.4.1 | MIT | **2** | **3.4 MB** | — | — |
+
 ### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
 
-**`PH-7` → `SL-032`** holds the four small activated rows, ordered by `DEC-068` d1.
-✅ **`WBS-23.1` / `DW-061` DONE** — the mobile notice, merged as PR #301 (`78b5ca2`), `AC-140` Met
-(`AV-218`). ▶ **Next three, in order: `WBS-23.2` (`DW-040`, card-level drag-to-reprioritize — the
-ordinal, its guard and its audit are already built and tested, only the GESTURE is missing),
-`WBS-23.3` (`DW-038`, PNG chart export — a canvas draw and a download, blocked on nothing),
-`WBS-23.4` (`DW-032`, reach `Topic.Reclassify` — the domain method exists and is deliberately
-unreachable).**
+**`PH-7` → `SL-032`**, four small activated rows in `DEC-068` d1's order. **Measure the statuses; do not
+trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 
-⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
-**five** open items when `SL-032` was created and names **four** now. The same rule returns **zero rows
-for all 28 closed slices**. That is the first slice-scope readiness rule in this package that has ever
-tracked progress instead of passing over an empty set — keep new work items carrying `slice_id`.
+- ✅ **`WBS-23.1` / `DW-061`** — mobile notice. PR #301 → `78b5ca2`, `AC-140` Met (`AV-218`).
+- ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
+- ▶ **`WBS-23.3` / `DW-038`** — PNG export. **Start with the CSP spike above.**
+- ▶ **`WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`; the domain method exists and is deliberately
+  unreachable, and its guard is disjoint from Convert's so no topic can be a candidate for both.
 
-⚠ **`AC-140` covers the NOTICE clause of `NFR-063` ONLY.** The *no-broken-layout* clause is
-deliberately NOT claimed — assessing 52 routes as unbroken is a visual judgement no automated check
-performs. Both the criterion and `DW-061`'s closure note say so. Do not read that row as covering it.
+⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
+**five** items when `SL-032` was created, **four** after `23.1`, **three** after `23.2`. The same rule
+returns **zero rows for all 28 closed slices**. First slice-scope rule here that has ever tracked
+progress instead of passing over an empty set — **keep new work items carrying `slice_id`.**
+
+⚠⚠ **TWO ROWS IN THIS SLICE HAD WRONG SIZING, AND BOTH SAID "only the gesture / blocked on nothing".**
+`DW-040` needed a backend change (the operation was a SWAP — indistinguishable from a move at ±1, wrong
+for any longer drag) *and* a new addressing mode (the kanban renders the **filtered, sorted, page-
+truncated** backlog, so a client-computed position addresses a different sequence — it sends the
+TARGET'S IDENTITY and the server resolves both ends; **a test exists whose whole purpose is to fail if
+anyone "simplifies" that back to a delta**). `DW-038`'s is above. **Read the code before believing a
+row's sizing** — that habit paid three times in this slice.
+
+⚠ **Both acceptance criteria name what they do NOT cover, deliberately.** `AC-140` covers `NFR-063`'s
+NOTICE clause only, not *no-broken-layout* across 52 routes. `AC-141` does not claim every topic is
+reachable by the gesture. Do not read either as wider than it says.
 
 ⚠ **Watch the backend applock test.** The first CI run on #301 failed `AuditAtomicityTests.
 Concurrent_commands_all_commit_without_forking_the_audit_chain` with *"audit-chain applock not
-acquired"*, and the re-run passed on **identical backend code**. That is two observations of one commit
-range disagreeing with itself. **If it recurs, file a defect** — the audit chain is hash-linked and
-therefore inherently serialising, which `DW-053` already names as the shape where throughput surprises
-you. Do not label it flaky on the strength of one more green.
+acquired"*; the re-run passed on **identical backend code**. Two observations of one commit range
+disagreeing with itself. **If it recurs, file a defect** — the audit chain is hash-linked and therefore
+inherently serialising, which `DW-053` names as the shape where throughput surprises you. **Do not
+label it flaky on the strength of one more green.**
+
+⚠ **New defects from this slice:** `DEF-103` **Fixed** (the kanban rendered a silent 25-row prefix;
+now `KANBAN_PAGE_SIZE = 500` plus an actionable notice — the residual ceiling is named, not hidden).
+`DEF-104` **Open, low** — **twelve** paged reads accept an unbounded caller page size and **two** cap
+it, so the remedy already exists in-repo (`GetNotifications` uses `Math.Clamp` to a `MaxPageSize`
+constant; search uses `Math.Min(take, MaxTakePerType)`). ⚠ Its row records that the first sweep keyed
+on the identifier `PageSize` and returned **ten** — blind to the audit endpoint and `GetDecisions`,
+which page with locals named `size` and `n`. **Not** bundled into `SL-032`: twelve modules plus tests
+is a slice of its own.
 
 ### Open, and the operator's alone
 

@@ -4,104 +4,111 @@
 > Read the linked file before acting. ⚠ Keep this file under ~17KB — past its read limit
 > the tail is SILENTLY dropped on load, so an over-long index is worse than a short one.
 
-## ★★ 2026-08-20 (later) · **THE DISPOSITION SESSION — v1 GOT BIGGER**
+## ★★★ 2026-08-21 · **BUILDING SL-032** · `gate` 7/7 · `ready:TRUE` · head `f031869`
+
+> ▶▶ **NEXT ACTION IS A SPIKE, NOT A BUILD** — `prm-next.md` §6 `▶▶ DO THIS FIRST`. The operator chose
+> spike-before-install for `WBS-23.3` (`DW-038`, PNG export).
+
+- ⚠⚠ **`DW-038`'s ROW IS WRONG: "draw the chart to a canvas… NOT blocked on anything" — THERE IS NO
+  CANVAS.** `OQ-022` (Approved) = *"no chart library — charts are CSS primitives"*, per `ADR-0022`. All five
+  card kinds are DOM/CSS. **The CSP is `style-src 'self'` with NO `unsafe-inline`** and every DOM→image lib
+  uses SVG `foreignObject` + inline styles → **may be blocked outright**. ⚠ `vite preview` CANNOT tell you —
+  nginx applies the CSP. ⚠ If it needs `unsafe-inline`, STOP: `DW-022` concluded `style-src 'self'` ships as-is.
+  ⭐ **Dep evaluation DONE, don't redo:** pick **`modern-screenshot`** 4.7.0, MIT, **0 deps**, 186 KB, 2.06M/wk,
+  published 2026-04-16 (vs `html-to-image` 315 KB, untouched since 2025-04-19).
+- ✅ **`SL-032`: `WBS-23.1` (`DW-061` mobile notice, #301→`78b5ca2`, `AC-140`) and `23.2` (`DW-040` drag,
+  #302→`145d9bf`, `AC-141`) MERGED.** ⭐⭐ **`DEF-087`'s fix-forward rule VISIBLY WORKS:** slice `wbs-done`
+  went **5→4→3** where it returns **zero rows for all 28 closed slices**. Keep new wbs rows carrying `slice_id`.
+- ⚠⚠ **APPROVED LESSONS ARE IMMUTABLE** — *"supersede, never edit"*. A merge is therefore a NEW row
+  superseding the old: **`LL-013` now supersedes `LL-007` + `LL-012`**. ⚠ It says a mutation check has TWO
+  subjects — **a passing mutant proves nothing**; prove the DETECTOR exists (test count moved 10→13) BEFORE
+  mutating. I hit exactly this: a failed `cd` meant the test file was never written and I read 10 pre-existing
+  tests as a mutation result. **11 lessons bind; the auto-loaded note was refreshed via `handoff_emit`.**
+- ⚠⚠ **TWO `DW-` ROWS IN ONE SLICE HAD WRONG SIZING**, both saying "only the gesture"/"blocked on nothing".
+  `DW-040` needed a BACKEND change (the op was a **SWAP** — identical to a move at ±1, wrong for longer drags)
+  **and** a new addressing mode: the kanban renders the **filtered/sorted/page-truncated** backlog, so a
+  client-computed position addresses a different sequence. It sends the **TARGET'S IDENTITY**; a test exists
+  to fail if anyone "simplifies" that back to a delta. **Read the code before believing a row's sizing.**
+- ⚠ **`DEF-103` Fixed** (kanban rendered a silent 25-row prefix → `KANBAN_PAGE_SIZE=500` + actionable notice).
+  ⚠ **`DEF-104` Open**: **12** paged reads uncapped, **2** capped — the remedy already exists in-repo
+  (`Math.Clamp` to `MaxPageSize`; `Math.Min(take, MaxTakePerType)`). ⭐ **My first sweep keyed on `PageSize`
+  and returned 10 — blind to the audit endpoint and `GetDecisions` (`size`, `n`).** Sweeping every `.Take(...)`
+  found them. **A sweep keyed on one identifier silently narrows; the denominator is part of the finding.**
+- ⚠⚠ **COMMITTING TO `main` IS NOT PUBLISHING TO `main`** — 10 unpushed package commits got folded into one
+  feature squash. **Push after package commits**; `git rev-list --left-right --count HEAD...origin/main`.
+  ⚠ **Trap 25 fired again** (merged remotely, aborted locally) — verify by CONTENT, back up `data/` first.
+- ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a literal substring failed against a string that
+  *visibly contains it* (`لـ` absorbs the alef of `ال`). **Assert the SCRIPT RANGE, never a fragment.**
+- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like "Playwright
+  can't drive native HTML5 drag" (a real limitation) — it was a shared helper's hard-coded `toHaveCount(2)`.
+  The drag had worked. Nearly cost a rewrite of working code.
+
+## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 
 - ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
-  **refused an interview** because the slate cited ~40 records by id alone. `LL-011`, **Approved+pinned**
-  (11 lessons bind). Anything they read to DECIDE carries each record's full text inline, generated from
-  the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it as real and fixed —
-  `G-IDS` checks FKs, **not ids in prose**. Operator chose to carry the gap (`DEF-101`), not reconstruct.
-- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows `Activated`** (`DEC-067`/`SC-029`) — **against my
-  recommendation**, recorded as an override. Nine remain unscheduled by intent.
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES
-  THEM.** Found via `DEC-064` d2 (*"DW-037 is ACTIVATED"*) that **never reached the row** while `SC-020`
-  had marked `FR-035` `Deferred`. Fixed by `SC-028`; three more caught **before** writing.
+  **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's full
+  text inline, generated from the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it
+  as real and fixed — `G-IDS` checks FKs, **not ids in prose**. Carried as `DEF-101`, not reconstructed.
+- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows were `Activated`** (`DEC-067`/`SC-029`) — **against my
+  recommendation**, recorded as an override. v1 is materially larger.
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.**
+  `DEC-064` d2 said *"DW-037 is ACTIVATED"* and never reached the row, while `SC-020` had it `Deferred`.
   **Activating a `DW-` row → check its requirement in the same breath.**
-- ✅ **`assumptions-current` FIXED — it FAILS now** (`ASM-011`, overdue on purpose). ⚠ the field is a
-  **FUTURE due date**; more will redden — **that is the control working, don't clear them.**
+- ✅ **`assumptions-current` FIXED — it FAILS now** (`ASM-011`, overdue on purpose). The field is a **FUTURE
+  due date**; more will redden — **that is the control working, don't clear them.** ⛔ `DEF-087` untouched.
   ⚠ **`deferred-work-reviewed` CANNOT go green from reviewing** — it selects `Open`+`Activated`+`Scheduled`.
-- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` (Approved) removed**; `DEC-020`/`ADR-0003`/
-  `OQ-040` still assume it. Operator: *record it, change nothing.* Keyword sweep only (`LL-008`, 4th).
-- ⚠ **`DW-052`'s premise is wrong** — caps are **50 MB / 2 GB**, not `NFR-011`'s 100 MB.
-  ⚠ **`DW-037`'s data claim was half wrong** — `Topic.Schedule` does NOT persist the meeting id
-  (`TopicScheduledEvent` has **zero consumers**); the calendar must read from the **Meetings** API.
-- ⚠ **I reported "four" truncated assumption titles; it was EIGHT.** I measured inside the twelve rows I
-  was already editing. **Measuring inside the set you are holding is not measuring the register.** All 8
-  repaired; `DEF-092` widened. `ASM-001` → `Superseded`; `DW-029` → `Done`.
+- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` removed**; `DEC-020`/`ADR-0003`/`OQ-040` still
+  assume it. Operator: *record it, change nothing.* Found by **keyword** sweep only (`LL-008`).
+- ⚠ **I reported "four" truncated assumption titles; it was EIGHT.** I measured inside the twelve rows I was
+  already editing. **Measuring inside the set you are holding is not measuring the register.**
 
-## ★ 2026-08-20 · **THE DW-029 PROGRAMME IS CLOSED** · durable bits only
+## ★ 2026-08-20 · the DW-029 programme closed — durable rules only
 
-- ✅ **EVERY PHASE IS `Implemented` EXCEPT `PH-3`**, which stays `Approved` on purpose (`WBS-20.4` is the
-  email adapter vs a hard constraint, `DEC-055`; "repairing" it is the manufactured-status move `DEF-010`
-  records). `SL-014` is `Deferred` (`P14`, `DEC-028`). **`PH-7`/`SL-032` now hold the live build work.**
-- ⚠⚠ **A MENTION IS NOT A COVERAGE.** "named ANYWHERE in a DW row" made `NFR-018` vanish from a worklist
-  because another row's prose mentioned it. **A well-cross-referenced register would report itself
-  finished.** Match on TITLE, not prose.
-- ⚠⚠ **`DEF-099` — OTLP traces had NEVER reached Seq in ANY environment.** ⭐ **The discriminator is the
-  reusable part:** events grew 679→739 while DB spans sat at **exactly 72** — same host, port, container;
-  log path delivering, trace path not. **Verify observability by sending traffic and asserting spans
-  MOVE, never by a clean boot.**
-- ⭐ **`LL-008`** sweep by KEYWORD not just id (an id-only sweep returned **0 hits for 6 of 7**).
-  **`LL-009`** two instruments agreeing is ONE when they share a mechanism. **`LL-010`** if a requirement
-  says X is the single source for Y, **check X exists before measuring Y**.
+- ✅ **EVERY PHASE `Implemented` EXCEPT `PH-3`**, which stays `Approved` on purpose (`WBS-20.4` is the email
+  adapter vs a hard constraint, `DEC-055`). `SL-014` `Deferred`. **`PH-7`/`SL-032` now hold live build work.**
+- ⚠⚠ **A MENTION IS NOT A COVERAGE** — matching a requirement "named anywhere in a DW row" made one vanish
+  from a worklist. **A well-cross-referenced register would report itself finished.** Match on TITLE.
+- ⚠⚠ **`DEF-099`: OTLP traces had NEVER reached Seq in ANY environment.** ⭐ **The discriminator is reusable:**
+  events grew 679→739 while DB spans sat at **exactly 72** — same host/port/container. **Verify observability
+  by sending traffic and asserting spans MOVE, never by a clean boot.**
 - ⚠ **COUNT THE REQUIREMENT'S CLAUSES BEFORE YOU COUNT YOUR FINDINGS** — twice, strong evidence covered
   two-thirds of a three-part requirement and nearly carried a `Met`.
-- ⚠ **The operator declined to relax a requirement TWICE.** The register states the **TARGET**, not the
-  status quo — never offer a narrowing as the easy path.
-- ⚠⚠ **A number entering a durable artifact must come from output visible in the same breath** — an
-  unmeasured count reached a commit message, which cannot be amended.
-- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the tool's token limit**; `columns` does not narrow it.
-  Count from `data/requirements.jsonl`.
-- ⚠ **Running a stack here:** `docker ps` empty does NOT mean safe — 5 populated volumes exist and
-  `dev-up.sh` is `up -d --build`, the documented breaker. Isolated project, FRESH volumes, tag an existing
-  CI image to skip the 3.62 GB FTS build, `sqlserver`+`seq` healthy first, then `down -v` and remove the tag.
-- ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`, `scope_changes.decision_ref/
-  description/iteration`, `slices.title/objective/phase_id`, `phases.title`. Nullable fields preserved by
-  omission. ⚠ **CHECK constraints:** `verified_by IN (human|agent|ci)`, `verification_method IN
-  (auto-test|manual|inspection)`, `progress.event_type` is a fixed set (no `decision-made`).
+- ⚠ **The operator declined to relax a requirement TWICE.** The register states the **TARGET**, not the status
+  quo — never offer a narrowing as the easy path.
+- ⚠⚠ **A number entering a durable artifact must come from output visible in the same breath.**
+- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the token limit**; count from the JSONL.
+- ⚠ **Running a stack:** `docker ps` empty does NOT mean safe — 5 populated volumes exist and `dev-up.sh` is
+  `up -d --build`, the documented breaker. Isolated project, FRESH volumes, tag a CI image, `sqlserver`+`seq`
+  healthy first, then `down -v` and remove the tag.
+- ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`, `scope_changes.decision_ref/description/
+  iteration`, `slices.title/objective/phase_id`, `phases.title`. Nullable preserved by omission.
+  ⚠ **CHECKs:** `verified_by IN (human|agent|ci)`, `verification_method IN (auto-test|manual|inspection)`,
+  `progress.event_type` is a fixed set (no `decision-made`). ⚠ **Approved lessons are IMMUTABLE.**
 
-## ★ batches 14+15 — only what the head above does not repeat
+## ★ batches 13–15 — durable rules only (fuller record in `prm-next.md`)
 
-- ⚠ **THE READER-CLOSABLE PHASE OF `DW-029` IS EXHAUSTED** — what remains needs a stack, a browser, a
-  scanner, an unconfirmed org policy or an undeferred `P14`. **Re-run the rule rather than trusting any
-  written list.** Remaining reader-closable: `NFR-018` (external ASVS L2) and `NFR-038` (rides `P14`).
-- **Still open, needing a stack or a scanner:** `NFR-018` DAST + pentest, `NFR-019` TLS scan, `NFR-052`
-  single-command startup, the ops group (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`
-  measured from trace data — **`DEF-099` is fixed so traces now arrive.** `DW-066` (alpine/distroless) is
-  operator-only and its **risk is musl, not the two `FROM` lines**.
-
-## ★ batch 13 — compacted; fuller record in `prm-next.md`
-
-- ✅⚠ **`DEF-093` fixed upstream (4.4.2) — the old "never report gates green" rule is RETIRED.** ⚠⚠ The token
-  rule changed in ONE direction: **journal text is exempt; every live ENTITY row is still screened**
-  (`title`/`statement`/`description`) — there, name the concept or backtick the token.
-- ⭐⭐ **Classifying rule, used every batch since: surface that DOES NOT EXIST can be excluded BY NAME in a
-  `Met` verdict; surface that EXISTS but is unproven CANNOT.**
-- ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — the `NFR-021`
-  census read as a 38-command validation hole; all four commands carrying scalar input are guarded **in the
-  domain**. ⚠ A defect row's predicted cause is a HYPOTHESIS (`DEF-067`).
-- ⚠ **Never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores `lifecycle_status`,
-  so an AC ahead of its evidence holds readiness false **forever**. **A part-verified requirement gets a
-  `DW-` row, not an AC.**
+- ⭐⭐ **Surface that DOES NOT EXIST can be excluded BY NAME in a `Met` verdict; surface that EXISTS but is
+  unproven CANNOT.** That line decided every borderline call.
+- ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — an `NFR-021` census
+  read as a 38-command validation hole; all four commands carrying scalar input are guarded in the domain.
+- ⚠ **Never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores `lifecycle_status`, so
+  an AC ahead of its evidence holds readiness false **forever**. **A part-verified requirement gets a `DW-` row.**
 - ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (`DEF-091`); `vitest` does
-  NOT typecheck — use `npm run build` or `-p tsconfig.app.json`.
-- ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE** (sqlserver-fts **3.62 GB**). `SC-024` narrowed the
-  SIZE clause; the operator **REJECTED** relaxing minimal-base → **`DW-066`**. **Do not change a base image.**
+  NOT typecheck — use `npm run build`. ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE** (fts 3.62 GB);
+  operator REJECTED relaxing minimal-base → `DW-066`. **Do not change a base image.**
 - ⚠⚠ **Hangfire's `JobStorage.Current` + `GlobalJobFilters` are PROCESS-GLOBAL**; it never hands a filter the
   job's own exception — record `InnerException`.
-- ⚠ **Coverage must be UNIONED, never summed.** ⚠ **`gh pr merge` can merge remotely then abort locally** —
-  verify by CONTENT. ⚠ **Never push to a branch with CI in flight.**
-- ⭐ **`SL-030` MERGED** (#295 → `1a52dba`). ⚠ `MoveTopicPriority` is deliberately UNFILTERED.
-  ⚠ `Timeline.tsx`/`Calendar.tsx` are honest SHELLS — `Calendar.tsx`'s work is now `Activated`.
-- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — slice-scope
-  `wbs-done` is vacuous for the 28 old slices (`DEF-087`); `G-TRACE` needs three legs.
+- ⚠ **Coverage must be UNIONED, never summed.** ⚠ **Never push to a branch with CI in flight.**
+- ⚠ `Timeline.tsx` is an honest SHELL; `Calendar.tsx`'s work is now `Activated` (`DW-037`).
+- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `G-TRACE` needs 3 legs.
+- **Still open, needing a stack or scanner:** `NFR-018` DAST+pentest, `NFR-019` TLS scan, `NFR-052`, the ops
+  group (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060` measured from trace data.
 
 ## ★ Earlier state — durable facts only
 
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records.
-- **Ten lessons Approved + PINNED** (`LL-001`…`LL-010`) bind every session via the auto-loaded note.
-  ⚠ **`LL-011` is Proposed and awaiting the operator's interview** — it does not bind until they approve.
+- ⚠ **Count the binding lessons; never quote a number.** `LL-007`+`LL-012` are Superseded by `LL-013`.
 - ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — redirect to a file and read `$?` on the bare command.
 - **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four checks. `RISK-007` adoption clock
   started 2026-08-17.
