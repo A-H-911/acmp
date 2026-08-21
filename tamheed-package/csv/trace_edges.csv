@@ -383,6 +383,8 @@ LL-008,DEF-098,learned_from
 LL-009,PE-508,learned_from
 LL-010,PE-525,learned_from
 LL-011,PE-555,learned_from
+LL-012,PE-575,learned_from
+LL-014,PE-578,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
