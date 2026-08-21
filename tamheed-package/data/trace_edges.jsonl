@@ -97,6 +97,7 @@
 {"from_id":"ADR-0027","to_id":"FR-151","relation":"relates_to"}
 {"from_id":"ADR-0027","to_id":"FR-153","relation":"relates_to"}
 {"from_id":"ADR-0028","to_id":"ADR-0026","relation":"relates_to"}
+{"from_id":"ADR-0044","to_id":"ADR-0022","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-020","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-029","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-030","relation":"relates_to"}
