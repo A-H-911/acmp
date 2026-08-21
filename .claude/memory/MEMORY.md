@@ -34,10 +34,9 @@
   drag, #302→`145d9bf`, `AC-141`) and **`23.3`** (#304→`ada5fe2`, `AC-142`) MERGED. ⭐⭐ **`DEF-087`'s
   fix-forward rule VISIBLY WORKS:** slice `wbs-done` went **5→4→3→2** where it returns **zero rows for
   all 28 closed slices**. Keep new wbs rows carrying `slice_id`.
-- ⚠⚠ **APPROVED LESSONS ARE IMMUTABLE** — *"supersede, never edit"*; a merge is a NEW row superseding the
-  old (`LL-013` supersedes `LL-007`+`LL-012`). ⚠ A mutation check has TWO subjects — **a passing mutant
-  proves nothing**; prove the DETECTOR exists (test count moved 10→13) BEFORE mutating. **Count the binding
-  lessons; never quote a number.**
+- ⚠⚠ **APPROVED LESSONS ARE IMMUTABLE** — supersede, never edit (`LL-013` supersedes `LL-007`+`LL-012`).
+  ⚠ A mutation check has TWO subjects — **a passing mutant proves nothing**; prove the DETECTOR exists
+  before mutating. **Count the binding lessons; never quote a number.**
 - ⚠⚠ **THREE `DW-` ROWS IN THIS SLICE HAD WRONG SIZING**, each saying "only the gesture" / "blocked on
   nothing": `DW-040` needed a backend change (the op was a **SWAP**) *and* a new addressing mode (the kanban
   renders the filtered/sorted/truncated backlog, so it must send the **TARGET'S IDENTITY**, not a position —
@@ -48,17 +47,18 @@
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records. `SL-014`
   `Deferred` (`DEC-028`) and off the ladder.
-- ⚠ **`DEF-103` Fixed** (silent 25-row kanban prefix). ⚠ **`DEF-104` Open**: 12 paged reads uncapped, 2
-  capped; the remedy exists in-repo. ⭐ **The first sweep keyed on `PageSize` and returned 10 — blind to
-  two endpoints paging with `size`/`n`.** **A sweep keyed on one identifier silently narrows; the
-  denominator is part of the finding.**
+- ⚠ **`DEF-103` Fixed**; **`DEF-104` Open** (12 paged reads uncapped, 2 capped; remedy exists in-repo).
+  ⭐ **The first sweep keyed on `PageSize` returned 10 — blind to two endpoints paging with `size`/`n`.**
+  **A sweep keyed on one identifier silently narrows; the denominator is part of the finding.**
 - ⚠⚠ **COMMITTING TO `main` IS NOT PUBLISHING TO `main`** — 10 unpushed package commits were folded into
   one feature squash. **Push after every package commit**; check `git rev-list --left-right --count
-  HEAD...origin/main`. ⚠ Trap 25: verify a merge by CONTENT, and back up `data/` before git ops.
-- ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a literal substring failed against a string that
-  *visibly contains it* (`لـ` absorbs `ال`'s alef). **Assert the SCRIPT RANGE, never a fragment.**
-- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like
-  "Playwright can't drive HTML5 drag" — it was a helper's hard-coded `toHaveCount(2)`. The drag had worked.
+  HEAD...origin/main` — ⚠⚠ **`git fetch` FIRST. That count reads the LOCAL `origin/main` ref, so `0 0`
+  against an unfetched ref means nothing**; it said "synced" right after a remote merge on 2026-08-21.
+  ⚠ Trap 25 fires often: verify a merge by CONTENT, and back up `data/` before git ops.
+- ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a substring failed against a string that *visibly
+  contains it* (`لـ` absorbs `ال`'s alef). **Assert the SCRIPT RANGE, never a fragment.**
+- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like a
+  Playwright drag limitation; it was a helper's hard-coded `toHaveCount(2)`. The drag had worked.
 
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 
@@ -66,8 +66,6 @@
   **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's full
   text inline, generated from the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it
   as real and fixed — `G-IDS` checks FKs, **not ids in prose**. Carried as `DEF-101`, not reconstructed.
-- ⚠⚠ **ALL TWELVE demand-triggered `DW-` rows were `Activated`** (`DEC-067`/`SC-029`) — **against my
-  recommendation**, recorded as an override. v1 is materially larger.
 - ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.**
   `DEC-064` d2 said *"DW-037 is ACTIVATED"* and never reached the row, while `SC-020` had it `Deferred`.
   **Activating a `DW-` row → check its requirement in the same breath.**
@@ -82,7 +80,7 @@
 ## ★ 2026-08-20 · the DW-029 programme closed — durable rules only
 
 - ⚠⚠ **A MENTION IS NOT A COVERAGE** — matching a requirement "named anywhere in a DW row" made one
-  vanish from a worklist. **A well-cross-referenced register would report itself finished.** Match on TITLE.
+  vanish from a worklist. Match on TITLE.
 - ⚠⚠ **`DEF-099`: OTLP traces had NEVER reached Seq in ANY environment.** ⭐ **Reusable discriminator:**
   events grew 679→739 while DB spans sat at **exactly 72** — same host/port/container. **Verify
   observability by sending traffic and asserting spans MOVE, never by a clean boot.**
@@ -92,10 +90,12 @@
   status quo — never offer a narrowing as the easy path.
 - ⚠⚠ **A number entering a durable artifact must come from output visible in the same breath.**
 - ⚠ **`entity_query("requirement", ...)` OVERFLOWS the token limit**; count from the JSONL.
-- ⚠ **Running a stack: `docker ps` empty does NOT mean safe** — 5 populated volumes, `dev-up.sh` is
-  `up -d --build`. Full recipe in `prm-next.md` §6 "HOW TO RUN A STACK HERE" — follow it exactly.
-- ⚠ **`entity_upsert` NOT NULL on UPDATE:** `defects.title/severity`, `scope_changes.decision_ref/
-  description/iteration`, `slices.title/objective/phase_id`, `phases.title`. Nullable preserved by omission.
+- ⚠ **Running a stack: `docker ps` empty does NOT mean safe** — 5 populated volumes; recipe in
+  `prm-next.md` §6 "HOW TO RUN A STACK HERE".
+- ⚠⚠ **`entity_upsert` REPLACES FULL ROWS** — NOT NULL on UPDATE: `defects.title/severity`,
+  `scope_changes.decision_ref/description/iteration`, `slices.title/objective/phase_id`, `phases.title`;
+  nullable preserved by omission. **Before writing that you PRESERVED something, check the tool can.**
+  A `SL-032` objective claimed to leave text "in place" in the very write that deleted it (`PE-585`).
   ⚠ **CHECKs:** `verified_by IN (human|agent|ci)`, `verification_method IN (auto-test|manual|inspection)`,
   `progress.event_type` is a fixed set (no `decision-made`). ⚠ **Approved lessons are IMMUTABLE.**
 

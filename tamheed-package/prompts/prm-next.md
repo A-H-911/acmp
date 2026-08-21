@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twelve** times, and **two** unmeasured assertions have escaped into
+file has carried a stale statement **twelve** times, and **three** wrong assertions have escaped into
 commit messages, which cannot be amended. **Five of the eleven were written and then invalidated within
 the SAME session** by the very work that session was doing: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
@@ -27,6 +27,16 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE THIRD ESCAPE INTO A COMMIT MESSAGE (2026-08-21) WAS A ROW LYING ABOUT ITSELF.** `SL-032`'s
+rewritten objective said *"THE SLICE OBJECTIVE BELOW REPEATED THEM VERBATIM"* and *"the wrong text is left
+in place rather than edited away"* — and `entity_upsert` **replaces full rows**, so that very write had
+deleted the text it claimed to preserve. Commit `0e75755`'s message repeats it and is pushed.
+**THE SHAPE, and it is not a stale number: an intention stated in the same breath as an operation that
+contradicts it, where the OPERATION is what takes effect.** No gate sees it — both halves are well-formed
+prose in a valid row. `PE-585` corrects it; the original objective survives at
+`0e75755^:tamheed-package/data/slices.jsonl` and is pointed at rather than re-typed (`LL-001`).
+**Before writing that you preserved something, check the tool you used can preserve it.**
 
 ⚠ **THE TWELFTH WAS AN INSTRUCTION, NOT A NUMBER, AND IT WOULD HAVE COST A DEPENDENCY.** §6's
 `▶▶ DO THIS FIRST` block told a fresh session to run a spike and, three lines down, *"THE DEPENDENCY
