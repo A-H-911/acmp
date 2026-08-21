@@ -165,6 +165,31 @@ describe('Kanban (P5b)', () => {
     expect(moveMutate).not.toHaveBeenCalled();
   });
 
+  /* DEF-103 — the board has no pager, so truncation must be stated AND actionable. Both directions are
+     asserted: a silent prefix is the defect, and a notice on a complete board would be noise that
+     trains the user to ignore it. */
+  it('says so when the column set is truncated, naming both numbers and what to do', () => {
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} total={60} />, { roles: ['secretary'] });
+    const notice = screen.getByRole('status');
+    expect(notice).toHaveTextContent(/1/);
+    expect(notice).toHaveTextContent(/60/);
+    expect(notice).toHaveTextContent(/filter/i);   // actionable, not merely informative
+  });
+
+  it('shows no truncation notice when everything is on the board', () => {
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} total={1} />, { roles: ['secretary'] });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows no truncation notice when the caller supplies no total', () => {
+    // `total` is optional; an absent total must not be read as 0 and render a bogus "1 of 0".
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('ignores a card dropped on itself', () => {
     const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
     renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
