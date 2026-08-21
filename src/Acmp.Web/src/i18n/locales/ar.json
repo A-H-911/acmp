@@ -1394,7 +1394,8 @@
       "up": "رفع أولوية {{key}}",
       "down": "خفض أولوية {{key}}",
       "movedUp": "تم رفع {{key}}",
-      "movedDown": "تم خفض {{key}}"
+      "movedDown": "تم خفض {{key}}",
+      "droppedOn": "نُقل {{key}} إلى موضع {{target}}."
     },
     "empty": {
       "title": "لا مواضيع تطابق المرشّحات",

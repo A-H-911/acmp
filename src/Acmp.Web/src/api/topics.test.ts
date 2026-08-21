@@ -146,6 +146,19 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
   });
 
+  it('useMoveTopicPriority sends the TARGET IDENTITY for a drag, never a computed position (AC-141)', async () => {
+    // This client renders the filtered, sorted and page-truncated backlog, so its indices are not the
+    // server's column indices. The body must therefore carry targetTopicId; delta 0 is the sentinel that
+    // tells the server which addressing mode is in play (its validator refuses 0 with no target).
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useMoveTopicPriority(), { wrapper });
+    result.current.mutate({ topicId: 'abc', targetTopicId: 'xyz' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/topics/abc/priority/move');
+    expect(lastBody(spy)).toEqual({ delta: 0, targetTopicId: 'xyz' });
+  });
+
   it('usePrepareTopic POSTs to the prepare endpoint and invalidates backlog, pool, and detail', async () => {
     const spy = stubFetch(() => ({ status: 204 }));
     const { client, wrapper } = makeQueryWrapper();

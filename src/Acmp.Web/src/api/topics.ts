@@ -232,14 +232,34 @@ export function useAcceptTopic() {
 }
 
 // AC-043 / FR-034: keyboard move-up/down reorder — a single ±1 priority delta within the topic's kanban column.
+/*
+ * Reorder within a kanban column. TWO addressing modes, and the second is not a convenience:
+ *   { delta: 1 | -1 }        — the keyboard move up/down buttons (AC-043 / FR-034).
+ *   { targetTopicId }        — drag: put this topic where that one is (AC-141 / FR-037).
+ *
+ * ⚠ DRAG MUST NOT SEND A DELTA. This client renders the filtered, sorted and page-truncated backlog
+ * result, so the index a user sees is not the index of the canonical column the server orders by. A
+ * positional delta computed here would move the topic somewhere else entirely whenever a filter is
+ * active, a sort persists from the table view, or the column runs past one page. Sending the target's
+ * identity makes our ordering irrelevant — the server resolves both ends itself.
+ */
+type MoveTopicPriorityArgs =
+  | { topicId: string; delta: 1 | -1; targetTopicId?: never }
+  | { topicId: string; targetTopicId: string; delta?: never };
+
 export function useMoveTopicPriority() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ topicId, delta }: { topicId: string; delta: 1 | -1 }) =>
-      api<void>(`/topics/${topicId}/priority/move`, {
+    mutationFn: (args: MoveTopicPriorityArgs) =>
+      api<void>(`/topics/${args.topicId}/priority/move`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delta }),
+        // Delta 0 is the server's "not this mode" sentinel; the validator refuses 0 with no target.
+        body: JSON.stringify(
+          'targetTopicId' in args && args.targetTopicId
+            ? { delta: 0, targetTopicId: args.targetTopicId }
+            : { delta: args.delta },
+        ),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
   });
