@@ -78,7 +78,7 @@ only AFTER the nine fixes.
 > ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
 > BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
 > of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ `WBS-23.3` IS SHIPPED` and
+> already merged. **Go to §6 — read `▶▶ `SL-032`'s FOUR LEAVES ARE ALL BUILT` and
 > `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
@@ -524,7 +524,10 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ `WBS-23.3` IS SHIPPED (2026-08-21). THE NEXT BUILD ITEM IS `WBS-23.4`.
+### ▶▶ `SL-032`'s FOUR LEAVES ARE ALL BUILT (2026-08-21). NEXT IS THE SLICE CLOSE, WHICH IS THE OPERATOR'S.
+
+⚠ **`WBS-23.4` shipped too — see the slice list below and `PE-583`.** What follows is the `23.3` record,
+kept because its dependency finding binds any future DOM-to-image work.
 
 **`PE-578`** carries the CSP spike, **`PE-579`** the build. `AC-142` is Met (`AV-220`) against `ada5fe2`
 (PR #304). **Do not re-run the spike and do not re-open the dependency question.** This block replaced a
@@ -573,14 +576,15 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
 - ✅ **`WBS-23.3` / `DW-038`** — PNG chart export. PR #304 → `ada5fe2`, `AC-142` Met (`AV-220`).
   Needed `ADR-0044` + `SC-030` first; see the block above. `DW-038` is `Done`.
-- ▶▶ **`WBS-23.4` / `DW-032` — THE LAST *LEAF* IN THIS SLICE.** Reach `Topic.Reclassify`; the domain
-  method exists and is deliberately unreachable, and its guard is disjoint from Convert's so no topic can
-  be a candidate for both. ⚠ **Read the code before believing that sizing** — it is the fourth `DW-` row
-  in this slice whose brief may not survive contact, and the previous three did not.
-  ⚠⚠ **CLOSING `23.4` WILL NOT MAKE `SL-032` READY BY ITSELF.** Slice-scope `wbs-done` names **`WBS-23`,
-  the PARENT, as well as `WBS-23.4`** — check it yourself with
-  `readiness_check(scope="slice", id="SL-032")`. The parent row needs its own transition once every leaf
-  is `Implemented`, so expect `ready:false` after `23.4` merges and do not read that as a real blocker.
+- ✅ **`WBS-23.4` / `DW-032`** — triage reclassification. PR #305, `AC-143` (`FR-164`). ⚠ **Its sizing was
+  RIGHT** — the domain method really was the only missing piece — **but the REGISTER was not**: the
+  pre-build keyword sweep found **no requirement anywhere** covering reclassification, and `DEC-070` +
+  `SC-031` created `FR-164` before the build could be recorded. **Read `PE-583`.**
+  ⚠⚠ **CLOSING `23.4` DOES NOT MAKE `SL-032` READY BY ITSELF.** Slice-scope `wbs-done` also names
+  **`WBS-23`, the PARENT** — check with `readiness_check(scope="slice", id="SL-032")`. Precedent from
+  `WBS-21` and `WBS-22`: the parent goes `Implemented` once every child is. ⚠ **The SLICE's own
+  `Implemented` is the OPERATOR's verdict, not yours** — done-claimed is `Review`, and the ceremony is
+  `prompts/slice-review.md`.
 
 ⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
 **five** items when `SL-032` was created, then **four**, **three** and now **two** as `23.1`, `23.2`

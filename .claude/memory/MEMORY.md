@@ -7,17 +7,15 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-21 · **SL-032: ONE ITEM LEFT** · run `gate_run()` / `readiness_check()` — never quote these
+## ★★★ 2026-08-21 · **SL-032's FOUR LEAVES ARE ALL BUILT** · run `gate_run()` / `readiness_check()`
 
-> ▶▶ **NEXT BUILD ITEM: `WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`. `prm-next.md` §6.
-> ⚠ **Read the code before believing its sizing** — it is the fourth `DW-` row in this slice, and the
-> previous three all had briefs that did not survive contact.
+> ▶▶ **NEXT IS THE SLICE CLOSE, AND IT IS THE OPERATOR'S** — done-claimed is `Review`; `Implemented` on a
+> slice is their verdict, via `prompts/slice-review.md`. ⚠ Slice `wbs-done` also names **`WBS-23`, the
+> PARENT**; precedent (`WBS-21`, `WBS-22`) is that the parent goes `Implemented` once every child is.
 
-- ★★ [**`WBS-23.3` SHIPPED — the technique passed, the package failed**](wbs233-csp-spike.md) — PNG chart
-  export, PR #304 → `ada5fe2`, `AC-142` Met. DOM→PNG is **clean under `style-src 'self'`** and the
-  STOP-and-ask condition never arose (header untouched); **`modern-screenshot` — the pre-selected pick —
-  throws on every card**, and its `font:false` escape **silently breaks the Arabic layout**.
-  `html-to-image` shipped. **Read the file before proposing anything here.**
+- ★★ [**`WBS-23.3` shipped — the technique passed, the package failed**](wbs233-csp-spike.md) — PNG chart
+  export. DOM→PNG is **clean under `style-src 'self'`** (header untouched); **`modern-screenshot`, the
+  pre-selected pick, throws on every card**, and its `font:false` escape **silently breaks Arabic layout**.
 - ⚠⚠ **`LL-014` APPROVED + PINNED: REGISTRY METADATA CANNOT RANK CORRECTNESS.** Size/deps/downloads/
   freshness rank packages that all work. Every number in that table was right and the ranking still
   **inverted** against the one axis that decided anything. **"The technique works here" never transfers to
