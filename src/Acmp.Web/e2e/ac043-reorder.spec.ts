@@ -38,11 +38,18 @@ async function filterToRun(page: Page, stamp: number): Promise<void> {
 }
 
 // The topic keys in the Triage column, in displayed (priority) order. Filtered to this run first.
-async function triageOrder(page: Page, stamp: number): Promise<string[]> {
+/*
+ * ⚠ THE EXPECTED COUNT IS A PARAMETER AND MUST STAY ONE. It was hard-coded to 2 for the AC-043 test's
+ * two fixtures, and reusing the helper from the AC-141 test — which seeds three — failed in CI on
+ * `Expected: 2, Received: 3` AFTER the drag had already worked. The count is not decoration: without it
+ * the helper can read the order before both fixtures have rendered and return a half-filled column, so
+ * the fix is to pass the number, never to drop the assertion.
+ */
+async function triageOrder(page: Page, stamp: number, expected: number): Promise<string[]> {
   await page.getByRole('button', { name: 'Kanban' }).click();
   await filterToRun(page, stamp);
   const col = page.locator('.kb-col').filter({ hasText: 'Triage' });
-  await expect(col.locator('.bk-key')).toHaveCount(2); // both fixtures visible before we read order
+  await expect(col.locator('.bk-key')).toHaveCount(expected); // all fixtures visible before we read order
   return col.locator('.bk-key').allInnerTexts();
 }
 
@@ -56,7 +63,7 @@ test.describe('AC-043 — keyboard priority reorder', () => {
     await page.goto('/backlog');
 
     // Both new topics start at priority 0; the (Priority, CreatedAt, Key) tiebreak puts A (created first) above B.
-    const before = await triageOrder(page, stamp);
+    const before = await triageOrder(page, stamp, 2);
     expect(before.indexOf(a.key)).toBeLessThan(before.indexOf(b.key));
 
     // Move A DOWN via its keyboard button → B rises above A.
@@ -70,7 +77,7 @@ test.describe('AC-043 — keyboard priority reorder', () => {
 
     // Persisted: a full reload re-fetches priority-sorted from the server and the new order holds.
     await page.reload();
-    const after = await triageOrder(page, stamp); // reload clears the box — triageOrder re-applies it
+    const after = await triageOrder(page, stamp, 2); // reload clears the box — triageOrder re-applies it
     expect(after.indexOf(b.key)).toBeLessThan(after.indexOf(a.key));
   });
 });
@@ -112,7 +119,7 @@ test.describe('AC-141 / FR-037 — drag-to-reprioritize', () => {
 
     // Persisted, not just re-rendered: the server renumbered the column 1..N.
     await page.reload();
-    const after = await triageOrder(page, stamp);
+    const after = await triageOrder(page, stamp, 3);
     expect(after).toEqual([c.key, a.key, b.key]);
   });
 });
