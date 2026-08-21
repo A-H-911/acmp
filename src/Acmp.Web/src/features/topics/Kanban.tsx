@@ -26,7 +26,7 @@ import { Icon } from '../../components/icons';
 
 type Pending = { kind: 'accept' | 'return'; topic: TopicSummary } | null;
 
-export function Kanban({ rows }: { rows: TopicSummary[] }) {
+export function Kanban({ rows, total }: { rows: TopicSummary[]; total?: number }) {
   const { t } = useTranslation();
   const [dragId, setDragId] = useState<string | null>(null);
   const [moveId, setMoveId] = useState<string | null>(null);
@@ -88,6 +88,15 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
         <Icon name="grip" size={15} aria-hidden />
         {t('kanban.hint')}
       </div>
+      {/* DEF-103: the board has no pager by design, so when the result is still truncated it must SAY so
+          and give the user something to do. Silently rendering a prefix of a column on the surface that
+          reorders it is the defect; a card the user cannot see is one they cannot prioritize. */}
+      {typeof total === 'number' && total > rows.length && (
+        <div className="kb-truncated" role="status">
+          <Icon name="warnTriangle" size={15} aria-hidden />
+          {t('kanban.truncated', { shown: rows.length, total })}
+        </div>
+      )}
       <div aria-live="assertive" className="visually-hidden">{live}</div>
 
       <div className="kb-board">

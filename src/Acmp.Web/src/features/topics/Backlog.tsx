@@ -53,6 +53,24 @@ const STATUS_VALUES = ['Draft', 'Submitted', 'Triage', 'Accepted', 'Prepared', '
 const SORT_PARAM: Record<string, string> = { topic: 'title', status: 'status', age: 'age', urgency: 'urgency' };
 const PAGE_SIZE = 25;
 
+/*
+ * DEF-103. The kanban is a BOARD, not a paged list: it hides the pager (a five-column board with a
+ * pager is incoherent) but was still sending PAGE_SIZE, so it silently rendered a 25-row PREFIX of the
+ * column with no control anywhere to reach the rest. That is a reach problem, not a disclosure one —
+ * the "showing X of Y" line already told the user, and gave them nothing to do about it.
+ *
+ * Why a raised bound rather than per-column pagination or lazy loading: the board needs the WHOLE
+ * column to be meaningful (priority order is relative), so paginating it would reintroduce the same
+ * defect one column at a time. Why bounded rather than unbounded: an uncapped page size on a read any
+ * authenticated user can call is a request-size hazard, and 500 covers the committee's realistic scale
+ * — CON-001 caps this deployment at 20 users, and the backlog read already excludes Closed, Converted
+ * and Rejected, so this budget spans ACTIVE plus Decided topics only.
+ *
+ * ⚠ 500 IS A CEILING, NOT A GUARANTEE. When the result is still truncated the kanban says so and tells
+ * the user to narrow the filters, because silently showing a prefix is the defect being fixed here.
+ */
+const KANBAN_PAGE_SIZE = 500;
+
 interface Filters {
   statuses: string[];
   type: string;
@@ -88,7 +106,7 @@ export function Backlog() {
     sortBy: view === 'kanban' ? 'priority' : (SORT_PARAM[sortCol] ?? 'age'),
     sortDir: view === 'kanban' ? 'asc' : sortDir,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: view === 'kanban' ? KANBAN_PAGE_SIZE : PAGE_SIZE,
   };
   const { data, isLoading, isError, refetch } = useBacklog(params);
 
@@ -209,7 +227,7 @@ export function Backlog() {
           ) : view === 'list' ? (
             <TopicsList rows={data!.items} />
           ) : (
-            <Kanban rows={data!.items} />
+            <Kanban rows={data!.items} total={total} />
           )}
           {view !== 'kanban' && (
             <div className="bk-foot">

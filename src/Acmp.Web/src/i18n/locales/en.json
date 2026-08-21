@@ -1570,7 +1570,8 @@
       "reasonRequired": "A reason is required.",
       "revisit": "Revisit on",
       "confirm": "Return topic"
-    }
+    },
+    "truncated": "Showing {{shown}} of {{total}} topics. Narrow the filters to see the rest — the board has no pages."
   },
   "topicEdit": {
     "title": "Edit {{key}}",
