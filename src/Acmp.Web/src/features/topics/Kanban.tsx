@@ -44,6 +44,27 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
     setLive(t(delta < 0 ? 'topics.reorder.movedUp' : 'topics.reorder.movedDown', { key: topic.key }));
   };
 
+  /*
+   * AC-141 / FR-037: card-level drop = REORDER within a column. The section-level drop below is a
+   * different requirement — it changes STATUS (FR-033) — and both listeners see the same gesture, so a
+   * same-column drop must stop propagation or one drag would fire two operations.
+   *
+   * ⚠ SENDS THE TARGET'S IDENTITY, NOT A POSITION. `rows` is the filtered, sorted and page-truncated
+   * backlog result, so our index is not the server's column index. Computing a delta here would move the
+   * card somewhere else whenever a filter is on, a sort persists from the table view, or the column runs
+   * past a page. Returning early on a cross-bucket target leaves the gesture to the section handler.
+   */
+  const onDropOnCard = (target: TopicSummary, e: React.DragEvent) => {
+    if (!dragId || dragId === target.id) return;
+    const dragged = rows.find((r) => r.id === dragId);
+    if (!dragged || bucketOf(dragged.status) !== bucketOf(target.status)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDragId(null);
+    movePriority.mutate({ topicId: dragged.id, targetTopicId: target.id });
+    setLive(t('topics.reorder.droppedOn', { key: dragged.key, target: target.key }));
+  };
+
   const requestMove = (topicId: string, to: KanbanBucket) => {
     const topic = rows.find((r) => r.id === topicId);
     if (!topic) return;
@@ -102,6 +123,8 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
                   isFirst={i === 0}
                   isLast={i === col.cards.length - 1}
                   onReorder={onReorder}
+                  onDropOnCard={(e) => onDropOnCard(c, e)}
+                  isDropTarget={!!dragId && dragId !== c.id}
                 />
               ))}
             </div>
@@ -130,18 +153,24 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
   );
 }
 
-function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable, isFirst, isLast, onReorder }: {
+function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable, isFirst, isLast, onReorder,
+  onDropOnCard, isDropTarget }: {
   topic: TopicSummary; dragging: boolean; onDragStart: () => void; onDragEnd: () => void; onMoveKey: () => void;
   reorderable: boolean; isFirst: boolean; isLast: boolean; onReorder: (topic: TopicSummary, delta: 1 | -1) => void;
+  onDropOnCard: (e: React.DragEvent) => void; isDropTarget: boolean;
 }) {
   const { t } = useTranslation();
   const urgent = topic.urgency !== 'Normal';
   return (
     <div
-      className={`kb-card ${dragging ? 'dragging' : ''}`}
+      className={`kb-card ${dragging ? 'dragging' : ''} ${isDropTarget ? 'kb-card-drop' : ''}`}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      // preventDefault on dragover is what MAKES an element a drop target in the HTML5 DnD API;
+      // without it the drop event never fires and the gesture silently does nothing.
+      onDragOver={(e) => { if (isDropTarget) e.preventDefault(); }}
+      onDrop={onDropOnCard}
       tabIndex={0}
       role="group"
       aria-label={`${topic.key}: ${topic.title}. ${t('kanban.moveHint')}`}

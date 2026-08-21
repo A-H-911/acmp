@@ -74,3 +74,45 @@ test.describe('AC-043 — keyboard priority reorder', () => {
     expect(after.indexOf(b.key)).toBeLessThan(after.indexOf(a.key));
   });
 });
+
+test.describe('AC-141 / FR-037 — drag-to-reprioritize', () => {
+  /*
+   * The gesture half of FR-037. The ordinal half (MoveTopicPriority: materialize the column, move,
+   * renumber 1..N, audit) was already built and is what AC-043 above exercises; what did not exist was a
+   * card-level drop handler, so dragging a card onto another did nothing at all.
+   *
+   * ⚠ THIS TEST EARNS ITS COST BY DRAGGING ACROSS MORE THAN ONE POSITION. A single-position drag would
+   * pass even against the old ±1 SWAP semantics, so it could not tell the fix from the bug it replaced.
+   * Three cards, dragging the LAST onto the FIRST, is the smallest fixture where move and swap disagree:
+   * a move yields [C, A, B] and a swap yields [C, B, A]. The assertion checks the full order, not just
+   * that C reached the top, precisely so the swap is excluded.
+   */
+  test('dragging a card onto another reorders the column, and moves rather than swaps', async ({ page, request }) => {
+    const bearer = await secretarySession(page);
+    const stamp = Date.now();
+    const a = await apiCreateTopic(request, bearer, `AC141 drag A ${stamp}`);
+    const b = await apiCreateTopic(request, bearer, `AC141 drag B ${stamp}`);
+    const c = await apiCreateTopic(request, bearer, `AC141 drag C ${stamp}`);
+
+    await page.goto('/backlog');
+    await page.getByRole('button', { name: 'Kanban' }).click();
+    await filterToRun(page, stamp);
+
+    const col = page.locator('.kb-col').filter({ hasText: 'Triage' });
+    await expect(col.locator('.bk-key')).toHaveCount(3);
+    expect(await col.locator('.bk-key').allInnerTexts()).toEqual([a.key, b.key, c.key]);
+
+    // Drag C onto A. Playwright's dragTo drives the real HTML5 drag sequence the handlers listen for.
+    await col.locator('.kb-card').filter({ hasText: c.key })
+      .dragTo(col.locator('.kb-card').filter({ hasText: a.key }));
+
+    await expect
+      .poll(async () => (await col.locator('.bk-key').allInnerTexts()).join(','))
+      .toBe([c.key, a.key, b.key].join(','));
+
+    // Persisted, not just re-rendered: the server renumbered the column 1..N.
+    await page.reload();
+    const after = await triageOrder(page, stamp);
+    expect(after).toEqual([c.key, a.key, b.key]);
+  });
+});

@@ -1394,7 +1394,8 @@
       "up": "Move {{key}} up in priority",
       "down": "Move {{key}} down in priority",
       "movedUp": "{{key}} moved up",
-      "movedDown": "{{key}} moved down"
+      "movedDown": "{{key}} moved down",
+      "droppedOn": "Moved {{key}} to the position of {{target}}."
     },
     "empty": {
       "title": "No topics match these filters",

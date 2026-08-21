@@ -773,4 +773,162 @@ public class TopicHandlerTests
         byKey["TOP-2026-203"].Should().Be(3);
         await audit.Received(1).EmitEnrichedAsync("Topics.TopicReordered", "Topic", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
+
+    // ---- MOVE semantics, widened for drag-and-drop (AC-141 / FR-037, DW-040) ----
+    //
+    // The delta was ±1-only and the operation was a SWAP. Drag needs neither: dragging a card from index 4
+    // to index 0 must shift 0..3 down by one, which a swap does not do. These four tests exist to pin both
+    // halves of that change — that ±1 behaviour is UNCHANGED, and that larger magnitudes are a move rather
+    // than a swap. Without the first, widening the delta would be a silent regression of AC-043's keyboard
+    // path; without the second, the widening would ship swap semantics under a drag gesture.
+
+    [Fact]
+    public async Task Move_by_more_than_one_MOVES_rather_than_swapping()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+        await SeedSubmittedAsync(db, "TOP-2026-203");
+        var d = await SeedSubmittedAsync(db, "TOP-2026-204");
+
+        // Order by (Priority 0, CreatedAt, Key) = [201, 202, 203, 204]. Drag 204 to the top: delta -3.
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(d.PublicId, -3), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        // MOVE → [204, 201, 202, 203]: everything it passed shifts down one.
+        byKey["TOP-2026-204"].Should().Be(1);
+        byKey["TOP-2026-201"].Should().Be(2);
+        byKey["TOP-2026-202"].Should().Be(3);
+        byKey["TOP-2026-203"].Should().Be(4);
+        // A SWAP would have produced [204, 202, 203, 201], leaving 202 and 203 untouched at 2 and 3.
+        // Asserting 201 lands at 2 is precisely what discriminates the two; it is the whole point of this test.
+    }
+
+    [Fact]
+    public async Task Move_by_one_is_still_indistinguishable_from_the_swap_it_replaced()
+    {
+        // AC-043's keyboard path must be untouched by the widening. Same fixture and same assertion as
+        // Move_down_swaps_the_neighbour_and_renumbers_the_column_contiguously, kept separate so a future
+        // change to move semantics fails HERE with a name that says what broke.
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+        await SeedSubmittedAsync(db, "TOP-2026-203");
+
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(a.PublicId, 1), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        byKey["TOP-2026-202"].Should().Be(1);
+        byKey["TOP-2026-201"].Should().Be(2);
+        byKey["TOP-2026-203"].Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Move_past_the_end_of_the_column_is_a_no_op()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+
+        // Delta overshoots the column; the handler returns before touching anything rather than clamping,
+        // so priorities stay at their un-renumbered default of 0.
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(a.PublicId, 99), default);
+
+        (await db.Topics.ToListAsync()).Should().OnlyContain(t => t.Priority == 0);
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
+    [InlineData(-1, true)]
+    [InlineData(5, true)]
+    [InlineData(-5, true)]
+    public void Move_validator_rejects_only_a_zero_delta(int delta, bool expectedValid)
+    {
+        // Zero is refused rather than silently no-oping, so a bugged caller is told. Everything else is a
+        // legal signed offset — the validator is what used to make drag impossible to express.
+        var result = new MoveTopicPriorityValidator().Validate(new MoveTopicPriorityCommand(Guid.NewGuid(), delta));
+        result.IsValid.Should().Be(expectedValid);
+    }
+
+    // ---- Target-topic addressing: the DRAG path (AC-141 / FR-037) ----
+    //
+    // ⚠ WHY THIS MODE EXISTS AT ALL, so nobody "simplifies" it back to a delta. The kanban renders the
+    // FILTERED, SORTED and PAGE-TRUNCATED backlog result, so the index a user sees is not the index of the
+    // canonical column this handler orders by. A client-computed positional delta would therefore move the
+    // topic somewhere else entirely whenever a filter is active, a sort persists from the table view, or the
+    // column runs past one page. Sending the target's IDENTITY makes the client's ordering irrelevant.
+
+    [Fact]
+    public async Task Move_to_a_target_topic_places_it_at_that_target_position()
+    {
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");
+        await SeedSubmittedAsync(db, "TOP-2026-202");
+        await SeedSubmittedAsync(db, "TOP-2026-203");
+        var d = await SeedSubmittedAsync(db, "TOP-2026-204");
+
+        // [201, 202, 203, 204] — drag 204 onto 201 (the top card).
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(d.PublicId, 0, a.PublicId), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        byKey["TOP-2026-204"].Should().Be(1);
+        byKey["TOP-2026-201"].Should().Be(2);
+        byKey["TOP-2026-202"].Should().Be(3);
+        byKey["TOP-2026-203"].Should().Be(4);
+    }
+
+    [Fact]
+    public async Task Move_to_a_target_ignores_the_callers_own_idea_of_position()
+    {
+        // THE POINT OF THE WHOLE ADDRESSING MODE, expressed as a test. The command carries Delta = 0 — a
+        // value the validator refuses on its own and which would be meaningless arithmetic — and the move
+        // still lands correctly, because the destination comes from the target's identity and nothing else.
+        // If anyone reintroduces "target = index + Delta" as a shortcut, this test is what fails.
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        await SeedSubmittedAsync(db, "TOP-2026-201");
+        var b = await SeedSubmittedAsync(db, "TOP-2026-202");
+        var c = await SeedSubmittedAsync(db, "TOP-2026-203");
+
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(b.PublicId, 0, c.PublicId), default);
+
+        var byKey = await db.Topics.ToDictionaryAsync(t => t.Key, t => t.Priority);
+        byKey["TOP-2026-201"].Should().Be(1);
+        byKey["TOP-2026-203"].Should().Be(2);
+        byKey["TOP-2026-202"].Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Move_to_a_target_in_another_column_is_refused()
+    {
+        // Cross-column drag is a STATUS change (FR-033), a different requirement handled by a different
+        // endpoint. Reordering must not quietly become a transition, so a target outside the topic's own
+        // bucket is a no-op rather than a partial move.
+        await using var db = NewDb(User("kc-sec", "Sec"), Clock(default));
+        var a = await SeedSubmittedAsync(db, "TOP-2026-201");   // triage bucket
+        var other = await SeedTopicAsync(db, TopicStatus.Accepted);   // accepted bucket
+
+        await MovePriority(db).Handle(new MoveTopicPriorityCommand(a.PublicId, 0, other.PublicId), default);
+
+        (await db.Topics.ToListAsync()).Should().OnlyContain(t => t.Priority == 0);   // nothing renumbered
+    }
+
+    [Theory]
+    [InlineData(1, false, false)]    // delta only → valid
+    [InlineData(0, true, false)]     // target only → valid
+    [InlineData(1, true, true)]      // BOTH → refused: the handler must never pick a winner silently
+    [InlineData(0, false, true)]     // NEITHER → refused: a request that asks for nothing
+    public void Move_validator_requires_exactly_one_addressing_mode(int delta, bool withTarget, bool expectInvalid)
+    {
+        var cmd = new MoveTopicPriorityCommand(Guid.NewGuid(), delta, withTarget ? Guid.NewGuid() : null);
+        new MoveTopicPriorityValidator().Validate(cmd).IsValid.Should().Be(!expectInvalid);
+    }
+
+    [Fact]
+    public void Move_validator_refuses_a_topic_targeting_itself()
+    {
+        var id = Guid.NewGuid();
+        new MoveTopicPriorityValidator().Validate(new MoveTopicPriorityCommand(id, 0, id))
+            .IsValid.Should().BeFalse();
+    }
 }

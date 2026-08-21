@@ -138,10 +138,11 @@ public static class TopicEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.BacklogPrioritize);
 
-        // AC-043 / FR-034: keyboard move-up/down reorder within the topic's kanban column (a single ±1 delta).
+        // AC-043 / FR-034 keyboard ±1, and AC-141 / FR-037 drag-to-reprioritize. Exactly one addressing
+        // mode per request; the validator enforces it.
         group.MapPost("/{id:guid}/priority/move", async (Guid id, MoveBody body, ISender sender, CancellationToken ct) =>
         {
-            await sender.Send(new MoveTopicPriorityCommand(id, body.Delta), ct);
+            await sender.Send(new MoveTopicPriorityCommand(id, body.Delta, body.TargetTopicId), ct);
             return Results.NoContent();
         }).RequireAuthorization(Policies.BacklogPrioritize);
 
@@ -183,7 +184,10 @@ public static class TopicEndpoints
     public sealed record ConfidentialityBody(bool Restricted);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
-    public sealed record MoveBody(int Delta);
+    // Delta = keyboard ±1 (AC-043). TargetTopicId = drag: put this topic where that one is (AC-141);
+    // the server resolves both positions in the canonical column, because the client's list is
+    // filtered, sorted and page-truncated and its indices are therefore not the column's.
+    public sealed record MoveBody(int Delta, Guid? TargetTopicId = null);
     // Scope is nullable and OMITTING IT MEANS "leave it alone", which is what makes this safe to add
     // to an existing body: a caller that does not know about scope cannot silently reset an elevated
     // topic back to a derived value (DEF-058).
