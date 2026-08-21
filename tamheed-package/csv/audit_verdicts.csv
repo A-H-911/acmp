@@ -231,3 +231,18 @@ CONTRAST, since this is user-facing text: the token pair computes to 5.73:1 in t
 RTL CORRECTNESS WAS LOOKED AT, NOT ASSUMED. Screenshots at 375 px in both locales were reviewed: under Arabic the icon and text mirror to the right and the language toggle mirrors left, achieved by the existing CSS logical properties with no per-direction override, which is what INV-009 requires.
 
 WHAT THIS VERDICT DOES NOT CLAIM: the 'no broken layout' clause of NFR-063 across all 52 routes. See the criterion's own scope note. Recorded by Claude Opus 5 (1M context), Claude Code session 27ae9c8d.",agent,auto-test,78b5ca2,1,2026-08-20T23:37:57Z,,
+AV-219,AC-141,Met,"GREEN CI ON THE MERGE COMMIT, and the drag case demonstrably RAN rather than being collected and skipped: the e2e job reports 86 passed where the previous run on this branch reported 85, the difference being exactly the case added here.
+
+THE e2e IS BUILT SO IT CANNOT PASS AGAINST THE BUG IT REPLACED. It seeds THREE topics and drags the LAST onto the FIRST, then asserts the FULL resulting order rather than merely that the dragged card reached the top. Three is the smallest fixture where move and swap disagree - a move yields [C, A, B] and a swap yields [C, B, A] - so a two-card or single-position drag would have passed against the old semantics and proved nothing. It then RELOADS and re-asserts, so the verdict rests on server-persisted renumbering rather than on optimistic client state.
+
+MUTATION-CHECKED AT BOTH LAYERS, each mutant reverted and the original result reproduced.
+(1) Restoring the swap in MoveTopicPriorityHandler fails Move_by_more_than_one_MOVES_rather_than_swapping and NOTHING ELSE - so the new test discriminates move from swap. Critically, the plus-or-minus-one test PASSED against that same mutant, which is independent proof that AC-043's keyboard path is unaffected by this change rather than an assurance that it should be.
+(2) Removing the same-bucket guard in Kanban.onDropOnCard fails exactly the cross-column test - so one gesture cannot silently fire both a reorder and a status transition.
+
+THE ADDRESSING MODE IS ITSELF UNDER TEST, because it is the part most likely to be 'simplified' back into a defect. Move_to_a_target_ignores_the_callers_own_idea_of_position sends Delta = 0 - a value the validator refuses on its own - and still lands correctly, which can only be true if the destination comes from the target's identity. A frontend test asserts the mutation is called with targetTopicId and never a computed delta. This matters because the client renders the FILTERED, SORTED and PAGE-TRUNCATED backlog, so a browser-computed position would address a different sequence than the server's canonical column.
+
+VALIDATOR COVERAGE: a theory over both addressing modes proves exactly one may be supplied - both together and neither are refused - plus a case refusing a topic targeting itself.
+
+SUITE COUNTS AT THE MERGE COMMIT: 1149 backend tests, 1251 frontend tests, 86 e2e, dotnet build 0 errors and 0 warnings, oxlint 0, check-i18n parity 1903 keys, check-hardcoded-strings 0.
+
+WHAT THIS VERDICT DOES NOT CLAIM: that every topic in a column is reachable by the gesture. DEF-103 records that the kanban renders only the first 25 with no control to reach the rest, so a topic beyond that cannot be dragged. The criterion names that limit explicitly. Recorded by Claude Opus 5 (1M context), Claude Code session 27ae9c8d.",agent,auto-test,145d9bf,1,2026-08-21T05:06:37Z,,
