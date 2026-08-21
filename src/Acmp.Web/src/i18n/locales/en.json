@@ -2204,6 +2204,8 @@
     "probability": "Probability",
     "viewDetail": "View detail",
     "drill": "Open {{title}}",
+    "exportPng": "Export {{title}} as a PNG image",
+    "exportPngFailed": "Couldn’t export this chart as an image.",
     "updated": "Updated {{time}}",
     "kpi": {
       "approvedRate": "approved or conditional",

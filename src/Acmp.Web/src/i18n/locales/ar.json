@@ -2204,6 +2204,8 @@
     "probability": "الاحتمالية",
     "viewDetail": "عرض التفاصيل",
     "drill": "فتح {{title}}",
+    "exportPng": "تصدير {{title}} كصورة PNG",
+    "exportPngFailed": "تعذّر تصدير هذا الرسم كصورة.",
     "updated": "حُدّث {{time}}",
     "kpi": {
       "approvedRate": "موافق عليه أو مشروط",
