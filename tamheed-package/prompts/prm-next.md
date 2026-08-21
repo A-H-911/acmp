@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **eleven** times, and **two** unmeasured assertions have escaped into
+file has carried a stale statement **twelve** times, and **two** unmeasured assertions have escaped into
 commit messages, which cannot be amended. **Five of the eleven were written and then invalidated within
 the SAME session** by the very work that session was doing: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
@@ -28,7 +28,15 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
-⚠⚠ **THE TWELFTH IS THE MOST EMBARRASSING, BECAUSE IT HAPPENED IN THE SESSION WHOSE OWN FINDINGS ARE
+⚠ **THE TWELFTH WAS AN INSTRUCTION, NOT A NUMBER, AND IT WOULD HAVE COST A DEPENDENCY.** §6's
+`▶▶ DO THIS FIRST` block told a fresh session to run a spike and, three lines down, *"THE DEPENDENCY
+EVALUATION IS DONE — do not redo it"* over a table marking `modern-screenshot` as the pick. The spike
+ran on 2026-08-21 and that package **cannot run under this app's CSP at all**. Every number in the table
+was correct; the *instruction built on them* was wrong, and a fresh session obeying it would have
+installed a package that throws on every card. The block was **replaced, not annotated** — see §6.
+**This is the tenth fix's lesson repeating: an id-and-status verifier cannot see a stale INSTRUCTION.**
+
+⚠⚠ **THE THIRTEENTH IS THE MOST EMBARRASSING, BECAUSE IT HAPPENED IN THE SESSION WHOSE OWN FINDINGS ARE
 ABOUT THIS.** Commit `a2066ba` asserts *"readiness ready:TRUE"* about the state after twelve activations.
 Only `gate_run()` was run after those writes; the last `readiness_check` preceded every one of them. The
 assertion was later verified true — **and it was still unmeasured when written.** ⚠ **An assertion that
@@ -70,7 +78,8 @@ only AFTER the nine fixes.
 > ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
 > BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
 > of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ DO THIS FIRST` and `▶ WHERE THE BUILD WORK STANDS` before
+> already merged. **Go to §6 — read `▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED` and
+> `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
@@ -515,34 +524,50 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ DO THIS FIRST — the CSP spike for `WBS-23.3` (2026-08-21)
+### ▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED (2026-08-21). DO NOT RE-RUN IT.
 
-**The operator chose a SPIKE over installing. Do not add the dependency until the spike answers.**
+**Read `PE-578` — it carries the whole run, the exact header, the controls and the numbers.** The
+`▶▶ DO THIS FIRST` block that stood here has been replaced rather than annotated, because it told a
+fresh session to run a spike that is finished and to install a package that does not work.
 
-`DW-038`/`FR-142` wants PNG chart export. ⚠⚠ **ITS ROW SAYS "draw the chart to a canvas and hand the
-browser a download… It is NOT blocked on anything." BOTH HALVES ARE FALSE.** There is no canvas:
-`OQ-022` is **Approved** — *"no chart library — charts are CSS primitives (`rpt-*` renderers)"*, resolved
-by `ADR-0022`. All five card kinds (`bars`, `columns`, `stack`, `stat`, `matrix`) are DOM/CSS. Nothing
-installed can rasterise them; Playwright is dev-only and cannot ship.
+**THE ANSWER, in one line: the technique is NOT blocked by the shipped CSP; the pre-selected package
+is.** Nothing was installed and no header was touched.
 
-**THE SPIKE, and it is the whole decision:** every library in this family renders via an SVG
-`foreignObject` carrying inline styles, and the shipped CSP is **`style-src 'self'` with NO
-`unsafe-inline`** (`deploy/nginx/cloud-443.conf.template:56` and `default.conf.template:42`;
-`img-src 'self' data:` IS allowed, so the data URL is fine — the styles are the risk). **`vite preview`
-will NOT tell you, because nginx applies the CSP, not Vite.** Serve the built app with the real header
-and try the technique on one report card *before* anything reaches `package.json`.
+- ✅ **DOM → `foreignObject` → data-URL SVG → canvas → PNG runs clean under `style-src 'self'`.**
+  The parent document's `style-src` does not reach inside an SVG rendered as an image, `img-src 'self'
+  data:` admits the data URL, and the canvas is not tainted. **The `⚠ if it needs `unsafe-inline`, STOP`
+  condition did not arise** — `DW-022`'s finding stands untouched and the header ships as-is.
+- ⛔ **`modern-screenshot` 4.7.0 — the pick — THROWS ON EVERY CARD IN BOTH LOCALES.** `embedWebFont`
+  builds a scratch document with `implementation.createHTMLDocument()`, appends a `<style>` to it, and
+  dereferences `.sheet` unguarded; the scratch document inherits the page CSP, so the sheet is null.
+  `font: false` skips that path and every capture then succeeds — **and silently breaks the Arabic
+  layout** (the title reflows into the subtitle, because it omits `width`/`height` from the styles it
+  copies). A crash traded for a one-locale visual defect is not an escape.
+- ✅ **`html-to-image` 1.11.13 works, with fonts embedded, contributing ZERO CSP violations.** It
+  appends its font `<style>` to the *detached clone* instead of a scratch document. Proven directly,
+  not inferred from pixels: `getFontEmbedCSS` returns 48 `@font-face` rules for en and 80 for ar, every
+  `url()` a `data:` WOFF2.
 
-⚠ **If it needs `style-src 'unsafe-inline'`, STOP and ask.** `DW-022` already investigated that exact
-header and concluded `style-src 'self'` ships as-is; widening it reverses a recorded finding.
+⚠⚠ **THE DEPENDENCY TABLE THAT STOOD HERE WAS DELETED, NOT UPDATED, AND ITS INSTRUCTION — "THE
+DEPENDENCY EVALUATION IS DONE — do not redo it" — WAS THE ERROR.** It ranked four packages on registry
+metadata (size, deps, downloads, last-published) and marked `modern-screenshot` as the pick. Every
+number in it was correct. Measured against the only axis that decides anything — does it run under this
+app's CSP — **the ranking inverts completely**: the winner on every metadata axis cannot run here, and
+the candidate rejected as the largest and stalest is the one that works. `LL-014` (Proposed) records the
+rule. Do not restore a table; if you need the metadata again, re-measure it.
 
-**THE DEPENDENCY EVALUATION IS DONE — do not redo it.** Measured 2026-08-21 from the registry:
+▶ **WHAT IS ACTUALLY LEFT.** The install decision is the operator's and it CHANGED from what they were
+shown, so it goes back to them — **read the live status of `LL-014` and of any `DEC-` recorded after
+`DEC-068` before assuming it is still open.** Two notes for whoever builds it: compute the font CSS ONCE
+with `getFontEmbedCSS` and pass it via the `fontEmbedCSS` option (the ar payload is ~1.63 MB per capture
+otherwise), and know that `html-to-image` has a catch path that `insertRule`s into the app's LIVE
+stylesheet when a sheet's `cssRules` read throws — inert today because every stylesheet here is
+same-origin, live the moment one is not.
 
-| package | version | licence | runtime deps | unpacked | weekly | last published |
-|---|---|---|---|---|---|---|
-| **`modern-screenshot`** ← pick | 4.7.0 | MIT | **none** | **186 KB** | 2.06M | **2026-04-16** |
-| `html-to-image` | 1.11.13 | MIT | none | 315 KB | 5.18M | 2025-04-19 (stale) |
-| `dom-to-image-more` | 3.10.2 | MIT | — | 977 KB | — | — |
-| `html2canvas` | 1.4.1 | MIT | **2** | **3.4 MB** | — | — |
+⚠ Not measured, and do not let a build session assume otherwise: **Chromium only** (149.0.7827.55), no
+Firefox/WebKit, no full-page multi-card export, no memory measurement on the on-prem hardware. **No
+acceptance criterion was written** — a spike produces feasibility evidence, not build evidence, so
+`WBS-23.3` is deliberately NOT `Review`.
 
 ### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
 
@@ -551,7 +576,9 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 
 - ✅ **`WBS-23.1` / `DW-061`** — mobile notice. PR #301 → `78b5ca2`, `AC-140` Met (`AV-218`).
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
-- ▶ **`WBS-23.3` / `DW-038`** — PNG export. **Start with the CSP spike above.**
+- ▶ **`WBS-23.3` / `DW-038`** — PNG export. **The CSP spike is DONE (`PE-578`) — do not re-run it.**
+  Feasible with `html-to-image`, not with the package that was pre-selected; the install decision went
+  back to the operator because it changed. See the block above.
 - ▶ **`WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`; the domain method exists and is deliberately
   unreachable, and its guard is disjoint from Convert's so no topic can be a candidate for both.
 
