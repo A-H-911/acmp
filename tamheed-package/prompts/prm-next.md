@@ -78,7 +78,7 @@ only AFTER the nine fixes.
 > ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
 > BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
 > of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED` and
+> already merged. **Go to §6 — read `▶▶ `WBS-23.3` IS SHIPPED` and
 > `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
@@ -524,50 +524,45 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED (2026-08-21). DO NOT RE-RUN IT.
+### ▶▶ `WBS-23.3` IS SHIPPED (2026-08-21). THE NEXT BUILD ITEM IS `WBS-23.4`.
 
-**Read `PE-578` — it carries the whole run, the exact header, the controls and the numbers.** The
-`▶▶ DO THIS FIRST` block that stood here has been replaced rather than annotated, because it told a
-fresh session to run a spike that is finished and to install a package that does not work.
+**`PE-578`** carries the CSP spike, **`PE-579`** the build. `AC-142` is Met (`AV-220`) against `ada5fe2`
+(PR #304). **Do not re-run the spike and do not re-open the dependency question.** This block replaced a
+`▶▶ DO THIS FIRST` that told a fresh session to run a spike that was finished and to install a package
+that does not work here.
 
-**THE ANSWER, in one line: the technique is NOT blocked by the shipped CSP; the pre-selected package
-is.** Nothing was installed and no header was touched.
+**THE THREE THINGS WORTH CARRYING, none of which is a task:**
 
-- ✅ **DOM → `foreignObject` → data-URL SVG → canvas → PNG runs clean under `style-src 'self'`.**
-  The parent document's `style-src` does not reach inside an SVG rendered as an image, `img-src 'self'
-  data:` admits the data URL, and the canvas is not tainted. **The `⚠ if it needs `unsafe-inline`, STOP`
-  condition did not arise** — `DW-022`'s finding stands untouched and the header ships as-is.
-- ⛔ **`modern-screenshot` 4.7.0 — the pick — THROWS ON EVERY CARD IN BOTH LOCALES.** `embedWebFont`
-  builds a scratch document with `implementation.createHTMLDocument()`, appends a `<style>` to it, and
-  dereferences `.sheet` unguarded; the scratch document inherits the page CSP, so the sheet is null.
-  `font: false` skips that path and every capture then succeeds — **and silently breaks the Arabic
-  layout** (the title reflows into the subtitle, because it omits `width`/`height` from the styles it
-  copies). A crash traded for a one-locale visual defect is not an escape.
-- ✅ **`html-to-image` 1.11.13 works, with fonts embedded, contributing ZERO CSP violations.** It
-  appends its font `<style>` to the *detached clone* instead of a scratch document. Proven directly,
-  not inferred from pixels: `getFontEmbedCSS` returns 48 `@font-face` rules for en and 80 for ar, every
-  `url()` a `data:` WOFF2.
+- ✅ **DOM → `foreignObject` → data-URL SVG → canvas → PNG is CLEAN under `style-src 'self'`.** A parent
+  document's `style-src` does not reach inside an SVG rendered as an image. **The "if it needs
+  `unsafe-inline`, STOP and ask" condition NEVER AROSE** — `DW-022`'s finding stands and both nginx
+  templates are untouched. If a later session reads `DW-038`'s brief and finds the prediction that inline
+  styles in a foreignObject would be blocked: **that prediction is false and was measured to be false.**
+- ⛔ **`modern-screenshot` 4.7.0 cannot run here** — `embedWebFont` appends a `<style>` to a scratch
+  `createHTMLDocument()` that inherits the page CSP, then dereferences the null `.sheet`. Its `font:false`
+  escape silently breaks the **Arabic** layout. ✅ **`html-to-image` 1.11.13 is what shipped** (`DEC-069`).
+  ⚠ It has a catch path that `insertRule`s into the app's **live** stylesheet when a sheet's `cssRules`
+  read throws — inert today because every stylesheet here is same-origin, live the moment one is not.
+  ⚠ For a future capture, compute the font CSS ONCE with `getFontEmbedCSS` and pass `fontEmbedCSS`; the
+  ar payload is ~1.63 MB per call otherwise. Deliberately not done yet — no measurement says it hurts.
+- ⚠⚠ **`LL-014` is Approved and PINNED: registry metadata cannot rank correctness.** The carried-in
+  dependency table ranked four packages on size, deps, downloads and freshness and marked the pick. Every
+  number was right; the ranking **inverted** against the only axis that decided anything. **"The technique
+  works here" never transfers to "this package works here."**
 
-⚠⚠ **THE DEPENDENCY TABLE THAT STOOD HERE WAS DELETED, NOT UPDATED, AND ITS INSTRUCTION — "THE
-DEPENDENCY EVALUATION IS DONE — do not redo it" — WAS THE ERROR.** It ranked four packages on registry
-metadata (size, deps, downloads, last-published) and marked `modern-screenshot` as the pick. Every
-number in it was correct. Measured against the only axis that decides anything — does it run under this
-app's CSP — **the ranking inverts completely**: the winner on every metadata axis cannot run here, and
-the candidate rejected as the largest and stalest is the one that works. `LL-014` (Proposed) records the
-rule. Do not restore a table; if you need the metadata again, re-measure it.
+⚠⚠ **THE PRE-BUILD REGISTER SWEEP EARNED ITS KEEP AND YOU SHOULD RUN IT THE SAME WAY.** Sweeping
+`adrs`, `decisions` and `open_questions` **BY KEYWORD** before writing a line found `DEF-105`:
+`ADR-0022` clause 4 still read *"Export = client-side CSV only in v1"* and `WBS-14.5` marked `FR-142`
+`(PH-2)`, against three later Approved decisions ordering the build. **An identifier sweep returns
+nothing — `FR-142` and `ADR-0022` never name each other.** Resolved by `ADR-0044` + `SC-030`; `DEF-105`
+is Fixed. ⚠ **The operator's instruction was "a new ADR superseding clause 4", and taking it literally
+would have marked the `ADR-0022` ROW Superseded** — invalidating an id `DEF-102` and two source comments
+depend on. The clause-only shape was put back to them and confirmed **before** it was applied. **When an
+instruction names a clause, check whether the row or the clause is the thing that can be superseded.**
 
-▶ **WHAT IS ACTUALLY LEFT.** The install decision is the operator's and it CHANGED from what they were
-shown, so it goes back to them — **read the live status of `LL-014` and of any `DEC-` recorded after
-`DEC-068` before assuming it is still open.** Two notes for whoever builds it: compute the font CSS ONCE
-with `getFontEmbedCSS` and pass it via the `fontEmbedCSS` option (the ar payload is ~1.63 MB per capture
-otherwise), and know that `html-to-image` has a catch path that `insertRule`s into the app's LIVE
-stylesheet when a sheet's `cssRules` read throws — inert today because every stylesheet here is
-same-origin, live the moment one is not.
-
-⚠ Not measured, and do not let a build session assume otherwise: **Chromium only** (149.0.7827.55), no
-Firefox/WebKit, no full-page multi-card export, no memory measurement on the on-prem hardware. **No
-acceptance criterion was written** — a spike produces feasibility evidence, not build evidence, so
-`WBS-23.3` is deliberately NOT `Review`.
+⚠ **Not measured, and do not let a later session assume otherwise:** Chromium only (149 and 151 — the
+result reproduced across two builds), **no Firefox, no WebKit**; no whole-page multi-card export; no
+memory measurement on the on-prem hardware. `AC-142` names all four exclusions in its own text.
 
 ### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
 
@@ -576,14 +571,16 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 
 - ✅ **`WBS-23.1` / `DW-061`** — mobile notice. PR #301 → `78b5ca2`, `AC-140` Met (`AV-218`).
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
-- ▶ **`WBS-23.3` / `DW-038`** — PNG export. **The CSP spike is DONE (`PE-578`) — do not re-run it.**
-  Feasible with `html-to-image`, not with the package that was pre-selected; the install decision went
-  back to the operator because it changed. See the block above.
-- ▶ **`WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`; the domain method exists and is deliberately
-  unreachable, and its guard is disjoint from Convert's so no topic can be a candidate for both.
+- ✅ **`WBS-23.3` / `DW-038`** — PNG chart export. PR #304 → `ada5fe2`, `AC-142` Met (`AV-220`).
+  Needed `ADR-0044` + `SC-030` first; see the block above. `DW-038` is `Done`.
+- ▶▶ **`WBS-23.4` / `DW-032` — THE LAST ITEM IN THIS SLICE.** Reach `Topic.Reclassify`; the domain method
+  exists and is deliberately unreachable, and its guard is disjoint from Convert's so no topic can be a
+  candidate for both. ⚠ **Read the code before believing that sizing** — it is the fourth `DW-` row in
+  this slice whose brief may not survive contact, and the previous three did not.
 
 ⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
-**five** items when `SL-032` was created, **four** after `23.1`, **three** after `23.2`. The same rule
+**five** items when `SL-032` was created, then **four**, **three** and now **two** as `23.1`, `23.2`
+and `23.3` closed. The same rule
 returns **zero rows for all 28 closed slices**. First slice-scope rule here that has ever tracked
 progress instead of passing over an empty set — **keep new work items carrying `slice_id`.**
 

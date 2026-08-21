@@ -7,24 +7,34 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-21 · **BUILDING SL-032** · `gate` 7/7 · `ready:TRUE` (measure them, never quote these)
+## ★★★ 2026-08-21 · **SL-032: ONE ITEM LEFT** · run `gate_run()` / `readiness_check()` — never quote these
 
-> ▶▶ **THE `WBS-23.3` SPIKE IS DONE — the next action is the OPERATOR's install decision**, not a spike
-> and not a build. `prm-next.md` §6, first block. ⚠ Read the live `LL-014` status and any `DEC-` after
-> `DEC-068` before assuming it is still open.
+> ▶▶ **NEXT BUILD ITEM: `WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`. `prm-next.md` §6.
+> ⚠ **Read the code before believing its sizing** — it is the fourth `DW-` row in this slice, and the
+> previous three all had briefs that did not survive contact.
 
-- ★★ [**`WBS-23.3` spike: the technique passed, the package failed**](wbs233-csp-spike.md) — DOM→PNG is
-  **clean under `style-src 'self'`** (the STOP-and-ask condition never arose; header untouched), but
-  **`modern-screenshot` 4.7.0 — the pre-selected pick — throws on every card**, and its `font: false`
-  escape **silently breaks the Arabic layout**. `html-to-image` 1.11.13 works, fonts embedded, zero
-  violations. **Read the file before proposing anything here.**
-- ⚠⚠ **`LL-014` (Proposed): REGISTRY METADATA CANNOT RANK CORRECTNESS.** Size/deps/downloads/freshness
-  rank packages that all work. Every number in that table was right and the ranking still **inverted**
-  against the one axis that decided anything. **"The technique works here" never transfers to "this
-  package works here."** ⭐ Two libs, same technique, opposite outcome — one unguarded property read.
-- ✅ **`SL-032`: `WBS-23.1` (`DW-061` mobile notice, #301→`78b5ca2`, `AC-140`) and `23.2` (`DW-040` drag,
-  #302→`145d9bf`, `AC-141`) MERGED.** ⭐⭐ **`DEF-087`'s fix-forward rule VISIBLY WORKS:** slice `wbs-done`
-  went **5→4→3** where it returns **zero rows for all 28 closed slices**. Keep new wbs rows carrying `slice_id`.
+- ★★ [**`WBS-23.3` SHIPPED — the technique passed, the package failed**](wbs233-csp-spike.md) — PNG chart
+  export, PR #304 → `ada5fe2`, `AC-142` Met. DOM→PNG is **clean under `style-src 'self'`** and the
+  STOP-and-ask condition never arose (header untouched); **`modern-screenshot` — the pre-selected pick —
+  throws on every card**, and its `font:false` escape **silently breaks the Arabic layout**.
+  `html-to-image` shipped. **Read the file before proposing anything here.**
+- ⚠⚠ **`LL-014` APPROVED + PINNED: REGISTRY METADATA CANNOT RANK CORRECTNESS.** Size/deps/downloads/
+  freshness rank packages that all work. Every number in that table was right and the ranking still
+  **inverted** against the one axis that decided anything. **"The technique works here" never transfers to
+  "this package works here."** ⭐ Two libs, same technique, opposite outcome — one unguarded property read.
+- ⚠⚠ **THE PRE-BUILD KEYWORD SWEEP FOUND `DEF-105`** — `ADR-0022` clause 4 read *"Export = client-side
+  CSV only in v1"* against three later Approved decisions ordering the build. **An identifier sweep
+  returns NOTHING — `FR-142` and `ADR-0022` never name each other.** Fixed by `ADR-0044` + `SC-030`.
+  ⚠⚠ **The instruction was "supersede clause 4"; obeying it literally would have marked the ADR *row*
+  Superseded**, invalidating an id `DEF-102` and two source comments depend on. **When an instruction
+  names a CLAUSE, check whether the row or the clause is what can be superseded** — and put the
+  correction back to the operator before applying.
+- ⚠ **`DW-075`: `ToastProvider` is built, tested and mounted NOWHERE** — `useToast()` throws from any real
+  screen. Failure feedback is inline (`.rpt-card-note`) instead.
+- ✅ **`SL-032`: `WBS-23.1`** (`DW-061` mobile notice, #301→`78b5ca2`, `AC-140`), **`23.2`** (`DW-040`
+  drag, #302→`145d9bf`, `AC-141`) and **`23.3`** (#304→`ada5fe2`, `AC-142`) MERGED. ⭐⭐ **`DEF-087`'s
+  fix-forward rule VISIBLY WORKS:** slice `wbs-done` went **5→4→3→2** where it returns **zero rows for
+  all 28 closed slices**. Keep new wbs rows carrying `slice_id`.
 - ⚠⚠ **APPROVED LESSONS ARE IMMUTABLE** — *"supersede, never edit"*; a merge is a NEW row superseding the
   old (`LL-013` supersedes `LL-007`+`LL-012`). ⚠ A mutation check has TWO subjects — **a passing mutant
   proves nothing**; prove the DETECTOR exists (test count moved 10→13) BEFORE mutating. **Count the binding
@@ -39,19 +49,17 @@
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records. `SL-014`
   `Deferred` (`DEC-028`) and off the ladder.
-- ⚠ **`DEF-103` Fixed** (kanban rendered a silent 25-row prefix → `KANBAN_PAGE_SIZE=500` + actionable notice).
-  ⚠ **`DEF-104` Open**: **12** paged reads uncapped, **2** capped — the remedy already exists in-repo
-  (`Math.Clamp` to `MaxPageSize`; `Math.Min(take, MaxTakePerType)`). ⭐ **My first sweep keyed on `PageSize`
-  and returned 10 — blind to the audit endpoint and `GetDecisions` (`size`, `n`).** Sweeping every `.Take(...)`
-  found them. **A sweep keyed on one identifier silently narrows; the denominator is part of the finding.**
-- ⚠⚠ **COMMITTING TO `main` IS NOT PUBLISHING TO `main`** — 10 unpushed package commits got folded into one
-  feature squash. **Push after package commits**; `git rev-list --left-right --count HEAD...origin/main`.
-  ⚠ **Trap 25 fired again** (merged remotely, aborted locally) — verify by CONTENT, back up `data/` first.
+- ⚠ **`DEF-103` Fixed** (silent 25-row kanban prefix). ⚠ **`DEF-104` Open**: 12 paged reads uncapped, 2
+  capped; the remedy exists in-repo. ⭐ **The first sweep keyed on `PageSize` and returned 10 — blind to
+  two endpoints paging with `size`/`n`.** **A sweep keyed on one identifier silently narrows; the
+  denominator is part of the finding.**
+- ⚠⚠ **COMMITTING TO `main` IS NOT PUBLISHING TO `main`** — 10 unpushed package commits were folded into
+  one feature squash. **Push after every package commit**; check `git rev-list --left-right --count
+  HEAD...origin/main`. ⚠ Trap 25: verify a merge by CONTENT, and back up `data/` before git ops.
 - ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a literal substring failed against a string that
-  *visibly contains it* (`لـ` absorbs the alef of `ال`). **Assert the SCRIPT RANGE, never a fragment.**
-- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like "Playwright
-  can't drive native HTML5 drag" (a real limitation) — it was a shared helper's hard-coded `toHaveCount(2)`.
-  The drag had worked. Nearly cost a rewrite of working code.
+  *visibly contains it* (`لـ` absorbs `ال`'s alef). **Assert the SCRIPT RANGE, never a fragment.**
+- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like
+  "Playwright can't drive HTML5 drag" — it was a helper's hard-coded `toHaveCount(2)`. The drag had worked.
 
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 
@@ -128,10 +136,8 @@
   advances only via the AC auto-advance trigger. `DEF-012` is Won't-fix (`DEC-055`).
 - ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) — see
   [[inmemory-provider-hides-db-refusals]]. `DEF-068`'s landmine: **a stream-scoped policy is RESOURCE-ONLY**.
-- **6 stale branches still exist** (verified 2026-08-21) — `chore/design-update-round2`,
-  `chore/docs-v8-local-design`, `docs/defer-p14-tarseem`, `feat/audit-adr`,
-  `feat/budget-notification-observer`, `feat/p13-webex-integration`. All pre-date `4c1b356`, so **all
-  carry `DEF-064`'s broken `ar.json`**. ⚠ Several merged `feat/`-`fix/` branches also linger on `origin`
+- **6 stale branches still exist** (verified 2026-08-21, `git branch -a`), all pre-dating `4c1b356` so
+  **all carry `DEF-064`'s broken `ar.json`**. ⚠ Merged `feat/`/`fix/` branches also linger on `origin`
   against the "delete branch" half of the branching rule.
 
 ## Shipped, reference only (detail in the package)
