@@ -7,11 +7,12 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-21 · **SL-032's FOUR LEAVES ARE ALL BUILT** · run `gate_run()` / `readiness_check()`
+## ★★★ 2026-08-21 · **`SL-032` IS `Review` — DONE-CLAIMED, NOT VERIFIED** · run `gate_run()` / `readiness_check()`
 
-> ▶▶ **NEXT IS THE SLICE CLOSE, AND IT IS THE OPERATOR'S** — done-claimed is `Review`; `Implemented` on a
-> slice is their verdict, via `prompts/slice-review.md`. ⚠ Slice `wbs-done` also names **`WBS-23`, the
-> PARENT**; precedent (`WBS-21`, `WBS-22`) is that the parent goes `Implemented` once every child is.
+> ▶▶ **NEXT IS THE SLICE CLOSE AND IT IS THE OPERATOR'S** — `Implemented` on a slice is their verdict, via
+> `prompts/slice-review.md`. All four leaves + parent `WBS-23` are `Implemented`, slice readiness is
+> `ready:TRUE`, gate 7/7. ⭐ **Slice `wbs-done` ran 5→4→3→2→0** — the FIRST slice exit `DEF-087`'s
+> fix-forward rule has ever been able to adjudicate (it returns zero rows for all 28 older slices).
 
 - ★★ [**`WBS-23.3` shipped — the technique passed, the package failed**](wbs233-csp-spike.md) — PNG chart
   export. DOM→PNG is **clean under `style-src 'self'`** (header untouched); **`modern-screenshot`, the

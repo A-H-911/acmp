@@ -78,7 +78,7 @@ only AFTER the nine fixes.
 > ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
 > BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
 > of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ `SL-032`'s FOUR LEAVES ARE ALL BUILT` and
+> already merged. **Go to §6 — read `▶▶ `SL-032` IS `Review`` and
 > `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
@@ -524,7 +524,13 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ `SL-032`'s FOUR LEAVES ARE ALL BUILT (2026-08-21). NEXT IS THE SLICE CLOSE, WHICH IS THE OPERATOR'S.
+### ▶▶ `SL-032` IS `Review` (2026-08-21) — DONE-CLAIMED, NOT VERIFIED. THE CLOSE IS THE OPERATOR'S.
+
+All four leaves and the parent `WBS-23` are `Implemented`; `readiness_check(scope="slice", id="SL-032")`
+returns **ready:TRUE**; gate 7/7. **The slice was deliberately NOT set `Implemented`** — that is the
+operator's verdict through `prompts/slice-review.md`, and an agent marking its own slice verified is
+the manufactured-status move `DEF-010` records. ⭐ Slice `wbs-done` ran **5→4→3→2→0**: the first slice
+exit `DEF-087`'s fix-forward rule has ever been able to adjudicate.
 
 ⚠ **`WBS-23.4` shipped too — see the slice list below and `PE-583`.** What follows is the `23.3` record,
 kept because its dependency finding binds any future DOM-to-image work.
