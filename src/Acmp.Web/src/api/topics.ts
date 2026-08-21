@@ -355,6 +355,25 @@ export function useReopenTopic(key: string | undefined) {
  * this RETURNS the successor's key — the caller navigates to the new topic, because the one the user
  * was looking at has just been retired to Converted and is no longer the live artifact.
  */
+// FR-164 / DW-032: correct a topic's classification during triage. The endpoint takes BOTH type and
+// source because the domain method does; the UI sends the topic's existing source unchanged, since no
+// surface in the product has ever displayed or offered a TopicSource (DW-076).
+export function useReclassifyTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, type, source }: { topicId: string; type: string; source: string }) =>
+      api<void>(`/topics/${topicId}/reclassify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, source }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
 export function useConvertTopic(key: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

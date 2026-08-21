@@ -11,6 +11,7 @@ import {
   useCloseTopic,
   useReopenTopic,
   useConvertTopic,
+  useReclassifyTopic,
   useSetTopicConfidentiality,
   useUpdateTopic,
   useMoveTopicPriority,
@@ -240,6 +241,24 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
     // both topics' traceability panels gained the ConvertedTo edge
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['traceability'] });
+  });
+
+  // FR-164 / DW-032. Sends BOTH fields because the endpoint and the domain method take both; the
+  // caller supplies the topic's existing source unchanged, since no surface offers a TopicSource yet
+  // (DW-076). Invalidates the BACKLOG as well as the detail: type is a backlog column and a facet.
+  it('useReclassifyTopic POSTs the type and source, and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReclassifyTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', type: 'ResearchDiscovery', source: 'SecurityFinding' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reclassify');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ type: 'ResearchDiscovery', source: 'SecurityFinding' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });
 
   // FR-163 / C-AUTHZ-04. PUT of the desired STATE, not a POST of an action, so a repeat is a no-op

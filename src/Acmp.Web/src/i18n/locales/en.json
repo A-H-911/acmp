@@ -1454,6 +1454,14 @@
     "close": {
       "button": "Close topic"
     },
+    "reclassify": {
+      "button": "Reclassify",
+      "title": "Reclassify topic",
+      "subtitle": "Correct the topic type. Available during triage, before the topic is accepted.",
+      "typeLabel": "New type",
+      "typePlaceholder": "Choose a type",
+      "confirm": "Apply new type"
+    },
     "reopen": {
       "button": "Reopen",
       "title": "Reopen this topic",
