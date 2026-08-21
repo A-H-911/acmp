@@ -573,10 +573,14 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
 - ✅ **`WBS-23.3` / `DW-038`** — PNG chart export. PR #304 → `ada5fe2`, `AC-142` Met (`AV-220`).
   Needed `ADR-0044` + `SC-030` first; see the block above. `DW-038` is `Done`.
-- ▶▶ **`WBS-23.4` / `DW-032` — THE LAST ITEM IN THIS SLICE.** Reach `Topic.Reclassify`; the domain method
-  exists and is deliberately unreachable, and its guard is disjoint from Convert's so no topic can be a
-  candidate for both. ⚠ **Read the code before believing that sizing** — it is the fourth `DW-` row in
-  this slice whose brief may not survive contact, and the previous three did not.
+- ▶▶ **`WBS-23.4` / `DW-032` — THE LAST *LEAF* IN THIS SLICE.** Reach `Topic.Reclassify`; the domain
+  method exists and is deliberately unreachable, and its guard is disjoint from Convert's so no topic can
+  be a candidate for both. ⚠ **Read the code before believing that sizing** — it is the fourth `DW-` row
+  in this slice whose brief may not survive contact, and the previous three did not.
+  ⚠⚠ **CLOSING `23.4` WILL NOT MAKE `SL-032` READY BY ITSELF.** Slice-scope `wbs-done` names **`WBS-23`,
+  the PARENT, as well as `WBS-23.4`** — check it yourself with
+  `readiness_check(scope="slice", id="SL-032")`. The parent row needs its own transition once every leaf
+  is `Implemented`, so expect `ready:false` after `23.4` merges and do not read that as a real blocker.
 
 ⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
 **five** items when `SL-032` was created, then **four**, **three** and now **two** as `23.1`, `23.2`
