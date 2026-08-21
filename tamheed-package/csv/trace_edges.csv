@@ -88,6 +88,7 @@ AC-109,FR-160,verifies
 AC-110,FR-161,verifies
 AC-111,FR-162,verifies
 AC-112,FR-045,verifies
+AC-143,FR-164,verifies
 ADR-0017,ADR-0012,relates_to
 ADR-0019,ADR-0008,relates_to
 ADR-0020,ADR-0019,relates_to
@@ -357,6 +358,7 @@ FR-160,DEC-057,derives_from
 FR-161,DEC-057,derives_from
 FR-162,DEC-057,derives_from
 FR-163,DEC-060,derives_from
+FR-164,DEC-070,derives_from
 INV-001,ADR-0001,derives_from
 INV-001,ADR-0002,derives_from
 INV-002,ADR-0001,derives_from
@@ -617,6 +619,7 @@ SC-029,FR-032,scope_modifies
 SC-029,FR-154,scope_modifies
 SC-029,FR-155,scope_modifies
 SC-030,WBS-14.5,scope_modifies
+SC-031,FR-164,scope_adds
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
@@ -960,6 +963,7 @@ TEST-049,INV-013,tests
 TEST-050,INV-010,tests
 TEST-051,FR-159,tests
 TEST-052,FR-163,tests
+TEST-053,FR-164,tests
 WBS-1,FR-001,implements
 WBS-1,FR-003,implements
 WBS-1,FR-004,implements
@@ -1165,6 +1169,7 @@ WBS-20.5,FR-141,implements
 WBS-20.5,FR-142,implements
 WBS-21,FR-030,implements
 WBS-22,FR-163,implements
+WBS-23.4,FR-164,implements
 WBS-3,FR-017,implements
 WBS-3,FR-019,implements
 WBS-3,FR-020,implements
