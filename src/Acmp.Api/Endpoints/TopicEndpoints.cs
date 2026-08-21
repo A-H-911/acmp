@@ -11,6 +11,7 @@ using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
 using Acmp.Modules.Topics.Application.Features.ReactivateTopic;
+using Acmp.Modules.Topics.Application.Features.ReclassifyTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
 using Acmp.Modules.Topics.Application.Features.ReopenTopic;
 using Acmp.Modules.Topics.Application.Features.SetTopicConfidentiality;
@@ -113,6 +114,16 @@ public static class TopicEndpoints
             return Results.Created($"/api/topics/{result.Key}", result);
         }).RequireAuthorization(Policies.TopicTriage);
 
+        // FR-164 / DW-032: correct a topic's type and source before Acceptance. Same policy as the
+        // other triage acts, and deliberately NOT part of PUT /api/topics/{id}: that path lets the
+        // SUBMITTER edit their own pre-Accept topic with no policy check, so folding classification
+        // into it would make it self-service. The aggregate refuses anything past Triage.
+        group.MapPost("/{id:guid}/reclassify", async (Guid id, ReclassifyBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReclassifyTopicCommand(id, body.Type, body.Source), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
         // FR-163 / C-AUTHZ-04: classify or declassify. Chairman + Secretary only (DEC-063 d2), gated
         // by AllowedRoles on the command AND the endpoint policy — the same two roles TopicTriage
         // carries. ⚠ Deliberately NOT Policies.TopicEdit: that policy now carries
@@ -182,6 +193,7 @@ public static class TopicEndpoints
     // PUT, not POST: setting a classification is idempotent and the body carries the DESIRED state
     // rather than an action, so a repeated call is a no-op instead of a second event.
     public sealed record ConfidentialityBody(bool Restricted);
+    public sealed record ReclassifyBody(TopicType Type, TopicSource Source);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
     // Delta = keyboard ±1 (AC-043). TargetTopicId = drag: put this topic where that one is (AC-141);

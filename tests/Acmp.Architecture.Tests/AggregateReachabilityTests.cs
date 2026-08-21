@@ -137,15 +137,15 @@ public sealed class AggregateReachabilityTests
         // stops calling its transition, THIS TEST FAILS — which is the whole point of taking the
         // entries out rather than leaving them as harmless no-ops.
         //
-        // DW-032 (was part of DW-030): Reclassify changes Type/Source pre-Accept and is the Secretary's
-        // triage-time correction path. It is NOT part of FR-030 and never was: SC-018 scoped FR-030 to the
-        // CONVERT direction, and the two guards are DISJOINT — Convert requires Decided, Reclassify forbids
-        // anything past Triage — so no topic is ever a candidate for both. Read DW-032 before touching it;
-        // do not re-raise it as a new finding.
+        // ⚠ A FIFTH ENTRY CAME OUT HERE UNDER DW-032 / FR-164, AND AGAIN THE REMOVAL IS THE DELIVERABLE.
+        // Topic::Reclassify/2 is now reached by ReclassifyTopicHandler. If that handler is deleted or
+        // stops calling it, THIS TEST FAILS — which is why the entry is gone rather than left behind as
+        // a harmless no-op. It is still NOT part of FR-030: SC-018 scoped that requirement to the CONVERT
+        // direction, and the two guards stay DISJOINT — Convert requires Decided, Reclassify forbids
+        // anything past Triage — so no topic is ever a candidate for both.
         // ⚠ Topic::Convert/3 WAS listed here and is GONE, not edited: FR-030 shipped, Convert now takes a
         // reason (arity 4), and this key is name+arity — a stale Convert/3 entry would silently allowlist a
         // method that no longer exists while the real one went unguarded.
-        "Acmp.Modules.Topics.Domain.Topic::Reclassify/2",
         // DEC-057 d3: these two are UNCALLABLE BY CONSTRUCTION, not forgotten, so they are permanent
         // entries rather than open findings. Both enforcement points evaluate the window inside an EF
         // Where/AnyAsync — ExpireGuestAccess and DelegationResolver — where a domain method cannot be

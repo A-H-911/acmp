@@ -18,7 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, type TopicDetail as Topic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, type TopicDetail as Topic,
 } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { Dialog } from '../../components/ui/Dialog';
@@ -31,7 +31,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials, TOPIC_TYPE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
-import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
+import { AcmpAuthContext, hasRole } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
 const TABS = ['overview', 'comments', 'attachments', 'votes', 'history'] as const;
@@ -115,6 +115,15 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const [convertOpen, setConvertOpen] = useState(false);
   const [convertReason, setConvertReason] = useState('');
   const [convertType, setConvertType] = useState('');
+  // FR-164 / DW-032 — triage-time reclassification. Chairman/Secretary only, mirroring the scope and
+  // classification gates in EditTopic: the server refuses anyone else, and offering a control that can
+  // only be refused is worse than not offering it.
+  const reclassify = useReclassifyTopic(topic.key);
+  const [reclassifyOpen, setReclassifyOpen] = useState(false);
+  const [reclassifyType, setReclassifyType] = useState('');
+  const auth = useContext(AcmpAuthContext);
+  const mayReclassify = !!auth && hasRole(auth, 'secretary', 'chairman');
+  const preAccept = ['Draft', 'Submitted', 'Triage', 'Reopened'].includes(topic.status);
 
   // FR-160/FR-161/FR-045 — the lifecycle EXITS. Each of these transitions existed on the aggregate
   // with no caller (DEF-084): a Decided topic could never be closed, a Deferred one never came back,
@@ -204,6 +213,16 @@ function DetailHeader({ topic }: { topic: Topic }) {
         {topic.status === 'Decided' && (
           <Button onClick={() => { setConvertReason(''); setConvertType(''); setConvertOpen(true); }}>
             <Icon name="refresh" size={15} aria-hidden /> {t('topics.convert.button')}
+          </Button>
+        )}
+        {/* AC-143 / FR-164 — correct a mis-typed topic during triage. Before this the only remedy was
+            reject-and-resubmit, which discards the record and its comments. Shown only pre-Accept and
+            only to the two roles the server admits; the aggregate refuses past Triage regardless.
+            NO-REFERENCE COMPOSITION (INV-014): "ACMP Backlog & Topic.dc.html" specifies no triage
+            reclassification affordance, so this reuses the verified convert-button pattern beside it. */}
+        {preAccept && mayReclassify && (
+          <Button variant="secondary" onClick={() => { setReclassifyType(''); setReclassifyOpen(true); }}>
+            <Icon name="funnel" size={15} aria-hidden /> {t('topics.reclassify.button')}
           </Button>
         )}
         {/* AC-112 / FR-045 — approved in the original plan, unbuilt until now. */}
@@ -337,6 +356,57 @@ function DetailHeader({ topic }: { topic: Topic }) {
               value={convertReason}
               onChange={(e) => setConvertReason(e.target.value)}
             />
+          </div>
+        </Dialog>
+        {/*
+          AC-143 / FR-164 — triage-time reclassification. ONE field, not two: TopicSource is also
+          correctable through the endpoint (the domain method takes both), but no surface in this
+          product has ever displayed or offered a source, and it has no bilingual labels at all —
+          inventing nine Arabic governance terms against no canonical glossary is what NFR-039 and
+          DW-069 forbid. The topic's existing source is sent back unchanged, and DW-076 carries the
+          picker. No reason field: unlike convert and reopen, reclassification records no status
+          transition, so there is nothing for a reason to attach to — the audit diff is the record.
+        */}
+        <Dialog
+          open={reclassifyOpen}
+          onClose={() => setReclassifyOpen(false)}
+          icon={<Icon name="funnel" size={20} aria-hidden />}
+          title={t('topics.reclassify.title')}
+          description={t('topics.reclassify.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setReclassifyOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={reclassify.isPending}
+                disabled={reclassifyType === ''}
+                onClick={() =>
+                  onLifecycle(() =>
+                    reclassify.mutate(
+                      { topicId: topic.id, type: reclassifyType, source: topic.source },
+                      { onSuccess: () => setReclassifyOpen(false), onError: lifecycleError },
+                    ))}
+              >
+                {t('topics.reclassify.confirm')}
+              </Button>
+            </>
+          }
+        >
+          <div className="field">
+            <label className="field-label" htmlFor="reclassify-type">{t('topics.reclassify.typeLabel')}</label>
+            <select
+              id="reclassify-type"
+              className="input"
+              value={reclassifyType}
+              onChange={(e) => setReclassifyType(e.target.value)}
+            >
+              <option value="">{t('topics.reclassify.typePlaceholder')}</option>
+              {/* The current type is excluded — the server treats it as a no-op, so offering it would
+                  be a control that cannot do anything. */}
+              {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+                <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+              ))}
+            </select>
           </div>
         </Dialog>
       </div>
