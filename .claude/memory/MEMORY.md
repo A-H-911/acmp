@@ -42,7 +42,15 @@
   often: verify a merge by CONTENT, and back up `data/` before git ops.
 - ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a substring failed against a string that *visibly
   contains it* (`لـ` absorbs `ال`'s alef). **Assert the SCRIPT RANGE, never a fragment.**
-- ⚠ **`DEF-103` Fixed**; **`DEF-104` Open** (12 paged reads uncapped, 2 capped; remedy exists in-repo).
+- ⚠⚠ **`DEF-104` FIXED (#306 → `bdbd8b6`) AND ITS OWN COUNT WAS WRONG** — the row said TWELVE, its
+  enumeration listed ELEVEN. Two sweeps on different keys agree on **eleven**, and **neither was complete
+  alone**. ⭐ One shared `PageSize.Clamp` beside `PagedResult`, **`Max = 500`** because that is the largest
+  page the SPA itself requests and `ADR-0022` verified 500 covers every register — **copying
+  `GetNotifications`' 50 would have broken reports and the kanban.** ⚠ `GetDecisions` with a NULL limit
+  still does **no** `Take`: capping where no cap existed is `DEF-103`'s silent-truncation shape.
+  ⚠⚠ **MY OWN NEW GUARD WAS TOO NARROW ON FIRST WRITE** — keyed on the OUTPUT shape (`PagedResult<T>`), it
+  excluded the one read that was already correct. Its **discovery guard** ("must find ≥10") caught it.
+  **Key a discovery on the INPUT that defines the risk, not the output shape.**
 - ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
   (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records. `SL-014`
   `Deferred` (`DEC-028`) and off the ladder.

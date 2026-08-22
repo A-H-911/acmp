@@ -547,10 +547,11 @@ nobody else has read it.**
 it with a slice review is how a phase ships without its gate — `slice-review.md` says so in its own second
 line. `SL-032` is `PH-7`'s only slice.
 
-▶ **THERE IS NO QUEUED BUILD ITEM.** What is live: `DEF-104` (12 uncapped paged reads, low — the remedy
-already exists in-repo); the **nine** still-`Activated` `DW-` rows with no slice (`DW-028 033 035 036 037
-039 063 068 069`); the operator-only group (`DW-066`, `DW-074`+`DEF-100`, `NFR-018`'s external ASVS
-assessment); and `release-close-out.md`, which has never been run. ⚠ `DEC-068` d3 deliberately did NOT
+▶ **THERE IS NO QUEUED BUILD ITEM.** ✅ `DEF-104` is **Fixed** (#306 → `bdbd8b6`, `PE-589`) — ⚠ its own
+headline said TWELVE while its enumeration listed ELEVEN; the set was re-derived by two sweeps on
+different keys and is **eleven**. What remains live: the **nine** still-`Activated` `DW-` rows with no
+slice (`DW-028 033 035 036 037 039 063 068 069`); the operator-only group (`DW-066`, `DW-074`+`DEF-100`,
+`NFR-018`'s external ASVS assessment); and `release-close-out.md`, which has never been run. ⚠ `DEC-068` d3 deliberately did NOT
 schedule the release close-out, and the three rows whose trigger names "before release sign-off"
 (`DW-041`, `DW-067`, `DW-071`) therefore have **not** fired.
 
