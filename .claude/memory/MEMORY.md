@@ -7,58 +7,45 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-21 · **`SL-032` IS `Review` — DONE-CLAIMED, NOT VERIFIED** · run `gate_run()` / `readiness_check()`
+## ★★★ 2026-08-23 · **`SL-032` `Implemented`; `PH-7` OPEN; NO QUEUED BUILD ITEM** · measure, never quote
 
-> ▶▶ **NEXT IS THE SLICE CLOSE AND IT IS THE OPERATOR'S** — `Implemented` on a slice is their verdict, via
-> `prompts/slice-review.md`. All four leaves + parent `WBS-23` are `Implemented`, slice readiness is
-> `ready:TRUE`, gate 7/7. ⭐ **Slice `wbs-done` ran 5→4→3→2→0** — the FIRST slice exit `DEF-087`'s
-> fix-forward rule has ever been able to adjudicate (it returns zero rows for all 28 older slices).
+> ▶▶ **NOTHING IS MID-FLIGHT.** Live work: `DEF-104` (12 uncapped paged reads, low; remedy in-repo) · the
+> **nine** still-`Activated` `DW-` rows with no slice · the operator-only group (`DW-066`,
+> `DW-074`+`DEF-100`, `NFR-018` external ASVS) · `release-close-out.md`, never run. ⚠ `DEC-068` d3
+> deliberately did NOT schedule the release close-out, so `DW-041`/`DW-067`/`DW-071` have **not** fired.
+> ⚠⚠ **`PH-7` IS NOT CLOSED** — a phase exit is `phase-close.md`; conflating it with a slice review is how
+> a phase ships without its gate.
 
-- ★★ [**`WBS-23.3` shipped — the technique passed, the package failed**](wbs233-csp-spike.md) — PNG chart
-  export. DOM→PNG is **clean under `style-src 'self'`** (header untouched); **`modern-screenshot`, the
-  pre-selected pick, throws on every card**, and its `font:false` escape **silently breaks Arabic layout**.
-- ⚠⚠ **`LL-014` APPROVED + PINNED: REGISTRY METADATA CANNOT RANK CORRECTNESS.** Size/deps/downloads/
-  freshness rank packages that all work. Every number in that table was right and the ranking still
-  **inverted** against the one axis that decided anything. **"The technique works here" never transfers to
-  "this package works here."** ⭐ Two libs, same technique, opposite outcome — one unguarded property read.
-- ⚠⚠ **THE PRE-BUILD KEYWORD SWEEP FOUND `DEF-105`** — `ADR-0022` clause 4 read *"Export = client-side
-  CSV only in v1"* against three later Approved decisions ordering the build. **An identifier sweep
-  returns NOTHING — `FR-142` and `ADR-0022` never name each other.** Fixed by `ADR-0044` + `SC-030`.
-  ⚠⚠ **The instruction was "supersede clause 4"; obeying it literally would have marked the ADR *row*
-  Superseded**, invalidating an id `DEF-102` and two source comments depend on. **When an instruction
-  names a CLAUSE, check whether the row or the clause is what can be superseded** — and put the
-  correction back to the operator before applying.
-- ⚠ **`DW-075`: `ToastProvider` is built, tested and mounted NOWHERE** — `useToast()` throws from any real
-  screen. Failure feedback is inline (`.rpt-card-note`) instead.
-- ✅ **`SL-032`: `WBS-23.1`** (`DW-061` mobile notice, #301→`78b5ca2`, `AC-140`), **`23.2`** (`DW-040`
-  drag, #302→`145d9bf`, `AC-141`) and **`23.3`** (#304→`ada5fe2`, `AC-142`) MERGED. ⭐⭐ **`DEF-087`'s
-  fix-forward rule VISIBLY WORKS:** slice `wbs-done` went **5→4→3→2** where it returns **zero rows for
-  all 28 closed slices**. Keep new wbs rows carrying `slice_id`.
-- ⚠⚠ **APPROVED LESSONS ARE IMMUTABLE** — supersede, never edit (`LL-013` supersedes `LL-007`+`LL-012`).
-  ⚠ A mutation check has TWO subjects — **a passing mutant proves nothing**; prove the DETECTOR exists
-  before mutating. **Count the binding lessons; never quote a number.**
-- ⚠⚠ **THREE `DW-` ROWS IN THIS SLICE HAD WRONG SIZING**, each saying "only the gesture" / "blocked on
-  nothing": `DW-040` needed a backend change (the op was a **SWAP**) *and* a new addressing mode (the kanban
-  renders the filtered/sorted/truncated backlog, so it must send the **TARGET'S IDENTITY**, not a position —
-  a test exists to fail if anyone "simplifies" that back to a delta), and `DW-038` was blocked on a real
-  thing with no canvas anywhere. ⚠ **`DEC-068` d1's RATIONALE repeats `DW-038`'s wrong sizing verbatim** —
-  wrong prose inside an Approved decision; its outcome stands, left unedited, recorded in `PE-578`.
-  **READ THE CODE BEFORE BELIEVING A ROW'S SIZING.**
-- ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
-  (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records. `SL-014`
-  `Deferred` (`DEC-028`) and off the ladder.
-- ⚠ **`DEF-103` Fixed**; **`DEF-104` Open** (12 paged reads uncapped, 2 capped; remedy exists in-repo).
-  ⭐ **The first sweep keyed on `PageSize` returned 10 — blind to two endpoints paging with `size`/`n`.**
-  **A sweep keyed on one identifier silently narrows; the denominator is part of the finding.**
+- ⚠⚠ **THE SLICE-REVIEW VERDICT CARRIES A RECORDED WEAKNESS, and it is in the row.** I ran the ceremony
+  having written two of the four ACs I reviewed. The mechanical half is independent — reference-graph
+  closure, guards re-checked at HEAD, suites re-run there, and `git diff <merge> HEAD -- src tests` EMPTY
+  proving HEAD's code IS the tree CI tested — **but the WORDING of `AC-142`/`AC-143` has been read by
+  nobody else.** The operator applied the transition knowing that. ⭐ **`git diff <merge-sha> HEAD -- src
+  tests` is the cheap check that closes "CI was green on the PR" → "what is on main is what CI saw".**
+- ⚠⚠ **`LL-015` (Approved+pinned): A SCAN'S SCOPE IS PART OF ITS ANSWER.** A scanner that RUNS, HAS a
+  subject, and returns a TRUE number about the **wrong SET** reads exactly like a finding — and `LL-013`'s
+  fault-injection **confirms** it rather than catching it. Three instances in one day: `PageSize` → 10 of
+  12; `dataUrlCount: 0` beside an 874,619-char string; and my grep of `tests/ --include=*.cs` reporting a
+  guard test missing when it lives in the SPA. **State the DENOMINATOR; a ZERO is the dangerous result.**
+- ★★ [**`WBS-23.3`: the technique passed, the package failed**](wbs233-csp-spike.md) · ★★ [**`WBS-23.4`:
+  right row, missing requirement**](wbs234-reclassify.md) — read these two before touching report export,
+  topic classification, or shared dialog CSS. Between them: `LL-014` (registry metadata cannot rank
+  correctness), the `ADR-0022` clause-4 conflict a **keyword** sweep found, and two findings against my own
+  instruments (a hollow assertion that passed its mutant; a row that claimed to preserve text it deleted).
+- ⭐⭐ **`DEF-087`'s fix-forward rule WORKS:** slice `wbs-done` ran **5→4→3→2→0** across `SL-032` — the first
+  slice exit it could ever adjudicate (it returns zero rows for all 28 older slices). **Keep new wbs rows
+  carrying `slice_id`.**
 - ⚠⚠ **COMMITTING TO `main` IS NOT PUBLISHING TO `main`** — 10 unpushed package commits were folded into
   one feature squash. **Push after every package commit**; check `git rev-list --left-right --count
   HEAD...origin/main` — ⚠⚠ **`git fetch` FIRST. That count reads the LOCAL `origin/main` ref, so `0 0`
-  against an unfetched ref means nothing**; it said "synced" right after a remote merge on 2026-08-21.
-  ⚠ Trap 25 fires often: verify a merge by CONTENT, and back up `data/` before git ops.
+  against an unfetched ref means nothing**; it said "synced" right after a remote merge. ⚠ Trap 25 fires
+  often: verify a merge by CONTENT, and back up `data/` before git ops.
 - ⚠⚠ **ARABIC MORPHOLOGY BITES TEST ASSERTIONS** — a substring failed against a string that *visibly
   contains it* (`لـ` absorbs `ال`'s alef). **Assert the SCRIPT RANGE, never a fragment.**
-- ⚠ **A failure message names a symptom; WHERE it fires is the evidence.** A red e2e looked like a
-  Playwright drag limitation; it was a helper's hard-coded `toHaveCount(2)`. The drag had worked.
+- ⚠ **`DEF-103` Fixed**; **`DEF-104` Open** (12 paged reads uncapped, 2 capped; remedy exists in-repo).
+- ⚠ **`PH-3` stays `Approved` ON PURPOSE** — `WBS-20.4` is the email adapter vs a hard constraint
+  (`DEC-055`). Do **not** "repair" it; that is the manufactured-status move `DEF-010` records. `SL-014`
+  `Deferred` (`DEC-028`) and off the ladder.
 
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 

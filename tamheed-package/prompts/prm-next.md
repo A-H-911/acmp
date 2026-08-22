@@ -88,7 +88,7 @@ only AFTER the nine fixes.
 > ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
 > BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
 > of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ `SL-032` IS `Review`` and
+> already merged. **Go to §6 — read `▶▶ `SL-032` IS `Implemented`` and
 > `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
@@ -534,21 +534,34 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ `SL-032` IS `Review` (2026-08-21) — DONE-CLAIMED, NOT VERIFIED. THE CLOSE IS THE OPERATOR'S.
+### ▶▶ `SL-032` IS `Implemented` (2026-08-23, OPERATOR'S VERDICT). `PH-7` IS NOT CLOSED.
 
-All four leaves and the parent `WBS-23` are `Implemented`; `readiness_check(scope="slice", id="SL-032")`
-returns **ready:TRUE**; gate 7/7. **The slice was deliberately NOT set `Implemented`** — that is the
-operator's verdict through `prompts/slice-review.md`, and an agent marking its own slice verified is
-the manufactured-status move `DEF-010` records. ⭐ Slice `wbs-done` ran **5→4→3→2→0**: the first slice
-exit `DEF-087`'s fix-forward rule has ever been able to adjudicate.
+The slice-review ceremony ran (`PE-586`): all four ACs hold at HEAD, zero broken references, every guard
+re-checked present and its suite re-run there, and `git diff 02101d6 HEAD -- src tests` **empty**, so
+HEAD's code IS the tree CI tested. The operator applied the transition (`PE-588`) — the agent ran the
+review and deliberately did **not** flip it, having written two of the four criteria it reviewed. ⚠ **That
+caveat is in the row: the mechanical half is independent, the WORDING of `AC-142`/`AC-143` is not, and
+nobody else has read it.**
 
-⚠ **`WBS-23.4` shipped too — see the slice list below and `PE-583`.** What follows is the `23.3` record,
-kept because its dependency finding binds any future DOM-to-image work.
+⚠⚠ **`PH-7` STAYS OPEN AND WAS NOT ASKED TO CLOSE.** A phase exit is `prompts/phase-close.md`; conflating
+it with a slice review is how a phase ships without its gate — `slice-review.md` says so in its own second
+line. `SL-032` is `PH-7`'s only slice.
 
-**`PE-578`** carries the CSP spike, **`PE-579`** the build. `AC-142` is Met (`AV-220`) against `ada5fe2`
-(PR #304). **Do not re-run the spike and do not re-open the dependency question.** This block replaced a
-`▶▶ DO THIS FIRST` that told a fresh session to run a spike that was finished and to install a package
-that does not work here.
+▶ **THERE IS NO QUEUED BUILD ITEM.** What is live: `DEF-104` (12 uncapped paged reads, low — the remedy
+already exists in-repo); the **nine** still-`Activated` `DW-` rows with no slice (`DW-028 033 035 036 037
+039 063 068 069`); the operator-only group (`DW-066`, `DW-074`+`DEF-100`, `NFR-018`'s external ASVS
+assessment); and `release-close-out.md`, which has never been run. ⚠ `DEC-068` d3 deliberately did NOT
+schedule the release close-out, and the three rows whose trigger names "before release sign-off"
+(`DW-041`, `DW-067`, `DW-071`) therefore have **not** fired.
+
+⭐ **`SL-032` IS THE FIRST SLICE EXIT `wbs-done` COULD ADJUDICATE** — 5→4→3→2→0, where it returns zero
+rows for all 28 older slices whose items have `slice_id` NULL (`DEC-068` d2's fix-forward rule for
+`DEF-087`). Keep new work items carrying `slice_id`.
+
+---
+
+**WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` carries the `WBS-23.3` CSP spike,
+`PE-579` its build, `PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review.
 
 **THE THREE THINGS WORTH CARRYING, none of which is a task:**
 
