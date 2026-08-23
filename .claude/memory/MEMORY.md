@@ -32,11 +32,26 @@
 > sentence, invisible to every gate.** ⭐ **Take the sha256 pre-image BEFORE the write, every time.**
 > ⭐ **Hash-and-verify when you must PRESERVE; rewrite openly when you must CHANGE. The dangerous middle is
 > re-typing a long field in order to keep it the same** — `DW-078`'s 3933-char title was rewritten instead.
-> I recommended
-> splitting; operator said all. ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
+> ⚠ **The sweep itself was an OVERRIDE** — I recommended splitting the majors out; the operator said
+> sweep all (`DEC-072` d1). ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
 > ALERT*, which it is; open alerts are it WORKING. ⚠⚠ **`mssql` 2022→2025 CAN DESTROY THE FIVE DEV VOLUMES**
-> — fresh-volume isolated project only. ⚠⚠⚠ **`DEC-073`: THE SWEEP RUNS FIRST, SO `DW-078` IS THE NEXT
-> ACTION — NOT `WBS-24.1`.** Attribution: two majors under eight in-flight items = two candidate causes.
+> — fresh-volume isolated project only.
+> ✅✅ **SWEEP RUN 2026-08-23: 7 of 10 MERGED** (`#255 257 259 256 258 260 139`). ⚠ **`typescript` on `main`
+> is now `~7.0.2`.** **`SL-033`/`WBS-24.1` IS UNBLOCKED — that is the next action now.**
+> ⛔ **TWO BLOCKERS, NEITHER A RETRY.** `#135` mssql 2025: **the image will not boot** —
+> `sqlservr: error while loading shared libraries: liblber-2.5.so.0`, exit 127, on a FRESH run. ⚠⚠ **That
+> is the IMAGE, not our harness — PRODUCTION MUST NOT MOVE TO SQL SERVER 2025 EITHER.**
+> `#307`+`#137`+`#261` → **`DW-082`**: the vitest pair must move in ONE commit (each pins an exact peer on
+> the other); every test PASSES and only `ADR-0016`'s coverage gate fails, over ~20 files **byte-identical
+> to `main`** — so **`coverage-v8` v4 COUNTS LINES DIFFERENTLY**, trap 2 at scale. **Never lower the
+> threshold to clear it.**
+> ⭐⭐ **THE DISCOVERY GUARD (`total>=9`) SAVED THREE BROKEN POLLERS IN ONE AFTERNOON** — each fell through
+> to a default and reported ZERO checks; the floor turned a silent false-PASS into a loud false-FAIL.
+> ⚠⚠ **ROOT CAUSE IS ENVIRONMENTAL: multi-line `python` inside `$()` inside a heredoc-written bash script
+> fails SILENTLY here — use ONE single-line `python -c` per metric.** ⚠ **An IN_PROGRESS check carries
+> `conclusion == ""`, NOT null** — excluding only `None` marks every RUNNING check as failed.
+> ⚠ **`npm ci` unlinks `node_modules` first; on Windows it can `EPERM` on a locked native binary and leave
+> the tree gutted.** ⚠ **A stale RED is exactly as uninformative as a stale GREEN** — re-run before judging.
 > **`DW-079`** the `NFR-018` ASVS L2 evidence pack (override; I said leave it). ⚠⚠ **It does NOT close
 > `NFR-018` and NO AC may be written from it.** **`DW-071`** — `WBS-24.2`/`24.6`/`24.8` each add their route
 > to `e2e/rtl-a11y.spec.ts` **in the same batch**; the sweep visits **3 of 52** routes.

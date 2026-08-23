@@ -618,10 +618,23 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-⚠⚠ **THE NEXT ACTION IS `DW-078`, THE TEN-PR DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
-BEFORE this slice, and `DEC-074` narrowed it to ten. Everything below is what happens once the queue is
-clear; read the `DEC-072`/`DEC-074` block. ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move)
-is NOT in the sweep and does NOT block the slice** — it is its own work, unscheduled.
+✅ **THE SWEEP HAS RUN (2026-08-23) — `SL-033` IS UNBLOCKED AND `WBS-24.1` IS THE NEXT ACTION.**
+`DW-078`: **seven of ten merged**, each on a green that included current `main` — `#255` `#257` `#259`
+`#256` `#258` `#260` `#139`. ⚠ **`typescript` on `main` is now `~7.0.2`** (a compiler major landed).
+**THREE ARE BLOCKED AND NEITHER BLOCKER IS A RETRY:**
+- ⛔ **`#135` mssql 2025 — the image will not boot.** Fresh run, current `main`: *`/opt/mssql/bin/sqlservr:
+  error while loading shared libraries: liblber-2.5.so.0`*, exit 127. ⚠⚠ **That is the IMAGE, not our
+  harness — so PRODUCTION MUST NOT MOVE TO SQL SERVER 2025 EITHER.** Awaiting the operator's disposition;
+  until then `DW-078` stays `Activated`.
+- ⛔ **`#307` (superseding `#137`+`#261`) — `DW-082`.** The vitest pair MUST move in one commit (each pins
+  an exact peer on the other). Every test PASSES; only `ADR-0016`'s coverage gate fails, over ~20 files
+  **byte-identical to `main`**. So **`coverage-v8` v4 counts lines differently** — trap 2 at scale.
+  ⚠⚠ **DO NOT LOWER THE THRESHOLD TO CLEAR IT.** Leave `#137`/`#261`/`#307` OPEN.
+⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
+the slice** — its own work, unscheduled.
+⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
+failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
+flake, and `#307` as a coverage regression across twenty files with no cause.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
