@@ -221,7 +221,10 @@ NOT restated here** — read them from the register: `LL-013` (a mutation check 
 mutant proves nothing), `LL-014` (registry metadata cannot rank correctness; "the technique works here"
 never transfers to "this package works here") and **`LL-015` (a scan's SCOPE is part of its answer — a
 scanner that runs, has a subject, and returns a TRUE number about the WRONG SET reads exactly like a
-finding, and `LL-013`'s fault-injection CONFIRMS it rather than catching it)**.
+finding, and `LL-013`'s fault-injection CONFIRMS it rather than catching it)**. ⚠ **`LL-016` is the newest
+and it is about THIS FILE**: a sequence in prose is invisible to every mechanical check, and **a phrase can
+go stale without its number changing** — the wrong half rides in attached to a figure you *did* just measure,
+which is what makes it invisible.
 
 - **`LL-008` — sweep the registers by KEYWORD as well as by identifier.** An id-only sweep returned **zero
   hits for six of seven** candidates and would have concluded the registers were silent; the keyword sweep
@@ -613,13 +616,23 @@ shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`
 | # | row | what |
 |---|---|---|
 | `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns |
-| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view — ⚠ read below |
+| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view — ⚠ read below · **+ axe route** |
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half |
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) |
 | `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only |
-| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count |
-| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** |
+| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** |
+
+⚠⚠ **THE THREE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its
+route to the live axe sweep in `e2e/rtl-a11y.spec.ts` IN THE SAME BATCH THAT BUILDS IT, and says so in its
+own acceptance criterion.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
+route ships — that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the
+sweep"* — fired against exactly these three surfaces. ⚠ **The row had been read as fully parked and it never
+was**: `DEC-071` d4 parked its SECOND clause (release sign-off) and nobody had read the first. **The summary
+over a row had dropped half of what the row said** — `DEC-064` d2's failure inverted. The sweep today visits
+**three of fifty-two routes**, so shipping three more surfaces untouched makes a recorded ratio worse.
+⚠ This does NOT activate `DW-041` or `DW-067`: both name release sign-off ALONE, which stays unscheduled.
 
 ⚠⚠ **READ THE CODE BEFORE BELIEVING ANY OF THESE EIGHT ROWS' SIZING.** **TWO** of `SL-032`'s four said
 "blocked on nothing" and were wrong — `DW-040` and `DW-038`; `DW-061`'s and `DW-032`'s sizings HELD.
@@ -637,6 +650,36 @@ somebody else, which its own row names as the shape that produced `DEF-052` and 
 refusal as the feature and prove it by forcing it.** `navModel.ts`'s ACCESS map grants `session` to GUEST
 ONLY and that restraint holds (`DEF-053` deliberately left it alone). A guest is bounded by a TIME WINDOW,
 so the targeting parameter must never become the way a guest reads somebody else's slot.
+
+### ▶▶ THE SECOND INTERVIEW OF 2026-08-23 (`DEC-072`, applied by `SC-032`) — FOUR MORE DISPOSITIONS
+
+⚠ **Run after the resume above was prepared and pushed. TWO of the four OVERRODE the recommendation; both
+are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 precedent.**
+
+- **d1 — THE WHOLE DEPENDABOT QUEUE IS SWEPT, MAJORS INCLUDED** (`DW-078`, `Activated`). **OVERRIDE** — the
+  recommendation was to merge the routine set and carry the three majors. Thirteen PRs open, oldest
+  **2026-07-16**; the majors are `mssql/server` 2022→2025, `typescript` 6→7, `vitest` 3→4.
+  ⚠⚠ **IT IS NOT AN `NFR-051` BREACH AND MUST NOT BE FILED AS ONE** — that requirement is `Implemented` and
+  says Dependabot shall be **configured to ALERT**, which it is; thirteen open alerts are it WORKING. Nothing
+  in the register obliges anyone to *act*, so the gap is uncovered rather than violated.
+  ⚠⚠ **THE `mssql` BUMP CAN DESTROY DATA** — fresh-volume isolated project only, per "HOW TO RUN A STACK
+  HERE" below. The shape is part of what was authorised: **a dedicated batch, full e2e leg per risky bump**,
+  majors verified individually and never as a block. ⚠ **Its ordering against `SL-033` is NOT decided** —
+  before, or beside in its own batch. **Ask; do not pick.**
+- **d2 — `DW-071`'s new-route clause HAS FIRED**, so it is `Activated` and three `SL-033` items carry the
+  axe-route obligation. See the table above; that is where it lives, not here.
+- **d3 — `LL-016` is Approved and PINNED** in one step, the operator having read the exact statement.
+- **d4 — THE `NFR-018` ASVS EVIDENCE PACK IS PREPARED NOW** (`DW-079`, `Activated`). **OVERRIDE** — the
+  recommendation was to leave it, externally blocked with no trigger fired. ⚠⚠ **IT DOES NOT CLOSE
+  `NFR-018`, AND NO ACCEPTANCE CRITERION MAY BE WRITTEN FROM IT** — only an external assessor's report can
+  evidence that requirement, and an AC ahead of the report holds readiness false forever (trap 16c). The
+  pack must carry the KNOWN GAPS too (`DEF-100`, `DW-074`: two of three internal hops are plaintext), or it
+  is worse than no pack.
+
+⚠ **Nothing `DEC-071` settled that morning was re-raised.** ⭐ **Two store facts proven by experiment, not
+assumed:** `scope_adds` → a **deferred-work** target is ACCEPTED (every prior one pointed at an AC, a
+requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|clarification|code|inferred`
+— anything else rolls back the whole batch.
 
 ⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE (`DEC-071` d3), not a judgement this file endorses.** The
 recommendation was three slices, because `DEC-068` d1 justified a single slice from the rows being *small
@@ -729,8 +772,9 @@ in both halves — eleven, and one shared helper closed them all in one PR.
   deliberately**. ⚠ Not a config edit: service-to-service TLS needs a certificate story, and the public
   certbot flow does not extend to services addressing each other by compose name.
 - **`NFR-018`** — the only remaining requirement real work could close, and it needs an **external OWASP
-  ASVS 5.0 Level 2 assessment**. Preparable, not closable: an evidence pack mapping existing controls to
-  the L2 chapters would stop an assessor starting cold.
+  ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
+  a suggestion** — `DW-079`, `Activated` by `DEC-072` d4. Commissioning the assessment itself remains the
+  operator's act alone.
 - **The running-stack group** — `DW-065` (span PARENTING across modules, still unobserved), the ops group
   (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`, several of which are measured FROM
   trace data. ⚠ **`DEF-099` is fixed, so traces now actually arrive** — that blocker is gone.
