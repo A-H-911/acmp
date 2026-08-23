@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **sixteen** times, and **four** wrong assertions have escaped into
+file has carried a stale statement **seventeen** times, and **five** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -28,6 +28,21 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE SEVENTEENTH IS THE WORST OF THE SESSION: A CAP I SET MYSELF, IN THE SAME COMMAND, READ BACK AS
+IF IT WERE THE REGISTER — AND IT COST A JUDGEMENT, NOT A COUNT.** `gh pr list --limit 10` returned exactly
+ten rows and I wrote **thirteen**; no output anywhere showed a total. `DW-078` then carried a headline of
+thirteen over an enumeration of ten — **`DEF-104`'s exact shape, reproduced in the session that memorialised
+`DEF-104`**, and `LL-015` in its purest form. Measured with no cap: **twelve**.
+⚠⚠ **THE TWO ROWS THE CAP HID WERE THE TWO THAT MATTERED.** #128 and #134 (`dotnet/sdk` and
+`dotnet/aspnet` 8.0→10.0) both edit `deploy/Dockerfile.backend` — the `FROM` lines at 16, 31 and 51 that
+`DW-066` is entirely about. Earlier in the same session I read `DW-066`'s trigger (*"whenever a base-image
+bump is being made anyway"*) and concluded it had **not** fired, reasoning that the open docker rows touched
+node, nginx and mssql. That reasoning came wholly from the truncated list. **A TRUNCATED INSTRUMENT DOES NOT
+UNDERCOUNT — IT DELETES THE EVIDENCE THAT WOULD HAVE CHANGED YOUR ANSWER, from the end of the list you are
+least likely to think about.** The classification was wrong too: **three** routine and **nine** majors, not
+seven and three, with #261 filed routine while #137 — *the same version family* — was filed major.
+`PE-599` corrects it; commit `b1eb81a` cannot be amended, hence five escapes.
 
 ⚠⚠ **THE SIXTEENTH ESCAPED INTO A COMMIT MESSAGE — AND IT SAT INSIDE THE SENTENCE BRAGGING THAT THE
 MECHANICAL PASS HAD RUN CLEAN.** The fifteenth's own write said those 190 identifiers spanned *"nine
@@ -660,8 +675,15 @@ so the targeting parameter must never become the way a guest reads somebody else
 are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 precedent.**
 
 - **d1 — THE WHOLE DEPENDABOT QUEUE IS SWEPT, MAJORS INCLUDED** (`DW-078`, `Activated`). **OVERRIDE** — the
-  recommendation was to merge the routine set and carry the three majors. Thirteen PRs open, oldest
-  **2026-07-16**; the majors are `mssql/server` 2022→2025, `typescript` 6→7, `vitest` 3→4.
+  recommendation was to merge the routine set and carry the majors. ⚠⚠ **THE COUNT THAT SAT HERE WAS
+  THIRTEEN AND IT WAS NEVER MEASURED** — `gh pr list` had `--limit 10` on it (`PE-599`). It is **twelve**,
+  oldest **2026-07-16**, and the split is **three routine / nine majors**, not seven and three.
+  ⚠⚠ **TWO OF THE NINE WERE INVISIBLE WHEN d1 WAS DECIDED AND THEY CHANGE WHAT IT MEANS:** #128 and #134
+  are `dotnet/sdk` and `dotnet/aspnet` **8.0→10.0** — a FRAMEWORK MIGRATION, since the solution targets
+  `net8.0`. **Do not fold them into the sweep on the strength of the word "everything".**
+  ⚠⚠ **AND #134 IS `DW-066`'s TWO LINES** — it edits the api/worker `FROM` lines that row asks to move to
+  alpine or distroless, so either they happen together as one base-image decision or #134 forecloses the
+  cheapest moment `DW-066` will ever get. **`DW-066`'s trigger names exactly this moment; it HAS fired.**
   ⚠⚠ **IT IS NOT AN `NFR-051` BREACH AND MUST NOT BE FILED AS ONE** — that requirement is `Implemented` and
   says Dependabot shall be **configured to ALERT**, which it is; thirteen open alerts are it WORKING. Nothing
   in the register obliges anyone to *act*, so the gap is uncovered rather than violated.

@@ -18,7 +18,12 @@
 > `DW-041`/`DW-067` have **not** fired. ⚠⚠ **`DW-071` HAS** — `DEC-072` d2, see below.
 >
 > ⚠⚠ **A SECOND INTERVIEW (`DEC-072`, `SC-032`) ADDED THREE ACTIVATED ROWS — TWO ARE OVERRIDES.**
-> **`DW-078`** sweep the WHOLE Dependabot queue, majors included (13 PRs, oldest 2026-07-16). I recommended
+> **`DW-078`** sweep the WHOLE Dependabot queue, majors included. ⚠⚠⚠ **I WROTE "13 PRs" FROM A COMMAND
+> I HAD CAPPED AT `--limit 10`. It is TWELVE, 3 routine / 9 majors** (`PE-599`). ⚠⚠ **THE CAP COST A
+> JUDGEMENT: the two hidden rows, #128/#134 `dotnet` 8→10, both edit `deploy/Dockerfile.backend` — so
+> `DW-066`'s trigger HAS fired, after I reasoned in the same session that it had not.** A truncated
+> instrument deletes the evidence that would have changed your answer, from the end you never think about.
+> I recommended
 > splitting; operator said all. ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
 > ALERT*, which it is; open alerts are it WORKING. ⚠⚠ **`mssql` 2022→2025 CAN DESTROY THE FIVE DEV VOLUMES**
 > — fresh-volume isolated project only. ⚠⚠⚠ **`DEC-073`: THE SWEEP RUNS FIRST, SO `DW-078` IS THE NEXT
