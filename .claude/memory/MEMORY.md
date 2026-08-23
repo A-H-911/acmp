@@ -21,7 +21,8 @@
 > **`DW-078`** sweep the WHOLE Dependabot queue, majors included (13 PRs, oldest 2026-07-16). I recommended
 > splitting; operator said all. ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
 > ALERT*, which it is; open alerts are it WORKING. ⚠⚠ **`mssql` 2022→2025 CAN DESTROY THE FIVE DEV VOLUMES**
-> — fresh-volume isolated project only. **Its ordering vs `SL-033` is UNDECIDED — ask, don't pick.**
+> — fresh-volume isolated project only. ⚠⚠⚠ **`DEC-073`: THE SWEEP RUNS FIRST, SO `DW-078` IS THE NEXT
+> ACTION — NOT `WBS-24.1`.** Attribution: two majors under eight in-flight items = two candidate causes.
 > **`DW-079`** the `NFR-018` ASVS L2 evidence pack (override; I said leave it). ⚠⚠ **It does NOT close
 > `NFR-018` and NO AC may be written from it.** **`DW-071`** — `WBS-24.2`/`24.6`/`24.8` each add their route
 > to `e2e/rtl-a11y.spec.ts` **in the same batch**; the sweep visits **3 of 52** routes.

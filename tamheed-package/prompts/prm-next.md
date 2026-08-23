@@ -603,7 +603,10 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-▶▶ **NEXT: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
+⚠⚠ **THE NEXT ACTION IS `DW-078`, THE DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
+BEFORE this slice. Everything below is what happens once the queue is clear; read the `DEC-072` block.
+
+▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
 `columnConfig` and `ColumnPicker` return **zero** across the 339 `.ts*` files of `src/Acmp.Web`, and the
 sweep is proven to have had a subject — the control term `Backlog` returns 305 in the same pass
@@ -664,8 +667,12 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
   in the register obliges anyone to *act*, so the gap is uncovered rather than violated.
   ⚠⚠ **THE `mssql` BUMP CAN DESTROY DATA** — fresh-volume isolated project only, per "HOW TO RUN A STACK
   HERE" below. The shape is part of what was authorised: **a dedicated batch, full e2e leg per risky bump**,
-  majors verified individually and never as a block. ⚠ **Its ordering against `SL-033` is NOT decided** —
-  before, or beside in its own batch. **Ask; do not pick.**
+  majors verified individually and never as a block.
+  ⚠⚠ **ORDERING IS DECIDED (`DEC-073`, same interview): THE SWEEP RUNS BEFORE `SL-033` STARTS, SO THIS —
+  NOT `WBS-24.1` — IS THE NEXT ACTION.** `WBS-24.1` waits until the queue is clear. Reason is attribution:
+  a TypeScript major and a SQL Server major landing under eight items in flight give any later failure two
+  candidate causes, and every `SL-033` item should be built against the versions it will ship on. The
+  accepted cost is that the live slice pauses for a batch.
 - **d2 — `DW-071`'s new-route clause HAS FIRED**, so it is `Activated` and three `SL-033` items carry the
   axe-route obligation. See the table above; that is where it lives, not here.
 - **d3 — `LL-016` is Approved and PINNED** in one step, the operator having read the exact statement.
