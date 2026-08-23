@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifteen** times, and **three** wrong assertions have escaped into
+file has carried a stale statement **sixteen** times, and **four** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -28,6 +28,15 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE SIXTEENTH ESCAPED INTO A COMMIT MESSAGE — AND IT SAT INSIDE THE SENTENCE BRAGGING THAT THE
+MECHANICAL PASS HAD RUN CLEAN.** The fifteenth's own write said those 190 identifiers spanned *"nine
+families"*. Nothing measured that. The phrase was carried whole out of the TENTH's sentence in this file
+(*"68 across nine families"*) with only the figure in front of it refreshed; measured, the answer is
+**fifteen**. ⚠⚠ **A PHRASE CAN GO STALE WITHOUT ITS NUMBER CHANGING** — the wrong half travelled attached
+to a number I had genuinely just measured, which is what made it invisible. And an id-and-status pass
+cannot check a clause about an id-and-status pass. Caught by a review pass after the push: `e33c636`'s
+message cannot be amended, so the escape count above is now four; `PE-595` corrects `PE-593`.
 
 ⚠⚠ **THE FIFTEENTH (2026-08-23, later) IS THIS SECTION FAILING AT ITS OWN JOB: THE ORDINALS COLLIDED.**
 Two findings, added by two different commits (`74b2801` and `21ba170`), were **both** labelled
@@ -47,7 +56,7 @@ more, and every one of them is prose:
 - **"Nine rows correctly carry no date"** — 17 assumptions, 12 dated, so it is **five**. ⚠⚠ **THE
   ARITHMETIC NEVER CLOSED, IN A FILE NOTHING CHECKS THE PROSE ARITHMETIC OF.**
 
-⚠ The mechanical pass ran clean again: **190** distinct identifiers across nine families, every one
+⚠ The mechanical pass ran clean again: **190** distinct identifiers, every one
 resolving except `DEF-082` — the KNOWN gap (`DEF-101`). **That is three passes running where the
 id-and-status check found nothing and the prose carried everything. Read the prose; it is the hard half.**
 
