@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Acmp.Application.Tests.Shared;
 using Acmp.Modules.Meetings.Application;
 using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
@@ -8,6 +9,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Membership;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -25,6 +27,11 @@ public class MeetingRecordingTests
     // These tests exercise the upload/store/audit logic, not content sniffing (C-FILE-01), so the inspector
     // is a pass-through; the magic-byte behaviour is covered by MimeFileContentInspectorTests.
     private static readonly IFileContentInspector PassInspector = new PassThroughInspector();
+
+    // DEF-015: bucket names now come from configuration. Defaults reproduce the historical constants, so
+    // every existing assertion below still names the same bucket; the per-environment override is asserted
+    // by its own test.
+    private static readonly IOptions<StorageOptions> Buckets = Microsoft.Extensions.Options.Options.Create(new StorageOptions());
 
     private sealed class PassThroughInspector : IFileContentInspector
     {
@@ -55,7 +62,7 @@ public class MeetingRecordingTests
         var audit = Substitute.For<IAuditSink>();
 
         var content = new MemoryStream(Encoding.UTF8.GetBytes("mp4-bytes"));
-        var dto = await new UploadRecordingHandler(db, files, user, audit, PassInspector)
+        var dto = await new UploadRecordingHandler(db, files, user, audit, PassInspector, Buckets)
             .Handle(new UploadRecordingCommand(meeting.Key, "board.mp4", "video/mp4", 9, content), CancellationToken.None);
 
         dto.Source.Should().Be("Uploaded");
@@ -82,7 +89,7 @@ public class MeetingRecordingTests
             .Returns("acmp-recordings/new-key");
         var audit = Substitute.For<IAuditSink>();
 
-        await new UploadRecordingHandler(db, files, user, audit, PassInspector)
+        await new UploadRecordingHandler(db, files, user, audit, PassInspector, Buckets)
             .Handle(new UploadRecordingCommand(meeting.Key, "new.mp4", "video/mp4", 9, Stream.Null), CancellationToken.None);
 
         await files.Received(1).DeleteAsync("acmp-recordings", "acmp-recordings/old-key", Arg.Any<CancellationToken>());
@@ -92,7 +99,7 @@ public class MeetingRecordingTests
     public async Task Unknown_meeting_throws()
     {
         var (db, user) = NewDb();
-        var handler = new UploadRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>(), PassInspector);
+        var handler = new UploadRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>(), PassInspector, Buckets);
         await FluentActions.Awaiting(() => handler.Handle(
                 new UploadRecordingCommand("MTG-9999-999", "x.mp4", "video/mp4", 1, Stream.Null), CancellationToken.None))
             .Should().ThrowAsync<KeyNotFoundException>();
@@ -112,7 +119,7 @@ public class MeetingRecordingTests
         files.DeleteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("storage down")));
 
-        var dto = await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector)
+        var dto = await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector, Buckets)
             .Handle(new UploadRecordingCommand(meeting.Key, "new.mp4", "video/mp4", 9, Stream.Null), CancellationToken.None);
 
         dto.FileName.Should().Be("new.mp4"); // upload succeeded despite the cleanup failure
@@ -122,13 +129,15 @@ public class MeetingRecordingTests
     [Fact]
     public async Task Detail_projects_recording_by_source()
     {
-        var (db, _) = NewDb();
+        var (db, user) = NewDb();
         SeedMeeting(db, "MTG-2026-010").AttachUploadedRecording("acmp-recordings/k", "a.mp4", "video/mp4", 12);
         SeedMeeting(db, "MTG-2026-011").AttachRecording("https://webex/play", "https://webex/dl", 600);
         SeedMeeting(db, "MTG-2026-012"); // no recording
         await db.SaveChangesAsync();
 
-        var handler = new GetMeetingDetailHandler(db);
+        // DEF-073: the caller is a committee member (the substitute reports no roles), so the guest
+        // scoping is inactive here and the directory is never consulted.
+        var handler = new GetMeetingDetailHandler(db, Substitute.For<ICommitteeDirectory>(), user, TopicConfidentialityStub.SeesEverything());
         (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-010"), default))!.Recording!.Source.Should().Be("Uploaded");
         var w = (await handler.Handle(new GetMeetingDetailQuery("MTG-2026-011"), default))!.Recording!;
         w.Source.Should().Be("Webex");
@@ -149,8 +158,96 @@ public class MeetingRecordingTests
         files.GetPreSignedUrlAsync("acmp-recordings", "acmp-recordings/MTG-2026-001/abc.mp4", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
             .Returns("https://minio.test/signed");
 
-        var url = await new GetRecordingUrlHandler(db, files).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+        var url = await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>()).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
         url.Should().Be("https://minio.test/signed");
+    }
+
+    // NFR-027 - "time-limited, <= 1 h expiry". Until this test the ceiling was a VALUE, not a property:
+    // every other test here passes Arg.Any<TimeSpan>(), so raising Ttl to FromHours(4) broke nothing.
+    // A presigned URL is a bearer-less capability for its whole TTL, so the ceiling is the control.
+    [Fact]
+    public async Task Playback_url_expiry_stays_inside_the_one_hour_ceiling()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);
+        meeting.AttachUploadedRecording("acmp-recordings/MTG-2026-001/abc.mp4", "a.mp4", "video/mp4", 10);
+        await db.SaveChangesAsync();
+
+        TimeSpan? captured = null;
+        var files = Substitute.For<IFileStore>();
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(ci => { captured = ci.ArgAt<TimeSpan>(2); return "https://minio.test/signed"; });
+
+        await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>())
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        captured.Should().NotBeNull("the handler must pass an explicit expiry, never the store's default");
+        captured!.Value.Should().BePositive("a zero or negative expiry would be signed as already dead");
+        captured.Value.Should().BeLessThanOrEqualTo(TimeSpan.FromHours(1), "NFR-027 caps presigned URLs at 1 h");
+    }
+
+    // NFR-025 / AC-122 / DEF-094 - "all access to transcript content shall generate an audit log entry",
+    // which was 0% before this: the handler emitted nothing at all. Minting a presigned URL IS the access
+    // event, because the URL is a bearer-less capability good for its whole TTL.
+    [Fact]
+    public async Task Minting_a_playback_url_writes_an_access_audit_row()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);
+        meeting.AttachUploadedRecording("acmp-recordings/MTG-2026-001/abc.mp4", "a.mp4", "video/mp4", 10);
+        await db.SaveChangesAsync();
+
+        var files = Substitute.For<IFileStore>();
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns("https://minio.test/signed");
+        var audit = Substitute.For<IAuditSink>();
+
+        await new GetRecordingUrlHandler(db, files, Buckets, audit)
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingAccessed", "Meeting",
+            meeting.PublicId.ToString(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact] // The row must mean "a capability was handed out", not "someone asked" - a 404 grants nothing.
+    public async Task A_meeting_with_no_recording_writes_no_access_audit_row()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);          // seeded WITHOUT AttachUploadedRecording
+        await db.SaveChangesAsync();
+
+        var audit = Substitute.For<IAuditSink>();
+        var url = await new GetRecordingUrlHandler(db, Substitute.For<IFileStore>(), Buckets, audit)
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+
+        url.Should().BeNull();
+        await audit.DidNotReceive().EmitEnrichedAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    // DEF-015: the bucket was a const on each handler, so UAT and production would have written to the same
+    // bucket (AC-083). Every recording handler must now name the bucket its ENVIRONMENT configures.
+    [Fact]
+    public async Task Recording_handlers_use_the_configured_bucket_not_a_constant()
+    {
+        var envBucket = Microsoft.Extensions.Options.Options.Create(
+            new StorageOptions { RecordingsBucket = "acmp-prod-recordings" });
+        var (db, user) = NewDb();
+        var meeting = SeedMeeting(db);
+        var files = Substitute.For<IFileStore>();
+        files.UploadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.ArgAt<string>(1));
+
+        await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector, envBucket)
+            .Handle(new UploadRecordingCommand(meeting.Key, "a.mp4", "video/mp4", 4, new MemoryStream(Encoding.UTF8.GetBytes("mp4-bytes"))), CancellationToken.None);
+        await new GetRecordingUrlHandler(db, files, envBucket, Substitute.For<IAuditSink>())
+            .Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+        await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), envBucket)
+            .Handle(new DeleteRecordingCommand(meeting.Key), CancellationToken.None);
+
+        await files.Received(1).UploadAsync("acmp-prod-recordings", Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await files.Received(1).GetPreSignedUrlAsync("acmp-prod-recordings", Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+        await files.Received(1).DeleteAsync("acmp-prod-recordings", Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -160,7 +257,7 @@ public class MeetingRecordingTests
         var meeting = SeedMeeting(db);
         var files = Substitute.For<IFileStore>();
 
-        var url = await new GetRecordingUrlHandler(db, files).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
+        var url = await new GetRecordingUrlHandler(db, files, Buckets, Substitute.For<IAuditSink>()).Handle(new GetRecordingUrlQuery(meeting.Key), CancellationToken.None);
 
         url.Should().BeNull();
         await files.DidNotReceive().GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
@@ -176,7 +273,7 @@ public class MeetingRecordingTests
         var files = Substitute.For<IFileStore>();
         var audit = Substitute.For<IAuditSink>();
 
-        await new DeleteRecordingHandler(db, files, user, audit)
+        await new DeleteRecordingHandler(db, files, user, audit, Buckets)
             .Handle(new DeleteRecordingCommand(meeting.Key), CancellationToken.None);
 
         (await db.Meetings.SingleAsync(m => m.Key == meeting.Key)).RecordingObjectKey.Should().BeNull();
@@ -193,7 +290,7 @@ public class MeetingRecordingTests
         await db.SaveChangesAsync();
         var files = Substitute.For<IFileStore>();
 
-        await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>())
+        await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), Buckets)
             .Handle(new DeleteRecordingCommand(meeting.Key), CancellationToken.None);
 
         var stored = await db.Meetings.SingleAsync(m => m.Key == meeting.Key);
@@ -213,7 +310,7 @@ public class MeetingRecordingTests
         files.DeleteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("storage down")));
 
-        await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>())
+        await new DeleteRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), Buckets)
             .Handle(new DeleteRecordingCommand(meeting.Key), CancellationToken.None);
 
         (await db.Meetings.SingleAsync(m => m.Key == meeting.Key)).RecordingObjectKey.Should().BeNull();
@@ -223,7 +320,7 @@ public class MeetingRecordingTests
     public async Task Delete_unknown_meeting_throws()
     {
         var (db, user) = NewDb();
-        var handler = new DeleteRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>());
+        var handler = new DeleteRecordingHandler(db, Substitute.For<IFileStore>(), user, Substitute.For<IAuditSink>(), Buckets);
         await FluentActions.Awaiting(() => handler.Handle(new DeleteRecordingCommand("MTG-9999-999"), CancellationToken.None))
             .Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -241,7 +338,7 @@ public class MeetingRecordingTests
         files.UploadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(ci => Task.FromResult($"{ci.ArgAt<string>(0)}/{ci.ArgAt<string>(1)}"));
 
-        await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector)
+        await new UploadRecordingHandler(db, files, user, Substitute.For<IAuditSink>(), PassInspector, Buckets)
             .Handle(new UploadRecordingCommand(meeting.Key, "clip.any", contentType, 3, Stream.Null), CancellationToken.None);
 
         (await db.Meetings.SingleAsync(m => m.Key == meeting.Key)).RecordingObjectKey.Should().EndWith(ext);

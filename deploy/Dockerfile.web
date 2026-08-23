@@ -1,6 +1,6 @@
 # Multi-stage build for the React SPA served by nginx (docs/domain/deployment.md).
 # Base images digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
-FROM node:22-alpine@sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2 AS build
+FROM node:26-alpine@sha256:aadf416b2cdce311a8811ba3f0608a61b77dbf997500e2eafe781b51f6a0b019 AS build
 WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./
 RUN npm ci
@@ -20,17 +20,30 @@ RUN npm run build
 # (unprivileged port). Same official-nginx envsubst entrypoint (/docker-entrypoint.d) so the
 # ${KEYCLOAK_ORIGIN} template substitution is unchanged; only the listen port moves 80 -> 8080
 # (default.conf.template + compose port map + healthcheck follow).
-FROM nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0 AS final
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:334d92979f15aaecd5dd50af5105e1230e2bb70765d45b1e2f964e7c5eda81c3 AS final
+ARG IMAGE_VERSION=dev
+ARG IMAGE_REVISION=unknown
+ARG IMAGE_CREATED=unknown
+LABEL org.opencontainers.image.title="ACMP Web" \
+      org.opencontainers.image.source="https://github.com/A-H-911/acmp" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      org.opencontainers.image.revision="${IMAGE_REVISION}" \
+      org.opencontainers.image.created="${IMAGE_CREATED}"
 # The base image already runs as UID 101, but COPY into /usr/share/nginx/html + /etc/nginx/templates needs
 # write access, so briefly switch to root for the copies, then drop back to the non-root user for runtime.
 # The explicit `USER 101` also makes the non-root guarantee visible to the Trivy Dockerfile scan (DS-0002),
 # which reads the Dockerfile text and cannot see the base image's baked-in USER.
 USER root
-# The CSP needs the Keycloak origin; it is templated at container start (nginx envsubst) so each
-# environment supplies its own origin with no rebuild. NGINX_ENVSUBST_FILTER restricts substitution
-# to KEYCLOAK_ORIGIN only, preserving nginx runtime vars ($host, $uri, $scheme).
+# The CSP needs the Keycloak origin and (P22) the object-store origin that recording playback is
+# presigned against; both are templated at container start (nginx envsubst) so each environment
+# supplies its own with no rebuild. NGINX_ENVSUBST_FILTER is a regex over VARIABLE NAMES and must
+# list every one the template uses — it exists to preserve nginx runtime vars ($host, $uri, $scheme),
+# but a template var missing from it is NOT left harmlessly alone: nginx then reads the surviving
+# ${NAME} as one of ITS variables and dies with `unknown "NAME" variable`. Both also carry a default
+# so the container still starts when compose supplies neither.
 ENV KEYCLOAK_ORIGIN="http://keycloak.localhost:8085" \
-    NGINX_ENVSUBST_FILTER="KEYCLOAK_ORIGIN"
+    ACMP_MEDIA_ORIGIN="" \
+    NGINX_ENVSUBST_FILTER="KEYCLOAK_ORIGIN|ACMP_MEDIA_ORIGIN"
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /web/dist /usr/share/nginx/html
 EXPOSE 8080

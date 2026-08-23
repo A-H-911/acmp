@@ -61,7 +61,7 @@ This page covers the decision lifecycle and how it links to ADRs. See [[TOP-2026
 - Decision and ADR
 
 > Published pages stay immutable once superseded.`;
-const BODY_AR = `نظرة موجزة على كيفية حوكمة اللجنة لقرارات المعمارية.
+const BODY_AR = `نظرة موجزة على كيفية حوكمة اللجنة لقرارات الهيكلة.
 
 ## النطاق
 
@@ -78,7 +78,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<string>
   const topic = await post(request, bearer, '/api/topics', {
     title: 'Adopt a single identity provider', description: 'Consolidate per-stream IdPs.',
     justification: 'Cuts duplicated maintenance.', type: 'ArchitectureDecision', urgency: 'Normal',
-    source: 'CommitteeMember', streams: ['IAM'], systems: [], tags: [],
+    source: 'CommitteeMember', streams: ['core'], systems: [], tags: [],
   });
 
   // doc1: Governance, versioned (create → edit = v2) → publish; the showcase page.
@@ -113,7 +113,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<string>
   // Templates of varied TargetType.
   for (const tpl of [
     { name: L('Standard topic submission', 'تقديم موضوع قياسي'), targetType: 'Topic', body: '## Summary\n\n{{summary}}' },
-    { name: L('Architecture Decision Record', 'سجل قرار معماري'), targetType: 'Adr', body: '## Context\n\n{{context}}' },
+    { name: L('Architecture Decision Record', 'سجل قرار هيكلة'), targetType: 'Adr', body: '## Context\n\n{{context}}' },
     { name: L('Minutes of meeting', 'محضر اجتماع'), targetType: 'MinutesOfMeeting', body: '## Attendees\n\n{{attendees}}' },
   ]) {
     await post(request, bearer, '/api/knowledge/templates', tpl);

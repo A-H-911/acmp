@@ -13,6 +13,12 @@ vi.mock('../../api/actions', async (orig) => ({
 }));
 import { useActionsRegister, useActionsCounts } from '../../api/actions';
 
+// The "New action" CTA opens the source chooser, which reads the three source registers. Stubbed so
+// this file tests the WIRING; the chooser's own behaviour is covered in RaiseActionFromDialog.test.tsx.
+vi.mock('../../api/topics', () => ({ useBacklog: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false, refetch: vi.fn() })) }));
+vi.mock('../../api/decisions', () => ({ useDecisionsRegister: vi.fn(() => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() })) }));
+vi.mock('../../api/meetings', () => ({ useMeetings: vi.fn(() => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() })) }));
+
 const mockList = useActionsRegister as unknown as Mock;
 const mockCounts = useActionsCounts as unknown as Mock;
 
@@ -50,6 +56,21 @@ describe('ActionsRegister (P8b)', () => {
     mockCounts.mockReset();
     mockCounts.mockReturnValue({ total: 8, overdue: 2 });
     withRows();
+  });
+
+  // The design specifies `primary: New action` on this register and the i18n key was already written
+  // for it, but nothing rendered it — an action could only be raised from a source page. A CTA that is
+  // present but inert is the same failure as one that is missing, so this asserts it actually OPENS the
+  // source chooser rather than merely existing.
+  it('opens the source chooser from the New action CTA', async () => {
+    const user = userEvent.setup();
+    withRows();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /new action/i }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Raise an action from…')).toBeInTheDocument();
   });
 
   it('shows the loading skeleton while fetching', () => {

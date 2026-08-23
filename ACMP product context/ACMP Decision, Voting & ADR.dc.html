@@ -403,14 +403,14 @@ class Component extends DCLogic {
       conditions:L('Conditions','الشروط'), alternatives:L('Alternatives considered','البدائل المدروسة'), notChosen:L('Not chosen','لم يُختر'),
       recordDetail:L('Record detail','تفاصيل السجل'), affectedSystems:L('Affected systems','الأنظمة المتأثرة'),
       immutableHistory:L('Immutable history','سجل غير قابل للتعديل'),
-      convertTitle:L('Convert to ADR','تحويل إلى سجل قرار'), convertSub:L('Create an Architecture Decision Record','إنشاء سجل قرار معماري'),
+      convertTitle:L('Convert to ADR','تحويل إلى سجل قرار'), convertSub:L('Create an Architecture Decision Record','إنشاء سجل قرار هيكلة'),
       convertBody:L('This creates a linked ADR pre-filled from this decision (context, options, and outcome). The decision and ADR stay traceable in both directions.','يُنشئ سجل قرار مرتبطًا ومعبّأ مسبقًا من هذا القرار. يبقى القرار والسجل قابلين للتتبّع بالاتجاهين.'),
       willBeCreated:L('will be created','سيُنشأ'), createAdr:L('Create ADR','إنشاء السجل'),
       supersedeTitle:L('Supersede this decision','استبدال هذا القرار'), supersedeSub:L('Records a new decision that replaces this one','يسجّل قرارًا جديدًا يحلّ محلّ هذا'),
       newDecision:L('New decision','قرار جديد'), supersedeReason2:L('Reason for superseding','سبب الاستبدال'), supersedeReasonPh:L('Explain why this decision is being replaced…','اشرح سبب استبدال هذا القرار…'),
       supersedeWarn:L('The original decision is never deleted. It is marked Superseded and kept in the immutable history.','لا يُحذف القرار الأصلي أبدًا. يُوسم كمُستبدَل ويُحفظ في السجل غير القابل للتعديل.'),
       confirmSupersede:L('Supersede decision','استبدال القرار'),
-      adrs:L('ADRs','سجلات القرار'), status:L('Status','الحالة'), adrLabel:L('Architecture Decision Record','سجل قرار معماري'),
+      adrs:L('ADRs','سجلات القرار'), status:L('Status','الحالة'), adrLabel:L('Architecture Decision Record','سجل قرار هيكلة'),
       adrTitle:L('Keycloak as the standard identity provider','Keycloak كموفّر هوية معياري'), exportMd:L('Export .md','تصدير .md'),
       supersedesLabel:L('Supersedes','يحلّ محلّ'), legacyAuth:L('Per-stream internal auth','مصادقة داخلية لكل مسار'),
       supersededByLabel:L('Superseded by','استُبدل بـ'), newIdp:L('Federated IdP mesh','شبكة هويّات اتحادية'),
@@ -533,7 +533,7 @@ class Component extends DCLogic {
     const adrMeta = [
       { label:L('Status','الحالة'), value:adrLabelMap[adrState] },
       { label:L('Date','التاريخ'), value:L('18 Feb 2026','18 فبراير 2026') },
-      { label:L('Deciders','المقرّرون'), value:L('Architecture Committee','لجنة الهندسة') },
+      { label:L('Deciders','المقرّرون'), value:L('Architecture Committee','لجنة الهيكلة') },
       { label:L('Authority','الجهة'), value:L('S. M. (Chairman)','س. م. (الرئيس)') },
       { label:L('Tags','الوسوم'), value:L('Identity · Platform','الهوية · المنصّة') }
     ];

@@ -29,9 +29,22 @@ function StateShell({ title, body, icon, action, note, tone = 'default' }: State
   );
 }
 
-export function EmptyState({ title, body, icon }: { title?: string; body?: string; icon?: IconName }) {
+// `action` is the empty state's call-to-action, rendered in StateShell's shared `.state-actions`
+// wrapper. It exists because StateShell always had the slot and EmptyState simply did not forward
+// it: registers that wanted a CTA had to hand-roll their own wrapper (Backlog's `bk-empty-actions`)
+// and the rest ended up with no CTA at all — so /meetings offered no way forward from its own empty
+// screen. One optional prop here fixes every caller instead of adding a bespoke div per register.
+// Optional by design: adding it breaks no existing call site.
+export function EmptyState({ title, body, icon, action }: { title?: string; body?: string; icon?: IconName; action?: ReactNode }) {
   const { t } = useTranslation();
-  return <StateShell icon={<Icon name={icon ?? 'doc'} size={20} />} title={title ?? t('state.emptyTitle')} body={body ?? t('state.emptyBody')} />;
+  return (
+    <StateShell
+      icon={<Icon name={icon ?? 'doc'} size={20} />}
+      title={title ?? t('state.emptyTitle')}
+      body={body ?? t('state.emptyBody')}
+      action={action}
+    />
+  );
 }
 
 export function LoadingState({ label }: { label?: string }) {

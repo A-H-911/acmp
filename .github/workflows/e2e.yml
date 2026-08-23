@@ -15,6 +15,7 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
+      - 'tamheed-package/**'
   workflow_dispatch:
 
 # Supersede a stale in-flight run of the same PR; separate group from ci.yml.
@@ -26,27 +27,126 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Force the action-reminder Hangfire sweep to fire every minute in e2e so AC-054/055 can prove a genuine
+      # fire on the real stack (R4a). Compose interpolation takes shell env over --env-file, so the worker gets
+      # minutely HERE while deploy/.env.example and production keep the daily 0 6 * * * default (docker-compose.yml).
+      ACTION_REMINDERS_SWEEP_CRON: '* * * * *'
+      # AC-011 / DEC-042 — TURN THE ADR-0038 WRITE PATH ON IN CI. IIdentityProvider and
+      # IGuestProvisioner are registered ONLY when this is true, so until now CI ran seven services
+      # with a genuine Keycloak and never constructed either: invite, role assignment, forced sign-out,
+      # guest disable and the guest-presenter flow were reachable only by the manual UAT probe. That is
+      # the same shape of blindness that let DEF-066 survive two shipped steps.
+      #
+      # SET HERE RATHER THAN IN deploy/.env.example, which DEC-042 preferred as the narrower option:
+      # this changes CI only, while dev and production keep the false default. Same mechanism as the
+      # sweep cron above — compose interpolation takes shell env over --env-file, verified by rendering
+      # `docker compose config` with it set and reading KeycloakAdmin__Enabled back as "true".
+      #
+      # ⚠ NO SECRET IS NEEDED HERE and that is not an oversight: gen-secrets.sh writes
+      # KeycloakAdmin__ClientSecret UNCONDITIONALLY (a compose secret whose file is missing fails the
+      # whole stack), .env.example pins a non-placeholder value, and reconcile.sh converges the Keycloak
+      # client from that same file on presence rather than on this flag. So the identity side already
+      # existed on every run; only the app-side DI registration was off.
+      KEYCLOAK_ADMIN_ENABLED: 'true'
     defaults:
       run:
         working-directory: src/Acmp.Web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: src/Acmp.Web/package-lock.json
 
+      # ADR-0032: secrets are file-backed. Materialize deploy/secrets/* from the committed placeholder .env.example
+      # before compose (which references those files) parses. No real credentials here — CI values are public.
+      - name: Materialize Docker secret files
+        working-directory: .
+        run: sh deploy/scripts/gen-secrets.sh
+
       - name: Bring up the self-contained stack
         working-directory: .
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example up -d --build --wait
 
+      # DEF-078. When --wait fails, compose says only "container acmp-api-1 is unhealthy" and stops. That
+      # sentence names the symptom and withholds every fact needed to act on it: WHICH readiness check failed,
+      # and why. Diagnosing the first occurrence cost a full CI round-trip that produced no new information,
+      # which is the same defect DEF-051 records one step up the file and DEF-074 records for the e2e dump —
+      # a failure report that cannot reach the failure it explains.
+      #
+      # ⚠ This step is only useful because /readyz was ALSO given a response writer in the same change. With
+      # the default writer its whole body is the aggregate status word — measured on production as literally
+      # "Unhealthy" — so dumping it would have produced a diagnostic containing no diagnosis, which is the very
+      # defect this step exists to fix. `|| true` throughout: this must never itself fail and mask the real
+      # error, and it only runs when the bring-up already failed.
+      - name: Why is the API unhealthy (diagnostics on failure only)
+        if: ${{ failure() }}
+        working-directory: .
+        run: |
+          echo "=== container states ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example ps || true
+          echo "=== /readyz, with the per-check descriptions ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example \
+            exec -T api curl -sS -o - -w '\nHTTP %{http_code}\n' http://localhost:8080/readyz || true
+          echo "=== api log (tail) ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example logs --tail=120 api || true
+          echo "=== minio-init log (buckets provisioned?) ==="
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example logs minio-init || true
+
+      # DEF-051. keycloak-config is a one-shot that nothing depends_on, so before this step a FAILED
+      # realm reconciliation left the stack fully healthy and CI green. That is not hypothetical: it
+      # fired on its first outing — after the ADR-0038 client was added to reconcile.sh, the e2e log
+      # showed the container Created and NOTHING ELSE, because compose only dumps a one-shot's stdout
+      # on the failure path. The run executed the reconciler and proved nothing about whether it
+      # converged, and a PR body claiming otherwise had to be corrected after merge.
+      #
+      # The exit code IS the convergence assertion: reconcile.sh reads its own post-conditions back
+      # (the acmp-web origin, and the service account's grant compared as an exact set) and returns
+      # non-zero if they did not take. So this asserts the outcome, not merely that a script ran.
+      #
+      # The log is printed UNCONDITIONALLY and on purpose — a green check that leaves no trace is
+      # what produced this defect. The `grant is exactly` line is the evidence a human can read.
+      - name: Realm reconciliation converged (DEF-051 — a silent reconcile is how DEF-023 shipped)
+        working-directory: .
+        run: |
+          set -euo pipefail
+          CF="-f deploy/docker-compose.yml --env-file deploy/.env.example"
+          cid="$(docker compose $CF ps -aq keycloak-config)"
+          [ -n "$cid" ] || { echo "keycloak-config container does not exist"; exit 1; }
+
+          # POLL until it has EXITED. Reading the exit code while the container still runs is the
+          # bug PE-154 recorded in the local boot gate, and 08-bootstrap-box.sh's wait_oneshot says
+          # so in as many words — I made it anyway on the first attempt, and this step's own first
+          # run reported `state=running:0`.
+          #
+          # WHICH ALSO ANSWERS THE QUESTION DEF-051 LEFT OPEN: `docker compose up --wait` returned
+          # while this one-shot was still mid-flight, so --wait offers NO guarantee about a one-shot
+          # at all — and deploy/scripts/up.sh, which ends in exactly that, therefore cannot catch a
+          # failed reconcile on dev or ON-PREM PROD. Measured, not assumed.
+          deadline=$(( $(date +%s) + 180 ))
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            state="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' "$cid")"
+            case "$state" in exited:*) break ;; esac
+            sleep 3
+          done
+
+          echo "--- keycloak-config log ---"
+          docker logs "$cid" 2>&1 || true
+          echo "---------------------------"
+          [ "$state" = "exited:0" ] || { echo "keycloak-config did not converge (state=$state)"; exit 1; }
+          echo "keycloak-config exited 0 — the realm matches what reconcile.sh asserts."
+
       - name: Install web deps
         run: npm ci
 
-      - name: Install Playwright (chromium)
-        run: npx playwright install --with-deps chromium
+      # AC-101 requires Chrome AND Edge. `msedge` is a real browser CHANNEL, not a bundled engine, so
+      # it needs its own install line — without it every Edge-scoped test dies at launch rather than
+      # failing informatively, which reads as a broken suite instead of a missing browser.
+      - name: Install Playwright (chromium + msedge)
+        run: npx playwright install --with-deps chromium msedge
 
       - name: Run E2E (seeds Keycloak users, then drives the real PKCE login)
         env:
@@ -55,18 +155,51 @@ jobs:
           set -a; source ../../deploy/.env.example; set +a
           npm run e2e
 
+      # OQ-071 / OQ-070 / ADR-0038 — the minimum realm-management grant, proven on every run against
+      # a REAL Keycloak (same image, same realm export as UAT), not asserted from documentation.
+      # DEC-041 split the standing obligation: the ROLE-SET proof lives here, permanently and
+      # automatically; UAT keeps a reduced connectivity check for the deployed topology it alone has.
+      #
+      # AFTER the Playwright run on purpose: leg 2 temporarily strips the service account's grant to
+      # prove a narrower one is REFUSED, and nothing downstream should depend on that window. The
+      # script restores the grant on exit and re-verifies that the restore worked.
+      - name: Minimum Keycloak grant is sufficient AND necessary (OQ-071)
+        working-directory: .
+        run: |
+          set -a; . deploy/.env.example; set +a
+          bash scripts/prove-keycloak-grant.sh -f deploy/docker-compose.yml --env-file deploy/.env.example
+
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: src/Acmp.Web/playwright-report
           retention-days: 7
 
+      # ⚠ --tail 200 WAS TOO SHORT TO CONTAIN THE FAILURE IT EXISTS TO EXPLAIN. On the AC-011 run the
+      # spec failed at 13:06 and this step ran at 13:12, so 200 lines across nine services covered only
+      # the last ~15 seconds — the 500 that failed the job was already off the top, and the dump showed
+      # healthy traffic instead. That is DEF-051's lesson in a second place: a diagnostic that reports
+      # something other than the failure is worse than none, because it reads like evidence.
+      #
+      # The api service is dumped SEPARATELY and first: it is the one that answers the requests the
+      # specs assert on, and interleaving it with eight other services is what made 200 lines cover
+      # seconds. The combined dump is kept after it for cross-service ordering.
       - name: Stack logs on failure
         if: ${{ failure() }}
         working-directory: .
-        run: docker compose -f deploy/docker-compose.yml logs --no-color --tail 200
+        run: |
+          # ⚠ NO --tail ON THE API LOG, AND THAT IS THE CORRECTION RATHER THAN THE ORIGINAL FIX.
+          # The first attempt at this raised 200 to 4000, which is choosing a bigger magic number for
+          # a question the number cannot answer: you do not know how far back the failure is until you
+          # have found it, and 4000 api lines still began eight minutes into a suite whose failure was
+          # in the first minute. A tail is the wrong instrument here. The whole log is a few MB and the
+          # step only runs on failure.
+          echo "===== api (the service the specs talk to) — FULL log ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color api
+          echo "===== all services (tail) ====="
+          docker compose -f deploy/docker-compose.yml logs --no-color --tail 2000
 
       - name: Tear down the stack
         if: ${{ always() }}

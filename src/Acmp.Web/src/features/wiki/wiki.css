@@ -15,7 +15,13 @@
   flex: 0 0 260px;
   background: var(--surface);
   border-inline-end: 1px solid var(--border);
-  border-radius: 12px 0 0 12px;
+  /* Logical corners. This paired a LOGICAL border side with a PHYSICAL radius, so in RTL the border
+     flipped and the rounding did not: the seam between the two panes got the rounded corners and the
+     outer edge went square — the inverse of the design, and the only screen in the product that did
+     this (these were the sole physical border-radius declarations in the whole stylesheet set).
+     ADR/DEC-022 puts RTL on CSS logical properties precisely so this cannot happen. */
+  border-start-start-radius: 12px;
+  border-end-start-radius: 12px;
   display: flex;
   flex-direction: column;
   min-block-size: 0;
@@ -101,7 +107,9 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-inline-start: 0;
-  border-radius: 0 12px 12px 0;
+  /* Logical corners — the trailing pane rounds on its OUTER (end) edge; see .wiki-tree above. */
+  border-start-end-radius: 12px;
+  border-end-end-radius: 12px;
 }
 .wiki-skeleton { max-inline-size: 760px; margin: 0 auto; padding: 30px 32px; }
 .wiki-skeleton .skeleton { block-size: 12px; border-radius: 5px; margin-block-end: 12px; }

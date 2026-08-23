@@ -1,13 +1,20 @@
 ﻿using Acmp.Modules.Topics.Application.Features.AcceptTopic;
 using Acmp.Modules.Topics.Application.Features.AddTopicComment;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
+using Acmp.Modules.Topics.Application.Features.CloseTopic;
 using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
+using Acmp.Modules.Topics.Application.Features.ConvertTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
+using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
 using Acmp.Modules.Topics.Application.Features.PrioritizeTopic;
+using Acmp.Modules.Topics.Application.Features.ReactivateTopic;
+using Acmp.Modules.Topics.Application.Features.ReclassifyTopic;
 using Acmp.Modules.Topics.Application.Features.RejectTopic;
+using Acmp.Modules.Topics.Application.Features.ReopenTopic;
+using Acmp.Modules.Topics.Application.Features.SetTopicConfidentiality;
 using Acmp.Modules.Topics.Application.Features.SubmitTopic;
 using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain.Enums;
@@ -75,6 +82,59 @@ public static class TopicEndpoints
             return Results.NoContent();
         }).RequireAuthorization(Policies.TopicTriage);
 
+        // FR-161 / AC-110 — the way BACK from Deferred. Before this the revisit date recorded above
+        // was displayed on the topic detail and could never be acted on.
+        group.MapPost("/{id:guid}/reactivate", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReactivateTopicCommand(id), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-160 / AC-109 — the terminal transition. Without it Decided was a permanent resting state.
+        group.MapPost("/{id:guid}/close", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new CloseTopicCommand(id), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-045 / AC-112 — approved in the original plan, traced to WBS-5.7, never built until now.
+        // Reuses ReasonBody: the justification is mandatory, as it is for reject and defer (FR-044).
+        group.MapPost("/{id:guid}/reopen", async (Guid id, ReasonBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReopenTopicCommand(id, body.Reason), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-030 / AC-113 (SC-018): convert a Decided topic to a different type. Returns 201 with the
+        // SUCCESSOR's key — the response body describes the new artifact, not the retired one, which is why
+        // this is Created rather than NoContent like the other lifecycle transitions.
+        group.MapPost("/{id:guid}/convert", async (Guid id, ConvertBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new ConvertTopicCommand(id, body.TargetType, body.Reason), ct);
+            return Results.Created($"/api/topics/{result.Key}", result);
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-164 / DW-032: correct a topic's type and source before Acceptance. Same policy as the
+        // other triage acts, and deliberately NOT part of PUT /api/topics/{id}: that path lets the
+        // SUBMITTER edit their own pre-Accept topic with no policy check, so folding classification
+        // into it would make it self-service. The aggregate refuses anything past Triage.
+        group.MapPost("/{id:guid}/reclassify", async (Guid id, ReclassifyBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new ReclassifyTopicCommand(id, body.Type, body.Source), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
+        // FR-163 / C-AUTHZ-04: classify or declassify. Chairman + Secretary only (DEC-063 d2), gated
+        // by AllowedRoles on the command AND the endpoint policy — the same two roles TopicTriage
+        // carries. ⚠ Deliberately NOT Policies.TopicEdit: that policy now carries
+        // ConfidentialityRequirement, so routing declassification through it would make lifting a
+        // classification depend on being able to see the topic — circular for the case that matters.
+        group.MapPut("/{id:guid}/confidentiality", async (Guid id, ConfidentialityBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new SetTopicConfidentialityCommand(id, body.Restricted), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.TopicTriage);
+
         // W4: mark prepared — ABAC (Owner/Secretary) enforced in the handler.
         group.MapPost("/{id:guid}/prepare", async (Guid id, ISender sender, CancellationToken ct) =>
         {
@@ -82,10 +142,18 @@ public static class TopicEndpoints
             return Results.NoContent();
         });
 
-        // W3: backlog prioritization.
+        // W3: backlog prioritization (absolute set — drag-and-drop / direct edit).
         group.MapPut("/{id:guid}/priority", async (Guid id, PriorityBody body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new PrioritizeTopicCommand(id, body.Priority), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.BacklogPrioritize);
+
+        // AC-043 / FR-034 keyboard ±1, and AC-141 / FR-037 drag-to-reprioritize. Exactly one addressing
+        // mode per request; the validator enforces it.
+        group.MapPost("/{id:guid}/priority/move", async (Guid id, MoveBody body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new MoveTopicPriorityCommand(id, body.Delta, body.TargetTopicId), ct);
             return Results.NoContent();
         }).RequireAuthorization(Policies.BacklogPrioritize);
 
@@ -93,7 +161,7 @@ public static class TopicEndpoints
         group.MapPut("/{id:guid}", async (Guid id, UpdateTopicBody body, ISender sender, CancellationToken ct) =>
         {
             await sender.Send(new UpdateTopicCommand(id, body.Title, body.Description, body.Justification,
-                body.Urgency, body.Streams, body.Systems, body.Tags), ct);
+                body.Urgency, body.Streams, body.Systems, body.Tags, body.Scope), ct);
             return Results.NoContent();
         });
 
@@ -119,8 +187,23 @@ public static class TopicEndpoints
 
     public sealed record AcceptTopicBody(Guid OwnerId, string OwnerName);
     public sealed record ReasonBody(string Reason);
+    // FR-030: ReasonBody is not reused here — conversion needs the TARGET TYPE as well, and the reason is
+    // about why the type is changing rather than why a transition was refused.
+    public sealed record ConvertBody(TopicType TargetType, string Reason);
+    // PUT, not POST: setting a classification is idempotent and the body carries the DESIRED state
+    // rather than an action, so a repeated call is a no-op instead of a second event.
+    public sealed record ConfidentialityBody(bool Restricted);
+    public sealed record ReclassifyBody(TopicType Type, TopicSource Source);
     public sealed record DeferTopicBody(string Reason, DateTimeOffset? RevisitOn);
     public sealed record PriorityBody(int Priority);
+    // Delta = keyboard ±1 (AC-043). TargetTopicId = drag: put this topic where that one is (AC-141);
+    // the server resolves both positions in the canonical column, because the client's list is
+    // filtered, sorted and page-truncated and its indices are therefore not the column's.
+    public sealed record MoveBody(int Delta, Guid? TargetTopicId = null);
+    // Scope is nullable and OMITTING IT MEANS "leave it alone", which is what makes this safe to add
+    // to an existing body: a caller that does not know about scope cannot silently reset an elevated
+    // topic back to a derived value (DEF-058).
     public sealed record UpdateTopicBody(string Title, string Description, string Justification,
-        TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags);
+        TopicUrgency Urgency, IReadOnlyList<string> Streams, IReadOnlyList<string> Systems, IReadOnlyList<string> Tags,
+        TopicScope? Scope = null);
 }

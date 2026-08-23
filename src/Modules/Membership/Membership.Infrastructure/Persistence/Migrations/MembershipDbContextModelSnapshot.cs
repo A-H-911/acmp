@@ -31,6 +31,9 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTimeOffset?>("AccessExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -62,6 +65,9 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Role")
                         .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("RolesChangedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -168,6 +174,9 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<bool>("IsWildcard")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("PublicId")
                         .HasColumnType("uniqueidentifier");
 
@@ -184,6 +193,10 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("IsWildcard")
+                        .IsUnique()
+                        .HasFilter("[IsWildcard] = 1");
 
                     b.ToTable("streams", "membership");
                 });
@@ -249,10 +262,7 @@ namespace Acmp.Modules.Membership.Infrastructure.Persistence.Migrations
                                 .HasColumnType("bigint");
 
                             b1.Property<long>("StreamId")
-                                .ValueGeneratedOnAdd()
                                 .HasColumnType("bigint");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<long>("StreamId"));
 
                             b1.HasKey("CommitteeMemberId", "StreamId");
 

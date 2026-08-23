@@ -73,7 +73,7 @@ public class MembershipResolverTests
     public async Task UserStreamProvider_returns_assigned_stream_codes()
     {
         await using var db = NewDb();
-        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهندسة"));
+        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهيكلة"));
         var platform = Stream.Create("platform", LocalizedString.Create("Platform", "المنصة"));
         db.Streams.AddRange(architecture, platform);
         var member = Member("kc-u");
@@ -83,8 +83,43 @@ public class MembershipResolverTests
         member.AssignStreams(new[] { architecture.Id });
         await db.SaveChangesAsync();
 
-        var codes = await new UserStreamProvider(db).GetAssignedStreamsAsync("kc-u");
+        var assigned = await new UserStreamProvider(db).GetAssignedStreamsAsync("kc-u");
 
-        codes.Should().BeEquivalentTo(new[] { "architecture" });
+        assigned.Codes.Should().BeEquivalentTo(new[] { "architecture" });
+        assigned.IsUnrestricted.Should().BeFalse("an ordinary delivery stream must not read as the wildcard");
+    }
+
+    // DW-026 / ADR-0043 clause (3). The step-5 backfill assigned the WILDCARD to every member who
+    // held nothing, so if the provider does not surface that flag those members intersect no topic
+    // and are refused everything — the exact opposite of what the backfill exists to prevent.
+    //
+    // ⚠ THE FLAG COMES FROM THE COLUMN, NOT FROM THE CODE. The wildcard here is created through the
+    // same seeded shape production uses and is then read back through the provider; a test that
+    // asserted on the string "all-streams" would pass while the control matched a magic value that
+    // clause (3) forbids it to match.
+    [Fact]
+    public async Task UserStreamProvider_reports_a_wildcard_holder_as_unrestricted()
+    {
+        await using var db = NewDb();
+        var core = Stream.Create("core", LocalizedString.Create("Core", "الأساسي"));
+        db.Streams.Add(core);
+        var member = Member("kc-wild");
+        db.Members.Add(member);
+        await db.SaveChangesAsync();
+
+        // The wildcard is a seeded singleton with no domain factory (the migration sets the column),
+        // so the flag is set the only way a test can: on the entity the provider will read back.
+        var wildcard = Stream.Create("all-streams", LocalizedString.Create("All streams", "كل المسارات"));
+        typeof(Stream).GetProperty(nameof(Stream.IsWildcard))!.SetValue(wildcard, true);
+        db.Streams.Add(wildcard);
+        await db.SaveChangesAsync();
+
+        member.AssignStreams(new[] { wildcard.Id });
+        await db.SaveChangesAsync();
+
+        var assigned = await new UserStreamProvider(db).GetAssignedStreamsAsync("kc-wild");
+
+        assigned.IsUnrestricted.Should().BeTrue("a member holding the wildcard stream is unrestricted");
+        assigned.Codes.Should().NotContain("core", "the flag must not be inferred from holding any stream at all");
     }
 }

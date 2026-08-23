@@ -1,5 +1,16 @@
 {
-  "app": { "name": "ACMP", "committee": "Architecture Committee", "tagline": "Architecture Committee Management Platform" },
+  "app": {
+    "name": "ACMP",
+    "committee": "Architecture Committee",
+    "tagline": "Architecture Committee Management Platform"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "FILE_TOO_LARGE": "The file exceeds the maximum allowed size.",
+    "FILE_TYPE_NOT_ALLOWED": "That file type isn’t allowed.",
+    "FILE_CONTENT_MISMATCH": "The file’s contents don’t match its declared type.",
+    "NotEmptyValidator": "This field is required."
+  },
   "search": {
     "title": "Search",
     "prompt": {
@@ -41,11 +52,12 @@
     "goToDashboard": "Go to dashboard",
     "skipToContent": "Skip to main content",
     "breadcrumb": "Breadcrumb",
+    "mobileNotice": "ACMP is not optimized for small screens. Use a tablet or desktop for the full experience.",
     "reload": "Reload page",
     "comingSoon": "This area will be built in a later phase.",
-    "phase2Lead": "Available in a later release.",
-    "phase2Title": "Coming in Phase 2",
-    "phase2Body": "This area is planned for Phase 2 and isn’t available yet.",
+    "deferredLead": "Diagrams are maintained outside ACMP.",
+    "deferredTitle": "No in-product diagrams",
+    "deferredBody": "ACMP does not render diagrams. Keep them in your diagramming tool and link them from the topic, decision, or ADR they belong to.",
     "cancel": "Cancel",
     "close": "Close"
   },
@@ -54,8 +66,20 @@
     "count": "{{count}} actions",
     "overdueCount": "{{count}} overdue",
     "newAction": "New action",
-    "newSoon": "Creating actions ships in a later slice.",
     "comingSoon": "Coming soon",
+    "source": {
+      "Topic": "Topic",
+      "Decision": "Decision",
+      "Meeting": "Meeting"
+    },
+    "raise": {
+      "title": "Raise an action from…",
+      "subtitle": "Every action is linked to the governance record it came from. Pick that record first.",
+      "typeLabel": "Source type",
+      "filterLabel": "Filter by title or ID",
+      "noneTitle": "Nothing to link to",
+      "noneBody": "No records of this type match. Try another type or clear the filter."
+    },
     "savedView": "My open actions",
     "filtersLabel": "Actions filters",
     "on": "ON",
@@ -155,7 +179,11 @@
         "verify": "Confirm the completed work. You cannot verify an action you own — this is recorded and cannot be edited."
       }
     },
-    "priority": { "Low": "Low", "Normal": "Medium", "High": "High" },
+    "priority": {
+      "Low": "Low",
+      "Normal": "Medium",
+      "High": "High"
+    },
     "create": {
       "action": "Create follow-up action",
       "title": "Create an action",
@@ -175,7 +203,11 @@
       "priority": "Priority",
       "description": "Description",
       "descriptionPh": "Add any detail (optional)…",
-      "err": { "title": "A title is required.", "owner": "An owner is required.", "due": "A due date is required." }
+      "err": {
+        "title": "A title is required.",
+        "owner": "An owner is required.",
+        "due": "A due date is required."
+      }
     }
   },
   "adrs": {
@@ -264,7 +296,11 @@
       "positivePh": "What improves (optional)…",
       "negative": "Negative consequences",
       "negativePh": "Trade-offs and costs (optional)…",
-      "err": { "title": "A title is required.", "context": "A context is required.", "decision": "A decision is required." }
+      "err": {
+        "title": "A title is required.",
+        "context": "A context is required.",
+        "decision": "A decision is required."
+      }
     }
   },
   "invariants": {
@@ -350,7 +386,11 @@
       "rationalePh": "Why this rule exists…",
       "owner": "Owner",
       "ownerPh": "Select an owner…",
-      "err": { "statement": "A statement is required.", "rationale": "A rationale is required.", "owner": "An owner is required." }
+      "err": {
+        "statement": "A statement is required.",
+        "rationale": "A rationale is required.",
+        "owner": "An owner is required."
+      }
     }
   },
   "audit": {
@@ -498,7 +538,11 @@
       "topicPh": "Select a topic",
       "plan": "Mitigation plan",
       "planPh": "How the risk will be reduced (optional)…",
-      "err": { "title": "A title is required.", "owner": "An owner is required.", "topic": "A linked topic is required." }
+      "err": {
+        "title": "A title is required.",
+        "owner": "An owner is required.",
+        "topic": "A linked topic is required."
+      }
     }
   },
   "deps": {
@@ -654,7 +698,8 @@
       "DerivedFrom": "Derived from",
       "Implements": "Implements",
       "Blocks": "Blocks",
-      "Resolves": "Resolves"
+      "Resolves": "Resolves",
+      "ConvertedTo": "Converted to"
     },
     "picker": {
       "type": "Type",
@@ -754,12 +799,36 @@
         "reason": "A reason is required.",
         "conditions": "A conditionally-approved decision needs at least one condition."
       }
+    },
+    "record": {
+      "title": "Record & issue a decision",
+      "subtitle": "Capture the committee’s outcome and issue it on the record",
+      "linkedTopic": "Linked topic",
+      "ratifies": "Ratifies {{key}} on issue",
+      "override": "Issue against the vote (chair override)",
+      "overrideNote": "Use only when the decision differs from the vote outcome. A justification is required and recorded.",
+      "justification": "Override justification",
+      "justificationPh": "Explain why the decision differs from the vote…",
+      "immutableWarn": "Once issued, a decision cannot be edited — only superseded by a new decision. Review the statement, rationale and conditions before confirming.",
+      "confirm": "Record & issue",
+      "error": "The decision could not be issued. Please try again.",
+      "sod3Denied": "You cannot issue this decision because you counted (closed) its vote — segregation of duties requires the vote to be counted by someone other than the issuing chair.",
+      "err": {
+        "title": "A title is required.",
+        "statement": "A decision statement is required.",
+        "rationale": "A rationale is required.",
+        "conditions": "A conditionally-approved decision needs at least one condition.",
+        "justification": "A justification is required for a chair override."
+      }
     }
   },
   "voting": {
     "voteTitle": "Vote",
     "attributed": "Attributed (not anonymous)",
-    "state": { "open": "Voting open", "closed": "Closed & locked" },
+    "state": {
+      "open": "Voting open",
+      "closed": "Closed & locked"
+    },
     "linkedTopic": "Linked topic",
     "eligibleVoters": "Eligible voters",
     "castSummary": "attributed — visible to all",
@@ -771,7 +840,11 @@
     "quorumMet": "Quorum met",
     "quorumPending": "Quorum pending",
     "quorumDetail": "{{cast}} of {{eligible}} voted · {{needed}} required",
-    "option": { "Approve": "Approve", "Reject": "Reject", "Abstain": "Abstain" },
+    "option": {
+      "Approve": "Approve",
+      "Reject": "Reject",
+      "Abstain": "Abstain"
+    },
     "yourBallot": "Your ballot",
     "ballotAttributed": "Recorded under your name",
     "commentPh": "Add a comment with your vote (optional)…",
@@ -819,7 +892,10 @@
       "coiNote": "Recusals are recorded by name and removed from the quorum base. Each ballot shows a recuse control to the voter.",
       "confirm": "Configure vote",
       "error": "The vote could not be configured. Please try again.",
-      "err": { "voters": "Select at least two eligible voters.", "quorum": "Quorum must be between 1 and the number of eligible voters." }
+      "err": {
+        "voters": "Select at least two eligible voters.",
+        "quorum": "Quorum must be between 1 and the number of eligible voters."
+      }
     }
   },
   "nav": {
@@ -843,6 +919,7 @@
     "templates": "Templates",
     "diagrams": "Diagrams",
     "reports": "Reports",
+    "members": "Members",
     "audit": "Audit Trail",
     "admin": "Administration"
   },
@@ -875,7 +952,8 @@
     "secureHandoff": "Secure OIDC handoff · Keycloak",
     "failedTitle": "Sign-in could not be completed",
     "signedOut": "You've been signed out.",
-    "sessionExpired": "Your session expired. Please log in again."
+    "sessionExpired": "Your session expired. Please log in again.",
+    "idleTimeout": "You were signed out after 30 minutes without activity. Please log in again."
   },
   "notif": {
     "title": "Notifications",
@@ -927,7 +1005,11 @@
     "moveUp": "Move {{name}} up",
     "moveDown": "Move {{name}} down"
   },
-  "dev": { "role": "Preview role (dev only)", "roleShort": "Role", "rolesHeader": "Roles are read-only from Keycloak" },
+  "dev": {
+    "role": "Preview role (dev only)",
+    "roleShort": "Role",
+    "rolesHeader": "Roles are read-only from Keycloak"
+  },
   "dashboard": {
     "greeting": {
       "morning": "Good morning, {{name}}",
@@ -1013,7 +1095,7 @@
       "users": "Users, roles, and committee membership",
       "templates": "Standardized templates for topics, ADRs, minutes, and research",
       "health": "Live status of core services and integrations",
-      "streams": "Delivery streams and their committee owners",
+      "streams": "Delivery streams configured for this committee",
       "roles": "Read-only reference — roles & capabilities are defined in Keycloak",
       "jobs": "Background job queues, schedules, and recent runs (Hangfire)",
       "notifications": "Delivery channels and per-event default notifications"
@@ -1028,10 +1110,14 @@
       "notifications": "Notification Settings"
     },
     "kc": {
-      "title": "Roles are read-only",
-      "note": "committee roles are sourced from Keycloak claims. ACMP does not create accounts or edit roles — there is no self-registration. Membership and voting eligibility are managed here."
+      "title": "Keycloak is the source of truth",
+      "note": "committee roles are sourced from Keycloak claims. Open a user to invite an account or change its role — ACMP writes both through to Keycloak, and there is still no self-registration. Membership and voting eligibility are managed here."
     },
-    "filter": { "role": "Role", "status": "Status", "membership": "Membership" },
+    "filter": {
+      "role": "Role",
+      "status": "Status",
+      "membership": "Membership"
+    },
     "showing": "Showing {{count}} users",
     "col": {
       "user": "Name / email",
@@ -1045,18 +1131,55 @@
     "votingEligible": "Voting-eligible",
     "observer": "Observer",
     "addCommittee": "Add committee",
+    "addCommitteeSoon": "Committee editing lands with the stream registry (BL-024).",
+    "votingEligibleLocked": "Only the Chairman or the Secretary can change voting eligibility.",
     "viewUser": "View user detail",
-    "status": { "active": "Active", "invited": "Invited", "disabled": "Disabled" },
+    "status": {
+      "active": "Active",
+      "invited": "Invited",
+      "disabled": "Disabled"
+    },
     "emptyTitle": "No members yet",
     "emptyBody": "Members appear here after they first sign in through Keycloak.",
+    "invite": {
+      "streams": "Streams",
+      "streamsHelp": "Choose at least one. Streams bound what this member may write; pick âAll streamsâ only if they genuinely work across every stream.",
+      "title": "Invite a new user",
+      "email": "Email address",
+      "fullName": "Full name",
+      "note": "An invitation creates the account and lists the person as Invited. They have no role until one is assigned, so they can sign in but reach nothing.",
+      "send": "Send invitation",
+      "sending": "Inviting…",
+      "error": "The invitation could not be sent. Please try again.",
+      "successTitle": "User invited",
+      "successBody": "{{name}} has been added and is listed as Invited until they first sign in.",
+      "passwordLabel": "Temporary password",
+      "passwordHint": "Shown once and not stored anywhere. Give it to the person directly — they must change it when they first sign in.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "another": "Invite someone else"
+    },
     "detail": {
       "back": "Back to users",
       "memberships": "Committee & stream memberships",
-      "roleReadonly": "Role is read-only — managed in Keycloak",
+      "roleSource": "stored in Keycloak",
       "votingEligible": "Voting eligible",
       "yes": "Yes",
       "no": "No",
       "noMemberships": "No committee or stream memberships."
+    },
+    "assign": {
+      "title": "Committee role",
+      "label": "Committee role",
+      "note": "Saving replaces this person's committee roles in Keycloak and ends their open sessions, so the new role applies on their next request rather than up to an hour later.",
+      "save": "Save role",
+      "saved": "Role saved. {{name}} has been signed out, so the new role applies the moment they sign in again.",
+      "confirmTitle": "Grant {{role}}?",
+      "confirmBody": "{{role}} is a privileged role: it can administer the committee and change other people's access. Confirm that {{name}} should hold it.",
+      "confirmCta": "Grant this role",
+      "error": "The role could not be changed. Please try again.",
+      "errorSelf": "You cannot change your own roles. Another Administrator has to make this change.",
+      "errorLastAdmin": "Refused — the committee would be left with no Administrator. Grant Administrator to someone else first."
     },
     "health": {
       "overall": {
@@ -1072,7 +1195,7 @@
       "service": {
         "application": "Application (API)",
         "sqlServer": "SQL Server",
-        "minio": "MinIO object storage",
+        "objectStore": "Object storage",
         "seq": "Seq logging",
         "hangfire": "Background jobs (Hangfire)",
         "webex": "Webex / Tarseem"
@@ -1086,15 +1209,43 @@
     },
     "roles": {
       "kcRef": "Mirrored from Keycloak realm roles — read-only.",
-      "col": { "role": "Role", "who": "Responsibilities", "caps": "Key capabilities" },
-      "chairman": { "who": "Chairs meetings; approves decisions & minutes", "caps": "Approve · Override · Vote" },
-      "secretary": { "who": "Runs the workflow end to end", "caps": "Edit · Schedule · Record" },
-      "member": { "who": "Committee voting member", "caps": "Vote · Comment" },
-      "reviewer": { "who": "Reviews submissions & ADRs", "caps": "Review · Comment" },
-      "auditor": { "who": "Read-only oversight + audit log", "caps": "Read · Export" },
-      "administrator": { "who": "Users, templates, configuration", "caps": "Manage system" },
-      "submitter": { "who": "Submits topics; limited access", "caps": "Submit · View own" },
-      "guest": { "who": "Time-boxed single-topic access", "caps": "View invited topic" }
+      "col": {
+        "role": "Role",
+        "who": "Responsibilities",
+        "caps": "Key capabilities"
+      },
+      "chairman": {
+        "who": "Chairs meetings; approves decisions & minutes",
+        "caps": "Approve · Override · Vote"
+      },
+      "secretary": {
+        "who": "Runs the workflow end to end",
+        "caps": "Edit · Schedule · Record"
+      },
+      "member": {
+        "who": "Committee voting member",
+        "caps": "Vote · Comment"
+      },
+      "reviewer": {
+        "who": "Reviews submissions & ADRs",
+        "caps": "Review · Comment"
+      },
+      "auditor": {
+        "who": "Read-only oversight + audit log",
+        "caps": "Read · Export"
+      },
+      "administrator": {
+        "who": "Users, templates, configuration",
+        "caps": "Manage system"
+      },
+      "submitter": {
+        "who": "Submits topics; limited access",
+        "caps": "Submit · View own"
+      },
+      "guest": {
+        "who": "Time-boxed single-topic access",
+        "caps": "View invited topic"
+      }
     },
     "notif": {
       "matrixTitle": "Default notifications by event type",
@@ -1102,13 +1253,27 @@
       "on": "On",
       "off": "Off",
       "planned": "Planned",
-      "col": { "event": "Event type", "inApp": "In-app", "email": "Email", "webex": "Webex" },
+      "col": {
+        "event": "Event type",
+        "inApp": "In-app",
+        "email": "Email",
+        "webex": "Webex"
+      },
       "channel": {
         "active": "Active",
         "planned": "Phase 2 · Planned",
-        "inapp": { "name": "In-app", "desc": "The only delivery channel in v1. Always on — every committee event reaches the recipient in-app." },
-        "email": { "name": "Email", "desc": "Planned for Phase 2. SMTP delivery of digests and high-priority events. Not active in v1." },
-        "webex": { "name": "Webex / Tarseem", "desc": "Planned for Phase 2. Meeting and vote reminders pushed to Webex spaces. Not active in v1." }
+        "inapp": {
+          "name": "In-app",
+          "desc": "The only delivery channel in v1. Always on — every committee event reaches the recipient in-app."
+        },
+        "email": {
+          "name": "Email",
+          "desc": "Planned for Phase 2. SMTP delivery of digests and high-priority events. Not active in v1."
+        },
+        "webex": {
+          "name": "Webex / Tarseem",
+          "desc": "Planned for Phase 2. Meeting and vote reminders pushed to Webex spaces. Not active in v1."
+        }
       },
       "event": {
         "topicSubmitted": "Topic submitted",
@@ -1124,13 +1289,18 @@
         "adrPublished": "ADR published"
       }
     },
-    "templates": {
-      "emptyTitle": "No templates yet",
-      "emptyBody": "Topic, ADR, minutes, decision, and research templates are managed here in a later phase."
-    },
     "streams": {
-      "emptyTitle": "No streams configured",
-      "emptyBody": "Delivery streams and their committee owners land with the stream registry (BL-024)."
+      "title": "Stream memberships",
+      "help": "Streams bound what this member may write. Choose âAll streamsâ only when they genuinely work across every stream.",
+      "noneWarning": "No stream assigned â this member will not be able to create or edit anything.",
+      "save": "Save streams",
+      "saved": "Streams updated for {{name}}.",
+      "col": {
+        "stream": "Stream",
+        "code": "Code"
+      },
+      "emptyTitle": "No streams",
+      "emptyBody": "No streams are configured yet."
     },
     "jobs": {
       "stat": {
@@ -1155,7 +1325,10 @@
         "Enqueued": "Enqueued",
         "Failed": "Failed"
       },
-      "unit": { "ms": "{{n}}ms", "s": "{{n}}s" },
+      "unit": {
+        "ms": "{{n}}ms",
+        "s": "{{n}}s"
+      },
       "retry": "Retry",
       "retryError": "Couldn't re-queue the job. Please try again.",
       "none": "—",
@@ -1173,7 +1346,13 @@
     "newTopic": "New topic",
     "comingSoon": "Coming soon",
     "viewLabel": "Backlog view",
-    "view": { "list": "List", "table": "Table", "kanban": "Kanban", "calendar": "Calendar", "timeline": "Timeline" },
+    "view": {
+      "list": "List",
+      "table": "Table",
+      "kanban": "Kanban",
+      "calendar": "Calendar",
+      "timeline": "Timeline"
+    },
     "savedView": "Triage queue",
     "searchLabel": "Filter topics",
     "searchPlaceholder": "Filter topics…",
@@ -1211,6 +1390,13 @@
     "age": "{{days}}d",
     "ageLabel": "{{days}} days old",
     "slaBreached": "Past its review SLA",
+    "reorder": {
+      "up": "Move {{key}} up in priority",
+      "down": "Move {{key}} down in priority",
+      "movedUp": "{{key}} moved up",
+      "movedDown": "{{key}} moved down",
+      "droppedOn": "Moved {{key}} to the position of {{target}}."
+    },
     "empty": {
       "title": "No topics match these filters",
       "body": "No backlog items match the current filters. Clear the filters or submit a new topic to get started."
@@ -1220,15 +1406,28 @@
       "title": "Couldn’t load the backlog",
       "body": "The service is temporarily unavailable. Your filters are saved — retry in a moment."
     },
-    "calendar": { "prev": "Previous month", "next": "Next month", "scheduled": "Scheduled", "due": "Due date", "note": "Scheduled and due-date markers appear once topics are scheduled to meetings (P6)." },
-    "timeline": { "week": "Wk {{n}}", "note": "Planned timelines appear once topics are scheduled to meetings (P6)." },
+    "calendar": {
+      "prev": "Previous month",
+      "next": "Next month",
+      "scheduled": "Scheduled",
+      "due": "Due date",
+      "note": "Scheduled and due-date markers appear once topics are scheduled to meetings (P6)."
+    },
+    "timeline": {
+      "week": "Wk {{n}}",
+      "note": "Planned timelines appear once topics are scheduled to meetings (P6)."
+    },
     "type": {
       "ResearchDiscovery": "Research",
       "ArchitectureDecision": "Arch. Decision",
       "EnhancementInnovation": "Enhancement",
       "GovernanceStandardization": "Governance"
     },
-    "urgency": { "Normal": "Normal", "Urgent": "Urgent", "Critical": "Critical" },
+    "urgency": {
+      "Normal": "Normal",
+      "Urgent": "Urgent",
+      "Critical": "Critical"
+    },
     "status": {
       "Draft": "Draft",
       "Submitted": "Submitted",
@@ -1248,6 +1447,39 @@
       "button": "Mark prepared",
       "error": "Couldn’t mark this topic prepared. Try again.",
       "forbidden": "You don’t have permission to prepare this topic."
+    },
+    "reactivate": {
+      "button": "Return to triage"
+    },
+    "close": {
+      "button": "Close topic"
+    },
+    "reclassify": {
+      "button": "Reclassify",
+      "title": "Reclassify topic",
+      "subtitle": "Correct the topic type. Available during triage, before the topic is accepted.",
+      "typeLabel": "New type",
+      "typePlaceholder": "Choose a type",
+      "confirm": "Apply new type"
+    },
+    "reopen": {
+      "button": "Reopen",
+      "title": "Reopen this topic",
+      "subtitle": "The topic returns to triage. Say why it is being reopened — the reason is recorded permanently.",
+      "label": "Reason for reopening",
+      "confirm": "Reopen topic"
+    },
+    "convert": {
+      "button": "Convert type",
+      "title": "Convert this topic to another type",
+      "subtitle": "This topic is closed as Converted and a new topic of the type you choose is created, carrying its attachments and discussion. The two stay linked.",
+      "typeLabel": "Convert to",
+      "typePlaceholder": "Choose a type…",
+      "label": "Reason for converting",
+      "confirm": "Convert topic"
+    },
+    "restricted": {
+      "badge": "Restricted"
     }
   },
   "submit": {
@@ -1260,6 +1492,7 @@
     "saveDraft": "Save draft",
     "submit": "Submit for triage",
     "submitError": "Couldn’t submit the topic. Check the form and try again.",
+    "uploadError": "The file couldn’t be attached. Check the file and try again.",
     "fType": "Topic type",
     "fTitle": "Title",
     "fTitleHelp": "Be specific — this appears in the backlog and agenda.",
@@ -1269,11 +1502,10 @@
     "fJustification": "Why now",
     "fJustificationPh": "Risks of inaction, dependencies, deadlines…",
     "fStreams": "Affected streams",
-    "fStreamsPh": "Type a stream and press Enter…",
     "fSystems": "Affected systems",
     "fSystemsPh": "Type a system and press Enter…",
     "dropFiles": "Drop files here or click to upload",
-    "dropHint": "PDF, PNG, SVG, DOCX · up to 25 MB",
+    "dropHint": "PDF, PNG, JPEG, SVG, DOCX · up to 50 MB",
     "guardTitle": "Leave without submitting?",
     "guardBody": "This topic hasn’t been submitted to the committee. Your draft is saved on this device, so you can finish it later.",
     "keepEditing": "Keep editing",
@@ -1320,7 +1552,13 @@
     "moved": "{{key}} moved to {{bucket}}.",
     "illegal": "Can’t move to {{bucket}} in this phase — scheduling needs a meeting (coming in a later phase).",
     "actionError": "That action couldn’t be completed. Try again.",
-    "bucket": { "triage": "Triage", "accepted": "Accepted", "scheduled": "Scheduled", "returned": "Returned", "done": "Done" },
+    "bucket": {
+      "triage": "Triage",
+      "accepted": "Accepted",
+      "scheduled": "Scheduled",
+      "returned": "Returned",
+      "done": "Done"
+    },
     "accept": {
       "title": "Accept {{key}} into the backlog",
       "body": "Accepting assigns an owner and moves the topic into the active backlog.",
@@ -1340,7 +1578,26 @@
       "reasonRequired": "A reason is required.",
       "revisit": "Revisit on",
       "confirm": "Return topic"
-    }
+    },
+    "truncated": "Showing {{shown}} of {{total}} topics. Narrow the filters to see the rest — the board has no pages."
+  },
+  "topicEdit": {
+    "title": "Edit {{key}}",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "saveError": "Couldn’t save the changes. Check the form and try again.",
+    "lockedContent": "The title, description and justification are locked once a topic is accepted. Streams, systems, scope and urgency can still be changed.",
+    "lockedAll": "This topic is {{status}} and can no longer be edited. Supersede the linked decision instead.",
+    "fScope": "Scope",
+    "fScopeHelp": "Platform and organization-wide topics are actionable by any member, not only the streams they name.",
+    "err": {
+      "title": "A title is required.",
+      "streams": "Choose at least one affected stream."
+    },
+    "fRestricted": "Confidentiality",
+    "fRestrictedHelp": "A restricted topic is visible only to the Chairman, the Secretary, the Auditor, its owner and anyone explicitly assigned to it. It is hidden from the backlog and from search for everyone else.",
+    "restrictedOn": "Restricted",
+    "restrictedOff": "Not restricted"
   },
   "detail": {
     "notFoundTitle": "Topic not found",
@@ -1349,7 +1606,13 @@
     "edit": "Edit",
     "owner": "Owner",
     "created": "Created {{date}}",
-    "tab": { "overview": "Overview", "comments": "Discussion", "attachments": "Attachments", "votes": "Votes", "history": "History" },
+    "tab": {
+      "overview": "Overview",
+      "comments": "Discussion",
+      "attachments": "Attachments",
+      "votes": "Votes",
+      "history": "History"
+    },
     "sec": {
       "description": "Description",
       "justification": "Justification",
@@ -1362,8 +1625,14 @@
     "post": "Post comment",
     "noComments": "No comments yet. Start the discussion.",
     "noHistory": "No history yet.",
-    "attach": { "empty": "No attachments yet. Drop files to add them.", "download": "Download" },
-    "votes": { "emptyTitle": "No votes yet", "emptyBody": "Votes appear here once the committee votes on this topic (Voting, P9)." },
+    "attach": {
+      "empty": "No attachments yet. Drop files to add them.",
+      "download": "Download"
+    },
+    "votes": {
+      "emptyTitle": "No votes yet",
+      "emptyBody": "Votes appear here once the committee votes on this topic (Voting, P9)."
+    },
     "rel": {
       "title": "Relationships",
       "sub": "Traceability — both directions",
@@ -1375,9 +1644,15 @@
     "title": "Meetings",
     "listSub": "Schedule, build the agenda, and publish to the committee.",
     "listCount": "{{upcoming}} upcoming · {{past}} past",
-    "view": { "list": "List", "calendar": "Calendar" },
+    "view": {
+      "list": "List",
+      "calendar": "Calendar"
+    },
     "viewToggle": "Switch meetings view",
-    "section": { "upcoming": "Upcoming", "past": "Past" },
+    "section": {
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
     "calendar": {
       "label": "Meetings calendar",
       "prevMonth": "Previous month",
@@ -1424,20 +1699,56 @@
       "Remote": "Remote"
     },
     "tableCaption": "Scheduled and past committee meetings",
-    "col": { "key": "Reference", "title": "Meeting", "when": "When", "type": "Type", "chair": "Chair", "items": "Items", "status": "Status", "agenda": "Agenda" },
+    "col": {
+      "key": "Reference",
+      "title": "Meeting",
+      "when": "When",
+      "type": "Type",
+      "chair": "Chair",
+      "items": "Items",
+      "status": "Status",
+      "agenda": "Agenda"
+    },
     "captionUpcoming": "Upcoming committee meetings",
     "captionPast": "Past committee meetings",
     "itemCount": "{{count}} items",
     "minutes": "{{count}} min",
     "lengthMin": "{{count}} min",
     "minShort": "{{count}}m",
-    "status": { "Scheduled": "Scheduled", "InProgress": "In progress", "Held": "Held", "Closed": "Closed", "Cancelled": "Cancelled" },
-    "agendaStatus": { "Draft": "Draft", "Published": "Published", "Locked": "Locked", "Closed": "Closed" },
-    "empty": { "title": "No meetings scheduled yet", "body": "Meetings will appear here once they're scheduled." },
-    "error": { "title": "Couldn't load meetings", "body": "There was a problem loading meetings. Please try again." },
-    "notFound": { "title": "Meeting not found", "body": "We couldn't find a meeting with that reference." },
+    "status": {
+      "Scheduled": "Scheduled",
+      "InProgress": "In progress",
+      "Held": "Held",
+      "Closed": "Closed",
+      "Cancelled": "Cancelled"
+    },
+    "agendaStatus": {
+      "Draft": "Draft",
+      "Published": "Published",
+      "Locked": "Locked",
+      "Closed": "Closed"
+    },
+    "empty": {
+      "title": "No meetings scheduled yet",
+      "body": "Meetings will appear here once they're scheduled."
+    },
+    "error": {
+      "title": "Couldn't load meetings",
+      "body": "There was a problem loading meetings. Please try again."
+    },
+    "notFound": {
+      "title": "Meeting not found",
+      "body": "We couldn't find a meeting with that reference."
+    },
     "agendaBuilder": "Agenda builder",
-    "tab": { "overview": "Overview", "agenda": "Agenda", "attendance": "Attendance", "notes": "Notes", "minutes": "Minutes", "recording": "Recording" },
+    "tab": {
+      "overview": "Overview",
+      "agenda": "Agenda",
+      "attendance": "Attendance",
+      "notes": "Notes",
+      "minutes": "Minutes",
+      "recording": "Recording"
+    },
     "tabsLabel": "Meeting sections",
     "buildAgenda": "Build agenda",
     "openNotes": "Open live notes",
@@ -1455,7 +1766,10 @@
       "linkConduct": "Open the live workspace",
       "linkMinutes": "Review minutes",
       "linkRecording": "View recording",
-      "noAgenda": { "title": "No agenda yet", "body": "Build the agenda to see the running order here." }
+      "noAgenda": {
+        "title": "No agenda yet",
+        "body": "Build the agenda to see the running order here."
+      }
     },
     "comingSoon": "This control will be built in a later phase.",
     "preview": "Preview",
@@ -1472,15 +1786,25 @@
     "scheduledTopics": "Prepared",
     "searchTopics": "Search topics…",
     "urgent": "Urgent",
+    "restrictedKey": "Restricted",
+    "restrictedTitle": "Restricted topic",
     "add": "Add",
     "addTopic": "Add {{key}} to the agenda",
-    "poolEmpty": { "title": "Nothing to schedule", "body": "Open an accepted topic and choose “Mark prepared” to add it to this pool." },
+    "poolEmpty": {
+      "title": "Nothing to schedule",
+      "body": "Open an accepted topic and choose “Mark prepared” to add it to this pool."
+    },
     "agendaItems": "Agenda items",
     "agendaOrder": "Agenda order",
     "agendaView": "Agenda",
     "dragHint": "Drag to reorder · ↑↓ keys",
-    "agendaEmpty": { "title": "No items yet", "body": "Add prepared topics from the left, or drag them here to build the agenda." },
-    "agendaEmptyView": { "body": "This meeting has no agenda items." },
+    "agendaEmpty": {
+      "title": "No items yet",
+      "body": "Add prepared topics from the left, or drag them here to build the agenda."
+    },
+    "agendaEmptyView": {
+      "body": "This meeting has no agenda items."
+    },
     "timebox": "Time-box",
     "decTime": "Decrease timebox for {{key}}",
     "incTime": "Increase timebox for {{key}}",
@@ -1488,6 +1812,20 @@
     "presenterPick": "Assign",
     "presenterFor": "Presenter for {{key}}",
     "presenterUnset": "No presenter assigned",
+    "guest": {
+      "invite": "Invite a guest",
+      "title": "Invite a guest presenter",
+      "description": "The guest gets read-only access to {{key}} and nothing else. Their access ends after the meeting, and the server stops accepting them at that moment.",
+      "email": "Email",
+      "fullName": "Full name",
+      "note": "This creates an account for someone outside the committee. They are added to this slot as its presenter and can see only their own session material.",
+      "send": "Invite guest",
+      "error": "The guest could not be invited. Please try again.",
+      "doneTitle": "Guest presenter invited",
+      "doneBody": "{{name}} now holds this slot and can sign in until their access ends.",
+      "expiresLabel": "Access ends",
+      "close": "Done"
+    },
     "moveUp": "Move {{key}} up",
     "moveDown": "Move {{key}} down",
     "removeItem": "Remove {{key}} from the agenda",
@@ -1528,18 +1866,36 @@
       "body": "This meeting was cancelled. Its topics were returned to the backlog for rescheduling."
     },
     "banner": {
-      "notReady": { "title": "Agenda not published", "body": "This meeting can't start until its agenda is built and published." },
-      "inProgress": { "title": "Meeting in progress", "body": "Live notes and attendance are being captured. Minutes are drafted when the meeting concludes." },
-      "concluded": { "title": "Meeting concluded", "body": "A minutes draft will be available for review once the Minutes module ships." },
-      "cancelled": { "title": "Meeting cancelled", "body": "This session was cancelled and its scheduled topics returned to the backlog." }
+      "notReady": {
+        "title": "Agenda not published",
+        "body": "This meeting can't start until its agenda is built and published."
+      },
+      "inProgress": {
+        "title": "Meeting in progress",
+        "body": "Live notes and attendance are being captured. Minutes are drafted when the meeting concludes."
+      },
+      "concluded": {
+        "title": "Meeting concluded",
+        "body": "A minutes draft will be available for review once the Minutes module ships."
+      },
+      "cancelled": {
+        "title": "Meeting cancelled",
+        "body": "This session was cancelled and its scheduled topics returned to the backlog."
+      }
     },
     "mom": {
       "title": "Minutes of meeting",
       "committee": "Architecture Committee",
       "docHeading": "Minutes of Meeting",
       "bodyLabel": "Minutes body",
-      "notReady": { "title": "Minutes open after the meeting starts", "body": "Once this meeting is in progress or held, the Secretary can capture its minutes here." },
-      "denied": { "title": "No published minutes yet", "body": "The minutes for this meeting have not been published. You'll be able to read the record here once it is approved." },
+      "notReady": {
+        "title": "Minutes open after the meeting starts",
+        "body": "Once this meeting is in progress or held, the Secretary can capture its minutes here."
+      },
+      "denied": {
+        "title": "No published minutes yet",
+        "body": "The minutes for this meeting have not been published. You'll be able to read the record here once it is approved."
+      },
       "startNote": "Draft the official record of this meeting, then send it for review.",
       "startDraft": "Start minutes",
       "saveDraft": "Save draft",
@@ -1565,7 +1921,14 @@
       "exportSoon": "PDF export arrives in a later phase",
       "versionHistory": "Version history",
       "current": "Current",
-      "status": { "Draft": "Draft", "InReview": "In review", "Approved": "Approved", "Published": "Published", "Superseded": "Superseded" },
+      "soleAuthor": "Approved by sole author",
+      "status": {
+        "Draft": "Draft",
+        "InReview": "In review",
+        "Approved": "Approved",
+        "Published": "Published",
+        "Superseded": "Superseded"
+      },
       "banner": {
         "draft": "Editable — save your changes as you write.",
         "review": "Awaiting approval.",
@@ -1621,6 +1984,7 @@
     },
     "recordTime": "Record time",
     "recordDecision": "Record decision",
+    "recordDecisionNote": "Chairman only",
     "createAction": "Create action",
     "callVote": "Call vote",
     "attendance": "Attendance",
@@ -1641,18 +2005,65 @@
       "Guest": "Guest"
     }
   },
-  "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard." },
-  "errorBoundary": { "title": "Something went wrong", "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard." },
+  "session": {
+    "banner": "Presenter access — read-only, and expires after the meeting.",
+    "expires": "Expires {{at}}",
+    "presenterChip": "Presenter · Read-only",
+    "summaryLabel": "Topic summary",
+    "slotLabel": "Agenda slot",
+    "itemOf": "Item {{n}} of {{of}}",
+    "minutes": "{{count}} min",
+    "materialsLabel": "Materials for your slot",
+    "materialsEmpty": "No materials have been attached to your topic yet.",
+    "open": "Open",
+    "openFailed": "That file could not be opened. Your access may have ended.",
+    "loading": "Loading your session",
+    "none": {
+      "title": "You are not presenting",
+      "body": "This page shows the agenda slot you are presenting and its materials. Nothing is assigned to you right now."
+    },
+    "ended": {
+      "title": "Your access has ended",
+      "body": "Guest access expires after the meeting. Contact the Secretary of the Committee if you still need your session material."
+    }
+  },
+  "members": {
+    "title": "Members",
+    "sub": "The committee roster. Invite a person, and grant or change their roles."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you’re looking for doesn’t exist or may have been moved. Check the address, or head back to your dashboard."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "body": "An unexpected error interrupted this page. Your work was not lost. Reload to try again, or return to your dashboard."
+  },
   "reports": {
     "title": "Reports",
     "lead": "Risk and dependency analytics",
     "card": {
-      "riskExposure": { "title": "Risk exposure" },
-      "riskStat": { "title": "Risk overview", "sub": "committee-wide snapshot" },
-      "depStat": { "title": "Dependency overview", "sub": "current snapshot" },
-      "depsByKind": { "title": "Dependencies by relation", "sub": "all links by kind" },
-      "riskByStream": { "title": "Risk by stream" },
-      "blockedByStream": { "title": "Cross-stream dependencies" },
+      "riskExposure": {
+        "title": "Risk exposure"
+      },
+      "riskStat": {
+        "title": "Risk overview",
+        "sub": "committee-wide snapshot"
+      },
+      "depStat": {
+        "title": "Dependency overview",
+        "sub": "current snapshot"
+      },
+      "depsByKind": {
+        "title": "Dependencies by relation",
+        "sub": "all links by kind"
+      },
+      "riskByStream": {
+        "title": "Risk by stream"
+      },
+      "blockedByStream": {
+        "title": "Cross-stream dependencies"
+      },
       "outcomes": "Decision outcomes",
       "throughput": "Throughput",
       "openItems": "Open items",
@@ -1674,7 +2085,14 @@
       "eventVolume": "Audit event volume",
       "immutable": "Immutable records"
     },
-    "view": { "executive": "Executive", "committee": "Committee", "stream": "Stream", "decisions": "Decision history", "actions": "Action trends", "audit": "Audit" },
+    "view": {
+      "executive": "Executive",
+      "committee": "Committee",
+      "stream": "Stream",
+      "decisions": "Decision history",
+      "actions": "Action trends",
+      "audit": "Audit"
+    },
     "viewSub": {
       "executive": "Executive overview · committee-wide health",
       "committee": "Committee operations · backlog, aging, decisions",
@@ -1707,34 +2125,111 @@
     "export": "Export CSV",
     "noData": "No data for this view",
     "activeTopics": "{{count}} active topics",
-    "filter": { "stream": "Stream", "allStreams": "All streams" },
-    "reason": { "trend": "Trend data — Phase 3", "seam": "Not available yet — Phase 3" },
-    "status": { "triage": "Triage", "accepted": "Accepted", "scheduled": "Scheduled", "returned": "Returned", "done": "Decided" },
-    "outcome": { "approved": "Approved", "conditional": "Conditional", "rejected": "Rejected", "other": "Other" },
-    "action": { "Open": "Open", "InProgress": "In progress", "Blocked": "Blocked", "Verified": "Verified" },
-    "aging": { "over30": "topics over 30 days" },
-    "open": { "backlog": "Backlog topics", "pendingDecisions": "Pending decisions", "openActions": "Open actions", "activeRisks": "Active risks" },
-    "supersede": { "superseded": "Superseded", "active": "Active", "disputed": "Disputed", "tracked": "Traceable" },
-    "verify": { "rate": "Verified", "closed": "Closed", "awaiting": "Awaiting verify", "overdue": "Overdue" },
-    "audit": { "approved": "Decisions approved", "missing": "Missing sign-off", "overrides": "Overrides recorded", "attributed": "Attributed", "decisions": "Decisions", "superseded": "Superseded", "risksClosed": "Risks closed", "depsResolved": "Deps resolved" },
+    "filter": {
+      "stream": "Stream",
+      "allStreams": "All streams"
+    },
+    "reason": {
+      "trend": "Trend data — Phase 3",
+      "seam": "Not available yet — Phase 3"
+    },
+    "status": {
+      "triage": "Triage",
+      "accepted": "Accepted",
+      "scheduled": "Scheduled",
+      "returned": "Returned",
+      "done": "Decided"
+    },
+    "outcome": {
+      "approved": "Approved",
+      "conditional": "Conditional",
+      "rejected": "Rejected",
+      "other": "Other"
+    },
+    "action": {
+      "Open": "Open",
+      "InProgress": "In progress",
+      "Blocked": "Blocked",
+      "Verified": "Verified"
+    },
+    "aging": {
+      "over30": "topics over 30 days"
+    },
+    "open": {
+      "backlog": "Backlog topics",
+      "pendingDecisions": "Pending decisions",
+      "openActions": "Open actions",
+      "activeRisks": "Active risks"
+    },
+    "supersede": {
+      "superseded": "Superseded",
+      "active": "Active",
+      "disputed": "Disputed",
+      "tracked": "Traceable"
+    },
+    "verify": {
+      "rate": "Verified",
+      "closed": "Closed",
+      "awaiting": "Awaiting verify",
+      "overdue": "Overdue"
+    },
+    "audit": {
+      "approved": "Decisions approved",
+      "missing": "Missing sign-off",
+      "overrides": "Overrides recorded",
+      "attributed": "Attributed",
+      "decisions": "Decisions",
+      "superseded": "Superseded",
+      "risksClosed": "Risks closed",
+      "depsResolved": "Deps resolved"
+    },
     "activeCount": "probability × impact · {{count}} active",
     "streamCount": "{{count}} open risks",
     "blockedCount": "{{count}} blocked",
     "streamNote": "Topic-linked only",
-    "risk": { "open": "Open", "mitigating": "Mitigating", "highSeverity": "High severity", "critical": "Critical" },
-    "dep": { "total": "Total links", "open": "Open", "blocked": "Blocked", "resolved": "Resolved" },
-    "level": { "Low": "Low", "Medium": "Med", "High": "High" },
-    "impactLevel": { "Low": "Low", "Medium": "Med", "High": "High" },
+    "risk": {
+      "open": "Open",
+      "mitigating": "Mitigating",
+      "highSeverity": "High severity",
+      "critical": "Critical"
+    },
+    "dep": {
+      "total": "Total links",
+      "open": "Open",
+      "blocked": "Blocked",
+      "resolved": "Resolved"
+    },
+    "level": {
+      "Low": "Low",
+      "Medium": "Med",
+      "High": "High"
+    },
+    "impactLevel": {
+      "Low": "Low",
+      "Medium": "Med",
+      "High": "High"
+    },
     "probability": "Probability",
     "viewDetail": "View detail",
     "drill": "Open {{title}}",
+    "exportPng": "Export {{title}} as a PNG image",
+    "exportPngFailed": "Couldn’t export this chart as an image.",
     "updated": "Updated {{time}}",
-    "kpi": { "approvedRate": "approved or conditional", "highSeverity": "high-severity risks" },
+    "kpi": {
+      "approvedRate": "approved or conditional",
+      "highSeverity": "high-severity risks"
+    },
     "cellLabel": "{{count}} risks · impact {{impact}} · probability {{prob}}",
     "noStreamRisks": "No stream-linked risks",
     "noStreamBlocked": "No stream-linked blockers",
-    "empty": { "title": "No reporting data yet", "body": "Reports populate as committee activity is recorded." },
-    "error": { "title": "Couldn’t load reports", "body": "Something went wrong loading the reporting data." }
+    "empty": {
+      "title": "No reporting data yet",
+      "body": "Reports populate as committee activity is recorded."
+    },
+    "error": {
+      "title": "Couldn’t load reports",
+      "body": "Something went wrong loading the reporting data."
+    }
   },
   "research": {
     "title": "Research missions",
@@ -1825,7 +2320,6 @@
       "fJustification": "Justification",
       "fJustificationPh": "Why this matters now…",
       "fStreams": "Affected streams",
-      "fStreamsPh": "Add a stream and press Enter…",
       "err": {
         "title": "A title is required.",
         "description": "A description is required.",

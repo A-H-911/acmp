@@ -9,6 +9,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
+import { primaryRoleOf } from '../../auth/roles';
 import { useTheme } from '../../theme/useTheme';
 import { useNotifications } from '../../api/notifications';
 import { Icon } from '../icons';
@@ -33,7 +34,9 @@ export function TopBar() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const otherLang = i18n.language === 'ar' ? 'en' : 'ar';
-  const roleLabel = roles[0] ? t(`role.${roles[0]}`) : '';
+  // DEF-034: `roles[0]` is claim-array order, not precedence. This one had the right i18n namespace
+  // but picked the same arbitrary role as the sidebar did.
+  const roleLabel = roles.length ? t(`role.${primaryRoleOf(roles)}`) : '';
 
   // Escape closes the profile menu; outside-click is caught by the backdrop.
   useEffect(() => {

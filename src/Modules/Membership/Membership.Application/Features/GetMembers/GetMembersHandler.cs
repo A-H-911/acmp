@@ -14,11 +14,21 @@ public sealed class GetMembersHandler : IRequestHandler<GetMembersQuery, IReadOn
     {
         // Few streams for a single committee — load once and map in memory (no per-row join).
         var streams = await _db.Streams.AsNoTracking()
-            .ToDictionaryAsync(s => s.Id, s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar), ct);
+            .ToDictionaryAsync(s => s.Id, s => new StreamRefDto(s.PublicId, s.Code, s.Name.En, s.Name.Ar, s.IsWildcard), ct);
 
         var query = _db.Members.AsNoTracking();
         if (!request.IncludeInactive)
-            query = query.Where(m => m.Status == Domain.Enums.MembershipStatus.Active);
+        {
+            // FR-158 / DEF-038 — INVITED IS NOT "INACTIVE". It means pre-registered and not yet
+            // signed in, and hiding it is precisely the defect: the roster showed 1 of 26 real
+            // committee members and read as though the committee were nearly empty, leaving an
+            // administrator unable to name the people who still had to be chased.
+            //
+            // Disabled remains hidden by default — that IS the "inactive" the flag is about, and
+            // AC-058 keeps those records for historical attribution rather than for the directory.
+            query = query.Where(m => m.Status == Domain.Enums.MembershipStatus.Active
+                                     || m.Status == Domain.Enums.MembershipStatus.Invited);
+        }
 
         var rows = await query
             .OrderBy(m => m.FullName)

@@ -32,6 +32,31 @@ function installStorageShim(name: 'localStorage' | 'sessionStorage') {
 installStorageShim('localStorage');
 installStorageShim('sessionStorage');
 
+/*
+ * jsdom does not implement matchMedia, and useTheme now asks it whether the OS prefers dark. Without
+ * this every test that mounts TopBar or LoginPage throws — the failure would look like a broken
+ * component rather than a missing browser API.
+ *
+ * Defaults to "does not match", i.e. a light OS, so existing tests keep their previous behaviour and
+ * any test that cares can override this property explicitly.
+ */
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 // Deterministic locale; clean the DOM between tests.
 const { default: i18n } = await import('../i18n');
 void i18n.changeLanguage('en');

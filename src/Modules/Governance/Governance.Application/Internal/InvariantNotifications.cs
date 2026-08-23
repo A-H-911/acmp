@@ -22,33 +22,33 @@ internal static class InvariantNotifications
     // W18: a reviewer is asked to review a proposed invariant.
     public static NotificationMessage ProposedForReview(string recipientUserId, string key) => new(
         recipientUserId,
-        LocalizedString.Create("Invariant proposed for review", "ثابت معماري مقترح للمراجعة"),
+        LocalizedString.Create("Invariant proposed for review", "ثابت هيكلة مقترح للمراجعة"),
         LocalizedString.Create(
             $"Invariant {key} has been proposed and awaits your review.",
-            $"تم اقتراح الثابت المعماري {key} وينتظر مراجعتك."),
+            $"تم اقتراح ثابت الهيكلة {key} وينتظر مراجعتك."),
         CategoryInvariantProposed, InvariantLink(key));
 
     // W18: the committee is told an invariant was activated (now in force).
     public static Func<string, NotificationMessage> Activated(string key)
     {
-        var title = LocalizedString.Create("Invariant activated", "تم تفعيل ثابت معماري");
+        var title = LocalizedString.Create("Invariant activated", "تم تفعيل ثابت هيكلة");
         var body = LocalizedString.Create(
             $"Invariant {key} is now active and in force.",
-            $"أصبح الثابت المعماري {key} فعّالاً وساري المفعول.");
+            $"أصبح ثابت الهيكلة {key} فعّالاً وساري المفعول.");
         return recipient => new NotificationMessage(recipient, title, body, CategoryInvariantActivated, InvariantLink(key));
     }
 
     // W21: the committee is told an invariant was superseded/retired (with the replacement key when superseded).
     public static Func<string, NotificationMessage> Superseded(string priorKey, string? successorKey)
     {
-        var title = LocalizedString.Create("Invariant superseded", "تم استبدال ثابت معماري");
+        var title = LocalizedString.Create("Invariant superseded", "تم استبدال ثابت هيكلة");
         var body = successorKey is null
             ? LocalizedString.Create(
                 $"Invariant {priorKey} has been retired.",
-                $"تم سحب الثابت المعماري {priorKey}.")
+                $"تم سحب ثابت الهيكلة {priorKey}.")
             : LocalizedString.Create(
                 $"Invariant {priorKey} has been superseded by {successorKey}.",
-                $"تم استبدال الثابت المعماري {priorKey} بالثابت {successorKey}.");
+                $"تم استبدال ثابت الهيكلة {priorKey} بالثابت {successorKey}.");
         return recipient => new NotificationMessage(recipient, title, body, CategoryInvariantSuperseded, InvariantLink(successorKey ?? priorKey));
     }
 

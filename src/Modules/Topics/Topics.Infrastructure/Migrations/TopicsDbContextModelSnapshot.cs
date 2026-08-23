@@ -43,6 +43,11 @@ namespace Acmp.Modules.Topics.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsRestricted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Justification")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -78,6 +83,9 @@ namespace Acmp.Modules.Topics.Infrastructure.Migrations
 
                     b.Property<int>("Scope")
                         .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("SlaNotifiedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Source")
                         .HasColumnType("int");

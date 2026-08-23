@@ -1,6 +1,7 @@
 ﻿using Acmp.Bootstrap;
 using Acmp.Modules.Integrations.Webex;
 using Acmp.Shared.Contracts.Meetings;
+using Acmp.Shared.Contracts.Membership;
 using FluentAssertions;
 using Hangfire;
 using MediatR;
@@ -35,6 +36,19 @@ public class CompositionRootTests
         // Webex scheduler wraps it), so a fake stands in — no SQL / Hangfire server required for a wiring check.
         services.AddSingleton(Substitute.For<IBackgroundJobClient>());
         return services.BuildServiceProvider();
+    }
+
+    // GET /api/audit now takes ICommitteeDirectory as a handler parameter to resolve actor subjects to
+    // people. A minimal-API handler parameter is resolved PER REQUEST, so a missing registration is not a
+    // startup failure — it is a 500 the first time a reviewer opens the audit register, which is the one
+    // page that must be dependable. This asserts the port is resolvable from the real module graph.
+    [Fact]
+    public void Composition_root_resolves_the_committee_directory_the_audit_register_depends_on()
+    {
+        using var provider = Build(webexEnabled: false);
+        using var scope = provider.CreateScope();
+
+        scope.ServiceProvider.GetRequiredService<ICommitteeDirectory>().Should().NotBeNull();
     }
 
     [Fact] // The recurring action-reminder sweep the worker cron-triggers dispatches via MediatR.

@@ -46,7 +46,7 @@ public class MembershipAdminFeatureTests
     {
         var admin = User("kc-admin", "Administrator");
         await using var db = NewDb(admin);
-        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهندسة"));
+        var architecture = Stream.Create("architecture", LocalizedString.Create("Architecture", "الهيكلة"));
         db.Streams.Add(architecture);
         var member = Member("kc-u");
         db.Members.Add(member);
@@ -135,13 +135,13 @@ public class MembershipAdminFeatureTests
         await using var db = NewDb(user);
         db.Streams.AddRange(
             Stream.Create("platform", LocalizedString.Create("Platform", "المنصة")),
-            Stream.Create("architecture", LocalizedString.Create("Architecture", "الهندسة")));
+            Stream.Create("architecture", LocalizedString.Create("Architecture", "الهيكلة")));
         await db.SaveChangesAsync();
 
         var streams = await new GetStreamsHandler(db).Handle(new GetStreamsQuery(), CancellationToken.None);
 
         streams.Select(s => s.Code).Should().Equal("architecture", "platform");
-        streams[0].NameAr.Should().Be("الهندسة");
+        streams[0].NameAr.Should().Be("الهيكلة");
 
         // The query record's synthesized copy-constructor (the decl line the coverage basis counts).
         (new GetStreamsQuery() with { }).AllowedRoles.Should().BeEmpty();

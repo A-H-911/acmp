@@ -73,6 +73,17 @@ public class AdrHandlerTests
             Task.FromResult((IReadOnlyCollection<CommitteeRecipient>)_all);
         public Task<IReadOnlyCollection<CommitteeRecipient>> GetActiveMembersInRoleAsync(string role, CancellationToken ct = default) =>
             Task.FromResult((IReadOnlyCollection<CommitteeRecipient>)(_byRole.TryGetValue(role, out var r) ? r : Array.Empty<CommitteeRecipient>()));
+        // Widened port (audit actor resolution). These fakes only exercise notification fan-out, so the
+        // roster they already hold is the right source; unknown ids are simply absent, as the contract says.
+        public Task<IReadOnlyDictionary<string, string>> ResolveDisplayNamesAsync(
+            IReadOnlyCollection<string> userIds, CancellationToken ct = default) =>
+            Task.FromResult((IReadOnlyDictionary<string, string>)_all
+                .Where(r => userIds.Contains(r.UserId))
+                .ToDictionary(r => r.UserId, r => r.FullName));
+        // FR-159 widened the port with a subject-to-member lookup. These doubles exercise notification
+        // fan-out only, so there is no member to resolve and null is the honest answer.
+        public Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default) =>
+            Task.FromResult<CommitteeMemberRef?>(null);
     }
 
     private static IReadOnlyList<AdrOptionRequest> Opts() => new[]

@@ -15,6 +15,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <!-- MinioFileStoreCloudTests fakes IMinioClient to reach the S3 least-privilege branches that a MinIO
+         root container cannot produce (denied bucket probe / denied create). -->
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="Testcontainers.Minio" Version="4.13.0" />
     <PackageReference Include="Testcontainers.MsSql" Version="4.13.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
@@ -37,6 +40,8 @@
     <ProjectReference Include="..\..\src\Modules\Risks\Risks.Infrastructure\Acmp.Modules.Risks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Governance\Governance.Infrastructure\Acmp.Modules.Governance.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Knowledge\Knowledge.Infrastructure\Acmp.Modules.Knowledge.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Dependencies\Dependencies.Infrastructure\Acmp.Modules.Dependencies.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Traceability\Traceability.Infrastructure\Acmp.Modules.Traceability.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

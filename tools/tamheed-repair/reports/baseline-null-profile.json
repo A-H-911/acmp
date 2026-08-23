@@ -1,0 +1,2809 @@
+{
+  "acceptance_criteria": {
+    "rows": 74,
+    "v1_keys": [
+      "Given / When / Then",
+      "ID",
+      "Phase",
+      "Verifies"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 120,
+        "at_cap": {
+          "120": 74,
+          "200": 0
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 443,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "requirement_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "slice_id": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "superseded_by": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "introduced_in": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "retired_in": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 533,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "adrs": {
+    "rows": 33,
+    "v1_keys": [
+      "front_matter"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 120,
+        "at_cap": {
+          "120": 2,
+          "200": 0
+        }
+      },
+      "context": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1946,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "decision": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 5436,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "consequences": {
+        "null": 27,
+        "null_pct": 81.8,
+        "max_len": 1104,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "superseded_by": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 28,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "assumptions": {
+    "rows": 16,
+    "v1_keys": [
+      "Assumption",
+      "Basis",
+      "ID",
+      "Owner",
+      "Risk if wrong",
+      "Status"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 8
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1957,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "risk_if_wrong": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 572,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 16,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 16,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 16,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 16,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 3005,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 16,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "audit_verdicts": {
+    "rows": 74,
+    "v1_keys": [
+      "AC",
+      "Notes",
+      "Section",
+      "Test ref",
+      "Verdict"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "ac_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "verdict": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "evidence": {
+        "null": 1,
+        "null_pct": 1.4,
+        "max_len": 549,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "iteration": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "recorded_at": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1433,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 74,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "constraints": {
+    "rows": 15,
+    "v1_keys": [
+      "Constraint",
+      "ID",
+      "Source",
+      "Status",
+      "Type"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 15
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 427,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 15,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 15,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 15,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 15,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 544,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 15,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "decisions": {
+    "rows": 28,
+    "v1_keys": [
+      "Decision",
+      "ID",
+      "Promoted to",
+      "Rationale",
+      "Status",
+      "Trigger to revisit"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 1
+        }
+      },
+      "decision": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 323,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "rationale": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 789,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 28,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 28,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "promoted_to": {
+        "null": 10,
+        "null_pct": 35.7,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "source_kind": {
+        "null": 28,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 28,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1461,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 28,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "deferred_work": {
+    "rows": 23,
+    "v1_keys": [
+      "#",
+      "Deferred item",
+      "Phase-1 handling",
+      "Status",
+      "Target phase",
+      "Trigger to activate",
+      "Type"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 2614,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "severity": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "activation_trigger": {
+        "null": 23,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "invariant_at_stake": {
+        "null": 23,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 4,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "source_kind": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 5,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "source_span": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 38,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 2990,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 23,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "dependencies": {
+    "rows": 11,
+    "v1_keys": [
+      "Criticality",
+      "Dependency",
+      "ID",
+      "Notes",
+      "Type"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 3
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 283,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "owner": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 782,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "document_sections": {
+    "rows": 495,
+    "v1_keys": [],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "document_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "heading": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 119,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "body": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 82622,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "sort_order": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "custom_attributes": {
+        "null": 495,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 495,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "entity_types": {
+    "rows": 33,
+    "v1_keys": [],
+    "fields": {
+      "type_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 20,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "label": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 33,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "id_prefix": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 5,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "generation_class": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "template_ref": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 33,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {}
+      }
+    }
+  },
+  "invariants": {
+    "rows": 14,
+    "v1_keys": [
+      "Enforced by",
+      "ID",
+      "Invariant",
+      "Rationale"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 9
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 382,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "enforcement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 49,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 14,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 14,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 14,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 14,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 589,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 14,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "kpis": {
+    "rows": 21,
+    "v1_keys": [
+      "Baseline",
+      "Cadence",
+      "Dashboard",
+      "ID",
+      "Measurement",
+      "Metric",
+      "Name",
+      "Owner",
+      "Status",
+      "Target"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 54,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "measure": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": [
+          "Measurement"
+        ]
+      },
+      "target": {
+        "null": 16,
+        "null_pct": 76.2,
+        "max_len": 30,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 222,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 21,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "milestones": {
+    "rows": 6,
+    "v1_keys": [
+      "Gate",
+      "ID",
+      "Milestone",
+      "Phase"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 66,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "phase_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 4,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "due": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 145,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "narrative_documents": {
+    "rows": 52,
+    "v1_keys": [
+      "front_matter",
+      "path"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "doc_kind": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 21,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 69,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 321,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 52,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "omissions": {
+    "rows": 3,
+    "v1_keys": [],
+    "fields": {
+      "entity_type": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 10,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "reason": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 102,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      }
+    }
+  },
+  "open_questions": {
+    "rows": 58,
+    "v1_keys": [
+      "Blocking?",
+      "ID",
+      "Question",
+      "Resolution",
+      "Status"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 3
+        }
+      },
+      "question": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 716,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "resolution": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 654,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "resolved_by": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1475,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 58,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "packages": {
+    "rows": 1,
+    "v1_keys": [],
+    "fields": {
+      "name": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 15,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 49,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "profile": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "mode": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "iteration": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "package_version": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 5,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "mvp_definition": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 1
+        }
+      },
+      "entry_point": {
+        "null": 1,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "go_no_go": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 76,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "created_at": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 10,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11776,
+        "at_cap": {}
+      }
+    }
+  },
+  "phases": {
+    "rows": 4,
+    "v1_keys": [
+      "Phase",
+      "Primary value",
+      "Size",
+      "Theme"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 4,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 22,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "objective": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "exit_criteria": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "sort_order": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "introduced_in": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "retired_in": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 125,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 4,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "prompts": {
+    "rows": 3,
+    "v1_keys": [],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "prompt_kind": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 9,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 24,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "body": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 12664,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "phase_id": {
+        "null": 3,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 3,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 3,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "requirements": {
+    "rows": 218,
+    "v1_keys": [
+      "FR-IDs",
+      "ID",
+      "Phase",
+      "Priority",
+      "Requirement",
+      "Size",
+      "Source",
+      "US-ID",
+      "User Story",
+      "Verification"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "kind": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 14,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 78,
+          "200": 78
+        }
+      },
+      "statement": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 494,
+        "at_cap": {
+          "120": 78,
+          "200": 1
+        }
+      },
+      "priority": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 51,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "mvp": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 218,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 218,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 5,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "source_span": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 89,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "introduced_in": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "retired_in": {
+        "null": 218,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 762,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 218,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "risks": {
+    "rows": 11,
+    "v1_keys": [
+      "ID",
+      "Impact",
+      "Likelihood",
+      "MVP/Full",
+      "Mitigation",
+      "Owner",
+      "Risk",
+      "Status"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 200,
+        "at_cap": {
+          "120": 0,
+          "200": 11
+        }
+      },
+      "description": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 395,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "probability": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "impact": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 1,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "mitigation": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 383,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "risk_state": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 4,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "discharged_by": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 867,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 11,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "stakeholders": {
+    "rows": 6,
+    "v1_keys": [
+      "ID",
+      "Influence (H/M/L)",
+      "Interest",
+      "Stakeholder / role"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "name": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 43,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "role": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": [
+          "Stakeholder / role"
+        ]
+      },
+      "interest": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 68,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 194,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 6,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "tests": {
+    "rows": 50,
+    "v1_keys": [
+      "Covers",
+      "ID",
+      "Status",
+      "Test suite / area",
+      "Type"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 71,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "kind": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "verdict": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 7,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 11,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 266,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 50,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  },
+  "trace_edges": {
+    "rows": 1032,
+    "v1_keys": [],
+    "fields": {
+      "from_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "to_id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "relation": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 12,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      }
+    }
+  },
+  "wbs_items": {
+    "rows": 155,
+    "v1_keys": [
+      "EPIC",
+      "Leaves",
+      "Module(s)",
+      "Phase",
+      "Size",
+      "Title",
+      "WBS group"
+    ],
+    "fields": {
+      "id": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "title": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 120,
+        "at_cap": {
+          "120": 133,
+          "200": 0
+        }
+      },
+      "parent_id": {
+        "null": 20,
+        "null_pct": 12.9,
+        "max_len": 6,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "phase_id": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "slice_id": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "effort": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "lifecycle_status": {
+        "null": 0,
+        "null_pct": 0.0,
+        "max_len": 8,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        }
+      },
+      "disposition": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "disposition_reason_ref": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      },
+      "source_kind": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "source_span": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": false,
+        "starved_by": []
+      },
+      "custom_attributes": {
+        "null": 135,
+        "null_pct": 87.1,
+        "max_len": 203,
+        "at_cap": {}
+      },
+      "last_referenced": {
+        "null": 155,
+        "null_pct": 100.0,
+        "max_len": 0,
+        "at_cap": {
+          "120": 0,
+          "200": 0
+        },
+        "fully_null": true,
+        "lifecycle": true,
+        "starved_by": []
+      }
+    }
+  }
+}

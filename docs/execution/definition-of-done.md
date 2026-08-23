@@ -1,7 +1,7 @@
 ---
 status: Approved
-version: 1.1.0
-updated: 2026-07-06
+version: 1.2.0
+updated: 2026-07-17
 owner: lead-secretary
 ---
 
@@ -68,6 +68,21 @@ Every user story (`US-###`) must satisfy all of the following before the story i
 
 - [ ] **[HARD]** All AC-### criteria linked to this US-### (per [docs/validation/acceptance-criteria.md](../validation/acceptance-criteria.md)) are verified passing — either by automated test or documented manual test result.
 - [ ] **[HARD]** The QA engineer or Tech Lead has confirmed acceptance; no AC is "assumed passing" without evidence.
+
+#### The live-leg rule — when an `AC-###` may be recorded `Met`
+
+> **Relocated here 2026-07-17 (P17a). This RECORDS long-standing practice; it does not change the bar.** The rule
+> has been applied since S6b and is cited across the [progress log](../progress/progress-log.md) and
+> [acceptance audit](../validation/acceptance-audit.md) as *"per G-TRACE"* — **a mis-citation**. G-TRACE is the
+> Keystone *link-completeness* gate (*"every MVP requirement → ≥1 decision, ≥1 work item, ≥1 test"*,
+> [work-breakdown.md](../planning/work-breakdown.md) §Traceability) and says nothing about AC verdicts; it already
+> passes. New entries cite **this section**, not G-TRACE. Existing `per G-TRACE` citations stay as written
+> (dated record); the rule they invoke is the one below, unchanged.
+
+- [ ] **[HARD]** An `AC-###` is recorded **`Met`** in the [acceptance audit](../validation/acceptance-audit.md) only once its **live real-stack leg** lands — the criterion is exercised against the composed stack (genuine Keycloak authorization-code + PKCE, real SQL Server), i.e. by the Playwright E2E suite. Until then the verdict is **`Partial`**, however complete the lower legs are.
+- [ ] **[HARD]** Domain, handler, and HTTP-level proof is **necessary but not sufficient**. `AcmpWebApplicationFactory` swaps every module DbContext for EF Core **InMemory** and replaces Keycloak with a header-driven test auth handler — so it cannot prove DB-enforced constraints, the real token pipeline, or **that a user-reachable UI affordance exists at all**.
+- [ ] **[HARD]** The rule exists because of a real miss: **D-15**. `POST /api/topics/{id}/prepare` was fully proven at the API and the E2E called it over direct HTTP — while the SPA **had no "Mark prepared" button**, leaving the agenda pool permanently empty in-product. On API evidence alone AC-035 would have read `Met` while the core loop was broken for every real user. An E2E that bypasses the affordance it is meant to prove **masks the gap** and does not satisfy this rule.
+- [ ] **[NOTE]** Not every `Partial` is live-leg-shaped. Where an AC's gap is **unbuilt UI** or **future-phase work**, record that as the residual — do **not** tag it at the testing phase, which cannot close it. A residual must name its real blocker.
 
 ---
 

@@ -3,6 +3,7 @@ using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
 using Acmp.Bootstrap;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Infrastructure.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
@@ -10,6 +11,12 @@ using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Docker secrets (docs/domain/deployment.md §3.3, ADR-0032): every file under /run/secrets becomes a config key,
+// with `__` mapping to the section separator (e.g. ConnectionStrings__Acmp -> ConnectionStrings:Acmp). Added last
+// so a mounted secret outranks appsettings/env; optional so a local `dotnet run` without the mount is unaffected.
+// INV-007: no secret literals live in source or compose — only in the git-ignored mounted files (gen-secrets.sh).
+builder.Configuration.AddKeyPerFile("/run/secrets", optional: true);
 
 // Serilog -> console + self-hosted Seq (ADR-0014). Fully configuration-driven.
 builder.Host.UseSerilog((context, services, config) => config
@@ -27,6 +34,12 @@ builder.Services.AddAcmpModules(builder.Configuration);
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
 
+// DEF-056 / AC-006 — the policy layer short-circuits with 403 BEFORE MediatR, so AuthorizationBehavior
+// (the only other emitter of Authorization.Forbidden) never runs for a per-endpoint policy refusal, and
+// those denials left no audit row at all. Registered here rather than inside AddAcmpAuthorization
+// because it is an ASP.NET pipeline concern and the shared kernel has no business owning one.
+builder.Services.AddAcmpAuthorizationAuditing();
+
 // P16-B4: proportional rate limiting (C-API-03) + read-only-FS-safe DataProtection key-ring (C-CON-003).
 builder.Services.AddAcmpRateLimiting(builder.Configuration);
 builder.Services.AddAcmpDataProtection(builder.Configuration);
@@ -42,7 +55,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 // Health checks: liveness (self) + readiness (SQL Server). The "api" check is trivially healthy when
 // the app is serving the request — it backs the Administration → System Health "Application" tile (NR-08).
 var connectionString = builder.Configuration.GetConnectionString("Acmp") ?? string.Empty;
-builder.Services.AddHealthChecks()
+var healthChecks = builder.Services.AddHealthChecks()
     .AddCheck("api", () => HealthCheckResult.Healthy("Serving requests"), tags: new[] { "live" })
     .AddSqlServer(connectionString, name: "sqlserver", tags: new[] { "ready" });
 
@@ -53,11 +66,40 @@ builder.Services.AddHealthChecks()
 var backgroundJobsEnabled = !builder.Environment.IsEnvironment("Testing")
     && !string.IsNullOrWhiteSpace(connectionString);
 if (backgroundJobsEnabled)
-    builder.Services.AddAcmpHangfireStorage(connectionString);
+{
+    // Prod runtime connects as the least-priv acmp_svc (no DDL): the `--migrate-only` deploy step pre-provisions the
+    // Hangfire schema, so the host sets Hangfire:PrepareSchema=false. Dev/e2e keeps the default true (ADR-0031/0032).
+    builder.Services.AddAcmpHangfireStorage(connectionString,
+        builder.Configuration.GetValue("Hangfire:PrepareSchema", true));
+    // Readiness sub-checks (NFR-045): MinIO + Hangfire (critical) + Seq (degraded-only).
+    builder.Services.AddAcmpReadinessChecks(healthChecks, builder.Configuration);
+}
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
+//
+// NFR-043 / DW-062: the requirement asks that every inbound request be traced with spans for the HTTP
+// handler, the DB query, Hangfire job dispatch and outbound HTTP calls. Until DW-062 only the first existed
+// — a trace showed that a handler was entered and nothing about what it waited on. The four sources below
+// are one per named span kind, in that order.
+//   AspNetCore  — the inbound handler span (the trace root).
+//   SqlClient   — one span per command sent to SQL Server. This is EF Core's actual DB call; the separate
+//                 EF Core instrumentation spans the ORM operation instead, which hides the statement that
+//                 the latency question is really about.
+//   AcmpTelemetry.SourceName — Hangfire job DISPATCH, emitted in-process by the enqueue seam. There is no
+//                 stable OpenTelemetry.Instrumentation.Hangfire (newest is 1.17.0-beta.1) and it spans job
+//                 EXECUTION rather than the enqueue this requirement names, so an ActivitySource is both
+//                 the smaller and the more accurate instrument. AddSource is what makes it exported —
+//                 without this line the spans are created and silently dropped.
+//   HttpClient  — outbound calls (the Webex adapter, ADR-0023).
+// Sampling is left at the SDK default (parent-based, always-on), which is the 100% NFR-043 asks for at this
+// traffic volume; setting a sampler here would only narrow it.
 builder.Services.AddOpenTelemetry()
-    .WithTracing(t => t.AddAspNetCoreInstrumentation().AddOtlpExporter())
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddSqlClientInstrumentation()
+        .AddSource(AcmpTelemetry.SourceName)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
     .WithMetrics(m => m.AddAspNetCoreInstrumentation().AddOtlpExporter());
 
 builder.Services.AddEndpointsApiExplorer();
@@ -69,6 +111,12 @@ app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
+// ADR-0039 — between authentication and authorization on purpose: the principal is known here,
+// and a stale or expired one must be refused BEFORE any policy or handler sees it.
+app.UseAcmpPrincipalRevalidation();
+// ADR-0040 / DEF-052 — a Guest reaches the guest surface and nothing else. After revalidation, so an
+// EXPIRED guest is refused as expired (401, not retryable) rather than as out-of-scope.
+app.UseAcmpGuestSurface();
 app.UseAuthorization();
 
 // After auth so the rate-limiter can partition by the caller's `sub` (see HardeningExtensions).
@@ -82,11 +130,44 @@ if (!app.Environment.IsProduction())
 }
 
 app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.Contains("ready") });
+/*
+ * DEF-078. /readyz used to answer with the DEFAULT writer, whose entire body is the aggregate status word —
+ * measured on production as literally "Unhealthy". Every check already builds a description naming what broke
+ * ("object-storage bucket 'x' unreachable: ..."), and all of it was discarded at the last step. That is the
+ * "tell" half of a control missing while the "detect" half worked: production sat 503 for three days and the
+ * endpoint that knew why would not say, so diagnosing it required reading source and running commands on the
+ * box.
+ *
+ * ⚠ Safe to emit: /readyz is NOT externally reachable — nginx proxies `location /api/` without stripping the
+ * prefix and has no health block, so this is internal to the compose network (the compose healthcheck and an
+ * operator with a shell). The descriptions name dependencies, never credentials.
+ */
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = h => h.Tags.Contains("ready"),
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                error = e.Value.Exception?.Message,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+            }),
+        });
+    },
+});
 
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
+app.MapSessionEndpoints();
 app.MapMinutesEndpoints();
 app.MapDecisionEndpoints();
 app.MapVoteEndpoints();
@@ -104,9 +185,21 @@ app.MapAdminEndpoints();
 app.MapAuditEndpoints(); // AC-017/019/020: Auditor read + on-demand chain-verify (read-only)
 app.MapWebexEndpoints(); // P13: anonymous, HMAC-authenticated inbound Webex webhook
 
-// The API OWNS schema migrations (both hosts share one SQL DB; a single migrator avoids a two-host race —
-// the worker waits for the schema). Retries while SQL Server finishes accepting connections.
-await MigrationRunner.MigrateAsync(app);
+// Schema migrations. Dev/e2e: the API migrates at startup (Database:MigrateOnStartup default true; it connects
+// with DDL rights and a single migrator avoids a two-host race — the worker waits for the schema). Prod: a dedicated
+// `--migrate-only` deploy step runs migrations as a privileged principal, and the runtime host (least-priv acmp_svc)
+// sets MigrateOnStartup=false and never issues DDL (ADR-0031/0032, deployment.md §5). Retries while SQL Server warms.
+var migrateOnly = args.Contains("--migrate-only");
+if (migrateOnly || builder.Configuration.GetValue("Database:MigrateOnStartup", true))
+    await MigrationRunner.MigrateAsync(app);
+
+if (migrateOnly)
+{
+    // Pre-provision the Hangfire schema in this same privileged step, so the least-priv runtime host needs no DDL.
+    if (!string.IsNullOrWhiteSpace(connectionString))
+        Acmp.Bootstrap.AcmpCompositionRoot.EnsureHangfireSchema(connectionString);
+    return; // deploy migrate step: schema is ready — do not start serving.
+}
 
 // The recurring action-reminder sweep (AC-054/055) is REGISTERED AND RUN by the Acmp.Worker container
 // (ADR-0024), not here — the API no longer hosts a Hangfire server.

@@ -13,7 +13,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { type TopicSummary, useAcceptTopic, useReturnTopic } from '../../api/topics';
+import { type TopicSummary, useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
 import { useMembers } from '../../api/members';
 import { bucketOf, moveAction, KANBAN_BUCKETS, BUCKET_TONE, initials, type KanbanBucket } from './topicMeta';
 import { Dialog } from '../../components/ui/Dialog';
@@ -26,7 +26,7 @@ import { Icon } from '../../components/icons';
 
 type Pending = { kind: 'accept' | 'return'; topic: TopicSummary } | null;
 
-export function Kanban({ rows }: { rows: TopicSummary[] }) {
+export function Kanban({ rows, total }: { rows: TopicSummary[]; total?: number }) {
   const { t } = useTranslation();
   const [dragId, setDragId] = useState<string | null>(null);
   const [moveId, setMoveId] = useState<string | null>(null);
@@ -34,8 +34,36 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
   const [live, setLive] = useState('');
   const liveRef = useRef(live);
   liveRef.current = live;
+  const movePriority = useMoveTopicPriority();
 
   const bucketLabel = (b: KanbanBucket) => t(`kanban.bucket.${b}`);
+
+  // AC-043 / FR-034: keyboard reorder within a column — a ±1 priority delta, announced via the live region.
+  const onReorder = (topic: TopicSummary, delta: 1 | -1) => {
+    movePriority.mutate({ topicId: topic.id, delta });
+    setLive(t(delta < 0 ? 'topics.reorder.movedUp' : 'topics.reorder.movedDown', { key: topic.key }));
+  };
+
+  /*
+   * AC-141 / FR-037: card-level drop = REORDER within a column. The section-level drop below is a
+   * different requirement — it changes STATUS (FR-033) — and both listeners see the same gesture, so a
+   * same-column drop must stop propagation or one drag would fire two operations.
+   *
+   * ⚠ SENDS THE TARGET'S IDENTITY, NOT A POSITION. `rows` is the filtered, sorted and page-truncated
+   * backlog result, so our index is not the server's column index. Computing a delta here would move the
+   * card somewhere else whenever a filter is on, a sort persists from the table view, or the column runs
+   * past a page. Returning early on a cross-bucket target leaves the gesture to the section handler.
+   */
+  const onDropOnCard = (target: TopicSummary, e: React.DragEvent) => {
+    if (!dragId || dragId === target.id) return;
+    const dragged = rows.find((r) => r.id === dragId);
+    if (!dragged || bucketOf(dragged.status) !== bucketOf(target.status)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDragId(null);
+    movePriority.mutate({ topicId: dragged.id, targetTopicId: target.id });
+    setLive(t('topics.reorder.droppedOn', { key: dragged.key, target: target.key }));
+  };
 
   const requestMove = (topicId: string, to: KanbanBucket) => {
     const topic = rows.find((r) => r.id === topicId);
@@ -60,6 +88,15 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
         <Icon name="grip" size={15} aria-hidden />
         {t('kanban.hint')}
       </div>
+      {/* DEF-103: the board has no pager by design, so when the result is still truncated it must SAY so
+          and give the user something to do. Silently rendering a prefix of a column on the surface that
+          reorders it is the defect; a card the user cannot see is one they cannot prioritize. */}
+      {typeof total === 'number' && total > rows.length && (
+        <div className="kb-truncated" role="status">
+          <Icon name="warnTriangle" size={15} aria-hidden />
+          {t('kanban.truncated', { shown: rows.length, total })}
+        </div>
+      )}
       <div aria-live="assertive" className="visually-hidden">{live}</div>
 
       <div className="kb-board">
@@ -83,7 +120,7 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
               <span className="kb-count">{col.cards.length}</span>
             </div>
             <div className="kb-cards">
-              {col.cards.map((c) => (
+              {col.cards.map((c, i) => (
                 <Card
                   key={c.id}
                   topic={c}
@@ -91,6 +128,12 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
                   onDragStart={() => setDragId(c.id)}
                   onDragEnd={() => setDragId(null)}
                   onMoveKey={() => setMoveId(c.id)}
+                  reorderable={col.bucket !== 'done'}
+                  isFirst={i === 0}
+                  isLast={i === col.cards.length - 1}
+                  onReorder={onReorder}
+                  onDropOnCard={(e) => onDropOnCard(c, e)}
+                  isDropTarget={!!dragId && dragId !== c.id}
                 />
               ))}
             </div>
@@ -119,17 +162,24 @@ export function Kanban({ rows }: { rows: TopicSummary[] }) {
   );
 }
 
-function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey }: {
+function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable, isFirst, isLast, onReorder,
+  onDropOnCard, isDropTarget }: {
   topic: TopicSummary; dragging: boolean; onDragStart: () => void; onDragEnd: () => void; onMoveKey: () => void;
+  reorderable: boolean; isFirst: boolean; isLast: boolean; onReorder: (topic: TopicSummary, delta: 1 | -1) => void;
+  onDropOnCard: (e: React.DragEvent) => void; isDropTarget: boolean;
 }) {
   const { t } = useTranslation();
   const urgent = topic.urgency !== 'Normal';
   return (
     <div
-      className={`kb-card ${dragging ? 'dragging' : ''}`}
+      className={`kb-card ${dragging ? 'dragging' : ''} ${isDropTarget ? 'kb-card-drop' : ''}`}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      // preventDefault on dragover is what MAKES an element a drop target in the HTML5 DnD API;
+      // without it the drop event never fires and the gesture silently does nothing.
+      onDragOver={(e) => { if (isDropTarget) e.preventDefault(); }}
+      onDrop={onDropOnCard}
       tabIndex={0}
       role="group"
       aria-label={`${topic.key}: ${topic.title}. ${t('kanban.moveHint')}`}
@@ -146,6 +196,28 @@ function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey }: {
             they're distinguishable without splitting the column (design = 5 fixed buckets). */}
         {topic.status === 'Prepared' && <Tag tone="info">{t('topics.status.Prepared')}</Tag>}
         {urgent && <Icon name="warnTriangle" size={12} className="bk-urgent-ic" aria-label={t('topics.urgent')} />}
+        {reorderable && (
+          <span className="kb-reorder">
+            <button
+              type="button"
+              className="kb-reorder-btn"
+              disabled={isFirst}
+              aria-label={t('topics.reorder.up', { key: topic.key })}
+              onClick={() => onReorder(topic, -1)}
+            >
+              <Icon name="chevronUp" size={14} aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="kb-reorder-btn"
+              disabled={isLast}
+              aria-label={t('topics.reorder.down', { key: topic.key })}
+              onClick={() => onReorder(topic, 1)}
+            >
+              <Icon name="chevronDown" size={14} aria-hidden />
+            </button>
+          </span>
+        )}
       </div>
       <Link className="kb-card-title" to={`/topics/${topic.key}`}>{topic.title}</Link>
       <div className="kb-card-foot">

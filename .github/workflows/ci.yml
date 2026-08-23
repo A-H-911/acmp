@@ -12,6 +12,7 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
+      - 'tamheed-package/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -20,6 +21,7 @@ on:
       - 'docs/**'
       - 'ACMP product context/**'
       - '.claude/**'
+      - 'tamheed-package/**'
 
 # Supersede stale in-flight PR runs; never cancel a push-to-main run.
 concurrency:
@@ -31,11 +33,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Restore
@@ -55,8 +57,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Self-contained lint (ADR-0015 / CON-001 — no external runtime hosts)
@@ -66,6 +68,35 @@ jobs:
       - name: Validate docker-compose
         run: docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example config -q
 
+      # The CLOUD topology had NO CI validation at all — not even a syntax check — which is how
+      # DEF-019 survived: web referenced ${ACMP_IMAGE_TAG}, but ADR-0037 makes web the one image
+      # published per environment (<sha>-uat / <sha>-prod), so a plain <sha> tag does not exist and
+      # the first deploy would have failed pulling web, on the box, mid-deploy. Config validation
+      # would not have caught that specific bug, but leaving the file entirely unchecked is how a
+      # whole topology drifts unnoticed; the tag mismatch itself is pinned by check-cloud-images.mjs.
+      - name: Validate cloud docker-compose (PH-5 topology)
+        run: docker compose -f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud.example config -q
+
+      # Guards the P24-publishes / P21-consumes contract that DEF-019 broke: every ACMP image the
+      # cloud compose references must be one CI actually publishes, with the right tag SHAPE.
+      - name: Cloud image tags match what CI publishes (DEF-019)
+        run: node scripts/check-cloud-images.mjs
+
+      # Nothing in CI read the runbooks at all, so two doc defects sat there unnoticed: a stale
+      # budget ceiling in five places (the figure the alert thresholds and the IAM-deny brake are
+      # all derived from), and a cloud runbook telling operators to run the ON-PREM warm-standby
+      # failover script for a cloud rollback — which restores a backup over an intact database.
+      - name: Runbooks agree with the deployment (budget ceiling, cloud vs on-prem scripts)
+        run: node scripts/check-runbook-drift.mjs
+
+      # DEF-054. up.sh now asserts that keycloak-config converged, because `up --wait` returns while
+      # a one-shot is still mid-flight and dev + on-prem prod were therefore blind to a failed realm
+      # reconcile. That guard is itself in the "detects but does not TELL" family, so it is proven by
+      # FORCING each refusal against a stubbed docker — a guard that always returns 0 is
+      # indistinguishable from a working one on a healthy stack, which is the whole defect.
+      - name: The one-shot convergence guard actually refuses (DEF-054)
+        run: sh deploy/scripts/assert-oneshot.test.sh
+
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -73,8 +104,8 @@ jobs:
       run:
         working-directory: src/Acmp.Web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -83,9 +114,116 @@ jobs:
         run: npm ci
       - name: i18n parity (EN/AR)
         run: node ../../scripts/check-i18n.mjs
+      # NFR-035 second clause (DW-042). check-i18n compares the two resource files against EACH OTHER, so it
+      # is structurally blind to a label typed straight into JSX: the string never enters either file and
+      # parity stays perfect. This gate reads the components instead.
+      - name: No hardcoded display strings in components (NFR-035)
+        run: node ../../scripts/check-hardcoded-strings.mjs
       - name: Test + coverage gate (ADR-0016 ≥95% lines, global + per-file)
         run: npm run test:cov
       - name: Build
         run: npm run build
-      - name: Audit
-        run: npm audit --audit-level=high
+      - name: Audit (High/Critical npm advisories; triaged allowlist)
+        # Was `npm audit --audit-level=high`, which has no triage mechanism. check-npm-audit.mjs
+        # blocks on every High/Critical EXCEPT advisories explicitly triaged as not-applicable to
+        # ACMP (each with a documented reason). Mirrors the .NET gate, scripts/check-vulns.mjs.
+        run: node ../../scripts/check-npm-audit.mjs
+
+  # ---------------------------------------------------------------------------------------
+  # Publish images to ECR (SL-024 / ADR-0037). Lives in THIS workflow rather than a separate
+  # one on purpose: `needs` is the only gate that makes publishing an untested commit
+  # structurally impossible. A second workflow would have to trigger on workflow_run and
+  # re-derive the SHA, which is more machinery for a weaker guarantee.
+  #
+  # Push-to-main only — a fork PR must never reach the registry the servers pull from. That is
+  # enforced twice: by the `if` here, and by the OIDC role's own `sub` condition, which does not
+  # match a pull_request token at all (deploy/aws/06-github-oidc.sh).
+  #
+  # No AWS access key exists anywhere in this repo. The role is assumed with a short-lived
+  # GitHub OIDC token, which is why this job needs id-token: write — granted per-job so the
+  # test jobs above cannot mint one.
+  publish:
+    needs: [ backend, frontend, compose ]
+    # The AWS_ROLE_ARN test is a self-enabling switch, not decoration: this job is merged before
+    # deploy/aws/06-github-oidc.sh has been run, and without it the very next push to main would
+    # go red on a missing role. It stays skipped until the variable is set, then starts publishing
+    # on its own with no second commit to remember.
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
+      && vars.AWS_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v7
+
+      # Both authority URLs are repository VARIABLES, not secrets — they are public URLs. They are
+      # required rather than defaulted: VITE_OIDC_AUTHORITY is baked into the bundle at build time,
+      # so a wrong or empty value ships a web image that cannot log in, and it fails in the browser
+      # with nothing in the API logs. Fail here instead, where the message is readable.
+      - name: Require the per-environment authorities
+        run: |
+          : "${UAT:?set repository variable KEYCLOAK_AUTHORITY_UAT}"
+          : "${PROD:?set repository variable KEYCLOAK_AUTHORITY_PROD}"
+        env:
+          UAT: ${{ vars.KEYCLOAK_AUTHORITY_UAT }}
+          PROD: ${{ vars.KEYCLOAK_AUTHORITY_PROD }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v3
+
+      # api / worker / sqlserver-fts are environment-AGNOSTIC: one build, promoted between
+      # environments by digest. `web` is not — ADR-0037 bakes the OIDC authority in, so it is built
+      # twice and the two images are never interchangeable. That asymmetry is the whole reason the
+      # web tags carry an -uat/-prod suffix and the others do not.
+      - name: Build and push
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          push() { docker buildx build --push --provenance=false "$@"; }
+          push -f deploy/Dockerfile.backend  --target api    -t "$REG/acmp/api:$SHA" .
+          push -f deploy/Dockerfile.backend  --target worker -t "$REG/acmp/worker:$SHA" .
+          push -f deploy/Dockerfile.sqlserver               -t "$REG/acmp/sqlserver-fts:$SHA" deploy
+          push -f deploy/Dockerfile.web -t "$REG/acmp/web:$SHA-uat" \
+               --build-arg VITE_OIDC_AUTHORITY='${{ vars.KEYCLOAK_AUTHORITY_UAT }}' \
+               --build-arg VITE_OIDC_CLIENT_ID=acmp-web .
+          push -f deploy/Dockerfile.web -t "$REG/acmp/web:$SHA-prod" \
+               --build-arg VITE_OIDC_AUTHORITY='${{ vars.KEYCLOAK_AUTHORITY_PROD }}' \
+               --build-arg VITE_OIDC_CLIENT_ID=acmp-web .
+
+      # Record the immutable digests. A tag can be moved; a digest cannot, and promotion (P25+)
+      # deploys BY DIGEST so that "what UAT tested" and "what production runs" are the same bytes
+      # rather than the same label.
+      - name: Record digests
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          : > digests.env
+          for r in api worker sqlserver-fts; do
+            d=$(aws ecr describe-images --repository-name "acmp/$r" --image-ids imageTag="$SHA" \
+                  --query 'imageDetails[0].imageDigest' --output text)
+            echo "ACMP_DIGEST_$(echo "$r" | tr 'a-z-' 'A-Z_')=$d" >> digests.env
+          done
+          for e in uat prod; do
+            d=$(aws ecr describe-images --repository-name acmp/web --image-ids imageTag="$SHA-$e" \
+                  --query 'imageDetails[0].imageDigest' --output text)
+            echo "ACMP_DIGEST_WEB_$(echo "$e" | tr 'a-z' 'A-Z')=$d" >> digests.env
+          done
+          echo "ACMP_IMAGE_SHA=$SHA" >> digests.env
+          cat digests.env >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: image-digests-${{ github.sha }}
+          path: digests.env
+          retention-days: 90

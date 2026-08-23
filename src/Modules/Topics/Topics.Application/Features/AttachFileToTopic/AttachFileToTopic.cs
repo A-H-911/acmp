@@ -27,17 +27,17 @@ public sealed class AttachFileToTopicValidator : AbstractValidator<AttachFileToT
         RuleFor(x => x.SizeBytes)
             .GreaterThan(0)
             .LessThanOrEqualTo(o.MaxSizeBytes)
+            .WithErrorCode("FILE_TOO_LARGE")   // BL-016: the SPA localizes by code (it owns the MB limit for display)
             .WithMessage($"File exceeds the maximum allowed size of {o.MaxSizeBytes / (1024 * 1024)} MB.");
         RuleFor(x => x.ContentType)
             .Must(ct => o.AllowedContentTypes.Contains(ct, StringComparer.OrdinalIgnoreCase))
+            .WithErrorCode("FILE_TYPE_NOT_ALLOWED")
             .WithMessage(x => $"File type '{x.ContentType}' is not allowed.");
     }
 }
 
 public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopicCommand, TopicAttachmentDto>
 {
-    public const string Bucket = "acmp-topics";
-
     private readonly ITopicsDbContext _db;
     private readonly IResourceAuthorizer _authz;
     private readonly IFileStore _files;
@@ -45,10 +45,15 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
     private readonly IClock _clock;
     private readonly IAuditSink _audit;
     private readonly IFileContentInspector _inspector;
+    private readonly string _bucket;
 
     public AttachFileToTopicHandler(ITopicsDbContext db, IResourceAuthorizer authz, IFileStore files,
-        ICurrentUser user, IClock clock, IAuditSink audit, IFileContentInspector inspector)
+        ICurrentUser user, IClock clock, IAuditSink audit, IFileContentInspector inspector,
+        IOptions<StorageOptions> storage)
     {
+        // DEF-015: per-environment, never a const. The cloud stack points this at the SAME bucket as
+        // recordings (deploy/aws/02-s3.sh creates one per env); on-prem keeps the historical split.
+        _bucket = storage.Value.AttachmentsBucket;
         _db = db;
         _authz = authz;
         _files = files;
@@ -69,13 +74,18 @@ public sealed class AttachFileToTopicHandler : IRequestHandler<AttachFileToTopic
 
         // C-FILE-01: confirm the actual bytes match the allow-listed declared type before storing (fail-closed).
         if (!_inspector.ContentMatchesDeclared(request.Content, request.ContentType))
-            throw new ValidationException($"File content does not match its declared type '{request.ContentType}'.");
+            throw new ValidationException(new[]
+            {
+                new FluentValidation.Results.ValidationFailure(nameof(request.ContentType),
+                    $"File content does not match its declared type '{request.ContentType}'.")
+                { ErrorCode = "FILE_CONTENT_MISMATCH" },   // BL-016
+            });
 
         // Object key is server-derived (GUID + a content-type extension) — NEVER the raw client filename, which
         // could carry path/encoding tricks or break the presigned-URL signature. The original name is kept as
         // display metadata (attachment.FileName) only.
         var objectName = $"{topic.PublicId}/{Guid.NewGuid()}{ExtensionFor(request.ContentType)}";
-        var storageKey = await _files.UploadAsync(Bucket, objectName, request.Content, request.ContentType, ct);
+        var storageKey = await _files.UploadAsync(_bucket, objectName, request.Content, request.ContentType, ct);
 
         var attachment = topic.AddAttachment(request.FileName, request.ContentType, request.SizeBytes,
             storageKey, sub, name, _clock.UtcNow);

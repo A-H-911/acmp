@@ -6,7 +6,34 @@ import { UsersDirectory, UserDetail } from './UsersMembership';
 import { renderWithAuth } from '../../test/render';
 import type { Member } from '../../api/members';
 
-vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
+// UserDetail renders InviteUserPanel (FR-156) and RoleAssignmentPanel (FR-157), so the module mock
+// has to cover their hooks or the detail tests fail on an undefined hook rather than on anything
+// real. The panels' own behaviour is asserted against the wire in their own suites — this file is
+// the screen, so it only proves they are mounted.
+// vi.mock is hoisted above every import, so a plain `const` declared here would still be in its
+// temporal dead zone when the factory runs. vi.hoisted is the supported way to share a spy with it.
+const { mockSetVoting } = vi.hoisted(() => ({ mockSetVoting: vi.fn() }));
+
+vi.mock('../../api/members', () => ({
+  // ADR-0042 step 3 — StreamAssignmentPanel's data + mutation. The panel renders for real; only its
+  // server calls are stubbed, so the chips these tests see are the chips an administrator sees.
+  streamName: (s: { nameEn: string; nameAr: string }, isArabic: boolean) => (isArabic ? s.nameAr : s.nameEn),
+  useStreams: () => ({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+  useAssignStreams: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false, isSuccess: false }),
+  // DEF-041 — the directory's voting switch. Hoisted so a test can assert the exact payload, and
+  // cleared in beforeEach because it is shared across the whole describe.
+  useSetVotingEligibility: () => ({ mutate: mockSetVoting, isPending: false, isError: false }),
+  useMembers: vi.fn(),
+  useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),
+}));
 import { useMembers } from '../../api/members';
 
 const mockUseMembers = useMembers as unknown as Mock;
@@ -19,7 +46,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهندسة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
   {
     publicId: '2', keycloakUserId: 'kc-fixture', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',
@@ -27,13 +54,23 @@ const MEMBERS: Member[] = [
   },
 ];
 
-function renderDirectory(onView = vi.fn()) {
+// Administrator stays the DEFAULT deliberately: it is the role that administers the roster, so a
+// directory affordance that is inert for it is inert for the reason the matrix gives rather than by
+// accident (DEF-041 / DEC-046 d4 excludes Administrator from voting eligibility under SoD-5).
+function renderDirectory({ onView = vi.fn(), roles = ['administrator'] }: { onView?: () => void; roles?: string[] } = {}) {
   result({ data: MEMBERS });
-  renderWithAuth(<UsersDirectory onView={onView} />, { roles: ['administrator'] });
+  renderWithAuth(<UsersDirectory onView={onView} />, { roles: roles as never });
 }
 
 describe('UsersDirectory (AC-059)', () => {
-  beforeEach(() => mockUseMembers.mockReset());
+  // ⚠ mockSetVoting is cleared HERE, not merely declared. It is shared by every test in this
+  // describe, so without this the "inert for Administrator" assertion inherits the Secretary test's
+  // call and fails for a reason that has nothing to do with the control — and had it been ordered
+  // the other way round it would have PASSED while proving nothing.
+  beforeEach(() => {
+    mockUseMembers.mockReset();
+    mockSetVoting.mockClear();
+  });
 
   it('renders a directory row per member with role sourced from Keycloak', () => {
     renderDirectory();
@@ -41,20 +78,35 @@ describe('UsersDirectory (AC-059)', () => {
     expect(screen.getByText('khalid@acmp.gov')).toBeInTheDocument();
     expect(screen.getByText('Secretary')).toBeInTheDocument();
     expect(screen.getByText('Auditor')).toBeInTheDocument();
-    // Roles are read-only — every row marks its source.
+    // The lock note survives ADR-0038: roles are writable now, but Keycloak is still where they
+    // live, and the directory row remains read-only — the editor is one level in, on the detail.
     expect(screen.getAllByText('from Keycloak')).toHaveLength(2);
   });
 
-  it('shows the Keycloak read-only governance banner', () => {
+  // ⚠ THIS WAS NAMED "shows the Keycloak read-only governance banner" AND ASSERTED "Roles are
+  // read-only". Both were true until ADR-0038, which supersedes ADR-0015 §Q3 and gives the user
+  // detail a working role editor (SC-004) — so the banner was making a claim the product no longer
+  // honours, and the test was holding it in place. The name changes with the assertion, because a
+  // name that describes the old rule is exactly how the last supersession went unnoticed.
+  it('shows the Keycloak source-of-truth banner (roles are writable since ADR-0038)', () => {
     renderDirectory();
-    expect(screen.getByText('Roles are read-only')).toBeInTheDocument();
+    expect(screen.getByText('Keycloak is the source of truth')).toBeInTheDocument();
+    // The half that did NOT change: identity is federated and nobody signs themselves up.
+    expect(screen.getByText(/no self-registration/i)).toBeInTheDocument();
   });
 
-  it('does not render the provision/invite affordances (ADR-0015 / OQ-042: manual Keycloak provisioning)', () => {
+  // ⚠ WAS "(ADR-0015 / OQ-042: manual Keycloak provisioning)" and asserted no "invit" text at all.
+  // OQ-042 resolved to "deep-link to the Keycloak admin console only, carrying no in-app
+  // account-creation form", and ADR-0038 overtakes that resolution exactly as it overtakes
+  // ADR-0015 §Q3 — the register still said otherwise, which is the SC-004 pattern a second time.
+  // What is STILL true is narrower and is what this now asserts: the DIRECTORY hosts no invite
+  // control and never got the design's "Provision via Keycloak" button. The invite lives one level
+  // in, on the user detail, and the banner now points there — so a mention of it here is correct.
+  it('keeps the directory itself free of provisioning controls (the invite lives on the user detail)', () => {
     renderDirectory();
     expect(screen.queryByRole('button', { name: /provision/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/Provision via Keycloak/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /invite/i })).not.toBeInTheDocument();
   });
 
   it('marks a member with no streams as an observer', () => {
@@ -68,13 +120,41 @@ describe('UsersDirectory (AC-059)', () => {
     expect(screen.getAllByRole('columnheader')).toHaveLength(5);
   });
 
-  it('renders the read-only voting-eligibility switch per member', () => {
+  // DEF-041 / DEC-046 d4 — this switch used to be asserted READ-ONLY here, and that assertion was
+  // correct until the control was wired. It is replaced rather than deleted: the state it described
+  // still exists for roles that may not change eligibility, and the two cases below are the property
+  // that actually matters now.
+  it('renders each member voting-eligibility state on the switch', () => {
     renderDirectory();
     const switches = screen.getAllByRole('switch');
     expect(switches).toHaveLength(2);
     expect(switches[0]).toHaveAttribute('aria-checked', 'true'); // Khalid: voting-eligible
     expect(switches[1]).toHaveAttribute('aria-checked', 'false'); // Audit Office: not
-    switches.forEach((s) => expect(s).toHaveAttribute('aria-disabled', 'true'));
+  });
+
+  it('lets a Secretary flip eligibility, sending the DESIRED STATE rather than a toggle', async () => {
+    const user = userEvent.setup();
+    renderDirectory({ roles: ['secretary'] });
+
+    await user.click(screen.getAllByRole('switch')[0]);
+
+    // Khalid is currently eligible, so the click must ask for false. A "toggle" call would leave two
+    // racing clicks resolving to whichever order the server saw last.
+    expect(mockSetVoting).toHaveBeenCalledWith({ publicId: '1', isVotingEligible: false });
+  });
+
+  it('leaves the switch inert for a role that may not change it — INCLUDING Administrator', async () => {
+    const user = userEvent.setup();
+    // ⚠ Administrator is the discriminating role: it administers the roster and may assign streams
+    // and deactivate members, so "the admin roles" is exactly the wrong generalisation. SoD-5 keeps
+    // it out of committee content and the server refuses it (DEC-046 d4).
+    renderDirectory({ roles: ['administrator'] });
+
+    const first = screen.getAllByRole('switch')[0];
+    expect(first).toHaveAttribute('aria-disabled', 'true');
+    await user.click(first);
+
+    expect(mockSetVoting).not.toHaveBeenCalled();
   });
 
   it('keeps the assignments count an honest dash (no count API yet)', () => {
@@ -93,7 +173,7 @@ describe('UsersDirectory (AC-059)', () => {
   it('calls onView with the member when the row view button is clicked', async () => {
     const user = userEvent.setup();
     const onView = vi.fn();
-    renderDirectory(onView);
+    renderDirectory({ onView });
     const view = screen.getAllByRole('button', { name: 'View user detail' });
     expect(view).toHaveLength(2);
     await user.click(view[0]);
@@ -128,16 +208,31 @@ describe('UsersDirectory (AC-059)', () => {
   });
 });
 
-describe('UserDetail (read-only, no invite per ADR-0015)', () => {
-  it('renders the read-only detail with memberships and no invite flow', async () => {
+// ⚠ THIS BLOCK USED TO ASSERT "no invite flow per ADR-0015", and that was CORRECT until today.
+// ADR-0015 §Q3 states plainly: "User provisioning is manual via the self-hosted Keycloak admin
+// console. ACMP does not integrate the Keycloak Admin API in v1." ADR-0038 (Approved 2026-08-11)
+// REVERSES that clause — the rest of ADR-0015, self-hosting Keycloak and bundling every runtime
+// dependency, is untouched and still holds. The assertion is therefore removed because the decision
+// behind it changed, not because it became inconvenient; SC-004 records the supersession.
+describe('UserDetail (invite + role assignment per ADR-0038, superseding ADR-0015 §Q3)', () => {
+  beforeEach(() => result({ data: MEMBERS }));
+
+  it('renders the detail with memberships, the role editor and the invite section', async () => {
     const onBack = vi.fn();
     renderWithAuth(<UserDetail member={MEMBERS[0]} isArabic={false} onBack={onBack} />, { roles: ['administrator'] });
 
     expect(screen.getByText('Back to users')).toBeInTheDocument();
     expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
-    expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
-    expect(screen.getByText(/Role is read-only/)).toBeInTheDocument();
-    expect(screen.queryByText(/invit/i)).not.toBeInTheDocument();
+    // Scoped to the read-only memberships row (a <span>): the StreamAssignmentPanel below now
+    // renders 'Core' again as a toggle <button>, so an unscoped query matches both.
+    expect(screen.getByText('Core', { selector: 'span' })).toBeInTheDocument(); // his stream membership
+    // ⚠ WAS `expect(screen.getByText(/Role is read-only/))`. The padlock said the role was managed
+    // in Keycloak and could not be changed here; FR-157 changes it here. Keycloak is still where it
+    // is STORED, which is all the replacement claims.
+    expect(screen.getByText('stored in Keycloak')).toBeInTheDocument();
+    // §(8) puts the invite section at the foot of this view; FR-157's editor sits above it.
+    expect(screen.getByText('Invite a new user')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save role' })).toBeInTheDocument();
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Back to users' }));
@@ -147,5 +242,16 @@ describe('UserDetail (read-only, no invite per ADR-0015)', () => {
   it('shows an honest empty memberships note for an observer', () => {
     renderWithAuth(<UserDetail member={MEMBERS[1]} isArabic={false} onBack={vi.fn()} />, { roles: ['administrator'] });
     expect(screen.getByText('No committee or stream memberships.')).toBeInTheDocument();
+  });
+
+  // The container passes the member it snapshotted when the row was clicked, so after a role change
+  // the head would keep showing the OLD role and a successful change would read as a failed one.
+  // The detail re-reads the roster cache the assignment invalidates.
+  it('shows the refreshed role after the roster reports the change, not the clicked snapshot', () => {
+    result({ data: [{ ...MEMBERS[0], role: 'Reviewer' }, MEMBERS[1]] });
+    renderWithAuth(<UserDetail member={MEMBERS[0]} isArabic={false} onBack={vi.fn()} />, { roles: ['administrator'] });
+
+    expect(screen.getAllByText('Reviewer').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Secretary')).not.toBeInTheDocument(); // the stale snapshot's role
   });
 });

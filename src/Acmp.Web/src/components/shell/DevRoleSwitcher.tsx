@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
-import { COMMITTEE_ROLES } from '../../auth/roles';
+import { COMMITTEE_ROLES, primaryRoleOf } from '../../auth/roles';
 import { Icon } from '../icons';
 
 function roleInitials(label: string): string {
@@ -33,7 +33,9 @@ export function DevRoleSwitcher() {
 
   if (!devSetRoles) return null;
 
-  const current = roles[0] ?? 'secretary';
+  // DEF-034: same arbitrary `roles[0]`. DEV-only, so it never reached a user — but leaving one copy
+  // of the wrong derivation behind is how the next person learns the wrong pattern.
+  const current = roles.length ? primaryRoleOf(roles) : 'secretary';
   const currentLabel = t(`role.${current}`);
 
   return (

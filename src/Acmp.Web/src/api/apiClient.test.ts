@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { api, ApiError, setTokenGetter, type ProblemDetails } from './apiClient';
+import { api, ApiError, setTokenGetter, localizedValidationMessage, type ProblemDetails } from './apiClient';
 import { stubFetch } from '../test/queryHarness';
 import i18n from '../i18n';
 
@@ -59,14 +59,14 @@ describe('api() fetch wrapper', () => {
     const problem: ProblemDetails = {
       title: 'Validation failed',
       status: 400,
-      errors: { title: ['Required'] },
+      errors: [{ propertyName: 'Title', errorMessage: 'Required', errorCode: 'NotEmptyValidator' }],
     };
     stubFetch(() => ({ status: 400, jsonBody: problem }));
     await expect(api('/topics', { method: 'POST' })).rejects.toMatchObject({
       name: 'ApiError',
       status: 400,
       message: 'Validation failed',
-      problem: { errors: { title: ['Required'] } },
+      problem: { errors: [{ errorCode: 'NotEmptyValidator' }] },
     });
   });
 
@@ -90,5 +90,25 @@ describe('api() fetch wrapper', () => {
     await api('/topics', { headers: { 'Content-Type': 'application/json' } });
     expect(headersOf(spy)['Content-Type']).toBe('application/json');
     expect(headersOf(spy).Accept).toBe('application/json');
+  });
+});
+
+describe('localizedValidationMessage (BL-016)', () => {
+  it('translates a known error code via the errors.* i18n catalog (not the raw server text)', () => {
+    const msg = localizedValidationMessage({
+      errors: [{ propertyName: 'ContentType', errorMessage: "File type 'x' is not allowed.", errorCode: 'FILE_TYPE_NOT_ALLOWED' }],
+    });
+    expect(msg).toBe(i18n.t('errors.FILE_TYPE_NOT_ALLOWED'));
+  });
+
+  it('falls back to the server ErrorMessage for an unmapped code', () => {
+    const msg = localizedValidationMessage({
+      errors: [{ propertyName: 'X', errorMessage: 'Server said no.', errorCode: 'SOME_UNMAPPED_CODE' }],
+    });
+    expect(msg).toBe('Server said no.');
+  });
+
+  it('returns the title when there are no field errors', () => {
+    expect(localizedValidationMessage({ title: 'Nope' })).toBe('Nope');
   });
 });

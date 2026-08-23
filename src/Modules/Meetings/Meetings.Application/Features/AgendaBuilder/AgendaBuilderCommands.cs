@@ -4,6 +4,7 @@ using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Membership;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -57,7 +58,7 @@ public sealed class AddAgendaItemHandler(IMeetingsDbContext db) : IRequestHandle
         agenda.AddItem(request.TopicId, request.TopicKey, request.TopicTitle, request.Urgent,
             request.TimeboxMinutes, request.PresenterUserId, request.PresenterName);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -67,14 +68,22 @@ public sealed record RemoveAgendaItemCommand(Guid MeetingId, Guid TopicId) : IRe
     public IReadOnlyCollection<string> AllowedRoles { get; } = AgendaBuilderRoles.Editors;
 }
 
-public sealed class RemoveAgendaItemHandler(IMeetingsDbContext db) : IRequestHandler<RemoveAgendaItemCommand, AgendaDto>
+public sealed class RemoveAgendaItemHandler(IMeetingsDbContext db, IGuestWindowWriter windows, IClock clock)
+    : IRequestHandler<RemoveAgendaItemCommand, AgendaDto>
 {
     public async Task<AgendaDto> Handle(RemoveAgendaItemCommand request, CancellationToken ct)
     {
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
+        // Read the presenter BEFORE removing the item — afterwards there is nothing left to ask.
+        var presenter = agenda.Items.FirstOrDefault(i => i.TopicId == request.TopicId)?.PresenterUserId;
         agenda.RemoveItem(request.TopicId);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+
+        // DW-025: the slot a guest's access was granted for no longer exists.
+        if (presenter is { } gone)
+            await GuestWindows.CloseOrphanedAsync(db, windows, clock.UtcNow, new[] { gone }, ct);
+
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -91,7 +100,7 @@ public sealed class MoveAgendaItemHandler(IMeetingsDbContext db) : IRequestHandl
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
         agenda.MoveItem(request.TopicId, request.Delta);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -108,7 +117,7 @@ public sealed class SetAgendaItemTimeboxHandler(IMeetingsDbContext db) : IReques
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
         agenda.SetTimebox(request.TopicId, request.Minutes);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -129,13 +138,23 @@ public sealed class AssignPresenterValidator : AbstractValidator<AssignPresenter
     }
 }
 
-public sealed class AssignPresenterHandler(IMeetingsDbContext db) : IRequestHandler<AssignPresenterCommand, AgendaDto>
+public sealed class AssignPresenterHandler(IMeetingsDbContext db, IGuestWindowWriter windows, IClock clock)
+    : IRequestHandler<AssignPresenterCommand, AgendaDto>
 {
     public async Task<AgendaDto> Handle(AssignPresenterCommand request, CancellationToken ct)
     {
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
+        // Whoever held the slot before this call. Captured first: after AssignPresenter the item
+        // names the new presenter and the old one is unrecoverable.
+        var replaced = agenda.Items.FirstOrDefault(i => i.TopicId == request.TopicId)?.PresenterUserId;
         agenda.AssignPresenter(request.TopicId, request.PresenterUserId, request.PresenterName);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+
+        // DW-025: a guest replaced on their slot keeps no access to it. Re-assigning the SAME person
+        // is a no-op here — they still present it, so the still-presenting check leaves them alone.
+        if (replaced is { } previous && previous != request.PresenterUserId)
+            await GuestWindows.CloseOrphanedAsync(db, windows, clock.UtcNow, new[] { previous }, ct);
+
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }

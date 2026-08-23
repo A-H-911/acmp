@@ -27,9 +27,16 @@ playwright-report/
 test-results/
 *.local
 
+# ── Tamheed package (transient single-writer lock) ────
+tamheed-package/data/.lock
+
 # ── Env & secrets (NEVER commit) ──────────────────────
 *.env
 !*.env.example
+# NOT a credential file despite the extension: the Keycloak service account's client id and its
+# proven minimum grant (ADR-0038 / OQ-070). It is KEY=value so the reconciler can source it and the
+# CI gate can parse it without jq — and it MUST be committed, because both read it.
+!deploy/keycloak/admin-client.env
 deploy/secrets/*
 !deploy/secrets/.gitkeep
 deploy/nginx/certs/*
@@ -45,3 +52,14 @@ Thumbs.db
 
 # Playwright MCP scratch artifacts (screenshots, snapshots)
 .playwright-mcp/
+
+# P23 restore-drill scratch (deploy/scripts/spike-cloud-gates.sh U4)
+.spike-backups/
+
+# ── Tamheed v3→v4 migration backup ────────────────────
+# package_migrate keeps the pre-migration store here. NOT committed: the v3 data
+# is already in git history at 967e75d (the commit immediately before the
+# migration), so a second 3.9 MB copy would be permanent weight for a backup the
+# repo already holds. Recover with:
+#   git show 967e75d:tamheed-package/data/<file>.jsonl
+tamheed-package/data-v3-backup/

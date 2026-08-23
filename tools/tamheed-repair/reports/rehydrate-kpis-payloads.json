@@ -1,0 +1,128 @@
+[
+  {
+    "type": "kpi",
+    "id": "KPI-001",
+    "title": "Topic-to-decision cycle time",
+    "measure": "dashboard aggregate"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-002",
+    "title": "Action SLA adherence (% actions closed by due date)",
+    "measure": "actions dashboard"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-003",
+    "title": "Backlog age (topics aging past urgency SLA)",
+    "measure": "aging indicator"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-004",
+    "title": "Vote-to-ratification integrity (hash-chain verifiable)",
+    "measure": "Auditor chain check"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-005",
+    "title": "Bilingual coverage (strings with EN+AR + RTL clean)",
+    "measure": "i18n parity + RTL VR"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-006",
+    "title": "Topic Intake Rate",
+    "measure": "Weekly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-007",
+    "title": "Carry-Over Rate",
+    "measure": "Per-meeting"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-008",
+    "title": "End-to-End Decision Lead Time",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-009",
+    "title": "Decision Cycle Time (In-Committee)",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-010",
+    "title": "Action Completion Rate",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-011",
+    "title": "Action Overdue Rate",
+    "measure": "Daily"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-012",
+    "title": "Verified Completion Rate",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-013",
+    "title": "Open Critical Risk Count",
+    "measure": "Daily"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-014",
+    "title": "Risks Without Mitigation",
+    "measure": "Weekly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-015",
+    "title": "Attendance Rate",
+    "measure": "Per-meeting"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-016",
+    "title": "Quorum Compliance Rate",
+    "measure": "Per-vote"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-017",
+    "title": "ADR Coverage Rate",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-018",
+    "title": "Governance Maturity Index",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-019",
+    "title": "Invariant Violation Rate",
+    "measure": "Monthly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-020",
+    "title": "Research Conversion Rate",
+    "measure": "Quarterly"
+  },
+  {
+    "type": "kpi",
+    "id": "KPI-021",
+    "title": "MoM Publication Timeliness",
+    "measure": "Per-meeting"
+  }
+]

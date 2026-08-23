@@ -39,7 +39,7 @@ async function shot(page: Page, name: string): Promise<void> {
 async function createTopic(request: APIRequestContext, bearer: string, title: string, urgency: string) {
   const res = await request.post('/api/topics', {
     headers: { Authorization: bearer, ...JSON_H },
-    data: { type: 'ArchitectureDecision', title, description: 'VR setup.', justification: 'VR setup.', streams: ['Platform'], systems: [], urgency, source: 'CommitteeMember', tags: [] },
+    data: { type: 'ArchitectureDecision', title, description: 'VR setup.', justification: 'VR setup.', streams: ['core'], systems: [], urgency, source: 'CommitteeMember', tags: [] },
   });
   if (res.status() !== 201) throw new Error(`topic ${res.status()} ${await res.text()}`);
   return res.json() as Promise<{ id: string; key: string }>;

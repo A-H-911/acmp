@@ -8,6 +8,7 @@ import { useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AcmpAuthContext';
+import { primaryRoleOf } from '../../auth/roles';
 import { buildNav } from '../../nav/navModel';
 import { Icon } from '../icons';
 
@@ -21,14 +22,18 @@ export function SideNav() {
   const exactMatch = (path: string) =>
     path === '/' || allPaths.some((p) => p !== path && p.startsWith(`${path}/`));
 
-  const primaryRole = roles[0] ?? 'Guest';
+  // DEF-034: was `roles[0] ?? 'Guest'` — claim-array order, not precedence — and the key namespace
+  // was `roles.` where the locale defines `role.` (singular), so the lookup always missed and the
+  // badge printed a raw lowercase claim. A Secretary holding four other roles was told he was an
+  // Auditor, in English, inside an Arabic UI.
+  const primaryRole = primaryRoleOf(roles);
 
   return (
     <nav className="sidebar" aria-label={t('nav.primary')}>
       <div className="nav-roleview">
         <span className="nav-roleview-dot" aria-hidden="true" />
         <span className="nav-roleview-text">
-          {t('nav.viewingAs')} <b>{t(`roles.${primaryRole}`, primaryRole)}</b>
+          {t('nav.viewingAs')} <b>{t(`role.${primaryRole}`, primaryRole)}</b>
         </span>
       </div>
       {groups.map((group, gi) => (

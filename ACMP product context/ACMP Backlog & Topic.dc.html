@@ -526,7 +526,7 @@ class Component extends DCLogic {
 
     const owners = { OH:L('Omar H.','عمر ح.'), NP:L('Noura P.','نورة ب.'), LK:L('Lina K.','لينا ك.'), YR:L('Yousef R.','يوسف ر.'), KA:L('Khalid A.','خالد ع.'), MS:L('Maha S.','مها س.'), FN:L('Faisal N.','فيصل ن.'), HD:L('Hatem D.','حاتم د.') };
     const streamL = { identity:L('Identity','الهوية'), platform:L('Platform','المنصّة'), payments:L('Payments','المدفوعات'), health:L('Health','الصحة'), permits:L('Permits','التصاريح'), notifications:L('Notifications','الإشعارات'), ios:'iOS' };
-    const typeL = { arch:L('Arch. Decision','قرار معماري'), gov:L('Governance','حوكمة'), research:L('Research','بحث') };
+    const typeL = { arch:L('Arch. Decision','قرار هيكلة'), gov:L('Governance','حوكمة'), research:L('Research','بحث') };
     const ageColor=(a)=> a>30?'var(--st-danger-fg)':(a>20?'var(--st-warn-fg)':'var(--text-2)');
     const urgL = { urgent:t.urgent, normal:L('Normal','عادي'), low:L('Low','منخفض') };
 
@@ -585,7 +585,7 @@ class Component extends DCLogic {
         numBg: done?'var(--st-success-dot)':(active?'var(--primary)':'transparent'), numFg:(done||active)?'#fff':'var(--text-3)', numBd: done?'var(--st-success-dot)':(active?'var(--primary)':'var(--border-strong)') }; });
 
     const typeOptions = [
-      ['arch',L('Architecture','معماري'),L('A technical decision needing committee approval','قرار تقني يحتاج موافقة'),'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z'],
+      ['arch',L('Architecture','الهيكلة'),L('A technical decision needing committee approval','قرار تقني يحتاج موافقة'),'M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z'],
       ['gov',L('Governance','حوكمة'),L('A standard, policy, or invariant','معيار أو سياسة أو ثابت'),'M6 4h13v16H6a2 2 0 00-2 2V6a2 2 0 012-2zM9 8h7'],
       ['research',L('Research','بحث'),L('A spike or investigation','دراسة أو استكشاف'),'M14 3v4a1 1 0 001 1h4M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z']
     ].map(([k,label,desc,d])=>{ const sel=topicType===k; return { go:()=>this.set('topicType',k), sel:sel?'true':'false', label, desc, d, bd:sel?'var(--accent)':'var(--border)', bg:sel?'var(--primary-tint)':'var(--surface)', ic:sel?'var(--accent)':'var(--text-3)', titleColor:sel?'var(--accent)':'var(--text)' }; });
@@ -630,7 +630,7 @@ class Component extends DCLogic {
       { label:'ADR', dir:L('Down','لاحق'), up:false, items:[{ k:'ADR-2026-003', title:L('Keycloak as standard IdP','Keycloak كموفّر هوية'), ...this.sem('info'), st:L('Proposed','مقترح') }] },
       { label:L('Actions','الإجراءات'), dir:L('Down','لاحق'), up:false, items:[{ k:'ACT-2026-040', title:L('Produce migration ADR','إعداد سجل القرار'), ...this.sem('warn'), st:L('In Progress','قيد التنفيذ') }] },
       { label:L('Risk','المخاطر'), dir:L('Related','مرتبط'), up:false, rel:true, items:[{ k:'RSK-2026-006', title:L('Dual-running auth migration','التشغيل المزدوج'), ...this.sem('warn'), st:L('Mitigating','قيد المعالجة') }] },
-      { label:L('Meeting','الاجتماع'), dir:L('Scheduled','مجدول'), up:false, rel:true, items:[{ k:'MTG-2026-019', title:L('Weekly Architecture Committee','لجنة الهندسة الأسبوعية'), ...this.sem('sched'), st:L('Scheduled','مجدول') }] },
+      { label:L('Meeting','الاجتماع'), dir:L('Scheduled','مجدول'), up:false, rel:true, items:[{ k:'MTG-2026-019', title:L('Weekly Architecture Committee','لجنة الهيكلة الأسبوعية'), ...this.sem('sched'), st:L('Scheduled','مجدول') }] },
       { label:L('Depends on','يعتمد على'), dir:L('Up','سابق'), up:true, items:[{ k:'TOP-2026-022', title:L('API pagination standard','معيار ترقيم الواجهات'), ...this.sem('info'), st:L('Accepted','مقبول') }] }
     ].map(g=>({ label:g.label, dir:g.dir, dirColor:g.up?'var(--st-warn-fg)':(g.rel?'var(--st-neutral-fg)':'var(--st-info-fg)'), dirBg:g.up?'var(--st-warn-bg)':(g.rel?'var(--st-neutral-bg)':'var(--st-info-bg)'), dirArrow:g.up?'none':'rotate(180deg)', items:g.items.map(it=>({ k:it.k, title:it.title, st:it.st, chip:it.chip, dot:it.dot })) }));
 

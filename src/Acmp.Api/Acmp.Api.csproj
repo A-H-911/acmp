@@ -18,9 +18,20 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+    <!-- Docker-secrets config source (/run/secrets -> config keys, ADR-0032). First-party. -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="8.0.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+    <!-- NFR-043 / DW-062: the requirement names four span kinds per inbound request. AspNetCore covers the
+         handler; these two cover the DB query and the outbound HTTP call. SqlClient (not the EF Core
+         instrumentation) because it spans the command actually sent to SQL Server, which is what a latency
+         question asks about. There is deliberately NO OpenTelemetry.Instrumentation.Hangfire here: it has
+         never shipped a stable release (latest is 1.17.0-beta.1), and a prerelease dependency in a
+         production image is the operator's call, not this change's. Job DISPATCH — the half NFR-043 actually
+         names — is spanned in-process instead; see AcmpTelemetry. -->
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.17.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -46,6 +57,15 @@
     <ProjectReference Include="..\Modules\Integrations\Webex\Acmp.Modules.Integrations.Webex.csproj" />
     <!-- Shared composition root (ADR-0024): AddAcmpModules / AddAcmpHangfireStorage, shared with Acmp.Worker. -->
     <ProjectReference Include="..\Acmp.Bootstrap\Acmp.Bootstrap.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      DEF-078: ObjectStoreHealthCheck is internal but must be unit-assertable. Exposing internals to the test
+      project is preferred over making the type public - the readiness checks are composition detail, not API
+      surface, and widening them to be testable would be letting the test dictate the design.
+    -->
+    <InternalsVisibleTo Include="Acmp.Api.Tests" />
   </ItemGroup>
 
 </Project>

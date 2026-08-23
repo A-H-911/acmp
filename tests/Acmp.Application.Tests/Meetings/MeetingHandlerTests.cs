@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
@@ -48,6 +49,19 @@ public class MeetingHandlerTests
         u.DisplayName.Returns(name);
         return u;
     }
+
+    // DW-025: these handlers now close a guest's access window when the slot it was granted for goes
+    // away. The behaviour itself is proven in GuestWindowTests / the API tests; here the port is a
+    // no-op stand-in so the existing assertions keep testing what they were written for.
+    private static IGuestWindowWriter NoWindows() => Substitute.For<IGuestWindowWriter>();
+
+    // DEF-073 / AC-011: the meeting READS now scope a guest-only caller to the meetings they present
+    // at. Every principal in this file is a committee member — the ICurrentUser substitute reports no
+    // roles, so AcmpRoles.IsGuestOnly is false and the scope helper returns null (no filtering) without
+    // ever consulting the directory. A bare substitute is therefore the honest stand-in here rather
+    // than a convenience: if a change ever made these reads resolve a NON-guest, this returns null from
+    // ResolveMemberAsync and the resulting failure is the signal.
+    private static ICommitteeDirectory NoDirectory() => Substitute.For<ICommitteeDirectory>();
 
     private static IClock Clock(DateTimeOffset now)
     {
@@ -129,7 +143,7 @@ public class MeetingHandlerTests
         timeboxed.Items.Single(i => i.TopicId == t1).TimeboxMinutes.Should().Be(30);
 
         var newPresenter = Guid.NewGuid();
-        var assigned = await new AssignPresenterHandler(db).Handle(new AssignPresenterCommand(meetingId, t1, newPresenter, "Noura P."), default);
+        var assigned = await new AssignPresenterHandler(db, NoWindows(), clock).Handle(new AssignPresenterCommand(meetingId, t1, newPresenter, "Noura P."), default);
         assigned.Items.Single(i => i.TopicId == t1).PresenterName.Should().Be("Noura P.");
     }
 
@@ -186,7 +200,7 @@ public class MeetingHandlerTests
 
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("InProgress");
         detail.Agenda!.Status.Should().Be("Locked");
         scheduler.Entered.Should().ContainSingle().Which.Should().Be(topic);
@@ -208,7 +222,7 @@ public class MeetingHandlerTests
         await new MarkAttendanceHandler(db, clock, Substitute.For<IAuditSink>(), user)
             .Handle(new MarkAttendanceCommand(meetingId, member, "Omar H.", AttendanceRole.Member, AttendanceStatus.Present, true), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Attendance.Should().ContainSingle(a => a.UserId == member && a.Status == "Present");
     }
 
@@ -227,7 +241,7 @@ public class MeetingHandlerTests
         await new CaptureDiscussionHandler(db, clock, user).Handle(new CaptureDiscussionCommand(meetingId, topic, "Consensus on direction."), default);
         await new RecordActualTimeHandler(db).Handle(new RecordActualTimeCommand(meetingId, topic, 12, AgendaItemOutcome.Discussed), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Discussions.Should().ContainSingle(d => d.TopicId == topic && d.Body == "Consensus on direction.");
         detail.Agenda!.Items.Single().ActualMinutes.Should().Be(12);
         detail.Agenda.Items.Single().Outcome.Should().Be("Discussed");
@@ -241,7 +255,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
 
-        var list = await new GetMeetingsHandler(db).Handle(new GetMeetingsQuery(), default);
+        var list = await new GetMeetingsHandler(db, NoDirectory(), User()).Handle(new GetMeetingsQuery(), default);
         list.Should().ContainSingle();
         list[0].ItemCount.Should().Be(1);
 
@@ -320,7 +334,7 @@ public class MeetingHandlerTests
 
         await new EndMeetingHandler(db, clock, audit, user).Handle(new EndMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("Held");
         detail.Agenda!.Status.Should().Be("Closed");
         await audit.Received(1).EmitEnrichedAsync("Meetings.MeetingHeld", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
@@ -334,7 +348,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(Guid.NewGuid(), "Quorum lost"), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
@@ -347,7 +361,7 @@ public class MeetingHandlerTests
         var (db, meetingId, _) = await StartedMeetingAsync(user, clock);   // InProgress — Cancel allows Scheduled only
         await using var _ = db;
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "Too late"), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -360,7 +374,7 @@ public class MeetingHandlerTests
         var (db, meetingId) = await ScheduledMeetingAsync(user, clock);
         await using var _ = db;
 
-        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user)
+        var act = () => new CancelMeetingHandler(db, clock, Substitute.For<IAuditSink>(), user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "   "), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -374,7 +388,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         var audit = Substitute.For<IAuditSink>();
 
-        await new CancelMeetingHandler(db, clock, audit, user)
+        await new CancelMeetingHandler(db, clock, audit, user, NoWindows())
             .Handle(new CancelMeetingCommand(meetingId, "Quorum will not be met"), default);
 
         var meeting = await db.Meetings.SingleAsync();
@@ -391,7 +405,7 @@ public class MeetingHandlerTests
         var user = User(); var clock = Clock(Now);
         await using var db = NewDb(user, clock);
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(Guid.NewGuid(), Guid.NewGuid()), default);
 
         await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Agenda not found*");
@@ -405,7 +419,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(meetingId, Guid.NewGuid()), default);   // unknown topic
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -418,7 +432,7 @@ public class MeetingHandlerTests
         var (db, meetingId, topic) = await StartedMeetingAsync(user, clock);   // agenda Locked at start
         await using var _ = db;
 
-        var act = () => new RemoveAgendaItemHandler(db)
+        var act = () => new RemoveAgendaItemHandler(db, NoWindows(), clock)
             .Handle(new RemoveAgendaItemCommand(meetingId, topic), default);
 
         await act.Should().ThrowAsync<InvalidOperationException>();            // RequireEditable
@@ -434,7 +448,7 @@ public class MeetingHandlerTests
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, drop, "TOP-2026-001", "Drop", false, 15, Presenter, "P"), default);
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, keep, "TOP-2026-002", "Keep", false, 15, Presenter, "P"), default);
 
-        var agenda = await new RemoveAgendaItemHandler(db).Handle(new RemoveAgendaItemCommand(meetingId, drop), default);
+        var agenda = await new RemoveAgendaItemHandler(db, NoWindows(), clock).Handle(new RemoveAgendaItemCommand(meetingId, drop), default);
 
         agenda.Items.Should().ContainSingle().Which.TopicId.Should().Be(keep);
         agenda.Items.Single().Order.Should().Be(1);                           // renumbered from the gap

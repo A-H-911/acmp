@@ -1,0 +1,265 @@
+/*
+ * FR-159 / DEC-037 — the GUEST / PRESENTER SHELL, transcribed from
+ * "ACMP Navigation & IA.dc.html" lines 304-347 (INV-014). The literals below are the reference's own:
+ * the 11px/18px banner padding, the 760px column, the 12px card radius, the 34px and 40px icon tiles,
+ * and the 10.5px uppercase labels. Logical properties throughout, so RTL mirrors without a second rule.
+ */
+
+.gs {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 520px;
+}
+
+/* Full-bleed warning strip above the content, exactly as drawn. */
+.gs-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 18px;
+  background: var(--st-warn-bg);
+  border-block-end: 1px solid color-mix(in srgb, var(--st-warn-fg) 22%, transparent);
+  color: var(--st-warn-fg);
+}
+.gs-banner-text {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.gs-banner-expiry {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.gs-body {
+  flex: 1 1 auto;
+  padding: 22px 24px;
+  background: var(--bg-app);
+}
+.gs-col {
+  max-inline-size: 760px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gs-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* ---- Topic card ---- */
+.gs-topic {
+  padding: 18px 20px;
+}
+.gs-topic-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 9px;
+  flex-wrap: wrap;
+}
+.gs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 22px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--st-neutral-bg);
+  color: var(--st-neutral-fg);
+}
+.gs-key {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.gs-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.gs-summary {
+  margin-block-start: 13px;
+  padding-block-start: 13px;
+  border-block-start: 1px solid var(--border-soft);
+}
+.gs-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-block-end: 6px;
+}
+.gs-summary-text {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+
+/* ---- Agenda-slot card ---- */
+.gs-slot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+}
+.gs-slot-icon {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 10px;
+  background: var(--st-sched-bg);
+  color: var(--st-sched-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.gs-slot-main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.gs-slot-main .gs-label {
+  margin-block-end: 0;
+}
+.gs-slot-meeting {
+  font-size: 14px;
+  font-weight: 600;
+  margin-block-start: 2px;
+}
+.gs-slot-detail {
+  font-size: 12px;
+  color: var(--text-2);
+  font-family: var(--mono);
+  margin-block-start: 1px;
+}
+.gs-timebox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  block-size: 32px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  background: var(--primary-tint);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  flex: 0 0 auto;
+}
+
+/* ---- Materials ---- */
+.gs-materials {
+  overflow: hidden;
+}
+.gs-materials-head {
+  padding: 12px 16px;
+  border-block-end: 1px solid var(--border-soft);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.gs-materials-empty {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.gs-material {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  inline-size: 100%;
+  text-align: start;
+  border: 0;
+  border-block-end: 1px solid var(--border-soft);
+  background: transparent;
+  padding: 12px 16px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.gs-material:last-child {
+  border-block-end: 0;
+}
+.gs-material:hover:not(:disabled) {
+  background: var(--subtle);
+}
+.gs-material:disabled {
+  cursor: progress;
+}
+.gs-material-icon {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.gs-material-icon.is-doc {
+  background: var(--st-danger-bg);
+  color: var(--st-danger-fg);
+}
+.gs-material-icon.is-other {
+  background: var(--st-info-bg);
+  color: var(--st-info-fg);
+}
+.gs-material-main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.gs-material-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gs-material-meta {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.gs-material-error {
+  display: block;
+  font-size: 11.5px;
+  color: var(--st-danger-fg);
+}
+.gs-material-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+/* The chevron points the way the language reads. */
+[dir='rtl'] .gs-material-open svg {
+  transform: scaleX(-1);
+}
+
+.gs-ended {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -6,7 +6,22 @@ import { renderWithAuth } from '../test/render';
 import type { Member } from '../api/members';
 import type { SystemHealth } from '../api/systemHealth';
 
-vi.mock('../api/members', () => ({ useMembers: vi.fn() }));
+// The user-detail sub-state now includes the invite section (FR-156) and the role editor (FR-157),
+// so this module mock must cover their hooks too — otherwise the detail assertion fails on an
+// undefined hook rather than on the sub-state behaviour it is actually about.
+// ⚠ This is an EXPLICIT factory, not importOriginal — so every hook the page's subtree calls has to
+// be listed here or it resolves to undefined. `useStreams` joined the list when the Streams tab
+// stopped being an empty state and started reading the seeded taxonomy; `streamName` is the real
+// helper because the tab renders names through it.
+vi.mock('../api/members', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../api/members')>()),
+  useMembers: vi.fn(),
+  useStreams: vi.fn(),
+  useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),
+}));
+import { useStreams } from '../api/members';
+const mockUseStreams = useStreams as unknown as Mock;
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;
 
@@ -23,7 +38,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهندسة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
 ];
 
@@ -43,6 +58,13 @@ function renderPage() {
     isLoading: false, isError: false, refetch: vi.fn(),
   });
   mockUseRequeue.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false, variables: undefined });
+  mockUseStreams.mockReturnValue({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false, isError: false, refetch: vi.fn(),
+  });
   renderWithAuth(<AdministrationPage />, { roles: ['administrator'] });
 }
 
@@ -52,21 +74,31 @@ describe('AdministrationPage — sub-tab container', () => {
     mockUseHealth.mockReset();
     mockUseJobs.mockReset();
     mockUseRequeue.mockReset();
+    mockUseStreams.mockReset();
   });
 
-  it('renders all six sub-tabs, all navigable (design disables none; Templates moved to /templates)', () => {
+  it('renders the five remaining sub-tabs, all navigable (Templates → /templates, Users → /members)', () => {
     renderPage();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(6);
+    expect(tabs).toHaveLength(5);
     expect(tabs.filter((t) => (t as HTMLButtonElement).disabled)).toHaveLength(0);
     expect(screen.queryByRole('tab', { name: /Templates/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Users & Membership/ })).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('defaults to the Users directory', () => {
+  // ⚠ USERS LEFT THIS PAGE (OQ-069 → DEC-041, divergence recorded as SC-008). The design draws a
+  // Users tab here, but FR-156/FR-157 grant the capability to "an Administrator OR SECRETARY" and
+  // this route is Administrator-only, so half of each requirement was unreachable. The roster,
+  // invite and role editor now live on /members, which admits both — see MembersPage.test.tsx for
+  // the behaviour that moved, including the user-detail sub-state this file used to assert.
+  it('no longer hosts the users directory — it moved to /members', () => {
     renderPage();
-    expect(screen.getByText('Roles are read-only')).toBeInTheDocument();
-    expect(screen.getByText('Khalid A')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Users & Membership/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('Khalid A')).not.toBeInTheDocument();
+  });
+
+  it('defaults to System Health, the first remaining tab', () => {
+    renderPage();
+    expect(screen.getByRole('tab', { name: /System Health/ })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('switches to System Health and renders live + unmonitored service tiles', async () => {
@@ -77,8 +109,15 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getByText('All core systems operational')).toBeInTheDocument();
     expect(screen.getByText('SQL Server')).toBeInTheDocument();
     expect(screen.getAllByText('Operational').length).toBeGreaterThan(0);
-    // A service with no registered check is honest about it, not shown as down.
-    expect(screen.getByText('MinIO object storage')).toBeInTheDocument();
+    // A service with no registered check is honest about it, not shown as down. This fixture reports
+    // only api + sqlserver, so the object-store tile is legitimately unmonitored here.
+    //
+    // ⚠ WAS 'MinIO object storage' UNTIL DEF-039 RENAMED THE LABEL to 'Object storage' (the cloud stack
+    // runs S3, so a MinIO-labelled tile was wrong where it mattered most). This assertion broke, and the
+    // way it was missed is the transferable part: the rename was checked by grepping for the i18n KEY
+    // (`minio`), which found nothing — while this test asserts the rendered LABEL. A clean scan that
+    // searches for the wrong token is indistinguishable from a clean codebase.
+    expect(screen.getByText('Object storage')).toBeInTheDocument();
     expect(screen.getAllByText('Monitoring not configured').length).toBeGreaterThan(0);
   });
 
@@ -102,11 +141,17 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getAllByText('Planned').length).toBeGreaterThan(0);
   });
 
-  it('shows honest-empty for streams (later-phase module)', async () => {
+  // ⚠ WAS "shows honest-empty for streams (later-phase module)". That empty state outlived its own
+  // premise: migration 20260813125628_Membership_StreamTaxonomy_ADR0042 seeded the taxonomy, and the
+  // tab kept claiming the registry had not shipped. The tab now reads GET /api/members/streams.
+  it('switches to Streams and lists the seeded taxonomy, not an empty state', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('tab', { name: /Streams/ }));
-    expect(screen.getByText('No streams configured')).toBeInTheDocument();
+
+    expect(screen.getByText('Core')).toBeInTheDocument();
+    expect(screen.getByText('All streams')).toBeInTheDocument();
+    expect(screen.queryByText(/No streams/i)).not.toBeInTheDocument();
   });
 
   it('switches to Job Monitor and renders the live Hangfire stat tiles', async () => {
@@ -117,15 +162,4 @@ describe('AdministrationPage — sub-tab container', () => {
     expect(screen.getByText('3')).toBeInTheDocument(); // succeeded tile
   });
 
-  it('opening a user detail replaces the tabbed view (design userdetail sub-state)', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await user.click(screen.getByRole('button', { name: 'View user detail' }));
-    expect(screen.getByText('Back to users')).toBeInTheDocument();
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Back to users' }));
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getByText('Khalid A')).toBeInTheDocument();
-  });
 });

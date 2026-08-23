@@ -1,6 +1,13 @@
 /*
- * Create-action dialog (P8b2b, W13). Launched from a SOURCE artifact page (a decision, a meeting…) —
- * there is no standalone create, so the source (type/id/key) is pre-filled and shown locked. Matches the
+ * Create-action dialog (P8b2b, W13). The source (type/id/key) is always pre-filled and shown locked —
+ * an ActionItem carries a non-nullable (SourceType, SourceId), so this dialog never invents one.
+ *
+ * It is reached two ways, and BOTH supply the source before it mounts: from a source artifact page (a
+ * decision, a meeting), or from the Actions register's "New action" CTA via RaiseActionFromDialog, which
+ * exists precisely to choose the source first. The earlier note here said "there is no standalone
+ * create" — that was true until 2026-08-10; the register CTA is the design's `primary: New action`,
+ * wired by operator decision. This dialog itself is unchanged by that: it still requires a source.
+ * Matches the
  * `action` form in "ACMP Create Flows & Dialogs.dc.html" (Title · Linked-to · Owner · Due · Priority ·
  * Description) — a real design reference, so this is composed to it (not a no-reference composition).
  *

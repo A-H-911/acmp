@@ -52,9 +52,9 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await page.getByRole('textbox', { name: 'Title', exact: true }).fill(title);
         await page.getByRole('textbox', { name: 'Description', exact: true }).fill('E2E description for the core-loop spec.');
         await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('E2E justification — exercises the full loop.');
-        const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-        await streams.fill('Platform');
-        await streams.press('Enter');
+        // ADR-0042 step 2: affected streams are toggle chips over the seeded taxonomy, not free text.
+        // The chip's accessible name is the DISPLAY name ("Core"); the value posted is the code ("core").
+        await page.getByRole('button', { name: 'Core', exact: true }).click();
 
         const [createRes] = await Promise.all([
           page.waitForResponse((r) => r.url().endsWith('/api/topics') && r.request().method() === 'POST'),
@@ -68,7 +68,14 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
       await test.step('secretary accepts the topic (Kanban → owner = member)', async () => {
         await page.goto('/backlog');
         await page.getByRole('button', { name: 'Kanban' }).click();
+        // Narrow to this run's topic before touching the card. GetBacklog pages at 25 and the kanban
+        // sorts (Priority, CreatedAt, Key) ascending, so a just-created priority-0 topic sorts LAST and
+        // falls past the fold on any environment that is not freshly built. This spec passed at 12:37
+        // and timed out at 16:00 with no code change — the suite creates ~60 topics per full run, so it
+        // pushes its OWN fixture off page 1 as it goes. Search matches Title OR Key.
+        await page.locator('.bk-filters').getByRole('searchbox').fill(topic.key); // 300 ms debounce
         const card = page.locator('.kb-card', { hasText: topic.key });
+        await expect(card).toBeVisible();
         await card.focus();
         await card.press('m'); // keyboard move popover (more deterministic than native drag)
         await page.getByRole('button', { name: 'Accepted' }).click();
@@ -114,8 +121,18 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await expect(page.locator('.mt-agenda-list')).toContainText(topic.key);
 
         // Every agenda item needs a presenter before the agenda can be published (domain invariant).
+        // Nothing in the UI gates publish on the assignment landing — the button is enabled on
+        // items.length alone (AgendaBuilder.tsx:216) — so publish could reach the server before the
+        // presenter POST committed and come back 409. Wait for the assignment, same as every other
+        // step in this spec.
         await page.getByRole('button', { name: `Presenter for ${topic.key}` }).click();
-        await page.getByRole('option', { name: memberName, exact: true }).click();
+        const [presRes] = await Promise.all([
+          page.waitForResponse(
+            (r) => r.url().includes(`/agenda/items/${topic.id}/presenter`) && r.request().method() === 'POST',
+          ),
+          page.getByRole('option', { name: memberName, exact: true }).click(),
+        ]);
+        expect(presRes.status()).toBe(200);
 
         await page.getByRole('button', { name: 'Publish & notify' }).first().click();
         const pubDialog = page.getByRole('dialog');

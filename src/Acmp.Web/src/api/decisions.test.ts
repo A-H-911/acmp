@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useDecision, useDecisionsRegister, useSupersedeDecision } from './decisions';
+import { useDecision, useDecisionsRegister, useSupersedeDecision, useRecordDecision, useIssueDecision } from './decisions';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
@@ -86,6 +86,50 @@ describe('useSupersedeDecision', () => {
       title: { en: 't', ar: 't' }, statement: { en: 's', ar: 's' }, rationale: { en: 'r', ar: 'r' },
       conditions: [], reason: { en: 'x', ar: 'x' },
     });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect((result.current.error as ApiError).status).toBe(403);
+  });
+});
+
+describe('useRecordDecision', () => {
+  it('POSTs the draft body (incl. the coupled voteId) and invalidates the register', async () => {
+    const spy = stubFetch(() => ({ status: 201, jsonBody: { id: 'd1', key: 'DECN-2026-020' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useRecordDecision(), { wrapper });
+    result.current.mutate({
+      topicId: 'top-1', meetingId: 'mtg-1', outcome: 'Rejected',
+      title: { en: 'Reject the migration', ar: 'رفض' }, statement: { en: 's', ar: 's' }, rationale: { en: 'r', ar: 'r' },
+      alternatives: null, voteId: 'vote-1', conditions: [],
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/decisions');
+    expect(methodOf(spy)).toBe('POST');
+    expect((lastBody(spy) as { voteId?: string }).voteId).toBe('vote-1');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['decisions', 'register'] });
+  });
+});
+
+describe('useIssueDecision', () => {
+  it('POSTs the override body to /{id}/issue and refreshes both decisions and votes (auto-ratify)', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useIssueDecision(), { wrapper });
+    result.current.mutate({ id: 'd1', chairOverride: true, overrideJustification: { en: 'j', ar: 'j' } });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/decisions/d1/issue');
+    expect(methodOf(spy)).toBe('POST');
+    expect(lastBody(spy)).toMatchObject({ chairOverride: true, overrideJustification: { en: 'j' } });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['decisions'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['votes'] });
+  });
+
+  it('surfaces the SoD-3 403 (chair was the vote closer) instead of swallowing it', async () => {
+    stubFetch(() => ({ status: 403, jsonBody: { title: 'Denied' } }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useIssueDecision(), { wrapper });
+    result.current.mutate({ id: 'd1', chairOverride: false, overrideJustification: null });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect((result.current.error as ApiError).status).toBe(403);
   });

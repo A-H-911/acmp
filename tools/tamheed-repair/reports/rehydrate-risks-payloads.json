@@ -1,0 +1,14 @@
+[
+  {
+    "type": "risk",
+    "id": "RISK-001",
+    "title": "**Keycloak claim mapping coordination**: ACMP requires specific group/realm-role claim names from Keycloak. If the org's Keycloak admin cannot expose the required claims in the required format before ",
+    "risk_state": "retired"
+  },
+  {
+    "type": "risk",
+    "id": "RISK-004",
+    "title": "**At-rest encryption keys stored on-host (no HSM)**: At this scale (on-prem VM, ≤20 users, no budget for HSM), database and MinIO encryption keys will be stored on the same host. This is a weaker key-",
+    "risk_state": "accepted"
+  }
+]

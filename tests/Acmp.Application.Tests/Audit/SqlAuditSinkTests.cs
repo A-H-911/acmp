@@ -1,6 +1,8 @@
-﻿using Acmp.Shared.Application.Abstractions;
+﻿using System.Reflection;
+using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -142,5 +144,69 @@ public class SqlAuditSinkTests
         row.Outcome.Should().Be(AuditOutcome.Denied);
         row.BeforeJson.Should().BeNull();
         row.AfterJson.Should().BeNull();
+    }
+
+    // F-04 (D-23) — the tip-race retry branch (AppendAsync catch + IsTipRace) is otherwise exercised only by the
+    // real-SQL concurrency integration tests, whose coverage depends on the OS scheduler actually interleaving
+    // appends — the source of the flaky >=95% coverage gate on this file. This drives the branch deterministically:
+    // the first SaveChangesAsync throws a fabricated audit tip-race, the second succeeds, proving detach+retry
+    // recovers without forking or duplicating the chain.
+    [Fact]
+    public async Task Append_retries_on_a_tip_race_and_records_exactly_one_row()
+    {
+        var interceptor = new ThrowOnceOnSaveInterceptor(new DbUpdateException("audit tip-race",
+            MakeTipRaceSqlException(2601, "Violation of UNIQUE KEY constraint 'IX_AuditEvents_PreviousHash'.")));
+        await using var db = new AuditDbContext(new DbContextOptionsBuilder<AuditDbContext>()
+            .UseInMemoryDatabase(nameof(Append_retries_on_a_tip_race_and_records_exactly_one_row))
+            .AddInterceptors(interceptor).Options);
+        var sink = Sink(db);
+
+        await sink.EmitAsync("Test.Raced", "kc-1", new { X = 1 });
+
+        interceptor.Calls.Should().Be(2, "the first attempt lost the tip-race and the sink retried");
+        var rows = await db.AuditEvents.ToListAsync();
+        rows.Should().ContainSingle("the retry re-inserted rather than forking or duplicating the chain");
+    }
+
+    // Fails the first SaveChanges with a tip-race DbUpdateException, then delegates — drives the retry branch
+    // without a real SQL Server (AuditDbContext is sealed, so intercept rather than subclass).
+    private sealed class ThrowOnceOnSaveInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesInterceptor
+    {
+        private readonly Exception _first;
+        public int Calls { get; private set; }
+
+        public ThrowOnceOnSaveInterceptor(Exception first) => _first = first;
+
+        public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> SavingChangesAsync(
+            Microsoft.EntityFrameworkCore.Diagnostics.DbContextEventData eventData,
+            Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result, CancellationToken ct = default)
+        {
+            Calls++;
+            if (Calls == 1)
+                throw _first;
+            return base.SavingChangesAsync(eventData, result, ct);
+        }
+    }
+
+    // Microsoft.Data.SqlClient 5.1.x exposes no public SqlException/SqlError/SqlErrorCollection constructor, so a
+    // tip-race SqlException (Number 2601/2627, message naming an audit-chain unique index) is fabricated via the
+    // internal members. Test-only, never production.
+    private static SqlException MakeTipRaceSqlException(int number, string message)
+    {
+        var errorCtor = typeof(SqlError).GetConstructor(
+            BindingFlags.NonPublic | BindingFlags.Instance, binder: null,
+            new[] { typeof(int), typeof(byte), typeof(byte), typeof(string), typeof(string), typeof(string), typeof(int), typeof(Exception) },
+            modifiers: null) ?? throw new InvalidOperationException("SqlError ctor shape changed.");
+        var error = (SqlError)errorCtor.Invoke(new object?[] { number, (byte)0, (byte)0, "server", message, "proc", 0, null });
+
+        var collection = (SqlErrorCollection)Activator.CreateInstance(typeof(SqlErrorCollection), nonPublic: true)!;
+        typeof(SqlErrorCollection).GetMethod("Add", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(collection, new object[] { error });
+
+        var createException = typeof(SqlException).GetMethod("CreateException",
+            BindingFlags.NonPublic | BindingFlags.Static, binder: null,
+            new[] { typeof(SqlErrorCollection), typeof(string) }, modifiers: null)
+            ?? throw new InvalidOperationException("SqlException.CreateException shape changed.");
+        return (SqlException)createException.Invoke(null, new object[] { collection, "16.0.0" })!;
     }
 }

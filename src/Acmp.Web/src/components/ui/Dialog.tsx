@@ -27,6 +27,17 @@ export function Dialog({ open, onClose, title, description, tone = 'default', ic
   const prevFocus = useRef<HTMLElement | null>(null);
   const titleId = useId();
 
+  // ⚠ onClose IS READ THROUGH A REF SO IT CANNOT RE-RUN THE EFFECT BELOW. Callers routinely pass an
+  // inline arrow, which is a new identity on every render — with onClose in the dependency array the
+  // trap tore down and rebuilt on each one, and its cleanup restores focus to the element that was
+  // focused before the dialog opened. Inside a dialog containing a text field that means the SECOND
+  // keystroke lands somewhere else: typing "nadia@..." stored "n". Harmless for a confirm dialog,
+  // which is why it survived until a dialog had an input in it.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
     prevFocus.current = document.activeElement as HTMLElement | null;
@@ -35,7 +46,7 @@ export function Dialog({ open, onClose, title, description, tone = 'default', ic
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === 'Tab' && panel) {
@@ -59,7 +70,7 @@ export function Dialog({ open, onClose, title, description, tone = 'default', ic
       document.removeEventListener('keydown', onKey);
       prevFocus.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

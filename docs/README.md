@@ -7,6 +7,8 @@ owner: lead-secretary
 
 # ACMP — execution-ready package
 
+> **⚠️ FROZEN ARCHIVE (2026-07-22).** This Keystone v1 tree was migrated to the **Tamheed v2 relational package** at [`../tamheed-package/`](../tamheed-package/) and is now a read-only historical record. Do **not** edit these files or treat them as current state. The system of record is the Tamheed package — query it via the `tamheed` MCP tools; human review surface: `../tamheed-package/review.html`. See [`../AGENTS.md`](../AGENTS.md).
+
 This directory is the **Keystone v1.0.0 planning & governance package** for the Architecture Committee Management Platform (ACMP). It is the single source of truth for *what* to build, *why*, *which decisions are settled*, *what remains open*, and *how* to execute — traceable end-to-end. The running application lives in `../src`; the agent control surface is [`../AGENTS.md`](../AGENTS.md) (imported by [`../CLAUDE.md`](../CLAUDE.md)).
 
 ## How an agent should consume this package

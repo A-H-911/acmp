@@ -2,13 +2,270 @@
 artifact: progress-log
 status: active
 version: v1
-updated: 2026-07-17
+updated: 2026-07-21
 ---
 
 # ACMP Progress Log
 
 Per-phase, dated log of execution progress. Keystone gate **G-PROGRESS**.
 Newest entries on top. Each entry: what was done, decisions applied, what's next.
+
+---
+
+### 2026-07-20 — D-23 closeable-gap follow-up — 5 items on one branch (AC-032/043/057 → Met)
+
+**Slice:** `feat/D23-closeable-gaps` (off `main` after P19 #148). The five buildable gaps the P19 audit surfaced, built as one combined PR (operator choice), in the order the plan set to minimize CI thrash. Every shape was re-verified against source first (a 2nd devil's-advocate pass caught a real reorder-ordering bug — see below).
+
+**Committed (7 commits):**
+1. **F-04 de-flake** — a deterministic `SqlAuditSink` tip-race unit test (an EF `SaveChanges` interceptor throws a fabricated `Microsoft.Data.SqlClient.SqlException` 2601 on the first save, delegates on the second) so the retry branch's coverage stops depending on the OS scheduler. First commit ⇒ every later push runs on deterministic coverage.
+2. **AC-032 → Met** — `RejectTopicHandler` notifies the submitter on reject (`INotificationChannel` + `TopicNotifications.TopicRejected`, EN/AR, skip-self).
+3. **AC-057 → Met** — a daily headless `SweepTopicSlaHandler` (mirrors `SweepActionReminders`) notifies the Secretary roster on SLA breach; idempotent via a new persisted `Topic.SlaNotifiedAt` marker (migration `Topics_AddSlaNotifiedAt`) reset in `Topic.Transition`.
+4. **AC-043 → Met** — full-stack keyboard priority reorder, **closing the A-03 backlog keyboard-alternative leg** (the one in-repo `[BLOCK]` leg). Handler-side bucket-scoped swap that renumbers 1..N contiguously (priorities default to 0, so a naive swap is a no-op — the **correctness bug the review caught**); a deterministic (Priority, CreatedAt, Key) tiebreak in both the handler and `GetBacklog` so display matches persistence; `POST /priority/move {delta}`; kanban move buttons (≥24px), e2e persistence spec.
+5. **wcag22aa** — the e2e axe sweep now includes `wcag22aa` (adds `target-size`) and scans the kanban view where the reorder controls live.
+6. **BL-016** — server validation failures carry a stable `ErrorCode`; the SPA localizes EN/AR via an `errors.*` catalog (`localizedValidationMessage`); apiClient `errors` type corrected to the real wire shape. **AC-049/AC-030 kept Partial** — the browser live-leg (an upload rejection rendered localized) is the remaining leg.
+7. **Re-audit** — AC-032/043/057 → Met (rollup **60 Met / 13 Partial / 1 Pending / 0 Not-met**); the P19 gate rows A-03 and F-04 updated (both now built/de-flaked, e2e/coverage re-confirmed in CI).
+
+**Verification:** backend `dotnet test` green on the changed handlers (F-04, reject, SLA sweep, move-priority, endpoint); FE Kanban/Backlog/apiClient/SubmitTopic/topics tests green; i18n parity 1797; migration builds; e2e specs (`ac043-reorder`, extended `rtl-a11y`) verified in CI. Keystone 1.0.0 validator 7/7; AC cells bare. **D-23 tail (2026-07-21, `feat/D23-tail-upload-l10n`):** the AC-049/AC-030 localized-validation live-leg (e2e `ac049-upload-l10n` — a mislabelled attachment trips the server magic-byte check and renders the BL-016-localized message, asserted *not* to be the raw server text; required-field submit blocked in-locale, no topic created) → **AC-049/AC-030 → Met. D-23 fully DONE (5/5).** Rollup **62 Met / 11 Partial / 1 Pending / 0 Not-met**.
+
+---
+
+### 2026-07-20 — P19 Final audit & release readiness — reports + CONDITIONAL NO-GO (ladder complete)
+
+**Slice:** `feat/P19-release-readiness` (off `main` after P18b #147 merged, `1f1eaea`). The last ladder slice. Per the P19 prompt: ran the [checkpoints.md](../execution/checkpoints.md) release gates + full [DoD](../execution/definition-of-done.md), produced the final acceptance-audit report (every `AC-###` → verdict, in [acceptance-audit.md](../validation/acceptance-audit.md) §Final Release-Readiness) and a release-notes summary ([status-report.md](status-report.md) §Release Notes v1.0). **Reports-only, decoupled from feature work (operator decision after a devil's-advocate review); P19 flips zero ACs** (stays 57 Met / 16 Partial / 1 Pending / 0 Not-met).
+
+**Verdict: CONDITIONAL NO-GO.** Release readiness is **operator-gated, not code-gated** — every `checkpoints.md` gate is a `[BLOCK]`, and the open ones are human/staging/deploy actions an execution agent cannot legitimately sign (UAT SO-01–04, F-03/F-05 staging, S-01 ASVS, S-03 DAST, S-08 TLS, D-02/D-03 prod backup, live Seq alerts, AC-004 Keycloak realm). Signing them would fabricate governance sign-offs — refused. The gate-run + go-live checklist are recorded in the two reports.
+
+**Devil's-advocate corrections that shaped this slice (verified directly, not asserted):**
+- **F-01 = OPEN, operator/live-leg-gated — NOT closeable by one build.** FR-034 already has Met ACs (AC-045/046), so AC-043 does not bear on F-01; F-01 is open on 6 *other* Must FRs (FR-019/022/025/027/040/044), all built code awaiting a live-leg, plus AC-004 (FR-013 is delivered + gated by S-07). An earlier draft's "AC-043 closes F-01" was wrong.
+- **PASS marks split** into artifact-grounded (i18n 1787, gating scanners green on #147) vs. verify-on-release-commit — no asserted-green in a governance report (the P17a discipline).
+- **F-04 recorded OPEN (flaky):** the `SqlAuditSink` coverage gate is nondeterministic (green→red on identical code across #147 runs — the D-18 tip-race retry branch covers only when a concurrent test hits the race). De-flake before sign-off. Surfaced live when the #147 docs commit's backend job flaked on coverage then passed on rerun.
+
+**Deferred follow-up recorded as D-23** (four buildable gaps: AC-043 keyboard reorder, AC-032/057 notifications, BL-016 validation l10n, wcag22aa e2e). Sub-agent-traced during planning, **not re-verified** — confirm before building.
+
+**Ladder complete: P1–P19 delivered (P14 deferred DEC-028).** Next work is operator go-live execution + the D-23 follow-up, not a new ladder slice.
+
+**Gates:** Keystone 1.0.0 validator 7/7 (G-PROGRESS green, AC cells bare); check-i18n 1787; docs-only (no code delta).
+
+---
+
+### 2026-07-19 — P18 Deployment — P18a hardening (MERGED #146) + P18b backup/runbook
+
+**P18a (`feat/P18a-deploy-hardening`, MERGED PR #146 `7991f93`, all 9 CI checks green).** Three batches finalizing
+deployment per [deployment.md](../domain/deployment.md):
+- **Batch 1 — Docker secrets everywhere (ADR-0032).** Env-var credentials → file-backed Docker secrets at
+  `/run/secrets`. .NET api/worker read them via native `AddKeyPerFile` (`__`→`:`); SQL Server + Keycloak use
+  entrypoint shims (no reliable `_FILE`), MinIO + Postgres use native `*_FILE`. `gen-secrets.sh` materializes
+  `deploy/secrets/*` (0644 in a 0700 dir — 0600 is unreadable by the non-root container UID; **printf not echo** so
+  no trailing newline corrupts the connstr); `up.sh` = single-command bring-up (NFR-052). ⚠ CI caught two bugs a
+  local `docker compose config` did not: the **two-context `Dockerfile.sqlserver`** (compose=repo-root vs
+  `SearchProvidersFtsTests`=deploy/ → the COPY couldn't resolve; **inlined the shim as an ENTRYPOINT**), and the
+  0600→0644 permission fix.
+- **Batch 2 — prod overlay `docker-compose.prod.yml`.** Additive; base stays the dev/e2e stack. Keycloak `start`
+  prod-mode, Seq auth, internal-only ports (Compose `!override`; MinIO/Seq consoles on `127.0.0.1`),
+  `RequireHttpsMetadata`, §9 resource limits, OCI image labels, SQL `/backups` bind-mount.
+- **Batch 3 — least-priv `acmp_svc` + readiness checks (ADR-0031).** ★ **Closes the AC-017/018 "→ P18 least-priv"
+  residual.** Runtime connects as `acmp_svc` (db_datareader+db_datawriter+EXECUTE+acmp_app, **not** db_owner/sysadmin),
+  so the audit-schema DENY finally BINDS. Migrator/runtime split: `--migrate-only` deploy step (a `db-migrate`
+  one-shot, as the sa migrator) runs EF migrations + pre-provisions the Hangfire schema; the runtime sets
+  `Database:MigrateOnStartup=false` + `Hangfire:PrepareSchema=false` and never issues DDL. A `sqlserver-init`
+  one-shot provisions `acmp_svc` + the `acmp_app` role before migrate. NFR-045 readiness: MinIO + Hangfire (critical)
+  + Seq (degraded-only) checks on `/readyz`. **Durable proof (CI):** the extended `AuditImmutabilityDbPermissionTests`
+  shows `acmp_svc` (datawriter + acmp_app, non-sysadmin) is DB-denied audit UPDATE/DELETE — the review rejected the
+  `db_owner` half-measure (it can REVOKE the DENY), so this is the real least-priv. `--migrate-only` verified locally
+  end-to-end (audit + HangFire schemas + acmp_app role, exit 0).
+
+**Rejected the original plan's `db_owner` least-priv (devil's-advocate review):** db_owner can REVOKE the DENY, so it
+neither is least-priv nor closes the residual. Also reaffirmed secrets-everywhere knowing dev/CI values are public.
+
+**P18b (`feat/P18b-backup-runbook`) — Batch 4 backup/restore/warm-standby scripts.** `deploy/scripts/`:
+`backup.sh` (SQL `.bak` + KC `pg_dump` + MinIO `mc mirror` + off-box `scp` + 30d prune; non-SQL legs guarded),
+`restore.sh` (RESTORE WITH REPLACE + verify `decisions.decisions` count — note the doc's `decisions.Decisions` casing
+was wrong), `promote.sh` (warm standby), `crontab.example` (nightly + 4h business-day, NFR-057 RPO ≤4h); ADR-0033
+(backup-as-scripts vs §6's Hangfire sketch); consolidated `deploy/runbooks/README.md`. **Tested restore validated:**
+seed 3 → backup → DELETE 0 → restore → 3 on a real SQL container.
+
+**Operator/P18 residuals that stay open by design (deployment.md §3.4):** TLS certs / topology, C-CRYPTO Step B +
+TDE + MinIO/Seq TLS/SSE + backup encryption, the SQL edition security decision (OQ-040 gates TDE + backup
+encryption), AC-004 Keycloak realm idle-timeout/MFA (OQ-003), the full stack-integrated backup/restore + a real
+standby VM. **Next: P19** (final audit & release readiness).
+
+---
+
+### 2026-07-18 — P17b (final slice) — decision-issuance UI built → AC-014/015/016 Met, F-03 leg landed
+
+**Slice:** `feat/decision-issue-ui` (off `main` after PR #144 merged the 18-AC live-leg slice). This is the P17b **feature**
+build the P17b-0 triage flagged as a D-15-shape product gap: a committee could not issue a decision or ratify a vote
+through the SPA — the "Record decision" button was a disabled "coming soon" stub and `api/decisions.ts` had only
+read + supersede. The backend (`RecordDecision` + `IssueDecision`, SoD-3 co-attestation, vote auto-ratify) was already
+complete; this slice is FE-only.
+
+**Done**
+- `api/decisions.ts`: `useRecordDecision` (POST `/decisions`) + `useIssueDecision` (POST `/{id}/issue`) — the missing mutations.
+- `features/decisions/RecordDecisionDialog.tsx`: a chairman-gated record→issue dialog launched from the in-session
+  `MeetingWorkspace` agenda item (replacing the disabled stub). Couples the agenda item's Closed vote (found client-side
+  in `useVotesRegister({status:'Closed'})` by topic+meeting — there is no vote-by-topic endpoint and the agenda item
+  carries no `voteId`), collects outcome/title/statement/rationale/alternatives?/conditions[] + a chair-override toggle +
+  justification, records once (holds the returned Draft so a failed issue never re-records a duplicate), then issues —
+  surfacing the SoD-3 403 / AC-029 409 inline (D-15 show-and-enforce). Reuses `ConditionsEditor` from `SupersedeDialog`.
+- `MeetingMinutes.tsx`: renders the server-set `approvedBySoleAuthor` flag as a warning badge in the always-mounted banner
+  (AC-014 — the flag was set server-side but never shown).
+- i18n EN+AR (`decisions.record.*`, `meetings.recordDecisionNote`, `meetings.mom.soleAuthor`); decisions.css record-dialog styles.
+- Tests: `RecordDecisionDialog.test` (happy + override + 403-surface + record-once retry guard + validation),
+  `decisions.test` (both new hooks, incl. the SoD-3 403), `MeetingMinutes.test` (badge present/absent), `MeetingWorkspace.test`
+  (chairman opens the dialog; secretary sees it gated). Live specs `p17b-decision-issue.spec.ts` (AC-015/016) +
+  `p17b-sole-author.spec.ts` (AC-014).
+
+**AC flips (Partial → Met, 2026-07-18):**
+- **AC-014** (SoD-2): the sole-author warning badge now renders; proven live (p17b-sole-author.spec).
+- **AC-015** (SoD-3): the chair who closed the vote is denied issue (403) and the UI surfaces it; vote stays Closed. Live (p17b-decision-issue).
+- **AC-016** (SoD-3): a secretary-counted vote lets the chair issue with an override → decision Issued + vote Ratified. Live (p17b-decision-issue).
+
+**F-03 (the real driver):** the previously-missing **"chairman ratify → decision record (Issued)"** leg is now built and
+proven live (AC-016). F-03 itself stays ☐ — it is a P19 full-loop staging sign-off (QA + Secretary), not an AC flip — but
+its last missing evidence now exists.
+
+**Decisions applied**
+- Outcome = **Rejected** (a non-follow-up) in the AC-015/016 specs so the AC-029 downstream-link gate is skipped and the
+  SoD-3 gate is the one reached (gate order in `IssueDecision.cs`: AC-029 → vote-coupling → SoD-3). A follow-up outcome
+  would 409 before SoD-3.
+- Design reconciliation recorded as **OQ-058**: the design's two surfaces (create form + vote-screen override) are merged
+  into one meeting-workspace dialog; design-only create-form fields (Approving authority / Effective date / Affected
+  systems) dropped (no backend field — implement-as-specified); the immutability confirm folded inline.
+
+**Next**
+- Land the branch (specs + audit flips in the same PR, R9) — CI's e2e job proves the AC-014/015/016 live legs.
+- P17b is now complete. Remaining ladder: **P18** (deployment) → **P19** (final audit & release readiness, incl. the F-03 staging gate).
+
+---
+
+### 2026-07-17 — P17a (test hygiene) — ★ un-broke a critical Keystone gate that `main` shipped red ★
+
+**Slice:** `feat/p17a-test-hygiene`. **No AC verdict flips** (by design — P17a is hygiene; verdict work is P17b,
+gated behind the P17b-0 triage). Plan: `~/.claude/plans/shimmying-splashing-newt.md` (revision 2, after a
+devil's-advocate pass broke three of revision 1's claims — see §Corrections below).
+
+**★ The find — `main` was `NOT READY` on critical gate `G-PROGRESS`, while the record said the validator was green.**
+Discovered by running the validator as a routine P17a gate, then bisecting rather than assuming:
+
+| commit | AC id cells in `acceptance-audit.md` | `validate_package.py docs` |
+|---|---|---|
+| `5743f88` (Keystone migration) | bare | **OK** |
+| `11c6372` (P16b) | bare | **OK** |
+| `e15cfff` (P16 #141 — the "G-IDS fix") | **bold** | **NOT READY — G-PROGRESS**, 74 coverage gaps |
+| `6984e5a` (HEAD before this slice) | bold | **NOT READY — G-PROGRESS** |
+| this slice (un-bolded) | bare | **OK — 7/7 critical PASS** |
+
+74 = the full AC set: the validator could not see **a single** verdict. **Root cause, read from the validator, not
+inferred:** `G-IDS` **already special-cases this file by name** and never scans its tables for definitions
+(`validate_package.py:428-436` — `audit_view = "acceptance-audit" in pf.rel.lower()`; `for table in pf.tables: if
+audit_view: continue`), so its AC cells can never be duplicate definitions, bold or bare, and `_guess_id_column` is
+**never reached** for it. **`G-PROGRESS` has no such skip** (`:968-988`): it matches each id cell with
+`cell.strip().strip("`")` + `ID_TOKEN_RE.fullmatch` — which strips **backticks only, never asterisks** — so
+`**AC-001**` matched nothing and every AC reported *"not represented in the acceptance audit (coverage gap)"*.
+
+**Two prior claims retracted** (both corrected in place, at their source): (1) this status report's *"Keystone
+validator NOT READY on G-IDS but pre-existing and identical on `main` (74 findings)"* — **`main` was `OK`**;
+(2) the P16 follow-up's *"G-IDS 74→0; package now RESULT: OK (6/6)"* — it turned a green package **red**, and the
+"green" was recorded **without re-running the validator after the change**. The validator is unchanged since
+2026-06-22, so there is no tooling-version excuse. **Why the reasoning failed (the transferable lesson):** the P16
+note cites `_guess_id_column`'s ≥60% rule *accurately* but never checked the **caller** six lines above it, and never
+ran the validator both ways. **Reading a function is not knowing it runs.** The stale `<!-- G-IDS -->` comment that
+asserted "the bold is load-bearing; un-bolding silently re-reds a critical gate" is replaced with the verified
+mechanism, so the next reader cannot re-break it. Ids **MUST stay bare**; do not link them either (no per-AC
+headings ⇒ 74 broken anchors).
+
+**D-19 (flaky `DecisionPage.test.tsx:174`) — fixed, and its register diagnosis was wrong.** The row blamed
+*"non-deterministic decision selection (order-/hash-dependent pick over the mocked decisions list)"*. **There is no
+list and no selection**: `useDecision` is mocked to one fixed object (`:54-56`) and the mutation is a fixed
+`mockResolvedValue` (`:78`). Real mechanism: `loc` (`LocationDisplay`) is **always mounted**, so
+`await screen.findByTestId('loc')` resolved on its first poll without waiting, and `toHaveTextContent` evaluated
+**once** — before `SupersedeDialog.onConfirm`'s **post-await** `navigate()` (`SupersedeDialog.tsx:70-81`) flushed —
+reading the initial route `DECN-2026-008`. Fix = retry the **assertion**, not the element:
+`await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent(...))`. 8/8 consecutive green (an
+intermittent flake is not *proven* gone by 8 passes; the race is structurally removed, and the runs support it).
+★ **The sibling assertions at `:168`/`:188`/`:209`/`:217-220` were deliberately NOT touched** — `mutateAsync` is
+*invoked* synchronously inside `onConfirm`, so an awaited `user.click` guarantees the call happened; only code after
+the handler's own `await` races. The plan had called for "fixing" them; reading the handler disproved that. Register
+row rewritten with the real mechanism (a register that misdiagnoses its own defect is worse than none).
+
+**Live-leg rule relocated to the Definition of Done (operator decision: keep the bar, fix the label).** The rule
+*"an AC is `Met` only once its live real-stack HTTP/UI leg lands"* is cited across this log and the audit as
+**"per G-TRACE"** — a **mis-citation**: G-TRACE is the Keystone *link-completeness* gate (*"every MVP requirement →
+≥1 decision, ≥1 work item, ≥1 test"*, `work-breakdown.md:331`), it already passes, and it says nothing about AC
+verdicts. The rule is now written explicitly in [definition-of-done.md](../execution/definition-of-done.md)
+§Acceptance Criteria (v1.2.0), with the **D-15** rationale (the prepare API was fully proven while the SPA had no
+button — on API evidence alone AC-035 would have read `Met` while the core loop was broken for every user) and the
+honest carve-out that unbuilt-UI gaps must name their real blocker rather than carry a testing-phase tag.
+**The evidence standard is unchanged** — only its home and label. Existing `per G-TRACE` citations stay as written.
+
+**Also:** `AGENTS.md` §Where-you-are was five slices stale (still "Current phase: P12 … next is P13+") → now
+PH-1/PH-2 closed, P14 deferred (DEC-028), ladder = P17→P18→P19 (v1.2.0). `.github/workflows/security.yml`'s header
+claimed every scanner *"lands REPORT-ONLY … without reding it"* while gitleaks (`--exit-code=1`), semgrep
+(`--error`) and trivy-fs (`--exit-code 1`) are all **gating** — corrected to the real per-job state. The surviving
+`→ P14` in the **P7b historical blockquote** ("vote/audit-timeline → P9/P14"), handed to P17 to judge: **`vote` → P9
+delivered**; **`audit-timeline` → P14 was a mis-pointer** (P14 is Tarseem/diagrams; the audit timeline shipped in the
+Audit slice, PR #105 `f32ca31`) — the same typo class as the AC-025 `"crypto hash-chain → P14"` correction, and with
+P14 now deferred it would read as "a shipped capability is deferred forever". **Annotated, not rewritten** (dated
+nested annotation, matching this package's established pattern; the blockquote records what was believed at P7b).
+
+**Gates (exit codes captured explicitly — piping to `grep`/`tail` swallows `$?`):** Keystone validator **OK, 7/7
+critical PASS**; FE `test:cov` **exit 0** (139 files / 1051 tests, per-file ≥95%); `check-i18n` **OK, 1768 keys**;
+`npm run build` **exit 0**; oxlint clean (2 pre-existing `only-export-components` warnings, untouched). No C# changed.
+
+**Next: P17b-0 — the AC triage, which BLOCKS all spec work.** Read each of the ≤19 candidate ACs' literal
+Given/When/Then against **both** the API surface and the UI, and bin each: closable-by-spec / needs-product-change
+(D-15 shape) / needs-interpretation (AC-025 shape) / unbuilt-UI. **The earlier "~19 flips, 36→55" forecast is
+retracted** — it was never triaged. **AC-034/043/048/057 carry `→ P17` tags but are unbuilt UI** and are not
+P17-closable. Operator decisions carried in: **AC-025** = test the ballot leg live (`POST /votes/{id}/change` on a
+closed vote), record tally/chair-action as immutable-by-absence + raise an `OQ-`; **AC-054/055** = force a **real
+fire** in e2e (compose knob with a safe `0 6 * * *` default; the minutely cron lives only in the CI job's `env:` —
+`deploy/.env.example` is the production template — and gated on verifying a no-op sweep emits no `AuditEvent`, since
+every audited write takes the single global `sp_getapplock('acmp-audit-chain')`).
+
+---
+
+### 2026-07-17 — P16 MERGED (★ complete ★) + P14 deferred indefinitely (DEC-028)
+
+**P16 complete.** PR #141 (B2b+B3+B4) squash-merged to `main` as `e15cfff` with 9/9 checks green — joining
+Batch 1 (#124) and Batch 2 (#126). The P16 security slice is now **done**; its residuals are stated, not silent
+(OQ-027 ZAP/DAST Deferred; C-CRYPTO-01/02/03 `Partial (Operator/P18)`; Trivy image scan report-only; ClamAV
+operator opt-in per OQ-026; D-22 inline-style hygiene).
+
+**P14 (Tarseem diagrams) deferred indefinitely — operator decision, registered as `DEC-028`.**
+Registered per the Keystone protocol ([naming-conventions](../governance/naming-conventions.md)): a **`DEC-`** in
+the [open-decision register](../decisions/open-decision-register.md), **not** an ADR, because this is a
+**scheduling** decision and nothing architecturally significant changes — **ADR-0006** (Tarseem as a containerized
+render sidecar, JSON spec = source of truth) **still stands, unchanged**, and OOS-02 ("no in-app diagram engine")
+is untouched. Only the schedule moved. This mirrors the **D-05 / P15 Keystone-import** precedent, which recorded an
+equivalent scheduling deferral without an ADR. Status is **`Approved`** — the *decision* is settled; it is the
+*work* that is deferred.
+
+Registered across the package so no path leads back to it by accident:
+- **DEC-028** (new) — the decision, its rationale, and the trigger: *operator re-opens P14 by explicit
+  instruction*; there is **no automatic trigger**. Also noted that DEC-001…027 were the migrated legacy `R-##`
+  set and ids are newly issued from DEC-028 on.
+- **D-11** — target phase `Phase 2` → **Unscheduled**; its old trigger ("P14 kickoff") **explicitly no longer
+  fires**. Stays `Open`: the work is still known-not-done, and the Phase-1 manual path (diagrams authored
+  externally, attached as files) remains the shipping behaviour.
+- **roadmap** ladder — P14 marked deferred, mirroring how the P15 row records the D-05 deferral.
+- **follow-up-prompts** — the P14 prompt now carries a ⛔ **DO NOT START** banner. It is kept verbatim so the
+  slice can resume unchanged if re-opened; the risk being closed is a fresh session picking it up as "next".
+
+**Safe to defer because nothing depends on it:** the capability is additive, the manual path already works, no AC
+verdict rests on it, and **P17→P19 proceed without it**. With P14 out, **PH-2 is closed**.
+
+**Stale-pointer correction found while doing this (AC-025).** Its note read *"crypto hash-chain → **P14**"* — but
+P14 is Tarseem/diagrams and never carried that work: the per-ballot crypto chain was **delivered in P16a**
+(`BallotChain`, `Vote.SealBallotChain` + tally recompute, ADR-0030, closing D-13). Left alone, deferring P14 would
+have turned a typo into "a shipped control is deferred forever". Corrected to point at P16a. **Verdict unchanged —
+AC-025 stays `Partial`**; its real residual is the live leg → P17.
+*(A second, older `→ P14` mention survives in a P7b **historical** blockquote — "vote/audit-timeline → P9/P14".
+Left as written: it records what was believed at that time, and rewriting history is worse than a dated note. No
+AC verdict depends on it. Flagged here so P17 can judge it with context.)*
+
+**Next (operator's instruction): a fresh session starts at P17 → P18 → P19 planning.**
+
+**Gates.** Keystone `RESULT: OK` (6/6 critical PASS). Docs-only change — no code, no AC verdict change, no new ADR.
 
 ---
 

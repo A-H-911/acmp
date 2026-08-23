@@ -6,11 +6,13 @@ using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Knowledge.Infrastructure.Search;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Search;
+using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Search;
 using Acmp.Shared.Contracts.Search;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 
 namespace Acmp.Integration.Tests;
 
@@ -19,6 +21,16 @@ namespace Acmp.Integration.Tests;
 // fanning out), so it is exercised here by calling the providers directly against an InMemory store.
 public sealed class SearchProviderGuardTests
 {
+    // FR-163: these suites assert SEARCH ENGINE behaviour (FTS vs LIKE, blank-query short-circuit),
+    // not confidentiality. A permissive scope keeps them measuring the engine.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private readonly TestClock _clock = new();
     private readonly TestCurrentUser _user = new();
 
@@ -46,7 +58,7 @@ public sealed class SearchProviderGuardTests
 
     private ISearchProvider Build(string which) => which switch
     {
-        "topics" => new TopicSearchProvider(new TopicsDbContext(InMemory<TopicsDbContext>("g-t"), _clock, _user)),
+        "topics" => new TopicSearchProvider(new TopicsDbContext(InMemory<TopicsDbContext>("g-t"), _clock, _user), SeesEverything()),
         "decisions" => new DecisionSearchProvider(new DecisionsDbContext(InMemory<DecisionsDbContext>("g-d"), _clock, _user)),
         "adrs" => new AdrSearchProvider(new GovernanceDbContext(InMemory<GovernanceDbContext>("g-g"), _clock, _user)),
         "minutes" => new MinutesSearchProvider(new MeetingsDbContext(InMemory<MeetingsDbContext>("g-m"), _clock, _user)),

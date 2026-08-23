@@ -7,10 +7,13 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
+import SessionPage from './features/session/SessionPage';
 import AdministrationPage from './pages/AdministrationPage';
+import MembersPage from './pages/MembersPage';
 import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
 import { TopicDetail } from './features/topics/TopicDetail';
+import { EditTopic } from './features/topics/EditTopic';
 import { MeetingsList } from './features/meetings/MeetingsList';
 import { MeetingPage, MeetingConduct } from './features/meetings/MeetingPage';
 import { MeetingOverview } from './features/meetings/MeetingOverview';
@@ -56,10 +59,24 @@ export const appRoutes = createRoutesFromElements(
         {/* Legacy alias — keep deep links to /dashboard working; Home is now '/' (Usage Map §G). */}
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="session" element={<PlaceholderPage titleKey="nav.session" />} />
+        {/* FR-159 / DEC-037 — the guest presenter surface, restricted to Guest plus Chairman and
+            Secretary (preview). DEF-053: the API half always enforced this (both queries carry
+            AllowedRoles and SessionApiTests forces a 403 for the other five roles), but the route
+            did not, so a Member typing /session met "you are not presenting" — a true-sounding
+            answer to a question they were not allowed to ask. The API stays the authority; this
+            gate is what makes the refusal say what it means. */}
+        <Route
+          path="session"
+          element={
+            <RequireRole roles={['guest', 'chairman', 'secretary']}>
+              <SessionPage />
+            </RequireRole>
+          }
+        />
         <Route path="backlog" element={<Backlog />} />
         <Route path="backlog/submit" element={<SubmitTopic />} />
         <Route path="topics/:key" element={<TopicDetail />} />
+        <Route path="topics/:key/edit" element={<EditTopic />} />
         <Route path="meetings" element={<MeetingsList />} />
         <Route path="meetings/new" element={<SchedulePage />} />
         {/* Meeting shell (Meetings owns the chrome) + nested content surfaces (Agenda & Meeting owns
@@ -91,10 +108,18 @@ export const appRoutes = createRoutesFromElements(
         <Route path="wiki" element={<WikiPage />} />
         <Route path="wiki/:key" element={<WikiPage />} />
         <Route path="templates" element={<TemplatesRegister />} />
-        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" phase2 />} />
+        {/* DEC-028 (2026-07-17): P14 deferred INDEFINITELY — ACMP ships no in-product diagram
+            renderer. The route stays so existing links do not 404, but it must not promise a phase. */}
+        <Route path="diagrams" element={<PlaceholderPage titleKey="nav.diagrams" deferred />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="search" element={<SearchPage />} />
 
+        {/* OQ-069 / DEC-041 — the roster, invite and role assignment admit Administrator AND
+            Secretary, which is what FR-156/FR-157 say and what the API has always enforced. The
+            guard here is courtesy; the API is what refuses. */}
+        <Route path="members" element={<RequireRole roles={['administrator', 'secretary']} />}>
+          <Route index element={<MembersPage />} />
+        </Route>
         <Route path="admin" element={<RequireRole roles={['administrator']} />}>
           <Route index element={<Navigate to="/admin/users" replace />} />
           <Route path="users" element={<AdministrationPage />} />

@@ -365,12 +365,12 @@ class Component extends DCLogic {
       agendaLink:L('Link existing','ربط أجندة قائمة'), agendaLinkSub:L('Carry over from a draft','ترحيل من مسودة'),
       valErr:L('Select a date in the future — the chosen date has passed.','اختر تاريخًا مستقبليًا — التاريخ المحدد قد مضى.'),
       cancel:L('Cancel','إلغاء'), createBtn:L('Create meeting','إنشاء الاجتماع'),
-      mtgTitle:L('Weekly Architecture Committee','لجنة الهندسة الأسبوعية'),
+      mtgTitle:L('Weekly Architecture Committee','لجنة الهيكلة الأسبوعية'),
       mtgWhen:L('Wed 18 Feb 2026 · 10:00–11:30','الأربعاء 18 فبراير 2026 · 10:00–11:30'),
       mtgType:L('Regular session','جلسة دورية'), mtgMode:L('Hybrid · Webex','مدمج · Webex'),
       agendaPreview:L('Agenda','الأجندة'), readiness:L('Readiness','الجاهزية'), quickLinks:L('Go to','الانتقال إلى'),
       recording:L('Recording & transcript','التسجيل والنص'),
-      recTitle:L('Weekly Architecture Committee — 11 Feb 2026','لجنة الهندسة الأسبوعية — 11 فبراير 2026'),
+      recTitle:L('Weekly Architecture Committee — 11 Feb 2026','لجنة الهيكلة الأسبوعية — 11 فبراير 2026'),
       viaWebex:L('Retrieved from Webex','مستلَم من Webex'), download:L('Download','تنزيل'),
       transcript:L('Transcript','النص'), searchTranscript:L('Search transcript…','ابحث في النص…'),
       recPendingT:L('Recording is being retrieved','يجري استرجاع التسجيل'), recPendingB:L('The Webex recording is being fetched in the background. This usually completes within a few minutes of the meeting ending.','يجري جلب تسجيل Webex في الخلفية. يكتمل ذلك عادة خلال دقائق من انتهاء الاجتماع.'),
@@ -409,7 +409,7 @@ class Component extends DCLogic {
 
     // ----- LIST data -----
     const upcomingRows=[
-      { id:'MTG-2026-019', when:L('Wed 18 Feb 2026','الأربعاء 18 فبراير 2026'), title:L('Weekly Architecture Committee','لجنة الهندسة الأسبوعية'), type:L('Regular','دورية'), st:'sched', stL:L('Scheduled','مجدول') },
+      { id:'MTG-2026-019', when:L('Wed 18 Feb 2026','الأربعاء 18 فبراير 2026'), title:L('Weekly Architecture Committee','لجنة الهيكلة الأسبوعية'), type:L('Regular','دورية'), st:'sched', stL:L('Scheduled','مجدول') },
       { id:'MTG-2026-020', when:L('Wed 25 Feb 2026','الأربعاء 25 فبراير 2026'), title:L('Identity & access review','مراجعة الهوية والوصول'), type:L('Special','خاصة'), st:'neutral', stL:L('Draft','مسودة') }
     ].map(m=>({ ...m, status:m.stL, chip:this.chip(m.st), dot:this.dot(m.st), go:()=>this.set('screen','overview') }));
     const pastRows=[

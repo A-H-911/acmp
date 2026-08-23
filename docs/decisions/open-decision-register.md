@@ -1,13 +1,15 @@
 ---
 status: Approved
-version: 1.0.0
-updated: 2026-07-06
+version: 1.1.0
+updated: 2026-07-17
 owner: lead-secretary
 ---
 
 # Open-Decision Register — ACMP
 
 These entries carry the settled canon formerly recorded in the pre-migration `docs/42-open-decisions.md §A` (confirmed by the secretary 2026-06-24). Every row is settled and overrides anything contradicting it elsewhere. They map one-to-one from the former `R-##` ids: **R-01 → DEC-001, R-02 → DEC-002, … R-27 → DEC-027** (add 100-based numbering: `R-0N → DEC-0NN`). "Promoted to" carries the source ADR where one exists; `n/a (canon)` means the decision is canon recorded in the README/CON register with no dedicated ADR.
+
+**DEC-001…027 are that migrated legacy set. From `DEC-028` on, ids are newly issued** for lightweight decisions taken during the build — this register is their home per [naming-conventions](../governance/naming-conventions.md) (`DEC-` here; **promote** to an `ADR-NNNN` when a decision is architecturally significant, recording the promotion in "Promoted to").
 
 | ID | Decision | Status | Rationale | Promoted to | Trigger to revisit |
 |---|---|---|---|---|---|
@@ -29,7 +31,7 @@ These entries carry the settled canon formerly recorded in the pre-migration `do
 | DEC-016 | Keystone integration — optional; the Research module works fully standalone; Keystone import is a Phase 2 enhancement, never a hard dependency | Approved | No hard external dependency (CON-013) | ADR-0007 | Reopen only via new ADR. Build scheduling since deferred out of P15 → future (D-05, 2026-07-12); the optional-companion decision is unchanged, so this is a D-05 deferral, not a reopen |
 | DEC-017 | Scale ceiling — on-prem, low traffic, ≤20 total users; reject architectural additions whose only justification is scaling beyond 20 | Approved | Right-size everything (CON-004) | n/a (canon) | Reopen only via new ADR |
 | DEC-018 | Audit hash chain — SHA-256 chained hash over vote and issued-decision audit records | Approved | Enables independent integrity verification by Auditor (BL-067) | ADR-0009 | Reopen only via new ADR |
-| DEC-019 | Tarseem integration phase — the diagram sidecar is Phase 2; the JSON spec is the version-controlled source of truth; a broken render never blocks | Approved | Phased; spec-as-source-of-truth | ADR-0006 | Reopen only via new ADR |
+| DEC-019 | Tarseem integration phase — the diagram sidecar is Phase 2; the JSON spec is the version-controlled source of truth; a broken render never blocks | Approved | Phased; spec-as-source-of-truth | ADR-0006 | Reopen only via new ADR. **Build scheduling since deferred indefinitely: P14 is removed from the ladder and re-opens only on explicit operator instruction (DEC-028, 2026-07-17; see D-11). The decision itself — sidecar shape, spec-as-source-of-truth, never-blocks — is unchanged, so this is a scheduling deferral, not a reopen** (same treatment as DEC-016 / D-05) |
 | DEC-020 | Primary datastore — Microsoft SQL Server only (transactional + columnstore reporting + FTS); no second database in v1 | Approved | One ACMP-owned store | ADR-0003 | Reopen only via new ADR |
 | DEC-021 | Backend stack — .NET 8 (LTS), ASP.NET Core, REST, Clean Architecture per module, vertical-slice MediatR handlers, EF Core | Approved | Settled stack (CON-002) | ADR-0002 | Reopen only via new ADR |
 | DEC-022 | Frontend stack — React 18 + TypeScript + Vite; react-i18next (EN/AR); RTL via CSS logical properties + `dir`; light/dark; `@dnd-kit` DnD | Approved | Settled stack (CON-002, CON-008) | ADR-0012 | Reopen only via new ADR |
@@ -38,3 +40,4 @@ These entries carry the settled canon formerly recorded in the pre-migration `do
 | DEC-025 | Traceability model — explicit typed relationship model (directed edges over shared Artifact identity); graph traversal in SQL | Approved | Typed edges give semantic precision | ADR-0008 | Reopen only via new ADR |
 | DEC-026 | Observability — Serilog + self-hosted Seq container (ACMP-owned) + OpenTelemetry traces/metrics; no dependency on the org's ELK/Seq | Approved | Self-contained observability | n/a (canon) | Reopen only via new ADR |
 | DEC-027 | Optimistic concurrency — every mutable aggregate root carries `RowVersion`; a stale write throws `DbUpdateConcurrencyException` → API returns 409 | Approved | Chosen over last-writer-wins and pessimistic locking; implemented 2026-06-30 (resolves OQ-043) | ADR-0018 | Reopen only via new ADR |
+| **DEC-028** | **P14 (Tarseem diagram sidecar + Diagrams surface) is deferred indefinitely** — removed from the active build-slice ladder. ACMP ships with **no in-product diagram renderer**; diagrams stay externally authored and attached as files (the D-11 Phase-1 handling, already in place). The `IDiagramRenderer` seam is **not** built | Approved | **Operator decision 2026-07-17:** P14 is not wanted in the near future. It is safe to drop from the ladder because the capability is **additive** and already has a working manual path (D-11), so nothing else depends on it: PH-2 is otherwise complete and **P17→P19 proceed without it**. Recorded as a `DEC-` and not an ADR because it is a **scheduling** decision, not an architecturally significant one — no settled decision changes (OOS-02 "no in-app diagram engine" stands; the unbuilt `IDiagramRenderer` seam is untouched). **Schedules `DEC-019`** (Tarseem = Phase 2) without superseding it: the sidecar shape, spec-as-source-of-truth and never-blocks clauses all stand, so DEC-019 is *annotated*, not reopened — the same treatment DEC-016 got for the D-05 / P15 Keystone-import deferral | n/a (scheduling; amends **DEC-019**'s phase, see **D-11**, **ADR-0006** unchanged) | **Operator re-opens P14 by explicit instruction** — there is no automatic trigger; this supersedes D-11's former "P14 kickoff" trigger |

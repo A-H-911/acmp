@@ -407,10 +407,10 @@ class Component extends DCLogic {
 
     // ---------- USERS ----------
     const usersRaw=[
-      { id:'u1', initials:'KA', name:{en:'Khalid A.',ar:'خالد ع.'}, email:'khalid.a@acmp.gov', role:{en:'Secretary of the Committee',ar:'أمين سر اللجنة'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:true, assign:12, st:'active' },
-      { id:'u2', initials:'SM', name:{en:'Sara M.',ar:'سارة م.'}, email:'sara.m@acmp.gov', role:{en:'Chairman',ar:'رئيس'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:true, assign:5, st:'active' },
-      { id:'u3', initials:'OH', name:{en:'Omar H.',ar:'عمر هـ.'}, email:'omar.h@acmp.gov', role:{en:'Member',ar:'عضو'}, committees:[{en:'Architecture',ar:'الهندسة'},{en:'Identity',ar:'الهوية'}], vote:true, assign:8, st:'active' },
-      { id:'u4', initials:'NP', name:{en:'Noura P.',ar:'نورة ب.'}, email:'noura.p@acmp.gov', role:{en:'Reviewer',ar:'مراجع'}, committees:[{en:'Architecture Committee',ar:'لجنة الهندسة'}], vote:false, assign:6, st:'active' },
+      { id:'u1', initials:'KA', name:{en:'Khalid A.',ar:'خالد ع.'}, email:'khalid.a@acmp.gov', role:{en:'Secretary of the Committee',ar:'أمين سر اللجنة'}, committees:[{en:'Architecture Committee',ar:'لجنة الهيكلة'}], vote:true, assign:12, st:'active' },
+      { id:'u2', initials:'SM', name:{en:'Sara M.',ar:'سارة م.'}, email:'sara.m@acmp.gov', role:{en:'Chairman',ar:'رئيس'}, committees:[{en:'Architecture Committee',ar:'لجنة الهيكلة'}], vote:true, assign:5, st:'active' },
+      { id:'u3', initials:'OH', name:{en:'Omar H.',ar:'عمر هـ.'}, email:'omar.h@acmp.gov', role:{en:'Member',ar:'عضو'}, committees:[{en:'Architecture',ar:'الهيكلة'},{en:'Identity',ar:'الهوية'}], vote:true, assign:8, st:'active' },
+      { id:'u4', initials:'NP', name:{en:'Noura P.',ar:'نورة ب.'}, email:'noura.p@acmp.gov', role:{en:'Reviewer',ar:'مراجع'}, committees:[{en:'Architecture Committee',ar:'لجنة الهيكلة'}], vote:false, assign:6, st:'active' },
       { id:'u5', initials:'FN', name:{en:'Faisal N.',ar:'فيصل ن.'}, email:'faisal.n@acmp.gov', role:{en:'Member',ar:'عضو'}, committees:[{en:'Platform',ar:'المنصة'}], vote:true, assign:4, st:'active' },
       { id:'u6', initials:'AO', name:{en:'Audit Office',ar:'مكتب التدقيق'}, email:'audit@acmp.gov', role:{en:'Auditor',ar:'مدقّق'}, committees:[], vote:false, assign:0, st:'active' },
       { id:'u7', initials:'LK', name:{en:'Lina K.',ar:'لينا ك.'}, email:'lina.k@acmp.gov', role:{en:'Submitter',ar:'مقدّم'}, committees:[{en:'Platform',ar:'المنصة'}], vote:false, assign:2, st:'invited' },
@@ -427,7 +427,7 @@ class Component extends DCLogic {
     // ---------- TEMPLATES ----------
     const tplRaw=[
       { name:{en:'Standard Topic Submission',ar:'نموذج تقديم موضوع قياسي'}, type:{en:'Topic type',ar:'نوع الموضوع'}, v:'v3', st:'active', up:{en:'12 Feb 2026',ar:'١٢ فبراير ٢٠٢٦'} },
-      { name:{en:'Architecture Decision Record (MADR)',ar:'سجل قرار معماري (MADR)'}, type:{en:'ADR',ar:'سجل قرار'}, v:'v2', st:'active', up:{en:'8 Feb 2026',ar:'٨ فبراير ٢٠٢٦'} },
+      { name:{en:'Architecture Decision Record (MADR)',ar:'سجل قرار هيكلة (MADR)'}, type:{en:'ADR',ar:'سجل قرار'}, v:'v2', st:'active', up:{en:'8 Feb 2026',ar:'٨ فبراير ٢٠٢٦'} },
       { name:{en:'Minutes of Meeting',ar:'محضر اجتماع'}, type:{en:'MoM',ar:'محضر'}, v:'v4', st:'active', up:{en:'18 Feb 2026',ar:'١٨ فبراير ٢٠٢٦'} },
       { name:{en:'Decision Record',ar:'سجل قرار'}, type:{en:'Decision',ar:'قرار'}, v:'v2', st:'active', up:{en:'5 Feb 2026',ar:'٥ فبراير ٢٠٢٦'} },
       { name:{en:'Research Brief',ar:'موجز بحثي'}, type:{en:'Research',ar:'بحث'}, v:'v1', st:'draft', up:{en:'22 Feb 2026',ar:'٢٢ فبراير ٢٠٢٦'} },
@@ -521,7 +521,7 @@ class Component extends DCLogic {
     // ---------- USER DETAIL ----------
     const ud={ initials:'OH', name:L('Omar H.','عمر هـ.'), email:'omar.h@acmp.gov', role:L('Member','عضو'), status:L('Active','نشط'),
       facts:[ {label:L('Keycloak ID','معرّف Keycloak'),value:'kc-0a4f-…-9b2'}, {label:L('Last sign-in','آخر دخول'),value:L('24 Jun 2026 · 09:12','٢٤ يونيو ٢٠٢٦ · ٠٩:١٢')}, {label:L('Provisioned','زُوِّد'),value:L('14 Jan 2026','١٤ يناير ٢٠٢٦')}, {label:L('Voting eligible','مؤهّل للتصويت'),value:L('Yes','نعم')} ],
-      memberships:[ {name:L('Architecture Committee','لجنة الهندسة'), role:L('Member','عضو')}, {name:L('Identity stream','مسار الهوية'), role:L('Lead','قائد')} ] };
+      memberships:[ {name:L('Architecture Committee','لجنة الهيكلة'), role:L('Member','عضو')}, {name:L('Identity stream','مسار الهوية'), role:L('Lead','قائد')} ] };
     const inviteFields=[ {label:L('Email address','البريد الإلكتروني'), value:'name@acmp.gov', mono:true}, {label:L('Full name','الاسم الكامل'), value:L('New member','عضو جديد'), mono:false} ];
 
     const t2={ cStream:L('Stream','المسار'), cOwner:L('Owner','المالك'), cMembers:L('Members','الأعضاء'), cTopics:L('Active topics','مواضيع نشطة'), cStatus:L('Status','الحالة'),

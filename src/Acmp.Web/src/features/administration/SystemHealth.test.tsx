@@ -66,4 +66,64 @@ describe('SystemHealth (NR-08)', () => {
     expect(screen.getByText('Seq logging')).toBeInTheDocument();
     expect(screen.getAllByText('Monitoring not configured').length).toBe(5); // all but api
   });
+
+  /*
+   * DEF-039. The object store, Seq and Hangfire tiles carried NO `check` at all, so they rendered
+   * "monitoring not configured" no matter what the server reported — the display half of DEF-039.
+   *
+   * ⚠ THE TEST ABOVE CANNOT SEE THAT BUG, and that is why this one exists: it passes a fixture
+   * containing only `api`, so those three tiles are legitimately unmonitored in it and the assertion
+   * holds whether or not they are wired. It stayed green across the fix. A regression guard has to
+   * supply the entries the server actually registers now.
+   */
+  it('shows the real status for object storage, Seq and Hangfire once the server reports them (DEF-039)', () => {
+    health({
+      data: dto([
+        { name: 'api', status: 'Healthy', description: null, durationMs: 1 },
+        { name: 'sqlserver', status: 'Healthy', description: null, durationMs: 2 },
+        { name: 'objectstore', status: 'Healthy', description: 'buckets reachable: acmp-prod-recordings', durationMs: 21 },
+        { name: 'hangfire', status: 'Healthy', description: 'servers=1, enqueued=0', durationMs: 3 },
+        { name: 'seq', status: 'Healthy', description: null, durationMs: 4 },
+      ]),
+    });
+    renderWithAuth(<SystemHealth />, { roles: ['administrator'] });
+
+    // Only Webex is genuinely unmonitored now — it is Phase 2 and disabled everywhere.
+    expect(screen.getAllByText('Monitoring not configured').length).toBe(1);
+    expect(screen.getByText('Object storage')).toBeInTheDocument();
+    // The label must NOT name MinIO: the cloud stack runs S3, and a MinIO-labelled tile was wrong on
+    // the environment it is most likely to be read on.
+    expect(screen.queryByText(/MinIO/i)).not.toBeInTheDocument();
+  });
+
+  /*
+   * A tile that reports "operational" while the server says Unhealthy would be worse than one that
+   * says nothing — the whole point of this screen is that it never invents a status.
+   */
+  it('renders a failing object store as down rather than operational', () => {
+    health({
+      data: dto(
+        [
+          { name: 'api', status: 'Healthy', description: null, durationMs: 1 },
+          {
+            name: 'objectstore',
+            status: 'Unhealthy',
+            description: "object-storage bucket 'acmp-prod-recordings' unreachable: connection refused",
+            durationMs: 5,
+          },
+        ],
+        'Unhealthy',
+      ),
+    });
+    renderWithAuth(<SystemHealth />, { roles: ['administrator'] });
+
+    expect(screen.getByText('Object storage')).toBeInTheDocument();
+    // getAllByText, not getByText: an Unhealthy report renders "Down" TWICE — once on the failing
+    // tile's chip and once in the overall banner — and getByText throws on multiple matches.
+    expect(screen.getAllByText('Down').length).toBeGreaterThanOrEqual(1);
+    // The object store is MONITORED and failing, not unmonitored: with api + objectstore reported,
+    // exactly the other four tiles say so. Counting is what distinguishes "renders Down" from
+    // "silently fell back to not-configured", which is the failure mode this guards.
+    expect(screen.getAllByText('Monitoring not configured').length).toBe(4);
+  });
 });

@@ -17,14 +17,18 @@ services:
     security_opt: ["no-new-privileges:true"]
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      # ADR-0032: SA password comes from the mounted Docker secret, read by the image's entrypoint shim
+      # (deploy/scripts/mssql-entrypoint.sh) — the mssql image has no native *_FILE support.
+      MSSQL_SA_PASSWORD_FILE: /run/secrets/mssql_sa_password
       MSSQL_PID: Developer
+    secrets:
+      - mssql_sa_password
     ports:
       - "1433:1433"
     volumes:
       - mssql-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -No -Q \"SELECT 1\" || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$(cat /run/secrets/mssql_sa_password)\" -C -No -Q \"SELECT 1\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -59,7 +63,9 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_root_password   # ADR-0032 (native *_FILE)
+    secrets:
+      - minio_root_password
     ports:
       - "9000:9000"   # S3 API
       - "9001:9001"   # console
@@ -72,6 +78,41 @@ services:
       retries: 12
       start_period: 20s
 
+  # One-shot bucket provisioning (DEF-078). Idempotent, exits 0.
+  #
+  # ⚠ THIS EXISTS BECAUSE THE READINESS FIX MADE A HIDDEN CONTRACT VISIBLE, and the contract was always
+  # there — only production honoured it. On cloud, deploy/aws/02-s3.sh creates the buckets out of band and
+  # the app's IAM policy deliberately grants no s3:CreateBucket (ADR-0035). This stack got away with never
+  # provisioning them because MinioFileStore.EnsureBucketAsync creates a bucket lazily on first UPLOAD, and
+  # the old readiness probe only asked whether the MinIO daemon was alive — a question a fresh stack always
+  # answered yes to. Now that /readyz asks whether the app can reach ITS buckets, "created on first write"
+  # is genuinely not ready, and e2e proved it by refusing to start the stack.
+  #
+  # Provisioning here rather than weakening the check is the point: dev/e2e now mirrors the production
+  # precondition instead of silently depending on a lazy-create path that production cannot use.
+  #
+  # Same pinned digest as the minio server above — that image already ships /usr/bin/mc, so this adds no new
+  # supply-chain surface and nothing further to pin (C-SUP-01).
+  minio-init:
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: ["/bin/sh", "-c"]
+    # Bucket names track StorageOptions' defaults (acmp-recordings / acmp-topics). --ignore-existing keeps
+    # this safe to re-run on an existing volume.
+    command:
+      - >
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$(cat /run/secrets/minio_root_password)" &&
+        mc mb --ignore-existing local/acmp-recordings &&
+        mc mb --ignore-existing local/acmp-topics
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+    secrets:
+      - minio_root_password
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
   # Keycloak's own operational store (OQ-038 → option a: dedicated Postgres-for-Keycloak).
   # ACMP *application* data stays SQL-Server-only (ADR-0003); this store holds only Keycloak's
   # realm/users/sessions. Volume `kcdata` is covered by backup/restore (docs/domain/deployment.md, ADR-0015).
@@ -82,7 +123,9 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USER}
-      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+      POSTGRES_PASSWORD_FILE: /run/secrets/kc_db_password   # ADR-0032 (native *_FILE)
+    secrets:
+      - kc_db_password
     volumes:
       - kcdata:/var/lib/postgresql/data
     healthcheck:
@@ -98,14 +141,18 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
     security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
+    # ADR-0032: KC's *_FILE support is unreliable across versions, so a thin entrypoint exports the DB + bootstrap
+    # passwords from the mounted secrets, then execs kc.sh with the `command` args (exec => signals intact).
+    entrypoint: ["bash", "-c", "export KC_DB_PASSWORD=\"$(cat /run/secrets/kc_db_password)\"; export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec /opt/keycloak/bin/kc.sh \"$@\"", "--"]
     command: ["start-dev", "--import-realm"]
+    secrets:
+      - kc_db_password
+      - kc_bootstrap_admin_password
     environment:
       KC_DB: postgres
       KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/keycloak"
       KC_DB_USERNAME: ${KC_DB_USER}
-      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_ENABLED: "true"
       # Trust the reverse proxy's X-Forwarded-* so KC emits correct https absolute URLs behind nginx/ngrok.
@@ -142,14 +189,20 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-    entrypoint: ["bash", "/opt/keycloak/reconcile.sh"]
+    # ADR-0032: export the admin password from the mounted secret, then run the reconcile script.
+    entrypoint: ["bash", "-c", "export KC_BOOTSTRAP_ADMIN_PASSWORD=\"$(cat /run/secrets/kc_bootstrap_admin_password)\"; exec bash /opt/keycloak/reconcile.sh"]
+    secrets:
+      - kc_bootstrap_admin_password
+      # ADR-0038: reconcile SETS the service account client's secret from this file, so the
+      # client and the app always agree. The value flows one way only — never read back out.
+      - KeycloakAdmin__ClientSecret
     environment:
       KC_URL: "http://keycloak:8080"
       ACMP_REALM: "acmp"
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
     volumes:
       - ./keycloak/reconcile.sh:/opt/keycloak/reconcile.sh:ro
+      - ./keycloak/admin-client.env:/opt/keycloak/admin-client.env:ro
     restart: "no"
 
   api:
@@ -157,19 +210,26 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: api
+    # ADR-0032: the connection string (which carries the DB password) and the MinIO secret key arrive as Docker
+    # secret files read by AddKeyPerFile(/run/secrets) — no credential literal lives in this compose file.
+    secrets:
+      - ConnectionStrings__Acmp
+      - Minio__SecretKey
+      - KeycloakAdmin__ClientSecret
+      - Webex__BotToken
+      - Webex__WebhookSecret
+      - Webex__OAuthClientSecret
+      - Webex__TokenEncryptionKey
+      - Webex__OAuthSetupKey
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
-      # Encrypt=True (C-CRYPTO-01): the API↔SQL link is TLS, not plaintext. SQL Server auto-generates a
-      # self-signed cert at startup, so this needs nothing mounted — verified in-stack (sys.dm_exec_connections
-      # encrypt_option: FALSE before, TRUE after). TrustServerCertificate=True stays because that cert is
-      # self-signed: the traffic is ENCRYPTED but the server is NOT AUTHENTICATED, so this stops passive
-      # sniffing (T-20) and not an active MITM. Authenticating it (TrustServerCertificate=False + a CA cert
-      # whose CN/SAN is `sqlserver`) is the operator's P18 step — see deployment.md §3.4.
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      # ConnectionStrings__Acmp is a Docker secret (see `secrets:` above), composed by gen-secrets.sh. It carries
+      # `Encrypt=True` (C-CRYPTO-01: API↔SQL is TLS against SQL Server's self-signed cert) + `TrustServerCertificate
+      # =True` (encrypted but NOT authenticated — stops passive sniffing T-20, not an active MITM). Step B
+      # (TrustServerCertificate=False + a CA cert whose CN/SAN is `sqlserver`) is the operator's step — deployment.md §3.4.
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
-      Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
       # Browser-reachable host used ONLY to presign recording playback URLs (ADR-0014); via nginx /acmp-recordings/.
       # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
@@ -180,20 +240,33 @@ services:
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"
       Authentication__Keycloak__RequireHttpsMetadata: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      # ⚠ DEF-099 — WITHOUT THIS LINE NOT ONE TRACE EVER REACHED Seq, in any environment, silently.
+      # The .NET OTLP exporter defaults to grpc, which posts the endpoint VERBATIM; Seq answers 404 on
+      # /ingest/otlp and 200 on /ingest/otlp/v1/traces. http/protobuf makes the SDK append the signal
+      # path (/v1/traces, /v1/metrics), so one base endpoint serves both. The SDK swallows export
+      # failures unless its self-diagnostic log is on, which is why this survived since the
+      # instrumentation shipped. ⚠ VERIFY A CHANGE HERE BY SENDING TRAFFIC AND ASSERTING THE SPAN
+      # COUNT MOVES — a clean start-up proves nothing, which is exactly how this was missed.
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "acmp-api"
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered at all, so the invite/role endpoints fail at composition rather than half-working.
+      # The client + its grant are reconciled by keycloak-config on every boot regardless (DEF-049),
+      # and the secret is always written (gen-secrets), so enabling this is a ONE-VARIABLE change.
+      # ⚠ The worker MUST carry identical values: it composes the same Membership module, and
+      # KeycloakAdminOptions is ValidateOnStart — Enabled=true without the secret STOPS the host.
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       # Webex adapter (P13, ADR-0005/0024). Default OFF — in-app is the sole channel (AC-071). Fill these via
       # .env to enable; the worker below MUST carry the identical values (same job graph). Secrets never committed.
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
-      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
-      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
       Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
       Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
       Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
-      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
-      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
-      Webex__OAuthSetupKey: "${WEBEX_OAUTH_SETUP_KEY:-}"
       # ASP.NET DataProtection key-ring lands on a writable tmpfs (the root FS is read-only below).
       # Ephemeral is fine: auth is bearer-token, so no protected payload must survive a restart.
       DataProtection__KeysPath: "/keys"
@@ -225,6 +298,11 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # DEF-078: the buckets must EXIST before the api starts, because /readyz now probes them and the
+      # container healthcheck gates on /readyz. Without this the api is correctly unhealthy on a fresh
+      # stack and nothing that depends on it ever starts.
+      minio-init:
+        condition: service_completed_successfully
       keycloak:
         # service_started, not _healthy: JwtBearer fetches OIDC metadata lazily on first request
         # (with retry), so the api need not block boot on Keycloak's slower readiness.
@@ -232,11 +310,17 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      # DEF-079 — same blind control as the cloud stack: /healthz is mapped with `Predicate = _ => false` and
+      # evaluates NO checks, so it could only fail if the process stopped answering TCP. Fixed here too rather
+      # than only where it was measured; leaving the on-prem compose on /healthz would reintroduce the defect
+      # on the next on-prem deployment and make the two files disagree for no reason.
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 40s
+      # Widened with the switch to /readyz: it reaches SQL Server, Hangfire and object storage, so first
+      # success legitimately takes longer than an endpoint that evaluated nothing.
+      start_period: 90s
 
   web:
     build:
@@ -250,6 +334,11 @@ services:
     environment:
       # CSP Keycloak origin, substituted into the nginx template at startup (runtime, no rebuild).
       KEYCLOAK_ORIGIN: "${KEYCLOAK_ORIGIN:-http://keycloak.localhost:8085}"
+      # CSP media-src for recording playback. Empty on-prem: presigned URLs are same-origin (MINIO_PUBLIC_ENDPOINT
+      # is the app host, proxied to MinIO by /acmp-recordings/) so 'self' already covers them. MUST stay
+      # DEFINED even when empty — an undefined var is left un-substituted by the nginx entrypoint and would
+      # land a literal ${ACMP_MEDIA_ORIGIN} in the header.
+      ACMP_MEDIA_ORIGIN: "${ACMP_MEDIA_ORIGIN:-}"
     # Container hardening (C-CON-001/002/003, D-21). nginx-unprivileged already runs as UID 101 and binds
     # 8080, so no capabilities are needed. Its packaged nginx.conf redirects every writable path into /tmp
     # (pid /tmp/nginx.pid; client_body/proxy/fastcgi/uwsgi/scgi _temp_path all under /tmp) and leaves
@@ -275,8 +364,13 @@ services:
       # serves every security header; without them it silently serves nothing.
       - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
     depends_on:
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     ports:
       # nginx-unprivileged listens on 8080 (non-root, C-CON-001); host port 8088 unchanged.
       - "8088:8080"
@@ -296,25 +390,52 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.backend
       target: worker
+    # ADR-0032: same Docker secrets as the api (must match — one job graph). No credential literal here.
+    secrets:
+      - ConnectionStrings__Acmp
+      - Minio__SecretKey
+      - KeycloakAdmin__ClientSecret
+      - Webex__BotToken
+      - Webex__WebhookSecret
+      - Webex__OAuthClientSecret
+      - Webex__TokenEncryptionKey
+      - Webex__OAuthSetupKey
     environment:
       DOTNET_ENVIRONMENT: Production
-      # Encrypt=True — must match the api's connection string exactly (C-CRYPTO-01); see the note there.
-      ConnectionStrings__Acmp: "Server=sqlserver;Database=Acmp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      # ⚠ DEF-099 — the worker had NO OTEL_ vars at all while Program.cs registers an OTLP exporter and
+      # its own comment says "Endpoint from the same OTEL_* env vars the API reads". Compose environment
+      # is PER-SERVICE and inherits nothing, so the exporter fell back to the SDK default
+      # http://localhost:4317 — nothing listens there inside this container. The job-EXECUTION spans
+      # (PR #297) and the DB/HTTP spans (PR #296) were produced and dropped.
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "acmp-worker"
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
-      Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
       Minio__Secure: "false"
+      # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
+      # registered at all, so the invite/role endpoints fail at composition rather than half-working.
+      # The client + its grant are reconciled by keycloak-config on every boot regardless (DEF-049),
+      # and the secret is always written (gen-secrets), so enabling this is a ONE-VARIABLE change.
+      # ⚠ The worker MUST carry identical values: it composes the same Membership module, and
+      # KeycloakAdminOptions is ValidateOnStart — Enabled=true without the secret STOPS the host.
+      KeycloakAdmin__Enabled: "${KEYCLOAK_ADMIN_ENABLED:-false}"
+      KeycloakAdmin__BaseUrl: "${KEYCLOAK_ADMIN_BASE_URL:-http://keycloak:8080/}"
+      KeycloakAdmin__Realm: "${ACMP_REALM:-acmp}"
+      KeycloakAdmin__ClientId: "${KEYCLOAK_ADMIN_CLIENT_ID:-acmp-admin-svc}"
       # Webex config MUST match the API's exactly (same job graph). Fill via .env to enable (default off).
       Webex__Enabled: "${WEBEX_ENABLED:-false}"
-      Webex__BotToken: "${WEBEX_BOT_TOKEN:-}"
       Webex__SpaceId: "${WEBEX_SPACE_ID:-}"
-      Webex__WebhookSecret: "${WEBEX_WEBHOOK_SECRET:-}"
       Webex__WebhookPublicUrl: "${WEBEX_WEBHOOK_PUBLIC_URL:-}"
       Webex__AcmpBaseUrl: "${WEBEX_ACMP_BASE_URL:-}"
       Webex__OAuthClientId: "${WEBEX_OAUTH_CLIENT_ID:-}"
-      Webex__OAuthClientSecret: "${WEBEX_OAUTH_CLIENT_SECRET:-}"
       Webex__OAuthRedirectUri: "${WEBEX_OAUTH_REDIRECT_URI:-}"
-      Webex__TokenEncryptionKey: "${WEBEX_TOKEN_ENCRYPTION_KEY:-}"
+      # W22 action-reminder sweep cron (ADR-0024). Safe default = daily 06:00 — absent the shell var this is
+      # byte-identical to today, so production is unaffected. The e2e CI job (and the local real-fire run) sets
+      # ACTION_REMINDERS_SWEEP_CRON='* * * * *' so the Hangfire sweep fires every minute and AC-054/055 can prove
+      # a genuine fire on the real stack. The SweepActionReminders handler is a no-op emitting no AuditEvent when
+      # nothing is due (SweepActionReminders.cs:122), so a minutely sweep does not contend on the audit applock.
+      ActionReminders__SweepCron: "${ACTION_REMINDERS_SWEEP_CRON:-0 6 * * *}"
     # Container hardening (C-CON-001/002/003, D-21). Unlike the api, /tmp can be a RAM-backed tmpfs here:
     # the worker takes no uploads and streams no files to disk (jobs talk to SQL/MinIO/Webex over the
     # network), so nothing large is ever spooled. No DataProtection key-ring either — the worker is a
@@ -331,8 +452,13 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # ⚠ service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up).
+      # The api healthcheck probes /readyz, which reaches SQL Server, Hangfire and object storage. Gating
+      # startup on it means a 30-second blip in ANY of those stops this service from starting at all — a
+      # dependency hiccup becomes a total outage, where the stack previously came up and served degraded.
+      # The honest health signal is kept (docker ps still reports unhealthy); only the interlock is dropped.
       api:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   # Optional inbound ingress for the Webex recording-ready webhook (P13, ADR-0024). Opt-in: `--profile ngrok`.
@@ -359,6 +485,35 @@ services:
         condition: service_healthy
     ports:
       - "4040:4040"   # ngrok agent inspection UI (operator-only)
+
+# Docker secrets (ADR-0032, deployment.md §3.3). File-backed: gen-secrets.sh materializes deploy/secrets/* from
+# deploy/.env(.example) before `docker compose up` (use deploy/scripts/up.sh). The dir is git-ignored; the .NET
+# hosts read the config-key-named files via AddKeyPerFile, the infra images via *_FILE / the mssql shim.
+secrets:
+  mssql_sa_password:
+    file: ./secrets/mssql_sa_password
+  minio_root_password:
+    file: ./secrets/minio_root_password
+  kc_db_password:
+    file: ./secrets/kc_db_password
+  kc_bootstrap_admin_password:
+    file: ./secrets/kc_bootstrap_admin_password
+  ConnectionStrings__Acmp:
+    file: ./secrets/ConnectionStrings__Acmp
+  Minio__SecretKey:
+    file: ./secrets/Minio__SecretKey
+  KeycloakAdmin__ClientSecret:
+    file: ./secrets/KeycloakAdmin__ClientSecret
+  Webex__BotToken:
+    file: ./secrets/Webex__BotToken
+  Webex__WebhookSecret:
+    file: ./secrets/Webex__WebhookSecret
+  Webex__OAuthClientSecret:
+    file: ./secrets/Webex__OAuthClientSecret
+  Webex__TokenEncryptionKey:
+    file: ./secrets/Webex__TokenEncryptionKey
+  Webex__OAuthSetupKey:
+    file: ./secrets/Webex__OAuthSetupKey
 
 volumes:
   mssql-data:

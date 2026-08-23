@@ -858,7 +858,7 @@ class Component extends DCLogic {
       s_none_t:'No results found', s_none_b:'No artifacts match your search. Try a different term, check the spelling, or remove a filter.'
     },
     ar: {
-      brand_sub:'لجنة الهندسة المعمارية', search_ph:'ابحث في المواضيع والقرارات والسجلات والإجراءات…',
+      brand_sub:'لجنة الهيكلة', search_ph:'ابحث في المواضيع والقرارات والسجلات والإجراءات…',
       notif:'الإشعارات', profile_name:'خالد ع.', profile_role:'أمين سر اللجنة', role_view:'العرض بصفة', logout:'تسجيل الخروج',
       grp_committee:'اللجنة', grp_gov:'الحوكمة', grp_know:'المعرفة', grp_insights:'التحليلات', grp_system:'النظام', grp_admin:'الإدارة',
       nav_home:'الرئيسية', nav_backlog:'قائمة المواضيع', nav_agenda:'الأجندة والاجتماعات', nav_decisions:'القرارات', nav_actions:'الإجراءات',
@@ -868,7 +868,7 @@ class Component extends DCLogic {
       greet:'صباح الخير، خالد', today:'الأربعاء · 24 يونيو 2026', next_in:'الاجتماع القادم خلال 6 أيام',
       new_topic:'موضوع جديد', card_backlog:'حالة قائمة المواضيع', open_backlog:'فتح القائمة', active_topics:'موضوعًا نشطًا',
       aging_warn:'موضوعان تجاوز عمرهما 30 يومًا ويحتاجان فرزًا', card_meeting:'الاجتماع القادم',
-      mtg_title:'لجنة الهندسة الأسبوعية', mtg_when:'الأربعاء 18 فبراير 2026 · 10:00', mtg_time:'الوقت المخصّص', items:'بنود', min_unit:'دقيقة', attendees:'حضور',
+      mtg_title:'لجنة الهيكلة الأسبوعية', mtg_when:'الأربعاء 18 فبراير 2026 · 10:00', mtg_time:'الوقت المخصّص', items:'بنود', min_unit:'دقيقة', attendees:'حضور',
       agenda_ready:'جاهزية الأجندة', overdue_actions:'الإجراءات المتأخرة', overdue:'متأخر', pending_approvals:'موافقات معلّقة', throughput_h:'الإنجاز', closed_month:'أُغلقت هذا الشهر',
       agenda_draft:'الأجندة: مسودة', view_agenda:'فتح الأجندة', card_actions:'إجراءاتي',
       card_attn:'يتطلّب انتباهك', card_upcoming:'القادم', card_activity:'النشاط الأخير', audit_trail:'سجل التدقيق',
@@ -877,7 +877,7 @@ class Component extends DCLogic {
       showing_rows:'عرض 9 من 15', view_all:'عرض الكل',
       edit:'تعديل', add_agenda:'إضافة للأجندة', more:'خيارات إضافية', owner_label:'المالك', created_on:'أُنشئ 15 فبراير 2026',
       topic_title:'اعتماد Keycloak كموفّر هوية موحّد عبر المسارات', topic_title_alt:'Adopt Keycloak as the standard IdP across streams', topic_owner:'عمر ح. (الهوية)',
-      type_arch:'قرار معماري', st_scheduled:'مجدول', urg_urgent:'عاجل',
+      type_arch:'قرار هيكلة', st_scheduled:'مجدول', urg_urgent:'عاجل',
       sec_desc:'الوصف', sec_just:'المبرّر', sec_streams:'المسارات المتأثرة', sec_systems:'الأنظمة المتأثرة', sec_attach:'المرفقات',
       desc_body:'توحيد إدارة الهوية والوصول على Keycloak كموفّر هوية معياري وحيد عبر جميع مسارات التسليم، ليحلّ محلّ تطبيقات المصادقة الداخلية لكل مسار.',
       just_body:'تجزئة المصادقة تزيد المخاطر الأمنية وكلفة التدقيق وزمن الإعداد. موفّر هوية موحّد يوحّد الدخول الموحّد والتحقق المتعدّد وسياسة الرموز، وهو شرط مسبق لتكامل الخدمات عبر المسارات.',
@@ -1016,7 +1016,7 @@ class Component extends DCLogic {
     ];
     const throughput = [['W1',4],['W2',6],['W3',5],['W4',7],['W5',6],['W6',9]].map(([label,v],i,a)=>({ label, pct:(v/9*100)+'%', op: i===a.length-1?'1':'0.55' }));
     const upcoming = [
-      { day:'18', mon:'Feb', title: lang==='en'?'Weekly Architecture Committee':'لجنة الهندسة الأسبوعية', meta:'MTG-2026-019 · 10:00', dot:'var(--st-sched-dot)' },
+      { day:'18', mon:'Feb', title: lang==='en'?'Weekly Architecture Committee':'لجنة الهيكلة الأسبوعية', meta:'MTG-2026-019 · 10:00', dot:'var(--st-sched-dot)' },
       { day:'20', mon:'Feb', title: lang==='en'?'Keycloak migration ADR due':'موعد سجل قرار ترحيل Keycloak', meta:'ACT-2026-040', dot:'var(--st-warn-dot)' },
       { day:'25', mon:'Feb', title: lang==='en'?'Payments tokenization review':'مراجعة ترميز المدفوعات', meta:'TOP-2026-009', dot:'var(--st-info-dot)' },
       { day:'03', mon:'Mar', title: lang==='en'?'Bi-weekly committee meeting':'اجتماع اللجنة نصف الشهري', meta:'MTG-2026-020', dot:'var(--st-neutral-dot)' }
@@ -1037,7 +1037,7 @@ class Component extends DCLogic {
     };
     const streamL = { identity:{en:'Identity',ar:'الهوية'}, platform:{en:'Platform',ar:'المنصّة'}, payments:{en:'Payments',ar:'المدفوعات'},
       health:{en:'Health',ar:'الصحة'}, permits:{en:'Permits',ar:'التصاريح'}, notifications:{en:'Notifications',ar:'الإشعارات'}, ios:{en:'iOS',ar:'iOS'}, android:{en:'Android',ar:'Android'} };
-    const typeL = { arch:{en:'Arch. Decision',ar:'قرار معماري'}, gov:{en:'Governance',ar:'حوكمة'}, research:{en:'Research',ar:'بحث'} };
+    const typeL = { arch:{en:'Arch. Decision',ar:'قرار هيكلة'}, gov:{en:'Governance',ar:'حوكمة'}, research:{en:'Research',ar:'بحث'} };
     const statusL = { triage:'st_triage', accepted:'st_accepted', scheduled:'st_scheduled', returned:'st_returned', inprogress:'st_inprogress' };
     const statusSem = { triage:'neutral', accepted:'info', scheduled:'sched', returned:'warn', inprogress:'warn', rejected:'danger' };
 
@@ -1177,7 +1177,7 @@ class Component extends DCLogic {
       { id:'n1', type:'action', key:'ACT-2026-040', d:ICN.actions, tone:'info', time:{en:'25m ago',ar:'قبل ٢٥ دقيقة'}, msg:{en:'You were assigned an action: Produce Keycloak migration ADR',ar:'أُسند إليك إجراء: إعداد سجل قرار ترحيل Keycloak'} },
       { id:'n2', type:'decision', key:'DECN-2026-008', d:ICN.decisions, tone:'success', time:{en:'2h ago',ar:'قبل ساعتين'}, msg:{en:'Chairman approved: Keycloak adoption (conditional)',ar:'اعتمد الرئيس: تبنّي Keycloak (مشروط)'} },
       { id:'n3', type:'vote', key:'TOP-2026-022', d:voteIcon, tone:'sched', time:{en:'3h ago',ar:'قبل ٣ ساعات'}, msg:{en:'Voting opened: API pagination standard',ar:'فُتح التصويت: معيار ترقيم الواجهات'} },
-      { id:'n4', type:'meeting', key:'MTG-2026-019', d:ICN.agenda, tone:'info', time:{en:'5h ago',ar:'قبل ٥ ساعات'}, msg:{en:'Meeting scheduled: Weekly Architecture Committee · Wed 18 Feb 2026',ar:'جُدول اجتماع: لجنة الهندسة الأسبوعية · الأربعاء ١٨ فبراير ٢٠٢٦'} },
+      { id:'n4', type:'meeting', key:'MTG-2026-019', d:ICN.agenda, tone:'info', time:{en:'5h ago',ar:'قبل ٥ ساعات'}, msg:{en:'Meeting scheduled: Weekly Architecture Committee · Wed 18 Feb 2026',ar:'جُدول اجتماع: لجنة الهيكلة الأسبوعية · الأربعاء ١٨ فبراير ٢٠٢٦'} },
       { id:'n5', type:'minutes', key:'MTG-2026-018', d:docIcon, tone:'warn', time:{en:'Yesterday',ar:'أمس'}, msg:{en:'Minutes are ready for your review and approval',ar:'المحضر جاهز لمراجعتك واعتمادك'} },
       { id:'n6', type:'returned', key:'TOP-2026-027', d:returnIcon, tone:'neutral', time:{en:'Yesterday',ar:'أمس'}, msg:{en:'Your topic was returned for rework with comments',ar:'أُعيد موضوعك لإعادة العمل مع ملاحظات'} },
       { id:'n7', type:'risk', key:'RSK-2026-006', d:ICN.risks, tone:'danger', time:{en:'2 Jun 2026',ar:'٢ يونيو ٢٠٢٦'}, msg:{en:'You were added as mitigation owner on a high-impact risk',ar:'أُضفت كمالك للمعالجة على مخاطرة عالية الأثر'} },

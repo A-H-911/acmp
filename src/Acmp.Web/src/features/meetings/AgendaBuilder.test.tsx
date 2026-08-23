@@ -19,6 +19,10 @@ vi.mock('../../api/meetings', () => ({
   useSetTimebox: vi.fn(),
   useAssignPresenter: vi.fn(),
   usePublishAgenda: vi.fn(),
+  // FR-159 — the row now carries a guest-presenter invite for a Secretary. Mocked here because
+  // this file mocks the whole api module; the invite's own behaviour is proven in
+  // GuestPresenterInvite.test.tsx against a real hook and a stubbed fetch.
+  useInviteGuestPresenter: vi.fn(() => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false })),
 }));
 vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
 
@@ -57,6 +61,7 @@ const MEETING: MeetingDetail = {
 const PREPARED: PagedResult<TopicSummary> = {
   items: [
     {
+      restricted: false,
       id: 't3', key: 'TOP-2026-040', title: 'Adopt OpenTelemetry', type: 'ArchitectureDecision', status: 'Prepared',
       urgency: 'Normal', scope: 'MultiStream', streams: [], ownerId: null, ownerName: null, priority: 1, timesDeferred: 0, ageDays: 2, slaBreached: false, createdAt: '2026-06-01T09:00:00Z',
     },

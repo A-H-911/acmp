@@ -82,16 +82,24 @@ public static class SharedKernelExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 
-        // MinIO object storage (ADR-0014). Building the client does not open a connection.
+        // Per-environment bucket names (DEF-015) — never hardcoded on a handler.
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+
+        // MinIO / S3 object storage (ADR-0014, ADR-0035). Building the client does not open a connection.
+        // Region is set on BOTH clients: it is the SigV4 signing scope, and against a real AWS endpoint the
+        // SDK also derives the request host from it (AWSS3Endpoints), so a missing region silently signs and
+        // addresses the wrong place. Default us-east-1 (OQ-060) — the on-prem MinIO ignores it.
         var minio = configuration.GetSection("Minio");
         var endpoint = minio["Endpoint"] ?? "localhost:9000";
         var accessKey = minio["AccessKey"] ?? "minioadmin";
         var secretKey = minio["SecretKey"] ?? "minioadmin";
+        var region = string.IsNullOrWhiteSpace(minio["Region"]) ? "us-east-1" : minio["Region"]!;
         var secure = bool.TryParse(minio["Secure"], out var s) && s;
         services.AddSingleton<IMinioClient>(_ => new MinioClient()
             .WithEndpoint(endpoint)
             .WithCredentials(accessKey, secretKey)
             .WithSSL(secure)
+            .WithRegion(region)
             .Build());
 
         // Presign client: uses the public endpoint (browser-reachable via nginx) when configured, so presigned
@@ -105,7 +113,7 @@ public static class SharedKernelExtensions
                 .WithEndpoint(publicEndpoint)
                 .WithCredentials(accessKey, secretKey)
                 .WithSSL(publicSecure)
-                .WithRegion("us-east-1")
+                .WithRegion(region)
                 .Build()));
         services.AddScoped<IFileStore, MinioFileStore>();
         // C-FILE-01 magic-byte upload inspection (stateless; the signature trie is built once).

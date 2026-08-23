@@ -29,6 +29,14 @@ RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-rest
 # Runs as the image's built-in non-root `app` user (UID 1654, ships in .NET 8 aspnet images) — C-CON-001 / DS-0002.
 # Kestrel binds 8080 (unprivileged port), so no root/cap_net_bind is needed.
 FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS api
+ARG IMAGE_VERSION=dev
+ARG IMAGE_REVISION=unknown
+ARG IMAGE_CREATED=unknown
+LABEL org.opencontainers.image.title="ACMP API" \
+      org.opencontainers.image.source="https://github.com/A-H-911/acmp" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      org.opencontainers.image.revision="${IMAGE_REVISION}" \
+      org.opencontainers.image.created="${IMAGE_CREATED}"
 RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/api ./
@@ -41,6 +49,14 @@ ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
 # --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
 # IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9822a6201c64c9f38b8a190832a7ae21cd30150d509b3ea170fd83b4f4e6166a AS worker
+ARG IMAGE_VERSION=dev
+ARG IMAGE_REVISION=unknown
+ARG IMAGE_CREATED=unknown
+LABEL org.opencontainers.image.title="ACMP Worker" \
+      org.opencontainers.image.source="https://github.com/A-H-911/acmp" \
+      org.opencontainers.image.version="${IMAGE_VERSION}" \
+      org.opencontainers.image.revision="${IMAGE_REVISION}" \
+      org.opencontainers.image.created="${IMAGE_CREATED}"
 WORKDIR /app
 COPY --from=build /app/worker ./
 ENV DOTNET_ENVIRONMENT=Production

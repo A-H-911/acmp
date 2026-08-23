@@ -1,0 +1,173 @@
+[
+  {
+    "type": "slice",
+    "id": "SL-001",
+    "title": "P1 — Repository initialization — solution, Docker stack (api/web/keycloak/sqlserver/seq/minio), CI skeleton",
+    "phase_id": "PH-1",
+    "sort_order": 1,
+    "objective": "Repository initialization — solution, Docker stack (api/web/keycloak/sqlserver/seq/minio), CI skeleton",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-002",
+    "title": "P2 — Backend foundation — modular-monolith host + Membership reference-module pattern",
+    "phase_id": "PH-1",
+    "sort_order": 2,
+    "objective": "Backend foundation — modular-monolith host + Membership reference-module pattern",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-003",
+    "title": "P3 — Frontend foundation — app shell, design tokens, i18n EN/AR + RTL, role-filtered nav",
+    "phase_id": "PH-1",
+    "sort_order": 3,
+    "objective": "Frontend foundation — app shell, design tokens, i18n EN/AR + RTL, role-filtered nav",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-004",
+    "title": "P4 — Identity & permissions — claim→role mapping, policy + ABAC authz, SoD, Users & Membership UI",
+    "phase_id": "PH-1",
+    "sort_order": 4,
+    "objective": "Identity & permissions — claim→role mapping, policy + ABAC authz, SoD, Users & Membership UI",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-005",
+    "title": "P5 — Topics & backlog — intake → triage → backlog, views, DnD prioritization",
+    "phase_id": "PH-1",
+    "sort_order": 5,
+    "objective": "Topics & backlog — intake → triage → backlog, views, DnD prioritization",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-006",
+    "title": "P6 — Agenda & meetings + in-app notifications",
+    "phase_id": "PH-1",
+    "sort_order": 6,
+    "objective": "Agenda & meetings + in-app notifications",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-007",
+    "title": "P7 — Minutes & decisions",
+    "phase_id": "PH-1",
+    "sort_order": 7,
+    "objective": "Minutes & decisions",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-008",
+    "title": "P8 — Actions & follow-up (incl. Hangfire reminders, Job Monitor, decision-link gate)",
+    "phase_id": "PH-1",
+    "sort_order": 8,
+    "objective": "Actions & follow-up (incl. Hangfire reminders, Job Monitor, decision-link gate)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-009",
+    "title": "P9 — Voting (incl. the P1–P9 audit remediation + hash-chained audit store)",
+    "phase_id": "PH-1",
+    "sort_order": 9,
+    "objective": "Voting (incl. the P1–P9 audit remediation + hash-chained audit store)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-010",
+    "title": "P10 — Risks, dependencies & traceability (incl. impact graph, risk/dep reports)",
+    "phase_id": "PH-1",
+    "sort_order": 10,
+    "objective": "Risks, dependencies & traceability (incl. impact graph, risk/dep reports)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-011",
+    "title": "P11 — ADRs & invariants (Governance module, decision→ADR promotion)",
+    "phase_id": "PH-1",
+    "sort_order": 11,
+    "objective": "ADRs & invariants (Governance module, decision→ADR promotion)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-012",
+    "title": "P12 — Dashboards & reports",
+    "phase_id": "PH-1",
+    "sort_order": 12,
+    "objective": "Dashboards & reports",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-013",
+    "title": "P13 — Webex adapter — notifications + recording links, strictly behind `INotificationChannel` (D-02)",
+    "phase_id": "PH-2",
+    "sort_order": 13,
+    "objective": "Webex adapter — notifications + recording links, strictly behind `INotificationChannel` (D-02)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-014",
+    "title": "P14 — Tarseem diagram sidecar behind `IDiagramRenderer` + the Diagrams surface (D-11)",
+    "phase_id": "PH-2",
+    "sort_order": 14,
+    "objective": "Tarseem diagram sidecar behind `IDiagramRenderer` + the Diagrams surface (D-11). **DEFERRED INDEFINITELY and removed from the active ladder — operator decision 2026-07-17, recorded as DEC-028. Not built; re-opened only by explicit operator instruction (no automatic trigger).** Diagrams stay externally authored + attached as files (D-11 Phase-1 handling). Nothing depends on it: PH-2 is otherwise complete and **P17→P19 proceed without it**",
+    "lifecycle_status": "Deferred"
+  },
+  {
+    "type": "slice",
+    "id": "SL-015",
+    "title": "P15 — Research & Knowledge — standalone Research module + Knowledge wiki/templates",
+    "phase_id": "PH-2",
+    "sort_order": 15,
+    "objective": "Research & Knowledge — standalone Research module + Knowledge wiki/templates. **Keystone import (FR-112) deferred out of P15 to future work (D-05, 2026-07-12) — not built in this slice**",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-016",
+    "title": "P16 — Security hardening — OWASP ASVS 5.0 L2 sweep, incl. per-ballot crypto chaining (D-13)",
+    "phase_id": "PH-4",
+    "sort_order": 16,
+    "objective": "Security hardening — OWASP ASVS 5.0 L2 sweep, incl. per-ballot crypto chaining (D-13)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-017",
+    "title": "P17 — Testing hardening — first task: harvest the \"→ P17\" deferrals from the progress log; partially advanced by the S1–S7 coverage/E2E slices (PR #38–#48, ADR-0016)",
+    "phase_id": "PH-4",
+    "sort_order": 17,
+    "objective": "Testing hardening — first task: harvest the \"→ P17\" deferrals from the progress log; partially advanced by the S1–S7 coverage/E2E slices (PR #38–#48, ADR-0016)",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-018",
+    "title": "P18 — Deployment — production compose + overrides, migration-on-deploy, nightly backups + warm-standby restore, deployment/rollback runbook",
+    "phase_id": "PH-4",
+    "sort_order": 18,
+    "objective": "Deployment — production compose + overrides, migration-on-deploy, nightly backups + warm-standby restore, deployment/rollback runbook",
+    "lifecycle_status": "Implemented"
+  },
+  {
+    "type": "slice",
+    "id": "SL-019",
+    "title": "P19 — Final audit & release readiness — checkpoints `[BLOCK]` gates + Definition of Done; final acceptance-audit report",
+    "phase_id": "PH-4",
+    "sort_order": 19,
+    "objective": "Final audit & release readiness — checkpoints `[BLOCK]` gates + Definition of Done; final acceptance-audit report",
+    "lifecycle_status": "Implemented"
+  }
+]

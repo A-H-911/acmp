@@ -51,11 +51,25 @@ public sealed class MinioFileStore : IFileStore
     public Task DeleteAsync(string bucket, string objectName, CancellationToken ct = default) =>
         _client.RemoveObjectAsync(new RemoveObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
 
+    // Auto-create is a LOCAL-DEV convenience, not a production path. Against S3 the bucket is provisioned
+    // out of band by deploy/aws/02-s3.sh and the app's IAM policy grants no s3:CreateBucket (ADR-0035) —
+    // and Block Public Access means a wrong name must fail loudly, not be silently created. The granted
+    // s3:ListBucket makes HeadBucket succeed, so in cloud this probe returns true and MakeBucket never
+    // fires; the catch is for a tightened policy where even the probe is denied. Swallowing a denial here
+    // is safe because it decides nothing: PutObject immediately after is the real authority and its own
+    // failure surfaces to the caller.
     private async Task EnsureBucketAsync(string bucket, CancellationToken ct)
     {
-        var exists = await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket), ct);
-        if (!exists)
+        try
+        {
+            if (await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket), ct))
+                return;
             await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket), ct);
+        }
+        catch (Exception ex) when (ex is AccessDeniedException or AuthorizationException)
+        {
+            // Pre-provisioned bucket we may write but not administer — proceed to the write.
+        }
     }
 }
 

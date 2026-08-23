@@ -12,7 +12,7 @@ namespace Acmp.Modules.Topics.Domain;
 // Never an EF navigation to another module, so the modular-monolith boundary holds (ADR-0001).
 // Implements the shared ABAC contracts so the platform authorization handlers can scope writes by
 // stream and by per-topic ownership (docs/domain/permission-role-matrix.md §E).
-public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource
+public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScopedResource, IConfidentialResource
 {
     private readonly List<string> _streams = new();
     private readonly List<string> _systems = new();
@@ -44,6 +44,10 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public Guid? OwnerId { get; private set; }            // CommitteeMember.PublicId
     public string? OwnerName { get; private set; }        // display snapshot
     public DateTimeOffset? RevisitOn { get; private set; }
+    // AC-057: when the SLA-breach sweep last notified the Secretary for this topic's CURRENT status window.
+    // Reset to null on every transition (see Transition) so a fresh breach in a new status re-notifies — an
+    // idempotent one-shot per breach, mirroring ActionItem.OverdueNotifiedAt.
+    public DateTimeOffset? SlaNotifiedAt { get; private set; }
     // P15c / W16: when this topic was created by converting a research Recommendation (REC-), the source
     // recommendation's id — an opaque value ref, no FK (ADR-0001), same shape as ResearchMission.SourceTopicId.
     // A filtered UNIQUE index on it (TopicConfiguration) enforces one-topic-per-recommendation atomically.
@@ -58,6 +62,18 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     // ABAC contracts (docs/domain/permission-role-matrix.md §E): write access is bounded by these.
     public IReadOnlyCollection<string> AffectedStreams => _streams.AsReadOnly();
     Guid ITopicScopedResource.TopicId => PublicId;
+
+    // ADR-0043 clause (5): a Platform or OrgWide topic affects everything, so no stream's members own
+    // it and stream scope does not bound writes to it. Computed from this module's own enum and
+    // exposed to the shared kernel as a PRIMITIVE — the contract must not reference TopicScope
+    // (ADR-0001 module boundary; ADR-0021 is the pattern).
+    public bool AffectsAllStreams => Scope is TopicScope.Platform or TopicScope.OrgWide;
+
+    // C-AUTHZ-04 / FR-163 (DEC-063). A Restricted topic is readable only by Chairman/Secretary/Auditor,
+    // its Owner, and holders of an explicit per-topic capability grant — and is excluded from list
+    // surfaces and search for everyone else. A plain bool, not a level enum: the control names exactly
+    // one classification. ponytail: a Confidentiality enum is the upgrade path if a second tier appears.
+    public bool IsRestricted { get; private set; }
 
     // Factory — creates a Draft. Drafts may be incomplete (the form autosaves as the user types);
     // completeness is enforced at Submit (AC-030). Submitter attribution is fixed here.
@@ -194,10 +210,15 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         Raise(new TopicClosedEvent(PublicId, Key, now));
     }
 
-    public void Convert(string actorSub, string actorName, DateTimeOffset now)
+    // W17 / FR-030: convert a Decided topic to a different type. This is the SOURCE side only — it
+    // retires the original; the handler creates the successor and links the two. The reason is required
+    // and lands in the status history, which is why no schema change was needed: TopicStatusEvent has
+    // always carried a Reason and Transition has always accepted one — this call simply passed null.
+    public void Convert(string reason, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Decided);
-        Transition(TopicStatus.Converted, null, actorSub, actorName, now);
+        RequireReason(reason, "A conversion reason is required.");
+        Transition(TopicStatus.Converted, reason.Trim(), actorSub, actorName, now);
         Raise(new TopicConvertedEvent(PublicId, Key, now));
     }
 
@@ -222,11 +243,55 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     }
 
     // Metadata (streams/systems/tags/urgency/scope) stays editable post-Accept until Decided (AC-034).
-    public void AssignStreams(IEnumerable<string> streams) { EnsureMutable(); ReplaceStrings(_streams, streams); }
+
+    // ⚠ THE GUARD IS HERE, IN THE AGGREGATE, RATHER THAN IN THE ONE VALIDATOR THAT PROMPTED IT
+    // (DEF-059, DEC-043). Submit enforces "at least one stream" (line 104) and ran once; update did
+    // not, so PUT /api/topics/{id} with an empty list could leave a LIVE topic affecting nothing —
+    // and StreamScopeHandler read exactly that state as "unscoped" and granted every stream-bounded
+    // member write access to it. An invariant asserted at one entry point and absent at the other is
+    // the shape this codebase keeps paying for; patching the named caller would have left every
+    // sibling caller of AssignStreams able to do the same thing.
+    //
+    // A DRAFT MAY STILL HOLD NONE, and that is not a hole: the form autosaves as the user types, so
+    // a draft is incomplete by design and Submit is the gate it must pass (AC-030). Nothing
+    // authorizes against a draft — it is not yet live work.
+    public void AssignStreams(IEnumerable<string> streams)
+    {
+        EnsureMutable();
+        var next = new List<string>();
+        ReplaceStrings(next, streams);
+        if (next.Count == 0 && Status != TopicStatus.Draft)
+            throw new InvalidOperationException("A submitted topic must affect at least one stream.");
+        ReplaceStrings(_streams, next);
+    }
+
     public void AssignSystems(IEnumerable<string> systems) { EnsureMutable(); ReplaceStrings(_systems, systems); }
     public void SetTags(IEnumerable<string> tags) { EnsureMutable(); ReplaceStrings(_tags, tags); }
     public void SetUrgency(TopicUrgency urgency) { EnsureMutable(); Urgency = urgency; }
     public void SetScope(TopicScope scope) { EnsureMutable(); Scope = scope; }
+
+    // FR-163: classify / declassify. Chairman + Secretary only (DEC-063 d2) — enforced at the
+    // application boundary, as every other role rule on this aggregate is.
+    //
+    // ⚠ DELIBERATELY EXEMPT FROM EnsureMutable, and this is the load-bearing part. EnsureMutable
+    // blocks every field edit once a topic is Decided/Closed/Converted. Applying it here would make an
+    // archived sensitive topic PERMANENTLY undeclassifiable — the classification could be set while the
+    // topic was live and could never be lifted afterwards, which is precisely when a declassification
+    // request arrives. Classification is metadata ABOUT the record, not a change TO the decided record,
+    // so the immutability EnsureMutable protects (AC-034) is not what is at stake.
+    public void Restrict(string actorSub, string actorName, DateTimeOffset now)
+    {
+        if (IsRestricted) return;               // idempotent: re-restricting is not an event
+        IsRestricted = true;
+        Raise(new TopicRestrictedEvent(PublicId, Key, true, actorSub, now));
+    }
+
+    public void Declassify(string actorSub, string actorName, DateTimeOffset now)
+    {
+        if (!IsRestricted) return;
+        IsRestricted = false;
+        Raise(new TopicRestrictedEvent(PublicId, Key, false, actorSub, now));
+    }
 
     // W3: backlog prioritization ordinal.
     public void SetPriority(int priority, DateTimeOffset now)
@@ -253,10 +318,15 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
 
     // ---- helpers ----
 
+    // AC-057: the SLA-breach sweep records that it has notified the Secretary for this breach; cleared on the
+    // next transition so the next status window can breach and notify afresh.
+    public void MarkSlaNotified(DateTimeOffset now) => SlaNotifiedAt = now;
+
     private void Transition(TopicStatus to, string? reason, string actorSub, string actorName, DateTimeOffset now)
     {
         _history.Add(new TopicStatusEvent(Status, to, reason, actorSub, actorName, now));
         Status = to;
+        SlaNotifiedAt = null;   // AC-057: a status change re-arms SLA notification for the new time-in-status window.
     }
 
     private void RequireStatus(params TopicStatus[] allowed)

@@ -29,7 +29,14 @@ Advance the PH-2 remainder in [`../planning/roadmap.md`](../planning/roadmap.md)
 
 Implement the **Webex adapter** behind `INotificationChannel` + a meeting-metadata client, per [`../domain/webex-feasibility.md`](../domain/webex-feasibility.md), [`../domain/notification-strategy.md`](../domain/notification-strategy.md) + ADR-0005: bot + **Adaptive Cards v1.3** notifications (**≤80KB per card, ≤10 image links per card**), meeting metadata + recording links (advances D-02), webhook for recording-ready, OAuth/bot token (scoped), webhook signature verification, **429 + Retry-After** backoff via Hangfire. **Do not** assume programmatic Webex Assistant transcripts. Keep Webex strictly behind the adapter — v1 must run without it. If the environment is air-gapped, build the adapter but don't deploy a live connection. Satisfy the standard footer.
 
-#### P14 — Tarseem integration
+#### P14 — Tarseem integration — ⛔ **DEFERRED INDEFINITELY (DEC-028, 2026-07-17) — DO NOT START**
+
+> **Operator decision: P14 is removed from the active ladder and is re-opened only by explicit operator
+> instruction.** Do not pick this prompt up because it is "next" — it is not next. The prompt below is
+> retained verbatim so the slice can be resumed unchanged if it is ever re-opened.
+> After P16, the ladder continues at **P17 → P18 → P19**. See **DEC-028**, **D-11**, and the
+> [roadmap](../planning/roadmap.md) ladder. ADR-0006 (Tarseem as a render sidecar) **still stands** — only the
+> scheduling changed, so nothing here needs redesigning if it returns.
 
 **Design (visual source of truth):** the **Diagrams** surface in `/ACMP product context/ACMP Diagrams.dc.html` (net-new wiring — this reference existed but was never mapped to a slice; consult the Usage Map row for scope).
 

@@ -51,7 +51,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<string>
     description: 'Consolidate per-stream IdPs onto one platform.',
     justification: 'Cuts duplicated maintenance and closes token-format gaps.',
     type: 'ResearchDiscovery', urgency: 'Normal', source: 'CommitteeMember',
-    streams: ['IAM'], systems: [], tags: [],
+    streams: ['core'], systems: [], tags: [],
   });
 
   // 2) The mission, seeded from that topic.
@@ -91,7 +91,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<string>
     title: 'Adopt Keycloak, realm per stream',
     description: 'Stand up Keycloak and migrate each stream to its own realm.',
     justification: 'The accepted recommendation from the unified-IdP mission.',
-    type: 'ArchitectureDecision', urgency: 'Urgent', streams: ['IAM'], systems: [], tags: [],
+    type: 'ArchitectureDecision', urgency: 'Urgent', streams: ['core'], systems: [], tags: [],
   });
   await post(request, bearer, `/api/research/${mid}/recommendations/${rec1.id}/convert`, { topicId: converted.id });
 

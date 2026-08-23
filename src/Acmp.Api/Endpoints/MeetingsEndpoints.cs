@@ -5,6 +5,7 @@ using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
 using Acmp.Modules.Meetings.Application.Features.GetRecordingUrl;
+using Acmp.Modules.Meetings.Application.Features.InviteGuestPresenter;
 using Acmp.Modules.Meetings.Application.Features.PublishAgenda;
 using Acmp.Modules.Meetings.Application.Features.ScheduleMeeting;
 using Acmp.Modules.Meetings.Application.Features.UploadRecording;
@@ -96,6 +97,13 @@ public static class MeetingsEndpoints
             Results.Ok(await sender.Send(new AssignPresenterCommand(id, topicId, body.PresenterUserId, body.PresenterName), ct)))
             .RequireAuthorization(Policies.AgendaPublish);
 
+        // FR-159 / AC-092 — invite a guest presenter onto an agenda slot, with access that expires
+        // after the meeting (ADR-0040). No policy attribute here on purpose: the capability is
+        // SECRETARY ONLY, which is narrower than Agenda.Publish (Chairman + Secretary), and the
+        // command's own AllowedRoles is where that is enforced — one place, server-side.
+        group.MapPost("/{id:guid}/guest-presenters", async (Guid id, GuestPresenterBody body, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new InviteGuestPresenterCommand(id, body.TopicId, body.Email, body.FullName), ct)));
+
         // W6: publish & notify (flips each topic to Scheduled; notifies committee members — P6b).
         group.MapPost("/{id:guid}/agenda/publish", async (Guid id, ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new PublishAgendaCommand(id), ct)))
@@ -148,6 +156,7 @@ public static class MeetingsEndpoints
     public sealed record MoveBody(int Delta);
     public sealed record TimeboxBody(int Minutes);
     public sealed record PresenterBody(Guid PresenterUserId, string PresenterName);
+    public sealed record GuestPresenterBody(Guid TopicId, string Email, string FullName);
     public sealed record AttendanceBody(Guid UserId, string Name, AttendanceRole Role, AttendanceStatus Status, bool IsVotingEligible);
     public sealed record DiscussionBody(Guid TopicId, string Body);
     public sealed record ActualTimeBody(int ActualMinutes, AgendaItemOutcome? Outcome);

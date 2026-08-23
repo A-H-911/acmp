@@ -31,6 +31,11 @@ export interface FakeResponse {
   jsonBody?: unknown;
   /** When true, res.json() rejects — simulates a non-JSON error body. */
   jsonThrows?: boolean;
+  /**
+   * Response headers. Needed since apiClient reads `X-Acmp-Auth-Reason` off every refusal (ADR-0039):
+   * a fake response with no headers at all would throw before the ApiError was built.
+   */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -46,6 +51,7 @@ export function stubFetch(impl?: (url: string, init?: RequestInit) => FakeRespon
     return {
       ok,
       status,
+      headers: new Headers(r.headers ?? {}),
       json: async () => {
         if (r.jsonThrows) throw new Error('not json');
         return r.jsonBody;

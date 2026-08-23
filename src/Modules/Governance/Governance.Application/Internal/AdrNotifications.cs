@@ -19,33 +19,33 @@ internal static class AdrNotifications
     // W17: a reviewer is asked to review a proposed ADR.
     public static NotificationMessage ProposedForReview(string recipientUserId, string adrKey) => new(
         recipientUserId,
-        LocalizedString.Create("ADR proposed for review", "سجل قرار معماري مقترح للمراجعة"),
+        LocalizedString.Create("ADR proposed for review", "سجل قرار هيكلة مقترح للمراجعة"),
         LocalizedString.Create(
             $"ADR {adrKey} has been proposed and awaits your review.",
-            $"تم اقتراح سجل القرار المعماري {adrKey} وينتظر مراجعتك."),
+            $"تم اقتراح سجل قرار الهيكلة {adrKey} وينتظر مراجعتك."),
         CategoryAdrProposed, AdrLink(adrKey));
 
     // W17: the committee is told an ADR was approved (now in force).
     public static Func<string, NotificationMessage> Approved(string adrKey)
     {
-        var title = LocalizedString.Create("ADR approved", "تم اعتماد سجل قرار معماري");
+        var title = LocalizedString.Create("ADR approved", "تم اعتماد سجل قرار هيكلة");
         var body = LocalizedString.Create(
             $"ADR {adrKey} has been approved and is now in force.",
-            $"تم اعتماد سجل القرار المعماري {adrKey} وأصبح ساري المفعول.");
+            $"تم اعتماد سجل قرار الهيكلة {adrKey} وأصبح ساري المفعول.");
         return recipient => new NotificationMessage(recipient, title, body, CategoryAdrApproved, AdrLink(adrKey));
     }
 
     // W21: the committee is told an ADR was superseded/deprecated (with the replacement key when superseded).
     public static Func<string, NotificationMessage> Superseded(string priorKey, string? successorKey)
     {
-        var title = LocalizedString.Create("ADR superseded", "تم استبدال سجل قرار معماري");
+        var title = LocalizedString.Create("ADR superseded", "تم استبدال سجل قرار هيكلة");
         var body = successorKey is null
             ? LocalizedString.Create(
                 $"ADR {priorKey} has been deprecated.",
-                $"تم إيقاف سجل القرار المعماري {priorKey}.")
+                $"تم إيقاف سجل قرار الهيكلة {priorKey}.")
             : LocalizedString.Create(
                 $"ADR {priorKey} has been superseded by {successorKey}.",
-                $"تم استبدال سجل القرار المعماري {priorKey} بالسجل {successorKey}.");
+                $"تم استبدال سجل قرار الهيكلة {priorKey} بالسجل {successorKey}.");
         return recipient => new NotificationMessage(recipient, title, body, CategoryAdrSuperseded, AdrLink(successorKey ?? priorKey));
     }
 

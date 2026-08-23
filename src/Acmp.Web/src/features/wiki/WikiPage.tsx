@@ -62,13 +62,11 @@ export function WikiPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {canManage && (
-            <div style={{ padding: '0 14px 8px' }}>
-              <Button variant="secondary" size="sm" onClick={() => setCreateOpen(true)}>
-                <Icon name="plus" size={14} aria-hidden /> {t('wiki.newPage')}
-              </Button>
-            </div>
-          )}
+          {/* The design's tree pane goes search -> page list with no create button
+              ("ACMP Research & Knowledge.dc.html"), so the button that sat here is gone. It was NOT
+              simply deleted: it was the only create path once any page existed, because the
+              "select a page" state had no CTA. The affordance moved into that state (below), which
+              keeps creation reachable in every case and matches the reference. */}
           <nav className="wiki-tree-scroll" aria-label={t('wiki.treeLabel')}>
             {spaces.map((sp) => (
               <div className="wiki-space" key={sp.space}>
@@ -153,13 +151,22 @@ function WikiMain({ selectedKey, canManage, isLoading, isError, hasDocs, searchi
   if (selectedKey) return <WikiArticlePane key={selectedKey} docKey={selectedKey} canManage={canManage} />;
   if (!hasDocs) {
     return (
+      // The CTA goes THROUGH the state, not beside it. It used to be a sibling of <EmptyState>, so it
+      // rendered outside the state's card with the wrapper's gap between them — a detached button under a
+      // bordered box, which is why this screen read as not matching the rest of the product. ErrorState and
+      // PermissionDenied already route their actions through StateShell's `.state-actions`; EmptyState
+      // simply had no way to, until the `action` slot above.
       <div className="wiki-empty">
-        <EmptyState icon="wiki" title={t('wiki.empty.title')} body={t('wiki.empty.body')} />
-        {canManage && (
-          <Button variant="primary" onClick={onCreate}>
-            <Icon name="plus" size={16} aria-hidden /> {t('wiki.newPage')}
-          </Button>
-        )}
+        <EmptyState
+          icon="wiki"
+          title={t('wiki.empty.title')}
+          body={t('wiki.empty.body')}
+          action={canManage && (
+            <Button variant="primary" onClick={onCreate}>
+              <Icon name="plus" size={16} aria-hidden /> {t('wiki.newPage')}
+            </Button>
+          )}
+        />
       </div>
     );
   }
@@ -171,7 +178,22 @@ function WikiMain({ selectedKey, canManage, isLoading, isError, hasDocs, searchi
       </div>
     );
   }
-  return <div className="wiki-empty"><EmptyState icon="file" title={t('wiki.select.title')} body={t('wiki.select.body')} /></div>;
+  // Pages exist but none is selected. This carries the create CTA now that the tree pane no longer
+  // does — without it, a manager with at least one page would have no way to create another.
+  return (
+    <div className="wiki-empty">
+      <EmptyState
+        icon="file"
+        title={t('wiki.select.title')}
+        body={t('wiki.select.body')}
+        action={canManage && (
+          <Button variant="secondary" onClick={onCreate}>
+            <Icon name="plus" size={16} aria-hidden /> {t('wiki.newPage')}
+          </Button>
+        )}
+      />
+    </div>
+  );
 }
 
 /** Keyed by docKey so navigating to another page remounts fresh (resets edit mode). */

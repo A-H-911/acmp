@@ -37,17 +37,25 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
 
     private readonly ITopicsDbContext _db;
     private readonly IClock _clock;
+    private readonly ITopicVisibility _visibility;
 
-    public GetBacklogHandler(ITopicsDbContext db, IClock clock)
+    public GetBacklogHandler(ITopicsDbContext db, IClock clock, ITopicVisibility visibility)
     {
         _db = db;
         _clock = clock;
+        _visibility = visibility;
     }
 
     public async Task<PagedResult<TopicSummaryDto>> Handle(GetBacklogQuery request, CancellationToken ct)
     {
         // History drives "time in current status" for the SLA aging badge (AC-057).
         var query = _db.Topics.AsNoTracking().Include(t => t.History).AsQueryable();
+
+        // C-AUTHZ-04 / FR-163. THIS ONE LINE COVERS FIVE PRODUCT SURFACES: the backlog list, the
+        // kanban, the agenda pool (GET /topics?status=Prepared), the role dashboards and the reports
+        // all read through this handler. Applied FIRST, before every filter and long before paging, so
+        // a Restricted topic can never be counted into a total the caller may not see.
+        query = query.VisibleTo(await _visibility.ResolveAsync(ct));
 
         if (request.Statuses is { Count: > 0 })
             query = query.Where(t => request.Statuses.Contains(t.Status));
@@ -74,7 +82,7 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
         var now = _clock.UtcNow;
         var sorted = Sort(topics, request.SortBy, request.SortDir, now);
         var total = sorted.Count;
-        var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+        var pageSize = PageSize.Clamp(request.PageSize);   // DEF-104: cap the caller-supplied page
         var page = request.Page <= 0 ? 1 : request.Page;
 
         var items = sorted
@@ -91,7 +99,9 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
         var desc = !string.Equals(dir, "asc", StringComparison.OrdinalIgnoreCase);
         IEnumerable<Topic> ordered = by.ToLowerInvariant() switch
         {
-            "priority" => topics.OrderBy(t => t.Priority),
+            // AC-043: same deterministic tiebreak MoveTopicPriorityHandler renumbers by, so the displayed order
+            // matches persistence even while priorities are non-contiguous (default 0).
+            "priority" => topics.OrderBy(t => t.Priority).ThenBy(t => t.CreatedAt).ThenBy(t => t.Key),
             "title" => topics.OrderBy(t => t.Title),
             "status" => topics.OrderBy(t => t.Status),
             "urgency" => topics.OrderBy(t => t.Urgency),
@@ -103,5 +113,5 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
     private static TopicSummaryDto Map(Topic t, DateTimeOffset now) => new(
         t.PublicId, t.Key, t.Title, t.Type.ToString(), t.Status.ToString(), t.Urgency.ToString(),
         t.Scope.ToString(), t.AffectedStreams.ToList(), t.OwnerId, t.OwnerName, t.Priority, t.TimesDeferred,
-        TopicAging.AgeDays(t.CreatedAt, now), TopicAging.IsBreaching(t, now), t.CreatedAt);
+        TopicAging.AgeDays(t.CreatedAt, now), TopicAging.IsBreaching(t, now), t.CreatedAt, t.IsRestricted);
 }

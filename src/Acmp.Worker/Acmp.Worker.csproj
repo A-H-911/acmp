@@ -13,12 +13,30 @@
 
   <ItemGroup>
     <!-- Serilog -> console + self-hosted Seq (ADR-0014), config-driven. GRANULAR packages, NOT Serilog.AspNetCore:
-         this is a headless daemon on the slim dotnet/runtime:8.0 base, and Serilog.AspNetCore carries a
-         FrameworkReference to Microsoft.AspNetCore.App that isn't present in that image (would crash at startup). -->
+         this host is a headless daemon that serves no HTTP, so Serilog.AspNetCore's request-logging middleware
+         and its ASP.NET Core enrichers have nothing to act on. Referencing fewer packages in a host that cannot
+         use them is the whole reason — it is a preference, NOT a hard constraint (DEF-095). -->
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <!-- Docker-secrets config source (/run/secrets -> config keys, ADR-0032). First-party. -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="8.0.0" />
+    <!-- OpenTelemetry (ADR-0014 / DW-062). This host had NO tracing at all, so the process that actually
+         EXECUTES the background jobs emitted nothing while the API it enqueues from was traced.
+         DELIBERATELY NOT OpenTelemetry.Instrumentation.AspNetCore: this host serves no HTTP, so an inbound
+         request instrumentation has nothing to instrument. Everything listed here is host-agnostic —
+         Extensions.Hosting works off the generic host, and SqlClient/Http span the DB and outbound calls the
+         jobs themselves make.
+         ⚠ Do NOT justify that exclusion by the base image. Measured while writing this: deploy/Dockerfile.backend's
+         `worker` target builds FROM mcr.microsoft.com/dotnet/aspnet:8.0 — the same image as `api` — and this
+         project resolves a Microsoft.AspNetCore.App framework reference transitively through Acmp.Bootstrap
+         regardless of what is listed here. Both facts bind DW-066: a minimal-base move must target an
+         aspnet alpine/distroless image, never dotnet/runtime. -->
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.17.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -46,6 +46,9 @@ const REL_DIR: Record<RelationshipType, PanelDir> = {
   Implements: 'up',
   Blocks: 'down',
   Resolves: 'related',
+  // FR-030: the edge reads original → successor, so from the ORIGINAL's panel the successor is
+  // downstream. invert() gives the successor's panel the "up" reading (converted from) for free.
+  ConvertedTo: 'down',
 };
 
 /** Flip perspective for an inbound/incoming edge (viewed artifact is the target end). */

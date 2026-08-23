@@ -10,7 +10,12 @@ useDefault = true
 description = "Placeholders (never real secrets) + test-only credentials committed by design"
 paths = [
   '''deploy/\.env\.example''',           # placeholder config template (git-ignored real .env)
-  '''.*\.md''',                          # docs may quote example values
+  # DEF-081: the '''.*\.md''' path allowlist that used to sit here exempted EVERY markdown file in the
+  # repository, forever, BY PATH — so the value inside was never examined. Three of DEF-080's five leak
+  # sites and both of DEF-083's were .md, and this gating full-history scan passed over all of them.
+  # A PATH allowlist and a VALUE allowlist are categorically different: one exempts a known string, the
+  # other exempts every string that will ever be written in that location. Only the second kind belongs
+  # under a heading that says "known non-secrets".
   '''.*\.dc\.html''',                    # design mockups
 ]
 regexes = [
@@ -18,4 +23,34 @@ regexes = [
   '''CHANGE_ME''',
   '''Pr0be#Passw0rd!''',                 # AuditImmutabilityDbPermissionTests probe login (test-only)
   '''ChangeMe_KC#2026''',                # documented KC fresh-boot admin placeholder
+  '''ACMP_LIVE_S3_[A-Z_]+''',            # env-var NAMES in MinioFileStoreLiveS3Tests, not values
 ]
+
+# DEF-083, and this block is the ONLY legitimate way to hold a real leak here.
+#
+# ⚠ THE RULE AT THE TOP OF THIS FILE STILL APPLIES AND WAS OBEYED: "a genuine finding outside this
+# allowlist is a real leak — ROTATE the credential; do NOT just add it here." These two fingerprints are
+# the same Webex OAuth setup key, committed 2026-07-07/09 in an agent-loaded memory file. It was scrubbed
+# from the working tree, and its liveness was then MEASURED rather than assumed: no Webex secret exists in
+# /acmp/prod/env or /acmp/uat/env, and the secret file on the prod box hashes to the SHA-256 of the EMPTY
+# STRING — it was never deployed, so there was nothing to revoke. The Keycloak credential found beside it
+# WAS live and WAS rotated (DEF-083).
+#
+# ⚠ WHY FINGERPRINTS AND NOT A PATH OR A REGEX: a fingerprint pins commit + file + rule + line, so it
+# exempts exactly these two historic occurrences and nothing else. The same secret appearing in a new
+# commit produces a different fingerprint and FAILS the gate. A path or regex entry would have re-created
+# the DEF-081 hole in miniature.
+#
+# ⚠ WHY THEY CANNOT SIMPLY BE REMOVED: gitleaks scans git HISTORY. Scrubbing the working tree does not
+# touch the commits that carry the value, so these findings are permanent. The alternative is rewriting
+# published history, which is worse than an audited, fingerprint-scoped exemption.
+[[rules]]
+id = "generic-api-key"
+[rules.allowlist]
+description = "DEF-083 — Webex OAuth setup key, historic commits only; scrubbed, and proven never deployed"
+stopwords = []
+commits = [
+  "7e3394e707ff5a7910def2aa6e6ab3fc6b039de8",
+  "5c5291a0d17f04c850ef3003b191a2326f8f7b0b",
+]
+paths = ['''\.claude/memory/p13-webex-integration-plan\.md''']

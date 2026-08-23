@@ -7,6 +7,14 @@ import {
   useAcceptTopic,
   useReturnTopic,
   usePrepareTopic,
+  useReactivateTopic,
+  useCloseTopic,
+  useReopenTopic,
+  useConvertTopic,
+  useReclassifyTopic,
+  useSetTopicConfidentiality,
+  useUpdateTopic,
+  useMoveTopicPriority,
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
@@ -127,6 +135,31 @@ describe('topic mutations', () => {
     expect(lastBody(spy)).toEqual({ ownerId: 'u1', ownerName: 'Owner One' });
   });
 
+  it('useMoveTopicPriority POSTs the ±1 delta to the move endpoint and invalidates the backlog (AC-043)', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useMoveTopicPriority(), { wrapper });
+    result.current.mutate({ topicId: 'abc', delta: 1 });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/topics/abc/priority/move');
+    expect(lastBody(spy)).toEqual({ delta: 1 });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+  });
+
+  it('useMoveTopicPriority sends the TARGET IDENTITY for a drag, never a computed position (AC-141)', async () => {
+    // This client renders the filtered, sorted and page-truncated backlog, so its indices are not the
+    // server's column indices. The body must therefore carry targetTopicId; delta 0 is the sentinel that
+    // tells the server which addressing mode is in play (its validator refuses 0 with no target).
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useMoveTopicPriority(), { wrapper });
+    result.current.mutate({ topicId: 'abc', targetTopicId: 'xyz' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(urlOf(spy)).toBe('/api/topics/abc/priority/move');
+    expect(lastBody(spy)).toEqual({ delta: 0, targetTopicId: 'xyz' });
+  });
+
   it('usePrepareTopic POSTs to the prepare endpoint and invalidates backlog, pool, and detail', async () => {
     const spy = stubFetch(() => ({ status: 204 }));
     const { client, wrapper } = makeQueryWrapper();
@@ -141,6 +174,151 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'prepared'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // FR-160 / FR-161 / FR-045 — the lifecycle exits (AC-109, AC-110, AC-112). Each asserts the URL,
+  // the verb and the invalidations: a mutation that hits the right endpoint but refreshes nothing
+  // leaves the user staring at the pre-transition status, which is indistinguishable from a failure.
+  it('useReactivateTopic POSTs to the reactivate endpoint and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReactivateTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate('abc');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reactivate');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  it('useCloseTopic POSTs to the close endpoint and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useCloseTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate('abc');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/close');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  it('useReopenTopic POSTs the justification the server requires', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReopenTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', reason: 'new regulatory guidance' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reopen');
+    expect((init as RequestInit).method).toBe('POST');
+    // the reason travels as `reason` because the endpoint binds ReasonBody (FR-044's mandatory-reason rule)
+    expect(lastBody(spy)).toEqual({ reason: 'new regulatory guidance' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // AC-113 / FR-030. Unlike the other lifecycle mutations this one READS the response: the server
+  // creates a successor topic and the caller navigates to it, so a hook that swallowed the body
+  // would leave the UI stranded on a topic that is now terminal.
+  it('useConvertTopic POSTs the target type and reason, and returns the successor key', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { id: 'new-guid', key: 'TOP-2026-777' } }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useConvertTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', targetType: 'ArchitectureDecision', reason: 'research concluded' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/convert');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ targetType: 'ArchitectureDecision', reason: 'research concluded' });
+    expect(result.current.data).toEqual({ id: 'new-guid', key: 'TOP-2026-777' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+    // both topics' traceability panels gained the ConvertedTo edge
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['traceability'] });
+  });
+
+  // FR-164 / DW-032. Sends BOTH fields because the endpoint and the domain method take both; the
+  // caller supplies the topic's existing source unchanged, since no surface offers a TopicSource yet
+  // (DW-076). Invalidates the BACKLOG as well as the detail: type is a backlog column and a facet.
+  it('useReclassifyTopic POSTs the type and source, and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useReclassifyTopic('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', type: 'ResearchDiscovery', source: 'SecurityFinding' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/reclassify');
+    expect((init as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ type: 'ResearchDiscovery', source: 'SecurityFinding' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // FR-163 / C-AUTHZ-04. PUT of the desired STATE, not a POST of an action, so a repeat is a no-op
+  // rather than a second classification event. Invalidates the BACKLOG as well as the detail because
+  // classifying removes the topic from other people's lists.
+  it('useSetTopicConfidentiality PUTs the desired state and invalidates backlog + detail', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useSetTopicConfidentiality('TOP-2026-001'), { wrapper });
+    result.current.mutate({ topicId: 'abc', restricted: true });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [url, init] = spy.mock.calls.at(-1)!;
+    expect(url).toBe('/api/topics/abc/confidentiality');
+    expect((init as RequestInit).method).toBe('PUT');
+    expect(lastBody(spy)).toEqual({ restricted: true });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+  });
+
+  // AC-034 / DEF-058. The endpoint REPLACES, so every editable field must go out on every save —
+  // and `scope` must be absent unless the editor changed it, because the server reads a missing
+  // scope as "leave it alone" and only then skips the triage authorization.
+  it('useUpdateTopic PUTs the whole editable topic and invalidates detail + backlog', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { client, wrapper } = makeQueryWrapper();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useUpdateTopic('TOP-2026-001'), { wrapper });
+
+    result.current.mutate({
+      topicId: 'abc',
+      edit: {
+        title: 'T', description: 'D', justification: 'J', urgency: 'Urgent',
+        streams: ['core'], systems: ['Auth'], tags: ['iam'], scope: 'OrgWide',
+      },
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(urlOf(spy)).toBe('/api/topics/abc');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('PUT');
+    expect(lastBody(spy)).toEqual({
+      title: 'T', description: 'D', justification: 'J', urgency: 'Urgent',
+      streams: ['core'], systems: ['Auth'], tags: ['iam'], scope: 'OrgWide',
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'backlog'] });
+  });
+
+  it('useUpdateTopic surfaces a refusal rather than reporting success', async () => {
+    stubFetch(() => ({ status: 403 }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useUpdateTopic('TOP-2026-001'), { wrapper });
+
+    result.current.mutate({
+      topicId: 'abc',
+      edit: { title: 'T', description: 'D', justification: 'J', urgency: 'Normal', streams: ['core'], systems: [], tags: [], scope: 'OrgWide' },
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBeInstanceOf(ApiError);
   });
 
   it('useReturnTopic routes reject vs defer to different endpoints/bodies', async () => {

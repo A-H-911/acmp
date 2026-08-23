@@ -357,3 +357,61 @@
   .act-detail-grid { grid-template-columns: 1fr; }
   .act-related { position: static; }
 }
+
+/* ---------- "raise an action from…" source chooser ---------- *
+ * Logical properties only (DEC-022) — text-align: start, padding-inline, border-inline-start — so the
+ * list mirrors in Arabic without a second stylesheet. Modelled on the wiki tree's .tnode row.        */
+.raise-src-filter {
+  inline-size: 100%;
+  block-size: 34px;
+  margin-block: 10px 8px;
+  padding-inline: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--subtle);
+  color: var(--text);
+  font-size: 12.5px;
+  outline: none;
+}
+.raise-src-filter:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.raise-src-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Bounded so a long register scrolls INSIDE the dialog rather than pushing its footer off-screen. */
+  max-block-size: 320px;
+  overflow-y: auto;
+}
+.raise-src-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  inline-size: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: 7px;
+  padding: 8px 9px;
+  font-size: 13px;
+  text-align: start;
+  color: var(--text);
+  cursor: pointer;
+}
+.raise-src-item:hover { background: var(--subtle); }
+.raise-src-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.raise-src-key {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.raise-src-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
