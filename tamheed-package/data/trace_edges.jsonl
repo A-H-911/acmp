@@ -87,6 +87,7 @@
 {"from_id":"AC-110","to_id":"FR-161","relation":"verifies"}
 {"from_id":"AC-111","to_id":"FR-162","relation":"verifies"}
 {"from_id":"AC-112","to_id":"FR-045","relation":"verifies"}
+{"from_id":"AC-143","to_id":"FR-164","relation":"verifies"}
 {"from_id":"ADR-0017","to_id":"ADR-0012","relation":"relates_to"}
 {"from_id":"ADR-0019","to_id":"ADR-0008","relation":"relates_to"}
 {"from_id":"ADR-0020","to_id":"ADR-0019","relation":"relates_to"}
@@ -97,6 +98,7 @@
 {"from_id":"ADR-0027","to_id":"FR-151","relation":"relates_to"}
 {"from_id":"ADR-0027","to_id":"FR-153","relation":"relates_to"}
 {"from_id":"ADR-0028","to_id":"ADR-0026","relation":"relates_to"}
+{"from_id":"ADR-0044","to_id":"ADR-0022","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-020","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-029","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-030","relation":"relates_to"}
@@ -355,6 +357,7 @@
 {"from_id":"FR-161","to_id":"DEC-057","relation":"derives_from"}
 {"from_id":"FR-162","to_id":"DEC-057","relation":"derives_from"}
 {"from_id":"FR-163","to_id":"DEC-060","relation":"derives_from"}
+{"from_id":"FR-164","to_id":"DEC-070","relation":"derives_from"}
 {"from_id":"INV-001","to_id":"ADR-0001","relation":"derives_from"}
 {"from_id":"INV-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"INV-002","to_id":"ADR-0001","relation":"derives_from"}
@@ -384,6 +387,8 @@
 {"from_id":"LL-011","to_id":"PE-555","relation":"learned_from"}
 {"from_id":"LL-012","to_id":"PE-575","relation":"learned_from"}
 {"from_id":"LL-014","to_id":"PE-578","relation":"learned_from"}
+{"from_id":"LL-015","to_id":"PE-586","relation":"learned_from"}
+{"from_id":"LL-016","to_id":"PE-595","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
@@ -614,6 +619,14 @@
 {"from_id":"SC-029","to_id":"FR-032","relation":"scope_modifies"}
 {"from_id":"SC-029","to_id":"FR-154","relation":"scope_modifies"}
 {"from_id":"SC-029","to_id":"FR-155","relation":"scope_modifies"}
+{"from_id":"SC-030","to_id":"WBS-14.5","relation":"scope_modifies"}
+{"from_id":"SC-031","to_id":"FR-164","relation":"scope_adds"}
+{"from_id":"SC-032","to_id":"DW-071","relation":"scope_modifies"}
+{"from_id":"SC-032","to_id":"DW-078","relation":"scope_adds"}
+{"from_id":"SC-032","to_id":"DW-079","relation":"scope_adds"}
+{"from_id":"SC-033","to_id":"DW-066","relation":"scope_modifies"}
+{"from_id":"SC-033","to_id":"DW-078","relation":"scope_modifies"}
+{"from_id":"SC-033","to_id":"DW-080","relation":"scope_adds"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
@@ -957,6 +970,7 @@
 {"from_id":"TEST-050","to_id":"INV-010","relation":"tests"}
 {"from_id":"TEST-051","to_id":"FR-159","relation":"tests"}
 {"from_id":"TEST-052","to_id":"FR-163","relation":"tests"}
+{"from_id":"TEST-053","to_id":"FR-164","relation":"tests"}
 {"from_id":"WBS-1","to_id":"FR-001","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-003","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-004","relation":"implements"}
@@ -1162,6 +1176,7 @@
 {"from_id":"WBS-20.5","to_id":"FR-142","relation":"implements"}
 {"from_id":"WBS-21","to_id":"FR-030","relation":"implements"}
 {"from_id":"WBS-22","to_id":"FR-163","relation":"implements"}
+{"from_id":"WBS-23.4","to_id":"FR-164","relation":"implements"}
 {"from_id":"WBS-3","to_id":"FR-017","relation":"implements"}
 {"from_id":"WBS-3","to_id":"FR-019","relation":"implements"}
 {"from_id":"WBS-3","to_id":"FR-020","relation":"implements"}

@@ -64,7 +64,7 @@ public sealed class GetDependenciesRegisterHandler
         var ordered = Sort(query, request.SortBy, request.SortDir);
 
         var total = await ordered.CountAsync(ct);
-        var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+        var pageSize = PageSize.Clamp(request.PageSize);   // DEF-104: cap the caller-supplied page
         var page = request.Page <= 0 ? 1 : request.Page;
 
         var rows = await ordered

@@ -53,11 +53,33 @@ the canvas is not tainted. **The "if it needs `unsafe-inline`, STOP and ask" con
 
 ## Not claimed
 
-Chromium 149 only — no Firefox, no WebKit. No full-page multi-card export. No memory measurement of the
-~1.63 MB ar font payload on the on-prem hardware. **No acceptance criterion was written**: a spike
-produces feasibility evidence, not build evidence, so `WBS-23.3` is deliberately not `Review`.
+Chromium only — **149 for the spike, 151 for the verification run, so the result reproduced across two
+builds** — but no Firefox and no WebKit. No full-page multi-card export. No memory measurement of the
+~1.63 MB ar font payload on the on-prem hardware. `AC-142` names all four exclusions in its own text.
+(⚠ This section originally also said "no acceptance criterion was written", which was true of the SPIKE
+and went stale the moment the build shipped in the same session. `AC-142` exists and is Met.)
 
 ## For the build session
 
 Compute the font CSS **once** with `getFontEmbedCSS` and pass it via the `fontEmbedCSS` option, or every
-capture re-embeds the whole payload. See [[check-before-building.md]] before starting.
+capture re-embeds the whole payload. **Deliberately NOT done in the shipped build** — no measurement says
+it hurts, and a cache would have to be keyed by locale (ar needs strictly more `@font-face` rules than
+en). See [[check-before-building.md]] before starting.
+
+## Shipped (2026-08-21)
+
+PR #304 → `ada5fe2`. `AC-142` Met (`AV-220`), `WBS-23.3` Implemented, `DW-038` Done. Built on
+`html-to-image` 1.11.13 per `DEC-069`.
+
+- **The card's own controls had to be filtered out of the raster** — they sit *inside* the element being
+  captured. Proven two independent ways: a unit test executing the extracted filter against the real DOM,
+  and a browser run exporting the same card **with and without** the filter, where the unfiltered control
+  shows both buttons in the picture. The negative control is the point — it proves the buttons are absent
+  *because of* the filter, not because they never rendered.
+- **`DEF-105` had to be cleared first.** `ADR-0022` clause 4 read *"Export = client-side CSV only in v1"*.
+  `ADR-0044` supersedes **the clause only**; the ADR row stays Approved with `superseded_by` unset,
+  because clauses 1/2/3/5 are load-bearing and `DEF-102` plus two source comments cite the id.
+  ⚠ The operator's instruction said "supersede clause 4" — taking it literally would have superseded the
+  ROW. **Put that correction back to them before applying it.**
+- **`DW-075` came out of this:** `ToastProvider` is built, tested and mounted nowhere, so failure feedback
+  here is inline in the card instead.

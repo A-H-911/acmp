@@ -18,15 +18,84 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twelve** times, and **two** unmeasured assertions have escaped into
-commit messages, which cannot be amended. **Five of the eleven were written and then invalidated within
-the SAME session** by the very work that session was doing: on 2026-08-19 it said
+file has carried a stale statement **seventeen** times, and **five** wrong assertions have escaped into
+commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
+the SAME session** by the very work that session was doing — do not read the count above as anything but a
+reason to distrust every number here, including that one: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
 went stale the moment batch 13 recorded two verdicts; and on 2026-08-20 §1's *"`assumptions-current`
 reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was made false by the
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE SEVENTEENTH IS THE WORST OF THE SESSION: A CAP I SET MYSELF, IN THE SAME COMMAND, READ BACK AS
+IF IT WERE THE REGISTER — AND IT COST A JUDGEMENT, NOT A COUNT.** `gh pr list --limit 10` returned exactly
+ten rows and I wrote **thirteen**; no output anywhere showed a total. `DW-078` then carried a headline of
+thirteen over an enumeration of ten — **`DEF-104`'s exact shape, reproduced in the session that memorialised
+`DEF-104`**, and `LL-015` in its purest form. Measured with no cap: **twelve**.
+⚠⚠ **THE TWO ROWS THE CAP HID WERE THE TWO THAT MATTERED.** #128 and #134 (`dotnet/sdk` and
+`dotnet/aspnet` 8.0→10.0) both edit `deploy/Dockerfile.backend` — the `FROM` lines at 16, 31 and 51 that
+`DW-066` is entirely about. Earlier in the same session I read `DW-066`'s trigger (*"whenever a base-image
+bump is being made anyway"*) and concluded it had **not** fired, reasoning that the open docker rows touched
+node, nginx and mssql. That reasoning came wholly from the truncated list. **A TRUNCATED INSTRUMENT DOES NOT
+UNDERCOUNT — IT DELETES THE EVIDENCE THAT WOULD HAVE CHANGED YOUR ANSWER, from the end of the list you are
+least likely to think about.** The classification was wrong too: **three** routine and **nine** majors, not
+seven and three, with #261 filed routine while #137 — *the same version family* — was filed major.
+`PE-599` corrects it; commit `b1eb81a` cannot be amended, hence five escapes.
+
+⚠⚠ **THE SIXTEENTH ESCAPED INTO A COMMIT MESSAGE — AND IT SAT INSIDE THE SENTENCE BRAGGING THAT THE
+MECHANICAL PASS HAD RUN CLEAN.** The fifteenth's own write said those 190 identifiers spanned *"nine
+families"*. Nothing measured that. The phrase was carried whole out of the TENTH's sentence in this file
+(*"68 across nine families"*) with only the figure in front of it refreshed; measured, the answer is
+**fifteen**. ⚠⚠ **A PHRASE CAN GO STALE WITHOUT ITS NUMBER CHANGING** — the wrong half travelled attached
+to a number I had genuinely just measured, which is what made it invisible. And an id-and-status pass
+cannot check a clause about an id-and-status pass. Caught by a review pass after the push: `e33c636`'s
+message cannot be amended, so the escape count above is now four; `PE-595` corrects `PE-593`.
+
+⚠⚠ **THE FIFTEENTH (2026-08-23, later) IS THIS SECTION FAILING AT ITS OWN JOB: THE ORDINALS COLLIDED.**
+Two findings, added by two different commits (`74b2801` and `21ba170`), were **both** labelled
+`THE THIRTEENTH` — so the count above read **thirteen** where it should have read fourteen, and the
+sequence had no fourteenth in it at all. The `a2066ba` unmeasured-assertion finding keeps `THIRTEENTH`; the 2026-08-23 end-to-end pass is renumbered
+`FOURTEENTH`; this is the fifteenth. **The section that counts wrong statements contained one, in its own
+numbering** — and no gate, and no id-and-status pass, can see an ordinal. The same re-read found **five**
+more, and every one of them is prose:
+- **A requirement-register row count** in §1 — stale the moment `SC-031` added `FR-164`. It is a `wc -l` now.
+- **`DEF-104` "Open, low … twelve paged reads"** in the build-standing block, a hundred lines below a block
+  already reading *"`DEF-104` is `Fixed`"*. ⚠⚠ **A FILE THAT CONTRADICTS ITSELF HANDS THE READER THE
+  CHOICE, AND THE STALE HALF WAS THE ONE WEARING THE DETAIL** — it is the half that reads researched.
+- **`LL-011` "(Proposed — needs the operator's confirmation interview)"**, below a line reading
+  *"`LL-011` Approved and PINNED"*. A fresh session would have run a ceremony that already happened:
+  the twelfth's shape, a stale INSTRUCTION rather than a stale number.
+- **"the advisory listing the same 53"** — that is a `readiness_check` field, not a fact about the register.
+- **"Nine rows correctly carry no date"** — 17 assumptions, 12 dated, so it is **five**. ⚠⚠ **THE
+  ARITHMETIC NEVER CLOSED, IN A FILE NOTHING CHECKS THE PROSE ARITHMETIC OF.**
+
+⚠ The mechanical pass ran clean again: **190** distinct identifiers, every one
+resolving except `DEF-082` — the KNOWN gap (`DEF-101`). **That is three passes running where the
+id-and-status check found nothing and the prose carried everything. Read the prose; it is the hard half.**
+
+⚠⚠ **THE FOURTEENTH (2026-08-23) WAS FOUND BY THIS FILE BEING RIGHT AND ME BEING WRONG, WHICH IS NEW.**
+Preparing the resume, the end-to-end re-read surfaced **five** stale statements at once — *"every phase is
+`Implemented` except `PH-3`"* (`PH-7` is also `Approved`), *"155 of 164 `wbs_items`"* (right numerator,
+stale denominator), *"Ten lessons … `LL-001`…`LL-010`"*, *"all 155 have `slice_id` NULL"* and *"28 closed
+slices"*. Each is now a COMMAND rather than a number, per the eighth fix's rule.
+⚠⚠ **AND THE SIXTH FINDING WAS THE OTHER DIRECTION: this file said TWO of `SL-032`'s rows were mis-sized
+and I had been writing THREE all session.** The file was right. I had conflated its TRUE sentence — *"that
+habit paid three times in this slice"*, two catches plus one confirmation — with a false count of wrong
+sizings, and propagated mine into **six** artifacts including `SL-033`'s standing warning. `PE-592`
+corrects it. **A count of what an instrument DID is not a count of what it FOUND**, and the mechanical
+id-and-status pass ran clean over all 170 identifiers while this sat in the prose.
+
+⚠⚠ **THE THIRD ESCAPE INTO A COMMIT MESSAGE (2026-08-21) WAS A ROW LYING ABOUT ITSELF.** `SL-032`'s
+rewritten objective said *"THE SLICE OBJECTIVE BELOW REPEATED THEM VERBATIM"* and *"the wrong text is left
+in place rather than edited away"* — and `entity_upsert` **replaces full rows**, so that very write had
+deleted the text it claimed to preserve. Commit `0e75755`'s message repeats it and is pushed.
+**THE SHAPE, and it is not a stale number: an intention stated in the same breath as an operation that
+contradicts it, where the OPERATION is what takes effect.** No gate sees it — both halves are well-formed
+prose in a valid row. `PE-585` corrects it; the original objective survives at
+`0e75755^:tamheed-package/data/slices.jsonl` and is pointed at rather than re-typed (`LL-001`).
+**Before writing that you preserved something, check the tool you used can preserve it.**
 
 ⚠ **THE TWELFTH WAS AN INSTRUCTION, NOT A NUMBER, AND IT WOULD HAVE COST A DEPENDENCY.** §6's
 `▶▶ DO THIS FIRST` block told a fresh session to run a spike and, three lines down, *"THE DEPENDENCY
@@ -75,17 +144,18 @@ only AFTER the nine fixes.
 
 ## §1 — The state the 2026-08-20 disposition session began from (⚠ superseded in part — see §6)
 
-> ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
-> BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
-> of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED` and
-> `▶ WHERE THE BUILD WORK STANDS` before
+> ⚠⚠ **SEVERAL LATER SESSIONS CHANGED THE SHAPE OF v1 AND BUILT AGAINST IT. THIS SECTION IS THE STATE
+> THEY BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`,
+> one of the two blind controls was fixed, `SL-032` was built and closed, and `SL-033` now holds eight
+> scheduled rows. **Go to §6 FIRST — read `▶▶ SL-033 IS THE LIVE SLICE` and
+> `▶ WHAT SL-032 DID` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
 `DW-029` acceptance-criterion programme that replaced it ran **twenty batches** and was accepted by the
-operator on 2026-08-20. **`SL-031` is `Implemented`, `PH-6` is closed, and every phase is `Implemented`
-except `PH-3`.**
+operator on 2026-08-20. **`SL-031` is `Implemented` and `PH-6` is closed.** ⚠ **Do not
+re-quote a phase tally from here** — `entity_query("phase")` is the live answer. What is durable is the
+REASON two phases sit at `Approved`: `PH-3` on purpose (below), and `PH-7` because it is the live phase.
 
 ⚠ **`PH-3` stays `Approved` ON PURPOSE — do not "repair" it.** `WBS-20.4` is the email adapter against a
 hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF-010` records.
@@ -95,12 +165,13 @@ hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF
 
 ### Measure, do not trust — the three commands that replace every tally
 
-⚠ **`entity_query("requirement", ...)` OVERFLOWS THE TOOL'S TOKEN LIMIT** — 226 rows is ~82 KB even
-with `columns` set, because `columns` does not actually narrow the payload. **Count from the canonical
+⚠ **`entity_query("requirement", ...)` OVERFLOWS THE TOOL'S TOKEN LIMIT** — the whole register is tens
+of KB even with `columns` set, because `columns` does not actually narrow the payload. (A row count sat
+in this sentence and went stale the moment `SC-031` added `FR-164`. `wc -l` is the answer.) **Count from the canonical
 JSONL instead**, which is also what trap 13 already tells you to do when building any payload:
 
 ```
-tamheed-package/data/requirements.jsonl     # 226 rows: count by lifecycle_status / kind / priority
+tamheed-package/data/requirements.jsonl     # wc -l for the total; count by lifecycle_status/kind/priority
 tamheed-package/data/deferred_work.jsonl    # the DW register: count by lifecycle_status / severity
 entity_query("defect", status="Open")       # small enough to query directly
 gate_run() / readiness_check("package")     # the live verdicts — never quote a remembered one
@@ -140,10 +211,13 @@ and `assumptions-current`, which **now fails on purpose** — see below.
 ⚠⚠ **ONE OF THE TWO BLIND CONTROLS IS FIXED; THE OTHER IS NOT.** ✅ `assumptions-current` no longer reports
 `indeterminate` — twelve rows were dated on 2026-08-20 and it now **fails**, naming the genuinely overdue
 one. ⚠ **The field is a FUTURE re-validation DUE date**, so more will go red as dates pass: **that is the
-control working, and clearing a date to restore the amber would be re-blinding it.** ⛔ Slice-scope
-`defects-closed` and `wbs-done` are STILL permanently `indeterminate` because almost no defect row carries
-`found_in` and 155 of 164 `wbs_items` have a NULL `slice_id` (`DEF-087`) — `readiness_check` says so in its
-own note. **A rule that cannot fail is not a green light**; this is the shape this project keeps finding in
+control working, and clearing a date to restore the amber would be re-blinding it.** ⚠⚠ **ONE OF THE TWO BLIND SLICE RULES IS NO LONGER BLIND, AND THAT IS NEW.**
+Slice-scope `wbs-done` now WORKS for any slice whose items carry a `slice_id` — `SL-032`'s ran 5→4→3→2→0
+and adjudicated its exit, the first time that rule has ever done so (`DEC-068` d2's fix-forward rule for
+`DEF-087`). It stays vacuous for the OLDER slices, whose items have none. ⛔ Slice-scope `defects-closed`
+IS still effectively blind: almost no defect row carries `found_in`. ⚠ **Count the NULL-`slice_id` items
+from `data/wbs_items.jsonl`; do not re-quote a number from here** — the one that used to sit in this
+sentence had the right numerator and a stale denominator, which is exactly what `LL-015` is about. **A rule that cannot fail is not a green light**; this is the shape this project keeps finding in
 instruments, living inside the package's own controls. See §6.
 
 ### The mechanical guarantee, and the token rule
@@ -153,9 +227,19 @@ read its failure list, it names the token.** ⚠ **Journal text is EXEMPT** (`pr
 `audit_verdicts.evidence`), so a progress note may quote marker tokens freely. **Every live ENTITY row is
 still screened** — `title`, `statement`, `description` — so there, name the concept or backtick the token.
 
-**Ten lessons are Approved and PINNED** (`LL-001`…`LL-010`) and bind every session via the tool-owned
-note. Three were added this session; `LL-008`, `LL-009` and `LL-010` are below because they earned
-themselves within days of being written.
+**The Approved+pinned lessons bind every session via the tool-owned note in `tamheed-package/CLAUDE.md`.**
+⚠ **COUNT THEM, NEVER QUOTE A NUMBER** — this sentence carried "Ten … (`LL-001`…`LL-010`)" long after it
+stopped being true, and the range form is worse than the count because superseded rows leave gaps.
+`entity_query("lesson", status="Approved")` is the answer. The three below earned themselves within days of
+being written and are repeated because they keep firing. ⚠ **Three more were added and pinned since and are
+NOT restated here** — read them from the register: `LL-013` (a mutation check has two subjects; a passing
+mutant proves nothing), `LL-014` (registry metadata cannot rank correctness; "the technique works here"
+never transfers to "this package works here") and **`LL-015` (a scan's SCOPE is part of its answer — a
+scanner that runs, has a subject, and returns a TRUE number about the WRONG SET reads exactly like a
+finding, and `LL-013`'s fault-injection CONFIRMS it rather than catching it)**. ⚠ **`LL-016` is the newest
+and it is about THIS FILE**: a sequence in prose is invisible to every mechanical check, and **a phrase can
+go stale without its number changing** — the wrong half rides in attached to a figure you *did* just measure,
+which is what makes it invisible.
 
 - **`LL-008` — sweep the registers by KEYWORD as well as by identifier.** An id-only sweep returned **zero
   hits for six of seven** candidates and would have concluded the registers were silent; the keyword sweep
@@ -199,8 +283,8 @@ themselves within days of being written.
   drawing nothing; their own headers say so. Requirement ids in source comments are **positive-only**
   evidence: one such citation was a *deferral* note.
   ⚠⚠ **BUT `Calendar.tsx` IS NO LONGER IN THIS "DO NOT REBUILD" SECTION'S SPIRIT.** `DW-037` is
-  **`Activated`** (`SC-028`) and `FR-035` is back to `Approved`: filling that shell is **live, approved
-  work**. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
+  `Activated` (`SC-028`), `FR-035` is back to `Approved`, and it is now **SCHEDULED as `WBS-24.2` in
+  `SL-033`** — filling that shell is the second item of the live slice, not a candidate. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
   prohibition. ⚠ Build it against the **Meetings** API (`MeetingDetailDto.ScheduledStart` +
   `AgendaItemDto.TopicId`); `Topic.Schedule` discards the meeting id into an unconsumed event.
   `Timeline.tsx` is unchanged — `FR-036`/`DW-001` stay deferred, since topics still carry no planned span.
@@ -309,9 +393,10 @@ themselves within days of being written.
 16c. ⚠ **`acs-met` COUNTS BY `retired_in`, AND IGNORES `lifecycle_status` ENTIRELY.** A `Deferred` AC
    still counts; only retirement removes one. So **writing ACs for unbuilt work holds readiness false
    forever** — this is why `DW-029` cannot be executed as one bulk pass.
-16d. ⚠ **SLICE-SCOPE `wbs-done` IS VACUOUS FOR EVERY PRE-EXISTING SLICE** (`DEF-087`): all 155
-   `wbs_items` have `slice_id` NULL, so the rule returns zero rows for all 28 closed slices. It also
-   **breaks the obvious AC→slice derivation**. New WBS rows must set `slice_id`.
+16d. ⚠ **SLICE-SCOPE `wbs-done` IS VACUOUS FOR EVERY SLICE WHOSE ITEMS PREDATE `DEC-068` d2**
+   (`DEF-087`): their `wbs_items` carry `slice_id` NULL, so the rule returns zero rows for them and
+   **breaks the obvious AC→slice derivation**. ✅ It is NOT vacuous any more for slices built since —
+   `SL-032` proved it adjudicates. **New WBS rows must set `slice_id`**; that is the whole fix.
 16e. ⚠ **`RELATION_RULES` REFUSE PLAUSIBLE EDGES.** `lesson --learned_from--> deferred-work` is
    rejected (allowed targets: decision, defect, progress-entry, risk, slice, wbs-item). The error is
    the only documentation, and **the whole batch rolls back** — re-send the entire corrected batch.
@@ -487,7 +572,7 @@ and simply sits. Found once, then found three more times in the same session by 
 
 ⚠ **`deferred-work-reviewed` CANNOT GO GREEN FROM REVIEWING** — read the predicate, don't assume it: it
 selects `Open` **`Activated`** and `Scheduled` alike, with no "reviewed" field. Only *closing* removes a
-row. Activating twelve left the advisory listing the same 53. **A review's deliverable is the recorded
+row. Activating twelve did not remove a single row from it. **A review's deliverable is the recorded
 judgement, not a colour change**, and the advisory staying red afterwards is correct.
 
 **Item 2 — the blind controls — is HALF done.**
@@ -495,7 +580,9 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
   naming **`ASM-011`** alone — the urgency SLA thresholds whose own text says they must be validated with
   the committee after the PH-1 pilot, which shipped long ago. ⚠ **The field is a FUTURE re-validation DUE
   date** (read the rule's SQL, not its description), so more will go red as dates pass. **That is the
-  control working — do NOT clear dates to restore the amber.** Nine rows correctly carry no date.
+  control working — do NOT clear dates to restore the amber.** The rest correctly carry no date — **count
+  them from `data/assumptions.jsonl`.** The number that sat here said nine, against a 17-row register with
+  twelve dated; it never closed, and **nothing anywhere checks the prose arithmetic in this file.**
 - ⛔ **`DEF-087` IS UNTOUCHED and still needs its own clean context.** Its own row warns the obvious
   mechanical fix closes `WBS-20.4`, the email adapter, against a hard constraint — the `DEF-012`/`DEC-055`
   trap. **Do not fold it into a broad session.**
@@ -522,70 +609,157 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
    ✅ **`DEF-082` carried, NOT reconstructed** (operator's call): a plausible reconstruction from
    second-hand narrative reads exactly like a record. `DEF-101` documents the honest gap.
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
-   **all 53 open rows carry a recorded human judgement for the first time.**
+   **every open row carries a recorded human judgement for the first time.**
 
-### ▶▶ THE `WBS-23.3` CSP SPIKE IS RUN AND ANSWERED (2026-08-21). DO NOT RE-RUN IT.
+### ▶▶ `SL-033` IS THE LIVE SLICE. START AT `WBS-24.1`. (state as of 2026-08-23)
 
-**Read `PE-578` — it carries the whole run, the exact header, the controls and the numbers.** The
-`▶▶ DO THIS FIRST` block that stood here has been replaced rather than annotated, because it told a
-fresh session to run a spike that is finished and to install a package that does not work.
+**`SL-032` is `Implemented`** — the operator's verdict on the slice review (`PE-586`, applied `PE-588`).
+**`DEF-104` is `Fixed`** (`PE-589`). **`SL-033` was created by `DEC-071`** and holds eight rows the
+operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
+`readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-**THE ANSWER, in one line: the technique is NOT blocked by the shipped CSP; the pre-selected package
-is.** Nothing was installed and no header was touched.
+⚠⚠ **THE NEXT ACTION IS `DW-078`, THE TEN-PR DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
+BEFORE this slice, and `DEC-074` narrowed it to ten. Everything below is what happens once the queue is
+clear; read the `DEC-072`/`DEC-074` block. ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move)
+is NOT in the sweep and does NOT block the slice** — it is its own work, unscheduled.
 
-- ✅ **DOM → `foreignObject` → data-URL SVG → canvas → PNG runs clean under `style-src 'self'`.**
-  The parent document's `style-src` does not reach inside an SVG rendered as an image, `img-src 'self'
-  data:` admits the data URL, and the canvas is not tainted. **The `⚠ if it needs `unsafe-inline`, STOP`
-  condition did not arise** — `DW-022`'s finding stands untouched and the header ships as-is.
-- ⛔ **`modern-screenshot` 4.7.0 — the pick — THROWS ON EVERY CARD IN BOTH LOCALES.** `embedWebFont`
-  builds a scratch document with `implementation.createHTMLDocument()`, appends a `<style>` to it, and
-  dereferences `.sheet` unguarded; the scratch document inherits the page CSP, so the sheet is null.
-  `font: false` skips that path and every capture then succeeds — **and silently breaks the Arabic
-  layout** (the title reflows into the subtitle, because it omits `width`/`height` from the styles it
-  copies). A crash traded for a one-locale visual defect is not an escape.
-- ✅ **`html-to-image` 1.11.13 works, with fonts embedded, contributing ZERO CSP violations.** It
-  appends its font `<style>` to the *detached clone* instead of a scratch document. Proven directly,
-  not inferred from pixels: `getFontEmbedCSS` returns 48 `@font-face` rules for en and 80 for ar, every
-  `url()` a `data:` WOFF2.
+▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
+columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
+`columnConfig` and `ColumnPicker` return **zero** across the 339 `.ts*` files of `src/Acmp.Web`, and the
+sweep is proven to have had a subject — the control term `Backlog` returns 305 in the same pass
+(`LL-013`). It is the single missing member of a family that otherwise
+shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`FR-035`), `Timeline.tsx`
+(`FR-036`).
 
-⚠⚠ **THE DEPENDENCY TABLE THAT STOOD HERE WAS DELETED, NOT UPDATED, AND ITS INSTRUCTION — "THE
-DEPENDENCY EVALUATION IS DONE — do not redo it" — WAS THE ERROR.** It ranked four packages on registry
-metadata (size, deps, downloads, last-published) and marked `modern-screenshot` as the pick. Every
-number in it was correct. Measured against the only axis that decides anything — does it run under this
-app's CSP — **the ranking inverts completely**: the winner on every metadata axis cannot run here, and
-the candidate rejected as the largest and stalest is the one that works. `LL-014` (Proposed) records the
-rule. Do not restore a table; if you need the metadata again, re-measure it.
+**THE ORDER (`DEC-071` d1), smallest and most contained first, riskiest LAST:**
 
-▶ **WHAT IS ACTUALLY LEFT.** The install decision is the operator's and it CHANGED from what they were
-shown, so it goes back to them — **read the live status of `LL-014` and of any `DEC-` recorded after
-`DEC-068` before assuming it is still open.** Two notes for whoever builds it: compute the font CSS ONCE
-with `getFontEmbedCSS` and pass it via the `fontEmbedCSS` option (the ar payload is ~1.63 MB per capture
-otherwise), and know that `html-to-image` has a catch path that `insertRule`s into the app's LIVE
-stylesheet when a sheet's `cssRules` read throws — inert today because every stylesheet here is
-same-origin, live the moment one is not.
+| # | row | what |
+|---|---|---|
+| `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns |
+| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view — ⚠ read below · **+ axe route** |
+| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half |
+| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) |
+| `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** |
+| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count |
+| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** |
 
-⚠ Not measured, and do not let a build session assume otherwise: **Chromium only** (149.0.7827.55), no
-Firefox/WebKit, no full-page multi-card export, no memory measurement on the on-prem hardware. **No
-acceptance criterion was written** — a spike produces feasibility evidence, not build evidence, so
-`WBS-23.3` is deliberately NOT `Review`.
+⚠⚠ **THE THREE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its
+route to the live axe sweep in `e2e/rtl-a11y.spec.ts` IN THE SAME BATCH THAT BUILDS IT, and says so in its
+own acceptance criterion.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
+route ships — that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the
+sweep"* — fired against exactly these three surfaces. ⚠ **The row had been read as fully parked and it never
+was**: `DEC-071` d4 parked its SECOND clause (release sign-off) and nobody had read the first. **The summary
+over a row had dropped half of what the row said** — `DEC-064` d2's failure inverted. The sweep today visits
+**three of fifty-two routes**, so shipping three more surfaces untouched makes a recorded ratio worse.
+⚠ This does NOT activate `DW-041` or `DW-067`: both name release sign-off ALONE, which stays unscheduled.
 
-### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
+⚠⚠ **READ THE CODE BEFORE BELIEVING ANY OF THESE EIGHT ROWS' SIZING.** **TWO** of `SL-032`'s four said
+"blocked on nothing" and were wrong — `DW-040` and `DW-038`; `DW-061`'s and `DW-032`'s sizings HELD.
+⚠ The number in this sentence read "three" for one day and was **my own prose error**, propagated into six
+artifacts before a sweep caught it (`PE-592`) — conflated with the TRUE statement that reading the code
+*paid* three times, two catches plus one confirmation. **The habit is what matters, and it is unchanged.** **Two of these eight already carry corrections in their own
+text:** `DW-037` says the scheduled date is **NOT** on the Topics side — `Topic.Schedule` does not persist
+the meeting id, it raises an event with **zero consumers**, so the calendar **must** read
+`MeetingDetailDto.ScheduledStart` + `AgendaItemDto.TopicId` from the **Meetings** API; and `DW-063` says
+`Stream.Create` **still has no caller**, so adding a sixth stream is a migration and a deployment.
+
+⚠⚠ **`WBS-24.8` (`DW-028`) IS THE ONE TO SLOW DOWN FOR.** It adds a targeting parameter to the `/session`
+read path **and authorization on that parameter** — a second authorization path over content scoped to
+somebody else, which its own row names as the shape that produced `DEF-052` and `DEF-056`. **Treat the
+refusal as the feature and prove it by forcing it.** `navModel.ts`'s ACCESS map grants `session` to GUEST
+ONLY and that restraint holds (`DEF-053` deliberately left it alone). A guest is bounded by a TIME WINDOW,
+so the targeting parameter must never become the way a guest reads somebody else's slot.
+
+### ▶▶ THE SECOND INTERVIEW OF 2026-08-23 (`DEC-072`, applied by `SC-032`) — FOUR MORE DISPOSITIONS
+
+⚠ **Run after the resume above was prepared and pushed. TWO of the four OVERRODE the recommendation; both
+are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 precedent.**
+
+- **d1 — THE WHOLE DEPENDABOT QUEUE IS SWEPT, MAJORS INCLUDED** (`DW-078`, `Activated`). **OVERRIDE** — the
+  recommendation was to merge the routine set and carry the majors. ⚠⚠ **THE COUNT THAT SAT HERE WAS
+  THIRTEEN AND IT WAS NEVER MEASURED** — `gh pr list` had `--limit 10` on it (`PE-599`). It is **twelve**,
+  oldest **2026-07-16**, and the split is **three routine / nine majors**, not seven and three.
+  ✅ **BOTH QUESTIONS THAT CREATED WERE PUT BACK TO THE OPERATOR AND ANSWERED (`DEC-074`, `SC-033`):**
+  **#128/#134 (`dotnet` 8.0→10.0) ARE CARVED OUT to `DW-080`** — the solution targets `net8.0`, so that pair
+  is a RUNTIME MIGRATION, not a dependency bump, and `DEC-072` d1's "everything" was answered over a
+  description that never contained it. **The sweep is therefore TEN PRs, not twelve**, and `DW-080` does
+  **not** block `SL-033`. **And `DW-066` IS NOW `Activated` AND BOUND TO `DW-080`** — #134 edits the api and
+  worker `FROM` lines (16/31/51, verified with `gh pr view --json files`), which is its trigger *verbatim*,
+  so the alpine/distroless move happens in the SAME change as one base-image decision. ⚠ **`DW-066` must not
+  be scheduled separately** — doing the base move apart from the `FROM` edit spends the expensive part
+  (full e2e leg, Arabic FREETEXT end to end) twice. ⚠ **musl is the risk, not the edit.**
+  ⚠⚠ **IT IS NOT AN `NFR-051` BREACH AND MUST NOT BE FILED AS ONE** — that requirement is `Implemented` and
+  says Dependabot shall be **configured to ALERT**, which it is; thirteen open alerts are it WORKING. Nothing
+  in the register obliges anyone to *act*, so the gap is uncovered rather than violated.
+  ⚠⚠ **THE `mssql` BUMP CAN DESTROY DATA** — fresh-volume isolated project only, per "HOW TO RUN A STACK
+  HERE" below. The shape is part of what was authorised: **a dedicated batch, full e2e leg per risky bump**,
+  majors verified individually and never as a block.
+  ⚠⚠ **ORDERING IS DECIDED (`DEC-073`, same interview): THE SWEEP RUNS BEFORE `SL-033` STARTS, SO THIS —
+  NOT `WBS-24.1` — IS THE NEXT ACTION.** `WBS-24.1` waits until the queue is clear. Reason is attribution:
+  a TypeScript major and a SQL Server major landing under eight items in flight give any later failure two
+  candidate causes, and every `SL-033` item should be built against the versions it will ship on. The
+  accepted cost is that the live slice pauses for a batch.
+- **d2 — `DW-071`'s new-route clause HAS FIRED**, so it is `Activated` and three `SL-033` items carry the
+  axe-route obligation. See the table above; that is where it lives, not here.
+- **d3 — `LL-016` is Approved and PINNED** in one step, the operator having read the exact statement.
+- **d4 — THE `NFR-018` ASVS EVIDENCE PACK IS PREPARED NOW** (`DW-079`, `Activated`). **OVERRIDE** — the
+  recommendation was to leave it, externally blocked with no trigger fired. ⚠⚠ **IT DOES NOT CLOSE
+  `NFR-018`, AND NO ACCEPTANCE CRITERION MAY BE WRITTEN FROM IT** — only an external assessor's report can
+  evidence that requirement, and an AC ahead of the report holds readiness false forever (trap 16c). The
+  pack must carry the KNOWN GAPS too (`DEF-100`, `DW-074`: two of three internal hops are plaintext), or it
+  is worse than no pack.
+
+⚠ **Nothing `DEC-071` settled that morning was re-raised.** ⭐ **Two store facts proven by experiment, not
+assumed:** `scope_adds` → a **deferred-work** target is ACCEPTED (every prior one pointed at an AC, a
+requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|clarification|code|inferred`
+— anything else rolls back the whole batch.
+
+⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE (`DEC-071` d3), not a judgement this file endorses.** The
+recommendation was three slices, because `DEC-068` d1 justified a single slice from the rows being *small
+with their machinery already in place* — untrue of a create-stream command, of every number in the SPA, and
+of an authorization surface. The mitigation is per-item: **each row gets its OWN acceptance criterion
+recorded in the batch that produces its evidence**, so the exit is adjudicated per item, never in aggregate.
+
+⚠ **`DW-069` IS DELIBERATELY NOT IN THIS SLICE** (`DEC-071` d2). The operator said "all" to the nine and
+"leave it, not now" to the glossary; the narrower answer governs. **Consequence:** `NFR-039` stays
+unmeetable — its clause two is *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
+picker) stays blocked, because the nine Arabic source labels have no canonical source.
+
+⚠ **STILL NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1
+release close-out. **`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text
+route coverage) therefore do NOT fire** — their triggers name "before release sign-off". `DEF-087` stays
+carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
+
+---
+
+**WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` the CSP spike, `PE-579` its build,
+`PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review, `PE-589` `DEF-104`.
+
+### ▶ WHAT `SL-032` DID — HISTORY, and it is CLOSED. The live slice is the block ABOVE this one.
 
 **`PH-7` → `SL-032`**, four small activated rows in `DEC-068` d1's order. **Measure the statuses; do not
 trust this list** — `readiness_check(scope="slice", id="SL-032")`.
 
 - ✅ **`WBS-23.1` / `DW-061`** — mobile notice. PR #301 → `78b5ca2`, `AC-140` Met (`AV-218`).
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
-- ▶ **`WBS-23.3` / `DW-038`** — PNG export. **The CSP spike is DONE (`PE-578`) — do not re-run it.**
-  Feasible with `html-to-image`, not with the package that was pre-selected; the install decision went
-  back to the operator because it changed. See the block above.
-- ▶ **`WBS-23.4` / `DW-032`** — reach `Topic.Reclassify`; the domain method exists and is deliberately
-  unreachable, and its guard is disjoint from Convert's so no topic can be a candidate for both.
+- ✅ **`WBS-23.3` / `DW-038`** — PNG chart export. PR #304 → `ada5fe2`, `AC-142` Met (`AV-220`).
+  Needed `ADR-0044` + `SC-030` first; see the block above. `DW-038` is `Done`.
+- ✅ **`WBS-23.4` / `DW-032`** — triage reclassification. PR #305, `AC-143` (`FR-164`). ⚠ **Its sizing was
+  RIGHT** — the domain method really was the only missing piece — **but the REGISTER was not**: the
+  pre-build keyword sweep found **no requirement anywhere** covering reclassification, and `DEC-070` +
+  `SC-031` created `FR-164` before the build could be recorded. **Read `PE-583`.**
+  ⚠⚠ **CLOSING `23.4` DOES NOT MAKE `SL-032` READY BY ITSELF.** Slice-scope `wbs-done` also names
+  **`WBS-23`, the PARENT** — check with `readiness_check(scope="slice", id="SL-032")`. Precedent from
+  `WBS-21` and `WBS-22`: the parent goes `Implemented` once every child is. ⚠ **The SLICE's own
+  `Implemented` is the OPERATOR's verdict, not yours** — done-claimed is `Review`, and the ceremony is
+  `prompts/slice-review.md`.
 
-⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
-**five** items when `SL-032` was created, **four** after `23.1`, **three** after `23.2`. The same rule
-returns **zero rows for all 28 closed slices**. First slice-scope rule here that has ever tracked
-progress instead of passing over an empty set — **keep new work items carrying `slice_id`.**
+⭐⭐ **`DEF-087`'s fix-forward rule WORKED END TO END.** Slice-scope `wbs-done` named **five** items when
+`SL-032` was created and ran **5→4→3→2→0** as each leaf and then the parent `WBS-23` closed — the first
+slice exit that rule has ever been able to adjudicate rather than pass over an empty set. It still returns
+zero rows for the older slices, whose items carry no `slice_id`. **Keep new work items carrying
+`slice_id`** — that is the entire fix, and `SL-033`'s items already do.
 
 ⚠⚠ **TWO ROWS IN THIS SLICE HAD WRONG SIZING, AND BOTH SAID "only the gesture / blocked on nothing".**
 `DW-040` needed a backend change (the operation was a SWAP — indistinguishable from a move at ±1, wrong
@@ -608,12 +782,17 @@ label it flaky on the strength of one more green.**
 
 ⚠ **New defects from this slice:** `DEF-103` **Fixed** (the kanban rendered a silent 25-row prefix;
 now `KANBAN_PAGE_SIZE = 500` plus an actionable notice — the residual ceiling is named, not hidden).
-`DEF-104` **Open, low** — **twelve** paged reads accept an unbounded caller page size and **two** cap
-it, so the remedy already exists in-repo (`GetNotifications` uses `Math.Clamp` to a `MaxPageSize`
-constant; search uses `Math.Min(take, MaxTakePerType)`). ⚠ Its row records that the first sweep keyed
-on the identifier `PageSize` and returned **ten** — blind to the audit endpoint and `GetDecisions`,
-which page with locals named `size` and `n`. **Not** bundled into `SL-032`: twelve modules plus tests
-is a slice of its own.
+`DEF-104` **Fixed** (PR #306 → `bdbd8b6`, `PE-589`) — **eleven** paged reads accepted an unbounded caller
+page size and **two** already capped it, so the correct pattern existed in-repo and was simply not applied.
+⚠⚠ **THE ROW'S OWN COUNT SAID TWELVE WHILE ITS OWN ENUMERATION LISTED ELEVEN**, and two sweeps on
+different keys agree on eleven — **neither was complete alone**: the identifier sweep (`PageSize`) returned
+**ten**, blind to the audit endpoint and `GetDecisions`, which page with locals named `size` and `n`.
+⭐ The fix is **one** shared `PageSize.Clamp` (`Acmp.Shared/Application/Pagination/PageSize.cs`, `Max = 500`,
+called from eleven files), 500 because that is the largest page the SPA itself requests — **copying
+`GetNotifications`' 50 would have broken reports and the kanban.** ⚠ `GetDecisions` with a NULL limit still
+does **no** `Take`: capping where no cap existed is `DEF-103`'s silent-truncation shape.
+⚠ **This paragraph used to predict "twelve modules plus tests is a slice of its own", and it was wrong**
+in both halves — eleven, and one shared helper closed them all in one PR.
 
 ### Open, and the operator's alone
 
@@ -627,8 +806,9 @@ is a slice of its own.
   deliberately**. ⚠ Not a config edit: service-to-service TLS needs a certificate story, and the public
   certbot flow does not extend to services addressing each other by compose name.
 - **`NFR-018`** — the only remaining requirement real work could close, and it needs an **external OWASP
-  ASVS 5.0 Level 2 assessment**. Preparable, not closable: an evidence pack mapping existing controls to
-  the L2 chapters would stop an assessor starting cold.
+  ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
+  a suggestion** — `DW-079`, `Activated` by `DEC-072` d4. Commissioning the assessment itself remains the
+  operator's act alone.
 - **The running-stack group** — `DW-065` (span PARENTING across modules, still unobserved), the ops group
   (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`, several of which are measured FROM
   trace data. ⚠ **`DEF-099` is fixed, so traces now actually arrive** — that blocker is gone.
@@ -675,9 +855,10 @@ Assert the PROPERTY** — a run of `[؀-ۿ]` proves the bundle resolved, survive
 rewording, and pairs with a key-echo check. Verify any such regex discriminates: it must match AR, and
 **not** match EN, and **not** match the literal key path.
 
-### ⚠ NEW LESSON, and it changes how you write for the operator
+### ⚠ THE LESSON THAT CHANGED HOW YOU WRITE FOR THE OPERATOR — and it BINDS
 
-**`LL-011` (Proposed — needs the operator's confirmation interview): AN IDENTIFIER IS A POINTER, NOT A
+**`LL-011` (Approved and PINNED — the confirmation interview is DONE; this is not a proposal): AN
+IDENTIFIER IS A POINTER, NOT A
 REFERENCE.** The first version of the disposition slate cited ~40 records by id alone and asked the
 operator to rule on them. **They refused the interview on exactly that ground.** An id is an index into a
 store the reader may not have open, so citing one hands the retrieval work to the person the artifact

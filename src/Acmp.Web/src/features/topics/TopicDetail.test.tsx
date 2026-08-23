@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -18,11 +18,11 @@ vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => '
 vi.mock('../../api/topics', () => ({
   useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(),
   usePrepareTopic: vi.fn(), useReactivateTopic: vi.fn(), useCloseTopic: vi.fn(), useReopenTopic: vi.fn(),
-  useConvertTopic: vi.fn(),
+  useConvertTopic: vi.fn(), useReclassifyTopic: vi.fn(),
 }));
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic,
 } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
@@ -33,6 +33,7 @@ const mockReactivate = useReactivateTopic as unknown as Mock;
 const mockClose = useCloseTopic as unknown as Mock;
 const mockReopen = useReopenTopic as unknown as Mock;
 const mockConvert = useConvertTopic as unknown as Mock;
+const mockReclassify = useReclassifyTopic as unknown as Mock;
 let mutate: Mock;
 let uploadMutate: Mock;
 let prepareMutate: Mock;
@@ -40,6 +41,7 @@ let reactivateMutate: Mock;
 let closeMutate: Mock;
 let reopenMutate: Mock;
 let convertMutate: Mock;
+let reclassifyMutate: Mock;
 
 const TOPIC: Topic = {
   restricted: false,
@@ -60,9 +62,9 @@ function result(over: Partial<ReturnType<typeof useTopicDetail>>) {
   mockDetail.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...over });
 }
 
-function setup(path = '/topics/TOP-2026-014') {
+function setup(path = '/topics/TOP-2026-014', roles: string[] = ['secretary']) {
   render(
-    <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
+    <AcmpAuthContext.Provider value={makeAuth(roles as Parameters<typeof makeAuth>[0])}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/topics/:key" element={<TopicDetail />} />
@@ -95,6 +97,8 @@ describe('TopicDetail (P5b)', () => {
     mockConvert.mockReset();
     convertMutate = vi.fn();
     mockConvert.mockReturnValue({ mutate: convertMutate, isPending: false });
+    reclassifyMutate = vi.fn();
+    mockReclassify.mockReturnValue({ mutate: reclassifyMutate, isPending: false });
   });
 
   // FR-160 / FR-161 / FR-045 — the lifecycle exits. Each button is gated on the ONE status its
@@ -296,5 +300,50 @@ describe('TopicDetail (P5b)', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  // ---- FR-164 / DW-032 (WBS-23.4): triage-time reclassification ----
+
+  it('reclassifies a pre-accept topic, carrying its existing source unchanged', async () => {
+    // ⚠ The source is deliberately NOT the fixture's default. With TOPIC's own 'CommitteeMember' the
+    // assertion passed against an implementation that hardcoded that literal — proven by mutation, so
+    // the value here must be one nothing else in the file would produce by accident.
+    result({ data: { ...TOPIC, status: 'Submitted', source: 'SecurityFinding' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
+    await userEvent.selectOptions(screen.getByLabelText('New type'), 'ResearchDiscovery');
+    await userEvent.click(screen.getByRole('button', { name: 'Apply new type' }));
+    expect(reclassifyMutate).toHaveBeenCalledTimes(1);
+    expect(reclassifyMutate.mock.calls[0][0]).toEqual({
+      topicId: 'g1', type: 'ResearchDiscovery', source: 'SecurityFinding',
+    });
+  });
+
+  it('does not offer reclassification once the topic is past triage', () => {
+    result({ data: { ...TOPIC, status: 'Accepted' } });
+    setup();
+    expect(screen.queryByRole('button', { name: 'Reclassify' })).toBeNull();
+    // ...and DOES offer it pre-accept, so the assertion above cannot pass by the control being
+    // absent everywhere.
+    cleanup();
+    result({ data: { ...TOPIC, status: 'Triage' } });
+    setup();
+    expect(screen.getByRole('button', { name: 'Reclassify' })).toBeInTheDocument();
+  });
+
+  it('does not offer reclassification to a member, whom the server would refuse', () => {
+    result({ data: { ...TOPIC, status: 'Submitted' } });
+    setup('/topics/TOP-2026-014', ['member']);
+    expect(screen.queryByRole('button', { name: 'Reclassify' })).toBeNull();
+  });
+
+  it('excludes the current type from the choices — the server treats it as a no-op', async () => {
+    result({ data: { ...TOPIC, status: 'Submitted' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
+    const options = Array.from(screen.getByLabelText('New type').querySelectorAll('option'))
+      .map((o) => (o as HTMLOptionElement).value).filter(Boolean);
+    expect(options).not.toContain('ArchitectureDecision');
+    expect(options).toContain('ResearchDiscovery');
   });
 });
