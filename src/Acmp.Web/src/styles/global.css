@@ -49,6 +49,30 @@ a { color: inherit; }
 }
 .skip-link:focus { inset-block-start: var(--sp-2); }
 
+/* ================= Not-optimized-for-mobile notice (NFR-063 / DW-061) =================
+   THE 768px FIGURE IS THE REQUIREMENT'S OWN THRESHOLD AND LIVES ONLY HERE.
+   MobileNotice.tsx deliberately carries no matchMedia copy of it, so there is no second
+   number to drift out of step with this one.
+
+   Hidden by default rather than shown-and-hidden: `display: none` also removes it from the
+   accessibility tree, so a desktop screen-reader user is never told about a constraint that
+   does not apply to them. The media query is the only thing that reveals it.
+
+   767.98 rather than 767 because the requirement says "< 768px" and a viewport can be
+   fractional under zoom or a non-integer device pixel ratio; `max-width: 767px` would leave
+   a 767.5px viewport with no notice. */
+.mobile-notice { display: none; }
+
+@media (max-width: 767.98px) {
+  .mobile-notice {
+    display: flex; align-items: center; gap: 9px;
+    padding-block: 10px; padding-inline: 16px;
+    background: var(--st-warn-bg); color: var(--st-warn-fg);
+    border-block-end: 1px solid color-mix(in srgb, var(--st-warn-fg) 22%, transparent);
+    font-size: 12.5px; font-weight: 600; line-height: 1.45;
+  }
+}
+
 /* ============================ App shell ============================ */
 .app-shell { display: flex; flex-direction: column; min-block-size: 100vh; }
 

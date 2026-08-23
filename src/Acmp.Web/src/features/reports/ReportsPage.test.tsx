@@ -15,23 +15,26 @@ vi.mock('../../api/decisions', async (o) => ({ ...(await o<typeof import('../../
 vi.mock('../../api/actions', async (o) => ({ ...(await o<typeof import('../../api/actions')>()), useActionsRegister: vi.fn() }));
 vi.mock('../../api/risks', async (o) => ({ ...(await o<typeof import('../../api/risks')>()), useRisksRegister: vi.fn() }));
 vi.mock('../../api/dependencies', async (o) => ({ ...(await o<typeof import('../../api/dependencies')>()), useDependenciesRegister: vi.fn() }));
+vi.mock('html-to-image', () => ({ toPng: vi.fn() }));
 
 import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
 import { useActionsRegister } from '../../api/actions';
 import { useRisksRegister } from '../../api/risks';
 import { useDependenciesRegister } from '../../api/dependencies';
+import { toPng } from 'html-to-image';
 
 const mBacklog = useBacklog as unknown as Mock;
 const mDecisions = useDecisionsRegister as unknown as Mock;
 const mActions = useActionsRegister as unknown as Mock;
 const mRisks = useRisksRegister as unknown as Mock;
 const mDeps = useDependenciesRegister as unknown as Mock;
+const mToPng = toPng as unknown as Mock;
 
 const paged = <T,>(items: T[]) => ({ data: { items, total: items.length, page: 1, pageSize: 500, totalPages: 1 }, isLoading: false, isError: false, refetch: vi.fn() });
 const arr = <T,>(items: T[]) => ({ data: items, isLoading: false, isError: false, refetch: vi.fn() });
 
-const topic = (p: Partial<TopicSummary>): TopicSummary => ({ id: 'i', key: 'TOP-1', title: 't', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal', scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0, timesDeferred: 0, ageDays: 40, slaBreached: false, createdAt: '2026-01-01', ...p });
+const topic = (p: Partial<TopicSummary>): TopicSummary => ({ id: 'i', key: 'TOP-1', title: 't', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal', scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0, timesDeferred: 0, ageDays: 40, slaBreached: false, createdAt: '2026-01-01', restricted: false, ...p });
 const decision = (p: Partial<DecisionSummary>): DecisionSummary => ({ id: 'i', key: 'DECN-1', topicId: 't', meetingId: null, outcome: 'Approved', status: 'Issued', title: { en: 'd', ar: 'd' }, issuedAt: '2026-06-01', ...p });
 const action = (p: Partial<ActionSummary>): ActionSummary => ({ id: 'i', key: 'ACT-1', title: { en: 'a', ar: 'a' }, status: 'Open', priority: 'Normal', ownerUserId: 'u', ownerName: 'o', dueDate: null, isOverdue: false, progressPct: 0, sourceType: 'Topic', sourceId: 's', sourceKey: null, meetingKey: null, ...p });
 const risk = (p: Partial<RiskSummary>): RiskSummary => ({ id: 'i', key: 'RSK-1', title: { en: 'r', ar: 'r' }, status: 'Open', likelihood: 'High', impact: 'High', severity: 9, exposure: 'Critical', ownerUserId: '', ownerName: '', subjectType: 'Topic', subjectId: 'i', subjectKey: 'TOP-1', ...p });
@@ -52,6 +55,8 @@ describe('ReportsPage (P12-PR3 shell)', () => {
     loaded();
     URL.createObjectURL = vi.fn(() => 'blob:x');
     URL.revokeObjectURL = vi.fn();
+    mToPng.mockReset();
+    mToPng.mockResolvedValue('data:image/png;base64,AAAA');
   });
 
   it('renders the six view-tabs and the default executive cards', () => {
@@ -130,6 +135,56 @@ describe('ReportsPage (P12-PR3 shell)', () => {
     mDeps.mockReturnValue(paged<DependencySummary>([]));
     setup();
     expect(screen.getByText('No reporting data yet')).toBeInTheDocument();
+  });
+
+  // ---- FR-142's PNG half (DW-038 / WBS-23.3, dependency chosen by DEC-069) ----
+
+  it('exports a chart card as a PNG named for the view and the card', async () => {
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Export Decision outcomes as a PNG image' }));
+    expect(mToPng).toHaveBeenCalledTimes(1);
+    const [node, opts] = mToPng.mock.calls[0];
+    // the whole CARD is rasterised, not some inner fragment
+    expect((node as HTMLElement).classList.contains('rpt-card')).toBe(true);
+    expect(opts.pixelRatio).toBe(2);
+    const a = clickSpy.mock.instances[0] as unknown as HTMLAnchorElement;
+    expect(a.download).toBe('acmp-report-executive-outcomes.png');
+    expect(a.href).toBe('data:image/png;base64,AAAA');
+    clickSpy.mockRestore();
+  });
+
+  it('keeps the card’s own controls OUT of the exported image', async () => {
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Export Decision outcomes as a PNG image' }));
+    const filter = mToPng.mock.calls[0][1].filter as (n: Node) => boolean;
+    // MUTATION GUARD: drop the filter and the export/drill buttons are rasterised into
+    // the picture. Force the refusal rather than assert the option merely exists.
+    const tools = document.querySelector('.rpt-card-tools') as HTMLElement;
+    const chart = document.querySelector('.rpt-card-body') as HTMLElement;
+    expect(tools).not.toBeNull();
+    expect(filter(tools)).toBe(false);
+    expect(filter(chart)).toBe(true);
+  });
+
+  it('offers no PNG export on an honest-empty card — there is no chart to export', () => {
+    setup();
+    // the executive view's throughput card is a trend empty-state
+    expect(screen.getByText('Trend data — Phase 3')).toBeInTheDocument();
+    const emptyCard = screen.getByText('Trend data — Phase 3').closest('.rpt-card') as HTMLElement;
+    expect(emptyCard.querySelector('.rpt-png')).toBeNull();
+    // ...while a card that draws something does offer it, so the assertion above
+    // cannot pass by the button being absent everywhere.
+    const drawnCard = screen.getByRole('heading', { name: 'Decision outcomes' }).closest('.rpt-card') as HTMLElement;
+    expect(drawnCard.querySelector('.rpt-png')).not.toBeNull();
+  });
+
+  it('says so in the card when the export fails instead of doing nothing', async () => {
+    mToPng.mockRejectedValue(new Error('CSP'));
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Export Decision outcomes as a PNG image' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Couldn’t export this chart as an image.');
   });
 
   it('is axe-clean when loaded', async () => {

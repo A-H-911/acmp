@@ -2,7 +2,8 @@
  * Administration → System Health (NR-08; mirrors the "ACMP Administration" `health` section).
  * Wired to GET /api/admin/health. The screen renders a FIXED catalog of the six core services so it
  * matches the design's tile list; it overlays the real status of whichever checks the server
- * actually registers (api + SQL Server in v1) and shows the rest as "monitoring not configured" —
+ * actually registers (api, SQL Server, object storage, Hangfire and Seq) and shows the rest as
+ * "monitoring not configured" —
  * never a fabricated status. Per-tile latency is real (HealthReportEntry.Duration); uptime% / p95 are
  * not collected on-prem in v1 and are intentionally omitted (recorded design deviation).
  */
@@ -12,14 +13,32 @@ import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
 
-// The six services the design lists, in order. `check` matches the server's health-check name when
-// one exists; services with no registered check render as "monitoring not configured".
+/*
+ * The six services the design lists, in order. `check` matches the server's health-check name when one
+ * exists; a service with no registered check renders as "monitoring not configured" — never a
+ * fabricated status.
+ *
+ * ⚠ THREE OF THESE WERE PERMANENTLY UNMONITORED FOR A REASON THAT NO LONGER HOLDS (DEF-039). The
+ * object store, Seq and Hangfire tiles carried no `check` because, when this screen was written, the
+ * only registered checks were `api` and `sqlserver`. The server has registered all three since — and
+ * DEF-078/DEF-082 then found that two of them had never actually passed, which is why wiring them
+ * earlier would have surfaced a real 503 rather than a green tile.
+ *
+ * ⚠ THE OBJECT-STORE TILE IS DELIBERATELY NOT CALLED "MinIO" ANY MORE. It used to be, and that was the
+ * display half of DEF-039: the cloud stack runs S3, so a tile labelled MinIO was wrong on the
+ * environment it was most likely to be read on. The check behind it (`objectstore`) is environment-
+ * aware by construction — one SDK bucket probe that works against MinIO and S3 alike — so the label
+ * follows suit rather than branching on environment.
+ *
+ * `webex` keeps no check on purpose: Webex is Phase 2 and disabled in every deployed environment, so
+ * "monitoring not configured" is the honest answer rather than a gap.
+ */
 const SERVICES: { key: string; check?: string; icon: IconName }[] = [
   { key: 'application', check: 'api', icon: 'server' },
   { key: 'sqlServer', check: 'sqlserver', icon: 'database' },
-  { key: 'minio', icon: 'box' },
-  { key: 'seq', icon: 'viewList' },
-  { key: 'hangfire', icon: 'cog' },
+  { key: 'objectStore', check: 'objectstore', icon: 'box' },
+  { key: 'seq', check: 'seq', icon: 'viewList' },
+  { key: 'hangfire', check: 'hangfire', icon: 'cog' },
   { key: 'webex', icon: 'video' },
 ];
 

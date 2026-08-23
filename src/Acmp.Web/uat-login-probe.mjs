@@ -20,9 +20,22 @@ import { chromium } from '@playwright/test';
 
 const BASE = (process.argv[2] ?? 'https://uat.acmp.anas7ammo.dev').replace(/\/$/, '');
 const TEMP_PASSWORD = process.env.ACMP_SEED_PASSWORD ?? 'ChangeMe_Acmp#2026';
-// Deterministic so a second run can log in with it. Not a secret: these are UAT fixtures on a
-// throwaway environment, and the value never leaves this file (INV-007 covers real credentials).
-const NEW_PASSWORD = process.env.ACMP_UAT_PASSWORD ?? 'Uat_Acmp#2026_Rotated';
+/*
+ * ⚠ THE ROTATED PASSWORD USED TO BE HARD-CODED HERE AS A FALLBACK, DEFENDED BY A COMMENT THAT SAID
+ * "the value never leaves this file". THAT WAS FALSE WHEN IT WAS WRITTEN AND GOT WORSE: a 2026-08-16
+ * scan found the same literal in FIVE tracked files — this script, uat-invite-probe.mjs, two handoff
+ * notes, and .claude/memory/ph5-sl025-uat-live.md, which is auto-loaded into agent context every
+ * single session. "It is only UAT" is how a credential earns a hard-coded home; "it never leaves this
+ * file" is not a property you can assert, only one you can measure, and nobody measured it.
+ *
+ * No fallback now. The env var is REQUIRED and missing it fails loudly here rather than surfacing as
+ * a confusing login failure three steps into a browser flow.
+ */
+const NEW_PASSWORD = process.env.ACMP_UAT_PASSWORD;
+if (!NEW_PASSWORD) {
+  console.error('ACMP_UAT_PASSWORD is not set. Export the current UAT password before running this probe.');
+  process.exit(2);
+}
 
 const EXPECTED = {
   chairman: 'Chairman',

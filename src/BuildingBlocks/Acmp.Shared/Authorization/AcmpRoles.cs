@@ -20,4 +20,23 @@ public static class AcmpRoles
     {
         Chairman, Secretary, Member, Reviewer, Auditor, Administrator, Submitter, Guest,
     };
+
+    /// <summary>
+    /// True when the principal holds Guest and NO committee role — the external presenter ADR-0040
+    /// introduces, as opposed to an insider who happens to be listed as a guest somewhere.
+    /// </summary>
+    /// <param name="isInRole">
+    /// Role membership for the caller: <c>ClaimsPrincipal.IsInRole</c> at the HTTP edge,
+    /// <c>ICurrentUser.IsInRole</c> inside a handler. Taken as a delegate so this predicate can live
+    /// in the shared role vocabulary without depending on either of them.
+    /// </param>
+    /// <remarks>
+    /// DEFINED ONCE BECAUSE TWO COPIES WOULD DRIFT. GuestSurfaceMiddleware gates the request SURFACE
+    /// with this and the Meetings read handlers scope their ROWS with it; while the middleware owned a
+    /// private copy, the gate believed it had closed a read the handlers still served committee-wide
+    /// (DEF-073). Roles are Keycloak claims and cannot be self-assigned, so holding a committee role
+    /// alongside Guest is an insider signal rather than an escape hatch.
+    /// </remarks>
+    public static bool IsGuestOnly(Func<string, bool> isInRole) =>
+        isInRole(Guest) && !All.Any(role => role != Guest && isInRole(role));
 }

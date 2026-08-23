@@ -219,6 +219,14 @@ services:
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY}"
       Authentication__Keycloak__RequireHttpsMetadata: "${ACMP_REQUIRE_HTTPS_METADATA:-true}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      # ⚠ DEF-099 — WITHOUT THIS LINE NOT ONE TRACE EVER REACHED Seq, in any environment, silently.
+      # The .NET OTLP exporter defaults to grpc, which posts the endpoint VERBATIM; Seq answers 404 on
+      # /ingest/otlp and 200 on /ingest/otlp/v1/traces. http/protobuf makes the SDK append the signal
+      # path (/v1/traces, /v1/metrics), so one base endpoint serves both. The SDK swallows export
+      # failures unless its self-diagnostic log is on, which is why this survived since the
+      # instrumentation shipped. ⚠ VERIFY A CHANGE HERE BY SENDING TRAFFIC AND ASSERTING THE SPAN
+      # COUNT MOVES — a clean start-up proves nothing, which is exactly how this was missed.
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "acmp-api"
       # ADR-0038 in-app user management. Default OFF: with Enabled=false IIdentityProvider is not
       # registered, so the endpoints fail at composition rather than half-working. keycloak-config
@@ -253,11 +261,22 @@ services:
       seq: { condition: service_started }
       keycloak: { condition: service_started }
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      # DEF-079. This probed /healthz, which Program.cs maps with `Predicate = _ => false` — it selects ZERO
+      # registered checks, so it returned 200 as long as the process could accept a TCP connection. The
+      # container therefore reported "Up 3 days (healthy)" on production while its own /readyz was returning
+      # 503, and that is precisely why DEF-078 went unnoticed: the one indicator anyone looks at was wired to
+      # the endpoint that knows nothing.
+      #
+      # ⚠ SEQUENCING (DEC-056 d2): this line may only point at /readyz once the object-store probe is fixed.
+      # Repointing while /readyz is still 503 would mark the api container unhealthy the moment it applied and
+      # risk restart churn on a live stack — which is why the probe fix ships in the same PR, ahead of this.
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 12
-      start_period: 45s
+      # /readyz reaches SQL Server, Hangfire and object storage, so it legitimately needs longer to first
+      # succeed than an endpoint that evaluated nothing. Widened so a cold start is not read as a failure.
+      start_period: 90s
     deploy:
       resources:
         limits: { cpus: "1.5", memory: 512M }
@@ -272,6 +291,11 @@ services:
     secrets: [ConnectionStrings__Acmp, Minio__SecretKey, KeycloakAdmin__ClientSecret, Webex__BotToken, Webex__WebhookSecret, Webex__OAuthClientSecret, Webex__TokenEncryptionKey, Webex__OAuthSetupKey]
     environment:
       DOTNET_ENVIRONMENT: Production
+      # ⚠ DEF-099 — see the api service. The worker had NO OTEL_ vars at all, so its OTLP exporter fell
+      # back to the SDK default http://localhost:4317 and every span it produced was dropped.
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://seq:5341/ingest/otlp"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "acmp-worker"
       Hangfire__PrepareSchema: "false"
       Minio__Endpoint: "${ACMP_S3_ENDPOINT:-s3.us-east-1.amazonaws.com}"
       Minio__Region: "${AWS_REGION:-us-east-1}"
@@ -308,7 +332,10 @@ services:
     depends_on:
       sqlserver: { condition: service_healthy }
       db-migrate: { condition: service_completed_successfully }
-      api: { condition: service_healthy }
+      # ⚠ service_started, not service_healthy — /readyz reaches SQL/Hangfire/object storage, so gating
+      # startup on it turns a dependency blip into a full outage (DEF-079 follow-up). Signal kept,
+      # interlock dropped.
+      api: { condition: service_started }
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 256M }
@@ -360,7 +387,10 @@ services:
       - "${ACMP_HTTP_PORT:-80}:8080"
       - "${ACMP_HTTPS_PORT:-443}:8443"
     depends_on:
-      api: { condition: service_healthy }
+      # ⚠ service_started, not service_healthy — /readyz reaches SQL/Hangfire/object storage, so gating
+      # startup on it turns a dependency blip into a full outage (DEF-079 follow-up). Signal kept,
+      # interlock dropped.
+      api: { condition: service_started }
     healthcheck:
       # Probes BOTH listeners. The old check hit 8080 only, so "healthy" said nothing about TLS.
       # --no-check-certificate is deliberate: on first boot the cert is the self-signed placeholder

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -12,18 +12,39 @@ import type { TopicDetail as Topic } from '../../api/topics';
 // The traceability panel (which replaced the P5 empty relationships sidebar) has its own test; stub
 // it here so this page test stays isolated from the panel's query providers.
 vi.mock('../traceability/TraceabilityPanel', () => ({ TraceabilityPanel: () => 'TRACE_PANEL' }));
-vi.mock('../../api/topics', () => ({ useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(), usePrepareTopic: vi.fn() }));
-import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic } from '../../api/topics';
+// ⚠ EVERY HOOK THE COMPONENT IMPORTS MUST BE LISTED HERE. A module mock REPLACES the module, so a
+// hook added to TopicDetail.tsx and forgotten here is `undefined` at render and the whole suite dies
+// on "is not a function" — which is how a label rename once turned main red (PE-409).
+vi.mock('../../api/topics', () => ({
+  useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(),
+  usePrepareTopic: vi.fn(), useReactivateTopic: vi.fn(), useCloseTopic: vi.fn(), useReopenTopic: vi.fn(),
+  useConvertTopic: vi.fn(), useReclassifyTopic: vi.fn(),
+}));
+import {
+  useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic,
+} from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
 const mockAddComment = useAddTopicComment as unknown as Mock;
 const mockUpload = useUploadTopicAttachment as unknown as Mock;
 const mockPrepare = usePrepareTopic as unknown as Mock;
+const mockReactivate = useReactivateTopic as unknown as Mock;
+const mockClose = useCloseTopic as unknown as Mock;
+const mockReopen = useReopenTopic as unknown as Mock;
+const mockConvert = useConvertTopic as unknown as Mock;
+const mockReclassify = useReclassifyTopic as unknown as Mock;
 let mutate: Mock;
 let uploadMutate: Mock;
 let prepareMutate: Mock;
+let reactivateMutate: Mock;
+let closeMutate: Mock;
+let reopenMutate: Mock;
+let convertMutate: Mock;
+let reclassifyMutate: Mock;
 
 const TOPIC: Topic = {
+  restricted: false,
   id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', description: 'Consolidate IdP onto Keycloak.',
   justification: 'Reduce auth sprawl and audit cost.', type: 'ArchitectureDecision', status: 'Scheduled', urgency: 'Urgent',
   scope: 'MultiStream', source: 'CommitteeMember', streams: ['identity', 'platform'], systems: ['Auth Service'], tags: [],
@@ -41,9 +62,9 @@ function result(over: Partial<ReturnType<typeof useTopicDetail>>) {
   mockDetail.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...over });
 }
 
-function setup(path = '/topics/TOP-2026-014') {
+function setup(path = '/topics/TOP-2026-014', roles: string[] = ['secretary']) {
   render(
-    <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
+    <AcmpAuthContext.Provider value={makeAuth(roles as Parameters<typeof makeAuth>[0])}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/topics/:key" element={<TopicDetail />} />
@@ -64,6 +85,110 @@ describe('TopicDetail (P5b)', () => {
     mockPrepare.mockReset();
     prepareMutate = vi.fn();
     mockPrepare.mockReturnValue({ mutate: prepareMutate, isPending: false });
+    mockReactivate.mockReset();
+    reactivateMutate = vi.fn();
+    mockReactivate.mockReturnValue({ mutate: reactivateMutate, isPending: false });
+    mockClose.mockReset();
+    closeMutate = vi.fn();
+    mockClose.mockReturnValue({ mutate: closeMutate, isPending: false });
+    mockReopen.mockReset();
+    reopenMutate = vi.fn();
+    mockReopen.mockReturnValue({ mutate: reopenMutate, isPending: false });
+    mockConvert.mockReset();
+    convertMutate = vi.fn();
+    mockConvert.mockReturnValue({ mutate: convertMutate, isPending: false });
+    reclassifyMutate = vi.fn();
+    mockReclassify.mockReturnValue({ mutate: reclassifyMutate, isPending: false });
+  });
+
+  // FR-160 / FR-161 / FR-045 — the lifecycle exits. Each button is gated on the ONE status its
+  // transition accepts, so the assertions pair "appears on the right status" with "absent on the
+  // default one" — a button that always rendered would satisfy a presence-only test while offering
+  // the user an action the server refuses.
+  it('offers Return to triage only on a Deferred topic, and calls the mutation', async () => {
+    result({ data: { ...TOPIC, status: 'Deferred' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Return to triage/i }));
+    expect(reactivateMutate).toHaveBeenCalledWith('g1', expect.anything());
+  });
+
+  it('offers Close topic only on a Decided topic, and calls the mutation', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Close topic/i }));
+    expect(closeMutate).toHaveBeenCalledWith('g1', expect.anything());
+  });
+
+  it('does not offer the lifecycle exits on a Scheduled topic', () => {
+    result({ data: TOPIC });   // Scheduled
+    setup();
+    expect(screen.queryByRole('button', { name: /Return to triage/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Close topic/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Reopen$/i })).not.toBeInTheDocument();
+  });
+
+  // AC-112: the justification is mandatory, and the dialog enforces it BEFORE the request rather
+  // than letting the server refuse something the UI could have prevented.
+  it('requires a justification before a reopen can be confirmed', async () => {
+    result({ data: { ...TOPIC, status: 'Rejected' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /^Reopen$/i }));
+
+    const confirm = screen.getByRole('button', { name: /Reopen topic/i });
+    expect(confirm).toBeDisabled();
+
+    await userEvent.type(screen.getByLabelText(/Reason for reopening/i), 'new regulatory guidance');
+    expect(confirm).toBeEnabled();
+
+    await userEvent.click(confirm);
+    expect(reopenMutate).toHaveBeenCalledWith(
+      { topicId: 'g1', reason: 'new regulatory guidance' }, expect.anything());
+  });
+
+  // AC-113 / FR-030. Both inputs are mandatory and the confirm stays disabled until BOTH are given —
+  // asserted separately, because a test that types only the reason would pass against a dialog that
+  // had forgotten to gate on the type, and a mis-clicked convert retires a Decided topic irreversibly.
+  it('offers Convert type only on a Decided topic', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    setup();
+    expect(screen.getByRole('button', { name: /Convert type/i })).toBeInTheDocument();
+  });
+
+  it('does not offer Convert type on a non-Decided topic', () => {
+    result({ data: TOPIC }); // Scheduled
+    setup();
+    expect(screen.queryByRole('button', { name: /Convert type/i })).not.toBeInTheDocument();
+  });
+
+  it('requires BOTH a target type and a reason before a conversion can be confirmed', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Convert type/i }));
+
+    const confirm = screen.getByRole('button', { name: /Convert topic/i });
+    expect(confirm).toBeDisabled();
+
+    // Reason alone is not enough.
+    await userEvent.type(screen.getByLabelText(/Reason for converting/i), 'research concluded');
+    expect(confirm).toBeDisabled();
+
+    await userEvent.selectOptions(screen.getByLabelText(/Convert to/i), 'ResearchDiscovery');
+    expect(confirm).toBeEnabled();
+
+    await userEvent.click(confirm);
+    expect(convertMutate).toHaveBeenCalledWith(
+      { topicId: 'g1', targetType: 'ResearchDiscovery', reason: 'research concluded' }, expect.anything());
+  });
+
+  it('omits the topic\'s current type from the conversion choices', async () => {
+    result({ data: { ...TOPIC, status: 'Decided' } }); // type = ArchitectureDecision
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: /Convert type/i }));
+
+    const options = within(screen.getByLabelText(/Convert to/i)).getAllByRole('option');
+    // placeholder + the three OTHER types; offering the current one is an option that can only fail.
+    expect(options).toHaveLength(4);
+    expect(options.map((o: HTMLElement) => (o as HTMLOptionElement).value)).not.toContain('ArchitectureDecision');
   });
 
   it('renders the header and overview from the detail DTO', () => {
@@ -175,5 +300,50 @@ describe('TopicDetail (P5b)', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  // ---- FR-164 / DW-032 (WBS-23.4): triage-time reclassification ----
+
+  it('reclassifies a pre-accept topic, carrying its existing source unchanged', async () => {
+    // ⚠ The source is deliberately NOT the fixture's default. With TOPIC's own 'CommitteeMember' the
+    // assertion passed against an implementation that hardcoded that literal — proven by mutation, so
+    // the value here must be one nothing else in the file would produce by accident.
+    result({ data: { ...TOPIC, status: 'Submitted', source: 'SecurityFinding' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
+    await userEvent.selectOptions(screen.getByLabelText('New type'), 'ResearchDiscovery');
+    await userEvent.click(screen.getByRole('button', { name: 'Apply new type' }));
+    expect(reclassifyMutate).toHaveBeenCalledTimes(1);
+    expect(reclassifyMutate.mock.calls[0][0]).toEqual({
+      topicId: 'g1', type: 'ResearchDiscovery', source: 'SecurityFinding',
+    });
+  });
+
+  it('does not offer reclassification once the topic is past triage', () => {
+    result({ data: { ...TOPIC, status: 'Accepted' } });
+    setup();
+    expect(screen.queryByRole('button', { name: 'Reclassify' })).toBeNull();
+    // ...and DOES offer it pre-accept, so the assertion above cannot pass by the control being
+    // absent everywhere.
+    cleanup();
+    result({ data: { ...TOPIC, status: 'Triage' } });
+    setup();
+    expect(screen.getByRole('button', { name: 'Reclassify' })).toBeInTheDocument();
+  });
+
+  it('does not offer reclassification to a member, whom the server would refuse', () => {
+    result({ data: { ...TOPIC, status: 'Submitted' } });
+    setup('/topics/TOP-2026-014', ['member']);
+    expect(screen.queryByRole('button', { name: 'Reclassify' })).toBeNull();
+  });
+
+  it('excludes the current type from the choices — the server treats it as a no-op', async () => {
+    result({ data: { ...TOPIC, status: 'Submitted' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
+    const options = Array.from(screen.getByLabelText('New type').querySelectorAll('option'))
+      .map((o) => (o as HTMLOptionElement).value).filter(Boolean);
+    expect(options).not.toContain('ArchitectureDecision');
+    expect(options).toContain('ResearchDiscovery');
   });
 });

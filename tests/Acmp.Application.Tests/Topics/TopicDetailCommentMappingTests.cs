@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
@@ -14,6 +15,16 @@ namespace Acmp.Application.Tests.Topics;
 // so the Select(c => new TopicCommentDto(...)) mapping line executes.
 public class TopicDetailCommentMappingTests
 {
+    // FR-163: this suite asserts DETAIL MAPPING, not confidentiality. A permissive scope keeps it
+    // measuring what it claims to; the narrowing is asserted in the confidentiality suites.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private static readonly DateTimeOffset T0 = new(2026, 4, 1, 10, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset T1 = T0.AddMinutes(5);
 
@@ -64,7 +75,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock);
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);
@@ -104,7 +115,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock);
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);
@@ -146,7 +157,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock);
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);

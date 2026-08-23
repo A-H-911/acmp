@@ -23,4 +23,8 @@ public enum RelationshipType
     Implements = 14,    // Action → Decision     (inverse: implemented-by)
     Blocks = 15,        // Topic/Action/Risk → Topic/Action (inverse: blocked-by)
     Resolves = 16,      // Decision/Action → Risk (inverse: resolved-by)
+    // FR-030 / DEC-061. Original → successor when a Decided topic is converted to a different type.
+    // APPENDED, never inserted: RelType persists via HasConversion<int>() (RelationshipConfiguration.cs),
+    // so renumbering an existing member would silently remap every stored relationship row.
+    ConvertedTo = 17,   // Topic → Topic (inverse: converted-from)
 }

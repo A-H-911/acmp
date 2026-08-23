@@ -20,6 +20,7 @@ let returnMutate: Mock;
 let moveMutate: Mock;
 
 const row = (over: Partial<TopicSummary>): TopicSummary => ({
+  restricted: false,
   id: 'x', key: 'TOP-0', title: 'T', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal',
   scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0, timesDeferred: 0, ageDays: 1,
   slaBreached: false, createdAt: '2026-02-15T09:00:00Z', ...over,
@@ -127,5 +128,75 @@ describe('Kanban (P5b)', () => {
     const rows = [row({ id: 'd1', key: 'TOP-2026-301', status: 'Decided' })];
     renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
     expect(screen.queryByRole('button', { name: /Move TOP-2026-301/ })).not.toBeInTheDocument();
+  });
+
+  /*
+   * AC-141 / FR-037 — card-level drag reorder. jsdom has no drag-and-drop implementation, but the HTML5
+   * DnD API is plain events, so firing dragStart on one card and drop on another exercises exactly the
+   * handlers a browser would call. What jsdom cannot judge is whether the cards LOOK droppable; that is
+   * the e2e's job.
+   */
+  it('drops a card onto another in the same column and sends the TARGET IDENTITY, never a position', async () => {
+    const rows = [
+      row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' }),
+      row({ id: 't2', key: 'TOP-2026-202', status: 'Triage' }),
+      row({ id: 't3', key: 'TOP-2026-203', status: 'Triage' }),
+    ];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+
+    fireEvent.dragStart(card('TOP-2026-203'));
+    fireEvent.drop(card('TOP-2026-201'));
+
+    // targetTopicId, NOT a delta: this client's list is filtered/sorted/paged, so its indices are not the
+    // server's. If anyone "optimises" this to a computed delta, this assertion is what fails.
+    expect(moveMutate).toHaveBeenCalledWith({ topicId: 't3', targetTopicId: 't1' });
+    expect(moveMutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT reorder when the drop target is in a different column — that is a status change', () => {
+    // Cross-column drag belongs to FR-033 and the section-level drop handler. If the card handler claimed
+    // it, one gesture would fire a reorder AND a transition. The accept dialog opening is the proof that
+    // the section handler still received the gesture.
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+
+    fireEvent.dragStart(card('TOP-2026-101'));   // triage
+    fireEvent.drop(card('TOP-2026-102'));        // accepted — different bucket
+
+    expect(moveMutate).not.toHaveBeenCalled();
+  });
+
+  /* DEF-103 — the board has no pager, so truncation must be stated AND actionable. Both directions are
+     asserted: a silent prefix is the defect, and a notice on a complete board would be noise that
+     trains the user to ignore it. */
+  it('says so when the column set is truncated, naming both numbers and what to do', () => {
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} total={60} />, { roles: ['secretary'] });
+    const notice = screen.getByRole('status');
+    expect(notice).toHaveTextContent(/1/);
+    expect(notice).toHaveTextContent(/60/);
+    expect(notice).toHaveTextContent(/filter/i);   // actionable, not merely informative
+  });
+
+  it('shows no truncation notice when everything is on the board', () => {
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} total={1} />, { roles: ['secretary'] });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows no truncation notice when the caller supplies no total', () => {
+    // `total` is optional; an absent total must not be read as 0 and render a bogus "1 of 0".
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('ignores a card dropped on itself', () => {
+    const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+
+    fireEvent.dragStart(card('TOP-2026-201'));
+    fireEvent.drop(card('TOP-2026-201'));
+
+    expect(moveMutate).not.toHaveBeenCalled();
   });
 });

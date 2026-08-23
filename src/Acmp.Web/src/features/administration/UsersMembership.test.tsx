@@ -10,7 +10,26 @@ import type { Member } from '../../api/members';
 // has to cover their hooks or the detail tests fail on an undefined hook rather than on anything
 // real. The panels' own behaviour is asserted against the wire in their own suites — this file is
 // the screen, so it only proves they are mounted.
+// vi.mock is hoisted above every import, so a plain `const` declared here would still be in its
+// temporal dead zone when the factory runs. vi.hoisted is the supported way to share a spy with it.
+const { mockSetVoting } = vi.hoisted(() => ({ mockSetVoting: vi.fn() }));
+
 vi.mock('../../api/members', () => ({
+  // ADR-0042 step 3 — StreamAssignmentPanel's data + mutation. The panel renders for real; only its
+  // server calls are stubbed, so the chips these tests see are the chips an administrator sees.
+  streamName: (s: { nameEn: string; nameAr: string }, isArabic: boolean) => (isArabic ? s.nameAr : s.nameEn),
+  useStreams: () => ({
+    data: [
+      { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 'sw', code: 'all-streams', nameEn: 'All streams', nameAr: 'كل المسارات', isWildcard: true },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+  useAssignStreams: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false, isSuccess: false }),
+  // DEF-041 — the directory's voting switch. Hoisted so a test can assert the exact payload, and
+  // cleared in beforeEach because it is shared across the whole describe.
+  useSetVotingEligibility: () => ({ mutate: mockSetVoting, isPending: false, isError: false }),
   useMembers: vi.fn(),
   useInviteUser: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useAssignRoles: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, isSuccess: false }),
@@ -27,7 +46,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهيكلة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
   {
     publicId: '2', keycloakUserId: 'kc-fixture', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',
@@ -35,13 +54,23 @@ const MEMBERS: Member[] = [
   },
 ];
 
-function renderDirectory(onView = vi.fn()) {
+// Administrator stays the DEFAULT deliberately: it is the role that administers the roster, so a
+// directory affordance that is inert for it is inert for the reason the matrix gives rather than by
+// accident (DEF-041 / DEC-046 d4 excludes Administrator from voting eligibility under SoD-5).
+function renderDirectory({ onView = vi.fn(), roles = ['administrator'] }: { onView?: () => void; roles?: string[] } = {}) {
   result({ data: MEMBERS });
-  renderWithAuth(<UsersDirectory onView={onView} />, { roles: ['administrator'] });
+  renderWithAuth(<UsersDirectory onView={onView} />, { roles: roles as never });
 }
 
 describe('UsersDirectory (AC-059)', () => {
-  beforeEach(() => mockUseMembers.mockReset());
+  // ⚠ mockSetVoting is cleared HERE, not merely declared. It is shared by every test in this
+  // describe, so without this the "inert for Administrator" assertion inherits the Secretary test's
+  // call and fails for a reason that has nothing to do with the control — and had it been ordered
+  // the other way round it would have PASSED while proving nothing.
+  beforeEach(() => {
+    mockUseMembers.mockReset();
+    mockSetVoting.mockClear();
+  });
 
   it('renders a directory row per member with role sourced from Keycloak', () => {
     renderDirectory();
@@ -91,13 +120,41 @@ describe('UsersDirectory (AC-059)', () => {
     expect(screen.getAllByRole('columnheader')).toHaveLength(5);
   });
 
-  it('renders the read-only voting-eligibility switch per member', () => {
+  // DEF-041 / DEC-046 d4 — this switch used to be asserted READ-ONLY here, and that assertion was
+  // correct until the control was wired. It is replaced rather than deleted: the state it described
+  // still exists for roles that may not change eligibility, and the two cases below are the property
+  // that actually matters now.
+  it('renders each member voting-eligibility state on the switch', () => {
     renderDirectory();
     const switches = screen.getAllByRole('switch');
     expect(switches).toHaveLength(2);
     expect(switches[0]).toHaveAttribute('aria-checked', 'true'); // Khalid: voting-eligible
     expect(switches[1]).toHaveAttribute('aria-checked', 'false'); // Audit Office: not
-    switches.forEach((s) => expect(s).toHaveAttribute('aria-disabled', 'true'));
+  });
+
+  it('lets a Secretary flip eligibility, sending the DESIRED STATE rather than a toggle', async () => {
+    const user = userEvent.setup();
+    renderDirectory({ roles: ['secretary'] });
+
+    await user.click(screen.getAllByRole('switch')[0]);
+
+    // Khalid is currently eligible, so the click must ask for false. A "toggle" call would leave two
+    // racing clicks resolving to whichever order the server saw last.
+    expect(mockSetVoting).toHaveBeenCalledWith({ publicId: '1', isVotingEligible: false });
+  });
+
+  it('leaves the switch inert for a role that may not change it — INCLUDING Administrator', async () => {
+    const user = userEvent.setup();
+    // ⚠ Administrator is the discriminating role: it administers the roster and may assign streams
+    // and deactivate members, so "the admin roles" is exactly the wrong generalisation. SoD-5 keeps
+    // it out of committee content and the server refuses it (DEC-046 d4).
+    renderDirectory({ roles: ['administrator'] });
+
+    const first = screen.getAllByRole('switch')[0];
+    expect(first).toHaveAttribute('aria-disabled', 'true');
+    await user.click(first);
+
+    expect(mockSetVoting).not.toHaveBeenCalled();
   });
 
   it('keeps the assignments count an honest dash (no count API yet)', () => {
@@ -116,7 +173,7 @@ describe('UsersDirectory (AC-059)', () => {
   it('calls onView with the member when the row view button is clicked', async () => {
     const user = userEvent.setup();
     const onView = vi.fn();
-    renderDirectory(onView);
+    renderDirectory({ onView });
     const view = screen.getAllByRole('button', { name: 'View user detail' });
     expect(view).toHaveLength(2);
     await user.click(view[0]);
@@ -166,7 +223,9 @@ describe('UserDetail (invite + role assignment per ADR-0038, superseding ADR-001
 
     expect(screen.getByText('Back to users')).toBeInTheDocument();
     expect(screen.getByText('Committee & stream memberships')).toBeInTheDocument();
-    expect(screen.getByText('Architecture')).toBeInTheDocument(); // his stream membership
+    // Scoped to the read-only memberships row (a <span>): the StreamAssignmentPanel below now
+    // renders 'Core' again as a toggle <button>, so an unscoped query matches both.
+    expect(screen.getByText('Core', { selector: 'span' })).toBeInTheDocument(); // his stream membership
     // ⚠ WAS `expect(screen.getByText(/Role is read-only/))`. The padlock said the role was managed
     // in Keycloak and could not be changed here; FR-157 changes it here. Keycloak is still where it
     // is STORED, which is all the replacement claims.

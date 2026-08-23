@@ -9,10 +9,14 @@ afterEach(() => vi.unstubAllGlobals());
 const urlOf = (spy: ReturnType<typeof stubFetch>) => String(spy.mock.calls.at(-1)![0]);
 
 describe('canonical enum arrays', () => {
-  it('carry all 16 relationship types and all 16 artifact types', () => {
-    expect(RELATIONSHIP_TYPES).toHaveLength(16);
+  // The counts are a PROXY for "this array still mirrors the C# enum", which TypeScript cannot see.
+  // 16 -> 17 for ConvertedTo (FR-030 / DEC-061), added as a deliberate governance act under ADR-0008.
+  // The guard did its job: it failed the moment the vocabulary grew, which is why the number is
+  // hardcoded rather than derived from the array under test — deriving it would assert nothing.
+  it('carry all 17 relationship types and all 16 artifact types', () => {
+    expect(RELATIONSHIP_TYPES).toHaveLength(17);
     expect(ARTIFACT_TYPES).toHaveLength(16);
-    expect(new Set(RELATIONSHIP_TYPES).size).toBe(16);
+    expect(new Set(RELATIONSHIP_TYPES).size).toBe(17);
     expect(new Set(ARTIFACT_TYPES).size).toBe(16);
   });
 });

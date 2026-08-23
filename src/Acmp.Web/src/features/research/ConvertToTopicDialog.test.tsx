@@ -6,6 +6,22 @@ import { ConvertToTopicDialog } from './ConvertToTopicDialog';
 import { ApiError } from '../../api/apiClient';
 
 const nav = vi.hoisted(() => vi.fn());
+// Stub the react-query-backed StreamPicker's data hook, exactly as TemplatePicker is stubbed above:
+// keeps this suite query-free while still rendering the REAL picker, so the chips these tests click
+// are the ones users click. The wildcard is absent because useAssignableStreams excludes it (that
+// filter is asserted in StreamPicker.test.tsx, not re-asserted here).
+vi.mock('../../api/members', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/members')>()),
+  useAssignableStreams: () => ({
+    data: [
+      { publicId: 's-core', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 's-gov', code: 'government', nameEn: 'Government', nameAr: 'الحكومي', isWildcard: false },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 vi.mock('react-router-dom', async (orig) => ({
   ...(await orig<typeof import('react-router-dom')>()),
   useNavigate: () => nav,
@@ -57,13 +73,13 @@ describe('ConvertToTopicDialog (P15c-2)', () => {
     const user = userEvent.setup();
     setup();
     await user.type(screen.getByLabelText(/Justification/), 'Cuts per-stream maintenance');
-    await user.type(screen.getByLabelText(/Affected streams/), 'IAM{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     await user.click(screen.getByRole('button', { name: 'Convert' }));
     expect(convert).toHaveBeenCalledWith({
       missionId: 'm1', recommendationId: null,
       title: 'Adopt a unified IdP', description: 'Standardise identity across streams',
       justification: 'Cuts per-stream maintenance', type: 'ResearchDiscovery', urgency: 'Normal',
-      streams: ['IAM'], systems: [], tags: [],
+      streams: ['core'], systems: [], tags: [],
     });
     expect(markConverted).not.toHaveBeenCalled();
     expect(nav).toHaveBeenCalledWith('/topics/TOP-2026-030');
@@ -73,9 +89,9 @@ describe('ConvertToTopicDialog (P15c-2)', () => {
     const user = userEvent.setup();
     setup({ recommendationId: 'r2' });
     await user.type(screen.getByLabelText(/Justification/), 'Rollback safety');
-    await user.type(screen.getByLabelText(/Affected streams/), 'Platform{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Government' }));
     await user.click(screen.getByRole('button', { name: 'Convert' }));
-    expect(convert).toHaveBeenCalledWith(expect.objectContaining({ missionId: 'm1', recommendationId: 'r2', streams: ['Platform'] }));
+    expect(convert).toHaveBeenCalledWith(expect.objectContaining({ missionId: 'm1', recommendationId: 'r2', streams: ['government'] }));
     expect(markConverted).toHaveBeenCalledWith({ id: 'm1', recommendationId: 'r2', topicId: 'top-guid' });
     expect(nav).toHaveBeenCalledWith('/topics/TOP-2026-030');
   });
@@ -85,7 +101,7 @@ describe('ConvertToTopicDialog (P15c-2)', () => {
     const user = userEvent.setup();
     setup({ recommendationId: 'r2' });
     await user.type(screen.getByLabelText(/Justification/), 'x');
-    await user.type(screen.getByLabelText(/Affected streams/), 'IAM{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     await user.click(screen.getByRole('button', { name: 'Convert' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('already been converted');
     expect(nav).not.toHaveBeenCalled();
@@ -96,7 +112,7 @@ describe('ConvertToTopicDialog (P15c-2)', () => {
     const user = userEvent.setup();
     setup();
     await user.type(screen.getByLabelText(/Justification/), 'x');
-    await user.type(screen.getByLabelText(/Affected streams/), 'IAM{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     await user.click(screen.getByRole('button', { name: 'Convert' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('could not be created');
     expect(nav).not.toHaveBeenCalled();

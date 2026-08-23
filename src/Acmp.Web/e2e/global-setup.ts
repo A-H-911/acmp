@@ -1,4 +1,4 @@
-import { E2E_PASSWORD, E2E_USERS, type E2eUser } from './users';
+import { E2E_PASSWORD, E2E_ROLELESS_USER, E2E_USERS, type E2eUser } from './users';
 
 /*
  * S6 global-setup (ADR-0016 §2). Runs once before the E2E suite:
@@ -159,6 +159,14 @@ async function seedUser(token: string, u: E2eUser): Promise<void> {
     });
   }
 
+  // AC-003 — no committee realm role is a legitimate fixture state (see E2E_ROLELESS_USER), so the
+  // assignment is skipped. Skipped LOUDLY: an unlogged skip here would be indistinguishable from a
+  // seeding step that silently failed, and this account's whole value is that its role set is empty.
+  if (!u.realmRole) {
+    console.log(`[e2e] seeded ${u.username} (NO committee realm role — AC-003's subject)`);
+    return;
+  }
+
   const role = await realmRole(token, u.realmRole);
   const assign = await fetch(`${KC_BASE}/admin/realms/${REALM}/users/${id}/role-mappings/realm`, {
     method: 'POST',
@@ -174,7 +182,7 @@ export default async function globalSetup(): Promise<void> {
   await waitFor('Web SPA', `${WEB_BASE}/`);
 
   const token = await adminToken();
-  for (const u of Object.values(E2E_USERS)) {
+  for (const u of [...Object.values(E2E_USERS), E2E_ROLELESS_USER]) {
     await seedUser(token, u);
   }
 }

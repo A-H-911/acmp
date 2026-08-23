@@ -3,6 +3,7 @@ using Acmp.Api.Infrastructure;
 using Acmp.Api.Infrastructure.Authentication;
 using Acmp.Bootstrap;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Infrastructure.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
@@ -32,6 +33,12 @@ builder.Services.AddAcmpModules(builder.Configuration);
 // Authentication (Keycloak OIDC bearer, ADR-0004) + policy-based authorization (docs/domain/permission-role-matrix.md matrix).
 builder.Services.AddAcmpAuthentication(builder.Configuration);
 builder.Services.AddAcmpAuthorization(builder.Configuration);
+
+// DEF-056 / AC-006 — the policy layer short-circuits with 403 BEFORE MediatR, so AuthorizationBehavior
+// (the only other emitter of Authorization.Forbidden) never runs for a per-endpoint policy refusal, and
+// those denials left no audit row at all. Registered here rather than inside AddAcmpAuthorization
+// because it is an ASP.NET pipeline concern and the shared kernel has no business owning one.
+builder.Services.AddAcmpAuthorizationAuditing();
 
 // P16-B4: proportional rate limiting (C-API-03) + read-only-FS-safe DataProtection key-ring (C-CON-003).
 builder.Services.AddAcmpRateLimiting(builder.Configuration);
@@ -69,8 +76,30 @@ if (backgroundJobsEnabled)
 }
 
 // OpenTelemetry traces/metrics over OTLP (Seq ingests OTLP). Endpoint from OTEL_* env vars.
+//
+// NFR-043 / DW-062: the requirement asks that every inbound request be traced with spans for the HTTP
+// handler, the DB query, Hangfire job dispatch and outbound HTTP calls. Until DW-062 only the first existed
+// — a trace showed that a handler was entered and nothing about what it waited on. The four sources below
+// are one per named span kind, in that order.
+//   AspNetCore  — the inbound handler span (the trace root).
+//   SqlClient   — one span per command sent to SQL Server. This is EF Core's actual DB call; the separate
+//                 EF Core instrumentation spans the ORM operation instead, which hides the statement that
+//                 the latency question is really about.
+//   AcmpTelemetry.SourceName — Hangfire job DISPATCH, emitted in-process by the enqueue seam. There is no
+//                 stable OpenTelemetry.Instrumentation.Hangfire (newest is 1.17.0-beta.1) and it spans job
+//                 EXECUTION rather than the enqueue this requirement names, so an ActivitySource is both
+//                 the smaller and the more accurate instrument. AddSource is what makes it exported —
+//                 without this line the spans are created and silently dropped.
+//   HttpClient  — outbound calls (the Webex adapter, ADR-0023).
+// Sampling is left at the SDK default (parent-based, always-on), which is the 100% NFR-043 asks for at this
+// traffic volume; setting a sampler here would only narrow it.
 builder.Services.AddOpenTelemetry()
-    .WithTracing(t => t.AddAspNetCoreInstrumentation().AddOtlpExporter())
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddSqlClientInstrumentation()
+        .AddSource(AcmpTelemetry.SourceName)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
     .WithMetrics(m => m.AddAspNetCoreInstrumentation().AddOtlpExporter());
 
 builder.Services.AddEndpointsApiExplorer();
@@ -101,7 +130,39 @@ if (!app.Environment.IsProduction())
 }
 
 app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/readyz", new HealthCheckOptions { Predicate = h => h.Tags.Contains("ready") });
+/*
+ * DEF-078. /readyz used to answer with the DEFAULT writer, whose entire body is the aggregate status word —
+ * measured on production as literally "Unhealthy". Every check already builds a description naming what broke
+ * ("object-storage bucket 'x' unreachable: ..."), and all of it was discarded at the last step. That is the
+ * "tell" half of a control missing while the "detect" half worked: production sat 503 for three days and the
+ * endpoint that knew why would not say, so diagnosing it required reading source and running commands on the
+ * box.
+ *
+ * ⚠ Safe to emit: /readyz is NOT externally reachable — nginx proxies `location /api/` without stripping the
+ * prefix and has no health block, so this is internal to the compose network (the compose healthcheck and an
+ * operator with a shell). The descriptions name dependencies, never credentials.
+ */
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = h => h.Tags.Contains("ready"),
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                error = e.Value.Exception?.Message,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+            }),
+        });
+    },
+});
 
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();

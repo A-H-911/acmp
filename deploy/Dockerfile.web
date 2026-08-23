@@ -1,6 +1,6 @@
 # Multi-stage build for the React SPA served by nginx (docs/domain/deployment.md).
 # Base images digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot.
-FROM node:26-alpine@sha256:233761595746769ebfdb6090f44fc7cdf818ae0ce62d2b37e0367723b9823e36 AS build
+FROM node:26-alpine@sha256:aadf416b2cdce311a8811ba3f0608a61b77dbf997500e2eafe781b51f6a0b019 AS build
 WORKDIR /web
 COPY src/Acmp.Web/package.json src/Acmp.Web/package-lock.json ./
 RUN npm ci
@@ -20,7 +20,7 @@ RUN npm run build
 # (unprivileged port). Same official-nginx envsubst entrypoint (/docker-entrypoint.d) so the
 # ${KEYCLOAK_ORIGIN} template substitution is unchanged; only the listen port moves 80 -> 8080
 # (default.conf.template + compose port map + healthcheck follow).
-FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:18d67281256ded39ff65e010ae4f831be18f19356f83c60bc546492c7eb6dd23 AS final
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:334d92979f15aaecd5dd50af5105e1230e2bb70765d45b1e2f964e7c5eda81c3 AS final
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown

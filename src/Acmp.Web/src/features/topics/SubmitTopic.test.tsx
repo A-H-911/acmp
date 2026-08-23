@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { render, screen, act, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -21,6 +21,22 @@ import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 
 // Stub the react-query-backed TemplatePicker to a plain apply button (covered in
 // features/templates/TemplatePicker.test.tsx); keeps this suite query-free.
+// Stub the react-query-backed StreamPicker's data hook, exactly as TemplatePicker is stubbed above:
+// keeps this suite query-free while still rendering the REAL picker, so the chips these tests click
+// are the ones users click. The wildcard is absent because useAssignableStreams excludes it (that
+// filter is asserted in StreamPicker.test.tsx, not re-asserted here).
+vi.mock('../../api/members', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/members')>()),
+  useAssignableStreams: () => ({
+    data: [
+      { publicId: 's-core', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false },
+      { publicId: 's-gov', code: 'government', nameEn: 'Government', nameAr: 'الحكومي', isWildcard: false },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 vi.mock('../templates/TemplatePicker', () => ({
   TemplatePicker: ({ onApply, hasContent }: { onApply: (b: string) => void; hasContent?: boolean }) => (
     <button type="button" disabled={hasContent} onClick={() => onApply('TEMPLATE BODY')}>apply-template</button>
@@ -125,7 +141,7 @@ describe('SubmitTopic (P5b)', () => {
     await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
     await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
     await user.type(screen.getByLabelText(/Why now/), 'Reduces auth sprawl.');
-    await user.type(screen.getByLabelText(/Affected streams/), 'identity{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
     expect(mutateAsync).toHaveBeenCalledWith(
@@ -133,7 +149,7 @@ describe('SubmitTopic (P5b)', () => {
         type: 'ArchitectureDecision',
         title: 'Adopt Keycloak',
         source: 'CommitteeMember',
-        streams: ['identity'],
+        streams: ['core'],
         systems: [],
         tags: [],
       }),
@@ -150,7 +166,7 @@ describe('SubmitTopic (P5b)', () => {
     Object.defineProperty(big, 'size', { value: 51 * 1024 * 1024 });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, big);
-    expect(screen.getByText(/25 MB or smaller/)).toBeInTheDocument();
+    expect(screen.getByText(/50 MB or smaller/)).toBeInTheDocument();
   });
 
   it('uploads attached files after the topic is created', async () => {
@@ -160,7 +176,7 @@ describe('SubmitTopic (P5b)', () => {
     await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
     await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
     await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
-    await user.type(screen.getByLabelText(/Affected streams/), 'identity{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     const file = new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' });
     await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file);
     await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
@@ -190,6 +206,28 @@ describe('SubmitTopic (P5b)', () => {
     const evt = new Event('beforeunload', { cancelable: true });
     window.dispatchEvent(evt);
     expect(evt.defaultPrevented).toBe(true); // guard prevented the unload
+  });
+
+  /*
+   * AC-094's SECOND CLAUSE (narrowed from AC-048 by SC-014 under DEC-051 d1). The registration half
+   * is proven directly above; until this test existed, "removed when clean" was asserted by NOTHING,
+   * and the AC would have been recorded Met on half its statement — the same one-clause-of-several
+   * failure AC-006 was caught on.
+   *
+   * ⚠ IT GUARDS A REAL PROPERTY, not tidiness: a handler that survives the form going clean blocks
+   * navigation the user never dirtied, and `preventDefault` on beforeunload is exactly the thing a
+   * user cannot dismiss by any in-page action.
+   */
+  it('removes the beforeunload guard once the form is clean again', async () => {
+    const user = userEvent.setup();
+    setup();
+    const title = screen.getByLabelText(/Title/);
+    await user.type(title, 'Dirty draft');
+    await user.clear(title); // hasContent -> false, so the effect cleanup runs
+
+    const evt = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(evt);
+    expect(evt.defaultPrevented).toBe(false); // the handler was removed, not merely inert
   });
 
   it('formats attachment sizes in KB and MB', async () => {
@@ -230,7 +268,7 @@ describe('SubmitTopic (P5b)', () => {
     await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
     await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
     await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
-    await user.type(screen.getByLabelText(/Affected streams/), 'identity{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
     await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
     expect(await screen.findByText(i18n.t('submit.submitError'))).toBeInTheDocument();
   });
@@ -246,15 +284,19 @@ describe('SubmitTopic (P5b)', () => {
     expect(screen.queryByText('spec.pdf')).not.toBeInTheDocument();
   });
 
-  it('removes the last stream token on Backspace when the input is empty', async () => {
+  // ⚠ RETARGETED FROM STREAMS TO SYSTEMS, not deleted. Streams are toggle chips now, so
+  // Backspace-removes-the-last-token no longer applies there — but it still applies to the systems
+  // TokenInput, and there is no TokenInput.test.tsx, so THIS IS THE ONLY TEST COVERING IT. Deleting
+  // it along with the stream token input would have dropped that guard silently.
+  it('removes the last system token on Backspace when the input is empty', async () => {
     const user = userEvent.setup();
     setup();
-    const streams = screen.getByLabelText(/Affected streams/);
-    await user.type(streams, 'identity{Enter}');
-    expect(screen.getByText('identity')).toBeInTheDocument(); // token added
-    streams.focus();
+    const systems = screen.getByLabelText(/Affected systems/);
+    await user.type(systems, 'keycloak{Enter}');
+    expect(screen.getByText('keycloak')).toBeInTheDocument(); // token added
+    systems.focus();
     await user.keyboard('{Backspace}'); // empty draft + Backspace removes the last token
-    expect(screen.queryByText('identity')).not.toBeInTheDocument();
+    expect(screen.queryByText('keycloak')).not.toBeInTheDocument();
   });
 
   it('syncs the active section as fieldsets scroll into view (IntersectionObserver scroll-spy)', () => {

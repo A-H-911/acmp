@@ -96,9 +96,11 @@ public sealed class AddRecommendationHandler : IRequestHandler<AddRecommendation
     public async Task Handle(AddRecommendationCommand request, CancellationToken ct)
     {
         var mission = await Load(_db, request.MissionId, ct);
-        mission.AddRecommendation(request.Statement, request.Rationale, request.Priority, request.LinkedTopicId);
+        var recommendation = mission.AddRecommendation(request.Statement, request.Rationale, request.Priority, request.LinkedTopicId);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.RecommendationAdded", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        // DW-017: the CHILD is the subject, so AuditCapture's buffered diff (keyed by CLR type +
+        // PublicId) actually drains into this row. Subjecting it to the mission left before/after empty.
+        await _audit.EmitEnrichedAsync("Research.RecommendationAdded", nameof(Recommendation), recommendation.PublicId.ToString(), ct: ct);
     }
 
     internal static async Task<ResearchMission> Load(IResearchDbContext db, Guid id, CancellationToken ct) =>
@@ -122,7 +124,7 @@ public sealed class UpdateRecommendationHandler : IRequestHandler<UpdateRecommen
         var mission = await AddRecommendationHandler.Load(_db, request.MissionId, ct);
         mission.UpdateRecommendation(request.RecommendationId, request.Statement, request.Rationale, request.Priority, request.LinkedTopicId);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.RecommendationUpdated", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Research.RecommendationUpdated", nameof(Recommendation), request.RecommendationId.ToString(), ct: ct);
     }
 }
 
@@ -142,7 +144,7 @@ public sealed class SetRecommendationStatusHandler : IRequestHandler<SetRecommen
         var mission = await AddRecommendationHandler.Load(_db, request.MissionId, ct);
         mission.SetRecommendationStatus(request.RecommendationId, request.Status);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.RecommendationStatusChanged", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Research.RecommendationStatusChanged", nameof(Recommendation), request.RecommendationId.ToString(), ct: ct);
     }
 }
 
@@ -162,6 +164,6 @@ public sealed class MarkRecommendationConvertedHandler : IRequestHandler<MarkRec
         var mission = await AddRecommendationHandler.Load(_db, request.MissionId, ct);
         mission.ConvertRecommendation(request.RecommendationId, request.TopicId);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.RecommendationConverted", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Research.RecommendationConverted", nameof(Recommendation), request.RecommendationId.ToString(), ct: ct);
     }
 }

@@ -125,6 +125,13 @@ namespace Acmp.Modules.Research.Infrastructure.Migrations
                             b1.Property<int>("Confidence")
                                 .HasColumnType("int");
 
+                            b1.Property<DateTimeOffset>("CreatedAt")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<string>("CreatedBy")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
                             b1.Property<bool>("IsVerified")
                                 .HasColumnType("bit");
 
@@ -138,6 +145,12 @@ namespace Acmp.Modules.Research.Infrastructure.Migrations
 
                             b1.Property<Guid>("PublicId")
                                 .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateTimeOffset?>("UpdatedAt")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<string>("UpdatedBy")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("Id");
 
@@ -215,6 +228,13 @@ namespace Acmp.Modules.Research.Infrastructure.Migrations
 
                             SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<long>("Id"));
 
+                            b1.Property<DateTimeOffset>("CreatedAt")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<string>("CreatedBy")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
                             b1.Property<string>("Key")
                                 .IsRequired()
                                 .HasMaxLength(32)
@@ -234,6 +254,12 @@ namespace Acmp.Modules.Research.Infrastructure.Migrations
 
                             b1.Property<int>("Status")
                                 .HasColumnType("int");
+
+                            b1.Property<DateTimeOffset?>("UpdatedAt")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<string>("UpdatedBy")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("Id");
 
