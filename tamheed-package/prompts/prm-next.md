@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirteen** times, and **three** wrong assertions have escaped into
+file has carried a stale statement **fifteen** times, and **three** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -29,7 +29,29 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
-⚠⚠ **THE THIRTEENTH (2026-08-23) WAS FOUND BY THIS FILE BEING RIGHT AND ME BEING WRONG, WHICH IS NEW.**
+⚠⚠ **THE FIFTEENTH (2026-08-23, later) IS THIS SECTION FAILING AT ITS OWN JOB: THE ORDINALS COLLIDED.**
+Two findings, added by two different commits (`74b2801` and `21ba170`), were **both** labelled
+`THE THIRTEENTH` — so the count above read **thirteen** where it should have read fourteen, and the
+sequence had no fourteenth in it at all. The `a2066ba` unmeasured-assertion finding keeps `THIRTEENTH`; the 2026-08-23 end-to-end pass is renumbered
+`FOURTEENTH`; this is the fifteenth. **The section that counts wrong statements contained one, in its own
+numbering** — and no gate, and no id-and-status pass, can see an ordinal. The same re-read found **five**
+more, and every one of them is prose:
+- **A requirement-register row count** in §1 — stale the moment `SC-031` added `FR-164`. It is a `wc -l` now.
+- **`DEF-104` "Open, low … twelve paged reads"** in the build-standing block, a hundred lines below a block
+  already reading *"`DEF-104` is `Fixed`"*. ⚠⚠ **A FILE THAT CONTRADICTS ITSELF HANDS THE READER THE
+  CHOICE, AND THE STALE HALF WAS THE ONE WEARING THE DETAIL** — it is the half that reads researched.
+- **`LL-011` "(Proposed — needs the operator's confirmation interview)"**, below a line reading
+  *"`LL-011` Approved and PINNED"*. A fresh session would have run a ceremony that already happened:
+  the twelfth's shape, a stale INSTRUCTION rather than a stale number.
+- **"the advisory listing the same 53"** — that is a `readiness_check` field, not a fact about the register.
+- **"Nine rows correctly carry no date"** — 17 assumptions, 12 dated, so it is **five**. ⚠⚠ **THE
+  ARITHMETIC NEVER CLOSED, IN A FILE NOTHING CHECKS THE PROSE ARITHMETIC OF.**
+
+⚠ The mechanical pass ran clean again: **190** distinct identifiers across nine families, every one
+resolving except `DEF-082` — the KNOWN gap (`DEF-101`). **That is three passes running where the
+id-and-status check found nothing and the prose carried everything. Read the prose; it is the hard half.**
+
+⚠⚠ **THE FOURTEENTH (2026-08-23) WAS FOUND BY THIS FILE BEING RIGHT AND ME BEING WRONG, WHICH IS NEW.**
 Preparing the resume, the end-to-end re-read surfaced **five** stale statements at once — *"every phase is
 `Implemented` except `PH-3`"* (`PH-7` is also `Approved`), *"155 of 164 `wbs_items`"* (right numerator,
 stale denominator), *"Ten lessons … `LL-001`…`LL-010`"*, *"all 155 have `slice_id` NULL"* and *"28 closed
@@ -102,7 +124,7 @@ only AFTER the nine fixes.
 > THEY BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`,
 > one of the two blind controls was fixed, `SL-032` was built and closed, and `SL-033` now holds eight
 > scheduled rows. **Go to §6 FIRST — read `▶▶ SL-033 IS THE LIVE SLICE` and
-> `▶ WHERE THE BUILD WORK STANDS` before
+> `▶ WHAT SL-032 DID` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
@@ -119,12 +141,13 @@ hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF
 
 ### Measure, do not trust — the three commands that replace every tally
 
-⚠ **`entity_query("requirement", ...)` OVERFLOWS THE TOOL'S TOKEN LIMIT** — 226 rows is ~82 KB even
-with `columns` set, because `columns` does not actually narrow the payload. **Count from the canonical
+⚠ **`entity_query("requirement", ...)` OVERFLOWS THE TOOL'S TOKEN LIMIT** — the whole register is tens
+of KB even with `columns` set, because `columns` does not actually narrow the payload. (A row count sat
+in this sentence and went stale the moment `SC-031` added `FR-164`. `wc -l` is the answer.) **Count from the canonical
 JSONL instead**, which is also what trap 13 already tells you to do when building any payload:
 
 ```
-tamheed-package/data/requirements.jsonl     # 226 rows: count by lifecycle_status / kind / priority
+tamheed-package/data/requirements.jsonl     # wc -l for the total; count by lifecycle_status/kind/priority
 tamheed-package/data/deferred_work.jsonl    # the DW register: count by lifecycle_status / severity
 entity_query("defect", status="Open")       # small enough to query directly
 gate_run() / readiness_check("package")     # the live verdicts — never quote a remembered one
@@ -522,7 +545,7 @@ and simply sits. Found once, then found three more times in the same session by 
 
 ⚠ **`deferred-work-reviewed` CANNOT GO GREEN FROM REVIEWING** — read the predicate, don't assume it: it
 selects `Open` **`Activated`** and `Scheduled` alike, with no "reviewed" field. Only *closing* removes a
-row. Activating twelve left the advisory listing the same 53. **A review's deliverable is the recorded
+row. Activating twelve did not remove a single row from it. **A review's deliverable is the recorded
 judgement, not a colour change**, and the advisory staying red afterwards is correct.
 
 **Item 2 — the blind controls — is HALF done.**
@@ -530,7 +553,9 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
   naming **`ASM-011`** alone — the urgency SLA thresholds whose own text says they must be validated with
   the committee after the PH-1 pilot, which shipped long ago. ⚠ **The field is a FUTURE re-validation DUE
   date** (read the rule's SQL, not its description), so more will go red as dates pass. **That is the
-  control working — do NOT clear dates to restore the amber.** Nine rows correctly carry no date.
+  control working — do NOT clear dates to restore the amber.** The rest correctly carry no date — **count
+  them from `data/assumptions.jsonl`.** The number that sat here said nine, against a 17-row register with
+  twelve dated; it never closed, and **nothing anywhere checks the prose arithmetic in this file.**
 - ⛔ **`DEF-087` IS UNTOUCHED and still needs its own clean context.** Its own row warns the obvious
   mechanical fix closes `WBS-20.4`, the email adapter, against a hard constraint — the `DEF-012`/`DEC-055`
   trap. **Do not fold it into a broad session.**
@@ -557,7 +582,7 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
    ✅ **`DEF-082` carried, NOT reconstructed** (operator's call): a plausible reconstruction from
    second-hand narrative reads exactly like a record. `DEF-101` documents the honest gap.
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
-   **all 53 open rows carry a recorded human judgement for the first time.**
+   **every open row carries a recorded human judgement for the first time.**
 
 ### ▶▶ `SL-033` IS THE LIVE SLICE. START AT `WBS-24.1`. (state as of 2026-08-23)
 
@@ -567,8 +592,10 @@ operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
 ▶▶ **NEXT: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
-columns** (show/hide, reorder). Verified unbuilt: no `columnPrefs`, `visibleColumns`, `columnConfig` or
-`ColumnPicker` anywhere in `src/Acmp.Web`. It is the single missing member of a family that otherwise
+columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
+`columnConfig` and `ColumnPicker` return **zero** across the 339 `.ts*` files of `src/Acmp.Web`, and the
+sweep is proven to have had a subject — the control term `Backlog` returns 305 in the same pass
+(`LL-013`). It is the single missing member of a family that otherwise
 shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`FR-035`), `Timeline.tsx`
 (`FR-036`).
 
@@ -623,7 +650,7 @@ carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical bli
 **WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` the CSP spike, `PE-579` its build,
 `PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review, `PE-589` `DEF-104`.
 
-### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
+### ▶ WHAT `SL-032` DID — HISTORY, and it is CLOSED. The live slice is the block ABOVE this one.
 
 **`PH-7` → `SL-032`**, four small activated rows in `DEC-068` d1's order. **Measure the statuses; do not
 trust this list** — `readiness_check(scope="slice", id="SL-032")`.
@@ -669,12 +696,17 @@ label it flaky on the strength of one more green.**
 
 ⚠ **New defects from this slice:** `DEF-103` **Fixed** (the kanban rendered a silent 25-row prefix;
 now `KANBAN_PAGE_SIZE = 500` plus an actionable notice — the residual ceiling is named, not hidden).
-`DEF-104` **Open, low** — **twelve** paged reads accept an unbounded caller page size and **two** cap
-it, so the remedy already exists in-repo (`GetNotifications` uses `Math.Clamp` to a `MaxPageSize`
-constant; search uses `Math.Min(take, MaxTakePerType)`). ⚠ Its row records that the first sweep keyed
-on the identifier `PageSize` and returned **ten** — blind to the audit endpoint and `GetDecisions`,
-which page with locals named `size` and `n`. **Not** bundled into `SL-032`: twelve modules plus tests
-is a slice of its own.
+`DEF-104` **Fixed** (PR #306 → `bdbd8b6`, `PE-589`) — **eleven** paged reads accepted an unbounded caller
+page size and **two** already capped it, so the correct pattern existed in-repo and was simply not applied.
+⚠⚠ **THE ROW'S OWN COUNT SAID TWELVE WHILE ITS OWN ENUMERATION LISTED ELEVEN**, and two sweeps on
+different keys agree on eleven — **neither was complete alone**: the identifier sweep (`PageSize`) returned
+**ten**, blind to the audit endpoint and `GetDecisions`, which page with locals named `size` and `n`.
+⭐ The fix is **one** shared `PageSize.Clamp` (`Acmp.Shared/Application/Pagination/PageSize.cs`, `Max = 500`,
+called from eleven files), 500 because that is the largest page the SPA itself requests — **copying
+`GetNotifications`' 50 would have broken reports and the kanban.** ⚠ `GetDecisions` with a NULL limit still
+does **no** `Take`: capping where no cap existed is `DEF-103`'s silent-truncation shape.
+⚠ **This paragraph used to predict "twelve modules plus tests is a slice of its own", and it was wrong**
+in both halves — eleven, and one shared helper closed them all in one PR.
 
 ### Open, and the operator's alone
 
@@ -736,9 +768,10 @@ Assert the PROPERTY** — a run of `[؀-ۿ]` proves the bundle resolved, survive
 rewording, and pairs with a key-echo check. Verify any such regex discriminates: it must match AR, and
 **not** match EN, and **not** match the literal key path.
 
-### ⚠ NEW LESSON, and it changes how you write for the operator
+### ⚠ THE LESSON THAT CHANGED HOW YOU WRITE FOR THE OPERATOR — and it BINDS
 
-**`LL-011` (Proposed — needs the operator's confirmation interview): AN IDENTIFIER IS A POINTER, NOT A
+**`LL-011` (Approved and PINNED — the confirmation interview is DONE; this is not a proposal): AN
+IDENTIFIER IS A POINTER, NOT A
 REFERENCE.** The first version of the disposition slate cited ~40 records by id alone and asked the
 operator to rule on them. **They refused the interview on exactly that ground.** An id is an index into a
 store the reader may not have open, so citing one hands the retrieval work to the person the artifact
