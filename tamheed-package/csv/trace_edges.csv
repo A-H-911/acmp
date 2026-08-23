@@ -625,6 +625,9 @@ SC-031,FR-164,scope_adds
 SC-032,DW-071,scope_modifies
 SC-032,DW-078,scope_adds
 SC-032,DW-079,scope_adds
+SC-033,DW-066,scope_modifies
+SC-033,DW-078,scope_modifies
+SC-033,DW-080,scope_adds
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

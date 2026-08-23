@@ -618,8 +618,10 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-⚠⚠ **THE NEXT ACTION IS `DW-078`, THE DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
-BEFORE this slice. Everything below is what happens once the queue is clear; read the `DEC-072` block.
+⚠⚠ **THE NEXT ACTION IS `DW-078`, THE TEN-PR DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
+BEFORE this slice, and `DEC-074` narrowed it to ten. Everything below is what happens once the queue is
+clear; read the `DEC-072`/`DEC-074` block. ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move)
+is NOT in the sweep and does NOT block the slice** — it is its own work, unscheduled.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
@@ -678,12 +680,15 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
   recommendation was to merge the routine set and carry the majors. ⚠⚠ **THE COUNT THAT SAT HERE WAS
   THIRTEEN AND IT WAS NEVER MEASURED** — `gh pr list` had `--limit 10` on it (`PE-599`). It is **twelve**,
   oldest **2026-07-16**, and the split is **three routine / nine majors**, not seven and three.
-  ⚠⚠ **TWO OF THE NINE WERE INVISIBLE WHEN d1 WAS DECIDED AND THEY CHANGE WHAT IT MEANS:** #128 and #134
-  are `dotnet/sdk` and `dotnet/aspnet` **8.0→10.0** — a FRAMEWORK MIGRATION, since the solution targets
-  `net8.0`. **Do not fold them into the sweep on the strength of the word "everything".**
-  ⚠⚠ **AND #134 IS `DW-066`'s TWO LINES** — it edits the api/worker `FROM` lines that row asks to move to
-  alpine or distroless, so either they happen together as one base-image decision or #134 forecloses the
-  cheapest moment `DW-066` will ever get. **`DW-066`'s trigger names exactly this moment; it HAS fired.**
+  ✅ **BOTH QUESTIONS THAT CREATED WERE PUT BACK TO THE OPERATOR AND ANSWERED (`DEC-074`, `SC-033`):**
+  **#128/#134 (`dotnet` 8.0→10.0) ARE CARVED OUT to `DW-080`** — the solution targets `net8.0`, so that pair
+  is a RUNTIME MIGRATION, not a dependency bump, and `DEC-072` d1's "everything" was answered over a
+  description that never contained it. **The sweep is therefore TEN PRs, not twelve**, and `DW-080` does
+  **not** block `SL-033`. **And `DW-066` IS NOW `Activated` AND BOUND TO `DW-080`** — #134 edits the api and
+  worker `FROM` lines (16/31/51, verified with `gh pr view --json files`), which is its trigger *verbatim*,
+  so the alpine/distroless move happens in the SAME change as one base-image decision. ⚠ **`DW-066` must not
+  be scheduled separately** — doing the base move apart from the `FROM` edit spends the expensive part
+  (full e2e leg, Arabic FREETEXT end to end) twice. ⚠ **musl is the risk, not the edit.**
   ⚠⚠ **IT IS NOT AN `NFR-051` BREACH AND MUST NOT BE FILED AS ONE** — that requirement is `Implemented` and
   says Dependabot shall be **configured to ALERT**, which it is; thirteen open alerts are it WORKING. Nothing
   in the register obliges anyone to *act*, so the gap is uncovered rather than violated.

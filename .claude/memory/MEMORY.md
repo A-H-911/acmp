@@ -23,6 +23,15 @@
 > JUDGEMENT: the two hidden rows, #128/#134 `dotnet` 8→10, both edit `deploy/Dockerfile.backend` — so
 > `DW-066`'s trigger HAS fired, after I reasoned in the same session that it had not.** A truncated
 > instrument deletes the evidence that would have changed your answer, from the end you never think about.
+> ✅ **`DEC-074`/`SC-033`: the `dotnet` pair is CARVED OUT to `DW-080` (runtime migration, not a bump), so
+> the sweep is TEN PRs; and `DW-066` is `Activated` and BOUND to `DW-080` — the alpine move rides with the
+> `FROM` edit as ONE base-image decision. ⚠ musl is the risk, not the edit: full e2e + Arabic FREETEXT.**
+> ⚠⚠⚠ **LL-001 CAUGHT IN THE ACT BY ITS OWN CONTROL:** re-sending `DW-066`'s 2317-char title (NOT NULL,
+> so a full-row replace must carry it) came back **2315** — I had dropped the `⚠` off *"THIS MUST GO THROUGH
+> THE FULL e2e LEG"*, the one sentence saying a green suite proves nothing. **Two characters, highest-value
+> sentence, invisible to every gate.** ⭐ **Take the sha256 pre-image BEFORE the write, every time.**
+> ⭐ **Hash-and-verify when you must PRESERVE; rewrite openly when you must CHANGE. The dangerous middle is
+> re-typing a long field in order to keep it the same** — `DW-078`'s 3933-char title was rewritten instead.
 > I recommended
 > splitting; operator said all. ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
 > ALERT*, which it is; open alerts are it WORKING. ⚠⚠ **`mssql` 2022→2025 CAN DESTROY THE FIVE DEV VOLUMES**
