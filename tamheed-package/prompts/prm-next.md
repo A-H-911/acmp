@@ -622,10 +622,17 @@ operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `DW-078`: **seven of ten merged**, each on a green that included current `main` — `#255` `#257` `#259`
 `#256` `#258` `#260` `#139`. ⚠ **`typescript` on `main` is now `~7.0.2`** (a compiler major landed).
 **THREE ARE BLOCKED AND NEITHER BLOCKER IS A RETRY:**
-- ⛔ **`#135` mssql 2025 — the image will not boot.** Fresh run, current `main`: *`/opt/mssql/bin/sqlservr:
-  error while loading shared libraries: liblber-2.5.so.0`*, exit 127. ⚠⚠ **That is the IMAGE, not our
-  harness — so PRODUCTION MUST NOT MOVE TO SQL SERVER 2025 EITHER.** Awaiting the operator's disposition;
-  until then `DW-078` stays `Activated`.
+- ⛔ **`#135` mssql 2025 — THE CAUSE IS OURS, AND MY FIRST DIAGNOSIS WAS WRONG (`PE-606`).** I recorded
+  *"the image will not boot … production must not move to SQL Server 2025"*. **Withdrawn.** `ldd
+  /opt/mssql/bin/sqlservr` reports **nothing missing in either image**: 2022 is Ubuntu 22.04 with
+  `liblber-2.5.so.0`, 2025 is 24.04 with `liblber.so.2` (OpenLDAP 2.5→2.6, soname changed).
+  ⚠⚠ **`deploy/Dockerfile.sqlserver` HARDCODES the `ubuntu/22.04/mssql-server-2022` package repo**, and
+  `#135` changes only the `FROM` — so a 22.04 FTS package lands on a 24.04 base. **A PINNED BASE IMAGE
+  AND A PINNED PACKAGE REPO ARE ONE DECISION IN TWO PLACES, AND ONLY ONE IS AUTOMATED.** Dependabot
+  cannot see the coupling, so `#135` can never go green on its own.
+  ⚠⚠ **HOW THE WRONG DIAGNOSIS SURVIVED — `LL-009`, walked into after quoting it the same day:**
+  Testcontainers AND compose failed identically and I read that as independent corroboration. **Both
+  build the same Dockerfile.** Two instruments agreeing is ONE instrument when they share a mechanism.
 - ⛔ **`#307` (superseding `#137`+`#261`) — `DW-082`.** The vitest pair MUST move in one commit (each pins
   an exact peer on the other). Every test PASSES; only `ADR-0016`'s coverage gate fails, over ~20 files
   **byte-identical to `main`**. So **`coverage-v8` v4 counts lines differently** — trap 2 at scale.

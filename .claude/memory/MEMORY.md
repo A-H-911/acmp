@@ -38,9 +38,16 @@
 > — fresh-volume isolated project only.
 > ✅✅ **SWEEP RUN 2026-08-23: 7 of 10 MERGED** (`#255 257 259 256 258 260 139`). ⚠ **`typescript` on `main`
 > is now `~7.0.2`.** **`SL-033`/`WBS-24.1` IS UNBLOCKED — that is the next action now.**
-> ⛔ **TWO BLOCKERS, NEITHER A RETRY.** `#135` mssql 2025: **the image will not boot** —
-> `sqlservr: error while loading shared libraries: liblber-2.5.so.0`, exit 127, on a FRESH run. ⚠⚠ **That
-> is the IMAGE, not our harness — PRODUCTION MUST NOT MOVE TO SQL SERVER 2025 EITHER.**
+> ⛔ **TWO BLOCKERS.** `#135` mssql 2025 — ⚠⚠⚠ **MY FIRST DIAGNOSIS WAS WRONG AND IS WITHDRAWN**
+> (`PE-606`). I said *"the image won't boot; production must not move to 2025"*. **`ldd` shows NOTHING
+> missing in EITHER image** — 2022=Ubuntu 22.04 has `liblber-2.5.so.0`, 2025=24.04 has `liblber.so.2`
+> (OpenLDAP soname change). ⚠⚠ **`deploy/Dockerfile.sqlserver` HARDCODES the `ubuntu/22.04/
+> mssql-server-2022` repo; `#135` bumps only the `FROM`** — a 22.04 FTS package on a 24.04 base.
+> ⭐ **A PINNED BASE IMAGE AND A PINNED PACKAGE REPO ARE ONE DECISION IN TWO PLACES, AND ONLY ONE IS
+> AUTOMATED** — dependabot can never make this PR green.
+> ⚠⚠⚠ **HOW IT SURVIVED: `LL-009`, walked into hours after quoting it.** Testcontainers AND compose
+> failed identically — but **both build the same Dockerfile**, so that was ONE instrument, not two.
+> *Different runner, different orchestrator* FEELS like independence and is not.
 > `#307`+`#137`+`#261` → **`DW-082`**: the vitest pair must move in ONE commit (each pins an exact peer on
 > the other); every test PASSES and only `ADR-0016`'s coverage gate fails, over ~20 files **byte-identical
 > to `main`** — so **`coverage-v8` v4 COUNTS LINES DIFFERENTLY**, trap 2 at scale. **Never lower the
