@@ -18,15 +18,28 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twelve** times, and **three** wrong assertions have escaped into
-commit messages, which cannot be amended. **Five of the eleven were written and then invalidated within
-the SAME session** by the very work that session was doing: on 2026-08-19 it said
+file has carried a stale statement **thirteen** times, and **three** wrong assertions have escaped into
+commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
+the SAME session** by the very work that session was doing — do not read the count above as anything but a
+reason to distrust every number here, including that one: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
 went stale the moment batch 13 recorded two verdicts; and on 2026-08-20 §1's *"`assumptions-current`
 reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was made false by the
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE THIRTEENTH (2026-08-23) WAS FOUND BY THIS FILE BEING RIGHT AND ME BEING WRONG, WHICH IS NEW.**
+Preparing the resume, the end-to-end re-read surfaced **five** stale statements at once — *"every phase is
+`Implemented` except `PH-3`"* (`PH-7` is also `Approved`), *"155 of 164 `wbs_items`"* (right numerator,
+stale denominator), *"Ten lessons … `LL-001`…`LL-010`"*, *"all 155 have `slice_id` NULL"* and *"28 closed
+slices"*. Each is now a COMMAND rather than a number, per the eighth fix's rule.
+⚠⚠ **AND THE SIXTH FINDING WAS THE OTHER DIRECTION: this file said TWO of `SL-032`'s rows were mis-sized
+and I had been writing THREE all session.** The file was right. I had conflated its TRUE sentence — *"that
+habit paid three times in this slice"*, two catches plus one confirmation — with a false count of wrong
+sizings, and propagated mine into **six** artifacts including `SL-033`'s standing warning. `PE-592`
+corrects it. **A count of what an instrument DID is not a count of what it FOUND**, and the mechanical
+id-and-status pass ran clean over all 170 identifiers while this sat in the prose.
 
 ⚠⚠ **THE THIRD ESCAPE INTO A COMMIT MESSAGE (2026-08-21) WAS A ROW LYING ABOUT ITSELF.** `SL-032`'s
 rewritten objective said *"THE SLICE OBJECTIVE BELOW REPEATED THEM VERBATIM"* and *"the wrong text is left
@@ -85,17 +98,18 @@ only AFTER the nine fixes.
 
 ## §1 — The state the 2026-08-20 disposition session began from (⚠ superseded in part — see §6)
 
-> ⚠⚠ **TWO LATER SESSIONS CHANGED THE SHAPE OF v1 AND STARTED BUILDING. THIS SECTION IS THE STATE THEY
-> BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`, one
-> of the two blind controls was fixed, and `PH-7`/`SL-032` now carries live build work with two items
-> already merged. **Go to §6 — read `▶▶ `SL-032` IS `Implemented`` and
+> ⚠⚠ **SEVERAL LATER SESSIONS CHANGED THE SHAPE OF v1 AND BUILT AGAINST IT. THIS SECTION IS THE STATE
+> THEY BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`,
+> one of the two blind controls was fixed, `SL-032` was built and closed, and `SL-033` now holds eight
+> scheduled rows. **Go to §6 FIRST — read `▶▶ SL-033 IS THE LIVE SLICE` and
 > `▶ WHERE THE BUILD WORK STANDS` before
 > acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
 `DW-029` acceptance-criterion programme that replaced it ran **twenty batches** and was accepted by the
-operator on 2026-08-20. **`SL-031` is `Implemented`, `PH-6` is closed, and every phase is `Implemented`
-except `PH-3`.**
+operator on 2026-08-20. **`SL-031` is `Implemented` and `PH-6` is closed.** ⚠ **Do not
+re-quote a phase tally from here** — `entity_query("phase")` is the live answer. What is durable is the
+REASON two phases sit at `Approved`: `PH-3` on purpose (below), and `PH-7` because it is the live phase.
 
 ⚠ **`PH-3` stays `Approved` ON PURPOSE — do not "repair" it.** `WBS-20.4` is the email adapter against a
 hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF-010` records.
@@ -150,10 +164,13 @@ and `assumptions-current`, which **now fails on purpose** — see below.
 ⚠⚠ **ONE OF THE TWO BLIND CONTROLS IS FIXED; THE OTHER IS NOT.** ✅ `assumptions-current` no longer reports
 `indeterminate` — twelve rows were dated on 2026-08-20 and it now **fails**, naming the genuinely overdue
 one. ⚠ **The field is a FUTURE re-validation DUE date**, so more will go red as dates pass: **that is the
-control working, and clearing a date to restore the amber would be re-blinding it.** ⛔ Slice-scope
-`defects-closed` and `wbs-done` are STILL permanently `indeterminate` because almost no defect row carries
-`found_in` and 155 of 164 `wbs_items` have a NULL `slice_id` (`DEF-087`) — `readiness_check` says so in its
-own note. **A rule that cannot fail is not a green light**; this is the shape this project keeps finding in
+control working, and clearing a date to restore the amber would be re-blinding it.** ⚠⚠ **ONE OF THE TWO BLIND SLICE RULES IS NO LONGER BLIND, AND THAT IS NEW.**
+Slice-scope `wbs-done` now WORKS for any slice whose items carry a `slice_id` — `SL-032`'s ran 5→4→3→2→0
+and adjudicated its exit, the first time that rule has ever done so (`DEC-068` d2's fix-forward rule for
+`DEF-087`). It stays vacuous for the OLDER slices, whose items have none. ⛔ Slice-scope `defects-closed`
+IS still effectively blind: almost no defect row carries `found_in`. ⚠ **Count the NULL-`slice_id` items
+from `data/wbs_items.jsonl`; do not re-quote a number from here** — the one that used to sit in this
+sentence had the right numerator and a stale denominator, which is exactly what `LL-015` is about. **A rule that cannot fail is not a green light**; this is the shape this project keeps finding in
 instruments, living inside the package's own controls. See §6.
 
 ### The mechanical guarantee, and the token rule
@@ -163,9 +180,16 @@ read its failure list, it names the token.** ⚠ **Journal text is EXEMPT** (`pr
 `audit_verdicts.evidence`), so a progress note may quote marker tokens freely. **Every live ENTITY row is
 still screened** — `title`, `statement`, `description` — so there, name the concept or backtick the token.
 
-**Ten lessons are Approved and PINNED** (`LL-001`…`LL-010`) and bind every session via the tool-owned
-note. Three were added this session; `LL-008`, `LL-009` and `LL-010` are below because they earned
-themselves within days of being written.
+**The Approved+pinned lessons bind every session via the tool-owned note in `tamheed-package/CLAUDE.md`.**
+⚠ **COUNT THEM, NEVER QUOTE A NUMBER** — this sentence carried "Ten … (`LL-001`…`LL-010`)" long after it
+stopped being true, and the range form is worse than the count because superseded rows leave gaps.
+`entity_query("lesson", status="Approved")` is the answer. The three below earned themselves within days of
+being written and are repeated because they keep firing. ⚠ **Three more were added and pinned since and are
+NOT restated here** — read them from the register: `LL-013` (a mutation check has two subjects; a passing
+mutant proves nothing), `LL-014` (registry metadata cannot rank correctness; "the technique works here"
+never transfers to "this package works here") and **`LL-015` (a scan's SCOPE is part of its answer — a
+scanner that runs, has a subject, and returns a TRUE number about the WRONG SET reads exactly like a
+finding, and `LL-013`'s fault-injection CONFIRMS it rather than catching it)**.
 
 - **`LL-008` — sweep the registers by KEYWORD as well as by identifier.** An id-only sweep returned **zero
   hits for six of seven** candidates and would have concluded the registers were silent; the keyword sweep
@@ -209,8 +233,8 @@ themselves within days of being written.
   drawing nothing; their own headers say so. Requirement ids in source comments are **positive-only**
   evidence: one such citation was a *deferral* note.
   ⚠⚠ **BUT `Calendar.tsx` IS NO LONGER IN THIS "DO NOT REBUILD" SECTION'S SPIRIT.** `DW-037` is
-  **`Activated`** (`SC-028`) and `FR-035` is back to `Approved`: filling that shell is **live, approved
-  work**. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
+  `Activated` (`SC-028`), `FR-035` is back to `Approved`, and it is now **SCHEDULED as `WBS-24.2` in
+  `SL-033`** — filling that shell is the second item of the live slice, not a candidate. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
   prohibition. ⚠ Build it against the **Meetings** API (`MeetingDetailDto.ScheduledStart` +
   `AgendaItemDto.TopicId`); `Topic.Schedule` discards the meeting id into an unconsumed event.
   `Timeline.tsx` is unchanged — `FR-036`/`DW-001` stay deferred, since topics still carry no planned span.
@@ -319,9 +343,10 @@ themselves within days of being written.
 16c. ⚠ **`acs-met` COUNTS BY `retired_in`, AND IGNORES `lifecycle_status` ENTIRELY.** A `Deferred` AC
    still counts; only retirement removes one. So **writing ACs for unbuilt work holds readiness false
    forever** — this is why `DW-029` cannot be executed as one bulk pass.
-16d. ⚠ **SLICE-SCOPE `wbs-done` IS VACUOUS FOR EVERY PRE-EXISTING SLICE** (`DEF-087`): all 155
-   `wbs_items` have `slice_id` NULL, so the rule returns zero rows for all 28 closed slices. It also
-   **breaks the obvious AC→slice derivation**. New WBS rows must set `slice_id`.
+16d. ⚠ **SLICE-SCOPE `wbs-done` IS VACUOUS FOR EVERY SLICE WHOSE ITEMS PREDATE `DEC-068` d2**
+   (`DEF-087`): their `wbs_items` carry `slice_id` NULL, so the rule returns zero rows for them and
+   **breaks the obvious AC→slice derivation**. ✅ It is NOT vacuous any more for slices built since —
+   `SL-032` proved it adjudicates. **New WBS rows must set `slice_id`**; that is the whole fix.
 16e. ⚠ **`RELATION_RULES` REFUSE PLAUSIBLE EDGES.** `lesson --learned_from--> deferred-work` is
    rejected (allowed targets: decision, defect, progress-entry, risk, slice, wbs-item). The error is
    the only documentation, and **the whole batch rolls back** — re-send the entire corrected batch.
@@ -534,68 +559,69 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **all 53 open rows carry a recorded human judgement for the first time.**
 
-### ▶▶ `SL-032` IS `Implemented` (2026-08-23, OPERATOR'S VERDICT). `PH-7` IS NOT CLOSED.
+### ▶▶ `SL-033` IS THE LIVE SLICE. START AT `WBS-24.1`. (state as of 2026-08-23)
 
-The slice-review ceremony ran (`PE-586`): all four ACs hold at HEAD, zero broken references, every guard
-re-checked present and its suite re-run there, and `git diff 02101d6 HEAD -- src tests` **empty**, so
-HEAD's code IS the tree CI tested. The operator applied the transition (`PE-588`) — the agent ran the
-review and deliberately did **not** flip it, having written two of the four criteria it reviewed. ⚠ **That
-caveat is in the row: the mechanical half is independent, the WORDING of `AC-142`/`AC-143` is not, and
-nobody else has read it.**
+**`SL-032` is `Implemented`** — the operator's verdict on the slice review (`PE-586`, applied `PE-588`).
+**`DEF-104` is `Fixed`** (`PE-589`). **`SL-033` was created by `DEC-071`** and holds eight rows the
+operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
+`readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-⚠⚠ **`PH-7` STAYS OPEN AND WAS NOT ASKED TO CLOSE.** A phase exit is `prompts/phase-close.md`; conflating
-it with a slice review is how a phase ships without its gate — `slice-review.md` says so in its own second
-line. `SL-032` is `PH-7`'s only slice.
+▶▶ **NEXT: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
+columns** (show/hide, reorder). Verified unbuilt: no `columnPrefs`, `visibleColumns`, `columnConfig` or
+`ColumnPicker` anywhere in `src/Acmp.Web`. It is the single missing member of a family that otherwise
+shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`FR-035`), `Timeline.tsx`
+(`FR-036`).
 
-▶ **THERE IS NO QUEUED BUILD ITEM.** ✅ `DEF-104` is **Fixed** (#306 → `bdbd8b6`, `PE-589`) — ⚠ its own
-headline said TWELVE while its enumeration listed ELEVEN; the set was re-derived by two sweeps on
-different keys and is **eleven**. What remains live: the **nine** still-`Activated` `DW-` rows with no
-slice (`DW-028 033 035 036 037 039 063 068 069`); the operator-only group (`DW-066`, `DW-074`+`DEF-100`,
-`NFR-018`'s external ASVS assessment); and `release-close-out.md`, which has never been run. ⚠ `DEC-068` d3 deliberately did NOT
-schedule the release close-out, and the three rows whose trigger names "before release sign-off"
-(`DW-041`, `DW-067`, `DW-071`) therefore have **not** fired.
+**THE ORDER (`DEC-071` d1), smallest and most contained first, riskiest LAST:**
 
-⭐ **`SL-032` IS THE FIRST SLICE EXIT `wbs-done` COULD ADJUDICATE** — 5→4→3→2→0, where it returns zero
-rows for all 28 older slices whose items have `slice_id` NULL (`DEC-068` d2's fix-forward rule for
-`DEF-087`). Keep new work items carrying `slice_id`.
+| # | row | what |
+|---|---|---|
+| `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns |
+| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view — ⚠ read below |
+| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half |
+| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) |
+| `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator |
+| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count |
+| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** |
+
+⚠⚠ **READ THE CODE BEFORE BELIEVING ANY OF THESE EIGHT ROWS' SIZING.** **TWO** of `SL-032`'s four said
+"blocked on nothing" and were wrong — `DW-040` and `DW-038`; `DW-061`'s and `DW-032`'s sizings HELD.
+⚠ The number in this sentence read "three" for one day and was **my own prose error**, propagated into six
+artifacts before a sweep caught it (`PE-592`) — conflated with the TRUE statement that reading the code
+*paid* three times, two catches plus one confirmation. **The habit is what matters, and it is unchanged.** **Two of these eight already carry corrections in their own
+text:** `DW-037` says the scheduled date is **NOT** on the Topics side — `Topic.Schedule` does not persist
+the meeting id, it raises an event with **zero consumers**, so the calendar **must** read
+`MeetingDetailDto.ScheduledStart` + `AgendaItemDto.TopicId` from the **Meetings** API; and `DW-063` says
+`Stream.Create` **still has no caller**, so adding a sixth stream is a migration and a deployment.
+
+⚠⚠ **`WBS-24.8` (`DW-028`) IS THE ONE TO SLOW DOWN FOR.** It adds a targeting parameter to the `/session`
+read path **and authorization on that parameter** — a second authorization path over content scoped to
+somebody else, which its own row names as the shape that produced `DEF-052` and `DEF-056`. **Treat the
+refusal as the feature and prove it by forcing it.** `navModel.ts`'s ACCESS map grants `session` to GUEST
+ONLY and that restraint holds (`DEF-053` deliberately left it alone). A guest is bounded by a TIME WINDOW,
+so the targeting parameter must never become the way a guest reads somebody else's slot.
+
+⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE (`DEC-071` d3), not a judgement this file endorses.** The
+recommendation was three slices, because `DEC-068` d1 justified a single slice from the rows being *small
+with their machinery already in place* — untrue of a create-stream command, of every number in the SPA, and
+of an authorization surface. The mitigation is per-item: **each row gets its OWN acceptance criterion
+recorded in the batch that produces its evidence**, so the exit is adjudicated per item, never in aggregate.
+
+⚠ **`DW-069` IS DELIBERATELY NOT IN THIS SLICE** (`DEC-071` d2). The operator said "all" to the nine and
+"leave it, not now" to the glossary; the narrower answer governs. **Consequence:** `NFR-039` stays
+unmeetable — its clause two is *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
+picker) stays blocked, because the nine Arabic source labels have no canonical source.
+
+⚠ **STILL NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1
+release close-out. **`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text
+route coverage) therefore do NOT fire** — their triggers name "before release sign-off". `DEF-087` stays
+carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
 
 ---
 
-**WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` carries the `WBS-23.3` CSP spike,
-`PE-579` its build, `PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review.
-
-**THE THREE THINGS WORTH CARRYING, none of which is a task:**
-
-- ✅ **DOM → `foreignObject` → data-URL SVG → canvas → PNG is CLEAN under `style-src 'self'`.** A parent
-  document's `style-src` does not reach inside an SVG rendered as an image. **The "if it needs
-  `unsafe-inline`, STOP and ask" condition NEVER AROSE** — `DW-022`'s finding stands and both nginx
-  templates are untouched. If a later session reads `DW-038`'s brief and finds the prediction that inline
-  styles in a foreignObject would be blocked: **that prediction is false and was measured to be false.**
-- ⛔ **`modern-screenshot` 4.7.0 cannot run here** — `embedWebFont` appends a `<style>` to a scratch
-  `createHTMLDocument()` that inherits the page CSP, then dereferences the null `.sheet`. Its `font:false`
-  escape silently breaks the **Arabic** layout. ✅ **`html-to-image` 1.11.13 is what shipped** (`DEC-069`).
-  ⚠ It has a catch path that `insertRule`s into the app's **live** stylesheet when a sheet's `cssRules`
-  read throws — inert today because every stylesheet here is same-origin, live the moment one is not.
-  ⚠ For a future capture, compute the font CSS ONCE with `getFontEmbedCSS` and pass `fontEmbedCSS`; the
-  ar payload is ~1.63 MB per call otherwise. Deliberately not done yet — no measurement says it hurts.
-- ⚠⚠ **`LL-014` is Approved and PINNED: registry metadata cannot rank correctness.** The carried-in
-  dependency table ranked four packages on size, deps, downloads and freshness and marked the pick. Every
-  number was right; the ranking **inverted** against the only axis that decided anything. **"The technique
-  works here" never transfers to "this package works here."**
-
-⚠⚠ **THE PRE-BUILD REGISTER SWEEP EARNED ITS KEEP AND YOU SHOULD RUN IT THE SAME WAY.** Sweeping
-`adrs`, `decisions` and `open_questions` **BY KEYWORD** before writing a line found `DEF-105`:
-`ADR-0022` clause 4 still read *"Export = client-side CSV only in v1"* and `WBS-14.5` marked `FR-142`
-`(PH-2)`, against three later Approved decisions ordering the build. **An identifier sweep returns
-nothing — `FR-142` and `ADR-0022` never name each other.** Resolved by `ADR-0044` + `SC-030`; `DEF-105`
-is Fixed. ⚠ **The operator's instruction was "a new ADR superseding clause 4", and taking it literally
-would have marked the `ADR-0022` ROW Superseded** — invalidating an id `DEF-102` and two source comments
-depend on. The clause-only shape was put back to them and confirmed **before** it was applied. **When an
-instruction names a clause, check whether the row or the clause is the thing that can be superseded.**
-
-⚠ **Not measured, and do not let a later session assume otherwise:** Chromium only (149 and 151 — the
-result reproduced across two builds), **no Firefox, no WebKit**; no whole-page multi-card export; no
-memory measurement on the on-prem hardware. `AC-142` names all four exclusions in its own text.
+**WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` the CSP spike, `PE-579` its build,
+`PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review, `PE-589` `DEF-104`.
 
 ### ▶ WHERE THE BUILD WORK STANDS (2026-08-21)
 
@@ -616,11 +642,11 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
   `Implemented` is the OPERATOR's verdict, not yours** — done-claimed is `Review`, and the ceremony is
   `prompts/slice-review.md`.
 
-⭐⭐ **`DEF-087`'s fix-forward rule IS WORKING AND YOU CAN WATCH IT.** Slice-scope `wbs-done` named
-**five** items when `SL-032` was created, then **four**, **three** and now **two** as `23.1`, `23.2`
-and `23.3` closed. The same rule
-returns **zero rows for all 28 closed slices**. First slice-scope rule here that has ever tracked
-progress instead of passing over an empty set — **keep new work items carrying `slice_id`.**
+⭐⭐ **`DEF-087`'s fix-forward rule WORKED END TO END.** Slice-scope `wbs-done` named **five** items when
+`SL-032` was created and ran **5→4→3→2→0** as each leaf and then the parent `WBS-23` closed — the first
+slice exit that rule has ever been able to adjudicate rather than pass over an empty set. It still returns
+zero rows for the older slices, whose items carry no `slice_id`. **Keep new work items carrying
+`slice_id`** — that is the entire fix, and `SL-033`'s items already do.
 
 ⚠⚠ **TWO ROWS IN THIS SLICE HAD WRONG SIZING, AND BOTH SAID "only the gesture / blocked on nothing".**
 `DW-040` needed a backend change (the operation was a SWAP — indistinguishable from a move at ±1, wrong

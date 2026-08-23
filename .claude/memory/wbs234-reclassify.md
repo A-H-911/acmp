@@ -9,8 +9,9 @@ PR #305. `FR-164` / `AC-143` / `TEST-053`, `DEC-070` + `SC-031`. Full record in 
 
 ## The row was accurate — the register was not
 
-`DW-032` said `Topic.Reclassify` exists, is correct, and is reachable from no production code. **True**,
-after three consecutive `SL-032` rows whose sizing was wrong. What the row could not tell me was that
+`DW-032` said `Topic.Reclassify` exists, is correct, and is reachable from no production code. **True** —
+as was `DW-061`'s. ⚠ Two of `SL-032`'s four sizings were wrong (`DW-040`, `DW-038`), not three; the
+"three" was my own prose error, corrected in `PE-592`. What the row could not tell me was that
 **no requirement anywhere covered the capability**. Found by the `LL-005`/`LL-008` sweep run *by keyword*
 before writing code — an identifier sweep returns nothing, because the requirement register simply had no
 row to find. Precedent for the fix: `DEF-086` → `FR-163`.

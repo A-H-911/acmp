@@ -7,26 +7,26 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-23 · **`SL-032` `Implemented`; `PH-7` OPEN; NO QUEUED BUILD ITEM** · measure, never quote
+## ★★★ 2026-08-23 · **`SL-033` IS LIVE — START AT `WBS-24.1`** · run the checks, never quote them
 
-> ▶▶ **NOTHING IS MID-FLIGHT.** Live work: `DEF-104` (12 uncapped paged reads, low; remedy in-repo) · the
-> **nine** still-`Activated` `DW-` rows with no slice · the operator-only group (`DW-066`,
-> `DW-074`+`DEF-100`, `NFR-018` external ASVS) · `release-close-out.md`, never run. ⚠ `DEC-068` d3
-> deliberately did NOT schedule the release close-out, so `DW-041`/`DW-067`/`DW-071` have **not** fired.
-> ⚠⚠ **`PH-7` IS NOT CLOSED** — a phase exit is `phase-close.md`; conflating it with a slice review is how
-> a phase ships without its gate.
+> ▶▶ **NEXT: `WBS-24.1` / `DW-033` / `FR-032`** — configurable backlog columns (show/hide, reorder);
+> verified unbuilt, the single missing member of a family whose other four views shipped. `SL-033` holds
+> **eight** rows in `DEC-071` d1's order, `DW-028` LAST because it is the only one adding an
+> authorization surface. `prm-next.md` §6 has the table. ⚠⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE**
+> (`DEC-071` d3) — I recommended three. Each row still gets its OWN AC in the batch producing its
+> evidence. ⚠ **`PH-7` IS NOT CLOSED**; the release close-out is still unscheduled, so
+> `DW-041`/`DW-067`/`DW-071` have **not** fired.
 
-- ⚠⚠ **THE SLICE-REVIEW VERDICT CARRIES A RECORDED WEAKNESS, and it is in the row.** I ran the ceremony
-  having written two of the four ACs I reviewed. The mechanical half is independent — reference-graph
-  closure, guards re-checked at HEAD, suites re-run there, and `git diff <merge> HEAD -- src tests` EMPTY
-  proving HEAD's code IS the tree CI tested — **but the WORDING of `AC-142`/`AC-143` has been read by
-  nobody else.** The operator applied the transition knowing that. ⭐ **`git diff <merge-sha> HEAD -- src
-  tests` is the cheap check that closes "CI was green on the PR" → "what is on main is what CI saw".**
-- ⚠⚠ **`LL-015` (Approved+pinned): A SCAN'S SCOPE IS PART OF ITS ANSWER.** A scanner that RUNS, HAS a
-  subject, and returns a TRUE number about the **wrong SET** reads exactly like a finding — and `LL-013`'s
-  fault-injection **confirms** it rather than catching it. Three instances in one day: `PageSize` → 10 of
-  12; `dataUrlCount: 0` beside an 874,619-char string; and my grep of `tests/ --include=*.cs` reporting a
-  guard test missing when it lives in the SPA. **State the DENOMINATOR; a ZERO is the dangerous result.**
+- ⚠⚠⚠ **I ASSERTED "THREE OF `SL-032`'s FOUR ROWS WERE MIS-SIZED". IT WAS TWO, AND I PROPAGATED MINE INTO
+  SIX ARTIFACTS IN ONE DAY** (`PE-592`). `prm-next` said TWO and **the file was right**. I had conflated
+  its TRUE sentence — *"that habit PAID three times in this slice"*, two catches **plus one confirmation**
+  — with a count of wrong sizings. ⚠⚠ **A COUNT OF WHAT AN INSTRUMENT DID IS NOT A COUNT OF WHAT IT
+  FOUND.** ⭐ Found only by re-reading `prm-next` end to end as its own preamble instructs; the mechanical
+  id-and-status pass ran clean over every identifier and could not see it.
+- ⚠⚠ **PREPARING A RESUME MEANS RE-VERIFYING THE FILE, NOT APPENDING TO IT.** The same pass found **five**
+  more stale statements at once — a false phase claim, a tally with the right numerator and a stale
+  denominator, a lesson count, and two `slice_id` numbers. **Replace each with the COMMAND that measures
+  it.** ⚠ Bumping the file's own stale-count then invalidated the sentence beneath it. Numbers in prose breed.
 - ★★ [**`WBS-23.3`: the technique passed, the package failed**](wbs233-csp-spike.md) · ★★ [**`WBS-23.4`:
   right row, missing requirement**](wbs234-reclassify.md) — read these two before touching report export,
   topic classification, or shared dialog CSS. Between them: `LL-014` (registry metadata cannot rank
