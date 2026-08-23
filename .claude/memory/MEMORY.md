@@ -27,6 +27,19 @@
   more stale statements at once — a false phase claim, a tally with the right numerator and a stale
   denominator, a lesson count, and two `slice_id` numbers. **Replace each with the COMMAND that measures
   it.** ⚠ Bumping the file's own stale-count then invalidated the sentence beneath it. Numbers in prose breed.
+- ⚠⚠⚠ **THE SAME FILE, LATER THAT DAY: THE SECTION THAT COUNTS WRONG STATEMENTS CONTAINED ONE** — two
+  findings from two commits were **both** labelled `THE THIRTEENTH`, so its counter was a whole occasion
+  short. **A SEQUENCE IN PROSE IS INVISIBLE TO EVERY MECHANICAL CHECK** — an id-and-status pass sees ids and
+  statuses, never an ordinal, and it ran clean over 190 identifiers past this. Five more fell out of the
+  same read (`PE-593`). ⚠⚠ **TWICE THE FILE CONTRADICTED ITSELF, AND BOTH TIMES THE STALE HALF WAS THE ONE
+  WEARING THE DETAIL** — `DEF-104` "Open, low … twelve paged reads" a hundred lines under "`DEF-104` is
+  `Fixed`", and `LL-011` "Proposed — needs the operator's interview" under "`LL-011` Approved and PINNED".
+  **The half that reads researched is the half that wins the reader.** ⭐ The `LL-011` one was a stale
+  INSTRUCTION: it would have sent a fresh session to re-run a ceremony that already happened.
+  ⚠ **NOTHING CHECKS PROSE ARITHMETIC** — "twelve dated" + "nine correctly carry no date" over a **17**-row
+  register sat there unnoticed; it is five. ⭐ **Re-measure the next action's premise before handing it on:**
+  `WBS-24.1`'s unbuilt claim was re-run with a subject proof (4 tokens → 0 over 339 files, control
+  `Backlog` → 305) instead of carried on its row's five-day-old word.
 - ★★ [**`WBS-23.3`: the technique passed, the package failed**](wbs233-csp-spike.md) · ★★ [**`WBS-23.4`:
   right row, missing requirement**](wbs234-reclassify.md) — read these two before touching report export,
   topic classification, or shared dialog CSS. Between them: `LL-014` (registry metadata cannot rank
