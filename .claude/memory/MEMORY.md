@@ -15,7 +15,23 @@
 > authorization surface. `prm-next.md` §6 has the table. ⚠⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE**
 > (`DEC-071` d3) — I recommended three. Each row still gets its OWN AC in the batch producing its
 > evidence. ⚠ **`PH-7` IS NOT CLOSED**; the release close-out is still unscheduled, so
-> `DW-041`/`DW-067`/`DW-071` have **not** fired.
+> `DW-041`/`DW-067` have **not** fired. ⚠⚠ **`DW-071` HAS** — `DEC-072` d2, see below.
+>
+> ⚠⚠ **A SECOND INTERVIEW (`DEC-072`, `SC-032`) ADDED THREE ACTIVATED ROWS — TWO ARE OVERRIDES.**
+> **`DW-078`** sweep the WHOLE Dependabot queue, majors included (13 PRs, oldest 2026-07-16). I recommended
+> splitting; operator said all. ⚠⚠ **NOT an `NFR-051` breach** — that requires Dependabot be *configured to
+> ALERT*, which it is; open alerts are it WORKING. ⚠⚠ **`mssql` 2022→2025 CAN DESTROY THE FIVE DEV VOLUMES**
+> — fresh-volume isolated project only. **Its ordering vs `SL-033` is UNDECIDED — ask, don't pick.**
+> **`DW-079`** the `NFR-018` ASVS L2 evidence pack (override; I said leave it). ⚠⚠ **It does NOT close
+> `NFR-018` and NO AC may be written from it.** **`DW-071`** — `WBS-24.2`/`24.6`/`24.8` each add their route
+> to `e2e/rtl-a11y.spec.ts` **in the same batch**; the sweep visits **3 of 52** routes.
+> ⭐ **HOW IT WAS FOUND: the trigger had TWO clauses and only the second was parked. The SUMMARY over a row
+> had dropped half of what the row SAID** — `DEC-064` d2's failure inverted. **Read triggers, not labels.**
+> ⭐ **Store facts proven, not assumed:** `scope_adds` → a **deferred-work** target IS accepted (every prior
+> one pointed at an AC/requirement/slice); `deferred_work.source_kind` is a CHECK over
+> `brief|clarification|code|inferred` and anything else **rolls the whole batch back**.
+> ⭐ **A full-row replace is safe if you hash first and verify after** — `DW-071`'s 2097-char title came back
+> byte-identical and `custom_attributes` survived **by omission**. That is `PE-585`'s shape *defended*.
 
 - ⚠⚠⚠ **I ASSERTED "THREE OF `SL-032`'s FOUR ROWS WERE MIS-SIZED". IT WAS TWO, AND I PROPAGATED MINE INTO
   SIX ARTIFACTS IN ONE DAY** (`PE-592`). `prm-next` said TWO and **the file was right**. I had conflated
