@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 4515f496-f3b7-46a8-8285-244b75d6b513
-  modified: 2026-08-11T08:47:03.311Z
+  modified: 2026-08-15T18:13:20.051Z
 ---
 
 On 2026-08-10/11 I asserted a defect **six times** from a pattern-match — a symptom that *looked
@@ -30,6 +30,15 @@ sanctioned fix. **The missed trigger is specific and reusable: in an app that hi
 ROLE BY DESIGN, "nothing links to it" can never be established by walking the app as one role.**
 Before any "nothing references X" claim, grep the routing/nav *model*, not the rendered UI — and see
 [[absence-claims-need-untruncated-search]], the same error in its search-tool form.
+
+⚠ **#8/#9 — 2026-08-16, and BOTH were my own register rows, not code.** `AV-159` recorded that a
+role-less login writes **no audit row**, so `AC-003`'s audit clause was unmet. It had searched only
+for emitters of `Authorization.Forbidden` and read their absence as the absence of *any* record —
+missing `Authentication.NoRoleClaim`, emitted in `AuthenticationExtensions.MapKeycloakRolesAsync` at
+`OnTokenValidated`, **the AC's own moment**. The clause was already satisfied in production. In the
+same session, `DEF-056`'s parked "measured blocker" was equally wrong — see
+[[an-absence-needs-a-proven-instrument]]. **The rule now reads: a register row is an implementation
+too, and "I searched for X and found none" only rules out X, never the whole family.**
 
 **Why it kept happening.** This repo has a rich, well-documented defect history — `DEF-023` health
 probes green on an unreachable box, `DEF-030` an armed alert with no delivery path, `DEF-031` an

@@ -636,6 +636,23 @@
   background: var(--st-danger-bg);
   color: var(--st-danger-fg);
 }
+
+/* FR-163 / C-AUTHZ-04. Same chrome as .dt-urgent so the chips row stays one rhythm, but the WARN tone
+   rather than DANGER: a restricted topic is a governed state, not an error. Every token here is
+   verified present in tokens.css — an undefined custom property does not warn, it silently falls back
+   to the initial value, which is how DW-031 shipped square corners. */
+.dt-restricted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 23px;
+  padding-inline: 9px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--st-warn-bg);
+  color: var(--st-warn-fg);
+}
 .dt-title { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.3; }
 .dt-meta {
   margin-block-start: var(--sp-3);
@@ -881,3 +898,13 @@
 .kb-return { display: flex; flex-direction: column; gap: var(--sp-3); margin-block-start: var(--sp-2); }
 .kb-return-mode { border: 0; margin: 0; padding: 0; display: flex; gap: var(--sp-4); }
 .kb-return-mode legend { padding: 0; font-size: 12.5px; font-weight: 600; margin-block-end: var(--sp-2); }
+
+/* DEF-103 — the kanban has no pager by design; when the column set is still truncated it says so.
+   Warn tones (not error): nothing is broken, but the board is not showing everything it orders. */
+.kb-truncated {
+  display: flex; align-items: center; gap: 9px;
+  margin-block-end: 12px; padding-block: 9px; padding-inline: 14px;
+  background: var(--st-warn-bg); color: var(--st-warn-fg);
+  border: 1px solid color-mix(in srgb, var(--st-warn-fg) 22%, transparent);
+  border-radius: var(--r-md); font-size: 12.5px; font-weight: 600;
+}

@@ -36,7 +36,13 @@ public sealed class CommitteeMemberConfiguration : IEntityTypeConfiguration<Comm
             sa.ToTable("member_streams");
             sa.WithOwner().HasForeignKey(s => s.CommitteeMemberId);
             sa.HasKey(s => new { s.CommitteeMemberId, s.StreamId });
-            sa.Property(s => s.StreamId);
+            // ⚠ ValueGeneratedNever IS LOAD-BEARING, not tidiness (DEF-066). For an OwnsMany with a
+            // composite key, EF's convention treats the non-foreign-key half as store-generated — so
+            // this column shipped as an IDENTITY, and every assignment, which sets a real Stream.Id,
+            // was refused by SQL Server with "Cannot insert explicit value for identity column". It
+            // passed everywhere because the InMemory provider has no identity columns. StreamId is a
+            // chosen reference to membership.streams; nothing may generate it.
+            sa.Property(s => s.StreamId).ValueGeneratedNever();
         });
     }
 }

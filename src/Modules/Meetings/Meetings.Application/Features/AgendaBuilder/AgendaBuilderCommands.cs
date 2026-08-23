@@ -58,7 +58,7 @@ public sealed class AddAgendaItemHandler(IMeetingsDbContext db) : IRequestHandle
         agenda.AddItem(request.TopicId, request.TopicKey, request.TopicTitle, request.Urgent,
             request.TimeboxMinutes, request.PresenterUserId, request.PresenterName);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -83,7 +83,7 @@ public sealed class RemoveAgendaItemHandler(IMeetingsDbContext db, IGuestWindowW
         if (presenter is { } gone)
             await GuestWindows.CloseOrphanedAsync(db, windows, clock.UtcNow, new[] { gone }, ct);
 
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -100,7 +100,7 @@ public sealed class MoveAgendaItemHandler(IMeetingsDbContext db) : IRequestHandl
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
         agenda.MoveItem(request.TopicId, request.Delta);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -117,7 +117,7 @@ public sealed class SetAgendaItemTimeboxHandler(IMeetingsDbContext db) : IReques
         var agenda = await AgendaLoader.ForMeetingAsync(db, request.MeetingId, ct);
         agenda.SetTimebox(request.TopicId, request.Minutes);
         await db.SaveChangesAsync(ct);
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }
 
@@ -155,6 +155,6 @@ public sealed class AssignPresenterHandler(IMeetingsDbContext db, IGuestWindowWr
         if (replaced is { } previous && previous != request.PresenterUserId)
             await GuestWindows.CloseOrphanedAsync(db, windows, clock.UtcNow, new[] { previous }, ct);
 
-        return MeetingMapping.ToDto(agenda);
+        return MeetingMapping.ToDtoForEditor(agenda);
     }
 }

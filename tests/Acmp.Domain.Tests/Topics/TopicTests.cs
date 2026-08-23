@@ -235,6 +235,65 @@ public class TopicTests
         t.AffectedStreams.Should().NotBeEmpty();
     }
 
+    // DEF-059 / DEC-043 half one. Submit enforces "at least one stream" and runs ONCE; without this
+    // the same invariant is absent on every later edit, and an emptied live topic was read by
+    // StreamScopeHandler as "unscoped" — granting every stream-bounded member write access to it.
+    // The guard lives here rather than in UpdateTopicValidator because AssignStreams has other
+    // callers, and patching the one that prompted the finding leaves its siblings able to do it.
+    [Fact]
+    public void A_live_topic_cannot_be_emptied_of_streams()
+    {
+        var t = Accepted();
+
+        var empty = () => t.AssignStreams(Array.Empty<string>());
+
+        empty.Should().Throw<InvalidOperationException>().WithMessage("*at least one stream*");
+        t.AffectedStreams.Should().NotBeEmpty("a refused edit must leave the topic as it was");
+    }
+
+    // ⚠ The exemption, and it is not a hole. The submission form autosaves as the user types, so a
+    // Draft is incomplete BY DESIGN and Submit (AC-030) is the gate it must pass. Nothing authorizes
+    // against a draft — it is not yet live work.
+    [Fact]
+    public void A_draft_may_still_hold_no_streams()
+    {
+        var t = NewDraft();
+
+        var empty = () => t.AssignStreams(Array.Empty<string>());
+
+        empty.Should().NotThrow();
+        t.AffectedStreams.Should().BeEmpty();
+    }
+
+    // ADR-0043 clause (5) — the primitive the shared ABAC contract reads, computed from this
+    // module's own enum. Platform/OrgWide affect everything, so no stream's members own them.
+    [Theory]
+    [InlineData(TopicScope.SingleStream, false)]
+    [InlineData(TopicScope.MultiStream, false)]
+    [InlineData(TopicScope.Platform, true)]
+    [InlineData(TopicScope.OrgWide, true)]
+    public void AffectsAllStreams_is_declared_from_the_topic_scope(TopicScope scope, bool expected)
+    {
+        var t = Accepted();
+
+        t.SetScope(scope);
+
+        t.AffectsAllStreams.Should().Be(expected);
+    }
+
+    // DEF-058's reason for existing: DeriveScope must not undo a human's elevation. Submit derives
+    // from the stream count, and this guard is precisely why elevation is safe to allow at all.
+    [Fact]
+    public void Submitting_does_not_overwrite_an_elevated_scope()
+    {
+        var t = NewDraft("identity");
+        t.SetScope(TopicScope.OrgWide);
+
+        t.Submit(Now);
+
+        t.Scope.Should().Be(TopicScope.OrgWide, "a single stream would otherwise derive SingleStream");
+    }
+
     [Fact]
     public void Comment_cannot_be_empty()
     {

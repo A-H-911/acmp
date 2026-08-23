@@ -24,6 +24,10 @@ public static class TopicsInfrastructureExtensions
 
         services.AddScoped<ITopicsDbContext>(sp => sp.GetRequiredService<TopicsDbContext>());
         services.AddScoped<ITopicKeyGenerator, TopicKeyGenerator>();
+        // FR-163 / C-AUTHZ-04: the caller's confidentiality reach, resolved once per request. Scoped so
+        // the grant round-trip happens at most once even when a handler filters several queries.
+        services.AddScoped<Acmp.Modules.Topics.Application.Abstractions.ITopicVisibility,
+            Acmp.Modules.Topics.Application.Internal.TopicVisibility>();
 
         // Cross-module seam consumed by the Meetings module (ADR-0001): advance a topic's lifecycle on
         // agenda publish (Prepared→Scheduled) and meeting start (Scheduled→InCommittee).
@@ -40,6 +44,11 @@ public static class TopicsInfrastructureExtensions
         // Cross-module read seam consumed by Research (ADR-0001, P15c / FR-115): a topic's key + title snapshot
         // for the mission→source-topic traceability edge.
         services.AddScoped<ITopicReader, TopicReader>();
+
+        // Cross-module read seam consumed by Meetings, Traceability and Dependencies (ADR-0001, SL-030 /
+        // FR-163): which topics the caller must not see, so each can redact the key+title snapshot it froze
+        // into its own schema. Scoped, because the answer is about the CALLER and dies with the request.
+        services.AddScoped<ITopicConfidentiality, TopicConfidentialityReader>();
 
         services.Configure<TopicAttachmentOptions>(configuration.GetSection(TopicAttachmentOptions.SectionName));
 

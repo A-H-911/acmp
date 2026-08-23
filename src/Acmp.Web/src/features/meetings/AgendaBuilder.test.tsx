@@ -61,6 +61,7 @@ const MEETING: MeetingDetail = {
 const PREPARED: PagedResult<TopicSummary> = {
   items: [
     {
+      restricted: false,
       id: 't3', key: 'TOP-2026-040', title: 'Adopt OpenTelemetry', type: 'ArchitectureDecision', status: 'Prepared',
       urgency: 'Normal', scope: 'MultiStream', streams: [], ownerId: null, ownerName: null, priority: 1, timesDeferred: 0, ageDays: 2, slaBreached: false, createdAt: '2026-06-01T09:00:00Z',
     },

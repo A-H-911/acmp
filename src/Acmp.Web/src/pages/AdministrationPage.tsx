@@ -1,9 +1,10 @@
 /*
  * Administration area (admin-gated by route; mirrors "ACMP Administration.dc.html"). Owns the page
  * header + the tab strip and renders the active tab's body. The design marks no tab disabled, so
- * every tab is navigable (Usage Map): System Health, Roles, and Job Monitor are live/canonical;
- * Notification Settings is canonical read-only; Streams is honest-empty because its module data
- * lands in a later phase (P15).
+ * every tab is navigable (Usage Map): System Health, Roles, Job Monitor and Streams are
+ * live/canonical; Notification Settings is canonical read-only. Streams stopped being honest-empty
+ * when migration 20260813125628_Membership_StreamTaxonomy_ADR0042 seeded the taxonomy — see
+ * StreamsReference for what it can and cannot source.
  *
  * ⚠ USERS IS NO LONGER A TAB HERE (OQ-069, resolved by DEC-041; divergence recorded as SC-008).
  * FR-156 and FR-157 both read "As an Administrator or Secretary" and the server has always honoured
@@ -20,7 +21,7 @@ import { SystemHealth } from '../features/administration/SystemHealth';
 import { RolesReference } from '../features/administration/RolesReference';
 import { NotificationSettings } from '../features/administration/NotificationSettings';
 import { JobMonitor } from '../features/administration/JobMonitor';
-import { ComingDataTab } from '../features/administration/ComingDataTab';
+import { StreamsReference } from '../features/administration/StreamsReference';
 import '../styles/administration.css';
 
 // The Administration sub-tabs, in design order. Templates moved to the standalone /templates route
@@ -61,7 +62,7 @@ export default function AdministrationPage() {
       {sub === 'health' && <SystemHealth />}
       {sub === 'roles' && <RolesReference />}
       {sub === 'notifications' && <NotificationSettings />}
-      {sub === 'streams' && <ComingDataTab tab="streams" icon="stream" />}
+      {sub === 'streams' && <StreamsReference />}
       {sub === 'jobs' && <JobMonitor />}
     </section>
   );

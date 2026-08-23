@@ -7,7 +7,7 @@
  * look at the refusal, not to widen it". A stub transport cannot answer the question at all: the
  * behaviour under test is Keycloak's own authorization, which only a real Keycloak evaluates.
  *
- * This exercises EXACTLY the eight admin calls KeycloakAdminClient.cs makes and nothing else — the
+ * This exercises EXACTLY the nine admin calls KeycloakAdminClient.cs makes and nothing else — the
  * list is derived from the adapter, not from the ADR prose, because the grant has to cover what the
  * code does rather than what the design said it would do. Calls 4-6 are the ones worth watching:
  * they go through Keycloak's role-mapper resource, and a grant that covers create + password but
@@ -147,6 +147,13 @@ async function main() {
   // 8 — disable (FR-159 guest expiry). Disable, never delete (DEF-029).
   await call(8, 'disable user', 'PUT', `/users/${id}`, { enabled: false });
 
+  // 9 — SC-011's list, the port's one READ. Added when ListUsersAsync was, so the grant proof covers
+  // what the adapter DOES rather than what it did when the set was first established (OQ-070).
+  // Measured to pass under {manage-users} on Keycloak 26.0. ⚠ The obvious optimisation does NOT:
+  // GET /roles/{name}/users is 403 under the same grant, which is why the adapter reads role mappings
+  // per user (call 3's permission) instead of listing by role.
+  await call(9, 'list realm users', 'GET', `/users?first=0&max=100`);
+
   report();
   process.exit(results.every((r) => r.ok) ? 0 : 1);
 }
@@ -158,7 +165,7 @@ function report() {
   }
   const refused = results.filter((r) => !r.ok);
   if (refused.length === 0) {
-    console.log('\nAll 8 calls SUFFICIENT under this grant. That is NOT proof it is minimal —');
+    console.log('\nAll 9 calls SUFFICIENT under this grant. That is NOT proof it is minimal —');
     console.log('re-run with a narrower grant; the set is minimal when removing anything refuses.');
   } else {
     console.log(`\n${refused.length} call(s) REFUSED under this grant:`);

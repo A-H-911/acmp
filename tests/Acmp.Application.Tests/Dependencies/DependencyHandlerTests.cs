@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Dependencies.Application.Features.CreateDependency;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Dependencies.Application.Features.CreateDependency;
 using Acmp.Modules.Dependencies.Application.Features.GetDependenciesForArtifact;
 using Acmp.Modules.Dependencies.Application.Features.GetDependenciesRegister;
 using Acmp.Modules.Dependencies.Application.Features.GetDependencyByKey;
@@ -200,7 +201,7 @@ public class DependencyHandlerTests
     {
         var (name, _, key) = await SeededAsync(DependencyKind.BlockedBy);
         await using var read = Db(name, User(), Clock(Now));
-        var dto = await new GetDependencyByKeyHandler(read).Handle(new GetDependencyByKeyQuery(key), default);
+        var dto = await new GetDependencyByKeyHandler(read, TopicConfidentialityStub.SeesEverything()).Handle(new GetDependencyByKeyQuery(key), default);
         dto!.Key.Should().Be(key);
         dto.Kind.Should().Be("BlockedBy");
         dto.Status.Should().Be("Open");
@@ -211,7 +212,7 @@ public class DependencyHandlerTests
     public async Task GetByKey_returns_null_for_an_unknown_key()
     {
         await using var db = NewDb(User(), Clock(Now));
-        (await new GetDependencyByKeyHandler(db).Handle(new GetDependencyByKeyQuery("DPN-2026-999"), default)).Should().BeNull();
+        (await new GetDependencyByKeyHandler(db, TopicConfidentialityStub.SeesEverything()).Handle(new GetDependencyByKeyQuery("DPN-2026-999"), default)).Should().BeNull();
     }
 
     [Fact] // A non-blocker kind is not a blocker even while Open.
@@ -219,7 +220,7 @@ public class DependencyHandlerTests
     {
         var (name, _, key) = await SeededAsync(DependencyKind.DependsOn);
         await using var read = Db(name, User(), Clock(Now));
-        (await new GetDependencyByKeyHandler(read).Handle(new GetDependencyByKeyQuery(key), default))!.IsBlocker.Should().BeFalse();
+        (await new GetDependencyByKeyHandler(read, TopicConfidentialityStub.SeesEverything()).Handle(new GetDependencyByKeyQuery(key), default))!.IsBlocker.Should().BeFalse();
     }
 
     // ---- Register ----------------------------------------------------------------------------------------
@@ -250,7 +251,7 @@ public class DependencyHandlerTests
     {
         var name = await RegisterFixtureAsync();
         await using var read = Db(name, User(), Clock(Now));
-        var h = new GetDependenciesRegisterHandler(read);
+        var h = new GetDependenciesRegisterHandler(read, TopicConfidentialityStub.SeesEverything());
 
         (await h.Handle(new GetDependenciesRegisterQuery(), default)).Total.Should().Be(3);              // Removed excluded
         (await h.Handle(new GetDependenciesRegisterQuery(Status: DependencyStatus.Removed), default)).Total.Should().Be(1); // explicit
@@ -264,7 +265,7 @@ public class DependencyHandlerTests
     {
         var name = await RegisterFixtureAsync();
         await using var read = Db(name, User(), Clock(Now));
-        var h = new GetDependenciesRegisterHandler(read);
+        var h = new GetDependenciesRegisterHandler(read, TopicConfidentialityStub.SeesEverything());
 
         var byKeyDesc = await h.Handle(new GetDependenciesRegisterQuery(SortBy: "key", SortDir: "desc"), default);
         byKeyDesc.Items[0].Key.Should().Be("DPN-2026-003");   // highest key among the 3 non-removed
@@ -302,7 +303,7 @@ public class DependencyHandlerTests
         }
 
         await using var read = Db(name, User(), Clock(Now));
-        var panel = await new GetDependenciesForArtifactHandler(read)
+        var panel = await new GetDependenciesForArtifactHandler(read, TopicConfidentialityStub.SeesEverything())
             .Handle(new GetDependenciesForArtifactQuery(DependencyEndpointType.Topic, topicId), default);
 
         panel.Outbound.Should().ContainSingle();

@@ -47,7 +47,8 @@ export type RelationshipType =
   | 'DerivedFrom'
   | 'Implements'
   | 'Blocks'
-  | 'Resolves';
+  | 'Resolves'
+  | 'ConvertedTo';
 
 /** Read-time perspective relative to the viewed artifact. */
 export type RelationshipDirection = 'Outgoing' | 'Incoming';
@@ -56,7 +57,7 @@ export type RelationshipDirection = 'Outgoing' | 'Incoming';
 export const RELATIONSHIP_TYPES: RelationshipType[] = [
   'DecidedBy', 'RecordedAs', 'Produces', 'Mitigates', 'Addresses', 'Supersedes', 'Governs',
   'Violates', 'DependsOn', 'Informs', 'IllustratedBy', 'References', 'DerivedFrom', 'Implements',
-  'Blocks', 'Resolves',
+  'Blocks', 'Resolves', 'ConvertedTo',
 ];
 
 /** Every ArtifactType value (panel far-type labels + i18n-parity coverage). */

@@ -78,7 +78,7 @@ async function seed(request: APIRequestContext, bearer: string): Promise<string>
   const topic = await post(request, bearer, '/api/topics', {
     title: 'Adopt a single identity provider', description: 'Consolidate per-stream IdPs.',
     justification: 'Cuts duplicated maintenance.', type: 'ArchitectureDecision', urgency: 'Normal',
-    source: 'CommitteeMember', streams: ['IAM'], systems: [], tags: [],
+    source: 'CommitteeMember', streams: ['core'], systems: [], tags: [],
   });
 
   // doc1: Governance, versioned (create → edit = v2) → publish; the showcase page.

@@ -1,7 +1,9 @@
 # RESUME — ACMP
 
 **The single entry point. Rewritten whole 2026-08-13 at session end.** Every `handoff/RESUME-*.md`
-and every `handoff/prm-*.md` other than this file and `handoff/prm-next.md` is ⛔ superseded history.
+and every `handoff/prm-*.md` is ⛔ superseded history. **Tamheed v3.0.0 moved prompts into the
+package**, so the kickoff prompt now lives at `tamheed-package/prompts/prm-next.md` — edit it, never
+add another `prm-*.md`.
 This file is durably named. The paste-able kickoff prompt is **`handoff/prm-next.md`** — edit it,
 never add another `prm-*.md`.
 

@@ -234,7 +234,9 @@ function AgendaSpine({
                   {done ? <Icon name="check" size={12} aria-hidden /> : i + 1}
                 </span>
                 <span className="mt-spine-body">
-                  <span className="mt-spine-title">{item.topicTitle}</span>
+                  {/* FR-163 / AC-114 — a redacted item arrives with an empty key and title; the
+                      server sends blanks so the placeholder can be localized here (EN+AR). */}
+                  <span className="mt-spine-title">{item.topicTitle || t('meetings.restrictedTitle')}</span>
                   <span className="mt-spine-meta">
                     <Icon name="clock" size={11} aria-hidden /> {t('meetings.minShort', { count: item.timeboxMinutes })}
                     {active && <span className="mt-spine-running">· {t('meetings.running')}</span>}
@@ -273,17 +275,20 @@ function ActiveItem({
   const { t } = useTranslation();
   const [voteOpen, setVoteOpen] = useState(false);
   const [decisionOpen, setDecisionOpen] = useState(false);
+  // FR-163 / AC-114 — used for the heading AND the section's accessible name: an empty aria-label is a
+  // WCAG failure, so the placeholder has to reach both.
+  const displayTitle = item.topicTitle || t('meetings.restrictedTitle');
   return (
-    <section className="mt-active" aria-label={item.topicTitle}>
+    <section className="mt-active" aria-label={displayTitle}>
       <div className="mt-active-card">
         <div className="mt-active-head">
           <div className="mt-active-headmain">
             <div className="mt-active-keyrow">
               <span className="mt-active-index" aria-hidden="true">{index}</span>
-              <span className="mt-key">{item.topicKey}</span>
+              <span className="mt-key">{item.topicKey || t('meetings.restrictedKey')}</span>
               {item.urgent && <span className="mt-urgent-pill">{t('meetings.urgent')}</span>}
             </div>
-            <h2 className="mt-active-title">{item.topicTitle}</h2>
+            <h2 className="mt-active-title">{displayTitle}</h2>
           </div>
           <div className="mt-active-time">
             <span className="mt-active-time-label">{t('meetings.itemTime')}</span>

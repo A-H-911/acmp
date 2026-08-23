@@ -191,6 +191,16 @@ describe('DecisionPage (P7b)', () => {
     expect(mutateAsync.mock.calls[0][0].alternatives).toEqual({ en: 'We weighed a SaaS IdP', ar: 'We weighed a SaaS IdP' });
   });
 
+  /*
+   * DEF-067 — this test was the one the defect was filed against, and it needed TIME, not patience:
+   * the failure was `Test timed out in 5000ms` while still executing, not an assertion racing an
+   * unsettled DOM. The fix is the raised `testTimeout` in vitest.config.ts, which carries the full
+   * reasoning and the second, unrelated test that proved it is a CLASS rather than this one test.
+   *
+   * The findBy/waitFor below are kept as genuine hardening against latent races, but they are NOT
+   * what fixed it — they were tried first and the failure persisted, which is how the duration
+   * diagnosis was reached rather than guessed.
+   */
   it('requires a condition when the successor is Conditionally Approved, then submits it', async () => {
     const user = userEvent.setup();
     result({ data: ISSUED });
@@ -206,9 +216,16 @@ describe('DecisionPage (P7b)', () => {
     await user.type(screen.getByLabelText(/^Rationale/), 'Conditional rationale');
     await user.type(screen.getByLabelText(/Reason for superseding/), 'why');
 
+    /*
+     * ⚠ THESE TWO WAITS ARE HARDENING, NOT THE DEF-067 FIX — corrected here because the first
+     * version of this comment claimed they were, and a comment that misattributes a fix sends the
+     * next reader after the wrong cause. `getByText` immediately after a click, and asserting a call
+     * count on a handler that awaits a mutation, are both genuinely racy and worth removing. But the
+     * failure persisted after this change, and the real cause was duration (see vitest.config.ts).
+     */
     // submit with an empty condition → blocked with the conditions error
     await user.click(screen.getByRole('button', { name: 'Supersede decision' }));
-    expect(screen.getByText(/at least one condition/i)).toBeInTheDocument();
+    expect(await screen.findByText(/at least one condition/i)).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
 
     // add a second row, remove it, fill the first, then submit
@@ -217,7 +234,9 @@ describe('DecisionPage (P7b)', () => {
     await user.type(screen.getByLabelText('Condition 1'), 'A rollback plan exists');
     await user.click(screen.getByRole('button', { name: 'Supersede decision' }));
 
-    expect(mutateAsync).toHaveBeenCalledTimes(1);
+    // The submit handler awaits mutateAsync, so the call is one microtask BEHIND the click under any
+    // load at all. Asserting the count directly is the second half of the same race.
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
     expect(mutateAsync.mock.calls[0][0].conditions).toEqual([
       { text: { en: 'A rollback plan exists', ar: 'A rollback plan exists' }, dueDate: null },
     ]);
