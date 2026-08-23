@@ -1,4 +1,6 @@
-﻿using Acmp.Modules.Topics.Infrastructure.Persistence;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Internal;
+using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Contracts.Search;
 using Acmp.Shared.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +14,17 @@ namespace Acmp.Modules.Topics.Infrastructure.Search;
 public sealed class TopicSearchProvider : ISearchProvider
 {
     private readonly TopicsDbContext _db;
+    private readonly ITopicVisibility _visibility;
 
-    public TopicSearchProvider(TopicsDbContext db) => _db = db;
+    // ⚠ ISearchProvider.SearchAsync carries NO principal parameter — the interface is deliberately
+    // narrow ("THIS interface is the swap point"). The provider is registered AddScoped, so the caller
+    // is resolved through the request-scoped ITopicVisibility rather than by widening the contract for
+    // every other module's provider.
+    public TopicSearchProvider(TopicsDbContext db, ITopicVisibility visibility)
+    {
+        _db = db;
+        _visibility = visibility;
+    }
 
     public string ArtifactType => "Topics";
 
@@ -30,6 +41,12 @@ public sealed class TopicSearchProvider : ISearchProvider
                 EF.Functions.FreeText(t.Title, q, 1033) || EF.Functions.FreeText(t.Description, q, 1033) ||
                 t.Title.Contains(q) || t.Description.Contains(q))
             : src.Where(t => t.Title.Contains(q) || t.Description.Contains(q));
+
+        // C-AUTHZ-04 / FR-163: excluded from SEARCH RESULTS, which the control names explicitly —
+        // a title and a description excerpt are exactly the content a Restricted topic withholds.
+        // ⚠ COMPOSED BEFORE .Take. After it, the control would silently shrink pages instead of
+        // filtering them: a search asking for 5 hits would return 3 with no explanation.
+        matched = matched.VisibleTo(await _visibility.ResolveAsync(ct));
 
         var rows = await matched
             .OrderByDescending(t => t.Key)

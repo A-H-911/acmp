@@ -68,3 +68,19 @@ export function moveAction(from: KanbanBucket, to: KanbanBucket): MoveAction {
   if (to === 'returned') return from === 'triage' || from === 'accepted' ? 'return' : 'illegal';
   return 'illegal';
 }
+
+/**
+ * The four canonical TopicType wire names, in domain order (TopicType.cs). Labels are localized via
+ * `topics.type.<name>` — no English label is stored here (guardrail 9).
+ *
+ * ⚠ Three older copies of this list exist as local consts (Backlog.tsx TYPE_VALUES,
+ * ConvertToTopicDialog.tsx TOPIC_TYPES, SubmitTopic.tsx's icon-paired list). They are deliberately
+ * left alone rather than churned inside a conversion PR; new code should import THIS one so the
+ * duplication stops growing.
+ */
+export const TOPIC_TYPE_VALUES = [
+  'ResearchDiscovery',
+  'ArchitectureDecision',
+  'EnhancementInnovation',
+  'GovernanceStandardization',
+] as const;

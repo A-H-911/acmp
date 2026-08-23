@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.GetBacklog;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Application.Features.GetBacklog;
 using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
@@ -13,6 +14,17 @@ namespace Acmp.Application.Tests.Topics;
 // Backlog_and_detail test (which only hits: no-filters, age/desc sort, page 1 / pageSize 25).
 public class GetBacklogCoverageTests
 {
+    // FR-163: these suites assert BACKLOG filtering, sorting and paging — not confidentiality, which
+    // has its own suites. A permissive scope keeps them measuring what they claim to; a restrictive one
+    // would silently change what every case here is testing.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private static readonly DateTimeOffset T0 = new(2026, 4, 1, 9, 0, 0, TimeSpan.Zero);
 
     private static TopicsDbContext NewDb()
@@ -81,7 +93,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-001"),
             InTriage("TOP-2026-002"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -104,7 +116,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-010"),
             Rejected("TOP-2026-011"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var withoutClosed = await handler.Handle(new GetBacklogQuery(IncludeClosed: false), default);
@@ -123,7 +135,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-012"),
             Rejected("TOP-2026-013"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var withClosed = await handler.Handle(new GetBacklogQuery(IncludeClosed: true), default);
@@ -143,7 +155,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-020", type: TopicType.ArchitectureDecision),
             Submitted("TOP-2026-021", type: TopicType.GovernanceStandardization));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -165,7 +177,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-030", urgency: TopicUrgency.Urgent),
             Submitted("TOP-2026-031", urgency: TopicUrgency.Normal));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -188,7 +200,7 @@ public class GetBacklogCoverageTests
             Accepted("TOP-2026-040", ownerId),
             Accepted("TOP-2026-041", Guid.NewGuid()));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(new GetBacklogQuery(OwnerId: ownerId), default);
@@ -209,7 +221,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-050", stream: "identity"),
             Submitted("TOP-2026-051", stream: "platform"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(new GetBacklogQuery(Stream: "identity"), default);
@@ -230,7 +242,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-060", title: "Adopt Keycloak"),
             Submitted("TOP-2026-061", title: "Migrate Database"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(new GetBacklogQuery(Search: "keycloak"), default);
@@ -249,7 +261,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-070", title: "Topic A"),
             Submitted("TOP-2026-071", title: "Topic B"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(new GetBacklogQuery(Search: "TOP-2026-070"), default);
@@ -273,7 +285,7 @@ public class GetBacklogCoverageTests
         low.SetPriority(3, T0);
         db.Topics.AddRange(high, low);
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -295,7 +307,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-090", title: "Zebra Topic"),
             Submitted("TOP-2026-091", title: "Alpha Topic"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var asc = await handler.Handle(new GetBacklogQuery(SortBy: "title", SortDir: "asc"), default);
@@ -319,7 +331,7 @@ public class GetBacklogCoverageTests
             InTriage("TOP-2026-100"),
             Submitted("TOP-2026-101"));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -341,7 +353,7 @@ public class GetBacklogCoverageTests
             Submitted("TOP-2026-110", urgency: TopicUrgency.Critical),
             Submitted("TOP-2026-111", urgency: TopicUrgency.Normal));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var result = await handler.Handle(
@@ -362,7 +374,7 @@ public class GetBacklogCoverageTests
         db.Topics.AddRange(Enumerable.Range(1, 5)
             .Select(i => Submitted($"TOP-2026-{200 + i:D3}", title: $"Topic {i:D2}")));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act
         var page2 = await handler.Handle(
@@ -384,7 +396,7 @@ public class GetBacklogCoverageTests
         db.Topics.AddRange(Enumerable.Range(1, 3)
             .Select(i => Submitted($"TOP-2026-{300 + i:D3}")));
         await db.SaveChangesAsync();
-        var handler = new GetBacklogHandler(db, ClockAt(T0));
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
 
         // Act — both Page=0 and PageSize=0 should be clamped to 1 and 25
         var result = await handler.Handle(new GetBacklogQuery(Page: 0, PageSize: 0), default);

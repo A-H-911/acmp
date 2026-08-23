@@ -241,7 +241,17 @@ public class ActionHandlerTests
                 .Handle(new CancelActionCommand(id, LocalizedString.Create("dropped", "أُسقط")), default);
 
         await using var read = Db(name, User(), Clock(Now));
-        (await new GetActionByKeyHandler(read, Clock(Now)).Handle(new GetActionByKeyQuery(key), default))!.Status.Should().Be("Cancelled");
+        var cancelled = await new GetActionByKeyHandler(read, Clock(Now)).Handle(new GetActionByKeyQuery(key), default);
+
+        // FR-086 / AC-119 has three clauses and only the status was asserted. The other two are the
+        // point of the requirement: the action REMAINS RETRIEVABLE (a cancel must not delete - the
+        // audit trail is the reason the feature exists) and it KEEPS ITS REASON, which the validator
+        // makes mandatory. Reading the row back non-null used to prove preservation only incidentally,
+        // via a null-forgiving dereference; now it says so.
+        cancelled.Should().NotBeNull("a cancelled action is preserved, never deleted (FR-086)");
+        cancelled!.Status.Should().Be("Cancelled");
+        cancelled.CancelReason!.En.Should().Be("dropped");
+        cancelled.CancelReason.Ar.Should().Be("أُسقط");
     }
 
     [Fact] // exercises every register sort arm + the text/key search branch

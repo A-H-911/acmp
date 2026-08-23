@@ -19,7 +19,10 @@ public sealed record TopicSummaryDto(
     int TimesDeferred,
     int AgeDays,
     bool SlaBreached,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    // FR-163: surfaced so the list can BADGE a restricted topic. Safe to expose, because the row only
+    // reaches a caller who is already allowed to see it — the visibility predicate filters first.
+    bool Restricted = false);
 
 public sealed record TopicHistoryDto(string From, string To, string? Reason, string ActorName, DateTimeOffset OccurredAt);
 
@@ -51,4 +54,7 @@ public sealed record TopicDetailDto(
     DateTimeOffset? RevisitOn,
     IReadOnlyList<TopicHistoryDto> History,
     IReadOnlyList<TopicCommentDto> Comments,
-    IReadOnlyList<TopicAttachmentDto> Attachments);
+    IReadOnlyList<TopicAttachmentDto> Attachments,
+    // FR-163: the detail badge, and what the edit form round-trips. Defaulted so every existing
+    // construction site keeps compiling and no caller silently starts claiming a topic is restricted.
+    bool Restricted = false);

@@ -9,7 +9,10 @@ namespace Acmp.Modules.Research.Domain;
 // statement + optional rationale, a priority band, its own Proposed→Accepted|Rejected disposition, and an
 // optional LinkedTopicId (a soft value ref stored ONLY — the graph edge is P15c, ADR-0001, no FK). Mutation is
 // driven by the ResearchMission aggregate so its invariants hold.
-public sealed class Recommendation : BaseEntity
+// ⚠ AuditableEntity rather than BaseEntity — see Finding for the full reasoning (DW-017). In short:
+// the capture interceptor only walks Entries<AuditableEntity>(), so every Research.Recommendation*
+// audit row carried empty before/after until this changed.
+public sealed class Recommendation : AuditableEntity
 {
     private Recommendation() { }
 

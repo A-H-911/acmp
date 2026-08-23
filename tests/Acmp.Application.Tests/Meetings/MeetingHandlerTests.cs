@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+﻿using Acmp.Application.Tests.Shared;
+using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
@@ -53,6 +54,14 @@ public class MeetingHandlerTests
     // away. The behaviour itself is proven in GuestWindowTests / the API tests; here the port is a
     // no-op stand-in so the existing assertions keep testing what they were written for.
     private static IGuestWindowWriter NoWindows() => Substitute.For<IGuestWindowWriter>();
+
+    // DEF-073 / AC-011: the meeting READS now scope a guest-only caller to the meetings they present
+    // at. Every principal in this file is a committee member — the ICurrentUser substitute reports no
+    // roles, so AcmpRoles.IsGuestOnly is false and the scope helper returns null (no filtering) without
+    // ever consulting the directory. A bare substitute is therefore the honest stand-in here rather
+    // than a convenience: if a change ever made these reads resolve a NON-guest, this returns null from
+    // ResolveMemberAsync and the resulting failure is the signal.
+    private static ICommitteeDirectory NoDirectory() => Substitute.For<ICommitteeDirectory>();
 
     private static IClock Clock(DateTimeOffset now)
     {
@@ -191,7 +200,7 @@ public class MeetingHandlerTests
 
         await new StartMeetingHandler(db, scheduler, user, clock, Substitute.For<IAuditSink>()).Handle(new StartMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("InProgress");
         detail.Agenda!.Status.Should().Be("Locked");
         scheduler.Entered.Should().ContainSingle().Which.Should().Be(topic);
@@ -213,7 +222,7 @@ public class MeetingHandlerTests
         await new MarkAttendanceHandler(db, clock, Substitute.For<IAuditSink>(), user)
             .Handle(new MarkAttendanceCommand(meetingId, member, "Omar H.", AttendanceRole.Member, AttendanceStatus.Present, true), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Attendance.Should().ContainSingle(a => a.UserId == member && a.Status == "Present");
     }
 
@@ -232,7 +241,7 @@ public class MeetingHandlerTests
         await new CaptureDiscussionHandler(db, clock, user).Handle(new CaptureDiscussionCommand(meetingId, topic, "Consensus on direction."), default);
         await new RecordActualTimeHandler(db).Handle(new RecordActualTimeCommand(meetingId, topic, 12, AgendaItemOutcome.Discussed), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Discussions.Should().ContainSingle(d => d.TopicId == topic && d.Body == "Consensus on direction.");
         detail.Agenda!.Items.Single().ActualMinutes.Should().Be(12);
         detail.Agenda.Items.Single().Outcome.Should().Be("Discussed");
@@ -246,7 +255,7 @@ public class MeetingHandlerTests
         await using var _ = db;
         await new AddAgendaItemHandler(db).Handle(new AddAgendaItemCommand(meetingId, Guid.NewGuid(), "TOP-2026-001", "A", false, 15, Presenter, "Omar H."), default);
 
-        var list = await new GetMeetingsHandler(db).Handle(new GetMeetingsQuery(), default);
+        var list = await new GetMeetingsHandler(db, NoDirectory(), User()).Handle(new GetMeetingsQuery(), default);
         list.Should().ContainSingle();
         list[0].ItemCount.Should().Be(1);
 
@@ -325,7 +334,7 @@ public class MeetingHandlerTests
 
         await new EndMeetingHandler(db, clock, audit, user).Handle(new EndMeetingCommand(meetingId), default);
 
-        var detail = await new GetMeetingDetailHandler(db).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
+        var detail = await new GetMeetingDetailHandler(db, NoDirectory(), User(), TopicConfidentialityStub.SeesEverything()).Handle(new GetMeetingDetailQuery("MTG-2026-001"), default);
         detail!.Status.Should().Be("Held");
         detail.Agenda!.Status.Should().Be("Closed");
         await audit.Received(1).EmitEnrichedAsync("Meetings.MeetingHeld", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());

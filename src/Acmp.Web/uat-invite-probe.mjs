@@ -23,7 +23,13 @@ import { chromium } from '@playwright/test';
 
 const BASE = (process.argv[2] ?? 'https://uat.acmp.anas7ammo.dev').replace(/\/$/, '');
 const TEMP_PASSWORD = process.env.ACMP_SEED_PASSWORD ?? 'ChangeMe_Acmp#2026';
-const NEW_PASSWORD = process.env.ACMP_UAT_PASSWORD ?? 'Uat_Acmp#2026_Rotated';
+// ⚠ No hard-coded fallback — see the note in uat-login-probe.mjs. The literal that used to sit here
+// was found in five tracked files, one of them auto-loaded into agent context every session.
+const NEW_PASSWORD = process.env.ACMP_UAT_PASSWORD;
+if (!NEW_PASSWORD) {
+  console.error('ACMP_UAT_PASSWORD is not set. Export the current UAT password before running this probe.');
+  process.exit(2);
+}
 const USER = process.env.ACMP_PROBE_USER ?? 'secretary';
 
 // Timestamped so a second run cannot collide with the first — and so the account it creates is

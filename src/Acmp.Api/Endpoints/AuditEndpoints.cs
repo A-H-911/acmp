@@ -54,7 +54,7 @@ public static class AuditEndpoints
 
             var total = await q.CountAsync(ct);
             var pg = page <= 0 ? 1 : page;
-            var size = pageSize <= 0 ? 25 : pageSize;
+            var size = PageSize.Clamp(pageSize);   // DEF-104: cap the caller-supplied page
 
             var items = await q
                 .OrderByDescending(e => e.Sequence)

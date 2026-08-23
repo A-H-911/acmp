@@ -110,6 +110,10 @@
   flex-direction: column;
   gap: 3px;
 }
+/* The shared primary-name treatment for an admin table row — despite the name it is not role-only:
+   the users directory, the roles reference and the streams reference all lead their row with it, and
+   the design draws all three identically (`.ttl`). Reused deliberately rather than duplicated under
+   a per-tab selector; rename it if a fourth caller makes "role" actively misleading. */
 .adm-role-name {
   font-size: 13px;
   font-weight: 600;
@@ -195,6 +199,15 @@
   border-radius: var(--r-full);
   background: var(--border-strong);
   flex: 0 0 auto;
+  /* DEF-041 — the switch is a real <button> now, and this rule was written when it was an inert
+     <span>: a hard-coded not-allowed cursor would tell a Chairman or Secretary that the control they
+     are allowed to use is forbidden. The cursor follows the SAME attribute the handler does, so the
+     two cannot drift apart. Padding is zeroed because a UA button has some by default and the knob
+     is sized against these exact 38x22 box dimensions. */
+  padding: 0;
+  cursor: pointer;
+}
+.adm-switch[aria-disabled='true'] {
   cursor: not-allowed;
 }
 .adm-switch[aria-checked='true'] {
@@ -692,3 +705,34 @@
 /* The one-time credential block moved to components/ui/invited-credential.css when the guest-presenter
    invite began sharing it: these rules only ever loaded on the administration route, so the shared
    component rendered unstyled anywhere else. */
+
+/* ADR-0042 step 3 — the "no stream assigned" warning in the assignment panel. Deliberately a WARNING
+   tone rather than the directory's neutral "Observer" chip: once step 7 wires stream scope, holding
+   no streams is not a status, it is an inability to write anything. */
+.adm-stream-warning {
+  display: flex; align-items: center; gap: 7px;
+  margin-block: 4px 2px; padding: 8px 11px;
+  border: 1px solid var(--st-warn-fg); border-radius: var(--r-md);
+  background: var(--st-warn-bg); color: var(--st-warn-fg);
+  font-size: 12.5px; font-weight: 600;
+}
+
+/* The wildcard reads differently from a delivery stream (DEC-043): unrestricted access is what an
+   auditor most needs to spot at a glance, and the state most easily granted by accident. Dashed so
+   it is distinguishable without relying on colour (WCAG 1.4.1). */
+.stream-chip.is-wildcard { border-style: dashed; }
+.stream-chip.is-wildcard.is-on {
+  border-style: solid; border-color: var(--st-warn-fg);
+  background: var(--st-warn-bg); color: var(--st-warn-fg);
+}
+
+/* ======================= Streams reference (Admin → Streams) ======================= */
+/* The design's stream row leads with a 9px accent square, then the name. The wildcard's square is
+   hollow + dashed — the same convention as `.stream-chip.is-wildcard` above, so unrestricted scope
+   is recognisable wherever it appears and is distinguishable without relying on colour. */
+.adm-stream-ref { display: inline-flex; align-items: center; gap: 10px; }
+.adm-stream-dot {
+  inline-size: 9px; block-size: 9px; border-radius: 3px;
+  background: var(--accent); flex: 0 0 auto;
+}
+.adm-stream-dot.is-wildcard { background: transparent; border: 1.5px dashed var(--accent); }

@@ -13,6 +13,7 @@ import MembersPage from './pages/MembersPage';
 import { Backlog } from './features/topics/Backlog';
 import { SubmitTopic } from './features/topics/SubmitTopic';
 import { TopicDetail } from './features/topics/TopicDetail';
+import { EditTopic } from './features/topics/EditTopic';
 import { MeetingsList } from './features/meetings/MeetingsList';
 import { MeetingPage, MeetingConduct } from './features/meetings/MeetingPage';
 import { MeetingOverview } from './features/meetings/MeetingOverview';
@@ -75,6 +76,7 @@ export const appRoutes = createRoutesFromElements(
         <Route path="backlog" element={<Backlog />} />
         <Route path="backlog/submit" element={<SubmitTopic />} />
         <Route path="topics/:key" element={<TopicDetail />} />
+        <Route path="topics/:key/edit" element={<EditTopic />} />
         <Route path="meetings" element={<MeetingsList />} />
         <Route path="meetings/new" element={<SchedulePage />} />
         {/* Meeting shell (Meetings owns the chrome) + nested content surfaces (Agenda & Meeting owns

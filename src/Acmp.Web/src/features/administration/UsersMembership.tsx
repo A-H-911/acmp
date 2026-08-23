@@ -6,7 +6,9 @@
  * Behavior:
  *  - The DIRECTORY is read-only (GET /api/members). Membership editing affordances (committee ×
  *    remove, dashed + add, voting-eligibility switch) are rendered to match the design but are
- *    INERT/disabled: stream assignment lands with BL-024 and voting eligibility with Voting (P9).
+ *    INERT/disabled. ⚠ STREAM ASSIGNMENT IS NO LONGER INERT — it landed with ADR-0042 step 3, but in
+ *    the USER DETAIL (StreamAssignmentPanel), not on these directory affordances, which stay inert.
+ *    Voting eligibility still lands with Voting (P9).
  *  - The row's view button opens an in-place user detail (state lifted to the container). That
  *    detail is NO LONGER read-only: ADR-0038 supersedes ADR-0015 §Q3's "no Keycloak Admin API in
  *    v1" clause (SC-004), so the detail hosts the invite section (FR-156) and the role assignment
@@ -14,9 +16,11 @@
  * Wired to GET /api/members (AC-059).
  */
 import { useTranslation } from 'react-i18next';
-import { useMembers, type Member } from '../../api/members';
+import { useMembers, useSetVotingEligibility, type Member } from '../../api/members';
+import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { InviteUserPanel } from './InviteUserPanel';
 import { RoleAssignmentPanel } from './RoleAssignmentPanel';
+import { StreamAssignmentPanel } from './StreamAssignmentPanel';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Table, type Column } from '../../components/ui/Table';
@@ -51,6 +55,13 @@ export function UsersDirectory({ onView }: { onView: (m: Member) => void }) {
 
 function Directory({ members, isArabic, onView }: { members: Member[]; isArabic: boolean; onView: (m: Member) => void }) {
   const { t } = useTranslation();
+  const auth = useAuth();
+  const setVoting = useSetVotingEligibility();
+  // Presentation gating only — SetVotingEligibilityCommand.AllowedRoles is what actually refuses,
+  // and it refuses Administrator too (SoD-5). navModel.ts says the same in as many words.
+  const canSetVoting = hasRole(auth, 'chairman', 'secretary');
+  const onSetVoting = (publicId: string, isVotingEligible: boolean) =>
+    setVoting.mutate({ publicId, isVotingEligible });
 
   const columns: Column<Member>[] = [
     {
@@ -118,15 +129,33 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
             </button>
           </span>
           <span className="adm-vote">
-            <span
+            {/* DEF-041 / DEC-046 d4 — LIVE for Chairman and Secretary, and this is what the design
+                always drew: `<button onClick="{{ u.toggleVote }}" role="switch">`, an operable
+                button in the ROW. What shipped from P4 was a <span role="switch" aria-disabled>,
+                which is a real accessibility-tree node but has no handler and no tabindex, so it
+                was unreachable by mouse, keyboard and screen reader alike.
+                ⚠ ADMINISTRATOR IS NOT IN THIS LIST and that is not an oversight: SoD-5 keeps that
+                role out of committee content, and who may vote is content. The server refuses it
+                (SetVotingEligibilityCommand.AllowedRoles) — hiding it here is presentation gating
+                only, exactly as navModel.ts says.
+                The DESIRED STATE is sent, never "toggle": two clicks racing would otherwise land on
+                whichever order the server saw last. */}
+            <button
+              type="button"
               className="adm-switch"
               role="switch"
               aria-checked={m.isVotingEligible}
-              aria-disabled="true"
+              aria-disabled={canSetVoting ? undefined : 'true'}
               aria-label={t('admin.votingEligible')}
+              title={canSetVoting ? undefined : t('admin.votingEligibleLocked')}
+              onClick={
+                canSetVoting
+                  ? () => onSetVoting(m.publicId, !m.isVotingEligible)
+                  : undefined
+              }
             >
               <span className="adm-knob" aria-hidden="true" />
-            </span>
+            </button>
             <span className={m.isVotingEligible ? 'adm-vote-on' : 'adm-vote-off'}>{t('admin.votingEligible')}</span>
           </span>
         </span>
@@ -260,6 +289,11 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
       {/* FR-157 — role assignment. Keyed on the member so re-opening a different user starts from
           THAT user's role rather than carrying the previous panel's selection. */}
       <RoleAssignmentPanel key={current.publicId} member={current} />
+
+      {/* BL-024 / ADR-0042 step 3 — stream assignment. Keyed for the same reason as the role panel.
+          It sits AFTER the role panel deliberately: which streams someone needs only makes sense
+          once you know their role, and CommitteeWide roles bypass stream scope entirely. */}
+      <StreamAssignmentPanel key={`streams-${current.publicId}`} member={current} />
 
       {/* §(8) places the invite section at the foot of the user detail view (FR-156). The server
           decides who may actually invite — Administrator or Secretary — so this is not gated here;

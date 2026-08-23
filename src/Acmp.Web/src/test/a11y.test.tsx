@@ -16,7 +16,13 @@ import { Backlog } from '../features/topics/Backlog';
 import type { Member } from '../api/members';
 import type { TopicSummary } from '../api/topics';
 
-vi.mock('../api/members', () => ({ useMembers: vi.fn() }));
+// useSetVotingEligibility is the directory's voting switch (DEF-041). Stubbed rather than omitted:
+// the component calls the hook unconditionally, so a missing export fails at render — which is a
+// mock gap, not an accessibility finding.
+vi.mock('../api/members', () => ({
+  useMembers: vi.fn(),
+  useSetVotingEligibility: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}));
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;
 
@@ -33,11 +39,13 @@ vi.mock('../api/notifications', () => ({
 
 const TOPICS: TopicSummary[] = [
   {
+    restricted: false,
     id: 'g1', key: 'TOP-2026-014', title: 'Adopt Keycloak as the standard IdP', type: 'ArchitectureDecision',
     status: 'Scheduled', urgency: 'Urgent', scope: 'MultiStream', streams: ['identity', 'platform'],
     ownerId: 'o1', ownerName: 'Omar H', priority: 1, timesDeferred: 0, ageDays: 9, slaBreached: true, createdAt: '2026-02-15T09:00:00Z',
   },
   {
+    restricted: false,
     id: 'g2', key: 'TOP-2026-031', title: 'Event streaming spike', type: 'ResearchDiscovery',
     status: 'Triage', urgency: 'Normal', scope: 'SingleStream', streams: ['notifications'],
     ownerId: null, ownerName: null, priority: 5, timesDeferred: 0, ageDays: 4, slaBreached: false, createdAt: '2026-02-20T09:00:00Z',
@@ -58,7 +66,7 @@ const MEMBERS: Member[] = [
   {
     publicId: '1', keycloakUserId: 'kc-fixture', fullName: 'Khalid A', email: 'khalid@acmp.gov', role: 'Secretary',
     status: 'Active', isActive: true, isVotingEligible: true,
-    streams: [{ publicId: 's1', code: 'architecture', nameEn: 'Architecture', nameAr: 'الهيكلة' }],
+    streams: [{ publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false }],
   },
   {
     publicId: '2', keycloakUserId: 'kc-fixture', fullName: 'Audit Office', email: 'audit@acmp.gov', role: 'Auditor',

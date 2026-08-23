@@ -41,7 +41,9 @@ engineering remains. Full handoff: `handoff/RESUME-ph5-closeout.md` — read it 
 - Acceptance: **AC-075/076/077/078/079/080/081/082/083/084/086 Met** · **AC-085 Partial** (leg 1 only).
 - Open defects: **DEF-012** only (v_backlog residue — disclosed by design, no action).
   DEF-027 … DEF-033 are all **Fixed**.
-- Seeded accounts `chairman` / `secretary` / `member` / `auditor`, password `Uat_Acmp#2026_Rotated`.
+- Seeded accounts `chairman` / `secretary` / `member` / `auditor`. ⚠ The rotated password was written
+  out here in plaintext until 2026-08-16; it is now supplied via **`ACMP_UAT_PASSWORD`** and is not
+  recorded in any tracked file. (It remains in git history — rotation revokes it, not this edit.)
   The three `e2e-*` accounts are **disabled**, not deleted — read DEF-029 before changing that.
 
 ## Do these, in this order

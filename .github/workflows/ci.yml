@@ -114,6 +114,11 @@ jobs:
         run: npm ci
       - name: i18n parity (EN/AR)
         run: node ../../scripts/check-i18n.mjs
+      # NFR-035 second clause (DW-042). check-i18n compares the two resource files against EACH OTHER, so it
+      # is structurally blind to a label typed straight into JSX: the string never enters either file and
+      # parity stays perfect. This gate reads the components instead.
+      - name: No hardcoded display strings in components (NFR-035)
+        run: node ../../scripts/check-hardcoded-strings.mjs
       - name: Test + coverage gate (ADR-0016 ≥95% lines, global + per-file)
         run: npm run test:cov
       - name: Build

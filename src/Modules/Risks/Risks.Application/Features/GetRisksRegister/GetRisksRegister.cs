@@ -60,7 +60,7 @@ public sealed class GetRisksRegisterHandler : IRequestHandler<GetRisksRegisterQu
 
         var sorted = Sort(risks, request.SortBy, request.SortDir);
         var total = sorted.Count;
-        var pageSize = request.PageSize <= 0 ? 25 : request.PageSize;
+        var pageSize = PageSize.Clamp(request.PageSize);   // DEF-104: cap the caller-supplied page
         var page = request.Page <= 0 ? 1 : request.Page;
 
         var items = sorted

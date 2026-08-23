@@ -15,6 +15,10 @@ public sealed class StreamConfiguration : IEntityTypeConfiguration<Stream>
         b.HasAlternateKey(x => x.PublicId);
         b.Property(x => x.Code).IsRequired().HasMaxLength(64);
         b.HasIndex(x => x.Code).IsUnique();
+        // ADR-0042 (3): at most ONE wildcard row, enforced by the database rather than by application
+        // code — a second "unrestricted" stream would silently double the bypass surface. Filtered so
+        // it constrains only the wildcard row; the many IsWildcard = 0 rows are unaffected.
+        b.HasIndex(x => x.IsWildcard).IsUnique().HasFilter("[IsWildcard] = 1");
         b.OwnsOne(x => x.Name, n =>
         {
             n.Property(p => p.En).HasColumnName("name_en").IsRequired().HasMaxLength(128);

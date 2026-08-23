@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Domain;
+﻿using Acmp.Modules.Topics.Application.Abstractions;
+using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
@@ -13,6 +14,15 @@ namespace Acmp.Application.Tests.Topics;
 // id returns empty so cross-stream detection degrades to "not cross" rather than throwing out of the graph.
 public class TopicStreamReaderTests
 {
+    // FR-163: this suite asserts stream projection, not confidentiality.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private static readonly DateTimeOffset T0 = new(2026, 4, 1, 9, 0, 0, TimeSpan.Zero);
 
     private static TopicsDbContext NewDb()
@@ -37,7 +47,7 @@ public class TopicStreamReaderTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var streams = await new TopicStreamReader(db).GetStreamsAsync(topic.PublicId);
+        var streams = await new TopicStreamReader(db, SeesEverything()).GetStreamsAsync(topic.PublicId);
 
         streams.Should().BeEquivalentTo("identity", "platform");
     }
@@ -46,7 +56,7 @@ public class TopicStreamReaderTests
     public async Task Returns_empty_for_an_unknown_topic()
     {
         await using var db = NewDb();
-        var streams = await new TopicStreamReader(db).GetStreamsAsync(Guid.NewGuid());
+        var streams = await new TopicStreamReader(db, SeesEverything()).GetStreamsAsync(Guid.NewGuid());
         streams.Should().BeEmpty();
     }
 }

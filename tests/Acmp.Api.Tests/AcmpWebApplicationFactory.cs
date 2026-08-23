@@ -12,10 +12,13 @@ using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Research.Infrastructure.Persistence;
 using Acmp.Modules.Risks.Infrastructure.Persistence;
+using Acmp.Modules.Topics.Domain;
+using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Domain.ValueObjects;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +27,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using MembershipStream = Acmp.Modules.Membership.Domain.Stream;
 
 namespace Acmp.Api.Tests;
 
@@ -50,6 +55,37 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
 
     /// <summary>The fake, once the host is built — so a test can assert what Keycloak was asked to do.</summary>
     public FakeIdentityProvider Identity => Services.GetRequiredService<FakeIdentityProvider>();
+
+    // ADR-0042 step 1's taxonomy. ⚠ SEEDED HERE BECAUSE THE HARNESS USES THE INMEMORY PROVIDER, WHICH
+    // NEVER RUNS MIGRATIONS — and the taxonomy is seeded BY a migration, so it exists in every real
+    // environment and in none of these tests. Without it the submit/update validators would refuse
+    // every topic, which is a property of the FIXTURE rather than of the code under test.
+    //
+    // ⚠ The WILDCARD is deliberately absent: StreamCatalog excludes it from the assignable set, so
+    // seeding it here could only mask a bug in that filter. Nothing in this harness needs it.
+    private static readonly (string Code, string En, string Ar)[] SeededStreams =
+    {
+        ("core", "Core", "الأساسي"),
+        ("communications", "Communications", "الاتصالات"),
+        ("smart-cities", "Smart Cities", "المدن الذكية"),
+        ("government", "Government", "الحكومي"),
+        ("shared-services", "Shared Services", "الخدمات المشتركة"),
+    };
+
+    // Seeded once per host, before any test runs: the taxonomy is reference data that is simply
+    // always there, not something an individual test opts into and can forget.
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        foreach (var (code, en, ar) in SeededStreams)
+            db.Streams.Add(MembershipStream.Create(code, LocalizedString.Create(en, ar)));
+        db.SaveChanges();
+
+        return host;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -129,6 +165,62 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
         foreach (var (sub, name, role) in members)
             db.Members.Add(CommitteeMember.Provision(sub, name, $"{sub}@acmp.gov", role, DateTimeOffset.UtcNow));
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seed a topic already walked to <c>Decided</c>, and return its public id (FR-160 / AC-109).
+    /// </summary>
+    /// <remarks>
+    /// ⚠ THIS EXISTS BECAUSE <c>Decided</c> IS NOT REACHABLE OVER HTTP IN A TEST. A decision only
+    /// advances a topic through <c>TopicDecisionRecorder.MarkDecidedAsync</c>, which SILENTLY RETURNS
+    /// unless the topic is already <c>InCommittee</c> — and reaching that needs the whole meetings
+    /// flow (schedule → publish agenda → conduct). Building that fixture to exercise one endpoint
+    /// would be a large, fragile setup whose failures would look like close bugs.
+    ///
+    /// The walk uses the REAL aggregate transitions in their real order rather than writing a status
+    /// column, so a topic seeded here is one the domain agrees is Decided — if any guard in that chain
+    /// changes, this throws instead of quietly producing an impossible row.
+    /// </remarks>
+    public async Task<Guid> SeedDecidedTopicAsync(string ownerSub = "kc-omar", string ownerName = "Omar H.")
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TopicsDbContext>();
+        var now = DateTimeOffset.UtcNow;
+
+        var topic = Topic.Draft(
+            $"TOP-2026-{Random.Shared.Next(100, 999)}", "Adopt Keycloak", "Consolidate IAM.",
+            "Fragmented auth is risky.", TopicType.ArchitectureDecision, TopicUrgency.Normal,
+            TopicSource.CommitteeMember, ownerSub, ownerName,
+            new[] { "core" }, Array.Empty<string>(), Array.Empty<string>());
+
+        topic.Submit(now);
+        topic.BeginTriage(ownerSub, ownerName, now);
+        topic.Accept(Guid.NewGuid(), ownerName, ownerSub, ownerName, now);
+        topic.MarkPrepared(ownerSub, ownerName, now);
+        topic.Schedule(Guid.NewGuid(), ownerSub, ownerName, now);
+        topic.EnterCommittee(ownerSub, ownerName, now);
+        topic.Decide(ownerSub, ownerName, now);
+
+        db.Topics.Add(topic);
+        await db.SaveChangesAsync();
+        return topic.PublicId;
+    }
+
+    /// <summary>
+    /// Assign a seeded member to streams by CODE (ADR-0043 step 7). Codes rather than ids because the
+    /// authorization control keys on Stream.Code, so a test that passed ids could drift from the value
+    /// the handler actually intersects.
+    /// </summary>
+    public async Task AssignStreamsAsync(string sub, params string[] codes)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
+        var member = await db.Members.FirstAsync(m => m.KeycloakUserId == sub);
+        var ids = await db.Streams.Where(s => codes.Contains(s.Code)).Select(s => s.Id).ToListAsync();
+        if (ids.Count != codes.Length)
+            throw new InvalidOperationException($"[test] unknown stream code in [{string.Join(", ", codes)}]");
+        member.AssignStreams(ids);
         await db.SaveChangesAsync();
     }
 
