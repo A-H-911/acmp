@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Acmp.Modules.Membership.Domain.Enums;
 using FluentAssertions;
 
@@ -28,7 +29,7 @@ public class TopicEndpointsCoverageTests
         type = "ArchitectureDecision",
         urgency = "Urgent",
         source = "CommitteeMember",
-        streams = new[] { "identity" },
+        streams = new[] { "core" },
         systems = Array.Empty<string>(),
         tags = Array.Empty<string>(),
     };
@@ -39,7 +40,7 @@ public class TopicEndpointsCoverageTests
     // Shared setup: submit a topic as a Member, then accept it as Secretary (Submitted → Accepted).
     // AcceptTopicHandler calls BeginTriage() then Accept() in one shot (W2 + W3 rollup).
     // Secretary role satisfies Policies.TopicTriage directly (no ABAC needed).
-    private static async Task<(Guid TopicId, AcmpWebApplicationFactory Factory)>
+    private static async Task<(Guid TopicId, string Key, AcmpWebApplicationFactory Factory)>
         CreateAcceptedTopicAsync()
     {
         var factory = new AcmpWebApplicationFactory();
@@ -59,7 +60,7 @@ public class TopicEndpointsCoverageTests
             $"/api/topics/{topic!.Id}/accept",
             new { ownerId = owner.PublicId, ownerName = "Owner One" });
 
-        return (topic.Id, factory);
+        return (topic.Id, topic.Key, factory);
     }
 
     // ---- DeferTopicBody ----------------------------------------------------------------
@@ -67,7 +68,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // FluentValidation: Reason.NotEmpty → 400; covers DeferTopicBody binding
     public async Task Defer_empty_reason_returns_400()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             var response = await Client(factory, "Secretary").PostAsJsonAsync(
@@ -81,7 +82,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // W20: DeferTopicBody happy path — Accepted topic deferred with reason → 204
     public async Task Secretary_defers_accepted_topic_returns_204()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             var response = await Client(factory, "Secretary").PostAsJsonAsync(
@@ -97,7 +98,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // W4: /prepare lambda — Secretary has TopicEdit directly; Accepted → Prepared → 204
     public async Task Secretary_prepares_accepted_topic_returns_204()
     {
-        var (topicId, factory) = await CreateAcceptedTopicAsync();
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
         await using (factory)
         {
             // No RequireAuthorization policy on /prepare; handler gates via IResourceAuthorizer
@@ -172,11 +173,160 @@ public class TopicEndpointsCoverageTests
                 description = "Updated description.",
                 justification = "Clearer justification.",
                 urgency = "Normal",
-                streams = new[] { "identity" },
+                streams = new[] { "core" },
                 systems = Array.Empty<string>(),
                 tags = Array.Empty<string>(),
             });
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    // DEF-059 half one, over HTTP: the empty list is refused at the boundary with a 400 naming the
+    // field, rather than reaching the aggregate and surfacing as a 409 nobody can act on.
+    [Fact]
+    public async Task Emptying_a_topics_streams_returns_400()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topic = await (await Client(factory, "Member", sub: "kc-submitter")
+            .PostAsJsonAsync("/api/topics", SubmitBody()))
+            .Content.ReadFromJsonAsync<SubmitResult>();
+
+        var response = await Client(factory, "Member", sub: "kc-submitter").PutAsJsonAsync(
+            $"/api/topics/{topic!.Id}", UpdateBody(streams: Array.Empty<string>()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // DEF-058 over HTTP, both halves of the gate in one pair. Elevating scope widens write access to
+    // every stream-bounded member (ADR-0043 clause 5), so it is a triage act wherever it happens —
+    // including on the pre-Accept path, where a submitter editing their OWN topic otherwise passes
+    // no authorization check at all.
+    [Fact]
+    public async Task The_submitter_cannot_elevate_their_own_topics_scope_but_the_secretary_can()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topic = await (await Client(factory, "Member", sub: "kc-submitter")
+            .PostAsJsonAsync("/api/topics", SubmitBody()))
+            .Content.ReadFromJsonAsync<SubmitResult>();
+
+        var asSubmitter = await Client(factory, "Member", sub: "kc-submitter").PutAsJsonAsync(
+            $"/api/topics/{topic!.Id}", UpdateBody(scope: "OrgWide"));
+        asSubmitter.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var asSecretary = await Client(factory, "Secretary", sub: "kc-sec").PutAsJsonAsync(
+            $"/api/topics/{topic.Id}", UpdateBody(scope: "OrgWide"));
+        asSecretary.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Read it back: a 204 proves the request was accepted, not that the value landed. Platform
+        // and OrgWide were unreachable enum values before this endpoint carried Scope (DEF-058).
+        var detail = await Client(factory, "Member", sub: "kc-submitter")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{topic.Key}");   // detail is keyed by TOP-YYYY-###
+        detail.GetProperty("scope").GetString().Should().Be("OrgWide");
+    }
+
+    // AC-034 LITERALLY, over HTTP: an ACCEPTED topic, a Member who is NOT its Owner, an attempt to
+    // edit the description → 403. Every prior piece of evidence for this AC was handler-level
+    // (PermissionMatrixTests / TopicHandlerTests), which is a different claim: those construct the
+    // authorization decision directly, while this one travels the real pipeline the AC describes.
+    // ⚠ THE ACTOR IS A NON-OWNER MEMBER, not an unassigned one and not the submitter — a refusal of
+    // either would prove something else. kc-owner is the Owner; kc-other is a Member with no
+    // relationship to this topic at all.
+    [Fact]
+    public async Task A_member_who_is_not_the_owner_is_refused_editing_an_accepted_topic()
+    {
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
+        await using var _ = factory;
+
+        var response = await Client(factory, "Member", sub: "kc-other").PutAsJsonAsync(
+            $"/api/topics/{topicId}", UpdateBody(title: "Rewritten after the fact"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    // The other half of the same AC clause: the Secretary MAY edit metadata after Acceptance, while
+    // the content stays locked. Asserted by reading the topic back — a 204 says the request was
+    // accepted, not that the aggregate honoured the lock.
+    [Fact]
+    public async Task After_acceptance_the_secretary_edits_metadata_and_the_content_stays_locked()
+    {
+        var (topicId, key, factory) = await CreateAcceptedTopicAsync();
+        await using var _ = factory;
+        var before = await Client(factory, "Secretary", sub: "kc-sec")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{key}");
+        var originalTitle = before.GetProperty("title").GetString();
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec").PutAsJsonAsync(
+            $"/api/topics/{topicId}", UpdateBody(title: "Rewritten after the fact", streams: new[] { "government" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var after = await Client(factory, "Secretary", sub: "kc-sec")
+            .GetFromJsonAsync<JsonElement>($"/api/topics/{key}");
+        after.GetProperty("title").GetString().Should().Be(originalTitle, "content is locked against retroactive modification");
+        after.GetProperty("streams").EnumerateArray().Select(s => s.GetString())
+            .Should().BeEquivalentTo(new[] { "government" }, "metadata stays editable after Acceptance");
+    }
+
+    // ---- stream scope (ADR-0043 step 7, DEF-057) ---------------------------------------
+    //
+    // ⚠ PrepareTopic IS THE PATH, AND IT IS ESSENTIALLY THE ONLY ONE (DEF-068). The other TopicEdit
+    // call sites cannot discriminate: UpdateTopic pre-Accept skips authorization entirely for the
+    // submitter and refuses a non-owner Member on the CAPABILITY check BEFORE streams are consulted,
+    // and post-Accept it uses TopicTriage, not TopicEdit. PrepareTopic is TopicEdit on an ACCEPTED
+    // topic, where grant-on-accept makes CapabilityRequirement succeed for the owning Member — so
+    // stream scope is the only thing left that can decide the outcome, which is what makes the pair
+    // below a test of stream scope rather than of ownership.
+    //
+    // ⚠ THE MEMBER HOLDS A STREAM THROUGHOUT — a DIFFERENT one, never none. A member with no streams
+    // is refused too, but that proves "unassigned is denied", a different claim (ADR-0043 negative
+    // consequence 4). The control run is the same member, same topic, same request, with only the
+    // assignment changed.
+
+    [Fact]
+    public async Task An_owner_assigned_to_another_stream_is_refused_and_the_same_owner_in_stream_is_allowed()
+    {
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();   // the topic affects "core"
+        await using var _f = factory;
+        var asOwner = Client(factory, "Member", sub: "kc-owner");
+
+        await factory.AssignStreamsAsync("kc-owner", "government");
+        var outOfScope = await asOwner.PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        outOfScope.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "the owner holds government and the topic affects core, so stream scope must refuse");
+
+        // The control. Without it the 403 above is equally consistent with "the owner grant never
+        // resolved" or "this route refuses every Member" — neither of which is stream scope.
+        await factory.AssignStreamsAsync("kc-owner", "core");
+        var inScope = await asOwner.PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        inScope.StatusCode.Should().Be(HttpStatusCode.NoContent,
+            "the identical request succeeds once the owner holds the topic's stream — so the refusal was stream scope and nothing else");
+    }
+
+    // A committee-wide role is not stream-bounded at all (permission-role-matrix E.1), so the
+    // Secretary keeps working with no assignment whatsoever — which is what keeps the core loop and
+    // every existing spec green (DEF-068).
+    [Fact]
+    public async Task A_secretary_holding_no_streams_is_not_stream_scoped()
+    {
+        var (topicId, _, factory) = await CreateAcceptedTopicAsync();
+        await using var _f = factory;
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec")
+            .PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    private static object UpdateBody(string[]? streams = null, string? scope = null, string title = "Adopt Keycloak") => new
+    {
+        title,
+        description = "Updated description.",
+        justification = "Clearer justification.",
+        urgency = "Normal",
+        streams = streams ?? new[] { "core" },
+        systems = Array.Empty<string>(),
+        tags = Array.Empty<string>(),
+        scope,
+    };
 }

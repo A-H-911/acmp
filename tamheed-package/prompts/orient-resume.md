@@ -9,7 +9,9 @@ Orient yourself on this project's Tamheed package before doing anything else:
 1. `server_info` — confirm the server version and the resolved package root.
 2. `package_open("tamheed-package")` — take the single-writer lock.
 3. `gate_run()` — note the verdict, any failing gate, and any G-TRACE warning.
-4. Recent state: `entity_query("progress-entry", limit=10)` and
+4. The lessons: `entity_query("lesson", status="Approved")` — confirmed lessons
+   bind this session too.
+   Recent state: `entity_query("progress-entry", limit=10)` and
    `entity_query("audit-verdict", limit=10)` — what was the last recorded activity?
 5. **Cross-check git against the package** (the package is the state; git is the
    evidence): run `git log --oneline -15` and compare against `work_bind` records
@@ -20,4 +22,6 @@ Orient yourself on this project's Tamheed package before doing anything else:
    and the roadmap order — state which slice you believe is in progress and why.
 7. Report back in five lines: package state, gate verdict, last recorded activity,
    unrecorded-work findings, and the slice you propose to resume. STOP for
-   confirmation before writing anything.
+   confirmation before writing anything. (Resuming work on an approved slice →
+   slice-kickoff.md; a cold agent that has never seen this package →
+   package-onboarding.md.)

@@ -12,6 +12,15 @@ public sealed class Stream : AuditableEntity
     public string Code { get; private set; } = string.Empty;
     public LocalizedString Name { get; private set; } = null!;
 
+    // ADR-0042 (3): the "unrestricted" marker. A member assigned this stream is not stream-bounded.
+    // It is a COLUMN and never a magic code — matching on Code would break silently when the row is
+    // renamed or re-coded, or hand universal access to a future stream that collided with the string.
+    // Set only by the Membership_StreamTaxonomy_ADR0042 seed: the wildcard is a seeded singleton (a
+    // filtered unique index enforces "at most one"), so there is deliberately no runtime factory for
+    // it. Read by UserStreamProvider (DW-026) and by the DEC-046 reconciliation, which grants exactly
+    // this stream to the member rows it creates (DEF-071).
+    public bool IsWildcard { get; private set; }
+
     public static Stream Create(string code, LocalizedString name) =>
         new() { Code = code.Trim().ToLowerInvariant(), Name = name };
 }

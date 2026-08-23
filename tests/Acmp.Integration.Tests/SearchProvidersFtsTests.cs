@@ -6,6 +6,7 @@ using Acmp.Modules.Knowledge.Infrastructure.Persistence;
 using Acmp.Modules.Knowledge.Infrastructure.Search;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Search;
+using Acmp.Modules.Topics.Application.Abstractions;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Search;
 using Acmp.Shared.Application.Abstractions;
@@ -15,6 +16,7 @@ using DotNet.Testcontainers.Images;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using Testcontainers.MsSql;
 
 namespace Acmp.Integration.Tests;
@@ -28,6 +30,16 @@ namespace Acmp.Integration.Tests;
 // query executes end-to-end. Docker-gated, like MinioFileStoreTests.
 public sealed class SearchProvidersFtsTests : IAsyncLifetime
 {
+    // FR-163: these suites assert SEARCH ENGINE behaviour (FTS vs LIKE, blank-query short-circuit),
+    // not confidentiality. A permissive scope keeps them measuring the engine.
+    private static ITopicVisibility SeesEverything()
+    {
+        var v = Substitute.For<ITopicVisibility>();
+        v.ResolveAsync(Arg.Any<CancellationToken>())
+            .Returns(new TopicVisibilityScope(true, Array.Empty<Guid>()));
+        return v;
+    }
+
     private readonly IFutureDockerImage _image = new ImageFromDockerfileBuilder()
         .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "deploy")
         .WithDockerfile("Dockerfile.sqlserver")
@@ -106,7 +118,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
         // columns/languages valid), which the InMemory suite can never prove.
         ISearchProvider[] providers =
         {
-            new TopicSearchProvider(_topics),
+            new TopicSearchProvider(_topics, SeesEverything()),
             new AdrSearchProvider(_governance),
             new MinutesSearchProvider(_meetings),
             new DocumentSearchProvider(_knowledge),

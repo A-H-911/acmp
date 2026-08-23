@@ -3,6 +3,7 @@ using Acmp.Modules.Dependencies.Application.Contracts;
 using Acmp.Modules.Dependencies.Application.Internal;
 using Acmp.Modules.Dependencies.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Contracts.Topics;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,18 +23,29 @@ public sealed class GetDependenciesForArtifactHandler
     : IRequestHandler<GetDependenciesForArtifactQuery, ArtifactDependenciesDto>
 {
     private readonly IDependenciesDbContext _db;
+    private readonly ITopicConfidentiality _confidentiality;
 
-    public GetDependenciesForArtifactHandler(IDependenciesDbContext db) => _db = db;
+    public GetDependenciesForArtifactHandler(IDependenciesDbContext db, ITopicConfidentiality confidentiality)
+    {
+        _db = db;
+        _confidentiality = confidentiality;
+    }
 
     public async Task<ArtifactDependenciesDto> Handle(GetDependenciesForArtifactQuery request, CancellationToken ct)
     {
+        // FR-163 / AC-114 — resolved ONCE for both directions. This read also backs the shared
+        // IDependencyArtifactReader port, so redacting here covers the impact graph's dependency edges too.
+        var hidden = await _confidentiality.GetHiddenTopicIdsAsync(ct);
+
         var outbound = await _db.Dependencies.AsNoTracking()
             .Where(d => d.Status != DependencyStatus.Removed && d.FromType == request.Type && d.FromId == request.Id)
+            .WithoutHiddenTopics(hidden)
             .OrderBy(d => d.CreatedAt)
             .ToListAsync(ct);
 
         var inbound = await _db.Dependencies.AsNoTracking()
             .Where(d => d.Status != DependencyStatus.Removed && d.ToType == request.Type && d.ToId == request.Id)
+            .WithoutHiddenTopics(hidden)
             .OrderBy(d => d.CreatedAt)
             .ToListAsync(ct);
 

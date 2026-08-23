@@ -52,9 +52,9 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await page.getByRole('textbox', { name: 'Title', exact: true }).fill(title);
         await page.getByRole('textbox', { name: 'Description', exact: true }).fill('E2E description for the core-loop spec.');
         await page.getByRole('textbox', { name: 'Why now', exact: true }).fill('E2E justification — exercises the full loop.');
-        const streams = page.getByRole('textbox', { name: 'Affected streams', exact: true });
-        await streams.fill('Platform');
-        await streams.press('Enter');
+        // ADR-0042 step 2: affected streams are toggle chips over the seeded taxonomy, not free text.
+        // The chip's accessible name is the DISPLAY name ("Core"); the value posted is the code ("core").
+        await page.getByRole('button', { name: 'Core', exact: true }).click();
 
         const [createRes] = await Promise.all([
           page.waitForResponse((r) => r.url().endsWith('/api/topics') && r.request().method() === 'POST'),
@@ -121,8 +121,18 @@ test.describe('core loop — topic → agenda → meeting → conduct → notify
         await expect(page.locator('.mt-agenda-list')).toContainText(topic.key);
 
         // Every agenda item needs a presenter before the agenda can be published (domain invariant).
+        // Nothing in the UI gates publish on the assignment landing — the button is enabled on
+        // items.length alone (AgendaBuilder.tsx:216) — so publish could reach the server before the
+        // presenter POST committed and come back 409. Wait for the assignment, same as every other
+        // step in this spec.
         await page.getByRole('button', { name: `Presenter for ${topic.key}` }).click();
-        await page.getByRole('option', { name: memberName, exact: true }).click();
+        const [presRes] = await Promise.all([
+          page.waitForResponse(
+            (r) => r.url().includes(`/agenda/items/${topic.id}/presenter`) && r.request().method() === 'POST',
+          ),
+          page.getByRole('option', { name: memberName, exact: true }).click(),
+        ]);
+        expect(presRes.status()).toBe(200);
 
         await page.getByRole('button', { name: 'Publish & notify' }).first().click();
         const pubDialog = page.getByRole('dialog');

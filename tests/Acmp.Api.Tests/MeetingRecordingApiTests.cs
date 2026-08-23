@@ -163,21 +163,51 @@ public class MeetingRecordingApiTests
         await using var factory = new AcmpWebApplicationFactory();
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
-        var resp = await Client(app, "Member").GetAsync($"/api/meetings/{key}/recording/url");
+
+        // Secretary, not Member: since NFR-025 narrowed this route, authorization is decided BEFORE
+        // existence, so an unauthorized role gets 403 whether or not a recording exists. This case is
+        // about the MISSING RECORDING, so it must be asked by someone allowed to ask - otherwise it
+        // would pass on the role gate and stop testing the 404 at all.
+        var resp = await Client(app, "Secretary").GetAsync($"/api/meetings/{key}/recording/url");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact] // any member can fetch the presigned playback URL after an upload
-    public async Task Recording_url_200_after_upload()
+    // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, and that is the point. It read "any member can fetch the
+    // presigned playback URL" and passed a Member, which encoded the DEF-094 divergence as intended
+    // behaviour: NFR-025 (Must) restricts recording and transcript access to Chairman, Secretary and
+    // Auditor. The requirement was built as written rather than reworded to match the code, so the test
+    // that asserted the wider behaviour had to change with it.
+    [Theory] // AC-122: the three roles NFR-025 names, and only those, can mint a playback URL
+    [InlineData("Chairman")]
+    [InlineData("Secretary")]
+    [InlineData("Auditor")]
+    public async Task Recording_url_200_for_an_authorized_role(string role)
     {
         await using var factory = new AcmpWebApplicationFactory();
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", VideoForm("video/mp4", "board.mp4"));
 
-        var resp = await Client(app, "Member").GetAsync($"/api/meetings/{key}/recording/url");
+        var resp = await Client(app, role).GetAsync($"/api/meetings/{key}/recording/url");
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
         (await resp.Content.ReadFromJsonAsync<UrlResponse>())!.Url.Should().StartWith("https://minio.test/");
+    }
+
+    [Theory] // AC-122 / DEF-094: everyone else is refused, including roles that can read the meeting itself
+    [InlineData("Member")]
+    [InlineData("Reviewer")]
+    [InlineData("Submitter")]
+    public async Task Recording_url_is_refused_for_an_unauthorized_role(string role)
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var app = WithFakeStore(factory);
+        var key = await SeedMeetingAsync(app);
+        await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", VideoForm("video/mp4", "board.mp4"));
+
+        // A Member can open the meeting detail perfectly well - it is specifically the RECORDING, which
+        // NFR-025 classes as sensitive, that they may not reach.
+        var resp = await Client(app, role).GetAsync($"/api/meetings/{key}/recording/url");
+        resp.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact] // AC-008

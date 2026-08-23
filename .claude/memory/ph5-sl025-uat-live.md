@@ -30,8 +30,16 @@ needs it on `PATH`. acmp-admin **does** hold `ssm:StartSession` (not just `SendC
 **Login works now.** All four seeded accounts (`chairman`/`secretary`/`member`/`auditor`) complete a
 real browser PKCE login and JIT-provision with the correct role. Re-run the proof any time with
 `node src/Acmp.Web/uat-login-probe.mjs https://uat.acmp.anas7ammo.dev` — it is committed, not a temp
-script. Passwords were rotated off the seed value; the probe tries the temp one then
-`Uat_Acmp#2026_Rotated`.
+script. Passwords were rotated off the seed value; the probe tries the temp one, then the rotated one
+which it now reads from **`ACMP_UAT_PASSWORD`**.
+
+> ⚠ **The rotated password used to be written out in plaintext right here, and this file is loaded
+> into agent context every session.** A 2026-08-16 scan found the same literal in **five** tracked
+> files (both probe scripts, two handoff notes, and this one), while the comment defending it in
+> `uat-login-probe.mjs` claimed *"the value never leaves this file"*. It was scrubbed from all five and
+> the probes now **require** `ACMP_UAT_PASSWORD` with no fallback. **It is still in git history**, so
+> the value is revoked by rotation, not by this edit. Never write a credential back into this file —
+> record what it was *for* and that it was rotated, never the value.
 
 **Four defects fixed in this session, all of the silent-success family:**
 - **DEF-023** — realm-export registered no cloud hostname. `reconcile.sh` now replaces

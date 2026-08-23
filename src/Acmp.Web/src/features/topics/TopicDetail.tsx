@@ -14,10 +14,14 @@
  *  - Dates are Gregorian, localized via Intl (guardrail 9).
  */
 import { useContext, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic, type TopicDetail as Topic } from '../../api/topics';
+import {
+  useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, type TopicDetail as Topic,
+} from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
+import { Dialog } from '../../components/ui/Dialog';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
 import { Tag, Badge } from '../../components/ui/Chip';
@@ -25,9 +29,9 @@ import { Button } from '../../components/ui/Button';
 import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
-import { statusTone, initials } from './topicMeta';
+import { statusTone, initials, TOPIC_TYPE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
-import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
+import { AcmpAuthContext, hasRole } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
 const TABS = ['overview', 'comments', 'attachments', 'votes', 'history'] as const;
@@ -100,7 +104,37 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const fmt = useDateFmt();
   const urgent = topic.urgency !== 'Normal';
   const prepare = usePrepareTopic(topic.key);
+  const reactivate = useReactivateTopic(topic.key);
+  const close = useCloseTopic(topic.key);
+  const reopen = useReopenTopic(topic.key);
+  const navigate = useNavigate();
   const [prepareErr, setPrepareErr] = useState<string | null>(null);
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
+  const convert = useConvertTopic(topic.key);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertReason, setConvertReason] = useState('');
+  const [convertType, setConvertType] = useState('');
+  // FR-164 / DW-032 — triage-time reclassification. Chairman/Secretary only, mirroring the scope and
+  // classification gates in EditTopic: the server refuses anyone else, and offering a control that can
+  // only be refused is worse than not offering it.
+  const reclassify = useReclassifyTopic(topic.key);
+  const [reclassifyOpen, setReclassifyOpen] = useState(false);
+  const [reclassifyType, setReclassifyType] = useState('');
+  const auth = useContext(AcmpAuthContext);
+  const mayReclassify = !!auth && hasRole(auth, 'secretary', 'chairman');
+  const preAccept = ['Draft', 'Submitted', 'Triage', 'Reopened'].includes(topic.status);
+
+  // FR-160/FR-161/FR-045 — the lifecycle EXITS. Each of these transitions existed on the aggregate
+  // with no caller (DEF-084): a Decided topic could never be closed, a Deferred one never came back,
+  // and a Rejected or Closed one could never be reopened. Same show-and-enforce rule as prepare —
+  // the button is offered on the right status and the backend refuses the wrong role.
+  const onLifecycle = (run: () => void) => {
+    setPrepareErr(null);
+    run();
+  };
+  const lifecycleError = (e: unknown) =>
+    setPrepareErr(e instanceof ApiError && e.status === 403 ? t('topics.prepare.forbidden') : t('topics.prepare.error'));
   // W4 (AC-035): move an Accepted topic into the agenda pool. Show-and-enforce — the button is offered
   // for any Accepted topic and the backend 403s a non-owner/non-Secretary, surfaced inline.
   const onPrepare = () => {
@@ -119,6 +153,13 @@ function DetailHeader({ topic }: { topic: Topic }) {
           {urgent && (
             <span className="dt-urgent">
               <Icon name="warnTriangle" size={12} aria-hidden /> {t(`topics.urgency.${topic.urgency}`)}
+            </span>
+          )}
+          {/* FR-163 / C-AUTHZ-04. ⚠ ICON + TEXT, never colour alone (WCAG 1.4.1 / NFR-034): the whole
+              point of this badge is that a reader must not have to infer "restricted" from a hue. */}
+          {topic.restricted && (
+            <span className="dt-restricted">
+              <Icon name="lock" size={12} aria-hidden /> {t('topics.restricted.badge')}
             </span>
           )}
         </div>
@@ -145,11 +186,229 @@ function DetailHeader({ topic }: { topic: Topic }) {
             <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.prepare.button')}
           </Button>
         )}
+        {/* AC-110 — the affordance the revisit date never had. */}
+        {topic.status === 'Deferred' && (
+          <Button
+            onClick={() => onLifecycle(() => reactivate.mutate(topic.id, { onError: lifecycleError }))}
+            loading={reactivate.isPending}
+          >
+            <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.reactivate.button')}
+          </Button>
+        )}
+        {/* AC-109 — Decided was a permanent resting state until this existed. */}
+        {topic.status === 'Decided' && (
+          <Button
+            onClick={() => onLifecycle(() => close.mutate(topic.id, { onError: lifecycleError }))}
+            loading={close.isPending}
+          >
+            <Icon name="checkCircle" size={15} aria-hidden /> {t('topics.close.button')}
+          </Button>
+        )}
+        {/* AC-113 / FR-030 — convert to another type. Shares the Decided status with Close, so this
+            header carries two lifecycle actions at once; the crowding was checked in a browser, not
+            just in JSDOM. No .dc.html covers a topic-type conversion affordance (the Usage Map maps
+            topic detail to "ACMP Backlog & Topic.dc.html", whose only "convert" hits are the
+            research→topic and decision→ADR flows), so this is a NO-REFERENCE COMPOSITION built from
+            the design system and the verified PR #289 button pattern (INV-014). */}
+        {topic.status === 'Decided' && (
+          <Button onClick={() => { setConvertReason(''); setConvertType(''); setConvertOpen(true); }}>
+            <Icon name="refresh" size={15} aria-hidden /> {t('topics.convert.button')}
+          </Button>
+        )}
+        {/* AC-143 / FR-164 — correct a mis-typed topic during triage. Before this the only remedy was
+            reject-and-resubmit, which discards the record and its comments. Shown only pre-Accept and
+            only to the two roles the server admits; the aggregate refuses past Triage regardless.
+            NO-REFERENCE COMPOSITION (INV-014): "ACMP Backlog & Topic.dc.html" specifies no triage
+            reclassification affordance, so this reuses the verified convert-button pattern beside it. */}
+        {preAccept && mayReclassify && (
+          <Button variant="secondary" onClick={() => { setReclassifyType(''); setReclassifyOpen(true); }}>
+            <Icon name="funnel" size={15} aria-hidden /> {t('topics.reclassify.button')}
+          </Button>
+        )}
+        {/* AC-112 / FR-045 — approved in the original plan, unbuilt until now. */}
+        {(topic.status === 'Rejected' || topic.status === 'Closed') && (
+          <Button onClick={() => { setReopenReason(''); setReopenOpen(true); }}>
+            <Icon name="warnTriangle" size={15} aria-hidden /> {t('topics.reopen.button')}
+          </Button>
+        )}
         <Button disabled title={t('topics.comingSoon')}>
           <Icon name="calendar" size={15} aria-hidden /> {t('detail.addAgenda')}
         </Button>
-        <Button variant="secondary" disabled title={t('topics.comingSoon')}>{t('detail.edit')}</Button>
+        {/* AC-034: live as of DEC-045. Shown for every non-immutable topic and NOT role-gated here —
+            the server decides what this actor may change (the submitter edits their own pre-Accept
+            topic; a Secretary edits metadata after). Hiding it by role would also hide it from the
+            owner, who is resolved per-topic by ABAC rather than by any claim the SPA can read. */}
+        {!['Decided', 'Closed', 'Converted'].includes(topic.status) && (
+          <Button variant="secondary" onClick={() => navigate(`/topics/${topic.key}/edit`)}>{t('detail.edit')}</Button>
+        )}
         {prepareErr && <span className="dt-prepare-err" role="alert">{prepareErr}</span>}
+        {/*
+          AC-112 — the justification is MANDATORY (FR-044's rule), so the confirm stays disabled
+          until one is typed rather than letting the server refuse a request the UI could have
+          prevented.
+        */}
+        <Dialog
+          open={reopenOpen}
+          onClose={() => setReopenOpen(false)}
+          icon={<Icon name="warnTriangle" size={20} aria-hidden />}
+          title={t('topics.reopen.title')}
+          description={t('topics.reopen.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setReopenOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={reopen.isPending}
+                disabled={reopenReason.trim().length === 0}
+                onClick={() =>
+                  onLifecycle(() =>
+                    reopen.mutate(
+                      { topicId: topic.id, reason: reopenReason.trim() },
+                      { onSuccess: () => setReopenOpen(false), onError: lifecycleError },
+                    ))}
+              >
+                {t('topics.reopen.confirm')}
+              </Button>
+            </>
+          }
+        >
+          {/*
+            The design system's own `.field-label` / `.textarea`, NOT bespoke classes. The first
+            version hand-rolled both and the visual check caught two defects a green suite could
+            not: `var(--radius-2)` does not exist so the corners fell back to SQUARE against a
+            rounded system, and without `min-inline-size: 0` the textarea collapsed to 34px inside
+            the dialog's flex body. `.textarea` already carries both, plus focus and invalid states.
+          */}
+          <label className="field-label" htmlFor="reopen-reason">{t('topics.reopen.label')}</label>
+          <textarea
+            id="reopen-reason"
+            className="textarea"
+            rows={3}
+            value={reopenReason}
+            onChange={(e) => setReopenReason(e.target.value)}
+          />
+        </Dialog>
+        {/*
+          AC-113 / FR-030. BOTH inputs are mandatory: the target type (there is no sensible default —
+          defaulting would let a mis-click retire a Decided topic into the wrong type) and the reason,
+          which the requirement names explicitly. Same design-system classes as the reopen dialog —
+          `.field-label` / `.textarea` / `.input`, never bespoke CSS (DW-031).
+        */}
+        <Dialog
+          open={convertOpen}
+          onClose={() => setConvertOpen(false)}
+          icon={<Icon name="refresh" size={20} aria-hidden />}
+          title={t('topics.convert.title')}
+          description={t('topics.convert.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setConvertOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={convert.isPending}
+                disabled={convertType === '' || convertReason.trim().length === 0}
+                onClick={() =>
+                  onLifecycle(() =>
+                    convert.mutate(
+                      { topicId: topic.id, targetType: convertType, reason: convertReason.trim() },
+                      {
+                        // The topic under the user is now Converted and terminal, so staying here
+                        // would show a dead record. Navigate to the successor the server just made.
+                        onSuccess: (created) => { setConvertOpen(false); navigate(`/topics/${created.key}`); },
+                        onError: lifecycleError,
+                      },
+                    ))}
+              >
+                {t('topics.convert.confirm')}
+              </Button>
+            </>
+          }
+        >
+          {/*
+            Each label+control is wrapped in `.field`, the design system's own grouping class, because
+            `.field + .field { margin-block-start: var(--sp-4) }` is what separates consecutive fields.
+            The reopen dialog omits it and looks fine only because it has a SINGLE field — with two,
+            the visual check showed the second label sitting flush against the select above it. Found
+            by looking at it; JSDOM reports both labels present either way.
+          */}
+          <div className="field">
+            <label className="field-label" htmlFor="convert-type">{t('topics.convert.typeLabel')}</label>
+            <select
+              id="convert-type"
+              className="input"
+              value={convertType}
+              onChange={(e) => setConvertType(e.target.value)}
+            >
+              <option value="">{t('topics.convert.typePlaceholder')}</option>
+              {/* The current type is excluded: converting a topic to what it already is is refused by
+                  the server, so offering it would be an option that can only fail. */}
+              {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+                <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="convert-reason">{t('topics.convert.label')}</label>
+            <textarea
+              id="convert-reason"
+              className="textarea"
+              rows={3}
+              value={convertReason}
+              onChange={(e) => setConvertReason(e.target.value)}
+            />
+          </div>
+        </Dialog>
+        {/*
+          AC-143 / FR-164 — triage-time reclassification. ONE field, not two: TopicSource is also
+          correctable through the endpoint (the domain method takes both), but no surface in this
+          product has ever displayed or offered a source, and it has no bilingual labels at all —
+          inventing nine Arabic governance terms against no canonical glossary is what NFR-039 and
+          DW-069 forbid. The topic's existing source is sent back unchanged, and DW-076 carries the
+          picker. No reason field: unlike convert and reopen, reclassification records no status
+          transition, so there is nothing for a reason to attach to — the audit diff is the record.
+        */}
+        <Dialog
+          open={reclassifyOpen}
+          onClose={() => setReclassifyOpen(false)}
+          icon={<Icon name="funnel" size={20} aria-hidden />}
+          title={t('topics.reclassify.title')}
+          description={t('topics.reclassify.subtitle')}
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setReclassifyOpen(false)}>{t('common.cancel')}</Button>
+              <Button
+                variant="primary"
+                loading={reclassify.isPending}
+                disabled={reclassifyType === ''}
+                onClick={() =>
+                  onLifecycle(() =>
+                    reclassify.mutate(
+                      { topicId: topic.id, type: reclassifyType, source: topic.source },
+                      { onSuccess: () => setReclassifyOpen(false), onError: lifecycleError },
+                    ))}
+              >
+                {t('topics.reclassify.confirm')}
+              </Button>
+            </>
+          }
+        >
+          <div className="field">
+            <label className="field-label" htmlFor="reclassify-type">{t('topics.reclassify.typeLabel')}</label>
+            <select
+              id="reclassify-type"
+              className="input"
+              value={reclassifyType}
+              onChange={(e) => setReclassifyType(e.target.value)}
+            >
+              <option value="">{t('topics.reclassify.typePlaceholder')}</option>
+              {/* The current type is excluded — the server treats it as a no-op, so offering it would
+                  be a control that cannot do anything. */}
+              {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+                <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+              ))}
+            </select>
+          </div>
+        </Dialog>
       </div>
     </div>
   );

@@ -158,7 +158,8 @@ export function AgendaBuilder() {
   const onMove = (item: AgendaItem, delta: 1 | -1) => {
     moveItem.mutate({ meetingId, topicId: item.topicId, delta });
     // Announce synchronously — the live order re-renders from the invalidated query.
-    setAnnounce(t(delta < 0 ? 'meetings.announce.movedUp' : 'meetings.announce.movedDown', { key: item.topicKey }));
+    setAnnounce(t(delta < 0 ? 'meetings.announce.movedUp' : 'meetings.announce.movedDown',
+      { key: item.topicKey || t('meetings.restrictedKey') }));
   };
 
   const onTimebox = (item: AgendaItem, dir: 1 | -1) => {
@@ -175,7 +176,7 @@ export function AgendaBuilder() {
 
   const onRemove = (item: AgendaItem) => {
     removeItem.mutate({ meetingId, topicId: item.topicId });
-    setAnnounce(t('meetings.announce.removed', { key: item.topicKey }));
+    setAnnounce(t('meetings.announce.removed', { key: item.topicKey || t('meetings.restrictedKey') }));
   };
 
   // Native drag: pool→agenda = Add; within-agenda = single ±1 nudge toward the drop target.
@@ -462,6 +463,12 @@ function AgendaItemRow({
   onItemDrop: (target: AgendaItem) => void;
 }) {
   const { t } = useTranslation();
+  // FR-163 / AC-114 — an agenda item whose topic the caller may not see arrives with an EMPTY key and
+  // title. The server sends blanks rather than the word "Restricted" on purpose: a server-side English
+  // string would break the EN+AR guardrail, so the placeholder is localized HERE. Substituted into the
+  // aria-labels too — an empty accessible name is a WCAG failure, not just an empty-looking chip.
+  const displayKey = item.topicKey || t('meetings.restrictedKey');
+  const displayTitle = item.topicTitle || t('meetings.restrictedTitle');
   return (
     <li
       className="mt-item"
@@ -489,23 +496,23 @@ function AgendaItemRow({
 
       <div className="mt-item-body">
         <div className="mt-item-keyrow">
-          <span className="mt-key">{item.topicKey}</span>
+          <span className="mt-key">{displayKey}</span>
           {item.urgent && (
             <span className="mt-urgent-pill">
               <Icon name="warnTriangle" size={10} aria-hidden /> {t('meetings.urgent')}
             </span>
           )}
         </div>
-        <div className="mt-item-title">{item.topicTitle}</div>
+        <div className="mt-item-title">{displayTitle}</div>
         <div className="mt-item-controls">
           <span className="mt-timebox">
             <Icon name="clock" size={14} aria-hidden /> {t('meetings.timebox')}
             <span className="mt-stepper">
-              <button type="button" className="mt-step" onClick={() => onTimebox(item, -1)} aria-label={t('meetings.decTime', { key: item.topicKey })}>
+              <button type="button" className="mt-step" onClick={() => onTimebox(item, -1)} aria-label={t('meetings.decTime', { key: displayKey })}>
                 <Icon name="minus" size={13} aria-hidden />
               </button>
               <span className="mt-step-val">{t('meetings.minShort', { count: item.timeboxMinutes })}</span>
-              <button type="button" className="mt-step" onClick={() => onTimebox(item, 1)} aria-label={t('meetings.incTime', { key: item.topicKey })}>
+              <button type="button" className="mt-step" onClick={() => onTimebox(item, 1)} aria-label={t('meetings.incTime', { key: displayKey })}>
                 <Icon name="plus" size={13} aria-hidden />
               </button>
             </span>
@@ -514,7 +521,7 @@ function AgendaItemRow({
             <Icon name="user" size={14} aria-hidden /> {t('meetings.presenter')}
             <span className="mt-presenter-pick">
               <Select
-                ariaLabel={t('meetings.presenterFor', { key: item.topicKey })}
+                ariaLabel={t('meetings.presenterFor', { key: displayKey })}
                 placeholder={t('meetings.presenterPick')}
                 value={item.presenterUserId ?? ''}
                 onChange={(v) => onPresenter(item, v)}
@@ -527,13 +534,13 @@ function AgendaItemRow({
       </div>
 
       <div className="mt-item-tools">
-        <button type="button" className="mt-tool" onClick={() => onMove(item, -1)} disabled={isFirst} aria-label={t('meetings.moveUp', { key: item.topicKey })}>
+        <button type="button" className="mt-tool" onClick={() => onMove(item, -1)} disabled={isFirst} aria-label={t('meetings.moveUp', { key: displayKey })}>
           <Icon name="chevronUp" size={13} aria-hidden />
         </button>
-        <button type="button" className="mt-tool" onClick={() => onMove(item, 1)} disabled={isLast} aria-label={t('meetings.moveDown', { key: item.topicKey })}>
+        <button type="button" className="mt-tool" onClick={() => onMove(item, 1)} disabled={isLast} aria-label={t('meetings.moveDown', { key: displayKey })}>
           <Icon name="chevronDown" size={13} aria-hidden />
         </button>
-        <button type="button" className="mt-tool mt-tool-danger" onClick={() => onRemove(item)} aria-label={t('meetings.removeItem', { key: item.topicKey })}>
+        <button type="button" className="mt-tool mt-tool-danger" onClick={() => onRemove(item)} aria-label={t('meetings.removeItem', { key: displayKey })}>
           <Icon name="x" size={13} aria-hidden />
         </button>
       </div>
@@ -577,9 +584,9 @@ export function AgendaPreview({ items, usedMinutes }: { items: AgendaItem[]; use
           <li key={item.topicId} className="mt-preview-item">
             <span className="mt-preview-num" aria-hidden="true">{i + 1}</span>
             <span className="mt-preview-body">
-              <span className="mt-preview-itemtitle">{item.topicTitle}</span>
+              <span className="mt-preview-itemtitle">{item.topicTitle || t('meetings.restrictedTitle')}</span>
               <span className="mt-preview-sub">
-                <span className="mt-preview-key">{item.topicKey}</span>
+                <span className="mt-preview-key">{item.topicKey || t('meetings.restrictedKey')}</span>
                 <span className="mt-preview-dot" aria-hidden="true">·</span>
                 <span className="mt-preview-presenter">{item.presenterName ?? t('meetings.presenterUnset')}</span>
               </span>

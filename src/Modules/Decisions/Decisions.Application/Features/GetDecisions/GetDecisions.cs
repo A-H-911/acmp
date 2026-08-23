@@ -3,6 +3,7 @@ using Acmp.Modules.Decisions.Application.Contracts;
 using Acmp.Modules.Decisions.Application.Internal;
 using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Application.Pagination;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,9 +42,13 @@ public sealed class GetDecisionsHandler : IRequestHandler<GetDecisionsQuery, IRe
             .OrderByDescending(d => d.IssuedAt ?? d.CreatedAt)
             .ThenByDescending(d => d.Id);
 
+        // DEF-104: cap the caller-supplied limit. ⚠ A NULL limit deliberately still means "no Take":
+        // this read is not caller-amplifiable — with no limit it reads the register once, which is what
+        // the reports page needs — so introducing a cap where none existed would be a silent truncation
+        // (DEF-103's shape) rather than a fix. Only the value the CALLER supplies is bounded here.
         if (request.Limit is int n and > 0)
         {
-            query = query.Take(n);
+            query = query.Take(PageSize.Clamp(n));
         }
 
         var decisions = await query.ToListAsync(ct);

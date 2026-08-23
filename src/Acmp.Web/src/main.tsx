@@ -25,6 +25,7 @@ import './styles/controls.css';
 import './styles/overlays.css';
 import { appRoutes } from './App.tsx';
 import { AuthProvider } from './auth/AuthProvider';
+import { MobileNotice } from './components/shell/MobileNotice';
 import { queryClient } from './api/queryClient';
 
 const router = createBrowserRouter(appRoutes);
@@ -33,6 +34,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        {/* NFR-063 / DW-061 — mounted here rather than in AppShell because the shell wraps only
+            authenticated routes, and /login is the first thing a phone user reaches. CSS-only
+            visibility: `display: none` above 767.98px, so it costs the desktop path nothing. */}
+        <MobileNotice />
         <RouterProvider router={router} />
       </AuthProvider>
     </QueryClientProvider>

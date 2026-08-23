@@ -1,10 +1,12 @@
 ﻿using Acmp.Modules.Actions.Infrastructure.Persistence;
 using Acmp.Modules.Decisions.Infrastructure.Persistence;
+using Acmp.Modules.Dependencies.Infrastructure.Persistence;
 using Acmp.Modules.Meetings.Infrastructure.Persistence;
 using Acmp.Modules.Membership.Infrastructure.Persistence;
 using Acmp.Modules.Notifications.Infrastructure.Persistence;
 using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
+using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +47,9 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
         await using (var db = NewActionsSql()) await db.Database.MigrateAsync();
         await using (var db = NewRisksSql()) await db.Database.MigrateAsync();
         await using (var db = NewNotificationsSql()) await db.Database.MigrateAsync();
+        // SL-030: the confidentiality egress filter runs over these two, so they must be real here.
+        await using (var db = NewDependenciesSql()) await db.Database.MigrateAsync();
+        await using (var db = NewTraceabilitySql()) await db.Database.MigrateAsync();
         await using (var db = NewAuditSql()) await db.Database.MigrateAsync(); // audit schema + Audit_DenyMutation (D-16)
     }
 
@@ -72,6 +77,12 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
 
     public NotificationsDbContext NewNotificationsSql() => new(
         SqlOptions<NotificationsDbContext>(NotificationsDbContext.Schema), Clock, CurrentUser);
+
+    public DependenciesDbContext NewDependenciesSql() => new(
+        SqlOptions<DependenciesDbContext>(DependenciesDbContext.Schema), Clock, CurrentUser);
+
+    public TraceabilityDbContext NewTraceabilitySql() => new(
+        SqlOptions<TraceabilityDbContext>(TraceabilityDbContext.Schema), Clock, CurrentUser);
 
     // AuditDbContext is not a ModuleDbContext (no clock/user) — its own schema "audit" (BL-066).
     public AuditDbContext NewAuditSql() => new(SqlOptions<AuditDbContext>(AuditDbContext.Schema));

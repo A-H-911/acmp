@@ -2,6 +2,9 @@
 using Acmp.Modules.Meetings.Application.Contracts;
 using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Contracts.Topics;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,15 +21,48 @@ public sealed record GetMeetingDetailQuery(string Key) : IRequest<MeetingDetailD
 public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQuery, MeetingDetailDto?>
 {
     private readonly IMeetingsDbContext _db;
+    private readonly ICommitteeDirectory _directory;
+    private readonly ICurrentUser _currentUser;
+    private readonly ITopicConfidentiality _confidentiality;
 
-    public GetMeetingDetailHandler(IMeetingsDbContext db) => _db = db;
+    public GetMeetingDetailHandler(IMeetingsDbContext db, ICommitteeDirectory directory,
+        ICurrentUser currentUser, ITopicConfidentiality confidentiality)
+    {
+        _db = db;
+        _directory = directory;
+        _currentUser = currentUser;
+        _confidentiality = confidentiality;
+    }
 
     public async Task<MeetingDetailDto?> Handle(GetMeetingDetailQuery request, CancellationToken ct)
     {
+        // DEF-073 / AC-011 — null for a committee member, the caller's own meetings for a guest.
+        var visible = await GuestPresenterScope.MeetingIdsAsync(_db, _directory, _currentUser, ct);
+
         var meeting = await _db.Meetings.AsNoTracking().FirstOrDefaultAsync(m => m.Key == request.Key, ct);
+
+        // 403 AND NOT 404, for the reason GuestSurfaceMiddleware already argues about the paths it
+        // blocks: the guest IS authenticated and the meeting does exist, so "not found" would send the
+        // SPA down a missing-resource path for what is an authorization answer — and AC-011 says 403.
+        //
+        // ⚠ A MISSING KEY TAKES THE SAME ANSWER, DELIBERATELY. Answering 404 for an unknown key and 403
+        // for a known one turns this route into an existence oracle for a guest, who can no longer see
+        // the list that would have told them. One answer for both leaves nothing to probe.
+        if (visible is not null && (meeting is null || !visible.Contains(meeting.PublicId)))
+            throw new ForbiddenAccessException("This meeting is outside your guest session's scope.");
+
         if (meeting is null) return null;
 
         var agenda = await _db.Agendas.AsNoTracking().FirstOrDefaultAsync(a => a.MeetingId == meeting.PublicId, ct);
+
+        // FR-163 / AC-114 — THE ONLY READ-ALL PATH THAT PROJECTS AN AGENDA. AllowedRoles is empty here, so a
+        // plain Member opens this; every other MeetingMapping agenda caller is Chairman/Secretary-gated and
+        // uses ToDtoForEditor. AgendaItem froze the topic's key and title at build time, so without this the
+        // meeting hands a Restricted topic's title to the whole committee.
+        //
+        // ⚠ RESOLVED ONCE PER MEETING, NEVER PER ITEM — one cross-module call for the whole agenda. Asking
+        // per item would be an N+1 over every meeting the committee ever opens.
+        var hidden = (await _confidentiality.GetHiddenTopicIdsAsync(ct)).ToHashSet();
 
         return new MeetingDetailDto(
             meeting.PublicId, meeting.Key, meeting.Title, meeting.CommitteeId,
@@ -34,7 +70,7 @@ public sealed class GetMeetingDetailHandler : IRequestHandler<GetMeetingDetailQu
             meeting.Type.ToString(), meeting.Mode.ToString(),
             meeting.Location, meeting.JoinUrl, meeting.ChairUserId, meeting.ChairName,
             meeting.StartedAt, meeting.HeldAt,
-            agenda is null ? null : MeetingMapping.ToDto(agenda),
+            agenda is null ? null : MeetingMapping.ToDto(agenda, hidden),
             meeting.Attendees.OrderBy(a => a.Name).Select(MeetingMapping.ToDto).ToList(),
             meeting.Discussions.Select(MeetingMapping.ToDto).ToList(),
             BuildRecording(meeting));

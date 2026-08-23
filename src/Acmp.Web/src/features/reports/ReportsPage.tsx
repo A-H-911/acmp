@@ -11,9 +11,10 @@
  * (per-week/quarter series the app doesn't keep) and seam cards (attendance / per-ballot vote
  * attribution — not on the summary DTOs) render an honest "Phase 3" empty state.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toPng } from 'html-to-image';
 import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
 import { useActionsRegister } from '../../api/actions';
@@ -139,28 +140,81 @@ export function ReportsPage() {
         <EmptyState icon="reports" title={t('reports.empty.title')} body={t('reports.empty.body')} />
       ) : (
         <div className="rpt-grid">
-          {cards.map((c) => <ReportCardView key={c.key} card={c} />)}
+          {cards.map((c) => <ReportCardView key={c.key} card={c} view={view} />)}
         </div>
       )}
     </section>
   );
 }
 
-function ReportCardView({ card }: { card: ReportCard }) {
+function ReportCardView({ card, view }: { card: ReportCard; view: ReportView }) {
   const { t } = useTranslation();
+  const cardRef = useRef<HTMLElement>(null);
+  const [pngState, setPngState] = useState<'idle' | 'busy' | 'failed'>('idle');
+  const title = t(card.titleKey);
+  // FR-142's PNG half (DW-038, DEC-069). Only cards that actually draw something can be
+  // exported — an honest-empty card has no chart to hand anyone.
+  const canExportPng = card.kind !== 'empty';
+
+  const onExportPng = async () => {
+    const el = cardRef.current;
+    if (!el) return;
+    setPngState('busy');
+    try {
+      // ponytail: no fontEmbedCSS cache. html-to-image already caches the woff2 fetches
+      // internally, and caching the assembled CSS would have to be keyed by locale — the
+      // ar bundle needs strictly more @font-face rules than en. Add one only if a
+      // measurement says the per-click assembly hurts.
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
+        // The export/drill controls live INSIDE the card, so they would be rasterised
+        // into the picture the user is about to paste into a document.
+        filter: (node) => !(node instanceof HTMLElement && node.classList.contains('rpt-card-tools')),
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `acmp-report-${view}-${card.key}.png`;
+      a.click();
+      setPngState('idle');
+    } catch {
+      // A click that silently does nothing is the worst outcome here — say so in the card.
+      setPngState('failed');
+    }
+  };
+
   return (
-    <section className="rpt-card">
+    <section className="rpt-card" ref={cardRef}>
       <div className="rpt-card-head">
         <div>
-          <h2 className="rpt-card-title">{t(card.titleKey)}</h2>
+          <h2 className="rpt-card-title">{title}</h2>
           <div className="rpt-card-sub">{t(card.subKey, card.subVars)}</div>
         </div>
-        {card.to && (
-          <Link className="rpt-drill" to={card.to} aria-label={t('reports.drill', { title: t(card.titleKey) })}>
-            <Icon name="arrowUpRight" size={15} aria-hidden />
-          </Link>
-        )}
+        <div className="rpt-card-tools">
+          {canExportPng && (
+            <button
+              type="button"
+              className="rpt-png"
+              onClick={onExportPng}
+              disabled={pngState === 'busy'}
+              aria-label={t('reports.exportPng', { title })}
+            >
+              <Icon name="download" size={15} aria-hidden />
+            </button>
+          )}
+          {card.to && (
+            <Link className="rpt-drill" to={card.to} aria-label={t('reports.drill', { title })}>
+              <Icon name="arrowUpRight" size={15} aria-hidden />
+            </Link>
+          )}
+        </div>
       </div>
+
+      {pngState === 'failed' && (
+        <p className="rpt-card-note" role="status">
+          <Icon name="alertCircle" size={13} aria-hidden />
+          {t('reports.exportPngFailed')}
+        </p>
+      )}
 
       {card.kpi != null && (
         <div className="rpt-kpi">

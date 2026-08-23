@@ -3,7 +3,7 @@
  * execution topic") or from an accepted recommendation ("Convert"). Unlike the P11e Convert-to-ADR confirm
  * (server pre-fills everything), a topic needs fields research doesn't carry — so this is a short FORM, not a
  * bare confirm. No-reference composition (guardrail #14 — the design shows only the button); built in the
- * research module's own dialog style (Dialog + Field + Select + shared TokenInput), mirroring AddFinding.
+ * research module's own dialog style (Dialog + Field + Select + the shared StreamPicker), mirroring AddFinding.
  *
  * Pre-fill: Title ← mission title / recommendation statement (trimmed to the 120-char topic limit); Description
  * ← the mission question / recommendation rationale. Justification has no research source (typed) and Streams
@@ -22,7 +22,7 @@ import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
 import { Field, Input, Textarea } from '../../components/ui/Field';
 import { Select } from '../../components/ui/Select';
-import { TokenInput } from '../../components/ui/TokenInput';
+import { StreamPicker } from '../../components/ui/StreamPicker';
 import { Icon } from '../../components/icons';
 import { ApiError } from '../../api/apiClient';
 import { useConvertResearchToTopic } from '../../api/topics';
@@ -139,15 +139,13 @@ export function ConvertToTopicDialog({ onClose, missionId, recommendationId, see
         </Field>
         <Field label={t('research.convert.fStreams')} required error={errors.streams}>
           {(p) => (
-            <TokenInput
+            <StreamPicker
               id={p.id}
               ariaInvalid={p['aria-invalid']}
               describedby={p['aria-describedby']}
               values={streams}
               onChange={setStreams}
-              placeholder={t('research.convert.fStreamsPh')}
               ariaLabel={t('research.convert.fStreams')}
-              removeLabel={(v) => t('topics.removeFilter', { label: v })}
             />
           )}
         </Field>

@@ -11,6 +11,7 @@ import type { RiskSummary } from '../../api/risks';
 import type { DependencySummary } from '../../api/dependencies';
 
 const topic = (p: Partial<TopicSummary>): TopicSummary => ({
+  restricted: false,
   id: 'i', key: 'TOP-1', title: 't', type: 'ArchitectureDecision', status: 'Triage', urgency: 'Normal',
   scope: 'SingleStream', streams: ['identity'], ownerId: null, ownerName: null, priority: 0,
   timesDeferred: 0, ageDays: 1, slaBreached: false, createdAt: '2026-01-01', ...p,

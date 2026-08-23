@@ -75,9 +75,11 @@ public sealed class AddFindingHandler : IRequestHandler<AddFindingCommand>
     public async Task Handle(AddFindingCommand request, CancellationToken ct)
     {
         var mission = await Load(_db, request.MissionId, ct);
-        mission.AddFinding(request.Summary, request.Detail, request.Confidence);
+        var finding = mission.AddFinding(request.Summary, request.Detail, request.Confidence);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.FindingAdded", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        // DW-017: the CHILD is the subject, so AuditCapture's buffered diff (keyed by CLR type +
+        // PublicId) actually drains into this row. Subjecting it to the mission left before/after empty.
+        await _audit.EmitEnrichedAsync("Research.FindingAdded", nameof(Finding), finding.PublicId.ToString(), ct: ct);
     }
 
     internal static async Task<ResearchMission> Load(IResearchDbContext db, Guid id, CancellationToken ct) =>
@@ -101,7 +103,7 @@ public sealed class UpdateFindingHandler : IRequestHandler<UpdateFindingCommand>
         var mission = await AddFindingHandler.Load(_db, request.MissionId, ct);
         mission.UpdateFinding(request.FindingId, request.Summary, request.Detail, request.Confidence);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.FindingUpdated", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Research.FindingUpdated", nameof(Finding), request.FindingId.ToString(), ct: ct);
     }
 }
 
@@ -121,6 +123,6 @@ public sealed class VerifyFindingHandler : IRequestHandler<VerifyFindingCommand>
         var mission = await AddFindingHandler.Load(_db, request.MissionId, ct);
         mission.VerifyFinding(request.FindingId);
         await _db.SaveChangesAsync(ct);
-        await _audit.EmitEnrichedAsync("Research.FindingVerified", nameof(ResearchMission), mission.PublicId.ToString(), ct: ct);
+        await _audit.EmitEnrichedAsync("Research.FindingVerified", nameof(Finding), request.FindingId.ToString(), ct: ct);
     }
 }

@@ -43,6 +43,11 @@ namespace Acmp.Modules.Topics.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsRestricted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Justification")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

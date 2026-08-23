@@ -23,6 +23,8 @@ export interface TopicSummary {
   ageDays: number;
   slaBreached: boolean;
   createdAt: string;
+  /** FR-163 / C-AUTHZ-04. Only ever true on a row the caller is already allowed to see. */
+  restricted: boolean;
 }
 
 export interface PagedResult<T> {
@@ -197,6 +199,8 @@ export interface TopicDetail {
   ageDays: number;
   slaBreached: boolean;
   createdAt: string;
+  /** FR-163 / C-AUTHZ-04. Only ever true on a row the caller is already allowed to see. */
+  restricted: boolean;
   revisitOn: string | null;
   history: TopicHistoryEntry[];
   comments: TopicComment[];
@@ -228,14 +232,34 @@ export function useAcceptTopic() {
 }
 
 // AC-043 / FR-034: keyboard move-up/down reorder — a single ±1 priority delta within the topic's kanban column.
+/*
+ * Reorder within a kanban column. TWO addressing modes, and the second is not a convenience:
+ *   { delta: 1 | -1 }        — the keyboard move up/down buttons (AC-043 / FR-034).
+ *   { targetTopicId }        — drag: put this topic where that one is (AC-141 / FR-037).
+ *
+ * ⚠ DRAG MUST NOT SEND A DELTA. This client renders the filtered, sorted and page-truncated backlog
+ * result, so the index a user sees is not the index of the canonical column the server orders by. A
+ * positional delta computed here would move the topic somewhere else entirely whenever a filter is
+ * active, a sort persists from the table view, or the column runs past one page. Sending the target's
+ * identity makes our ordering irrelevant — the server resolves both ends itself.
+ */
+type MoveTopicPriorityArgs =
+  | { topicId: string; delta: 1 | -1; targetTopicId?: never }
+  | { topicId: string; targetTopicId: string; delta?: never };
+
 export function useMoveTopicPriority() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ topicId, delta }: { topicId: string; delta: 1 | -1 }) =>
-      api<void>(`/topics/${topicId}/priority/move`, {
+    mutationFn: (args: MoveTopicPriorityArgs) =>
+      api<void>(`/topics/${args.topicId}/priority/move`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delta }),
+        // Delta 0 is the server's "not this mode" sentinel; the validator refuses 0 with no target.
+        body: JSON.stringify(
+          'targetTopicId' in args && args.targetTopicId
+            ? { delta: 0, targetTopicId: args.targetTopicId }
+            : { delta: args.delta },
+        ),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'backlog'] }),
   });
@@ -267,6 +291,164 @@ export function usePrepareTopic(key: string | undefined) {
       qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
       qc.invalidateQueries({ queryKey: ['topics', 'prepared'] });
       qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-161 (AC-110): return a Deferred topic to Triage. THE AFFORDANCE IS THE REQUIREMENT HERE — the
+ * revisit date was already written by Defer and already rendered on the topic detail, so before this
+ * the product displayed a date it gave no way to act on. That is D-15's shape exactly (a transition
+ * shipped backend-only, core loop still broken, every backend test green), which is why AC-110
+ * carries a UI clause that this hook alone does not satisfy.
+ */
+export function useReactivateTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (topicId: string) => api<void>(`/topics/${topicId}/reactivate`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-160 (AC-109): close a Decided topic. Without it Decided was a permanent resting state and the
+ * committee's open list grew without bound. Show-and-enforce, like prepare: the button renders for a
+ * Decided topic and the backend refuses the wrong role.
+ */
+export function useCloseTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (topicId: string) => api<void>(`/topics/${topicId}/close`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-045 (AC-112): reopen a Closed or Rejected topic. The justification is MANDATORY — the server
+ * refuses an empty one (FR-044's rule for rejection and deferral), so the dialog requires it rather
+ * than letting the request fail.
+ */
+export function useReopenTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, reason }: { topicId: string; reason: string }) =>
+      api<void>(`/topics/${topicId}/reopen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/**
+ * FR-030 / AC-113: convert a Decided topic to a different type. Unlike the other lifecycle mutations
+ * this RETURNS the successor's key — the caller navigates to the new topic, because the one the user
+ * was looking at has just been retired to Converted and is no longer the live artifact.
+ */
+// FR-164 / DW-032: correct a topic's classification during triage. The endpoint takes BOTH type and
+// source because the domain method does; the UI sends the topic's existing source unchanged, since no
+// surface in the product has ever displayed or offered a TopicSource (DW-076).
+export function useReclassifyTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, type, source }: { topicId: string; type: string; source: string }) =>
+      api<void>(`/topics/${topicId}/reclassify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, source }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+export function useConvertTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, targetType, reason }: { topicId: string; targetType: string; reason: string }) =>
+      api<{ id: string; key: string }>(`/topics/${topicId}/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetType, reason }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+      // The successor is a brand-new topic and the original now carries a ConvertedTo edge, so the
+      // traceability panel on BOTH is stale.
+      qc.invalidateQueries({ queryKey: ['traceability'] });
+    },
+  });
+}
+
+/**
+ * FR-163 / C-AUTHZ-04 (DEC-063 d2). PUT the DESIRED state rather than POSTing an action, so a repeat
+ * is a no-op instead of a second classification event.
+ *
+ * Invalidates the BACKLOG as well as the detail because classifying can remove the topic from other
+ * people's lists — the caller's own view may look unchanged while everyone else's changed.
+ */
+export function useSetTopicConfidentiality(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, restricted }: { topicId: string; restricted: boolean }) =>
+      api<void>(`/topics/${topicId}/confidentiality`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restricted }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+    },
+  });
+}
+
+/** The editable half of a topic (AC-034). `scope` is omitted unless the editor changed it. */
+export interface TopicEdit {
+  title: string;
+  description: string;
+  justification: string;
+  urgency: string;
+  streams: string[];
+  systems: string[];
+  tags: string[];
+  scope?: string;
+}
+
+/**
+ * AC-034 edit (PUT /api/topics/{id}) — the caller this command had never had. Every field the
+ * endpoint accepts is sent on every save, because PUT REPLACES: omitting `systems` would clear it.
+ * `scope` is the one exception and is deliberately absent unless changed — the server reads a missing
+ * scope as "leave it alone" and only then skips the triage check (DEF-058).
+ *
+ * The field-level locks (content frozen after Acceptance, metadata until Decided) are enforced by the
+ * aggregate; the form disables what it must not send, and the server is what makes it true.
+ */
+export function useUpdateTopic(key: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, edit }: { topicId: string; edit: TopicEdit }) =>
+      api<void>(`/topics/${topicId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(edit),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['topics', 'detail', key] });
+      qc.invalidateQueries({ queryKey: ['topics', 'backlog'] });
     },
   });
 }

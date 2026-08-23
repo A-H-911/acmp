@@ -38,6 +38,11 @@ public sealed class TopicConfiguration : IEntityTypeConfiguration<Topic>
         b.Property(x => x.Scope).HasConversion<int>().IsRequired();
         b.Property(x => x.Source).HasConversion<int>().IsRequired();
         b.Property(x => x.Status).HasConversion<int>().IsRequired();
+        // FR-163 / C-AUTHZ-04. A plain scalar with a false default, so every existing row is
+        // unrestricted and no backfill is needed. Unlike Streams/Systems/Tags — which are serialized to
+        // single JSON columns and therefore cannot be filtered in SQL — this IS queryable, which is what
+        // lets the visibility predicate compose server-side instead of filtering a page in memory.
+        b.Property(x => x.IsRestricted).IsRequired().HasDefaultValue(false);
         b.Property(x => x.Priority);
         b.Property(x => x.SubmittedBySub).IsRequired().HasMaxLength(128);
         b.Property(x => x.SubmittedByName).IsRequired().HasMaxLength(256);

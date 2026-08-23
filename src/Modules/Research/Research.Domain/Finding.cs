@@ -5,10 +5,17 @@ using Acmp.Shared.Domain.ValueObjects;
 namespace Acmp.Modules.Research.Domain;
 
 // A discovery captured during a research mission (FR-113). Owned child of the ResearchMission aggregate
-// (reached only through it) — the same shape as Risk's Mitigation: a BaseEntity identity, a per-mission
+// (reached only through it) — the same shape as Risk's Mitigation: an entity identity, a per-mission
 // display key (FND-###), a bilingual summary + optional detail, a confidence band, and an independent-
 // verification flag. Mutation is driven by the ResearchMission aggregate so its invariants hold.
-public sealed class Finding : BaseEntity
+//
+// ⚠ AuditableEntity RATHER THAN BaseEntity, AND THE DIFFERENCE IS THE WHOLE OF DW-017.
+// AuditCaptureInterceptor iterates ChangeTracker.Entries<AuditableEntity>(), so while this was a
+// BaseEntity the capture could not see a Finding mutation AT ALL — and a child add leaves the parent
+// mission's own scalars unchanged, so nothing else was captured either. Every Research.Finding* audit
+// row therefore recorded THAT something happened with EMPTY before/after, which is weaker than it
+// looks: INV-005 held, a naive compliance check passed, and the row said nothing about what changed.
+public sealed class Finding : AuditableEntity
 {
     private Finding() { }
 

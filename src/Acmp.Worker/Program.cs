@@ -3,8 +3,10 @@ using Acmp.Modules.Actions.Application.Reminders;
 using Acmp.Modules.Membership.Application.Features.ExpireGuestAccess;
 using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Infrastructure.Observability;
 using Hangfire;
 using MediatR;
+using OpenTelemetry.Trace;
 using Serilog;
 
 // Acmp.Worker — the dedicated background-job host (ADR-0024). The API enqueues; this process runs the Hangfire
@@ -41,6 +43,22 @@ if (backgroundJobsEnabled)
         builder.Configuration.GetValue("Hangfire:PrepareSchema", true));
     builder.Services.AddHangfireServer();
 }
+
+// OpenTelemetry traces over OTLP (ADR-0014 / DW-062). This host had NONE: the API that ENQUEUES a job was
+// traced while the process that EXECUTES it emitted nothing, so a job's own DB work was invisible and any
+// span it did produce would have been orphaned. Endpoint from the same OTEL_* env vars the API reads.
+//
+// ⚠ NO AspNetCore instrumentation here — see the csproj note: that package would drag in a framework
+// reference this slim base image does not carry. Nothing is lost; this host serves no HTTP.
+// AcmpTelemetry.SourceName is registered because the Webex jobs this host runs dispatch further Hangfire
+// work through the same seam the API uses, so the source has to be exported from both hosts or those spans
+// exist in one process and vanish in the other.
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t => t
+        .AddSqlClientInstrumentation()
+        .AddSource(AcmpTelemetry.SourceName)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter());
 
 var host = builder.Build();
 
