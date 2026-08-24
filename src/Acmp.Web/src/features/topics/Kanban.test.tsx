@@ -168,6 +168,116 @@ describe('Kanban (P5b)', () => {
   /* DEF-103 — the board has no pager, so truncation must be stated AND actionable. Both directions are
      asserted: a silent prefix is the defect, and a notice on a complete board would be noise that
      trains the user to ignore it. */
+  // Moving a card UP was never exercised - only down, from the top card, which cannot go up. The
+  // two directions are separate call sites with opposite deltas, so one working proves nothing.
+  it('reorders a topic upward as well as downward (AC-043)', async () => {
+    const user = userEvent.setup();
+    const rows = [
+      row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' }),
+      row({ id: 't2', key: 'TOP-2026-202', status: 'Triage' }),
+    ];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+
+    await user.click(screen.getByRole('button', { name: /Move TOP-2026-202 up/ }));
+
+    expect(moveMutate).toHaveBeenCalledWith({ topicId: 't2', delta: -1 });
+  });
+
+  // Every one of these dialogs could be OPENED and none dismissed. Each sits over a board the
+  // secretary is working through, and each dismissal is its own handler on its own state.
+  it('dismisses the move popover without moving anything', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+    fireEvent.keyDown(card('TOP-2026-101'), { key: 'M' });
+    expect(screen.getByRole('button', { name: /Returned/ })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('button', { name: /Returned/ })).not.toBeInTheDocument();
+    expect(moveMutate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['Accepted', 'Accept'],
+    ['Returned', 'Return topic'],
+  ])('cancels the %s dialog without transitioning the topic', async (bucket, confirmLabel) => {
+    const user = userEvent.setup();
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+    fireEvent.keyDown(card('TOP-2026-101'), { key: 'M' });
+    await user.click(screen.getByRole('button', { name: new RegExp(bucket) }));
+    expect(screen.getByRole('button', { name: confirmLabel })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('button', { name: confirmLabel })).not.toBeInTheDocument();
+    expect(acceptMutate).not.toHaveBeenCalled();
+    expect(returnMutate).not.toHaveBeenCalled();
+  });
+
+  // The return dialog offers defer OR reject and only the default had ever been sent. They are
+  // different outcomes for the topic's author, so the radio has to reach the command.
+  it('returns a topic as rejected when that mode is chosen', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+    fireEvent.keyDown(card('TOP-2026-101'), { key: 'M' });
+    await user.click(screen.getByRole('button', { name: /Returned/ }));
+
+    await user.click(screen.getByRole('radio', { name: /reject/i }));
+    await user.type(screen.getByLabelText(/Reason/), 'Out of committee scope.');
+    await user.click(screen.getByRole('button', { name: 'Return topic' }));
+
+    expect(returnMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ topicId: 't1', mode: 'reject' }),
+      expect.anything(),
+    );
+  });
+
+  // Both transition commands have an onError arm and neither had run. A silent failure here leaves
+  // the card visually unmoved with no explanation, which reads as an unresponsive board.
+  it.each([
+    ['Accepted', 'Accept'],
+    ['Returned', 'Return topic'],
+  ])('surfaces a failed %s transition instead of failing silently', async (bucket, confirmLabel) => {
+    const user = userEvent.setup();
+    acceptMutate.mockImplementation((_v: unknown, o: { onError?: () => void }) => o?.onError?.());
+    returnMutate.mockImplementation((_v: unknown, o: { onError?: () => void }) => o?.onError?.());
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+    fireEvent.keyDown(card('TOP-2026-101'), { key: 'M' });
+    await user.click(screen.getByRole('button', { name: new RegExp(bucket) }));
+    // Each dialog has its own precondition before the confirm is meaningful.
+    if (confirmLabel === 'Return topic') {
+      await user.type(screen.getByLabelText(/Reason/), 'why');
+    } else {
+      await user.click(screen.getByRole('button', { name: 'Owner' }));
+      await user.click(screen.getByRole('option', { name: 'Khalid A' }));
+    }
+
+    await user.click(screen.getByRole('button', { name: confirmLabel }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  // dragOver and dragEnd are the handlers that make a drop LAND and the drag state clear. A card
+  // whose dragOver never preventDefaults is not a drop target at all in a real browser.
+  it('accepts the drag over a card and clears the drag state when it ends', () => {
+    const rows = [
+      row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' }),
+      row({ id: 't2', key: 'TOP-2026-202', status: 'Triage' }),
+    ];
+    renderWithAuth(<Kanban rows={rows} />, { roles: ['secretary'] });
+
+    fireEvent.dragStart(card('TOP-2026-202'));
+    // preventDefault on dragOver is what tells the browser a drop is allowed here; without it the
+    // drop event never fires and the gesture silently does nothing.
+    expect(fireEvent.dragOver(card('TOP-2026-201'))).toBe(false);
+
+    fireEvent.dragEnd(card('TOP-2026-202'));
+    fireEvent.drop(card('TOP-2026-201'));
+
+    // The drag was ENDED before the drop, so nothing should move.
+    expect(moveMutate).not.toHaveBeenCalled();
+  });
+
   it('says so when the column set is truncated, naming both numbers and what to do', () => {
     const rows = [row({ id: 't1', key: 'TOP-2026-201', status: 'Triage' })];
     renderWithAuth(<Kanban rows={rows} total={60} />, { roles: ['secretary'] });
