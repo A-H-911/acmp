@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **nineteen** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -670,7 +670,11 @@ between merge cycles, never during one.
   **lines only**, **v3 rendered every untested inline handler INVISIBLE to it.** `coverage-v8` v4 is the
   HONEST counter and those files were never properly covered.
   ⚠ **It is THIRTY-TWO files, not ~20** — the smaller figure came from a truncated CI log.
-  **FOURTEEN are closed, EIGHTEEN remain** (`PE-610` has the per-file worklist, `PE-611` the state).
+  ⚠ **DO NOT READ A TALLY HERE — MEASURE IT.** `npm run test:cov -- --coverage.reporter=json
+  --coverage.reporter=json-summary --coverage.reporter=text` then `node scripts/coverage-triage.mjs`
+  prints the failing files, their uncovered lines AND each line's source text. `PE-610` has the original
+  per-file worklist; `PE-611` and `PE-614` the states as of their dates. **A count written here is stale
+  the moment the next file closes, and this row is closing files.**
   ⚠⚠ **NEVER LOWER THE THRESHOLD** — the number would now hide real untested code, which is worse than
   the artefact it was first mistaken for. Leave `#137`/`#261`/`#307` OPEN; `#307` supersedes the other
   two in content and closing it loses the paired bump.
@@ -688,11 +692,22 @@ components with new inline handlers and doing this first means `WBS-24.1`'s own 
 that can SEE them; (2) **`SL-033` from `WBS-24.1`**; (3) **`DW-080` ALONE with nothing else in flight**,
 which its own row requires — a musl-and-globalization failure mode a unit suite cannot see; (4)
 **`DW-079`**, document-only.
-⚠ **`DW-082`'s remaining 18 are mechanical but NOT uniform.** 17 are inline-handler; **`TopBar` is NOT** —
-`DevRoleSwitcher.tsx` is in the coverage `exclude` list but **its call site is not**, so the exclusion
-hides the component and still charges `TopBar` for the branch that renders it. **Handler tests will not
-fix that file; it needs its own decision.** `DecisionPage` is PARTIAL: retry closed, raise-action
-open/close and convert-dialog close are not. ⚠ The work lives on branch **`chore/vitest-4-pair`**.
+⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
+block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
+its call site is not … handler tests will not fix that file; it needs its own decision."* **Measured false**
+(`PE-614`): `TopBar`'s uncovered lines are 62, 63, 92, 108, 131, 138, 160 — search submit, search
+`onChange`, language toggle, notification toggle, `NotificationCenter` `onClose`, profile backdrop. **All
+seven are inline handlers.** The `lazy()` declaration on 20–21 records **three hits**, and the
+`{DevRoleSwitcher && …}` call site on 99–101 has **no statement starting on it**, so it never enters the
+line metric at all. The exclusion charges `TopBar` nothing. ⚠⚠ **WHERE IT CAME FROM: version one of the
+triage script misread the ASCII table's compressed `92-138` as a 47-line range; version two corrected the
+NUMBER to seven and NOBODY RE-DERIVED THE CAUSE INFERRED FROM THE WRONG NUMBER.** It then travelled into
+`PE-611`, into this block, and into the memory index as a standing warning. **A CORRECTED MEASUREMENT DOES
+NOT CORRECT THE INFERENCE SOMEBODY BUILT ON THE OLD ONE** — the twelfth's lesson running backwards.
+⚠ **`DW-082`'s remainder is mechanical and, as far as anything has been measured, uniform** — every
+uncovered line resolved so far is an inline handler. Do not re-add a "needs a decision" label to any file
+without reading its lines: `scripts/coverage-triage.mjs` prints each one's source text for exactly that.
+`DecisionPage` is now CLOSED. ⚠ The work lives on branch **`chore/vitest-4-pair`**.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
