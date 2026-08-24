@@ -172,13 +172,13 @@ jobs:
           UAT: ${{ vars.KEYCLOAK_AUTHORITY_UAT }}
           PROD: ${{ vars.KEYCLOAK_AUTHORITY_PROD }}
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: us-east-1
       - id: ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # api / worker / sqlserver-fts are environment-AGNOSTIC: one build, promoted between
       # environments by digest. `web` is not — ADR-0037 bakes the OIDC authority in, so it is built

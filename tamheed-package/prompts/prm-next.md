@@ -618,10 +618,30 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-⚠⚠ **THE NEXT ACTION IS `DW-078`, THE TEN-PR DEPENDENCY SWEEP, NOT `WBS-24.1`** — `DEC-073` put the sweep
-BEFORE this slice, and `DEC-074` narrowed it to ten. Everything below is what happens once the queue is
-clear; read the `DEC-072`/`DEC-074` block. ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move)
-is NOT in the sweep and does NOT block the slice** — it is its own work, unscheduled.
+✅ **THE SWEEP HAS RUN (2026-08-23) — `SL-033` IS UNBLOCKED AND `WBS-24.1` IS THE NEXT ACTION.**
+`DW-078`: **seven of ten merged**, each on a green that included current `main` — `#255` `#257` `#259`
+`#256` `#258` `#260` `#139`. ⚠ **`typescript` on `main` is now `~7.0.2`** (a compiler major landed).
+**THREE ARE BLOCKED AND NEITHER BLOCKER IS A RETRY:**
+- ⛔ **`#135` mssql 2025 — THE CAUSE IS OURS, AND MY FIRST DIAGNOSIS WAS WRONG (`PE-606`).** I recorded
+  *"the image will not boot … production must not move to SQL Server 2025"*. **Withdrawn.** `ldd
+  /opt/mssql/bin/sqlservr` reports **nothing missing in either image**: 2022 is Ubuntu 22.04 with
+  `liblber-2.5.so.0`, 2025 is 24.04 with `liblber.so.2` (OpenLDAP 2.5→2.6, soname changed).
+  ⚠⚠ **`deploy/Dockerfile.sqlserver` HARDCODES the `ubuntu/22.04/mssql-server-2022` package repo**, and
+  `#135` changes only the `FROM` — so a 22.04 FTS package lands on a 24.04 base. **A PINNED BASE IMAGE
+  AND A PINNED PACKAGE REPO ARE ONE DECISION IN TWO PLACES, AND ONLY ONE IS AUTOMATED.** Dependabot
+  cannot see the coupling, so `#135` can never go green on its own.
+  ⚠⚠ **HOW THE WRONG DIAGNOSIS SURVIVED — `LL-009`, walked into after quoting it the same day:**
+  Testcontainers AND compose failed identically and I read that as independent corroboration. **Both
+  build the same Dockerfile.** Two instruments agreeing is ONE instrument when they share a mechanism.
+- ⛔ **`#307` (superseding `#137`+`#261`) — `DW-082`.** The vitest pair MUST move in one commit (each pins
+  an exact peer on the other). Every test PASSES; only `ADR-0016`'s coverage gate fails, over ~20 files
+  **byte-identical to `main`**. So **`coverage-v8` v4 counts lines differently** — trap 2 at scale.
+  ⚠⚠ **DO NOT LOWER THE THRESHOLD TO CLEAR IT.** Leave `#137`/`#261`/`#307` OPEN.
+⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
+the slice** — its own work, unscheduled.
+⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
+failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
+flake, and `#307` as a coverage regression across twenty files with no cause.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
