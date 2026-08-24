@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **eighteen** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **nineteen** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -28,6 +28,20 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE NINETEENTH (2026-08-25) IS THE SAME MEASUREMENT WRITTEN TWICE, IN ONE COMMIT, WITH TWO
+DIFFERENT NUMBERS — AND THE HALF THAT WAS WRONG IS UNKNOWABLE.** §6 said the resume pass covered **206**
+cited identifiers; `PE-612`, written by the same commit `c043ed6`, said **217**. Nothing reconciles them,
+because **the regex that produced either number was never recorded** — so the disagreement is not merely
+unresolved, it is unresolvable from the artifacts. Measured fresh today over 18 id families: **221 before
+this paragraph was written and 223 after it** — because the file is its own subject and citing `PE-612`
+and `PE-613` here moved the number. That adjudicates nothing about 206-vs-217, since a different pattern is
+a different question; it does demonstrate the hazard in one line. ⚠⚠ **A NUMBER WITHOUT ITS
+INSTRUMENT IS NOT A MEASUREMENT, IT IS A CLAIM** — two of them from one pass simply expose what was always
+true of the other seventeen. The fix is the eighth's rule taken one step further: not just *replace the
+number with a command*, but **commit the command** (`scripts/count-prompt-ids.py`), so the next reader can
+argue with the instrument. ⭐ **Found in the first ten minutes of a fresh session, by reading `PE-612`
+against the file it describes — the two disagreed on their own shared subject.** `PE-613` records it.
 
 ⚠⚠ **THE EIGHTEENTH IS THE COUNTER ITSELF FAILING IN A NEW WAY: I CORRECTED THE STATEMENT AND FORGOT TO
 COUNT IT.** This file carried *"`#135` mssql 2025 — the image will not boot … PRODUCTION MUST NOT MOVE TO
@@ -815,8 +829,13 @@ direct — but read this before debugging a stuck package PR. ⚠ **Residual: `D
 one-human team: the clause is UNSATISFIABLE, not merely unmet.
 
 ⚠⚠ **WHAT THIS RESUME PASS ACTUALLY VERIFIED, stated so the next session does not over-trust it.**
-The MECHANICAL pass ran over all **206** cited identifiers — every one resolves except `DEF-082`, the
-known gap `DEF-101` records. §6 and the operator-owned list WERE re-read end to end and six stale
+The MECHANICAL pass ran over every cited identifier — all resolve except `DEF-082`, the
+known gap `DEF-101` records. ⚠⚠ **THE COUNT THAT SAT IN THIS SENTENCE READ `206` AND ITS OWN PROGRESS
+ENTRY READ `217` — ONE PASS, ONE COMMIT (`c043ed6`), TWO NUMBERS.** That is the NINETEENTH (`PE-613`).
+Neither is recoverable, because the regex that produced them was never written down. **Measure it —
+`scripts/count-prompt-ids.py`, committed for exactly this reason, prints the distinct-id and family
+counts and names the pattern it used**, so the next reader can disagree with the instrument instead of
+with a number. §6 and the operator-owned list WERE re-read end to end and six stale
 statements were corrected. ⚠ **§2 through §5 (the traps) were NOT re-read this pass** — the session was
 near its context limit and reading them badly is worse than declaring them unread. **A fresh session
 should read them before relying on them**, because this file's own history says staleness hides exactly
