@@ -4,7 +4,19 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    /*
+     * ⚠ "node" is DECLARED here, not inherited. Four test files under src/ legitimately read the
+     * repo from disk — LoginPage.test.tsx, styles/contrast.test.ts and the two rtl-*.test.ts guards
+     * import `node:fs`/`node:path` and use `__dirname`. Until vitest 4 that compiled by ACCIDENT:
+     * vitest 3 re-exported types from `vite`, whose dist/node/index.d.ts carries a
+     * `/// <reference types="node" />`, which registered @types/node globally for this program.
+     * vitest 4 dropped that chain, and `tsc -b` immediately produced 16 errors over unchanged code
+     * (TS2591 `Cannot find name 'node:fs'`, TS2304 `__dirname`) — see DEF-106.
+     *
+     * An accidental type dependency is one dependency bump away from a broken build, so the fix is
+     * to state it rather than to restore the accident.
+     */
+    "types": ["vite/client", "node"],
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
