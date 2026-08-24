@@ -643,7 +643,7 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-✅ **THE SWEEP IS DONE; `DW-082` IS IN FLIGHT (state at the END of 2026-08-23).** ⚠ **Measure, do not
+✅ **THE SWEEP IS DONE AND SO IS `DW-082` (2026-08-25).** ⚠ **Measure, do not
 trust this block** — `entity_query("deferred-work", status="Activated")`, `gh pr list --state open`, and a
 full `npm run test:cov` are the live answers.
 **`DW-078` is `Done`: EIGHT of ten landed** — `#255` `#257` `#259` `#256` `#258` `#260` `#139` plus
@@ -663,21 +663,27 @@ between merge cycles, never during one.
   ⚠⚠ **HOW THE WRONG DIAGNOSIS SURVIVED — `LL-009`, walked into after quoting it the same day:**
   Testcontainers AND compose failed identically and I read that as independent corroboration. **Both
   build the same Dockerfile.** Two instruments agreeing is ONE instrument when they share a mechanism.
-- ⏳ **`#307` (superseding `#137`+`#261`) — `DW-082` IS ANSWERED AND EXECUTION IS UNDER WAY.** The
-  experiment settled it (`PE-608`): on `ErrorBoundary.tsx` **both** providers record the SAME uncalled
-  inline `onClick`, differing only in WHERE they count it — v3 has no zero-hit statements so the line is
-  credited; v4 records statement 3 at zero hits, which propagates into lines. Since `ADR-0016`'s gate is
-  **lines only**, **v3 rendered every untested inline handler INVISIBLE to it.** `coverage-v8` v4 is the
-  HONEST counter and those files were never properly covered.
-  ⚠ **It is THIRTY-TWO files, not ~20** — the smaller figure came from a truncated CI log.
-  ⚠ **DO NOT READ A TALLY HERE — MEASURE IT.** `npm run test:cov -- --coverage.reporter=json
-  --coverage.reporter=json-summary --coverage.reporter=text` then `node scripts/coverage-triage.mjs`
-  prints the failing files, their uncovered lines AND each line's source text. `PE-610` has the original
-  per-file worklist; `PE-611` and `PE-614` the states as of their dates. **A count written here is stale
-  the moment the next file closes, and this row is closing files.**
+- ✅✅ **`DW-082` IS `Done` AND `#307` IS MERGED (`8432a1d`, 2026-08-25).** All THIRTY-TWO files pass
+  `ADR-0016` — `npm run test:cov` exits 0 over 158 files / 1365 tests at **99.19% lines, zero files under
+  95** — and `npm run build` exits 0. CI, Security and E2E were all green before the merge. **The
+  threshold was never touched.** `#261` auto-closed; ⚠ **`#137` is still open and is now SUPERSEDED** —
+  its 4.1.10 bump landed as 4.1.11 via `#307`.
+  ⭐ The experiment that decided it (`PE-608`) is worth keeping: on `ErrorBoundary.tsx` **both** providers
+  record the SAME uncalled inline `onClick` and differ only in WHERE they count it — v3 has no zero-hit
+  statements so the line is credited; v4 records the statement at zero hits, which propagates into lines.
+  `ADR-0016` gates on **lines only**, so **v3 rendered every untested inline handler INVISIBLE to it.**
+  ⭐⭐ **EXECUTION PROVED IT HARDER THAN THE EXPERIMENT DID: FOUR of the closed files had NO TEST FILE AT
+  ALL, and v3 scored every one of them ≥95%.** The old provider was not merely lenient — it reported a
+  passing grade on components nobody had ever tested.
   ⚠⚠ **NEVER LOWER THE THRESHOLD** — the number would now hide real untested code, which is worse than
-  the artefact it was first mistaken for. Leave `#137`/`#261`/`#307` OPEN; `#307` supersedes the other
-  two in content and closing it loses the paired bump.
+  the artefact it was first mistaken for, and this row's execution is the evidence.
+  ⚠ **`scripts/coverage-triage.mjs` is COMMITTED** (`src/Acmp.Web/scripts/`) — run it after
+  `npm run test:cov -- --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text`.
+  It prints each uncovered line's **source text** so a cause is confirmed rather than assumed, and refuses
+  to report unless three calibrations pass. ⭐ **Calibration A caught a real defect in it on its first
+  run**: attributing a statement to every line of its SPAN reported `TopBar` at **100%** against a gate
+  saying 82%, because a covered multi-line JSX element swallows the uncovered inline arrow nested inside
+  it — it would have reported ZERO failing files against a gate listing eighteen.
 ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
 the slice** — its own work, unscheduled.
 ⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
@@ -687,11 +693,11 @@ flake, and `#307` as a coverage regression across twenty files with no cause.
 ▶▶ **WHAT RUNS NEXT (`DEC-075` d2): ALL FOUR ACTIVATED STREAMS ARE IN SCOPE — the operator answered
 "all".** ⚠⚠ **THE ORDER BELOW IS THE AGENT'S RECOMMENDATION, NOT THEIR INSTRUCTION, and is freely
 reorderable** — keeping what they DECIDED separate from what I INFERRED is `DEC-071` d3's discipline
-applied to sequencing. (1) the **`DW-082` handler tests** (18 files left), because `SL-033` adds new
-components with new inline handlers and doing this first means `WBS-24.1`'s own code lands under a gate
-that can SEE them; (2) **`SL-033` from `WBS-24.1`**; (3) **`DW-080` ALONE with nothing else in flight**,
-which its own row requires — a musl-and-globalization failure mode a unit suite cannot see; (4)
-**`DW-079`**, document-only.
+applied to sequencing. ✅ **(1) the `DW-082` handler tests are DONE** — that was deliberately first so
+`SL-033`'s new components land under a gate that can SEE their inline handlers, and they now do.
+**▶▶ (2) `SL-033` FROM `WBS-24.1` IS THE NEXT ACTION.** (3) **`DW-080` ALONE with nothing else in
+flight**, which its own row requires — a musl-and-globalization failure mode a unit suite cannot see;
+(4) **`DW-079`**, document-only.
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
 its call site is not … handler tests will not fix that file; it needs its own decision."* **Measured false**
@@ -704,10 +710,10 @@ triage script misread the ASCII table's compressed `92-138` as a 47-line range; 
 NUMBER to seven and NOBODY RE-DERIVED THE CAUSE INFERRED FROM THE WRONG NUMBER.** It then travelled into
 `PE-611`, into this block, and into the memory index as a standing warning. **A CORRECTED MEASUREMENT DOES
 NOT CORRECT THE INFERENCE SOMEBODY BUILT ON THE OLD ONE** — the twelfth's lesson running backwards.
-⚠ **`DW-082`'s remainder is mechanical and, as far as anything has been measured, uniform** — every
-uncovered line resolved so far is an inline handler. Do not re-add a "needs a decision" label to any file
-without reading its lines: `scripts/coverage-triage.mjs` prints each one's source text for exactly that.
-`DecisionPage` is now CLOSED. ⚠ The work lives on branch **`chore/vitest-4-pair`**.
+✅ **`DW-082` IS FINISHED and the remainder was uniform after all** — every uncovered line in all 32
+files was a handler, a dismissal, an error arm or a drag path; not one needed a decision. **Do not re-add
+a "needs a decision" label to any file without reading its lines**: `scripts/coverage-triage.mjs` prints
+each one's source text for exactly that. The branch `chore/vitest-4-pair` is merged and deleted.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
@@ -800,6 +806,40 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
 assumed:** `scope_adds` → a **deferred-work** target is ACCEPTED (every prior one pointed at an AC, a
 requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|clarification|code|inferred`
 — anything else rolls back the whole batch.
+
+### ▶▶ WHAT 2026-08-25 ADDED — read this before trusting any instrument here
+
+- ✅ **`DEF-106` FIXED, AND MY FIRST DIAGNOSIS OF IT WAS WRONG AND IS WITHDRAWN.** I filed it as *"the
+  local build reports 16 errors while CI compiles the same commit cleanly, so trap 22b's arbiter is
+  unusable on this machine"*. ⚠⚠ **THE EXPERIMENT BEHIND THAT WAS INVALID: I checked out `main`, ran
+  `npm run build`, saw the same errors, and concluded main was broken too — but `node_modules` still held
+  the BRANCH's install. A CHECKOUT CHANGES THE SOURCE; IT DOES NOT CHANGE `node_modules`.**
+  ⭐ **What adjudicated it was the e2e job failing with the SAME sixteen errors, in Linux, in CI**, inside
+  the web image's own `npm run build` — which killed the local-environment theory outright. A three-way
+  split then located it: main source + main's tree passes, branch source + branch's tree fails, branch
+  source + MAIN's tree **passes**. Identical source, opposite verdicts: the variable was never the machine.
+  **Real cause:** `tsconfig.app.json` sets `types: ["vite/client"]` and includes all of `src`, and four
+  test files there read the repo from disk. Node types were never declared — they arrived transitively,
+  because vitest 3 re-exported types from `vite`, whose `dist/node/index.d.ts` carries a
+  `/// <reference types="node" />`. vitest 4 dropped the chain. **The typecheck had been compiling by
+  ACCIDENT since before that branch.** Fixed by declaring `types: ["vite/client", "node"]`.
+  ⚠⚠ **AND CI's `frontend` JOB LOOKED FINE THROUGHOUT, because it fails at the coverage-gate step, which
+  runs BEFORE the build step. A JOB THAT STOPS EARLY CANNOT VOUCH FOR THE STEPS IT NEVER REACHED.**
+- ⚠⚠ **A COMMIT LANDED CARRYING ANOTHER SESSION'S MESSAGE.** `git add … && cat > /tmp/c4.txt <<EOF …
+  && git commit -F /tmp/c4.txt` — the `git add` failed, so the heredoc never ran, and `git commit -F`
+  found a **leftover `/tmp/c4.txt` from 2026-08-19** and used it. Correct files, a message describing a
+  different feature on a different branch, no error anywhere. ⭐ **An `&&` chain fails CLOSED for the
+  command that breaks and OPEN for any later command that reads a file the chain was supposed to write.**
+  Amended before pushing. **Write generated inputs to `/tmp/name-$$.txt` and `rm` them**, and read back
+  `git log -1 --format=%s`. (`LL-021`, Proposed.)
+- ⚠⚠ **THE MEMORY INDEX HAD BEEN SILENTLY TRUNCATED AND NOBODY KNEW.** The tooling reports a **200-LINE**
+  read limit; the file was at 275, so its *"Standing rules & gotchas"* section — the most durable content
+  in it — **was already invisible**. Compacted to 155, detail moved to `dw082-sweep-and-vitest4.md`.
+  ⭐ The old note there had DISPROVEN a ~17KB *byte* ceiling and concluded the limit was unknown.
+  **A LIMIT YOU HAVE DISPROVEN IN ONE UNIT IS NOT A LIMIT YOU HAVE DISPROVEN** — it was measuring the
+  wrong dimension.
+- ⚠ **`LL-020` and `LL-021` are `Proposed`** and join `LL-017/018/019`. `lessons-confirmed` fails on
+  purpose. **Do not approve them unread** — approved lessons are immutable.
 
 ### ▶▶ THE THIRD INTERVIEW OF 2026-08-23 (`DEC-075`) — AND `DEF-105`, WHICH IT FIXED
 

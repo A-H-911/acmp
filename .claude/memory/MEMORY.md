@@ -11,11 +11,25 @@
 > Keep this under ~140 lines: one line per entry, detail in topic files.
 
 
-## ★★★ 2026-08-25 · **`DW-082` IS THE LIVE WORK** — branch `chore/vitest-4-pair`, PR `#307`
+## ★★★ 2026-08-25 · **`DW-082` DONE, `#307` MERGED** — ▶▶ NEXT: `SL-033` from `WBS-24.1`
 
-★★★ [**The `DW-082` / Dependabot-sweep arc**](dw082-sweep-and-vitest4.md) — read this before touching
-the vitest-4 branch, the coverage gate, or the open PR queue. Everything below is the short form.
+★★★ [**The `DW-082` / Dependabot-sweep arc**](dw082-sweep-and-vitest4.md) — read before touching the
+coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this file.**
 
+- ✅✅ **`DW-082` CLOSED: all 32 files pass `ADR-0016`** — `test:cov` exits 0, 158 files / 1365 tests,
+  **99.19% lines, zero files under 95**; `build` exits 0; CI+Security+E2E green; `#307` merged `8432a1d`.
+  **The threshold was never touched.** ⚠ `#137` still open and now SUPERSEDED.
+- ⚠⚠ **`DEF-106`: THE APP TYPECHECK HAD BEEN COMPILING BY ACCIDENT** — vitest 3 re-exported `vite`'s
+  types, which carry `/// <reference types="node" />`; vitest 4 dropped the chain and `tsc -b` produced
+  16 errors over untouched code. Fixed by DECLARING `types: ["vite/client", "node"]`.
+  ⚠⚠⚠ **MY FIRST DIAGNOSIS WAS WRONG BECAUSE MY EXPERIMENT WAS: I checked out `main` and built it
+  against the BRANCH's `node_modules`. A CHECKOUT CHANGES THE SOURCE, NOT `node_modules`.**
+  ⭐ **CI's `frontend` job looked fine throughout — it fails at the coverage step, which runs BEFORE the
+  build step. A JOB THAT STOPS EARLY CANNOT VOUCH FOR STEPS IT NEVER REACHED.**
+- ⚠⚠ **A COMMIT TOOK A STALE `/tmp` FILE FROM ANOTHER SESSION AS ITS MESSAGE** — the `&&` chain broke at
+  a failed `git add`, so the heredoc never ran and `git commit -F` used a leftover from 2026-08-19.
+  ⭐ **A chain fails CLOSED for the command that breaks and OPEN for any later command reading a file the
+  chain was supposed to write.** Use `/tmp/name-$$.txt`, `rm` it, and read back `git log -1 --format=%s`.
 - ⚠⚠⚠ **NEVER WRITE THE REMAINING-FILE COUNT ANYWHERE — MEASURE IT.** `npm run test:cov --
   --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text`, then
   `node scripts/coverage-triage.mjs` (committed 2026-08-25). It prints each uncovered line's **source
@@ -33,7 +47,7 @@ the vitest-4 branch, the coverage gate, or the open PR queue. Everything below i
 - ⚠⚠ **DO PACKAGE WRITES ON `main`** (C31 — a feature checkout rolls `data/` backwards), **and PUSH after
   each one.** Every push to `main` re-stales every open PR (`strict=true`), so push between merge cycles,
   never during one. ⚠ `main` IS branch-protected: 9 checks, `enforce_admins=false`.
-- ⚠ **`LL-017/018/019` are `Proposed`** — `lessons-confirmed` FAILS on purpose; never approve them unread.
+- ⚠ **`LL-017`…`LL-021` are `Proposed`** — `lessons-confirmed` FAILS on purpose; never approve them unread.
 - ⚠ **If `npm ci` fails `EPERM`/`EBUSY` here, enumerate node processes FIRST** (`DW-083`: six `vite` servers
   ran 13 days holding a native binary). ⚠ **`ls node_modules | wc -l` is NOT npm's package count** — 125
   directories vs "169 added" is apples to oranges, and reading it as a gutted tree cost a detour.
