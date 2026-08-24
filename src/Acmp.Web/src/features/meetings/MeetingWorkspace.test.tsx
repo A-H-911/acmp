@@ -65,9 +65,9 @@ const MEMBERS: Member[] = [
   { publicId: 'u2', keycloakUserId: 'kc-fixture', fullName: 'Omar R', email: 'omar@example.com', role: 'Member', status: 'Active', isActive: true, isVotingEligible: true, streams: [] },
 ];
 
-function setup(detail: MeetingDetail = MEETING, roles: Parameters<typeof makeAuth>[0] = ['secretary']) {
+function setup(detail: MeetingDetail = MEETING, roles: Parameters<typeof makeAuth>[0] = ['secretary'], members: Member[] = MEMBERS) {
   mockDetail.mockReturnValue({ data: detail, isLoading: false, isError: false, error: null });
-  mockMembers.mockReturnValue({ data: MEMBERS });
+  mockMembers.mockReturnValue({ data: members });
   render(
     <AcmpAuthContext.Provider value={makeAuth(roles)}>
       <MemoryRouter initialEntries={['/meetings/MTG-2026-019']}>
@@ -245,6 +245,67 @@ describe('MeetingWorkspace (P6d)', () => {
     expect(callVote).toBeEnabled();
     await user.click(callVote);
     expect(screen.getByRole('dialog', { name: 'Configure a vote session' })).toBeInTheDocument();
+  });
+
+  /*
+   * toAttendanceRole maps a COMMITTEE role onto the meeting's own AttendanceRole vocabulary, and
+   * only two of its five arms had ever run — the fixture holds a Chairman and a Member. The role it
+   * writes is recorded on the attendance row, which is what quorum and the minutes are read from,
+   * so a wrong arm mislabels the record rather than failing visibly.
+   *
+   * ⚠ The default arm is the one worth having: any role this map does not know becomes Guest, the
+   * least-privileged label, rather than leaking an unmapped string into the attendance vocabulary.
+   */
+  it.each([
+    ['Secretary', 'Secretary'],
+    ['Reviewer', 'Reviewer'],
+    ['Administrator', 'Guest'],
+  ])('marks a %s present with the attendance role %s', async (committeeRole, attendanceRole) => {
+    const user = userEvent.setup();
+    setup(MEETING, ['secretary'], [
+      { publicId: 'u9', keycloakUserId: 'kc-x', fullName: 'Layla N', email: 'l@a.gov', role: committeeRole, status: 'Active', isActive: true, isVotingEligible: true, streams: [] } as Member,
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Toggle attendance for Layla N' }));
+
+    expect(markSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u9', name: 'Layla N', role: attendanceRole, status: 'Present' }),
+    );
+  });
+
+  // The active item's saved note is looked up out of the meeting's discussions, and with an EMPTY
+  // discussions array that lookup never runs — so no test had ever proved a previously captured
+  // note is shown back to the secretary rather than silently dropped.
+  it('shows the note already captured against the active item', () => {
+    setup({
+      ...MEETING,
+      discussions: [
+        { topicId: 't-other', body: 'NOT THIS ONE' },
+        { topicId: MEETING.agenda!.items[0].topicId, body: 'Agreed to pilot with one stream' },
+      ],
+    } as unknown as MeetingDetail);
+
+    // A decoy row is present on purpose: a lookup that returns the FIRST discussion rather than the
+    // matching one would pass against a single-element array.
+    expect(screen.getByDisplayValue('Agreed to pilot with one stream')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('NOT THIS ONE')).not.toBeInTheDocument();
+  });
+
+  // Both dialogs could be opened and neither dismissed. They are separate mounts with separate
+  // handlers, and each sits over a live meeting the secretary has to get back to.
+  it.each([
+    ['Call vote', 'Configure a vote session', ['secretary'] as Parameters<typeof makeAuth>[0]],
+    ['Record decision', 'Record & issue a decision', ['chairman'] as Parameters<typeof makeAuth>[0]],
+  ])('opens and dismisses the %s dialog', async (opener, dialogName, roles) => {
+    const user = userEvent.setup();
+    setup(MEETING, roles);
+
+    await user.click(screen.getByRole('button', { name: opener }));
+    expect(screen.getByRole('dialog', { name: dialogName })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog', { name: dialogName })).not.toBeInTheDocument();
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {
