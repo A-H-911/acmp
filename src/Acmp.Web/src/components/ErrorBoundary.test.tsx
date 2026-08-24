@@ -54,6 +54,22 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('ok content')).toBeInTheDocument();
   });
 
+  // The fallback's OTHER action - reload - had never been clicked, so its handler
+  // had never run: the recovery path a user takes after a crash was untested.
+  it('reloads the page from the fallback "reload" action', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const reload = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...original, reload } });
+    try {
+      renderBoundary();
+      await userEvent.click(screen.getByRole('button', { name: i18n.t('common.reload') }));
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: original });
+    }
+  });
+
   it('navigates home from the fallback "go to dashboard" action', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     renderBoundary();

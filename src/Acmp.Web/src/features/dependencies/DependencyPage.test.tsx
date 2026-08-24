@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
 import { renderWithAuth } from '../../test/render';
@@ -62,10 +63,15 @@ describe('DependencyPage (P10e)', () => {
     expect(screen.getByText('Dependency not found')).toBeInTheDocument();
   });
 
-  it('shows a retryable error state on a non-404 failure', () => {
-    result({ isError: true, error: new ApiError(500, undefined) });
+  it('shows a retryable error state on a non-404 failure, and retry refetches', async () => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    result({ isError: true, error: new ApiError(500, undefined), refetch });
     setup();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    // The existence assertion left onRetry uninvoked; coverage-v8 v4 named it.
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('shows the loading state while fetching', () => {

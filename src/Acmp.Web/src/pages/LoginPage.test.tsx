@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import { setAuthStatus } from '../auth/authStatus';
@@ -21,6 +21,15 @@ describe('LoginPage', () => {
     const btn = screen.getByRole('button', { name: /log in|تسجيل الدخول/i });
     fireEvent.click(btn);
     expect(signIn).toHaveBeenCalledTimes(1);
+  });
+
+  // The header language control had never been clicked, so its onClick had never
+  // run. coverage-v8 v4 named the line; v3 credited it for the JSX around it.
+  it('switches the interface language from the header control', async () => {
+    renderWithAuth(<LoginPage />, { auth: makeAuth([], { isAuthenticated: false }) });
+    expect(i18n.language).toBe('en');
+    fireEvent.click(screen.getByRole('button', { name: /\u0627\u0644\u0639\u0631\u0628\u064a\u0629/ }));
+    await waitFor(() => expect(i18n.language).toBe('ar'));
   });
 
   it('forwards the deep-link path (router state.from) to signIn so login returns there', () => {
