@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **seventeen** times, and **five** wrong assertions have escaped into
+file has carried a stale statement **nineteen** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -28,6 +28,31 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE NINETEENTH (2026-08-25) IS THE SAME MEASUREMENT WRITTEN TWICE, IN ONE COMMIT, WITH TWO
+DIFFERENT NUMBERS — AND THE HALF THAT WAS WRONG IS UNKNOWABLE.** §6 said the resume pass covered **206**
+cited identifiers; `PE-612`, written by the same commit `c043ed6`, said **217**. Nothing reconciles them,
+because **the regex that produced either number was never recorded** — so the disagreement is not merely
+unresolved, it is unresolvable from the artifacts. Measured fresh today over 18 id families: **221 before
+this paragraph was written and 223 after it** — because the file is its own subject and citing `PE-612`
+and `PE-613` here moved the number. That adjudicates nothing about 206-vs-217, since a different pattern is
+a different question; it does demonstrate the hazard in one line. ⚠⚠ **A NUMBER WITHOUT ITS
+INSTRUMENT IS NOT A MEASUREMENT, IT IS A CLAIM** — two of them from one pass simply expose what was always
+true of the other seventeen. The fix is the eighth's rule taken one step further: not just *replace the
+number with a command*, but **commit the command** (`scripts/count-prompt-ids.py`), so the next reader can
+argue with the instrument. ⭐ **Found in the first ten minutes of a fresh session, by reading `PE-612`
+against the file it describes — the two disagreed on their own shared subject.** `PE-613` records it.
+
+⚠⚠ **THE EIGHTEENTH IS THE COUNTER ITSELF FAILING IN A NEW WAY: I CORRECTED THE STATEMENT AND FORGOT TO
+COUNT IT.** This file carried *"`#135` mssql 2025 — the image will not boot … PRODUCTION MUST NOT MOVE TO
+SQL SERVER 2025 EITHER."* Every clause was wrong — `ldd` reports nothing missing in EITHER image, and the
+real cause was our own `Dockerfile.sqlserver` pinning a 22.04 package repo under a 24.04 base. `PE-606`
+withdrew it and §6's bullet was rewritten — **but the counter above stayed at seventeen and no ordinal was
+written**, so the file recorded the correction and lost the count of it. It had also escaped into commit
+messages `6069618` and `e8e22f3`, which is why the escape count moves to six.
+⚠⚠ **A CORRECTION THAT DOES NOT UPDATE THE TALLY OF CORRECTIONS IS HALF A CORRECTION.** Found by grepping
+for `EIGHTEENTH` and getting zero — not by reading. **When you fix a statement here, bump the count in the
+same edit; they are one action.**
 
 ⚠⚠ **THE SEVENTEENTH IS THE WORST OF THE SESSION: A CAP I SET MYSELF, IN THE SAME COMMAND, READ BACK AS
 IF IT WERE THE REGISTER — AND IT COST A JUDGEMENT, NOT A COUNT.** `gh pr list --limit 10` returned exactly
@@ -618,11 +643,16 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
 `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
 
-✅ **THE SWEEP HAS RUN (2026-08-23) — `SL-033` IS UNBLOCKED AND `WBS-24.1` IS THE NEXT ACTION.**
-`DW-078`: **seven of ten merged**, each on a green that included current `main` — `#255` `#257` `#259`
-`#256` `#258` `#260` `#139`. ⚠ **`typescript` on `main` is now `~7.0.2`** (a compiler major landed).
-**THREE ARE BLOCKED AND NEITHER BLOCKER IS A RETRY:**
-- ⛔ **`#135` mssql 2025 — THE CAUSE IS OURS, AND MY FIRST DIAGNOSIS WAS WRONG (`PE-606`).** I recorded
+✅ **THE SWEEP IS DONE; `DW-082` IS IN FLIGHT (state at the END of 2026-08-23).** ⚠ **Measure, do not
+trust this block** — `entity_query("deferred-work", status="Activated")`, `gh pr list --state open`, and a
+full `npm run test:cov` are the live answers.
+**`DW-078` is `Done`: EIGHT of ten landed** — `#255` `#257` `#259` `#256` `#258` `#260` `#139` plus
+**`#308`**, which supersedes `#135`. `main` was green after each. ⚠ **`typescript` on `main` is now
+`~7.0.2`** (a compiler major landed). ⚠⚠ **`main` IS NOW BRANCH-PROTECTED** (`DEF-105`, Fixed): 9 required
+checks, `strict=true` so branches must be up to date, `enforce_admins=false` so package writes still go
+direct per the 2026-08-20 rule. **Every push to `main` re-stales every open PR** — do package pushes
+between merge cycles, never during one.
+- ✅ **`#135` IS CLOSED, SUPERSEDED BY THE MERGED `#308`** — and my first diagnosis of it was WRONG (`PE-606`). I recorded
   *"the image will not boot … production must not move to SQL Server 2025"*. **Withdrawn.** `ldd
   /opt/mssql/bin/sqlservr` reports **nothing missing in either image**: 2022 is Ubuntu 22.04 with
   `liblber-2.5.so.0`, 2025 is 24.04 with `liblber.so.2` (OpenLDAP 2.5→2.6, soname changed).
@@ -633,15 +663,36 @@ operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
   ⚠⚠ **HOW THE WRONG DIAGNOSIS SURVIVED — `LL-009`, walked into after quoting it the same day:**
   Testcontainers AND compose failed identically and I read that as independent corroboration. **Both
   build the same Dockerfile.** Two instruments agreeing is ONE instrument when they share a mechanism.
-- ⛔ **`#307` (superseding `#137`+`#261`) — `DW-082`.** The vitest pair MUST move in one commit (each pins
-  an exact peer on the other). Every test PASSES; only `ADR-0016`'s coverage gate fails, over ~20 files
-  **byte-identical to `main`**. So **`coverage-v8` v4 counts lines differently** — trap 2 at scale.
-  ⚠⚠ **DO NOT LOWER THE THRESHOLD TO CLEAR IT.** Leave `#137`/`#261`/`#307` OPEN.
+- ⏳ **`#307` (superseding `#137`+`#261`) — `DW-082` IS ANSWERED AND EXECUTION IS UNDER WAY.** The
+  experiment settled it (`PE-608`): on `ErrorBoundary.tsx` **both** providers record the SAME uncalled
+  inline `onClick`, differing only in WHERE they count it — v3 has no zero-hit statements so the line is
+  credited; v4 records statement 3 at zero hits, which propagates into lines. Since `ADR-0016`'s gate is
+  **lines only**, **v3 rendered every untested inline handler INVISIBLE to it.** `coverage-v8` v4 is the
+  HONEST counter and those files were never properly covered.
+  ⚠ **It is THIRTY-TWO files, not ~20** — the smaller figure came from a truncated CI log.
+  **FOURTEEN are closed, EIGHTEEN remain** (`PE-610` has the per-file worklist, `PE-611` the state).
+  ⚠⚠ **NEVER LOWER THE THRESHOLD** — the number would now hide real untested code, which is worse than
+  the artefact it was first mistaken for. Leave `#137`/`#261`/`#307` OPEN; `#307` supersedes the other
+  two in content and closing it loses the paired bump.
 ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
 the slice** — its own work, unscheduled.
 ⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
 failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
 flake, and `#307` as a coverage regression across twenty files with no cause.
+
+▶▶ **WHAT RUNS NEXT (`DEC-075` d2): ALL FOUR ACTIVATED STREAMS ARE IN SCOPE — the operator answered
+"all".** ⚠⚠ **THE ORDER BELOW IS THE AGENT'S RECOMMENDATION, NOT THEIR INSTRUCTION, and is freely
+reorderable** — keeping what they DECIDED separate from what I INFERRED is `DEC-071` d3's discipline
+applied to sequencing. (1) the **`DW-082` handler tests** (18 files left), because `SL-033` adds new
+components with new inline handlers and doing this first means `WBS-24.1`'s own code lands under a gate
+that can SEE them; (2) **`SL-033` from `WBS-24.1`**; (3) **`DW-080` ALONE with nothing else in flight**,
+which its own row requires — a musl-and-globalization failure mode a unit suite cannot see; (4)
+**`DW-079`**, document-only.
+⚠ **`DW-082`'s remaining 18 are mechanical but NOT uniform.** 17 are inline-handler; **`TopBar` is NOT** —
+`DevRoleSwitcher.tsx` is in the coverage `exclude` list but **its call site is not**, so the exclusion
+hides the component and still charges `TopBar` for the branch that renders it. **Handler tests will not
+fix that file; it needs its own decision.** `DecisionPage` is PARTIAL: retry closed, raise-action
+open/close and convert-dialog close are not. ⚠ The work lives on branch **`chore/vitest-4-pair`**.
 
 ▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
@@ -735,6 +786,61 @@ assumed:** `scope_adds` → a **deferred-work** target is ACCEPTED (every prior 
 requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|clarification|code|inferred`
 — anything else rolls back the whole batch.
 
+### ▶▶ THE THIRD INTERVIEW OF 2026-08-23 (`DEC-075`) — AND `DEF-105`, WHICH IT FIXED
+
+- **d1 — `DW-082` CLOSES BY WRITING THE MISSING HANDLER TESTS**, then merging `#307`. The only route
+  ending with BOTH a current vitest and a true 95%. ⚠⚠ **Lowering the threshold stays forbidden and is
+  now MORE so** — the number would hide real untested code rather than an artefact.
+- **d2 — ALL FOUR ACTIVATED STREAMS ARE IN SCOPE** (the operator answered *"all"*). Order = agent's
+  recommendation only; see the next-action block above.
+- **d3 — SIX LEAKED `vite` PROCESSES KILLED, AND `DW-083` FILES THE GAP THAT LET THEM LEAK.** They had
+  been running out of `src/Acmp.Web/node_modules` for up to THIRTEEN DAYS on ports 5199/5201/5233/5241/
+  4173/8124, holding `rolldown-binding.win32-x64-msvc.node` open — which is why `npm ci` failed here with
+  `EPERM`/`EBUSY`, and why an interrupted `npm ci` gutted `node_modules` from 171 packages to 35.
+  ⚠⚠ **TRAP 28 GUARDS THE FILES AND MISSES THE PROCESSES**: a `vr-*.tsx` in `src/` would ship, so it is
+  checked — but the same visual-verify loop also starts a long-lived dev server and nothing stops it. **A
+  file-level check runs perfectly clean over a machine carrying six leaked servers.** ⚠ **If `npm ci`
+  ever fails here with `EPERM`/`EBUSY` on a file under `node_modules`, enumerate node processes and match
+  their command lines against the repo path BEFORE debugging npm** — and note `npm ci` makes it WORSE,
+  because it unlinks `node_modules` before discovering it cannot finish.
+- **d4 — `LL-017`, `LL-018`, `LL-019` FILED AS `Proposed`, NOT Approved.** The operator selected the
+  FINDINGS; approved lessons are IMMUTABLE here and selecting a finding is not approving a sentence they
+  have not read. ⚠ **`lessons-confirmed` therefore FAILS on purpose** — that advisory is doing its job,
+  do not "fix" it by approving them unread. `LL-017`: when an instrument changes and the numbers get
+  worse, *"the new one is broken"* and *"the old one was lying"* predict IDENTICAL evidence — only
+  adjudicating one hand-countable artefact separates them. `LL-018`: two runners over one shared artefact
+  are ONE instrument for LOCATING a fault and TWO for VERIFYING its repair. `LL-019`: a pinned base image
+  and a pinned package repo are one decision in two places, only one automated.
+
+✅ **`DEF-105` IS FIXED AND IT WAS A REAL GAP: `INV-013` NAMED `branch protection` AS ITS ENFORCEMENT AND
+NONE EXISTED.** Three endpoints agreed — classic protection 404, `rulesets` empty, `rules/branches/main`
+empty — while `SEC-120`, `SEC-126`, `SEC-172`, `SEC-581` and the invariant's own enforcement column all
+asserted it as fact. `SEC-126` said *"cannot merge/deploy without passing"*, which was flatly false.
+⚠⚠ **THE OBSERVABLE THAT GAVE IT AWAY WAS A STATUS THAT NEVER APPEARED**: not one PR ever reported
+`BEHIND`, which GitHub emits only when a repo requires branches to be up to date. **An absence produces no
+output to be suspicious of.** After the fix all twelve open PRs flipped to `BEHIND` at once — the control
+went from never emitting that status to emitting it on every row, which also proves they had ALL been
+behind while six reported `CLEAN`. ⚠ **`publish` is deliberately NOT a required check** (it reports
+SKIPPED on PRs, and a required check that never reports hangs a PR forever). ⚠ **A package-only PR would
+skip 7 of the 9 required checks and hang**, because `e2e.yml` and `security.yml` path-ignore
+`tamheed-package/**` while `ci.yml`'s PR trigger ignores only `*.md`. Acceptable — package writes go
+direct — but read this before debugging a stuck package PR. ⚠ **Residual: `DW-081`** — `SEC-120` mandates
+*"Minimum 1 approver"* and the config sets **0**, because GitHub forbids self-approval and this is a
+one-human team: the clause is UNSATISFIABLE, not merely unmet.
+
+⚠⚠ **WHAT THIS RESUME PASS ACTUALLY VERIFIED, stated so the next session does not over-trust it.**
+The MECHANICAL pass ran over every cited identifier — all resolve except `DEF-082`, the
+known gap `DEF-101` records. ⚠⚠ **THE COUNT THAT SAT IN THIS SENTENCE READ `206` AND ITS OWN PROGRESS
+ENTRY READ `217` — ONE PASS, ONE COMMIT (`c043ed6`), TWO NUMBERS.** That is the NINETEENTH (`PE-613`).
+Neither is recoverable, because the regex that produced them was never written down. **Measure it —
+`scripts/count-prompt-ids.py`, committed for exactly this reason, prints the distinct-id and family
+counts and names the pattern it used**, so the next reader can disagree with the instrument instead of
+with a number. §6 and the operator-owned list WERE re-read end to end and six stale
+statements were corrected. ⚠ **§2 through §5 (the traps) were NOT re-read this pass** — the session was
+near its context limit and reading them badly is worse than declaring them unread. **A fresh session
+should read them before relying on them**, because this file's own history says staleness hides exactly
+where nobody looked.
+
 ⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE (`DEC-071` d3), not a judgement this file endorses.** The
 recommendation was three slices, because `DEC-068` d1 justified a single slice from the rows being *small
 with their machinery already in place* — untrue of a create-stream command, of every number in the SPA, and
@@ -816,10 +922,13 @@ in both halves — eleven, and one shared helper closed them all in one PR.
 
 ### Open, and the operator's alone
 
-- **`DW-066`** — migrate api and worker to an alpine/distroless base (`NFR-054`'s minimal-base clause,
-  KEPT after the operator rejected relaxing it). ⚠ **The edit is two `FROM` lines; the RISK is not the
-  edit** — alpine is musl, and this app does SQL Server native interop plus Arabic/English culture-aware
-  work. **Full e2e leg, and verify Arabic FREETEXT end to end.** A green unit suite proves nothing here.
+- ⚠ **`DW-066` HAS MOVED — it is `Activated` and BOUND TO `DW-080`** (`DEC-074` d2), so it is no longer
+  the operator's to schedule alone. Its trigger *"whenever a base-image bump is being made anyway"* FIRED:
+  `#128`/`#134` edit the very `FROM` lines it names. The alpine/distroless move rides with the .NET 8→10
+  change as **ONE base-image decision**, because doing it separately spends the expensive part twice.
+  ⚠ **The edit is two `FROM` lines; the RISK is not the edit** — alpine is musl, and this app does SQL
+  Server native interop plus Arabic/English culture-aware work. **Full e2e leg, and verify Arabic FREETEXT
+  end to end.** A green unit suite proves nothing here.
 - **`DW-074` + `DEF-100`** — `NFR-019` mandates TLS on three internal hops; app↔Keycloak and nginx↔api run
   plaintext on the Docker network. **The operator KEPT the requirement rather than narrowing it**
   (`DEC-066`), so `NFR-019` stays `Approved` and correctly has **no AC**, and `DEF-100` stays **open
