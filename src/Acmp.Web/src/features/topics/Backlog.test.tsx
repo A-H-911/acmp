@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Backlog } from './Backlog';
 import { renderWithAuth } from '../../test/render';
@@ -139,11 +139,79 @@ describe('Backlog (P5b)', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('shows an error state with retry on failure', () => {
-    result({ isError: true });
+  it('retries the failed fetch from the error state', async () => {
+    const refetch = vi.fn();
+    result({ isError: true, refetch });
     renderWithAuth(<Backlog />, { roles: ['secretary'] });
     expect(screen.getByText(/load the backlog/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  // Sorting has TWO arms and only the same-column toggle had ever run. Picking a DIFFERENT column
+  // must reset the direction to ascending — otherwise a column inherits the previous one's
+  // direction and the first click on it appears to do nothing.
+  it('resets to ascending when a different sortable column is chosen', async () => {
+    result({ data: paged(TOPICS) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+    // Default is age/desc, so 'Age' would take the toggle arm. 'Topic' takes the other — and it is
+    // the only sortable column with no same-named FILTER CHIP, so the query is unambiguous.
+    await user.click(screen.getByRole('button', { name: 'Topic' }));
+
+    expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ sortBy: 'title', sortDir: 'asc' });
+  });
+
+  // Three filter controls whose onChange had never fired. Each is asserted through the SERVER
+  // PARAMS rather than the chip's own label: these filters are server-backed, so a control that
+  // updates its display without reaching the query is the failure that matters.
+  it('passes the type and urgency filters to the query', async () => {
+    result({ data: paged(TOPICS) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+
+    await user.click(screen.getByRole('button', { name: 'Type' }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Arch. Decision' }));
+    // Disambiguated from the sortable "Urgency" COLUMN HEADER, which carries the same accessible
+    // name; only the filter chip is a menu trigger.
+    await user.click(screen.getByRole('button', { name: 'Urgency', expanded: false }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Critical' }));
+
+    expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ type: 'ArchitectureDecision', urgency: 'Critical' });
+  });
+
+  it('debounces the search box into the query', async () => {
+    result({ data: paged(TOPICS) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+
+    await user.type(screen.getByRole('searchbox'), '  gateway  ');
+
+    // Trimmed, and only after the 300ms debounce — asserted with waitFor rather than a fixed sleep,
+    // so the test does not encode the delay it is waiting on.
+    await waitFor(() => expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ search: 'gateway' }));
+  });
+
+  // Clearing is the only way out of a filter combination that matches nothing, and it has to reset
+  // the SEARCH BOX as well as the chips — a clear that leaves the query behind still shows nothing.
+  it('clears the filters and the search box together', async () => {
+    result({ data: paged([]) });
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+
+    await user.type(screen.getByRole('searchbox'), 'zzz');
+    await waitFor(() => expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ search: 'zzz' }));
+
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+    expect(screen.getByRole('searchbox')).toHaveValue('');
+    await waitFor(() => {
+      const p = mockBacklog.mock.calls.at(-1)?.[0];
+      expect(p?.search).toBeUndefined();
+      expect(p?.statuses).toBeUndefined();
+    });
   });
 
   it('toggles sort direction when a sortable header is clicked', async () => {
