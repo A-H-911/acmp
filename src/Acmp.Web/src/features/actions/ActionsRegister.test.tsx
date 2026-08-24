@@ -10,13 +10,25 @@ vi.mock('../../api/actions', async (orig) => ({
   ...(await orig<typeof import('../../api/actions')>()),
   useActionsRegister: vi.fn(),
   useActionsCounts: vi.fn(),
+  // Only so CreateActionDialog can MOUNT once a source is picked — its own behaviour is
+  // covered in CreateActionDialog.test.tsx. Without this it reaches a real useMutation
+  // and needs a QueryClientProvider this file deliberately does not have.
+  useCreateAction: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
+vi.mock('../../api/members', () => ({ useMembers: () => ({ data: [] }) }));
 import { useActionsRegister, useActionsCounts } from '../../api/actions';
 
 // The "New action" CTA opens the source chooser, which reads the three source registers. Stubbed so
 // this file tests the WIRING; the chooser's own behaviour is covered in RaiseActionFromDialog.test.tsx.
 vi.mock('../../api/topics', () => ({ useBacklog: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false, refetch: vi.fn() })) }));
-vi.mock('../../api/decisions', () => ({ useDecisionsRegister: vi.fn(() => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() })) }));
+// One decision, because Decision is the chooser's default type: an EMPTY register renders the
+// empty state, so nothing is pickable and the onPicked wiring can never fire.
+vi.mock('../../api/decisions', () => ({
+  useDecisionsRegister: vi.fn(() => ({
+    data: [{ id: 'dec-guid-1', key: 'DECN-2026-008', title: { en: 'Adopt the shared gateway', ar: 'اعتماد البوابة المشتركة' } }],
+    isLoading: false, isError: false, refetch: vi.fn(),
+  })),
+}));
 vi.mock('../../api/meetings', () => ({ useMeetings: vi.fn(() => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() })) }));
 
 const mockList = useActionsRegister as unknown as Mock;
@@ -71,6 +83,39 @@ describe('ActionsRegister (P8b)', () => {
 
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Raise an action from…')).toBeInTheDocument();
+  });
+
+  // The CTA's three wiring callbacks — dismiss, hand-off, and dismiss-the-handoff — had never
+  // executed. A chooser you cannot close, or that drops the source it just collected, is the same
+  // dead CTA the test above exists to rule out, one step further in.
+  it('closes the source chooser without picking anything', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /new action/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('carries the picked source into the create dialog, and closes that too', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /new action/i }));
+    await user.click(await screen.findByRole('button', { name: /DECN-2026-008/ }));
+
+    // Asserting the KEY, not merely that a dialog is open: the source object has to survive the
+    // hand-off, and CreateActionDialog renders source.sourceKey in its Linked chip.
+    const created = await screen.findByRole('dialog');
+    expect(within(created).getByText('DECN-2026-008')).toBeInTheDocument();
+    expect(screen.queryByText('Raise an action from…')).not.toBeInTheDocument();
+
+    await user.click(within(created).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('shows the loading skeleton while fetching', () => {

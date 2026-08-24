@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import axe from 'axe-core';
@@ -148,6 +148,30 @@ describe('DecisionPage (P7b)', () => {
     await user.click(screen.getByRole('button', { name: 'Convert to ADR' }));
     // The confirm dialog names the source decision in its body.
     expect(screen.getByText(/pre-filled from DECN-2026-008/)).toBeInTheDocument();
+
+    // Dismissing it is the other half of the wiring and had never run: a confirm dialog you can
+    // only get out of by confirming is a one-way door on an irreversible promotion.
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByText(/pre-filled from DECN-2026-008/)).not.toBeInTheDocument();
+  });
+
+  // The follow-up-action CTA had never been clicked, so neither it nor its dialog's dismiss ran.
+  it('opens the follow-up action dialog against this decision, and closes it', async () => {
+    const user = userEvent.setup();
+    result({ data: ISSUED });
+    setup(['chairman']);
+
+    await user.click(screen.getByRole('button', { name: 'Create follow-up action' }));
+
+    // The dialog must be raised AGAINST this decision — ActionItem's source is non-nullable, so a
+    // dialog that opens without carrying DECN-2026-008 could never produce a valid command.
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('DECN-2026-008')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('hides Convert to ADR from a non-chair', () => {

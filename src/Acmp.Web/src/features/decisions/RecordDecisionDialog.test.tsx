@@ -95,6 +95,44 @@ describe('RecordDecisionDialog (P17b, W12)', () => {
     expect(nav).not.toHaveBeenCalled();
   });
 
+  // The outcome Select's onChange had never fired, so every recorded decision in this suite was the
+  // default Approved — and the conditions mapper on the command payload had therefore never run
+  // either, because an Approved decision carries no conditions to map.
+  it('carries the conditions of a Conditionally Approved decision into the record command', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Outcome' }));
+    await user.click(screen.getByRole('option', { name: 'Conditionally Approved' }));
+    await fillRequired(user);
+    await user.type(screen.getByRole('textbox', { name: 'Condition 1' }), '  Pilot with one stream first  ');
+
+    await user.click(screen.getByRole('button', { name: 'Record & issue' }));
+
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: 'ConditionallyApproved',
+        // Trimmed and localized by the mapper — asserted as the whole payload shape rather than
+        // "conditions is non-empty", because the mapper is what line-level coverage was missing.
+        conditions: [{ text: { en: 'Pilot with one stream first', ar: 'Pilot with one stream first' }, dueDate: null }],
+      }),
+    );
+  });
+
+  // The catch has two arms and only the ApiError one had ever executed. A transport failure — offline,
+  // DNS, an aborted fetch — rejects with a plain Error, and the dialog must still say something.
+  it('falls back to the generic message when the failure is not an ApiError', async () => {
+    issue.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const user = userEvent.setup();
+    setup();
+    await fillRequired(user);
+
+    await user.click(screen.getByRole('button', { name: 'Record & issue' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('could not be issued');
+    expect(nav).not.toHaveBeenCalled();
+  });
+
   it('does not re-record the Draft when a failed issue is retried (record-once guard)', async () => {
     issue.mockRejectedValueOnce(new ApiError(409, { title: 'downstream link required' }));
     const user = userEvent.setup();
