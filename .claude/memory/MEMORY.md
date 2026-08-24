@@ -7,7 +7,33 @@
 > real ceiling is, is still unknown, so keep the index lean **because a long index buries its own top**,
 > not because of a threshold nobody measured. Do not restore a number you have not observed.
 
-## ★★★ 2026-08-23 · **`SL-033` IS LIVE — START AT `WBS-24.1`** · run the checks, never quote them
+## ★★★ 2026-08-23 (END) · **`DW-082` IS THE LIVE WORK — 14 of 32 done** · run the checks, never quote them
+
+> ▶▶ **NEXT: the `DW-082` handler tests — 18 files left**, branch **`chore/vitest-4-pair`**. `DEC-075` d2:
+> **ALL FOUR** activated streams are in scope (operator said "all"); the ORDER is the agent's
+> recommendation only — tests → `SL-033`/`WBS-24.1` → `DW-080` alone → `DW-079`.
+> ⚠⚠ **`TopBar` IS NOT A HANDLER FIX** — `DevRoleSwitcher.tsx` is in coverage `exclude` but **its call
+> site is not**, so the exclusion hides the component and still charges `TopBar`. Needs its own decision.
+> `DecisionPage` is PARTIAL (retry done). ⚠ **NEVER lower `ADR-0016`'s threshold** — the number would now
+> hide real untested code. ✅ `DW-078` **Done** (8/10, `#308` merged, `#135` closed). ✅ `DEF-105` fixed:
+> **`main` IS BRANCH-PROTECTED** — 9 checks, `strict=true`, `enforce_admins=false`. ⚠ **Every push to
+> `main` re-stales every open PR**; push package writes BETWEEN merge cycles, never during one.
+> ⚠⚠ **DO PACKAGE WRITES ON `main`** — C31: checking out a feature branch rolls `data/` BACKWARDS, and
+> the store refused a write for exactly that reason today (the staleness check earned its keep).
+> ⚠ `LL-017/018/019` are **`Proposed`** — `lessons-confirmed` FAILS on purpose; do not approve unread.
+
+- ⚠⚠⚠ **THE RESUME'S COUNTER FAILED IN A NEW WAY: I CORRECTED A STATEMENT AND FORGOT TO COUNT IT.**
+  The `#135` mis-diagnosis was withdrawn (`PE-606`) and its §6 bullet rewritten — but the counter stayed
+  at seventeen with no ordinal written, so the file kept the fix and lost the tally. Now **eighteen /
+  six escapes**. ⭐ **Found by grepping for `EIGHTEENTH` and getting ZERO, not by reading.**
+  **A correction that does not update the tally of corrections is half a correction — they are one edit.**
+- ⭐⭐ **NAME THE PART YOU DID NOT CHECK, IN THE ARTIFACT ITSELF.** This pass verified all 217 ids
+  mechanically and re-read §6 + the operator-owned list, but **not §2–§5**. The file now says so, so the
+  next session reads them instead of inheriting an unearned assurance.
+- ⚠⚠ **`DW-083`: TRAP 28 GUARDS VISUAL-VERIFY *FILES* AND MISSES THE *PROCESSES*.** Six `vite` servers
+  ran for 13 days holding `rolldown-binding...node` open — `npm ci` failed `EPERM`/`EBUSY` and, because it
+  unlinks first, **gutted `node_modules` 171→35**. A file-level check runs clean over that machine.
+  ⭐ **If `npm ci` fails on a `node_modules` file here, enumerate node processes FIRST.**
 
 > ▶▶ **NEXT: `WBS-24.1` / `DW-033` / `FR-032`** — configurable backlog columns (show/hide, reorder);
 > verified unbuilt, the single missing member of a family whose other four views shipped. `SL-033` holds
