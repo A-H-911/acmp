@@ -40,6 +40,20 @@ describe('SortableList keyboard fallback', () => {
     ]);
   });
 
+  // The suite asserted Move up is DISABLED on the first row but never clicked an
+  // ENABLED one, so the upward branch had never executed. coverage-v8 v4 surfaced
+  // it (line 62); v3 credited the line for the JSX around the handler.
+  it('reorders via the Move up control on a row where it is enabled', async () => {
+    const user = userEvent.setup();
+    const onReorder = setup();
+    await user.click(screen.getByRole('button', { name: /Move Bravo up/i }));
+    expect(onReorder).toHaveBeenCalledWith([
+      { id: 'b', name: 'Bravo' },
+      { id: 'a', name: 'Alpha' },
+      { id: 'c', name: 'Charlie' },
+    ]);
+  });
+
   it('disables Move up on the first row and Move down on the last', () => {
     setup();
     expect(screen.getByRole('button', { name: /Move Alpha up/i })).toBeDisabled();
