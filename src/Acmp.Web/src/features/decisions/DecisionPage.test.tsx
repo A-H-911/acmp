@@ -97,6 +97,19 @@ describe('DecisionPage (P7b)', () => {
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
+  // The three assertions above only proved controls EXIST. Their handlers - retry, the raise-action
+  // dialog's open and close, and the convert dialog's close - had never run (DW-082).
+  it('retries the failed fetch from the error state', async () => {
+    const refetch = vi.fn();
+    result({ isError: true, error: new ApiError(500, undefined), refetch });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
   it('renders header, rationale, conditions and record detail from the DTO', () => {
     result({ data: ISSUED });
     setup();

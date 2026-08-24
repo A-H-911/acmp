@@ -76,6 +76,21 @@ describe('NotificationCenter (P6b — ACMP.dc.html L92–131)', () => {
     expect(screen.getByText('A new meeting is scheduled.')).toBeTruthy();
   });
 
+  // The All tab was clicked but never switched BACK, so the Unread tab's own handler had never
+  // run. coverage-v8 v4 named that line (DW-082).
+  it('the Unread tab filters back to unread items only', async () => {
+    feed({ data: { items: ITEMS, unreadCount: 1 } });
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationCenter open onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /All/ }));
+    expect(screen.getByText('A new meeting is scheduled.')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: /Unread/ }));
+
+    expect(screen.getByRole('button', { name: /Unread/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('marks read, closes, and follows the deep link when the key is clicked', async () => {
     const onClose = vi.fn();
     feed({ data: { items: ITEMS, unreadCount: 1 } });

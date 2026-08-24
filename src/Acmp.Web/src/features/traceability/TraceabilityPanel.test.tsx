@@ -15,8 +15,10 @@ vi.mock('../../api/dependencies', async (orig) => ({
   useArtifactDependencies: vi.fn(),
 }));
 // Dialogs have their own tests; expose whether they are open via a marker.
-vi.mock('./CreateRelationshipDialog', () => ({ CreateRelationshipDialog: ({ open }: { open: boolean }) => (open ? createElement('div', null, 'REL_DIALOG_OPEN') : null) }));
-vi.mock('../dependencies/CreateDependencyDialog', () => ({ CreateDependencyDialog: ({ open }: { open: boolean }) => (open ? createElement('div', null, 'DEP_DIALOG_OPEN') : null) }));
+// The marker exposes OPEN state; the button lets a test drive onClose, which the panel owns and
+// which had never been invoked (coverage-v8 v4 named both onClose lines - DW-082).
+vi.mock('./CreateRelationshipDialog', () => ({ CreateRelationshipDialog: ({ open, onClose }: { open: boolean; onClose: () => void }) => (open ? createElement('div', null, 'REL_DIALOG_OPEN', createElement('button', { type: 'button', onClick: onClose }, 'CLOSE_REL')) : null) }));
+vi.mock('../dependencies/CreateDependencyDialog', () => ({ CreateDependencyDialog: ({ open, onClose }: { open: boolean; onClose: () => void }) => (open ? createElement('div', null, 'DEP_DIALOG_OPEN', createElement('button', { type: 'button', onClick: onClose }, 'CLOSE_DEP')) : null) }));
 import { useArtifactRelationships } from '../../api/traceability';
 import { useArtifactDependencies } from '../../api/dependencies';
 
@@ -83,6 +85,21 @@ describe('TraceabilityPanel (P10e, AC-062)', () => {
     expect(screen.getByText('DEP_DIALOG_OPEN')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Add relationship/ }));
     expect(screen.getByText('REL_DIALOG_OPEN')).toBeInTheDocument();
+  });
+
+  it('closes each dialog again through the onClose the panel owns', async () => {
+    relState();
+    depState();
+    const user = userEvent.setup();
+    renderWithAuth(<TraceabilityPanel {...props} />, { roles: ['secretary'] });
+
+    await user.click(screen.getByRole('button', { name: /Add dependency/ }));
+    await user.click(screen.getByRole('button', { name: 'CLOSE_DEP' }));
+    expect(screen.queryByText('DEP_DIALOG_OPEN')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Add relationship/ }));
+    await user.click(screen.getByRole('button', { name: 'CLOSE_REL' }));
+    expect(screen.queryByText('REL_DIALOG_OPEN')).not.toBeInTheDocument();
   });
 
   it('hides the add buttons from a plain member', () => {
