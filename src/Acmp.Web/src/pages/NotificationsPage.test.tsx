@@ -118,6 +118,45 @@ describe('NotificationsPage (#79 — ACMP.dc.html L706–739)', () => {
     expect(screen.getByText('A new meeting is scheduled.')).toBeInTheDocument();
   });
 
+  // The All tab was clicked but never switched BACK, so the Unread tab's own handler had never
+  // run. Asserted as a PROPERTY - the read item disappears again - rather than by re-reading the
+  // component's own aria-selected. coverage-v8 v4 named the line (DW-082).
+  it('the Unread tab filters the read item back out', async () => {
+    page();
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationsPage />);
+
+    await user.click(screen.getByRole('tab', { name: /All/ }));
+    expect(screen.getByText('A new meeting is scheduled.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: /Unread/ }));
+
+    expect(screen.queryByText('A new meeting is scheduled.')).not.toBeInTheDocument();
+  });
+
+  // The deep link is reachable from the KEY and from the message body; only the key was tested, so
+  // the larger of the two click targets had never been exercised.
+  it('follows the deep link from the row message body, not only the key', async () => {
+    page();
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'The agenda for MTG-2026-019 is published.' }));
+
+    expect(navigate).toHaveBeenCalledWith('/meetings/MTG-2026-019');
+  });
+
+  it('marks a row read from its own mark-read control without navigating', async () => {
+    page();
+    const user = userEvent.setup();
+    renderWithAuth(<NotificationsPage />);
+
+    await user.click(screen.getByRole('button', { name: /mark read/i }));
+
+    expect(markReadMutate).toHaveBeenCalledWith('n1');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('shows Load more under All when more pages exist and fetches the next page', async () => {
     page({ hasMore: true }, { hasNextPage: true });
     const user = userEvent.setup();

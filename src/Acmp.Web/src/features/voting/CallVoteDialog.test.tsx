@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { CallVoteDialog } from './CallVoteDialog';
+import { ApiError } from '../../api/apiClient';
 import type { Member } from '../../api/members';
 
 const navigate = vi.fn();
@@ -85,5 +86,51 @@ describe('CallVoteDialog (P9b)', () => {
     await user.click(screen.getByRole('button', { name: 'Configure vote' }));
     expect(await screen.findByText(/at least two eligible voters/)).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
+  // The roster toggle is a two-way control and only the REMOVE arm had ever executed. Putting a
+  // voter back is the ordinary correction of a mis-click, and it is the arm that decides who is
+  // eligible on a record that cannot be amended after the vote opens.
+  it('puts a deselected voter back on the roster', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    const sara = screen.getByRole('checkbox', { name: /Sara M\./ });
+    await user.click(sara);
+    expect(sara).not.toBeChecked();
+    await user.click(sara);
+    expect(sara).toBeChecked();
+
+    await user.type(screen.getByRole('spinbutton'), '2');
+    await user.click(screen.getByRole('button', { name: 'Configure vote' }));
+
+    const arg = mutateAsync.mock.calls[0][0] as { eligibleVoters: { userId: string }[] };
+    expect(arg.eligibleVoters.map((v) => v.userId)).toEqual(['kc-1', 'kc-2']);
+  });
+
+  // allowAbstain defaults ON, so every prior test configured a vote that permits abstention and the
+  // control that turns it off had never been operated. Asserted on the COMMAND, because the option
+  // set is fixed at configure time and cannot be changed once voting opens.
+  it('configures a vote that does not permit abstention', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('checkbox', { name: 'Abstain' }));
+    await user.type(screen.getByRole('spinbutton'), '2');
+    await user.click(screen.getByRole('button', { name: 'Configure vote' }));
+
+    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ allowAbstain: false }));
+  });
+
+  it('surfaces a configure failure inline and does not navigate', async () => {
+    mutateAsync.mockRejectedValueOnce(new ApiError(409, { title: 'A vote is already open on this topic' }));
+    const user = userEvent.setup();
+    setup();
+
+    await user.type(screen.getByRole('spinbutton'), '2');
+    await user.click(screen.getByRole('button', { name: 'Configure vote' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('already open');
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

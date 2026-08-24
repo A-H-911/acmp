@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { SearchPage } from './SearchPage';
 import type { SearchGroup } from '../../api/search';
@@ -78,11 +79,16 @@ describe('SearchPage', () => {
     expect(screen.queryByText('TOP-2026-001')).toBeNull();
   });
 
-  it('shows an error state with a retry action', () => {
+  it('shows an error state whose retry action actually refetches', async () => {
+    const user = userEvent.setup();
     const refetch = vi.fn();
     mockSearch.mockReturnValue(result({ isError: true, refetch }));
     setup();
-    expect(screen.getByRole('button')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /retry/i })).toBeTruthy();
+    // Asserting the button EXISTS left onRetry uninvoked, so the retry path had
+    // never run. coverage-v8 v4 named that line; v3 credited it for the JSX.
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('shows an empty state when nothing matches', () => {

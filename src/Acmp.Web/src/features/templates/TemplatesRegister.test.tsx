@@ -12,9 +12,15 @@ vi.mock('../../api/templates', async (orig) => ({
   useTemplates: vi.fn(),
   useDeprecateTemplate: () => ({ mutateAsync: fns.deprecate, isPending: false }),
 }));
+// ⚠ The stub exposes onClose as a control. Modelling only the OPEN half leaves the register's own
+// dismiss handlers unreachable by construction while still looking like coverage.
 vi.mock('./TemplateFormDialog', () => ({
-  TemplateFormDialog: (p: { open: boolean; template?: TemplateSummary }) =>
-    p.open ? <div data-testid="form" data-edit={p.template?.key ?? ''} /> : null,
+  TemplateFormDialog: (p: { open: boolean; template?: TemplateSummary; onClose: () => void }) =>
+    p.open ? (
+      <div data-testid="form" data-edit={p.template?.key ?? ''}>
+        <button type="button" onClick={p.onClose}>CLOSE_FORM</button>
+      </div>
+    ) : null,
 }));
 import { useTemplates } from '../../api/templates';
 const mockList = useTemplates as unknown as Mock;
@@ -48,10 +54,15 @@ describe('TemplatesRegister (P15e)', () => {
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
   });
 
-  it('shows an error state on failure', () => {
-    mockList.mockReturnValue(listResult({ isError: true }));
+  it('retries the failed fetch from the error state', async () => {
+    const refetch = vi.fn();
+    mockList.mockReturnValue(listResult({ isError: true, refetch }));
     setup();
     expect(screen.getByText('Couldn’t load the templates')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('shows the empty state + New template for a manager', () => {
@@ -100,20 +111,6 @@ describe('TemplatesRegister (P15e)', () => {
     expect(lastParams()).toMatchObject({ targetType: 'Adr', statuses: ['Active'] });
   });
 
-  it('opens the edit form seeded with the row', async () => {
-    const user = userEvent.setup();
-    setup();
-    await user.click(screen.getByRole('button', { name: 'Edit Standard Topic' }));
-    expect(screen.getByTestId('form')).toHaveAttribute('data-edit', 'TPL-1');
-  });
-
-  it('opens the create form from New template', async () => {
-    const user = userEvent.setup();
-    setup();
-    await user.click(screen.getByRole('button', { name: 'New template' }));
-    expect(screen.getByTestId('form')).toHaveAttribute('data-edit', '');
-  });
-
   it('deprecates via a confirm dialog; an already-deprecated row cannot be deprecated', async () => {
     const user = userEvent.setup();
     setup();
@@ -122,5 +119,53 @@ describe('TemplatesRegister (P15e)', () => {
     await user.click(screen.getByRole('button', { name: 'Deprecate Standard Topic' }));
     await user.click(screen.getByRole('button', { name: 'Deprecate' }));
     expect(fns.deprecate).toHaveBeenCalledWith('t1');
+  });
+
+  // Backing OUT of a destructive confirm is the arm that had never run. Deprecation is the one
+  // irreversible action on this register, so "changed my mind" must actually work.
+  it('cancels the deprecate confirmation without deprecating', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Deprecate Standard Topic' }));
+    expect(screen.getByText('Deprecate this template')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByText('Deprecate this template')).not.toBeInTheDocument();
+    expect(fns.deprecate).not.toHaveBeenCalled();
+  });
+
+  // Both form dialogs could be opened and neither dismissed. They are SEPARATE mounts with separate
+  // handlers — create clears a boolean, edit clears the row it was seeded with — so one closing
+  // proves nothing about the other, and a stuck edit dialog holds a stale row.
+  it.each([
+    ['create', 'New template', ''],
+    ['edit', 'Edit Standard Topic', 'TPL-1'],
+  ])('opens and dismisses the %s form', async (_kind, opener, expectedSeed) => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: opener }));
+    expect(screen.getByTestId('form')).toHaveAttribute('data-edit', expectedSeed);
+
+    await user.click(screen.getByRole('button', { name: 'CLOSE_FORM' }));
+
+    expect(screen.queryByTestId('form')).not.toBeInTheDocument();
+  });
+
+  // The empty state carries its OWN New template CTA, a second call site from the header's.
+  it('opens the create form from the empty state', async () => {
+    withRows([]);
+    const user = userEvent.setup();
+    setup(['administrator']);
+
+    // TWO of them render here — the header's and the empty state's. Click the empty state's, the
+    // one a first-time user actually meets, rather than whichever the query happens to return first.
+    const ctas = screen.getAllByRole('button', { name: 'New template' });
+    expect(ctas).toHaveLength(2);
+    await user.click(ctas[1]);
+
+    expect(screen.getByTestId('form')).toHaveAttribute('data-edit', '');
   });
 });

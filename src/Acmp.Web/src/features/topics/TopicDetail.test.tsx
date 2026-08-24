@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within, cleanup } from '@testing-library/react';
+import { render, screen, within, cleanup, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -63,7 +63,7 @@ function result(over: Partial<ReturnType<typeof useTopicDetail>>) {
 }
 
 function setup(path = '/topics/TOP-2026-014', roles: string[] = ['secretary']) {
-  render(
+  return render(
     <AcmpAuthContext.Provider value={makeAuth(roles as Parameters<typeof makeAuth>[0])}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
@@ -290,6 +290,135 @@ describe('TopicDetail (P5b)', () => {
     result({ isLoading: true });
     setup();
     expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  /*
+   * Three lifecycle dialogs could be OPENED and none dismissed, and every one of them gates an
+   * irreversible transition on a governance record. The dismissal is a separate handler from the
+   * confirm, so "the confirm works" says nothing about being able to back out.
+   */
+  it.each([
+    ['Rejected', /^Reopen$/i, /Reopen topic/i],
+    ['Decided', /Convert type/i, /Convert topic/i],
+    ['Submitted', 'Reclassify', 'Apply new type'],
+  ])('cancels the %s lifecycle dialog without committing', async (status, opener, confirmName) => {
+    result({ data: { ...TOPIC, status } });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: opener }));
+    expect(screen.getByRole('button', { name: confirmName })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('button', { name: confirmName })).toBeNull();
+    expect(reopenMutate).not.toHaveBeenCalled();
+    expect(convertMutate).not.toHaveBeenCalled();
+    expect(reclassifyMutate).not.toHaveBeenCalled();
+  });
+
+  // The onSuccess arms. Each closes its dialog, and convert also navigates to the NEW topic - a
+  // dialog left open over a topic that no longer exists in that form is worse than no dialog.
+  it('closes the reopen dialog once the reopen succeeds', async () => {
+    reopenMutate.mockImplementation((_v: unknown, o: { onSuccess: () => void }) => o.onSuccess());
+    result({ data: { ...TOPIC, status: 'Rejected' } });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /^Reopen$/i }));
+    await user.type(screen.getByLabelText(/Reason for reopening/i), 'new regulatory guidance');
+    await user.click(screen.getByRole('button', { name: /Reopen topic/i }));
+
+    expect(screen.queryByRole('button', { name: /Reopen topic/i })).toBeNull();
+  });
+
+  it('navigates to the created topic once a conversion succeeds', async () => {
+    convertMutate.mockImplementation((_v: unknown, o: { onSuccess: (c: { key: string }) => void }) =>
+      o.onSuccess({ key: 'TOP-2026-099' }));
+    result({ data: { ...TOPIC, status: 'Decided' } });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /Convert type/i }));
+    await user.type(screen.getByLabelText(/Reason for converting/i), 'research concluded');
+    await userEvent.selectOptions(screen.getByLabelText(/Convert to/i), 'ResearchDiscovery');
+    await user.click(screen.getByRole('button', { name: /Convert topic/i }));
+
+    // The route changes to the NEW key, so this page unmounts - asserted by its header going away
+    // rather than by spying on the navigate hook, which would not prove the route actually moved.
+    expect(screen.queryByRole('button', { name: /Convert topic/i })).toBeNull();
+  });
+
+  it('closes the reclassify dialog once it succeeds', async () => {
+    reclassifyMutate.mockImplementation((_v: unknown, o: { onSuccess: () => void }) => o.onSuccess());
+    result({ data: { ...TOPIC, status: 'Submitted' } });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Reclassify' }));
+    await userEvent.selectOptions(screen.getByLabelText('New type'), 'ResearchDiscovery');
+    await user.click(screen.getByRole('button', { name: 'Apply new type' }));
+
+    expect(screen.queryByRole('button', { name: 'Apply new type' })).toBeNull();
+  });
+
+  // The 403 arm was covered and the OTHER arm was not. They produce different copy on purpose: a 403
+  // means "you may not", anything else means "it did not work" - telling a user the wrong one sends
+  // them to the wrong person.
+  it('shows the generic prepare error for a non-403 failure', async () => {
+    prepareMutate.mockImplementation((_id: string, opts: { onError: (e: unknown) => void }) => opts.onError(new ApiError(500)));
+    result({ data: { ...TOPIC, status: 'Accepted' } });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Mark prepared' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toBeInTheDocument();
+    expect(alert).not.toHaveTextContent(/permission/i);
+  });
+
+  it('navigates to the edit form from the header action', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    // The route left this page; its own header action is gone.
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+  });
+
+  it('retries a failed topic fetch from the error state', async () => {
+    const refetch = vi.fn();
+    result({ isError: true, error: new ApiError(500), refetch });
+    setup();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  // Drag-and-drop is the attachment path the tab is designed around, and none of its three handlers
+  // had run - the existing test drives the hidden input instead.
+  it('uploads a file dropped onto the attachments drop zone', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    const { container } = setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    const zone = container.querySelector('.sub-drop') as HTMLElement;
+    const file = new File(['x'], 'dropped.pdf', { type: 'application/pdf' });
+
+    fireEvent.dragOver(zone);
+    expect(zone).toHaveClass('over'); // the affordance that tells the user the drop will land
+    fireEvent.dragLeave(zone);
+    expect(zone).not.toHaveClass('over');
+
+    fireEvent.drop(zone, { dataTransfer: { files: [file] } });
+
+    expect(uploadMutate).toHaveBeenCalledWith({ topicId: 'g1', file });
+    expect(zone).not.toHaveClass('over');
+    await user.click(within(zone).getByRole('button'));
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {

@@ -137,6 +137,33 @@ describe('RaiseActionFromDialog', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
+  // The retry assertion above covers only the DECISION picker. Each source type is its own
+  // component with its own onRetry, and the other two had never been exercised - coverage-v8 v4
+  // named both lines (DW-082).
+  it('offers a working retry when TOPIC candidates fail to load', async () => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    mockTopics.mockReturnValue({ ...idle, isError: true, data: undefined, refetch });
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Topic' }));
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('offers a working retry when MEETING candidates fail to load', async () => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    mockMeetings.mockReturnValue({ ...idle, isError: true, data: undefined, refetch });
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Meeting' }));
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
   // Candidates are <button>s, not clickable rows: the picker has to be operable by keyboard.
   it('exposes every candidate as a focusable control', () => {
     setup();

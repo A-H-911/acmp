@@ -12,6 +12,13 @@ vi.mock('../../api/meetings', () => ({
 }));
 import { useMeetings } from '../../api/meetings';
 
+// The Schedule CTAs call navigate(); Link-based routing elsewhere is unaffected by this mock.
+const navigate = vi.fn();
+vi.mock('react-router-dom', async (orig) => ({
+  ...(await orig<typeof import('react-router-dom')>()),
+  useNavigate: () => navigate,
+}));
+
 const mockMeetings = useMeetings as unknown as Mock;
 
 function result(over: Partial<ReturnType<typeof useMeetings>>) {
@@ -116,17 +123,44 @@ describe('MeetingsList (P6c)', () => {
     expect(within(emptyRegion).getByRole('button', { name: /schedule/i })).toBeInTheDocument();
   });
 
+  // Asserting the CTAs EXIST left both onClick handlers uninvoked, so neither route out of this
+  // screen had ever been taken. coverage-v8 v4 named both lines (DW-082).
+  it('routes to the schedule screen from the empty state CTA', async () => {
+    result({ data: [] });
+    const user = userEvent.setup();
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+
+    await user.click(within(screen.getByRole('status')).getByRole('button', { name: /schedule/i }));
+
+    expect(navigate).toHaveBeenCalledWith('/meetings/new');
+  });
+
+  it('routes to the schedule screen from the header CTA', async () => {
+    result({ data: MEETINGS });
+    const user = userEvent.setup();
+    renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
+
+    await user.click(screen.getByRole('button', { name: /schedule/i }));
+
+    expect(navigate).toHaveBeenCalledWith('/meetings/new');
+  });
+
   it('shows the loading state on first fetch', () => {
     result({ isLoading: true });
     renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('shows an error state with retry on failure', () => {
-    result({ isError: true });
+  it('shows an error state whose retry actually refetches', async () => {
+    const refetch = vi.fn();
+    result({ isError: true, refetch });
+    const user = userEvent.setup();
     renderWithAuth(<MeetingsList />, { roles: ['secretary'] });
     expect(screen.getByText("Couldn't load meetings")).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {

@@ -234,7 +234,7 @@ describe('EditTopic (AC-034)', () => {
     expect(screen.getByText(/topic not found/i)).toBeInTheDocument();
   });
 
-  it('offers a retry when the topic could not be loaded at all', () => {
+  it('offers a retry when the topic could not be loaded at all', async () => {
     const refetch = vi.fn();
     mockDetail.mockReturnValue({ data: undefined, isLoading: false, isError: true, error: new Error('boom'), refetch });
     render(
@@ -245,7 +245,36 @@ describe('EditTopic (AC-034)', () => {
       </AcmpAuthContext.Provider>,
     );
 
-    expect(screen.getByRole('button', { name: /retry|try again/i })).toBeInTheDocument();
+    // ⚠ CLICKED, not merely found. Asserting the button exists leaves onRetry unexecuted, which is
+    // how a retry control that is wired to nothing passes a suite — the shape DW-082 exposes.
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  // Two editable controls whose onChange had never fired. Asserted through the SAVE PAYLOAD rather
+  // than through the rendered chip, because PUT replaces the whole topic: a control that updates the
+  // display but not the form state loses the edit silently, and only the payload can see that.
+  it('sends an added system in the payload', async () => {
+    setup();
+
+    const systems = screen.getByRole('textbox', { name: /systems/i });
+    await userEvent.type(systems, 'Identity Broker{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(mutateAsync.mock.calls[0][0].edit.systems).toEqual(['Auth Service', 'Identity Broker']);
+  });
+
+  it('sends the newly chosen urgency in the payload', async () => {
+    setup();
+
+    const critical = screen.getByRole('button', { name: 'Critical' });
+    expect(critical).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(critical);
+    await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(critical).toHaveAttribute('aria-pressed', 'true');
+    expect(mutateAsync.mock.calls[0][0].edit.urgency).toBe('Critical');
   });
 
   // Guardrail 9 / DEF-064. check-i18n.mjs compares KEY SETS, so "parity OK" is true and meaningless

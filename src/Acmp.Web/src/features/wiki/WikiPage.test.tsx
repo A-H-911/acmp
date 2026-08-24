@@ -30,8 +30,16 @@ vi.mock('./WikiEditor', () => ({
     <div data-testid="editor"><button onClick={p.onDone}>stub-done</button></div>
   ),
 }));
-vi.mock('./WikiVersionHistory', () => ({ WikiVersionHistory: (p: { open: boolean }) => (p.open ? <div data-testid="history" /> : null) }));
-vi.mock('./CreateDocumentDialog', () => ({ CreateDocumentDialog: (p: { open: boolean }) => (p.open ? <div data-testid="create" /> : null) }));
+// ⚠ Both stubs expose onClose as a control. Rendering only the OPEN half leaves this page's own
+// dismiss handlers unreachable by construction while still looking like coverage.
+vi.mock('./WikiVersionHistory', () => ({
+  WikiVersionHistory: (p: { open: boolean; onClose: () => void }) =>
+    p.open ? <div data-testid="history"><button type="button" onClick={p.onClose}>CLOSE_HISTORY</button></div> : null,
+}));
+vi.mock('./CreateDocumentDialog', () => ({
+  CreateDocumentDialog: (p: { open: boolean; onClose: () => void }) =>
+    p.open ? <div data-testid="create"><button type="button" onClick={p.onClose}>CLOSE_CREATE</button></div> : null,
+}));
 
 const mockList = useWikiDocuments as unknown as Mock;
 const mockDoc = useDocument as unknown as Mock;
@@ -89,10 +97,15 @@ describe('WikiPage (P15e)', () => {
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
   });
 
-  it('shows an error state on a register failure', () => {
-    mockList.mockReturnValue(listResult({ isError: true }));
+  it('retries the failed register fetch from the error state', async () => {
+    const refetch = vi.fn();
+    mockList.mockReturnValue(listResult({ isError: true, refetch }));
     setup();
     expect(screen.getByText('Couldn’t load the wiki')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('groups Published pages into spaces and hides Archived; a manager also sees Draft (marked)', () => {
@@ -127,6 +140,10 @@ describe('WikiPage (P15e)', () => {
     setup('/wiki', ['secretary']);
     await user.click(screen.getByRole('button', { name: 'New page' }));
     expect(screen.getByTestId('create')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'CLOSE_CREATE' }));
+
+    expect(screen.queryByTestId('create')).not.toBeInTheDocument();
   });
 
   it('filters the tree by search and shows the search-empty state on no match', async () => {
@@ -135,6 +152,13 @@ describe('WikiPage (P15e)', () => {
     await user.type(screen.getByRole('searchbox', { name: /Search this wiki/ }), 'zzz');
     expect(screen.getByText('No pages match')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Governance model' })).not.toBeInTheDocument();
+
+    // Clearing is the ONLY way back from a no-match search, and it had never been invoked.
+    // Asserted by the tree RETURNING, not by the input emptying: a handler that clears the box
+    // without clearing the filter leaves the user staring at the same empty state.
+    await user.click(screen.getByRole('button', { name: /clear/i }));
+
+    expect(screen.getByRole('link', { name: 'Governance model' })).toBeInTheDocument();
   });
 
   it('with docs but no page selected: shows the "select a page" hint', () => {
@@ -159,6 +183,10 @@ describe('WikiPage (P15e)', () => {
     setup('/wiki/DOC-1');
     await user.click(screen.getByRole('button', { name: 'stub-history' }));
     expect(screen.getByTestId('history')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'CLOSE_HISTORY' }));
+
+    expect(screen.queryByTestId('history')).not.toBeInTheDocument();
   });
 
   it('shows a not-found state for an unknown key (404)', () => {
@@ -167,10 +195,17 @@ describe('WikiPage (P15e)', () => {
     expect(screen.getByText('Page not found')).toBeInTheDocument();
   });
 
-  it('shows a retryable error for a non-404 document failure', () => {
-    mockDoc.mockReturnValue(docResult({ isError: true, error: new ApiError(500, undefined) }));
+  it('retries the failed document fetch from the error state', async () => {
+    const refetch = vi.fn();
+    mockDoc.mockReturnValue(docResult({ isError: true, error: new ApiError(500, undefined), refetch }));
     setup('/wiki/DOC-1');
     expect(screen.getByText('Couldn’t load the wiki')).toBeInTheDocument();
+
+    // A DIFFERENT retry from the register's, on a different query — one working proves nothing
+    // about the other, and this one is the only way back from a failed article load.
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
   });
 
   it('shows the article skeleton while the document is loading', () => {

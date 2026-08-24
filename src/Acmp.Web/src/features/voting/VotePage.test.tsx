@@ -144,6 +144,78 @@ describe('VotePage (P9b)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/could not be closed/);
   });
 
+  // A ballot carries an optional comment and its onChange had never fired, so every ballot this
+  // suite cast was comment-less. The comment is part of the ATTRIBUTED record a vote produces, so
+  // it has to reach the command, not just the textarea.
+  it('open: carries the ballot comment into the cast command, in both locales', async () => {
+    const user = userEvent.setup();
+    setVote({ data: vote('Open') });
+    setup();
+
+    await user.click(screen.getByRole('radio', { name: 'Approve' }));
+    await user.type(screen.getByRole('textbox'), 'Approving subject to the pilot');
+    await user.click(screen.getByRole('button', { name: /Cast vote/ }));
+    await user.click(screen.getByRole('button', { name: 'Confirm & cast' }));
+
+    expect(fns.cast).toHaveBeenCalledWith({
+      id: 'g1',
+      choice: 'Approve',
+      comment: { en: 'Approving subject to the pilot', ar: 'Approving subject to the pilot' },
+    });
+  });
+
+  // Backing out of the confirm had never run. This is the last reversible moment before an
+  // attributed, permanently recorded ballot, which is the whole reason the dialog exists.
+  it('open: cancelling the confirm dialog casts nothing', async () => {
+    const user = userEvent.setup();
+    setVote({ data: vote('Open') });
+    setup();
+
+    await user.click(screen.getByRole('radio', { name: 'Approve' }));
+    await user.click(screen.getByRole('button', { name: /Cast vote/ }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(fns.cast).not.toHaveBeenCalled();
+  });
+
+  // Both failure arms were unexercised. They are DIFFERENT commands with different recovery: a
+  // failed open leaves the vote closed, a failed cast leaves the voter believing they voted.
+  it('open: a failed cast closes the dialog and surfaces the server reason', async () => {
+    const user = userEvent.setup();
+    muts.cast.mockReturnValue(mutation('cast', () => Promise.reject(new ApiError(409, { title: 'Voting has already closed' }))));
+    setVote({ data: vote('Open') });
+    setup();
+
+    await user.click(screen.getByRole('radio', { name: 'Approve' }));
+    await user.click(screen.getByRole('button', { name: /Cast vote/ }));
+    await user.click(screen.getByRole('button', { name: 'Confirm & cast' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('already closed');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('not_open: a failed open surfaces an error rather than failing silently', async () => {
+    const user = userEvent.setup();
+    muts.open.mockReturnValue(mutation('open', () => Promise.reject(new ApiError(409, { title: 'nope' }))));
+    setVote({ data: vote('Configured') });
+    setup('me', ['chairman']);
+
+    await user.click(screen.getByRole('button', { name: /Open voting/ }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('retries a failed vote fetch from the error state', async () => {
+    const refetch = vi.fn();
+    setVote({ isError: true, error: new ApiError(500, undefined), refetch });
+    setup();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
   it('ineligible: a non-voter sees the view-only card', () => {
     setVote({ data: vote('Open', { ballots: [ballot({ voterUserId: 'other', voterName: 'Other' })] }) });
     setup('me');

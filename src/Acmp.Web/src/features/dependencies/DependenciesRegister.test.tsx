@@ -11,8 +11,22 @@ vi.mock('../../api/dependencies', async (orig) => ({
   useDependenciesRegister: vi.fn(),
   useDependenciesCounts: vi.fn(),
 }));
-// The create dialog has its own test; stub it so this test stays isolated from its providers.
-vi.mock('./CreateDependencyDialog', () => ({ CreateDependencyDialog: () => null }));
+/*
+ * The create dialog has its own test; stub it so this test stays isolated from its providers.
+ * ⚠ The stub must model BOTH halves of the contract. It used to render `null` unconditionally, which
+ * made the register's own onClose UNREACHABLE BY CONSTRUCTION while still looking like coverage —
+ * the same shape found in TraceabilityPanel's mocks. It now renders an open marker and a close
+ * control, so opening and dismissing are both observable from here.
+ */
+vi.mock('./CreateDependencyDialog', () => ({
+  CreateDependencyDialog: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? (
+      <div>
+        CREATE_DEP_OPEN
+        <button type="button" onClick={onClose}>CLOSE_CREATE_DEP</button>
+      </div>
+    ) : null,
+}));
 import { useDependenciesRegister, useDependenciesCounts } from '../../api/dependencies';
 
 const mockReg = useDependenciesRegister as unknown as Mock;
@@ -102,10 +116,47 @@ describe('DependenciesRegister (P10e)', () => {
     expect(screen.getByText('No dependencies match these filters')).toBeInTheDocument();
   });
 
-  it('renders the error state', () => {
-    regResult({ isError: true });
+  it('retries the failed fetch from the error state', async () => {
+    const refetch = vi.fn();
+    regResult({ isError: true, refetch });
     renderWithAuth(<DependenciesRegister />, { roles: ['member'] });
     expect(screen.getByText('Couldn’t load the dependencies')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  // BOTH "New dependency" CTAs open the same dialog and NEITHER had been clicked. They are separate
+  // call sites — the header one and the empty-state one — so one working proves nothing about the
+  // other, and the empty state is exactly where a first-time user meets this register.
+  it.each([
+    ['header', [ROW()]],
+    ['empty state', []],
+  ])('opens and dismisses the create dialog from the %s', async (_where, rows) => {
+    regResult(page(rows as DependencySummary[]));
+    const user = userEvent.setup();
+    renderWithAuth(<DependenciesRegister />, { roles: ['secretary'] });
+    expect(screen.queryByText('CREATE_DEP_OPEN')).not.toBeInTheDocument();
+
+    await user.click(screen.getAllByRole('button', { name: /New dependency/ })[0]);
+    expect(screen.getByText('CREATE_DEP_OPEN')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'CLOSE_CREATE_DEP' }));
+    expect(screen.queryByText('CREATE_DEP_OPEN')).not.toBeInTheDocument();
+  });
+
+  it('filters by relation kind', async () => {
+    regResult(page([ROW()]));
+    const user = userEvent.setup();
+    renderWithAuth(<DependenciesRegister />, { roles: ['member'] });
+
+    await user.click(screen.getByRole('button', { name: 'Relation' }));
+    await user.click(screen.getByText('Blocks'));
+
+    // Asserted through the SERVER PARAMS, not the chip's label: this filter is server-backed, so a
+    // chip that updates its own display without reaching the query is the failure worth catching.
+    expect(mockReg.mock.calls[mockReg.mock.calls.length - 1][0]).toMatchObject({ kind: 'Blocks' });
   });
 
   it('renders the loading skeleton', () => {

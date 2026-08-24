@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -78,7 +78,7 @@ function detailResult(over: Partial<ReturnType<typeof useMeetingDetail>>) {
 }
 
 function setup(path = '/meetings/MTG-2026-019') {
-  render(
+  return render(
     <AcmpAuthContext.Provider value={makeAuth(['secretary'])}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
@@ -194,6 +194,121 @@ describe('AgendaBuilder (P6c)', () => {
     detailResult({ isError: true, error: new ApiError(404) });
     setup('/meetings/MTG-9999-999');
     expect(screen.getByText('Meeting not found')).toBeInTheDocument();
+  });
+
+  // The opposite arm of every paired control. Each pair is two call sites with opposite signs, so
+  // one working proves nothing about the other - and each writes to the agenda a committee runs from.
+  it('moves an item up with a -1 delta', async () => {
+    detailResult({ data: MEETING });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Move TOP-2026-031 up' }));
+
+    expect(moveSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't2', delta: -1 });
+  });
+
+  it('increments the timebox by the step', async () => {
+    detailResult({ data: MEETING });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Increase timebox for TOP-2026-014' }));
+
+    expect(timeboxSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', minutes: 25 });
+  });
+
+  // Assigning a presenter is the one edit here that resolves an id against the member list before
+  // committing - so the NAME it snapshots has to come from that lookup, not from the picker's label.
+  it('assigns a presenter, snapshotting the resolved member name', async () => {
+    detailResult({ data: MEETING });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Presenter for TOP-2026-014' }));
+    await user.click(screen.getByRole('option', { name: 'Lina M' }));
+
+    expect(presenterSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ meetingId: 'm1', topicId: 't1', presenterUserId: 'u9', presenterName: 'Lina M' }),
+    );
+  });
+
+  it('filters the prepared-topic pool from the search box', async () => {
+    detailResult({ data: MEETING });
+    const user = userEvent.setup();
+    setup();
+    expect(screen.getByRole('button', { name: 'Add TOP-2026-040 to the agenda' })).toBeInTheDocument();
+
+    await user.type(screen.getByRole('searchbox'), 'zzz');
+
+    expect(screen.queryByRole('button', { name: 'Add TOP-2026-040 to the agenda' })).not.toBeInTheDocument();
+  });
+
+  // Publishing notifies every committee member and locks the agenda; backing out of that confirm
+  // had never run, which makes the dialog a one-way door in practice.
+  it('cancels the publish confirmation without publishing', async () => {
+    detailResult({ data: MEETING });
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: 'Publish & notify' }));
+    const dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(publishSpy).not.toHaveBeenCalled();
+  });
+
+  it('retries a failed meeting fetch from the error state', async () => {
+    const { ApiError } = await import('../../api/apiClient');
+    const refetch = vi.fn();
+    detailResult({ isError: true, error: new ApiError(500), refetch });
+    setup();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  /*
+   * Drag-and-drop is the agenda's PRIMARY gesture and none of its handlers had ever run: dropping a
+   * pooled topic onto the agenda, reordering by dropping one item on another, and the dragOver that
+   * makes either possible. jsdom cannot judge whether the targets LOOK droppable — that is the
+   * e2e's job — but the HTML5 DnD API is plain events, so the handlers a browser would call are
+   * exactly these.
+   */
+  it('adds a pooled topic by dropping it onto the agenda', () => {
+    detailResult({ data: MEETING });
+    const { container } = setup();
+    const pooled = screen.getByRole('button', { name: 'Add TOP-2026-040 to the agenda' }).closest('[draggable]')!;
+    const list = container.querySelector('.mt-agenda-list') ?? container.querySelector('[class*="agenda"]')!;
+
+    fireEvent.dragStart(pooled);
+    expect(fireEvent.dragOver(list)).toBe(false); // prevented default = a drop is allowed to land
+    fireEvent.drop(list);
+
+    expect(addSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ meetingId: 'm1', topicId: 't3', topicKey: 'TOP-2026-040' }),
+    );
+  });
+
+  it('reorders by dropping one agenda item onto another, and ignores a drop on itself', () => {
+    detailResult({ data: MEETING });
+    setup();
+    const first = screen.getByRole('button', { name: 'Move TOP-2026-014 up' }).closest('[draggable]')!;
+    const second = screen.getByRole('button', { name: 'Move TOP-2026-031 up' }).closest('[draggable]')!;
+
+    // Self-drop first: the guard is `src.topicId !== target.topicId`, and a reorder fired by a
+    // gesture that went nowhere would renumber the agenda for no reason.
+    fireEvent.dragStart(second);
+    fireEvent.drop(second);
+    expect(moveSpy).not.toHaveBeenCalled();
+
+    fireEvent.dragStart(second);
+    fireEvent.drop(first);
+
+    // second.order (1) > first.order (0) → moving up, delta -1.
+    expect(moveSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't2', delta: -1 });
   });
 
   it('is axe-clean (WCAG 2.2 AA structure/ARIA)', async () => {

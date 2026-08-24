@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { render, screen, act, waitFor, within } from '@testing-library/react';
+import { render, screen, act, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import axe from 'axe-core';
@@ -7,6 +7,7 @@ import { SubmitTopic } from './SubmitTopic';
 import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import { makeAuth } from '../../test/render';
 import i18n from '../../i18n';
+import { ApiError } from '../../api/apiClient';
 
 // Spy on the component's programmatic navigation (keeps createMemoryRouter/useBlocker real). This also
 // sidesteps a jsdom/undici AbortSignal mismatch when the data router performs a real client navigation.
@@ -181,6 +182,85 @@ describe('SubmitTopic (P5b)', () => {
     await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file);
     await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
     await waitFor(() => expect(mockUpload).toHaveBeenCalledWith('g1', file)); // res.id from mutateAsync
+  });
+
+  // The OTHER arm of the leave guard. "Keep editing" was covered; actually LEAVING was not, and it
+  // is the arm that discards the user's work - the one that must not be broken.
+  it('leaves the dirty form when the guard is confirmed (AC-047)', async () => {
+    const user = userEvent.setup();
+    const router = setup();
+    await user.type(screen.getByLabelText(/Title/), 'Half-written topic');
+    await act(async () => {
+      await router.navigate('/backlog');
+    });
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Leave' }));
+
+    await waitFor(() => expect(screen.queryByLabelText(/Title/)).toBeNull());
+  });
+
+  // AC-049 / BL-016: the topic is ALREADY CREATED when an attachment is rejected, so swallowing the
+  // rejection would silently lose the file and navigate away as if everything worked. The user must
+  // be kept on the form with the server's own localized reason.
+  it('keeps the user on the form and shows the server reason when an attachment is rejected', async () => {
+    const user = userEvent.setup();
+    mockUpload.mockRejectedValueOnce(new ApiError(400, { title: 'Attachment content does not match its extension' }));
+    setup();
+    await user.click(screen.getByRole('button', { name: /Arch\. Decision/ }));
+    await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
+    await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
+    await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
+    const file = new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' });
+    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file);
+
+    await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/does not match|couldn/i);
+    expect(screen.getByLabelText(/Title/)).toBeInTheDocument(); // kept here, not navigated away
+  });
+
+  // Drag-and-drop is a whole input path with its own three handlers, none of which had run. It is
+  // the way most people attach a file, and it is invisible to a test that only drives the picker.
+  it('accepts a file dropped onto the drop zone', async () => {
+    const user = userEvent.setup();
+    setup();
+    const zone = document.querySelector('.sub-drop') as HTMLElement;
+    const file = new File([new Uint8Array(8)], 'dropped.pdf', { type: 'application/pdf' });
+
+    fireEvent.dragOver(zone);
+    expect(zone).toHaveClass('over'); // the drag-over state is what tells the user the drop will land
+    fireEvent.dragLeave(zone);
+    expect(zone).not.toHaveClass('over');
+
+    fireEvent.drop(zone, { dataTransfer: { files: [file] } });
+
+    expect(await screen.findByText('dropped.pdf')).toBeInTheDocument();
+    expect(zone).not.toHaveClass('over');
+    // The visible CTA only forwards to the hidden input; clicking it must not throw.
+    await user.click(screen.getAllByRole('button', { name: /choose file|browse|attach/i })[0]);
+  });
+
+  // The urgency cards' onClick had never fired, so every submitted topic carried the default.
+  it('submits the chosen urgency rather than the default', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Arch\. Decision/ }));
+    await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
+    await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
+    await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
+
+    // ⚠ The card's accessible name is its title PLUS its description, so an exact 'Critical' never
+    // matches here — unlike EditTopic's urgency cards, which render the label alone.
+    const critical = screen.getByRole('button', { name: /^Critical/ });
+    await user.click(critical);
+    expect(critical).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(mutateAsync.mock.calls.at(-1)?.[0]).toMatchObject({ urgency: 'Critical' });
   });
 
   it('starts from an empty form when the saved draft is corrupt', () => {

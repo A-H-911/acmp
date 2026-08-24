@@ -106,6 +106,102 @@ describe('MeetingRecording', () => {
     expect(mutate).toHaveBeenCalled();
   });
 
+  // The file input's onChange is where an upload actually BEGINS, and nothing had ever fired it.
+  // Asserted on the mutation argument: a picker that opens but hands the mutation nothing is
+  // indistinguishable from a working one until someone tries to upload.
+  it('starts the upload with the chosen file', async () => {
+    const mutate = vi.fn();
+    mockUpload.mockReturnValue({ mutate, isPending: false, isError: false });
+    mockDetail.mockReturnValue({ data: meeting(null) });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    // The visible CTA only forwards a click to the hidden input, so both are exercised: the button
+    // first (its own handler), then the input, which is what the OS picker would have driven.
+    await user.click(screen.getByRole('button', { name: /upload/i }));
+    const file = new File(['x'], 'board.mp4', { type: 'video/mp4' });
+    await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), file);
+
+    expect(mutate).toHaveBeenCalledWith(file);
+  });
+
+  it('offers Replace on an existing recording and re-opens the picker', async () => {
+    const mutate = vi.fn();
+    mockUpload.mockReturnValue({ mutate, isPending: false, isError: false });
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    await user.click(screen.getByRole('button', { name: /replace/i }));
+    const file = new File(['y'], 'board-v2.mp4', { type: 'video/mp4' });
+    await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), file);
+
+    expect(mutate).toHaveBeenCalledWith(file);
+  });
+
+  // Backing out of the delete confirm had never run. A recording is the meeting's only durable
+  // record of what was said; the dialog exists so the destructive click is reversible until it is
+  // confirmed, and an unreachable Cancel makes it a one-way door.
+  it('cancels the delete confirmation without deleting', async () => {
+    const mutate = vi.fn();
+    mockDelete.mockReturnValue({ mutate, isPending: false });
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+    const dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  // Escape is the Dialog's OWN onClose, a different handler from the footer Cancel button above -
+  // and it is the dismissal a keyboard user reaches for.
+  it('dismisses the delete confirmation with Escape', async () => {
+    const mutate = vi.fn();
+    mockDelete.mockReturnValue({ mutate, isPending: false });
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    await user.click(screen.getByRole('button', { name: /delete/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  /*
+   * safeHttps has three ways to say no and only two had run: null, and a non-https scheme. The
+   * third is a string `new URL()` THROWS on, which an unparseable Webex playbackUrl would be.
+   * ⚠ This is a security guard, not a formatting one - it is what stops a non-https or malformed
+   * value reaching an href - so its refusal is the behaviour worth proving, by forcing it.
+   */
+  it('renders no link when the Webex playback URL is not a URL at all', () => {
+    mockDetail.mockReturnValue({
+      data: meeting({ ...webex, playbackUrl: 'not a url' }),
+    });
+    renderTab(['secretary']);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  // The shell owns loading and error, so this tab renders NOTHING rather than its own empty state
+  // while the detail is still resolving - otherwise every meeting flashes "no recording" first.
+  it('renders nothing until the meeting detail resolves', () => {
+    mockDetail.mockReturnValue({ data: undefined });
+    const { container } = renderTab(['secretary']);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('has no accessibility violations in the upload state', async () => {
     mockDetail.mockReturnValue({ data: meeting(null) });
     const { container } = renderTab(['secretary']);

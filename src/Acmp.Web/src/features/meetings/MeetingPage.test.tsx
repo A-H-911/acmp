@@ -51,6 +51,9 @@ function setupShell(path = '/meetings/MTG-2026-019') {
             <Route path="minutes" element={<div>MINUTES_STUB</div>} />
             <Route path="recording" element={<div>RECORDING_STUB</div>} />
           </Route>
+          {/* The cancelled phase's primary action leaves this meeting entirely, so the destination
+              has to exist for that navigation to be observable rather than silently unmatched. */}
+          <Route path="/meetings/new" element={<div>NEW_MEETING_STUB</div>} />
         </Routes>
       </MemoryRouter>
     </AcmpAuthContext.Provider>,
@@ -140,10 +143,37 @@ describe('MeetingPage — meeting shell (P6a IA)', () => {
     expect(screen.getByText('Meeting not found')).toBeInTheDocument();
   });
 
-  it('shows the generic error state (with retry) for a non-404 failure', () => {
-    detailResult({ isError: true, error: new Error('boom') });
+  it('shows the generic error state (with retry) for a non-404 failure', async () => {
+    const refetch = vi.fn();
+    detailResult({ isError: true, error: new Error('boom'), refetch });
     setupShell();
     expect(screen.getByText(/load meetings/)).toBeInTheDocument();
+
+    // ⚠ Clicked, not merely found: asserting the error copy leaves onRetry unexecuted, so a retry
+    // button wired to nothing passes this test unchanged.
+    await userEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
+
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  /*
+   * PrimaryAction is a five-way switch and only two arms had ever been clicked (Build agenda,
+   * Start meeting). The other three are the ONLY primary route off their respective phases, so a
+   * broken one strands the user on a meeting with no forward action — and each is a different
+   * destination, which is why this walks all three rather than asserting the label renders.
+   */
+  it.each([
+    ['InProgress', 'Open live notes', 'NOTES_STUB'],
+    ['Held', 'Review minutes', 'MINUTES_STUB'],
+    ['Cancelled', 'Reschedule', 'NEW_MEETING_STUB'],
+  ])('the %s primary action navigates to its destination', async (status, label, stub) => {
+    detailResult({ data: meeting({ status, agenda: publishedAgenda }) });
+    const user = userEvent.setup();
+    setupShell();
+
+    await user.click(screen.getByRole('button', { name: label }));
+
+    expect(screen.getByText(stub)).toBeInTheDocument();
   });
 });
 
