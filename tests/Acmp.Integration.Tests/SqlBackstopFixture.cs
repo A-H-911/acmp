@@ -35,7 +35,7 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
+        await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (backstop)");
         ConnectionString = _container.GetConnectionString();
 
         // Applying each context's migrations on real SQL Server IS the "migrations apply cleanly" proof
