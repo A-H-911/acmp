@@ -63,7 +63,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
     {
         await _image.CreateAsync();
         _container = new MsSqlBuilder(_image).Build();
-        await _container.StartAsync();
+        await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS)");
 
         // A full-text catalog cannot live in master/tempdb/model (MsSqlBuilder connects to master) — so create
         // a real application database and migrate every module into it.

@@ -27,7 +27,7 @@ public sealed class MinioFileStoreTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _minio.StartAsync();
+        await ContainerStartup.StartOrFailFastAsync(_minio, "MinIO");
         var uri = new Uri(_minio.GetConnectionString());
         var client = new MinioClient()
             .WithEndpoint(uri.Host, uri.Port)
