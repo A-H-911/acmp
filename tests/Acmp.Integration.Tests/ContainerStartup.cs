@@ -1,4 +1,5 @@
 ﻿using DotNet.Testcontainers.Containers;
+using DotNet.Testcontainers.Images;
 
 namespace Acmp.Integration.Tests;
 
@@ -46,6 +47,38 @@ internal static class ContainerStartup
             throw new TimeoutException(
                 $"{name} container did not become ready in {bound.TotalSeconds:0} seconds. " +
                 $"Container startup log:{Environment.NewLine}{await LogTailAsync(container)}",
+                ex);
+        }
+    }
+
+    // DW-085 (DEC-078 d2). The image BUILD is the other unbounded await on this path: SearchProvidersFtsTests
+    // builds deploy/Dockerfile.sqlserver - the 3.62 GB FTS image (DW-059 measured it) - before any container
+    // exists. Normally cached, so the hazard only appears on a runner with a cold cache or a stalled build,
+    // which is the same conditional visibility that let the startup hang sit unnoticed.
+    //
+    // The budgets are chosen together, not separately: a build and a start can BOTH be slow in one run, and
+    // 8 + 10 = 18 minutes still leaves the backend job room under its own timeout-minutes: 25 to fail, report,
+    // and finish. Eight minutes is roughly 3x the ~160s a genuine cold build of that image takes.
+    internal static readonly TimeSpan BuildBudget = TimeSpan.FromMinutes(8);
+
+    public static async Task BuildOrFailFastAsync(IFutureDockerImage image, string name, TimeSpan? budget = null)
+    {
+        var bound = budget ?? BuildBudget;
+        using var cts = new CancellationTokenSource(bound);
+
+        try
+        {
+            await image.CreateAsync(cts.Token);
+        }
+        catch (Exception ex) when (ex is TimeoutException or OperationCanceledException && cts.IsCancellationRequested)
+        {
+            // No container exists yet, so unlike StartOrFailFastAsync there is no log to attach. SAY that,
+            // rather than leaving a reader hunting for one: an empty diagnostic that reads like a full one
+            // is worse than a bare timeout.
+            throw new TimeoutException(
+                $"{name} image did not finish building in {bound.TotalSeconds:0} seconds. " +
+                "No container exists at this point, so there is no container log to attach and this message " +
+                "is the whole of the diagnosis - read the Docker build output above it.",
                 ex);
         }
     }
