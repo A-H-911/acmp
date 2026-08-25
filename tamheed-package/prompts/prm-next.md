@@ -18,7 +18,7 @@ git status --porcelain -uall                 # expect clean; you are on `main`, 
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty-two** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -29,6 +29,21 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
+⚠ **THE TWENTY-SECOND (2026-08-25, later) IS A DECISION OUTRUNNING THE PROSE THAT DESCRIBED THE OLD
+STATE.** §6 called `DW-080` *"unscheduled"* — true until `DEC-076` d3 ordered it third, hours earlier in
+the same session. ⭐ **Both 21 and 22 were caught by the pre-handoff end-to-end read rather than by a
+later session tripping over them, which is the ninth fix's method paying for itself twice in one pass.**
+⚠ **Neither was an id and neither was a status; the mechanical pass ran clean over both.**
+
+⚠⚠ **THE TWENTY-FIRST (2026-08-25, later) IS THE PREAMBLE'S OWN WARNING FIRING ON THE SESSION THAT WROTE
+IT: A NUMBER INVALIDATED, INSIDE ONE SESSION, BY THAT SESSION'S OWN LATER WORK.** §6 said the memory index
+was *"compacted to 155"*. True when written. I then added to that same file twice more in the same
+session and it ended at **178** — against a measured **200-line hard cap**. ⚠⚠ **AND THE STALENESS IS NOT
+THE ARITHMETIC, IT IS THE HEADROOM: `155` reads as comfortable and `178` is nearly out of room**, which is
+exactly the decision the next session has to make before adding a line. Replaced with the command.
+⭐ **Every number I put into a file I am still editing is a hostage to the rest of my own session** —
+the preamble has warned about this since the first fix, and it caught its author anyway.
+
 ⚠⚠ **THE NINETEENTH (2026-08-25) IS THE SAME MEASUREMENT WRITTEN TWICE, IN ONE COMMIT, WITH TWO
 DIFFERENT NUMBERS — AND THE HALF THAT WAS WRONG IS UNKNOWABLE.** §6 said the resume pass covered **206**
 cited identifiers; `PE-612`, written by the same commit `c043ed6`, said **217**. Nothing reconciles them,
@@ -36,7 +51,8 @@ because **the regex that produced either number was never recorded** — so the 
 unresolved, it is unresolvable from the artifacts. Measured fresh today over 18 id families: **221 before
 this paragraph was written and 223 after it** — because the file is its own subject and citing `PE-612`
 and `PE-613` here moved the number. That adjudicates nothing about 206-vs-217, since a different pattern is
-a different question; it does demonstrate the hazard in one line. ⚠⚠ **A NUMBER WITHOUT ITS
+a different question; it does demonstrate the hazard in one line. ⚠ **Both figures are HISTORY, stamped
+2026-08-25 — the live number is whatever the script prints today, and it has risen since.** ⚠⚠ **A NUMBER WITHOUT ITS
 INSTRUMENT IS NOT A MEASUREMENT, IT IS A CLAIM** — two of them from one pass simply expose what was always
 true of the other seventeen. The fix is the eighth's rule taken one step further: not just *replace the
 number with a command*, but **commit the command** (`scripts/count-prompt-ids.py`), so the next reader can
@@ -409,6 +425,17 @@ which is what makes it invisible.
 14. ⚠ **A GENERATED payload must be PASTED, not RE-TYPED** (`LL-001`). Where composition is
    unavoidable, **hash a pre-image and assert byte-identity after** — done twice last session over
    24 requirements and 4 WBS items, both identical.
+14b. ⚠⚠ **APPROVING A LESSON IS GUARDED IN TWO WAYS THE OTHER REGISTERS DO NOT HAVE, AND BOTH ARE
+   FRIENDS.** (a) *Approval is not an edit* — `entity_upsert` refuses unless the content you send is
+   **byte-identical** to the stored row (*"content drifted on [...]; send the stored content
+   byte-identical, or supersede first"*). (b) *Attribution lands WITH approval* — it refuses again
+   without `confirmed_by`, which **can never be added later**. ⭐ Together they make trap 14's dangerous
+   middle SAFE here: re-typing a long field in order to PRESERVE it fails LOUDLY instead of silently
+   enshrining a corrupted lesson that is immutable from that moment. **Elsewhere there is no such guard —
+   hash-and-verify, or rewrite openly.**
+14c. ⚠ **A `deferred-work` row's `title` is NOT NULL, so closing one needs a full row.** Rewriting the
+   title openly (the row's state really did change) beats re-typing 4000 characters to keep them
+   identical; `activation_trigger` is nullable and **preserved by omission** — verified, 988 chars intact.
 15. **Omitting `custom_attributes` PRESERVES it; sending it REPLACES the whole blob.**
 16. **Run `gate_run()` AFTER writing.** ⚠ Creating an AC ahead of its build turns `G-PROGRESS` RED —
    record a verdict in the same session (`Pending`, or `Partial` when part is genuinely done).
@@ -471,8 +498,22 @@ which is what makes it invisible.
 19. ⚠ `gh pr create --body` and `git commit -m` with backticks break under PowerShell — use
    `--body-file` / `-F <file>`. ⚠ A `git commit -F -` **heredoc on stdin** can trip the
    no-verify guard hook; write the message to a file instead.
+   ⚠⚠ **BUT NOT TO A FIXED PATH — THIS TRAP AS WRITTEN IS WHAT PRODUCED `LL-021`.** `git add … && cat >
+   /tmp/c4.txt <<EOF … && git commit -F /tmp/c4.txt`: the `git add` failed, so the heredoc **never ran**,
+   and `git commit -F` found a **leftover `/tmp/c4.txt` from a session five days earlier** and used it.
+   Correct files, a message describing a different feature on a different branch, and **no error
+   anywhere**. ⭐ **An `&&` chain fails CLOSED for the command that breaks and OPEN for any later command
+   that reads a file the chain was supposed to write.** Use `/tmp/name-$$.txt`, `rm` it after, and read
+   back `git log -1 --format=%s`.
 22. ⚠ The coverage gate is **per-file ≥95%**, and the line a new feature most often misses is the
    **validator**. `rm -rf tests/*/TestResults` before trusting a local run (`DEF-069`).
+22c. ⚠⚠ **`npm run build` IS ONLY AN ARBITER WHEN `node_modules` MATCHES THE BRANCH'S LOCKFILE, AND A
+   CHECKOUT DOES NOT CHANGE `node_modules`.** Diagnosing `DEF-106` I checked out `main`, ran the build,
+   saw the same 16 errors and concluded main was broken too — while the tree on disk was still the
+   *other* branch's install. **That experiment was invalid and its conclusion was published before it was
+   caught.** After `npm ci` on each side: main passes (231 packages), the branch fails (169), and the
+   branch source against MAIN's tree **passes** — identical source, opposite verdicts. **`npm ci` before
+   you believe a build, and say which tree you built against.**
 22b. ⚠⚠ **THE SPA TYPECHECK HAS TWO ENTRY POINTS AND ONE OF THEM CHECKS NOTHING.**
    `npx tsc --noEmit -p tsconfig.json` **exits 0 over a tree that does not compile**, because
    `src/Acmp.Web/tsconfig.json` is solution-style: `"files": []` plus project references. A clean scan
@@ -482,6 +523,8 @@ which is what makes it invisible.
    a subject by injecting a deliberate error and watching the count move.**
 23. ⚠ **`gh pr checks --watch` AND `gh run watch` BOTH REPORT SUCCESS ON UNFINISHED RUNS.** Poll the
    `status` field until `completed`, then read `conclusion`; treat a 503 as **unknown**, never success.
+   ⚠ Fired again 2026-08-25 as a **TLS handshake timeout** from `gh pr checks` — same rule, different
+   shape: ANY transport failure is unknown. Re-read before acting; it succeeded on the retry.
 23b. ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND, NOT YOUR GATE'S.** Fired again 2026-08-18:
    reading it bare caught a real `IMPORTS` failure `dotnet format` would have hidden behind `tail`.
    Redirect to a file and read `$?` on the bare command.
@@ -492,7 +535,10 @@ which is what makes it invisible.
    verify the content is in `origin/main` **by content, not ancestry**, then `git reset --hard`.
 26. **A log tail is the wrong instrument for a failure whose distance you do not know** (`DEF-074`).
 27. ⚠ **NOTHING A LATER SESSION MUST READ MAY LIVE IN THE SCRATCHPAD.** Repository or package, never
-   scratchpad.
+   scratchpad. ⭐ **It fired and was discharged on 2026-08-25:** the `DW-082` triage script had lived only
+   in a scratchpad and was LOST, so the worklist had to be re-derived. Three instruments are now committed
+   instead — `src/Acmp.Web/scripts/coverage-triage.mjs`, `scripts/count-prompt-ids.py` and
+   `scripts/gen-lesson-docket.mjs`. **If you build an instrument worth trusting once, commit it.**
 27b. ⚠ **A PLUGIN RELOAD ORPHANS THE PACKAGE LOCK.** `/reload-plugins` kills the MCP server process while
    `data/.lock` still names its pid, so the next `package_open` refuses with "another writer owns this
    package". **Do not just delete it.** The operator guide's two discriminators decide: an **identity**
@@ -664,8 +710,9 @@ between merge cycles, never during one.
   Testcontainers AND compose failed identically and I read that as independent corroboration. **Both
   build the same Dockerfile.** Two instruments agreeing is ONE instrument when they share a mechanism.
 - ✅✅ **`DW-082` IS `Done` AND `#307` IS MERGED (`8432a1d`, 2026-08-25).** All THIRTY-TWO files pass
-  `ADR-0016` — `npm run test:cov` exits 0 over 158 files / 1365 tests at **99.19% lines, zero files under
-  95** — and `npm run build` exits 0. CI, Security and E2E were all green before the merge. **The
+  `ADR-0016` — **at `8432a1d`** `npm run test:cov` exited 0 over 158 files / 1365 tests at 99.19% lines,
+  zero files under 95, and `npm run build` exited 0. ⚠ **Those are the numbers AT THE MERGE, not now:**
+  `SL-033` adds components and tests, so re-run the gate rather than reading them forward. CI, Security and E2E were all green before the merge. **The
   threshold was never touched.** ✅ **`#261` and `#137` are both CLOSED** — `#137` as superseded
   (`DEC-076` d2), its 4.1.10 bump having landed as 4.1.11 via `#307`. **The only open PRs are `#128` and
   `#134`, the `dotnet` 8→10 pair carved out to `DW-080` by `DEC-074`.**
@@ -686,20 +733,30 @@ between merge cycles, never during one.
   saying 82%, because a covered multi-line JSX element swallows the uncovered inline arrow nested inside
   it — it would have reported ZERO failing files against a gate listing eighteen.
 ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
-the slice** — its own work, unscheduled.
+`SL-033`.** ⚠⚠ **IT IS NO LONGER "UNSCHEDULED" — `DEC-076` d3 ORDERED IT THIRD**, after `SL-033` and
+before `DW-079`. It is still not a `WBS-` row in any slice, which is a different thing from unscheduled
+and is the distinction that made the old wording wrong. **That was the TWENTY-SECOND** — caught by this
+pre-handoff read, not by a later session tripping over it.
 ⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
 failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
 flake, and `#307` as a coverage regression across twenty files with no cause.
 
-▶▶ **WHAT RUNS NEXT (`DEC-075` d2): ALL FOUR ACTIVATED STREAMS ARE IN SCOPE — the operator answered
-"all".** ⚠⚠ **THE ORDER BELOW IS THE AGENT'S RECOMMENDATION, NOT THEIR INSTRUCTION, and is freely
-reorderable** — keeping what they DECIDED separate from what I INFERRED is `DEC-071` d3's discipline
-applied to sequencing — **and `DEC-076` d3 has now ACCEPTED that order**, so it is theirs, not mine.
-✅ **(1) the `DW-082` handler tests are DONE** — that was deliberately first so
-`SL-033`'s new components land under a gate that can SEE their inline handlers, and they now do.
-**▶▶ (2) `SL-033` FROM `WBS-24.1` IS THE NEXT ACTION.** (3) **`DW-080` ALONE with nothing else in
-flight**, which its own row requires — a musl-and-globalization failure mode a unit suite cannot see;
-(4) **`DW-079`**, document-only.
+▶▶▶ **START HERE. `SL-033` FROM `WBS-24.1` IS THE NEXT ACTION.**
+
+**All four activated streams are in scope (`DEC-075` d2 — the operator answered *"all"*), and the ORDER
+IS NOW THEIRS: `DEC-076` d3 accepted it.** It began as the agent's recommendation, kept separate from
+their instruction per `DEC-071` d3's discipline; that separation is now closed and the sequence below is
+a decision, not a suggestion.
+
+1. ✅ **`DW-082` handler tests — DONE.** Deliberately first, so `SL-033`'s new components land under a
+   gate that can SEE their inline handlers. They now do.
+2. ▶▶ **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
+   user-configurable columns. `SL-033` and all nine `WBS-24*` rows are `Approved` and unstarted.
+3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+   musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
+   only two open PRs, `#128` and `#134`.
+4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+   written from it** (trap 16c).
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
 its call site is not … handler tests will not fix that file; it needs its own decision."* **Measured false**
@@ -836,7 +893,10 @@ requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|
   `git log -1 --format=%s`. (`LL-021`, Proposed.)
 - ⚠⚠ **THE MEMORY INDEX HAD BEEN SILENTLY TRUNCATED AND NOBODY KNEW.** The tooling reports a **200-LINE**
   read limit; the file was at 275, so its *"Standing rules & gotchas"* section — the most durable content
-  in it — **was already invisible**. Compacted to 155, detail moved to `dw082-sweep-and-vitest4.md`.
+  in it — **was already invisible**. Compacted, with the detail moved to `dw082-sweep-and-vitest4.md`.
+  ⚠⚠ **DO NOT READ A LINE COUNT HERE — `wc -l` IT.** The figure that sat in this sentence was true when
+  written and false two edits later, in the same session (the TWENTY-FIRST). **Check the headroom before
+  adding to that file**, because the cap is a hard 200 and the tail is dropped SILENTLY.
   ⭐ The old note there had DISPROVEN a ~17KB *byte* ceiling and concluded the limit was unknown.
   **A LIMIT YOU HAVE DISPROVEN IN ONE UNIT IS NOT A LIMIT YOU HAVE DISPROVEN** — it was measuring the
   wrong dimension.
@@ -880,7 +940,10 @@ requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|
 - **d4 — `LL-017`, `LL-018`, `LL-019` FILED AS `Proposed`, NOT Approved.** The operator selected the
   FINDINGS; approved lessons are IMMUTABLE here and selecting a finding is not approving a sentence they
   have not read. ⚠ **`lessons-confirmed` therefore FAILS on purpose** — that advisory is doing its job,
-  do not "fix" it by approving them unread. `LL-017`: when an instrument changes and the numbers get
+  do not "fix" it by approving them unread.
+  ✅ **RESOLVED 2026-08-25 by `DEC-076` d1: all three (plus `LL-020`, `LL-021`) are now Approved and
+  PINNED, and `lessons-confirmed` PASSES.** The interview finally happened because the slate carried the
+  full text; d4's reasoning was right and is kept as the record of why it waited. `LL-017`: when an instrument changes and the numbers get
   worse, *"the new one is broken"* and *"the old one was lying"* predict IDENTICAL evidence — only
   adjudicating one hand-countable artefact separates them. `LL-018`: two runners over one shared artefact
   are ONE instrument for LOCATING a fault and TWO for VERIFYING its repair. `LL-019`: a pinned base image
@@ -909,11 +972,18 @@ ENTRY READ `217` — ONE PASS, ONE COMMIT (`c043ed6`), TWO NUMBERS.** That is th
 Neither is recoverable, because the regex that produced them was never written down. **Measure it —
 `scripts/count-prompt-ids.py`, committed for exactly this reason, prints the distinct-id and family
 counts and names the pattern it used**, so the next reader can disagree with the instrument instead of
-with a number. §6 and the operator-owned list WERE re-read end to end and six stale
-statements were corrected. ⚠ **§2 through §5 (the traps) were NOT re-read this pass** — the session was
-near its context limit and reading them badly is worse than declaring them unread. **A fresh session
-should read them before relying on them**, because this file's own history says staleness hides exactly
-where nobody looked.
+with a number. It now RESOLVES every cited id against the JSONL too: **all resolve except `DEF-082`.**
+
+✅ **`PE-612`'s DECLARATION IS DISCHARGED: §2–§5 WERE READ THIS PASS**, which is why traps 19, 22b, 23 and
+27 changed. ⚠⚠ **AND ONE OF THEM WAS NOT MERELY STALE — IT WAS THE CAUSE.** Trap 19 said *"write the
+message to a file instead"*, and following it into a FIXED path is precisely how a commit took a stale
+`/tmp` file from another session as its message. **A trap can be actively wrong, not just out of date;
+read them as claims, not as scripture.**
+
+⚠ **WHAT WAS *NOT* DONE, so nobody inherits an unearned assurance:** the traps were read and corrected
+where this session had evidence, but they were **not independently re-verified against the code** — a
+trap that has quietly stopped being true, and that nothing this session happened to touch, would have
+survived. §1's candidate rule and §3's register claims were likewise read, not re-measured.
 
 ⚠ **ONE SLICE OF EIGHT IS AN OPERATOR OVERRIDE (`DEC-071` d3), not a judgement this file endorses.** The
 recommendation was three slices, because `DEC-068` d1 justified a single slice from the rows being *small
