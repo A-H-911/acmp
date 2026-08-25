@@ -47,7 +47,16 @@ coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this
 - ⚠⚠ **DO PACKAGE WRITES ON `main`** (C31 — a feature checkout rolls `data/` backwards), **and PUSH after
   each one.** Every push to `main` re-stales every open PR (`strict=true`), so push between merge cycles,
   never during one. ⚠ `main` IS branch-protected: 9 checks, `enforce_admins=false`.
-- ⚠ **`LL-017`…`LL-021` are `Proposed`** — `lessons-confirmed` FAILS on purpose; never approve them unread.
+- ✅✅ **`LL-017`…`LL-021` APPROVED AND PINNED (`DEC-076`, 2026-08-25)** — every sentence as written.
+  ⭐ **What made it work is reusable: `scripts/gen-lesson-docket.mjs`** prints the FULL canonical text of
+  every field from `lessons.jsonl`, verified byte-identical before publishing — `LL-011` discharged
+  mechanically. **Use it for the next lessons interview.**
+  ⭐ **Store controls worth knowing:** approval is NOT an edit (refuses unless content is byte-identical to
+  the stored row) and **`confirmed_by` must land ON the approving write** — it can never be added later.
+- ⚠⚠ **`DEF-107`: APPROVING + PINNING A LESSON DOES NOT MAKE IT BIND.** The note sessions load is rebuilt
+  ONLY by `handoff_emit`, and nothing compares it to the pinned set. `LL-016` sat Approved+pinned for TWO
+  DAYS without ever reaching it. ⚠ `lessons-confirmed` counts `Proposed` rows, so it goes green on
+  approval whether or not it propagated. **Run `handoff_emit` in the SAME batch as any approval.**
 - ⚠ **If `npm ci` fails `EPERM`/`EBUSY` here, enumerate node processes FIRST** (`DW-083`: six `vite` servers
   ran 13 days holding a native binary). ⚠ **`ls node_modules | wc -l` is NOT npm's package count** — 125
   directories vs "169 added" is apples to oranges, and reading it as a gutted tree cost a detour.

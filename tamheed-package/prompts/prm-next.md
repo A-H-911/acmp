@@ -666,8 +666,9 @@ between merge cycles, never during one.
 - ✅✅ **`DW-082` IS `Done` AND `#307` IS MERGED (`8432a1d`, 2026-08-25).** All THIRTY-TWO files pass
   `ADR-0016` — `npm run test:cov` exits 0 over 158 files / 1365 tests at **99.19% lines, zero files under
   95** — and `npm run build` exits 0. CI, Security and E2E were all green before the merge. **The
-  threshold was never touched.** `#261` auto-closed; ⚠ **`#137` is still open and is now SUPERSEDED** —
-  its 4.1.10 bump landed as 4.1.11 via `#307`.
+  threshold was never touched.** ✅ **`#261` and `#137` are both CLOSED** — `#137` as superseded
+  (`DEC-076` d2), its 4.1.10 bump having landed as 4.1.11 via `#307`. **The only open PRs are `#128` and
+  `#134`, the `dotnet` 8→10 pair carved out to `DW-080` by `DEC-074`.**
   ⭐ The experiment that decided it (`PE-608`) is worth keeping: on `ErrorBoundary.tsx` **both** providers
   record the SAME uncalled inline `onClick` and differ only in WHERE they count it — v3 has no zero-hit
   statements so the line is credited; v4 records the statement at zero hits, which propagates into lines.
@@ -693,7 +694,8 @@ flake, and `#307` as a coverage regression across twenty files with no cause.
 ▶▶ **WHAT RUNS NEXT (`DEC-075` d2): ALL FOUR ACTIVATED STREAMS ARE IN SCOPE — the operator answered
 "all".** ⚠⚠ **THE ORDER BELOW IS THE AGENT'S RECOMMENDATION, NOT THEIR INSTRUCTION, and is freely
 reorderable** — keeping what they DECIDED separate from what I INFERRED is `DEC-071` d3's discipline
-applied to sequencing. ✅ **(1) the `DW-082` handler tests are DONE** — that was deliberately first so
+applied to sequencing — **and `DEC-076` d3 has now ACCEPTED that order**, so it is theirs, not mine.
+✅ **(1) the `DW-082` handler tests are DONE** — that was deliberately first so
 `SL-033`'s new components land under a gate that can SEE their inline handlers, and they now do.
 **▶▶ (2) `SL-033` FROM `WBS-24.1` IS THE NEXT ACTION.** (3) **`DW-080` ALONE with nothing else in
 flight**, which its own row requires — a musl-and-globalization failure mode a unit suite cannot see;
@@ -838,8 +840,25 @@ requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|
   ⭐ The old note there had DISPROVEN a ~17KB *byte* ceiling and concluded the limit was unknown.
   **A LIMIT YOU HAVE DISPROVEN IN ONE UNIT IS NOT A LIMIT YOU HAVE DISPROVEN** — it was measuring the
   wrong dimension.
-- ⚠ **`LL-020` and `LL-021` are `Proposed`** and join `LL-017/018/019`. `lessons-confirmed` fails on
-  purpose. **Do not approve them unread** — approved lessons are immutable.
+- ✅✅ **THE LESSONS INTERVIEW IS DONE (`DEC-076`, 2026-08-25): `LL-017`…`LL-021` ARE ALL APPROVED AND
+  PINNED**, every sentence taken as written, none refined. `lessons-confirmed` is GREEN for the first time
+  in weeks. ⭐ **The form is what made it possible and it is now reusable:** the slate was a generated
+  docket carrying the FULL canonical text of every field of every row, printed from `data/lessons.jsonl`
+  and verified block-by-block as byte-identical before publishing — `LL-011` discharged mechanically
+  rather than remembered. `scripts/gen-lesson-docket.mjs` is committed; **use it for the next one.**
+  ⭐ **Two store controls, both new to this session:** approval is NOT an edit — `entity_upsert` refuses
+  unless the content you send is byte-identical to the stored row — and **attribution lands WITH approval**
+  (`confirmed_by` can never be added later). Together they make `LL-001`'s dangerous middle safe *here*:
+  re-typing a long field in order to preserve it fails LOUDLY instead of silently enshrining a corrupted
+  lesson that is immutable from that moment. Elsewhere, hash-and-verify is still the only substitute.
+- ⚠⚠ **`DEF-107`: APPROVING AND PINNING A LESSON DOES NOT MAKE IT BIND.** The note every session loads is
+  rebuilt ONLY by `handoff_emit`, and nothing compares it against the pinned set. **`LL-016` was Approved,
+  pinned and operator-attributed on 2026-08-23 and was still absent from the note on 2026-08-25** — so for
+  two days the register said it binds every session and no session saw it. Found by accident: the emit
+  added SIX lines, not five. ⚠ **`lessons-confirmed` cannot catch this** — it counts `Proposed` rows, so it
+  goes green the instant a lesson is approved, propagated or not. **THE FIX IS PROTOCOL: run
+  `handoff_emit(target_dir=<repo root>)` in the SAME batch as any approval and commit the rebuilt note.**
+  Same shape as `DEC-064` d2's *"DW-037 is ACTIVATED"* beside a row still reading `Open`.
 
 ### ▶▶ THE THIRD INTERVIEW OF 2026-08-23 (`DEC-075`) — AND `DEF-105`, WHICH IT FIXED
 
