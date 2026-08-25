@@ -835,15 +835,34 @@ DECIDED and what the agent INFERRED; **`DEC-077` d5 then AMENDED it, inserting `
 spanned five rows. **Two are now done and three are numbered below.** The sequence is a decision, not
 a suggestion.
 
-1. ▶▶▶ **`SL-033`, STARTING AT `WBS-24.1`. THIS IS THE NEXT ACTION** — `DW-033` / `FR-032`, the backlog
-   as a dense table with user-configurable columns. ⚠ **Measure, do not trust this line** —
+⚠⚠ **THE ORDER WAS AMENDED AGAIN ON 2026-08-26 BY `DEC-078` d2 + `SC-034`, WHICH INSERTED `DW-085` AT
+THE FRONT** — exactly as `DEC-077` d5 inserted `DW-084`. **That was an OPERATOR OVERRIDE**: the agent
+recommended carrying `DW-085` Open because its trigger has not fired, and the operator activated it. The
+reasoning-against is preserved in `DEC-078`; do not read the activation as the agent agreeing.
+
+1. ▶▶▶ **`DW-085` — bound the FTS image build. THIS IS THE NEXT ACTION** (`DEC-078` d2).
+   `_image.CreateAsync()` in `SearchProvidersFtsTests` is the one remaining unbounded await on the path
+   `DW-084` closed. ⚠⚠ **READ ITS ROW BEFORE BUILDING: ITS STANDARD OF PROOF IS LOWER THAN `DW-084`'S
+   AND MUST NOT BORROW IT BY ASSOCIATION.** An image build cannot be forced to hang without committing a
+   deliberately-hanging Dockerfile — which is a worse thing to own than the gap — so the evidence must
+   SAY whether the guard was forced or is unforced. **A guard proven only by a green run is the shape
+   this project keeps rejecting, and calling it proven would be worse than leaving it unbuilt.**
+2. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
+   user-configurable columns. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
-   The two rows that used to precede it are both closed, so nothing stands in front of it.
-2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
    only two open PRs, `#128` and `#134` (verified with no `--limit` cap, 2026-08-25).
-3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+
+✅ **`LL-022` IS APPROVED AND PINNED** (`DEC-078` d1) and `lessons-confirmed` passes again. ⭐ **The
+approval path has a guard worth knowing before you meet it: omitting a field is NOT preservation there.**
+An ordinary update preserves nullable fields by omission (trap 13b), but an approving upsert refused a
+minimal payload outright — *"content drifted on ['category','context',…]; send the stored content
+byte-identical"* — so every content field must be resent. It fails LOUDLY, which is what makes `LL-001`'s
+dangerous middle survivable here; generate the payload from the JSONL and read it back rather than
+trusting what you believe you wrote.
 
 ✅ **`DW-082`, the handler tests, is DONE** and is deliberately not numbered — it led so that `SL-033`'s
 new components would land under a gate that can SEE their inline handlers, and they now do.
