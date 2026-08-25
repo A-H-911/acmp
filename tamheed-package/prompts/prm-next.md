@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-five** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty-six** times, and **seven** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -40,13 +40,31 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
+⚠⚠⚠ **THE TWENTY-SIXTH IS INSIDE THE TWENTY-FIFTH, WRITTEN IN THE SAME EDIT, AND IT ESCAPED INTO A
+PUSHED COMMIT MESSAGE — THE SIXTEENTH'S SHAPE EXACTLY.** The entry below originally closed *"the FOURTH
+time this file has carried a wrong INSTRUCTION rather than a wrong number."* **Nothing measured that.**
+Measured now, with the criterion stated so anyone can disagree with it — a preamble entry, headline
+ordinal or named sub-item, whose stale thing THIS FILE ITSELF labels an instruction — the priors are the
+tenth, the twelfth, the fifteenth's `LL-011` item and the twentieth. **Four priors, so mine is the FIFTH.**
+"Fourth" is reachable only by counting headline ordinals and silently dropping the fifteenth's sub-item,
+a criterion I never stated and did not have in mind.
+⚠⚠ **AN ORDINAL IS THE ONE THING `LL-016` NAMES AS INVISIBLE TO EVERY MECHANICAL CHECK, AND I WROTE ONE
+WITHOUT AN INSTRUMENT INSIDE THE ENTRY DOCUMENTING A STALE STATEMENT** — while the id-and-status pass over
+the same edit ran clean at 232 of 233. ⭐ **THE FIX IS THE EIGHTH'S RULE EXTENDED FROM NUMBERS TO ORDINALS:
+do not re-count, NAME THE LIST.** A list of four named entries cannot go stale by one; a count can, and
+did. ⚠ **Both tallies moved** — the statement count because the THIRTEENTH's precedent is that an
+unmeasured assertion is counted whether or not it happens to come out right, and the escape count because
+`33994aa` is pushed and a commit message cannot be amended. **Softening my own tally is the move this
+register has declined four times; it is not available to me either.**
+
 ⚠⚠ **THE TWENTY-FIFTH (2026-08-25, after `DW-084`) IS A STALE *INSTRUCTION* IN §6's `DEC-072` d1 BLOCK,
 AND IT SURVIVED THE PASS THAT REWROTE THE FILE AROUND IT.** The paragraph reads *"ORDERING IS DECIDED
 (`DEC-073`): THE SWEEP RUNS BEFORE `SL-033` STARTS, SO THIS — NOT `WBS-24.1` — IS THE NEXT ACTION."*
 `DW-078` closed two days later, so a fresh session reading that block would go looking for a Dependabot
 queue that is already swept. **Every id in it resolves and `DW-078` genuinely reads `Done`, so the
-id-and-status pass runs clean straight over it** — the twelfth's shape, and the fourth time this file has
-carried a wrong INSTRUCTION rather than a wrong number.
+id-and-status pass runs clean straight over it** — the twelfth's shape. **Prior stale INSTRUCTIONS, NAMED
+rather than counted, because a list cannot drift the way an ordinal can: the tenth's *"read this
+requirement carefully"*, the twelfth, the fifteenth's `LL-011` item, and the twentieth.**
 ⭐⭐ **WHAT IS NEW, AND IT IS A DISTINCTION THE COUNTER NEEDED: THE IDENTICAL SENTENCE IS FINE IN ONE PLACE
 AND WRONG IN THE OTHER.** Commit `ae23b03`'s subject says *"the sweep runs first, so `DW-078` is the next
 action, not `WBS-24.1`"* — and that is NOT counted as an escape, because a commit message is a dated
