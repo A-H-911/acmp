@@ -61,7 +61,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _image.CreateAsync();
+        await ContainerStartup.BuildOrFailFastAsync(_image, "SQL Server FTS (deploy/Dockerfile.sqlserver)");
         _container = new MsSqlBuilder(_image).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS)");
 
