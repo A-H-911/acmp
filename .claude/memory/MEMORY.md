@@ -1,24 +1,27 @@
 # Memory Index — ACMP
 
-> Compacted 2026-08-25 (11th). One line per memory; detail lives in topic files and the package.
-> Read the linked file before acting.
-> ⚠⚠ **THE CEILING IS NOW MEASURED AND IT IS A LINE COUNT, NOT A BYTE COUNT: 200 LINES.** On 2026-08-25
-> the tooling refused a write at **275 lines**, stating that everything past 200 is silently dropped on
-> load — so the **"Standing rules & gotchas"** pointers at the bottom, the most durable content here, had
-> **already been invisible**. The earlier note was right that the *byte* figure was unmeasured (18,668
-> bytes loaded in full on 2026-08-21) and wrong to conclude the ceiling was unknown — **it was measuring
-> the wrong dimension.** ⭐ **A limit you have disproven in one unit is not a limit you have disproven.**
-> Keep this under ~140 lines: one line per entry, detail in topic files.
+> One line per entry; detail lives in topic files and the package. Read the linked file before acting.
+> ⚠⚠ **MEASURED CEILING: 200 LINES** (not bytes — the old byte figure was disproven and the wrong
+> dimension). Past 200 is dropped **silently**, and it had already eaten the "Standing rules" section.
+> ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-25 · **`DW-082` DONE, `#307` MERGED** — ▶▶ NEXT: `SL-033` from `WBS-24.1`
+## ★★★ 2026-08-25 · **`DW-082` DONE** — ▶▶ NEXT: **`DW-084` FIRST**, then `SL-033`/`WBS-24.1`
+
+- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
+  any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
+  (`DEF-108` Open/high, `DEC-077` d1) — **do NOT "fix" it by softening or converting; both were declined.**
+- ⚠⚠ **I LEFT `main` RED AND REPORTED IT CLEAN.** `scripts/*.py|mjs` are **NOT** path-ignored, so a
+  package-and-prose commit carrying one instrument runs the FULL pipeline. `DEC-077` d2: **`scripts/**`
+  now goes via PR**, and **poll CI to completion after ANY direct push to `main`**, whatever it touched.
+  ⛔ Never propose path-ignoring `scripts/**` — several `check-*.mjs` **are** the CI gates.
 
 ★★★ [**The `DW-082` / Dependabot-sweep arc**](dw082-sweep-and-vitest4.md) — read before touching the
 coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this file.**
 
 - ✅✅ **`DW-082` CLOSED: all 32 files pass `ADR-0016`** — `test:cov` exits 0, 158 files / 1365 tests,
   **99.19% lines, zero files under 95**; `build` exits 0; CI+Security+E2E green; `#307` merged `8432a1d`.
-  **The threshold was never touched.** ⚠ `#137` still open and now SUPERSEDED.
+  **The threshold was never touched.** ✅ `#261`+`#137` closed; only `#128`/`#134` (→`DW-080`) remain.
 - ⚠⚠ **`DEF-106`: THE APP TYPECHECK HAD BEEN COMPILING BY ACCIDENT** — vitest 3 re-exported `vite`'s
   types, which carry `/// <reference types="node" />`; vitest 4 dropped the chain and `tsc -b` produced
   16 errors over untouched code. Fixed by DECLARING `types: ["vite/client", "node"]`.

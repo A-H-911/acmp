@@ -12,13 +12,18 @@ server_info()                                # expect tamheed 4.4.2, root = C:\U
 package_open("tamheed-package")
 gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
                                              # REAL finding - read its failure list, it names the token.
-readiness_check("package")                   # expect ready:TRUE. Advisories failing is NORMAL (see §1).
-                                             # ready:FALSE = a real blocker, go read it, never soften it.
+readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERATELY. DEC-077 d1 carries
+                                             # DEF-108 Open at HIGH, which blocks `defects-closed`. That
+                                             # is the operator's decision, NOT a fault to repair, and it
+                                             # holds until DEF-108 is chased. Advisories failing is also
+                                             # NORMAL (see §1). ⛔ Do NOT "fix" readiness by softening
+                                             # DEF-108's severity or converting it - both were offered
+                                             # to the operator and BOTH WERE DECLINED.
 git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
 ```
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-two** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty-three** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -28,6 +33,15 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠ **THE TWENTY-THIRD (2026-08-25, later still) IS THE KICKOFF BLOCK ITSELF.** It said
+*"`readiness_check` — expect `ready:TRUE` … `ready:FALSE` = a real blocker, go read it, never soften
+it"*. `DEC-077` d1 then made `FALSE` the CORRECT state, deliberately. A fresh session pasting the block
+would have read the package's intended condition as a fault and gone looking for something to repair.
+⚠⚠ **THREE OF THE LAST FOUR ARE THE SAME SHAPE — A DECISION OUTRUNNING THE PROSE THAT DESCRIBED THE OLD
+STATE — WHICH LOCATES THE RISK WINDOW PRECISELY: it is the gap between the operator ruling and the
+write-up finishing.** Apply a decision to EVERY artifact in the same batch, or the artifact you skipped
+is the one the next session reads.
 
 ⚠ **THE TWENTY-SECOND (2026-08-25, later) IS A DECISION OUTRUNNING THE PROSE THAT DESCRIBED THE OLD
 STATE.** §6 called `DW-080` *"unscheduled"* — true until `DEC-076` d3 ordered it third, hours earlier in
@@ -606,10 +620,22 @@ The programme is closed, but these were expensive and they generalise to any ver
   `NFR-023` question went to the operator before its sweep, and the sweep would have changed the question —
   the register already held two answers nobody had connected to it.
 
-✅ **BRANCHING IS SETTLED — stop asking.** Operator decision, 2026-08-20: **split by content.** Package,
-prompt and memory writes go **straight to `main`** (both CI workflows path-ignore `tamheed-package/**` and
-`.claude/**`, so they cannot redden anything). **Anything touching CODE goes branch → PR → green CI →
-squash-merge.** Batch 13 followed this and it worked; PRs #296 and #297 are the examples.
+✅ **BRANCHING IS SETTLED — stop asking. ⚠ AMENDED 2026-08-25 (`DEC-077` d2); READ THE AMENDMENT.**
+Operator decision, 2026-08-20: **split by content.** Package, prompt and memory writes go **straight to
+`main`**; **anything touching CODE goes branch → PR → green CI → squash-merge.** PRs #296/#297 are the
+original examples.
+
+⚠⚠ **THE AMENDMENT, AND IT EXISTS BECAUSE THE ORIGINAL RULE'S JUSTIFICATION WAS NARROWER THAN THE RULE.**
+The allowance rests on both workflows path-ignoring `tamheed-package/**` and `.claude/**` — *"so they
+cannot redden anything"*. **But `scripts/*.py` and `scripts/*.mjs` are NOT path-ignored.** A commit that
+is package-and-prose PLUS one instrument runs the **full** pipeline, and on 2026-08-25 exactly such a
+commit (`6bdaac4`) left `main` **red** while its author reported the state as clean (`DEF-108`).
+**a. `scripts/**` IS CARVED OUT — it goes branch → PR → green CI, like any other code.**
+**b. AFTER *ANY* DIRECT PUSH TO `main`, POLL CI TO COMPLETION** — `status` until `completed`, then read
+`conclusion` — **whatever the commit touched.** Not a judgement call about whether it "could" redden.
+⛔ **DO NOT PROPOSE ADDING `scripts/**` TO THE PATH-IGNORE. It was offered and REJECTED**: several
+`scripts/*.mjs` **are** the CI gates (`check-coverage`, `check-i18n`, `check-vulns`,
+`check-hardcoded-strings`), so ignoring that path would mean **a change to a gate never runs the gate.**
 
 ## §6 — THE CARRIED LIST. This section IS the list; nothing is carried in conversation.
 
@@ -741,7 +767,16 @@ pre-handoff read, not by a later session tripping over it.
 failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
 flake, and `#307` as a coverage regression across twenty files with no cause.
 
-▶▶▶ **START HERE. `SL-033` FROM `WBS-24.1` IS THE NEXT ACTION.**
+▶▶▶ **START HERE — BUT READ THIS FIRST: `main` IS GREEN AND READINESS IS `FALSE`, BOTH ON PURPOSE.**
+
+⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL. STOP AND INVESTIGATE — DO NOT RE-RUN IT** (`DEC-077`
+d3). That test is the ONLY place any `FREETEXT` branch executes against real SQL Server, which makes it
+the one test whose silent loss would be least visible and most expensive. ⚠ **This overrode the agent's
+recommendation** (re-run once and log it); the operator took the stricter reading, as they have four
+times now on a control that went red.
+⚠ **`DEF-108` is `Open`/high and holds `readiness_check` at `ready:FALSE` by decision** (`DEC-077` d1) —
+the backend job died twice in the Testcontainers SQL Server path on commits that changed no backend
+code, and a plain re-run of the same tree then passed. **Four data points, no verdict.**
 
 **All four activated streams are in scope (`DEC-075` d2 — the operator answered *"all"*), and the ORDER
 IS NOW THEIRS: `DEC-076` d3 accepted it.** It began as the agent's recommendation, kept separate from
@@ -750,12 +785,19 @@ a decision, not a suggestion.
 
 1. ✅ **`DW-082` handler tests — DONE.** Deliberately first, so `SL-033`'s new components land under a
    gate that can SEE their inline handlers. They now do.
-2. ▶▶ **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
+2. ▶▶▶ **`DW-084` FIRST — the container-startup timeout** (`DEC-077` d4/d5, amending `DEC-076` d3).
+   A hung SQL Server container currently burns the backend job's 25-minute ceiling and reports
+   **`cancelled`** — neither pass nor fail. Make it fail fast with the container's own log attached.
+   ⚠ **Prove it by FORCING it** (an image or port that cannot come up); an intermittent path is never
+   proven by a green run. ⚠ **It does NOT close `DEF-108`** — it changes how the failure presents.
+   **It leads because `SL-033` runs CI repeatedly and `DEC-077` d3 says stop on every red from that
+   test, so the slice would otherwise be interrupted by the very ambiguous signal this removes.**
+3. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
    user-configurable columns. `SL-033` and all nine `WBS-24*` rows are `Approved` and unstarted.
-3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+4. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
    only two open PRs, `#128` and `#134`.
-4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+5. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
