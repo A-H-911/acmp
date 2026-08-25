@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-six** times, and **seven** wrong assertions have escaped into
+file has carried a stale statement **twenty-seven** times, and **eight** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +39,29 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE TWENTY-SEVENTH IS THE WORST KIND IN THIS FILE'S HISTORY, BECAUSE IT REACHED THE OPERATOR'S
+DECISION SLATE.** This file, `DW-085`'s row, `DEC-078` and commit `33994aa` all said the FTS image build
+*"cannot meet this project's prove-by-forcing bar without committing a deliberately-hanging Dockerfile"* —
+and that its standard of proof would therefore be LOWER than `DW-084`'s. **It is false and it was never
+true.** A Dockerfile written to a TEMP DIRECTORY at run time forces the build perfectly well, ships
+nothing, and is unambiguous test scaffolding; the forced test passed on the first attempt at exactly its
+bound. **The objection is to OWNING a hanging Dockerfile in `deploy/`, and the objection was allowed to
+swallow the technique** — `AV-159`'s shape running in reverse: one method being unacceptable was
+generalised into no method existing.
+⚠⚠ **IT IS NOT A STALE STATEMENT, IT IS AN UNMEASURED ONE** — the THIRTEENTH's shape. *"Cannot"* is a
+claim about EVERY method and it is the cheapest sentence to write and the dearest to justify.
+⚠⚠ **AND IT WAS ON THE DOCKET THE OPERATOR READ WHILE DECIDING**, where it partly justified the
+recommendation to carry `DW-085`. They overrode it and activated the row anyway, so the false premise did
+not change the outcome — **that is luck, not process.** ⭐ **A false constraint in a decision slate is
+worse than the same sentence in a note: a note is read later by someone with the register open, where
+checking is cheap; a slate is read AT THE MOMENT OF DECIDING, by the one person who cannot check it.**
+⭐⭐ **THE STRUCTURAL GAP IS `LL-023` (Proposed): `LL-011`'s generator guarantees the QUOTED records — and
+on that docket fifteen fields were verified byte-identical, the verifier itself calibrated against two
+injected faults — but NOTHING guarantees the agent's connective prose, and the connective prose is what
+frames the question.** Worse, the verification machinery makes the surrounding prose read as MORE
+trustworthy, because everything beside it is provably exact. `PE-631` corrects it; `33994aa` is pushed,
+hence eight escapes.
 
 ⚠⚠⚠ **THE TWENTY-SIXTH IS INSIDE THE TWENTY-FIFTH, WRITTEN IN THE SAME EDIT, AND IT ESCAPED INTO A
 PUSHED COMMIT MESSAGE — THE SIXTEENTH'S SHAPE EXACTLY.** The entry below originally closed *"the FOURTH
@@ -840,14 +863,16 @@ THE FRONT** — exactly as `DEC-077` d5 inserted `DW-084`. **That was an OPERATO
 recommended carrying `DW-085` Open because its trigger has not fired, and the operator activated it. The
 reasoning-against is preserved in `DEC-078`; do not read the activation as the agent agreeing.
 
-1. ▶▶▶ **`DW-085` — bound the FTS image build. THIS IS THE NEXT ACTION** (`DEC-078` d2).
-   `_image.CreateAsync()` in `SearchProvidersFtsTests` is the one remaining unbounded await on the path
-   `DW-084` closed. ⚠⚠ **READ ITS ROW BEFORE BUILDING: ITS STANDARD OF PROOF IS LOWER THAN `DW-084`'S
-   AND MUST NOT BORROW IT BY ASSOCIATION.** An image build cannot be forced to hang without committing a
-   deliberately-hanging Dockerfile — which is a worse thing to own than the gap — so the evidence must
-   SAY whether the guard was forced or is unforced. **A guard proven only by a green run is the shape
-   this project keeps rejecting, and calling it proven would be worse than leaving it unbuilt.**
-2. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
+✅✅ **`DW-085` IS DONE (PR `#310` → `590ac03`)** — the FTS image build is bounded at 8 minutes and the
+failure names the build, the bound, and the fact that there is no container log to attach. ⚠ **The two
+budgets were chosen TOGETHER and should not be tuned apart: 8 (build) + 10 (start) = 18 minutes, leaving
+the backend job room under its own `timeout-minutes: 25` to fail, report and finish.**
+⭐ **From its calibration, and it sharpens `LL-022` rather than contradicting it:** the BUILD path throws
+`OperationCanceledException`, not `TimeoutException` — so there the exception-TYPE assertion genuinely
+discriminates, where on the container path it was INHERITED and would have passed vacuously. **Check what
+the framework already does PER CALL; the answer differs inside one library.**
+
+1. ▶▶▶ **`SL-033`, STARTING AT `WBS-24.1`. THIS IS THE NEXT ACTION** — `DW-033` / `FR-032`, the backlog as a dense table with
    user-configurable columns. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
 3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
@@ -895,6 +920,8 @@ edit.** What follows is what the row bought, kept because it binds later work:
   is now the only unbounded await left on that path. Left out of scope deliberately: `DEC-077` d4 scoped
   the decision to container **startup**, all four `DEF-108` data points name startup, and it could not
   meet the prove-by-forcing bar without committing a deliberately-hanging Dockerfile.
+  ⛔ **THAT LAST CLAUSE IS WITHDRAWN — see the TWENTY-SEVENTH above.** It was forced, with a temp-directory
+  Dockerfile, to `DW-084`'s own standard.
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
 its call site is not … handler tests will not fix that file; it needs its own decision."* **Measured false**
