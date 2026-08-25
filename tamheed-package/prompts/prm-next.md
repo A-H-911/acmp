@@ -22,8 +22,14 @@ readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERA
 git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
 ```
 
+⚠ **WHAT THE COUNTER COUNTS, so it stays meaningful:** a statement is tallied when it was true, became
+false, and **reached a commit** — where a fresh session could have read it. Wording caught and fixed
+before it was committed is not counted; nor is annotating a historical record whose outcome later
+happened. Otherwise the number would drift into a log of every edit and stop meaning anything, which is
+the failure it exists to warn about.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-three** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty-four** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -33,6 +39,15 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠ **THE TWENTY-FOURTH IS THE NEXT-ACTION BLOCK, ONE HOUR OLD, AND IT IS *TWO* FAULTS IN ONE
+PARAGRAPH.** It said *"all FOUR activated streams are in scope … and the ORDER IS NOW THEIRS: `DEC-076`
+d3 accepted it"* — but `DEC-077` d5 had already amended that order by inserting `DW-084` at the front, so
+(a) the live sequence is **five** rows, not four, and (b) crediting the order solely to `DEC-076` d3 sends
+a reader to a decision that does not contain `DW-084`. ⚠ **A COUNT AND AN ATTRIBUTION FAIL DIFFERENTLY:
+the count merely disagrees with the list beneath it, but the wrong attribution sends someone to the wrong
+record and they find nothing amiss there.** Also restructured: the numbered list opened with a ✅ DONE
+item, so the one thing a fresh session most needs was the *second* thing it read.
 
 ⚠ **THE TWENTY-THIRD (2026-08-25, later still) IS THE KICKOFF BLOCK ITSELF.** It said
 *"`readiness_check` — expect `ready:TRUE` … `ready:FALSE` = a real blocker, go read it, never soften
@@ -778,26 +793,30 @@ times now on a control that went red.
 the backend job died twice in the Testcontainers SQL Server path on commits that changed no backend
 code, and a plain re-run of the same tree then passed. **Four data points, no verdict.**
 
-**All four activated streams are in scope (`DEC-075` d2 — the operator answered *"all"*), and the ORDER
-IS NOW THEIRS: `DEC-076` d3 accepted it.** It began as the agent's recommendation, kept separate from
-their instruction per `DEC-071` d3's discipline; that separation is now closed and the sequence below is
-a decision, not a suggestion.
+**THE ORDER IS THE OPERATOR'S, AND IT IS THE PRODUCT OF TWO DECISIONS — read both before reordering.**
+`DEC-075` d2 put the four activated streams in scope (they answered *"all"*); `DEC-076` d3 accepted the
+agent's proposed sequence for them, closing the separation `DEC-071` d3 required between what they
+DECIDED and what the agent INFERRED; **`DEC-077` d5 then AMENDED it, inserting `DW-084` at the front.**
+⚠ **`DW-084` IS NOT ONE OF `DEC-075` d2's FOUR STREAMS — it was created by `DEC-077`**, so the work now
+spans five rows: one already done and **four numbered below**. The sequence is a decision, not a
+suggestion.
 
-1. ✅ **`DW-082` handler tests — DONE.** Deliberately first, so `SL-033`'s new components land under a
-   gate that can SEE their inline handlers. They now do.
-2. ▶▶▶ **`DW-084` FIRST — the container-startup timeout** (`DEC-077` d4/d5, amending `DEC-076` d3).
+✅ **`DW-082`, the handler tests, is DONE** and is deliberately not numbered below — it led so that
+`SL-033`'s new components would land under a gate that can SEE their inline handlers, and they now do.
+
+1. ▶▶▶ **`DW-084` — the container-startup timeout. THIS IS THE NEXT ACTION** (`DEC-077` d4/d5).
    A hung SQL Server container currently burns the backend job's 25-minute ceiling and reports
    **`cancelled`** — neither pass nor fail. Make it fail fast with the container's own log attached.
    ⚠ **Prove it by FORCING it** (an image or port that cannot come up); an intermittent path is never
    proven by a green run. ⚠ **It does NOT close `DEF-108`** — it changes how the failure presents.
    **It leads because `SL-033` runs CI repeatedly and `DEC-077` d3 says stop on every red from that
    test, so the slice would otherwise be interrupted by the very ambiguous signal this removes.**
-3. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
+2. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
    user-configurable columns. `SL-033` and all nine `WBS-24*` rows are `Approved` and unstarted.
-4. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
    only two open PRs, `#128` and `#134`.
-5. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
