@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-25 · **`DW-082` DONE** — ▶▶ NEXT: **`DW-084` FIRST**, then `SL-033`/`WBS-24.1`
+## ★★★ 2026-08-25 · **`DW-082` + `DW-084` DONE** — ▶▶ NEXT: **`SL-033` / `WBS-24.1`**, then `DW-080`, `DW-079`
 
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
   any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
@@ -15,6 +15,15 @@
   package-and-prose commit carrying one instrument runs the FULL pipeline. `DEC-077` d2: **`scripts/**`
   now goes via PR**, and **poll CI to completion after ANY direct push to `main`**, whatever it touched.
   ⛔ Never propose path-ignoring `scripts/**` — several `check-*.mjs` **are** the CI gates.
+- ✅✅ **`DW-084` DONE** (PR `#309` → `eb09342`): `ContainerStartup.StartOrFailFastAsync` bounds **all
+  three** container starts in `Acmp.Integration.Tests` at 10 min and attaches the container's own log.
+  ⚠ **Do NOT tighten the bound** — one tight enough to fire on a slow-but-healthy start manufactures the
+  very red `DEC-077` d3 makes a mandatory stop. ⚠ It did **not** close `DEF-108`. New: **`DW-085`** — the
+  FTS image *build* is still unbounded, deliberately out of scope.
+  ⭐⭐ **HOLLOW PASS CAUGHT BY MUTATION: Testcontainers ALREADY throws `TimeoutException("The operation
+  has timed out.")`, so asserting the exception TYPE alone passes VACUOUSLY.** When you WRAP an existing
+  failure to make it legible, assert the DIFFERENCE — the message — never the failure. (`LL-022`, Proposed
+  — the operator's interview is owed; `lessons-confirmed` fails on it on purpose.)
 
 ★★★ [**The `DW-082` / Dependabot-sweep arc**](dw082-sweep-and-vitest4.md) — read before touching the
 coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this file.**
@@ -29,10 +38,6 @@ coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this
   against the BRANCH's `node_modules`. A CHECKOUT CHANGES THE SOURCE, NOT `node_modules`.**
   ⭐ **CI's `frontend` job looked fine throughout — it fails at the coverage step, which runs BEFORE the
   build step. A JOB THAT STOPS EARLY CANNOT VOUCH FOR STEPS IT NEVER REACHED.**
-- ⚠⚠ **A COMMIT TOOK A STALE `/tmp` FILE FROM ANOTHER SESSION AS ITS MESSAGE** — the `&&` chain broke at
-  a failed `git add`, so the heredoc never ran and `git commit -F` used a leftover from 2026-08-19.
-  ⭐ **A chain fails CLOSED for the command that breaks and OPEN for any later command reading a file the
-  chain was supposed to write.** Use `/tmp/name-$$.txt`, `rm` it, and read back `git log -1 --format=%s`.
 - ⚠⚠⚠ **NEVER WRITE THE REMAINING-FILE COUNT ANYWHERE — MEASURE IT.** `npm run test:cov --
   --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text`, then
   `node scripts/coverage-triage.mjs` (committed 2026-08-25). It prints each uncovered line's **source
@@ -40,13 +45,6 @@ coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this
 - ⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold.** `coverage-v8` v4 is the HONEST counter: v3 credited the
   line wrapping an *uninvoked* inline handler, so the gate could not see untested handlers at all.
   Four closed files **had no test file whatsoever** and v3 scored them ≥95%.
-- ⚠⚠⚠ **"`TopBar` IS NOT A HANDLER FIX / needs its own decision" WAS FALSE AND IS WITHDRAWN** (`PE-614`).
-  All seven of its uncovered lines are inline handlers. ⭐ **It came from version one of the triage script
-  misreading an ASCII table's compressed `92-138` as a 47-line range; version two fixed the NUMBER and
-  nobody re-derived the CAUSE built on the wrong one. A corrected measurement does not correct the
-  inference someone built on it.**
-- ⚠⚠ **`DEF-106`: the local `npm run build` reports 16 TS errors on `main` while CI compiles it cleanly** —
-  so trap 22b's named arbiter is unusable here. Don't "fix" code on its say-so; CI is the gate.
 - ⚠⚠ **DO PACKAGE WRITES ON `main`** (C31 — a feature checkout rolls `data/` backwards), **and PUSH after
   each one.** Every push to `main` re-stales every open PR (`strict=true`), so push between merge cycles,
   never during one. ⚠ `main` IS branch-protected: 9 checks, `enforce_admins=false`.

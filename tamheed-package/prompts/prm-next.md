@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-four** times, and **six** wrong assertions have escaped into
+file has carried a stale statement **twenty-five** times, and **six** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +39,22 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE TWENTY-FIFTH (2026-08-25, after `DW-084`) IS A STALE *INSTRUCTION* IN §6's `DEC-072` d1 BLOCK,
+AND IT SURVIVED THE PASS THAT REWROTE THE FILE AROUND IT.** The paragraph reads *"ORDERING IS DECIDED
+(`DEC-073`): THE SWEEP RUNS BEFORE `SL-033` STARTS, SO THIS — NOT `WBS-24.1` — IS THE NEXT ACTION."*
+`DW-078` closed two days later, so a fresh session reading that block would go looking for a Dependabot
+queue that is already swept. **Every id in it resolves and `DW-078` genuinely reads `Done`, so the
+id-and-status pass runs clean straight over it** — the twelfth's shape, and the fourth time this file has
+carried a wrong INSTRUCTION rather than a wrong number.
+⭐⭐ **WHAT IS NEW, AND IT IS A DISTINCTION THE COUNTER NEEDED: THE IDENTICAL SENTENCE IS FINE IN ONE PLACE
+AND WRONG IN THE OTHER.** Commit `ae23b03`'s subject says *"the sweep runs first, so `DW-078` is the next
+action, not `WBS-24.1`"* — and that is NOT counted as an escape, because a commit message is a dated
+record of what was decided when it was decided, and its outcome later happened. This file is a LIVE
+instruction surface a fresh session acts on. **Same words, different status: what makes prose stale is
+not the sentence, it is whether the artifact claims to describe NOW.** Annotated in place rather than
+deleted, because the `DEC-073` reasoning — attribution, one cause per failure — still binds `DW-080`.
+⚠ **`DW-084`'s own completion is deliberately NOT counted**; see the ✅ note in §6 for why.
 
 ⚠ **THE TWENTY-FOURTH IS THE NEXT-ACTION BLOCK, ONE HOUR OLD, AND IT IS *TWO* FAULTS IN ONE
 PARAGRAPH.** It said *"all FOUR activated streams are in scope … and the ORDER IS NOW THEIRS: `DEC-076`
@@ -797,27 +813,51 @@ code, and a plain re-run of the same tree then passed. **Four data points, no ve
 `DEC-075` d2 put the four activated streams in scope (they answered *"all"*); `DEC-076` d3 accepted the
 agent's proposed sequence for them, closing the separation `DEC-071` d3 required between what they
 DECIDED and what the agent INFERRED; **`DEC-077` d5 then AMENDED it, inserting `DW-084` at the front.**
-⚠ **`DW-084` IS NOT ONE OF `DEC-075` d2's FOUR STREAMS — it was created by `DEC-077`**, so the work now
-spans five rows: one already done and **four numbered below**. The sequence is a decision, not a
-suggestion.
+⚠ **`DW-084` IS NOT ONE OF `DEC-075` d2's FOUR STREAMS — it was created by `DEC-077`**, so the work
+spanned five rows. **Two are now done and three are numbered below.** The sequence is a decision, not
+a suggestion.
 
-✅ **`DW-082`, the handler tests, is DONE** and is deliberately not numbered below — it led so that
-`SL-033`'s new components would land under a gate that can SEE their inline handlers, and they now do.
-
-1. ▶▶▶ **`DW-084` — the container-startup timeout. THIS IS THE NEXT ACTION** (`DEC-077` d4/d5).
-   A hung SQL Server container currently burns the backend job's 25-minute ceiling and reports
-   **`cancelled`** — neither pass nor fail. Make it fail fast with the container's own log attached.
-   ⚠ **Prove it by FORCING it** (an image or port that cannot come up); an intermittent path is never
-   proven by a green run. ⚠ **It does NOT close `DEF-108`** — it changes how the failure presents.
-   **It leads because `SL-033` runs CI repeatedly and `DEC-077` d3 says stop on every red from that
-   test, so the slice would otherwise be interrupted by the very ambiguous signal this removes.**
-2. **`SL-033`, starting at `WBS-24.1`** — `DW-033` / `FR-032`, the backlog as a dense table with
-   user-configurable columns. `SL-033` and all nine `WBS-24*` rows are `Approved` and unstarted.
-3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+1. ▶▶▶ **`SL-033`, STARTING AT `WBS-24.1`. THIS IS THE NEXT ACTION** — `DW-033` / `FR-032`, the backlog
+   as a dense table with user-configurable columns. ⚠ **Measure, do not trust this line** —
+   `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
+   The two rows that used to precede it are both closed, so nothing stands in front of it.
+2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
-   only two open PRs, `#128` and `#134`.
-4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+   only two open PRs, `#128` and `#134` (verified with no `--limit` cap, 2026-08-25).
+3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+
+✅ **`DW-082`, the handler tests, is DONE** and is deliberately not numbered — it led so that `SL-033`'s
+new components would land under a gate that can SEE their inline handlers, and they now do.
+
+✅✅ **`DW-084` IS DONE (PR `#309` → `eb09342`, 2026-08-25) AND IS NO LONGER THE NEXT ACTION.**
+⚠⚠ **THIS IS NOT A STALE STATEMENT AND THE COUNTER IS DELIBERATELY NOT BUMPED FOR IT.** The block said
+*"`DW-084` is the next action"*; that was true, and the work being DONE is its outcome arriving, not the
+claim turning out wrong. The counter's own scope excludes *"annotating a historical record whose outcome
+later happened"* — **and keeping that boundary is what stops the tally degrading into a log of every
+edit.** What follows is what the row bought, kept because it binds later work:
+- `ContainerStartup.StartOrFailFastAsync` bounds every container start in `Acmp.Integration.Tests` at
+  **10 minutes** and, on expiry, throws a `TimeoutException` naming the container, the bound, and the
+  tail of the container's **own** startup log. ⚠ **THREE call sites, not the one the row named** —
+  `SqlBackstopFixture`, `SearchProvidersFtsTests`, `MinioFileStoreTests` all carried the identical
+  unbounded call; guarding only the reported path would have left the siblings able to hang the same way.
+- ⚠ **The bound is generous ON PURPOSE.** It covers pull + create + boot + wait, and a bound tight
+  enough to fire on a slow-but-healthy start would **manufacture exactly the red `DEC-077` d3 turns into
+  a mandatory operator stop.** Do not "tighten" it. A whole green backend job is ~9 minutes.
+- ⭐⭐ **THE FINDING WORTH CARRYING, and it is a hollow pass caught before it shipped.** Mutating the
+  wrapper away showed Testcontainers **already** throws `TimeoutException`, message *"The operation has
+  timed out."* — so `ThrowAsync<TimeoutException>` **alone would have passed vacuously**, and the two
+  message assertions are the only part of that test doing work. It also settles why a bound alone could
+  never have satisfied the row: `TestcontainersSettings.WaitStrategyTimeout` stops the hang and still
+  names no container, no bound and no log. **Filed as `LL-022` (Proposed — the operator's interview is
+  owed; `lessons-confirmed` fails on it ON PURPOSE, exactly as `DEC-075` d4 intended. Do not approve it
+  unread, and do not "fix" the advisory.)**
+- ⚠ **IT DID NOT CLOSE `DEF-108`, WHICH STAYS `Open`/high WITH READINESS DELIBERATELY `FALSE`.** It
+  changed how the failure presents. ⛔ Still do not soften or convert `DEF-108`.
+- ⚠ **NEW: `DW-085`** — `_image.CreateAsync()`, the 3.62 GB FTS image **build**, is still unbounded and
+  is now the only unbounded await left on that path. Left out of scope deliberately: `DEC-077` d4 scoped
+  the decision to container **startup**, all four `DEF-108` data points name startup, and it could not
+  meet the prove-by-forcing bar without committing a deliberately-hanging Dockerfile.
 ⚠⚠ **THE TWENTIETH, AND IT WAS A STALE *INSTRUCTION* THAT WOULD HAVE COST AN OPERATOR INTERVIEW.** This
 block said *"`TopBar` is NOT [a handler fix] — `DevRoleSwitcher.tsx` is in the coverage `exclude` list but
 its call site is not … handler tests will not fix that file; it needs its own decision."* **Measured false**
@@ -907,8 +947,10 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
   ⚠⚠ **THE `mssql` BUMP CAN DESTROY DATA** — fresh-volume isolated project only, per "HOW TO RUN A STACK
   HERE" below. The shape is part of what was authorised: **a dedicated batch, full e2e leg per risky bump**,
   majors verified individually and never as a block.
-  ⚠⚠ **ORDERING IS DECIDED (`DEC-073`, same interview): THE SWEEP RUNS BEFORE `SL-033` STARTS, SO THIS —
-  NOT `WBS-24.1` — IS THE NEXT ACTION.** `WBS-24.1` waits until the queue is clear. Reason is attribution:
+  ⚠⚠ **ORDERING WAS DECIDED (`DEC-073`, same interview): THE SWEEP RAN BEFORE `SL-033` STARTED.**
+  ⛔ **HISTORY — `DW-078` IS `Done`, SO THIS IS NO LONGER THE NEXT ACTION AND `WBS-24.1` NO LONGER WAITS
+  ON IT.** The sentence here read *"so THIS — not `WBS-24.1` — IS THE NEXT ACTION"* for two days after the
+  queue was swept: **the TWENTY-FIFTH.** The REASONING below is what still binds, and it binds `DW-080`:
   a TypeScript major and a SQL Server major landing under eight items in flight give any later failure two
   candidate causes, and every `SL-033` item should be built against the versions it will ship on. The
   accepted cost is that the live slice pauses for a batch.
