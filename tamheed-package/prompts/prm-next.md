@@ -1058,7 +1058,7 @@ and would have reported nothing at all; **silence reads identically to "still ru
 
 ✅✅ **`WBS-24.5` IS DONE-CLAIMED (PR `#316` → `76c2dde`, 2026-08-27)** — configurable retention.
 `AC-149`/`AC-150`/`AC-151` `Met` (`AV-227`/`228`/`229`), **`FR-155`, `NFR-059` AND `NFR-060` all →
-`Implemented`**, `DW-036` `Done`. ⚠ `Review` — your verdict.
+`Implemented`**, `DW-036` `Done`. ✅ **`Implemented` — the operator's verdict, 2026-08-27.**
 ⚠⚠ **IT WAS RESIZED `S`→`L` BEFORE ANY CODE (`DEC-080` / `SC-035`), AND THE RESIZE IS THE STORY.** The
 row said *"retention CONFIGURABILITY only"*. `SEC-080` names the home — *"the Configuration table
 (`16` §2.15) holds retention settings for legal/compliance to set later"* — and `SEC-103` specifies it.
@@ -1095,6 +1095,27 @@ YOU REMEMBER.**
 carries only per-assembly summaries — and **my first such grep ran over a ZERO-BYTE download** and
 returned a confident zero. A control term is what exposed it.
 
+⚠⚠ **NEW AND LOAD-BEARING: `OQ-079` AND `OQ-080` (2026-08-27).** `DOC-011` carried two open questions
+as **doc-local labels only** — `OQ-DATA-004` (retention periods per record class) and `OQ-DATA-003` (the
+legal-hold workflow). A sweep of the `open_questions` register returned **ZERO** rows against a control
+of **78**, so both were invisible to `open-questions-resolved`, `open-questions-overdue` and every
+readiness view — `DEF-101`'s shape, a prose-only identifier. ⚠⚠ **Except these were LOAD-BEARING:
+`AC-149`, `AC-150` and `AC-151` all state their boundaries by leaning on those questions being open, so
+THE STATED SCOPE OF THREE `Met` VERDICTS RESTED ON QUESTIONS THE REGISTER COULD NOT SEE.** Filed as
+`OQ-079` and `OQ-080`. ⚠ **The cross-reference runs ONE WAY only and that is a store constraint, not an
+oversight** — approved ACs are immutable and refuse edits, so the new rows cite the criteria and the
+criteria cannot cite back.
+⛔⛔ **THE TRAP INSIDE `OQ-080`, FOR WHOEVER TOUCHES PHASE 2.** `SEC-080` ASSERTS that a legal hold
+overrides any future retention or purge — and **no hold mechanism exists in the product**: no flag, no
+place/release path, no audit of either. It is harmless today only because nothing purges. **Build
+enforcement without it and `SEC-080`'s guarantee becomes false SILENTLY**, since nothing enforces it and
+no test asserts it. **Answer `OQ-080` FIRST, not alongside.**
+⚠ **`AC-147`'s DANGLING SUPERSESSION IS A RULED-ON STATE, NOT DRIFT — DO NOT "REPAIR" IT.** `AC-148`
+supersedes it in substance, but `AC-147`'s `superseded_by` stays NULL because the store refuses to edit
+an approved AC **at all — including to mark it superseded, which is the very path its own refusal message
+names**. The operator accepted this on 2026-08-27; `DEF-111` and `AC-148`'s text are the record. `NFR-037`
+therefore carries two active `Met` criteria, one containing a withdrawn exclusion.
+
 ⚠ **ONE LESSON AWAITS YOUR INTERVIEW: `LL-024`** — generated code loses its escapes silently, so prove
 it RUNS rather than reading it. It cost four cycles in one session. **`lessons-confirmed` therefore fails
 again, ON PURPOSE** — that advisory is doing its job; do not clear it by approving a sentence the
@@ -1120,11 +1141,19 @@ operator has not read (`DEC-075` d4's precedent).
 3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
-⚠⚠ **TWO OPERATOR VERDICTS ARE OWED AND THE WORK IS NOT PENDING — DO NOT REBUILD EITHER.** `WBS-24.4`
-and `WBS-24.5` are `Review`, which is done-claimed by the agent; `Implemented` is the OPERATOR's call and
-`DEC-079` d3 established that they adjudicate PER ITEM. `WBS-24.1`, `24.2` and `24.3` are already
-`Implemented`. **`Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming those
-rows is the rule working, not a fault to repair.**
+⚠⚠ **ONE OPERATOR VERDICT IS OWED, AND THE WORK IS MERGED — DO NOT REBUILD IT.** `WBS-24.4` is
+`Review`; `24.1`, `24.2`, `24.3` and `24.5` are `Implemented`. **`Review` counts as OPEN in
+`readiness_check`, so slice-scope `wbs-done` naming that row is the rule working, not a fault to repair.**
+⚠⚠ **`24.4` HAS NOW BEEN DECLINED TWICE, AND THE REASON THE FIRST TIME NO LONGER APPLIES.** It was
+withheld on 2026-08-26 because `AC-147` carried an exclusion the definition of done forbids; `DEF-111` is
+**Fixed and merged** (`2b0da29`) and `AC-148` carries the corrected criterion with its own `Met` verdict.
+On 2026-08-27 the operator promoted `24.5` and did not promote `24.4`. **No reason is recorded, and none
+is inferred here — ASK, do not guess.** ⛔ Do NOT read it as pending work: the code is merged and
+`NFR-037` is `Implemented`.
+⭐⭐ **THE PER-ITEM MECHANISM HAS DISCRIMINATED TWICE NOW, WHICH IS WHY IT IS NOT CEREMONY.** A
+slice-level verdict would have carried `24.4` through on its neighbours' strength on both occasions.
+`DEC-071` d3 put eight rows in one slice over the agent's objection and this was the recorded mitigation;
+it has earned itself.
 ⭐⭐ **THE PER-ITEM MECHANISM HAS NOW DISCRIMINATED, WHICH IS WHY IT IS NOT CEREMONY.** At the 2026-08-26
 review the operator promoted `24.2` and `24.3` and WITHHELD `24.4`, because its criterion carried an
 exclusion the definition of done forbids (`DEF-111`, since Fixed). **A slice-level verdict would have
@@ -1212,7 +1241,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Implemented` |
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Implemented` |
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Review` |
-| `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Review` |
+| `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
 | `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** | `Approved` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
