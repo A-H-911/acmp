@@ -872,8 +872,26 @@ the backend job room under its own `timeout-minutes: 25` to fail, report and fin
 discriminates, where on the container path it was INHERITED and would have passed vacuously. **Check what
 the framework already does PER CALL; the answer differs inside one library.**
 
-1. ▶▶▶ **`SL-033`, STARTING AT `WBS-24.1`. THIS IS THE NEXT ACTION** — `DW-033` / `FR-032`, the backlog as a dense table with
-   user-configurable columns. ⚠ **Measure, do not trust this line** —
+✅✅ **`WBS-24.1` IS DONE-CLAIMED (PR `#311` → `f968703`)** — user-configurable backlog columns.
+`AC-144` is `Met` (`AV-222`) and **`FR-032` auto-advanced to `Implemented`**. ⚠ The row is `Review`,
+not `Implemented`: that is YOUR verdict via `prompts/slice-review.md`.
+⚠⚠ **ITS SIZING WAS WRONG IN THE CHEAP DIRECTION AND THE SAME TRAP IS LIVE FOR THE OTHER SEVEN.** The
+title said *"dense table … verified unbuilt"*; **the table had already shipped** and only the
+CONFIGURATION was missing. `DW-033`'s own text was accurate and narrow — **the WBS title's SUMMARY of it
+was the wrong part** (`DEC-064` d2's shape). **Read each row's own text, not the WBS summary of it.**
+⭐ **Two defects no unit test could see:** `.table-wrap`'s `overflow: hidden` would have clipped the
+popover (found by reading CSS), and the panel rendered OFF-SCREEN in **both** directions until
+`align="start"` (found by looking at it — x=-123 in LTR, right edge 1345 vs a 1200px viewport in RTL).
+⚠ **`DW-085`'s and `DW-084`'s guards ran clean on a real runner** inside a green Integration suite.
+⚠⚠ **NEW: `DEF-109`** — `Acmp.Api.Tests` ran **20m35s / 17 failed** between two normal runs (3m18s and
+2m37s, 368/368), all 100-second `HttpClient` timeouts across TWELVE unrelated classes, on a backend tree
+byte-identical to both. **The mitigation cannot be credited: the run BEFORE it was also green.**
+⛔ **Do not re-run a red into silence** — append a second occurrence to `DEF-109` instead.
+
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.2`. THIS IS THE NEXT ACTION** — `DW-037` / `FR-035`, the calendar view, **plus its axe
+   route in the same batch** (`DEC-072` d2). ⚠ Build it against the **Meetings** API
+   (`MeetingDetailDto.ScheduledStart` + `AgendaItemDto.TopicId`) — `Topic.Schedule` raises an event with
+   ZERO consumers and persists no meeting id. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
 3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the

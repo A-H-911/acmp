@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-25 · **`DW-082` + `DW-084` DONE** — ▶▶ NEXT: **`SL-033` / `WBS-24.1`**, then `DW-080`, `DW-079`
+## ★★★ 2026-08-26 · **`WBS-24.1` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.2`** (calendar + axe route)
 
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
   any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
@@ -25,35 +25,43 @@
   failure to make it legible, assert the DIFFERENCE — the message — never the failure. (`LL-022`, Proposed
   — the operator's interview is owed; `lessons-confirmed` fails on it on purpose.)
 
-★★★ [**The `DW-082` / Dependabot-sweep arc**](dw082-sweep-and-vitest4.md) — read before touching the
-coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this file.**
+- ✅ **`WBS-24.1` DONE-CLAIMED** (`#311`→`f968703`): `AC-144` Met, **`FR-032` auto-advanced to
+  `Implemented`**. ⚠ Row is `Review` — `Implemented` is the OPERATOR's verdict.
+  ⚠⚠ **ITS SIZING WAS WRONG AND THE TRAP IS LIVE FOR THE OTHER SEVEN `SL-033` ROWS: the WBS title said
+  "dense table … verified unbuilt"; the TABLE HAD SHIPPED.** `DW-033`'s own text was right — the
+  title's SUMMARY of it was wrong. **Read each row's text, never the WBS summary.**
+  ⭐⭐ **Two defects no unit test could see:** `.table-wrap`'s `overflow:hidden` clips popovers (so a
+  control in `Table`'s toolbar slot is wrong — use `.bk-bar`), and `Menu`'s default `align="end"` put
+  the panel OFF-SCREEN both ways (x=-123 LTR / right edge 1345 vs 1200 RTL). **`align="start"` when the
+  trigger sits at the inline-start.**
+- ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs** (3m18s, 2m37s,
+  368/368) — all 100s `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical.
+  ⛔ **The mitigation cannot be credited — the run BEFORE it was green too.** Don't re-run a red into
+  silence; append an occurrence. ⚠ `DEC-077` d3 did NOT fire: `SearchProvidersFtsTests` was green.
+- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY.** Spying jsdom `localStorage` is
+  version-dependent — prototype spy never fired, instance spy fired locally and NOT in CI, so the
+  injected fault never happened while the test asserted a spy call count. **Replace the GLOBAL
+  (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ I retargeted the spy until green instead of
+  diagnosing — tuning until green is not a fix.
 
-- ✅✅ **`DW-082` CLOSED: all 32 files pass `ADR-0016`** — `test:cov` exits 0, 158 files / 1365 tests,
-  **99.19% lines, zero files under 95**; `build` exits 0; CI+Security+E2E green; `#307` merged `8432a1d`.
-  **The threshold was never touched.** ✅ `#261`+`#137` closed; only `#128`/`#134` (→`DW-080`) remain.
-- ⚠⚠ **`DEF-106`: THE APP TYPECHECK HAD BEEN COMPILING BY ACCIDENT** — vitest 3 re-exported `vite`'s
-  types, which carry `/// <reference types="node" />`; vitest 4 dropped the chain and `tsc -b` produced
-  16 errors over untouched code. Fixed by DECLARING `types: ["vite/client", "node"]`.
-  ⚠⚠⚠ **MY FIRST DIAGNOSIS WAS WRONG BECAUSE MY EXPERIMENT WAS: I checked out `main` and built it
-  against the BRANCH's `node_modules`. A CHECKOUT CHANGES THE SOURCE, NOT `node_modules`.**
-  ⭐ **CI's `frontend` job looked fine throughout — it fails at the coverage step, which runs BEFORE the
-  build step. A JOB THAT STOPS EARLY CANNOT VOUCH FOR STEPS IT NEVER REACHED.**
-- ⚠⚠⚠ **NEVER WRITE THE REMAINING-FILE COUNT ANYWHERE — MEASURE IT.** `npm run test:cov --
-  --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text`, then
-  `node scripts/coverage-triage.mjs` (committed 2026-08-25). It prints each uncovered line's **source
-  text**, so a cause is confirmed rather than assumed, and refuses to report unless 3 calibrations pass.
+- ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` (prints each uncovered line's
+  source text; refuses to report unless 3 calibrations pass) · `scripts/gen-lesson-docket.mjs` (full
+  canonical text for a lessons interview — `LL-011` discharged mechanically) ·
+  `scripts/count-prompt-ids.py`. ⚠ `DEF-106`: declare `types: ["vite/client","node"]`; a CHECKOUT DOES
+  NOT CHANGE `node_modules`.
+
+★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) ⚠ **Live state is `prm-next.md`, not this file.**
+
+- ⭐ **A JOB THAT STOPS EARLY CANNOT VOUCH FOR THE STEPS IT NEVER REACHED** — CI's `frontend` job fails
+  at the coverage step, which runs BEFORE the build step.
 - ⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold.** `coverage-v8` v4 is the HONEST counter: v3 credited the
   line wrapping an *uninvoked* inline handler, so the gate could not see untested handlers at all.
   Four closed files **had no test file whatsoever** and v3 scored them ≥95%.
 - ⚠⚠ **DO PACKAGE WRITES ON `main`** (C31 — a feature checkout rolls `data/` backwards), **and PUSH after
   each one.** Every push to `main` re-stales every open PR (`strict=true`), so push between merge cycles,
   never during one. ⚠ `main` IS branch-protected: 9 checks, `enforce_admins=false`.
-- ✅✅ **`LL-017`…`LL-021` APPROVED AND PINNED (`DEC-076`, 2026-08-25)** — every sentence as written.
-  ⭐ **What made it work is reusable: `scripts/gen-lesson-docket.mjs`** prints the FULL canonical text of
-  every field from `lessons.jsonl`, verified byte-identical before publishing — `LL-011` discharged
-  mechanically. **Use it for the next lessons interview.**
-  ⭐ **Store controls worth knowing:** approval is NOT an edit (refuses unless content is byte-identical to
-  the stored row) and **`confirmed_by` must land ON the approving write** — it can never be added later.
+  ⭐ **Approving a lesson: content must be byte-identical (omission is NOT preservation there), and
+  `confirmed_by` must land ON the approving write.**
 - ⚠⚠ **`DEF-107`: APPROVING + PINNING A LESSON DOES NOT MAKE IT BIND.** The note sessions load is rebuilt
   ONLY by `handoff_emit`, and nothing compares it to the pinned set. `LL-016` sat Approved+pinned for TWO
   DAYS without ever reaching it. ⚠ `lessons-confirmed` counts `Proposed` rows, so it goes green on
@@ -82,48 +90,11 @@ coverage gate or the PR queue. ⚠ **Live state is `prm-next.md` §6, never this
 - ⚠ **I reported "four" truncated assumption titles; it was EIGHT.** I measured inside the twelve rows I was
   already editing. **Measuring inside the set you are holding is not measuring the register.**
 
-## ★ 2026-08-20 · the DW-029 programme closed — durable rules only
+## ★ Batches 13–21 + the DW-029 close-out
 
-- ⚠⚠ **A MENTION IS NOT A COVERAGE** — matching a requirement "named anywhere in a DW row" made one
-  vanish from a worklist. Match on TITLE.
-- ⚠⚠ **`DEF-099`: OTLP traces had NEVER reached Seq in ANY environment.** ⭐ **Reusable discriminator:**
-  events grew 679→739 while DB spans sat at **exactly 72** — same host/port/container. **Verify
-  observability by sending traffic and asserting spans MOVE, never by a clean boot.**
-- ⚠ **COUNT THE REQUIREMENT'S CLAUSES BEFORE YOU COUNT YOUR FINDINGS** — twice, strong evidence covered
-  two-thirds of a three-part requirement and nearly carried a `Met`.
-- ⚠ **The operator declined to relax a requirement TWICE.** The register states the **TARGET**, not the
-  status quo — never offer a narrowing as the easy path.
-- ⚠⚠ **A number entering a durable artifact must come from output visible in the same breath.**
-- ⚠ **`entity_query("requirement", ...)` OVERFLOWS the token limit**; count from the JSONL.
-- ⚠ **Running a stack: `docker ps` empty does NOT mean safe** — 5 populated volumes; recipe in
-  `prm-next.md` §6 "HOW TO RUN A STACK HERE".
-- ⚠⚠ **`entity_upsert` REPLACES FULL ROWS** — NOT NULL on UPDATE: `defects.title/severity`,
-  `scope_changes.decision_ref/description/iteration`, `slices.title/objective/phase_id`, `phases.title`;
-  nullable preserved by omission. **Before writing that you PRESERVED something, check the tool can.**
-  A `SL-032` objective claimed to leave text "in place" in the very write that deleted it (`PE-585`).
-  ⚠ **CHECKs:** `verified_by IN (human|agent|ci)`, `verification_method IN (auto-test|manual|inspection)`,
-  `progress.event_type` is a fixed set (no `decision-made`). ⚠ **Approved lessons are IMMUTABLE.**
-
-## ★ batches 13–15 — durable rules only (fuller record in `prm-next.md`)
-
-- ⭐⭐ **Surface that DOES NOT EXIST can be excluded BY NAME in a `Met` verdict; surface that EXISTS but is
-  unproven CANNOT.** That line decided every borderline call.
-- ⚠⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY** (`LL-006`) — an `NFR-021` census
-  read as a 38-command validation hole; all four commands carrying scalar input are guarded in the domain.
-- ⚠ **Never leave a Pending/Partial AC** — `acs-met` counts by `retired_in` and ignores `lifecycle_status`, so
-  an AC ahead of its evidence holds readiness false **forever**. **A part-verified requirement gets a `DW-` row.**
-- ⚠ **`tsc --noEmit -p tsconfig.json` in `src/Acmp.Web` EXITS 0 OVER ZERO FILES** (`DEF-091`); `vitest` does
-  NOT typecheck — use `npm run build`. ⚠ **`DEF-096`: `NFR-054`'s 500 MB cap is UNSATISFIABLE** (fts 3.62 GB);
-  operator REJECTED relaxing minimal-base → `DW-066`. **Do not change a base image.**
-- ⚠⚠ **Hangfire's `JobStorage.Current` + `GlobalJobFilters` are PROCESS-GLOBAL**; it never hands a filter the
-  job's own exception — record `InnerException`.
-- ⚠ **Coverage must be UNIONED, never summed.** ⚠ **Never push to a branch with CI in flight.**
-  ⚠ `Timeline.tsx` is an honest SHELL; `Calendar.tsx`'s work is `Activated` (`DW-037`).
-- ⭐ [**Store mechanics proven by experiment**](package-mechanics-proven-2026-08-18.md) — `G-TRACE` needs 3 legs.
-- **Still open, needing a stack or scanner:** `NFR-018` DAST+pentest, `NFR-019` TLS scan, `NFR-052`, the ops
-  group (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060` measured from trace data.
-- ⚠⚠ **`$?` AFTER A PIPE IS THE PIPE'S LAST COMMAND** — redirect to a file, read `$?` on the bare command.
-- **PRODUCTION IS DEPLOYED AND RECONCILED**; `/readyz` 200 on all four. `RISK-007` clock started 2026-08-17.
+★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
+enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after
+a pipe, the still-open stack/scanner group, and production's reconciled state.
 
 ## Earlier 2026-08 — durable findings only
 
