@@ -6,106 +6,41 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-26 · **`WBS-24.1`–`24.3` DONE** — ▶▶ NEXT: **`WBS-24.4`** · ⚠ 2 verdicts + `LL-024` owed
+## ★★★ 2026-08-26 · **`SL-033`: `WBS-24.1`–`24.4` DONE** — ▶▶ NEXT: **`WBS-24.5`** (`DW-036`/`FR-155`)
 
+★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — four items, **four different ways a row
+misled**; the bidi/`unicode-bidi: plaintext` rule; the i18n formatter no-op; two hollow passes; the
+`number-render-scan` warnings. ⚠ **Live state is `prm-next.md`, not this file.**
+
+- ⚠⚠ **3 OPERATOR VERDICTS OWED** (`WBS-24.2`/`24.3`/`24.4` sit at `Review`; `Implemented` is yours,
+  `DEC-079` d3) **+ the `LL-024` interview.** ⚠ **Do NOT rebuild any of them** — `Review` counting as
+  open in `readiness_check` is the rule working.
 - ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
-  — not just the row you closed. The pre-handoff read found **7** stale statements the id-and-status pass
-  ran clean over: a **"do NOT rebuild" entry naming a file that had just been built**, a duplicated
-  sentence where one copy got fixed, a list numbered 1-3-4, and **`LL-023` "(Proposed)" in prose while
-  the register said Approved**. ⭐ **Never write a lifecycle status inline** — the register has it.
-- ⚠⚠ **`LL-024` (Proposed): GENERATED CODE LOSES ITS ESCAPES SILENTLY AND STILL LOOKS PLAUSIBLE.**
-  `'
-'` written through a Python heredoc becomes a REAL newline in the output file. Four hits in one
-  session (Dockerfile, test fixture, an embedded regex twice). **Build escapes with `chr(92)`, then
-  EXTRACT AND RUN the generated block — reading it is the check that fails.**
-
-- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
-  any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
-  (`DEF-108` Open/high, `DEC-077` d1) — **do NOT "fix" it by softening or converting; both were declined.**
-- ⚠⚠ **I LEFT `main` RED AND REPORTED IT CLEAN.** `scripts/*.py|mjs` are **NOT** path-ignored, so a
-  package-and-prose commit carrying one instrument runs the FULL pipeline. `DEC-077` d2: **`scripts/**`
-  now goes via PR**, and **poll CI to completion after ANY direct push to `main`**, whatever it touched.
-  ⛔ Never propose path-ignoring `scripts/**` — several `check-*.mjs` **are** the CI gates.
-- ✅✅ **`DW-084` DONE** (PR `#309` → `eb09342`): `ContainerStartup.StartOrFailFastAsync` bounds **all
-  three** container starts in `Acmp.Integration.Tests` at 10 min and attaches the container's own log.
-  ⚠ **Do NOT tighten the bound** — one tight enough to fire on a slow-but-healthy start manufactures the
-  very red `DEC-077` d3 makes a mandatory stop. ⚠ It did **not** close `DEF-108`. New: **`DW-085`** — the
-  FTS image *build* is still unbounded, deliberately out of scope.
-  ⭐⭐ **HOLLOW PASS CAUGHT BY MUTATION: Testcontainers ALREADY throws `TimeoutException("The operation
-  has timed out.")`, so asserting the exception TYPE alone passes VACUOUSLY.** When you WRAP an existing
-  failure to make it legible, assert the DIFFERENCE — the message — never the failure. (`LL-022`, Proposed
-  — the operator's interview is owed; `lessons-confirmed` fails on it on purpose.)
-
-- ✅ **`WBS-24.1` DONE-CLAIMED** (`#311`→`f968703`): `AC-144` Met, **`FR-032` auto-advanced to
-  `Implemented`**. ⚠ Row is `Review` — `Implemented` is the OPERATOR's verdict.
-  ⚠⚠ **ITS SIZING WAS WRONG AND THE TRAP IS LIVE FOR THE OTHER SEVEN `SL-033` ROWS: the WBS title said
-  "dense table … verified unbuilt"; the TABLE HAD SHIPPED.** `DW-033`'s own text was right — the
-  title's SUMMARY of it was wrong. **Read each row's text, never the WBS summary.**
-  ⭐⭐ **Two defects no unit test could see:** `.table-wrap`'s `overflow:hidden` clips popovers (so a
-  control in `Table`'s toolbar slot is wrong — use `.bk-bar`), and `Menu`'s default `align="end"` put
-  the panel OFF-SCREEN both ways (x=-123 LTR / right edge 1345 vs 1200 RTL). **`align="start"` when the
-  trigger sits at the inline-start.**
-- ✅ **`WBS-24.2` DONE-CLAIMED** (`#312`→`65c158c`): calendar shows real meetings; `AC-145` Met,
-  **`FR-035` → `Implemented`**. ⚠ Row is `Review` — operator's verdict (`DEC-079` d3).
-  ⭐⭐ **A GREEN e2e JOB DOES NOT PROVE YOUR NEW TEST RAN — CHECK THE COUNT.** 86→88 for ONE added test,
-  because `playwright.config.ts` runs `rtl-a11y.spec.ts` in **both** `chromium` and `msedge`.
-  ⚠⚠ **`/meetings` carries NO topic ids** (only `/meetings/{key}`). `DW-086`: do NOT fan
-  `useMeetingDetail` across the month — `DEF-104`'s N+1 shape.
-  ⚠ **Playwright `getByRole` matches `name` as a case-insensitive SUBSTRING** — `{name:'AR'}` hit four
-  buttons. Use `exact: true`.
-  ⚠ **A comment about a SIBLING's state goes stale silently** — nothing compiles it (`Backlog.tsx` called
-  Kanban "coming soon" for months). ⚠ A test can pass ALONE and fail in the full suite: another file
-  mounted the component without the new API mocked.
-- ✅ **`WBS-24.3` DONE-CLAIMED** (`#313`→`a794daa`): wiki version diff; `AC-146` Met, **`FR-117` →
-  `Implemented`**. No dependency — a 30-line LCS, bounded so an oversized compare is refused.
-  ⚠⚠⚠ **`white-space: pre` PRESERVES WHITESPACE, NOT CHARACTER ORDER.** In Arabic the diff rendered
-  `# Governance charter` as `Governance charter #` and moved full stops/`-` markers — bidi reordering of
-  NEUTRAL chars. **Fix: `unicode-bidi: plaintext`** (per-line direction). **Any future pre-formatted or
-  code-like surface needs it, and none will fail a test without it.**
-  ⭐ **A judgement about whether a requirement is SATISFIED must never live in a code comment** — that
-  comment (`"viewable satisfies FR-117"`) was `DW-039`'s whole reason to exist, and it was false: the
-  requirement says viewable AND diffable.
-  ⚠ **Widening SHARED test data to serve a new test changes every test that reads it** — scope the new
-  fixture instead of relaxing the old assertion.
-- ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs** (3m18s, 2m37s,
-  368/368) — all 100s `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical.
-  ⛔ **The mitigation cannot be credited — the run BEFORE it was green too.** Don't re-run a red into
-  silence; append an occurrence. ⚠ `DEC-077` d3 did NOT fire: `SearchProvidersFtsTests` was green.
+  — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
+  over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
+  lifecycle status inline in prose** — the register has it.
+- ⚠⚠ **`LL-024` (Proposed): GENERATED CODE LOSES ITS ESCAPES SILENTLY AND STILL LOOKS PLAUSIBLE.** Fired
+  again 2026-08-26: a bash heredoc ate one backslash level out of a scanner regex. **Build escapes with
+  `chr(92)`, then EXTRACT AND RUN the generated block** — or use the Write tool, not a heredoc.
+- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). ⚠
+  **`readiness_check` is `ready:FALSE` ON PURPOSE** (`DEF-108` Open/high, `DEC-077` d1) — **do NOT
+  "fix" it by softening or converting; both were declined.**
+- ⚠⚠ **`scripts/**` is NOT path-ignored** (`DEC-077` d2): a package-and-prose commit carrying one
+  instrument runs the FULL pipeline. **`scripts/**` goes via PR, and poll CI to completion after ANY
+  direct push to `main`.** ⛔ Never propose path-ignoring it — several `check-*.mjs` **are** the gates.
+- ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs**, all 100s
+  `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical. ⛔ **The mitigation
+  cannot be credited — the run BEFORE it was green too.** Append an occurrence; don't re-run into silence.
+- ⚠ **`DEF-110`** (`DEC-079` d2, *record it, change nothing*): the SLA thresholds are a hardcoded
+  `switch` while `ASM-011`/`OQ-035` promise **configuration**. **So `assumptions-current` naming
+  `ASM-011` is not an overdue date — its remediation path does not exist.** ⛔ Don't re-date it.
 - ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY.** Spying jsdom `localStorage` is
-  version-dependent — prototype spy never fired, instance spy fired locally and NOT in CI, so the
-  injected fault never happened while the test asserted a spy call count. **Replace the GLOBAL
-  (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ I retargeted the spy until green instead of
-  diagnosing — tuning until green is not a fix.
+  version-dependent — the injected fault never happened while the test asserted a spy call count.
+  **Replace the GLOBAL (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ Tuning until green is not a fix.
+- ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `scripts/gen-lesson-docket.mjs`
+  · `scripts/count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`. ⚠ `DEF-106`: declare
+  `types: ["vite/client","node"]`; **a CHECKOUT DOES NOT CHANGE `node_modules`**.
 
-- ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` (prints each uncovered line's
-  source text; refuses to report unless 3 calibrations pass) · `scripts/gen-lesson-docket.mjs` (full
-  canonical text for a lessons interview — `LL-011` discharged mechanically) ·
-  `scripts/count-prompt-ids.py`. ⚠ `DEF-106`: declare `types: ["vite/client","node"]`; a CHECKOUT DOES
-  NOT CHANGE `node_modules`.
-
-★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) ⚠ **Live state is `prm-next.md`, not this file.**
-
-- ⭐ **A JOB THAT STOPS EARLY CANNOT VOUCH FOR THE STEPS IT NEVER REACHED** — CI's `frontend` job fails
-  at the coverage step, which runs BEFORE the build step.
-- ⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold.** `coverage-v8` v4 is the HONEST counter: v3 credited the
-  line wrapping an *uninvoked* inline handler, so the gate could not see untested handlers at all.
-  Four closed files **had no test file whatsoever** and v3 scored them ≥95%.
-- ⚠⚠ **DO PACKAGE WRITES ON `main`** (C31 — a feature checkout rolls `data/` backwards), **and PUSH after
-  each one.** Every push to `main` re-stales every open PR (`strict=true`), so push between merge cycles,
-  never during one. ⚠ `main` IS branch-protected: 9 checks, `enforce_admins=false`.
-  ⭐ **Approving a lesson: content must be byte-identical (omission is NOT preservation there), and
-  `confirmed_by` must land ON the approving write.**
-- ⚠⚠ **`DEF-107`: APPROVING + PINNING A LESSON DOES NOT MAKE IT BIND.** The note sessions load is rebuilt
-  ONLY by `handoff_emit`, and nothing compares it to the pinned set. `LL-016` sat Approved+pinned for TWO
-  DAYS without ever reaching it. ⚠ `lessons-confirmed` counts `Proposed` rows, so it goes green on
-  approval whether or not it propagated. **Run `handoff_emit` in the SAME batch as any approval.**
-- ⚠ **If `npm ci` fails `EPERM`/`EBUSY` here, enumerate node processes FIRST** (`DW-083`: six `vite` servers
-  ran 13 days holding a native binary). ⚠ **`ls node_modules | wc -l` is NOT npm's package count** — 125
-  directories vs "169 added" is apples to oranges, and reading it as a gutted tree cost a detour.
-- ⚠⚠ **`prm-next.md` has carried a stale statement TWENTY times.** Two more this session: §6 and `PE-612`
-  disagreed 206-vs-217 on one measurement (`PE-613` — the fix was to **commit the instrument**,
-  `scripts/count-prompt-ids.py`), and the `TopBar` instruction above. **Read its prose; the id-and-status
-  pass is the easy half.** ⚠ Its §2–§5 were declared UNREAD by the prior session — read them.
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 
 - ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
