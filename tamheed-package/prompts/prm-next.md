@@ -1056,17 +1056,63 @@ merge run was **6m41s** with `SearchProvidersFtsTests` green — neither `DEF-10
 and would have reported nothing at all; **silence reads identically to "still running."** Use `gh`'s own
 `--jq`.
 
+✅✅ **`WBS-24.5` IS DONE-CLAIMED (PR `#316` → `76c2dde`, 2026-08-27)** — configurable retention.
+`AC-149`/`AC-150`/`AC-151` `Met` (`AV-227`/`228`/`229`), **`FR-155`, `NFR-059` AND `NFR-060` all →
+`Implemented`**, `DW-036` `Done`. ⚠ `Review` — your verdict.
+⚠⚠ **IT WAS RESIZED `S`→`L` BEFORE ANY CODE (`DEC-080` / `SC-035`), AND THE RESIZE IS THE STORY.** The
+row said *"retention CONFIGURABILITY only"*. `SEC-080` names the home — *"the Configuration table
+(`16` §2.15) holds retention settings for legal/compliance to set later"* — and `SEC-103` specifies it.
+**It did not exist.** ⚠ Verified against a CONTROL, because the obvious grep lies: `class Configuration`
+matches only EF entity-type configurations under `Persistence/Configurations/`, while `class Stream`
+resolves to a real entity. **That collision is why its absence went unnoticed for months.**
+⭐⭐ **THE AGENT'S FIRST RECOMMENDATION (appsettings) WAS WRONG AND WAS WITHDRAWN BEFORE THE OPERATOR
+RULED. READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED** — the keyword sweep of
+the NARRATIVE documents (`LL-008`) found the mechanism AND three clauses that bound the build and that no
+code-reading would surface: enforcement is **Phase 2** (`SEC-089`), the period VALUES are an open
+question awaiting legal (`OQ-DATA-004`), and a retention config change is a **privileged AUDITED action**
+(`SEC-077`).
+⛔ **A PURGE JOB WOULD *VIOLATE* `NFR-059`/`NFR-060`, NOT COMPLETE THEM.** `automaticPurgeEnabled` is a
+CONSTANT reported as a fact, never a setting, so nothing can switch on a purge that does not exist. **v1
+ships NO periods and that is canon** (`SEC-080`) — an AC here must evidence the MECHANISM, never a value.
+⭐ **Three things the codebase decided, which beat designing them:** `Policies.AdminConfig` already
+existed and already admitted Administrator alone; `AuditDbContext` was already the shape a cross-cutting
+store needs under `ADR-0001`, so BuildingBlocks was the answer not a choice; and the type had to be
+`ConfigurationSetting` because `SharedKernelExtensions.cs` already imports
+`Microsoft.Extensions.Configuration`.
+⚠⚠ **A NEW `DbContext` MUST BE SUBSTITUTED IN THREE PLACES, NOT TWO** — DI, `MigrationRunner`, AND
+`AcmpWebApplicationFactory`. Omitting the third fails by reaching for a REAL SQL Server, which reads like
+a broken environment rather than a missing registration.
+⭐⭐ **`WBS-24.3`'s BIDI LESSON PREDICTED ITS OWN RECURRENCE BY NAME AND WAS RIGHT.** It named *"a log
+viewer, a JSON preview, **a config panel**"*; in Arabic `{"years":7}` rendered `{years":7"}`. ⚠ **Its fix
+does NOT transfer: `unicode-bidi: plaintext` takes direction from the first STRONG character and a JSON
+fragment has none** — use `dir="ltr"` on code-like elements.
+⚠⚠ **CI'S FIRST RUN FAILED AT THE *FORMAT CHECK* WITH BUILD AND TEST `skipped`** — so that red said
+NOTHING about the migration (`DEF-106`'s lesson). **I had run `dotnet build` and the suites but never
+`dotnet format --verify-no-changes`, which is a committed gate. RUN THE GATES THAT EXIST, NOT THE ONES
+YOU REMEMBER.**
+⭐ **The new tests are proven to have RUN BY THE COUNT, not the colour:** Integration **64→68** (+4) and
+`Acmp.Api.Tests` **368→376** (+8). ⚠ A grep of the CI log for the test CLASS names returns zero — the log
+carries only per-assembly summaries — and **my first such grep ran over a ZERO-BYTE download** and
+returned a confident zero. A control term is what exposed it.
+
 ⚠ **ONE LESSON AWAITS YOUR INTERVIEW: `LL-024`** — generated code loses its escapes silently, so prove
 it RUNS rather than reading it. It cost four cycles in one session. **`lessons-confirmed` therefore fails
 again, ON PURPOSE** — that advisory is doing its job; do not clear it by approving a sentence the
 operator has not read (`DEC-075` d4's precedent).
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.5`. THIS IS THE NEXT ACTION** — `DW-036` / `FR-155`, retention
-   **configurability** only. ⚠ **Read the row's own text before sizing it** — that habit has now paid on
-   all four items so far, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row
-   wrongly, `24.2`'s row carried its own correction and it held, `24.3` turned out to be about a source
-   COMMENT rather than a feature, and `24.4`'s measurement was right while its prescribed remedy was too
-   small. ⚠ **Measure, do not trust this line** — `readiness_check(scope="slice", id="SL-033")` and
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.6`. THIS IS THE NEXT ACTION** — `DW-035` / `FR-154`,
+   audit-log export for Auditor + Administrator. ⚠ **It also OWES AN AXE ROUTE** (`DEC-072` d2 /
+   `SC-032`) — in the SAME batch that builds it, named in its own acceptance criterion.
+   ⚠⚠ **READ THE ROW'S OWN TEXT AND THE NARRATIVE DOCUMENTS BEFORE SIZING IT** — that habit has now paid
+   on all FIVE items, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row wrongly;
+   `24.2`'s row carried its own correction and it held; `24.3` turned out to be about a source COMMENT
+   rather than a feature; `24.4`'s measurement was right while its prescribed remedy was too small; and
+   `24.5` was ONE WORD ("configurable") covering a subsystem the architecture had already specified.
+   ⭐⭐ **`24.5` ADDS A STEP TO THE HABIT, AND IT IS THE ONE THAT WOULD HAVE BEEN SKIPPED: READING `src`
+   TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** Its mechanism was named in `SEC-080`
+   and specified in `SEC-103`, and a code-only reading produced a recommendation that would have been an
+   architectural divergence. **Sweep the narrative documents by KEYWORD (`LL-008`) before sizing.**
+   ⚠ **Measure, do not trust this line** — `readiness_check(scope="slice", id="SL-033")` and
    `entity_query("wbs-item")` are the live answer.
 2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
@@ -1074,11 +1120,16 @@ operator has not read (`DEC-075` d4's precedent).
 3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
-⚠⚠ **TWO OPERATOR VERDICTS ARE OWED AND THE WORK IS NOT PENDING — DO NOT REBUILD EITHER.** `WBS-24.2` and
-`WBS-24.3` are `Review`, which is done-claimed by the agent; `Implemented` is the OPERATOR's call and
-`DEC-079` d3 established that they adjudicate PER ITEM. `WBS-24.1` is already `Implemented`. **`Review`
-counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming those rows is the rule working, not
-a fault to repair.**
+⚠⚠ **TWO OPERATOR VERDICTS ARE OWED AND THE WORK IS NOT PENDING — DO NOT REBUILD EITHER.** `WBS-24.4`
+and `WBS-24.5` are `Review`, which is done-claimed by the agent; `Implemented` is the OPERATOR's call and
+`DEC-079` d3 established that they adjudicate PER ITEM. `WBS-24.1`, `24.2` and `24.3` are already
+`Implemented`. **`Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming those
+rows is the rule working, not a fault to repair.**
+⭐⭐ **THE PER-ITEM MECHANISM HAS NOW DISCRIMINATED, WHICH IS WHY IT IS NOT CEREMONY.** At the 2026-08-26
+review the operator promoted `24.2` and `24.3` and WITHHELD `24.4`, because its criterion carried an
+exclusion the definition of done forbids (`DEF-111`, since Fixed). **A slice-level verdict would have
+carried `24.4` through on its neighbours' strength.** `DEC-071` d3 put eight rows in one slice over the
+agent's objection and the recorded mitigation was exactly this; the mitigation earned itself.
 
 ✅ **`LL-022` IS APPROVED AND PINNED** (`DEC-078` d1) and `lessons-confirmed` passes again. ⭐ **The
 approval path has a guard worth knowing before you meet it: omitting a field is NOT preservation there.**
@@ -1155,13 +1206,13 @@ shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`
 ⚠ **The status column is a convenience and it CAN go stale — `entity_query("wbs-item")` is the live
 answer, and `readiness_check(scope="slice", id="SL-033")` names every row still open.**
 
-| # | row | what | status (2026-08-26) |
+| # | row | what | status (2026-08-27) |
 |---|---|---|---|
 | `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns | ✅ `Implemented` |
-| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Review` |
-| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Review` |
+| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Implemented` |
+| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Implemented` |
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Review` |
-| `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only | `Approved` |
+| `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Review` |
 | `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** | `Approved` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
