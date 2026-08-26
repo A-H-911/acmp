@@ -105,7 +105,14 @@ export function Kanban({ rows, total }: { rows: TopicSummary[]; total?: number }
           <section
             key={col.bucket}
             className={`kb-col ${dragId ? 'drop' : ''}`}
-            aria-label={`${bucketLabel(col.bucket)}, ${col.cards.length}`}
+            /*
+             * DEF-111: this was a template literal interpolating the count RAW, twelve lines above
+             * the same number rendered through <Num>. So in Arabic a sighted reader saw ٧ and a
+             * screen-reader user heard 7 — one number, one component, localized for the eye and not
+             * for the ear. Routing it through t() hands the value to the i18n formatter, which
+             * localizes numeric placeholders centrally (NFR-037); a template literal cannot reach it.
+             */
+            aria-label={t('kanban.colAria', { bucket: bucketLabel(col.bucket), count: col.cards.length })}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();

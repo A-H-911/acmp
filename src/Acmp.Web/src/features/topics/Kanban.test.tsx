@@ -3,6 +3,7 @@ import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Kanban } from './Kanban';
 import { renderWithAuth } from '../../test/render';
+import i18n from '../../i18n';
 import type { TopicSummary } from '../../api/topics';
 import type { Member } from '../../api/members';
 
@@ -59,6 +60,28 @@ describe('Kanban (P5b)', () => {
     expect(screen.getByRole('region', { name: /Accepted, 1/ })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: /Scheduled, 1/ })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: /Returned, 0/ })).toBeInTheDocument();
+  });
+
+  it('announces the column count in the reader digits, not just on screen (DEF-111 / NFR-037)', async () => {
+    /*
+     * The accessible name is what a screen-reader user HEARS. It used to be a template literal
+     * interpolating the count raw, twelve lines above the same number rendered through <Num> — so in
+     * Arabic the eye got the localized form and the ear got a Latin one. Asserting the VISIBLE count
+     * would not have caught that; only the accessible name can.
+     *
+     * MUTATION CHECK: put the template literal back and this goes red while every other test in this
+     * file stays green, because they all run in English, where both forms render identically.
+     */
+    await i18n.changeLanguage('ar');
+    try {
+      renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+      const names = screen.getAllByRole('region').map((r) => r.getAttribute('aria-label') ?? '');
+      expect(names.length).toBeGreaterThan(0);
+      expect(names.some((n) => /[٠-٩]/.test(n))).toBe(true);
+      expect(names.every((n) => !/[0-9]/.test(n))).toBe(true);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   it('badges a Prepared topic so it stays distinct inside the shared Accepted bucket (D-15)', () => {
