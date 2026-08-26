@@ -953,3 +953,44 @@
   font-size: 12.5px; text-align: start; cursor: pointer;
 }
 .bk-cols-reset:hover { color: var(--text); }
+
+/* WBS-24.2 / FR-035 — calendar day-cell event chips and the selected-meeting panel.
+   The chip matches the design's day-cell event shape: a dot, an ellipsised label, the whole
+   thing clickable. Logical properties throughout so it mirrors in RTL. */
+.cal-event {
+  display: flex; align-items: center; gap: 5px; inline-size: 100%;
+  padding-block: 3px; padding-inline: 7px;
+  border: 0; border-radius: 6px; background: var(--st-sched-bg, var(--subtle));
+  color: var(--text); font: inherit; font-size: 10.5px; font-weight: 600;
+  text-align: start; cursor: pointer;
+}
+.cal-event:hover { filter: brightness(1.05); }
+.cal-event.is-selected { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cal-event-dot {
+  inline-size: 5px; block-size: 5px; border-radius: 50%;
+  background: var(--st-sched-dot); flex: 0 0 auto;
+}
+.cal-event-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-event-count {
+  margin-inline-start: auto; flex: 0 0 auto;
+  color: var(--text-2); font-variant-numeric: tabular-nums;
+}
+.cal-detail {
+  margin-block-start: var(--sp-3); padding: var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--subtle);
+}
+.cal-detail-head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+  margin-block-end: var(--sp-2); flex-wrap: wrap;
+}
+.cal-detail-title { font-size: 13.5px; font-weight: 600; }
+.cal-detail-link { font-size: 12.5px; }
+.cal-detail-empty { margin: 0; font-size: 12.5px; color: var(--text-2); }
+.cal-detail-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cal-detail-topic {
+  display: flex; align-items: center; gap: 9px; min-inline-size: 0;
+  padding-block: 5px; padding-inline: 7px; border-radius: var(--r-sm);
+  color: var(--text); font-size: 12.5px; text-decoration: none;
+}
+.cal-detail-topic:hover { background: var(--surface); }
+.cal-detail-topic-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
