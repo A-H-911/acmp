@@ -2,6 +2,7 @@
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Behaviors;
 using Acmp.Shared.Infrastructure.Audit;
+using Acmp.Shared.Infrastructure.Configuration;
 using Acmp.Shared.Infrastructure.FileStorage;
 using Acmp.Shared.Infrastructure.Identity;
 using Acmp.Shared.Infrastructure.Persistence;
@@ -68,6 +69,15 @@ public static class SharedKernelExtensions
                     sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema))
                 .AddAcmpAuditInterceptors(sp));
         services.AddScoped<IAuditSink, SqlAuditSink>();
+
+        // WBS-24.5 (DEC-080 / SC-035): the externalized configuration store (schema "config") the data
+        // architecture specifies at SEC-103, and the home SEC-080 names for retention settings. On the
+        // SHARED connection like Audit above, so a config write and its audit row commit together —
+        // SEC-077 makes a retention config change a privileged AUDITED action, and an audit row that can
+        // survive a rolled-back write would be worse than no audit row.
+        services.AddDbContext<ConfigurationDbContext>((sp, options) =>
+            options.UseSqlServer(sp.GetRequiredService<DbConnection>(), sql =>
+                sql.MigrationsHistoryTable("__EFMigrationsHistory", ConfigurationDbContext.Schema)));
 
         // D-16 / C-INS-02 (ADR-0030): the nightly integrity verifier + the audit store's own chain check. Other
         // modules register their own IIntegrityCheck (e.g. Decisions' vote-ballot chain); the verifier fans out.
