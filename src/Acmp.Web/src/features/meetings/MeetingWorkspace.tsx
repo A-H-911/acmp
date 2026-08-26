@@ -28,6 +28,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import {
   useMeetingDetail,
   useEndMeeting,
@@ -284,7 +285,7 @@ function ActiveItem({
         <div className="mt-active-head">
           <div className="mt-active-headmain">
             <div className="mt-active-keyrow">
-              <span className="mt-active-index" aria-hidden="true">{index}</span>
+              <span className="mt-active-index" aria-hidden="true"><Num value={index} /></span>
               <span className="mt-key">{item.topicKey || t('meetings.restrictedKey')}</span>
               {item.urgent && <span className="mt-urgent-pill">{t('meetings.urgent')}</span>}
             </div>

@@ -54,7 +54,9 @@ describe('JobMonitor (AC-056)', () => {
   it('shows the five stat tiles and an empty-table state when there are no jobs', () => {
     jobsState({ data: configured([]) });
     renderWithAuth(<JobMonitor />, { roles: ['administrator'] });
-    expect(screen.getByText('1284')).toBeInTheDocument();
+    // "1,284", grouped — NFR-037 localizes the stat tiles, and English groups thousands. The
+    // requirement is not only about Arabic digits: a four-figure count read "1284" before.
+    expect(screen.getByText('1,284')).toBeInTheDocument();
     expect(screen.getByText('No jobs yet')).toBeInTheDocument();
   });
 

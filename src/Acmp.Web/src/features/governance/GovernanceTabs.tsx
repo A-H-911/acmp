@@ -9,6 +9,7 @@
  */
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { Icon, type IconName } from '../../components/icons';
 import './governance.css';
 
@@ -40,7 +41,7 @@ export function GovernanceTabs({ active, adrCount, invCount }: Props) {
         const label = (
           <>
             <Icon name={tab.icon} size={16} aria-hidden /> {t(tab.labelKey)}
-            {tab.count !== undefined && <span className="adr-tab-count">{tab.count}</span>}
+            {tab.count !== undefined && <span className="adr-tab-count"><Num value={tab.count} /></span>}
           </>
         );
         return tab.key === active ? (

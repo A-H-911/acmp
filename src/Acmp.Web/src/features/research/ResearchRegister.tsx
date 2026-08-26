@@ -16,6 +16,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { useResearchRegister, useResearchCounts, type MissionSummary } from '../../api/research';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
@@ -183,8 +184,8 @@ function MissionsTable({ rows, lang, sort, onSort }: { rows: MissionSummary[]; l
       ),
     },
     { id: 'lead', header: t('research.col.lead'), width: '150px', cell: (r) => <Lead name={r.ownerName} /> },
-    { id: 'findings', header: t('research.col.findings'), width: '96px', cell: (r) => <span className="rsc-num">{r.findingCount}</span> },
-    { id: 'recs', header: t('research.col.recs'), width: '110px', cell: (r) => <span className="rsc-num">{r.recommendationCount}</span> },
+    { id: 'findings', header: t('research.col.findings'), width: '96px', cell: (r) => <span className="rsc-num"><Num value={r.findingCount} /></span> },
+    { id: 'recs', header: t('research.col.recs'), width: '110px', cell: (r) => <span className="rsc-num"><Num value={r.recommendationCount} /></span> },
     { id: 'status', header: t('research.col.status'), width: '124px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`research.status.${r.status}`)} size="sm" /> },
     { id: 'updated', header: t('research.col.updated'), width: '128px', sortable: true, cell: (r) => <span className="rsc-date">{fmtDate(r.updatedAt ?? r.createdAt)}</span> },
   ];

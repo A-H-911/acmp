@@ -23,6 +23,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Pct } from '../../lib/numberFmt';
 import { useActionsRegister, useActionsCounts, type ActionSummary } from '../../api/actions';
 import { Table, type Column, type SortDir } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
@@ -239,7 +240,7 @@ function Progress({ pct }: { pct: number }) {
       <span className="act-pbar" aria-hidden="true">
         <span className="act-pbar-fill" style={{ inlineSize: `${pct}%`, background: progressColor(pct) }} />
       </span>
-      <span className="act-pct">{pct}%</span>
+      <span className="act-pct"><Pct value={pct} /></span>
     </span>
   );
 }

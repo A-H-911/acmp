@@ -15,6 +15,7 @@
  */
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Pct } from '../../lib/numberFmt';
 import { useAction, type LocalizedText } from '../../api/actions';
 import { ApiError } from '../../api/apiClient';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -88,7 +89,7 @@ export function ActionPage() {
             <div className="act-facts-progress">
               <div className="act-facts-progress-head">
                 <span>{t('actions.progress')}</span>
-                <span className="act-facts-pct">{act.progressPct}%</span>
+                <span className="act-facts-pct"><Pct value={act.progressPct} /></span>
               </div>
               <div className="act-pbar act-pbar-lg" aria-hidden="true">
                 <span className="act-pbar-fill" style={{ inlineSize: `${act.progressPct}%`, background: progressColorDetail(act.progressPct) }} />

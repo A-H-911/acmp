@@ -37,7 +37,6 @@ export function WikiReadingView({ document, canManage, onEdit, onHistory }: Prop
   const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en);
   const fmtDate = (iso: string) => formatDmy(iso, i18n.language);
   // Read-time minutes localized so the Arabic locale renders Arabic-Indic digits (design "قراءة ٤ دقائق").
-  const fmtCount = (n: number) => new Intl.NumberFormat(i18n.language === 'ar' ? 'ar-u-nu-arab' : 'en').format(n);
   const author = members.data?.find((m) => m.keycloakUserId === document.ownerUserId)?.fullName ?? document.ownerUserId;
   const body = pick(document.body);
   const canPublish = canManage && document.status === 'Draft';
@@ -89,7 +88,7 @@ export function WikiReadingView({ document, canManage, onEdit, onHistory }: Prop
         <span>{t('wiki.updated')} {fmtDate(document.updatedAt ?? document.createdAt)}</span>
         <span className="wiki-meta-dot" aria-hidden="true" />
         <span className="wiki-meta-time">
-          <Icon name="clock" size={13} aria-hidden /> {t('wiki.readtime', { minutes: fmtCount(readTime(body)) })}
+          <Icon name="clock" size={13} aria-hidden /> {t('wiki.readtime', { minutes: readTime(body) })}
         </span>
         {document.tags.length > 0 && (
           <span className="wiki-tags">

@@ -18,6 +18,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import {
   useVote, useOpenVote, useCastBallot, useChangeBallot, useRecuseVote, useCloseVote,
   type Ballot, type LocalizedText, type VoteDetail,
@@ -156,7 +157,7 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
                   <div key={r.opt}>
                     <div className="tally-head">
                       <span className="tally-label"><span className={`tally-swatch ${r.tone}`} aria-hidden="true" />{t(`voting.option.${r.opt}`, r.opt)}</span>
-                      <span className="tally-count">{r.count}</span>
+                      <span className="tally-count"><Num value={r.count} /></span>
                     </div>
                     <div className="tally-track"><span className={`tally-fill ${r.tone}`} style={{ inlineSize: r.pct }} /></div>
                   </div>

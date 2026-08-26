@@ -13,6 +13,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { type TopicSummary, useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
 import { useMembers } from '../../api/members';
 import { bucketOf, moveAction, KANBAN_BUCKETS, BUCKET_TONE, initials, type KanbanBucket } from './topicMeta';
@@ -117,7 +118,7 @@ export function Kanban({ rows, total }: { rows: TopicSummary[]; total?: number }
                 <span className={`kb-dot tone-${BUCKET_TONE[col.bucket]}`} aria-hidden="true" />
                 {bucketLabel(col.bucket)}
               </span>
-              <span className="kb-count">{col.cards.length}</span>
+              <span className="kb-count"><Num value={col.cards.length} /></span>
             </div>
             <div className="kb-cards">
               {col.cards.map((c, i) => (

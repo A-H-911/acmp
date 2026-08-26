@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Bytes, Num } from '../../lib/numberFmt';
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
@@ -66,12 +67,6 @@ function loadDraft(): FormState | null {
   } catch {
     return null;
   }
-}
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
-  return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
 export function SubmitTopic() {
@@ -307,7 +302,7 @@ export function SubmitTopic() {
                     {/* hint (start) + char counter (end) on one justified row, per the design */}
                     <div className="sub-title-foot">
                       <span className="sub-hint" id="sub-title-hint">{t('submit.fTitleHelp')}</span>
-                      <span className="sub-count">{form.title.length}/{MAX_TITLE}</span>
+                      <span className="sub-count"><Num value={form.title.length} />/<Num value={MAX_TITLE} /></span>
                     </div>
                   </>
                 )}
@@ -393,7 +388,7 @@ export function SubmitTopic() {
                     <span className="sub-file-ic" aria-hidden="true"><Icon name="doc" size={15} /></span>
                     <span className="sub-file-main">
                       <span className="sub-file-name">{f.name}</span>
-                      <span className="sub-file-meta">{formatBytes(f.size)}</span>
+                      <span className="sub-file-meta"><Bytes value={f.size} /></span>
                     </span>
                     <button
                       type="button"

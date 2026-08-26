@@ -21,6 +21,7 @@
  */
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { useAuth } from '../../auth/AcmpAuthContext';
 import { useBacklog, type TopicSummary } from '../../api/topics';
 import { useMeetings, type MeetingSummary } from '../../api/meetings';
@@ -180,11 +181,11 @@ function BacklogCard({ topics, span }: { topics: TopicSummary[]; span: number })
   const segs = segments.map((s) => ({ key: s.bucket, label: t(`dashboard.bucket.${s.bucket}`), count: s.count, tone: s.tone }));
   return (
     <DashCard span={span} title={t('dashboard.card.backlog')} headerRight={<DrillLink to="/backlog" label={t('dashboard.openBacklog')} />}>
-      <div className="dash-kpi"><span className="dash-kpi-n">{total}</span><span className="dash-kpi-l">{t('dashboard.activeTopics')}</span></div>
+      <div className="dash-kpi"><span className="dash-kpi-n"><Num value={total} /></span><span className="dash-kpi-l">{t('dashboard.activeTopics')}</span></div>
       <SegmentBar segments={segs} total={total} />
       <div className="dash-urgency">
         {urgency.map((u) => (
-          <span key={u.urgency}><b>{u.count}</b> {t(`dashboard.urgency.${u.urgency}`, u.urgency)}</span>
+          <span key={u.urgency}><b><Num value={u.count} /></b> {t(`dashboard.urgency.${u.urgency}`, u.urgency)}</span>
         ))}
       </div>
     </DashCard>
@@ -259,7 +260,7 @@ function SlaCard({ topics, span }: { topics: TopicSummary[]; span: number }) {
   const { t } = useTranslation();
   const rows = topics.map((x) => ({ key: x.key, to: `/topics/${x.key}`, primary: x.title, right: <AgeBadge days={x.ageDays} /> }));
   return (
-    <DashCard span={span} title={t('dashboard.card.sla')} headerRight={rows.length ? <span className="dash-badge warn">{rows.length}</span> : undefined}>
+    <DashCard span={span} title={t('dashboard.card.sla')} headerRight={rows.length ? <span className="dash-badge warn"><Num value={rows.length} /></span> : undefined}>
       <KeyList rows={rows} emptyLabel={t('dashboard.noSla')} />
     </DashCard>
   );
@@ -270,7 +271,7 @@ function VotesAwaitingCard({ votes, span }: { votes: VoteSummary[]; span: number
   // Votes carry no title on the wire (VoteSummary) — the key + "awaiting" row links to the vote screen.
   const rows = votes.map((v) => ({ key: v.key, to: `/votes/${v.key}`, primary: t('dashboard.voteAwaitingRow') }));
   return (
-    <DashCard span={span} title={t('dashboard.card.votesAwaiting')} headerRight={rows.length ? <span className="dash-badge warn">{rows.length}</span> : undefined}>
+    <DashCard span={span} title={t('dashboard.card.votesAwaiting')} headerRight={rows.length ? <span className="dash-badge warn"><Num value={rows.length} /></span> : undefined}>
       <KeyList rows={rows} emptyLabel={t('dashboard.noVotes')} />
     </DashCard>
   );
@@ -283,7 +284,7 @@ function EscalatedRisksCard({ risks, span }: { risks: RiskSummary[]; span: numbe
     right: <StatusChip tone={EXPOSURE_TONE[r.exposure]} label={t(`dashboard.exposure.${r.exposure}`, r.exposure)} size="sm" />,
   }));
   return (
-    <DashCard span={span} title={t('dashboard.card.escalatedRisks')} headerRight={rows.length ? <span className="dash-badge danger">{rows.length}</span> : undefined}>
+    <DashCard span={span} title={t('dashboard.card.escalatedRisks')} headerRight={rows.length ? <span className="dash-badge danger"><Num value={rows.length} /></span> : undefined}>
       <KeyList rows={rows} emptyLabel={t('dashboard.noRisks')} />
     </DashCard>
   );
@@ -296,7 +297,7 @@ function EscalatedActionsCard({ actions, now, span }: { actions: ActionSummary[]
     right: <span className="dash-badge danger">{t('dashboard.overdueDays', { count: daysOverdue(a.dueDate, a.isOverdue, now) })}</span>,
   }));
   return (
-    <DashCard span={span} title={t('dashboard.card.escalatedActions')} headerRight={rows.length ? <span className="dash-badge danger">{rows.length}</span> : undefined}>
+    <DashCard span={span} title={t('dashboard.card.escalatedActions')} headerRight={rows.length ? <span className="dash-badge danger"><Num value={rows.length} /></span> : undefined}>
       <KeyList rows={rows} emptyLabel={t('dashboard.noActions')} />
     </DashCard>
   );
@@ -309,7 +310,7 @@ function DeferredTopicsCard({ topics, span }: { topics: TopicSummary[]; span: nu
     right: <span className="dash-badge warn">{t('dashboard.deferredTimes', { count: x.timesDeferred })}</span>,
   }));
   return (
-    <DashCard span={span} title={t('dashboard.card.deferredTopics')} headerRight={rows.length ? <span className="dash-badge warn">{rows.length}</span> : undefined}>
+    <DashCard span={span} title={t('dashboard.card.deferredTopics')} headerRight={rows.length ? <span className="dash-badge warn"><Num value={rows.length} /></span> : undefined}>
       <KeyList rows={rows} emptyLabel={t('dashboard.noDeferred')} />
     </DashCard>
   );

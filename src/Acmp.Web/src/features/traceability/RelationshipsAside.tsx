@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { Icon, type IconName } from '../../components/icons';
 import { Button } from '../../components/ui/Button';
 import { type TypeGroup } from './traceMeta';
@@ -51,7 +52,7 @@ export function RelationshipsAside({ groups, total, loading, onOpenGraph }: Prop
         <div className="rg-head-row">
           <Icon name="deps" size={16} aria-hidden />
           <h2>{t('trace.graph.relTitle')}</h2>
-          <span className="rg-total">{total}</span>
+          <span className="rg-total"><Num value={total} /></span>
         </div>
         <div className="rg-sub">{t('trace.graph.relSub')}</div>
       </div>
@@ -83,7 +84,7 @@ export function RelationshipsAside({ groups, total, loading, onOpenGraph }: Prop
                       </span>
                     </span>
                   </span>
-                  <span className="rg-count">{g.items.length}</span>
+                  <span className="rg-count"><Num value={g.items.length} /></span>
                   <Icon name="chevronDown" size={15} className={`rg-caret${open ? ' rg-caret--open' : ''}`} aria-hidden />
                 </button>
                 {open && (

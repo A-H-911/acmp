@@ -9,6 +9,7 @@
  */
 import { Menu, MenuItem, MenuSeparator } from './Menu';
 import { Icon } from '../icons';
+import { Num } from '../../lib/numberFmt';
 
 export interface FilterOption {
   value: string;
@@ -42,7 +43,7 @@ export function FilterChip(props: FilterChipProps) {
   const trigger = (
     <>
       {props.label}
-      {count > 0 && <span className="fchip-count">{count}</span>}
+      {count > 0 && <span className="fchip-count"><Num value={count} /></span>}
       <Icon name="chevronDown" size={12} aria-hidden />
     </>
   );

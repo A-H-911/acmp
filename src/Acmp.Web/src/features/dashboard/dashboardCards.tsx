@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import type { StatusTone } from '../../components/ui/StatusChip';
 import { Icon } from '../../components/icons';
 import { LoadingState, ErrorState } from '../../components/states';
@@ -51,7 +52,7 @@ export function SegmentBar({ segments, total }: { segments: Segment[]; total: nu
         {segments.map((s) => (
           <li key={s.key}>
             <span className="dash-legend-dot" style={{ background: dotVar(s.tone) }} />
-            <b>{s.count}</b> {s.label}
+            <b><Num value={s.count} /></b> {s.label}
           </li>
         ))}
       </ul>
@@ -66,7 +67,7 @@ export function StatTiles({ tiles }: { tiles: StatTile[] }) {
     <div className="dash-stats">
       {tiles.map((s) => (
         <div key={s.key} className="dash-stat">
-          <div className="dash-stat-v" style={s.tone ? { color: `var(--st-${TONE_VAR[s.tone]}-fg)` } : undefined}>{s.value}</div>
+          <div className="dash-stat-v" style={s.tone ? { color: `var(--st-${TONE_VAR[s.tone]}-fg)` } : undefined}>{typeof s.value === 'number' ? <Num value={s.value} /> : s.value}</div>
           <div className="dash-stat-l">{s.label}</div>
         </div>
       ))}

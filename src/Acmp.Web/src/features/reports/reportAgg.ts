@@ -87,7 +87,8 @@ export interface StatTile {
   /** Raw label shown instead of a translated key (e.g. a stream code with no localized name). */
   label?: string;
   /** Unit appended to the value (e.g. '%' for a rate tile); omitted for plain counts. */
-  suffix?: string;
+  /** `percent` = render through Intl's percent style so the SIGN is locale-correct too. */
+  kind?: 'percent';
 }
 
 export function riskStats(risks: readonly RiskSummary[]): StatTile[] {
