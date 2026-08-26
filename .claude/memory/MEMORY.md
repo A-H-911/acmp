@@ -6,22 +6,34 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-26 · **`SL-033`: `WBS-24.1`–`24.4` DONE** — ▶▶ NEXT: **`WBS-24.5`** (`DW-036`/`FR-155`)
+## ★★★ 2026-08-27 · **`SL-033`: `WBS-24.1`–`24.5` DONE** — ▶▶ NEXT: **`WBS-24.6`** (`DW-035`/`FR-154`, **+ axe route**)
 
-★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — four items, **four different ways a row
-misled**; the bidi/`unicode-bidi: plaintext` rule; the i18n formatter no-op; two hollow passes; the
-`number-render-scan` warnings. ⚠ **Live state is `prm-next.md`, not this file.**
+★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — five items, **five different ways a row
+misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; hollow passes; the
+three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is `prm-next.md`, not this file.**
 
-- ⚠⚠ **3 OPERATOR VERDICTS OWED** (`WBS-24.2`/`24.3`/`24.4` sit at `Review`; `Implemented` is yours,
-  `DEC-079` d3) **+ the `LL-024` interview.** ⚠ **Do NOT rebuild any of them** — `Review` counting as
-  open in `readiness_check` is the rule working.
+- ⚠⚠ **READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** `WBS-24.5` looked like
+  a small item in `src` and was a subsystem in the NARRATIVE documents (`SEC-080`/`SEC-103` name a
+  Configuration table that did not exist). My code-only recommendation would have been an architectural
+  divergence. **Sweep the narrative docs by keyword (`LL-008`) BEFORE sizing.**
+- ⚠⚠ **`DOC-011`'s `OQ-DATA-*` labels were INVISIBLE to the register** (zero `OQ-` rows vs a control of
+  78) while **three `Met` verdicts leaned on them being open**. Now `OQ-079`/`OQ-080`. ⛔ **`SEC-080`
+  asserts a legal hold overrides any future purge and NO HOLD MECHANISM EXISTS** — build Phase-2
+  enforcement without it and that guarantee goes false **silently**.
+- ⚠ **Approved ACs are IMMUTABLE, including against being marked superseded.** `AC-147`'s
+  `superseded_by` is NULL by necessity and the operator ACCEPTED it — **do not "repair" it.**
+- ⚠⚠ **`WBS-24.4` HAS BEEN DECLINED TWICE and the original reason (`DEF-111`) is FIXED.** No reason is
+  recorded for the second. **ASK — do not infer, and do not rebuild: the code is merged.**
+
+- ⚠ **1 OPERATOR VERDICT OWED** — `WBS-24.4` only. `24.1`/`24.2`/`24.3`/`24.5` are `Implemented`.
+  ⚠ **Do NOT rebuild it** — `Review` counting as open in `readiness_check` is the rule working.
 - ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
   — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
   over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
   lifecycle status inline in prose** — the register has it.
-- ⚠⚠ **`LL-024` (Proposed): GENERATED CODE LOSES ITS ESCAPES SILENTLY AND STILL LOOKS PLAUSIBLE.** Fired
-  again 2026-08-26: a bash heredoc ate one backslash level out of a scanner regex. **Build escapes with
-  `chr(92)`, then EXTRACT AND RUN the generated block** — or use the Write tool, not a heredoc.
+- ⚠⚠ **`LL-024` is Approved + PINNED** (2026-08-27) and it FIRED AGAIN ninety minutes later: a heredoc
+  ate an escaped apostrophe and two unicode ranges. **Use the editor tool, not a heredoc — remove the
+  second interpretation layer rather than escaping through it.** Then RUN the generated file.
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). ⚠
   **`readiness_check` is `ready:FALSE` ON PURPOSE** (`DEF-108` Open/high, `DEC-077` d1) — **do NOT
   "fix" it by softening or converting; both were declined.**

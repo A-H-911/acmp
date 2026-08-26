@@ -1,6 +1,6 @@
 ---
 name: sl033-slice-findings
-description: "Per-item durable findings from SL-033 (WBS-24.1 to 24.4) — four different ways a planning row misled, plus the defects only a browser or a mutation could see."
+description: "Per-item durable findings from SL-033 (WBS-24.1 to 24.5) — five different ways a planning row misled, plus the defects only a browser or a mutation could see."
 metadata: 
   node_type: memory
   type: project
@@ -8,11 +8,11 @@ metadata:
   modified: 2026-08-26T17:47:15.776Z
 ---
 
-# `SL-033` — what each item taught (`WBS-24.1`…`24.4`)
+# `SL-033` — what each item taught (`WBS-24.1`…`24.5`)
 
 ⚠ **Live state is `tamheed-package/prompts/prm-next.md`, not this file.** This is the durable residue only.
 
-## ⭐⭐ FOUR ITEMS, FOUR DIFFERENT WAYS A ROW MISLED — this is the pattern worth carrying
+## ⭐⭐ FIVE ITEMS, FIVE DIFFERENT WAYS A ROW MISLED — this is the pattern worth carrying
 
 | item | how the row related to reality |
 |---|---|
@@ -20,13 +20,48 @@ metadata:
 | `24.2` `DW-037` | the row carried **its own correction** and it HELD — distrust the summary, read the row |
 | `24.3` `DW-039` | the row was really about a **source COMMENT**, not a feature |
 | `24.4` `DW-068` | the **measurement was right and the prescribed remedy too small** |
+| `24.5` `DW-036` | **ONE WORD** ("configurable") covering a subsystem the architecture had already specified |
 
 **Read each row's own text AND the code, then size it yourself.** Every item paid, in a different direction.
+
+## ⭐⭐ `24.5` ADDS A STEP THE OTHER FOUR DID NOT NEED
+
+⚠⚠ **READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** `DW-036` said
+"retention **configurability** only". I found no settings store in the code and recommended
+appsettings — which `SEC-103` makes an architectural **divergence**. `SEC-080` names the home (*"the
+Configuration table (16 §2.15) holds retention settings…"*) and `SEC-103` specifies its columns. It did
+not exist. **Sweep the NARRATIVE documents by keyword (`LL-008`) before sizing, not just the code.**
+
+That sweep also found three clauses no code-reading would surface: enforcement is **Phase 2**
+(`SEC-089`), the period VALUES are an open question awaiting legal (`OQ-079`), and a retention config
+change is a **privileged AUDITED action** (`SEC-077`).
+
+⚠ **The obvious grep lies here:** `class Configuration` matches only EF entity-type configurations under
+`Persistence/Configurations/`. Control with `class Stream`, which resolves to a real entity. That
+collision is *why* the table's absence went unnoticed.
+
+⭐ **Three things the codebase decided, which beat designing them:** `Policies.AdminConfig` already
+existed and already admitted Administrator alone · `AuditDbContext` was already the shape a cross-cutting
+store needs under `ADR-0001`, so BuildingBlocks was the answer not a choice · the type had to be
+`ConfigurationSetting`, because `SharedKernelExtensions.cs` already imports
+`Microsoft.Extensions.Configuration`.
+
+⚠⚠ **A NEW `DbContext` MUST BE SUBSTITUTED IN THREE PLACES, NOT TWO** — DI, `MigrationRunner`, AND
+`AcmpWebApplicationFactory`. Omitting the third fails by reaching for a REAL SQL Server, which reads like
+a broken environment rather than a missing registration.
+
+⛔ **`automaticPurgeEnabled` is a CONSTANT, not a setting.** A purge job would **violate**
+`NFR-059`/`NFR-060`, not complete them. **v1 shipping no period is canon** (`SEC-080`).
 
 ## Defects no unit test could see
 
 - **`24.1`** `.table-wrap`'s `overflow: hidden` clips popovers → a control in `Table`'s toolbar slot is wrong, use `.bk-bar`. `Menu`'s default `align="end"` put the panel **off-screen both ways** (x=−123 LTR, right edge 1345 vs a 1200px viewport RTL). **`align="start"` when the trigger sits at the inline-start.**
 - **`24.3`** ⚠⚠ **`white-space: pre` PRESERVES WHITESPACE, NOT CHARACTER ORDER.** In Arabic the diff rendered `# Governance charter` as `Governance charter #` and moved full stops and `-` markers — bidi reordering of NEUTRAL characters. **Fix: `unicode-bidi: plaintext`.** Any future pre-formatted or code-like surface (log viewer, JSON preview, config panel) needs it, **and none will fail a test without it.**
+- **`24.5`** ⭐⭐ **`24.3`'s bidi lesson PREDICTED ITS OWN RECURRENCE BY NAME** — it said *"a log
+  viewer, a JSON preview, **a config panel**"*, and in Arabic `{"years":7}` rendered `{years":7"}`.
+  ⚠ **Its fix does NOT transfer: `unicode-bidi: plaintext` takes direction from the first STRONG
+  character and a JSON fragment has none.** Use `dir="ltr"` on code-like elements, and keep a worked
+  example OUT of translated prose.
 - **`24.4`** the mockups draw `٤٠٪` with **U+066A**, the Arabic percent sign; the app glued an ASCII `%` onto the digits. **THE SIGN IS PART OF THE NUMBER FORMAT, NOT A SUFFIX** — `style: 'percent'` makes Intl pick it per locale. ⚠ Intl then appends **U+061C** (Arabic Letter Mark), so `getByText('٨٧٪')` finds nothing and the failure looks exactly like the sign being wrong. Match on content.
 
 ## `24.4` — the i18n finding that generalises
@@ -62,3 +97,23 @@ It lists numbers rendered **bare in JSX** (the `t()` path needs no enumeration �
 It now carries a calibration for each, plus a minimum-file-set guard. See [[scan-must-prove-it-had-a-subject]] and `LL-015`.
 
 ⚠⚠ **I then used its output as a measurement of something else** — its candidate-**line** count became "24 sites" in a pushed commit message, where the real render-site count was **31** there and **37** at merge. **An instrument's output measures the thing the instrument counts and NOTHING ELSE; if you are about to state a different quantity, run a different command.**
+
+
+## ⚠ Register + CI traps from `24.5`
+
+- ⚠⚠ **`DOC-011`'s `OQ-DATA-*` labels were INVISIBLE to the register** — zero `OQ-` rows for retention
+  against a control of 78 — while **three `Met` verdicts leaned on them being open**. Filed as `OQ-079`
+  (periods) and `OQ-080` (legal hold). ⛔ **`SEC-080` asserts a legal hold overrides any future purge and
+  NO HOLD MECHANISM EXISTS.** Build Phase-2 enforcement without it and that guarantee goes false
+  **silently**. Answer `OQ-080` first.
+- ⚠ **Approved ACs are IMMUTABLE — including against being marked superseded**, which is the very path
+  the refusal message names. `AC-147`'s `superseded_by` is NULL by necessity; the operator accepted it.
+  **Do not "repair" it.** Cross-references can only run *from* a new row *to* an old one.
+- ⚠⚠ **CI's first run died at the FORMAT CHECK with Build and Test `skipped`** — that red said nothing
+  about the migration (`DEF-106`). **`dotnet format --verify-no-changes` is a committed gate; run the
+  gates that EXIST, not the ones you remember.** `dotnet ef` also writes migrations as **CRLF** and in a
+  block namespace, both of which this repo rejects.
+- ⭐ **Prove a new test RAN by the COUNT, not the colour:** Integration **64→68**, Api **368→376**.
+  ⚠ The CI log carries only per-assembly summaries, so grepping for a test CLASS name returns zero — and
+  my first such grep ran over a **zero-byte download**. A control term is what exposed it.
+- ⚠ `userEvent.type` parses `{` as a keyboard descriptor — use `user.paste` for JSON.
