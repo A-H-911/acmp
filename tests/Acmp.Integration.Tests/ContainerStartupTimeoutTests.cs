@@ -24,7 +24,9 @@ public sealed class ContainerStartupTimeoutTests
     // obsolete, and an explicit tag means a Testcontainers upgrade cannot silently move it.
     private static ContainerBuilder Alpine() => new ContainerBuilder("alpine:3.20")
         .WithEntrypoint("/bin/sh", "-c")
-        .WithCommand($"echo {Marker}; sleep 300");
+        // 60s, not 300s: it only has to outlive a 10-second bound, and a shorter sleep caps how long a
+        // container could linger if teardown ever fails. Both containers here are disposed explicitly.
+        .WithCommand($"echo {Marker}; sleep 60");
 
     [Fact]
     public async Task A_container_that_never_becomes_ready_fails_fast_and_carries_its_own_log()
@@ -72,7 +74,11 @@ public sealed class ContainerStartupTimeoutTests
         try
         {
             // Alpine is already local by the time this runs, so the measured window is the BUILD, not a pull.
-            File.WriteAllText(Path.Combine(dir.FullName, "Dockerfile"), "FROM alpine:3.20\nRUN sleep 600\n");
+            // The sleep is 30s, not 600s: 3x the 10-second bound is ample to keep the build running when
+            // the budget expires, and it caps how long an ABANDONED build could linger if the Docker
+            // daemon carries on after the cancelled request. ⚠ That is a no-regret bound, NOT a diagnosis
+            // of DEF-109 — the same test was present in a run where Api.Tests passed in 3m18s.
+            File.WriteAllText(Path.Combine(dir.FullName, "Dockerfile"), "FROM alpine:3.20\nRUN sleep 30\n");
 
             var image = new ImageFromDockerfileBuilder()
                 .WithDockerfileDirectory(dir.FullName)

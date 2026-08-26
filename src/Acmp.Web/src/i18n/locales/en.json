@@ -1480,6 +1480,14 @@
     },
     "restricted": {
       "badge": "Restricted"
+    },
+    "columns": {
+      "label": "Column settings",
+      "trigger": "Columns",
+      "reset": "Reset to default",
+      "pinned": "The Topic column is always shown",
+      "moveUp": "Move {{column}} earlier",
+      "moveDown": "Move {{column}} later"
     }
   },
   "submit": {

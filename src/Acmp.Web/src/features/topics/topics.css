@@ -908,3 +908,48 @@
   border: 1px solid color-mix(in srgb, var(--st-warn-fg) 22%, transparent);
   border-radius: var(--r-md); font-size: 12.5px; font-weight: 600;
 }
+
+/* WBS-24.1 / FR-032 — the column picker. No .dc.html reference exists for this control
+   (the design specifies the table, not its configuration), so it is composed from the
+   shared kit: the Menu popover's panel, button classes, and the standard tokens.
+   All spacing uses logical properties so the panel mirrors correctly in RTL. */
+.bk-cols-trigger { gap: 7px; }
+.bk-cols-count {
+  min-width: 17px; height: 17px; padding-inline: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9px; background: var(--sunken); color: var(--text-2);
+  font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.bk-cols { min-width: 232px; padding: var(--sp-1); }
+.bk-cols-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bk-cols-row { display: flex; align-items: center; gap: 2px; }
+.bk-cols-toggle {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  padding-block: 7px; padding-inline: 8px;
+  border: 0; border-radius: var(--r-sm); background: transparent;
+  color: var(--text); font-size: 13px; text-align: start; cursor: pointer;
+}
+.bk-cols-toggle:hover:not(:disabled) { background: var(--subtle); }
+.bk-cols-toggle:disabled { cursor: default; color: var(--text-2); }
+/* Hidden columns keep the check glyph in place and drop it to invisible, so the labels stay
+   on one vertical rule instead of shifting as the user toggles them. */
+.bk-cols-toggle.is-hidden svg { visibility: hidden; }
+.bk-cols-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-cols-move { display: flex; align-items: center; gap: 1px; flex: 0 0 auto; }
+.bk-cols-arrow {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border: 0; border-radius: var(--r-sm); background: transparent;
+  color: var(--text-3); cursor: pointer;
+}
+.bk-cols-arrow:hover:not(:disabled) { background: var(--subtle); color: var(--text); }
+.bk-cols-arrow:disabled { opacity: 0.3; cursor: default; }
+.bk-cols-reset {
+  width: 100%; margin-block-start: var(--sp-1);
+  padding-block: 7px; padding-inline: 8px;
+  border: 0; border-block-start: 1px solid var(--border-soft); border-radius: 0;
+  background: transparent; color: var(--text-2);
+  font-size: 12.5px; text-align: start; cursor: pointer;
+}
+.bk-cols-reset:hover { color: var(--text); }

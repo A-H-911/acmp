@@ -37,7 +37,16 @@ import { statusTone, initials } from './topicMeta';
 import { Kanban } from './Kanban';
 import { Calendar } from './Calendar';
 import { Timeline } from './Timeline';
+import { ColumnPicker, applyColumnPrefs, useColumnPrefs, type ColumnPrefs } from './columnPrefs';
 import './topics.css';
+
+/**
+ * The table's columns, in the order `ACMP Backlog & Topic.dc.html` specifies (INV-014).
+ * Declared at module scope so its identity is stable across renders — useColumnPrefs takes it
+ * as the set of KNOWN ids, and rebuilding the array every render would reset preferences on every
+ * keystroke elsewhere in the screen.
+ */
+const COLUMN_IDS = ['key', 'topic', 'type', 'streams', 'owner', 'status', 'age', 'urgency'];
 
 const VIEWS: { id: string; icon: IconName }[] = [
   { id: 'list', icon: 'viewList' },
@@ -80,6 +89,10 @@ interface Filters {
 export function Backlog() {
   const { t } = useTranslation();
   const [view, setView] = useState('table');
+  // Lifted out of TopicsTable on purpose: .table-wrap sets `overflow: hidden` to clip the table to
+  // its border radius, which would CLIP the picker's popover if the control lived in the table's own
+  // toolbar. It belongs beside the other view-level controls anyway.
+  const { prefs: columnPrefs, toggle: toggleColumn, move: moveColumn, reset: resetColumns } = useColumnPrefs(COLUMN_IDS);
   const [search, setSearch] = useState('');
   const [searchParam, setSearchParam] = useState('');
   const [filters, setFilters] = useState<Filters>({ statuses: [], type: '', urgency: '' });
@@ -157,6 +170,15 @@ export function Backlog() {
             ),
           }))}
         />
+        {view === 'table' && (
+          <ColumnPicker
+            columns={COLUMN_IDS.map((id) => ({ id, label: t(`topics.col.${id}`) }))}
+            prefs={columnPrefs}
+            onToggle={toggleColumn}
+            onMove={moveColumn}
+            onReset={resetColumns}
+          />
+        )}
         <button type="button" className="bk-saved" disabled title={t('topics.comingSoon')}>
           <Icon name="funnel" size={14} aria-hidden /> {t('topics.savedView')}
           <Icon name="chevronDown" size={13} aria-hidden />
@@ -223,7 +245,7 @@ export function Backlog() {
       ) : (
         <>
           {view === 'table' ? (
-            <TopicsTable rows={data!.items} sort={{ by: sortCol, dir: sortDir }} onSort={onSort} />
+            <TopicsTable rows={data!.items} sort={{ by: sortCol, dir: sortDir }} onSort={onSort} prefs={columnPrefs} />
           ) : view === 'list' ? (
             <TopicsList rows={data!.items} />
           ) : (
@@ -303,7 +325,7 @@ function Age({ days, breached }: { days: number; breached: boolean }) {
   );
 }
 
-function TopicsTable({ rows, sort, onSort }: { rows: TopicSummary[]; sort: { by: string; dir: SortDir }; onSort: (id: string) => void }) {
+function TopicsTable({ rows, sort, onSort, prefs }: { rows: TopicSummary[]; sort: { by: string; dir: SortDir }; onSort: (id: string) => void; prefs: ColumnPrefs }) {
   const { t } = useTranslation();
   const columns: Column<TopicSummary>[] = [
     { id: 'key', header: t('topics.col.key'), width: '112px', cell: (r) => <span className="bk-key">{r.key}</span> },
@@ -336,7 +358,16 @@ function TopicsTable({ rows, sort, onSort }: { rows: TopicSummary[]; sort: { by:
       cell: (r) => <span className={`bk-urg ${r.urgency.toLowerCase()}`}>{t(`topics.urgency.${r.urgency}`)}</span>,
     },
   ];
-  return <Table caption={t('topics.tableCaption')} columns={columns} rows={rows} getRowKey={(r) => r.id} sort={sort} onSortChange={onSort} />;
+  return (
+    <Table
+      caption={t('topics.tableCaption')}
+      columns={applyColumnPrefs(columns, prefs)}
+      rows={rows}
+      getRowKey={(r) => r.id}
+      sort={sort}
+      onSortChange={onSort}
+    />
+  );
 }
 
 function TopicsList({ rows }: { rows: TopicSummary[] }) {
