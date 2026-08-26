@@ -2457,8 +2457,17 @@
     },
     "versions": {
       "title": "Version history",
-      "subtitle": "Every save creates an immutable snapshot. Select one to view it.",
-      "empty": "No earlier versions."
+      "subtitle": "Every save creates an immutable snapshot. Select one to view it, or compare it with the version before.",
+      "empty": "No earlier versions.",
+      "view": "View",
+      "compare": "Compare with v{{version}}",
+      "compareNone": "Compare",
+      "oldest": "This is the first version — there is nothing before it to compare with.",
+      "identical": "No lines changed between these versions.",
+      "tooLarge": "These versions are too long to compare line by line.",
+      "linesAdded": "Lines added:",
+      "linesRemoved": "Lines removed:",
+      "diffLabel": "Changes since the previous version"
     },
     "create": {
       "title": "New wiki page",

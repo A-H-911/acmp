@@ -58,3 +58,105 @@ describe('WikiVersionHistory (P15e)', () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+/**
+ * FR-117's third clause (DW-039 / WBS-24.3). The requirement reads "versioned … viewable AND
+ * diffable"; versioning and viewing shipped in P15d/P15e and the diff did not. The source comment
+ * that stood in for a record — "Diff is deferred to P14 — viewable satisfies FR-117" — is what
+ * DW-039 was filed about, and these tests are the evidence that replaces it.
+ */
+describe('WikiVersionHistory — version compare (FR-117 diff clause)', () => {
+  const selectV2 = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: /^v2/ }));
+  };
+
+  /**
+   * Multi-line bodies, local to these tests. The shared fixture is deliberately left alone: it is
+   * single-line, a pre-existing test asserts its exact text, and markdown folds a lone newline into
+   * one paragraph — so widening it there broke that test rather than these.
+   */
+  const multiline = [
+    { ...versions[0], body: { en: 'First cut\nshared line', ar: 'أول' } },
+    { ...versions[1], body: { en: 'Second revision\nshared line', ar: 'ثاني' } },
+  ];
+  const setupDiff = (over: Partial<DocumentDetail> = {}) => setup({ versions: multiline, ...over });
+
+  it('offers a compare control naming the version it compares against', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    expect(screen.getByRole('button', { name: /compare with v1/i })).toBeEnabled();
+  });
+
+  it('shows the snapshot first and only diffs when compare is chosen', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    expect(screen.queryByRole('list', { name: /changes since/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+    expect(screen.getByRole('list', { name: /changes since/i })).toBeInTheDocument();
+  });
+
+  it('marks the changed line as removed-then-added and leaves the shared line unchanged', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+
+    const items = screen.getAllByRole('listitem');
+    const cls = items.map((li) => li.className.replace('wiki-diff-line ', ''));
+    expect(cls).toEqual(['wiki-diff-removed', 'wiki-diff-added', 'wiki-diff-same']);
+    expect(items[2]).toHaveTextContent('shared line');
+  });
+
+  it('summarises the change with counts', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+    expect(screen.getByText('+1')).toBeInTheDocument();
+    expect(screen.getByText('\u22121')).toBeInTheDocument();
+  });
+
+  it('disables compare on the oldest version rather than offering a broken control', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await user.click(screen.getByRole('button', { name: /^v1/ }));
+    const compare = screen.getByRole('button', { name: /^compare$/i });
+    expect(compare).toBeDisabled();
+    expect(compare).toHaveAttribute('title', expect.stringMatching(/first version/i));
+  });
+
+  it('says so when two versions are identical instead of rendering an empty diff', async () => {
+    const user = userEvent.setup();
+    const same = { en: 'identical body', ar: 'نفس' };
+    setupDiff({ versions: [
+      { ...versions[0], body: same },
+      { ...versions[1], body: same },
+    ] });
+    await selectV2(user);
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+    expect(screen.getByText(/no lines changed/i)).toBeInTheDocument();
+  });
+
+  it('returns to the snapshot view when View is chosen again', async () => {
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+    await user.click(screen.getByRole('button', { name: /^view$/i }));
+    expect(screen.queryByRole('list', { name: /changes since/i })).not.toBeInTheDocument();
+  });
+
+  it('does NOT carry compare mode over to a newly selected version', async () => {
+    // Selecting a different snapshot while comparing would otherwise show a diff the user never
+    // asked for, against a predecessor they did not choose.
+    const user = userEvent.setup();
+    setupDiff();
+    await selectV2(user);
+    await user.click(screen.getByRole('button', { name: /compare with v1/i }));
+    await user.click(screen.getByRole('button', { name: /^v1/ }));
+    expect(screen.queryByRole('list', { name: /changes since/i })).not.toBeInTheDocument();
+  });
+});
