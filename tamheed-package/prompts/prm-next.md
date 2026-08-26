@@ -888,10 +888,30 @@ popover (found by reading CSS), and the panel rendered OFF-SCREEN in **both** di
 byte-identical to both. **The mitigation cannot be credited: the run BEFORE it was also green.**
 ⛔ **Do not re-run a red into silence** — append a second occurrence to `DEF-109` instead.
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.2`. THIS IS THE NEXT ACTION** — `DW-037` / `FR-035`, the calendar view, **plus its axe
-   route in the same batch** (`DEC-072` d2). ⚠ Build it against the **Meetings** API
-   (`MeetingDetailDto.ScheduledStart` + `AgendaItemDto.TopicId`) — `Topic.Schedule` raises an event with
-   ZERO consumers and persists no meeting id. ⚠ **Measure, do not trust this line** —
+✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
+`AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⚠ `Review`, not
+`Implemented` — your verdict, as `DEC-079` d3 established.
+⭐ **`DW-037`'s own correction was load-bearing and it HELD** — the scheduled date really is not on the
+Topics side. **That is the opposite of `WBS-24.1`, where the WBS title's SUMMARY of a row was the
+misleading part. Read each row's own text; distrust the summary.**
+⚠⚠ **A SIZING FACT NEITHER ROW ANTICIPATED: `/meetings` carries NO topic ids** — only `/meetings/{key}`
+does. So the grid shows a per-meeting COUNT from one request and titles on selection. **`DW-086` records
+the residual and says explicitly: do NOT fan `useMeetingDetail` across the month — that is `DEF-104`'s
+N+1 shape.**
+⭐⭐ **THE AXE SWEEP WAS PROVEN TO RUN, NOT INFERRED FROM A GREEN JOB:** the e2e count moved **86 → 88**,
+which is **+2 for ONE added test** because `playwright.config.ts` runs `rtl-a11y.spec.ts` in **both**
+`chromium` and `msedge`. **A green e2e job that never reached a new test leaves the count unchanged —
+check the count, not the colour.**
+⚠ **Two stale things found:** `Backlog.tsx`'s comment calling Kanban/Calendar/Timeline all "coming soon"
+(only Timeline is), and a test that **passed alone and failed in the full suite** — `Backlog.test.tsx`
+mounts the calendar and mocked only the topics API. **A comment about a SIBLING's state goes stale
+silently; nothing compiles it.**
+⚠ **Harness gotcha:** Playwright's `getByRole` matches `name` as a **case-insensitive SUBSTRING**, so
+`{name:'AR'}` also hit "Regul**ar**", "Extraordin**ar**y" and "**Ar**chitecture board". Use `exact: true`.
+
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.3`. THIS IS THE NEXT ACTION** — `DW-039` / `FR-117`, the wiki version **diff** half.
+   ⚠ **Read `DW-039`'s own text before sizing it** — that habit has now paid on both of the first two
+   items, in opposite directions. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
 3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the

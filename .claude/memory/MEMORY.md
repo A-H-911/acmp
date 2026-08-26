@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-26 · **`WBS-24.1` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.2`** (calendar + axe route)
+## ★★★ 2026-08-26 · **`WBS-24.1` + `24.2` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.3`** (wiki diff)
 
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
   any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
@@ -34,6 +34,17 @@
   control in `Table`'s toolbar slot is wrong — use `.bk-bar`), and `Menu`'s default `align="end"` put
   the panel OFF-SCREEN both ways (x=-123 LTR / right edge 1345 vs 1200 RTL). **`align="start"` when the
   trigger sits at the inline-start.**
+- ✅ **`WBS-24.2` DONE-CLAIMED** (`#312`→`65c158c`): calendar shows real meetings; `AC-145` Met,
+  **`FR-035` → `Implemented`**. ⚠ Row is `Review` — operator's verdict (`DEC-079` d3).
+  ⭐⭐ **A GREEN e2e JOB DOES NOT PROVE YOUR NEW TEST RAN — CHECK THE COUNT.** 86→88 for ONE added test,
+  because `playwright.config.ts` runs `rtl-a11y.spec.ts` in **both** `chromium` and `msedge`.
+  ⚠⚠ **`/meetings` carries NO topic ids** (only `/meetings/{key}`). `DW-086`: do NOT fan
+  `useMeetingDetail` across the month — `DEF-104`'s N+1 shape.
+  ⚠ **Playwright `getByRole` matches `name` as a case-insensitive SUBSTRING** — `{name:'AR'}` hit four
+  buttons. Use `exact: true`.
+  ⚠ **A comment about a SIBLING's state goes stale silently** — nothing compiles it (`Backlog.tsx` called
+  Kanban "coming soon" for months). ⚠ A test can pass ALONE and fail in the full suite: another file
+  mounted the component without the new API mocked.
 - ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs** (3m18s, 2m37s,
   368/368) — all 100s `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical.
   ⛔ **The mitigation cannot be credited — the run BEFORE it was green too.** Don't re-run a red into
