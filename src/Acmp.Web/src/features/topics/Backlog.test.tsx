@@ -8,6 +8,14 @@ import type { TopicSummary } from '../../api/topics';
 vi.mock('../../api/topics', () => ({ useBacklog: vi.fn() }));
 import { useBacklog } from '../../api/topics';
 
+// WBS-24.2: Calendar now reads scheduled dates from the MEETINGS API, so this suite has to mock
+// that boundary too. Without it the calendar test fails with "No QueryClient set" — and it failed
+// only in the FULL run, never in isolation, because nothing else here mounts the calendar.
+vi.mock('../../api/meetings', () => ({
+  useMeetings: () => ({ data: [] }),
+  useMeetingDetail: () => ({ data: undefined, isLoading: false }),
+}));
+
 const mockBacklog = useBacklog as unknown as Mock;
 
 function result(over: Partial<ReturnType<typeof useBacklog>>) {
@@ -88,14 +96,16 @@ describe('Backlog (P5b)', () => {
     expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
   });
 
-  it('renders the live calendar view chrome with an honest empty note (D1)', async () => {
+  it('renders the live calendar view chrome and says when no meeting is scheduled (FR-035)', async () => {
     result({ data: paged(TOPICS) });
     const user = userEvent.setup();
     renderWithAuth(<Backlog />, { roles: ['secretary'] });
     await user.click(screen.getByRole('button', { name: /calendar/i }));
-    // Faithful chrome (month nav) + honest note that markers arrive with P6 scheduling.
+    // ⚠ This assertion USED to check the honest-empty-shell note, which WBS-24.2 removed because
+    // the markers are real now. With no meetings mocked the month is genuinely empty, so the note
+    // states that rather than promising markers "once topics are scheduled (P6)".
     expect(screen.getByRole('button', { name: 'Previous month' })).toBeInTheDocument();
-    expect(screen.getByText(/scheduled and due-date markers/i)).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent(/no meetings are scheduled this month/i);
   });
 
   it('renders the live timeline view chrome with topic rows and an honest note (D1)', async () => {

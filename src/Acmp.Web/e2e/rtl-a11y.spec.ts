@@ -92,4 +92,24 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     await switchToArabic(page);
     expect(await axeViolations(page), 'Kanban (AR/RTL) axe violations').toEqual([]);
   });
+
+  // WBS-24.2's second obligation (DEC-072 d2 / SC-032): DW-071's first trigger clause fires
+  // "whenever a new route ships — that is the moment the ratio gets worse, and the moment it is
+  // cheapest to add the route to the sweep". The calendar is a VIEW within /backlog rather than
+  // its own route, so it is swept the way the kanban above is: navigate, switch view, run axe.
+  test('Backlog calendar with its scheduled-meeting markers is axe-clean in both English and Arabic', async ({ page }) => {
+    await loginAs(page, 'secretary');
+    const bearer = await captureBearer(page);
+    await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+
+    await page.goto('/backlog');
+    await page.getByRole('button', { name: 'Calendar' }).click();
+    // The month grid is the frame; it renders whether or not any meeting is scheduled, so this
+    // wait does not depend on seeded data.
+    await expect(page.locator('.cal-grid')).toBeVisible();
+    expect(await axeViolations(page), 'Calendar (EN) axe violations').toEqual([]);
+
+    await switchToArabic(page);
+    expect(await axeViolations(page), 'Calendar (AR/RTL) axe violations').toEqual([]);
+  });
 });

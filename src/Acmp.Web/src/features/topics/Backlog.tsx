@@ -14,8 +14,13 @@
  *    server sort, so that column is not sortable.
  *  - Stream/Owner filters are rendered (design parity, 5 chips) but disabled this slice — they need a
  *    verified option source (stream registry + owner directory keyed to topic owner ids); follow-up.
- *  - Kanban/Calendar/Timeline render honest "coming soon" shells (kanban → PR4; calendar/timeline need
- *    meeting/decision data → P6). Export/Saved-views are disabled affordances for the same reason.
+ *  - ⚠ THIS LINE WAS STALE AND DW-037 RECORDS THAT IT MISLED A PREVIOUS PASS. It said Kanban,
+ *    Calendar and Timeline were all "coming soon" shells. Current state: Kanban is BUILT (native
+ *    drag, keyboard move popover, aria-live announcements); Calendar is BUILT (WBS-24.2 — meeting
+ *    chips from the Meetings API, since the topic read model carries no scheduled date); only
+ *    Timeline is still an honest shell, because topics carry no planned SPAN (FR-036 / DW-001,
+ *    deferred). Export/Saved-views remain disabled affordances.
+ *    ⭐ A comment describing a sibling's state goes stale silently — nothing compiles it.
  *  - Row navigation = a link on the title (accessible primary action) rather than a whole-row button,
  *    which doesn't nest cleanly in table grid semantics.
  */
