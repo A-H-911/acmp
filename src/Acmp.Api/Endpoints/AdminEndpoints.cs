@@ -2,8 +2,8 @@
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Infrastructure.Audit;
 using Acmp.Shared.Infrastructure.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Acmp.Api.Endpoints;
