@@ -12,6 +12,7 @@ using Acmp.Modules.Risks.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Infrastructure.Audit;
+using Acmp.Shared.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Api.Infrastructure;
@@ -38,6 +39,9 @@ public static class MigrationRunner
             scope.ServiceProvider.GetRequiredService<DependenciesDbContext>(),
             scope.ServiceProvider.GetRequiredService<NotificationsDbContext>(),
             scope.ServiceProvider.GetRequiredService<AuditDbContext>(),
+            // WBS-24.5 (DEC-080): the externalized configuration store. A migration nobody runs is a
+            // table that never exists, so it is registered here in the same breath as being written.
+            scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>(),
         };
 
         AddWebexIfPresent(contexts, scope.ServiceProvider);

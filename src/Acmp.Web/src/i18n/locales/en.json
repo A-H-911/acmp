@@ -1098,7 +1098,8 @@
       "streams": "Delivery streams configured for this committee",
       "roles": "Read-only reference — roles & capabilities are defined in Keycloak",
       "jobs": "Background job queues, schedules, and recent runs (Hangfire)",
-      "notifications": "Delivery channels and per-event default notifications"
+      "notifications": "Delivery channels and per-event default notifications",
+      "retention": "Record retention periods for legal and compliance — nothing is purged in this release"
     },
     "tabs": {
       "users": "Users & Membership",
@@ -1107,7 +1108,8 @@
       "streams": "Streams",
       "roles": "Roles",
       "jobs": "Job Monitor",
-      "notifications": "Notification Settings"
+      "notifications": "Notification Settings",
+      "retention": "Retention"
     },
     "kc": {
       "title": "Keycloak is the source of truth",
@@ -1336,6 +1338,23 @@
       "notConfiguredBody": "Background jobs (Hangfire) aren't running on this instance, so there's nothing to monitor. This is expected on test or minimal deployments.",
       "emptyTitle": "No jobs yet",
       "emptyBody": "Background jobs appear here as the scheduler runs them."
+    },
+    "retention": {
+      "postureTitle": "Retention posture",
+      "postureBody": "All records are retained and nothing is purged automatically in this release. Retention periods can be recorded here for legal and compliance to define, but no job acts on them yet. Votes, issued decisions, ADRs, published minutes and the audit log are immutable and are never purged.",
+      "purgeOff": "Automatic purge is off",
+      "purgeOn": "Automatic purge is on",
+      "emptyTitle": "No retention periods are set",
+      "emptyBody": "This is the expected state for this release — periods are for legal and compliance to define.",
+      "tableCaption": "Configured retention periods",
+      "setTitle": "Record a retention period",
+      "setHint": "The key must begin with “retention.” and the value must be JSON. Recording a period does not delete anything.",
+      "col": {
+        "key": "Key",
+        "value": "Value"
+      },
+      "save": "Save",
+      "saveFailed": "The value was not saved. Check the key prefix and that the value is valid JSON."
     }
   },
   "topics": {

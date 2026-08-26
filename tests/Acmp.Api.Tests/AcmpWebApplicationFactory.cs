@@ -20,6 +20,7 @@ using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Domain.ValueObjects;
 using Acmp.Shared.Infrastructure.Audit;
+using Acmp.Shared.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -143,6 +144,14 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<AuditDbContext>>();
             services.RemoveAll<AuditDbContext>();
             services.AddDbContext<AuditDbContext>(o => o.UseInMemoryDatabase(_dbName + "-audit"));
+
+            // WBS-24.5: the externalized configuration store. A DbContext has to be substituted in
+            // THREE places, not two — DI, MigrationRunner and here — and omitting this one fails
+            // by trying to reach a real SQL Server, which reads like an environment problem
+            // rather than a missing registration.
+            services.RemoveAll<DbContextOptions<ConfigurationDbContext>>();
+            services.RemoveAll<ConfigurationDbContext>();
+            services.AddDbContext<ConfigurationDbContext>(o => o.UseInMemoryDatabase(_dbName + "-config"));
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });

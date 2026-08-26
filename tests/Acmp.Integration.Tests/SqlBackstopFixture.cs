@@ -9,6 +9,7 @@ using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
+using Acmp.Shared.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
 
@@ -51,6 +52,8 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
         await using (var db = NewDependenciesSql()) await db.Database.MigrateAsync();
         await using (var db = NewTraceabilitySql()) await db.Database.MigrateAsync();
         await using (var db = NewAuditSql()) await db.Database.MigrateAsync(); // audit schema + Audit_DenyMutation (D-16)
+        // WBS-24.5: the config schema. Its UNIQUE index on Key is enforced only by a real database.
+        await using (var db = NewConfigurationSql()) await db.Database.MigrateAsync();
     }
 
     public Task DisposeAsync() => _container.DisposeAsync().AsTask();
@@ -86,6 +89,9 @@ public sealed class SqlBackstopFixture : IAsyncLifetime
 
     // AuditDbContext is not a ModuleDbContext (no clock/user) — its own schema "audit" (BL-066).
     public AuditDbContext NewAuditSql() => new(SqlOptions<AuditDbContext>(AuditDbContext.Schema));
+
+    public ConfigurationDbContext NewConfigurationSql() => new(
+        SqlOptions<ConfigurationDbContext>(ConfigurationDbContext.Schema));
 
     // ---- InMemory twins (the "accepts what SQL rejects" side of each contrast) ----
 
