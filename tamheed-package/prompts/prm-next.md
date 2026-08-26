@@ -909,9 +909,24 @@ silently; nothing compiles it.**
 ⚠ **Harness gotcha:** Playwright's `getByRole` matches `name` as a **case-insensitive SUBSTRING**, so
 `{name:'AR'}` also hit "Regul**ar**", "Extraordin**ar**y" and "**Ar**chitecture board". Use `exact: true`.
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.3`. THIS IS THE NEXT ACTION** — `DW-039` / `FR-117`, the wiki version **diff** half.
-   ⚠ **Read `DW-039`'s own text before sizing it** — that habit has now paid on both of the first two
-   items, in opposite directions. ⚠ **Measure, do not trust this line** —
+✅✅ **`WBS-24.3` IS DONE-CLAIMED (PR `#313` → `a794daa`)** — wiki version compare. `AC-146` `Met`
+(`AV-224`), **`FR-117` → `Implemented`**, `DW-039` `Done`. ⚠ `Review` — your verdict.
+⭐ **The row was really about a SOURCE COMMENT, not a diff.** *"Diff is deferred to P14 — viewable
+satisfies FR-117"* was a requirement-satisfaction judgement living where no register view could see it,
+untrue as written (`FR-117` says viewable **AND** diffable), and pointed at a phase `DEC-028` deferred
+INDEFINITELY. **A judgement about whether a requirement is satisfied does not belong in a code comment.**
+⭐⭐ **A DEFECT NO TEST COULD SEE, FOUND IN ARABIC: the diff rendered `# Governance charter` as
+`Governance charter #`**, moved trailing full stops to line-fronts and pushed `-` markers to line-ends —
+bidi reordering of NEUTRAL characters in an RTL paragraph. Fixed with `unicode-bidi: plaintext`.
+⚠⚠ **`white-space: pre` PRESERVES WHITESPACE, NOT CHARACTER ORDER.** Any future pre-formatted or
+code-like surface — a log viewer, a JSON preview, a config panel — needs the same treatment, **and none
+of them will fail a test if it is missing.**
+⚠ **Widening SHARED test data to serve a new test is a change to every test that reads it** — it broke a
+pre-existing exact-text assertion here; the fix was to scope the new fixture, not relax the old test.
+
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.4`. THIS IS THE NEXT ACTION** — `DW-068` / `NFR-037`, **number** formatting (the
+   date half already holds). ⚠ **Read the row's own text before sizing it** — that habit has now paid on
+   all three items so far, in different directions each time. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
 3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the

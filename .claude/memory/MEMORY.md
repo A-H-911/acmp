@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-26 · **`WBS-24.1` + `24.2` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.3`** (wiki diff)
+## ★★★ 2026-08-26 · **`WBS-24.1`–`24.3` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.4`** (number formatting)
 
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
   any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
@@ -45,6 +45,17 @@
   ⚠ **A comment about a SIBLING's state goes stale silently** — nothing compiles it (`Backlog.tsx` called
   Kanban "coming soon" for months). ⚠ A test can pass ALONE and fail in the full suite: another file
   mounted the component without the new API mocked.
+- ✅ **`WBS-24.3` DONE-CLAIMED** (`#313`→`a794daa`): wiki version diff; `AC-146` Met, **`FR-117` →
+  `Implemented`**. No dependency — a 30-line LCS, bounded so an oversized compare is refused.
+  ⚠⚠⚠ **`white-space: pre` PRESERVES WHITESPACE, NOT CHARACTER ORDER.** In Arabic the diff rendered
+  `# Governance charter` as `Governance charter #` and moved full stops/`-` markers — bidi reordering of
+  NEUTRAL chars. **Fix: `unicode-bidi: plaintext`** (per-line direction). **Any future pre-formatted or
+  code-like surface needs it, and none will fail a test without it.**
+  ⭐ **A judgement about whether a requirement is SATISFIED must never live in a code comment** — that
+  comment (`"viewable satisfies FR-117"`) was `DW-039`'s whole reason to exist, and it was false: the
+  requirement says viewable AND diffable.
+  ⚠ **Widening SHARED test data to serve a new test changes every test that reads it** — scope the new
+  fixture instead of relaxing the old assertion.
 - ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs** (3m18s, 2m37s,
   368/368) — all 100s `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical.
   ⛔ **The mitigation cannot be credited — the run BEFORE it was green too.** Don't re-run a red into
