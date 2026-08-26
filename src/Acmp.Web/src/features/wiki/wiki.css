@@ -407,3 +407,42 @@
   .wiki-editor-split { grid-template-columns: 1fr; }
   .wiki-editor-pane { border-inline-end: 0; border-block-end: 1px solid var(--border); }
 }
+
+/* WBS-24.3 / FR-117 — version compare. The +/- gutter is real TEXT, so a change is never signalled
+   by colour alone; the colours are reinforcement. Logical properties throughout for RTL. */
+.wiki-version-tabs { display: flex; gap: 4px; margin-block-end: var(--sp-2); }
+.wiki-version-tab {
+  padding-block: 5px; padding-inline: 11px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text-2);
+  font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.wiki-version-tab.is-active { background: var(--primary-tint); border-color: var(--accent); color: var(--accent); }
+.wiki-version-tab:disabled { opacity: 0.5; cursor: default; }
+.wiki-diff-stat {
+  display: flex; gap: var(--sp-2); margin: 0 0 var(--sp-2);
+  font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.wiki-diff-added { color: var(--st-success-fg); }
+.wiki-diff-removed { color: var(--st-danger-fg); }
+.wiki-diff {
+  list-style: none; margin: 0; padding: 0;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  overflow: auto; max-block-size: 46vh;
+  font-family: var(--mono, ui-monospace, monospace); font-size: 12px; line-height: 1.7;
+}
+.wiki-diff-line { display: flex; gap: 8px; padding-inline: 9px; }
+.wiki-diff-marker { flex: 0 0 auto; inline-size: 0.9em; color: var(--text-3); }
+/* The diff is code-like: preserve the author's leading spaces, and let a long line scroll the
+   container rather than reflow, so line numbers stay meaningful against the original.
+   ⚠⚠ unicode-bidi:plaintext IS LOAD-BEARING AND WAS ADDED AFTER LOOKING AT IT IN ARABIC. Without
+   it the RTL paragraph direction reorders the NEUTRAL characters of an English line: `# Governance
+   charter` rendered as `Governance charter #`, a trailing full stop jumped to the front, and `-`
+   list markers moved to the end. A diff that displays text differently from how it is stored is
+   worse than no diff — the markdown syntax characters are exactly what a reader is checking.
+   `plaintext` takes each LINE's direction from its own first strong character, so an Arabic body
+   still reads right-to-left and a markdown/English line reads left-to-right, inside one RTL page. */
+.wiki-diff-text { white-space: pre; unicode-bidi: plaintext; }
+.wiki-diff-added.wiki-diff-line { background: var(--st-success-bg); }
+.wiki-diff-removed.wiki-diff-line { background: var(--st-danger-bg); }
+.wiki-diff-same { color: var(--text-2); }
