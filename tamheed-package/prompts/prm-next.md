@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty** times, and **eight** wrong assertions have escaped into
+file has carried a stale statement **thirty** times, and **nine** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +39,21 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE NINTH ESCAPE (2026-08-26, `WBS-24.4`) IS A COUNT THAT WAS NEVER MEASURED, AND IT IS NOT IN THIS
+FILE — IT IS IN A PUSHED COMMIT MESSAGE.** Commit `7173eb7` says *"24 sites become `<Num value={…} />`"*.
+That figure is the **scanner's candidate-LINE count minus its false positives**, used as if it were the
+number of render sites. **They are different quantities and I never measured the second.** Measured with
+the pattern stated — occurrences of `<Num `/`<Pct `/`<Bytes ` in `src/**/*.tsx` excluding tests and the
+library that defines them — it is **31** at that commit and **37** at merge, across **19** files. Two
+lines carry a ternary with BOTH a `<Pct>` and a `<Num>`, and one line renders two `<Num>`, which is how
+lines and instances diverge.
+⚠⚠ **THIS IS `LL-015` COMMITTED BY THE SESSION THAT WAS QUOTING `LL-015` ABOUT ITS OWN SCANNER.** In the
+same hour I wrote into `AC-147` that the scanner is *triage, not a coverage proof* — and then used its
+output as a measurement of something else entirely. ⭐ **THE RULE: an instrument's output measures the
+thing the instrument counts, and NOTHING ELSE. If you are about to state a different quantity, run a
+different command.** A correction is posted on PR `#314`; the commit message stands, which is why the
+escape count moves rather than the statement count.
 
 ⚠⚠ **THE THIRTIETH IS AN EXACT REPEAT OF A SHAPE THIS SECTION ALREADY DOCUMENTS, WHICH IS WHY IT MATTERS
 MORE THAN ITS SIZE.** An entry here read *"`LL-023` (Proposed)"* — true when written, false about an hour
@@ -750,6 +765,14 @@ The programme is closed, but these were expensive and they generalise to any ver
   locale-aware date sites — and **exactly two** `Intl.NumberFormat` sites, while the text says *"date,
   time, **and number**"*) and `NFR-033` (a genuinely good contrast gate covering **one of two thresholds
   and none of four states**). **Evidence that is strong is not evidence that is complete.**
+  ⚠ **HISTORICAL AS OF 2026-08-26 — the `NFR-037` half is CLOSED** (`WBS-24.4`, `AC-147` `Met`, the
+  requirement `Implemented`), so *"exactly two `Intl.NumberFormat` sites"* describes the codebase BEFORE
+  that commit and is no longer a live measurement. **The lesson is untouched and is why the row existed
+  at all**; this is a dated annotation, not a correction, so the tally above does not move (`DW-084`'s
+  precedent: an outcome arriving is not a statement going stale). ⚠ **Do not re-derive the date-side
+  figure from this sentence either** — measured 2026-08-26 with the pattern stated, `new
+  Intl.DateTimeFormat(` outside tests returns **30**, not 31; `AC-147` records why the two disagree and
+  says plainly that they were not reconciled.
 - ⚠ **A surface that DOES NOT EXIST can be excluded BY NAME in a `Met` verdict; a surface that EXISTS but
   is unproven CANNOT.** That single line decided every borderline call this session.
 - ⚠ **A COUNT OF THE ENFORCING MECHANISM IS NOT A MEASURE OF THE PROPERTY.** An `NFR-021` census read as a
@@ -956,6 +979,14 @@ popover (found by reading CSS), and the panel rendered OFF-SCREEN in **both** di
 2m37s, 368/368), all 100-second `HttpClient` timeouts across TWELVE unrelated classes, on a backend tree
 byte-identical to both. **The mitigation cannot be credited: the run BEFORE it was also green.**
 ⛔ **Do not re-run a red into silence** — append a second occurrence to `DEF-109` instead.
+⚠ **`DEF-110` EXISTS AND THIS FILE NEVER CARRIED IT** (added 2026-08-26, after the resume was written).
+`DEC-079` d2 carried it Open at medium — *record it, change nothing*, the `DEF-102` disposition for the
+`DEF-102` shape: the topic urgency SLA thresholds are a hardcoded `switch` (3/7/21) while `ASM-011` and
+`OQ-035`'s recorded resolution both promise the committee will adjust them **via configuration**. ⚠ **So
+`assumptions-current` naming `ASM-011` is not merely an overdue date — its remediation path does not
+exist.** ⛔ Do not "fix" the advisory by re-dating the assumption; that was the wrong question and
+`DEF-110` records why. **`defects-minor` therefore names SIX rows, not five** — measure it, do not
+count from this sentence.
 
 ✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
 `AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⚠ `Review`, not
@@ -993,15 +1024,50 @@ of them will fail a test if it is missing.**
 ⚠ **Widening SHARED test data to serve a new test is a change to every test that reads it** — it broke a
 pre-existing exact-text assertion here; the fix was to scope the new fixture, not relax the old test.
 
+✅✅ **`WBS-24.4` IS DONE-CLAIMED (PR `#314` → `58052b4`)** — locale-appropriate NUMBER formatting.
+`AC-147` `Met` (`AV-225`), **`NFR-037` → `Implemented`**, `DW-068` `Done`. ⚠ `Review` — your verdict.
+⚠⚠ **ITS ROW WAS RIGHT ABOUT THE PROBLEM AND TOO SMALL ABOUT THE REMEDY — a FOURTH distinct way a row
+can mislead, after `24.1`'s wrong title-summary, `24.2`'s correction that held, and `24.3` being about a
+source comment.** `DW-068`'s census was exact (two `Intl.NumberFormat` sites in 347 files) but its
+prescription — *"extract one shared hook and route rendered numbers through it"* — reaches only ONE of the
+two ways a number gets on screen. The other is a value handed to `t()`, ~50 of them, which no per-site
+hook covers and no future author would remember.
+⭐⭐ **THE FINDING TO CARRY: `interpolation.format` IS A SILENT NO-OP FOR THIS.** i18next OVERWRITES it
+with its own `Formatter` during init, and that Formatter returns the value untouched when no format is
+named. A formatter **module** plus `alwaysFormat` is what fires; both halves are mutation-proven. Keying
+it off the **runtime type** is what makes it safe globally — a number localizes, an entity key and an
+ADR id are strings and do not. ⚠ **The general class: A VALUE PRE-STRINGIFIED BY ITS PRODUCER IS INVISIBLE
+TO A TYPE-KEYED FORMATTER** — three such bypasses existed and were closed.
+⭐ **A HOLLOW PASS IN A TEST WRITTEN TO PROVE THE FIX.** The relative-time assertion was written on **−2
+hours**; Arabic's **dual form** renders that with **no digit in it at all**, so it passed with or without
+the numbering pin. Rebuilt on five hours. **Pick a value that actually emits the thing you assert about.**
+⚠⚠ **AN `INV-014` MISS THE FIRST COMMIT SHIPPED:** the mockups draw `٤٠٪` with **U+066A**, and the app
+glued an ASCII `%` onto the digits. **THE SIGN IS PART OF THE NUMBER FORMAT, NOT A SUFFIX** — `style:
+'percent'` makes Intl choose it per locale. ⚠ Intl then appends **U+061C** (Arabic Letter Mark) after the
+sign, so `getByText('٨٧٪')` finds nothing and the failure looks exactly like the sign being wrong.
+⚠ **`scripts/number-render-scan.mjs` is committed and was WRONG THREE TIMES** — it missed the reports
+family (`s.value`, `card.kpi`), then camelCase (`findingCount`), then a number carrying a literal suffix
+(`{act.progressPct}%`). It now carries a calibration for each. **It is TRIAGE, not a coverage proof**, and
+`AC-147` says so instead of leaning on it.
+⚠ **Environment, so the gap between push and CI is not misread later:** GitHub Actions was in a
+**critical outage** (incident opened 15:11Z) and no workflow fired for ~30 minutes. Backend job on the
+merge run was **6m41s** with `SearchProvidersFtsTests` green — neither `DEF-109`'s signature nor
+`DEC-077` d3 fired. ⚠⚠ **`jq` IS NOT INSTALLED ON THIS MACHINE.** A CI monitor built on it ran silently
+and would have reported nothing at all; **silence reads identically to "still running."** Use `gh`'s own
+`--jq`.
+
 ⚠ **ONE LESSON AWAITS YOUR INTERVIEW: `LL-024`** — generated code loses its escapes silently, so prove
 it RUNS rather than reading it. It cost four cycles in one session. **`lessons-confirmed` therefore fails
 again, ON PURPOSE** — that advisory is doing its job; do not clear it by approving a sentence the
 operator has not read (`DEC-075` d4's precedent).
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.4`. THIS IS THE NEXT ACTION** — `DW-068` / `NFR-037`, **number** formatting (the
-   date half already holds). ⚠ **Read the row's own text before sizing it** — that habit has now paid on
-   all three items so far, in different directions each time. ⚠ **Measure, do not trust this line** —
-   `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.5`. THIS IS THE NEXT ACTION** — `DW-036` / `FR-155`, retention
+   **configurability** only. ⚠ **Read the row's own text before sizing it** — that habit has now paid on
+   all four items so far, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row
+   wrongly, `24.2`'s row carried its own correction and it held, `24.3` turned out to be about a source
+   COMMENT rather than a feature, and `24.4`'s measurement was right while its prescribed remedy was too
+   small. ⚠ **Measure, do not trust this line** — `readiness_check(scope="slice", id="SL-033")` and
+   `entity_query("wbs-item")` are the live answer.
 2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
    only two open PRs, `#128` and `#134` (re-verified with no `--limit` cap, 2026-08-26).
@@ -1094,7 +1160,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns | ✅ `Implemented` |
 | `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Review` |
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Review` |
-| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ▶ next |
+| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Review` |
 | `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only | `Approved` |
 | `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** | `Approved` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
