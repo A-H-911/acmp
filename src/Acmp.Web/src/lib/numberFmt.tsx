@@ -22,6 +22,18 @@ export function formatNumber(value: number, lang: string | undefined, opts?: Int
 }
 
 /**
+ * A percentage given the way this codebase already holds one — 0..100, not 0..1.
+ *
+ * ⚠ THE SIGN IS PART OF THE FORMAT, NOT A SUFFIX. The mockups draw `٤٠٪` in Arabic, with U+066A, and
+ * the app was rendering an ASCII `%` glued on after the number (INV-014). `style: 'percent'` makes
+ * Intl choose the right sign per locale, which is also why this takes 0..100 and divides: the data
+ * carries whole percents everywhere, and converting at the boundary beats changing every producer.
+ */
+export function formatPercent(value: number, lang: string | undefined): string {
+  return new Intl.NumberFormat(numberLocale(lang), { style: 'percent', maximumFractionDigits: 0 }).format(value / 100);
+}
+
+/**
  * Bytes rounded to the unit a person reads. Replaces three separate implementations — SessionPage's
  * (locale-aware) and MeetingRecording's and SubmitTopic's (both Latin-only, which is the defect).
  *
@@ -51,6 +63,12 @@ export function formatBytes(bytes: number, lang: string | undefined): string {
 export function Num({ value, ...opts }: { value: number } & Intl.NumberFormatOptions) {
   const { i18n } = useTranslation();
   return <>{formatNumber(value, i18n.language, opts)}</>;
+}
+
+/** A 0..100 percentage in the live UI language, sign included. */
+export function Pct({ value }: { value: number }) {
+  const { i18n } = useTranslation();
+  return <>{formatPercent(value, i18n.language)}</>;
 }
 
 /** Bytes in the live UI language, for JSX. */

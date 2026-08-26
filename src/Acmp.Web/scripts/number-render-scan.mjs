@@ -52,7 +52,13 @@ function sourceFiles(dir) {
 /** Numeric-looking expressions sitting in JSX child position on one line. */
 function scanLine(line) {
   const hits = [];
-  for (const m of line.matchAll(/[>}]\s*\{([^{}]+)\}\s*[<{]/g)) {
+  /*
+   * ⚠ NO TRAILING TERMINATOR. An earlier version required the expression to be followed by `<` or
+   * `{`, and so ran straight past `<span>{act.progressPct}%</span>` — a rendered percentage with a
+   * literal suffix, which is precisely a number on screen. Two real sites were missed that way.
+   * The leading `[>}]` is what keeps attributes out: `value={x}` is preceded by `=`, never by `>`.
+   */
+  for (const m of line.matchAll(/[>}]\s*\{([^{}]+)\}/g)) {
     const expr = m[1].trim();
     if (/^['"`]/.test(expr) || expr.includes('=>') || /^t\(/.test(expr)) continue; // literals, callbacks, i18n keys
     if (NUMISH_PART.test(expr) || NUMISH_WORD.test(expr)) hits.push(expr);
@@ -64,6 +70,11 @@ function scanLine(line) {
 const PROBE = '        <span className="x">{group.items.length}</span>';
 if (scanLine(PROBE).length !== 1) {
   console.error('CALIBRATION B FAILED: the matcher did not find an injected bare numeric render.');
+  process.exit(2);
+}
+// ...that a number followed by a literal suffix is seen (the terminator regression, two more sites)...
+if (scanLine('        <span className="x">{act.progressPct}%</span>').length !== 1) {
+  console.error('CALIBRATION B FAILED: the matcher missed a number carrying a literal suffix.');
   process.exit(2);
 }
 // ...that a camelCase quantity is still seen — the regression that silently cost two real sites...

@@ -14,7 +14,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Num } from '../../lib/numberFmt';
+import { Num, Pct } from '../../lib/numberFmt';
 import { toPng } from 'html-to-image';
 import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
@@ -219,7 +219,7 @@ function ReportCardView({ card, view }: { card: ReportCard; view: ReportView }) 
 
       {card.kpi != null && (
         <div className="rpt-kpi">
-          <span className="rpt-kpi-v">{typeof card.kpi === 'number' ? <><Num value={card.kpi} />{card.kpiSuffix ?? ''}</> : card.kpi}</span>
+          <span className="rpt-kpi-v">{typeof card.kpi !== 'number' ? card.kpi : card.kpiKind === 'percent' ? <Pct value={card.kpi} /> : <Num value={card.kpi} />}</span>
           {card.kpiSubKey && <span className="rpt-kpi-l">{t(card.kpiSubKey)}</span>}
         </div>
       )}
@@ -273,7 +273,7 @@ function StatGrid({ stats }: { stats: StatTile[] }) {
     <div className="rpt-stats">
       {stats.map((s, i) => (
         <div key={s.label ?? (s.labelKey || String(i))} className="rpt-stat">
-          <div className="rpt-stat-v" style={s.zone ? { color: `var(--st-${s.zone}-fg)` } : undefined}><Num value={s.value} />{s.suffix ?? ''}</div>
+          <div className="rpt-stat-v" style={s.zone ? { color: `var(--st-${s.zone}-fg)` } : undefined}>{s.kind === 'percent' ? <Pct value={s.value} /> : <Num value={s.value} />}</div>
           <div className="rpt-stat-l">{s.label ?? t(s.labelKey)}</div>
         </div>
       ))}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatNumber, formatBytes } from './numberFmt';
+import { formatNumber, formatBytes, formatPercent } from './numberFmt';
 
 describe('formatNumber', () => {
   it('renders Latin digits with grouping for English', () => {
@@ -23,6 +23,28 @@ describe('formatNumber', () => {
 
   it('passes Intl options through', () => {
     expect(formatNumber(0.5, 'en', { style: 'percent' })).toBe('50%');
+  });
+});
+
+describe('formatPercent', () => {
+  it('takes a whole percent, the way this codebase already holds one', () => {
+    expect(formatPercent(87, 'en')).toBe('87%');
+  });
+
+  it('uses the ARABIC percent sign, not an ASCII one beside Arabic-Indic digits', () => {
+    /*
+     * ٪ is U+066A, not U+0025. This is the assertion the whole function exists for: the mockups draw
+     * `٤٠٪` and the app was gluing an ASCII `%` onto the digits (INV-014). Asserting only the digits
+     * would pass with the wrong sign, which is what shipped before.
+     */
+    const ar = formatPercent(87, 'ar');
+    expect(ar).toContain('٪');
+    expect(ar).not.toContain('%');
+    expect(ar).toContain('٨٧');
+  });
+
+  it('rounds to whole percents rather than exposing the division', () => {
+    expect(formatPercent(67, 'en')).toBe('67%');
   });
 });
 

@@ -121,7 +121,9 @@ describe('supersedeStats / actionStatusBars / verificationStats', () => {
   it('verificationStats computes the verified rate as a percentage tile', () => {
     const s = verificationStats([action({ status: 'Verified' }), action({ status: 'Verified' }), action({ status: 'Completed' })]);
     expect(s[0].value).toBe(67); // 2 verified / 3 closed
-    expect(s[0].suffix).toBe('%');
+    // `kind`, not a literal `'%'` suffix: the SIGN is part of the number format, and Arabic draws
+    // ٪ (U+066A). The tile carries the intent; the renderer asks Intl for the locale's own sign.
+    expect(s[0].kind).toBe('percent');
   });
 });
 

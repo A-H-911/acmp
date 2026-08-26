@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bytes } from '../../lib/numberFmt';
+import { Bytes, Num } from '../../lib/numberFmt';
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
@@ -302,7 +302,7 @@ export function SubmitTopic() {
                     {/* hint (start) + char counter (end) on one justified row, per the design */}
                     <div className="sub-title-foot">
                       <span className="sub-hint" id="sub-title-hint">{t('submit.fTitleHelp')}</span>
-                      <span className="sub-count">{form.title.length}/{MAX_TITLE}</span>
+                      <span className="sub-count"><Num value={form.title.length} />/<Num value={MAX_TITLE} /></span>
                     </div>
                   </>
                 )}

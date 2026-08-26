@@ -41,7 +41,9 @@ interface CardMeta {
    * localize. A string is still allowed, but only for a non-quantity placeholder such as an em dash.
    */
   kpi?: number | string;
-  kpiSuffix?: string;
+  /** `percent` renders the value through Intl's percent style, which picks the locale's own
+   *  sign — Arabic draws ٪ (U+066A), not an ASCII `%` glued on after the digits (INV-014). */
+  kpiKind?: 'percent';
   kpiSubKey?: string;
   to?: string; // drill-down target
 }
@@ -197,7 +199,7 @@ export function verificationStats(actions: readonly ActionSummary[]): StatTile[]
   const completed = actions.filter((a) => a.status === 'Completed').length;
   const closed = verified + completed;
   return [
-    { value: closed === 0 ? 0 : Math.round((verified / closed) * 100), labelKey: 'reports.verify.rate', zone: 'success', suffix: '%' },
+    { value: closed === 0 ? 0 : Math.round((verified / closed) * 100), labelKey: 'reports.verify.rate', zone: 'success', kind: 'percent' },
     stat(closed, 'reports.verify.closed'),
     stat(completed, 'reports.verify.awaiting', 'warn'),
     stat(actions.filter((a) => a.isOverdue).length, 'reports.verify.overdue', 'danger'),
@@ -238,7 +240,7 @@ export function buildView(view: ReportView, d: ReportData): ReportCard[] {
       const exposure = riskMatrix(d.risks);
       const highSev = d.risks.filter((r) => isActiveRisk(r) && (r.exposure === 'High' || r.exposure === 'Critical')).length;
       return [
-        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kpi: issued > 0 ? pctOf(approvedFamily, issued) : '—', kpiSuffix: '%', kpiSubKey: 'reports.kpi.approvedRate', kind: 'stack', segments: outcomes, to: '/decisions' },
+        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kpi: issued > 0 ? pctOf(approvedFamily, issued) : '—', kpiKind: 'percent', kpiSubKey: 'reports.kpi.approvedRate', kind: 'stack', segments: outcomes, to: '/decisions' },
         trend('throughput', 'reports.card.throughput', 'reports.sub.throughput'),
         { key: 'exposure', titleKey: 'reports.card.riskExposure.title', subKey: 'reports.activeCount', subVars: { count: exposure.active }, kpi: highSev, kpiSubKey: 'reports.kpi.highSeverity', kind: 'matrix', matrix: exposure, to: '/risks' },
         { key: 'open', titleKey: 'reports.card.openItems', subKey: 'reports.sub.openItems', kind: 'stat', stats: openItemsStats(d) },

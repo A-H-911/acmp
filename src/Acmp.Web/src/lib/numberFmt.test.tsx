@@ -6,7 +6,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import i18n from '../i18n';
-import { Num, Bytes } from './numberFmt';
+import { Num, Bytes, Pct } from './numberFmt';
 
 const original = i18n.language;
 afterEach(async () => {
@@ -30,6 +30,27 @@ describe('<Num>', () => {
     await i18n.changeLanguage('en');
     render(<Num value={0.5} style="percent" />);
     expect(screen.getByText('50%')).toBeInTheDocument();
+  });
+});
+
+describe('<Pct>', () => {
+  it('renders the Arabic percent sign, not an ASCII one', async () => {
+    await i18n.changeLanguage('ar');
+    const { container } = render(<Pct value={87} />);
+    /*
+     * ⚠ Matched on CONTENT, not with an exact string, because Intl appends U+061C (ARABIC LETTER
+     * MARK) after the sign — an invisible bidi control it adds on purpose. `getByText('٨٧٪')` finds
+     * nothing, and the failure looks exactly like the sign being wrong.
+     */
+    expect(container.textContent).toContain('٪');
+    expect(container.textContent).not.toContain('%');
+    expect(container.textContent).toContain('٨٧');
+  });
+
+  it('renders the ASCII sign in English', async () => {
+    await i18n.changeLanguage('en');
+    const { container } = render(<Pct value={87} />);
+    expect(container.textContent).toBe('87%');
   });
 });
 
