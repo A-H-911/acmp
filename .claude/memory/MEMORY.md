@@ -37,6 +37,14 @@ misled**; the bidi/`unicode-bidi: plaintext` rule; the i18n formatter no-op; two
 - ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY.** Spying jsdom `localStorage` is
   version-dependent — the injected fault never happened while the test asserted a spy call count.
   **Replace the GLOBAL (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ Tuning until green is not a fix.
+★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) — the vitest-4 / coverage-v8 findings.
+⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold**: v3 credited the line wrapping an *uninvoked* inline
+handler, so the gate could not see untested handlers at all — four closed files had **no test file** and
+v3 scored them ≥95%. ⚠ **`DEF-107`: approving+pinning a lesson does NOT make it bind** — the note
+sessions load is rebuilt only by `handoff_emit`; run it in the SAME batch as any approval.
+⚠ **Push package writes BETWEEN merge cycles, never during one** — every push to `main` re-stales every
+open PR (`strict=true`).
+
 - ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `scripts/gen-lesson-docket.mjs`
   · `scripts/count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`. ⚠ `DEF-106`: declare
   `types: ["vite/client","node"]`; **a CHECKOUT DOES NOT CHANGE `node_modules`**.
@@ -112,6 +120,16 @@ a pipe, the still-open stack/scanner group, and production's reconciled state.
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`, never bolded) — bolding breaks the Keystone G-PROGRESS gate.
 - ⚠ **A new advisory can turn `main` red with no code change** — `GHSA-q939-rpr3-3284` (SSH.NET) blocked every merge mid-session. "It's only tests" is how a blocking gate becomes advisory.
 - ⚠ **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — any mounted secret must be written **unconditionally** by `gen-secrets`.
+
+## ⚠ Topic files this index does NOT link — an unlinked file is invisible to recall
+
+The ladder files below are covered by the blanket note in the last section. **These eleven are not, and
+nothing points at them**: `absence-claims-need-untruncated-search` · `ask-every-time-never-bank-answers` ·
+`audit-slice-literal-ac017` · `body-assertions-miss-the-envelope` · `package-mechanics-proven-2026-08-18` ·
+`reconciliation-and-voting-eligibility` · `substring-checks-bind-to-prose` · `topic-prepare-ui-gap-d15` ·
+`wbs233-csp-spike` · `wbs234-reclassify` · `webex-coverage-gate-async-exclusion`.
+⚠ **Their current value is NOT assessed here** — this line exists so they are findable, not to vouch for
+them. Found 2026-08-26 by checking every topic file for an inbound link; do that after any compaction.
 
 ## Completed ladder P1–P19 + PH-5 (reference only — do not re-open)
 

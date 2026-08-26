@@ -1,0 +1,201 @@
+<title>ACMP Lessons Docket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --paper:#e8ebee; --surface:#fafbfc; --ink:#14171a; --muted:#59616b;
+    --rule:#ccd3d9; --rule-strong:#9aa5ae;
+    --accent:#9a6008; --accent-soft:#f0e2c6;
+    --pending:#9a6008;
+    --shadow:0 1px 0 rgba(20,23,26,.04), 0 8px 24px -18px rgba(20,23,26,.5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#121518; --surface:#1a1e23; --ink:#e4e8eb; --muted:#98a2ac;
+      --rule:#282e35; --rule-strong:#3c454e;
+      --accent:#e2a84a; --accent-soft:#3a2f1a;
+      --pending:#e2a84a;
+      --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#121518; --surface:#1a1e23; --ink:#e4e8eb; --muted:#98a2ac;
+    --rule:#282e35; --rule-strong:#3c454e;
+    --accent:#e2a84a; --accent-soft:#3a2f1a;
+    --pending:#e2a84a;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Source Serif 4", Georgia, serif;
+    font-size:17px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:52rem; margin:0 auto; padding:clamp(2rem,5vw,4.5rem) clamp(1.1rem,4vw,2rem) 6rem; }
+
+  .masthead { border-bottom:2px solid var(--rule-strong); padding-bottom:1.6rem; margin-bottom:2.2rem; }
+  .kicker {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.7rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 .8rem;
+  }
+  h1 {
+    font-family:Archivo, "Helvetica Neue", sans-serif; font-weight:700;
+    font-size:clamp(1.9rem,5vw,2.9rem); line-height:1.08; letter-spacing:-.02em;
+    margin:0 0 .7rem; text-wrap:balance;
+  }
+  .standfirst { margin:0; color:var(--muted); font-size:1.06rem; max-width:42rem; }
+
+  .note {
+    background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--accent);
+    padding:1.1rem 1.3rem; margin:2.2rem 0; box-shadow:var(--shadow);
+  }
+  .note h2 {
+    font-family:Archivo, sans-serif; font-size:.78rem; font-weight:600;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 .6rem;
+  }
+  .note p { margin:0 0 .7rem; font-size:.95rem; }
+  .note p:last-child { margin-bottom:0; }
+  .note ul { margin:.2rem 0 0; padding-left:1.1rem; font-size:.95rem; }
+  .note li { margin-bottom:.35rem; }
+
+  .table-scroll { overflow-x:auto; margin:2.2rem 0 3rem; }
+  table { border-collapse:collapse; width:100%; min-width:34rem; font-size:.92rem; }
+  caption {
+    text-align:left; font-family:Archivo, sans-serif; font-size:.78rem; font-weight:600;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted); padding-bottom:.7rem;
+  }
+  th {
+    text-align:left; font-family:Archivo, sans-serif; font-weight:600; font-size:.72rem;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+    border-bottom:1px solid var(--rule-strong); padding:.45rem .8rem .45rem 0;
+  }
+  td { border-bottom:1px solid var(--rule); padding:.72rem .8rem .72rem 0; vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .id, .mono {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric:tabular-nums; font-size:.86em;
+  }
+  .id { color:var(--accent); font-weight:500; white-space:nowrap; }
+
+  .motion { border-top:1px solid var(--rule-strong); padding-top:2.2rem; margin-top:3.4rem; }
+  .motion-head { margin-bottom:1.5rem; }
+  .eyebrow { display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; margin-bottom:.75rem; }
+  .eyebrow .id { font-size:.85rem; letter-spacing:.04em; }
+  .chip {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.66rem; letter-spacing:.08em; text-transform:uppercase;
+    border:1px solid var(--rule-strong); color:var(--muted);
+    padding:.16rem .48rem; border-radius:2px;
+  }
+  .chip-pending { color:var(--pending); border-color:var(--pending); background:var(--accent-soft); }
+  .motion h2 {
+    font-family:Archivo, "Helvetica Neue", sans-serif; font-weight:600;
+    font-size:clamp(1.15rem,2.6vw,1.42rem); line-height:1.25; letter-spacing:-.012em;
+    margin:0; text-wrap:balance;
+  }
+
+  .field { margin-bottom:1.6rem; }
+  .field h3 {
+    font-family:Archivo, sans-serif; font-size:.72rem; font-weight:600;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
+    margin:0 0 .5rem; padding-bottom:.3rem; border-bottom:1px solid var(--rule);
+  }
+  .field p { margin:0 0 .85rem; }
+  .field p:last-child { margin-bottom:0; }
+
+  footer {
+    margin-top:4rem; padding-top:1.4rem; border-top:1px solid var(--rule);
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.74rem; color:var(--muted); line-height:1.7;
+  }
+  @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="kicker">ACMP · lessons register · operator confirmation</p>
+    <h1>1 lessons are waiting on your word</h1>
+    <p class="standfirst">Each was recorded by the executing agent after execution taught it something. None of them binds anything yet. Only the ones you approve will.</p>
+  </header>
+
+  <section class="note">
+    <h2>Before you read</h2>
+    <p><strong>An approved lesson is immutable.</strong> The store refuses an edit to one — a change means writing a new lesson that supersedes it. So approving is the expensive direction, and rejecting costs nothing but the row.</p>
+    <p><strong>Approving is not the same as agreeing a finding happened.</strong> These sentences were written by the agent, not by you. Selecting a finding is not approving the wording it was written up in.</p>
+    <ul>
+      <li><strong>Approve and pin</strong> — binds every future session and is written into the note the agent loads at startup. Reserve it for the ones worth interrupting someone with.</li>
+      <li><strong>Approve</strong> — binds, but stays out of the startup note.</li>
+      <li><strong>Reject</strong> — the row stays as history and binds nothing.</li>
+      <li><strong>Refine</strong> — tell me what is wrong with the sentence and I will rewrite it for another pass.</li>
+    </ul>
+    <p>Every word below is printed straight from the register — nothing paraphrased, nothing retyped. You should not need to open anything else to decide.</p>
+  </section>
+
+  <div class="table-scroll">
+    <table>
+      <caption>The docket</caption>
+      <thead>
+        <tr><th scope="col">Row</th><th scope="col">In one line</th><th scope="col">Kind</th><th scope="col">Category</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="id">LL-024</td>
+          <td>When a script generates source for another file - a Python heredoc writing TypeScript, a shell heredoc writing a Dockerfile, any generator emitting code - every escape sequence passes through TWO levels of interpretation, and the outer one usually wins silently.</td>
+          <td class="mono">improve</td>
+          <td class="mono">tooling</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+      <article class="motion" id="LL-024">
+        <header class="motion-head">
+          <div class="eyebrow">
+            <span class="id">LL-024</span>
+            <span class="chip chip-kind">improve</span>
+            <span class="chip">tooling</span>
+            <span class="chip chip-pending">Proposed</span>
+          </div>
+          <h2>WRITING CODE INTO A FILE THROUGH ANOTHER LANGUAGE SILENTLY EATS ITS ESCAPES, AND THE RESULT STILL LOOKS PLAUSIBLE - SO PROVE GENERATED CODE RUNS, NEVER READ IT AND BELIEVE IT</h2>
+        </header>
+        
+        <div class="field">
+          <h3>The lesson</h3>
+          <p>When a script generates source for another file - a Python heredoc writing TypeScript, a shell heredoc writing a Dockerfile, any generator emitting code - every escape sequence passes through TWO levels of interpretation, and the outer one usually wins silently. `'\\n'` in a Python string becomes a real newline in the output file, not the two characters a JS or regex literal needs. The generated file then contains a string split across two lines, or a character class broken in half.</p>
+<p>WHAT MAKES IT EXPENSIVE IS THAT THE DAMAGE LOOKS FINE. The output is still readable, still nearly right, and a `grep` for the surrounding text still matches. The failure surfaces later as a parse error in a test run, or - worse - as a snippet embedded in documentation that nobody executes until the session that needs it.</p>
+<p>FOUR OCCURRENCES IN ONE SESSION, 2026-08-26, each costing a cycle. (1) A Dockerfile written for a forced-build test: `FROM alpine:3.20\\nRUN sleep 30` became two source lines and the C# would not compile. (2) A test fixture: multi-line document bodies became unterminated string literals, and the whole test FILE failed to load - reported as 59 passing tests and one failed file, which reads like a test failure and is not. (3) and (4) A regex embedded in a markdown code block, twice: the character class `[^.\\n]` split across two lines, producing a snippet that would have failed for whoever copied it.</p>
+<p>THE ASYMMETRY WITH ORDINARY TYPOS. A typo in code you write directly fails at the point you wrote it. A mangled escape in code you GENERATE fails at the point someone else runs it, which may be a different session, and the generator that produced it has usually been thrown away by then.</p>
+        </div>
+        <div class="field">
+          <h3>What happened</h3>
+          <p>WBS-24.2 / WBS-24.3 / DW-084, 2026-08-26. Found by hitting it four separate times in one session; the fourth was inside the pre-handoff pass whose whole purpose is catching things a fresh session would trip over - which is where it would have done the most damage, because the reader would have copied a broken snippet out of the resume.</p>
+<p>A FIFTH OCCURRENCE, WBS-24.4, LATER THE SAME DAY - AND IT IS THE ONE THAT ARGUES HARDEST FOR THE RULE, because it happened to an agent who had just written this lesson down. A bash heredoc quoted `&lt;&lt;'EOF'`, the form believed to be literal, was used to write a Node scanner containing a path-separator regex. One backslash level was eaten anyway: the file arrived with the escape missing and Node refused to parse it. It cost only minutes BECAUSE the very next action happened to be running the generated script - the recommendation below, applied by accident rather than by discipline.</p>
+<p>WHAT THE FIFTH ADDS THAT THE FIRST FOUR DID NOT. The first four are one shape: an outer language interpreting an escape meant for the inner one. The fifth shows that KNOWING THIS, AND HAVING JUST WRITTEN IT DOWN, DOES NOT PREVENT IT - and that the quoting form assumed safe was not. So the defence cannot be vigilance, or a remembered rule about which heredoc is literal; it has to be the mechanical one: run the thing. In this instance the better remedy was also simpler than the rule suggests - the file was rewritten with the editor tool instead of through a heredoc, REMOVING THE SECOND INTERPRETATION LAYER ENTIRELY rather than trying to escape correctly through it.</p>
+        </div>
+        <div class="field">
+          <h3>What to do instead</h3>
+          <p>Build the escape explicitly rather than trusting it through a layer: `chr(92) + 'n'` in Python, or a placeholder token substituted afterwards. Then - and this is the part that actually catches it - PROVE THE GENERATED CODE RUNS. Extract the block and execute it, compile the file, or run the test that loads it, in the same breath as writing it. Reading the output and finding it plausible is exactly the check that fails here, because plausible is what the damage looks like. For a snippet embedded in prose, where nothing compiles it, extraction-and-execution is the ONLY check there is.</p>
+        </div>
+        <div class="field">
+          <h3>Why it generalises</h3>
+          <p>Escape mangling is invisible to every instrument this project already trusts. A gate compiles committed source, not a heredoc's intent; an id-and-status pass reads identifiers, not string literals; and a snippet inside a markdown fence is not code to any tool in the repository. The generator is also usually a throwaway, so there is no artefact left to re-inspect when the breakage is noticed. The only moment the fault is cheap to catch is immediately after generation, and only by execution.</p>
+        </div>
+        <div class="field">
+          <h3>If followed</h3>
+          <p>Generated code either runs or fails in the session that produced it, while the generator still exists and the intent is still in hand.</p>
+        </div>
+        <div class="field">
+          <h3>If ignored</h3>
+          <p>Mangled escapes ship inside test fixtures, Dockerfiles and documentation snippets, and surface as parse errors or broken copy-paste in a later session that has no idea a generator was involved.</p>
+        </div>
+      </article>
+
+  <footer>
+    Generated from tamheed-package/data/lessons.jsonl by scripts/gen-lesson-docket.mjs.<br>
+    1 of 24 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+  </footer>
+</div>
