@@ -21,7 +21,31 @@ const COLUMNS: Column<{ id: string }>[] = IDS.map((id) => ({ id, header: id, cel
 beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
+
+/**
+ * Replaces the localStorage GLOBAL rather than spying on it.
+ *
+ * ⚠ This is the second attempt. Spying — on `Storage.prototype.setItem` or on the `localStorage`
+ * instance — is jsdom-version dependent: the prototype spy never fired locally, the instance spy
+ * fired locally and did NOT fire in CI, so the injected fault silently did not happen and the test
+ * asserted a spy that was never called. Replacing the global binding is what the component actually
+ * resolves at call time, so the failure is injected the same way everywhere.
+ */
+function stubStorage(over: Partial<Storage>) {
+  const store = new Map<string, string>();
+  vi.stubGlobal('localStorage', {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => void store.set(k, v),
+    removeItem: (k: string) => void store.delete(k),
+    clear: () => store.clear(),
+    key: () => null,
+    length: 0,
+    ...over,
+  });
+  return store;
+}
 
 describe('readColumnPrefs', () => {
   it('returns every known column in declaration order when nothing is stored', () => {
@@ -168,30 +192,41 @@ describe('ColumnPicker + useColumnPrefs', () => {
   });
 
   it('keeps working when localStorage refuses the write', async () => {
-    const setItem = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
-      throw new Error('QuotaExceededError');
+    const store = stubStorage({
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
     });
     const user = await openPicker();
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'type' }));
 
     // The change still applies for this session; only the persistence was lost.
     expect(screen.getByTestId('hidden')).toHaveTextContent('type');
-    expect(setItem).toHaveBeenCalled();
+    // And this proves the fault was actually INJECTED rather than the assertion passing vacuously:
+    // if the throwing setItem had not been reached, the preference would have been written.
+    expect(store.has(KEY)).toBe(false);
   });
 
   it('still resets when localStorage refuses the removal', async () => {
+    const store = stubStorage({
+      removeItem: () => {
+        throw new Error('SecurityError');
+      },
+    });
     const user = await openPicker();
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'type' }));
-    vi.spyOn(localStorage, 'removeItem').mockImplementation(() => {
-      throw new Error('SecurityError');
-    });
+    expect(store.has(KEY)).toBe(true); // the write succeeded, so the removal is what must fail
     await user.click(screen.getByRole('button', { name: /reset/i }));
+    // Reset takes effect in the UI even though the stored value could not be removed.
     expect(screen.getByTestId('hidden')).toHaveTextContent('');
+    expect(store.has(KEY)).toBe(true);
   });
 
   it('reads a corrupted store as defaults when the getter itself throws', () => {
-    vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
-      throw new Error('SecurityError');
+    stubStorage({
+      getItem: () => {
+        throw new Error('SecurityError');
+      },
     });
     expect(readColumnPrefs(IDS)).toEqual({ order: IDS, hidden: [] });
   });
