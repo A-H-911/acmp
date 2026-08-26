@@ -22,6 +22,7 @@ import { RolesReference } from '../features/administration/RolesReference';
 import { NotificationSettings } from '../features/administration/NotificationSettings';
 import { JobMonitor } from '../features/administration/JobMonitor';
 import { StreamsReference } from '../features/administration/StreamsReference';
+import { RetentionSettings } from '../features/administration/RetentionSettings';
 import '../styles/administration.css';
 
 // The Administration sub-tabs, in design order. Templates moved to the standalone /templates route
@@ -32,6 +33,9 @@ const TABS: { id: string; icon: IconName }[] = [
   { id: 'roles', icon: 'shieldUser' },
   { id: 'jobs', icon: 'cog' },
   { id: 'notifications', icon: 'bell' },
+  // WBS-24.5: a SIXTH tab. ⚠ The design reference draws exactly five and this is not among them,
+  // so the screen behind it is a NO-REFERENCE COMPOSITION and says so in its own header (INV-014).
+  { id: 'retention', icon: 'shieldUser' },
 ];
 
 export default function AdministrationPage() {
@@ -64,6 +68,7 @@ export default function AdministrationPage() {
       {sub === 'notifications' && <NotificationSettings />}
       {sub === 'streams' && <StreamsReference />}
       {sub === 'jobs' && <JobMonitor />}
+      {sub === 'retention' && <RetentionSettings />}
     </section>
   );
 }

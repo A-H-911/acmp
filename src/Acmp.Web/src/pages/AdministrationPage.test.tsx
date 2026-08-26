@@ -77,10 +77,17 @@ describe('AdministrationPage — sub-tab container', () => {
     mockUseStreams.mockReset();
   });
 
-  it('renders the five remaining sub-tabs, all navigable (Templates → /templates, Users → /members)', () => {
+  it('renders the six sub-tabs, all navigable (Templates → /templates, Users → /members)', () => {
+    /*
+     * FIVE from the design reference, plus ONE the reference does not draw: Retention (WBS-24.5 /
+     * DEC-080). ⚠ That sixth tab is a NO-REFERENCE COMPOSITION and is recorded as a divergence in
+     * RetentionSettings.tsx's own header, not smuggled in by bumping this number — the count is
+     * asserted precisely so an unannounced tab cannot appear.
+     */
     renderPage();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(6);
+    expect(screen.getByRole('tab', { name: /Retention/ })).toBeInTheDocument();
     expect(tabs.filter((t) => (t as HTMLButtonElement).disabled)).toHaveLength(0);
     expect(screen.queryByRole('tab', { name: /Templates/ })).not.toBeInTheDocument();
   });
