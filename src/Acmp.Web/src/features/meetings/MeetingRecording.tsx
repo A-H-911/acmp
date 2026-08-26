@@ -8,6 +8,7 @@
 import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Bytes } from '../../lib/numberFmt';
 import { useMeetingDetail, useRecordingUrl, useUploadMeetingRecording, useDeleteMeetingRecording } from '../../api/meetings';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { Icon } from '../../components/icons';
@@ -24,12 +25,6 @@ function safeHttps(url: string | null | undefined): string | null {
   } catch {
     return null;
   }
-}
-
-function formatSize(bytes: number | null | undefined): string {
-  if (!bytes) return '';
-  const mb = bytes / (1024 * 1024);
-  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 export function MeetingRecording() {
@@ -87,7 +82,7 @@ export function MeetingRecording() {
                 label={uploaded ? t('meetings.recording.sourceUploaded') : t('meetings.recording.sourceWebex')}
               />
               {rec.fileName && <span className="mt-rec-name" dir="ltr">{rec.fileName}</span>}
-              {rec.sizeBytes ? <span className="mt-rec-size">{formatSize(rec.sizeBytes)}</span> : null}
+              {rec.sizeBytes ? <span className="mt-rec-size"><Bytes value={rec.sizeBytes} /></span> : null}
             </div>
             <div className="mt-rec-actions">
               {uploaded && src && (

@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Bytes } from '../../lib/numberFmt';
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
@@ -66,12 +67,6 @@ function loadDraft(): FormState | null {
   } catch {
     return null;
   }
-}
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
-  return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
 export function SubmitTopic() {
@@ -393,7 +388,7 @@ export function SubmitTopic() {
                     <span className="sub-file-ic" aria-hidden="true"><Icon name="doc" size={15} /></span>
                     <span className="sub-file-main">
                       <span className="sub-file-name">{f.name}</span>
-                      <span className="sub-file-meta">{formatBytes(f.size)}</span>
+                      <span className="sub-file-meta"><Bytes value={f.size} /></span>
                     </span>
                     <button
                       type="button"

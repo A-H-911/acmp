@@ -39,6 +39,7 @@
 import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import {
   useMeetingDetail,
   usePreparedTopics,
@@ -370,7 +371,7 @@ function PoolColumn({
       <div className="mt-pool-head">
         <div className="mt-pool-titlerow">
           <h2 className="mt-col-title">{t('meetings.scheduledTopics')}</h2>
-          <span className="mt-pool-count">{count}</span>
+          <span className="mt-pool-count"><Num value={count} /></span>
         </div>
         <span className="mt-pool-search">
           <Icon name="search" size={14} aria-hidden />
@@ -490,7 +491,7 @@ function AgendaItemRow({
       /* v8 ignore stop */
     >
       <div className="mt-item-rail">
-        <span className="mt-item-index" aria-hidden="true">{index}</span>
+        <span className="mt-item-index" aria-hidden="true"><Num value={index} /></span>
         <Icon name="grip" size={16} className="mt-item-grip" aria-hidden />
       </div>
 

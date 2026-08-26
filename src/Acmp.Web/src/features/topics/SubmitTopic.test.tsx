@@ -319,7 +319,13 @@ describe('SubmitTopic (P5b)', () => {
     Object.defineProperty(mb, 'size', { value: 3 * 1024 * 1024 });
     await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, [kb, mb]);
     expect(screen.getByText('200 KB')).toBeInTheDocument();
-    expect(screen.getByText('3.0 MB')).toBeInTheDocument();
+    /*
+     * "3 MB", not "3.0 MB". This file used to carry its own `toFixed(1)`; it now shares
+     * `lib/numberFmt.formatBytes` with the session and recording surfaces (NFR-037). The three
+     * disagreed, so merging them had to pick one — the mockups draw "25 MB" and "1.2 MB", i.e. a
+     * trailing zero is dropped (INV-014), which is `maximumFractionDigits` and not `toFixed`.
+     */
+    expect(screen.getByText('3 MB')).toBeInTheDocument();
   });
 
   it('saves a draft to localStorage and leaves when "Save draft" is clicked', async () => {

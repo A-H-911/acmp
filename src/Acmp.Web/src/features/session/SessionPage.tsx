@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatBytes } from '../../lib/numberFmt';
 import { useMySession, openSessionMaterial, type SessionMaterial } from '../../api/session';
 import { ApiError } from '../../api/apiClient';
 import { Icon } from '../../components/icons';
@@ -118,18 +119,6 @@ export default function SessionPage() {
   );
 }
 
-/** Rounded to the unit a person reads, not the byte count. */
-function formatSize(bytes: number, locale: string): string {
-  const units = ['B', 'KB', 'MB', 'GB'];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: unit === 0 ? 0 : 1 }).format(value)} ${units[unit]}`;
-}
-
 /** PDFs get the design's danger tile, everything else its info tile — the reference draws exactly two. */
 const isPdf = (contentType: string) => contentType.toLowerCase().includes('pdf');
 
@@ -152,7 +141,7 @@ function MaterialRow({ material }: { material: SessionMaterial }) {
     }
   }
 
-  const meta = `${material.contentType} · ${formatSize(material.sizeBytes, i18n.language)}`;
+  const meta = `${material.contentType} · ${formatBytes(material.sizeBytes, i18n.language)}`;
 
   return (
     <button type="button" className="gs-material" onClick={open} disabled={opening}>

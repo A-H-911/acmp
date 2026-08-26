@@ -7,6 +7,7 @@
  * mirrors cleanly under RTL with no per-direction overrides.
  */
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { useAdminJobs, useRequeueJob, type JobRow, type JobStatus } from '../../api/jobs';
 import { Table, type Column } from '../../components/ui/Table';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
@@ -89,7 +90,7 @@ export function JobMonitor() {
       <div className="adm-jobs-stats">
         {STAT_ORDER.map((key) => (
           <div key={key} className={`adm-jobs-stat ${key}`}>
-            <div className="adm-jobs-stat-value">{data.counts[key]}</div>
+            <div className="adm-jobs-stat-value"><Num value={data.counts[key]} /></div>
             <div className="adm-jobs-stat-label">{t(`admin.jobs.stat.${key}`)}</div>
           </div>
         ))}

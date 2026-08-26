@@ -24,6 +24,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import {
   useMission, useActivateMission, useCompleteMission, useCancelMission,
   useAddFinding, useVerifyFinding, useAddRecommendation, useSetRecommendationStatus,
@@ -248,7 +249,7 @@ function SectionShell({ icon, title, count, canAdd, onAdd, children }: {
         <div className="rsc-sec-title">
           <Icon name={icon} size={16} aria-hidden />
           <h2>{title}</h2>
-          <span className="rsc-sec-count">{count}</span>
+          <span className="rsc-sec-count"><Num value={count} /></span>
         </div>
         {canAdd && (
           <Button variant="ghost" size="sm" onClick={onAdd}>

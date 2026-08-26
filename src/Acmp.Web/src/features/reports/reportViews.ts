@@ -35,7 +35,13 @@ interface CardMeta {
   titleKey: string;
   subKey: string;
   subVars?: Record<string, number>;
-  kpi?: string;
+  /*
+   * NFR-037: a KPI is a QUANTITY and must reach the view as a NUMBER — pre-stringifying it here
+   * (`String(n)`, or a template literal with its own `%`) hands the renderer digits it can no longer
+   * localize. A string is still allowed, but only for a non-quantity placeholder such as an em dash.
+   */
+  kpi?: number | string;
+  kpiSuffix?: string;
   kpiSubKey?: string;
   to?: string; // drill-down target
 }
@@ -232,16 +238,16 @@ export function buildView(view: ReportView, d: ReportData): ReportCard[] {
       const exposure = riskMatrix(d.risks);
       const highSev = d.risks.filter((r) => isActiveRisk(r) && (r.exposure === 'High' || r.exposure === 'Critical')).length;
       return [
-        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kpi: issued > 0 ? `${pctOf(approvedFamily, issued)}%` : '—', kpiSubKey: 'reports.kpi.approvedRate', kind: 'stack', segments: outcomes, to: '/decisions' },
+        { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kpi: issued > 0 ? pctOf(approvedFamily, issued) : '—', kpiSuffix: '%', kpiSubKey: 'reports.kpi.approvedRate', kind: 'stack', segments: outcomes, to: '/decisions' },
         trend('throughput', 'reports.card.throughput', 'reports.sub.throughput'),
-        { key: 'exposure', titleKey: 'reports.card.riskExposure.title', subKey: 'reports.activeCount', subVars: { count: exposure.active }, kpi: String(highSev), kpiSubKey: 'reports.kpi.highSeverity', kind: 'matrix', matrix: exposure, to: '/risks' },
+        { key: 'exposure', titleKey: 'reports.card.riskExposure.title', subKey: 'reports.activeCount', subVars: { count: exposure.active }, kpi: highSev, kpiSubKey: 'reports.kpi.highSeverity', kind: 'matrix', matrix: exposure, to: '/risks' },
         { key: 'open', titleKey: 'reports.card.openItems', subKey: 'reports.sub.openItems', kind: 'stat', stats: openItemsStats(d) },
       ];
     }
     case 'committee':
       return [
         { key: 'byStatus', titleKey: 'reports.card.backlogStatus', subKey: 'reports.activeTopics', subVars: { count: d.activeTopics.length }, kind: 'bars', bars: backlogStatusBars(d.activeTopics), to: '/backlog' },
-        { key: 'aging', titleKey: 'reports.card.aging', subKey: 'reports.sub.aging', kpi: String(d.activeTopics.filter((t) => t.ageDays > 30).length), kpiSubKey: 'reports.aging.over30', kind: 'columns', cols: agingColumns(d.activeTopics), to: '/backlog' },
+        { key: 'aging', titleKey: 'reports.card.aging', subKey: 'reports.sub.aging', kpi: d.activeTopics.filter((t) => t.ageDays > 30).length, kpiSubKey: 'reports.aging.over30', kind: 'columns', cols: agingColumns(d.activeTopics), to: '/backlog' },
         seam('attendance', 'reports.card.attendance', 'reports.sub.attendance'),
         { key: 'outcomes', titleKey: 'reports.card.outcomes', subKey: 'reports.sub.outcomes', kind: 'stack', segments: decisionOutcomeStack(d.decisions), to: '/decisions' },
       ];
@@ -279,7 +285,12 @@ export function buildView(view: ReportView, d: ReportData): ReportCard[] {
 // ---- CSV export (current view → flat rows) ----
 
 /** Flatten the current view's cards to CSV. Trend/seam cards contribute a single note row so the
- *  export self-documents what wasn't available, rather than silently dropping the card. */
+ *  export self-documents what wasn't available, rather than silently dropping the card.
+ *
+ *  ⚠ THE `String(...)` CALLS BELOW ARE DELIBERATE AND ARE NOT AN NFR-037 GAP. A CSV is read by a
+ *  spreadsheet, not by a person: Arabic-Indic digits and a `١٬٣٠٠` grouping separator would arrive
+ *  as text in every cell. Locale-appropriate formatting is a rule about what a READER sees, and the
+ *  reader of this output is a machine — so these stay Latin and ungrouped, on purpose. */
 export function viewToCsv(cards: ReportCard[], t: (k: string, v?: Record<string, number>) => string): string {
   const rows: string[][] = [['Card', 'Metric', 'Value']];
   for (const c of cards) {

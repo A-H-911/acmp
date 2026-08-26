@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { Icon } from '../../components/icons';
 import { Menu } from '../../components/ui/Menu';
 import type { Column } from '../../components/ui/Table';
@@ -160,7 +161,7 @@ export function ColumnPicker({ columns, prefs, onToggle, onMove, onReset }: Pick
         <>
           <Icon name="cog" size={14} aria-hidden />
           {t('topics.columns.trigger')}
-          {hiddenCount > 0 && <span className="bk-cols-count">{hiddenCount}</span>}
+          {hiddenCount > 0 && <span className="bk-cols-count"><Num value={hiddenCount} /></span>}
         </>
       }
     >

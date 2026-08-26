@@ -10,6 +10,7 @@
  * bounded by each provider's status vocabulary (m22).
  */
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useSearch, type LocalizedText } from '../../api/search';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -51,7 +52,7 @@ export function SearchPage() {
             <section key={group.type} className="search-group" aria-label={t(`search.groups.${group.type}`, group.type)}>
               <h2 className="search-group-title">
                 {t(`search.groups.${group.type}`, group.type)}
-                <span className="search-group-count">{group.items.length}</span>
+                <span className="search-group-count"><Num value={group.items.length} /></span>
               </h2>
               <ul className="search-hits">
                 {group.items.map((hit) => (

@@ -14,6 +14,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Num } from '../../lib/numberFmt';
 import { toPng } from 'html-to-image';
 import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
@@ -218,7 +219,7 @@ function ReportCardView({ card, view }: { card: ReportCard; view: ReportView }) 
 
       {card.kpi != null && (
         <div className="rpt-kpi">
-          <span className="rpt-kpi-v">{card.kpi}</span>
+          <span className="rpt-kpi-v">{typeof card.kpi === 'number' ? <><Num value={card.kpi} />{card.kpiSuffix ?? ''}</> : card.kpi}</span>
           {card.kpiSubKey && <span className="rpt-kpi-l">{t(card.kpiSubKey)}</span>}
         </div>
       )}
@@ -272,7 +273,7 @@ function StatGrid({ stats }: { stats: StatTile[] }) {
     <div className="rpt-stats">
       {stats.map((s, i) => (
         <div key={s.label ?? (s.labelKey || String(i))} className="rpt-stat">
-          <div className="rpt-stat-v" style={s.zone ? { color: `var(--st-${s.zone}-fg)` } : undefined}>{s.value}{s.suffix ?? ''}</div>
+          <div className="rpt-stat-v" style={s.zone ? { color: `var(--st-${s.zone}-fg)` } : undefined}><Num value={s.value} />{s.suffix ?? ''}</div>
           <div className="rpt-stat-l">{s.label ?? t(s.labelKey)}</div>
         </div>
       ))}
@@ -289,7 +290,7 @@ function BarsView({ bars }: { bars: Bar[] }) {
         <div key={b.key} className="rpt-bar">
           <div className="rpt-bar-top">
             <span className="rpt-bar-label">{b.label ?? t(b.labelKey!)}</span>
-            <span className="rpt-bar-val">{b.count}</span>
+            <span className="rpt-bar-val"><Num value={b.count} /></span>
           </div>
           <div className="rpt-bar-track"><span className="rpt-bar-fill" style={{ inlineSize: `${b.pct}%`, background: `var(--st-${b.zone}-dot)` }} /></div>
         </div>
@@ -304,7 +305,7 @@ function ColumnsView({ cols }: { cols: Column[] }) {
       <div className="rpt-cols-bars">
         {cols.map((c) => (
           <div key={c.key} className="rpt-col">
-            <span className="rpt-col-v">{c.value}</span>
+            <span className="rpt-col-v"><Num value={c.value} /></span>
             <span className="rpt-col-bar" style={{ blockSize: `${c.pct}%`, background: `var(--st-${c.zone}-dot)` }} />
           </div>
         ))}
@@ -329,7 +330,7 @@ function StackView({ segments }: { segments: Segment[] }) {
         {segments.map((s) => (
           <span key={s.key}>
             <span className="rpt-stack-dot" style={{ background: `var(--st-${s.zone}-dot)` }} />
-            <b>{s.value}</b> {t(s.labelKey)}
+            <b><Num value={s.value} /></b> {t(s.labelKey)}
           </span>
         ))}
       </div>
