@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **twenty-seven** times, and **eight** wrong assertions have escaped into
+file has carried a stale statement **thirty** times, and **eight** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +39,53 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠ **THE THIRTIETH IS AN EXACT REPEAT OF A SHAPE THIS SECTION ALREADY DOCUMENTS, WHICH IS WHY IT MATTERS
+MORE THAN ITS SIZE.** An entry here read *"`LL-023` (Proposed)"* — true when written, false about an hour
+later when `DEC-079` d1 approved and pinned it, and committed that way. **A fresh session would have run
+a confirmation ceremony that had already happened** — the twelfth's shape, a stale INSTRUCTION rather
+than a stale number. And the FIFTEENTH recorded exactly this, about `LL-011`, in this same file:
+*"`LL-011` (Proposed — needs the operator's confirmation interview)"* sitting below a line saying it was
+Approved and pinned.
+⚠⚠ **THE MECHANICAL PASS CANNOT SEE IT, AND THAT IS THE STRUCTURAL POINT.** `count-prompt-ids.py` reports
+each cited row's status from the JSONL — it read `LL:Approved` correctly — but the word *"(Proposed)"*
+sitting in the PROSE beside the id is not a status, it is a sentence. **The checker agrees with the
+register while the paragraph disagrees with both.**
+⭐ **THE REMEDY IS TO STOP WRITING IT: never put a lesson's lifecycle status inline in this file.** Cite
+the id and let `entity_query("lesson", status="Proposed")` answer — a status written in prose has a
+half-life measured in one operator interview.
+
+⚠ **THE TWENTY-NINTH IS THE NEXT-ACTION LIST NUMBERED 1, 3, 4.** Item 2 vanished when the list was
+collapsed after `WBS-24.3` closed, and it reached two commits that way. **A SEQUENCE IN PROSE IS
+INVISIBLE TO EVERY MECHANICAL CHECK** (`LL-016`) — the id-and-status pass ran clean over it at 246 of
+247, because an ordinal is neither an id nor a status. Same shape as the FIFTEENTH, where two entries in
+this very section were both numbered `THIRTEENTH`. ⭐ **When you renumber a list here, read it back as a
+sequence rather than checking the item you changed.**
+
+⚠⚠ **THE TWENTY-EIGHTH IS A FAMILY OF FIVE, ALL FALSIFIED BY THE SESSION'S OWN WORK, AND THE FILE WAS
+COMMITTED TWICE WITH THEM.** Building `WBS-24.1`–`24.3` made these live instructions wrong, and the
+pre-handoff read is what caught them — not a later session tripping over them:
+- **§2's *"`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY SHELLS"*** — under a **do NOT
+  rebuild** heading. `Calendar.tsx` was filled that same day. ⚠⚠ **A "do not rebuild" entry that names a
+  file which HAS since been built is the most expensive kind of stale: it argues against the very work
+  that was just done.**
+- **§2's sub-note** — *"`DW-037` is `Activated`, `FR-035` is back to `Approved`, filling that shell is the
+  second item of the live slice"*. All three were true that morning and none survived the afternoon.
+- **§4 trap 1c's copy of the same claim** — the second instance of one sentence living in two places,
+  which is how one gets fixed and the other does not.
+- **§4 trap 1c's *"`FR-032` is now `Approved` with `DW-033` `Activated`"*** — both had moved on.
+- **§6's *"It is the single missing member of a family that otherwise shipped"*** — `FR-032` was the
+  missing member and is now `Implemented`.
+⭐ **AND TWO INSTRUCTION-SHAPED GAPS THAT WERE NOT FALSE, ONLY SILENT, WHICH IS WORSE FOR A READER:** the
+`WBS-24` order table carried no status, so nothing said three of its eight rows were finished; and the
+axe-obligation note still said THREE rows owe a route when `WBS-24.2`'s was discharged — a fresh session
+would have added the calendar sweep a second time. Both now say so.
+⚠ **Not an escape: no commit MESSAGE repeated any of them** — checked by grepping the log, where the only
+hit is a 2026-08-20 commit CORRECTING the same sentence. The count stays at eight.
+⭐⭐ **THE PATTERN ACROSS 25–28 IS ONE THING: THE FILE DESCRIBES A CODEBASE THAT THE SESSION IS CHANGING
+UNDERNEATH IT.** Every item built falsifies some sentence here, and none of them is an id or a status, so
+the mechanical pass runs clean over all of it — 245 of 246 today. **After building anything, grep this
+file for the FILE NAMES and REQUIREMENT IDS you touched, not just for the row you closed.**
 
 ⚠⚠⚠ **THE TWENTY-SEVENTH IS THE WORST KIND IN THIS FILE'S HISTORY, BECAUSE IT REACHED THE OPERATOR'S
 DECISION SLATE.** This file, `DW-085`'s row, `DEC-078` and commit `33994aa` all said the FTS image build
@@ -56,7 +103,7 @@ recommendation to carry `DW-085`. They overrode it and activated the row anyway,
 not change the outcome — **that is luck, not process.** ⭐ **A false constraint in a decision slate is
 worse than the same sentence in a note: a note is read later by someone with the register open, where
 checking is cheap; a slate is read AT THE MOMENT OF DECIDING, by the one person who cannot check it.**
-⭐⭐ **THE STRUCTURAL GAP IS `LL-023` (Proposed): `LL-011`'s generator guarantees the QUOTED records — and
+⭐⭐ **THE STRUCTURAL GAP IS `LL-023` (Approved and PINNED, `DEC-079` d1 — it binds): `LL-011`'s generator guarantees the QUOTED records — and
 on that docket fifteen fields were verified byte-identical, the verifier itself calibrated against two
 injected faults — but NOTHING guarantees the agent's connective prose, and the connective prose is what
 frames the question.** Worse, the verification machinery makes the surrounding prose read as MORE
@@ -255,6 +302,28 @@ twenty"). ⚠⚠ **An id-and-status verifier cannot see a stale INSTRUCTION or a
 number is exactly what this section is about.** The fix was to delete every intermediate count and leave the
 three-step rule. **When you re-verify this file, read the prose; the mechanical pass is the easy half.**
 
+⚠⚠ **BEFORE YOU HAND THIS FILE ON, RUN BOTH CHECKS — the mechanical one is committed, the second is not
+and is worth ten lines of your time.** `python scripts/count-prompt-ids.py` resolves every cited id and
+prints each row's real status. It does NOT see a status written in PROSE, which is how the THIRTIETH
+happened, so also run this — it compares an inline `(Status)` beside an id against the register:
+
+```python
+import io, re, json
+s = io.open('tamheed-package/prompts/prm-next.md', encoding='utf-8').read()
+rows = {}
+for f in ('lessons','deferred_work','defects','requirements','wbs_items','acceptance_criteria'):
+    for l in open(f'tamheed-package/data/{f}.jsonl', encoding='utf-8'):
+        r = json.loads(l); rows[r['id']] = r.get('lifecycle_status')
+for m in re.finditer(r'`(LL|DW|DEF|FR|NFR|WBS|AC)-[0-9.]+`[^.\n]{0,24}?\((Proposed|Activated|Approved|Open|Done|Fixed|Implemented|Review|Deferred)\)', s):
+    ident = m.group(0).split('`')[1]; claimed = m.group(2); actual = rows.get(ident)
+    if actual and claimed != actual:
+        print(f'line {s[:m.start()].count(chr(10))+1}: {ident} prose says ({claimed}) register says {actual}')
+```
+
+⚠ **It cannot tell a QUOTATION of a corrected error from the error itself** — the entry documenting the
+thirtieth quotes *"`LL-023` (Proposed)"* and the check flags it every time. That is trap 2's shape in a
+tool you just wrote: **read the hit before believing it.**
+
 ⚠ The eighth fix (batch 13) stopped patching the numbers and **deleted them**, replacing each with the
 command that measures it. A tally you can re-type is a tally that will go stale again; a command cannot.
 
@@ -406,15 +475,15 @@ which is what makes it invisible.
   renumber the column as if hidden topics were absent. ⚠ **`SC-021` is Merged but `WBS-22.3` still reads
   "notification bodies"** — the SC row and its `scope_modifies` edges ARE the correction. Do not "tidy" it.
 - **`SL-029` — FR-030 topic conversion with provenance** (`bcc3d00`, `b065a29`).
-- ⚠ **`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY SHELLS** — routed, well-commented,
-  drawing nothing; their own headers say so. Requirement ids in source comments are **positive-only**
-  evidence: one such citation was a *deferral* note.
-  ⚠⚠ **BUT `Calendar.tsx` IS NO LONGER IN THIS "DO NOT REBUILD" SECTION'S SPIRIT.** `DW-037` is
-  `Activated` (`SC-028`), `FR-035` is back to `Approved`, and it is now **SCHEDULED as `WBS-24.2` in
-  `SL-033`** — filling that shell is the second item of the live slice, not a candidate. This bullet now means only *"the file existing is not evidence it was built"* — it is **not** a
-  prohibition. ⚠ Build it against the **Meetings** API (`MeetingDetailDto.ScheduledStart` +
-  `AgendaItemDto.TopicId`); `Topic.Schedule` discards the meeting id into an unconsumed event.
-  `Timeline.tsx` is unchanged — `FR-036`/`DW-001` stay deferred, since topics still carry no planned span.
+- ⚠ **`Timeline.tsx` IS AN HONEST EMPTY SHELL — routed, well-commented, drawing nothing, and its own
+  header says so.** `FR-036`/`DW-001` stay deferred, because topics still carry no planned SPAN.
+  ⚠ **`Calendar.tsx` WAS ONE AND IS NOT ANY MORE (2026-08-26, `WBS-24.2` → `65c158c`).** It renders real
+  meeting markers; `DW-037` is `Done` and `FR-035` is `Implemented`. **Do not rebuild it, and do not go
+  looking for a scheduled date on the Topics read model** — there is none: `Topic.Schedule` raises an
+  event with zero consumers, and the view reads `MeetingSummary.scheduledStart` + `AgendaItem.topicId`.
+  ⭐ **The durable half of this bullet is unchanged: A FILE EXISTING IS NOT EVIDENCE IT WAS BUILT.**
+  Requirement ids in source comments are **positive-only** evidence — one such citation was a *deferral*
+  note, which is the whole reason `DW-039` existed.
 - **Real accessibility instruments already exist and are easy to miss:** `axe-core` is a dependency, and
   there is a jsdom axe test over 5 surfaces, a **live Playwright axe sweep in BOTH locales** with the full
   `wcag22aa` tag set, and a token-contrast test computing real WCAG luminance over 20 pairs in two
@@ -450,12 +519,12 @@ which is what makes it invisible.
    read a NULL column and its two `NotContain` controls passed **vacuously**.
 1c. ⚠⚠ **`LL-006` — A PROXY IS NOT THE ARTIFACT, AND IT FAILED FOUR TIMES IN ONE SESSION, EACH TIME
    INSIDE THE CORRECTION OF THE LAST.** A register attribute, then a register row, then a **filename**,
-   then a filename again. ⚠ **`Timeline.tsx` and `Calendar.tsx` EXIST AND ARE DELIBERATE EMPTY
-   SHELLS** — present, routed, well-commented, and drawing nothing; their own headers say so. (⚠ Status
-   note, so this is not misread as a prohibition: `Calendar.tsx`'s row `DW-037` is now **`Activated`** —
-   see §2. The LESSON here is about the file's existence proving nothing, not about the work being off
-   limits.) Check **both** directions: the sweep also found `FR-032` unbuilt inside the "presumed built"
-   group — and `FR-032` is now `Approved` with `DW-033` `Activated`, so that example has moved too.
+   then a filename again. ⚠ **`Timeline.tsx` IS AN HONEST EMPTY SHELL** — present,
+   routed, well-commented, drawing nothing; its own header says so. (⚠ Status note, 2026-08-26:
+   `Calendar.tsx` was the other example and is now BUILT — `DW-037` `Done`, `FR-035` `Implemented`.
+   The LESSON is about a file's existence proving nothing, not about either file's current state.)
+   Check **both** directions: the sweep also found `FR-032` unbuilt inside the "presumed built" group —
+   and `FR-032` is now `Implemented` with `DW-033` `Done`, so that example has moved twice.
    Requirement ids cited in source comments are strong evidence of being BUILT, but the instrument is
    **positive-only** and one citation was a **deferral note** (`InvariantStatus.cs:7`).
 2. **A measurement that indicts known-good code is measuring itself.** ⚠ Fired again 2026-08-18:
@@ -924,15 +993,26 @@ of them will fail a test if it is missing.**
 ⚠ **Widening SHARED test data to serve a new test is a change to every test that reads it** — it broke a
 pre-existing exact-text assertion here; the fix was to scope the new fixture, not relax the old test.
 
+⚠ **ONE LESSON AWAITS YOUR INTERVIEW: `LL-024`** — generated code loses its escapes silently, so prove
+it RUNS rather than reading it. It cost four cycles in one session. **`lessons-confirmed` therefore fails
+again, ON PURPOSE** — that advisory is doing its job; do not clear it by approving a sentence the
+operator has not read (`DEC-075` d4's precedent).
+
 1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.4`. THIS IS THE NEXT ACTION** — `DW-068` / `NFR-037`, **number** formatting (the
    date half already holds). ⚠ **Read the row's own text before sizing it** — that habit has now paid on
    all three items so far, in different directions each time. ⚠ **Measure, do not trust this line** —
    `readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")` are the live answer.
-3. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
-   only two open PRs, `#128` and `#134` (verified with no `--limit` cap, 2026-08-25).
-4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+   only two open PRs, `#128` and `#134` (re-verified with no `--limit` cap, 2026-08-26).
+3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+
+⚠⚠ **TWO OPERATOR VERDICTS ARE OWED AND THE WORK IS NOT PENDING — DO NOT REBUILD EITHER.** `WBS-24.2` and
+`WBS-24.3` are `Review`, which is done-claimed by the agent; `Implemented` is the OPERATOR's call and
+`DEC-079` d3 established that they adjudicate PER ITEM. `WBS-24.1` is already `Implemented`. **`Review`
+counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming those rows is the rule working, not
+a fault to repair.**
 
 ✅ **`LL-022` IS APPROVED AND PINNED** (`DEC-078` d1) and `lessons-confirmed` passes again. ⭐ **The
 approval path has a guard worth knowing before you meet it: omitting a field is NOT preservation there.**
@@ -992,30 +1072,42 @@ files was a handler, a dismissal, an error arm or a drag path; not one needed a 
 a "needs a decision" label to any file without reading its lines**: `scripts/coverage-triage.mjs` prints
 each one's source text for exactly that. The branch `chore/vitest-4-pair` is merged and deleted.
 
-▶▶ **THEN: `WBS-24.1` / `DW-033` / `FR-032`** — the backlog as a dense table with **user-configurable
+▶ **HISTORY — `WBS-24.1` SHIPPED (`f968703`) AND ITS REQUIREMENT IS `Implemented`.** Kept because the
+sweep below is the method, not because the work is pending. ⚠⚠ **AND THE ROW'S SIZING WAS WRONG: the
+dense TABLE had already shipped; only the CONFIGURATION was missing.** `DW-033`'s own text was accurate
+and narrow — the WBS title's SUMMARY of it was the wrong part.
+`WBS-24.1` / `DW-033` / `FR-032` — the backlog as a dense table with **user-configurable
 columns** (show/hide, reorder). **Re-verified unbuilt 2026-08-23**: `columnPrefs`, `visibleColumns`,
 `columnConfig` and `ColumnPicker` return **zero** across the 339 `.ts*` files of `src/Acmp.Web`, and the
 sweep is proven to have had a subject — the control term `Backlog` returns 305 in the same pass
-(`LL-013`). It is the single missing member of a family that otherwise
+(`LL-013`). It WAS the single missing member of a family that otherwise
 shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`FR-035`), `Timeline.tsx`
-(`FR-036`).
+(`FR-036`). ⚠ **Of those, only `Timeline.tsx` is still a shell today.**
 
 **THE ORDER (`DEC-071` d1), smallest and most contained first, riskiest LAST:**
 
-| # | row | what |
-|---|---|---|
-| `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns |
-| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view — ⚠ read below · **+ axe route** |
-| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half |
-| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) |
-| `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only |
-| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** |
-| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count |
-| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** |
+⚠ **The status column is a convenience and it CAN go stale — `entity_query("wbs-item")` is the live
+answer, and `readiness_check(scope="slice", id="SL-033")` names every row still open.**
 
-⚠⚠ **THE THREE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its
+| # | row | what | status (2026-08-26) |
+|---|---|---|---|
+| `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns | ✅ `Implemented` |
+| `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Review` |
+| `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Review` |
+| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ▶ next |
+| `WBS-24.5` | `DW-036` / `FR-155` | retention **configurability** only | `Approved` |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** | `Approved` |
+| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
+| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
+
+⚠⚠ **THE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its
 route to the live axe sweep in `e2e/rtl-a11y.spec.ts` IN THE SAME BATCH THAT BUILDS IT, and says so in its
-own acceptance criterion.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
+own acceptance criterion.**
+✅ **`WBS-24.2`'s IS DISCHARGED — do NOT add the calendar again.** `AC-145` carries it, and it was PROVEN
+to run rather than inferred from a green job: the e2e count moved **86 → 88**, which is **+2 for one added
+test** because `playwright.config.ts` runs `rtl-a11y.spec.ts` in **both** `chromium` and `msedge`.
+⭐ **Reuse that check:** a green e2e job that never reached your new test leaves the count unchanged.
+**`WBS-24.6` and `WBS-24.8` still owe theirs.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
 route ships — that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the
 sweep"* — fired against exactly these three surfaces. ⚠ **The row had been read as fully parked and it never
 was**: `DEC-071` d4 parked its SECOND clause (release sign-off) and nobody had read the first. **The summary

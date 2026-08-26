@@ -6,7 +6,18 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-26 · **`WBS-24.1`–`24.3` DONE-CLAIMED** — ▶▶ NEXT: **`WBS-24.4`** (number formatting)
+## ★★★ 2026-08-26 · **`WBS-24.1`–`24.3` DONE** — ▶▶ NEXT: **`WBS-24.4`** · ⚠ 2 verdicts + `LL-024` owed
+
+- ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
+  — not just the row you closed. The pre-handoff read found **7** stale statements the id-and-status pass
+  ran clean over: a **"do NOT rebuild" entry naming a file that had just been built**, a duplicated
+  sentence where one copy got fixed, a list numbered 1-3-4, and **`LL-023` "(Proposed)" in prose while
+  the register said Approved**. ⭐ **Never write a lifecycle status inline** — the register has it.
+- ⚠⚠ **`LL-024` (Proposed): GENERATED CODE LOSES ITS ESCAPES SILENTLY AND STILL LOOKS PLAUSIBLE.**
+  `'
+'` written through a Python heredoc becomes a REAL newline in the output file. Four hits in one
+  session (Dockerfile, test fixture, an embedded regex twice). **Build escapes with `chr(92)`, then
+  EXTRACT AND RUN the generated block — reading it is the check that fails.**
 
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). Only place
   any `FREETEXT` runs against real SQL Server. ⚠ **`readiness_check` is `ready:FALSE` ON PURPOSE**
