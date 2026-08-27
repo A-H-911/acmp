@@ -4,7 +4,7 @@
        same module graph and Hangfire storage — the enqueue side (API client) and the process side (worker
        server) must agree byte-for-byte or jobs won't line up (ADR-0024). -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

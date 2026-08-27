@@ -1,19 +1,19 @@
 <Project>
 
   <!-- P16b / C-SUP-02 (OQ-027): pin patched transitive versions so the CI dependency gate can block on
-       High/Critical CVEs. System.Formats.Asn1 5.0.0 (GHSA-447r-wph3-92pm, HIGH) surfaces transitively across
-       nearly every project via the auth/crypto stack, so it is pinned solution-wide here. Newtonsoft.Json 11.0.1
-       (GHSA-5crp-9r3c-p9vr, HIGH) surfaces in only 4 host/integration projects and is pinned directly in those
-       csprojs (avoids adding a 3rd-party JSON lib to projects that use only System.Text.Json). Verified: no
-       project declares a direct reference to System.Formats.Asn1, so this adds no duplicate reference. -->
-  <ItemGroup>
-    <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
-    <!-- Legacy 4.3.0 transitives with HIGH CVEs, patched in these framework-package versions:
-         System.Net.Http 4.3.0 (GHSA-7jgj-8wvc-jh57) -> 4.3.4; System.Text.RegularExpressions 4.3.0
-         (ReDoS, GHSA-cmhp-...) -> 4.3.1. Subsumed by the net8 runtime; pinned to silence the advisory. -->
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-  </ItemGroup>
+       High/Critical CVEs.
+
+       ⚠⚠ THREE PINS WERE REMOVED HERE BY DW-080 PHASE A, AND THE REMOVAL IS EVIDENCED, NOT ASSUMED.
+       System.Formats.Asn1 8.0.1 (GHSA-447r-wph3-92pm), System.Net.Http 4.3.4 (GHSA-7jgj-8wvc-jh57) and
+       System.Text.RegularExpressions 4.3.1 (ReDoS) existed to force patched versions of packages the net8
+       runtime subsumed but still advertised. Under net10 all three are provided in-box, so NuGet reports
+       NU1510 ("automatically available ... remove the PackageReference") on every project that inherits
+       them — 284 warnings, which is how they were noticed at all.
+       THE CHECK THAT JUSTIFIES REMOVING THEM: they were deleted, `dotnet restore` was re-run, and the
+       advisory list was read UNCAPPED — it is empty. The pins are not silencing anything any more, and a
+       security pin that no longer corresponds to a live advisory is worse than none: it reads as active
+       protection while doing nothing. Restore is the instrument; if a future runtime stops shipping a
+       patched version, the advisory returns and the gate blocks, which is the control working. -->
 
   <!-- Newtonsoft.Json only where it actually surfaces (the 4 host/integration projects), scoped by project name
        so domain/module projects that use System.Text.Json stay free of it. -->
@@ -31,6 +31,41 @@
        Scoped to the project that actually pulls it, so nothing else acquires an SSH client. -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acmp.Integration.Tests'">
     <PackageReference Include="SSH.NET" Version="2026.0.0" />
+  </ItemGroup>
+
+  <!-- DW-080 phase A (net8.0 -> net10.0): Microsoft.AspNetCore.OpenApi 10.0.0 pulls Microsoft.OpenApi
+       2.0.0 transitively, which carries a HIGH advisory (GHSA-v5pm-xwqc-g5wc). ⚠ THE MIGRATION ITSELF
+       INTRODUCED THIS — it did not exist on net8.0, where the 8.0.28 OpenApi package pulled a different
+       tree. Pinned to the patched 2.x rather than left to the transitive resolution, exactly as the
+       System.Formats.Asn1 and SSH.NET pins above: the CI dependency gate blocks on High/Critical by
+       design (C-SUP-02 / OQ-027), and a runtime migration is precisely the change most likely to smuggle
+       a new advisory in behind an unrelated green build.
+       Deliberately 2.x and NOT 3.x: Microsoft.AspNetCore.OpenApi 10.0.0 is built against the 2.x surface,
+       so a major bump here would be an API gamble to fix a CVE. Scoped to the one project that pulls it. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acmp.Api'">
+    <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
+  </ItemGroup>
+
+  <!-- DW-080 phase A, the SECOND advisory cluster the migration introduced, and it is nothing to do with
+       the OpenApi one above. Microsoft.EntityFrameworkCore.SqlServer 10.0.0 -> Microsoft.Data.SqlClient
+       pulls System.Security.Cryptography.Xml 9.0.0, which carries EIGHT high advisories. It surfaces in
+       every *.Infrastructure project rather than in one host, so it is pinned solution-wide here exactly
+       as System.Formats.Asn1 is, not scoped.
+       ⚠⚠ 10.0.0 IS ALSO VULNERABLE — "the next major is the patched one" is an assumption and it was
+       WRONG here. Pinning 10.0.0 left all eight advisories standing; the fix is 10.0.11, the current
+       patch. Verify a pin by re-running restore and reading the advisory list, never by the version
+       number looking newer than the one the tool complained about.
+       ⚠ HOW THIS CLUSTER WAS ALMOST MISSED, because the method matters more than the pin: the first
+       restore was read through `sort -u | head -20`, which was full of NU1510 notices, and the conclusion
+       drawn was "one new HIGH advisory". Re-read with NO cap there were two clusters. That is LL-015 /
+       PE-599's truncated instrument, in the same session that cites them. Enumerate advisories uncapped.
+       ⚠ NuGet reports NU1510 on THIS pin too — "automatically available, remove it" — and that advice is
+       wrong here, which is why the warning is left standing rather than obeyed. The version the framework
+       makes available is not what wins: SqlClient's transitive 9.0.0 does, and 9.0.0 is the vulnerable
+       one. Removing this reference was tested IN THIS TREE and the advisories come straight back — 104
+       reported hits across the Infrastructure projects, all naming 9.0.0. -->
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" />
   </ItemGroup>
 
 </Project>

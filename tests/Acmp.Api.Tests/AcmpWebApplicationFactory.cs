@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -88,70 +89,69 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         return host;
     }
 
+    /*
+     * Swap one module's DbContext onto the InMemory provider (DW-080 phase A).
+     *
+     * ⚠⚠ THE `IDbContextOptionsConfiguration<TContext>` LINE IS THE WHOLE POINT, AND ITS ABSENCE IS WHAT
+     * THE .NET 10 MIGRATION EXPOSED. EF Core 9+ registers that descriptor alongside DbContextOptions<T>,
+     * and IT is what carries the `UseSqlServer` call. Removing only the options descriptor left the SQL
+     * Server configuration applied, so both providers ended up in one service provider — which EF 8
+     * TOLERATED and EF 10 refuses outright: "Services for database providers 'SqlServer', 'InMemory' have
+     * been registered ... Only a single database provider can be registered."
+     *
+     * ⭐ THE SHAPE WORTH KEEPING: it compiled, `dotnet format` passed, and the solution built clean in
+     * Release — then 355 of 392 API tests failed at RUNTIME. DW-080's row predicted exactly this class
+     * ("the failure mode compiles and unit-tests perfectly"); it was the suite, not the compiler, that
+     * caught it. A migration's real verdict comes from executing, never from building.
+     *
+     * Extracted from fourteen copy-pasted triples rather than fixing fourteen of them, so the next
+     * context added here cannot silently omit the line that matters (WBS-24.5's three-places lesson).
+     */
+    internal static void UseInMemory<TContext>(IServiceCollection services, string dbName)
+        where TContext : DbContext
+    {
+        services.RemoveAll<DbContextOptions<TContext>>();
+        services.RemoveAll<IDbContextOptionsConfiguration<TContext>>();
+        services.RemoveAll<TContext>();
+        services.AddDbContext<TContext>(o => o.UseInMemoryDatabase(dbName));
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll<DbContextOptions<MembershipDbContext>>();
-            services.RemoveAll<MembershipDbContext>();
-            services.AddDbContext<MembershipDbContext>(o => o.UseInMemoryDatabase(_dbName));
+            UseInMemory<MembershipDbContext>(services, _dbName);
 
-            services.RemoveAll<DbContextOptions<TopicsDbContext>>();
-            services.RemoveAll<TopicsDbContext>();
-            services.AddDbContext<TopicsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-topics"));
+            UseInMemory<TopicsDbContext>(services, _dbName + "-topics");
 
-            services.RemoveAll<DbContextOptions<MeetingsDbContext>>();
-            services.RemoveAll<MeetingsDbContext>();
-            services.AddDbContext<MeetingsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-meetings"));
+            UseInMemory<MeetingsDbContext>(services, _dbName + "-meetings");
 
-            services.RemoveAll<DbContextOptions<DecisionsDbContext>>();
-            services.RemoveAll<DecisionsDbContext>();
-            services.AddDbContext<DecisionsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-decisions"));
+            UseInMemory<DecisionsDbContext>(services, _dbName + "-decisions");
 
-            services.RemoveAll<DbContextOptions<ActionsDbContext>>();
-            services.RemoveAll<ActionsDbContext>();
-            services.AddDbContext<ActionsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-actions"));
+            UseInMemory<ActionsDbContext>(services, _dbName + "-actions");
 
-            services.RemoveAll<DbContextOptions<RisksDbContext>>();
-            services.RemoveAll<RisksDbContext>();
-            services.AddDbContext<RisksDbContext>(o => o.UseInMemoryDatabase(_dbName + "-risks"));
+            UseInMemory<RisksDbContext>(services, _dbName + "-risks");
 
-            services.RemoveAll<DbContextOptions<TraceabilityDbContext>>();
-            services.RemoveAll<TraceabilityDbContext>();
-            services.AddDbContext<TraceabilityDbContext>(o => o.UseInMemoryDatabase(_dbName + "-traceability"));
+            UseInMemory<TraceabilityDbContext>(services, _dbName + "-traceability");
 
-            services.RemoveAll<DbContextOptions<DependenciesDbContext>>();
-            services.RemoveAll<DependenciesDbContext>();
-            services.AddDbContext<DependenciesDbContext>(o => o.UseInMemoryDatabase(_dbName + "-dependencies"));
+            UseInMemory<DependenciesDbContext>(services, _dbName + "-dependencies");
 
-            services.RemoveAll<DbContextOptions<GovernanceDbContext>>();
-            services.RemoveAll<GovernanceDbContext>();
-            services.AddDbContext<GovernanceDbContext>(o => o.UseInMemoryDatabase(_dbName + "-governance"));
+            UseInMemory<GovernanceDbContext>(services, _dbName + "-governance");
 
-            services.RemoveAll<DbContextOptions<ResearchDbContext>>();
-            services.RemoveAll<ResearchDbContext>();
-            services.AddDbContext<ResearchDbContext>(o => o.UseInMemoryDatabase(_dbName + "-research"));
+            UseInMemory<ResearchDbContext>(services, _dbName + "-research");
 
-            services.RemoveAll<DbContextOptions<KnowledgeDbContext>>();
-            services.RemoveAll<KnowledgeDbContext>();
-            services.AddDbContext<KnowledgeDbContext>(o => o.UseInMemoryDatabase(_dbName + "-knowledge"));
+            UseInMemory<KnowledgeDbContext>(services, _dbName + "-knowledge");
 
-            services.RemoveAll<DbContextOptions<NotificationsDbContext>>();
-            services.RemoveAll<NotificationsDbContext>();
-            services.AddDbContext<NotificationsDbContext>(o => o.UseInMemoryDatabase(_dbName + "-notifications"));
+            UseInMemory<NotificationsDbContext>(services, _dbName + "-notifications");
 
-            services.RemoveAll<DbContextOptions<AuditDbContext>>();
-            services.RemoveAll<AuditDbContext>();
-            services.AddDbContext<AuditDbContext>(o => o.UseInMemoryDatabase(_dbName + "-audit"));
+            UseInMemory<AuditDbContext>(services, _dbName + "-audit");
 
             // WBS-24.5: the externalized configuration store. A DbContext has to be substituted in
             // THREE places, not two — DI, MigrationRunner and here — and omitting this one fails
             // by trying to reach a real SQL Server, which reads like an environment problem
             // rather than a missing registration.
-            services.RemoveAll<DbContextOptions<ConfigurationDbContext>>();
-            services.RemoveAll<ConfigurationDbContext>();
-            services.AddDbContext<ConfigurationDbContext>(o => o.UseInMemoryDatabase(_dbName + "-config"));
+            UseInMemory<ConfigurationDbContext>(services, _dbName + "-config");
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
