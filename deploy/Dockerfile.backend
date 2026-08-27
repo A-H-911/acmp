@@ -13,6 +13,14 @@
 #
 # Base images are digest-pinned (C-SUP-01, P16b/B2b) — the tag is kept before @sha256: so Dependabot's docker
 # ecosystem can bump the pair. Digests are multi-arch manifest-list digests (docker buildx imagetools).
+# ⚠⚠ LL-019: THIS PIN AND `global.json` ARE ONE DECISION IN TWO PLACES, AND ONLY THIS ONE IS AUTOMATED.
+# Dependabot bumps the digest here; nothing tells global.json. This image ships SDK 10.0.302, so
+# global.json pins 10.0.302 with rollForward `latestFeature` — the roll-forward is what lets a developer
+# machine on a HIGHER feature band (10.0.4xx) still build, while the container matches exactly.
+# ⚠ DW-080 phase A pinned global.json to the LOCAL SDK (10.0.400) first, and the container was the thing
+# that failed: "Requested SDK version: 10.0.400 / Installed SDKs: 10.0.302". `latestPatch` cannot cross a
+# feature band. THE IMAGE IS THE AUTHORITY, NOT THE DEVELOPER'S BOX — if a digest bump changes the SDK
+# band, global.json's floor moves with it.
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS build
 WORKDIR /src
 COPY global.json acmp.sln ./
