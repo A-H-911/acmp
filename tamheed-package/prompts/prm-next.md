@@ -34,10 +34,9 @@ docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon
 on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase A left
 a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
 nothing, and conclude the work is not there.** `main` is green and untouched; the live work is on
-`feat/dw-080-phase-a-net10` with PR `#320` open, and ⚠ **one commit on it is not yet pushed** — check
-`git rev-list --left-right --count origin/feat/dw-080-phase-a-net10...HEAD` before assuming CI has seen
-your tree. ⭐ **This is the TWENTY-THIRD's shape again — the kickoff block itself describing an old
-world** — caught before it was committed, so the tally does not move.
+`feat/dw-080-phase-a-net10` with PR `#320` open. ⚠ **Never assume CI has seen your tree** — run
+`git rev-list --left-right --count origin/feat/dw-080-phase-a-net10...HEAD` and read the right-hand
+number. ⭐ **This is the TWENTY-THIRD's shape again — the kickoff block itself describing an old world.**
 
 ⚠ **WHAT THE COUNTER COUNTS, so it stays meaningful:** a statement is tallied when it was true, became
 false, and **reached a commit** — where a fresh session could have read it. Wording caught and fixed
@@ -46,7 +45,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-one** times, and **nine** wrong assertions have escaped into
+file has carried a stale statement **thirty-two** times, and **nine** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -56,6 +55,22 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-SECOND HAS THE SHORTEST LIFE OF ANY ENTRY HERE: ABOUT NINETY SECONDS, AND I FALSIFIED IT
+MYSELF BY DOING THE OBVIOUS NEXT THING.** The kickoff block — rewritten in the very pass that was fixing
+the kickoff block — said *"⚠ one commit on it is not yet pushed"*. It was written, committed, and then I
+pushed, which is the only action anyone would take next. **It was also wrong at the instant it was
+committed**, because two commits were unpushed at that moment, not one.
+⚠⚠ **THIS IS THE TWENTY-FIRST'S LESSON AND I HAD JUST RE-STATED IT IN THIS SAME SESSION** — *"every number
+I put into a file I am still editing is a hostage to the rest of my own session"* — and an hour earlier I
+had removed a verdict ROSTER for exactly this reason, writing that *"a sentence naming WHICH items are
+outstanding is falsified by the very work the reader is doing"*. Then I wrote a sentence naming which
+commits were outstanding.
+⭐⭐ **THE GENERAL FORM, WHICH IS WORTH MORE THAN THE INSTANCE: NEVER RECORD YOUR OWN WORKING STATE IN A
+DURABLE ARTIFACT.** Branch, PR number and "which row is at `Review`" are facts about the repository that
+outlive the session; "what I have pushed so far" is a fact about the ten minutes you are in. The line
+already CARRIED the command that answers it — `git rev-list --left-right --count` — and I put a stale
+answer in front of the working instrument anyway. **Delete the answer, keep the command.**
 
 ⚠⚠⚠ **THE THIRTY-FIRST IS THE THIRTIETH'S SHAPE, ABOUT A DIFFERENT LESSON, WRITTEN INTO THIS FILE
 *BELOW* THE PARAGRAPH THAT FORBIDS IT.** §6 said *"ONE LESSON AWAITS YOUR INTERVIEW: `LL-024` … so
