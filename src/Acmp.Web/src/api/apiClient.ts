@@ -98,3 +98,39 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
+
+/**
+ * A file download from an AUTHORIZED endpoint (WBS-24.6, the audit export).
+ *
+ * ⚠ WHY THIS EXISTS RATHER THAN AN `<a href>`. A plain link cannot carry the bearer token, so pointing
+ * one at a protected route yields a 401 — and the browser renders that as a broken download rather than
+ * as an error the app can show. The Reports page never hit this because its CSV is built client-side
+ * from data already fetched; an audited server-side export cannot be.
+ *
+ * Shares `api`'s token getter and its ApiError projection deliberately: a 403 from the export must be
+ * the same typed refusal every other call produces, not a special case at one call site.
+ */
+export async function apiBlob(path: string, init: RequestInit = {}): Promise<Blob> {
+  const token = getToken();
+  const res = await fetch(`/api${path}`, {
+    ...init,
+    headers: {
+      'Accept-Language': i18n.language,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let problem: ProblemDetails | undefined;
+    try {
+      problem = (await res.json()) as ProblemDetails;
+    } catch {
+      // Non-JSON error body — fall back to the status code.
+    }
+    const reason = res.headers.get('X-Acmp-Auth-Reason');
+    throw new ApiError(res.status, problem, (reason as AuthRefusal | null) ?? undefined);
+  }
+
+  return res.blob();
+}

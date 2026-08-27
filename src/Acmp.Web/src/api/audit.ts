@@ -9,7 +9,7 @@
  * subjectType/subjectId/outcome/before/after null.
  */
 import { useQuery } from '@tanstack/react-query';
-import { api } from './apiClient';
+import { api, apiBlob } from './apiClient';
 import type { PagedResult } from './topics';
 
 export interface AuditEvent {
@@ -53,6 +53,49 @@ function toQuery(p: AuditParams): string {
   if (p.pageSize) q.set('pageSize', String(p.pageSize));
   const s = q.toString();
   return s ? `?${s}` : '';
+}
+
+/** The two formats FR-154 names. The server rejects anything else with a 400. */
+export type AuditExportFormat = 'csv' | 'json';
+
+/**
+ * Download the audit log (WBS-24.6, FR-154, AC-152). Server-side by necessity, not by preference:
+ * control C-AUDIT-08 requires every export to be an audited sensitive event carrying who, scope and
+ * volume, and a client-built blob cannot be audited.
+ *
+ * Takes the SAME AuditParams the register uses, minus paging — an export is the reviewer's current
+ * filter over the WHOLE matching set, never one page of it. The server applies one shared predicate to
+ * both routes so the file and the screen cannot describe different sets.
+ *
+ * ⚠ Authorization is the API's (Policies.AuditRead + Policies.ReportExport = {Auditor, Chairman,
+ * Secretary}; ADR-0027 excludes Administrator). The route gate in App.tsx already keeps other roles off
+ * this screen; this function does not re-decide it, it just surfaces the refusal.
+ */
+export async function exportAuditLog(
+  params: AuditParams,
+  format: AuditExportFormat,
+): Promise<{ blob: Blob; filename: string }> {
+  const { page: _page, pageSize: _pageSize, ...filters } = params;
+  const query = toQuery(filters);
+  const blob = await apiBlob(`/audit/export${query ? `${query}&` : '?'}format=${format}`);
+  // Stamped in UTC by the caller's clock only for the local filename; the file's own rows carry
+  // round-trip timestamps from the server, which are the authoritative ones.
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T-]/g, '');
+  return { blob, filename: `acmp-audit-${stamp}.${format}` };
+}
+
+/**
+ * Hand the blob to the browser. Kept beside the fetch so both halves of "export" live together, and
+ * split from it so a test can assert the request without touching the DOM.
+ */
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  // Revoke on the next tick: revoking synchronously can race the browser's own read of the object URL.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export function useAuditRegister(params: AuditParams) {

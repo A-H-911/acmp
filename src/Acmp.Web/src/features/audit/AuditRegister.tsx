@@ -9,8 +9,14 @@
  * immutable), there is no create/edit affordance, and a read-only banner states it.
  *
  * Design↔behaviour reconciliations (see auditMeta for the data-shape rationale):
- *  - The mock's "Export log" button is dropped (no export endpoint this slice; a real CSV
- *    export is a follow-up, like the register chrome the risks slice dropped).
+ *  - The mock's "Export log" button IS NOW WIRED (WBS-24.6 / FR-154 / AC-152). It was dropped in
+ *    PR4 because no export endpoint existed, and this comment said so until that stopped being
+ *    true — a note about a sibling's state goes stale silently and nothing compiles it.
+ *    Design fidelity (INV-014): the mock draws ONE ghost button with a download glyph, so the
+ *    format choice (FR-154 says "CSV or JSON") lives in a Menu popover on that button rather than
+ *    in a second control the reference does not have. SEC-177's sitemap puts the export on its own
+ *    `/audit/export` node; the design reference governs and it draws a header button, so there is
+ *    no second route — recorded rather than silently resolved.
  *  - Of the mock's four filters, only "Artifact type" (→ entityType) is wired; Actor / Action
  *    / Date range render as inert parity chips (they need an actor directory / action catalog /
  *    date-range picker — follow-up, same call as the risks register's disabled Owner chip).
@@ -20,7 +26,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { useAuditRegister, type AuditEvent } from '../../api/audit';
+import {
+  useAuditRegister, exportAuditLog, saveBlob,
+  type AuditEvent, type AuditExportFormat,
+} from '../../api/audit';
+import { Menu, MenuItem } from '../../components/ui/Menu';
 import { Table, type Column } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -68,6 +78,7 @@ export function AuditRegister() {
             {readOnly}
           </div>
         </div>
+        <ExportLog entityType={entityType} />
       </div>
 
       <div className="aud-bar" role="search" aria-label={t('audit.filtersLabel')}>
@@ -112,6 +123,66 @@ export function AuditRegister() {
         </>
       )}
     </section>
+  );
+}
+
+/*
+ * The design's "Export log" ghost button (WBS-24.6 / FR-154 / AC-152).
+ *
+ * The reference draws one button, and FR-154 names two formats, so the choice is a Menu popover on
+ * that button — the shared component already owns the trigger, the outside-click backdrop, Esc, and
+ * focus return, and it mirrors its panel in RTL. `align="start"` because the button sits at the
+ * INLINE-END of the header: WBS-24.1 shipped a panel off-screen in both directions by taking the
+ * default, so this is that finding applied rather than re-discovered.
+ *
+ * The export carries the reviewer's CURRENT filter, which is the whole reason it is here and not on a
+ * separate page: exporting a set the screen is not showing is how a compliance file quietly disagrees
+ * with the evidence someone thinks they exported.
+ */
+function ExportLog({ entityType }: { entityType: string }) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState<AuditExportFormat | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  const run = async (format: AuditExportFormat, close: () => void) => {
+    close();
+    setBusy(format);
+    setFailed(false);
+    try {
+      const { blob, filename } = await exportAuditLog({ entityType: entityType || undefined }, format);
+      saveBlob(blob, filename);
+    } catch {
+      // The record must never fail silently. A refusal or a network fault is SHOWN — an export that
+      // does nothing is indistinguishable from a browser that blocked the download.
+      setFailed(true);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="aud-export">
+      <Menu
+        align="start"
+        label={t('audit.export.menuLabel')}
+        triggerClassName="aud-export-btn"
+        triggerProps={{ disabled: busy !== null }}
+        trigger={
+          <>
+            <Icon name="download" size={15} aria-hidden />
+            {busy ? t('audit.export.busy') : t('audit.export.label')}
+          </>
+        }
+      >
+        {(close) => (
+          <>
+            <MenuItem role="menuitem" onClick={() => void run('csv', close)}>{t('audit.export.csv')}</MenuItem>
+            <MenuItem role="menuitem" onClick={() => void run('json', close)}>{t('audit.export.json')}</MenuItem>
+          </>
+        )}
+      </Menu>
+      {failed && <span className="aud-export-error" role="alert">{t('audit.export.failed')}</span>}
+    </div>
   );
 }
 

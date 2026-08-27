@@ -55,3 +55,27 @@
 .aud-skel-head .aud-skel-bar { block-size: 9px; }
 
 .aud-foot { margin-block-start: 16px; }
+
+/* ---------- export log (WBS-24.6 / FR-154 / AC-152) ----------
+   INV-014: the values below are the "ACMP Lists & Registers.dc.html" isAudit header button,
+   read from the reference rather than approximated — 38px tall, 14px inline padding, 8px gap,
+   1px border-strong on surface, 9px radius, 600/13px, hover to subtle. NOT .btn-ghost, which is
+   this app's transparent/accent variant and is a different control. */
+.aud-export { position: relative; display: flex; align-items: center; gap: 10px; }
+.aud-export-btn {
+  block-size: 38px;
+  padding-inline: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.aud-export-btn:hover:not(:disabled) { background: var(--subtle); }
+.aud-export-btn:disabled { opacity: 0.55; cursor: default; }
+/* The refusal must be visible: an export that silently does nothing reads as a blocked download. */
+.aud-export-error { font-size: 12.5px; font-weight: 600; color: var(--st-danger-fg); }
