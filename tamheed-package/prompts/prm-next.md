@@ -1157,43 +1157,34 @@ lifecycle status here** — this paragraph asserted one and it was **the THIRTY-
 ("lesson", status="Proposed")` and `readiness_check`'s `lessons-confirmed` row are the live answer, and
 whether that advisory is red is a fact to READ, never one to carry in prose.
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.6`. THIS IS THE NEXT ACTION** — `DW-035` / `FR-154`, audit-log
-   export. ⛔⛔ **NOT "Auditor + Administrator", WHICH IS WHAT THIS LINE USED TO SAY AND WHAT THE ROW,
-   `DW-035` AND `FR-154` ALL SAID: `ADR-0027` (Approved) DECIDES `{Auditor, Chairman, Secretary}` WITH
-   ADMINISTRATOR *EXCLUDED*, AND IT NAMES EXPORTING EXPLICITLY.** Reconciled 2026-08-27 by `DEC-081` d2 /
-   `SC-036`; the code (`Policies.AuditRead`, the `App.tsx` route gate) had been right all along.
-   ⚠ **It also OWES AN AXE ROUTE** (`DEC-072` d2 / `SC-032`) — in the SAME batch that builds it, named in
-   its own acceptance criterion.
-   ⚠⚠ **READ THE ROW'S OWN TEXT AND THE NARRATIVE DOCUMENTS BEFORE SIZING IT** — that habit has now paid
-   on all SIX items, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row wrongly;
-   `24.2`'s row carried its own correction and it held; `24.3` turned out to be about a source COMMENT
-   rather than a feature; `24.4`'s measurement was right while its prescribed remedy was too small;
-   `24.5` was ONE WORD ("configurable") covering a subsystem the architecture had already specified; and
-   `24.6`'s row **quoted its requirement FAITHFULLY while that requirement's clause had been superseded
-   by an ADR the row never mentions.**
-   ⭐⭐ **`24.6` ADDS THE SIXTH AND IT IS THE ONLY ONE NO REGISTER VIEW CAN SEE.** Every id in those three
-   rows resolves, every status is right, `G-TRACE` is satisfied and the requirement register agrees with
-   itself — so both committed checkers run clean. **Only trap 32 / `LL-008`'s sweep of the ADR and
-   DECISION registers finds it**, and the discriminator was `ADR-0027` recording its own follow-through:
-   it said `FR-151` and `FR-153` would carry a pointer to it, both do, and `FR-154` had neither the
-   pointer nor the edge. ⚠ **When an ADR names the rows it will amend, CHECK THAT LIST against the rows
-   that quote it** — the one it missed is the one still asserting the superseded text.
-   ⭐⭐ **`24.5` ADDS A STEP TO THE HABIT, AND IT IS THE ONE THAT WOULD HAVE BEEN SKIPPED: READING `src`
-   TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** Its mechanism was named in `SEC-080`
-   and specified in `SEC-103`, and a code-only reading produced a recommendation that would have been an
-   architectural divergence. **Sweep the narrative documents by KEYWORD (`LL-008`) before sizing.**
-   ⚠ **Measure, do not trust this line** — `readiness_check(scope="slice", id="SL-033")` and
-   `entity_query("wbs-item")` are the live answer.
-2. **`DW-080` ALONE, with nothing else in flight** — its own row requires the isolation: a
+⚠⚠ **READ THE ROW'S OWN TEXT AND THE NARRATIVE DOCUMENTS BEFORE SIZING ANY REMAINING ITEM** — that habit
+has now paid on all SIX built items, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its
+row wrongly; `24.2`'s row carried its own correction and it held; `24.3` turned out to be about a source
+COMMENT rather than a feature; `24.4`'s measurement was right while its prescribed remedy was too small;
+`24.5` was ONE WORD ("configurable") covering a subsystem the architecture had already specified; and
+`24.6`'s row **quoted its requirement FAITHFULLY while that requirement's clause had been superseded by an
+ADR the row never mentions.** ⭐⭐ **`24.5` and `24.6` each added a STEP to the habit: read the NARRATIVE
+documents by keyword, because reading `src` tells you what exists and nothing about what was specified;
+and read the ADR/DECISION registers, because a row can be a faithful quotation of a dead clause.**
+⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
+`entity_query("wbs-item")` are the live answer.
+
+1. ▶▶▶ **`DW-080` ALONE, with nothing else in flight. THIS IS THE NEXT ACTION** — its own row requires the isolation: a
    musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
    only two open PRs, `#128` and `#134` (re-verified with no `--limit` cap, 2026-08-26).
-3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
-✅✅ **NO OPERATOR VERDICT IS OWED ANY MORE — `WBS-24.4` WAS PROMOTED ON 2026-08-27 (`DEC-081` d1,
-`PE-656`), AT THE SECOND ASKING.** ⚠ **Do not re-quote that from here** —
-`readiness_check(scope="slice", id="SL-033")` names every row still open, and it is the only answer that
-cannot go stale.
+⚠⚠ **ONE OPERATOR VERDICT IS OWED — `WBS-24.6`, AND ITS WORK IS MERGED. DO NOT REBUILD IT.** `Review`
+counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming that row is the rule working, not a
+fault to repair. ⚠ **Do not re-quote which rows are open from here** —
+`readiness_check(scope="slice", id="SL-033")` is the only answer that cannot go stale.
+✅ **`WBS-24.4` IS SETTLED — IT WAS PROMOTED ON 2026-08-27 (`DEC-081` d1, `PE-656`), AT THE SECOND
+ASKING.** ⚠ **This block said "NO OPERATOR VERDICT IS OWED ANY MORE" for about an hour, and `WBS-24.6`'s
+own completion made it false in the SAME session that wrote it** — caught by the pre-handoff read, before
+any commit, so the tally above does not move. ⭐ **A "nothing is owed" sentence has the shortest half-life
+of anything in this file: it is falsified by the next thing you finish, which is the thing you are
+already doing.** State the rule (`Review` means a verdict is owed) and let the check name the rows.
 ⭐⭐ **WHY IT MATTERS AS A METHOD AND NOT AS A STATUS: THE ROW HAD BEEN DECLINED TWICE AND THE SECOND
 DECLINE RECORDED NO REASON.** The first had one — `AC-147` carried an exclusion the definition of done
 forbids — and that cause (`DEF-111`) was Fixed and merged at `2b0da29`, with `AC-148` carrying the
@@ -1295,7 +1286,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Implemented` |
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Implemented` |
 | `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
-| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · **+ axe route** | `Approved` |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · axe route **DISCHARGED** | ✅ `Review` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
 
@@ -1305,13 +1296,28 @@ own acceptance criterion.**
 ✅ **`WBS-24.2`'s IS DISCHARGED — do NOT add the calendar again.** `AC-145` carries it, and it was PROVEN
 to run rather than inferred from a green job: the e2e count moved **86 → 88**, which is **+2 for one added
 test** because `playwright.config.ts` runs `rtl-a11y.spec.ts` in **both** `chromium` and `msedge`.
-⭐ **Reuse that check:** a green e2e job that never reached your new test leaves the count unchanged.
-**`WBS-24.6` and `WBS-24.8` still owe theirs.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
+✅ **`WBS-24.6`'s IS DISCHARGED TOO — do NOT add `/audit` again.** `AC-152` carries it; **88 → 90**, and the
+`88` was **re-measured from PR `#316`'s own run** rather than quoted from this file.
+⭐⭐ **THE THIRD STEP THAT CHECK NEEDED, learned here: the obvious confirmation is BLIND.** Grepping the e2e
+log for the new test's NAME returns zero — **and so does a grep for an EXISTING test's name**, because the
+log carries only per-test dots and a summary. **The control is the only thing that separates "my test did
+not run" from "this log never contains test names."** `WBS-24.5` recorded this exact shape about the
+BACKEND log; it repeated on the e2e log one item later. **Always grep a known-present term first.**
+⭐ **And scan the surface in the state that has the new UI in it.** `/audit`'s export is a `Menu`, and a
+closed `Menu` renders only its trigger — sweeping on load would have scored the panel, its `role="menu"`
+labelling and its `target-size` without ever rendering them. A true zero over the wrong set (`LL-015`).
+**`WBS-24.8` still owes its route.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
 route ships — that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the
 sweep"* — fired against exactly these three surfaces. ⚠ **The row had been read as fully parked and it never
 was**: `DEC-071` d4 parked its SECOND clause (release sign-off) and nobody had read the first. **The summary
-over a row had dropped half of what the row said** — `DEC-064` d2's failure inverted. The sweep today visits
-**three of fifty-two routes**, so shipping three more surfaces untouched makes a recorded ratio worse.
+over a row had dropped half of what the row said** — `DEC-064` d2's failure inverted.
+⚠⚠ **DO NOT RE-QUOTE A COVERAGE RATIO FROM HERE; MEASURE IT** — `grep -oE "page\.goto\('[^']+'\)"
+`e2e/rtl-a11y.spec.ts` | sort -u`. This sentence used to read *"the sweep today visits three of fifty-two
+routes"*, and it was counting SURFACES: the kanban and the calendar are views inside `/backlog`, not routes.
+Measured 2026-08-27 the sweep visits **three distinct ROUTES** (`/backlog`, `/backlog/submit`, `/audit`)
+across **five surfaces** and **ten scan points** (five tests × two locales). ⭐⭐ **So adding a genuinely new
+route left the figure reading "three" while its composition changed completely — `LL-016`'s *a phrase can go
+stale without its number changing*, on a number that was never measured in the unit its own sentence named.**
 ⚠ This does NOT activate `DW-041` or `DW-067`: both name release sign-off ALONE, which stays unscheduled.
 
 ⚠⚠ **READ THE CODE BEFORE BELIEVING ANY OF THESE EIGHT ROWS' SIZING.** **TWO** of `SL-032`'s four said

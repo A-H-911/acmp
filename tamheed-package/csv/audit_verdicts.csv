@@ -360,3 +360,23 @@ THE CONFIGURABLE CLAUSE needs no attachment-specific mechanism and deliberately 
 ⚠ SAME LIMIT AS AC-150, and it matters MORE here: this evidences that no such job exists today, not that none can be added - and for binary files in object storage a deletion is IRREVERSIBLE in a way a soft-deleted row is not. DEC-013's canon and NFR-060's own text are what stand against it, not a mechanical control.
 
 ⚠ EXPLICITLY NOT CLAIMED: any particular period; LEGAL HOLD, which SEC-083 names for recordings and transcripts as 'legal-hold capable' and which OQ-DATA-003 leaves open with legal - the configurable half is satisfied, the legal-hold half is NOT and is out of scope; and DW-052's residual, that the upload validators enforce 50 MB and 2 GB against NFR-011's 100 MB, which is a size question untouched by retention.",agent,inspection,76c2dde,1,2026-08-26T22:27:44Z,,
+AV-230,AC-152,Met,"PR #317 -> ca75244, all three CI workflows green (CI, Security, E2E).
+
+BACKEND. tests/Acmp.Api.Tests/AuditExportApiTests.cs adds 16 cases; the assembly moved 368 -> 392, so they are proven to have RUN by the count, not the colour. Coverage: AuditEndpoints.cs 169/169 lines and HardeningExtensions.cs 55/55 = 100%, unioned across per-project cobertura reports (never summed - trap 34) with a negative control returning NOT FOUND over 461 subject files.
+
+THREE MUTATIONS, each mutant confirmed to have COMPILED before the run (trap 12):
+(1) remove the CSV BOM -> Csv_carries_a_utf8_bom_and_survives_arabic_and_embedded_commas fails, 1 of 16. Asserted on BYTES because HttpContent.ReadAsStringAsync STRIPS the BOM - a string-based assertion would have passed whether or not the server sent one.
+(2) apply PageSize.Clamp to the export query -> Export_is_not_truncated_by_the_paged_read_cap fails, 1 of 16. It seeds 640 rows past the 500 cap and asserts the LAST row is present.
+(3) falsify the recorded row count -> Export_writes_an_audit_event_naming_who_scope_and_volume fails. The volume assertion was first written against a seed of 4, which a single stray character could satisfy; rebuilt on 37 and anchored to the property name.
+
+AUTHORIZATION, proven by forcing the refusal: Administrator, Member, Reviewer and Submitter all 403; Auditor, Chairman and Secretary all 200; no token 401; format=xlsx|pdf|empty all 400.
+
+AXE ROUTE (SC-032). E2E count moved from a MEASURED baseline of 88 on PR #316 to 90 here: +2 for one added test, because playwright.config.ts runs rtl-a11y.spec.ts in both chromium and msedge. The baseline was re-measured rather than quoted from the prompt. The sweep opens the export menu BEFORE scanning. A grep of the e2e log for the new test's name returns zero - and so does a grep for an EXISTING test's name, because the log carries only per-test dots and a summary - so the name grep is blind here and the count is the evidence.
+
+FRONTEND. 165 files / 1463 tests green; check-i18n 1953 keys (EN+AR added together); check-hardcoded-strings clean; oxlint clean; npm run build exit 0 against a lockfile-unchanged tree (trap 22c).
+
+dotnet format --verify-no-changes exit 0, run FIRST because WBS-24.5's first CI run died there with build and test skipped.
+
+WHAT IS NOT CLAIMED, and the AC says so in its own text: actor display-name resolution is deliberately absent from the export format; C-INS-01's anomaly alert does not exist and is carried as DW-087; the Report.Export composition is defence in depth that NO TEST DISCRIMINATES, stated as analysis rather than measurement; the inert Actor/Action/Date filter chips are unchanged; and SEC-177's /audit/export route does not exist because INV-014 gives the design reference precedence.
+
+NOT VERIFIED LOCALLY: Acmp.Integration.Tests could not run on this machine (Docker daemon down; all 154 failure traces name DockerUnavailableException with no other cause present). CI ran it with Docker available and the CI workflow is green.",agent,auto-test,ca75244,1,2026-08-27T13:24:09Z,,

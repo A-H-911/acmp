@@ -6,27 +6,41 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-27 · **`SL-033`: `WBS-24.1`–`24.5` DONE** — ▶▶ NEXT: **`WBS-24.6`** (`DW-035`/`FR-154`, **+ axe route**)
+## ★★★ 2026-08-27 · **`SL-033`: `WBS-24.1`–`24.6` DONE** — ▶▶ NEXT: **`DW-080`** (.NET 8→10 + `DW-066`, ALONE)
 
-★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — five items, **five different ways a row
+★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — six items, **six different ways a row
 misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; hollow passes; the
 three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is `prm-next.md`, not this file.**
 
-- ⚠⚠ **READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** `WBS-24.5` looked like
-  a small item in `src` and was a subsystem in the NARRATIVE documents (`SEC-080`/`SEC-103` name a
-  Configuration table that did not exist). My code-only recommendation would have been an architectural
-  divergence. **Sweep the narrative docs by keyword (`LL-008`) BEFORE sizing.**
+- ⚠⚠⚠ **`24.6`: A ROW CAN BE AN ACCURATE QUOTATION OF A SUPERSEDED CLAUSE, AND NO REGISTER VIEW SEES IT** —
+  three rows quoted `FR-154`'s *"Auditor and Administrator"*; `ADR-0027` excludes Administrator and names
+  EXPORTING. Ids, statuses and `G-TRACE` all clean, so **both committed checkers ran straight over it.**
+  ⭐⭐ **DISCRIMINATOR: an ADR that NAMES the rows it will amend — check that list against every row that
+  quotes it.** `ADR-0027` named `FR-151`/`FR-153` (both have the edge); `FR-154` had neither.
+- ⚠⚠ **READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED** (`24.5`: `SEC-080`/
+  `SEC-103` named a Configuration table that did not exist; my code-only answer was an architectural
+  divergence). **Sweep the narrative docs by keyword (`LL-008`) BEFORE sizing.** ⭐ `24.6` adds: **a
+  CONTROL can decide architecture** — `C-AUDIT-08` forces a SERVER export (a client blob cannot audit
+  itself), so the in-repo client-side-CSV precedent was the wrong answer.
+- ⛔ **NEVER apply `PageSize.Clamp` to an export** — on a compliance artifact `DEF-104`'s habit becomes
+  `DEF-103`'s silent truncation, indistinguishable from *"those rows do not exist"*.
+- ⚠⚠ **`ReadAsStringAsync` STRIPS THE BOM** — assert BYTES. Same hollow-pass shape as `24.4`'s Arabic dual
+  form, one item later. ⚠⚠ **A GREP OF THE E2E LOG FOR A TEST NAME IS BLIND** — zero for an EXISTING test
+  too. **The count is the instrument** (88→90 = +2 for one test × 2 browsers); **re-measure the baseline**
+  from the prior PR. ⭐ Scan a popover **with it OPEN** — a closed `Menu` renders only its trigger.
 - ⚠⚠ **`DOC-011`'s `OQ-DATA-*` labels were INVISIBLE to the register** (zero `OQ-` rows vs a control of
   78) while **three `Met` verdicts leaned on them being open**. Now `OQ-079`/`OQ-080`. ⛔ **`SEC-080`
   asserts a legal hold overrides any future purge and NO HOLD MECHANISM EXISTS** — build Phase-2
   enforcement without it and that guarantee goes false **silently**.
-- ⚠ **Approved ACs are IMMUTABLE, including against being marked superseded.** `AC-147`'s
-  `superseded_by` is NULL by necessity and the operator ACCEPTED it — **do not "repair" it.**
-- ⚠⚠ **`WBS-24.4` HAS BEEN DECLINED TWICE and the original reason (`DEF-111`) is FIXED.** No reason is
-  recorded for the second. **ASK — do not infer, and do not rebuild: the code is merged.**
+- ⚠ **Approved ACs are IMMUTABLE, including against being marked superseded** — `AC-147`'s NULL
+  `superseded_by` was ACCEPTED by the operator; do not "repair" it. ⚠ **`DW-087`:** `SEC-248`'s *"ACMP has
+  no export feature"* is now false; **its trigger named a Phase-3 ITEM, not a property, so the row could
+  not see its own condition met from another direction.**
 
-- ⚠ **1 OPERATOR VERDICT OWED** — `WBS-24.4` only. `24.1`/`24.2`/`24.3`/`24.5` are `Implemented`.
-  ⚠ **Do NOT rebuild it** — `Review` counting as open in `readiness_check` is the rule working.
+- ⚠ **1 OPERATOR VERDICT OWED** — **`WBS-24.6`**; `24.1`–`24.5` are all `Implemented` (`24.4` promoted
+  2026-08-27 at the second asking, `DEC-081` d1). ⚠ **Do NOT rebuild it** — `Review` counting as open in
+  `readiness_check` is the rule working. ⭐ **An ABSENT reason for a decline is not evidence of a reason:
+  asking got a promotion, where every available inference would have been wrong** (`LL-003`).
 - ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
   — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
   over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
@@ -43,23 +57,20 @@ three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is
 - ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs**, all 100s
   `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical. ⛔ **The mitigation
   cannot be credited — the run BEFORE it was green too.** Append an occurrence; don't re-run into silence.
-- ⚠ **`DEF-110`** (`DEC-079` d2, *record it, change nothing*): the SLA thresholds are a hardcoded
-  `switch` while `ASM-011`/`OQ-035` promise **configuration**. **So `assumptions-current` naming
-  `ASM-011` is not an overdue date — its remediation path does not exist.** ⛔ Don't re-date it.
-- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY.** Spying jsdom `localStorage` is
-  version-dependent — the injected fault never happened while the test asserted a spy call count.
-  **Replace the GLOBAL (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ Tuning until green is not a fix.
-★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) — the vitest-4 / coverage-v8 findings.
-⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold**: v3 credited the line wrapping an *uninvoked* inline
-handler, so the gate could not see untested handlers at all — four closed files had **no test file** and
-v3 scored them ≥95%. ⚠ **`DEF-107`: approving+pinning a lesson does NOT make it bind** — the note
-sessions load is rebuilt only by `handoff_emit`; run it in the SAME batch as any approval.
+  ⚠ **`DEF-110`** (*record it, change nothing*): SLA thresholds are a hardcoded `switch` while
+  `ASM-011`/`OQ-035` promise **configuration** — so `ASM-011` is not an overdue date, **its remediation
+  path does not exist.** ⛔ Don't re-date it.
+- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY** — spying jsdom `localStorage` is version-dependent,
+  so the injected fault never happened while the test asserted a spy count. **Replace the GLOBAL
+  (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ Tuning until green is not a fix.
+★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) — vitest-4 / coverage-v8 findings.
+⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold**: v3 credited the line wrapping an *uninvoked* inline handler,
+so four closed files with **no test file** scored ≥95%. ⚠ **`DEF-107`: approving+pinning a lesson does NOT
+make it bind** — the note is rebuilt only by `handoff_emit`; run it in the SAME batch as any approval.
 ⚠ **Push package writes BETWEEN merge cycles, never during one** — every push to `main` re-stales every
-open PR (`strict=true`).
-
-- ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `scripts/gen-lesson-docket.mjs`
-  · `scripts/count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`. ⚠ `DEF-106`: declare
-  `types: ["vite/client","node"]`; **a CHECKOUT DOES NOT CHANGE `node_modules`**.
+open PR (`strict=true`). ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` ·
+`gen-lesson-docket.mjs` · `count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`.
+⚠ `DEF-106`: declare `types: ["vite/client","node"]`; **a CHECKOUT DOES NOT CHANGE `node_modules`**.
 
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 
@@ -67,15 +78,13 @@ open PR (`strict=true`).
   **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's full
   text inline, generated from the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it
   as real and fixed — `G-IDS` checks FKs, **not ids in prose**. Carried as `DEF-101`, not reconstructed.
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM.**
-  `DEC-064` d2 said *"DW-037 is ACTIVATED"* and never reached the row, while `SC-020` had it `Deferred`.
-  **Activating a `DW-` row → check its requirement in the same breath.**
-- ✅ **`assumptions-current` FIXED — it FAILS now** (`ASM-011`, overdue on purpose). The field is a **FUTURE
-  due date**; more will redden — **that is the control working, don't clear them.** ⛔ `DEF-087` untouched.
-  ⚠ **`deferred-work-reviewed` CANNOT go green from reviewing** — it selects `Open`+`Activated`+`Scheduled`.
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM** —
+  activating a `DW-` row → check its requirement in the same breath. ⚠ **`deferred-work-reviewed` CANNOT go
+  green from reviewing** (it selects `Open`+`Activated`+`Scheduled`); ⚠ **`assumptions-current`'s field is a
+  FUTURE due date** — more will redden, that is the control working; don't clear them. ⛔ `DEF-087` untouched.
 - ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` removed**; `DEC-020`/`ADR-0003`/`OQ-040` still
   assume it. Operator: *record it, change nothing.* Found by **keyword** sweep only (`LL-008`).
-- ⚠ **I reported "four" truncated assumption titles; it was EIGHT.** I measured inside the twelve rows I was
+  ⚠ **I reported "four" truncated assumption titles; it was EIGHT** — I measured inside the twelve rows I was
   already editing. **Measuring inside the set you are holding is not measuring the register.**
 
 ## ★ Batches 13–21 + the DW-029 close-out

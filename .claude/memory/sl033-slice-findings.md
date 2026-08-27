@@ -1,18 +1,18 @@
 ---
 name: sl033-slice-findings
-description: "Per-item durable findings from SL-033 (WBS-24.1 to 24.5) — five different ways a planning row misled, plus the defects only a browser or a mutation could see."
+description: "Per-item durable findings from SL-033 (WBS-24.1 to 24.6) — six different ways a planning row misled, plus the defects only a browser or a mutation could see."
 metadata: 
   node_type: memory
   type: project
   originSessionId: a89ceedc-ec7e-412e-b4f7-f43f3e627b6b
-  modified: 2026-08-26T17:47:15.776Z
+  modified: 2026-08-27T13:33:05.156Z
 ---
 
-# `SL-033` — what each item taught (`WBS-24.1`…`24.5`)
+# `SL-033` — what each item taught (`WBS-24.1`…`24.6`)
 
 ⚠ **Live state is `tamheed-package/prompts/prm-next.md`, not this file.** This is the durable residue only.
 
-## ⭐⭐ FIVE ITEMS, FIVE DIFFERENT WAYS A ROW MISLED — this is the pattern worth carrying
+## ⭐⭐ SIX ITEMS, SIX DIFFERENT WAYS A ROW MISLED — this is the pattern worth carrying
 
 | item | how the row related to reality |
 |---|---|
@@ -21,8 +21,43 @@ metadata:
 | `24.3` `DW-039` | the row was really about a **source COMMENT**, not a feature |
 | `24.4` `DW-068` | the **measurement was right and the prescribed remedy too small** |
 | `24.5` `DW-036` | **ONE WORD** ("configurable") covering a subsystem the architecture had already specified |
+| `24.6` `DW-035` | the row was a **FAITHFUL QUOTATION of a clause an ADR had already superseded** |
 
 **Read each row's own text AND the code, then size it yourself.** Every item paid, in a different direction.
+
+## ⭐⭐⭐ `24.6` — THE ONE NO REGISTER VIEW COULD SEE, AND HOW IT WAS CAUGHT ANYWAY
+
+`WBS-24.6`, `DW-035` and `FR-154` all said the audit export is *"accessible only to Auditor and
+Administrator"*. **`ADR-0027` (Approved) decides `{Auditor, Chairman, Secretary}` with Administrator
+EXCLUDED on SoD grounds — and it names *exporting* explicitly.** Building to the row's own text would
+have reversed an Approved ADR and broken control `C-INS-03`.
+
+⚠⚠ **WHY NOTHING FLAGGED IT.** Every id in those three rows resolves. Every status is correct. `G-TRACE`
+passes. The requirement register agrees with itself. **`count-prompt-ids.py` and the prose-status checker
+both run clean straight over it**, because the fault is not an id, a status, or a broken link — it is a
+correct citation of a superseded sentence.
+
+⭐⭐ **THE DISCRIMINATOR, AND IT IS SHARPER THAN "SWEEP THE ADRs" (trap 32 / `LL-008` only got me into the
+register): `ADR-0027` RECORDED ITS OWN FOLLOW-THROUGH.** Its text says `FR-151` and `FR-153` would carry
+a pointer to it. Both do, as `relates_to` edges. **`FR-154` had neither the pointer nor the edge** — it
+was Phase-2 when the ADR was written and was simply missed.
+**→ When an ADR names the rows it will amend, check that list against every row that quotes it. The one
+it missed is the one still asserting the superseded text.** Fixed by `DEC-081` d2 / `SC-036`.
+
+## ⭐⭐ `24.6` — three more that generalise
+
+- ⚠⚠ **A CONTROL CAN DECIDE ARCHITECTURE.** `SEC-311` `C-AUDIT-08` requires *every export to be an audited
+  sensitive event carrying who, scope and volume*. **A client-built blob cannot audit itself**, so that
+  one sentence forced a SERVER endpoint — and the Reports page's client-side CSV was the obvious in-repo
+  precedent and the wrong answer. **Reading `src` would have produced the cheap answer with no signal.**
+- ⛔ **NEVER apply `PageSize.Clamp` to an export.** `DEF-104` taught that every paged read must cap a
+  caller-supplied page size. On a compliance artifact that habit *is* the defect — `DEF-103`'s silent
+  truncation, on the worst possible surface, indistinguishable from *"those rows do not exist"*. The
+  anti-regression test seeds past the cap and asserts the LAST row is present.
+- ⚠ **`SEC-248` is now FALSE and is deliberately not edited.** It justified not building `C-INS-01`'s
+  bulk-export alert with *"ACMP has no export feature … this signal activates with `D-07`, not before"*.
+  **Its activation condition named a Phase-3 ITEM rather than a property of the system, so the row could
+  not see its own condition being met from another direction.** Carried as `DW-087`.
 
 ## ⭐⭐ `24.5` ADDS A STEP THE OTHER FOUR DID NOT NEED
 
