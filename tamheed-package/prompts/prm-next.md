@@ -19,9 +19,14 @@ readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERA
                                              # NORMAL (see §1). ⛔ Do NOT "fix" readiness by softening
                                              # DEF-108's severity or converting it - both were offered
                                              # to the operator and BOTH WERE DECLINED.
-git status --porcelain -uall                 # expect a CLEAN TREE but NOT `main` — see below
-git rev-parse --abbrev-ref HEAD              # expect `feat/dw-080-phase-a-net10`, NOT main
-gh pr view 320 --json state,mergeStateStatus # expect OPEN / BLOCKED — DW-080 phase A is mid-flight
+git status --porcelain -uall                 # expect a CLEAN TREE
+git rev-parse --abbrev-ref HEAD              # ⚠ BRANCH-DEPENDENT — read the conditional below
+gh pr view 320 --json state,mergeStateStatus # ⚠ ASK IT, do not assume; the answer decides the next step
+gh pr checks 320                             # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
+                                             # (trap 23). ⚠ The last pushes were package-only, but for a
+                                             # `pull_request` event GitHub evaluates paths-ignore against
+                                             # the WHOLE PR diff, so they re-ran and CANCELLED the prior
+                                             # runs (trap 38). The NEWEST sha's run is the live one.
 docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon is DOWN on this machine
                                              # and that is the session's real constraint: it makes
                                              # `Acmp.Integration.Tests` unrunnable locally, which is the
@@ -30,13 +35,24 @@ docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon
                                              # that needs it, rather than iterating through CI.
 ```
 
-⚠⚠ **YOU ARE NOT ON `main` AND THAT IS THE FIRST THING TO KNOW.** This block said *"expect clean; you are
-on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase A left
-a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
-nothing, and conclude the work is not there.** `main` is green and untouched; the live work is on
-`feat/dw-080-phase-a-net10` with PR `#320` open. ⚠ **Never assume CI has seen your tree** — run
-`git rev-list --left-right --count origin/feat/dw-080-phase-a-net10...HEAD` and read the right-hand
-number. ⭐ **This is the TWENTY-THIRD's shape again — the kickoff block itself describing an old world.**
+⚠⚠ **YOU MAY NOT BE ON `main`, AND THAT IS THE FIRST THING TO ESTABLISH.** This block said *"expect clean;
+you are on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase
+A left a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
+nothing, and conclude the work is not there.** ⭐ **This is the TWENTY-THIRD's shape — the kickoff block
+describing an old world.**
+
+**IT IS WRITTEN AS A CONDITIONAL ON PURPOSE, BECAUSE A SNAPSHOT OF MY WORKING STATE IS WHAT PRODUCED THE
+THIRTY-SECOND.** Whichever branch you are on, `gh pr view 320` decides which of these you are in:
+
+| `#320` is… | where you are | what to do |
+|---|---|---|
+| **OPEN** | on `feat/dw-080-phase-a-net10`, `DW-080` phase A mid-flight | §6 item 1 — finish it |
+| **MERGED** | back on `main`, branch deleted by the merge | phase A is DONE; go to §6 item 2 (phase B) and **close `#128`/`#134`**, which it supersedes |
+| **CLOSED** | `main`, phase A abandoned | ⛔ stop and ask the operator — nothing here explains that |
+
+⚠ **`main` is green and untouched either way**; nothing in `DW-080` has ever been pushed to it.
+⚠ **Never assume CI has seen your tree** — `git rev-list --left-right --count @{u}...HEAD`, right-hand
+number. ⛔ **Do not write into this file what you have or have not pushed** (the THIRTY-SECOND).
 
 ⚠ **WHAT THE COUNTER COUNTS, so it stays meaningful:** a statement is tallied when it was true, became
 false, and **reached a commit** — where a fresh session could have read it. Wording caught and fixed
