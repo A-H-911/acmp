@@ -112,4 +112,38 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     await switchToArabic(page);
     expect(await axeViolations(page), 'Calendar (AR/RTL) axe violations').toEqual([]);
   });
+
+  // WBS-24.6's second obligation (DEC-072 d2 / SC-032), named in AC-152: DW-071's first trigger clause
+  // fires "whenever a new route ships — that is the moment the ratio gets worse, and the moment it is
+  // cheapest to add the route to the sweep". /audit is a real route, unlike WBS-24.2's calendar view.
+  //
+  // ⚠ THE POPOVER IS OPENED BEFORE THE SWEEP ON PURPOSE. A closed Menu renders nothing but its trigger,
+  // so scanning the page as it loads would score the new interactive surface — the panel, its role=menu
+  // labelling, and the menuitem target sizes wcag22aa's target-size rule cares about — without ever
+  // looking at it. That is a true zero over the wrong set (LL-015).
+  //
+  // ⚠ Secretary, not Auditor: ADR-0027's set is {Auditor, Chairman, Secretary} and Secretary is the
+  // account the rest of this spec already uses. Administrator would 403 — that refusal is proven in
+  // AuditExportApiTests, which is the right place for it.
+  test('Audit trail with the Export log menu open is axe-clean in both English and Arabic', async ({ page }) => {
+    await loginAs(page, 'secretary');
+    const bearer = await captureBearer(page);
+    await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+
+    await page.goto('/audit');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // exact:true — getByRole matches `name` as a case-insensitive SUBSTRING, which is how WBS-24.2's
+    // {name:'AR'} also hit "Regular" and "Extraordinary".
+    const exportBtn = page.getByRole('button', { name: 'Export log', exact: true });
+    await exportBtn.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    expect(await axeViolations(page), 'Audit + export menu (EN) axe violations').toEqual([]);
+
+    await page.keyboard.press('Escape'); // the language toggle is behind the menu's backdrop
+    await switchToArabic(page);
+    await page.getByRole('button', { name: 'تصدير السجل', exact: true }).click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    expect(await axeViolations(page), 'Audit + export menu (AR/RTL) axe violations').toEqual([]);
+  });
 });

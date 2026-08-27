@@ -448,6 +448,14 @@
     "error": {
       "title": "Couldn't load the audit trail",
       "body": "The audit register failed to load. Retry, or contact an administrator if it persists."
+    },
+    "export": {
+      "label": "Export log",
+      "menuLabel": "Export format",
+      "csv": "CSV (spreadsheet)",
+      "json": "JSON",
+      "busy": "Exporting…",
+      "failed": "Export failed. Please try again."
     }
   },
   "risks": {

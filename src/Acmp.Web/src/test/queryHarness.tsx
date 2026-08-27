@@ -32,6 +32,12 @@ export interface FakeResponse {
   /** When true, res.json() rejects — simulates a non-JSON error body. */
   jsonThrows?: boolean;
   /**
+   * The body returned by res.blob() — for apiBlob's file downloads (WBS-24.6's audit export).
+   * Purely additive: no existing caller reads it, and a stub that omits it still returns a Response
+   * shaped exactly as before plus one unused method.
+   */
+  blobBody?: Blob;
+  /**
    * Response headers. Needed since apiClient reads `X-Acmp-Auth-Reason` off every refusal (ADR-0039):
    * a fake response with no headers at all would throw before the ApiError was built.
    */
@@ -56,6 +62,7 @@ export function stubFetch(impl?: (url: string, init?: RequestInit) => FakeRespon
         if (r.jsonThrows) throw new Error('not json');
         return r.jsonBody;
       },
+      blob: async () => r.blobBody ?? new Blob([]),
     } as Response;
   });
   vi.stubGlobal('fetch', spy);

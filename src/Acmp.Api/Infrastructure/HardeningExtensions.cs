@@ -34,6 +34,14 @@ public static class HardeningExtensions
                 PerUserFixedWindow(http, options.SearchPermitPerMinute));
             limiter.AddPolicy(RateLimitPolicies.Upload, http =>
                 PerUserFixedWindow(http, options.UploadPermitPerMinute));
+            // WBS-24.6 (DW-035 / FR-154): C-API-03 names "auth, search, and EXPORT endpoints", and the
+            // export third had no policy because the product had no export endpoint to attach one to.
+            // Deliberately the tightest of the three windows: an export is a bulk pull of the audit log —
+            // T-10/AB-6's mass-export exfiltration — and a human clicking "Export log" needs single digits
+            // per minute, not sixty. This bounds VOLUME; it is not the anomaly ALERT that C-INS-01 asks for,
+            // which has no baseline to threshold against yet and is carried as DW-087.
+            limiter.AddPolicy(RateLimitPolicies.Export, http =>
+                PerUserFixedWindow(http, options.ExportPermitPerMinute));
             // The webhook is anonymous (no `sub`) — a single global bucket bounds ingestion volume.
             limiter.AddPolicy(RateLimitPolicies.Webhook, _ =>
                 RateLimitPartition.GetFixedWindowLimiter("webhook-global", _ => new FixedWindowRateLimiterOptions
@@ -83,6 +91,7 @@ public static class RateLimitPolicies
     public const string Search = "acmp-search";
     public const string Upload = "acmp-upload";
     public const string Webhook = "acmp-webhook";
+    public const string Export = "acmp-export";
 }
 
 // Proportional defaults (C-API-03 — ~15 users, not anti-DDoS); overridable via the "RateLimiting" config section.
@@ -92,4 +101,6 @@ public sealed class RateLimitingOptions
     public int SearchPermitPerMinute { get; init; } = 60;
     public int UploadPermitPerMinute { get; init; } = 20;
     public int WebhookPermitPerMinute { get; init; } = 120;
+    // The audit export (WBS-24.6). Tightest window of the four, on purpose — see the policy registration.
+    public int ExportPermitPerMinute { get; init; } = 10;
 }

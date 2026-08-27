@@ -9,10 +9,17 @@ import type { AuditEvent } from '../../api/audit';
 vi.mock('../../api/audit', async (orig) => ({
   ...(await orig<typeof import('../../api/audit')>()),
   useAuditRegister: vi.fn(),
+  // WBS-24.6: the export's own unit coverage lives in api/audit.test.ts. Here the module boundary is
+  // mocked so these tests assert what the COMPONENT is responsible for — which format it asks for,
+  // that it passes the live filter, and that a refusal is shown rather than swallowed.
+  exportAuditLog: vi.fn(),
+  saveBlob: vi.fn(),
 }));
-import { useAuditRegister } from '../../api/audit';
+import { useAuditRegister, exportAuditLog, saveBlob } from '../../api/audit';
 
 const mockList = useAuditRegister as unknown as Mock;
+const mockExport = exportAuditLog as unknown as Mock;
+const mockSave = saveBlob as unknown as Mock;
 
 // One enriched v2 row + one lean v1 row (system, enriched fields null) — proves the register
 // renders both shapes: normalized action verb, actor fallback, artifact "—", and outcome vs "—".
@@ -55,6 +62,9 @@ function lastParams() {
 describe('AuditRegister (PR4)', () => {
   beforeEach(() => {
     mockList.mockReset();
+    mockExport.mockReset();
+    mockSave.mockReset();
+    mockExport.mockResolvedValue({ blob: new Blob(['x']), filename: 'acmp-audit-20260827.csv' });
     withRows();
   });
 
@@ -161,5 +171,53 @@ describe('AuditRegister (PR4)', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  // ---- WBS-24.6 / FR-154 / AC-152 — the "Export log" button ----
+
+  it('renders the design reference\'s Export log button', () => {
+    setup();
+    expect(screen.getByRole('button', { name: /Export log/i })).toBeInTheDocument();
+  });
+
+  it.each(['csv', 'json'] as const)('exports as %s from the menu', async (format) => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Export log/i }));
+    // The label, not the format token: asserting on the visible menu item is what proves the popover
+    // actually opened. A token match would pass against a hidden panel.
+    await user.click(screen.getByRole('menuitem', { name: format === 'csv' ? /CSV/i : /JSON/i }));
+
+    expect(mockExport).toHaveBeenCalledTimes(1);
+    expect(mockExport.mock.calls[0][1]).toBe(format);
+    expect(mockSave).toHaveBeenCalledWith(expect.any(Blob), 'acmp-audit-20260827.csv');
+  });
+
+  // The whole reason the button lives on this screen: the file must be the set the reviewer is looking
+  // at. If the export ever stopped forwarding the filter, the screen and the file would disagree and
+  // nothing else in the suite would notice.
+  it('exports the filter the register is currently showing, not the whole log', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Artifact type/i }));
+    // FilterChip's options are menuitemradio, and the name is anchored: a bare /Vote/ substring would
+    // also match "Vote.Closed"-style labels if the entity list ever grows.
+    await user.click(await screen.findByRole('menuitemradio', { name: /^Vote$/i }));
+
+    await user.click(screen.getByRole('button', { name: /Export log/i }));
+    await user.click(screen.getByRole('menuitem', { name: /CSV/i }));
+
+    expect(mockExport.mock.calls[0][0]).toEqual({ entityType: 'Vote' });
+  });
+
+  it('shows a refusal instead of failing silently', async () => {
+    mockExport.mockRejectedValue(new Error('403'));
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Export log/i }));
+    await user.click(screen.getByRole('menuitem', { name: /CSV/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Export failed/i);
+    expect(mockSave).not.toHaveBeenCalled();
   });
 });
