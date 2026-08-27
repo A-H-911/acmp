@@ -1151,13 +1151,17 @@ an approved AC **at all — including to mark it superseded, which is the very p
 names**. The operator accepted this on 2026-08-27; `DEF-111` and `AC-148`'s text are the record. `NFR-037`
 therefore carries two active `Met` criteria, one containing a withdrawn exclusion.
 
-⚠ **A NEW LESSON WAS FILED ON 2026-08-27 FROM `WBS-24.6`: `LL-025`** — a plan row can be a FAITHFUL
-quotation of a clause an ADR has already superseded, and when an ADR names the rows it undertook to amend,
-that list is the instrument. ⛔ **Its status is deliberately NOT written here** (see the THIRTY-FIRST):
-`entity_query("lesson", status="Proposed")` and `readiness_check`'s `lessons-confirmed` row are the live
-answer, and only the OPERATOR's interview moves it. **Do not approve a sentence they have not read.**
+⚠ **`LL-025` CAME OUT OF `WBS-24.6` (2026-08-27):** a plan row can be a FAITHFUL quotation of a clause an
+ADR has already superseded, and **when an ADR names the rows it undertook to amend, that list is the
+instrument.** ⛔ **No lesson's lifecycle status is written here any more** — that was the THIRTY-FIRST,
+twice. **`tamheed-package/CLAUDE.md` is the tool-owned list of what actually binds**, rebuilt by
+`handoff_emit`; `readiness_check`'s `lessons-confirmed` row says whether an interview is outstanding.
+⚠⚠ **AND READING THAT NOTE IS NOT OPTIONAL AFTER AN APPROVAL — `DEF-107` IS A LESSON THAT WAS APPROVED,
+PINNED AND OPERATOR-ATTRIBUTED WHILE BINDING NOTHING FOR TWO DAYS**, because only `handoff_emit` rebuilds
+the note and `lessons-confirmed` goes green the instant a row is approved, propagated or not. **Run
+`handoff_emit(target_dir=<repo root>)` in the SAME batch as any approval and commit the rebuilt note.**
 
-⚠ **`LL-024` BINDS: generated code loses its escapes silently, so prove it RUNS rather than reading it.**
+⚠ **`LL-024`: generated code loses its escapes silently, so prove it RUNS rather than reading it.**
 It cost four cycles in one session, then fired a fifth and a sixth time. ⛔ **Do NOT write a lesson's
 lifecycle status here** — this paragraph asserted one and it was **the THIRTY-FIRST**; `entity_query
 ("lesson", status="Proposed")` and `readiness_check`'s `lessons-confirmed` row are the live answer, and
@@ -1181,16 +1185,22 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
-⚠⚠ **ONE OPERATOR VERDICT IS OWED — `WBS-24.6`, AND ITS WORK IS MERGED. DO NOT REBUILD IT.** `Review`
-counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming that row is the rule working, not a
-fault to repair. ⚠ **Do not re-quote which rows are open from here** —
-`readiness_check(scope="slice", id="SL-033")` is the only answer that cannot go stale.
-✅ **`WBS-24.4` IS SETTLED — IT WAS PROMOTED ON 2026-08-27 (`DEC-081` d1, `PE-656`), AT THE SECOND
-ASKING.** ⚠ **This block said "NO OPERATOR VERDICT IS OWED ANY MORE" for about an hour, and `WBS-24.6`'s
-own completion made it false in the SAME session that wrote it** — caught by the pre-handoff read, before
-any commit, so the tally above does not move. ⭐ **A "nothing is owed" sentence has the shortest half-life
-of anything in this file: it is falsified by the next thing you finish, which is the thing you are
-already doing.** State the rule (`Review` means a verdict is owed) and let the check name the rows.
+⚠⚠ **THE RULE, NOT THE ROSTER: A ROW AT `Review` IS DONE-CLAIMED WORK AWAITING THE OPERATOR'S VERDICT, AND
+IT IS ALWAYS MERGED. `Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming such a
+row is the rule working, not a fault to repair — and it is NEVER a reason to rebuild anything.**
+⛔ **Which rows are at `Review` is not written here on purpose** — `readiness_check(scope="slice",
+id="SL-033")` is the only answer that cannot go stale, and this block has now been wrong in BOTH
+directions within one session. It said *"no verdict is owed"* while `WBS-24.6` sat at `Review`, then said
+*"one is owed — `WBS-24.6`"* about ninety minutes before the operator promoted it (`DEC-082` d1). Both were
+true when written; both were falsified by the session's own next action, and both were caught before a
+commit, so the tally above does not move.
+⭐⭐ **THAT IS THE GENERAL SHAPE AND IT IS WHY THE ROSTER IS GONE: a sentence naming WHICH items are
+outstanding is falsified by the very work the reader is doing, so its half-life is one unit of work.** A
+sentence naming the RULE survives, because the rule is what does not change. ⚠ **Both verdicts of
+2026-08-27 (`WBS-24.4` at the second asking, `WBS-24.6`) were taken against a GENERATED slate carrying each
+criterion's own text** — `scripts/gen-slice-review-slate.mjs`, `LL-011`/`LL-023` discharged mechanically
+rather than remembered. ⭐ **And `WBS-24.4` is why you ask:** it had been declined twice with no reason
+recorded the second time, and asking produced a promotion, where every available inference was wrong.
 ⭐⭐ **WHY IT MATTERS AS A METHOD AND NOT AS A STATUS: THE ROW HAD BEEN DECLINED TWICE AND THE SECOND
 DECLINE RECORDED NO REASON.** The first had one — `AC-147` carried an exclusion the definition of done
 forbids — and that cause (`DEF-111`) was Fixed and merged at `2b0da29`, with `AC-148` carrying the
@@ -1292,7 +1302,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Implemented` |
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Implemented` |
 | `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
-| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · axe route **DISCHARGED** | ✅ `Review` |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · axe route **DISCHARGED** | ✅ `Implemented` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
 

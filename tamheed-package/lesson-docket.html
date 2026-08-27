@@ -143,59 +143,57 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-024</td>
-          <td>When a script generates source for another file - a Python heredoc writing TypeScript, a shell heredoc writing a Dockerfile, any generator emitting code - every escape sequence passes through TWO levels of interpretation, and the outer one usually wins silently.</td>
+          <td class="id">LL-025</td>
+          <td>A work row that quotes its requirement accurately can still be wrong, because the REQUIREMENT is what a decision superseded.</td>
           <td class="mono">improve</td>
-          <td class="mono">tooling</td>
+          <td class="mono">planning</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-      <article class="motion" id="LL-024">
+      <article class="motion" id="LL-025">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-024</span>
+            <span class="id">LL-025</span>
             <span class="chip chip-kind">improve</span>
-            <span class="chip">tooling</span>
+            <span class="chip">planning</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>WRITING CODE INTO A FILE THROUGH ANOTHER LANGUAGE SILENTLY EATS ITS ESCAPES, AND THE RESULT STILL LOOKS PLAUSIBLE - SO PROVE GENERATED CODE RUNS, NEVER READ IT AND BELIEVE IT</h2>
+          <h2>A plan row can be a FAITHFUL quotation of a clause an ADR has already superseded - and when an ADR names the rows it will amend, that list is the instrument</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>When a script generates source for another file - a Python heredoc writing TypeScript, a shell heredoc writing a Dockerfile, any generator emitting code - every escape sequence passes through TWO levels of interpretation, and the outer one usually wins silently. `'\\n'` in a Python string becomes a real newline in the output file, not the two characters a JS or regex literal needs. The generated file then contains a string split across two lines, or a character class broken in half.</p>
-<p>WHAT MAKES IT EXPENSIVE IS THAT THE DAMAGE LOOKS FINE. The output is still readable, still nearly right, and a `grep` for the surrounding text still matches. The failure surfaces later as a parse error in a test run, or - worse - as a snippet embedded in documentation that nobody executes until the session that needs it.</p>
-<p>FOUR OCCURRENCES IN ONE SESSION, 2026-08-26, each costing a cycle. (1) A Dockerfile written for a forced-build test: `FROM alpine:3.20\\nRUN sleep 30` became two source lines and the C# would not compile. (2) A test fixture: multi-line document bodies became unterminated string literals, and the whole test FILE failed to load - reported as 59 passing tests and one failed file, which reads like a test failure and is not. (3) and (4) A regex embedded in a markdown code block, twice: the character class `[^.\\n]` split across two lines, producing a snippet that would have failed for whoever copied it.</p>
-<p>THE ASYMMETRY WITH ORDINARY TYPOS. A typo in code you write directly fails at the point you wrote it. A mangled escape in code you GENERATE fails at the point someone else runs it, which may be a different session, and the generator that produced it has usually been thrown away by then.</p>
+          <p>A work row that quotes its requirement accurately can still be wrong, because the REQUIREMENT is what a decision superseded. Nothing mechanical can see it: the ids resolve, the statuses are right, the trace gate passes, and the registers agree with each other - they simply agree about a sentence that a decision overruled. So sweep the ADR and DECISION registers before sizing, not only the requirement register. And where an ADR names the rows it undertook to amend, TREAT THAT LIST AS A CHECKLIST and compare it against every row that quotes the ADR's subject: the row the follow-through missed is the one still asserting the superseded text.</p>
         </div>
         <div class="field">
           <h3>What happened</h3>
-          <p>WBS-24.2 / WBS-24.3 / DW-084, 2026-08-26. Found by hitting it four separate times in one session; the fourth was inside the pre-handoff pass whose whole purpose is catching things a fresh session would trip over - which is where it would have done the most damage, because the reader would have copied a broken snippet out of the resume.</p>
-<p>A FIFTH OCCURRENCE, WBS-24.4, LATER THE SAME DAY - AND IT IS THE ONE THAT ARGUES HARDEST FOR THE RULE, because it happened to an agent who had just written this lesson down. A bash heredoc quoted `&lt;&lt;'EOF'`, the form believed to be literal, was used to write a Node scanner containing a path-separator regex. One backslash level was eaten anyway: the file arrived with the escape missing and Node refused to parse it. It cost only minutes BECAUSE the very next action happened to be running the generated script - the recommendation below, applied by accident rather than by discipline.</p>
-<p>WHAT THE FIFTH ADDS THAT THE FIRST FOUR DID NOT. The first four are one shape: an outer language interpreting an escape meant for the inner one. The fifth shows that KNOWING THIS, AND HAVING JUST WRITTEN IT DOWN, DOES NOT PREVENT IT - and that the quoting form assumed safe was not. So the defence cannot be vigilance, or a remembered rule about which heredoc is literal; it has to be the mechanical one: run the thing. In this instance the better remedy was also simpler than the rule suggests - the file was rewritten with the editor tool instead of through a heredoc, REMOVING THE SECOND INTERPRETATION LAYER ENTIRELY rather than trying to escape correctly through it.</p>
+          <p>WBS-24.6 (DW-035 / FR-154), 2026-08-27, before any code was written. The WBS item, the deferred-work row and the requirement all said the audit-log export is *"accessible only to Auditor and Administrator"*. ADR-0027 (Approved) decides that audit read, search, EXPORT and delete are {Auditor, Chairman, Secretary} with Administrator EXCLUDED on segregation-of-duties grounds, and it names exporting explicitly. Building to the row's own text would have reversed an Approved ADR and broken control C-INS-03 - trap 32's shape, but arriving through a row that was not careless: it was a correct citation.</p>
+<p>WHY EVERY INSTRUMENT PASSED. count-prompt-ids.py resolved all 271 cited identifiers and read every status correctly. The inline prose-status checker found nothing. G-TRACE passed. The requirement register was internally consistent. The fault is not a dangling id, a wrong status, or a missing link - it is a true sentence whose source died.</p>
+<p>WHAT ACTUALLY CLOSED IT. Trap 32 / LL-008 got me into the ADR register, but that alone only produces a candidate. ADR-0027's own text records its follow-through: it states that FR-151 and FR-153 will carry a pointer to it. Both do, as relates_to edges. FR-154 had neither the pointer nor the edge - it was a Phase-2 requirement when the ADR was written and was simply missed. The ADR's promise about itself was the discriminator, and it is cheap to check.</p>
+<p>The code had implemented the ADR correctly on both sides for months (Policies.AuditRead and the App.tsx route gate); only the register was out of step. DEC-081 d2 and SC-036 reconciled it before any code was written.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>Build the escape explicitly rather than trusting it through a layer: `chr(92) + 'n'` in Python, or a placeholder token substituted afterwards. Then - and this is the part that actually catches it - PROVE THE GENERATED CODE RUNS. Extract the block and execute it, compile the file, or run the test that loads it, in the same breath as writing it. Reading the output and finding it plausible is exactly the check that fails here, because plausible is what the damage looks like. For a snippet embedded in prose, where nothing compiles it, extraction-and-execution is the ONLY check there is.</p>
+          <p>Before sizing a work item, read the ADR and DECISION registers for the row's subject as well as the requirement register (LL-008, trap 32). Then, for every ADR that turns out to govern it, read the ADR's OWN text for a list of rows it said it would amend or annotate - and check each one actually carries the pointer or the trace edge. Any row on that list without it is still asserting the superseded text, and any row NOT on that list that quotes the same subject was never considered at all.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>Escape mangling is invisible to every instrument this project already trusts. A gate compiles committed source, not a heredoc's intent; an id-and-status pass reads identifiers, not string literals; and a snippet inside a markdown fence is not code to any tool in the repository. The generator is also usually a throwaway, so there is no artefact left to re-inspect when the breakage is noticed. The only moment the fault is cheap to catch is immediately after generation, and only by execution.</p>
+          <p>The failure mode is invisible to every mechanical control this package has, because none of them compares a requirement's text against a decision that overruled it - they check identifiers, statuses and link existence, all of which are correct here. The ADR's own follow-through list is the only artifact that already names the affected set, so it converts an open-ended 'read everything' sweep into a finite checklist.</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>Generated code either runs or fails in the session that produced it, while the generator still exists and the intent is still in hand.</p>
+          <p>A row whose requirement clause is dead is caught during sizing, before code is written, at the cost of reading one ADR. Here that prevented building an authorization surface that would have reversed an Approved ADR and defeated a segregation-of-duties control on the audit log - the one dataset whose access rules exist to constrain the platform's own operator.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>Mangled escapes ship inside test fixtures, Dockerfiles and documentation snippets, and surface as parse errors or broken copy-paste in a later session that has no idea a generator was involved.</p>
+          <p>The build follows a row that reads correct, cites correctly, and passes every gate, while silently reversing a settled architectural decision. Nothing reports it: the code and the register would then agree with each other and both disagree with the ADR, which is the configuration hardest to detect later because the disagreement has no witness.</p>
         </div>
       </article>
 
   <footer>
     Generated from tamheed-package/data/lessons.jsonl by scripts/gen-lesson-docket.mjs.<br>
-    1 of 24 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    1 of 25 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>
