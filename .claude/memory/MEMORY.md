@@ -6,7 +6,26 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-27 · **`SL-033`: `WBS-24.1`–`24.6` DONE** — ▶▶ NEXT: **`DW-080`** (.NET 8→10 + `DW-066`, ALONE)
+## ★★★ 2026-08-27 · `SL-033` `24.1`–`24.6` DONE · ▶▶ **`DW-080` PHASE A IS MID-FLIGHT ON A BRANCH**
+
+⛔⛔ **YOU ARE PROBABLY NOT ON `main`.** `feat/dw-080-phase-a-net10`, PR **`#320`** open, **CI RED on ONE
+thing** (`DEF-113`). E2E + Security + every backend TEST are GREEN — **`SearchProvidersFtsTests` passes,
+so Arabic `FREETEXT` works on .NET 10.** ⚠ **Docker is DOWN**, which is the session's real constraint:
+`Acmp.Integration.Tests` cannot run locally, so a local coverage report names MORE files than CI and none
+of the extra list is real. **Ask the operator to start Docker.** ⚠ Check for an unpushed commit.
+- ⭐⭐ **`.0` OF A MAJOR IS THE LEAST-TESTED BUILD OF THAT MAJOR** — I pinned every package to `10.0.0`
+  with 11 patches out, **having already found `Cryptography.Xml` `10.0.0` itself vulnerable**, written
+  that into `Directory.Build.props`, and left twenty others on `.0`.
+- ⭐⭐ **A PINNED BASE IMAGE AND A PINNED SDK ARE ONE DECISION IN TWO PLACES** (`LL-019`, SDK band instead
+  of distro). `global.json` pinned to the LOCAL SDK → the CONTAINER broke; `latestPatch` cannot cross a
+  feature band. **The image is the authority, not the developer's box** — no local gate models it.
+- ⭐⭐ **A MIGRATION'S VERDICT COMES FROM EXECUTING, NOT BUILDING** — built clean in Release + `format`
+  green, then 355/392 API tests failed at RUNTIME, twice, for two unrelated causes.
+- ⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** and work only in globalization-invariant
+  mode, which **THROWS `CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does
+  `ar-SA` + `LCID 1025`. **A naive minimal-base move would THROW at runtime after compiling and
+  unit-testing perfectly.** Escape hatches: `icu-libs`+`icu-data-full`, or the `-extra` variants.
+  ⚠ Documentation, not measurement — the spike needs Docker. **`DEC-083` d2: bring a decision, not a pick.**
 
 ★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — six items, **six different ways a row
 misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; hollow passes; the
@@ -37,14 +56,18 @@ three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is
   no export feature"* is now false; **its trigger named a Phase-3 ITEM, not a property, so the row could
   not see its own condition met from another direction.**
 
-- ⚠ **1 OPERATOR VERDICT OWED** — **`WBS-24.6`**; `24.1`–`24.5` are all `Implemented` (`24.4` promoted
-  2026-08-27 at the second asking, `DEC-081` d1). ⚠ **Do NOT rebuild it** — `Review` counting as open in
-  `readiness_check` is the rule working. ⭐ **An ABSENT reason for a decline is not evidence of a reason:
-  asking got a promotion, where every available inference would have been wrong** (`LL-003`).
+- ⚠⚠ **THE RULE, NOT THE ROSTER: a row at `Review` is done-claimed work awaiting the operator's verdict,
+  it is ALWAYS merged, and it is NEVER a reason to rebuild.** ⛔ **Which rows are at `Review` is not
+  written here** — `readiness_check(scope="slice", id="SL-033")` is the only answer that cannot go stale,
+  and a "nothing is owed" sentence is falsified by the next thing you finish. ⭐ **An ABSENT reason for a
+  decline is not evidence of a reason: asking got `24.4` promoted, where every inference was wrong**
+  (`LL-003`). ⭐ Both 2026-08-27 verdicts were taken against a GENERATED slate
+  (`scripts/gen-slice-review-slate.mjs`), never a summary — `LL-011`/`LL-023` discharged mechanically.
 - ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
   — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
   over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
-  lifecycle status inline in prose** — the register has it.
+  lifecycle status inline in prose** — the register has it. ⭐ **Grep the ADVISORY NAME too**
+  (`lessons-confirmed` found two stale instructions no id-based pass could see).
 - ⚠⚠ **`LL-024` is Approved + PINNED** (2026-08-27) and it FIRED AGAIN ninety minutes later: a heredoc
   ate an escaped apostrophe and two unicode ranges. **Use the editor tool, not a heredoc — remove the
   second interpretation layer rather than escaping through it.** Then RUN the generated file.
@@ -82,13 +105,9 @@ open PR (`strict=true`). ⭐ **Instruments to USE, not re-derive:** `scripts/cov
   activating a `DW-` row → check its requirement in the same breath. ⚠ **`deferred-work-reviewed` CANNOT go
   green from reviewing** (it selects `Open`+`Activated`+`Scheduled`); ⚠ **`assumptions-current`'s field is a
   FUTURE due date** — more will redden, that is the control working; don't clear them. ⛔ `DEF-087` untouched.
-- ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` removed**; `DEC-020`/`ADR-0003`/`OQ-040` still
-  assume it. Operator: *record it, change nothing.* Found by **keyword** sweep only (`LL-008`).
-  ⚠ **I reported "four" truncated assumption titles; it was EIGHT** — I measured inside the twelve rows I was
-  already editing. **Measuring inside the set you are holding is not measuring the register.**
-
-## ★ Batches 13–21 + the DW-029 close-out
-
+  ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` removed** (*record it, change nothing*), found
+  by **keyword** sweep only (`LL-008`). ⚠ **I reported "four" truncated assumption titles; it was EIGHT** —
+  **measuring inside the set you are already holding is not measuring the register.**
 ★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
 enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after
 a pipe, the still-open stack/scanner group, and production's reconciled state.

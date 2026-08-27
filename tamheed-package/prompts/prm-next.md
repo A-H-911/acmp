@@ -19,8 +19,25 @@ readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERA
                                              # NORMAL (see §1). ⛔ Do NOT "fix" readiness by softening
                                              # DEF-108's severity or converting it - both were offered
                                              # to the operator and BOTH WERE DECLINED.
-git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
+git status --porcelain -uall                 # expect a CLEAN TREE but NOT `main` — see below
+git rev-parse --abbrev-ref HEAD              # expect `feat/dw-080-phase-a-net10`, NOT main
+gh pr view 320 --json state,mergeStateStatus # expect OPEN / BLOCKED — DW-080 phase A is mid-flight
+docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon is DOWN on this machine
+                                             # and that is the session's real constraint: it makes
+                                             # `Acmp.Integration.Tests` unrunnable locally, which is the
+                                             # ONLY place FREETEXT executes and the only real SQL Server.
+                                             # Ask the operator to start Docker before doing anything
+                                             # that needs it, rather than iterating through CI.
 ```
+
+⚠⚠ **YOU ARE NOT ON `main` AND THAT IS THE FIRST THING TO KNOW.** This block said *"expect clean; you are
+on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase A left
+a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
+nothing, and conclude the work is not there.** `main` is green and untouched; the live work is on
+`feat/dw-080-phase-a-net10` with PR `#320` open, and ⚠ **one commit on it is not yet pushed** — check
+`git rev-list --left-right --count origin/feat/dw-080-phase-a-net10...HEAD` before assuming CI has seen
+your tree. ⭐ **This is the TWENTY-THIRD's shape again — the kickoff block itself describing an old
+world** — caught before it was committed, so the tally does not move.
 
 ⚠ **WHAT THE COUNTER COUNTS, so it stays meaningful:** a statement is tallied when it was true, became
 false, and **reached a commit** — where a fresh session could have read it. Wording caught and fixed
@@ -407,7 +424,20 @@ REASON two phases sit at `Approved`: `PH-3` on purpose (below), and `PH-7` becau
 hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF-010` records.
 ⚠ `SL-014` is `Deferred` (`P14`/Tarseem, `DEC-028`) and is off the ladder. Do not start it.
 
-**You are on `main`, clean, everything merged, CI green.** No feature branch is open.
+⛔ **HISTORICAL — DO NOT READ THIS AS NOW.** The sentence here was *"You are on `main`, clean, everything
+merged, CI green. No feature branch is open."* It was true of the 2026-08-20 session this section
+describes, and it is **false as of 2026-08-27**: `DW-080` phase A left `feat/dw-080-phase-a-net10` open
+with PR `#320`. ⚠ **It is annotated rather than deleted because §1 is a dated record**, but it was written
+in the present tense and in the SECOND PERSON, which is what made it dangerous — *"you are on `main`"*
+reads as an instruction about now no matter what the section heading says. ⭐ **The transferable half: a
+historical section survives going stale only if its sentences do not address the reader directly.**
+`git rev-parse --abbrev-ref HEAD` is the answer, and the kickoff block at the top now asks for it.
+⚠ **DELIBERATELY NOT COUNTED IN THE TALLY, and the reasoning is recorded so nobody thinks it was missed.**
+§1's heading already says in bold that it is *"the state they began from, NOT the state you are in"*, so
+the artifact does not claim to describe NOW — the TWENTY-FIFTH's own test. The TWENTY-THIRD was counted
+because the KICKOFF block claims exactly that and has no such heading. **Counting this one too would
+inflate the ordinal against `LL-016`'s warning**, and an ordinal is the one thing no mechanical check can
+see. The fix is applied either way; only the number is withheld.
 
 ### Measure, do not trust — the three commands that replace every tally
 
@@ -1179,22 +1209,64 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 ⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
 `entity_query("wbs-item")` are the live answer.
 
-1. ▶▶▶ **`DW-080`, IN PROGRESS — PHASE A IS PUSHED (PR `#320`), PHASE B IS NOT STARTED.** Its own row
-   requires the isolation: a musl-and-globalization failure mode a unit suite cannot see. `DEC-083` d1
-   split it — **runtime `net8.0`→`net10.0` on the Debian base first (phase A), then `DW-066`'s
-   minimal-base move (phase B)** — so a failure can be attributed to one of them. Phase A supersedes
-   `#128` and `#134`.
-   ⛔ **PHASE B's BASE IS NOT CHOSEN. `DEC-083` d2 requires a spike of BOTH alpine and distroless with
-   MEASURED findings** — chiefly whether the aspnet alpine image ships without ICU, which for Arabic
-   `FREETEXT` / `LCID 1025` is the entire question — brought back as a decision. Do not pick one silently.
-   ⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM HERE.** This line said *"the only two open PRs, `#128` and
-   `#134`"*, re-verified 2026-08-26 — and two more (`#318`, `#319`) appeared within a day. **A Dependabot
-   queue is a moving target, so any count of it is stale by construction**; `gh pr list --state open`
-   with **no `--limit`** is the answer (`PE-599`: the cap is what hid `#128`/`#134` in the first place).
-   ⚠ `#318`/`#319` are covered by NO prior decision and `DEC-083` d3 deliberately LEFT THEM ALONE —
-   stretching an old *"sweep everything"* over unseen work is the failure that created `DW-080`.
-2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+1. ▶▶▶ **FINISH `DW-080` PHASE A. IT IS ONE FILE FROM GREEN, AND THE REMAINING FAILURE IS `DEF-113`.**
+   PR `#320` on `feat/dw-080-phase-a-net10`. ⚠ **Measure, do not trust this** — `gh pr checks 320` and
+   `gh run list --branch feat/dw-080-phase-a-net10` are the live answer, and poll `status` to `completed`
+   before reading `conclusion` (trap 23).
+   **What is already GREEN and must not be re-litigated:** E2E (the .NET 10 image builds AND boots the
+   whole stack), Security, and every backend TEST including `Acmp.Integration.Tests`.
+   ⭐⭐ **`SearchProvidersFtsTests` PASSES — Arabic `FREETEXT` against real SQL Server works on .NET 10.**
+   That is the single most load-bearing check in this migration and it is done.
+   **What is RED:** the backend job's **Coverage gate** step, naming ONE file at 92.00% (23/25) against a
+   **99.58%** global. `DEF-113` carries it, including the reason it is the first place to look: that same
+   file has a recorded history of async-state-machine coverage ATTRIBUTION moving it wildly (0/4 → 18/25
+   in one config change). ⛔ **Do NOT `[ExcludeFromCodeCoverage]` it and do NOT lower `ADR-0016`'s 95%** —
+   both were argued and refused before, and `DW-082` proved a lenient provider scored files with NO TEST
+   FILE at ≥95%. ⚠ **Get the two uncovered LINE NUMBERS and read them**; `LL-017` says *"the new
+   instrument miscounts"* and *"the old one was over-crediting"* predict identical evidence, so only the
+   hand-countable artefact separates them.
+   ⚠⚠ **THIS NEEDS DOCKER.** The local coverage report is missing `Acmp.Integration.Tests`' reach
+   entirely while the daemon is down, so a local run will name MORE files than CI does and none of that
+   extra list is real. Ask the operator to start Docker rather than iterating through CI.
+
+   ⭐⭐ **FOUR FINDINGS FROM PHASE A THAT OUTLIVE IT:**
+   - **`.0` OF A MAJOR IS THE LEAST-TESTED BUILD OF THAT MAJOR.** Phase A pinned every first-party
+     package to `10.0.0` with eleven patches out — and had ALREADY found that
+     `System.Security.Cryptography.Xml` `10.0.0` was itself vulnerable and needed `10.0.11`. The lesson
+     was written into `Directory.Build.props` and twenty other packages were left on `.0` anyway.
+   - **A PINNED BASE IMAGE AND A PINNED SDK ARE ONE DECISION IN TWO PLACES** (`LL-019`, with the distro
+     release swapped for an SDK band). `global.json` was pinned to the LOCAL SDK and the CONTAINER was
+     what broke; `rollForward: latestPatch` cannot cross a feature band. **The image is the authority,
+     not the developer's box** — and no local gate models this, only building the image does.
+   - **A MIGRATION'S VERDICT COMES FROM EXECUTING, NEVER FROM BUILDING.** The solution built clean in
+     Release and `dotnet format` passed, then 355 of 392 API tests failed at RUNTIME — twice, for two
+     unrelated causes (Swashbuckle's `TypeLoadException`, and EF 10 refusing two providers in one
+     service provider). `DW-080`'s row predicted exactly this class.
+   - **EF 10 REFUSES WHAT EF 8 TOLERATED, AND THE OLD GRAPH WAS NEVER LEGAL** (`DEF-112`, Fixed): one
+     owned value-object instance shared across three navigations. `LL-017` resolved in the rarer
+     direction — the OLD instrument was lying.
+2. ▶▶ **THEN `DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+   ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
+   findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
+   IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
+   SINCE .NET 6 INVARIANT MODE *THROWS* `CultureNotFoundException` FOR ANY NON-INVARIANT CULTURE.** ACMP
+   creates `ar-SA` and does `LCID 1025` FREETEXT, so **a naive minimal-base move would not degrade
+   Arabic, it would throw at runtime — after compiling and unit-testing perfectly.** The clause stays
+   reachable through the documented escape hatches (`icu-libs` + `icu-data-full` on alpine, or the
+   `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
+   ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
+   proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
+3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+
+⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM ANYWHERE IN THIS FILE.** A line here said *"the only two open
+PRs, `#128` and `#134`"*, re-verified 2026-08-26 — and two more appeared within a day. **A Dependabot
+queue is a moving target, so any count of it is stale by construction**; `gh pr list --state open` with
+**no `--limit`** is the answer (`PE-599`: a cap at ten is what hid `#128`/`#134` in the first place, which
+is the entire reason `DW-080` exists as its own row). ⚠ `#318` and `#319` are covered by NO prior decision
+and `DEC-083` d3 deliberately LEFT THEM ALONE — stretching an old *"sweep everything"* over work nobody
+has seen is the failure that created this row. **Phase A supersedes `#128` and `#134`** (the `#135`→`#308`
+precedent); close them when it merges.
 
 ⚠⚠ **THE RULE, NOT THE ROSTER: A ROW AT `Review` IS DONE-CLAIMED WORK AWAITING THE OPERATOR'S VERDICT, AND
 IT IS ALWAYS MERGED. `Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming such a
