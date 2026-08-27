@@ -1151,6 +1151,12 @@ an approved AC **at all — including to mark it superseded, which is the very p
 names**. The operator accepted this on 2026-08-27; `DEF-111` and `AC-148`'s text are the record. `NFR-037`
 therefore carries two active `Met` criteria, one containing a withdrawn exclusion.
 
+⚠ **A NEW LESSON WAS FILED ON 2026-08-27 FROM `WBS-24.6`: `LL-025`** — a plan row can be a FAITHFUL
+quotation of a clause an ADR has already superseded, and when an ADR names the rows it undertook to amend,
+that list is the instrument. ⛔ **Its status is deliberately NOT written here** (see the THIRTY-FIRST):
+`entity_query("lesson", status="Proposed")` and `readiness_check`'s `lessons-confirmed` row are the live
+answer, and only the OPERATOR's interview moves it. **Do not approve a sentence they have not read.**
+
 ⚠ **`LL-024` BINDS: generated code loses its escapes silently, so prove it RUNS rather than reading it.**
 It cost four cycles in one session, then fired a fifth and a sixth time. ⛔ **Do NOT write a lesson's
 lifecycle status here** — this paragraph asserted one and it was **the THIRTY-FIRST**; `entity_query
