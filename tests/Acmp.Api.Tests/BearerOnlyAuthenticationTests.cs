@@ -52,12 +52,11 @@ public class BearerOnlyAuthenticationTests
             builder.UseEnvironment("Testing");
             builder.ConfigureTestServices(services =>
             {
-                services.RemoveAll<DbContextOptions<MembershipDbContext>>();
-                services.RemoveAll<MembershipDbContext>();
-                services.AddDbContext<MembershipDbContext>(o => o.UseInMemoryDatabase(_dbName));
-                services.RemoveAll<DbContextOptions<AuditDbContext>>();
-                services.RemoveAll<AuditDbContext>();
-                services.AddDbContext<AuditDbContext>(o => o.UseInMemoryDatabase(_dbName + "-audit"));
+                // Shared with AcmpWebApplicationFactory: the helper also drops EF 9+'s
+                // IDbContextOptionsConfiguration<T>, which is what carries UseSqlServer. Omitting it is
+                // what failed 355 API tests the moment the runtime moved to .NET 10.
+                AcmpWebApplicationFactory.UseInMemory<MembershipDbContext>(services, _dbName);
+                AcmpWebApplicationFactory.UseInMemory<AuditDbContext>(services, _dbName + "-audit");
                 // Authentication is NOT swapped — that is the entire point of this suite.
             });
         }

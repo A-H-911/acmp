@@ -19,8 +19,40 @@ readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERA
                                              # NORMAL (see §1). ⛔ Do NOT "fix" readiness by softening
                                              # DEF-108's severity or converting it - both were offered
                                              # to the operator and BOTH WERE DECLINED.
-git status --porcelain -uall                 # expect clean; you are on `main`, everything is merged
+git status --porcelain -uall                 # expect a CLEAN TREE
+git rev-parse --abbrev-ref HEAD              # ⚠ BRANCH-DEPENDENT — read the conditional below
+gh pr view 320 --json state,mergeStateStatus # ⚠ ASK IT, do not assume; the answer decides the next step
+gh pr checks 320                             # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
+                                             # (trap 23). ⚠ The last pushes were package-only, but for a
+                                             # `pull_request` event GitHub evaluates paths-ignore against
+                                             # the WHOLE PR diff, so they re-ran and CANCELLED the prior
+                                             # runs (trap 38). The NEWEST sha's run is the live one.
+docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon is DOWN on this machine
+                                             # and that is the session's real constraint: it makes
+                                             # `Acmp.Integration.Tests` unrunnable locally, which is the
+                                             # ONLY place FREETEXT executes and the only real SQL Server.
+                                             # Ask the operator to start Docker before doing anything
+                                             # that needs it, rather than iterating through CI.
 ```
+
+⚠⚠ **YOU MAY NOT BE ON `main`, AND THAT IS THE FIRST THING TO ESTABLISH.** This block said *"expect clean;
+you are on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase
+A left a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
+nothing, and conclude the work is not there.** ⭐ **This is the TWENTY-THIRD's shape — the kickoff block
+describing an old world.**
+
+**IT IS WRITTEN AS A CONDITIONAL ON PURPOSE, BECAUSE A SNAPSHOT OF MY WORKING STATE IS WHAT PRODUCED THE
+THIRTY-SECOND.** Whichever branch you are on, `gh pr view 320` decides which of these you are in:
+
+| `#320` is… | where you are | what to do |
+|---|---|---|
+| **OPEN** | on `feat/dw-080-phase-a-net10`, `DW-080` phase A mid-flight | §6 item 1 — finish it |
+| **MERGED** | back on `main`, branch deleted by the merge | phase A is DONE; go to §6 item 2 (phase B) and **close `#128`/`#134`**, which it supersedes |
+| **CLOSED** | `main`, phase A abandoned | ⛔ stop and ask the operator — nothing here explains that |
+
+⚠ **`main` is green and untouched either way**; nothing in `DW-080` has ever been pushed to it.
+⚠ **Never assume CI has seen your tree** — `git rev-list --left-right --count @{u}...HEAD`, right-hand
+number. ⛔ **Do not write into this file what you have or have not pushed** (the THIRTY-SECOND).
 
 ⚠ **WHAT THE COUNTER COUNTS, so it stays meaningful:** a statement is tallied when it was true, became
 false, and **reached a commit** — where a fresh session could have read it. Wording caught and fixed
@@ -29,7 +61,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-one** times, and **nine** wrong assertions have escaped into
+file has carried a stale statement **thirty-three** times, and **nine** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +71,32 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-THIRD IS A NUMBER INSIDE A SENTENCE THAT TELLS YOU NOT TO TRUST THE NUMBER, AND THAT IS
+THE WHOLE FINDING.** §6 read *"`defects-minor` therefore names SIX rows, not five — measure it, do not
+count from this sentence."* Filing `DEF-113` made it seven, and it sat in three commits that way.
+⚠⚠ **THE HEDGE DOES NOT NEUTRALISE THE FIGURE — A READER TAKES THE NUMBER AND SKIPS THE DISCLAIMER**, which
+is the one part of the sentence that costs nothing to obey. This is the EIGHTH fix's rule applied only
+halfway: it stopped short of DELETING the count and supplied both a command and an answer, and the answer
+is what gets read. ⭐ **A count with a disclaimer attached is still a count. Give the command or give
+nothing.** ⚠ Counted rather than waved through on the strength of its own hedge: it was true, became
+false, and reached a commit, which is this section's test and the only one it has.
+
+⚠⚠⚠ **THE THIRTY-SECOND HAS THE SHORTEST LIFE OF ANY ENTRY HERE: ABOUT NINETY SECONDS, AND I FALSIFIED IT
+MYSELF BY DOING THE OBVIOUS NEXT THING.** The kickoff block — rewritten in the very pass that was fixing
+the kickoff block — said *"⚠ one commit on it is not yet pushed"*. It was written, committed, and then I
+pushed, which is the only action anyone would take next. **It was also wrong at the instant it was
+committed**, because two commits were unpushed at that moment, not one.
+⚠⚠ **THIS IS THE TWENTY-FIRST'S LESSON AND I HAD JUST RE-STATED IT IN THIS SAME SESSION** — *"every number
+I put into a file I am still editing is a hostage to the rest of my own session"* — and an hour earlier I
+had removed a verdict ROSTER for exactly this reason, writing that *"a sentence naming WHICH items are
+outstanding is falsified by the very work the reader is doing"*. Then I wrote a sentence naming which
+commits were outstanding.
+⭐⭐ **THE GENERAL FORM, WHICH IS WORTH MORE THAN THE INSTANCE: NEVER RECORD YOUR OWN WORKING STATE IN A
+DURABLE ARTIFACT.** Branch, PR number and "which row is at `Review`" are facts about the repository that
+outlive the session; "what I have pushed so far" is a fact about the ten minutes you are in. The line
+already CARRIED the command that answers it — `git rev-list --left-right --count` — and I put a stale
+answer in front of the working instrument anyway. **Delete the answer, keep the command.**
 
 ⚠⚠⚠ **THE THIRTY-FIRST IS THE THIRTIETH'S SHAPE, ABOUT A DIFFERENT LESSON, WRITTEN INTO THIS FILE
 *BELOW* THE PARAGRAPH THAT FORBIDS IT.** §6 said *"ONE LESSON AWAITS YOUR INTERVIEW: `LL-024` … so
@@ -407,7 +465,20 @@ REASON two phases sit at `Approved`: `PH-3` on purpose (below), and `PH-7` becau
 hard constraint (`DEC-055`), and closing it is the manufactured-status move `DEF-010` records.
 ⚠ `SL-014` is `Deferred` (`P14`/Tarseem, `DEC-028`) and is off the ladder. Do not start it.
 
-**You are on `main`, clean, everything merged, CI green.** No feature branch is open.
+⛔ **HISTORICAL — DO NOT READ THIS AS NOW.** The sentence here was *"You are on `main`, clean, everything
+merged, CI green. No feature branch is open."* It was true of the 2026-08-20 session this section
+describes, and it is **false as of 2026-08-27**: `DW-080` phase A left `feat/dw-080-phase-a-net10` open
+with PR `#320`. ⚠ **It is annotated rather than deleted because §1 is a dated record**, but it was written
+in the present tense and in the SECOND PERSON, which is what made it dangerous — *"you are on `main`"*
+reads as an instruction about now no matter what the section heading says. ⭐ **The transferable half: a
+historical section survives going stale only if its sentences do not address the reader directly.**
+`git rev-parse --abbrev-ref HEAD` is the answer, and the kickoff block at the top now asks for it.
+⚠ **DELIBERATELY NOT COUNTED IN THE TALLY, and the reasoning is recorded so nobody thinks it was missed.**
+§1's heading already says in bold that it is *"the state they began from, NOT the state you are in"*, so
+the artifact does not claim to describe NOW — the TWENTY-FIFTH's own test. The TWENTY-THIRD was counted
+because the KICKOFF block claims exactly that and has no such heading. **Counting this one too would
+inflate the ordinal against `LL-016`'s warning**, and an ordinal is the one thing no mechanical check can
+see. The fix is applied either way; only the number is withheld.
 
 ### Measure, do not trust — the three commands that replace every tally
 
@@ -1020,8 +1091,8 @@ byte-identical to both. **The mitigation cannot be credited: the run BEFORE it w
 `OQ-035`'s recorded resolution both promise the committee will adjust them **via configuration**. ⚠ **So
 `assumptions-current` naming `ASM-011` is not merely an overdue date — its remediation path does not
 exist.** ⛔ Do not "fix" the advisory by re-dating the assumption; that was the wrong question and
-`DEF-110` records why. **`defects-minor` therefore names SIX rows, not five** — measure it, do not
-count from this sentence.
+`DEF-110` records why. ⚠ **`defects-minor` therefore grew** — `readiness_check("package")` is the list;
+no count is written here, and the reason is the THIRTY-THIRD below.
 
 ✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
 `AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⚠ `Review`, not
@@ -1179,11 +1250,73 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 ⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
 `entity_query("wbs-item")` are the live answer.
 
-1. ▶▶▶ **`DW-080` ALONE, with nothing else in flight. THIS IS THE NEXT ACTION** — its own row requires the isolation: a
-   musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
-   only two open PRs, `#128` and `#134` (re-verified with no `--limit` cap, 2026-08-26).
-2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+1. ▶▶▶ **FINISH `DW-080` PHASE A. IT IS ONE FILE FROM GREEN, AND THE REMAINING FAILURE IS `DEF-113`.**
+   PR `#320` on `feat/dw-080-phase-a-net10`. ⚠ **Measure, do not trust this** — `gh pr checks 320` and
+   `gh run list --branch feat/dw-080-phase-a-net10` are the live answer, and poll `status` to `completed`
+   before reading `conclusion` (trap 23).
+   **What is already GREEN and must not be re-litigated:** E2E (the .NET 10 image builds AND boots the
+   whole stack), Security, and every backend TEST including `Acmp.Integration.Tests`.
+   ⭐⭐ **`SearchProvidersFtsTests` PASSES — Arabic `FREETEXT` against real SQL Server works on .NET 10.**
+   That is the single most load-bearing check in this migration and it is done.
+   **What is RED:** the backend job's **Coverage gate** step, naming ONE file at 92.00% (23/25) against a
+   **99.58%** global.
+   ⭐ **IT IS DETERMINISTIC, NOT FLAKE, AND THAT WAS ESTABLISHED WITHOUT RE-RUNNING ANYTHING.** Two
+   completed runs on different shas produced byte-identical output — the same file, the same 23/25, the
+   same global — because later package-only pushes re-ran the pipeline anyway (trap 38). **A second
+   observation that arrives as a by-product of real work is worth more than a re-run**, and re-running is
+   what `DEC-077` d3 forbids.
+   ⭐ **The e2e drag-test timeout seen once on `ee579c8c` has NOT recurred across the two runs since.** It
+   is still not called flake on that basis — the applock precedent forbids exactly that inference — but
+   the evidence accumulated without anyone chasing it. **Do not spend a cycle re-testing it.**
+   `DEF-113` carries the rest, including the reason it is the first place to look: that same
+   file has a recorded history of async-state-machine coverage ATTRIBUTION moving it wildly (0/4 → 18/25
+   in one config change). ⛔ **Do NOT `[ExcludeFromCodeCoverage]` it and do NOT lower `ADR-0016`'s 95%** —
+   both were argued and refused before, and `DW-082` proved a lenient provider scored files with NO TEST
+   FILE at ≥95%. ⚠ **Get the two uncovered LINE NUMBERS and read them**; `LL-017` says *"the new
+   instrument miscounts"* and *"the old one was over-crediting"* predict identical evidence, so only the
+   hand-countable artefact separates them.
+   ⚠⚠ **THIS NEEDS DOCKER.** The local coverage report is missing `Acmp.Integration.Tests`' reach
+   entirely while the daemon is down, so a local run will name MORE files than CI does and none of that
+   extra list is real. Ask the operator to start Docker rather than iterating through CI.
+
+   ⭐⭐ **FOUR FINDINGS FROM PHASE A THAT OUTLIVE IT:**
+   - **`.0` OF A MAJOR IS THE LEAST-TESTED BUILD OF THAT MAJOR.** Phase A pinned every first-party
+     package to `10.0.0` with eleven patches out — and had ALREADY found that
+     `System.Security.Cryptography.Xml` `10.0.0` was itself vulnerable and needed `10.0.11`. The lesson
+     was written into `Directory.Build.props` and twenty other packages were left on `.0` anyway.
+   - **A PINNED BASE IMAGE AND A PINNED SDK ARE ONE DECISION IN TWO PLACES** (`LL-019`, with the distro
+     release swapped for an SDK band). `global.json` was pinned to the LOCAL SDK and the CONTAINER was
+     what broke; `rollForward: latestPatch` cannot cross a feature band. **The image is the authority,
+     not the developer's box** — and no local gate models this, only building the image does.
+   - **A MIGRATION'S VERDICT COMES FROM EXECUTING, NEVER FROM BUILDING.** The solution built clean in
+     Release and `dotnet format` passed, then 355 of 392 API tests failed at RUNTIME — twice, for two
+     unrelated causes (Swashbuckle's `TypeLoadException`, and EF 10 refusing two providers in one
+     service provider). `DW-080`'s row predicted exactly this class.
+   - **EF 10 REFUSES WHAT EF 8 TOLERATED, AND THE OLD GRAPH WAS NEVER LEGAL** (`DEF-112`, Fixed): one
+     owned value-object instance shared across three navigations. `LL-017` resolved in the rarer
+     direction — the OLD instrument was lying.
+2. ▶▶ **THEN `DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+   ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
+   findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
+   IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
+   SINCE .NET 6 INVARIANT MODE *THROWS* `CultureNotFoundException` FOR ANY NON-INVARIANT CULTURE.** ACMP
+   creates `ar-SA` and does `LCID 1025` FREETEXT, so **a naive minimal-base move would not degrade
+   Arabic, it would throw at runtime — after compiling and unit-testing perfectly.** The clause stays
+   reachable through the documented escape hatches (`icu-libs` + `icu-data-full` on alpine, or the
+   `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
+   ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
+   proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
+3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+
+⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM ANYWHERE IN THIS FILE.** A line here said *"the only two open
+PRs, `#128` and `#134`"*, re-verified 2026-08-26 — and two more appeared within a day. **A Dependabot
+queue is a moving target, so any count of it is stale by construction**; `gh pr list --state open` with
+**no `--limit`** is the answer (`PE-599`: a cap at ten is what hid `#128`/`#134` in the first place, which
+is the entire reason `DW-080` exists as its own row). ⚠ `#318` and `#319` are covered by NO prior decision
+and `DEC-083` d3 deliberately LEFT THEM ALONE — stretching an old *"sweep everything"* over work nobody
+has seen is the failure that created this row. **Phase A supersedes `#128` and `#134`** (the `#135`→`#308`
+precedent); close them when it merges.
 
 ⚠⚠ **THE RULE, NOT THE ROSTER: A ROW AT `Review` IS DONE-CLAIMED WORK AWAITING THE OPERATOR'S VERDICT, AND
 IT IS ALWAYS MERGED. `Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming such a

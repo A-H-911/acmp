@@ -134,11 +134,19 @@ public sealed class DbBackstopTests
     public async Task DecisionKey_Duplicate_IsRejectedBySql()
     {
         var key = UniqueKey("DECN");
-        var rationale = LocalizedString.Create("Because", "لأن");
+        // ⚠⚠ EACH OWNED NAVIGATION GETS ITS OWN INSTANCE, AND THAT IS NOT STYLE. Title, Statement and
+        // Rationale are three SEPARATE owned entity types (Decision.Title#LocalizedString and friends), so
+        // handing the same CLR object to all three asks the change tracker to track one instance as three
+        // identities. EF 8 tolerated it; EF 10 refuses outright with "The property 'DecisionId' belongs to
+        // the type 'Decision.Statement#LocalizedString', but is being used with an instance of type
+        // 'Decision.Rationale#LocalizedString'". The old graph was never legal - the runtime upgrade is
+        // what stopped hiding it (DW-080 phase A). Production is unaffected: RecordDecision and
+        // SupersedeDecision pass three distinct request fields.
+        LocalizedString Text() => LocalizedString.Create("Because", "لأن");
         await using var db = _fx.NewDecisionsSql();
-        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, rationale, rationale, rationale, null, null,
+        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, Text(), Text(), Text(), null, null,
             Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
-        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, rationale, rationale, rationale, null, null,
+        db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, Text(), Text(), Text(), null, null,
             Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
 
         await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();

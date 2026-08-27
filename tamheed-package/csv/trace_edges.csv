@@ -403,6 +403,8 @@ LL-021,PE-615,learned_from
 LL-022,PE-626,learned_from
 LL-023,PE-631,learned_from
 LL-025,WBS-24.6,learned_from
+LL-026,DEF-113,learned_from
+LL-027,DEF-113,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from

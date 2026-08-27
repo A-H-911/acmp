@@ -98,27 +98,39 @@ public class WebexWebhookRegistrarTests
         await audit.DidNotReceive().EmitAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
-    // The BackgroundService override: StartAsync runs ExecuteAsync, which opens a DI scope and delegates to
-    // EnsureAsync. Deps must be SCOPED (ExecuteAsync calls CreateScope). Disabled options → a quick no-op.
+    // The BackgroundService override: ExecuteAsync opens a DI scope and delegates to EnsureAsync. Deps must be
+    // SCOPED (ExecuteAsync calls CreateScope), so this also proves the scope resolves what EnsureAsync asks for.
+    // ⚠⚠ NEITHER LIFECYCLE METHOD IS A JOIN, AND BOTH FAIL SILENTLY (DEF-113). Since .NET 10 the WHOLE of
+    // ExecuteAsync is dispatched to a background thread, so StartAsync returns with ExecuteTask still
+    // WaitingForActivation — an assertion straight after it is evaluated against work that has not happened.
+    // StopAsync is no better: it cancels the stopping token BEFORE awaiting, and the body is dispatched with
+    // that same token, so on a loaded runner it can cancel the work before it ever starts and then "join" a
+    // task that did nothing. ExecuteTask IS the running body: awaiting it involves no cancellation, so it is
+    // deterministic by construction rather than by timing, and it rethrows whatever ExecuteAsync threw, which
+    // is what makes the never-throws claim real. Asserting the API call POSITIVELY is what keeps the pass
+    // non-hollow — a negative assertion is satisfied by the empty run and cannot tell the two apart.
     [Fact]
     public async Task Background_service_runs_ensure_within_a_scope_and_never_throws()
     {
         var api = Substitute.For<IWebexApiClient>();
         var tokens = Substitute.For<IWebexTokenService>();
+        tokens.GetValidAccessTokenAsync(Arg.Any<CancellationToken>()).Returns("user-token");
         var audit = Substitute.For<IAuditSink>();
 
         var services = new ServiceCollection();
-        services.AddScoped<IOptions<WebexOptions>>(_ => Options.Create(new WebexOptions { Enabled = false }));
+        services.AddScoped<IOptions<WebexOptions>>(_ => Options.Create(Enabled()));
         services.AddScoped(_ => tokens);
         services.AddScoped(_ => api);
         services.AddScoped(_ => audit);
         using var sp = services.BuildServiceProvider();
 
         var registrar = new WebexWebhookRegistrar(sp, NullLogger<WebexWebhookRegistrar>.Instance);
+        var hosted = (IHostedService)registrar;
 
-        await ((IHostedService)registrar).Invoking(r => r.StartAsync(CancellationToken.None)).Should().NotThrowAsync();
+        await hosted.StartAsync(CancellationToken.None);
+        await FluentActions.Awaiting(() => registrar.ExecuteTask!).Should().NotThrowAsync();
 
-        // Disabled → EnsureAsync no-ops before touching the API.
-        await api.DidNotReceiveWithAnyArgs().EnsureRecordingsWebhookAsync(default!, default!, default!, default);
+        // The registrar really drove the shared routine through its own scope, at the derived URL.
+        await api.Received(1).EnsureRecordingsWebhookAsync("user-token", Url, "sekret", Arg.Any<CancellationToken>());
     }
 }
