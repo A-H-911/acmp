@@ -1179,9 +1179,20 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 ⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
 `entity_query("wbs-item")` are the live answer.
 
-1. ▶▶▶ **`DW-080` ALONE, with nothing else in flight. THIS IS THE NEXT ACTION** — its own row requires the isolation: a
-   musl-and-globalization failure mode a unit suite cannot see. Carries `DW-066`'s base move and the
-   only two open PRs, `#128` and `#134` (re-verified with no `--limit` cap, 2026-08-26).
+1. ▶▶▶ **`DW-080`, IN PROGRESS — PHASE A IS PUSHED (PR `#320`), PHASE B IS NOT STARTED.** Its own row
+   requires the isolation: a musl-and-globalization failure mode a unit suite cannot see. `DEC-083` d1
+   split it — **runtime `net8.0`→`net10.0` on the Debian base first (phase A), then `DW-066`'s
+   minimal-base move (phase B)** — so a failure can be attributed to one of them. Phase A supersedes
+   `#128` and `#134`.
+   ⛔ **PHASE B's BASE IS NOT CHOSEN. `DEC-083` d2 requires a spike of BOTH alpine and distroless with
+   MEASURED findings** — chiefly whether the aspnet alpine image ships without ICU, which for Arabic
+   `FREETEXT` / `LCID 1025` is the entire question — brought back as a decision. Do not pick one silently.
+   ⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM HERE.** This line said *"the only two open PRs, `#128` and
+   `#134`"*, re-verified 2026-08-26 — and two more (`#318`, `#319`) appeared within a day. **A Dependabot
+   queue is a moving target, so any count of it is stale by construction**; `gh pr list --state open`
+   with **no `--limit`** is the answer (`PE-599`: the cap is what hid `#128`/`#134` in the first place).
+   ⚠ `#318`/`#319` are covered by NO prior decision and `DEC-083` d3 deliberately LEFT THEM ALONE —
+   stretching an old *"sweep everything"* over unseen work is the failure that created `DW-080`.
 2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
