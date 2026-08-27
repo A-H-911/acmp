@@ -100,10 +100,15 @@ public class WebexWebhookRegistrarTests
 
     // The BackgroundService override: ExecuteAsync opens a DI scope and delegates to EnsureAsync. Deps must be
     // SCOPED (ExecuteAsync calls CreateScope), so this also proves the scope resolves what EnsureAsync asks for.
-    // ⚠ StartAsync alone proves NOTHING here: it returns while ExecuteAsync is still WaitingForActivation, so an
-    // assertion made straight after it passes whether or not the body ever ran (DEF-113 — that vacuous assertion
-    // is what hid lines 30-31 from coverage). StopAsync awaits the stored ExecuteTask, which is the only
-    // deterministic join, and asserting the API call POSITIVELY is what makes the pass non-hollow.
+    // ⚠⚠ NEITHER LIFECYCLE METHOD IS A JOIN, AND BOTH FAIL SILENTLY (DEF-113). Since .NET 10 the WHOLE of
+    // ExecuteAsync is dispatched to a background thread, so StartAsync returns with ExecuteTask still
+    // WaitingForActivation — an assertion straight after it is evaluated against work that has not happened.
+    // StopAsync is no better: it cancels the stopping token BEFORE awaiting, and the body is dispatched with
+    // that same token, so on a loaded runner it can cancel the work before it ever starts and then "join" a
+    // task that did nothing. ExecuteTask IS the running body: awaiting it involves no cancellation, so it is
+    // deterministic by construction rather than by timing, and it rethrows whatever ExecuteAsync threw, which
+    // is what makes the never-throws claim real. Asserting the API call POSITIVELY is what keeps the pass
+    // non-hollow — a negative assertion is satisfied by the empty run and cannot tell the two apart.
     [Fact]
     public async Task Background_service_runs_ensure_within_a_scope_and_never_throws()
     {
@@ -122,11 +127,8 @@ public class WebexWebhookRegistrarTests
         var registrar = new WebexWebhookRegistrar(sp, NullLogger<WebexWebhookRegistrar>.Instance);
         var hosted = (IHostedService)registrar;
 
-        await hosted.Invoking(async r =>
-        {
-            await r.StartAsync(CancellationToken.None);
-            await r.StopAsync(CancellationToken.None); // awaits ExecuteTask — the join StartAsync does not give
-        }).Should().NotThrowAsync();
+        await hosted.StartAsync(CancellationToken.None);
+        await FluentActions.Awaiting(() => registrar.ExecuteTask!).Should().NotThrowAsync();
 
         // The registrar really drove the shared routine through its own scope, at the derived URL.
         await api.Received(1).EnsureRecordingsWebhookAsync("user-token", Url, "sekret", Arg.Any<CancellationToken>());
