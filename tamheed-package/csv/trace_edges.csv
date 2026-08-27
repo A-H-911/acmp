@@ -98,6 +98,7 @@ ADR-0022,ADR-0003,relates_to
 ADR-0026,ADR-0009,relates_to
 ADR-0027,FR-151,relates_to
 ADR-0027,FR-153,relates_to
+ADR-0027,FR-154,relates_to
 ADR-0028,ADR-0026,relates_to
 ADR-0044,ADR-0022,relates_to
 DEC-064,DW-020,relates_to
@@ -351,6 +352,7 @@ FR-152,ADR-0026,derives_from
 FR-153,ADR-0009,derives_from
 FR-153,ADR-0027,derives_from
 FR-154,ADR-0009,derives_from
+FR-154,ADR-0027,derives_from
 FR-155,ADR-0009,derives_from
 FR-156,ADR-0038,derives_from
 FR-157,ADR-0038,derives_from
@@ -638,6 +640,9 @@ SC-033,DW-066,scope_modifies
 SC-033,DW-078,scope_modifies
 SC-033,DW-080,scope_adds
 SC-034,DW-085,scope_modifies
+SC-036,DW-035,scope_modifies
+SC-036,FR-154,scope_modifies
+SC-036,WBS-24.6,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests

@@ -29,7 +29,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty** times, and **nine** wrong assertions have escaped into
+file has carried a stale statement **thirty-one** times, and **nine** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -39,6 +39,41 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-FIRST IS THE THIRTIETH'S SHAPE, ABOUT A DIFFERENT LESSON, WRITTEN INTO THIS FILE
+*BELOW* THE PARAGRAPH THAT FORBIDS IT.** §6 said *"ONE LESSON AWAITS YOUR INTERVIEW: `LL-024` … so
+`lessons-confirmed` therefore fails again, ON PURPOSE — do not clear it by approving a sentence the
+operator has not read."* `LL-024` is **Approved and pinned** and `lessons-confirmed` **passes**. A fresh
+session would have gone looking for an advisory that is already green and an interview that already
+happened — a stale *instruction*, not a stale number.
+⚠⚠ **THE REMEDY FOR THIS EXACT FAULT IS WRITTEN ELEVEN HUNDRED LINES ABOVE IT** — *"never put a lesson's
+lifecycle status inline in this file"* — and it was written for the THIRTIETH, about `LL-023`, one
+session earlier. **A rule stated in the preamble did not reach the section the preamble is about.**
+⚠⚠ **BOTH COMMITTED CHECKS RAN CLEAN OVER IT, AND FOR DIFFERENT REASONS, WHICH IS THE STRUCTURAL POINT.**
+`count-prompt-ids.py` resolved `LL-024` and read its status as `Approved` correctly — it compares the id
+to the register, and the register was right. The prose-status checker missed it because the claim is
+never in the `(Status)` form its regex looks for: *"awaits your interview"* and *"fails again, ON
+PURPOSE"* are **sentences about a status**, not a status. ⭐ **Two instruments agreeing the file is clean,
+both blind to the same thing — `LL-009` inside this file's own tooling.**
+⚠⚠ **IT IS A FAMILY OF TWO, COUNTED AS ONE ORDINAL.** Grepping this file for `lessons-confirmed` — the
+sweep that found the first — immediately found the second: §6's `DW-084` block still read *"Filed as
+`LL-022` (Proposed — the operator's interview is owed; `lessons-confirmed` fails on it ON PURPOSE … Do
+not approve it unread, and do not 'fix' the advisory.)"*, **one hundred lines below a line reading
+`LL-022` IS APPROVED AND PINNED**. Same fault, same section, different lesson, found in one pass — so it
+takes one ordinal, following the FIFTEENTH's and TWENTY-EIGHTH's precedent of a family under one number
+rather than an inflated count (`LL-016`: an ordinal is the thing no check can see, so do not multiply
+them). ⭐ **The prose-status checker missed this one too, and for a THIRD reason** — its `(Proposed)`
+pattern allows 24 characters before the closing paren and this one runs for ninety. **Three different
+blindnesses, one fault class.**
+⚠ **Neither is an escape.** The last commit (`4aee2d6`) fixed the `LL-024` statement in the MEMORY INDEX
+and not here, and its message says so, so the only commit-message hit is a correction. ⭐⭐ **THAT IS THE
+TRANSFERABLE HALF: a correction applied to one artifact and not its sibling is how the surviving copy
+becomes the one the next session reads.** It is the TWENTY-THIRD's lesson — *apply a decision to EVERY
+artifact in the same batch* — firing on a correction rather than on a decision.
+⭐⭐ **THE STANDING FIX, because patching three instances of one fault is not a fix: WHEN YOU GREP THIS
+FILE FOR A ROW YOU TOUCHED, GREP FOR THE ADVISORY AND THE REGISTER NAME TOO.** `lessons-confirmed` found
+both of these in one command, where neither id-based pass found either. **An advisory's name is where the
+instructions built on a status live**, and instructions are the half that costs a session.
 
 ⚠⚠ **THE NINTH ESCAPE (2026-08-26, `WBS-24.4`) IS A COUNT THAT WAS NEVER MEASURED, AND IT IS NOT IN THIS
 FILE — IT IS IN A PUSHED COMMIT MESSAGE.** Commit `7173eb7` says *"24 sites become `<Num value={…} />`"*.
@@ -1116,19 +1151,33 @@ an approved AC **at all — including to mark it superseded, which is the very p
 names**. The operator accepted this on 2026-08-27; `DEF-111` and `AC-148`'s text are the record. `NFR-037`
 therefore carries two active `Met` criteria, one containing a withdrawn exclusion.
 
-⚠ **ONE LESSON AWAITS YOUR INTERVIEW: `LL-024`** — generated code loses its escapes silently, so prove
-it RUNS rather than reading it. It cost four cycles in one session. **`lessons-confirmed` therefore fails
-again, ON PURPOSE** — that advisory is doing its job; do not clear it by approving a sentence the
-operator has not read (`DEC-075` d4's precedent).
+⚠ **`LL-024` BINDS: generated code loses its escapes silently, so prove it RUNS rather than reading it.**
+It cost four cycles in one session, then fired a fifth and a sixth time. ⛔ **Do NOT write a lesson's
+lifecycle status here** — this paragraph asserted one and it was **the THIRTY-FIRST**; `entity_query
+("lesson", status="Proposed")` and `readiness_check`'s `lessons-confirmed` row are the live answer, and
+whether that advisory is red is a fact to READ, never one to carry in prose.
 
-1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.6`. THIS IS THE NEXT ACTION** — `DW-035` / `FR-154`,
-   audit-log export for Auditor + Administrator. ⚠ **It also OWES AN AXE ROUTE** (`DEC-072` d2 /
-   `SC-032`) — in the SAME batch that builds it, named in its own acceptance criterion.
+1. ▶▶▶ **`SL-033`, CONTINUING AT `WBS-24.6`. THIS IS THE NEXT ACTION** — `DW-035` / `FR-154`, audit-log
+   export. ⛔⛔ **NOT "Auditor + Administrator", WHICH IS WHAT THIS LINE USED TO SAY AND WHAT THE ROW,
+   `DW-035` AND `FR-154` ALL SAID: `ADR-0027` (Approved) DECIDES `{Auditor, Chairman, Secretary}` WITH
+   ADMINISTRATOR *EXCLUDED*, AND IT NAMES EXPORTING EXPLICITLY.** Reconciled 2026-08-27 by `DEC-081` d2 /
+   `SC-036`; the code (`Policies.AuditRead`, the `App.tsx` route gate) had been right all along.
+   ⚠ **It also OWES AN AXE ROUTE** (`DEC-072` d2 / `SC-032`) — in the SAME batch that builds it, named in
+   its own acceptance criterion.
    ⚠⚠ **READ THE ROW'S OWN TEXT AND THE NARRATIVE DOCUMENTS BEFORE SIZING IT** — that habit has now paid
-   on all FIVE items, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row wrongly;
+   on all SIX items, in a DIFFERENT direction each time: `24.1`'s WBS title summarised its row wrongly;
    `24.2`'s row carried its own correction and it held; `24.3` turned out to be about a source COMMENT
-   rather than a feature; `24.4`'s measurement was right while its prescribed remedy was too small; and
-   `24.5` was ONE WORD ("configurable") covering a subsystem the architecture had already specified.
+   rather than a feature; `24.4`'s measurement was right while its prescribed remedy was too small;
+   `24.5` was ONE WORD ("configurable") covering a subsystem the architecture had already specified; and
+   `24.6`'s row **quoted its requirement FAITHFULLY while that requirement's clause had been superseded
+   by an ADR the row never mentions.**
+   ⭐⭐ **`24.6` ADDS THE SIXTH AND IT IS THE ONLY ONE NO REGISTER VIEW CAN SEE.** Every id in those three
+   rows resolves, every status is right, `G-TRACE` is satisfied and the requirement register agrees with
+   itself — so both committed checkers run clean. **Only trap 32 / `LL-008`'s sweep of the ADR and
+   DECISION registers finds it**, and the discriminator was `ADR-0027` recording its own follow-through:
+   it said `FR-151` and `FR-153` would carry a pointer to it, both do, and `FR-154` had neither the
+   pointer nor the edge. ⚠ **When an ADR names the rows it will amend, CHECK THAT LIST against the rows
+   that quote it** — the one it missed is the one still asserting the superseded text.
    ⭐⭐ **`24.5` ADDS A STEP TO THE HABIT, AND IT IS THE ONE THAT WOULD HAVE BEEN SKIPPED: READING `src`
    TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED.** Its mechanism was named in `SEC-080`
    and specified in `SEC-103`, and a code-only reading produced a recommendation that would have been an
@@ -1141,15 +1190,18 @@ operator has not read (`DEC-075` d4's precedent).
 3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
-⚠⚠ **ONE OPERATOR VERDICT IS OWED, AND THE WORK IS MERGED — DO NOT REBUILD IT.** `WBS-24.4` is
-`Review`; `24.1`, `24.2`, `24.3` and `24.5` are `Implemented`. **`Review` counts as OPEN in
-`readiness_check`, so slice-scope `wbs-done` naming that row is the rule working, not a fault to repair.**
-⚠⚠ **`24.4` HAS NOW BEEN DECLINED TWICE, AND THE REASON THE FIRST TIME NO LONGER APPLIES.** It was
-withheld on 2026-08-26 because `AC-147` carried an exclusion the definition of done forbids; `DEF-111` is
-**Fixed and merged** (`2b0da29`) and `AC-148` carries the corrected criterion with its own `Met` verdict.
-On 2026-08-27 the operator promoted `24.5` and did not promote `24.4`. **No reason is recorded, and none
-is inferred here — ASK, do not guess.** ⛔ Do NOT read it as pending work: the code is merged and
-`NFR-037` is `Implemented`.
+✅✅ **NO OPERATOR VERDICT IS OWED ANY MORE — `WBS-24.4` WAS PROMOTED ON 2026-08-27 (`DEC-081` d1,
+`PE-656`), AT THE SECOND ASKING.** ⚠ **Do not re-quote that from here** —
+`readiness_check(scope="slice", id="SL-033")` names every row still open, and it is the only answer that
+cannot go stale.
+⭐⭐ **WHY IT MATTERS AS A METHOD AND NOT AS A STATUS: THE ROW HAD BEEN DECLINED TWICE AND THE SECOND
+DECLINE RECORDED NO REASON.** The first had one — `AC-147` carried an exclusion the definition of done
+forbids — and that cause (`DEF-111`) was Fixed and merged at `2b0da29`, with `AC-148` carrying the
+corrected criterion and its own `Met` verdict. The second, on 2026-08-27, said nothing at all. **The
+session ASKED instead of inferring (`LL-003`), and the answer was a promotion** — so every inference
+available from the evidence (a concern not yet stated, work still owed, something to rebuild) would have
+been WRONG about merged, finished code. ⚠ **AN ABSENT REASON IS NOT EVIDENCE OF A REASON.** It reads like
+a signal because a decline usually carries one, and that is exactly what makes it worth one question.
 ⭐⭐ **THE PER-ITEM MECHANISM HAS DISCRIMINATED TWICE NOW, WHICH IS WHY IT IS NOT CEREMONY.** A
 slice-level verdict would have carried `24.4` through on its neighbours' strength on both occasions.
 `DEC-071` d3 put eight rows in one slice over the agent's objection and this was the recorded mitigation;
@@ -1190,9 +1242,10 @@ edit.** What follows is what the row bought, kept because it binds later work:
   timed out."* — so `ThrowAsync<TimeoutException>` **alone would have passed vacuously**, and the two
   message assertions are the only part of that test doing work. It also settles why a bound alone could
   never have satisfied the row: `TestcontainersSettings.WaitStrategyTimeout` stops the hang and still
-  names no container, no bound and no log. **Filed as `LL-022` (Proposed — the operator's interview is
-  owed; `lessons-confirmed` fails on it ON PURPOSE, exactly as `DEC-075` d4 intended. Do not approve it
-  unread, and do not "fix" the advisory.)**
+  names no container, no bound and no log. **Filed as `LL-022`** — which now BINDS; `DEC-078` d1 approved
+  and pinned it. ⛔ **This sentence used to carry its then-status and an instruction built on it, and that
+  is the THIRTY-FIRST's second half** (see the preamble): a fresh session was told an interview was owed
+  and an advisory was red on purpose, months after both had been settled.
 - ⚠ **IT DID NOT CLOSE `DEF-108`, WHICH STAYS `Open`/high WITH READINESS DELIBERATELY `FALSE`.** It
   changed how the failure presents. ⛔ Still do not soften or convert `DEF-108`.
 - ⚠ **NEW: `DW-085`** — `_image.CreateAsync()`, the 3.62 GB FTS image **build**, is still unbounded and
@@ -1240,9 +1293,9 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.1` | `DW-033` / `FR-032` | configurable backlog columns | ✅ `Implemented` |
 | `WBS-24.2` | `DW-037` / `FR-035` | the calendar view · axe route **DISCHARGED** | ✅ `Implemented` |
 | `WBS-24.3` | `DW-039` / `FR-117` | the wiki version **diff** half | ✅ `Implemented` |
-| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Review` |
+| `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Implemented` |
 | `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
-| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, Auditor + Administrator · **+ axe route** | `Approved` |
+| `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · **+ axe route** | `Approved` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
 
