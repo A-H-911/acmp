@@ -21,7 +21,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <!-- Docker-secrets config source (/run/secrets -> config keys, ADR-0032). First-party. -->
-    <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="10.0.11" />
     <!-- OpenTelemetry (ADR-0014 / DW-062). This host had NO tracing at all, so the process that actually
          EXECUTES the background jobs emitted nothing while the API it enqueues from was traced.
          DELIBERATELY NOT OpenTelemetry.Instrumentation.AspNetCore: this host serves no HTTP, so an inbound

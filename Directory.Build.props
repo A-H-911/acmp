@@ -18,7 +18,7 @@
   <!-- Newtonsoft.Json only where it actually surfaces (the 4 host/integration projects), scoped by project name
        so domain/module projects that use System.Text.Json stay free of it. -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acmp.Api' Or '$(MSBuildProjectName)' == 'Acmp.Modules.Integrations.Webex' Or '$(MSBuildProjectName)' == 'Acmp.Bootstrap' Or '$(MSBuildProjectName)' == 'Acmp.Worker'">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <!-- SSH.NET <= 2025.1.0 (GHSA-q939-rpr3-3284, HIGH): ScpClient recursive download lets a malicious
