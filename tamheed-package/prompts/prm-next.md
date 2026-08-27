@@ -61,7 +61,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-two** times, and **nine** wrong assertions have escaped into
+file has carried a stale statement **thirty-three** times, and **nine** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -71,6 +71,16 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-THIRD IS A NUMBER INSIDE A SENTENCE THAT TELLS YOU NOT TO TRUST THE NUMBER, AND THAT IS
+THE WHOLE FINDING.** §6 read *"`defects-minor` therefore names SIX rows, not five — measure it, do not
+count from this sentence."* Filing `DEF-113` made it seven, and it sat in three commits that way.
+⚠⚠ **THE HEDGE DOES NOT NEUTRALISE THE FIGURE — A READER TAKES THE NUMBER AND SKIPS THE DISCLAIMER**, which
+is the one part of the sentence that costs nothing to obey. This is the EIGHTH fix's rule applied only
+halfway: it stopped short of DELETING the count and supplied both a command and an answer, and the answer
+is what gets read. ⭐ **A count with a disclaimer attached is still a count. Give the command or give
+nothing.** ⚠ Counted rather than waved through on the strength of its own hedge: it was true, became
+false, and reached a commit, which is this section's test and the only one it has.
 
 ⚠⚠⚠ **THE THIRTY-SECOND HAS THE SHORTEST LIFE OF ANY ENTRY HERE: ABOUT NINETY SECONDS, AND I FALSIFIED IT
 MYSELF BY DOING THE OBVIOUS NEXT THING.** The kickoff block — rewritten in the very pass that was fixing
@@ -1081,8 +1091,8 @@ byte-identical to both. **The mitigation cannot be credited: the run BEFORE it w
 `OQ-035`'s recorded resolution both promise the committee will adjust them **via configuration**. ⚠ **So
 `assumptions-current` naming `ASM-011` is not merely an overdue date — its remediation path does not
 exist.** ⛔ Do not "fix" the advisory by re-dating the assumption; that was the wrong question and
-`DEF-110` records why. **`defects-minor` therefore names SIX rows, not five** — measure it, do not
-count from this sentence.
+`DEF-110` records why. ⚠ **`defects-minor` therefore grew** — `readiness_check("package")` is the list;
+no count is written here, and the reason is the THIRTY-THIRD below.
 
 ✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
 `AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⚠ `Review`, not
@@ -1249,7 +1259,16 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
    ⭐⭐ **`SearchProvidersFtsTests` PASSES — Arabic `FREETEXT` against real SQL Server works on .NET 10.**
    That is the single most load-bearing check in this migration and it is done.
    **What is RED:** the backend job's **Coverage gate** step, naming ONE file at 92.00% (23/25) against a
-   **99.58%** global. `DEF-113` carries it, including the reason it is the first place to look: that same
+   **99.58%** global.
+   ⭐ **IT IS DETERMINISTIC, NOT FLAKE, AND THAT WAS ESTABLISHED WITHOUT RE-RUNNING ANYTHING.** Two
+   completed runs on different shas produced byte-identical output — the same file, the same 23/25, the
+   same global — because later package-only pushes re-ran the pipeline anyway (trap 38). **A second
+   observation that arrives as a by-product of real work is worth more than a re-run**, and re-running is
+   what `DEC-077` d3 forbids.
+   ⭐ **The e2e drag-test timeout seen once on `ee579c8c` has NOT recurred across the two runs since.** It
+   is still not called flake on that basis — the applock precedent forbids exactly that inference — but
+   the evidence accumulated without anyone chasing it. **Do not spend a cycle re-testing it.**
+   `DEF-113` carries the rest, including the reason it is the first place to look: that same
    file has a recorded history of async-state-machine coverage ATTRIBUTION moving it wildly (0/4 → 18/25
    in one config change). ⛔ **Do NOT `[ExcludeFromCodeCoverage]` it and do NOT lower `ADR-0016`'s 95%** —
    both were argued and refused before, and `DW-082` proved a lenient provider scored files with NO TEST
