@@ -64,7 +64,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-four** times, and **ten** wrong assertions have escaped into
+file has carried a stale statement **thirty-five** times, and **eleven** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -74,6 +74,29 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-FIFTH IS A MECHANISM I CALLED *PROVEN BY REPRODUCTION*, AND THE REPRODUCTION WAS
+CONFOUNDED. IT IS ALSO THE ELEVENTH ESCAPE — SAME FAULT, THREE PUSHED COMMITS.** §6's `DEF-114` note said
+the guard fails because *"Testcontainers does not rebuild an image that already EXISTS"*, and — worse —
+that the rival explanation, Docker's layer cache, had been *"measured and DISCARDED"* on a 33s identical
+rebuild against a 31s one-byte-different one. **Both are false and the confident one was the elimination.**
+⚠⚠ **THE SETUP STEP CHANGED TWO THINGS.** Pre-creating the named image also **warmed the `RUN sleep 30`
+layer**, and the cache is keyed on the INSTRUCTION, not the tag: warm, that build returns in ~**2 seconds**
+under a brand-new tag. The 33s figure was taken minutes after the daemon started, against a COLD cache — a
+true number about a state that no longer held (`LL-015`), used to rule a hypothesis OUT.
+⭐⭐ **A REPRODUCTION CONFIRMS; ONLY AN INTERVENTION THAT ISOLATES ONE VARIABLE EXPLAINS.** It reproduced
+perfectly every time, which is exactly why it felt like proof — a confounded setup reproduces *more*
+reliably, because it changes more. **What actually caught it was THE FIX FAILING:** a per-run TAG was
+applied against the true precondition and the test still failed. Filed as `LL-029`.
+⚠ **The real fix is the INSTRUCTION, not the tag** — `RUN echo {Guid} && sleep 30`. ⚠⚠ **And CI cannot
+adjudicate this one**: a fresh runner has a cold cache, so the test passed there throughout. **Do not cite
+the CI run as validation** — that is the exact inverse of `DEF-113`, where CI was the only instrument that
+could see the fault.
+⚠ **Counted twice, and the criterion is stated so it can be argued with.** The statement count moves
+because the claim was false and reached commits. The escape count moves once, not three times, for one
+fault class found in one pass across `df8d7c3a`, `98eafe54` and `0ef92e37` — the FIFTEENTH's and
+TWENTY-EIGHTH's family precedent. ⭐ **`DEC-084` d4's parenthetical also described the fix as "a per-run
+name" and is wrong; its RULING — fix it now, in its own PR — is untouched.**
 
 ⚠⚠⚠ **THE THIRTY-FOURTH IS A "NEEDS" THAT WAS NEVER MEASURED — A CLAIM ABOUT EVERY METHOD, WRITTEN
 BECAUSE TWO METHODS HAD BEEN THOUGHT OF. IT IS THE TWENTY-SEVENTH'S SHAPE EXACTLY.** §6 item 1 read
@@ -1343,26 +1366,27 @@ was disclosed as an inference on the slate (`DEC-071` d3) and `DEC-084` d3 overr
 it.** ⭐ Docker being up is **not** a reason to reorder: it is one operator action away at any time, so it
 is not a scarce window — that refutation is what moved the recommendation.
 
-1. ▶▶▶ **`DEF-114` — FIX IT FIRST, IN ITS OWN PR (`DEC-084` d4).** One line: give the forced-build image
-   a per-run name so Testcontainers can never skip the build. ⭐ **The deciding argument was not the code
-   but the INSTRUMENT: the local backend gate has been shown to reproduce CI exactly (461 files, 99.60%),
-   and `DEF-114` is the single thing making that false — 65/68 locally against CI's 66/68.** Fixing it
-   restores a gate the next two items depend on. Detail is in the row; the `DEC-073` reasoning for why it
-   was kept out of `#320` is in item 5's note below.
-2. ▶▶ **`WBS-24.7` / `DW-063` / `NFR-010` — the CONFIGURATION-DRIVEN stream count.** ⚠ **Read the row's own
+✅ **`DEF-114` IS FIXED (`DEC-084` d4) — one line, and it is the Dockerfile INSTRUCTION, not the tag.**
+⭐ **The deciding argument for doing it first was the INSTRUMENT, not the code: the local backend gate has
+been shown to reproduce CI exactly (461 files, 99.60%), and `DEF-114` was the single thing making that
+false — 65/68 locally against CI's 66/68.** ⚠⚠ **Its first diagnosis was wrong and the row is worth
+reading for that reason alone** — see the THIRTY-FIFTH and `LL-029`. ⚠ **CI cannot validate this fix**: a
+fresh runner has a cold cache, so the test passed there throughout. The local before/after under the true
+precondition is the evidence.
+1. ▶▶▶ **`WBS-24.7` / `DW-063` / `NFR-010` — the CONFIGURATION-DRIVEN stream count.** ⚠ **Read the row's own
    text before sizing** (`LL-025`, and the habit that has now paid on all six built items): the
    no-hard-limit clause genuinely HOLDS and was verified, so this is one clause of three. The five streams
    plus the wildcard are seeded by **raw SQL inside a migration**, and ⚠⚠ **`Stream.Create` STILL HAS NO
    CALLER** — so adding a sixth stream is a migration and a deployment, not configuration. The 20-or-more
    target is unproven and the requirement's own verification note asks for an integration test with 10
    streams that does not exist.
-3. **`WBS-24.8` / `DW-028` — the `/session` presenter preview. LAST IN THE SLICE ON PURPOSE.**
+2. ▶▶ **`WBS-24.8` / `DW-028` — the `/session` presenter preview. LAST IN THE SLICE ON PURPOSE.**
    ⚠⚠ **SLOW DOWN HERE.** It is a **second authorization path over content scoped to somebody else** — the
    shape that produced `DEF-052` and `DEF-056`. **Treat the refusal as the feature and prove it by forcing
    it.** ⚠ `navModel.ts`'s ACCESS map grants `session` to GUEST ONLY and that restraint holds (`DEF-053`
    deliberately left it alone); a guest is bounded by a TIME WINDOW, so the targeting parameter must never
    become the way a guest reads somebody else's slot. ⚠ **It still owes its axe route** (`DEC-072` d2).
-4. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+3. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1373,17 +1397,18 @@ is not a scarce window — that refutation is what moved the recommendation.
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-5. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
-temptation.** `DW-085`'s forced-build guard is not hermetic: **Testcontainers does not rebuild an image
-that already EXISTS**, so a leftover `acmp/forced-build-timeout:test` makes the deliberately-hanging build
-return in under a second and the timeout never fires. ⚠ **CI never sees it — a fresh runner has no such
-image — so it reports a false red only to DEVELOPERS**, which is backwards for a guard whose whole purpose
-is that this path cannot be proven any other way. Give the image a per-run name.
-⭐ **The row records that the OBVIOUS diagnosis was measured and DISCARDED before filing:** Docker's layer
-cache explains nothing here — an identical rebuild took **33s** and a one-byte-different one **31s**.
+temptation.** `DW-085`'s forced-build guard is not hermetic: **Docker caches `RUN sleep 30` like any other
+layer, and the cache is keyed on the INSTRUCTION, not the image tag.** Once warm, the deliberately-hanging
+build returns in ~2 seconds, the 10-second budget never expires, and the timeout never fires. ⚠ **CI never
+sees it — a fresh runner has a COLD CACHE — so it reports a false red only to DEVELOPERS**, which is
+backwards for a guard whose whole purpose is that this path cannot be proven any other way. **The fix is a
+per-run INSTRUCTION (`RUN echo {Guid} && sleep 30`); a per-run TAG fixes nothing and was tried first.**
+⛔ **This paragraph previously named the image-exists mechanism and claimed the layer cache had been
+measured and DISCARDED. Both were wrong — see the THIRTY-FIFTH, and `LL-029`.**
 It stayed out of `#320` because `DEC-073`'s attribution rule is one change, one cause, and `#320` was
 already green.
 

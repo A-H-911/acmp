@@ -404,6 +404,7 @@
 {"from_id":"LL-025","to_id":"WBS-24.6","relation":"learned_from"}
 {"from_id":"LL-026","to_id":"DEF-113","relation":"learned_from"}
 {"from_id":"LL-027","to_id":"DEF-113","relation":"learned_from"}
+{"from_id":"LL-029","to_id":"DEF-114","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
