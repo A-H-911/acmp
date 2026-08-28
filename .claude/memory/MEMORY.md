@@ -6,21 +6,27 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-27 · `SL-033` `24.1`–`24.6` DONE · ▶▶ **`DW-080` PHASE A IS MID-FLIGHT ON A BRANCH**
+## ★★★ 2026-08-28 · `SL-033` `24.1`–`24.6` DONE · **`DW-080` PHASE A MERGED** (`#320` → `df8d7c3a`)
 
-⛔⛔ **YOU ARE PROBABLY NOT ON `main`.** `feat/dw-080-phase-a-net10`, PR **`#320`** open, **CI RED on ONE
-thing** (`DEF-113`). E2E + Security + every backend TEST are GREEN — **`SearchProvidersFtsTests` passes,
-so Arabic `FREETEXT` works on .NET 10.** ⚠ **Docker is DOWN**, which is the session's real constraint:
-`Acmp.Integration.Tests` cannot run locally, so a local coverage report names MORE files than CI and none
-of the extra list is real. **Ask the operator to start Docker.** ⚠ Check for an unpushed commit.
-- ⭐⭐ **`.0` OF A MAJOR IS THE LEAST-TESTED BUILD OF THAT MAJOR** — I pinned every package to `10.0.0`
-  with 11 patches out, **having already found `Cryptography.Xml` `10.0.0` itself vulnerable**, written
-  that into `Directory.Build.props`, and left twenty others on `.0`.
-- ⭐⭐ **A PINNED BASE IMAGE AND A PINNED SDK ARE ONE DECISION IN TWO PLACES** (`LL-019`, SDK band instead
-  of distro). `global.json` pinned to the LOCAL SDK → the CONTAINER broke; `latestPatch` cannot cross a
-  feature band. **The image is the authority, not the developer's box** — no local gate models it.
-- ⭐⭐ **A MIGRATION'S VERDICT COMES FROM EXECUTING, NOT BUILDING** — built clean in Release + `format`
-  green, then 355/392 API tests failed at RUNTIME, twice, for two unrelated causes.
+Ten of ten green, `net10.0`, `SearchProvidersFtsTests` passes, `#128`/`#134` closed as superseded.
+**Phase B has NOT started.** ⚠ Live state is `prm-next.md`, never this file.
+- ⭐⭐ **A TEST ASSERTING AN *ABSENCE* AFTER A LIFECYCLE CALL IS VACUOUS** (`DEF-113` → `LL-026`): since
+  .NET 10 `BackgroundService` dispatches **all** of `ExecuteAsync` to a background thread. It passed on
+  BOTH runtimes — **only the per-file coverage floor ever saw it**, because a negative assertion is
+  satisfied by the empty run. ⛔ **`StopAsync` IS NOT A JOIN** (it cancels the token BEFORE awaiting, so a
+  loaded runner kills the body before it starts): my first fix used it, **passed locally, CI rejected it**.
+  Await `ExecuteTask`. ⭐ **A fix for a race that passes because the race went your way is the defect
+  reproducing inside its own remedy** — the local box always wins that race, so only CI discriminates.
+- ⚠⚠ **`LL-027` FIRED THREE TIMES IN ONE SESSION, EVERY TIME ON THE WORD "ONLY"** — *the ONLY project
+  reaching this file*, *the ONLY deterministic join*, and a confident *"Docker layer cache"* cause
+  (measured 33s vs 31s, **discarded before filing**). **A valid argument on a weak premise is WEAKENED,
+  not strengthened, by a stronger premise you did not check — and the unnecessary sentence is the one
+  that reads as rigorous.** Treat every `only`/`never`/`cannot` in your own draft as a measurement request.
+- ⚠ **DOCKER GATES THE *GATE*, NOT EVERY COVERAGE QUESTION.** With it up the local pipeline reproduces CI
+  **exactly** (461 files, 99.60%); with it down only the whole-gate answer is void — one file's line list
+  is still provable if its covering tests run locally (subset + equal count ⇒ identical set).
+  ⚠ **`DEF-114`** (open, one line): `DW-085`'s forced-build guard fails wherever its named image already
+  exists — Testcontainers skips the build. **False red for developers only; CI never sees it.**
 - ⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** and work only in globalization-invariant
   mode, which **THROWS `CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does
   `ar-SA` + `LCID 1025`. **A naive minimal-base move would THROW at runtime after compiling and

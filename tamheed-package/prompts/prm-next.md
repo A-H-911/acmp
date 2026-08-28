@@ -20,37 +20,40 @@ readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERA
                                              # DEF-108's severity or converting it - both were offered
                                              # to the operator and BOTH WERE DECLINED.
 git status --porcelain -uall                 # expect a CLEAN TREE
-git rev-parse --abbrev-ref HEAD              # ⚠ BRANCH-DEPENDENT — read the conditional below
-gh pr view 320 --json state,mergeStateStatus # ⚠ ASK IT, do not assume; the answer decides the next step
-gh pr checks 320                             # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
-                                             # (trap 23). ⚠ The last pushes were package-only, but for a
-                                             # `pull_request` event GitHub evaluates paths-ignore against
-                                             # the WHOLE PR diff, so they re-ran and CANCELLED the prior
-                                             # runs (trap 38). The NEWEST sha's run is the live one.
-docker info                                  # ⚠ EXPECT IT TO FAIL. The daemon is DOWN on this machine
-                                             # and that is the session's real constraint: it makes
-                                             # `Acmp.Integration.Tests` unrunnable locally, which is the
-                                             # ONLY place FREETEXT executes and the only real SQL Server.
-                                             # Ask the operator to start Docker before doing anything
-                                             # that needs it, rather than iterating through CI.
+git rev-parse --abbrev-ref HEAD              # ⚠ ASK IT, never assume — read the conditional below
+gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap at ten is what hid the two
+                                             # PRs that became `DW-080`). A Dependabot queue MOVES, so
+                                             # any count of it in prose is stale by construction.
+gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
+                                             # (trap 23). ⚠ For a `pull_request` event GitHub evaluates
+                                             # paths-ignore against the WHOLE PR diff, so on an open PR
+                                             # even a package-only push re-runs everything and CANCELS
+                                             # the in-flight run (trap 38). Newest sha wins.
+docker info                                  # ⚠ ASK IT — do not expect either answer. The daemon is
+                                             # frequently DOWN here, and while it is,
+                                             # `Acmp.Integration.Tests` cannot run: the ONLY place
+                                             # FREETEXT executes and the only real SQL Server. The
+                                             # operator started it on 2026-08-28, and a daemon that was
+                                             # up in one session says nothing about this one.
+                                             # ⚠ It gates the coverage GATE, not every coverage
+                                             # question — see the THIRTY-FOURTH before concluding that
+                                             # something "needs Docker".
 ```
 
-⚠⚠ **YOU MAY NOT BE ON `main`, AND THAT IS THE FIRST THING TO ESTABLISH.** This block said *"expect clean;
-you are on `main`, everything is merged"* for a long time, and it was true every time until `DW-080` phase
-A left a branch open across a session boundary. **A fresh session that assumes `main` will `git pull`, see
-nothing, and conclude the work is not there.** ⭐ **This is the TWENTY-THIRD's shape — the kickoff block
-describing an old world.**
+⚠⚠ **WHICH BRANCH YOU ARE ON IS THE FIRST THING TO ESTABLISH, AND THIS FILE DELIBERATELY DOES NOT SAY.**
+It said *"expect clean; you are on `main`, everything is merged"* for a long time, and it was true every
+time until `DW-080` phase A left a branch open across a session boundary — the TWENTY-THIRD's shape, the
+kickoff block describing an old world. **The command above is the answer; a sentence here is not.**
+⛔ **Do not replace it with a new snapshot** — a statement of where the work sits has a half-life of one
+merge, and writing one is what produced the THIRTY-SECOND.
 
-**IT IS WRITTEN AS A CONDITIONAL ON PURPOSE, BECAUSE A SNAPSHOT OF MY WORKING STATE IS WHAT PRODUCED THE
-THIRTY-SECOND.** Whichever branch you are on, `gh pr view 320` decides which of these you are in:
+**THE DURABLE FACT, WHICH IS NOT A WORKING STATE:** `DW-080` **phase A is MERGED** — PR `#320`, squashed
+to `df8d7c3a` on 2026-08-28, all ten checks green, verified into `origin/main` **by content** rather than
+by ancestry (trap 25). The solution targets `net10.0`, `SearchProvidersFtsTests` passes, and `#128`/`#134`
+were **closed as superseded** by it, on the `#135`→`#308` precedent. **Phase B has not started**, and it
+is §6 item 1 now. ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask
+the operator** — that is a state nothing here describes.
 
-| `#320` is… | where you are | what to do |
-|---|---|---|
-| **OPEN** | on `feat/dw-080-phase-a-net10`, `DW-080` phase A mid-flight | §6 item 1 — finish it |
-| **MERGED** | back on `main`, branch deleted by the merge | phase A is DONE; go to §6 item 2 (phase B) and **close `#128`/`#134`**, which it supersedes |
-| **CLOSED** | `main`, phase A abandoned | ⛔ stop and ask the operator — nothing here explains that |
-
-⚠ **`main` is green and untouched either way**; nothing in `DW-080` has ever been pushed to it.
 ⚠ **Never assume CI has seen your tree** — `git rev-list --left-right --count @{u}...HEAD`, right-hand
 number. ⛔ **Do not write into this file what you have or have not pushed** (the THIRTY-SECOND).
 
@@ -61,7 +64,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-three** times, and **nine** wrong assertions have escaped into
+file has carried a stale statement **thirty-four** times, and **ten** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -71,6 +74,44 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-FOURTH IS A "NEEDS" THAT WAS NEVER MEASURED — A CLAIM ABOUT EVERY METHOD, WRITTEN
+BECAUSE TWO METHODS HAD BEEN THOUGHT OF. IT IS THE TWENTY-SEVENTH'S SHAPE EXACTLY.** §6 item 1 read
+*"⚠⚠ **THIS NEEDS DOCKER.** … Ask the operator to start Docker rather than iterating through CI"*, and
+`DEF-113`'s own row offered *"two honest routes"*. **A third existed and cost ten minutes.**
+`Acmp.Application.Tests` needs no container, and running it ALONE reproduced CI's `23/25` EXACTLY — and a
+subset of CI's tests can only cover a SUBSET of CI's lines, so an equal count forces the two sets
+identical. **The two uncovered line numbers were obtained with the daemon down and without spending a CI
+cycle.**
+⚠⚠ **THE TRUE SENTENCE BESIDE IT IS WHAT MADE IT CREDIBLE, AND THAT IS THE TRAP.** *"A local run will name
+MORE files than CI does and none of that extra list is real"* is CORRECT — about the **gate**. The fault
+was generalising an instrument's unusability at ONE scope into unusability at EVERY scope: the gate over
+461 files is worthless without `Acmp.Integration.Tests`, while ONE file's line list is provable.
+**`AV-159`'s shape in reverse — *I searched for X and found none* ruling out the family — which is also how
+the TWENTY-SEVENTH went wrong.**
+⭐⭐ **REPLACED WITH A MEASUREMENT RATHER THAN A DELETION, because the prohibition was pointing at something
+real.** With the daemon up, the FULL local pipeline run exactly as CI runs it reproduces CI's gate output
+exactly — 461 files, 99.60% global, exit 0. **The durable fact is therefore: the local gate is a faithful
+model of CI's WHEN `Acmp.Integration.Tests` can run, and only then.** ⚠ That same run found `DEF-114`.
+⚠ **Counted**: it reached three commits, and *"needs"* is a claim about every method — the THIRTEENTH's
+rule is that an unmeasured assertion is counted whether or not it happens to come out right.
+
+⚠⚠ **THE TENTH ESCAPE IS TWO FALSE CLAIMS IN ONE PUSHED COMMIT MESSAGE (`1b79677f`), TAKEN AS ONE ORDINAL
+UNDER THE FAMILY PRECEDENT** (the FIFTEENTH's and TWENTY-EIGHTH's; the criterion is stated so it can be
+argued with — one commit, one pass, one fault class). **Both are the word `only`, and neither was
+measured:**
+- *"`Acmp.Application.Tests` is the ONLY project whose tests reach this file"* — `Acmp.Api.Tests` reaches
+  it too and covers lines 42, 43, 44 and 63. **The conclusion never needed it**: the subset argument
+  requires only that the local tests are a SUBSET of CI's, which is trivially true.
+- *"`StopAsync` … the only deterministic join"* — **it is not a join at all.** It cancels the stopping
+  token BEFORE awaiting, and .NET 10 dispatches the body carrying that token, so a loaded runner can
+  cancel the work before it ever starts. **CI rejected the fix built on it.**
+⭐⭐ **THE RULE, AND IT IS `LL-027`: A VALID ARGUMENT RESTING ON A WEAK PREMISE IS WEAKENED, NOT
+STRENGTHENED, BY A STRONGER PREMISE YOU DID NOT CHECK.** The unnecessary sentence was the only false one,
+and it was the one that read as rigorous. **Treat every `only`, `never` and `cannot` in your own draft as
+a measurement request: run the command, or strike the word.** ⚠ It fired a THIRD time inside the hour — a
+confident *"Docker's layer cache"* diagnosis of `DEF-114`, measured and discarded **before** it was filed
+(identical rebuild 33s, one-byte-different 31s, so the cache is not involved at all).
 
 ⚠⚠⚠ **THE THIRTY-THIRD IS A NUMBER INSIDE A SENTENCE THAT TELLS YOU NOT TO TRUST THE NUMBER, AND THAT IS
 THE WHOLE FINDING.** §6 read *"`defects-minor` therefore names SIX rows, not five — measure it, do not
@@ -1010,8 +1051,12 @@ between merge cycles, never during one.
   zero files under 95, and `npm run build` exited 0. ⚠ **Those are the numbers AT THE MERGE, not now:**
   `SL-033` adds components and tests, so re-run the gate rather than reading them forward. CI, Security and E2E were all green before the merge. **The
   threshold was never touched.** ✅ **`#261` and `#137` are both CLOSED** — `#137` as superseded
-  (`DEC-076` d2), its 4.1.10 bump having landed as 4.1.11 via `#307`. **The only open PRs are `#128` and
-  `#134`, the `dotnet` 8→10 pair carved out to `DW-080` by `DEC-074`.**
+  (`DEC-076` d2), its 4.1.10 bump having landed as 4.1.11 via `#307`. ⛔ **HISTORICAL — this sentence read
+  *"the only open PRs are `#128` and `#134`"* and it is the SURVIVING TWIN of a claim corrected further
+  down this same section** (see *DO NOT RE-QUOTE AN OPEN-PR LIST*): two more PRs appeared within a day,
+  and `#128`/`#134` are now closed as superseded by `DW-080` phase A. **One copy was fixed and this one
+  was not — the THIRTY-FIRST's shape, found by grepping for `#128` rather than for the row.** The durable
+  half is only that `DEC-074` carved that pair out to `DW-080`; `gh pr list --state open` is the count.
   ⭐ The experiment that decided it (`PE-608`) is worth keeping: on `ErrorBoundary.tsx` **both** providers
   record the SAME uncalled inline `onClick` and differ only in WHERE they count it — v3 has no zero-hit
   statements so the line is credited; v4 records the statement at zero hits, which propagates into lines.
@@ -1250,34 +1295,27 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 ⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
 `entity_query("wbs-item")` are the live answer.
 
-1. ▶▶▶ **FINISH `DW-080` PHASE A. IT IS ONE FILE FROM GREEN, AND THE REMAINING FAILURE IS `DEF-113`.**
-   PR `#320` on `feat/dw-080-phase-a-net10`. ⚠ **Measure, do not trust this** — `gh pr checks 320` and
-   `gh run list --branch feat/dw-080-phase-a-net10` are the live answer, and poll `status` to `completed`
-   before reading `conclusion` (trap 23).
-   **What is already GREEN and must not be re-litigated:** E2E (the .NET 10 image builds AND boots the
-   whole stack), Security, and every backend TEST including `Acmp.Integration.Tests`.
-   ⭐⭐ **`SearchProvidersFtsTests` PASSES — Arabic `FREETEXT` against real SQL Server works on .NET 10.**
-   That is the single most load-bearing check in this migration and it is done.
-   **What is RED:** the backend job's **Coverage gate** step, naming ONE file at 92.00% (23/25) against a
-   **99.58%** global.
-   ⭐ **IT IS DETERMINISTIC, NOT FLAKE, AND THAT WAS ESTABLISHED WITHOUT RE-RUNNING ANYTHING.** Two
-   completed runs on different shas produced byte-identical output — the same file, the same 23/25, the
-   same global — because later package-only pushes re-ran the pipeline anyway (trap 38). **A second
-   observation that arrives as a by-product of real work is worth more than a re-run**, and re-running is
-   what `DEC-077` d3 forbids.
-   ⭐ **The e2e drag-test timeout seen once on `ee579c8c` has NOT recurred across the two runs since.** It
-   is still not called flake on that basis — the applock precedent forbids exactly that inference — but
-   the evidence accumulated without anyone chasing it. **Do not spend a cycle re-testing it.**
-   `DEF-113` carries the rest, including the reason it is the first place to look: that same
-   file has a recorded history of async-state-machine coverage ATTRIBUTION moving it wildly (0/4 → 18/25
-   in one config change). ⛔ **Do NOT `[ExcludeFromCodeCoverage]` it and do NOT lower `ADR-0016`'s 95%** —
-   both were argued and refused before, and `DW-082` proved a lenient provider scored files with NO TEST
-   FILE at ≥95%. ⚠ **Get the two uncovered LINE NUMBERS and read them**; `LL-017` says *"the new
-   instrument miscounts"* and *"the old one was over-crediting"* predict identical evidence, so only the
-   hand-countable artefact separates them.
-   ⚠⚠ **THIS NEEDS DOCKER.** The local coverage report is missing `Acmp.Integration.Tests`' reach
-   entirely while the daemon is down, so a local run will name MORE files than CI does and none of that
-   extra list is real. Ask the operator to start Docker rather than iterating through CI.
+✅✅ **`DW-080` PHASE A IS DONE — PR `#320` → `df8d7c3a`, 2026-08-28, ten of ten checks green.** The
+solution targets `net10.0`, `SearchProvidersFtsTests` passes (Arabic `FREETEXT` against real SQL Server
+works on .NET 10 — the single most load-bearing check in the migration), the coverage gate reports 461
+files at **99.60%** with zero files under 95%, and `#128`/`#134` are **closed as superseded**.
+⚠ **`DW-080` itself stays `Activated` — phase B is the rest of the row**, and it is item 1 below.
+
+✅ **`DEF-113` IS `Fixed`, AND IT COST TWO ATTEMPTS. Read it if you read one row from this slice.** The
+two uncredited lines were a genuinely UNEXECUTED path, not the coverage-attribution artefact the file's
+own history predicted — so `LL-017` resolved toward *the old instrument was over-crediting*, settled by a
+**documented .NET 10 breaking change** (*BackgroundService runs all of ExecuteAsync as a Task*) rather
+than by argument. ⭐⭐ **The test passed on both runtimes, and only the per-file coverage floor ever
+noticed** — a NEGATIVE assertion is satisfied by the empty run, so 1167 green tests could not tell *ran
+and correctly did nothing* from *never ran*. **That is why `[ExcludeFromCodeCoverage]` and lowering
+`ADR-0016`'s 95% were the two worst available moves: both delete the only instrument that discriminated.**
+The generalisation is `LL-026`.
+⛔⛔ **AND THE FIRST FIX WAS ITSELF RACY — `StopAsync` IS NOT A JOIN.** It cancels the stopping token
+BEFORE awaiting, and .NET 10 dispatches the body carrying that token, so a loaded runner can cancel the
+work before it starts. It passed locally at 25/25 and CI rejected it. **`ExecuteTask` is the body:
+awaiting it involves no cancellation, so it is deterministic BY CONSTRUCTION rather than by timing.**
+⭐ **A fix for a race that passes locally because the race went your way is the defect class reproducing
+inside its own remedy** — and the local machine wins that race every time, so only CI can see it.
 
    ⭐⭐ **FOUR FINDINGS FROM PHASE A THAT OUTLIVE IT:**
    - **`.0` OF A MAJOR IS THE LEAST-TESTED BUILD OF THAT MAJOR.** Phase A pinned every first-party
@@ -1295,7 +1333,7 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
    - **EF 10 REFUSES WHAT EF 8 TOLERATED, AND THE OLD GRAPH WAS NEVER LEGAL** (`DEF-112`, Fixed): one
      owned value-object instance shared across three navigations. `LL-017` resolved in the rarer
      direction — the OLD instrument was lying.
-2. ▶▶ **THEN `DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+1. ▶▶▶ **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1306,8 +1344,16 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
+3. **`DEF-114`** — a ONE-LINE fix, deliberately left out of `#320` (`DEC-073`: one change, one cause).
+   `DW-085`'s forced-build guard is not hermetic: Testcontainers does not rebuild an image that already
+   EXISTS, so a leftover `acmp/forced-build-timeout:test` makes the deliberately-hanging build return in
+   under a second and the timeout never fires. ⚠ **CI never sees it — a fresh runner has no such image —
+   so it reports a false red only to developers**, which is backwards for a guard whose whole purpose is
+   that this path cannot be proven any other way. Give the image a per-run name. ⭐ The row records that
+   the OBVIOUS diagnosis (Docker's layer cache) was measured and DISCARDED before filing: an identical
+   rebuild took 33s, a one-byte-different one 31s.
 
 ⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM ANYWHERE IN THIS FILE.** A line here said *"the only two open
 PRs, `#128` and `#134`"*, re-verified 2026-08-26 — and two more appeared within a day. **A Dependabot
@@ -1315,8 +1361,9 @@ queue is a moving target, so any count of it is stale by construction**; `gh pr 
 **no `--limit`** is the answer (`PE-599`: a cap at ten is what hid `#128`/`#134` in the first place, which
 is the entire reason `DW-080` exists as its own row). ⚠ `#318` and `#319` are covered by NO prior decision
 and `DEC-083` d3 deliberately LEFT THEM ALONE — stretching an old *"sweep everything"* over work nobody
-has seen is the failure that created this row. **Phase A supersedes `#128` and `#134`** (the `#135`→`#308`
-precedent); close them when it merges.
+has seen is the failure that created this row. ✅ **`#128`/`#134` are CLOSED as superseded by phase A**
+(the `#135`→`#308` precedent), discharged 2026-08-28 — **so do not read any list above as live; run the
+command.**
 
 ⚠⚠ **THE RULE, NOT THE ROSTER: A ROW AT `Review` IS DONE-CLAIMED WORK AWAITING THE OPERATOR'S VERDICT, AND
 IT IS ALWAYS MERGED. `Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming such a
