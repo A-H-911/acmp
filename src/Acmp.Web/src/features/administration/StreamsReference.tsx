@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { streamName, useStreams, type StreamRef } from '../../api/members';
 import { Table, type Column } from '../../components/ui/Table';
 import { EmptyState, ErrorState, LoadingState } from '../../components/states';
+import { AddStreamButton, RenameStreamButton } from './StreamEditor';
 
 export function StreamsReference() {
   const { t, i18n } = useTranslation();
@@ -39,14 +40,21 @@ export function StreamsReference() {
   if (isError || !streams) return <ErrorState onRetry={() => void refetch()} />;
 
   if (streams.length === 0) {
-    return <EmptyState icon="stream" title={t('admin.streams.emptyTitle')} body={t('admin.streams.emptyBody')} />;
+    // ⚠ The Add button renders in the empty state too. Without it an administrator who somehow
+    // reaches an empty taxonomy has no way back — the one state where the affordance matters most.
+    return (
+      <>
+        <AddStreamButton />
+        <EmptyState icon="stream" title={t('admin.streams.emptyTitle')} body={t('admin.streams.emptyBody')} />
+      </>
+    );
   }
 
   const columns: Column<StreamRef>[] = [
     {
       id: 'stream',
       header: t('admin.streams.col.stream'),
-      width: '62%',
+      width: '54%',
       cell: (s) => (
         <span className="adm-stream-ref">
           <span className={`adm-stream-dot ${s.isWildcard ? 'is-wildcard' : ''}`} aria-hidden="true" />
@@ -57,12 +65,23 @@ export function StreamsReference() {
     {
       id: 'code',
       header: t('admin.streams.col.code'),
-      width: '38%',
+      width: '34%',
       // The wildcard's own name already says "All streams"; the dot is drawn distinctly (DEC-043)
       // rather than adding a badge, so unrestricted scope reads the same here as on the member chips.
       cell: (s) => <span className="adm-mchip">{s.code}</span>,
     },
+    {
+      id: 'actions',
+      header: t('admin.streams.col.actions'),
+      width: '1%',
+      cell: (s) => <RenameStreamButton stream={s} />,
+    },
   ];
 
-  return <Table caption={t('admin.tabs.streams')} columns={columns} rows={streams} getRowKey={(s) => s.publicId} />;
+  return (
+    <>
+      <AddStreamButton />
+      <Table caption={t('admin.tabs.streams')} columns={columns} rows={streams} getRowKey={(s) => s.publicId} />
+    </>
+  );
 }

@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Membership.Application.Features.AssignRoles;
 using Acmp.Modules.Membership.Application.Features.AssignStreams;
 using Acmp.Modules.Membership.Application.Features.CreateDelegation;
+using Acmp.Modules.Membership.Application.Features.CreateStream;
 using Acmp.Modules.Membership.Application.Features.DeactivateMember;
 using Acmp.Modules.Membership.Application.Features.GetMembers;
 using Acmp.Modules.Membership.Application.Features.GetStreams;
@@ -8,6 +9,7 @@ using Acmp.Modules.Membership.Application.Features.InviteUser;
 using Acmp.Modules.Membership.Application.Features.ProvisionCurrentUser;
 using Acmp.Modules.Membership.Application.Features.ReactivateMember;
 using Acmp.Modules.Membership.Application.Features.ReconcileIdentityAccounts;
+using Acmp.Modules.Membership.Application.Features.RenameStream;
 using Acmp.Modules.Membership.Application.Features.SetVotingEligibility;
 using Acmp.Shared.Authorization;
 using MediatR;
@@ -31,6 +33,15 @@ public static class MembershipEndpoints
     /// </remarks>
     public sealed record VotingEligibilityRequest(bool IsVotingEligible);
 
+    /// <summary>The stream's new bilingual display name. The CODE is absent on purpose.</summary>
+    /// <remarks>
+    /// Topics carry stream codes and the ABAC intersect resolves on them, so re-coding a live stream
+    /// would silently re-scope every topic that names the old value. Leaving Code out of the request
+    /// shape means the API cannot express that change at all, rather than relying on a handler to
+    /// ignore it.
+    /// </remarks>
+    public sealed record RenameStreamRequest(string NameEn, string NameAr);
+
     public static IEndpointRouteBuilder MapMembershipEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/members").WithTags("Membership").RequireAuthorization();
@@ -41,6 +52,29 @@ public static class MembershipEndpoints
 
         group.MapGet("/streams", async (ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new GetStreamsQuery(), ct)));
+
+        // NFR-010 / WBS-24.7 — the stream taxonomy becomes configuration instead of a migration.
+        // SEC-178 specifies screen 85 as "Stream list, edit inline, add stream button", Administrator
+        // only; these are its two write paths. Both are guarded server-side, so hiding the controls in
+        // the UI is never what stops a refused change.
+        //
+        // ⚠ There is no DELETE, and its absence is a decision rather than an omission: topics carry
+        // stream CODES and members hold stream assignments, so removing a row would orphan live scope
+        // references — the immutable-history asymmetry this project has already paid for once. A
+        // stream that should no longer be used is renamed, not deleted.
+        group.MapPost("/streams", async (CreateStreamCommand command, ISender sender, CancellationToken ct) =>
+        {
+            var publicId = await sender.Send(command, ct);
+            return Results.Created($"/api/members/streams/{publicId}", new { publicId });
+        }).RequireAuthorization(Policies.AdminUsers);
+
+        // PUT carries only the bilingual name; the code is not editable (see RenameStreamCommand).
+        group.MapPut("/streams/{publicId:guid}", async (
+            Guid publicId, RenameStreamRequest body, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new RenameStreamCommand(publicId, body.NameEn, body.NameAr), ct);
+            return Results.NoContent();
+        }).RequireAuthorization(Policies.AdminUsers);
 
         // JIT provisioning of the caller's profile from Keycloak claims (ADR-0004); SPA calls on login.
         group.MapPost("/me", async (ISender sender, CancellationToken ct) =>
