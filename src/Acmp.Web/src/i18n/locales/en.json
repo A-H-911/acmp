@@ -2084,6 +2084,17 @@
       "body": "Guest access expires after the meeting. Contact the Secretary of the Committee if you still need your session material."
     }
   },
+  "sessionPreview": {
+    "banner": "Preview — this is what the presenter sees. Read-only.",
+    "back": "Back to meetings",
+    "loading": "Loading the presenter's session",
+    "materialsReadOnly": "Materials are listed here, not opened — the presenter opens them from their own session.",
+    "none": {
+      "title": "Nothing to preview",
+      "body": "This agenda slot has no presenter assigned, or the meeting is no longer scheduled. A presenter would see the same empty page."
+    },
+    "previewSlot": "Preview presenter view"
+  },
   "members": {
     "title": "Members",
     "sub": "The committee roster. Invite a person, and grant or change their roles."
