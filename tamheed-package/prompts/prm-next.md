@@ -1373,20 +1373,39 @@ false — 65/68 locally against CI's 66/68.** ⚠⚠ **Its first diagnosis was w
 reading for that reason alone** — see the THIRTY-FIFTH and `LL-029`. ⚠ **CI cannot validate this fix**: a
 fresh runner has a cold cache, so the test passed there throughout. The local before/after under the true
 precondition is the evidence.
-1. ▶▶▶ **`WBS-24.7` / `DW-063` / `NFR-010` — the CONFIGURATION-DRIVEN stream count.** ⚠ **Read the row's own
-   text before sizing** (`LL-025`, and the habit that has now paid on all six built items): the
-   no-hard-limit clause genuinely HOLDS and was verified, so this is one clause of three. The five streams
-   plus the wildcard are seeded by **raw SQL inside a migration**, and ⚠⚠ **`Stream.Create` STILL HAS NO
-   CALLER** — so adding a sixth stream is a migration and a deployment, not configuration. The 20-or-more
-   target is unproven and the requirement's own verification note asks for an integration test with 10
-   streams that does not exist.
-2. ▶▶ **`WBS-24.8` / `DW-028` — the `/session` presenter preview. LAST IN THE SLICE ON PURPOSE.**
+✅ **`WBS-24.7` IS `Implemented`** — the operator's verdict, `DEC-085` d1. PR `#322` → `8884f4b9`, ten
+checks green; `AC-153` `Met` (`AV-231`), `NFR-010` → `Implemented`, `DW-063` `Done`.
+⭐⭐ **THE HABIT PAID A SEVENTH TIME, AND IN TWO DIRECTIONS AT ONCE.** `DW-063` offered a fork — *"a
+create-stream command … **or** a settings-seeded reconciler"* — and neither was the answer. The NARRATIVE
+sweep found the architecture had already decided the shape (`SEC-178` specifies screen 85 as *"Stream
+list, edit inline, add stream button"*; `ACMP Administration.dc.html` gives the section the primary action
+*Add stream*), and the CODE showed the feature was **half built** — a read-only Streams tab already
+shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'s shape in one row.
+⚠ **`NFR-010`'s `≥20` target is STILL NOT PROVEN** and the promotion does not claim it: the evidence is at
+**TEN**, the number the requirement's own verification note names. `AC-153` says so in its own text, and
+`DEC-085` d1 records that the operator declined to spin the gap out into its own `DW-` row.
+
+1. ▶▶▶ **`WBS-24.8` / `DW-028` — the `/session` presenter preview. THE LAST ITEM IN `SL-033`, AND LAST ON
+   PURPOSE** (`DEC-071` d1). ⚠ **`DEC-085` d3 HANDED THIS TO A FRESH SESSION** — start with
+   `prompts/slice-kickoff.md`. Nothing about it is warm: the `/session` read path, `SessionEndpoints.cs`
+   and `permission-role-matrix` §E.3 were all unread when the handoff was written, so there is no
+   re-derivation cost to worry about and no half-finished state to inherit.
    ⚠⚠ **SLOW DOWN HERE.** It is a **second authorization path over content scoped to somebody else** — the
    shape that produced `DEF-052` and `DEF-056`. **Treat the refusal as the feature and prove it by forcing
    it.** ⚠ `navModel.ts`'s ACCESS map grants `session` to GUEST ONLY and that restraint holds (`DEF-053`
    deliberately left it alone); a guest is bounded by a TIME WINDOW, so the targeting parameter must never
    become the way a guest reads somebody else's slot. ⚠ **It still owes its axe route** (`DEC-072` d2).
-3. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+   ⭐ **WHAT THE HANDOFF ALREADY ESTABLISHED, so you do not re-derive it — these are repository facts,
+   not a snapshot of anyone's working state.** The route EXISTS on both sides: `navModel.ts` line ~30
+   defines `session` with `cta: true`, and `SessionEndpoints.cs` maps `/api/session` under
+   `RequireAuthorization()`. So this is **adding a targeting parameter and its authorization to a live
+   read path**, not building a surface. ⚠ **Everything else is unread** — the handler behind that group,
+   and `permission-role-matrix` §E.3. **Read the row's own text and sweep the NARRATIVE documents by
+   keyword before sizing** (`LL-008`, `LL-025`): that habit has now paid on all SEVEN built items, most
+   recently on `24.7`, where the architecture had already specified a screen the row never mentioned and
+   the feature turned out to be half built. ⚠ For the axe obligation, **measure the sweep rather than
+   quoting a number**: `grep -oE "page\.goto\('[^']+'\)" src/Acmp.Web/e2e/rtl-a11y.spec.ts | sort -u`.
+2. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1397,7 +1416,7 @@ precondition is the evidence.
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-4. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
@@ -1540,7 +1559,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.4` | `DW-068` / `NFR-037` | **number** formatting (the date half already holds) | ✅ `Implemented` |
 | `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
 | `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · axe route **DISCHARGED** | ✅ `Implemented` |
-| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | `Approved` |
+| `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | ✅ `Implemented` |
 | `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
 
 ⚠⚠ **THE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its

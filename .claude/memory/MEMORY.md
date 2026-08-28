@@ -6,33 +6,31 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-28 · `SL-033` `24.1`–`24.6` DONE · **`DW-080` PHASE A MERGED** (`#320` → `df8d7c3a`)
+## ★★★ 2026-08-28 · `SL-033` `24.1`–**`24.7` DONE** · `DW-080` PHASE A MERGED · **NEXT = `WBS-24.8`**
 
-Ten of ten green, `net10.0`, `SearchProvidersFtsTests` passes, `#128`/`#134` closed as superseded.
-**Phase B has NOT started.** ⚠ Live state is `prm-next.md`, never this file.
-- ⭐⭐ **A TEST ASSERTING AN *ABSENCE* AFTER A LIFECYCLE CALL IS VACUOUS** (`DEF-113` → `LL-026`): since
-  .NET 10 `BackgroundService` dispatches **all** of `ExecuteAsync` to a background thread. It passed on
-  BOTH runtimes — **only the per-file coverage floor ever saw it**, because a negative assertion is
-  satisfied by the empty run. ⛔ **`StopAsync` IS NOT A JOIN** (it cancels the token BEFORE awaiting, so a
-  loaded runner kills the body before it starts): my first fix used it, **passed locally, CI rejected it**.
-  Await `ExecuteTask`. ⭐ **A fix for a race that passes because the race went your way is the defect
-  reproducing inside its own remedy** — the local box always wins that race, so only CI discriminates.
-- ⚠⚠ **`LL-028` (merged from `LL-023`+`LL-027`, `DEC-084` d2) FIRED THREE TIMES IN ONE SESSION, EVERY
-  TIME ON THE WORD "ONLY"** — *the ONLY project
-  reaching this file*, *the ONLY deterministic join*, and a confident *"Docker layer cache"* cause
-  (measured 33s vs 31s, **discarded before filing**). **A valid argument on a weak premise is WEAKENED,
-  not strengthened, by a stronger premise you did not check — and the unnecessary sentence is the one
-  that reads as rigorous.** Treat every `only`/`never`/`cannot` in your own draft as a measurement request.
+Three PRs merged, `main` green: `#320` phase A (`net10.0`, FTS passes), `#321` `DEF-114`, `#322`
+`WBS-24.7`. **`WBS-24.8` (`DW-028`) is the ONLY item left in `SL-033`** and `DEC-085` d3 handed it to a
+FRESH session — slow down there: a 2nd authorization path over someone else's content (`DEF-052`/
+`DEF-056` shape). ⚠ Live state is `prm-next.md`, never this file.
+- ⭐⭐ **A TEST ASSERTING AN *ABSENCE* AFTER A LIFECYCLE CALL IS VACUOUS** (`DEF-113` → `LL-026`): .NET 10
+  `BackgroundService` dispatches **all** of `ExecuteAsync` to a background thread. Passed on BOTH runtimes
+  — **only the per-file coverage floor saw it**; a negative assertion is satisfied by the empty run.
+  ⛔ **`StopAsync` IS NOT A JOIN** (cancels the token BEFORE awaiting) — my first fix used it, passed
+  locally, **CI rejected it**. Await `ExecuteTask`. ⭐ **A fix for a race that passes because the race went
+  your way is the defect reproducing inside its own remedy** — the local box always wins it.
+- ⚠⚠ **`LL-028`: EVERY `only`/`never`/`cannot` IN YOUR OWN DRAFT IS A MEASUREMENT REQUEST.** Fired 3× in
+  one session — *the ONLY project reaching this file*, *the ONLY deterministic join*, a confident *"layer
+  cache"* cause. **A valid argument on a weak premise is WEAKENED by a stronger premise you did not
+  check, and the unnecessary sentence is the one that reads as rigorous.**
+- ⚠⚠⚠ **`LL-029`: A REPRODUCTION THAT CHANGES TWO THINGS CONFIRMS WHICHEVER ONE YOU WERE WATCHING** —
+  the strongest-feeling evidence there is, because the symptom returns on demand. Pre-creating the image
+  also warmed the `RUN` layer; the cache is keyed on the **INSTRUCTION, not the tag**. Wrong cause → 3
+  pushed commits. ⭐⭐ **ONLY THE FIX FAILING CAUGHT IT.** ⚠ It fired again the same day in the mirror
+  direction: two ad-hoc verifiers reported false *"missing"* blocks because they did not model the
+  generator's `<br>` transformation. **A verifier that does not model the generator is measuring itself.**
 - ⚠ **DOCKER GATES THE *GATE*, NOT EVERY COVERAGE QUESTION.** With it up the local pipeline reproduces CI
-  **exactly** (461 files, 99.60%); with it down only the whole-gate answer is void — one file's line list
-  is still provable if its covering tests run locally (subset + equal count ⇒ identical set).
-- ⚠⚠⚠ **`DEF-114` / `LL-029`: A REPRODUCTION THAT CHANGES TWO THINGS CONFIRMS WHICHEVER ONE YOU WERE
-  WATCHING** — the strongest-feeling evidence there is, because the symptom returns on demand. I diagnosed
-  *"the image already exists"* and "proved" it by pre-creating the image — **which also warmed the `RUN
-  sleep 30` layer** — then eliminated the cache on a 33s figure measured against a COLD daemon. Real cause:
-  the cache is keyed on the **INSTRUCTION, not the tag** (~2s warm, new tag). Wrong cause → 3 pushed commits.
-  ⭐⭐ **ONLY THE FIX FAILING CAUGHT IT** — a reproduction CONFIRMS, an intervention isolating ONE variable
-  EXPLAINS. ⚠ **CI cannot validate it** (cold cache ⇒ always passed) — the inverse of `DEF-113`.
+  exactly; with it down only the whole-gate answer is void — one file's line list is still provable if its
+  covering tests run locally (subset + equal count ⇒ identical set).
 - ⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** and work only in globalization-invariant
   mode, which **THROWS `CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does
   `ar-SA` + `LCID 1025`. **A naive minimal-base move would THROW at runtime after compiling and
