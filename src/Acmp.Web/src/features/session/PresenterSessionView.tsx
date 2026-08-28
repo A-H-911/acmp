@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatBytes } from '../../lib/numberFmt';
+import { formatBytes, numberLocale } from '../../lib/numberFmt';
 import { openSessionMaterial, type PresenterSession, type SessionMaterial } from '../../api/session';
 import { Icon } from '../../components/icons';
 import './session.css';
@@ -36,12 +36,20 @@ export function PresenterSessionView({
 }) {
   const { t, i18n } = useTranslation();
 
+  // DEF-115 — numberLocale(), not the bare tag. Intl.DateTimeFormat('ar') emits LATIN digits, so this
+  // card rendered "10:40–10:55 · ١٥ دقيقة": two digit systems on one line, the times Latin and the
+  // minute count Arabic-Indic, because only the number path had WBS-24.4's ar-u-nu-arab pin.
+  // numberFmt.tsx exports numberLocale for exactly this and says so — "ANY Intl formatter that emits
+  // digits needs it" — and a DATE formatter is one. No unit test could see it (jsdom does not render,
+  // and an assertion on formatted output agrees with whatever the formatter produced); it was found by
+  // looking at the screen.
+  const locale = numberLocale(i18n.language);
   const fmtDateTime = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+    new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
   // 24-hour in BOTH languages, matching the reference's "10:40–10:55" and "١٠:٤٠–١٠:٥٥". Left to the
   // locale, en-US renders "10:40 AM–10:55 AM", which is a different shape from the design's.
   const fmtTime = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+    new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 
   return (
     <section className="gs">
