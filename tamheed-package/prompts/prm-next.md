@@ -47,12 +47,19 @@ kickoff block describing an old world. **The command above is the answer; a sent
 ⛔ **Do not replace it with a new snapshot** — a statement of where the work sits has a half-life of one
 merge, and writing one is what produced the THIRTY-SECOND.
 
-**THE DURABLE FACT, WHICH IS NOT A WORKING STATE:** `DW-080` **phase A is MERGED** — PR `#320`, squashed
+**THE DURABLE FACTS, WHICH ARE NOT A WORKING STATE.** `DW-080` **phase A is MERGED** — PR `#320`, squashed
 to `df8d7c3a` on 2026-08-28, all ten checks green, verified into `origin/main` **by content** rather than
 by ancestry (trap 25). The solution targets `net10.0`, `SearchProvidersFtsTests` passes, and `#128`/`#134`
-were **closed as superseded** by it, on the `#135`→`#308` precedent. **Phase B has not started**, and it
-is §6 item 1 now. ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask
-the operator** — that is a state nothing here describes.
+were **closed as superseded** by it, on the `#135`→`#308` precedent. **`DW-080` phase B has not started.**
+**`SL-033` has ONE item left, `WBS-24.8`** — everything from `WBS-24.1` to `WBS-24.7` is `Implemented`,
+and `DEC-085` d3 handed `WBS-24.8` to a fresh session.
+⛔ **THAT LAST SENTENCE NAMES THE ITEM AND NOT ITS POSITION, DELIBERATELY.** It used to read *"phase B …
+is §6 item 1 now"*, which `DEC-085` d3 falsified an hour later — **the THIRTY-SIXTH**. A list is
+renumbered exactly when work completes, which is the event that makes someone read this file, so a
+pointer at a slot is wrong precisely when it is read. **Never write `item N` here; name the row.**
+⚠ **Everything above is a repository fact; none of it is a status.** Read `readiness_check(scope="slice",
+id="SL-033")` for what is actually open. ⚠ **If a branch or an open PR exists that this paragraph does not
+explain, stop and ask the operator** — that is a state nothing here describes.
 
 ⚠ **Never assume CI has seen your tree** — `git rev-list --left-right --count @{u}...HEAD`, right-hand
 number. ⛔ **Do not write into this file what you have or have not pushed** (the THIRTY-SECOND).
@@ -64,7 +71,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-five** times, and **eleven** wrong assertions have escaped into
+file has carried a stale statement **thirty-six** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -74,6 +81,39 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-SIXTH IS A POINTER AT A LIST POSITION — AND A POSITION IS THE ONE THING GUARANTEED TO
+ROT.** The kickoff block said *"Phase B has not started, and it is §6 item 1 now"*, and §6's `DW-080`
+bullet said *"phase B is the rest of the row, and it is item 1 below"*. `DEC-085` d3 then made
+**`WBS-24.8`** item 1 and both went false. **A family of two, one fault class, one ordinal** — the
+FIFTEENTH's and TWENTY-EIGHTH's precedent.
+⚠⚠ **THE STRUCTURAL POINT IS SHARPER THAN *DO NOT QUOTE A COUNT*: A LIST IS RENUMBERED EXACTLY WHEN WORK
+COMPLETES, AND WORK COMPLETING IS THE EVENT THAT MAKES SOMEBODY READ THIS FILE.** So a cross-reference to
+a slot is not merely fragile, it is guaranteed to be wrong at the precise moment it is read.
+⭐⭐ **NAME THE ITEM, NEVER THE SLOT.** *"`DW-080` phase B, below"* survives every renumbering; *"item 1"*
+survives none. The same applies to *"the next action"*, which this file has already had to annotate as
+history three times (`DW-084`, `DW-078`, and the TWENTY-FIFTH).
+⚠ **IT IS `LL-016`'s NEIGHBOUR, NOT `LL-016` ITSELF, AND THE DIFFERENCE IS WHY NO CHECK CAUGHT IT.** That
+lesson is about a sequence being INTERNALLY wrong — a list numbered 1, 3, 4. This is an EXTERNAL reference
+INTO a sequence, and the list was perfectly numbered both times, so reading it back as a sequence — which
+I did, and which passed — cannot see it. **Grep for `item [0-9]` as well as reading the list.**
+⚠⚠ **A THIRD INSTANCE, FOUND IN THE SAME PASS AND FOLDED IN RATHER THAN GIVEN ITS OWN ORDINAL, BECAUSE IT
+IS THE SAME FAULT CLASS: A POINTER WHOSE REFERENT MOVES.** §6's heading read *"`SL-033` IS THE LIVE SLICE.
+**START AT `WBS-24.1`**. (state as of 2026-08-23)"* — and `WBS-24.1` has been `Implemented` since
+2026-08-24, with everything through `WBS-24.7` following it. **It pointed an arriving session at finished
+work for five days.** ⭐ **THE `(state as of …)` DID NOT SAVE IT: an IMPERATIVE with a date attached is
+still an imperative**, precisely as the THIRTY-THIRD found that a count with a disclaimer attached is
+still a count — and the NINTH fix had already found that a session ACTS ON A HEADING even when the body
+below it says otherwise. ⭐⭐ **THE STANDING FIX FOR ALL THREE: the next action lives in exactly ONE place,
+the numbered list under `START HERE`. Every other section says what HAPPENED. If a second place in this
+file tells you where to begin, that place is wrong** — this is the third time it has been.
+⚠ **THE TWELFTH ESCAPE:** commit `98eafe54`'s message reads *"phase B is item 1, `DW-079` item 2,
+`DEF-114` item 3"* — all three now wrong, and `DEF-114` has since left the list entirely. ⭐ `0ef92e37` is
+NOT counted: it QUOTES the claim while correcting it, which the TWENTY-FIFTH's rule makes a dated record
+rather than a live instruction.
+⚠ **Both instances were written by the session that renumbered the list an hour later** — the TWENTY-
+FIRST's shape yet again: every pointer I put into a file I am still editing is a hostage to the rest of
+my own session.
 
 ⚠⚠⚠ **THE THIRTY-FIFTH IS A MECHANISM I CALLED *PROVEN BY REPRODUCTION*, AND THE REPRODUCTION WAS
 CONFOUNDED. IT IS ALSO THE ELEVENTH ESCAPE — SAME FAULT, THREE PUSHED COMMITS.** §6's `DEF-114` note said
@@ -516,9 +556,9 @@ only AFTER the nine fixes.
 > ⚠⚠ **SEVERAL LATER SESSIONS CHANGED THE SHAPE OF v1 AND BUILT AGAINST IT. THIS SECTION IS THE STATE
 > THEY BEGAN FROM, NOT THE STATE YOU ARE IN.** Rows were activated, requirements returned to `Approved`,
 > one of the two blind controls was fixed, `SL-032` was built and closed, and `SL-033` now holds eight
-> scheduled rows. **Go to §6 FIRST — read `▶▶ SL-033 IS THE LIVE SLICE` and
-> `▶ WHAT SL-032 DID` before
-> acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates `PH-7`.
+> scheduled rows. **Go to §6 FIRST — the numbered list under `START HERE` is the ONLY place that says
+> what to do next — before acting on anything in §1, §2 or §4.** ⚠ Every phase statement below predates
+> `PH-7`.
 
 **THE BUILD LADDER IS FINISHED AND SO IS THE REGISTER PROGRAMME.** `P1`–`P19` shipped long ago; the
 `DW-029` acceptance-criterion programme that replaced it ran **twenty batches** and was accepted by the
@@ -1043,7 +1083,15 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **every open row carries a recorded human judgement for the first time.**
 
-### ▶▶ `SL-033` IS THE LIVE SLICE. START AT `WBS-24.1`. (state as of 2026-08-23)
+### ▶▶ `SL-033` IS THE LIVE SLICE — HOW IT WAS SCHEDULED, AND WHAT EACH ITEM TAUGHT
+
+⛔ **THIS HEADING USED TO READ “START AT `WBS-24.1`” AND THAT IS THE THIRTY-SIXTH'S THIRD INSTANCE.**
+`WBS-24.1` has been `Implemented` since 2026-08-24 and everything through `WBS-24.7` has followed it,
+so the heading pointed an arriving session at finished work. The `(state as of …)` it carried did not
+save it — an IMPERATIVE with a date attached is still an imperative, exactly as the THIRTY-THIRD found
+that a count with a disclaimer attached is still a count, and the NINTH fix found a session would act
+on a HEADING that its own body contradicted. ⭐ **The next action lives in ONE place, the numbered list
+under `START HERE`; every other section describes what happened, not what to do next.**
 
 **`SL-032` is `Implemented`** — the operator's verdict on the slice review (`PE-586`, applied `PE-588`).
 **`DEF-104` is `Fixed`** (`PE-589`). **`SL-033` was created by `DEC-071`** and holds eight rows the
@@ -1323,7 +1371,7 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 solution targets `net10.0`, `SearchProvidersFtsTests` passes (Arabic `FREETEXT` against real SQL Server
 works on .NET 10 — the single most load-bearing check in the migration), the coverage gate reports 461
 files at **99.60%** with zero files under 95%, and `#128`/`#134` are **closed as superseded**.
-⚠ **`DW-080` itself stays `Activated` — phase B is the rest of the row**, and it is item 1 below.
+⚠ **`DW-080` itself stays `Activated` — phase B is the rest of the row**, and it is listed below under `DW-080 PHASE B`. ⛔ This sentence used to end *"and it is item 1 below"*; naming a POSITION is the THIRTY-SIXTH.
 
 ✅ **`DEF-113` IS `Fixed`, AND IT COST TWO ATTEMPTS. Read it if you read one row from this slice.** The
 two uncredited lines were a genuinely UNEXECUTED path, not the coverage-attribution artefact the file's
