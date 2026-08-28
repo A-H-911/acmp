@@ -76,6 +76,10 @@ public class RiskHandlerTests
         // fan-out only, so there is no member to resolve and null is the honest answer.
         public Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default) =>
             Task.FromResult<CommitteeMemberRef?>(null);
+        // Widened again for FR-165 (resolve by PublicId, for the presenter preview). Null here for the
+        // same reason as the line above: these fakes exercise notification fan-out and never a session.
+        public Task<CommitteeMemberRef?> ResolveMemberByPublicIdAsync(Guid publicId, CancellationToken ct = default) =>
+            Task.FromResult<CommitteeMemberRef?>(null);
     }
 
     private static RaiseRiskCommand RaiseCmd(string owner = "kc-owner", RiskLevel l = RiskLevel.Medium,

@@ -116,4 +116,53 @@ public class CommitteeDirectoryTests
 
         members.Select(r => r.UserId).Should().BeEquivalentTo(new[] { "kc-a", "kc-b" });
     }
+
+    // FR-165 / DEC-086 d1 — resolving a member by PublicId rather than by Keycloak subject.
+    //
+    // WHY A SECOND LOOKUP EXISTS AT ALL. ResolveMemberAsync answers "who is the CALLER", because a token
+    // carries a subject. The presenter preview asks the opposite question: the Chairman names a slot, the
+    // slot carries AgendaItem.PresenterUserId, and that is a PublicId — so the only way to reach the
+    // targeted person's access window without Meetings reading Membership's tables (ADR-0001) is through
+    // this port. Everything else about the preview is composition; this is the one genuinely missing seam,
+    // and it was found while sizing WBS-24.8 rather than met as a surprise during it.
+    //
+    // ⚠ THE INVITED CASE IS THE WHOLE TEST, and it is the mutation that matters: swapping the predicate for
+    // an active-only one (Status == MembershipStatus.Active) still passes every other test in this file and
+    // breaks exactly the principal the preview exists to render. A guest presenter is Invited until their
+    // FIRST login, and the Secretary previews them BEFORE the meeting — so the active-only version would
+    // return null for every guest who has not yet signed in, which is precisely the population being
+    // previewed, and the page would show "not presenting" for a correctly-invited presenter.
+    [Fact]
+    public async Task ResolveMemberByPublicIdAsync_finds_an_INVITED_guest_and_carries_their_access_window()
+    {
+        await using var db = NewDb();
+        var expiry = DateTimeOffset.Parse("2099-07-02T10:30:00Z");
+        var guest = CommitteeMember.PreRegister("kc-guest", "Guest Presenter", "guest@example.org",
+            CommitteeRole.Guest, DateTimeOffset.UtcNow);
+        guest.SetAccessWindow(expiry);
+        db.Members.AddRange(guest, Member("kc-member", CommitteeRole.Member));
+        await db.SaveChangesAsync();
+
+        var found = await new CommitteeDirectory(db).ResolveMemberByPublicIdAsync(guest.PublicId);
+
+        found.Should().NotBeNull();
+        found!.PublicId.Should().Be(guest.PublicId);
+        // The banner's value, and the same stored column the per-request refusal and the sweep read: a
+        // preview that invented its own expiry could disagree with the server the presenter will meet.
+        found.AccessExpiresAt.Should().Be(expiry);
+    }
+
+    // Fail closed. An unknown target is "no such slot", never an unscoped answer — and the preview handler
+    // leans on this null to return its empty state rather than composing a view for nobody.
+    [Fact]
+    public async Task ResolveMemberByPublicIdAsync_is_null_for_an_unknown_public_id()
+    {
+        await using var db = NewDb();
+        db.Members.Add(Member("kc-member", CommitteeRole.Member));
+        await db.SaveChangesAsync();
+
+        var found = await new CommitteeDirectory(db).ResolveMemberByPublicIdAsync(Guid.NewGuid());
+
+        found.Should().BeNull();
+    }
 }
