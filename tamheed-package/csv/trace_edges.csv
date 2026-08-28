@@ -364,6 +364,8 @@ FR-161,DEC-057,derives_from
 FR-162,DEC-057,derives_from
 FR-163,DEC-060,derives_from
 FR-164,DEC-070,derives_from
+FR-165,DEC-048,derives_from
+FR-165,DEC-086,derives_from
 INV-001,ADR-0001,derives_from
 INV-001,ADR-0002,derives_from
 INV-002,ADR-0001,derives_from
@@ -648,6 +650,7 @@ SC-034,DW-085,scope_modifies
 SC-036,DW-035,scope_modifies
 SC-036,FR-154,scope_modifies
 SC-036,WBS-24.6,scope_modifies
+SC-037,FR-165,scope_adds
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
@@ -1198,6 +1201,7 @@ WBS-20.5,FR-142,implements
 WBS-21,FR-030,implements
 WBS-22,FR-163,implements
 WBS-23.4,FR-164,implements
+WBS-24.8,FR-165,implements
 WBS-3,FR-017,implements
 WBS-3,FR-019,implements
 WBS-3,FR-020,implements
