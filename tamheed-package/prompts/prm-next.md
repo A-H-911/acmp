@@ -106,7 +106,8 @@ measured:**
 - *"`StopAsync` … the only deterministic join"* — **it is not a join at all.** It cancels the stopping
   token BEFORE awaiting, and .NET 10 dispatches the body carrying that token, so a loaded runner can
   cancel the work before it ever starts. **CI rejected the fix built on it.**
-⭐⭐ **THE RULE, AND IT IS `LL-027`: A VALID ARGUMENT RESTING ON A WEAK PREMISE IS WEAKENED, NOT
+⭐⭐ **THE RULE, AND IT IS `LL-028` (merged from `LL-023` + `LL-027` by `DEC-084` d2): A VALID ARGUMENT
+RESTING ON A WEAK PREMISE IS WEAKENED, NOT
 STRENGTHENED, BY A STRONGER PREMISE YOU DID NOT CHECK.** The unnecessary sentence was the only false one,
 and it was the one that read as rigorous. **Treat every `only`, `never` and `cannot` in your own draft as
 a measurement request: run the command, or strike the word.** ⚠ It fired a THIRD time inside the hour — a
@@ -1333,7 +1334,35 @@ inside its own remedy** — and the local machine wins that race every time, so 
    - **EF 10 REFUSES WHAT EF 8 TOLERATED, AND THE OLD GRAPH WAS NEVER LEGAL** (`DEF-112`, Fixed): one
      owned value-object instance shared across three navigations. `LL-017` resolved in the rarer
      direction — the OLD instrument was lying.
-1. ▶▶▶ **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+⚠⚠ **THE ORDER BELOW IS `DEC-084` (2026-08-28), AND IT SETTLED A REAL AMBIGUITY RATHER THAN RESTATING
+ONE.** `DEC-076` d3 / `DEC-077` d5 / `DEC-078` d2 all read *`SL-033` → `DW-080` alone → `DW-079`*, while
+`DEC-083` d1 said *"phase A … then phase B"* with `WBS-24.7` and `WBS-24.8` still open and said nothing
+about them — **silent, not overriding.** The operator ruled: **finish `SL-033` first.**
+⛔ **THIS FILE BRIEFLY SAID "PHASE B IS ITEM 1" AND THAT WAS THE AGENT'S INFERENCE, NEVER A RULING** — it
+was disclosed as an inference on the slate (`DEC-071` d3) and `DEC-084` d3 overrode it. **Do not restore
+it.** ⭐ Docker being up is **not** a reason to reorder: it is one operator action away at any time, so it
+is not a scarce window — that refutation is what moved the recommendation.
+
+1. ▶▶▶ **`DEF-114` — FIX IT FIRST, IN ITS OWN PR (`DEC-084` d4).** One line: give the forced-build image
+   a per-run name so Testcontainers can never skip the build. ⭐ **The deciding argument was not the code
+   but the INSTRUMENT: the local backend gate has been shown to reproduce CI exactly (461 files, 99.60%),
+   and `DEF-114` is the single thing making that false — 65/68 locally against CI's 66/68.** Fixing it
+   restores a gate the next two items depend on. Detail is in the row; the `DEC-073` reasoning for why it
+   was kept out of `#320` is in item 5's note below.
+2. ▶▶ **`WBS-24.7` / `DW-063` / `NFR-010` — the CONFIGURATION-DRIVEN stream count.** ⚠ **Read the row's own
+   text before sizing** (`LL-025`, and the habit that has now paid on all six built items): the
+   no-hard-limit clause genuinely HOLDS and was verified, so this is one clause of three. The five streams
+   plus the wildcard are seeded by **raw SQL inside a migration**, and ⚠⚠ **`Stream.Create` STILL HAS NO
+   CALLER** — so adding a sixth stream is a migration and a deployment, not configuration. The 20-or-more
+   target is unproven and the requirement's own verification note asks for an integration test with 10
+   streams that does not exist.
+3. **`WBS-24.8` / `DW-028` — the `/session` presenter preview. LAST IN THE SLICE ON PURPOSE.**
+   ⚠⚠ **SLOW DOWN HERE.** It is a **second authorization path over content scoped to somebody else** — the
+   shape that produced `DEF-052` and `DEF-056`. **Treat the refusal as the feature and prove it by forcing
+   it.** ⚠ `navModel.ts`'s ACCESS map grants `session` to GUEST ONLY and that restraint holds (`DEF-053`
+   deliberately left it alone); a guest is bounded by a TIME WINDOW, so the targeting parameter must never
+   become the way a guest reads somebody else's slot. ⚠ **It still owes its axe route** (`DEC-072` d2).
+4. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1344,16 +1373,19 @@ inside its own remedy** — and the local machine wins that race every time, so 
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+5. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
-3. **`DEF-114`** — a ONE-LINE fix, deliberately left out of `#320` (`DEC-073`: one change, one cause).
-   `DW-085`'s forced-build guard is not hermetic: Testcontainers does not rebuild an image that already
-   EXISTS, so a leftover `acmp/forced-build-timeout:test` makes the deliberately-hanging build return in
-   under a second and the timeout never fires. ⚠ **CI never sees it — a fresh runner has no such image —
-   so it reports a false red only to developers**, which is backwards for a guard whose whole purpose is
-   that this path cannot be proven any other way. Give the image a per-run name. ⭐ The row records that
-   the OBVIOUS diagnosis (Docker's layer cache) was measured and DISCARDED before filing: an identical
-   rebuild took 33s, a one-byte-different one 31s.
+
+⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
+temptation.** `DW-085`'s forced-build guard is not hermetic: **Testcontainers does not rebuild an image
+that already EXISTS**, so a leftover `acmp/forced-build-timeout:test` makes the deliberately-hanging build
+return in under a second and the timeout never fires. ⚠ **CI never sees it — a fresh runner has no such
+image — so it reports a false red only to DEVELOPERS**, which is backwards for a guard whose whole purpose
+is that this path cannot be proven any other way. Give the image a per-run name.
+⭐ **The row records that the OBVIOUS diagnosis was measured and DISCARDED before filing:** Docker's layer
+cache explains nothing here — an identical rebuild took **33s** and a one-byte-different one **31s**.
+It stayed out of `#320` because `DEC-073`'s attribution rule is one change, one cause, and `#320` was
+already green.
 
 ⚠⚠ **DO NOT RE-QUOTE AN OPEN-PR LIST FROM ANYWHERE IN THIS FILE.** A line here said *"the only two open
 PRs, `#128` and `#134`"*, re-verified 2026-08-26 — and two more appeared within a day. **A Dependabot

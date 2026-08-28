@@ -17,7 +17,8 @@ Ten of ten green, `net10.0`, `SearchProvidersFtsTests` passes, `#128`/`#134` clo
   loaded runner kills the body before it starts): my first fix used it, **passed locally, CI rejected it**.
   Await `ExecuteTask`. ⭐ **A fix for a race that passes because the race went your way is the defect
   reproducing inside its own remedy** — the local box always wins that race, so only CI discriminates.
-- ⚠⚠ **`LL-027` FIRED THREE TIMES IN ONE SESSION, EVERY TIME ON THE WORD "ONLY"** — *the ONLY project
+- ⚠⚠ **`LL-028` (merged from `LL-023`+`LL-027`, `DEC-084` d2) FIRED THREE TIMES IN ONE SESSION, EVERY
+  TIME ON THE WORD "ONLY"** — *the ONLY project
   reaching this file*, *the ONLY deterministic join*, and a confident *"Docker layer cache"* cause
   (measured 33s vs 31s, **discarded before filing**). **A valid argument on a weak premise is WEAKENED,
   not strengthened, by a stronger premise you did not check — and the unnecessary sentence is the one
@@ -68,7 +69,7 @@ three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is
   and a "nothing is owed" sentence is falsified by the next thing you finish. ⭐ **An ABSENT reason for a
   decline is not evidence of a reason: asking got `24.4` promoted, where every inference was wrong**
   (`LL-003`). ⭐ Both 2026-08-27 verdicts were taken against a GENERATED slate
-  (`scripts/gen-slice-review-slate.mjs`), never a summary — `LL-011`/`LL-023` discharged mechanically.
+  (`scripts/gen-slice-review-slate.mjs`), never a summary — `LL-011`/`LL-028` discharged mechanically.
 - ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
   — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
   over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
