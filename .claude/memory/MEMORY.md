@@ -26,8 +26,13 @@ Ten of ten green, `net10.0`, `SearchProvidersFtsTests` passes, `#128`/`#134` clo
 - ⚠ **DOCKER GATES THE *GATE*, NOT EVERY COVERAGE QUESTION.** With it up the local pipeline reproduces CI
   **exactly** (461 files, 99.60%); with it down only the whole-gate answer is void — one file's line list
   is still provable if its covering tests run locally (subset + equal count ⇒ identical set).
-  ⚠ **`DEF-114`** (open, one line): `DW-085`'s forced-build guard fails wherever its named image already
-  exists — Testcontainers skips the build. **False red for developers only; CI never sees it.**
+- ⚠⚠⚠ **`DEF-114` / `LL-029`: A REPRODUCTION THAT CHANGES TWO THINGS CONFIRMS WHICHEVER ONE YOU WERE
+  WATCHING** — the strongest-feeling evidence there is, because the symptom returns on demand. I diagnosed
+  *"the image already exists"* and "proved" it by pre-creating the image — **which also warmed the `RUN
+  sleep 30` layer** — then eliminated the cache on a 33s figure measured against a COLD daemon. Real cause:
+  the cache is keyed on the **INSTRUCTION, not the tag** (~2s warm, new tag). Wrong cause → 3 pushed commits.
+  ⭐⭐ **ONLY THE FIX FAILING CAUGHT IT** — a reproduction CONFIRMS, an intervention isolating ONE variable
+  EXPLAINS. ⚠ **CI cannot validate it** (cold cache ⇒ always passed) — the inverse of `DEF-113`.
 - ⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** and work only in globalization-invariant
   mode, which **THROWS `CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does
   `ar-SA` + `LCID 1025`. **A naive minimal-base move would THROW at runtime after compiling and

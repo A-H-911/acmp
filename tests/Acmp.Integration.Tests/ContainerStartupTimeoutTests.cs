@@ -78,7 +78,17 @@ public sealed class ContainerStartupTimeoutTests
             // the budget expires, and it caps how long an ABANDONED build could linger if the Docker
             // daemon carries on after the cancelled request. ⚠ That is a no-regret bound, NOT a diagnosis
             // of DEF-109 — the same test was present in a run where Api.Tests passed in 3m18s.
-            File.WriteAllText(Path.Combine(dir.FullName, "Dockerfile"), "FROM alpine:3.20\nRUN sleep 30\n");
+            // ⚠⚠ THE GUID IS LOAD-BEARING (DEF-114) - it is what makes the RUN layer uncacheable, and
+            // without it this guard reports a FALSE RED on any machine that has built it before. Docker
+            // caches `RUN sleep 30` like any other layer, and the cache is keyed on the instruction, NOT
+            // on the image tag: once warm, the build returns in ~2 seconds, the 10-second budget never
+            // expires, and the assertion that a hanging build must time out fails. Measured both ways -
+            // cold ~33s, warm ~2s under a brand-new tag - so a per-run TAG fixes nothing and only a
+            // per-run INSTRUCTION does. CI never sees it because a fresh runner has a cold cache, so the
+            // rot lands only on a developer's machine: the worst direction for the one test that proves
+            // this timeout path at all.
+            File.WriteAllText(Path.Combine(dir.FullName, "Dockerfile"),
+                $"FROM alpine:3.20\nRUN echo {Guid.NewGuid():N} && sleep 30\n");
 
             var image = new ImageFromDockerfileBuilder()
                 .WithDockerfileDirectory(dir.FullName)
