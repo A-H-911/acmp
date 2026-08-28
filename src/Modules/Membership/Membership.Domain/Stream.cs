@@ -23,4 +23,11 @@ public sealed class Stream : AuditableEntity
 
     public static Stream Create(string code, LocalizedString name) =>
         new() { Code = code.Trim().ToLowerInvariant(), Name = name };
+
+    // NFR-010's configuration-driven clause: the committee renames a stream without a migration.
+    // ⚠ The CODE is deliberately not renameable. Topics carry stream codes and the ABAC intersect
+    // resolves on them, so re-coding a live stream would silently re-scope every topic that names the
+    // old value — a data migration wearing a text field. Display text is bilingual and free to change;
+    // the scope key is not. IsWildcard is untouched for the same reason it has no runtime factory.
+    public void Rename(LocalizedString name) => Name = name;
 }

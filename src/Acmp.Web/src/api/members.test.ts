@@ -1,6 +1,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams, useSetVotingEligibility } from './members';
+import {
+  useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams,
+  useSetVotingEligibility, useCreateStream, useRenameStream,
+} from './members';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /** The headers of the most recent fetch call. */
@@ -217,6 +220,65 @@ describe('useSetVotingEligibility (DEF-041 / DEC-046 d4)', () => {
 
     const { result } = renderHook(() => useSetVotingEligibility(), { wrapper });
     result.current.mutate({ publicId: 'm-9', isVotingEligible: true });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+/*
+ * WBS-24.7 — the two write paths that make NFR-010's configuration-driven clause true. These run the
+ * REAL hooks against a stubbed fetch, so the URL, the verb and the body shape are asserted rather
+ * than assumed; the component tests mock these hooks away and could never catch a wrong URL.
+ */
+describe('useCreateStream', () => {
+  it('POSTs the code and both names to the streams collection', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { publicId: 'new-1' } }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useCreateStream(), { wrapper });
+    result.current.mutate({ code: 'mobile', nameEn: 'Mobile', nameAr: 'الجوال' });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(spy.mock.calls.at(-1)![0])).toBe('/api/members/streams');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('POST');
+    expect(lastBody(spy)).toEqual({ code: 'mobile', nameEn: 'Mobile', nameAr: 'الجوال' });
+  });
+
+  // The duplicate-code refusal is the one an administrator meets. If the hook resolved on it, the
+  // dialog would close and report a stream that does not exist.
+  it('surfaces a refused duplicate as an error', async () => {
+    stubFetch(() => ({ status: 400, jsonBody: { title: 'already exists' } }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useCreateStream(), { wrapper });
+    result.current.mutate({ code: 'core', nameEn: 'Core', nameAr: 'الأساسي' });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useRenameStream', () => {
+  it('PUTs to the stream and sends ONLY the two names', async () => {
+    const spy = stubFetch(() => ({ status: 204 }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useRenameStream(), { wrapper });
+    result.current.mutate({ publicId: 's-1', nameEn: 'Core Platform', nameAr: 'منصة الأساس' });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(spy.mock.calls.at(-1)![0])).toBe('/api/members/streams/s-1');
+    expect((spy.mock.calls.at(-1)![1] as RequestInit).method).toBe('PUT');
+    // ⚠ NO `code` KEY. Topics carry the code and the ABAC intersect resolves on it, so the API must
+    // not be able to express a re-code at all — a body carrying one would be a data migration.
+    expect(lastBody(spy)).toEqual({ nameEn: 'Core Platform', nameAr: 'منصة الأساس' });
+  });
+
+  it('surfaces a refusal as an error rather than resolving', async () => {
+    stubFetch(() => ({ status: 404, jsonBody: { title: 'Not found' } }));
+    const { wrapper } = makeQueryWrapper();
+
+    const { result } = renderHook(() => useRenameStream(), { wrapper });
+    result.current.mutate({ publicId: 'missing', nameEn: 'X', nameAr: 'س' });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

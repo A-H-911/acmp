@@ -43,8 +43,56 @@ export function useStreams() {
   return useQuery({
     queryKey: ['streams'],
     queryFn: () => api<StreamRef[]>('/members/streams'),
-    // It changes when a migration runs, not while someone is filling in a form.
+    // ⚠ This USED to read "it changes when a migration runs, not while someone is filling in a form",
+    // and WBS-24.7 made that false: the taxonomy is now editable from Administration → Streams
+    // (NFR-010's configuration-driven clause). The staleTime stays generous because the list still
+    // changes rarely, and the two mutations below invalidate this key explicitly rather than relying
+    // on it expiring — otherwise a freshly added stream would be invisible for up to five minutes.
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Add a stream to the committee's taxonomy — Administrator only (NFR-010, WBS-24.7).
+ *
+ * ⚠ The CODE is the ABAC scope key, not a label: topics carry it and the stream intersect resolves
+ * on it. The server lowercases and trims it, refuses a duplicate with a legible message, and a
+ * unique index refuses one behind that — so this client does not need to pre-check, and must not
+ * present the code as cosmetic.
+ */
+export function useCreateStream() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { code: string; nameEn: string; nameAr: string }) =>
+      api<{ publicId: string }>('/members/streams', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['streams'] }),
+  });
+}
+
+/**
+ * Rename a stream's bilingual display text — Administrator only (NFR-010, WBS-24.7).
+ *
+ * ⚠ There is no code in the request and that is deliberate: the API cannot express a re-code at all,
+ * because moving a live stream's code would silently re-scope every topic that names the old value.
+ */
+export function useRenameStream() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ publicId, nameEn, nameAr }: { publicId: string; nameEn: string; nameAr: string }) =>
+      api<void>(`/members/streams/${publicId}`, {
+        method: 'PUT',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ nameEn, nameAr }),
+      }),
+    // The member roster renders stream chips from the same taxonomy, so both keys go stale together.
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['streams'] });
+      void qc.invalidateQueries({ queryKey: ['members'] });
+    },
   });
 }
 

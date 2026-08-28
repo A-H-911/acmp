@@ -1307,10 +1307,27 @@
       "saved": "Streams updated for {{name}}.",
       "col": {
         "stream": "Stream",
-        "code": "Code"
+        "code": "Code",
+        "actions": "Actions"
       },
       "emptyTitle": "No streams",
-      "emptyBody": "No streams are configured yet."
+      "emptyBody": "No streams are configured yet.",
+      "add": "Add stream",
+      "form": {
+        "addTitle": "Add a stream",
+        "addSubtitle": "The stream becomes assignable as soon as it is created.",
+        "addConfirm": "Add stream",
+        "codeHelp": "The stable scope key. Topics carry it and stream permissions resolve on it, so it cannot be changed afterwards — letters, digits and hyphens only.",
+        "codeInvalid": "Use letters, digits and hyphens only, starting with a letter or a digit.",
+        "nameEn": "Name (English)",
+        "nameAr": "Name (Arabic)",
+        "saveFailed": "The stream could not be saved. A stream with this code may already exist.",
+        "renameAction": "Rename",
+        "renameAria": "Rename {{name}}",
+        "renameTitle": "Rename stream",
+        "renameSubtitle": "Only the display name changes. The code {{code}} stays as it is, because topics and permissions resolve on it.",
+        "renameConfirm": "Save"
+      }
     },
     "jobs": {
       "stat": {

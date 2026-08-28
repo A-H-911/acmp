@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { StreamsReference } from './StreamsReference';
 import { useStreams, type StreamRef } from '../../api/members';
 import i18n from '../../i18n';
+import { makeQueryWrapper } from '../../test/queryHarness';
 
 const CORE: StreamRef = { publicId: 's1', code: 'core', nameEn: 'Core', nameAr: 'الأساسي', isWildcard: false };
 const GOV: StreamRef = { publicId: 's2', code: 'government', nameEn: 'Government', nameAr: 'الحكومي', isWildcard: false };
@@ -19,6 +20,9 @@ const result = (over: Record<string, unknown> = {}) => ({
   data: [CORE, GOV, WILDCARD], isLoading: false, isError: false, refetch: vi.fn(), ...over,
 });
 
+// ⚠ A QueryClientProvider is required now and was not before: WBS-24.7 added the Add-stream and
+// rename affordances, which call useMutation. The harness catching up with a real dependency is
+// not the same as relaxing a test - every assertion below is unchanged.
 describe('StreamsReference (Administration → Streams)', () => {
   beforeEach(() => {
     mockStreams.mockReturnValue(result());
@@ -26,7 +30,7 @@ describe('StreamsReference (Administration → Streams)', () => {
   });
 
   it('lists the committee\'s seeded streams', () => {
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.getByText('Core')).toBeInTheDocument();
     expect(screen.getByText('Government')).toBeInTheDocument();
@@ -35,7 +39,7 @@ describe('StreamsReference (Administration → Streams)', () => {
 
   // The code is the ABAC key topics carry, so a refused write is diagnosable from this table.
   it('shows each stream\'s code, not just its name', () => {
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.getByText('core')).toBeInTheDocument();
     expect(screen.getByText('all-streams')).toBeInTheDocument();
@@ -44,7 +48,7 @@ describe('StreamsReference (Administration → Streams)', () => {
   // ⚠ THE WHOLE POINT OF THIS COMPONENT. The tab used to claim "No streams configured" forever;
   // a seeded taxonomy must never render that copy again.
   it('never claims the committee has no streams while it has some', () => {
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.queryByText(/No streams/i)).not.toBeInTheDocument();
   });
@@ -53,7 +57,7 @@ describe('StreamsReference (Administration → Streams)', () => {
   // this component exists to stop: "there are no streams, so there is nothing to assign."
   it('reports a load failure rather than falling through to the empty state', () => {
     mockStreams.mockReturnValue(result({ data: undefined, isError: true }));
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.queryByText('No streams')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
@@ -61,7 +65,7 @@ describe('StreamsReference (Administration → Streams)', () => {
 
   it('says it is loading rather than rendering an empty table', () => {
     mockStreams.mockReturnValue(result({ data: undefined, isLoading: true }));
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.queryByText('Core')).not.toBeInTheDocument();
     expect(screen.getByText('Loading…')).toBeInTheDocument();
@@ -71,7 +75,7 @@ describe('StreamsReference (Administration → Streams)', () => {
   // honest statement of fact, not the old promise about a registry that has already shipped.
   it('shows a plain empty state when the taxonomy really is empty', () => {
     mockStreams.mockReturnValue(result({ data: [] }));
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.getByText('No streams')).toBeInTheDocument();
     expect(screen.queryByText(/BL-024/)).not.toBeInTheDocument();
@@ -79,7 +83,7 @@ describe('StreamsReference (Administration → Streams)', () => {
 
   it('renders the Arabic names under the Arabic locale', async () => {
     await i18n.changeLanguage('ar');
-    render(<StreamsReference />);
+    render(<StreamsReference />, { wrapper: makeQueryWrapper().wrapper });
 
     expect(screen.getByText('كل المسارات')).toBeInTheDocument();
     expect(screen.queryByText('All streams')).not.toBeInTheDocument();
