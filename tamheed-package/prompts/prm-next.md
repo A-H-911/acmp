@@ -80,7 +80,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-nine** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **forty** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -90,6 +90,48 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTIETH IS THE SWEEP THAT FIXED THE THIRTY-NINTH BEING SCOPED TO THE THIRTY-NINTH — SO IT
+COULD ONLY EVER FIND THAT ONE FAULT CLASS, AND IT PUSHED THREE OTHERS UNCHANGED.** Having named the
+inline-status class, I grepped this file for its exact wording (`— your verdict`, ``is at `Review` ``), ran
+`count-prompt-ids.py`, ran the prose-status checker, got a clean board, and committed. **SEVEN live stale
+statements about rows that same session had moved rode out in `910c02df` — the count itself grew from three to seven as the key widened:**
+- **the `DW-080` phase-A block's *"`DW-080` itself stays `Activated`"*** — I had set that row to `Done`
+  twenty minutes earlier;
+- **§6's *"it is still not a `WBS-` row in any slice"*** — it is `WBS-25.1`, built and closed;
+- **§6's heading *"`SL-033` IS THE LIVE SLICE"*** — `SL-034` had been created, executed and closed after it,
+  and the NINTH fix already established that a session acts on a HEADING over its own body;
+- **`DEC-072` d1's *"`DW-066` IS NOW `Activated`"***; and, worst-placed of all, **two bullets under a
+  heading reading *"Open, and the operator's alone"*** — `DW-066` and `DW-079`, neither open nor theirs;
+- **`DEC-072` d4's *"(`DW-079`, `Activated`)"*** — in the `(Status)` form the prose checker exists to catch,
+  and missed anyway because the id sits INSIDE the parentheses.
+⚠⚠ **THE TWO UNDER THE *Open* HEADING ARE THE ONES THAT WOULD HAVE COST A SESSION**: the others merely say something
+false, while a stale entry under an *Open* heading **actively recruits someone to do finished work** — the
+TWENTY-EIGHTH's *"a do-not-rebuild entry naming a file that HAS been built"* running in the opposite
+direction. ⭐⭐ **AND THE COUNT ITSELF IS THE LESSON: three found, then five, then six, then SEVEN — each time by
+WIDENING the key rather than by re-reading.** A sweep stopped at its first clean-looking result reports
+the scope it happened to have, not the state of the file (`LL-015`).
+⚠⚠ **ALL THREE INSTRUMENTS RAN CLEAN, AND FOR THREE DIFFERENT REASONS — `LL-009` INSIDE THIS FILE'S OWN
+TOOLING, AGAIN.** The phrase grep was scoped to one class's literal wording. The prose-status checker needs
+the `(Status)` form, and *"stays `Activated`"* is a sentence, not a parenthesis. `count-prompt-ids.py`
+resolves ids and statuses and has never been able to see a prose claim. **A clean board from three blind
+instruments reads exactly like a clean file.**
+⚠⚠⚠ **AND THE PROSE-STATUS CHECKER HAS A FOURTH BLINDNESS, FOUND HERE, WHICH MATTERS BECAUSE IT LOOKS LIKE
+THE ONE CASE IT WAS BUILT FOR.** `DEC-072` d4 read *"(`DW-079`, `Activated`)"* — a status in parentheses
+beside an id, exactly the shape the check exists to catch — and it was missed, because its regex expects
+`` `ID` `` **followed by** `(Status)`, while here the id sits **inside** the parentheses with the status.
+**The three known blindnesses were about the claim not being in the `(Status)` form at all; this one IS in
+that form and still slips.** ⭐ **So a clean run of that checker says less than its own documentation
+implies — widen the pattern, or treat it as one input rather than the answer.**
+⭐⭐ **THE REMEDY IS THE TWENTY-EIGHTH'S, WHICH ALREADY EXISTED AND WHICH I DID NOT RUN: after changing
+anything, GREP THIS FILE FOR THE IDENTIFIERS AND FILE NAMES YOU TOUCHED — not for the fault class you just
+named.** `DW-080`, `DW-079`, `DW-066`, `WBS-25`, `SL-034` would have surfaced all three in one command.
+**Grepping for a known-bad phrase can only find the fault you already understand; grepping for what you
+CHANGED finds the ones you do not.**
+⚠ **Counted once, family of SEVEN, on the FIFTEENTH's and TWENTY-EIGHTH's precedent** — one fault class
+(*a claim about a row this session moved*), one pass, one ordinal. ⚠ **Not an escape**: `910c02df`'s
+message asserts none of the seven. ⭐ **It is its own best argument for the NINTH fix's stronger standard —
+read the WHOLE file before handing it on, rather than the parts you think you touched.**
 
 ⚠⚠⚠ **THE THIRTY-NINTH IS THE THIRTY-SEVENTH'S EXACT FAULT CLASS, REINTRODUCED *IN THE SAME COMMIT THAT
 DOCUMENTED IT*, TWENTY LINES FROM A PARAGRAPH FORBIDDING IT.** The `WBS-25.1` block ended *"⚠ The row is
@@ -1146,7 +1188,14 @@ judgement, not a colour change**, and the advisory staying red afterwards is cor
 5. ✅ **Tiers one and three CONFIRMED by the operator — all 41 rows carried.** With the twelve activated,
    **every open row carries a recorded human judgement for the first time.**
 
-### ▶▶ `SL-033` IS THE LIVE SLICE — HOW IT WAS SCHEDULED, AND WHAT EACH ITEM TAUGHT
+### ▶ HISTORY — `SL-033`: HOW IT WAS SCHEDULED, AND WHAT EACH ITEM TAUGHT
+
+⛔ **THIS HEADING READ *"`SL-033` IS THE LIVE SLICE"* AND THAT WAS THE FORTIETH's THIRD INSTANCE.** `SL-034`
+was created, executed and CLOSED after it, so the heading named a slice that had been superseded as the
+live one — and the NINTH fix already found that a session **acts on a heading even when the body below it
+says otherwise**. ⚠ This is the THIRD time this one heading has gone stale: it also read *"START AT
+`WBS-24.1`"* (the THIRTY-SIXTH's third instance). **Nothing in this section is the next action; the
+numbered list under `START HERE` is.**
 
 ⛔ **THIS HEADING USED TO READ “START AT `WBS-24.1`” AND THAT IS THE THIRTY-SIXTH'S THIRD INSTANCE.**
 `WBS-24.1` has been `Implemented` since 2026-08-24 and everything through `WBS-24.7` has followed it,
@@ -1210,9 +1259,12 @@ between merge cycles, never during one.
   it — it would have reported ZERO failing files against a gate listing eighteen.
 ⚠ **`DW-080` (the .NET 8→10 migration + `DW-066`'s base move) was never in the sweep and does NOT block
 `SL-033`.** ⚠⚠ **IT IS NO LONGER "UNSCHEDULED" — `DEC-076` d3 ORDERED IT THIRD**, after `SL-033` and
-before `DW-079`. It is still not a `WBS-` row in any slice, which is a different thing from unscheduled
-and is the distinction that made the old wording wrong. **That was the TWENTY-SECOND** — caught by this
-pre-handoff read, not by a later session tripping over it.
+before `DW-079`. ⛔ **The sentence that followed — *"it is still not a `WBS-` row in any slice"* — was the
+FORTIETH's second instance.** `DEC-089` d2 made it `WBS-25.1` under `SL-034`, and both it and `DW-079`
+(`WBS-25.2`) have since been built and closed. **That was the TWENTY-SECOND** — caught by a pre-handoff
+read, not by a later session tripping over it. ⭐ **The durable half is the DISTINCTION, which is what the
+TWENTY-SECOND was actually about: *ordered* and *scheduled as a `WBS-` row* are different states, and
+conflating them is what made the original wording wrong.**
 ⭐ **WHAT THE METHOD BOUGHT, since it cost hours:** verifying each PR against CURRENT `main` made every
 failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
 flake, and `#307` as a coverage regression across twenty files with no cause.
@@ -1438,7 +1490,11 @@ and read the ADR/DECISION registers, because a row can be a faithful quotation o
 solution targets `net10.0`, `SearchProvidersFtsTests` passes (Arabic `FREETEXT` against real SQL Server
 works on .NET 10 — the single most load-bearing check in the migration), the coverage gate reports 461
 files at **99.60%** with zero files under 95%, and `#128`/`#134` are **closed as superseded**.
-⚠ **`DW-080` itself stays `Activated` — phase B is the rest of the row**, and it is listed below under `DW-080 PHASE B`. ⛔ This sentence used to end *"and it is item 1 below"*; naming a POSITION is the THIRTY-SIXTH.
+⛔ **A LIFECYCLE STATUS STOOD HERE — *"`DW-080` itself stays `Activated`"* — AND IT WAS THE FORTIETH.**
+Both phases shipped and the row is closed; `entity_query("deferred-work", id="DW-080")` is the answer.
+⛔ This sentence has now been wrong twice in two different ways: it also used to end *"and it is item 1
+below"*, which is the THIRTY-SIXTH. **A sentence that has rotted twice is a sentence that should carry no
+state at all.**
 
 ✅ **`DEF-113` IS `Fixed`, AND IT COST TWO ATTEMPTS. Read it if you read one row from this slice.** The
 two uncredited lines were a genuinely UNEXECUTED path, not the coverage-attribution artefact the file's
@@ -1852,7 +1908,8 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
   **#128/#134 (`dotnet` 8.0→10.0) ARE CARVED OUT to `DW-080`** — the solution targets `net8.0`, so that pair
   is a RUNTIME MIGRATION, not a dependency bump, and `DEC-072` d1's "everything" was answered over a
   description that never contained it. **The sweep is therefore TEN PRs, not twelve**, and `DW-080` does
-  **not** block `SL-033`. **And `DW-066` IS NOW `Activated` AND BOUND TO `DW-080`** — #134 edits the api and
+  **not** block `SL-033`. **And `DW-066` WAS BOUND TO `DW-080`** (a status stood here and it was the
+  FORTIETH's fourth instance; both rows are closed now) — #134 edits the api and
   worker `FROM` lines (16/31/51, verified with `gh pr view --json files`), which is its trigger *verbatim*,
   so the alpine/distroless move happens in the SAME change as one base-image decision. ⚠ **`DW-066` must not
   be scheduled separately** — doing the base move apart from the `FROM` edit spends the expensive part
@@ -1873,7 +1930,8 @@ are recorded as overrides, reasoning-against preserved, per the `DEC-071` d3 pre
 - **d2 — `DW-071`'s new-route clause HAS FIRED**, so it is `Activated` and three `SL-033` items carry the
   axe-route obligation. See the table above; that is where it lives, not here.
 - **d3 — `LL-016` is Approved and PINNED** in one step, the operator having read the exact statement.
-- **d4 — THE `NFR-018` ASVS EVIDENCE PACK IS PREPARED NOW** (`DW-079`, `Activated`). **OVERRIDE** — the
+- **d4 — THE `NFR-018` ASVS EVIDENCE PACK IS PREPARED NOW** (`DW-079` — **built and closed 2026-08-29 as
+  `WBS-25.2`**; a status stood here and was the FORTIETH's seventh instance). **OVERRIDE** — the
   recommendation was to leave it, externally blocked with no trigger fired. ⚠⚠ **IT DOES NOT CLOSE
   `NFR-018`, AND NO ACCEPTANCE CRITERION MAY BE WRITTEN FROM IT** — only an external assessor's report can
   evidence that requirement, and an AC ahead of the report holds readiness false forever (trap 16c). The
@@ -2085,13 +2143,16 @@ in both halves — eleven, and one shared helper closed them all in one PR.
 
 ### Open, and the operator's alone
 
-- ⚠ **`DW-066` HAS MOVED — it is `Activated` and BOUND TO `DW-080`** (`DEC-074` d2), so it is no longer
-  the operator's to schedule alone. Its trigger *"whenever a base-image bump is being made anyway"* FIRED:
-  `#128`/`#134` edit the very `FROM` lines it names. The alpine/distroless move rides with the .NET 8→10
-  change as **ONE base-image decision**, because doing it separately spends the expensive part twice.
-  ⚠ **The edit is two `FROM` lines; the RISK is not the edit** — alpine is musl, and this app does SQL
-  Server native interop plus Arabic/English culture-aware work. **Full e2e leg, and verify Arabic FREETEXT
-  end to end.** A green unit suite proves nothing here.
+- ⛔ **`DW-066` IS NOT OPEN AND IS NOT THE OPERATOR'S — IT IS CLOSED, AND THIS BULLET SAT UNDER A HEADING
+  READING *"Open"*.** It shipped inside `DW-080` phase B exactly as `DEC-074` d2 required, in the same
+  change as the `FROM`-line edit. **That was the FORTIETH's fifth instance**, and the worst-placed of them:
+  the other four merely said the wrong thing, while this one said it under a heading asserting the row was
+  outstanding. ⭐ **The durable half survived the outcome and is worth keeping: the RISK WAS NEVER THE
+  EDIT** — two `FROM` lines against SQL Server native interop and Arabic culture-aware work. ⚠⚠ **And the
+  spike proved the risk was not even musl** — it is the ICU **version**: `alpine-extra` ships ICU 78.1
+  against `chiseled-extra`'s 74.2, and CLDR moved `ar-SA`'s default calendar between them, so the same
+  binary renders Hijri on one and Gregorian on the other, **with no exception and no log line, in Arabic
+  only.** A green unit suite proves nothing here, which is why the row demanded a full e2e leg.
 - **`DW-074` + `DEF-100`** — `NFR-019` mandates TLS on three internal hops; app↔Keycloak and nginx↔api run
   plaintext on the Docker network. **The operator KEPT the requirement rather than narrowing it**
   (`DEC-066`), so `NFR-019` stays `Approved` and correctly has **no AC**, and `DEF-100` stays **open
@@ -2099,8 +2160,11 @@ in both halves — eleven, and one shared helper closed them all in one PR.
   certbot flow does not extend to services addressing each other by compose name.
 - **`NFR-018`** — the only remaining requirement real work could close, and it needs an **external OWASP
   ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
-  a suggestion** — `DW-079`, `Activated` by `DEC-072` d4. Commissioning the assessment itself remains the
-  operator's act alone.
+  a suggestion** — and it is **BUILT**: `DW-079` closed as `WBS-25.2` (`DEC-093`), and the pack is
+  `DOC-070` at `tamheed-package/docs/asvs-l2-evidence-pack.md`. *(A status stood here too — the FORTIETH's
+  sixth instance.)* ⛔ **`NFR-018` ITSELF DID NOT MOVE AND MUST NOT**: the pack is an INPUT to an
+  assessment, never the assessment, and no acceptance criterion may be written from it (trap 16c).
+  Commissioning the assessment itself remains the operator's act alone.
 - **The running-stack group** — `DW-065` (span PARENTING across modules, still unobserved), the ops group
   (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`, several of which are measured FROM
   trace data. ⚠ **`DEF-099` is fixed, so traces now actually arrive** — that blocker is gone.
