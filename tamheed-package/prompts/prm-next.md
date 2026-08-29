@@ -80,7 +80,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-eight** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **thirty-nine** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -90,6 +90,29 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-NINTH IS THE THIRTY-SEVENTH'S EXACT FAULT CLASS, REINTRODUCED *IN THE SAME COMMIT THAT
+DOCUMENTED IT*, TWENTY LINES FROM A PARAGRAPH FORBIDDING IT.** The `WBS-25.1` block ended *"⚠ The row is
+at `Review` — your verdict."* `DEC-092` promoted it to `Implemented` and a fresh session would have gone
+looking for a verdict already given. The THIRTY-SEVENTH — three `WBS-24.x` blocks reading *"⚠ `Review` —
+your verdict"* — was written up in commit `d8131b56`, and **that same commit introduced this one.**
+⚠⚠ **A RULE DOES NOT PROTECT THE SENTENCE BEING WRITTEN WHILE THE RULE IS BEING WRITTEN.** The remedy was
+stated, the ordinal was assigned, the register name was given — and the very next merge-block drafted in
+that pass carried a fresh inline status. The THIRTY-FIRST already recorded a remedy failing to reach the
+section it was about; this is the same shape at a distance of twenty lines instead of eleven hundred.
+⭐⭐ **THE ONLY FORM THAT DOES NOT ROT IS THE COMMAND.** Not a fresher status, not a status with a date
+attached — `readiness_check(scope="slice", id="SL-034")`. ⭐ **AND THE MECHANICAL HABIT THAT CATCHES IT:
+after writing ANY merge block here, grep this file for `— your verdict` and for `is at \`Review\`` before
+committing.** Neither is an id and neither is a status in the `(Status)` form the prose checker looks for,
+so both mechanical passes run clean straight over it — the THIRTY-FIRST's three blindnesses, again.
+⚠⚠ **IT IS A FAMILY OF TWO, ONE ORDINAL, ON THE FIFTEENTH'S AND TWENTY-EIGHTH'S PRECEDENT.** The grep that
+found the first immediately found a second: `WBS-24.2`'s block still read *"⚠ `Review`, not `Implemented`
+— your verdict"* about a row promoted on 2026-08-26. **So the THIRTY-SEVENTH's own remedy was applied to
+three blocks and missed a fourth**, which is the TWENTY-THIRD's lesson — a correction applied to some
+artifacts and not their siblings leaves the survivor as the one the next session reads.
+⚠ **Counted once**: both were true when written, became false, and sit in commits on `main` where a fresh
+session could read them. Found by grepping for the FILE's own phrases rather than for ids, which is the
+sweep the THIRTY-SEVENTH prescribed and the only one that has ever caught this class.
 
 ⚠⚠⚠ **THE THIRTY-EIGHTH IS A NEGATIVE STATEMENT ABOUT WORK — *"`DW-080` phase B has not started"* — AND
 IT WAS FALSIFIED BY THE VERY SESSION THAT WROTE IT, THEN PUSHED.** Phase B merged as `#325` → `1d7cb04b`,
@@ -1253,8 +1276,11 @@ exist.** ⛔ Do not "fix" the advisory by re-dating the assumption; that was the
 no count is written here, and the reason is the THIRTY-THIRD below.
 
 ✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
-`AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⚠ `Review`, not
-`Implemented` — your verdict, as `DEC-079` d3 established.
+`AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⛔ A lifecycle
+status stood here too — the THIRTY-NINTH's **second instance**, found in the same pass and folded into one
+ordinal. `readiness_check(scope="slice", id="SL-033")` is the answer. **What `DEC-079` d3 established is
+the RULE and it is what survives: done-claimed is `Review`, and `Implemented` is the operator's verdict,
+adjudicated per item.**
 ⭐ **`DW-037`'s own correction was load-bearing and it HELD** — the scheduled date really is not on the
 Topics side. **That is the opposite of `WBS-24.1`, where the WBS title's SUMMARY of a row was the
 misleading part. Read each row's own text; distrust the summary.**
@@ -1540,7 +1566,8 @@ false because the work COMPLETED — that is an outcome arriving, which this sec
 ✅✅ **`WBS-25.1` (`DW-080` PHASE B) IS MERGED — PR `#325` → `1d7cb04b`, ten checks green INCLUDING the
 e2e leg the row demanded.** `DEC-090` d1 chose **`aspnet:10.0-noble-chiseled-extra`**; d2 replaced the
 shell healthcheck with `Acmp.HealthProbe`. Same source, two bases: **326 MB → 258 MB (−21%)**, application
-CVEs **75 → 11 (−85%)**, zero criticals either side. ⚠ The row is at `Review` — your verdict.
+CVEs **75 → 11 (−85%)**, zero criticals either side. ⛔ A lifecycle status stood here and it was the
+THIRTY-NINTH; `readiness_check(scope="slice", id="SL-034")` is the answer that cannot go stale.
 ⭐⭐ **THE SPIKE FALSIFIED WHAT THIS FILE PREDICTED, AND THE CORRECTION IS THE VALUABLE PART.** A no-ICU
 base does **NOT** throw at runtime here. It starts, exits 0, and silently enters invariant mode, throwing
 only when a non-invariant culture is **touched** — and ACMP's API touches none (all 10 `CultureInfo` uses
@@ -1564,8 +1591,57 @@ three workflow files. ⭐ A size check ALONE would have passed on Debian at 326 
 with a *minimal-base* clause while sitting on the base it excludes.
 ⚠ **`DW-066`'s recorded 257 MB is stale by a runtime major** — measured on .NET 8; .NET 10 made it 326 MB.
 
-1. ▶▶▶ **`WBS-25.2` (`DW-079`)** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
-   written from it** (trap 16c).
+✅✅ **`WBS-25.2` (`DW-079`) IS `Implemented` (`DEC-093`) — PR `#327` → `58b900b0`, ten checks green, and
+`SL-034` IS CLOSED (`Implemented`, the operator's verdict, no waiver and no force).** It produced
+**`DOC-070`**, `tamheed-package/docs/asvs-l2-evidence-pack.md` — the **first narrative document in this
+package to live outside `docs/`**, per `DEC-091` d3, because all 69 prior `DOC-` rows point into the
+frozen archive and nothing had established where post-freeze prose goes.
+⛔ **`NFR-018` DID NOT MOVE AND MUST NOT.** It stays `Approved` with **no acceptance criterion**: only an
+external assessor's report can evidence it, and an AC written from the pack would hold package readiness
+false permanently (trap 16c). `DW-079` stays the honest instrument for the distance between the two.
+⭐⭐ **THE TRAP THE PACK HAD TO REFUSE, and it is one copy-paste away from anyone who assembles a pack from
+the existing catalogue:** `docs/domain/security-controls.md` §20 concludes *"L2 is met across all
+applicable chapters"* — precisely the **self-assertion of conformance `DW-079` forbids**, in a document
+that would be handed to a paid third party. The pack declines it explicitly and says why.
+⭐ **Its structural claims are mechanical, not remembered** — chapters, titles and level counts come from
+the authoritative OWASP machine-readable release. **ASVS levels are CUMULATIVE**, so *"Level 2"* means the
+253 requirements at **L1+L2**, not the 183 tagged L2; getting that wrong is silent. §20's
+`[unverified titles]` marker is **discharged** (17/17, 0 mismatched), calibrated first by injecting ASVS
+4.0's *"Malicious Code"* for V5 — a clean result from an uncalibrated checker proves nothing.
+⚠⚠ **THE CONTROL→CHAPTER MAP NEEDED TWO KEYS AND THIS IS `LL-009` PAYING AGAIN:** the per-control ASVS
+column and each section heading's own `V`-suffix **disagree on 41 of 72 controls**, so a single key would
+have silently dropped mappings. The union is what the pack carries.
+⚠ **`scripts/check-asvs-pack-paths.mjs` is committed and wired into `ci.yml`'s `compose` job.** It asserts
+every cited path **exists** — never that it is sufficient — and **fails closed below 12 citations** (trap
+31). ⭐ It is positioned deliberately: `ci.yml` path-ignores markdown **and** `tamheed-package`, so editing
+the pack never runs it; it fires when **SOURCE moves**, which is how the pack actually goes stale.
+
+⚠⚠ **THE BUILD LADDER HAS NOTHING SCHEDULED ON IT. Every item below is an OPERATOR act or an interview,
+not code** — measure before believing that: `entity_query("deferred-work", status="Activated")` and
+`readiness_check("package")` are the live answers, and the sentence you are reading is not.
+
+1. ▶▶▶ **DISPOSITION THE ROWS THIS SLICE FILED.** `DW-088`, `DW-090`, `DW-091`, `DW-092`, `DW-093` are all
+   `Open` and none has been put to the operator — filing a row is not dispositioning it, and an `Open` row
+   nobody has ruled on is the state `DEC-067`'s interview existed to end. ⚠ **`DW-093` is the one to read
+   first**: `C-AUTH-05` names SoD-1…SoD-5 as hard authorization checks and **SoD-4 has no guard at all**
+   (measured: its four siblings appear 11/10/13/11 times in `src`, SoD-4 **zero**), its only prior record
+   was a *"verify in a later batch"* in the frozen archive, and **the required strength is genuinely
+   unsettled** — the same catalogue calls SoD-2 *warn+audit*. ⛔ **Answer the strength question before
+   building anything**; a hard *recorder ≠ owner* guard could refuse legitimate minute-taking in a
+   committee of twenty where roles overlap by necessity. ⚠ `prompts/replan-deferred.md` is the ceremony.
+2. **`DEF-108` — nothing here moves it, and that is by design.** `DEC-089` d1 gave it a checkable end
+   condition: the cause is diagnosed, OR the failure recurs under `DW-084`/`DW-085`'s bounded presentation
+   with a log naming a cause, OR the operator disposes of it. ⛔ **ACCUMULATED GREENS SATISFY NO CLAUSE**,
+   and clause two waits on a FAILURE, so quiet time moves it no closer. It is listed so nobody re-opens
+   the question, not because there is an action in it.
+3. **`release-close-out.md` has never been run.** It sits in the prompt library, every phase is closed and
+   production is live, and it is the ceremony that would formally end v1. ⚠ It is the operator's to start.
+
+⚠ **Two `deferred-work` rows remain `Activated` and BOTH are correctly so — do not "tidy" either.**
+`DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
+says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
+stays *undecidable* until the artifact exists. `DW-071`'s new-route clause was discharged by `SL-033`;
+its SECOND clause is release sign-off, parked by `DEC-071` d4.
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
 temptation.** `DW-085`'s forced-build guard is not hermetic: **Docker caches `RUN sleep 30` like any other

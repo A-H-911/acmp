@@ -6,100 +6,62 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-29 · `SL-033` + `DW-080` BOTH DONE · **NEXT = `WBS-25.2` (`DW-079`, doc-only)**
+## ★★★ 2026-08-29 · `SL-033` AND `SL-034` BOTH DONE · **NOTHING IS SCHEDULED ON THE BUILD LADDER**
 
-`WBS-24.8` merged (`#323` → `24738d4b`, ten green). `FR-165` via `SC-037`/`DEC-086`; `AC-154`/`AC-155` `Met`.
-⚠ **Which rows are at `Review` is NOT written here** — `readiness_check(scope="slice", id="SL-033")` only.
-⚠ Live state is `prm-next.md`, never this file. `DEC-086` = the four sizing rulings (isolate / list-only
-materials / audit the successful read / new FR not `FR-159`).
+⚠ Live state is `prm-next.md`'s numbered list, never this file. `readiness_check("package")` is
+`ready:FALSE` on **`DEF-108` alone**, by `DEC-077` d1 — that is the intended state, not a fault.
+⛔ **`SL-033` is deliberately NOT closed** (`DEC-088`) — `DEF-108` holds it; there is nothing left to build
+in it. **`SL-034` IS closed** (`DEC-093`), no waiver, no force. Next actions are operator acts: disposition
+the rows this slice filed (`DW-088/090/091/092/093`), and `release-close-out.md`, never run.
 
-- ⭐⭐⭐ **WHEN AN ITEM ASKS YOU TO ADD THE THING WHOSE *ABSENCE* IS THE GUARANTEE, ISOLATE IT.** `/session`'s
-  security was that no parameter could name someone else's slot. `WBS-24.8` needed exactly that parameter →
-  own query (no `Guest` in `AllowedRoles`), own endpoint group **outside** the guest allowlist, own guarded
-  route. Never make the shared path conditional.
-- ⚠⚠⚠ **A DEFENCE LAYER CAN BE STRUCTURALLY INVISIBLE TO ANY FRONT-DOOR TEST.** I claimed adding `Guest` to
-  the preview's `AllowedRoles` was *"the single mutation"*; **measured false — all 10 API tests stay GREEN**,
-  because the path gate intercepts guests first, i.e. the very population that layer refuses. Only a
-  unit-level `AuthorizationBehavior` test catches it. ⭐ **Pin each refusal to a DISTINGUISHABLE SIGNATURE**
-  (header vs. audit row); three tests all asserting `403` test whichever layer runs first.
-- ⚠⚠ **A REFACTOR CAN PUSH A FILE UNDER THE PER-FILE COVERAGE FLOOR WITH NO NEW UNTESTED LINE** — moving
-  ~36 **covered** lines out of `GetMySession.cs` left the same 3 untested guards over a smaller denominator.
-  **Numerator never moved.** Don't read it as "the new code is untested".
-- ⛔ **RUN THE GATE, NOT THE TESTS** (`WBS-24.5`'s lesson, repeated 3 days later): `dotnet test` per project
-  passed while `check-coverage.mjs` failed on 4 files. With Docker up the local gate reproduced CI **exactly**
-  (466 files, 99.56%). ⚠ Every uncovered line was an **early-return guard I never forced** — I proved the
-  *authorization* guards and trusted the *data* guards.
-- ⚠⚠ **`DEF-115`, FOUND ONLY BY LOOKING:** `/session` rendered `10:40–10:55 · ١٥ دقيقة` — two digit systems
-  on one line, because only the number path had `ar-u-nu-arab`. **Also an `INV-014` divergence** (`DEC-037`
-  quotes the reference as `١٠:٤٠–١٠:٥٥`). ⭐ **`numberLocale()` is exported for ANY `Intl` formatter that
-  emits digits — a DATE formatter is one.** No gate reads pixels.
-- ⭐⭐ **`LL-001`'s HASH-AND-VERIFY CAUGHT A REAL CORRUPTION**: re-typing `DW-028`'s title to flip its status
-  flattened **six em dashes** to hyphens and reworded a phrase. **Always hash before, verify after.**
-- ⚠ **`DW-088` (new):** `TopicDetail`'s download button is hardcoded `disabled` — **no principal but a guest
-  presenter can open a topic attachment anywhere in the product.** Filed BEFORE the fork it bore on reached
-  the operator, so the ruling was not prejudged.
-- ⚠ **THIRTY-SEVENTH stale statement:** a **lifecycle status written inline in prose** (`⚠ Review — your
-  verdict`) in 3 item blocks, all since promoted. `THIRTY-FIRST`'s rule was written about *lessons* and
-  nobody carried it to `WBS-` rows. **A rule written about one register is not a rule about one register.**
-  ⭐ Found by grepping `prm-next.md` for **file names**, not ids — a status is not an id.
-- ⭐ **Two hollow passes of my own**: a failed guest invite still deserialised into a defaulted record (so
-  `NotBeNull` passed with no guest); and a mutation whose patch **silently never applied** yet reported a
-  clean pass on both suites (trap 12). Re-read the file; don't trust the exit code.
-- ⚠ **`AcmpWebApplicationFactory.WithIdentityProvider()`** is opt-in — without it the guest-invite path is
-  unreachable and the API answers look like feature bugs.
-- ⚠ Axe count **92 → 94** (+2 = one test × two browsers). **This file said 90** — re-measure, never quote.
+★★★ [**`SL-034` — the slate generator's 3 refusals + the ASVS pack**](sl034-slate-generator-and-asvs-pack.md)
+— read it before touching `gen-slice-review-slate.mjs`, the ASVS pack, or any test that reads the package.
 
-✅ **`DW-080` PHASE B IS DONE** (`#325` → `1d7cb04b`): api+worker on `aspnet:10.0-noble-chiseled-extra`.
-326→258 MB, CVEs **75→11**. The block that stood here PREDICTED THE WRONG FAILURE and the correction is
-the durable part:
-- ⛔⛔ **A NO-ICU BASE DOES *NOT* THROW AT STARTUP.** It starts, exits 0, silently enters invariant mode, and
-  throws **only when a non-invariant culture is TOUCHED**. ACMP's API touches none (all 10 `CultureInfo` =
-  `InvariantCulture`; `RequestLocalization`/`IStringLocalizer`/`.resx` = **0 of 693 files**). So plain
-  chiseled looks perfectly healthy while **arming a trap**. Silent, not loud — worse than predicted.
-- ⭐⭐ **THE RISK IS THE ICU *VERSION*, NOT musl.** alpine-extra ICU **78.1** vs chiseled-extra/Debian
-  **74.2**; CLDR moved `ar-SA`'s calendar in between — same binary renders **Hijri vs Gregorian**, no
-  exception, Arabic only. ⛔ **`-extra` is load-bearing; a digest bump changing the ICU major needs the
-  Arabic render checked, not a green suite.**
-- ⚠ **`LCID 1025` IS A SQL SERVER CONCERN** — EF migrations using `LANGUAGE 1025` inside `sqlserver-fts`,
-  an image `NFR-054` excludes. The api base cannot affect Arabic FREETEXT.
-- ⚠⚠ **A GREEN e2e DID NOT PROVE THE NEW HEALTHCHECK** (`DW-091`): both api dependents use
-  `service_started`, so **nothing consumes its verdict** — `DEF-078`/`DEF-079` a 3rd time, with the compose
-  comment asserting the opposite. ⭐ Probe then forced BOTH ways through Docker's plumbing.
-- ⚠ **`DW-090`: no AC for `NFR-054`** — its verification names a CI check that **does not exist**. A size
-  check ALONE passes on Debian at 326 MB, i.e. reports compliance with a *minimal-base* clause from the
-  base it excludes. ⚠ `DW-066`'s 257 MB is stale by a runtime major.
-- ⭐ **`AppContext.TryGetSwitch` REPORTS THE SWITCH, NOT THE EFFECTIVE MODE** — it said `off` on images that
-  WERE invariant. Attempt a culture; never read the flag.
+- ⭐⭐⭐ **`LL-032` (Approved + pinned): A TEST WHOSE FIXTURE IS THE LIVE REGISTER CHANGES MEANING WHEN
+  SOMEBODY DOES ORDINARY WORK — AND THE DANGEROUS OUTCOME IS THE *PASS*.** Promoting a row deleted a
+  calibration's subject; it failed loudly **only by luck**. ⭐ Stage the whole selection; ask *what would a
+  normal day's work have to change for this test to stop testing what it names?*
+- ⭐⭐ **THE REGRESSION CASE WRITTEN AS A CONTROL FOUND A LIVE DEFECT** (`DEF-119`) — `DEF-116` read `Fixed`
+  while one of the two rows it names still aborted. **Multi-criterion ≠ multi-requirement.**
+- ⛔⛔ **NEVER carry forward `security-controls.md` §20's *"L2 is met across all applicable chapters"*** —
+  the self-assertion `DW-079` forbids. ⭐ **ASVS levels are CUMULATIVE: "L2" = 253 reqs at L1+L2**, not 183.
+- ⚠⚠ **`jq` IS NOT INSTALLED** and I built a monitor on it anyway after reading that warning. It emits
+  **nothing** — silence reads as "still running". Use `gh --jq`. ⚠ Pin the sha in a CI poller; one that
+  re-reads `HEAD` prints `0 running / 0 runs` once you commit, which looks like success.
+- ⚠ **Approving a lesson needs `"operator_confirm": true`** — plus byte-identity and `confirmed_by`.
 
-★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — the earlier six items, **six different ways a
-row misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; the three-place
-`DbContext` registration.
+★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) · [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md)
 
-- ⭐⭐ **STILL THE HABIT THAT PAYS, now on all EIGHT items:** read the row's own text, then sweep the
-  NARRATIVE docs **and** the ADR/decision/OQ registers **by keyword** before sizing (`LL-008`, `LL-025`).
-  `24.8` added a ninth way a row misleads: **the row was accurate and complete, and the trap was in the code
-  it pointed at.**
-- ⚠⚠ **`24.6`: A ROW CAN ACCURATELY QUOTE A SUPERSEDED CLAUSE AND NO REGISTER VIEW SEES IT.** ⭐⭐
-  **DISCRIMINATOR: an ADR that NAMES the rows it will amend — check that list against every row quoting it.**
-- ⛔ **NEVER apply `PageSize.Clamp` to an export** — on a compliance artifact it becomes silent truncation.
-- ⚠⚠ **`ReadAsStringAsync` STRIPS THE BOM** — assert BYTES. ⭐ Scan a popover **with it OPEN**.
+- ⭐⭐ **THE HABIT THAT PAID ON ALL TEN ITEMS:** read the row's own text, then sweep the NARRATIVE docs
+  **and** the ADR/decision/OQ registers **by keyword** before sizing (`LL-008`, `LL-025`). It has now
+  mis-sized in ten different directions, including *the row was accurate and the trap was in the code*.
+- ⚠⚠ **A DEFENCE LAYER CAN BE INVISIBLE TO ANY FRONT-DOOR TEST** (`LL-030`) — adding `Guest` to a preview
+  query's `AllowedRoles` left all 10 API tests GREEN, because the path gate intercepts guests first.
+  ⭐ **Pin each refusal to a DISTINGUISHABLE SIGNATURE**; three tests asserting `403` test whichever layer
+  runs first. ⭐ **When an item asks you to add the thing whose ABSENCE is the guarantee, ISOLATE it.**
+- ⚠⚠ **A REFACTOR CAN PUSH A FILE UNDER THE PER-FILE COVERAGE FLOOR WITH NO NEW UNTESTED LINE** (`LL-031`)
+  — the numerator never moved; the denominator did. ⛔ **RUN THE GATE, NOT THE TESTS**: `dotnet test` per
+  project passed while `check-coverage.mjs` failed on 4 files.
+- ⛔ **NEVER lower `ADR-0016`'s 95%** — v3 credited lines wrapping *uninvoked* inline handlers, so files
+  with **no test file** scored ≥95%.
+- ⚠ **`DEF-107`: approving+pinning a lesson does NOT make it bind** — run `handoff_emit` in the SAME batch.
+- ⚠ **Push package writes BETWEEN merge cycles** — every push to `main` re-stales every open PR.
+- ⚠ **`AcmpWebApplicationFactory.WithIdentityProvider()` is opt-in** — without it the guest-invite
+  path is unreachable and the API answers look like feature bugs.
+- ⚠ **`DW-088`: `TopicDetail`'s download button is hardcoded `disabled`** — no principal but a guest
+  presenter can open a topic attachment anywhere in the product.
+- ⭐ **Instruments to USE, not re-derive:** `coverage-triage.mjs` · `gen-lesson-docket.mjs` ·
+  `gen-slice-review-slate.mjs` · `test-gen-slice-review-slate.py` · `check-asvs-pack-paths.mjs` ·
+  `count-prompt-ids.py` · `number-render-scan.mjs`.
+- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3).
+  ⚠⚠ **`scripts/**` is NOT path-ignored** (`DEC-077` d2) — PR route, and **poll CI to completion after ANY
+  direct push to `main`**. ⛔ Never propose path-ignoring it; several `check-*.mjs` **are** the gates.
+- ⚠ **`DEF-109`**: `Acmp.Api.Tests` ran 20m35s / 17 failed between two green runs. Append an occurrence;
+  don't re-run into silence. ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM
+  EXISTS** (`OQ-080`) — answer it BEFORE building Phase 2 retention enforcement.
 - ⚠ **Approved ACs are IMMUTABLE, including against being marked superseded** — `AC-147`'s NULL
-  `superseded_by` was ACCEPTED; do not "repair" it.
-- ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`).
-- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). ⚠
-  **`readiness_check` is `ready:FALSE` ON PURPOSE** (`DEF-108`) — do NOT soften or convert it.
-- ⚠⚠ **`scripts/**` is NOT path-ignored** (`DEC-077` d2) — it goes via PR, and **poll CI to completion after
-  ANY direct push to `main`**. ⛔ Never propose path-ignoring it; several `check-*.mjs` **are** the gates.
-- ⚠ **`DEF-109`**: `Acmp.Api.Tests` ran 20m35s / 17 failed between two normal runs. ⛔ The mitigation cannot
-  be credited — the run before it was green too. Append an occurrence; don't re-run into silence.
-- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY** — replace the GLOBAL (`vi.stubGlobal`) and assert the
-  OBSERVABLE. ⭐ Tuning until green is not a fix.
-★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md). ⚠⚠ **NEVER lower `ADR-0016`'s 95%**: v3
-credited lines wrapping *uninvoked* inline handlers, so files with **no test file** scored ≥95%.
-⚠ **`DEF-107`: approving+pinning a lesson does NOT make it bind** — run `handoff_emit` in the SAME batch.
-⚠ **Push package writes BETWEEN merge cycles** — every push to `main` re-stales every open PR.
-⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `gen-lesson-docket.mjs` ·
-`gen-slice-review-slate.mjs` · `count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`.
+  `superseded_by` was ACCEPTED; do not "repair" it. ⛔ **Never `PageSize.Clamp` an export** — silent
+  truncation on a compliance artifact.
 
 ## ★★ 2026-08-20 · the disposition session — durable rules only
 
