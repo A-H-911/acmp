@@ -47,13 +47,16 @@ const fatal = (m) => {
 const argv = process.argv.slice(2);
 let out = null;
 let title = 'Record slate';
+let introFile = null;
 const cites = [];
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--out') out = argv[++i];
   else if (argv[i] === '--title') title = argv[++i];
+  else if (argv[i] === '--intro') introFile = argv[++i];
   else cites.push(argv[i]);
 }
 if (!out) fatal('--out <file.html> is required');
+if (introFile && !existsSync(resolve(ROOT, introFile))) fatal(`intro file not found: ${introFile}`);
 if (cites.length === 0) fatal('name at least one ID or path:start-end to quote');
 
 /* ---- the store: every register, indexed by id --------------------------- */
@@ -95,6 +98,15 @@ for (const cite of cites) {
 }
 
 /* ---- render -------------------------------------------------------------- */
+/* The intro is the agent's own framing. It is NOT quoted from anything and carries no provenance
+   guarantee, which is precisely the seam the TWENTY-SEVENTH reached the operator's decision slate
+   through — so it is rendered inside a band that says so, rather than blending into the page. */
+const intro = introFile
+  ? `<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+${readFileSync(resolve(ROOT, introFile), 'utf8')}</div>`
+  : '';
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -105,6 +117,10 @@ const html = `<!doctype html>
  pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
      white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
  .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
 </style></head><body>
 <h1>${esc(title)}</h1>
 <p class="note">Every block below is quoted <b>verbatim</b> in one process from
@@ -113,6 +129,7 @@ and confirmed byte-identical after this page was written. Nothing here was re-ty
 <code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
 part of what is being asked. The connective prose around these blocks carries no such guarantee
 (<code>LL-023</code>).</p>
+${intro}
 ${blocks.map((b) => `<h2>${esc(b.label)}</h2>\n<pre>${esc(b.text)}</pre>`).join('\n')}
 </body></html>
 `;
