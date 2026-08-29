@@ -11,8 +11,7 @@
  *
  * WHAT IT REFUSES TO DO. It never prints an empty block. A row it needs and cannot find is a FATAL
  * exit, not a gap in the page — because a slate with a hole reads exactly like a slate without one.
- * It also refuses when a work item does not name exactly one acceptance criterion, rather than
- * guessing which one it meant.
+ * It also refuses an item that names NO acceptance criterion and NO record of why — see criteriaOf.
  *
  * ⚠ NOTHING HERE IS HARD-CODED TO A PARTICULAR SLICE OR COMMIT. An earlier version carried the three
  * item ids and their PR shas inline; that is a stale-data vector in a file whose whole purpose is to
@@ -39,6 +38,7 @@ const wbs = load('wbs_items');
 const acs = byId(load('acceptance_criteria'));
 const reqs = byId(load('requirements'));
 const dws = byId(load('deferred_work'));
+const decs = byId(load('decisions'));
 const verdicts = load('audit_verdicts');
 const slices = byId(load('slices'));
 
@@ -63,21 +63,34 @@ if (!items.length) fatal(`no work items in ${SLICE} are at Review — there is n
  * LL-011 is discharged, an item it cannot render is one whose review would have to be hand-built,
  * which is precisely what that lesson forbids.
  *
- * It still fails CLOSED on zero, and that arm is deliberate rather than leftover strictness: an item
- * sitting at Review naming no criterion is genuinely unreviewable, and rendering it would hand the
- * operator a page with nothing to adjudicate — the same harm wearing a different hat.
+ * ⚠ DEF-117 — IT USED TO FAIL CLOSED ON ZERO TOO, ARGUING THAT "an item sitting at Review naming no
+ * criterion is genuinely unreviewable". That is a claim about EVERY criterion-less item and it was
+ * false within three hours of being written: WBS-25.1 merged as #325 with a measured size and CVE
+ * delta, a deciding DEC- row and two residual DW- rows, and names no criterion ON PURPOSE, because
+ * DW-090 records that NFR-054's verification method names a CI check that does not exist. The only
+ * thing absent is the criterion; the REASON for its absence is itself recorded and adjudicable.
+ *
+ * So zero is now renderable — but only when the reason is IN THE STORE. An item naming no criterion
+ * and no DW-/DEC- row that could carry the reason really is a page with nothing on it, and that is
+ * the true statement the old comment over-generalised from. Returning [] here is not a relaxation:
+ * the caller re-checks and still exits non-zero when nothing explains the absence.
  */
 const criteriaOf = (item) => {
   const found = [...new Set((item.title.match(/\bAC-\d+\b/g) ?? []))]
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  if (!found.length) {
-    fatal(`${item.id} names no acceptance criterion; a completion record must name the criteria it satisfied`);
-  }
   for (const id of found) {
     if (!acs[id]) fatal(`${item.id} names ${id}, which is not in the register`);
   }
   return found.map((id) => acs[id]);
 };
+
+/* Every row of a named family the item cites, in citation order, skipping ids the register does not
+   hold — an unresolvable id is a typo in prose, not a missing record, and fatal() belongs to the
+   rows the page structurally needs. */
+const citedRows = (item, prefix, table) =>
+  [...new Set((item.title.match(new RegExp(`\\b${prefix}-\\d+\\b`, 'g')) ?? []))]
+    .map((id) => table[id])
+    .filter(Boolean);
 
 const latestVerdict = (acId) => {
   const v = verdicts.filter((x) => x.ac_id === acId);
@@ -94,42 +107,63 @@ const sections = items
   .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
   .map((w) => {
     const criteria = criteriaOf(w);
-    /* The requirement is read from the first criterion: an item's criteria all answer to the same
-       requirement by construction, and if they ever did not, the header would be lying rather than
-       merely incomplete — so that assumption is asserted below instead of assumed. */
-    const a = criteria[0];
+    const criterionLess = criteria.length === 0;
     /* Asserted here so a criterion with no verdict aborts the whole slate rather than rendering a
        section the operator could rule on without evidence. */
     criteria.forEach((c) => latestVerdict(c.id));
-    const q = reqs[a.requirement_id] ?? fatal(`requirement ${a.requirement_id} (of ${a.id}) not found`);
-    for (const c of criteria) {
-      if (c.requirement_id !== a.requirement_id) {
-        fatal(`${w.id}: ${c.id} answers to ${c.requirement_id} but ${a.id} answers to ${a.requirement_id}; one header cannot describe both`);
-      }
+
+    /* DEF-117's fail-closed half. A criterion-less item is adjudicable only if the store carries the
+       reason; with neither a DW- nor a DEC- row to quote there is genuinely nothing on the page. */
+    const decsCited = criterionLess ? citedRows(w, 'DEC', decs) : [];
+    const dwsCited = citedRows(w, 'DW', dws);
+    if (criterionLess && !dwsCited.length && !decsCited.length) {
+      fatal(`${w.id} names no acceptance criterion and no DW-/DEC- row that records why; nothing here can be adjudicated`);
     }
-    /* The DW- row is optional: not every work item closes one. Absent is fine; wrong is not. */
-    const dwId = [...new Set((w.title.match(/\bDW-\d+\b/g) ?? []))][0];
-    const d = dwId ? dws[dwId] : null;
-    if (dwId && !d) fatal(`${w.id} names ${dwId}, which is not in the register`);
+
+    /* ⚠ DEF-119 — THIS USED TO READ THE REQUIREMENT FROM THE FIRST CRITERION AND ABORT IF THE OTHERS
+       DISAGREED ("one header cannot describe both"). That guard protected the TEMPLATE's assumption
+       that one header sufficed, never a real invariant, and it left DEF-116 half-fixed: WBS-24.5 is
+       one of the two rows DEF-116 was filed about, and its three criteria answer to three different
+       requirements (FR-155, NFR-059, NFR-060), so the widened predicate still aborted on it. DEF-116
+       was verified against WBS-24.8, whose two criteria happen to share one requirement, so the guard
+       never fired. Render one section per DISTINCT requirement instead; a criterion-less item has no
+       criterion to read one from, so its own citation is the only source. */
+    const reqIds = criterionLess
+      ? [...new Set((w.title.match(/\b(?:FR|NFR)-\d+\b/g) ?? []))].slice(0, 1)
+      : [...new Set(criteria.map((c) => c.requirement_id))];
+    if (!reqIds.length) fatal(`${w.id} names no requirement and carries no criterion that names one`);
+    const qs = reqIds.map((id) => reqs[id] ?? fatal(`requirement ${id} (of ${w.id}) not found`));
+    /* The DW- row is optional: not every work item closes one. Absent is fine; wrong is not.
+       A criterion-less item gets EVERY cited row, because the reason may sit in any of them. */
+    const d = criterionLess ? null : dwsCited[0];
     return `
   <section>
     <h2>${esc(w.id)} <span class="st">${esc(w.lifecycle_status)}</span></h2>
-    <p class="meta">${criteria.map((c) => {
-      const cv = latestVerdict(c.id);
-      return `${esc(c.id)} verdict <b>${esc(cv.verdict)}</b> (${esc(cv.id)})`;
-    }).join(' &middot; ')} &middot;
-      ${esc(q.id)} <b>${esc(q.lifecycle_status)}</b>${d ? ` &middot; ${esc(d.id)} <b>${esc(d.lifecycle_status)}</b>` : ''}</p>
+    <p class="meta">${criterionLess
+      ? '<b>no acceptance criterion</b>'
+      : criteria.map((c) => {
+          const cv = latestVerdict(c.id);
+          return `${esc(c.id)} verdict <b>${esc(cv.verdict)}</b> (${esc(cv.id)})`;
+        }).join(' &middot; ')} &middot;
+      ${qs.map((q) => `${esc(q.id)} <b>${esc(q.lifecycle_status)}</b>`).join(' &middot; ')}${d ? ` &middot; ${esc(d.id)} <b>${esc(d.lifecycle_status)}</b>` : ''}</p>
+
+    ${criterionLess ? `<div class="lead"><p><b>This item carries NO acceptance criterion, and that is
+    deliberate rather than missing.</b> Nothing below is a verdict record, so there is no <code>Met</code>
+    to lean on: you are adjudicating the completion record itself, and the recorded reason for the
+    criterion's absence, both quoted verbatim from the store. If that reason does not persuade you, the
+    right outcome is to leave the item at <b>Review</b> and say what evidence would settle it.</p></div>` : ''}
 
     <h3>The work item &mdash; ${esc(w.id)}</h3>
     ${block('As stored', w.title)}
 
+    ${qs.map((q) => `
     <h3>The requirement &mdash; ${esc(q.id)}</h3>
-    ${block('As stored', q.statement || q.title)}
+    ${block('As stored', q.statement || q.title)}`).join('\n')}
 
     ${criteria.map((c) => {
       const cv = latestVerdict(c.id);
       return `
-    <h3>The acceptance criterion &mdash; ${esc(c.id)}</h3>
+    <h3>The acceptance criterion &mdash; ${esc(c.id)} <span class="meta">(answers to ${esc(c.requirement_id)})</span></h3>
     ${block('Title', c.title)}
     ${block('Criterion, as stored', c.statement)}
 
@@ -138,6 +172,15 @@ const sections = items
     ${block('Evidence, as stored', cv.evidence)}`;
     }).join('\n')}
     ${d ? `<h3>The deferred-work row it closed &mdash; ${esc(d.id)}</h3>${block('As stored', d.title)}` : ''}
+    ${criterionLess ? dwsCited.map((r) => `
+    <h3>Deferred-work row it cites &mdash; ${esc(r.id)} <span class="st">${esc(r.lifecycle_status)}</span></h3>
+    ${block('As stored', r.title)}
+    ${block('Activation trigger, as stored', r.activation_trigger)}`).join('\n') : ''}
+    ${criterionLess ? decsCited.map((r) => `
+    <h3>The deciding decision &mdash; ${esc(r.id)} <span class="st">${esc(r.lifecycle_status)}</span></h3>
+    ${block('Title, as stored', r.title)}
+    ${block('Decision, as stored', r.decision)}
+    ${block('Rationale, as stored', r.rationale)}`).join('\n') : ''}
   </section>`;
   })
   .join('\n');
@@ -163,8 +206,10 @@ const html = `<!doctype html>
 <p>Every item below sits at <b>Review</b>, which is <i>done-claimed by the agent</i>.
 <b>Implemented is the operator's verdict, adjudicated per item.</b></p>
 <p>Every block is quoted verbatim from <code>tamheed-package/data/*.jsonl</code> by the generator that
-produced this page (LL-011). The generator exits non-zero rather than print an empty block, and
-refuses when a work item does not name exactly one acceptance criterion.</p>
+produced this page (LL-011). The generator exits non-zero rather than print an empty block. An item may
+name any number of acceptance criteria, including none &mdash; but a criterion-less item is refused
+unless the store also carries a <code>DW-</code> or <code>DEC-</code> row recording why, which is then
+quoted in full below it.</p>
 </div>
 ${sections}
 </body></html>`;

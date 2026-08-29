@@ -63,3 +63,4 @@ Thumbs.db
 # repo already holds. Recover with:
 #   git show 967e75d:tamheed-package/data/<file>.jsonl
 tamheed-package/data-v3-backup/
+.slate-test-tmp/
