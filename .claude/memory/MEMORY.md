@@ -30,6 +30,15 @@ failure mode, not the safe choice**. `NFR-064` exists because **no requirement c
 - ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b) — two leaves it red, reading
   like the fix failed. ⚠ `verification_method` is a CHECK over `Test|Demonstration|Inspection|Analysis`;
   approving a lesson needs `"operator_confirm": true`; trace edges use `from_id`/`to_id`.
+- ⭐⭐⭐ **A TARGETED SWEEP FINDS CLAIMS ABOUT WHAT YOU *CHANGED*; ONLY A FULL READ FINDS CLAIMS ABOUT WHAT
+  *REMAINS*.** The **FORTY-SECOND** — 8 stale claims in `prm-next.md` — survived four targeted sweeps in
+  one session, because *"the only remaining requirement"*, *"the end condition is met"*, *"every phase is
+  closed"* name **no row you touched**; they go false when something is **ADDED elsewhere**.
+  ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE WRONG SUBJECT** — `SL-033`'s
+  `wbs-done` **passes with zero entities**, so "read it for what's open" hid five `WBS-26.x` items.
+  ⭐ **Name no slice id in durable prose**: `entity_query("slice", status="Approved")` resolves the live one.
+  ⚠ **`PH-3` and `PH-7` are `Approved`, not closed** — `PH-7` is the LIVE phase; ⛔ release close-out is
+  **not** due while a slice is open.
 
 ★★★ [**`SL-034` — the slate generator's 3 refusals + the ASVS pack**](sl034-slate-generator-and-asvs-pack.md)
 — read it before touching `gen-slice-review-slate.mjs`, the ASVS pack, or any test that reads the package.

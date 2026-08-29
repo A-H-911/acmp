@@ -64,15 +64,23 @@ carry** — the rows record it as an override, so do not read the activation as 
 so seeing them is not the unexplained state the warning below is about. A Dependabot queue moves; run the
 command rather than trusting this sentence's pair of numbers.
 ⚠ **That is a repository fact and NOT a slice status** — a merged row still owes the operator a verdict,
-and which rows are at `Review` is deliberately not written here. `readiness_check(scope="slice",
-id="SL-033")` is the only answer that cannot go stale.
+and which rows are at `Review` is deliberately not written here. ⛔ **DO NOT NAME A SLICE ID IN THIS
+PARAGRAPH.** Two sentences here named `SL-033`, and that was the FORTY-SECOND: a command with an id in it
+rots the moment a later slice opens, and pointing a fresh session at a FINISHED slice is worse than
+pointing at none. **`entity_query("slice", status="Approved")` names the live slice or slices without
+naming one**, and `readiness_check(scope="slice", id=…)` then takes the id it gives you.
 ⛔ **THAT LAST SENTENCE NAMES THE ITEM AND NOT ITS POSITION, DELIBERATELY.** It used to read *"phase B …
 is §6 item 1 now"*, which `DEC-085` d3 falsified an hour later — **the THIRTY-SIXTH**. A list is
 renumbered exactly when work completes, which is the event that makes someone read this file, so a
 pointer at a slot is wrong precisely when it is read. **Never write `item N` here; name the row.**
-⚠ **Everything above is a repository fact; none of it is a status.** Read `readiness_check(scope="slice",
-id="SL-033")` for what is actually open. ⚠ **If a branch or an open PR exists that this paragraph does not
-explain, stop and ask the operator** — that is a state nothing here describes.
+⚠ **Everything above is a repository fact; none of it is a status.** For what is actually open, resolve the
+live slice first (`entity_query("slice", status="Approved")`) and read ITS readiness — **not a slice this
+file names.** ⚠⚠ **MEASURED, because this is the FORTY-SECOND's sharpest half:** the sentence that stood
+here sent you to `SL-033`, whose `wbs-done` **passes with zero entities**, so a fresh session would have
+concluded nothing was open while five `WBS-26.x` items sat in another slice. **A pointer at a finished
+slice does not fail loudly — it returns a clean answer about the wrong subject** (`LL-015`).
+⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
+that is a state nothing here describes.
 
 ⚠ **Never assume CI has seen your tree** — `git rev-list --left-right --count @{u}...HEAD`, right-hand
 number. ⛔ **Do not write into this file what you have or have not pushed** (the THIRTY-SECOND).
@@ -84,7 +92,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-one** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **forty-two** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -94,6 +102,43 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-SECOND IS WHAT THE NINTH FIX'S FULL READ FOUND AFTER FOUR TARGETED SWEEPS IN ONE SESSION
+HAD ALL RUN CLEAN — NINE SITES, EIGHT DISTINCT CLAIMS, ONE PASS.** The FORTIETH's entry closed by saying
+it was *"its own best argument for the NINTH fix's stronger standard — read the WHOLE file before handing
+it on, rather than the parts you think you touched."* This is that argument being tested, and the standard
+paying: **every one of these survived the phrase grep, the touched-identifier sweep, `count-prompt-ids.py`
+and the prose-status checker.**
+- **Two in the KICKOFF BLOCK**, both naming `SL-033` as the slice to read for *"what is actually open"*.
+  ⚠⚠ **MEASURED, AND THIS IS THE SHARPEST HALF: `SL-033`'s `wbs-done` PASSES WITH ZERO ENTITIES.** A fresh
+  session obeying it would have concluded nothing was open while five `WBS-26.x` items sat in `SL-035`.
+  **A pointer at a finished slice does not fail loudly — it returns a clean answer about the wrong
+  subject** (`LL-015`). ⭐ **The fix is to name NO slice: `entity_query("slice", status="Approved")`.**
+- **Two POSITIONAL pointers**, the THIRTY-SIXTH's own fault class surviving in the file that documents it:
+  §6's *"context, not the next action (that is above)"* — it is 150 lines BELOW — and `SL-032`'s heading
+  *"the live slice is the block ABOVE this one"*, where the block above is the `DEC-075` interview and the
+  live slice has changed three times since.
+- **A tally-and-position claim**, *"Two are now done and three are numbered below"*: measured, `DW-078`,
+  `DW-079`, `DW-080`, `DW-082`, `DW-084` and `DW-085` are **all `Done`** and none is numbered anywhere.
+- **§1's requirement-programme END CONDITION**, and it is the most consequential: *"expect TWO, both
+  externally blocked … that is the operator's stated end condition, and it is met."* `DEC-094` d6 created
+  `NFR-064` — `Approved`, Must, non-functional, **not externally blocked**, scheduled as `WBS-26.1`. **The
+  end condition is no longer met**, and a fresh session would have believed the programme finished.
+- **`NFR-018` described as *"the only remaining requirement real work could close"*** — `NFR-064` also is,
+  and unlike `NFR-018` it is not blocked on a third party.
+- **`"every phase is closed"`, in TWO places, beside a suggestion to run `release-close-out.md`.** `PH-3`
+  and `PH-7` are `Approved`; **`PH-7` is the LIVE phase holding `SL-035`.** ⚠⚠ **AND §1 SAYS SO EXPLICITLY
+  TWENTY SCREENS EARLIER** — *"`PH-3` stays `Approved` ON PURPOSE"*, *"`PH-7` because it is the live
+  phase"*. **The file contradicted itself and the wrong half sat next to the release ceremony**, which is
+  the FIFTEENTH's *a file that contradicts itself hands the reader the choice*. ⭐ **I wrote one of the two
+  copies today, propagating the older one's phrasing** — the sibling-copy failure running FORWARD.
+⭐⭐ **THE TRANSFERABLE POINT: A TARGETED SWEEP CAN ONLY FIND CLAIMS ABOUT THE THING YOU CHANGED, AND MOST
+OF THESE ARE CLAIMS ABOUT WHAT REMAINS.** *"The only remaining requirement"*, *"the end condition is met"*,
+*"every phase is closed"*, *"three are numbered below"* — none names a row I touched, so no
+touched-identifier grep could reach them; they went false because something was ADDED elsewhere.
+**Grepping what you changed finds claims about it; only reading the whole file finds claims about what is
+left.** ⚠ **Counted once, family of eight, on the TWENTY-EIGHTH's precedent.** ⚠ **Not an escape** — the
+log was grepped for each phrase and no commit message asserts any of them.
 
 ⚠⚠⚠ **THE FORTY-FIRST IS AN UNMEASURED ENUMERATION IN THE ONE PLACE THIS FILE SAYS THE NEXT ACTION LIVES,
 AND ITS INSTRUMENT DID NOT UNDERCOUNT — IT DELETED ROWS.** The `START HERE` list read *"`DW-088`,
@@ -749,9 +794,21 @@ silently shrinks the worklist every time a row cross-references a requirement �
 register's prose gets at linking things, the more requirements quietly disappear, and a
 well-cross-referenced register would eventually report itself finished.**
 
-**Run it and expect TWO, both externally blocked:** `NFR-018` (needs an external OWASP ASVS 5.0 Level 2
-assessment) and `NFR-038` (rides Tarseem, whose `P14` is deferred indefinitely and which has no endpoint
-in the product at all). That is the operator's stated end condition for the programme, and it is met.
+⛔⛔ **THE ANSWER THAT STOOD HERE — *"expect TWO, both externally blocked … that is the operator's stated
+end condition for the programme, and it is met"* — IS NO LONGER TRUE, AND THAT IS THE FORTY-SECOND's most
+consequential member.** `DEC-094` d6 created **`NFR-064`** (segregation of duties): `Approved`, **Must**,
+non-functional, `mvp=1` — and **NOT externally blocked.** It is live work, scheduled as `WBS-26.1`. So a
+Must non-functional requirement that real work can close now exists, and **the end condition is no longer
+met.** A fresh session reading the old sentence would have believed the requirement programme was finished.
+⚠ **The two externally-blocked ones are unchanged and still real:** `NFR-018` (needs an external OWASP
+ASVS 5.0 Level 2 assessment — the evidence pack `DOC-070` is an INPUT to it, never a substitute) and
+`NFR-038` (rides Tarseem, whose `P14` is deferred indefinitely and which has no endpoint in the product).
+⚠⚠ **RUN THE RULE; DO NOT READ AN ANSWER FROM HERE — AND KNOW THAT STEP 2 IS A PROXY.** Mechanised as
+written, step 2's *"named in a `deferred-work` row's TITLE"* is a substring test, and it removes BOTH
+`NFR-018` (named in `DW-079`'s title) and `NFR-064` (named in `DW-093`'s), leaving `NFR-038` alone. The
+stated answer has always needed the judgement the script cannot make — *does the row COVER the
+requirement, or merely name it?* `DW-079` explicitly does NOT close `NFR-018`. **Treat the rule's output
+as triage, not as the worklist** (`LL-006`).
 
 ### The advisories — none is a task, and two are BLIND
 
@@ -1145,7 +1202,11 @@ commit (`6bdaac4`) left `main` **red** while its author reported the state as cl
 
 **Reconcile this section whenever you close one — a list nobody maintains is worse than no list.**
 
-### ⚠ WHAT THE 2026-08-20 DISPOSITION SESSION DID — context, not the next action (that is above)
+### ⚠ WHAT THE 2026-08-20 DISPOSITION SESSION DID — context, never the next action
+
+⛔ **THIS HEADING SAID *"(that is above)"* AND THE NEXT ACTION IS BELOW IT — the FORTY-SECOND.** The
+numbered list under `START HERE` sits further down this same section. **Never point at a direction; name
+the anchor:** the next action is the numbered list under `START HERE`, and nowhere else.
 
 **Item 1 of the old list — the deferred-work disposition — IS DONE, and it went differently than the
 bucket table predicted.** The whole slate is a published artifact carrying the full canonical text of every
@@ -1309,8 +1370,10 @@ code, and a plain re-run of the same tree then passed. **Four data points, no ve
 agent's proposed sequence for them, closing the separation `DEC-071` d3 required between what they
 DECIDED and what the agent INFERRED; **`DEC-077` d5 then AMENDED it, inserting `DW-084` at the front.**
 ⚠ **`DW-084` IS NOT ONE OF `DEC-075` d2's FOUR STREAMS — it was created by `DEC-077`**, so the work
-spanned five rows. **Two are now done and three are numbered below.** The sequence is a decision, not
-a suggestion.
+spanned five rows. ⛔ **A TALLY-AND-POSITION CLAIM STOOD HERE — *"Two are now done and three are numbered
+below"* — AND IT WAS THE FORTY-SECOND.** Measured: `DW-078`, `DW-079`, `DW-080`, `DW-082`, `DW-084` and
+`DW-085` are **all `Done`**, and none of them is numbered anywhere. **The sequence is a decision and it is
+now HISTORY; what is live is the numbered list under `START HERE`.**
 
 ⚠⚠ **THE ORDER WAS AMENDED AGAIN ON 2026-08-26 BY `DEC-078` d2 + `SC-034`, WHICH INSERTED `DW-085` AT
 THE FRONT** — exactly as `DEC-077` d5 inserted `DW-084`. **That was an OPERATOR OVERRIDE**: the agent
@@ -1727,7 +1790,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    and clause two waits on a FAILURE, so quiet time moves it no closer. ⚠ **`DEC-094` d8 reaffirmed this**:
    clause three was offered to the operator and NOT taken. It is listed so nobody re-opens the question,
    not because there is an action in it.
-3. **`release-close-out.md` has never been run.** It sits in the prompt library, every phase is closed and
+3. **`release-close-out.md` has never been run.** ⛔ **AND IT IS NOT DUE — *"every phase is closed"* stood
+   here and was the FORTY-SECOND.** Measured: **`PH-3` and `PH-7` are `Approved`, not `Implemented`** —
+   `PH-3` deliberately (§1: do not "repair" it), and **`PH-7` because it is the LIVE phase, now holding
+   `SL-035` with five open items.** Closing out a release while a slice is open is exactly what that
+   sentence would have invited. It sits in the prompt library, production is live, and
    production is live, and it is the ceremony that would formally end v1. ⚠ It is the operator's to start.
 
 ⚠ **Two `deferred-work` rows remain `Activated` and BOTH are correctly so — do not "tidy" either.**
@@ -2120,7 +2187,12 @@ carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical bli
 **WHAT `SL-032` TAUGHT, kept because it binds future work.** `PE-578` the CSP spike, `PE-579` its build,
 `PE-583` `WBS-23.4`, `PE-585` a correction, `PE-586` the review, `PE-589` `DEF-104`.
 
-### ▶ WHAT `SL-032` DID — HISTORY, and it is CLOSED. The live slice is the block ABOVE this one.
+### ▶ WHAT `SL-032` DID — HISTORY, and it is CLOSED.
+
+⛔ **THIS HEADING SAID *"the live slice is the block ABOVE this one"* AND IT WAS THE FORTY-SECOND.** The
+block above is the `DEC-075` interview, and the live slice has changed three times since. **Never point at
+a block; the live slice is whatever `entity_query("slice", status="Approved")` returns, and the next
+action is the numbered list under `START HERE`.**
 
 **`PH-7` → `SL-032`**, four small activated rows in `DEC-068` d1's order. **Measure the statuses; do not
 trust this list** — `readiness_check(scope="slice", id="SL-032")`.
@@ -2195,8 +2267,10 @@ in both halves — eleven, and one shared helper closed them all in one PR.
   (`DEC-066`), so `NFR-019` stays `Approved` and correctly has **no AC**, and `DEF-100` stays **open
   deliberately**. ⚠ Not a config edit: service-to-service TLS needs a certificate story, and the public
   certbot flow does not extend to services addressing each other by compose name.
-- **`NFR-018`** — the only remaining requirement real work could close, and it needs an **external OWASP
-  ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
+- **`NFR-018`** — ⛔ **it was described here as *"the only remaining requirement real work could close"* and
+  that is the FORTY-SECOND: `NFR-064` (segregation of duties, `DEC-094` d6) is also Must, non-functional
+  and `Approved`, and unlike this one it is NOT externally blocked — it is scheduled as `WBS-26.1`.**
+  `NFR-018` needs an **external OWASP ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
   a suggestion** — and it is **BUILT**: `DW-079` closed as `WBS-25.2` (`DEC-093`), and the pack is
   `DOC-070` at `tamheed-package/docs/asvs-l2-evidence-pack.md`. *(A status stood here too — the FORTIETH's
   sixth instance.)* ⛔ **`NFR-018` ITSELF DID NOT MOVE AND MUST NOT**: the pack is an INPUT to an
@@ -2205,8 +2279,10 @@ in both halves — eleven, and one shared helper closed them all in one PR.
 - **The running-stack group** — `DW-065` (span PARENTING across modules, still unobserved), the ops group
   (`NFR-015 017 044 052 062`, `PE-485`), and much of `DW-043`…`DW-060`, several of which are measured FROM
   trace data. ⚠ **`DEF-099` is fixed, so traces now actually arrive** — that blocker is gone.
-- **`release-close-out.md`** exists in the prompt library and has never been run. With every phase closed
-  and production live, it is the ceremony that would formally end v1.
+- **`release-close-out.md`** exists in the prompt library and has never been run. ⛔ **NOT DUE, and the
+  phrase *"with every phase closed"* that stood here was the FORTY-SECOND**: `PH-3` and `PH-7` are
+  `Approved`, and `PH-7` is the LIVE phase holding `SL-035`. It is the ceremony that would formally end
+  v1 — **after** the open slice closes, not while it is open.
 
 ### ⚠ HOW TO RUN A STACK HERE — batch 17 proved this and the next stack batch should copy it exactly
 
