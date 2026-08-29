@@ -42,6 +42,28 @@ public interface ICommitteeDirectory
     /// answer would hide their own slot from them on the one visit that matters most.
     /// </remarks>
     Task<CommitteeMemberRef?> ResolveMemberAsync(string keycloakUserId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Who a PublicId is, or null when no member row carries it.
+    /// </summary>
+    /// <remarks>
+    /// FR-165 / DEC-086 d1 — the presenter preview. This is <see cref="ResolveMemberAsync"/>'s question
+    /// asked from the other end. That one answers "who is the CALLER", because a token carries a Keycloak
+    /// subject. The preview never starts from a token: a Chairman or Secretary names an agenda slot, the
+    /// slot carries <c>AgendaItem.PresenterUserId</c>, and that is a PublicId. So this is the only way to
+    /// reach the TARGETED person's access window without Meetings reading Membership's tables (ADR-0001).
+    ///
+    /// ⚠ INCLUDES DISABLED AND INVITED MEMBERS, exactly like <see cref="ResolveMemberAsync"/> and unlike the
+    /// two active-only lookups above — and here the Invited case is not an edge case but the MAIN one. A
+    /// guest presenter is <c>Invited</c> until their first login, and the whole point of the preview is to
+    /// check their view BEFORE the meeting, which is before that login. An active-only answer would return
+    /// null for precisely the population being previewed.
+    ///
+    /// The returned <c>AccessExpiresAt</c> is the TARGET's window, not the caller's. That is the difference
+    /// that makes the preview worth having: a Chairman's own access does not expire, so a preview rendered
+    /// from the caller's row would show a banner no presenter will ever see.
+    /// </remarks>
+    Task<CommitteeMemberRef?> ResolveMemberByPublicIdAsync(Guid publicId, CancellationToken ct = default);
 }
 
 /// <summary>Who a subject is here: the id everything else identifies them by, and when their access ends.</summary>

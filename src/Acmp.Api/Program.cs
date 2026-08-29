@@ -168,6 +168,9 @@ app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
 app.MapSessionEndpoints();
+// FR-165 — deliberately its own group, OUTSIDE GuestSurfaceMiddleware's /api/session allowlist, so a
+// guest-only principal is refused at the path rather than only by the query's role set (DEC-086 d1).
+app.MapSessionPreviewEndpoints();
 app.MapMinutesEndpoints();
 app.MapDecisionEndpoints();
 app.MapVoteEndpoints();

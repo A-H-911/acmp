@@ -263,3 +263,51 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ── FR-165 / DEC-086 — the Chairman/Secretary preview chrome ──────────────────
+ * A NO-REFERENCE COMPOSITION (INV-014): no .dc.html covers a presenter-preview
+ * affordance — verified, not assumed; the only "preview" control in the agenda
+ * design is a download glyph beside Publish, which is the agenda PDF. So this is
+ * built from the shared design system, and the presenter's own shell underneath
+ * it stays reference-accurate. Info rather than warn: the warn banner belongs to
+ * the presenter's expiring access, and reusing it here would tell a Secretary
+ * that THEIR access expires.
+ */
+.gs-preview-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 18px;
+  background: var(--st-info-bg);
+  border-block-end: 1px solid color-mix(in srgb, var(--st-info-fg) 22%, transparent);
+  color: var(--st-info-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.gs-preview-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px 0;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+/* The back chevron points "back", which is the INLINE-START direction — so it
+ * flips with the document rather than pointing into the page in Arabic. */
+.gs-preview-back svg {
+  transform: rotate(180deg);
+}
+[dir='rtl'] .gs-preview-back svg {
+  transform: rotate(0deg);
+}
+/* A LISTED material is not a control, so it must not claim to be one. .gs-material
+ * is styled for a <button> — cursor: pointer plus a hover background — and reusing
+ * it bare on a <div> would render an affordance that lies. DEC-086 d2 lists
+ * materials without opening them, so the pointer and the hover are removed rather
+ * than left to suggest a click that does nothing. */
+.gs-material.is-listing {
+  cursor: default;
+}
+.gs-material.is-listing:hover {
+  background: transparent;
+}

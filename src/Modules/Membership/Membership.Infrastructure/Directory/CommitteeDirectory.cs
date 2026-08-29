@@ -71,4 +71,19 @@ public sealed class CommitteeDirectory : ICommitteeDirectory
             .Select(m => new CommitteeMemberRef(m.PublicId, m.AccessExpiresAt))
             .FirstOrDefaultAsync(ct);
     }
+
+    // NO Status filter, deliberately, and for a sharper reason than the method above it. A guest presenter
+    // is Invited until their first login, and the preview's whole purpose is to check their view BEFORE the
+    // meeting — so an active-only predicate here would return null for exactly the population being
+    // previewed and the page would report "not presenting" for a correctly-invited presenter.
+    public async Task<CommitteeMemberRef?> ResolveMemberByPublicIdAsync(Guid publicId, CancellationToken ct = default)
+    {
+        if (publicId == Guid.Empty)
+            return null;
+
+        return await _db.Members.AsNoTracking()
+            .Where(m => m.PublicId == publicId)
+            .Select(m => new CommitteeMemberRef(m.PublicId, m.AccessExpiresAt))
+            .FirstOrDefaultAsync(ct);
+    }
 }

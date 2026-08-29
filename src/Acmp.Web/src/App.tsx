@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import SessionPage from './features/session/SessionPage';
+import SessionPreviewPage from './features/session/SessionPreviewPage';
 import AdministrationPage from './pages/AdministrationPage';
 import MembersPage from './pages/MembersPage';
 import { Backlog } from './features/topics/Backlog';
@@ -70,6 +71,18 @@ export const appRoutes = createRoutesFromElements(
           element={
             <RequireRole roles={['guest', 'chairman', 'secretary']}>
               <SessionPage />
+            </RequireRole>
+          }
+        />
+        {/* FR-165 / DEC-086 d1 — the presenter preview is its OWN route, guarded to the two roles that
+            run the meeting. It cannot be a mode of /session: that route must stay open to Guests, so its
+            guard can never refuse one, and a preview rendered there would have no route-level protection
+            at all. This is layer 1 of three; the path gate and the query's role set are the other two. */}
+        <Route
+          path="session/preview"
+          element={
+            <RequireRole roles={['chairman', 'secretary']}>
+              <SessionPreviewPage />
             </RequireRole>
           }
         />

@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Application.Abstractions;
+using Acmp.Modules.Meetings.Application.Internal;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
@@ -108,36 +109,12 @@ public sealed class GetMySessionHandler : IRequestHandler<GetMySessionQuery, Pre
 
         var slot = candidates.First(c => c.MeetingId == meeting.PublicId);
 
-        // "Item 3 of 6" and the planned clock time both need the WHOLE agenda, not just this item.
-        var agendaItems = await _db.Agendas.AsNoTracking()
-            .Where(a => a.MeetingId == meeting.PublicId)
-            .SelectMany(a => a.Items.Select(i => new { i.Order, i.TimeboxMinutes }))
-            .ToListAsync(ct);
-
-        var ordered = agendaItems.OrderBy(i => i.Order).ToList();
-        var index = ordered.FindIndex(i => i.Order == slot.Order);
-        var minutesBefore = ordered.Take(index).Sum(i => i.TimeboxMinutes);
-        var slotStart = meeting.ScheduledStart.AddMinutes(minutesBefore);
-
-        var topic = await _topics.GetBriefAsync(slot.TopicId, ct);
-
-        return new PresenterSessionDto(
-            me.AccessExpiresAt,
-            meeting.Key,
-            meeting.Title,
-            slotStart,
-            slotStart.AddMinutes(slot.TimeboxMinutes),
-            index + 1,
-            ordered.Count,
-            slot.TimeboxMinutes,
-            // The agenda item carries key/title snapshots, but the SUMMARY and the materials only exist
-            // in Topics. A topic deleted underneath the slot degrades to the snapshot rather than 404s:
-            // the presenter still learns when and where they are presenting.
-            topic?.Key ?? string.Empty,
-            topic?.Title ?? string.Empty,
-            topic?.Summary ?? string.Empty,
-            topic?.Materials.Select(m => new SessionMaterialDto(m.Id, m.FileName, m.ContentType, m.SizeBytes)).ToList()
-                ?? new List<SessionMaterialDto>());
+        // WHICH slot is this handler's job; RENDERING it is PresenterSessionComposer's, shared with the
+        // Chairman/Secretary preview (FR-165, DEC-086 d1). The split exists so a preview cannot drift
+        // from the thing it previews — two renderers would agree only until the next change to either.
+        // The caller's OWN window is passed in: for a committee member it is null, and the banner says so.
+        return await PresenterSessionComposer.ComposeAsync(
+            _db, _topics, meeting.PublicId, slot.TopicId, me.AccessExpiresAt, ct);
     }
 }
 

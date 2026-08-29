@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { loginAs } from './login';
 import { captureBearer } from './apiHelpers';
-import { apiCreateTopic } from './scenario';
+import { apiAddAgendaItem, apiCreateTopic, apiMembers, apiPreparedTopic, apiScheduleMeeting } from './scenario';
 
 /*
  * S6b-3 (ADR-0016 §2) — the RTL/Arabic + accessibility pass, the last E2E slice. Proves the real
@@ -145,5 +145,39 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     await page.getByRole('button', { name: 'تصدير السجل', exact: true }).click();
     await expect(page.getByRole('menu')).toBeVisible();
     expect(await axeViolations(page), 'Audit + export menu (AR/RTL) axe violations').toEqual([]);
+  });
+
+  // WBS-24.8's axe obligation (DEC-072 d2 / SC-032), named in AC-155. DW-071's first trigger clause
+  // fires "whenever a new route ships", and /session/preview is a genuinely new route — guarded to
+  // Chairman and Secretary, so it is reachable by the account this spec already uses.
+  //
+  // ⚠⚠ THE SLOT IS SEEDED BEFORE THE SWEEP, AND THAT IS THE WHOLE POINT. With no presenter assigned the
+  // page renders its EMPTY STATE, and scanning that would score an EmptyState component this suite
+  // already covers elsewhere while never looking at the topic card, the slot card or the materials list
+  // this item actually added. WBS-24.6 hit the same shape one item earlier with a closed Menu: a true
+  // zero over the wrong set (LL-015). So a meeting, a prepared topic and an assigned presenter are
+  // created first, and the assertions below confirm the real shell rendered before axe runs.
+  test('Presenter preview is axe-clean in both English and Arabic', async ({ page }) => {
+    await loginAs(page, 'secretary');
+    const bearer = await captureBearer(page);
+    await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+
+    const members = await apiMembers(page.request, bearer);
+    const presenter = members[0];
+    const topic = await apiPreparedTopic(page.request, bearer, 'Preview sweep topic', presenter);
+    const meeting = await apiScheduleMeeting(page.request, bearer, 'Preview sweep meeting', presenter);
+    await apiAddAgendaItem(page.request, bearer, meeting.id, topic, presenter);
+
+    await page.goto(`/session/preview?meetingId=${meeting.id}&topicId=${topic.id}`);
+
+    // The CONTROL that the seeded slot actually rendered. Without it a regression that turned this page
+    // into its empty state would still sweep clean, and the sweep would report a passing route while
+    // covering none of the surface the route was added for.
+    await expect(page.getByRole('heading', { name: 'Preview sweep topic', exact: true })).toBeVisible();
+    expect(await axeViolations(page), 'Presenter preview (EN) axe violations').toEqual([]);
+
+    await switchToArabic(page);
+    await expect(page.getByRole('heading', { name: 'Preview sweep topic', exact: true })).toBeVisible();
+    expect(await axeViolations(page), 'Presenter preview (AR/RTL) axe violations').toEqual([]);
   });
 });

@@ -54,6 +54,7 @@ public class SessionApiTests
     }
 
     private sealed record MeetingSummary(Guid Id, string Key);
+    private sealed record ProvisionedMember(Guid PublicId);
     private sealed record InvitedGuest(Guid PublicId, string Email, DateTimeOffset AccessExpiresAt);
     private sealed record Material(Guid Id, string FileName, string ContentType, long SizeBytes);
     private sealed record Session(
@@ -239,6 +240,93 @@ public class SessionApiTests
         var (guest, _) = await InviteGuestForAsync(factory, topicId);
 
         var response = await Client(WithFakeStore(factory), "Guest", sub: $"kc-{guest.Email}")
+            .GetAsync($"/api/session/materials/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // ── the three guards the coverage gate found untested (FR-165's refactor) ──────────────────────
+    //
+    // ⚠⚠ THESE WERE NEVER COVERED, AND THE REFACTOR IS WHAT MADE THAT VISIBLE RATHER THAN WHAT CAUSED IT.
+    // Extracting the shell into PresenterSessionComposer removed ~36 lines of COVERED composition from
+    // this file. The same three early returns stayed untested, and their share of a smaller file crossed
+    // ADR-0016's 5% budget. So a refactor can push a file under a per-file floor WITHOUT INTRODUCING A
+    // SINGLE NEW UNTESTED LINE — the numerator never moved, the denominator did. Worth knowing before
+    // reading such a failure as "the new code is untested".
+
+    // A Chairman with a member row and no agenda slot anywhere. Distinct from the no-member-row case
+    // above it, which returns earlier and is what the existing "no slot" test actually exercised.
+    [Fact]
+    public async Task A_caller_who_is_provisioned_but_presents_nothing_gets_no_content()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var chair = Client(factory, "Chairman", sub: "kc-chair");
+        await chair.PostAsync("/api/members/me", null); // provision, so the directory resolves them
+
+        var response = await chair.GetAsync("/api/session/me");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // Presenting at a CANCELLED meeting: the slot exists, the meeting is filtered out, and the page must
+    // say "you are not presenting" rather than send someone to a meeting that will not happen.
+    //
+    // ⚠⚠ THE PRESENTER HERE IS A CHAIRMAN, NOT A GUEST, AND THE REASON IS A BEHAVIOUR WORTH KNOWING.
+    // A guest cannot reach this guard at all: CancelMeeting calls GuestWindows.CloseOrphanedAsync, so
+    // cancelling CLOSES the window of any guest not presenting elsewhere, and their next request is a
+    // 401 access_expired long before the "which meeting" filter runs. The first draft of this test used
+    // a guest and got exactly that 401 — correct product behaviour, wrong assertion. So the meeting-
+    // filter guard is reachable only by a principal whose access does not expire.
+    [Fact]
+    public async Task A_presenter_whose_only_meeting_was_cancelled_gets_no_content()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var (topicId, _) = await SeedTopicAsync(factory, key: "TOP-2026-055");
+
+        var chair = Client(factory, "Chairman", sub: "kc-chair-cancelled");
+        var me = await (await chair.PostAsync("/api/members/me", null)).Content.ReadFromJsonAsync<ProvisionedMember>();
+
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+        var scheduled = await sec.PostAsJsonAsync("/api/meetings", new
+        {
+            title = "Meeting that gets cancelled",
+            chairUserId = me!.PublicId,
+            chairName = "Sara Chair",
+            scheduledStart = FutureEnd.AddHours(-2),
+            scheduledEnd = FutureEnd,
+            location = (string?)null,
+            joinUrl = (string?)null,
+        });
+        var meeting = (await scheduled.Content.ReadFromJsonAsync<MeetingSummary>())!;
+
+        await sec.PostAsJsonAsync($"/api/meetings/{meeting.Id}/agenda/items", new
+        {
+            topicId,
+            topicKey = "TOP-2026-055",
+            topicTitle = "Cancelled-meeting slot",
+            urgent = false,
+            timeboxMinutes = 15,
+            presenterUserId = me.PublicId,
+            presenterName = "Sara Chair",
+        });
+
+        var cancelled = await sec.PostAsJsonAsync($"/api/meetings/{meeting.Id}/cancel",
+            new { reason = "Quorum could not be reached" });
+        cancelled.IsSuccessStatusCode.Should().BeTrue("the cancellation is this test's precondition");
+
+        var response = await chair.GetAsync("/api/session/me");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // The material handler's own member-row guard. Fails closed as 404 — the same answer as an attachment
+    // that does not exist, so the response cannot be used to probe for one.
+    [Fact]
+    public async Task A_material_request_from_a_caller_with_no_member_row_is_not_found()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+
+        var response = await Client(WithFakeStore(factory), "Chairman", sub: "kc-never-provisioned")
             .GetAsync($"/api/session/materials/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);

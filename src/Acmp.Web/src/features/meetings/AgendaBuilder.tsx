@@ -37,7 +37,7 @@
  * routed /agenda element, so it takes no props).
  */
 import { useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Num } from '../../lib/numberFmt';
 import {
@@ -87,6 +87,11 @@ export function AgendaBuilder() {
   // this screen. Hiding it from the Chairman is courtesy; the server is what refuses him.
   const auth = useAuth();
   const canInviteGuest = hasRole(auth, 'secretary');
+  // FR-165 / DEC-086 — who may PREVIEW a presenter's session view. Deliberately WIDER than
+  // canInviteGuest (Secretary only) and matching the API's AllowedRoles exactly: the Chairman runs the
+  // meeting and DEC-037 admitted them to the surface, but inviting a guest is the Secretary's alone
+  // (ADR-0040 decision 1). Two different questions, so two different gates rather than one reused.
+  const canPreviewPresenter = hasRole(auth, 'chairman') || hasRole(auth, 'secretary');
 
   // Mutations (all keyed to invalidate this meeting's detail).
   const addItem = useAddAgendaItem(key);
@@ -255,6 +260,11 @@ export function AgendaBuilder() {
               <EmptyState icon="viewKanban" title={t('meetings.agendaEmpty.title')} body={t('meetings.agendaEmpty.body')} />
             ) : (
               <ol className="mt-agenda-list">
+                {/* presenterPreview — the ENTRY POINT for FR-165. The preview starts from a CHOSEN
+                    presenter, so it lives on the agenda row where that person is already named and is
+                    NOT a nav item: OQ-074's resolution (DEC-048 d4) says so, and navModel.ts's ACCESS map
+                    stays guest-only. Rendered only when a presenter is actually assigned — there is no
+                    view to preview otherwise, and the server answers 204 for exactly that case. */}
                 {items.map((item, i) => (
                   <AgendaItemRow
                     key={item.topicId}
@@ -274,6 +284,15 @@ export function AgendaBuilder() {
                         topicId={item.topicId}
                         topicKey={item.topicKey}
                       />
+                    ) : null}
+                    presenterPreview={canPreviewPresenter && meetingId && item.presenterUserId ? (
+                      <Link
+                        className="mt-presenter-preview"
+                        to={`/session/preview?meetingId=${meetingId}&topicId=${item.topicId}`}
+                      >
+                        <Icon name="session" size={13} aria-hidden />
+                        {t('sessionPreview.previewSlot')}
+                      </Link>
                     ) : null}
                     dragRef={dragItem}
                     onItemDrop={onItemDrop}
@@ -448,6 +467,7 @@ function AgendaItemRow({
   dragRef,
   onItemDrop,
   guestInvite,
+  presenterPreview,
 }: {
   item: AgendaItem;
   index: number;
@@ -460,6 +480,15 @@ function AgendaItemRow({
   onRemove: (item: AgendaItem) => void;
   /** FR-159 — built by the parent so this row stays unaware of auth and of the meeting's identity. */
   guestInvite?: React.ReactNode;
+  /**
+   * FR-165 — the "preview presenter view" link, or null when nobody is assigned to this slot.
+   *
+   * Built by the parent for the same reason guestInvite is: this row must not learn who the caller is.
+   * The two gates differ — inviting is the Secretary's alone (ADR-0040 d1) while previewing admits the
+   * Chairman too (DEC-037) — and keeping both decisions in one place is what stops them drifting into
+   * each other.
+   */
+  presenterPreview?: React.ReactNode;
   dragRef: React.MutableRefObject<AgendaItem | null>;
   onItemDrop: (target: AgendaItem) => void;
 }) {
@@ -530,6 +559,7 @@ function AgendaItemRow({
               />
             </span>
             {guestInvite}
+            {presenterPreview}
           </span>
         </div>
       </div>
