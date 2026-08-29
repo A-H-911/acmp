@@ -6,13 +6,30 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-29 · `SL-033` AND `SL-034` BOTH DONE · **NOTHING IS SCHEDULED ON THE BUILD LADDER**
+## ★★★ 2026-08-29 · `SL-033`+`SL-034` DONE · **`SL-035` IS LIVE — SIX ACTIVATED ROWS**
 
 ⚠ Live state is `prm-next.md`'s numbered list, never this file. `readiness_check("package")` is
-`ready:FALSE` on **`DEF-108` alone**, by `DEC-077` d1 — that is the intended state, not a fault.
-⛔ **`SL-033` is deliberately NOT closed** (`DEC-088`) — `DEF-108` holds it; there is nothing left to build
-in it. **`SL-034` IS closed** (`DEC-093`), no waiver, no force. Next actions are operator acts: disposition
-the rows this slice filed (`DW-088/090/091/092/093`), and `release-close-out.md`, never run.
+`ready:FALSE` on **`DEF-108` alone**, by `DEC-077` d1 — the intended state, not a fault.
+⛔ **`SL-033` is deliberately NOT closed** (`DEC-088`); **`SL-034` IS** (`DEC-093`). **`SL-035` =
+`WBS-26.1`–`26.5`**, security first (`DEC-094`/`SC-038`). ⚠⚠ **ALL SIX ACTIVATIONS OVERRODE THE AGENT'S
+RECOMMENDATION TO CARRY** — the `DEC-067` shape; rows record it as an override, so do not read it as
+agreement about HOW. ⛔ **`WBS-26.1`: settle SoD-4's STRENGTH before writing any guard** — hard refusal /
+warn+audit / COI workflow are three different products, and **building the strict one by default is the
+failure mode, not the safe choice**. `NFR-064` exists because **no requirement covered SoD at all**.
+
+- ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row whose
+  `custom_attributes` hold a nested object is **silently deleted from the result**, not undercounted.
+  That produced the **FORTY-FIRST**: a next-action list wrong in BOTH directions (`DEC-089` d4 had already
+  ruled on `DW-088`, d3 on `DW-089`; `DW-086`/`DW-087` never had been, and were omitted). ⭐ **This index
+  carried the same wrong list** until the interview forced it — the sibling-copy failure again.
+- ⭐⭐ **`LL-005` PAID TWICE**: the pre-interview sweep produced two rulings that did not exist when the
+  interview was planned — SoD has no requirement, and `FR-035`'s words claim more than `AC-145` verified
+  (ruled a refinement; `FR-035` stays `Implemented`). **Sweep BEFORE the interview, never after.**
+- ⚠ **`LL-006` on a generator**: "every `Open` row no decision names" returns **35 rows, 34 already ruled**
+  by the 2026-08-20 BULK interview that named none. `Open` ≠ never-ruled; it now fails closed.
+- ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b) — two leaves it red, reading
+  like the fix failed. ⚠ `verification_method` is a CHECK over `Test|Demonstration|Inspection|Analysis`;
+  approving a lesson needs `"operator_confirm": true`; trace edges use `from_id`/`to_id`.
 
 ★★★ [**`SL-034` — the slate generator's 3 refusals + the ASVS pack**](sl034-slate-generator-and-asvs-pack.md)
 — read it before touching `gen-slice-review-slate.mjs`, the ASVS pack, or any test that reads the package.
