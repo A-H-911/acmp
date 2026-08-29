@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-29 · `SL-033` BUILD FINISHED — `WBS-24.1`–`24.8` ALL MERGED · **NEXT = `DW-080` PHASE B**
+## ★★★ 2026-08-29 · `SL-033` + `DW-080` BOTH DONE · **NEXT = `WBS-25.2` (`DW-079`, doc-only)**
 
 `WBS-24.8` merged (`#323` → `24738d4b`, ten green). `FR-165` via `SC-037`/`DEC-086`; `AC-154`/`AC-155` `Met`.
 ⚠ **Which rows are at `Review` is NOT written here** — `readiness_check(scope="slice", id="SL-033")` only.
@@ -49,11 +49,27 @@ materials / audit the successful read / new FR not `FR-159`).
   unreachable and the API answers look like feature bugs.
 - ⚠ Axe count **92 → 94** (+2 = one test × two browsers). **This file said 90** — re-measure, never quote.
 
-⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** → globalization-invariant mode **THROWS
-`CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does `ar-SA` + `LCID 1025`, so
-a naive minimal-base move **throws at runtime after compiling and unit-testing perfectly**. Escape hatches:
-`icu-libs`+`icu-data-full`, or the `-extra` variants. ⚠ Documentation, not measurement — the spike needs
-Docker. **`DEC-083` d2: bring a decision, not a pick.**
+✅ **`DW-080` PHASE B IS DONE** (`#325` → `1d7cb04b`): api+worker on `aspnet:10.0-noble-chiseled-extra`.
+326→258 MB, CVEs **75→11**. The block that stood here PREDICTED THE WRONG FAILURE and the correction is
+the durable part:
+- ⛔⛔ **A NO-ICU BASE DOES *NOT* THROW AT STARTUP.** It starts, exits 0, silently enters invariant mode, and
+  throws **only when a non-invariant culture is TOUCHED**. ACMP's API touches none (all 10 `CultureInfo` =
+  `InvariantCulture`; `RequestLocalization`/`IStringLocalizer`/`.resx` = **0 of 693 files**). So plain
+  chiseled looks perfectly healthy while **arming a trap**. Silent, not loud — worse than predicted.
+- ⭐⭐ **THE RISK IS THE ICU *VERSION*, NOT musl.** alpine-extra ICU **78.1** vs chiseled-extra/Debian
+  **74.2**; CLDR moved `ar-SA`'s calendar in between — same binary renders **Hijri vs Gregorian**, no
+  exception, Arabic only. ⛔ **`-extra` is load-bearing; a digest bump changing the ICU major needs the
+  Arabic render checked, not a green suite.**
+- ⚠ **`LCID 1025` IS A SQL SERVER CONCERN** — EF migrations using `LANGUAGE 1025` inside `sqlserver-fts`,
+  an image `NFR-054` excludes. The api base cannot affect Arabic FREETEXT.
+- ⚠⚠ **A GREEN e2e DID NOT PROVE THE NEW HEALTHCHECK** (`DW-091`): both api dependents use
+  `service_started`, so **nothing consumes its verdict** — `DEF-078`/`DEF-079` a 3rd time, with the compose
+  comment asserting the opposite. ⭐ Probe then forced BOTH ways through Docker's plumbing.
+- ⚠ **`DW-090`: no AC for `NFR-054`** — its verification names a CI check that **does not exist**. A size
+  check ALONE passes on Debian at 326 MB, i.e. reports compliance with a *minimal-base* clause from the
+  base it excludes. ⚠ `DW-066`'s 257 MB is stale by a runtime major.
+- ⭐ **`AppContext.TryGetSwitch` REPORTS THE SWITCH, NOT THE EFFECTIVE MODE** — it said `off` on images that
+  WERE invariant. Attempt a culture; never read the flag.
 
 ★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — the earlier six items, **six different ways a
 row misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; the three-place
@@ -85,22 +101,19 @@ credited lines wrapping *uninvoked* inline handlers, so files with **no test fil
 ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `gen-lesson-docket.mjs` ·
 `gen-slice-review-slate.mjs` · `count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`.
 
-## ★★ 2026-08-20 (later) · the disposition session — durable rules only
+## ★★ 2026-08-20 · the disposition session — durable rules only
 
 - ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
-  **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's full
-  text inline, generated from the JSONL. ⭐ The fix found **`DEF-082` does not exist** though 3 records cite it
-  as real and fixed — `G-IDS` checks FKs, **not ids in prose**. Carried as `DEF-101`, not reconstructed.
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM** —
-  activating a `DW-` row → check its requirement in the same breath. ⚠ **`deferred-work-reviewed` CANNOT go
-  green from reviewing** (it selects `Open`+`Activated`+`Scheduled`); ⚠ **`assumptions-current`'s field is a
-  FUTURE due date** — more will redden, that is the control working; don't clear them. ⛔ `DEF-087` untouched.
-  ⚠ **`DEF-102`: `NFR-013` mandates a columnstore `ADR-0022` removed** (*record it, change nothing*), found
-  by **keyword** sweep only (`LL-008`). ⚠ **I reported "four" truncated assumption titles; it was EIGHT** —
-  **measuring inside the set you are already holding is not measuring the register.**
+  **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's
+  full text inline, generated from the JSONL. ⭐ `G-IDS` checks FKs, **not ids in prose** (`DEF-101`).
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S STATUS ARE UNRELATED COLUMNS AND NOTHING COMPARES**
+  them — activating a `DW-` row → check its requirement in the same breath. ⚠ `assumptions-current`'s
+  field is a FUTURE due date; more will redden and that is the control working. ⛔ `DEF-087` untouched.
+- ⚠ **I reported "four" truncated assumption titles; it was EIGHT** — measuring inside the set you are
+  already holding is not measuring the register.
 ★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
 enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after
-a pipe, the still-open stack/scanner group, and production's reconciled state.
+a pipe, and production's reconciled state.
 
 ## Earlier 2026-08 — durable findings only
 

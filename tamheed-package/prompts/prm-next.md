@@ -50,9 +50,15 @@ merge, and writing one is what produced the THIRTY-SECOND.
 **THE DURABLE FACTS, WHICH ARE NOT A WORKING STATE.** `DW-080` **phase A is MERGED** — PR `#320`, squashed
 to `df8d7c3a` on 2026-08-28, all ten checks green, verified into `origin/main` **by content** rather than
 by ancestry (trap 25). The solution targets `net10.0`, `SearchProvidersFtsTests` passes, and `#128`/`#134`
-were **closed as superseded** by it, on the `#135`→`#308` precedent. **`DW-080` phase B has not started.**
+were **closed as superseded** by it, on the `#135`→`#308` precedent.
+**`DW-080` PHASE B IS ALSO MERGED — PR `#325` → `1d7cb04b` on 2026-08-29**, ten checks green including the
+e2e leg. The api and worker run on `aspnet:10.0-noble-chiseled-extra`.
 **`SL-033`'s BUILD IS FINISHED: `WBS-24.8` MERGED as PR `#323` → `24738d4b` on 2026-08-29**, ten checks
 green, verified into `origin/main` by content. Every item `WBS-24.1`–`WBS-24.8` has now been built.
+**`SL-034` EXISTS** (`DEC-089` d2) and holds `WBS-25.1` (phase B, merged) and `WBS-25.2` (`DW-079`).
+⚠ **The two open Dependabot PRs `#318`/`#319` ARE explained — `DEC-083` d3 left them alone deliberately**,
+so seeing them is not the unexplained state the warning below is about. A Dependabot queue moves; run the
+command rather than trusting this sentence's pair of numbers.
 ⚠ **That is a repository fact and NOT a slice status** — a merged row still owes the operator a verdict,
 and which rows are at `Review` is deliberately not written here. `readiness_check(scope="slice",
 id="SL-033")` is the only answer that cannot go stale.
@@ -74,7 +80,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-seven** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **thirty-eight** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -84,6 +90,21 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-EIGHTH IS A NEGATIVE STATEMENT ABOUT WORK — *"`DW-080` phase B has not started"* — AND
+IT WAS FALSIFIED BY THE VERY SESSION THAT WROTE IT, THEN PUSHED.** Phase B merged as `#325` → `1d7cb04b`,
+and the next package commit (`20f0b61c`) carried the sentence unchanged. A fresh session reading `main`
+would have been told to start work that was already on `main`.
+⚠⚠ **A "HAS NOT STARTED" IS A STATUS WEARING A REPOSITORY FACT'S CLOTHES, AND THAT IS WHY IT SAT IN THE
+ONE PARAGRAPH HEADED *THE DURABLE FACTS, WHICH ARE NOT A WORKING STATE*.** *"`#320` merged to `df8d7c3a`"*
+is durable — it stays true forever. *"Phase B has not started"* is the exact opposite: it is a claim about
+the present that the next merge destroys, and it had been sitting in the block whose whole purpose is to
+exclude such claims. **The heading did not protect it, because the sentence LOOKS like its neighbours.**
+⭐⭐ **THE RULE: A NEGATIVE IS NOT A FACT, IT IS A STATUS WITH NO TIMESTAMP.** Record what HAPPENED, never
+what has not. If a fresh session needs to know something is outstanding, the numbered list under
+`START HERE` says so and `readiness_check` proves it — both of which move on their own.
+⚠ **IT IS THE THIRTY-SECOND'S FAMILY** (never record your own working state) reappearing in the negative
+voice, which is the disguise that got it past two rewrites of this very block in one session.
 
 ⚠⚠⚠ **THE THIRTY-SEVENTH IS A LIFECYCLE STATUS WRITTEN INLINE IN PROSE — THE ONE THING THIS FILE ALREADY
 FORBIDS ITSELF, IN A SECTION THAT SAYS SO TWO SCREENS BELOW.** Three per-item blocks ended *"⚠ `Review` —
