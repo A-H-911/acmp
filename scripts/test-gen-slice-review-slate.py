@@ -24,7 +24,6 @@ narrowing of a refusal, and a narrowing that went too far would look exactly lik
 """
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -61,11 +60,29 @@ def rewrite(path, fn):
             f.write(json.dumps(fn(r), ensure_ascii=False) + "\n")
 
 
-def edit_item(item_id, change):
+def stage(slice_id, item_id, title=None):
+    """Put EXACTLY item_id at Review inside slice_id, optionally replacing its title.
+
+    ⚠ DEF-120 — AN EARLIER VERSION SET ONE ROW TO Review AND LEFT THE REST ALONE, so each case
+    silently depended on which OTHER rows happened to be at Review in the live store. Promoting
+    WBS-25.1 to Implemented deleted the calibration's subject: the mutation still applied, the
+    generator still ran, and it rendered a DIFFERENT item that was never under test. That failed
+    loudly here only by luck — had the surviving row lacked citations, the calibration would have
+    PASSED for the wrong reason, which is the hollow pass it exists to prevent.
+
+    So every case now stages the whole slice: one row at Review, all its siblings forced out, and
+    the shape under test written into the title. The tests assert a PROPERTY of the generator, not
+    a fact about today's register.
+    """
     def mutate(data):
         def f(r):
-            if r.get("id") == item_id:
-                change(r)
+            if r.get("slice_id") == slice_id:
+                if r.get("id") == item_id:
+                    r["lifecycle_status"] = "Review"
+                    if title is not None:
+                        r["title"] = title
+                else:
+                    r["lifecycle_status"] = "Implemented"
             return r
         rewrite(os.path.join(data, "wbs_items.jsonl"), f)
     return mutate
@@ -86,24 +103,29 @@ def case(name, mutate, slice_id, want_code, want_sub):
 def main():
     results = []
 
-    # DEF-117 — an item may name NO criterion when the store records why.
+    # DEF-117 — an item may name NO criterion when the store records why. The title cites a
+    # requirement and a DW- row and no AC-, which is exactly the shape WBS-25.1 had.
     results.append(case(
         "DEF-117: criterion-less item renders when a DW-/DEC- row records why",
-        None, "SL-034", 0, "item(s) at Review"))
+        stage("SL-034", "WBS-25.1",
+              "Criterion-less by design. Requirement NFR-054; the reason is recorded in DW-090."),
+        "SL-034", 0, "item(s) at Review"))
 
-    # DEF-116 + DEF-119 — many criteria, spanning many requirements, must render.
-    # SL-033's rows are all Implemented, so put the three-criterion one back at Review
-    # in the COPY. Its criteria answer to FR-155, NFR-059 and NFR-060.
+    # DEF-116 + DEF-119 — many criteria, spanning many requirements, must render. WBS-24.5's real
+    # title names AC-149/AC-150/AC-151, which answer to FR-155, NFR-059 and NFR-060 respectively:
+    # three criteria across three requirements, the shape that still aborted after DEF-116.
     results.append(case(
         "DEF-116/DEF-119: multi-criterion, multi-requirement item renders",
-        edit_item("WBS-24.5", lambda r: r.update(lifecycle_status="Review")),
+        stage("SL-033", "WBS-24.5"),
         "SL-033", 0, "item(s) at Review"))
 
-    # CALIBRATION — the refusal must still fire when nothing records the reason.
+    # CALIBRATION — the refusal must still fire when NOTHING records the reason. No AC-, no DW-,
+    # no DEC-; a requirement alone is not a reason. If this ever passes, the DEF-117 arm has been
+    # widened past the point where it discriminates.
     results.append(case(
         "CALIBRATION: no criterion AND no recorded reason still exits non-zero",
-        edit_item("WBS-25.1",
-                  lambda r: r.update(title=re.sub(r"\b(DW|DEC)-\d+\b", "XX-000", r["title"]))),
+        stage("SL-034", "WBS-25.1",
+              "Requirement NFR-054. Nothing here records why there is no criterion."),
         "SL-034", 2, "nothing here can be adjudicated"))
 
     shutil.rmtree(SCRATCH, ignore_errors=True)

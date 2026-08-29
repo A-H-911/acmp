@@ -89,6 +89,16 @@ jobs:
       - name: Runbooks agree with the deployment (budget ceiling, cloud vs on-prem scripts)
         run: node scripts/check-runbook-drift.mjs
 
+      # WBS-25.2 / DW-079. The ASVS L2 evidence pack is handed to an EXTERNAL ASSESSOR as a map of
+      # where ACMP's controls live, so a moved path costs somebody else's billed hours and a
+      # confidently-wrong anchor reads exactly like a correct one. Note what this gate is actually
+      # positioned to catch: ci.yml path-ignores both `**/*.md` and `tamheed-package/**`, so editing
+      # the pack never runs this — it runs when SOURCE moves, which is the way the pack actually goes
+      # stale. It asserts existence only; whether the code at a path implements the control it is
+      # cited for is the assessment itself, and no script stands in for that.
+      - name: ASVS evidence pack cites paths that still exist
+        run: node scripts/check-asvs-pack-paths.mjs
+
       # DEF-054. up.sh now asserts that keycloak-config converged, because `up --wait` returns while
       # a one-shot is still mid-flight and dev + on-prem prod were therefore blind to a failed realm
       # reconcile. That guard is itself in the "detects but does not TELL" family, so it is proven by
