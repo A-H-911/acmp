@@ -6,104 +6,84 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-28 · `SL-033` `24.1`–**`24.7` DONE** · `DW-080` PHASE A MERGED · **NEXT = `WBS-24.8`**
+## ★★★ 2026-08-29 · `SL-033` BUILD FINISHED — `WBS-24.1`–`24.8` ALL MERGED · **NEXT = `DW-080` PHASE B**
 
-Three PRs merged, `main` green: `#320` phase A (`net10.0`, FTS passes), `#321` `DEF-114`, `#322`
-`WBS-24.7`. **`WBS-24.8` (`DW-028`) is the ONLY item left in `SL-033`** and `DEC-085` d3 handed it to a
-FRESH session — slow down there: a 2nd authorization path over someone else's content (`DEF-052`/
-`DEF-056` shape). ⚠ Live state is `prm-next.md`, never this file.
-- ⭐⭐ **A TEST ASSERTING AN *ABSENCE* AFTER A LIFECYCLE CALL IS VACUOUS** (`DEF-113` → `LL-026`): .NET 10
-  `BackgroundService` dispatches **all** of `ExecuteAsync` to a background thread. Passed on BOTH runtimes
-  — **only the per-file coverage floor saw it**; a negative assertion is satisfied by the empty run.
-  ⛔ **`StopAsync` IS NOT A JOIN** (cancels the token BEFORE awaiting) — my first fix used it, passed
-  locally, **CI rejected it**. Await `ExecuteTask`. ⭐ **A fix for a race that passes because the race went
-  your way is the defect reproducing inside its own remedy** — the local box always wins it.
-- ⚠⚠ **`LL-028`: EVERY `only`/`never`/`cannot` IN YOUR OWN DRAFT IS A MEASUREMENT REQUEST.** Fired 3× in
-  one session — *the ONLY project reaching this file*, *the ONLY deterministic join*, a confident *"layer
-  cache"* cause. **A valid argument on a weak premise is WEAKENED by a stronger premise you did not
-  check, and the unnecessary sentence is the one that reads as rigorous.**
-- ⚠⚠⚠ **`LL-029`: A REPRODUCTION THAT CHANGES TWO THINGS CONFIRMS WHICHEVER ONE YOU WERE WATCHING** —
-  the strongest-feeling evidence there is, because the symptom returns on demand. Pre-creating the image
-  also warmed the `RUN` layer; the cache is keyed on the **INSTRUCTION, not the tag**. Wrong cause → 3
-  pushed commits. ⭐⭐ **ONLY THE FIX FAILING CAUGHT IT.** ⚠ It fired again the same day in the mirror
-  direction: two ad-hoc verifiers reported false *"missing"* blocks because they did not model the
-  generator's `<br>` transformation. **A verifier that does not model the generator is measuring itself.**
-- ⚠ **DOCKER GATES THE *GATE*, NOT EVERY COVERAGE QUESTION.** With it up the local pipeline reproduces CI
-  exactly; with it down only the whole-gate answer is void — one file's line list is still provable if its
-  covering tests run locally (subset + equal count ⇒ identical set).
-- ⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** and work only in globalization-invariant
-  mode, which **THROWS `CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does
-  `ar-SA` + `LCID 1025`. **A naive minimal-base move would THROW at runtime after compiling and
-  unit-testing perfectly.** Escape hatches: `icu-libs`+`icu-data-full`, or the `-extra` variants.
-  ⚠ Documentation, not measurement — the spike needs Docker. **`DEC-083` d2: bring a decision, not a pick.**
+`WBS-24.8` merged (`#323` → `24738d4b`, ten green). `FR-165` via `SC-037`/`DEC-086`; `AC-154`/`AC-155` `Met`.
+⚠ **Which rows are at `Review` is NOT written here** — `readiness_check(scope="slice", id="SL-033")` only.
+⚠ Live state is `prm-next.md`, never this file. `DEC-086` = the four sizing rulings (isolate / list-only
+materials / audit the successful read / new FR not `FR-159`).
 
-★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — six items, **six different ways a row
-misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; hollow passes; the
-three-place `DbContext` registration; the CI/register traps. ⚠ **Live state is `prm-next.md`, not this file.**
+- ⭐⭐⭐ **WHEN AN ITEM ASKS YOU TO ADD THE THING WHOSE *ABSENCE* IS THE GUARANTEE, ISOLATE IT.** `/session`'s
+  security was that no parameter could name someone else's slot. `WBS-24.8` needed exactly that parameter →
+  own query (no `Guest` in `AllowedRoles`), own endpoint group **outside** the guest allowlist, own guarded
+  route. Never make the shared path conditional.
+- ⚠⚠⚠ **A DEFENCE LAYER CAN BE STRUCTURALLY INVISIBLE TO ANY FRONT-DOOR TEST.** I claimed adding `Guest` to
+  the preview's `AllowedRoles` was *"the single mutation"*; **measured false — all 10 API tests stay GREEN**,
+  because the path gate intercepts guests first, i.e. the very population that layer refuses. Only a
+  unit-level `AuthorizationBehavior` test catches it. ⭐ **Pin each refusal to a DISTINGUISHABLE SIGNATURE**
+  (header vs. audit row); three tests all asserting `403` test whichever layer runs first.
+- ⚠⚠ **A REFACTOR CAN PUSH A FILE UNDER THE PER-FILE COVERAGE FLOOR WITH NO NEW UNTESTED LINE** — moving
+  ~36 **covered** lines out of `GetMySession.cs` left the same 3 untested guards over a smaller denominator.
+  **Numerator never moved.** Don't read it as "the new code is untested".
+- ⛔ **RUN THE GATE, NOT THE TESTS** (`WBS-24.5`'s lesson, repeated 3 days later): `dotnet test` per project
+  passed while `check-coverage.mjs` failed on 4 files. With Docker up the local gate reproduced CI **exactly**
+  (466 files, 99.56%). ⚠ Every uncovered line was an **early-return guard I never forced** — I proved the
+  *authorization* guards and trusted the *data* guards.
+- ⚠⚠ **`DEF-115`, FOUND ONLY BY LOOKING:** `/session` rendered `10:40–10:55 · ١٥ دقيقة` — two digit systems
+  on one line, because only the number path had `ar-u-nu-arab`. **Also an `INV-014` divergence** (`DEC-037`
+  quotes the reference as `١٠:٤٠–١٠:٥٥`). ⭐ **`numberLocale()` is exported for ANY `Intl` formatter that
+  emits digits — a DATE formatter is one.** No gate reads pixels.
+- ⭐⭐ **`LL-001`'s HASH-AND-VERIFY CAUGHT A REAL CORRUPTION**: re-typing `DW-028`'s title to flip its status
+  flattened **six em dashes** to hyphens and reworded a phrase. **Always hash before, verify after.**
+- ⚠ **`DW-088` (new):** `TopicDetail`'s download button is hardcoded `disabled` — **no principal but a guest
+  presenter can open a topic attachment anywhere in the product.** Filed BEFORE the fork it bore on reached
+  the operator, so the ruling was not prejudged.
+- ⚠ **THIRTY-SEVENTH stale statement:** a **lifecycle status written inline in prose** (`⚠ Review — your
+  verdict`) in 3 item blocks, all since promoted. `THIRTY-FIRST`'s rule was written about *lessons* and
+  nobody carried it to `WBS-` rows. **A rule written about one register is not a rule about one register.**
+  ⭐ Found by grepping `prm-next.md` for **file names**, not ids — a status is not an id.
+- ⭐ **Two hollow passes of my own**: a failed guest invite still deserialised into a defaulted record (so
+  `NotBeNull` passed with no guest); and a mutation whose patch **silently never applied** yet reported a
+  clean pass on both suites (trap 12). Re-read the file; don't trust the exit code.
+- ⚠ **`AcmpWebApplicationFactory.WithIdentityProvider()`** is opt-in — without it the guest-invite path is
+  unreachable and the API answers look like feature bugs.
+- ⚠ Axe count **92 → 94** (+2 = one test × two browsers). **This file said 90** — re-measure, never quote.
 
-- ⚠⚠⚠ **`24.6`: A ROW CAN BE AN ACCURATE QUOTATION OF A SUPERSEDED CLAUSE, AND NO REGISTER VIEW SEES IT** —
-  three rows quoted `FR-154`'s *"Auditor and Administrator"*; `ADR-0027` excludes Administrator and names
-  EXPORTING. Ids, statuses and `G-TRACE` all clean, so **both committed checkers ran straight over it.**
-  ⭐⭐ **DISCRIMINATOR: an ADR that NAMES the rows it will amend — check that list against every row that
-  quotes it.** `ADR-0027` named `FR-151`/`FR-153` (both have the edge); `FR-154` had neither.
-- ⚠⚠ **READING `src` TELLS YOU WHAT EXISTS AND NOTHING ABOUT WHAT WAS SPECIFIED** (`24.5`: `SEC-080`/
-  `SEC-103` named a Configuration table that did not exist; my code-only answer was an architectural
-  divergence). **Sweep the narrative docs by keyword (`LL-008`) BEFORE sizing.** ⭐ `24.6` adds: **a
-  CONTROL can decide architecture** — `C-AUDIT-08` forces a SERVER export (a client blob cannot audit
-  itself), so the in-repo client-side-CSV precedent was the wrong answer.
-- ⛔ **NEVER apply `PageSize.Clamp` to an export** — on a compliance artifact `DEF-104`'s habit becomes
-  `DEF-103`'s silent truncation, indistinguishable from *"those rows do not exist"*.
-- ⚠⚠ **`ReadAsStringAsync` STRIPS THE BOM** — assert BYTES. Same hollow-pass shape as `24.4`'s Arabic dual
-  form, one item later. ⚠⚠ **A GREP OF THE E2E LOG FOR A TEST NAME IS BLIND** — zero for an EXISTING test
-  too. **The count is the instrument** (88→90 = +2 for one test × 2 browsers); **re-measure the baseline**
-  from the prior PR. ⭐ Scan a popover **with it OPEN** — a closed `Menu` renders only its trigger.
-- ⚠⚠ **`DOC-011`'s `OQ-DATA-*` labels were INVISIBLE to the register** (zero `OQ-` rows vs a control of
-  78) while **three `Met` verdicts leaned on them being open**. Now `OQ-079`/`OQ-080`. ⛔ **`SEC-080`
-  asserts a legal hold overrides any future purge and NO HOLD MECHANISM EXISTS** — build Phase-2
-  enforcement without it and that guarantee goes false **silently**.
+⛔⛔ **PHASE B: ALPINE/DISTROLESS/CHISELED SHIP WITHOUT ICU** → globalization-invariant mode **THROWS
+`CultureNotFoundException`** for any non-invariant culture since .NET 6. ACMP does `ar-SA` + `LCID 1025`, so
+a naive minimal-base move **throws at runtime after compiling and unit-testing perfectly**. Escape hatches:
+`icu-libs`+`icu-data-full`, or the `-extra` variants. ⚠ Documentation, not measurement — the spike needs
+Docker. **`DEC-083` d2: bring a decision, not a pick.**
+
+★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) — the earlier six items, **six different ways a
+row misled**; the two bidi rules and why one does not transfer; the i18n formatter no-op; the three-place
+`DbContext` registration.
+
+- ⭐⭐ **STILL THE HABIT THAT PAYS, now on all EIGHT items:** read the row's own text, then sweep the
+  NARRATIVE docs **and** the ADR/decision/OQ registers **by keyword** before sizing (`LL-008`, `LL-025`).
+  `24.8` added a ninth way a row misleads: **the row was accurate and complete, and the trap was in the code
+  it pointed at.**
+- ⚠⚠ **`24.6`: A ROW CAN ACCURATELY QUOTE A SUPERSEDED CLAUSE AND NO REGISTER VIEW SEES IT.** ⭐⭐
+  **DISCRIMINATOR: an ADR that NAMES the rows it will amend — check that list against every row quoting it.**
+- ⛔ **NEVER apply `PageSize.Clamp` to an export** — on a compliance artifact it becomes silent truncation.
+- ⚠⚠ **`ReadAsStringAsync` STRIPS THE BOM** — assert BYTES. ⭐ Scan a popover **with it OPEN**.
 - ⚠ **Approved ACs are IMMUTABLE, including against being marked superseded** — `AC-147`'s NULL
-  `superseded_by` was ACCEPTED by the operator; do not "repair" it. ⚠ **`DW-087`:** `SEC-248`'s *"ACMP has
-  no export feature"* is now false; **its trigger named a Phase-3 ITEM, not a property, so the row could
-  not see its own condition met from another direction.**
-
-- ⚠⚠ **THE RULE, NOT THE ROSTER: a row at `Review` is done-claimed work awaiting the operator's verdict,
-  it is ALWAYS merged, and it is NEVER a reason to rebuild.** ⛔ **Which rows are at `Review` is not
-  written here** — `readiness_check(scope="slice", id="SL-033")` is the only answer that cannot go stale,
-  and a "nothing is owed" sentence is falsified by the next thing you finish. ⭐ **An ABSENT reason for a
-  decline is not evidence of a reason: asking got `24.4` promoted, where every inference was wrong**
-  (`LL-003`). ⭐ Both 2026-08-27 verdicts were taken against a GENERATED slate
-  (`scripts/gen-slice-review-slate.mjs`), never a summary — `LL-011`/`LL-028` discharged mechanically.
-- ⚠⚠⚠ **AFTER BUILDING ANYTHING, GREP `prm-next.md` FOR THE FILE NAMES AND REQUIREMENT IDS YOU TOUCHED**
-  — not just the row you closed. One pre-handoff read found **7** stale statements the id pass ran clean
-  over, incl. a **"do NOT rebuild" entry naming a file that had just been built**. ⭐ **Never write a
-  lifecycle status inline in prose** — the register has it. ⭐ **Grep the ADVISORY NAME too**
-  (`lessons-confirmed` found two stale instructions no id-based pass could see).
-- ⚠⚠ **`LL-024` is Approved + PINNED** (2026-08-27) and it FIRED AGAIN ninety minutes later: a heredoc
-  ate an escaped apostrophe and two unicode ranges. **Use the editor tool, not a heredoc — remove the
-  second interpretation layer rather than escaping through it.** Then RUN the generated file.
+  `superseded_by` was ACCEPTED; do not "repair" it.
+- ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`).
 - ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3). ⚠
-  **`readiness_check` is `ready:FALSE` ON PURPOSE** (`DEF-108` Open/high, `DEC-077` d1) — **do NOT
-  "fix" it by softening or converting; both were declined.**
-- ⚠⚠ **`scripts/**` is NOT path-ignored** (`DEC-077` d2): a package-and-prose commit carrying one
-  instrument runs the FULL pipeline. **`scripts/**` goes via PR, and poll CI to completion after ANY
-  direct push to `main`.** ⛔ Never propose path-ignoring it — several `check-*.mjs` **are** the gates.
-- ⚠⚠ **`DEF-109`: `Acmp.Api.Tests` ran 20m35s / 17 failed BETWEEN two normal runs**, all 100s
-  `HttpClient` timeouts over TWELVE unrelated classes, backend tree byte-identical. ⛔ **The mitigation
-  cannot be credited — the run BEFORE it was green too.** Append an occurrence; don't re-run into silence.
-  ⚠ **`DEF-110`** (*record it, change nothing*): SLA thresholds are a hardcoded `switch` while
-  `ASM-011`/`OQ-035` promise **configuration** — so `ASM-011` is not an overdue date, **its remediation
-  path does not exist.** ⛔ Don't re-date it.
-- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY** — spying jsdom `localStorage` is version-dependent,
-  so the injected fault never happened while the test asserted a spy count. **Replace the GLOBAL
-  (`vi.stubGlobal`) and assert the OBSERVABLE.** ⭐ Tuning until green is not a fix.
-★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md) — vitest-4 / coverage-v8 findings.
-⚠⚠ **NEVER lower `ADR-0016`'s 95% threshold**: v3 credited the line wrapping an *uninvoked* inline handler,
-so four closed files with **no test file** scored ≥95%. ⚠ **`DEF-107`: approving+pinning a lesson does NOT
-make it bind** — the note is rebuilt only by `handoff_emit`; run it in the SAME batch as any approval.
-⚠ **Push package writes BETWEEN merge cycles, never during one** — every push to `main` re-stales every
-open PR (`strict=true`). ⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` ·
-`gen-lesson-docket.mjs` · `count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`.
-⚠ `DEF-106`: declare `types: ["vite/client","node"]`; **a CHECKOUT DOES NOT CHANGE `node_modules`**.
+  **`readiness_check` is `ready:FALSE` ON PURPOSE** (`DEF-108`) — do NOT soften or convert it.
+- ⚠⚠ **`scripts/**` is NOT path-ignored** (`DEC-077` d2) — it goes via PR, and **poll CI to completion after
+  ANY direct push to `main`**. ⛔ Never propose path-ignoring it; several `check-*.mjs` **are** the gates.
+- ⚠ **`DEF-109`**: `Acmp.Api.Tests` ran 20m35s / 17 failed between two normal runs. ⛔ The mitigation cannot
+  be credited — the run before it was green too. Append an occurrence; don't re-run into silence.
+- ⚠⚠ **CI CAUGHT A VACUOUS TEST I HAD "FIXED" LOCALLY** — replace the GLOBAL (`vi.stubGlobal`) and assert the
+  OBSERVABLE. ⭐ Tuning until green is not a fix.
+★★★ [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md). ⚠⚠ **NEVER lower `ADR-0016`'s 95%**: v3
+credited lines wrapping *uninvoked* inline handlers, so files with **no test file** scored ≥95%.
+⚠ **`DEF-107`: approving+pinning a lesson does NOT make it bind** — run `handoff_emit` in the SAME batch.
+⚠ **Push package writes BETWEEN merge cycles** — every push to `main` re-stales every open PR.
+⭐ **Instruments to USE, not re-derive:** `scripts/coverage-triage.mjs` · `gen-lesson-docket.mjs` ·
+`gen-slice-review-slate.mjs` · `count-prompt-ids.py` · `src/Acmp.Web/scripts/number-render-scan.mjs`.
 
 ## ★★ 2026-08-20 (later) · the disposition session — durable rules only
 

@@ -51,8 +51,11 @@ merge, and writing one is what produced the THIRTY-SECOND.
 to `df8d7c3a` on 2026-08-28, all ten checks green, verified into `origin/main` **by content** rather than
 by ancestry (trap 25). The solution targets `net10.0`, `SearchProvidersFtsTests` passes, and `#128`/`#134`
 were **closed as superseded** by it, on the `#135`→`#308` precedent. **`DW-080` phase B has not started.**
-**`SL-033` has ONE item left, `WBS-24.8`** — everything from `WBS-24.1` to `WBS-24.7` is `Implemented`,
-and `DEC-085` d3 handed `WBS-24.8` to a fresh session.
+**`SL-033`'s BUILD IS FINISHED: `WBS-24.8` MERGED as PR `#323` → `24738d4b` on 2026-08-29**, ten checks
+green, verified into `origin/main` by content. Every item `WBS-24.1`–`WBS-24.8` has now been built.
+⚠ **That is a repository fact and NOT a slice status** — a merged row still owes the operator a verdict,
+and which rows are at `Review` is deliberately not written here. `readiness_check(scope="slice",
+id="SL-033")` is the only answer that cannot go stale.
 ⛔ **THAT LAST SENTENCE NAMES THE ITEM AND NOT ITS POSITION, DELIBERATELY.** It used to read *"phase B …
 is §6 item 1 now"*, which `DEC-085` d3 falsified an hour later — **the THIRTY-SIXTH**. A list is
 renumbered exactly when work completes, which is the event that makes someone read this file, so a
@@ -71,7 +74,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **thirty-six** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **thirty-seven** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -81,6 +84,22 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE THIRTY-SEVENTH IS A LIFECYCLE STATUS WRITTEN INLINE IN PROSE — THE ONE THING THIS FILE ALREADY
+FORBIDS ITSELF, IN A SECTION THAT SAYS SO TWO SCREENS BELOW.** Three per-item blocks ended *"⚠ `Review` —
+your verdict"* (`WBS-24.1`, `24.3`, `24.4`). **All three rows have since been promoted to `Implemented`**,
+so a fresh session reading any of them was told a verdict was owed on work the operator had already
+settled — and §6's own standing paragraph says in bold that *which rows are at `Review` is not written
+here on purpose*. **The file contradicted itself, and the contradiction is the part that shipped.**
+⚠⚠ **IT IS THE THIRTY-FIRST'S FAULT CLASS ESCAPING ITS ORIGINAL SCOPE.** That entry ruled *do not write a
+LESSON's lifecycle status here*; the same reasoning applies verbatim to a `WBS-` row and nobody carried it
+across. **A rule written about one register is not a rule about one register** — the reason (a status is a
+column, and prose cannot be kept in step with it) never mentioned lessons at all.
+⭐⭐ **ONE ORDINAL FOR THREE INSTANCES, under the FIFTEENTH's and TWENTY-EIGHTH's family precedent: one
+fault class, found in one pass.** Replaced with the command rather than a fresher status, which is the only
+form that cannot rot — `readiness_check(scope="slice", id="SL-033")`.
+⚠ **FOUND BY THE FILE-NAME SWEEP, NOT BY AN ID PASS**: grepping `prm-next.md` for the artefacts I had
+touched surfaced it, while every identifier in those sentences was correct. A status is not an id.
 
 ⚠⚠⚠ **THE THIRTY-SIXTH IS A POINTER AT A LIST POSITION — AND A POSITION IS THE ONE THING GUARANTEED TO
 ROT.** The kickoff block said *"Phase B has not started, and it is §6 item 1 now"*, and §6's `DW-080`
@@ -1188,8 +1207,9 @@ discriminates, where on the container path it was INHERITED and would have passe
 the framework already does PER CALL; the answer differs inside one library.**
 
 ✅✅ **`WBS-24.1` IS DONE-CLAIMED (PR `#311` → `f968703`)** — user-configurable backlog columns.
-`AC-144` is `Met` (`AV-222`) and **`FR-032` auto-advanced to `Implemented`**. ⚠ The row is `Review`,
-not `Implemented`: that is YOUR verdict via `prompts/slice-review.md`.
+`AC-144` is `Met` (`AV-222`) and **`FR-032` auto-advanced to `Implemented`**. ⚠ The row was done-claimed on merge and
+**no status is written here on purpose** — `readiness_check(scope="slice", id="SL-033")` is the
+live answer, and the verdict is YOURS via `prompts/slice-review.md`.
 ⚠⚠ **ITS SIZING WAS WRONG IN THE CHEAP DIRECTION AND THE SAME TRAP IS LIVE FOR THE OTHER SEVEN.** The
 title said *"dense table … verified unbuilt"*; **the table had already shipped** and only the
 CONFIGURATION was missing. `DW-033`'s own text was accurate and narrow — **the WBS title's SUMMARY of it
@@ -1233,7 +1253,7 @@ silently; nothing compiles it.**
 `{name:'AR'}` also hit "Regul**ar**", "Extraordin**ar**y" and "**Ar**chitecture board". Use `exact: true`.
 
 ✅✅ **`WBS-24.3` IS DONE-CLAIMED (PR `#313` → `a794daa`)** — wiki version compare. `AC-146` `Met`
-(`AV-224`), **`FR-117` → `Implemented`**, `DW-039` `Done`. ⚠ `Review` — your verdict.
+(`AV-224`), **`FR-117` → `Implemented`**, `DW-039` `Done`. ⚠ **No status is written here** — `readiness_check(scope="slice", id="SL-033")` is the live answer.
 ⭐ **The row was really about a SOURCE COMMENT, not a diff.** *"Diff is deferred to P14 — viewable
 satisfies FR-117"* was a requirement-satisfaction judgement living where no register view could see it,
 untrue as written (`FR-117` says viewable **AND** diffable), and pointed at a phase `DEC-028` deferred
@@ -1248,7 +1268,7 @@ of them will fail a test if it is missing.**
 pre-existing exact-text assertion here; the fix was to scope the new fixture, not relax the old test.
 
 ✅✅ **`WBS-24.4` IS DONE-CLAIMED (PR `#314` → `58052b4`)** — locale-appropriate NUMBER formatting.
-`AC-147` `Met` (`AV-225`), **`NFR-037` → `Implemented`**, `DW-068` `Done`. ⚠ `Review` — your verdict.
+`AC-147` `Met` (`AV-225`), **`NFR-037` → `Implemented`**, `DW-068` `Done`. ⚠ **No status is written here** — `readiness_check(scope="slice", id="SL-033")` is the live answer.
 ⚠⚠ **ITS ROW WAS RIGHT ABOUT THE PROBLEM AND TOO SMALL ABOUT THE REMEDY — a FOURTH distinct way a row
 can mislead, after `24.1`'s wrong title-summary, `24.2`'s correction that held, and `24.3` being about a
 source comment.** `DW-068`'s census was exact (two `Intl.NumberFormat` sites in 347 files) but its
@@ -1433,27 +1453,44 @@ shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'
 **TEN**, the number the requirement's own verification note names. `AC-153` says so in its own text, and
 `DEC-085` d1 records that the operator declined to spin the gap out into its own `DW-` row.
 
-1. ▶▶▶ **`WBS-24.8` / `DW-028` — the `/session` presenter preview. THE LAST ITEM IN `SL-033`, AND LAST ON
-   PURPOSE** (`DEC-071` d1). ⚠ **`DEC-085` d3 HANDED THIS TO A FRESH SESSION** — start with
-   `prompts/slice-kickoff.md`. Nothing about it is warm: the `/session` read path, `SessionEndpoints.cs`
-   and `permission-role-matrix` §E.3 were all unread when the handoff was written, so there is no
-   re-derivation cost to worry about and no half-finished state to inherit.
-   ⚠⚠ **SLOW DOWN HERE.** It is a **second authorization path over content scoped to somebody else** — the
-   shape that produced `DEF-052` and `DEF-056`. **Treat the refusal as the feature and prove it by forcing
-   it.** ⚠ `navModel.ts`'s ACCESS map grants `session` to GUEST ONLY and that restraint holds (`DEF-053`
-   deliberately left it alone); a guest is bounded by a TIME WINDOW, so the targeting parameter must never
-   become the way a guest reads somebody else's slot. ⚠ **It still owes its axe route** (`DEC-072` d2).
-   ⭐ **WHAT THE HANDOFF ALREADY ESTABLISHED, so you do not re-derive it — these are repository facts,
-   not a snapshot of anyone's working state.** The route EXISTS on both sides: `navModel.ts` line ~30
-   defines `session` with `cta: true`, and `SessionEndpoints.cs` maps `/api/session` under
-   `RequireAuthorization()`. So this is **adding a targeting parameter and its authorization to a live
-   read path**, not building a surface. ⚠ **Everything else is unread** — the handler behind that group,
-   and `permission-role-matrix` §E.3. **Read the row's own text and sweep the NARRATIVE documents by
-   keyword before sizing** (`LL-008`, `LL-025`): that habit has now paid on all SEVEN built items, most
-   recently on `24.7`, where the architecture had already specified a screen the row never mentioned and
-   the feature turned out to be half built. ⚠ For the axe obligation, **measure the sweep rather than
-   quoting a number**: `grep -oE "page\.goto\('[^']+'\)" src/Acmp.Web/e2e/rtl-a11y.spec.ts | sort -u`.
-2. **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+✅✅ **`WBS-24.8` IS MERGED — PR `#323` → `24738d4b`, 2026-08-29, ten checks green.** `SL-033`'s build is
+finished. `FR-165` added by `SC-037` under `DEC-086` d4; `AC-154`/`AC-155` `Met` (`AV-232`/`AV-233`);
+`DW-028` `Done`. ⚠ The row is at `Review` — that is YOUR verdict, and `readiness_check(scope="slice",
+id="SL-033")` is the only place its status is written.
+⭐⭐ **THE SHAPE FOLLOWS FROM ONE FACT AND IT GENERALISES: `/session`'s SECURITY WAS AN *ABSENCE*.** Its own
+source says there is no parameter naming a meeting, a topic or a person, *"which is a stronger guarantee
+than checking that they did not"*. This item required exactly that parameter, so `DEC-086` d1 **isolated**
+it — its own query (no `Guest` in `AllowedRoles`), its own endpoint group **outside** the guest path
+allowlist, its own guarded route — leaving `GetMySessionQuery` untouched. **When an item asks you to add
+the thing whose absence IS the guarantee, isolate it; do not make the shared path conditional.**
+⚠⚠⚠ **THE FINDING TO CARRY, AND IT IS ABOUT TESTING DEFENCE IN DEPTH: A LAYER'S CORRECTNESS CAN BE
+STRUCTURALLY INVISIBLE TO ANY TEST THAT ENTERS THROUGH THE FRONT DOOR.** I wrote that adding `Guest` to the
+preview query's `AllowedRoles` was *"the single mutation"* that opens the door. **Measured false by applying
+it: all ten API tests stay GREEN**, because the path gate intercepts guests first — the very population that
+layer exists to refuse. Only a unit-level test against `AuthorizationBehavior` catches it. ⭐ **Each refusal
+is therefore pinned to a DISTINGUISHABLE SIGNATURE** (a `guest_scope` header vs. an `Authorization.Forbidden`
+row), because three tests all asserting `403` read as rigour while testing whichever layer runs first.
+⚠⚠ **A REFACTOR CAN PUSH A FILE UNDER THE PER-FILE COVERAGE FLOOR WITHOUT ADDING ONE UNTESTED LINE.**
+`GetMySession.cs` went 191 → ~155 lines when the shell moved into a shared composer: **covered** code left,
+the same three early returns stayed untested, and their share crossed `ADR-0016`'s 5% budget. **The
+numerator never moved; the denominator did.** Do not read such a failure as *"the new code is untested"*.
+⚠ **AND I HAD NOT RUN THE GATE** — `dotnet test` per project, never `check-coverage.mjs`. That is
+`WBS-24.5`'s *run the gates that exist, not the ones you remember*, repeated three days later. With Docker
+up the local gate reproduced CI **exactly** (466 files, 99.56%, same four files) — the THIRTY-FOURTH again.
+⚠ **`DEF-115` (Fixed here) came from LOOKING, which no gate can do:** `/session` rendered `10:40–10:55 ·
+١٥ دقيقة` — two digit systems on one line, because only the number path carried `WBS-24.4`'s
+`ar-u-nu-arab` pin. **It is also an `INV-014` divergence** — `DEC-037` quotes the reference as
+`١٠:٤٠–١٠:٥٥` — so the page had disagreed with its own `.dc.html` since `FR-159` shipped.
+⚠ **`DW-088` is NEW and was filed BEFORE the question it bore on reached the operator**, so the fork was
+not prejudged: `TopicDetail`'s download button is hardcoded `disabled`, and **no principal but a guest
+presenter can open a topic attachment anywhere in the product** — an inverted capability gradient nothing
+in the package states as intended.
+⭐ **THE COUNTER IS NOT BUMPED FOR ANY OF THIS, and the reasoning is recorded so it does not read as an
+oversight.** *"`SL-033` has ONE item left"* and *"`WBS-24.8` still owes its route"* were TRUE and became
+false because the work COMPLETED — that is an outcome arriving, which this section's own scope excludes
+(the `DW-084` precedent). Both are corrected above.
+
+1. ▶▶▶ **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1464,7 +1501,7 @@ shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-3. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
@@ -1608,7 +1645,7 @@ answer, and `readiness_check(scope="slice", id="SL-033")` names every row still 
 | `WBS-24.5` | `DW-036` / `FR-155`, `NFR-059`, `NFR-060` | the `Configuration` store (**resized S→L**, `DEC-080`) | ✅ `Implemented` |
 | `WBS-24.6` | `DW-035` / `FR-154` | audit-log export, **`{Auditor, Chairman, Secretary}`** (`ADR-0027`) · axe route **DISCHARGED** | ✅ `Implemented` |
 | `WBS-24.7` | `DW-063` / `NFR-010` | configuration-driven stream count | ✅ `Implemented` |
-| `WBS-24.8` | `DW-028` | the `/session` presenter preview — **LAST, on purpose** · **+ axe route** | `Approved` |
+| `WBS-24.8` | `DW-028` / `FR-165` | the `/session` presenter preview — **LAST, on purpose** · axe route **DISCHARGED** | merged `#323` |
 
 ⚠⚠ **THE ROWS MARKED `+ axe route` CARRY A SECOND OBLIGATION (`DEC-072` d2, `SC-032`): each adds its
 route to the live axe sweep in `e2e/rtl-a11y.spec.ts` IN THE SAME BATCH THAT BUILDS IT, and says so in its
@@ -1626,7 +1663,7 @@ BACKEND log; it repeated on the e2e log one item later. **Always grep a known-pr
 ⭐ **And scan the surface in the state that has the new UI in it.** `/audit`'s export is a `Menu`, and a
 closed `Menu` renders only its trigger — sweeping on load would have scored the panel, its `role="menu"`
 labelling and its `target-size` without ever rendering them. A true zero over the wrong set (`LL-015`).
-**`WBS-24.8` still owes its route.** `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
+✅ **`WBS-24.8`'s IS DISCHARGED — do NOT add `/session/preview` again.** `AC-155` carries it; `playwright --list` moved **92 → 94**, +2 for one test across two browsers. ⚠ **The baseline was RE-MEASURED and was 92, while this file recorded 90** — the rule is to measure, and it paid the first time it was applied after being written. `DW-071` is **`Activated`** because its FIRST trigger clause — *"whenever a new
 route ships — that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the
 sweep"* — fired against exactly these three surfaces. ⚠ **The row had been read as fully parked and it never
 was**: `DEC-071` d4 parked its SECOND clause (release sign-off) and nobody had read the first. **The summary
@@ -1634,10 +1671,16 @@ over a row had dropped half of what the row said** — `DEC-064` d2's failure in
 ⚠⚠ **DO NOT RE-QUOTE A COVERAGE RATIO FROM HERE; MEASURE IT** — `grep -oE "page\.goto\('[^']+'\)"
 `e2e/rtl-a11y.spec.ts` | sort -u`. This sentence used to read *"the sweep today visits three of fifty-two
 routes"*, and it was counting SURFACES: the kanban and the calendar are views inside `/backlog`, not routes.
-Measured 2026-08-27 the sweep visits **three distinct ROUTES** (`/backlog`, `/backlog/submit`, `/audit`)
-across **five surfaces** and **ten scan points** (five tests × two locales). ⭐⭐ **So adding a genuinely new
-route left the figure reading "three" while its composition changed completely — `LL-016`'s *a phrase can go
-stale without its number changing*, on a number that was never measured in the unit its own sentence named.**
+⛔⛔ **THE COUNT THAT SAT HERE IS DELETED, AND ITS DELETION IS THE THIRTY-THIRD'S RULING FINALLY APPLIED IN
+FULL.** This sentence read *"Measured 2026-08-27 the sweep visits three distinct ROUTES (`/backlog`,
+`/backlog/submit`, `/audit`)…"* — a command AND an answer, and the answer is the half that gets read.
+`WBS-24.8` added `/session/preview` and the figure went stale the moment the route shipped, which is exactly
+when someone next reads this file. **A count with a disclaimer attached is still a count: give the command or
+give nothing.** ⭐ The durable half is the *reason* the old figure misled — it was counting SURFACES while
+its own sentence said ROUTES, so the kanban and the calendar (views inside `/backlog`) inflated it.
+**`LL-016`'s *a phrase can go stale without its number changing*, on a number never measured in the unit it
+named.** ⭐ **Not tallied**: it was true when written and was falsified by work COMPLETING, which this
+section's scope excludes (the `DW-084` precedent) — but the half-applied fix is why it could go stale at all.
 ⚠ This does NOT activate `DW-041` or `DW-067`: both name release sign-off ALONE, which stays unscheduled.
 
 ⚠⚠ **READ THE CODE BEFORE BELIEVING ANY OF THESE EIGHT ROWS' SIZING.** **TWO** of `SL-032`'s four said
@@ -1650,7 +1693,7 @@ the meeting id, it raises an event with **zero consumers**, so the calendar **mu
 `MeetingDetailDto.ScheduledStart` + `AgendaItemDto.TopicId` from the **Meetings** API; and `DW-063` says
 `Stream.Create` **still has no caller**, so adding a sixth stream is a migration and a deployment.
 
-⚠⚠ **`WBS-24.8` (`DW-028`) IS THE ONE TO SLOW DOWN FOR.** It adds a targeting parameter to the `/session`
+▶ **HISTORY — `WBS-24.8` (`DW-028`) SHIPPED (`#323` → `24738d4b`). Kept because the reasoning is the method, not because the work is pending.** It was the one to slow down for: It adds a targeting parameter to the `/session`
 read path **and authorization on that parameter** — a second authorization path over content scoped to
 somebody else, which its own row names as the shape that produced `DEF-052` and `DEF-056`. **Treat the
 refusal as the feature and prove it by forcing it.** `navModel.ts`'s ACCESS map grants `session` to GUEST
