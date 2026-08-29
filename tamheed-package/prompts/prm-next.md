@@ -1453,10 +1453,19 @@ shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'
 **TEN**, the number the requirement's own verification note names. `AC-153` says so in its own text, and
 `DEC-085` d1 records that the operator declined to spin the gap out into its own `DW-` row.
 
-✅✅ **`WBS-24.8` IS MERGED — PR `#323` → `24738d4b`, 2026-08-29, ten checks green.** `SL-033`'s build is
-finished. `FR-165` added by `SC-037` under `DEC-086` d4; `AC-154`/`AC-155` `Met` (`AV-232`/`AV-233`);
-`DW-028` `Done`. ⚠ The row is at `Review` — that is YOUR verdict, and `readiness_check(scope="slice",
-id="SL-033")` is the only place its status is written.
+✅✅ **`WBS-24.8` IS `Implemented` (`DEC-087` d1) — PR `#323` → `24738d4b`, ten checks green.** `SL-033`'s
+BUILD IS COMPLETE: `WBS-24` and all eight children are `Implemented`, every bound criterion is `Met`, and
+slice-scope `wbs-done` and `acs-met` both PASS. `FR-165` added by `SC-037` under `DEC-086` d4;
+`AC-154`/`AC-155` `Met` (`AV-232`/`AV-233`); `DW-028` `Done`.
+⛔⛔ **`SL-033` IS DELIBERATELY NOT CLOSED (`DEC-088`), AND THERE IS NOTHING LEFT TO BUILD IN IT.** The one
+rule still failing is `defects-closed` naming **`DEF-108`**, held open by `DEC-077` d1. **Do not read the
+open slice as unfinished work and do not go looking for an unimplemented row.** ⚠ The operator's FIRST
+answer was *"close it now"* and they reversed it once the collision with their own `DEC-077` d1 was put in
+front of them — a waiver and `force: true` are theirs alone, so neither was inferred (`LL-002`).
+⭐ **Greens do not discharge `DEF-108`.** The backend ran green twice more here with
+`SearchProvidersFtsTests` passing and a full local run had Integration 69/2-skipped — offered as fact and
+explicitly not as a closer, because that row conditions on the CAUSE being chased and its own text records
+the rule that a backend integration failure is not called flaky on one more green.
 ⭐⭐ **THE SHAPE FOLLOWS FROM ONE FACT AND IT GENERALISES: `/session`'s SECURITY WAS AN *ABSENCE*.** Its own
 source says there is no parameter naming a meeting, a topic or a person, *"which is a stronger guarantee
 than checking that they did not"*. This item required exactly that parameter, so `DEC-086` d1 **isolated**
@@ -1485,6 +1494,18 @@ up the local gate reproduced CI **exactly** (466 files, 99.56%, same four files)
 not prejudged: `TopicDetail`'s download button is hardcoded `disabled`, and **no principal but a guest
 presenter can open a topic attachment anywhere in the product** — an inverted capability gradient nothing
 in the package states as intended.
+⚠⚠ **`DEF-116` (Fixed, `#324` → `3f93ba66`) — THE SLICE REVIEW COULD NOT BE HELD UNTIL AN INSTRUMENT WAS
+FIXED.** `gen-slice-review-slate.mjs` derived an item's criterion by regex over its own title and aborted
+unless **exactly one** matched. `WBS-24.8` names two; **`WBS-24.4` names two and `WBS-24.5` names three**,
+so the multi-criterion path had never executed since the generator landed in `#315`. That generator **is**
+how `LL-011` is discharged, so an item it cannot render is one whose review would have to be hand-built.
+⚠ **A QUIETER GAP CAME WITH IT AND IS STILL UNENFORCED:** every earlier item's WBS row was amended after
+the build to NAME the criteria it satisfied — `24.8`'s never was. **Nothing enforces that amendment and no
+gate sees its absence**, so an item can be merged, verdicted and left permanently unreviewable. When you
+finish an item, make its row a completion record naming its `AC-` ids.
+✅ **`LL-030` and `LL-031` are Approved + PINNED (`DEC-087` d2/d3) and `handoff_emit` ran in the SAME
+batch**, so they bind now rather than in two days (`DEF-107`'s failure mode).
+
 ⭐ **THE COUNTER IS NOT BUMPED FOR ANY OF THIS, and the reasoning is recorded so it does not read as an
 oversight.** *"`SL-033` has ONE item left"* and *"`WBS-24.8` still owes its route"* were TRUE and became
 false because the work COMPLETED — that is an outcome arriving, which this section's own scope excludes
