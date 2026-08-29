@@ -53,14 +53,30 @@ if (!slices[SLICE]) fatal(`slice ${SLICE} not found`);
 const items = wbs.filter((w) => w.slice_id === SLICE && w.lifecycle_status === 'Review');
 if (!items.length) fatal(`no work items in ${SLICE} are at Review — there is nothing to adjudicate`);
 
-/** A completion record names its criterion; anything else is a guess, and a guess is a hole. */
-const criterionOf = (item) => {
-  const found = [...new Set((item.title.match(/\bAC-\d+\b/g) ?? []))];
-  if (found.length !== 1) {
-    fatal(`${item.id} names ${found.length} acceptance criteria (${found.join(', ') || 'none'}); expected exactly one`);
+/**
+ * A completion record names its criteria; anything else is a guess, and a guess is a hole.
+ *
+ * ⚠ DEF-116 — THIS ACCEPTS ONE OR MORE, AND USED TO DEMAND EXACTLY ONE. That predicate had never
+ * executed against a multi-criterion item: every interview since this instrument landed (#315) has
+ * adjudicated a single-criterion row, while WBS-24.4 names two criteria and WBS-24.5 names three, so
+ * both would have aborted it. WBS-24.8 is where it finally fired — and because this generator IS how
+ * LL-011 is discharged, an item it cannot render is one whose review would have to be hand-built,
+ * which is precisely what that lesson forbids.
+ *
+ * It still fails CLOSED on zero, and that arm is deliberate rather than leftover strictness: an item
+ * sitting at Review naming no criterion is genuinely unreviewable, and rendering it would hand the
+ * operator a page with nothing to adjudicate — the same harm wearing a different hat.
+ */
+const criteriaOf = (item) => {
+  const found = [...new Set((item.title.match(/\bAC-\d+\b/g) ?? []))]
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  if (!found.length) {
+    fatal(`${item.id} names no acceptance criterion; a completion record must name the criteria it satisfied`);
   }
-  if (!acs[found[0]]) fatal(`${item.id} names ${found[0]}, which is not in the register`);
-  return acs[found[0]];
+  for (const id of found) {
+    if (!acs[id]) fatal(`${item.id} names ${id}, which is not in the register`);
+  }
+  return found.map((id) => acs[id]);
 };
 
 const latestVerdict = (acId) => {
@@ -77,9 +93,20 @@ const block = (label, text) => (text ? `<div class="f"><h4>${esc(label)}</h4>${p
 const sections = items
   .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
   .map((w) => {
-    const a = criterionOf(w);
-    const v = latestVerdict(a.id);
+    const criteria = criteriaOf(w);
+    /* The requirement is read from the first criterion: an item's criteria all answer to the same
+       requirement by construction, and if they ever did not, the header would be lying rather than
+       merely incomplete — so that assumption is asserted below instead of assumed. */
+    const a = criteria[0];
+    /* Asserted here so a criterion with no verdict aborts the whole slate rather than rendering a
+       section the operator could rule on without evidence. */
+    criteria.forEach((c) => latestVerdict(c.id));
     const q = reqs[a.requirement_id] ?? fatal(`requirement ${a.requirement_id} (of ${a.id}) not found`);
+    for (const c of criteria) {
+      if (c.requirement_id !== a.requirement_id) {
+        fatal(`${w.id}: ${c.id} answers to ${c.requirement_id} but ${a.id} answers to ${a.requirement_id}; one header cannot describe both`);
+      }
+    }
     /* The DW- row is optional: not every work item closes one. Absent is fine; wrong is not. */
     const dwId = [...new Set((w.title.match(/\bDW-\d+\b/g) ?? []))][0];
     const d = dwId ? dws[dwId] : null;
@@ -87,7 +114,10 @@ const sections = items
     return `
   <section>
     <h2>${esc(w.id)} <span class="st">${esc(w.lifecycle_status)}</span></h2>
-    <p class="meta">${esc(a.id)} verdict <b>${esc(v.verdict)}</b> (${esc(v.id)}) &middot;
+    <p class="meta">${criteria.map((c) => {
+      const cv = latestVerdict(c.id);
+      return `${esc(c.id)} verdict <b>${esc(cv.verdict)}</b> (${esc(cv.id)})`;
+    }).join(' &middot; ')} &middot;
       ${esc(q.id)} <b>${esc(q.lifecycle_status)}</b>${d ? ` &middot; ${esc(d.id)} <b>${esc(d.lifecycle_status)}</b>` : ''}</p>
 
     <h3>The work item &mdash; ${esc(w.id)}</h3>
@@ -96,13 +126,17 @@ const sections = items
     <h3>The requirement &mdash; ${esc(q.id)}</h3>
     ${block('As stored', q.statement || q.title)}
 
-    <h3>The acceptance criterion &mdash; ${esc(a.id)}</h3>
-    ${block('Title', a.title)}
-    ${block('Criterion, as stored', a.statement)}
+    ${criteria.map((c) => {
+      const cv = latestVerdict(c.id);
+      return `
+    <h3>The acceptance criterion &mdash; ${esc(c.id)}</h3>
+    ${block('Title', c.title)}
+    ${block('Criterion, as stored', c.statement)}
 
-    <h3>The verdict &mdash; ${esc(v.id)}</h3>
-    <p class="meta">verified_by <b>${esc(v.verified_by)}</b> &middot; method <b>${esc(v.verification_method)}</b> &middot; against_commit <code>${esc(v.against_commit)}</code></p>
-    ${block('Evidence, as stored', v.evidence)}
+    <h3>The verdict &mdash; ${esc(cv.id)}</h3>
+    <p class="meta">verified_by <b>${esc(cv.verified_by)}</b> &middot; method <b>${esc(cv.verification_method)}</b> &middot; against_commit <code>${esc(cv.against_commit)}</code></p>
+    ${block('Evidence, as stored', cv.evidence)}`;
+    }).join('\n')}
     ${d ? `<h3>The deferred-work row it closed &mdash; ${esc(d.id)}</h3>${block('As stored', d.title)}` : ''}
   </section>`;
   })
