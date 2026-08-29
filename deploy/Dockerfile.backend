@@ -26,17 +26,39 @@ WORKDIR /src
 COPY global.json acmp.sln ./
 COPY --parents src/**/*.csproj ./
 RUN dotnet restore src/Acmp.Api/Acmp.Api.csproj \
- && dotnet restore src/Acmp.Worker/Acmp.Worker.csproj
+ && dotnet restore src/Acmp.Worker/Acmp.Worker.csproj \
+ && dotnet restore src/Acmp.HealthProbe/Acmp.HealthProbe.csproj
 COPY src/ ./src/
 # Two publishes in one stage: the second reuses the first's already-compiled shared assemblies (incremental),
 # so shared code is compiled once rather than once per image.
 RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-restore \
- && dotnet publish src/Acmp.Worker/Acmp.Worker.csproj -c Release -o /app/worker --no-restore
+ && dotnet publish src/Acmp.Worker/Acmp.Worker.csproj -c Release -o /app/worker --no-restore \
+ && dotnet publish src/Acmp.HealthProbe/Acmp.HealthProbe.csproj -c Release -o /app/api --no-restore
 
-# --- API runtime (HTTP; curl for the compose healthcheck) ---
+# --- API runtime (HTTP; the healthcheck is a .NET probe, not curl) ---
+# DW-080 phase B / DEC-090 d1 — the base is CHISELED-EXTRA, chosen against MEASURED findings rather than
+# documentation: 162 MB against Debian's 229; medium CVEs 26 -> 4 and low 13 -> 7 with no highs, where BOTH
+# alpine variants carry two; glibc, so the musl/native-interop risk around Microsoft.Data.SqlClient is gone.
+#
+# ⚠⚠ THE `-extra` SUFFIX IS LOAD-BEARING AND IS NOT AN OPTIMISATION TO STRIP. Plain chiseled ships NO ICU,
+# and a .NET app on a no-ICU base does NOT fail at startup — it starts, exits 0, and silently enters
+# globalization-invariant mode, throwing CultureNotFoundException only when a non-invariant culture is first
+# TOUCHED. ACMP's API touches none today (all 10 CultureInfo uses are InvariantCulture; RequestLocalization,
+# IStringLocalizer, .resx and new CultureInfo return zero across 693 .cs files), so the plain image would
+# look perfectly healthy while arming a trap for the first server-side culture code anyone writes.
+#
+# ⚠ `-extra` IS ALSO NOT INTERCHANGEABLE WITH alpine-extra. That image ships ICU 78.1 against this one's
+# 74.2, and CLDR changed ar-SA's default calendar in between: the same published binary renders a Hijri
+# date here and a Gregorian one there, with no exception and no log line. THE ICU VERSION IS THE RISK, not
+# musl — which is why a base bump that changes the ICU major needs the Arabic render checked, not just a
+# green suite.
+#
+# ⚠ curl is gone because chiseled has no shell and no package manager. The compose healthcheck runs
+# Acmp.HealthProbe.dll through the dotnet host instead, and it still probes /readyz rather than a socket,
+# because DEF-079 was exactly a healthcheck that could only fail if the process stopped answering TCP.
 # Runs as the image's built-in non-root `app` user (UID 1654, ships in the aspnet images) — C-CON-001 / DS-0002.
 # Kestrel binds 8080 (unprivileged port), so no root/cap_net_bind is needed.
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7 AS api
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:f5b3b2e2e548828d50e349726f51a5de001286f02c4bbde77db0dd34eb9f55ff AS api
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown
@@ -45,7 +67,6 @@ LABEL org.opencontainers.image.title="ACMP API" \
       org.opencontainers.image.version="${IMAGE_VERSION}" \
       org.opencontainers.image.revision="${IMAGE_REVISION}" \
       org.opencontainers.image.created="${IMAGE_CREATED}"
-RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/api ./
 ENV ASPNETCORE_ENVIRONMENT=Production
@@ -56,7 +77,7 @@ ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
 
 # --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
 # IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7 AS worker
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:f5b3b2e2e548828d50e349726f51a5de001286f02c4bbde77db0dd34eb9f55ff AS worker
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown

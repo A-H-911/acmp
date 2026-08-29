@@ -270,7 +270,11 @@ services:
       # ⚠ SEQUENCING (DEC-056 d2): this line may only point at /readyz once the object-store probe is fixed.
       # Repointing while /readyz is still 503 would mark the api container unhealthy the moment it applied and
       # risk restart churn on a live stack — which is why the probe fix ships in the same PR, ahead of this.
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/readyz || exit 1"]
+      # DW-080 phase B / DEC-090 d2 — CMD, not CMD-SHELL, and a .NET probe rather than curl: the api
+      # base is chiseled and ships NO shell and NO package manager, so neither half of the old check
+      # could survive. It still probes /readyz, which reaches SQL Server, Hangfire and object storage —
+      # a TCP-only check would have been free and would have rebuilt DEF-079 exactly.
+      test: ["CMD", "dotnet", "/app/Acmp.HealthProbe.dll"]
       interval: 15s
       timeout: 5s
       retries: 12
