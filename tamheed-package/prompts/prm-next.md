@@ -1516,21 +1516,34 @@ oversight.** *"`SL-033` has ONE item left"* and *"`WBS-24.8` still owes its rout
 false because the work COMPLETED — that is an outcome arriving, which this section's own scope excludes
 (the `DW-084` precedent). Both are corrected above.
 
-1. ▶▶▶ **`WBS-25.1` (`DW-080` PHASE B) — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE
-   QUESTION.** ⚠ **It is a `WBS-` row in `SL-034` now** (`DEC-089` d2), not a bare `DW-` row — measured
-   2026-08-29, NONE of the 178 `wbs-item` rows named it, so it would have been invisible to `wbs-done`,
-   to scoped readiness, and to `G-TRACE`'s wbs-or-slice leg. That is `DEF-087`'s shape.
-   ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
-   findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
-   IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
-   SINCE .NET 6 INVARIANT MODE *THROWS* `CultureNotFoundException` FOR ANY NON-INVARIANT CULTURE.** ACMP
-   creates `ar-SA` and does `LCID 1025` FREETEXT, so **a naive minimal-base move would not degrade
-   Arabic, it would throw at runtime — after compiling and unit-testing perfectly.** The clause stays
-   reachable through the documented escape hatches (`icu-libs` + `icu-data-full` on alpine, or the
-   `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
-   ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
-   proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-2. **`WBS-25.2` (`DW-079`)** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+✅✅ **`WBS-25.1` (`DW-080` PHASE B) IS MERGED — PR `#325` → `1d7cb04b`, ten checks green INCLUDING the
+e2e leg the row demanded.** `DEC-090` d1 chose **`aspnet:10.0-noble-chiseled-extra`**; d2 replaced the
+shell healthcheck with `Acmp.HealthProbe`. Same source, two bases: **326 MB → 258 MB (−21%)**, application
+CVEs **75 → 11 (−85%)**, zero criticals either side. ⚠ The row is at `Review` — your verdict.
+⭐⭐ **THE SPIKE FALSIFIED WHAT THIS FILE PREDICTED, AND THE CORRECTION IS THE VALUABLE PART.** A no-ICU
+base does **NOT** throw at runtime here. It starts, exits 0, and silently enters invariant mode, throwing
+only when a non-invariant culture is **touched** — and ACMP's API touches none (all 10 `CultureInfo` uses
+are `InvariantCulture`; `RequestLocalization`/`IStringLocalizer`/`.resx`/`new CultureInfo` are **zero
+across 693 files**). Plain chiseled would have looked perfectly healthy while arming a trap.
+⭐⭐ **THE REAL DISCRIMINATOR IS THE ICU *VERSION*, NOT musl.** alpine-extra ships ICU 78.1 against
+chiseled-extra's 74.2, and CLDR moved `ar-SA`'s default calendar in between — the same binary renders a
+Hijri date on one and a Gregorian one on the other, **no exception, no log line, Arabic only**. ⛔ So the
+`-extra` suffix is load-bearing and a digest bump that changes the ICU major needs the Arabic render
+checked, not just a green suite.
+⚠ **`LCID 1025` IS A SQL SERVER CONCERN, NOT A .NET ONE** — every reference is an EF migration creating a
+full-text index with `LANGUAGE 1025`, executed inside `sqlserver-fts`, an image `NFR-054` excludes.
+⚠⚠ **A GREEN e2e DOES NOT PROVE THE HEALTHCHECK, AND CHECKING THAT FOUND `DW-091`:** both api dependents
+use `service_started`, not `service_healthy`, so **nothing consumes the healthcheck's verdict** —
+`DEF-078`/`DEF-079`'s shape a third time, with a compose comment asserting the opposite. The probe itself
+was then forced both ways through Docker's own plumbing (200 → healthy, 503 → unhealthy with the reason in
+`docker inspect`).
+⚠ **NO AC WAS WRITTEN AND THAT IS DELIBERATE (`DW-090`):** `NFR-054`'s own verification names a CI check
+— `docker image inspect`, assert ≤ 500 MB, base layer verified — and **no such check exists** in any of the
+three workflow files. ⭐ A size check ALONE would have passed on Debian at 326 MB, reporting compliance
+with a *minimal-base* clause while sitting on the base it excludes.
+⚠ **`DW-066`'s recorded 257 MB is stale by a runtime major** — measured on .NET 8; .NET 10 made it 326 MB.
+
+1. ▶▶▶ **`WBS-25.2` (`DW-079`)** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
