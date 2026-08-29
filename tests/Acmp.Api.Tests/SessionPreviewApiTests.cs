@@ -238,6 +238,66 @@ public class SessionPreviewApiTests
         (await AuditActionsAsync(factory)).Should().Contain("Session.PresenterPreviewed");
     }
 
+    // EMPTY-STATE PARITY, THE CANCELLED-MEETING ARM. FR-165 says the preview reproduces the presenter's
+    // empty states as faithfully as their content, and a cancelled meeting is one: the presenter's own
+    // /session excludes it, so a preview that still rendered the slot would tell a Secretary to expect a
+    // meeting that will not happen.
+    //
+    // ⚠ THIS TEST EXISTS BECAUSE THE COVERAGE GATE FOUND ITS ABSENCE. The criterion claimed this parity
+    // and nothing forced it — the guard was written, believed, and never executed. Every uncovered line
+    // in this feature was an early-return of exactly this kind: I proved the AUTHORIZATION guards by
+    // forcing them and took the DATA guards on trust.
+    [Fact]
+    public async Task A_cancelled_meeting_is_204_because_the_presenter_would_see_nothing_either()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var (meetingId, topicId, _) = await ScenarioAsync(factory);
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        var cancelled = await sec.PostAsJsonAsync($"/api/meetings/{meetingId}/cancel",
+            new { reason = "Quorum could not be reached" });
+        cancelled.IsSuccessStatusCode.Should().BeTrue("the cancellation is this test's precondition");
+
+        var response = await sec.GetAsync(Url(meetingId, topicId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // A topic that is not on THAT meeting's agenda. The pair with the test above is what pins the
+    // behaviour: the meeting resolves and the item does not, so this exercises the other arm of the
+    // composer and proves the preview cannot be aimed at an arbitrary topic id to learn anything.
+    [Fact]
+    public async Task A_topic_that_is_not_on_the_agenda_is_204()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var (meetingId, _, _) = await ScenarioAsync(factory);
+
+        var response = await Client(factory, "Secretary", sub: "kc-sec")
+            .GetAsync(Url(meetingId, Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // FAIL CLOSED when the agenda names a presenter with no member row behind it. There is no person to
+    // preview, so there is nothing to render and nothing to audit — and the alternative, composing the
+    // view with a null window, would show a banner belonging to nobody.
+    [Fact]
+    public async Task A_presenter_id_with_no_member_row_is_204_and_audits_nothing()
+    {
+        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var (meetingId, topicId, _) = await ScenarioAsync(factory, withPresenter: false);
+        var sec = Client(factory, "Secretary", sub: "kc-sec");
+
+        var assigned = await sec.PostAsJsonAsync($"/api/meetings/{meetingId}/agenda/items/{topicId}/presenter",
+            new { presenterUserId = Guid.NewGuid(), presenterName = "Nobody At All" });
+        assigned.IsSuccessStatusCode.Should().BeTrue("the dangling presenter assignment is the precondition");
+
+        var response = await sec.GetAsync(Url(meetingId, topicId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await AuditActionsAsync(factory)).Should().NotContain("Session.PresenterPreviewed");
+    }
+
     // EMPTY-STATE PARITY (FR-165): a slot nobody is presenting is what the PRESENTER's page would show as
     // "you are not presenting", so the preview shows it too. And no audit row, because nothing was read —
     // the boundary DEC-086 d3 draws is disclosure, not the attempt.

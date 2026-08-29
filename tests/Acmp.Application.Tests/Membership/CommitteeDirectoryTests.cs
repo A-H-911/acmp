@@ -152,6 +152,35 @@ public class CommitteeDirectoryTests
         found.AccessExpiresAt.Should().Be(expiry);
     }
 
+    // The two argument guards, forced rather than trusted.
+    //
+    // ⚠ THESE EXIST BECAUSE THE COVERAGE GATE FOUND THEIR ABSENCE, and the reason is worth keeping: both
+    // are early returns that no happy-path test can reach, so they were written, believed, and never
+    // executed. An empty subject and an empty Guid are the two ways a caller can ask this port a question
+    // with no answer, and a lookup on either would otherwise scan the table for a value that cannot match.
+    [Fact]
+    public async Task ResolveMemberAsync_is_null_for_a_blank_subject_without_touching_the_table()
+    {
+        await using var db = NewDb();
+        db.Members.Add(Member("kc-member", CommitteeRole.Member));
+        await db.SaveChangesAsync();
+
+        var directory = new CommitteeDirectory(db);
+
+        (await directory.ResolveMemberAsync("")).Should().BeNull();
+        (await directory.ResolveMemberAsync("   ")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ResolveMemberByPublicIdAsync_is_null_for_an_empty_guid()
+    {
+        await using var db = NewDb();
+        db.Members.Add(Member("kc-member", CommitteeRole.Member));
+        await db.SaveChangesAsync();
+
+        (await new CommitteeDirectory(db).ResolveMemberByPublicIdAsync(Guid.Empty)).Should().BeNull();
+    }
+
     // Fail closed. An unknown target is "no such slot", never an unscoped answer — and the preview handler
     // leans on this null to return its empty state rather than composing a view for nobody.
     [Fact]
