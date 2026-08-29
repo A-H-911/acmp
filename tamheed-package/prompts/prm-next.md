@@ -1457,6 +1457,11 @@ shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'
 BUILD IS COMPLETE: `WBS-24` and all eight children are `Implemented`, every bound criterion is `Met`, and
 slice-scope `wbs-done` and `acs-met` both PASS. `FR-165` added by `SC-037` under `DEC-086` d4;
 `AC-154`/`AC-155` `Met` (`AV-232`/`AV-233`); `DW-028` `Done`.
+✅ **`DEF-108` NOW HAS A CHECKABLE END CONDITION IN ITS OWN ROW (`DEC-089` d1).** It is chased when the
+cause is diagnosed, OR the failure recurs under `DW-084`/`DW-085`'s bounded presentation with a log naming
+a cause, OR the operator explicitly disposes of it. ⛔ **ACCUMULATED GREENS SATISFY NO CLAUSE, BY DESIGN** —
+an end condition greens could satisfy would silently repeal the rule that a backend integration failure is
+not called flaky on one more green. ⚠ Clause two waits on a FAILURE, so quiet time moves it no closer.
 ⛔⛔ **`SL-033` IS DELIBERATELY NOT CLOSED (`DEC-088`), AND THERE IS NOTHING LEFT TO BUILD IN IT.** The one
 rule still failing is `defects-closed` naming **`DEF-108`**, held open by `DEC-077` d1. **Do not read the
 open slice as unfinished work and do not go looking for an unimplemented row.** ⚠ The operator's FIRST
@@ -1511,7 +1516,10 @@ oversight.** *"`SL-033` has ONE item left"* and *"`WBS-24.8` still owes its rout
 false because the work COMPLETED — that is an outcome arriving, which this section's own scope excludes
 (the `DW-084` precedent). Both are corrected above.
 
-1. ▶▶▶ **`DW-080` PHASE B — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE QUESTION.**
+1. ▶▶▶ **`WBS-25.1` (`DW-080` PHASE B) — AND THE DECIDING FACT IS ALREADY FOUND, WHICH CHANGES THE
+   QUESTION.** ⚠ **It is a `WBS-` row in `SL-034` now** (`DEC-089` d2), not a bare `DW-` row — measured
+   2026-08-29, NONE of the 178 `wbs-item` rows named it, so it would have been invisible to `wbs-done`,
+   to scoped readiness, and to `G-TRACE`'s wbs-or-slice leg. That is `DEF-087`'s shape.
    ⛔ **The base is NOT chosen; `DEC-083` d2 requires a spike of BOTH alpine and distroless with MEASURED
    findings.** ⚠⚠ **BUT MICROSOFT'S OWN CONTAINER DOCS SAY ALPINE, MARINER-DISTROLESS AND UBUNTU-CHISELED
    IMAGES SHIP WITHOUT ICU AND "only work with apps configured for globalization invariant mode" — AND
@@ -1522,7 +1530,7 @@ false because the work COMPLETED — that is an outcome arriving, which this sec
    `-extra` image variants, which DO ship ICU), but the size win is far smaller than `DW-066` assumes.
    ⚠ **That is DOCUMENTATION, not measurement** — first-party and authoritative, but the spike that
    proves this app boots and Arabic FREETEXT returns rows still needs Docker. Bring a decision, not a pick.
-2. **`DW-079`** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
+2. **`WBS-25.2` (`DW-079`)** — document-only. ⚠ It cannot close `NFR-018` and **no acceptance criterion may be
    written from it** (trap 16c).
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
