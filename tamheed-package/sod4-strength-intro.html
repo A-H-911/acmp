@@ -1,0 +1,164 @@
+<h2 style="font-family:inherit;color:#111;font-size:1.15rem">What is being asked</h2>
+
+<p><code>WBS-26.1</code> is the first item of <code>SL-035</code>. Its row and <code>DEC-094</code> d1 both say
+the same thing in bold: <b>SoD-4's enforcement strength is settled before any guard is written</b>, because a
+hard refusal, a warn-and-audit, and a conflict-of-interest declaration workflow are three different products.
+<code>NFR-064</code> &mdash; created by <code>SC-038</code> for this work &mdash; additionally requires that the
+strength of <b>all five</b> SoD rules be recorded, not only SoD-4's.</p>
+
+<p>That is <b>three questions</b>, below. Every fact in this section is measured; every record it leans on is
+quoted verbatim beneath it.</p>
+
+<h3>The measured state of all five rules</h3>
+
+<p>Identifier census across <code>src/**/*.cs</code>, this session &mdash; <code>SoD-1</code> 11,
+<code>SoD-2</code> 10, <code>SoD-3</code> 13, <code>SoD-5</code> 11, <b><code>SoD-4</code> zero</b>. The four
+non-zero siblings are the control proving the sweep had a subject. But a count of the enforcing mechanism is not
+a measure of the property, so each predicate was read:</p>
+
+<table>
+<tr><th>Rule</th><th>Strength, read from the code</th><th>How it is enforced</th></tr>
+<tr><td><b>SoD-1</b><br>verifier &ne; owner/assignee</td><td><b>Hard refusal</b></td>
+    <td>Shared predicate <code>CanVerifyAction</code>; the handler audits the denied attempt, then throws
+    <code>ForbiddenAccessException</code> (403), regardless of role.</td></tr>
+<tr><td><b>SoD-2</b><br>MoM approver &ne; sole author</td><td><b>Warn-and-audit</b> (soft, by spec)</td>
+    <td>Approval is <b>allowed</b>; <code>isSoleAuthor</code> is persisted on the aggregate and a distinct
+    <code>Meetings.MinutesApprovedBySoleAuthor</code> audit event is emitted for four-eyes review.</td></tr>
+<tr><td><b>SoD-3</b><br>cast &ne; count &ne; override</td><td><b>Hard refusal</b></td>
+    <td>Shared predicate <code>HasIndependentCoAttestation</code>; the issuing chair may not be the vote's
+    counter of record &mdash; denied attempt audited, then 403.</td></tr>
+<tr><td><b>SoD-4</b><br>recorder &ne; sole owner/presenter + COI</td><td style="background:#fdecea"><b>Absent</b></td>
+    <td>No predicate, no guard, no identifier anywhere in the source.</td></tr>
+<tr><td><b>SoD-5</b><br>Administrator excluded</td><td><b>Structural</b> &mdash; see Q3</td>
+    <td>Encoded by <b>never listing</b> <code>Administrator</code> in a committee-content capability's role
+    list; a Deny is the <i>absence</i> of a grant, so the runtime answer is a 403 with no SoD predicate
+    involved.</td></tr>
+</table>
+
+<h3>Q1 &mdash; SoD-4's first half: <i>decision recorder &ne; sole owner/presenter</i>. What strength?</h3>
+
+<p><b>Option A &mdash; hard refusal</b>, matching SoD-1 and SoD-3: audit the denied attempt, then 403. Follows
+<code>C-AUTH-05</code>'s summary wording (<i>"enforced as hard authZ checks"</i>) literally.</p>
+<p><b>Option B &mdash; warn-and-audit</b>, matching SoD-2: recording is allowed, the overlap is flagged on the
+decision and a distinct audit event is emitted. The pattern already exists and the catalogue already accepts it
+for one member.</p>
+<p><b>Option C &mdash; record SoD-4 as deliberately not enforced in v1</b>, satisfying <code>NFR-064</code>'s
+<i>strength-is-recorded</i> clause without building a guard.</p>
+
+<p><b>The agent's recommendation is B, and the reasoning against A is the reason the row asks at all.</b> This
+committee has roughly twenty people and the Secretary drafts decisions as their ordinary job
+(<code>RecordDecision</code>'s own header: <i>"the Secretary (or Chairman) drafts a decision against a
+topic"</i>). A hard <i>recorder &ne; owner</i> refusal would block a Secretary who also happens to own the topic
+from recording its decision at all &mdash; legitimate minute-taking refused by a control meant to stop
+self-dealing. B makes the overlap <b>visible and reviewable</b> without making it impossible, which is exactly
+the trade the catalogue already accepted for SoD-2. &#9888; <b>This is the agent's inference, not a reading of
+any record</b>: no document states which way SoD-4 should go, which is why the row was written.</p>
+
+<p>&#9888; <b>Option C is offered for completeness and is not recommended</b>, because <code>DEC-094</code> d1
+already ruled that the row is settled <i>and then built</i>.</p>
+
+<h3>Q2 &mdash; SoD-4's second half: <i>COI exclusion</i>. New evidence says this is already scoped to Phase 2.</h3>
+
+<p><b>This is the pre-interview sweep changing the question, which is the reason <code>LL-005</code> says to
+sweep before rather than after.</b> Measured this session across every register:</p>
+
+<ul>
+<li><b><code>FR-076</code></b> already specifies the COI feature, and specifies its strength <b>explicitly and
+softly</b>: <i>"a voter may declare a conflict; the declaration is recorded <b>without automatically excluding
+the voter</b> (exclusion is a chairman decision)"</i>. It is priority <b>S</b>, <code>mvp=0</code>,
+<b><code>Deferred</code></b>, Phase 2.</li>
+<li><b><code>DW-004</code></b> &mdash; <i>"Conflict-of-interest tracking per vote"</i>, <code>Open</code>,
+trigger <b>Phase 2</b>, with v1 handling recorded as <i>"Honor system, noted in MoM"</i>.</li>
+<li><b><code>WBS-9.7</code></b> already schedules it under <code>PH-2</code>.</li>
+<li><b><code>ADR-0010</code></b>'s consequences name <i>"conflict-of-interest recusals are expressible"</i>
+&mdash; and a <b>self-declared voluntary recusal already ships</b> (<code>RecuseVote</code>): the current voter
+excludes their own ballot from quorum and tally, audited as <code>Decisions.VoteRecused</code>. It carries <b>no
+declared reason, no conflict record and no chairman involvement</b>, so it is a withdrawal, not a COI
+declaration.</li>
+</ul>
+
+<p><b>So building a COI <i>exclusion</i> in <code>WBS-26.1</code> would contradict <code>FR-076</code>'s own
+words</b> &mdash; that requirement forbids automatic exclusion &mdash; <b>and would pull Phase-2 scope into v1
+without a scope change.</b> That is the shape trap 32 exists for: a build that reverses a settled clause nobody
+swept for.</p>
+
+<p><b>Option A &mdash; confirm COI is out of v1.</b> <code>WBS-26.1</code> covers the <i>recorder</i> half only,
+and SoD-4's COI strength is recorded as <i>"specified by <code>FR-076</code>, deferred to Phase 2 with
+<code>DW-004</code>; v1 handling is the honor system plus voluntary recusal"</i>.</p>
+<p><b>Option B &mdash; pull <code>FR-076</code> into v1.</b> That is a scope change, not a strength choice: it
+needs an <code>SC-</code> moving <code>FR-076</code> from <code>Deferred</code> to <code>Approved</code> and
+activating <code>DW-004</code>.</p>
+
+<p><b>The agent's recommendation is A.</b> The Phase-2 disposition is prior scoping that <code>DEC-094</code> d1
+did not have in front of it, and honouring it costs nothing. B is available and is yours alone.</p>
+
+<h3>Q3 &mdash; SoD-5 is structural, and <code>NFR-064</code>'s strength clause is binary</h3>
+
+<p><code>NFR-064</code> requires each rule's strength be recorded <i>"as either a hard refusal or a
+warn-and-audit"</i>. SoD-5 is neither in mechanism: it is enforced by <b>never granting</b> the capability, so
+no predicate runs and no SoD-specific code executes.</p>
+
+<p><b>Option A &mdash; record SoD-5 as a hard refusal</b>, on the ground that the runtime answer to an
+Administrator reaching committee content <b>is</b> a 403; "structural" describes the implementation, not the
+strength.</p>
+<p><b>Option B &mdash; add a third category</b> to <code>NFR-064</code>. That requires an <code>SC-</code>,
+because the requirement is <code>Approved</code>.</p>
+
+<p><b>The agent's recommendation is A</b>, which needs no scope change and does not weaken the requirement.</p>
+
+<h3>What building Q1 actually costs &mdash; read before choosing, because the row does not say this</h3>
+
+<p>Measured this session. SoD-4's first half needs three facts in one place, and <b>they sit in three modules
+and two key spaces</b>:</p>
+
+<table>
+<tr><th>What is needed</th><th>State</th></tr>
+<tr><td>The <b>recorder</b> of a decision</td><td style="background:#fdecea"><b>Not persisted.</b>
+    <code>Decision.Draft</code> takes <code>actorSub</code> as a parameter and <b>never stores it</b>; the
+    aggregate carries only <code>ChairApprovedByUserId</code>. A new field plus an EF migration.</td></tr>
+<tr><td>The topic's <b>owner</b></td><td style="background:#fff4e0"><code>Topic.OwnerId</code> exists (a
+    <code>CommitteeMember.PublicId</code>), but <code>ITopicReader</code>'s <code>TopicSummary</code> exposes
+    <b>id, key and title only</b> &mdash; the cross-module seam would need widening.</td></tr>
+<tr><td>The agenda <b>presenter</b></td><td style="background:#fff4e0"><code>AgendaItem.PresenterUserId</code>
+    exists in Meetings. Three Meetings cross-module seams exist &mdash; <code>IMeetingQuorumSource</code>,
+    <code>IMeetingWebexWriter</code>, <code>IWebexMeetingProvisioner</code> &mdash; and <b>none exposes the
+    presenter</b>. A new seam.</td></tr>
+<tr><td>Mapping a Keycloak <code>sub</code> to a <code>PublicId</code></td><td style="background:#e8f5e9">
+    <b>Already solved.</b> <code>ICommitteeDirectory.ResolveMemberAsync</code> exists, and its own documentation
+    names <code>AgendaItem.PresenterUserId</code> as the reason it does.</td></tr>
+</table>
+
+<p>So this is <b>not</b> "add a predicate to <code>SegregationOfDuties.cs</code>". It is a persisted field with a
+migration, one widened cross-module contract, one new one, and a guard &mdash; under <code>ADR-0001</code>,
+which forbids a module reading another module's tables. <b>That does not change the answer to Q1; it changes
+what the answer costs</b>, and the row's sizing did not carry it.</p>
+
+<h3>&#9888; A discrepancy in <code>DW-093</code>, reported and not diagnosed</h3>
+
+<p><code>DW-093</code> states: <i>"A sweep of the deferred-work, defect, open-question, requirement, decision and
+ADR registers for <code>SoD-4</code> <b>or the COI rule</b> returns <b>ZERO rows</b>"</i>. Measured this session
+with conflict-of-interest keys, that sweep returns <b><code>FR-076</code></b> (requirement),
+<b><code>DW-004</code></b> (deferred work) and <b><code>ADR-0010</code></b> (ADR) &mdash; the three rows Q2 rests
+on. <b>The claim is not correct as written.</b></p>
+
+<p><b>What is not being claimed:</b> nothing here explains <i>why</i> the original sweep returned zero &mdash;
+its instrument was not recorded, so any account of the cause would be a guess. The discrepancy is stated; the
+cause is not. &#9888; Note separately that <code>DEC-094</code> d6's <i>"three hits and none is a
+segregation-of-duties requirement"</i> reconciles exactly with this session's sweep (<code>FR-076</code>,
+<code>FR-085</code>, <code>FR-154</code>) &mdash; the count is right, though <code>FR-085</code> does name SoD-1
+explicitly. That does not disturb <code>NFR-064</code>, whose value is the five-rule scope and the strength
+clause; it is noted so the record is straight, not to reopen d6.</p>
+
+<h3>&#9888; What this slate does NOT establish</h3>
+
+<ul>
+<li><b>It does not audit the existing SoD test coverage.</b> Measured only that
+<code>SegregationOfDutiesTests</code> covers the SoD-1 and SoD-3 <i>predicates</i>; the handler-level refusals
+and SoD-2/SoD-5 have verdicts elsewhere that were not re-verified here. <code>NFR-064</code> demands a forcing
+test per rule, and that is the build batch's work.</li>
+<li><b>No acceptance criterion is written by this interview.</b> A criterion ahead of its evidence holds package
+readiness false permanently (trap 16c), so <code>NFR-064</code>'s criteria land in the batch that produces the
+evidence.</li>
+<li><b>Correctness of the quoted rows is not asserted</b> &mdash; only that every byte below was read from the
+canonical store or the working tree in one process, and never re-typed.</li>
+</ul>
