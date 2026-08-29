@@ -56,6 +56,10 @@ e2e leg. The api and worker run on `aspnet:10.0-noble-chiseled-extra`.
 **`SL-033`'s BUILD IS FINISHED: `WBS-24.8` MERGED as PR `#323` → `24738d4b` on 2026-08-29**, ten checks
 green, verified into `origin/main` by content. Every item `WBS-24.1`–`WBS-24.8` has now been built.
 **`SL-034` EXISTS** (`DEC-089` d2) and holds `WBS-25.1` (phase B, merged) and `WBS-25.2` (`DW-079`).
+**`SL-035` EXISTS** (`DEC-094` d5 / `SC-038`, 2026-08-29) and holds `WBS-26.1`–`WBS-26.5`, the six rows
+that interview activated. ⚠ **Every one of those six activations OVERRODE the agent's recommendation to
+carry** — the rows record it as an override, so do not read the activation as agreement about HOW. And
+`NFR-064` was created there because **no requirement covered segregation of duties at all**.
 ⚠ **The two open Dependabot PRs `#318`/`#319` ARE explained — `DEC-083` d3 left them alone deliberately**,
 so seeing them is not the unexplained state the warning below is about. A Dependabot queue moves; run the
 command rather than trusting this sentence's pair of numbers.
@@ -80,7 +84,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **forty-one** times, and **twelve** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -90,6 +94,26 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-FIRST IS AN UNMEASURED ENUMERATION IN THE ONE PLACE THIS FILE SAYS THE NEXT ACTION LIVES,
+AND ITS INSTRUMENT DID NOT UNDERCOUNT — IT DELETED ROWS.** The `START HERE` list read *"`DW-088`,
+`DW-090`, `DW-091`, `DW-092`, `DW-093` are all `Open` and **none has been put to the operator**"*. Wrong in
+BOTH directions: `DEC-089` **d4 had already ruled on `DW-088`** (*"stays Open as filed"*) and **d3 on
+`DW-089`**, while `DW-086` and `DW-087` had never been ruled on and were left out. The true set was SIX.
+⚠⚠ **THE CAUSE IS A REGEX OVER JSONL AND IT IS WORTH MORE THAN THE INSTANCE.** The selection came from
+`grep -oE '"id":"DW-…"[^}]*"lifecycle_status":"[A-Za-z]+"'` — and `[^}]*` stops at the FIRST closing brace,
+so any row whose `custom_attributes` contain a nested object is silently dropped. `DW-086` and `DW-088`
+both do. **It did not undercount; it removed those rows from consideration entirely** — `PE-599`'s shape,
+where a truncated instrument deletes the evidence that would have changed the answer rather than reporting
+a smaller number. ⭐⭐ **PARSE THE JSON. NEVER REGEX A JSONL ROW** — every row in this store carries a
+free-text `custom_attributes` blob, so the failure is latent in every such grep, not peculiar to this one.
+⚠ **"None has been put to the operator" was also never measured** — it is a claim about the whole decision
+register, and the THIRTEENTH's rule is that an unmeasured assertion is counted whether or not it happens
+to come out right. This one did not.
+⭐ **What actually caught it: being asked to run the interview.** The `LL-005` pre-interview sweep - which
+exists because the `NFR-023` question went to the operator before its sweep - is what read `DEC-089` and
+found d3 and d4. **A list nobody acts on is never checked; the act of using it is the test.**
+⚠ **Counted, not an escape**: `910c02df` and `652ab23f` carry the list, and no commit message repeats it.
 
 ⚠⚠⚠ **THE FORTIETH IS THE SWEEP THAT FIXED THE THIRTY-NINTH BEING SCOPED TO THE THIRTY-NINTH — SO IT
 COULD ONLY EVER FIND THAT ONE FAULT CLASS, AND IT PUSHED THREE OTHERS UNCHANGED.** Having named the
@@ -1676,20 +1700,33 @@ the pack never runs it; it fires when **SOURCE moves**, which is how the pack ac
 not code** — measure before believing that: `entity_query("deferred-work", status="Activated")` and
 `readiness_check("package")` are the live answers, and the sentence you are reading is not.
 
-1. ▶▶▶ **DISPOSITION THE ROWS THIS SLICE FILED.** `DW-088`, `DW-090`, `DW-091`, `DW-092`, `DW-093` are all
-   `Open` and none has been put to the operator — filing a row is not dispositioning it, and an `Open` row
-   nobody has ruled on is the state `DEC-067`'s interview existed to end. ⚠ **`DW-093` is the one to read
-   first**: `C-AUTH-05` names SoD-1…SoD-5 as hard authorization checks and **SoD-4 has no guard at all**
-   (measured: its four siblings appear 11/10/13/11 times in `src`, SoD-4 **zero**), its only prior record
-   was a *"verify in a later batch"* in the frozen archive, and **the required strength is genuinely
-   unsettled** — the same catalogue calls SoD-2 *warn+audit*. ⛔ **Answer the strength question before
-   building anything**; a hard *recorder ≠ owner* guard could refuse legitimate minute-taking in a
-   committee of twenty where roles overlap by necessity. ⚠ `prompts/replan-deferred.md` is the ceremony.
+⛔ **THE DISPOSITION ITEM THAT STOOD HERE IS DONE — `DEC-094` / `SC-038`, 2026-08-29 — AND ITS ROW LIST WAS
+THE FORTY-FIRST.** It named `DW-088, DW-090, DW-091, DW-092, DW-093` and was wrong in BOTH directions:
+`DEC-089` **d4 had already ruled on `DW-088`** and **d3 on `DW-089`**, while `DW-086` and `DW-087` had
+never been ruled on and were omitted. An unmeasured enumeration, in the one place this file says the next
+action lives. ⚠ **The instrument that produced it dropped rows silently**: a regex over
+`deferred_work.jsonl` spanning to the first `}` loses any row whose `custom_attributes` contain a brace —
+`PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
+have changed the answer. **Parse the JSON; never regex a JSONL row.**
+
+1. ▶▶▶ **BUILD `SL-035`, SECURITY FIRST — `WBS-26.1` then `WBS-26.2`, then `26.3`, `26.4`, `26.5`.**
+   `DEC-094` activated six rows and **every one overrode the agent's recommendation to carry**; the rows
+   record it as an override, so do not read the activation as agreement about HOW.
+   ⛔ **`WBS-26.1`'s STRENGTH QUESTION IS ANSWERED BEFORE ANY GUARD IS WRITTEN.** Hard refusal,
+   warn-and-audit like SoD-2, or a COI declaration workflow are three different products, and **building
+   the strict one by default is the failure mode here, not the safe choice** — a hard *recorder ≠ owner*
+   rule could refuse legitimate minute-taking in a committee of twenty. `NFR-064` exists for this work and
+   demands the strength of **all five** SoD rules be recorded, not only SoD-4's.
+   ⛔ **`WBS-26.5` must NOT fan `useMeetingDetail` across the month** — `DEF-104`'s N+1 shape; the answer
+   is a per-meeting agenda projection. ⚠ **`WBS-26.4`'s `service_healthy` switch is the risky one**:
+   `/readyz` reaches SQL Server, Hangfire and object storage, so strict ordering can turn a slow cold boot
+   into a failed stack. Prove the failure mode both ways; a green run proves nothing about that control.
 2. **`DEF-108` — nothing here moves it, and that is by design.** `DEC-089` d1 gave it a checkable end
    condition: the cause is diagnosed, OR the failure recurs under `DW-084`/`DW-085`'s bounded presentation
    with a log naming a cause, OR the operator disposes of it. ⛔ **ACCUMULATED GREENS SATISFY NO CLAUSE**,
-   and clause two waits on a FAILURE, so quiet time moves it no closer. It is listed so nobody re-opens
-   the question, not because there is an action in it.
+   and clause two waits on a FAILURE, so quiet time moves it no closer. ⚠ **`DEC-094` d8 reaffirmed this**:
+   clause three was offered to the operator and NOT taken. It is listed so nobody re-opens the question,
+   not because there is an action in it.
 3. **`release-close-out.md` has never been run.** It sits in the prompt library, every phase is closed and
    production is live, and it is the ceremony that would formally end v1. ⚠ It is the operator's to start.
 
