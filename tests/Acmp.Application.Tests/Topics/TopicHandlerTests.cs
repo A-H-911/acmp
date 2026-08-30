@@ -106,7 +106,7 @@ public class TopicHandlerTests
         backlog.Items[0].SlaBreached.Should().BeTrue();
         backlog.Items[0].AgeDays.Should().Be(9);
 
-        var detail = await new GetTopicDetailHandler(db, Clock(later), SeesEverything()).Handle(new GetTopicDetailQuery(result.Key), CancellationToken.None);
+        var detail = await new GetTopicDetailHandler(db, Clock(later), SeesEverything(), Substitute.For<IAnomalyDetector>()).Handle(new GetTopicDetailQuery(result.Key), CancellationToken.None);
         detail.Should().NotBeNull();
         detail!.Streams.Should().BeEquivalentTo("identity", "platform");
         detail.Tags.Should().BeEquivalentTo("SecurityArch");
