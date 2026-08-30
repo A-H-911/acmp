@@ -194,7 +194,7 @@ public class TopicVisibilityTests
         await using var db = await Seeded(user, clock, Restricted("TOP-2026-020"));
         var visibility = new TopicVisibility(user, Capabilities());
 
-        var detail = await new GetTopicDetailHandler(db, clock, visibility)
+        var detail = await new GetTopicDetailHandler(db, clock, visibility, Substitute.For<IAnomalyDetector>())
             .Handle(new GetTopicDetailQuery("TOP-2026-020"), CancellationToken.None);
 
         // null renders as 404. Asserting null rather than an exception IS the assertion: a 403 would
@@ -215,7 +215,7 @@ public class TopicVisibilityTests
         await using var db = await Seeded(user, clock, restricted);
         var visibility = new TopicVisibility(user, Capabilities(restricted.PublicId));
 
-        var detail = await new GetTopicDetailHandler(db, clock, visibility)
+        var detail = await new GetTopicDetailHandler(db, clock, visibility, Substitute.For<IAnomalyDetector>())
             .Handle(new GetTopicDetailQuery("TOP-2026-021"), CancellationToken.None);
 
         detail.Should().NotBeNull();

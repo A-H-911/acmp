@@ -19,12 +19,15 @@ public sealed class GetTopicDetailHandler : IRequestHandler<GetTopicDetailQuery,
     private readonly ITopicsDbContext _db;
     private readonly IClock _clock;
     private readonly ITopicVisibility _visibility;
+    private readonly IAnomalyDetector _anomaly;
 
-    public GetTopicDetailHandler(ITopicsDbContext db, IClock clock, ITopicVisibility visibility)
+    public GetTopicDetailHandler(ITopicsDbContext db, IClock clock, ITopicVisibility visibility,
+        IAnomalyDetector anomaly)
     {
         _db = db;
         _clock = clock;
         _visibility = visibility;
+        _anomaly = anomaly;
     }
 
     public async Task<TopicDetailDto?> Handle(GetTopicDetailQuery request, CancellationToken ct)
@@ -47,6 +50,15 @@ public sealed class GetTopicDetailHandler : IRequestHandler<GetTopicDetailQuery,
         // with this key exists, which is precisely the fact the classification is protecting; the
         // refusal must be indistinguishable from "no such topic".
         if (!(await _visibility.ResolveAsync(ct)).CanSee(t)) return null;
+
+        // C-INS-01 signal 2 (NFR-065): a SUCCESSFUL read of a Restricted topic is recorded here, and the
+        // detector decides whether this principal's rate is atypical (DEC-099 d1).
+        //
+        // ⚠⚠ IT SITS AFTER THE VISIBILITY CHECK ON PURPOSE. Above this line the caller may not see the
+        // topic and the refusal is already indistinguishable from "no such topic"; recording an access
+        // there would log reads that never happened and would leak, into the audit log, the existence of
+        // topics the classification exists to hide. Below it, the access is real.
+        if (t.IsRestricted) await _anomaly.ObserveRestrictedTopicAccessAsync(t.PublicId, ct);
 
         var now = _clock.UtcNow;
         return new TopicDetailDto(

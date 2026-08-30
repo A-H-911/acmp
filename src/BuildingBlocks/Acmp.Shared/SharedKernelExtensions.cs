@@ -69,6 +69,8 @@ public static class SharedKernelExtensions
                     sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.Schema))
                 .AddAcmpAuditInterceptors(sp));
         services.AddScoped<IAuditSink, SqlAuditSink>();
+        // C-INS-01 / NFR-065: the two anomaly signals. Scoped like the sink it writes through.
+        services.AddScoped<IAnomalyDetector, AnomalyDetector>();
 
         // WBS-24.5 (DEC-080 / SC-035): the externalized configuration store (schema "config") the data
         // architecture specifies at SEC-103, and the home SEC-080 names for retention settings. On the

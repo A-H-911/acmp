@@ -75,7 +75,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything(), Substitute.For<IAnomalyDetector>());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);
@@ -115,7 +115,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything(), Substitute.For<IAnomalyDetector>());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);
@@ -157,7 +157,7 @@ public class TopicDetailCommentMappingTests
         db.Topics.Add(topic);
         await db.SaveChangesAsync();
 
-        var handler = new GetTopicDetailHandler(db, clock, SeesEverything());
+        var handler = new GetTopicDetailHandler(db, clock, SeesEverything(), Substitute.For<IAnomalyDetector>());
 
         // Act
         var dto = await handler.Handle(new GetTopicDetailQuery(topic.Key), default);

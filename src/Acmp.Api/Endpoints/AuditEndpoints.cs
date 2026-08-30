@@ -182,7 +182,8 @@ public static class AuditEndpoints
          * from this event.
          */
         group.MapGet("/export", async (
-            AuditDbContext db, ICurrentUser user, IAuditSink audit, CancellationToken ct,
+            AuditDbContext db, ICurrentUser user, IAuditSink audit, IAnomalyDetector anomaly,
+            CancellationToken ct,
             string format = CsvFormat, string? entityType = null, string? actor = null,
             string? action = null, DateTimeOffset? from = null, DateTimeOffset? to = null) =>
         {
@@ -225,6 +226,11 @@ public static class AuditEndpoints
                 To = to,
                 RowCount = rows.Count,
             }, ct);
+
+            // C-INS-01 signal 1 (NFR-065): bulk/atypical export volume. AFTER the C-AUDIT-08 record, never
+            // instead of it - the anomaly is a SECOND, distinct event, so a reviewer filters for it rather
+            // than scanning every export. Detection is app-side and Seq notifies on this event (DEC-099 d2).
+            await anomaly.ObserveAuditExportAsync(rows.Count, ct);
 
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
 
