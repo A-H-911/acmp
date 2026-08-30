@@ -535,6 +535,7 @@ NFR-062,ADR-0016,derives_from
 NFR-063,ADR-0012,derives_from
 NFR-063,ADR-0016,derives_from
 NFR-064,DEC-094,derives_from
+NFR-065,DEC-098,derives_from
 SC-013,AC-017,scope_modifies
 SC-013,AC-018,scope_modifies
 SC-013,AC-019,scope_modifies
@@ -664,6 +665,9 @@ SC-038,WBS-26,scope_adds
 SC-039,DW-093,scope_modifies
 SC-039,WBS-26.1,scope_modifies
 SC-040,WBS-26.1,scope_modifies
+SC-041,NFR-065,scope_adds
+SC-041,TEST-054,relates_to
+SC-041,WBS-26.2,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
@@ -1009,6 +1013,7 @@ TEST-050,INV-010,tests
 TEST-051,FR-159,tests
 TEST-052,FR-163,tests
 TEST-053,FR-164,tests
+TEST-054,NFR-065,tests
 WBS-1,FR-001,implements
 WBS-1,FR-003,implements
 WBS-1,FR-004,implements
@@ -1217,6 +1222,7 @@ WBS-22,FR-163,implements
 WBS-23.4,FR-164,implements
 WBS-24.8,FR-165,implements
 WBS-26.1,NFR-064,implements
+WBS-26.2,NFR-065,implements
 WBS-3,FR-017,implements
 WBS-3,FR-019,implements
 WBS-3,FR-020,implements
