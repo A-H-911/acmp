@@ -42,6 +42,10 @@ public sealed record DecisionDetailDto(
     DateTimeOffset? IssuedAt,
     Guid? SupersededByDecisionId,
     LocalizedString? SupersessionReason,
+    // C-AUTH-05 SoD-4 (NFR-064), warn-and-audit: the recorder was also the topic's owner or its
+    // presenter. Recording was ALLOWED - this is a review signal, not a refusal, and it is the
+    // counterpart of MinutesDto's ApprovedBySoleAuthor for SoD-2.
+    bool RecordedByConflictedActor,
     IReadOnlyList<DecisionConditionDto> Conditions);
 
 // Request shape for a condition on the record/supersede commands.

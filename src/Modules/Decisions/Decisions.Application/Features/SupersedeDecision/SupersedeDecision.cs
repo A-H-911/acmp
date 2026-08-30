@@ -5,6 +5,7 @@ using Acmp.Modules.Decisions.Domain;
 using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -85,10 +86,13 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
     private readonly IAuditSink _audit;
     private readonly ICommitteeDirectory _directory;
     private readonly INotificationChannel _notifications;
+    private readonly ITopicReader _topicReader;
+    private readonly IAgendaPresenterReader _agenda;
 
     public SupersedeDecisionHandler(IDecisionsDbContext db, IDecisionKeyGenerator keys,
         ITopicDecisionRecorder topics, ICurrentUser user, IClock clock, IAuditSink audit,
-        ICommitteeDirectory directory, INotificationChannel notifications)
+        ICommitteeDirectory directory, INotificationChannel notifications,
+        ITopicReader topicReader, IAgendaPresenterReader agenda)
     {
         _db = db;
         _keys = keys;
@@ -98,6 +102,8 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
         _audit = audit;
         _directory = directory;
         _notifications = notifications;
+        _topicReader = topicReader;
+        _agenda = agenda;
     }
 
     public async Task<DecisionSummaryDto> Handle(SupersedeDecisionCommand request, CancellationToken ct)
@@ -113,8 +119,15 @@ public sealed class SupersedeDecisionHandler : IRequestHandler<SupersedeDecision
             .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
 
         // Successor inherits the prior's topic + meeting; it reaches Issued before the prior is superseded.
+        // SoD-4 (NFR-064) applies to the SUCCESSOR exactly as it does to a first draft: superseding is
+        // recording a decision. Evaluating it only in RecordDecision would leave this path as the way to
+        // record a conflicted decision without the flag - a hole in a signal, DEF-052's shape.
+        var conflicted = await RecorderConflict.EvaluateAsync(
+            _directory, _topicReader, _agenda, sub, prior.TopicId, prior.MeetingId, ct);
+
         var successor = Decision.Draft(key, prior.TopicId, prior.MeetingId, request.Outcome,
-            request.Title, request.Statement, request.Rationale, request.Alternatives, voteId: null, conditions, sub, now);
+            request.Title, request.Statement, request.Rationale, request.Alternatives, voteId: null, conditions,
+            conflicted, now);
         successor.Issue(sub, name, chairOverride: false, overrideJustification: null, now);
         _db.Decisions.Add(successor);
 

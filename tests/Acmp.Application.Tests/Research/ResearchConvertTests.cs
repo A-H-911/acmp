@@ -51,6 +51,10 @@ public class ResearchConvertTests
         public Task<TopicBrief?> GetBriefAsync(Guid id, CancellationToken ct = default) => Task.FromResult<TopicBrief?>(null);
         public Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
             Task.FromResult<string?>(null);
+        // WBS-26.1 widened the port again, for SoD-4's recorder-vs-owner check. Same reasoning as above:
+        // the conversion path does not ask, so this answers "nothing here" rather than inventing an owner.
+        public Task<Guid?> GetOwnerIdAsync(Guid topicId, CancellationToken ct = default) =>
+            Task.FromResult<Guid?>(null);
     }
 
     private sealed class RecordingTraceWriter : ITraceabilityWriter

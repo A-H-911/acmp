@@ -145,9 +145,9 @@ public sealed class DbBackstopTests
         LocalizedString Text() => LocalizedString.Create("Because", "لأن");
         await using var db = _fx.NewDecisionsSql();
         db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, Text(), Text(), Text(), null, null,
-            Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
+            Array.Empty<DecisionConditionInput>(), recordedByConflictedActor: false, DateTimeOffset.UtcNow));
         db.Decisions.Add(Decision.Draft(key, Guid.NewGuid(), null, DecisionOutcome.Approved, Text(), Text(), Text(), null, null,
-            Array.Empty<DecisionConditionInput>(), "it-actor", DateTimeOffset.UtcNow));
+            Array.Empty<DecisionConditionInput>(), recordedByConflictedActor: false, DateTimeOffset.UtcNow));
 
         await FluentActions.Awaiting(() => db.SaveChangesAsync()).Should().ThrowAsync<DbUpdateException>();
     }

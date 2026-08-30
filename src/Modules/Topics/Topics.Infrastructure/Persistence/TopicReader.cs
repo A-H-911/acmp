@@ -45,6 +45,26 @@ public sealed class TopicReader : ITopicReader
         return topic is null ? null : new TopicSummary(topic.PublicId, topic.Key, topic.Title);
     }
 
+    // C-AUTH-05 SoD-4 / NFR-064: the Decisions module asks whether the person recording a decision owns the
+    // topic it is about. Null when the topic is unknown or has no owner yet (Triage) - both ordinary.
+    //
+    // ⚠⚠ DELIBERATELY NOT `.VisibleTo(...)`-FILTERED, UNLIKE EVERY OTHER READ ON THIS CLASS, AND THE
+    // DIFFERENCE IS THE WHOLE POINT. The others answer a USER's question and must not let a caller tell a
+    // Restricted topic from a missing one (C-AUTHZ-04). This one answers a CONTROL's question about the
+    // caller themselves, and applying the confidentiality filter here would mean a recorder who cannot see
+    // a Restricted topic gets `null` - "no owner" - and is therefore never flagged on it. A segregation-of-
+    // duties signal that switches itself off exactly where the material is most sensitive is worse than
+    // none, and it would fail silently (LL-030: a defence layer invisible to every front-door test).
+    //
+    // IT LEAKS NOTHING, and that is why the exception is safe rather than merely convenient: the Guid is
+    // compared inside Decisions and discarded. The only thing derived from it that ever reaches a client is
+    // a boolean about the CALLER'S OWN relationship to a topic they are already recording a decision on.
+    public Task<Guid?> GetOwnerIdAsync(Guid topicId, CancellationToken ct = default) =>
+        _db.Topics.AsNoTracking()
+            .Where(t => t.PublicId == topicId)
+            .Select(t => t.OwnerId)
+            .FirstOrDefaultAsync(ct);
+
     public async Task<TopicBrief?> GetBriefAsync(Guid topicId, CancellationToken ct = default)
     {
         // C-AUTHZ-04 / FR-163. This serves the guest /session brief — the topic's full Description and

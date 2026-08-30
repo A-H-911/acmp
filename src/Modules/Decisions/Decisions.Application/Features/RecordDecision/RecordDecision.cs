@@ -5,6 +5,9 @@ using Acmp.Modules.Decisions.Domain;
 using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Contracts.Meetings;
+using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Contracts.Topics;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -79,15 +82,22 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
     private readonly ICurrentUser _user;
     private readonly IClock _clock;
     private readonly IAuditSink _audit;
+    private readonly ICommitteeDirectory _committee;
+    private readonly ITopicReader _topics;
+    private readonly IAgendaPresenterReader _agenda;
 
     public RecordDecisionHandler(IDecisionsDbContext db, IDecisionKeyGenerator keys,
-        ICurrentUser user, IClock clock, IAuditSink audit)
+        ICurrentUser user, IClock clock, IAuditSink audit,
+        ICommitteeDirectory committee, ITopicReader topics, IAgendaPresenterReader agenda)
     {
         _db = db;
         _keys = keys;
         _user = user;
         _clock = clock;
         _audit = audit;
+        _committee = committee;
+        _topics = topics;
+        _agenda = agenda;
     }
 
     public async Task<DecisionSummaryDto> Handle(RecordDecisionCommand request, CancellationToken ct)
@@ -109,13 +119,24 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
         var conditions = (request.Conditions ?? Array.Empty<DecisionConditionRequest>())
             .Select(c => new DecisionConditionInput(c.Text, c.DueDate));
 
+        var conflicted = await RecorderConflict.EvaluateAsync(
+            _committee, _topics, _agenda, sub, request.TopicId, request.MeetingId, ct);
+
         var decision = Decision.Draft(key, request.TopicId, request.MeetingId, request.Outcome,
-            request.Title, request.Statement, request.Rationale, request.Alternatives, request.VoteId, conditions, sub, now);
+            request.Title, request.Statement, request.Rationale, request.Alternatives, request.VoteId, conditions,
+            conflicted, now);
 
         _db.Decisions.Add(decision);
         await _db.SaveChangesAsync(ct);
 
         await _audit.EmitEnrichedAsync("Decisions.DecisionDrafted", nameof(Decision), decision.PublicId.ToString(), ct: ct);
+
+        // SoD-4 warn-and-audit: a SECOND, DISTINCT event, never a replacement for the first. A reviewer
+        // filters on this one alone to find every decision recorded by a conflicted actor; folding the
+        // signal into DecisionDrafted's payload would make that a scan instead of a filter.
+        if (conflicted)
+            await _audit.EmitEnrichedAsync(RecorderConflict.AuditEvent, nameof(Decision),
+                decision.PublicId.ToString(), ct: ct);
 
         return DecisionMapping.ToSummary(decision);
     }
