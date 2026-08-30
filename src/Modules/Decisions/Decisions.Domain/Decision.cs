@@ -38,6 +38,14 @@ public sealed class Decision : AuditableEntity
     public LocalizedString? OverrideJustification { get; private set; }
     public DateTimeOffset? IssuedAt { get; private set; }
 
+    // C-AUTH-05 SoD-4 (NFR-064), WARN-AND-AUDIT by DEC-095 d1: TRUE when the subject who RECORDED this
+    // decision was also the owner of its topic, or its presenter on the linked meeting's agenda. Recording
+    // is never refused - this is the flag a reviewer sees, the counterpart of
+    // MinutesOfMeeting.ApprovedBySoleAuthor for SoD-2 and Invariant.AuthorApprovedSelf in Governance.
+    // ⚠ Set once at Draft and never recomputed: it records who recorded it AT THE TIME, so a later change
+    // of topic owner cannot rewrite history into or out of a conflict.
+    public bool RecordedByConflictedActor { get; private set; }
+
     // Supersession back-link (AC-028): the decision that replaced this one + why.
     public Guid? SupersededByDecisionId { get; private set; }
     public LocalizedString? SupersessionReason { get; private set; }
@@ -45,10 +53,16 @@ public sealed class Decision : AuditableEntity
     public IReadOnlyCollection<DecisionCondition> Conditions => _conditions.AsReadOnly();
 
     // W12: draft a decision. Drafts are editable only by being replaced (no field setters) until issued.
+    // ⚠ THIS USED TO TAKE AN UNUSED `actorSub` AND IT WAS REMOVED IN WBS-26.1, DELIBERATELY. The parameter
+    // was passed by both callers and never read, and it read as though the recorder were stored here. It is
+    // not, and it never needed to be: ModuleDbContext stamps AuditableEntity.CreatedBy from ICurrentUser on
+    // insert, so `CreatedBy` IS the recorder's Keycloak subject - which is exactly what SoD-2 keys off for
+    // minutes and what Governance keys off for an invariant. Do not reintroduce it.
     // Domain guards: a topic + rationale are required; a ConditionallyApproved outcome needs ≥1 condition.
     public static Decision Draft(string key, Guid topicId, Guid? meetingId, DecisionOutcome outcome,
         LocalizedString title, LocalizedString statement, LocalizedString rationale, LocalizedString? alternatives,
-        Guid? voteId, IEnumerable<DecisionConditionInput> conditions, string actorSub, DateTimeOffset now)
+        Guid? voteId, IEnumerable<DecisionConditionInput> conditions,
+        bool recordedByConflictedActor, DateTimeOffset now)
     {
         if (topicId == Guid.Empty) throw new InvalidOperationException("A decision must reference a topic.");
         if (title is null) throw new InvalidOperationException("A decision title is required.");
@@ -67,6 +81,7 @@ public sealed class Decision : AuditableEntity
             Rationale = rationale,
             Alternatives = alternatives,
             VoteId = voteId,
+            RecordedByConflictedActor = recordedByConflictedActor,
         };
 
         foreach (var c in conditions ?? Enumerable.Empty<DecisionConditionInput>())

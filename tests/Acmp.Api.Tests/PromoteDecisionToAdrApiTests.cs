@@ -37,7 +37,7 @@ public class PromoteDecisionToAdrApiTests
             LocalizedString.Create("Adopt Keycloak, realm per stream.", "اعتماد كيكلوك، نطاق لكل مسار."),
             LocalizedString.Create("Fragmented auth across streams.", "مصادقة مجزأة عبر المسارات."),
             LocalizedString.Create("In-house IdP.", "موفّر داخلي."),
-            voteId: null, conditions: Array.Empty<DecisionConditionInput>(), actorSub: "kc-chair", Now);
+            voteId: null, conditions: Array.Empty<DecisionConditionInput>(), recordedByConflictedActor: false, Now);
         d.Issue("kc-chair", "Chair", chairOverride: false, overrideJustification: null, Now);
         db.Decisions.Add(d);
         await db.SaveChangesAsync();

@@ -36,4 +36,20 @@ public interface ITopicReader
     /// attachment id. Fail-closed: an unknown attachment and a mismatched one are the same answer.
     /// </remarks>
     Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default);
+
+    /// <summary>The topic's assigned owner as a <c>CommitteeMember.PublicId</c>, or null when the topic
+    /// has none or does not exist.</summary>
+    /// <remarks>
+    /// C-AUTH-05 SoD-4 / NFR-064. The Decisions module needs to know whether the person RECORDING a
+    /// decision is the owner of the topic it is about, and it cannot read Topics' tables (ADR-0001).
+    ///
+    /// A SEPARATE METHOD rather than a widened <see cref="TopicSummary"/>, for the reason this file already
+    /// gives about <see cref="GetBriefAsync"/>: that record is consumed by the Research conversion path and
+    /// by a test double, and reshaping it would break both to serve a caller that wants a different field.
+    ///
+    /// NULL IS NOT AN ERROR AND MUST NOT BE TREATED AS ONE. A topic in Triage has no owner yet
+    /// (Topic.OwnerId is assigned on Accept), so "no owner" is an ordinary state. SoD-4 is a warn-and-audit
+    /// rule (DEC-095 d1): an unknown or ownerless topic simply raises no flag, and never blocks recording.
+    /// </remarks>
+    Task<Guid?> GetOwnerIdAsync(Guid topicId, CancellationToken ct = default);
 }

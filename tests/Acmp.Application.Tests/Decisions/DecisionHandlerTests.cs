@@ -11,6 +11,7 @@ using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Behaviors;
 using Acmp.Shared.Application.Exceptions;
 using Acmp.Shared.Contracts.Actions;
+using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
@@ -108,7 +109,7 @@ public class DecisionHandlerTests
         DecisionOutcome outcome = DecisionOutcome.Approved, LocalizedString? alternatives = null)
     {
         var db = NewDb(user, clock);
-        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
             .Handle(RecordCmd(outcome, alternatives), CancellationToken.None);
         return (db, summary.Id);
     }
@@ -120,7 +121,7 @@ public class DecisionHandlerTests
         await using var db = NewDb(user, clock);
         var audit = Substitute.For<IAuditSink>();
 
-        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, audit)
+        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, audit, Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
             .Handle(RecordCmd(), CancellationToken.None);
 
         summary.Key.Should().Be("DECN-2026-001");
@@ -138,10 +139,10 @@ public class DecisionHandlerTests
 
         string nullKey, valueKey;
         await using (var db = Db(name, user, clock))
-            nullKey = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            nullKey = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(alternatives: null), default)).Key;
         await using (var db = Db(name, user, clock))
-            valueKey = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            valueKey = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(alternatives: alt), default)).Key;
 
         await using var read = Db(name, user, clock);
@@ -159,7 +160,7 @@ public class DecisionHandlerTests
         await using var db = NewDb(user, clock);
         var conditions = new[] { new DecisionConditionRequest(LocalizedString.Create("Add tests", "أضف اختبارات"), Now.AddDays(7)) };
 
-        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+        var summary = await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
             .Handle(RecordCmd(DecisionOutcome.ConditionallyApproved, conditions: conditions), default);
 
         var detail = await new GetDecisionByKeyHandler(db).Handle(new GetDecisionByKeyQuery(summary.Key), default);
@@ -258,7 +259,7 @@ public class DecisionHandlerTests
 
         Guid priorId;
         await using (var db = Db(name, user, clock))
-            priorId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            priorId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(), default)).Id;
         await using (var db = Db(name, user, clock)) // the prior must be Issued before it can be superseded (W21)
             await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(), TraceLinks())
@@ -266,7 +267,7 @@ public class DecisionHandlerTests
 
         DecisionSummaryDto successor;
         await using (var db = Db(name, user, clock))
-            successor = await new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), recorder, user, clock, audit, Dir(), channel)
+            successor = await new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), recorder, user, clock, audit, Dir(), channel, SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Statement, Rationale, null,
                     Array.Empty<DecisionConditionRequest>(), reason), default);
 
@@ -291,7 +292,7 @@ public class DecisionHandlerTests
         await using var db = NewDb(user, clock);
 
         var act = () => new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), new FakeRecorder(), user, clock,
-                Substitute.For<IAuditSink>(), Dir(), NoNotify())
+                Substitute.For<IAuditSink>(), Dir(), NoNotify(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
             .Handle(new SupersedeDecisionCommand(Guid.NewGuid(), DecisionOutcome.Approved, Title, Statement, Rationale, null,
                 Array.Empty<DecisionConditionRequest>(), LocalizedString.Create("r", "ر")), default);
 
@@ -306,7 +307,7 @@ public class DecisionHandlerTests
         await using var _ = db;
 
         var act = () => new SupersedeDecisionHandler(db, new DecisionKeyGenerator(db), new FakeRecorder(), user, clock,
-                Substitute.For<IAuditSink>(), Dir(), NoNotify())
+                Substitute.For<IAuditSink>(), Dir(), NoNotify(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
             .Handle(new SupersedeDecisionCommand(priorId, DecisionOutcome.Approved, Title, Statement, Rationale, null,
                 Array.Empty<DecisionConditionRequest>(), LocalizedString.Create("r", "ر")), default);
 
@@ -319,10 +320,10 @@ public class DecisionHandlerTests
         var user = User(); var clock = Clock(Now);
         var name = "list-" + Guid.NewGuid();
         await using (var db = Db(name, user, clock))
-            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(), default);
         await using (var db = Db(name, user, clock))
-            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(), default);   // second decision for the same topic
 
         await using var read = Db(name, user, clock);
@@ -341,7 +342,7 @@ public class DecisionHandlerTests
         var name = "reg-" + Guid.NewGuid();
         for (var i = 0; i < 3; i++)   // the register is NOT topic-scoped — three records is enough to prove it
             await using (var db = Db(name, user, clock))
-                await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+                await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                     .Handle(RecordCmd(), default);
 
         await using var read = Db(name, user, clock);
@@ -361,10 +362,10 @@ public class DecisionHandlerTests
         var name = "regs-" + Guid.NewGuid();
         Guid issuedId;
         await using (var db = Db(name, user, clock))
-            issuedId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            issuedId = (await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(), default)).Id;
         await using (var db = Db(name, user, clock))          // a second record that stays Draft
-            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>())
+            await new RecordDecisionHandler(db, new DecisionKeyGenerator(db), user, clock, Substitute.For<IAuditSink>(), Dir(), SoD4Ports.NoTopics(), SoD4Ports.NoAgenda())
                 .Handle(RecordCmd(), default);
         await using (var db = Db(name, user, clock))
             await new IssueDecisionHandler(db, new FakeRecorder(), user, clock, Substitute.For<IAuditSink>(), Dir(), NoNotify(), Links(), TraceLinks())

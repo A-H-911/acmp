@@ -16,6 +16,6 @@ internal static class DecisionMapping
         d.PublicId, d.Key, d.TopicId, d.MeetingId, d.Outcome.ToString(), d.Status.ToString(),
         d.Title, d.Statement, d.Rationale, d.Alternatives, d.VoteId,
         d.ChairApprovedByUserId, d.ChairApprovedByName, d.ChairOverride, d.OverrideJustification,
-        d.IssuedAt, d.SupersededByDecisionId, d.SupersessionReason,
+        d.IssuedAt, d.SupersededByDecisionId, d.SupersessionReason, d.RecordedByConflictedActor,
         d.Conditions.Select(ToDto).ToList());
 }
