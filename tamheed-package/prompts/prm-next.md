@@ -12,13 +12,16 @@ server_info()                                # expect tamheed 4.4.2, root = C:\U
 package_open("tamheed-package")
 gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
                                              # REAL finding - read its failure list, it names the token.
-readiness_check("package")                   # ⚠ EXPECT ready:FALSE - DELIBERATELY. DEC-077 d1 carries
-                                             # DEF-108 Open at HIGH, which blocks `defects-closed`. That
-                                             # is the operator's decision, NOT a fault to repair, and it
-                                             # holds until DEF-108 is chased. Advisories failing is also
-                                             # NORMAL (see §1). ⛔ Do NOT "fix" readiness by softening
-                                             # DEF-108's severity or converting it - both were offered
-                                             # to the operator and BOTH WERE DECLINED.
+readiness_check("package")                   # ⚠ ASK IT. Do NOT expect either answer - this line said
+                                             # "EXPECT ready:FALSE - DELIBERATELY" for days and that
+                                             # became false when DEC-097 d1 closed DEF-108 (the
+                                             # FORTY-THIRD). Advisories failing is NORMAL and is not a
+                                             # task (see §1); a BLOCKING failure names its row and is
+                                             # a real finding. ⛔ Never "fix" a blocking failure by
+                                             # softening a defect's severity or converting it - that
+                                             # was offered on DEF-108 twice and declined both times,
+                                             # and its eventual close was an evidenced disposition,
+                                             # not a re-grading.
 git status --porcelain -uall                 # expect a CLEAN TREE
 git rev-parse --abbrev-ref HEAD              # ⚠ ASK IT, never assume — read the conditional below
 gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap at ten is what hid the two
@@ -63,6 +66,14 @@ carry** — the rows record it as an override, so do not read the activation as 
 ⚠ **The two open Dependabot PRs `#318`/`#319` ARE explained — `DEC-083` d3 left them alone deliberately**,
 so seeing them is not the unexplained state the warning below is about. A Dependabot queue moves; run the
 command rather than trusting this sentence's pair of numbers.
+**2026-08-30 MERGED THREE MORE PRs, ALL SQUASHED TO `main` WITH TEN CHECKS GREEN:** `#329` → `472b84d1`
+(`scripts/gen-record-slate.mjs`, the general record-slate generator — the three earlier generators are each
+welded to one register, so a cross-register interview had none), `#330` → `42e948b8` (SoD-4 as
+warn-and-audit over topic owner AND agenda presenter, plus `NFR-064`'s evidence for all five SoD rules,
+which upgraded SoD-2's audit assertion from a mock to a ROW), and `#331` → `c273294c` (C-INS-01's two
+anomaly signals, including `Topics.RestrictedTopicAccessed` — read-auditing that did not exist at all).
+⚠ `#330`'s second CI run went red on `DEF-108` and was re-run by `DEC-097` d2 AFTER the disposition; see
+the annotation on `DEC-077` d3.
 ⚠ **That is a repository fact and NOT a slice status** — a merged row still owes the operator a verdict,
 and which rows are at `Review` is deliberately not written here. ⛔ **DO NOT NAME A SLICE ID IN THIS
 PARAGRAPH.** Two sentences here named `SL-033`, and that was the FORTY-SECOND: a command with an id in it
@@ -92,7 +103,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-two** times, and **twelve** wrong assertions have escaped into
+file has carried a stale statement **forty-three** times, and **thirteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -102,6 +113,34 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-THIRD IS A ROW CLOSING AND TAKING NINE STATEMENTS WITH IT — NONE OF WHICH NAMED ITS
+STATUS.** `DEC-097` d1 closed `DEF-108` as environmental, and everything that had REASONED FROM its being
+open went false at once. The kickoff block's *"⚠ EXPECT ready:FALSE - DELIBERATELY"* is the dangerous one:
+a fresh session pasting it would read the package's true, evidenced `ready:TRUE` as a fault and go looking
+for something to repair — or, worse, suspect the status had been manufactured. Also: *"`DEF-108` is
+`Open`/high and holds `readiness_check` at `ready:FALSE`"*, *"`SL-033` IS DELIBERATELY NOT CLOSED"*,
+*"the one rule still failing is `defects-closed`"*, *"clause three was offered to the operator and NOT
+taken"* (it was taken), *"it stays `Open`/high with readiness deliberately `FALSE`"*, `SL-035`'s *"five open
+items"*, *"Two `deferred-work` rows remain `Activated`"* (five), and the `START HERE` heading's own
+*"READINESS IS `FALSE`, BOTH ON PURPOSE"*.
+⭐⭐ **THE TRANSFERABLE POINT, AND IT IS NOT THE FORTY-SECOND'S:** that one was about claims describing what
+REMAINS. **These describe what FOLLOWS FROM a row's state, and not one of them mentions the row's status,**
+so neither the prose-status checker nor `count-prompt-ids.py` could ever see them — every id resolved and no
+`(Status)` form appeared anywhere. **When a row is dispositioned, grep for its IDENTIFIER and then read what
+the hits CONCLUDE, not what they assert.** A status is a column; a consequence is a sentence.
+⚠ **A SECOND, OLDER CLASS RODE ALONG AND IS FOLDED IN RATHER THAN NUMBERED SEPARATELY** (`LL-016`: an
+ordinal is what no check can see, so do not multiply them): §1's candidate-rule answer and §6's `NFR-018`
+bullet, both of which the FORTY-SECOND had already corrected once, went false AGAIN when `NFR-064` and
+`NFR-065` reached `Implemented`. ⭐ **A SENTENCE THAT HAS BEEN WRONG IN BOTH DIRECTIONS IS NOT A SENTENCE TO
+REFRESH — BOTH ARE NOW DELETED IN FAVOUR OF THE COMMAND**, which is the EIGHTH fix's rule finally applied to
+them rather than a third answer being written.
+⚠ **Counted once, family of nine, on the FIFTEENTH's and TWENTY-EIGHTH's precedent** — one fault class,
+one pass, one ordinal. ⚠ **THE THIRTEENTH ESCAPE IS SEPARATE AND IS A COMMIT MESSAGE:** `3ed9440b` says the
+Api suite went to **421**; it is **419**. That figure was never measured — after adding one test I re-ran
+only a three-test filter and wrote the total from belief — and the same line contradicted itself, claiming
+both *"418 → 421"* and *"(+4, +1 presenter)"*. `PE-711` records it; the PR body was corrected before merge,
+the commit message cannot be.
 
 ⚠⚠⚠ **THE FORTY-SECOND IS WHAT THE NINTH FIX'S FULL READ FOUND AFTER FOUR TARGETED SWEEPS IN ONE SESSION
 HAD ALL RUN CLEAN — NINE SITES, EIGHT DISTINCT CLAIMS, ONE PASS.** The FORTIETH's entry closed by saying
@@ -124,8 +163,14 @@ and the prose-status checker.**
   externally blocked … that is the operator's stated end condition, and it is met."* `DEC-094` d6 created
   `NFR-064` — `Approved`, Must, non-functional, **not externally blocked**, scheduled as `WBS-26.1`. **The
   end condition is no longer met**, and a fresh session would have believed the programme finished.
+  ⚠ **DATED 2026-08-29 AND NOT A CURRENT STATE: `NFR-064` REACHED `Implemented` ON 2026-08-30.** Annotated
+  rather than rewritten, because this entry is a record of what that pass FOUND; but it is written in the
+  present tense, which §1 already records as the thing that makes a historical sentence dangerous. **Run the
+  candidate rule; do not read a set from here.** Not re-counted — an outcome arriving is not a statement
+  going stale (the `DW-084` precedent).
 - **`NFR-018` described as *"the only remaining requirement real work could close"*** — `NFR-064` also is,
-  and unlike `NFR-018` it is not blocked on a third party.
+  and unlike `NFR-018` it is not blocked on a third party. ⚠ **DATED: `NFR-064` and `NFR-065` are both
+  `Implemented` as of 2026-08-30, so this correction is itself historical — see the FORTY-THIRD.**
 - **`"every phase is closed"`, in TWO places, beside a suggestion to run `release-close-out.md`.** `PH-3`
   and `PH-7` are `Approved`; **`PH-7` is the LIVE phase holding `SL-035`.** ⚠⚠ **AND §1 SAYS SO EXPLICITLY
   TWENTY SCREENS EARLIER** — *"`PH-3` stays `Approved` ON PURPOSE"*, *"`PH-7` because it is the live
@@ -794,18 +839,23 @@ silently shrinks the worklist every time a row cross-references a requirement �
 register's prose gets at linking things, the more requirements quietly disappear, and a
 well-cross-referenced register would eventually report itself finished.**
 
-⛔⛔ **THE ANSWER THAT STOOD HERE — *"expect TWO, both externally blocked … that is the operator's stated
-end condition for the programme, and it is met"* — IS NO LONGER TRUE, AND THAT IS THE FORTY-SECOND's most
-consequential member.** `DEC-094` d6 created **`NFR-064`** (segregation of duties): `Approved`, **Must**,
-non-functional, `mvp=1` — and **NOT externally blocked.** It is live work, scheduled as `WBS-26.1`. So a
-Must non-functional requirement that real work can close now exists, and **the end condition is no longer
-met.** A fresh session reading the old sentence would have believed the requirement programme was finished.
+⛔⛔ **NO ANSWER IS WRITTEN HERE ANY MORE, AND THE REASON IS THAT THIS SENTENCE HAS NOW BEEN WRONG IN BOTH
+DIRECTIONS.** It first read *"expect TWO, both externally blocked … the end condition is met"*. `DEC-094` d6
+then created `NFR-064` and made that false (the FORTY-SECOND). `WBS-26.1` and `WBS-26.2` then carried
+`NFR-064` AND `NFR-065` to `Implemented`, which made the CORRECTION false in turn — the FORTY-THIRD.
+⭐⭐ **A COUNT THAT HAS BEEN WRONG IN BOTH DIRECTIONS IS NOT A COUNT TO REFRESH, IT IS A COUNT TO DELETE**
+(the EIGHTH fix's rule, and the THIRTY-THIRD's: give the command or give nothing). **RUN THE RULE.** ⚠ Its
+step 2 is a substring PROXY and cannot make the judgement the rule needs — *does the row COVER the
+requirement, or merely NAME it?* — so treat its output as triage (`LL-006`).
 ⚠ **The two externally-blocked ones are unchanged and still real:** `NFR-018` (needs an external OWASP
 ASVS 5.0 Level 2 assessment — the evidence pack `DOC-070` is an INPUT to it, never a substitute) and
 `NFR-038` (rides Tarseem, whose `P14` is deferred indefinitely and which has no endpoint in the product).
 ⚠⚠ **RUN THE RULE; DO NOT READ AN ANSWER FROM HERE — AND KNOW THAT STEP 2 IS A PROXY.** Mechanised as
 written, step 2's *"named in a `deferred-work` row's TITLE"* is a substring test, and it removes BOTH
-`NFR-018` (named in `DW-079`'s title) and `NFR-064` (named in `DW-093`'s), leaving `NFR-038` alone. The
+`NFR-018` (named in `DW-079`'s title) and `NFR-064` (named in `DW-093`'s), leaving `NFR-038` alone.
+⚠ **THAT WORKED EXAMPLE IS DATED 2026-08-29 AND ITS ARITHMETIC HAS MOVED** — `NFR-064` is `Implemented` and
+so never enters the candidate set now. It is kept because the POINT survives its own numbers: step 2 removes
+a requirement whose covering row merely NAMES it. The
 stated answer has always needed the judgement the script cannot make — *does the row COVER the
 requirement, or merely name it?* `DW-079` explicitly does NOT close `NFR-018`. **Treat the rule's output
 as triage, not as the worklist** (`LL-006`).
@@ -1019,6 +1069,17 @@ which is what makes it invisible.
 16e. ⚠ **`RELATION_RULES` REFUSE PLAUSIBLE EDGES.** `lesson --learned_from--> deferred-work` is
    rejected (allowed targets: decision, defect, progress-entry, risk, slice, wbs-item). The error is
    the only documentation, and **the whole batch rolls back** — re-send the entire corrected batch.
+   ⚠ **FIRED AGAIN 2026-08-30 ON A SECOND SHAPE: `scope-change --scope_adds--> test` IS REFUSED** (allowed
+   targets include requirement, wbs-item, slice, acceptance-criterion — not `test`). Use `relates_to`. The
+   batch that carried it rolled back six VALID edges with it, so the cost of the refusal is the whole write.
+16f. ⚠⚠ **A NEW `mvp=1` REQUIREMENT NEEDS A `test` ROW TO EXIST BEFORE `G-TRACE` GOES GREEN** (trap 16b's
+   third leg). If no suite covers it yet, create the row as **`Proposed`** with verdict `Pending` and say IN
+   the row that it is PLANNED AND NOT WRITTEN — seven rows already sit at `Proposed`, so this is the register's
+   own idiom, not an invention. ⛔ It must never read as evidence that a test exists.
+16g. ✅ **`slice.objective` IS NULLABLE AND PRESERVED BY OMISSION** — verified 2026-08-30 when `SL-033` closed:
+   a status-only upsert carrying `id`, `title`, `phase_id`, `sort_order`, `introduced_in` and
+   `lifecycle_status` left its 3329-character objective byte-length-identical. **Closing a slice does not
+   require re-transmitting its objective**, which is worth knowing before you re-type one (`LL-001`).
 17. ⚠ `progress_entries` is **append-only** — correct via a `correction` event, never an edit.
 17b. ⚠⚠ **BRANCH TOPOLOGY IS PACKAGE TOPOLOGY (C31).** The package lives in the git working tree. Do
    package writes on the branch you will merge, and **merge `main` in FIRST** when the branch predates
@@ -1119,6 +1180,13 @@ which is what makes it invisible.
    resolves to `src/Acmp.Web/src/Acmp.Web/src` and either crashes or, far worse, **reports a clean tree
    over ZERO files**. Resolve from the script's own location (`fileURLToPath(import.meta.url)`), and
    **run the script the way CI runs it**, not only from the repo root. Same family as trap 22b.
+29b. ⚠⚠ **`ConfigurationSetting.Create` NORMALISES EVERY KEY WITH `Trim().ToLowerInvariant()`, SO A READER
+   MATCHING A camelCase STRING FINDS NOTHING AND FALLS BACK TO ITS DEFAULT — SILENTLY.** Cost a cycle on
+   `WBS-26.2`: `anomaly.bulkExport.rowCount` stored as `anomaly.bulkexport.rowcount`, both thresholds
+   defaulted, and the failure presented as *a threshold that cannot be configured* — `DEF-110`'s shape
+   arriving through the back door on the very control built to avoid it. ⭐ It is `LL-033`'s family: a lookup
+   whose spelling does not match the corpus's returns a confident nothing, and the fallback made it quiet.
+   **Lower-case every configuration key at the point you declare it.**
 30. ⚠⚠ **A SCANNER YOU WRITE CAN MEASURE ITSELF.** The first hardcoded-string scanner used
    `/>([^<>{}]*)</` and matched straight through TypeScript: `day >= 1 && dayNum <` read as a JSX text
    node. It reported FIVE findings and **all five were the bug** — acting on the count would have meant
@@ -1354,16 +1422,32 @@ conflating them is what made the original wording wrong.**
 failure attributable to ONE change. A batch merge would have shown `#135` later as an unrelated-looking
 flake, and `#307` as a coverage regression across twenty files with no cause.
 
-▶▶▶ **START HERE — BUT READ THIS FIRST: `main` IS GREEN AND READINESS IS `FALSE`, BOTH ON PURPOSE.**
+▶▶▶ **START HERE — BUT READ THE TWO STANDING RULES BELOW FIRST. ⛔ THIS HEADING USED TO ASSERT `main`
+IS GREEN AND READINESS IS `FALSE`; BOTH ARE STATES, NOT RULES, AND THE SECOND WENT FALSE — the
+FORTY-THIRD. `gh run list` and `readiness_check("package")` are the answers.**
 
 ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL. STOP AND INVESTIGATE — DO NOT RE-RUN IT** (`DEC-077`
 d3). That test is the ONLY place any `FREETEXT` branch executes against real SQL Server, which makes it
 the one test whose silent loss would be least visible and most expensive. ⚠ **This overrode the agent's
 recommendation** (re-run once and log it); the operator took the stricter reading, as they have four
 times now on a control that went red.
-⚠ **`DEF-108` is `Open`/high and holds `readiness_check` at `ready:FALSE` by decision** (`DEC-077` d1) —
-the backend job died twice in the Testcontainers SQL Server path on commits that changed no backend
-code, and a plain re-run of the same tree then passed. **Four data points, no verdict.**
+⚠⚠ **IT WAS OVERRIDDEN EXACTLY ONCE, ON 2026-08-30, AND THE RULE ITSELF IS UNCHANGED.** `DEC-097` d2 re-ran
+a failed job on PR `#330` AFTER `DEF-108` had been dispositioned — the agent recommended an administrator
+merge instead, and the reasoning-against is preserved there. **`DEC-077` d3 as written is unconditional and
+contains no exception for a dispositioned cause**, so that was recorded as an override on its face. ⛔ **Do
+not read it as precedent: the response to a red here is still stop and investigate.**
+✅ **`DEF-108` IS CLOSED — `Won't-fix`, accepted as ENVIRONMENTAL by `DEC-097` d1 (2026-08-30), under
+clause (3) of the end condition `DEC-089` d1 gave it.** It had been carried `Open`/high since `DEC-077` d1
+specifically so that nothing could be declared done while it stood, and that hold is now released.
+⚠⚠ **WHAT SETTLED IT WAS A DIFFERENT KIND OF EVIDENCE, NOT A FOURTH TALLY MARK.** Occurrences 1–3 supported
+only *no backend code changed in this commit* — a claim about a diff. Occurrence 4 fired on a tree whose
+`src/` and `tests/` were **byte-identical** to one that had passed CI completely ninety minutes earlier
+(`git diff` empty), with the crash signature reproducing frame-for-frame including offsets. Identical code,
+opposite verdicts. ⛔ **THE TRIGGER IS STILL NOT DIAGNOSED and the closure does not rest on one** — clause
+(1) is explicitly NOT satisfied. ⛔⛔ **CLOSING IT REPEALED NOTHING: a backend integration failure is still
+never called flaky on the strength of one more green, and a further red from that test is a NEW defect to
+investigate on its own evidence — file one, do not append to the closed row, and do not cite the closure as
+a precedent.**
 
 **THE ORDER IS THE OPERATOR'S, AND IT IS THE PRODUCT OF TWO DECISIONS — read both before reordering.**
 `DEC-075` d2 put the four activated streams in scope (they answered *"all"*); `DEC-076` d3 accepted the
@@ -1647,17 +1731,24 @@ shipped, so only the write path was missing. `WBS-24.5`'s lesson and `WBS-24.1`'
 BUILD IS COMPLETE: `WBS-24` and all eight children are `Implemented`, every bound criterion is `Met`, and
 slice-scope `wbs-done` and `acs-met` both PASS. `FR-165` added by `SC-037` under `DEC-086` d4;
 `AC-154`/`AC-155` `Met` (`AV-232`/`AV-233`); `DW-028` `Done`.
-✅ **`DEF-108` NOW HAS A CHECKABLE END CONDITION IN ITS OWN ROW (`DEC-089` d1).** It is chased when the
+✅ **`DEF-108` HAD A CHECKABLE END CONDITION AND IT WAS USED — the row is CLOSED (`Won't-fix`, `DEC-097`
+d1, clause 3). The clause structure below is kept because it is the METHOD, not because the row is open.** It is chased when the
 cause is diagnosed, OR the failure recurs under `DW-084`/`DW-085`'s bounded presentation with a log naming
 a cause, OR the operator explicitly disposes of it. ⛔ **ACCUMULATED GREENS SATISFY NO CLAUSE, BY DESIGN** —
 an end condition greens could satisfy would silently repeal the rule that a backend integration failure is
 not called flaky on one more green. ⚠ Clause two waits on a FAILURE, so quiet time moves it no closer.
-⛔⛔ **`SL-033` IS DELIBERATELY NOT CLOSED (`DEC-088`), AND THERE IS NOTHING LEFT TO BUILD IN IT.** The one
-rule still failing is `defects-closed` naming **`DEF-108`**, held open by `DEC-077` d1. **Do not read the
-open slice as unfinished work and do not go looking for an unimplemented row.** ⚠ The operator's FIRST
-answer was *"close it now"* and they reversed it once the collision with their own `DEC-077` d1 was put in
-front of them — a waiver and `force: true` are theirs alone, so neither was inferred (`LL-002`).
-⭐ **Greens do not discharge `DEF-108`.** The backend ran green twice more here with
+✅✅ **`SL-033` IS CLOSED — `Implemented`, `DEC-098` d2 (2026-08-30).** `DEC-088` had held it open on ONE
+condition and one only — *it stays open until `DEF-108`'s cause is settled* — and `DEC-097` d1 settled it.
+⭐ **THE REASON IT CLOSED IS THAT THE HOLD EXPIRED ON ITS OWN TERMS, NOT THAT THE SLICE LOOKED FINISHED** —
+it had looked finished since `WBS-24.8` merged. Leaving it open once the condition was met would have been
+a hold with no stated reason, which is the failure `DEC-089`'s end condition was written to prevent.
+⚠ `DEF-109` stays open at medium, carried deliberately; the `defects-minor` advisory naming it is the
+control working and was never a reason to hold the slice. ⚠ The operator's FIRST answer at `DEC-087` was
+*"close it now"* and they reversed it once the collision with their own `DEC-077` d1 was put in front of
+them — a waiver and `force: true` are theirs alone, so neither was inferred (`LL-002`).
+⭐ **Greens did not discharge `DEF-108` and never could have** — its closure rests on four recorded
+occurrences and two full crash dumps, not on a green, and that distinction is the whole reason the row was
+allowed to close. The backend ran green twice more here with
 `SearchProvidersFtsTests` passing and a full local run had Integration 69/2-skipped — offered as fact and
 explicitly not as a closer, because that row conditions on the CAUSE being chased and its own text records
 the rule that a backend integration failure is not called flaky on one more green.
@@ -1772,32 +1863,46 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **BUILD `SL-035`, SECURITY FIRST — `WBS-26.1` then `WBS-26.2`, then `26.3`, `26.4`, `26.5`.**
+1. ▶▶▶ **CONTINUE `SL-035` IN `DEC-094` d5's ORDER — security first, then deployment/CI, then the
+   calendar projection.** ⛔ **DO NOT NAME WHICH ITEMS ARE LEFT HERE.** Two sentences in this file have
+   already rotted by doing exactly that, and a list is renumbered precisely when work completes, which is
+   the event that makes somebody read this. **`readiness_check(scope="slice", id="SL-035")`'s `wbs-done`
+   names every open row, and `entity_query("wbs-item")` gives their statuses.**
    `DEC-094` activated six rows and **every one overrode the agent's recommendation to carry**; the rows
    record it as an override, so do not read the activation as agreement about HOW.
-   ⛔ **`WBS-26.1`'s STRENGTH QUESTION IS ANSWERED BEFORE ANY GUARD IS WRITTEN.** Hard refusal,
-   warn-and-audit like SoD-2, or a COI declaration workflow are three different products, and **building
-   the strict one by default is the failure mode here, not the safe choice** — a hard *recorder ≠ owner*
-   rule could refuse legitimate minute-taking in a committee of twenty. `NFR-064` exists for this work and
-   demands the strength of **all five** SoD rules be recorded, not only SoD-4's.
+   ⚠⚠ **EVERY REMAINING ITEM GETS A PRE-BUILD SWEEP BEFORE ANY CODE, AND ON THIS SLICE THAT HAS PAID ON
+   BOTH ITEMS BUILT SO FAR — IN A DIFFERENT DIRECTION EACH TIME.** `WBS-26.1`'s sweep found `FR-076`
+   already specified SoD-4's COI half, softly, at Phase 2 — building it would have contradicted a
+   requirement's own words. `WBS-26.2`'s found that its bound requirement `NFR-046` covered neither of its
+   signals, AND that `DW-092`'s central data premise was false: nothing recorded Restricted-topic reads at
+   all, so the signal was undetectable by any mechanism. **Both were invisible to every id-and-status pass,
+   because every identifier resolved and every status was correct** (`LL-025`).
    ⛔ **`WBS-26.5` must NOT fan `useMeetingDetail` across the month** — `DEF-104`'s N+1 shape; the answer
    is a per-meeting agenda projection. ⚠ **`WBS-26.4`'s `service_healthy` switch is the risky one**:
    `/readyz` reaches SQL Server, Hangfire and object storage, so strict ordering can turn a slow cold boot
    into a failed stack. Prove the failure mode both ways; a green run proves nothing about that control.
-2. **`DEF-108` — nothing here moves it, and that is by design.** `DEC-089` d1 gave it a checkable end
-   condition: the cause is diagnosed, OR the failure recurs under `DW-084`/`DW-085`'s bounded presentation
-   with a log naming a cause, OR the operator disposes of it. ⛔ **ACCUMULATED GREENS SATISFY NO CLAUSE**,
-   and clause two waits on a FAILURE, so quiet time moves it no closer. ⚠ **`DEC-094` d8 reaffirmed this**:
-   clause three was offered to the operator and NOT taken. It is listed so nobody re-opens the question,
-   not because there is an action in it.
+2. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
+   `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
+   (`node scripts/gen-slice-review-slate.mjs SL-035`), never a summary — `LL-011`. ⛔ **Which rows are at
+   `Review` is deliberately not written here**; the command above prints them. ⭐ The per-item mechanism
+   has discriminated twice and is not ceremony: a slice-level verdict would have carried `WBS-24.4`
+   through on its neighbours' strength on both occasions.
 3. **`release-close-out.md` has never been run.** ⛔ **AND IT IS NOT DUE — *"every phase is closed"* stood
    here and was the FORTY-SECOND.** Measured: **`PH-3` and `PH-7` are `Approved`, not `Implemented`** —
-   `PH-3` deliberately (§1: do not "repair" it), and **`PH-7` because it is the LIVE phase, now holding
-   `SL-035` with five open items.** Closing out a release while a slice is open is exactly what that
-   sentence would have invited. It sits in the prompt library, production is live, and
-   production is live, and it is the ceremony that would formally end v1. ⚠ It is the operator's to start.
+   `PH-3` deliberately (§1: do not "repair" it), and **`PH-7` because it is the LIVE phase, holding the
+   open slice.** ⛔ **A COUNT OF ITS OPEN ITEMS STOOD HERE AND IS DELETED, NOT REFRESHED** — it went stale
+   the moment an item closed, which is the FORTY-THIRD's cheapest member. `readiness_check(scope="slice",
+   id="SL-035")` is the count. Closing out a release while a slice is open is exactly what the deleted
+   sentence would have invited. It sits in the prompt library, production is live, and it is the ceremony
+   that would formally end v1. ⚠ It is the operator's to start.
 
-⚠ **Two `deferred-work` rows remain `Activated` and BOTH are correctly so — do not "tidy" either.**
+⚠ **SEVERAL `deferred-work` rows are `Activated` and every one is correctly so — do not "tidy" any.**
+⛔ **A COUNT STOOD HERE ("Two") AND IS DELETED: `entity_query("deferred-work", status="Activated")` is
+the answer, and the number moves every time a slice item ships.** ⚠⚠ **A `DW-` ROW DOES NOT CLOSE
+ITSELF WHEN ITS `WBS-` ITEM SHIPS, AND NOTHING COMPARES THEM** — three rows sat `Activated` after their
+items were built and merged, and the omission was found only by measuring the register while preparing
+this file. **When you done-claim an item, close its `DW-` row in the same batch**, as every `WBS-24.x`
+item did.
 `DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
 says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
 stays *undecidable* until the artifact exists. `DW-071`'s new-route clause was discharged by `SL-033`;
@@ -1893,8 +1998,11 @@ edit.** What follows is what the row bought, kept because it binds later work:
   and pinned it. ⛔ **This sentence used to carry its then-status and an instruction built on it, and that
   is the THIRTY-FIRST's second half** (see the preamble): a fresh session was told an interview was owed
   and an advisory was red on purpose, months after both had been settled.
-- ⚠ **IT DID NOT CLOSE `DEF-108`, WHICH STAYS `Open`/high WITH READINESS DELIBERATELY `FALSE`.** It
-  changed how the failure presents. ⛔ Still do not soften or convert `DEF-108`.
+- ⚠ **IT DID NOT CLOSE `DEF-108`** — it changed how the failure presents. ⛔ The clause that followed here
+  said the row *"stays `Open`/high with readiness deliberately `FALSE`"*, and that was true for five days
+  and is now false: `DEC-097` d1 closed it as environmental. **That is the FORTY-THIRD.** The durable half
+  is unchanged and is why the row is still worth reading: bounding a hang changes a failure's PRESENTATION
+  and never its cause.
 - ⚠ **NEW: `DW-085`** — `_image.CreateAsync()`, the 3.62 GB FTS image **build**, is still unbounded and
   is now the only unbounded await left on that path. Left out of scope deliberately: `DEC-077` d4 scoped
   the decision to container **startup**, all four `DEF-108` data points name startup, and it could not
@@ -2267,9 +2375,10 @@ in both halves — eleven, and one shared helper closed them all in one PR.
   (`DEC-066`), so `NFR-019` stays `Approved` and correctly has **no AC**, and `DEF-100` stays **open
   deliberately**. ⚠ Not a config edit: service-to-service TLS needs a certificate story, and the public
   certbot flow does not extend to services addressing each other by compose name.
-- **`NFR-018`** — ⛔ **it was described here as *"the only remaining requirement real work could close"* and
-  that is the FORTY-SECOND: `NFR-064` (segregation of duties, `DEC-094` d6) is also Must, non-functional
-  and `Approved`, and unlike this one it is NOT externally blocked — it is scheduled as `WBS-26.1`.**
+- **`NFR-018`** — ⛔ **THIS BULLET HAS CARRIED A WRONG CLAIM TWICE AND NOW CARRIES NONE.** It first said
+  *"the only remaining requirement real work could close"*; `NFR-064` falsified that (the FORTY-SECOND);
+  then `NFR-064` and `NFR-065` both reached `Implemented`, falsifying the correction (the FORTY-THIRD).
+  **Run §1's candidate rule rather than reading any answer from here.**
   `NFR-018` needs an **external OWASP ASVS 5.0 Level 2 assessment**. Preparable, not closable. ✅ **The evidence pack is now SCHEDULED work, not
   a suggestion** — and it is **BUILT**: `DW-079` closed as `WBS-25.2` (`DEC-093`), and the pack is
   `DOC-070` at `tamheed-package/docs/asvs-l2-evidence-pack.md`. *(A status stood here too — the FORTIETH's
