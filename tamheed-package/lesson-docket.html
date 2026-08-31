@@ -143,54 +143,54 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-032</td>
-          <td>A TEST WHOSE FIXTURE IS THE LIVE REGISTER IS A TEST WHOSE MEANING CHANGES WHEN SOMEBODY DOES ORDINARY WORK, AND THE DANGEROUS OUTCOME IS NOT THE FAILURE - IT IS THE PASS.</td>
+          <td class="id">LL-040</td>
+          <td>WHEN YOU SWEEP FOR *WHAT WAS DECIDED*, YOU SWEEP DECISIONS, ADRs AND OPEN QUESTIONS - AND A REAL DECISION MAY BE SITTING IN A `Fixed` DEFECT ROW, WHICH READS AS A CLOSED PROBLEM RATHER THAN AS A RULING.</td>
           <td class="mono">improve</td>
-          <td class="mono">testing</td>
+          <td class="mono">analysis</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-      <article class="motion" id="LL-032">
+      <article class="motion" id="LL-040">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-032</span>
+            <span class="id">LL-040</span>
             <span class="chip chip-kind">improve</span>
-            <span class="chip">testing</span>
+            <span class="chip">analysis</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>A test whose fixture is the LIVE register is a test whose meaning changes when somebody does ordinary work - and the dangerous outcome is not the failure, it is the pass</h2>
+          <h2>A CLOSED row is an unindexed decision store: operator decisions get recorded inside Fixed defects, where no decision-register sweep can ever find them</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>A TEST WHOSE FIXTURE IS THE LIVE REGISTER IS A TEST WHOSE MEANING CHANGES WHEN SOMEBODY DOES ORDINARY WORK, AND THE DANGEROUS OUTCOME IS NOT THE FAILURE - IT IS THE PASS. If a test SELECTS its subject from mutable state rather than constructing it, then a promotion, a status flip or an added row can silently substitute a different subject; the mutation still applies, the code still runs, and the assertion is now about something that was never under test. It may still pass - for a reason that has nothing to do with what the test names.</p>
+          <p>WHEN YOU SWEEP FOR *WHAT WAS DECIDED*, YOU SWEEP DECISIONS, ADRs AND OPEN QUESTIONS - AND A REAL DECISION MAY BE SITTING IN A `Fixed` DEFECT ROW, WHICH READS AS A CLOSED PROBLEM RATHER THAN AS A RULING. Measured in this package: **10 of 113 closed defect rows record an operator decision**, including one - `DEF-079` - that a later work item was scoped to REVERSE without anyone noticing, because every sweep for a governing decision came back empty. **A row's lifecycle status tells you the problem is closed; it tells you nothing about whether the row also holds a ruling that still binds.** And the same rows' PROSE is not maintained after closure: a status is corrected when the work lands, the surrounding sentences usually are not.</p>
         </div>
         <div class="field">
           <h3>What happened</h3>
-          <p>A three-case regression suite was written for the slice-review slate generator (DEF-117, DEF-119) and committed. Its third case was a deliberate calibration: strip the recorded reason out of a criterion-less work item and assert the generator STILL refuses it. Each case copied the store to a scratch tree and set ONE row's lifecycle_status to Review, leaving every sibling as the live register happened to have it. Hours later, in the same session, the operator promoted that row to Implemented (DEC-092). The calibration's mutation still applied and the generator still ran - but on a DIFFERENT item, never under test, which carried a citation and therefore rendered. Filed as DEF-120.</p>
+          <p>WBS-26.4 was scoped to switch compose dependents from service_started to service_healthy, on DW-091's claim that a misleading comment had concealed an oversight. The pre-build sweep found the opposite: service_healthy had been declared, its total-outage consequence measured, put back to the operator, and reversed by their choice - all recorded in DEF-079, a Fixed defect row. Sweeping decisions, ADRs and open questions for the trade returned nothing. Generalising the class then found that 10 of 113 closed defect rows carry operator decisions, and that two of them (DEF-094, DEF-031) carry PROSE that is now false while their statuses are correct: DEF-094 still offers disposition options for a disposition long taken and says no AC exists when AC-122 is Approved and Met; DEF-031's open_gap says backup failures have no alerting path when backup.sh publishes to SNS from an EXIT trap.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>Stage the whole SELECTION, never one row. Force the row under test into the state that selects it, force every sibling OUT of that state, and write the shape being tested into the row rather than inheriting it - so the case asserts a PROPERTY of the code under test rather than a fact about today's register. Then demand the cheap proof that the coupling is gone: the fixed test must pass under the exact live state that broke it. THE DISCRIMINATOR FOR SPOTTING IT BEFORE IT BITES: ask what a normal day's work would have to change for this test to stop testing what it names. If the answer is a status column, an added row, or a promotion - anything a colleague could do without touching the code under test - the fixture is coupled and the pass is not load-bearing.</p>
+          <p>Add closed rows to the *what was decided* sweep, not only open ones - `Fixed`, `Won't-fix` and `Obsolete` defects, and closed deferred-work rows. Grep them for decision language (*put back to the operator*, *the operator chose*, *operator decision*) as well as for the identifier you care about. ⚠ **Read the hits rather than counting them: tense is invisible to a regex.** *"Needed an operator decision"* followed by *"✅ DECIDED"* is history, not an open question - two of the ten flagged that way and both were clean. And when a row's status changes, **re-read its prose in the same batch**: a status is one column and the sentences around it are another, and nothing in the store compares them.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>THE LOUD FAILURE WAS LUCK, AND THAT IS THE WHOLE LESSON. The surviving Review row happened to carry a DW- citation, so the generator exited 0 against an expected 2 and the breakage was visible. Had that row instead lacked citations - one title-edit away, and the ordinary state of an item early in its life - the generator would have exited 2 WITH THE EXPECTED MESSAGE FOR A COMPLETELY DIFFERENT REASON, and the calibration would have reported PASS while testing nothing, indefinitely. A calibration that can pass for the wrong reason is the hollow pass it exists to prevent. IT IS NOT SIMPLY 'MOCK YOUR DATA': reading real rows was the right call and is what makes the suite meaningful, since it exercises real shapes a fixture would not. The error was finer - the SUBJECT SELECTION came from live mutable state rather than being established by the test. The generator's input is 'the set of rows at Review in slice X', so a test of it must CONSTRUCT that set.</p>
+          <p>It is LL-038's family - a state can be load-bearing and its reason may live where no register view looks - with the specific, checkable location this package keeps using. LL-038's instances have now been a progress entry, no record at all, a code comment, a closed defect row, and stale prose inside a correctly-statused row; this names the fourth and fifth and gives them a sweep. It also inherits LL-006's rule (read the thing itself) with a warning attached: the sweep that finds these rows CANNOT adjudicate them, because the discriminator between a live question and a narrated one is grammatical.</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>Regression suites over the Tamheed package keep meaning what they say as rows are promoted, added and re-statused in the ordinary course of work, and a calibration that stops discriminating fails loudly instead of going quietly green.</p>
+          <p>A work item is never scoped to reverse a decision nobody could find, and a closed row's prose is corrected when its status is. The sweep for governing decisions covers where decisions actually are, rather than where the schema suggests they should be.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>A hollow pass in the regression suite for the instrument that discharges LL-011, which would eventually let an unrenderable work item reach an operator review as a hand-built page - the exact harm DEF-116 and DEF-117 were filed to prevent. More generally it is LL-015's fault (a true result about the wrong set) operating on a test fixture instead of on a scan scope, and LL-013's fault-injection cannot catch it, because the injection lands on a subject the test no longer examines.</p>
+          <p>An item gets activated, decided and scheduled on a premise a closed row already refuted - which is exactly what happened to WBS-26.4, costing a scope change and a blocked build - and closed rows accumulate prose that reads as open work, inviting sessions to re-do settled things or to re-litigate settled ones.</p>
         </div>
       </article>
 
   <footer>
     Generated from tamheed-package/data/lessons.jsonl by scripts/gen-lesson-docket.mjs.<br>
-    1 of 32 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    1 of 40 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>
