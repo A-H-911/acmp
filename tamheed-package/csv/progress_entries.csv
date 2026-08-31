@@ -1908,3 +1908,22 @@ THE MECHANISM, AND IT NEEDS ONLY ONE SLOW REQUEST. The webhook policy is a `Fixe
 ⚠ THE SIBLING CARRIES THE IDENTICAL LATENT FAULT AND GOT LUCKY. Same fixed window, same lowered limit, same unbounded spacing. **A fix applied to one and not the other leaves the survivor as the one that fails next**, which is this package's recurring correction-applied-to-one-sibling failure. Whatever is done is done to both.
 
 ⚠ **`DEC-100` d3's HOLD ON `WBS-26.3` IS NOT DISCHARGED.** The re-run changed WHICH test is red, not whether `main` is. The hold stands until `main` reports green, and the path to green now runs through `DEF-122` rather than through a re-run.",DEF-122,Claude Opus 5 (session 5bebccc0),,PH-7,SL-035,2026-08-31T00:14:50Z,,
+PE-723,note,"`DEF-122`'s MECHANISM IS ISOLATED, AND THE ISOLATION KILLED THE FIX I HAD RECOMMENDED.
+
+THE INTERVENTION, DESIGNED TO BE FALSIFIABLE BEFORE IT WAS RUN. The hypothesis - that the fixed window opens at request 1's permit ACQUISITION, so elapsed time INSIDE the window decides the outcome rather than the test's total duration - predicts an ASYMMETRY between two variants of IDENTICAL wall-clock length. **If both behaved alike the hypothesis was wrong**, and that was stated in `DEC-101` before the run.
+
+| variant | wall clock | r1 | r2 | r3 |
+|---|---|---|---|---|
+| A - control, no delay | 0.57 s | OK | OK | **429** |
+| B - 65 s delay BEFORE request 1 | 1 m 5 s | OK | OK | **429** |
+| C - 65 s delay BETWEEN requests 1 and 2 | 1 m 6 s | OK | OK | **200** |
+
+**B AND C ARE THE SAME LENGTH AND DIFFER ONLY IN WHERE THE DELAY SITS.** B throttles, C does not. *The test was slow* is therefore ELIMINATED - B was equally slow and behaved correctly - and the isolated variable is elapsed time inside the window. C reproduces the CI symptom exactly (`r3 = 200`) at 1 m 6 s against CI's 1 m 19 s. **A is the control proving the harness reproduces the PASSING behaviour**, so B's green is not a scanner that never looked (`LL-013`).
+
+⭐⭐ **THE OPERATOR'S OVERRIDE IS WHAT MADE THIS WORTH DOING, AND IT INVALIDATED MY OWN RECOMMENDATION.** I had proposed warming the host outside the webhook partition so request 1's cold-start cost falls outside the window, and offered isolation as the option NOT taken. **The isolation shows that fix is a MITIGATION, not a fix:** the failure condition is ANY gap of more than the window between request 1's acquire and request 3, so a slow request 2, a GC pause or thread-pool starvation mid-sequence produces the identical failure. A warm-up only makes the FIRST request less likely to be the slow one.
+
+⚠⚠ **THE PROPERTY THAT MAKES IT WORSE THAN MERELY INCOMPLETE, AND IT IS THE PART TO CARRY: A REMEDY THAT REDUCES A PROBABILITY CANNOT BE FALSIFIED BY THE FAILURE RECURRING.** A recurrence gets attributed to the residual the remedy openly admits - *it removes the DOMINANT cost, not every possible slow request* - rather than to the remedy being wrong. **I wrote that residual into the recommendation myself and proposed it anyway.** That is the THIRTY-FIFTH's shape one step earlier: there, a confounded setup reproduced more reliably BECAUSE it changed more, and only the fix failing caught it; here the fix could never have failed legibly.
+
+⚠ WHAT IS STILL NOT DIAGNOSED, so nobody over-reads the table: **what made request 1 slow ON THE CI RUNNER is not established** and this isolation says nothing about it. Plausibly `DEF-109`'s environmental pressure; nothing here measures it. **The fix must not depend on the answer** - the test's correctness has to stop being a function of request timing at all.
+
+⚠ THE HARNESS WAS SCRATCH AND IS DELETED. `tests/Acmp.Api.Tests/ZzDef122IsolationScratch.cs`, run twice, then removed and `git status` verified clean of it. It costs over two minutes of wall clock and asserts framework behaviour rather than product behaviour, so committing it would buy a slow test that guards nothing about ACMP. The table above is the record.",DEF-122,Claude Opus 5 (session 5bebccc0),,PH-7,SL-035,2026-08-31T06:38:50Z,,
