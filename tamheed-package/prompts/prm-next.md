@@ -81,6 +81,12 @@ which upgraded SoD-2's audit assertion from a mock to a ROW), and `#331` → `c2
 anomaly signals, including `Topics.RestrictedTopicAccessed` — read-auditing that did not exist at all).
 ⚠ `#330`'s second CI run went red on `DEF-108` and was re-run by `DEC-097` d2 AFTER the disposition; see
 the annotation on `DEC-077` d3.
+**2026-08-31 MERGED TWO MORE, EACH TEN CHECKS GREEN ON BOTH ITS PR RUN AND ITS MERGE-COMMIT RUN — CITED BY
+RUN ID, WHICH IS THE POINT** (`LL-036`): `#332` → `4529fd01` (`DEF-122`'s fix — the two C-API-03 rate-limit
+tests now issue their requests CONCURRENTLY and assert the COUNT of throttled responses, so a fixed window
+cannot roll mid-sequence), and `#333` → `05f2bbd5` (`WBS-26.3` — `ci.yml`'s `compose` job now really BUILDS
+`api`, `web` and `worker` and asserts size ≤ 500 MB plus TWO base assertions; main CI run `33392572509`).
+**`NFR-054` reached `Implemented` for the first time** and `DW-090` is `Done`.
 ⛔⛔ **AND `#331`'s TEN GREEN CHECKS WERE ITS *PR* RUN. ITS MERGE-COMMIT RUN ON `main` WENT RED, AND THIS
 FILE SAID OTHERWISE FOR A WHOLE SESSION — THE FORTY-FOURTH's FIRST MEMBER.** PR head `6e8d4b96` passed CI
 `33297195353` at 06:43:15Z; the squash-merge `c273294c` failed CI `33297623382` at 06:45:13Z on
@@ -119,7 +125,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-four** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **forty-five** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -129,6 +135,32 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-FIFTH IS A LIVE INSTRUCTION TO BUILD WORK THAT A SCOPE CHANGE HAD ALREADY WITHDRAWN — AND
+IT SAT IN THE NUMBERED LIST, THE ONE PLACE THIS FILE SAYS THE NEXT ACTION LIVES.** The list read *"⚠
+`WBS-26.4`'s `service_healthy` switch is the risky one: `/readyz` reaches SQL Server, Hangfire and object
+storage, so strict ordering can turn a slow cold boot into a failed stack. Prove the failure mode both
+ways."* Every clause of that is TRUE about the risk and it is now the wrong thing to do: `SC-042`
+re-scoped the item because `DW-091`'s premise was withdrawn, and **a fresh session obeying the sentence
+would have reversed an explicit operator decision** — the one `DEF-079` records, where `service_healthy`
+was declared, its consequence measured, put back to the operator, and dropped by their choice.
+⭐⭐ **THE SHAPE, AND IT IS NOT THE FORTY-FOURTH'S: A SENTENCE CAN BE FACTUALLY TRUE AND STILL BE A STALE
+INSTRUCTION.** Nothing in it was ever false — the risk is real, the mechanism is real, `/readyz` really
+does reach three subsystems. What changed is that the ACTION it recommends was withdrawn. **A staleness
+checker that asks *is this claim still true?* returns YES and passes it.** ⭐ **The only safe form for an
+item's deliverable is the ITEM'S OWN ROW plus its `SC-`** — deleted here rather than refreshed, which is
+the EIGHTH fix's standing remedy.
+⚠⚠ **IT IS ALSO THE THIRTY-SIXTH'S FAMILY IN A NEW COSTUME.** That one was a pointer at a list POSITION;
+this is a pointer at an item's CONTENT. Both rot for the same reason — **the numbered list is rewritten
+exactly when work completes, and a description of an item ages against the item.** Name the row; never
+summarise it here.
+⚠ **NOT AN ESCAPE**: the phrase was grepped across the log and no commit message asserts it. ⚠ **Counted
+once.** ⭐ **What found it: sweeping for the identifiers this session moved and then reading what the hits
+CONCLUDE rather than what they assert** — the FORTY-THIRD's own remedy, on its third consecutive payday.
+⛔ **AND THE THREE INSTRUMENTS WERE CLEAN AGAIN.** `count-prompt-ids.py` resolves ids and statuses; every id
+here was correct. The prose-status checker wants a `(Status)` form; this is an imperative. The
+`— your verdict` / ``is at `Review` `` greps are scoped to a different fault class. **Four consecutive
+findings that no instrument this file owns can see.**
 
 ⚠⚠⚠ **THE FORTY-FOURTH IS A CI COLOUR ATTRIBUTED TO THE WRONG RUN, AND IT LEFT `main` RED AND UNRECORDED
 FOR A WHOLE SESSION.** This file said the 2026-08-30 merges landed *"with ten checks green"*. True of each
@@ -1894,9 +1926,18 @@ checked, not just a green suite.
 full-text index with `LANGUAGE 1025`, executed inside `sqlserver-fts`, an image `NFR-054` excludes.
 ⚠⚠ **A GREEN e2e DOES NOT PROVE THE HEALTHCHECK, AND CHECKING THAT FOUND `DW-091`:** both api dependents
 use `service_started`, not `service_healthy`, so **nothing consumes the healthcheck's verdict** —
-`DEF-078`/`DEF-079`'s shape a third time, with a compose comment asserting the opposite. The probe itself
+`DEF-078`/`DEF-079`'s shape a third time. The probe itself
 was then forced both ways through Docker's own plumbing (200 → healthy, 503 → unhealthy with the reason in
 `docker inspect`).
+⛔⛔ **THE CLAUSE *"with a compose comment asserting the opposite"* STOOD HERE AND IS WITHDRAWN — IT WAS A
+MISATTRIBUTED QUOTATION.** The sentence `DW-091` quoted sits in the `api` service's OWN `depends_on` block,
+attached to `minio-init`; the actual dependents each carry the OPPOSITE comment, saying `service_started`
+is deliberate and naming its cost, at four sites across both topologies. **And `DEF-079` — cited above as
+the precedent — is the row that RECORDS the decision**: `service_healthy` was declared, its total-outage
+consequence measured, put back to the operator, and dropped by their choice (`fd98515`).
+⭐ **WHAT SURVIVES IS THE OBSERVATION, AND IT IS STILL TRUE**: nothing consumes the healthcheck's verdict.
+`SC-042` re-scoped `WBS-26.4` to close that WITHOUT restoring the interlock. ⛔ Restoring `service_healthy`
+needs a decision superseding `DEF-079`'s, not a scope change.
 ⛔ **THIS BLOCK SAID *"NO AC WAS WRITTEN AND THAT IS DELIBERATE (`DW-090`) … no such check exists"* AND
 THAT IS NOW FALSE IN EVERY CLAUSE — `WBS-26.3` BUILT THE CHECK.** It is kept as the reason the AC was
 withheld for so long, which was correct at the time: `NFR-054`'s own verification names a CI check —
@@ -1972,10 +2013,33 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    push to `main`; it was skipped that once because `backend` **failed** and it `needs:` it. **`skipped`
    conflates *the `if:` was false* with *a needed job did not succeed*, and the API prints the same word
    for both** (`LL-039`, Proposed). The `needs:` line was ONE LINE above the `if:` and I did not read it.
+   ⚠⚠⚠ **AND THE FOURTH SWEEP DID NOT RESIZE AN ITEM — IT STOPPED ONE, WHICH IS THE STRONGEST RESULT THE
+   HABIT HAS PRODUCED.** `WBS-26.4`'s sweep found `DW-091`'s central claim to be a **misattributed
+   quotation**: the sentence it quoted sits in the `api` service's OWN `depends_on` block arguing for
+   `minio-init: service_completed_successfully`, not in either dependent's. And `DEF-079` — the row
+   `DW-091` cites as its PRECEDENT — turned out to **record the decision the item proposed to reverse**:
+   `service_healthy` was declared, its total-outage consequence was measured, it was put back to the
+   operator, and they chose to keep the signal and drop the gate. **No code was written; `SC-042`
+   re-scoped the item.** ⭐ Read `LL-040`: a CLOSED row is an unindexed decision store, so a sweep of the
+   decision, ADR and open-question registers cannot see a ruling that lives in a `Fixed` defect.
+   ⛔⛔ **A LINE STOOD HERE READING *\"`WBS-26.4`'s `service_healthy` switch is the risky one … prove the
+   failure mode both ways\"* AND IT IS DELETED, NOT REFRESHED — THE FORTY-FIFTH.** It was a live
+   INSTRUCTION to build work that `SC-042` withdrew, and a fresh session obeying it would have reversed an
+   explicit operator decision. **The item's deliverable is now in its own row and in `SC-042`; read those,
+   and never a description of it here.**
    ⛔ **`WBS-26.5` must NOT fan `useMeetingDetail` across the month** — `DEF-104`'s N+1 shape; the answer
-   is a per-meeting agenda projection. ⚠ **`WBS-26.4`'s `service_healthy` switch is the risky one**:
-   `/readyz` reaches SQL Server, Hangfire and object storage, so strict ordering can turn a slow cold boot
-   into a failed stack. Prove the failure mode both ways; a green run proves nothing about that control.
+   is a per-meeting agenda projection. ⚠ **Its row also carries a RIDER** (`DEC-105` d2): a one-line
+   comment correction at `src/Acmp.Api/Endpoints/MeetingsEndpoints.cs` travels with its PR, and the row
+   says what to do if the item is never built. Read the row, not this sentence.
+   ⚠⚠ **A SECOND REGISTER FINDING CAME OUT OF THE SAME ROUND AND IS OPEN: `DEF-123`.** Measured — of 346
+   `tests` edges, `TEST-041` carries **110** and `TEST-045` **66**, each reaching every requirement
+   `NFR-001`–`NFR-063`, and **63 of 65 NFRs have no test edge but those two**. `DOC-068`'s own test
+   register (`SEC-631`) documents them as covering **two requirements each**, so **172 of 176 edges are
+   undocumented**; `TEST-045` is `Proposed` — the suite is not written. Three of the blanket-wired NFRs
+   name capabilities that **do not exist** (Tarseem × 2, deferred indefinitely; AI extraction, Phase 3).
+   ⛔ **No edge has been touched** — `DEC-104` d1 authorised an investigation, not a repair, and the row
+   argues against choosing a remedy before the operator rules. `G-TRACE` and `G-REL` PASS and are right
+   to: **`G-REL` validates an edge's shape; no rule validates its claim.**
 2. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
    `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
    (`node scripts/gen-slice-review-slate.mjs SL-035`), never a summary — `LL-011`. ⛔ **Which rows are at
