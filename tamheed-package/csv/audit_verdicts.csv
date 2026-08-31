@@ -445,3 +445,37 @@ AV-236,AC-157,Met,"CORRECTION OF `AV-235`'s EVIDENCE, NOT A RE-GRADING. The verd
 **EVERY OTHER CLAUSE OF `AV-235` STANDS AND IS NOT RESTATED HERE** - the four per-signal tests with their negative controls, the two-pass mutation proof with each mutant confirmed to compile, the threshold-basis keys in the `ConfigurationSetting` store, the placement of the recording after the visibility check, and the explicit scope exclusions. Read `AV-235` for those; read this row for the one correction.
 
 ⚠ The merged tree's red is filed as `DEF-121` (`Open`, high) and is a container-startup failure under investigation per `DEC-100` d1. **It is not evidence about this criterion**, and this correction must not be read as either weakening or strengthening the `WBS-26.2` verdict - it makes the evidence true, which is the only thing it does.",agent,auto-test,c273294c,1,2026-08-31T00:04:26Z,,
+AV-237,AC-158,Met,"EVIDENCED BY CI, NOT BY A LOCAL MEASUREMENT - which is the whole reason this criterion could not be written before now. `DW-090` refused an AC that would *""rest on a one-off local measurement taken by the agent that made the change""*, and `NFR-054`'s own recorded verification method names a CI check. **CITED BY RUN ID, NOT BY COLOUR (`LL-036`).**
+
+**THE MERGE-COMMIT RUN ON `main`: run `33392572509` (push, main), commit `05f2bbd5`, conclusion SUCCESS** - backend, frontend, compose and publish all `success`. The `compose` job (job `99492447195`) emitted, verbatim:
+```
+api    (acmpimg-api):    258.2 MB <= 500.0 MB
+api    (acmpimg-api):    base ""mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra"" verified - 5 of 7 layers match
+worker (acmpimg-worker): 256.5 MB <= 500.0 MB
+worker (acmpimg-worker): base ""mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra"" verified - 5 of 7 layers match
+web    (acmpimg-web):     56.9 MB <= 500.0 MB
+web    (acmpimg-web):    base ""nginxinc/nginx-unprivileged:1.31-alpine"" verified - 9 of 11 layers match
+[check-image-contract] 3 image(s) within 500.0 MB and on their expected base (NFR-054)
+```
+**THE PR RUN: run `33391609531` (pull_request), head of PR `#333`** - ten checks green, `compose` job `99486311772` emitting byte-identical figures. Both runs are cited because they are DIFFERENT runs over the same code and only naming both makes the claim checkable (`LL-036`).
+
+⭐ **PROVEN TO HAVE RUN, NOT INFERRED FROM A GREEN JOB.** The `compose` job was green before this change too - it just built nothing. The gate's own output lines were grepped out of both logs. ⚠ **AND THE GREP WAS CALIBRATED FIRST:** the same log was grepped for a PRE-EXISTING step (`check-asvs-pack-paths` / `ASVS`) and returned **26** hits, so the log demonstrably carries step output and a zero would have meant *the gate did not run* rather than *this log never contains step names*. That control is the third step `WBS-24.5` and `WBS-24.2` both had to learn.
+
+⭐⭐ **THREE INDEPENDENT MEASUREMENTS AGREE, ON TWO DIFFERENT HOSTS.** Local (Docker 29.7.2, by the exact command CI runs): api 258.2 MB, worker 256.5 MB, web 57.0 MB. PR runner: 258.2 / 256.5 / 56.9. `main` runner: 258.2 / 256.5 / 56.9. The 0.1 MB difference on `web` is layer-compression noise between hosts, not drift. ⭐ **AND api's 258.2 MB MATCHES `DEC-092`'s INDEPENDENTLY-RECORDED 258 MB** - a figure taken on 2026-08-29 by a different route, months before this instrument existed.
+
+**CLAUSE 1 (SIZE) IS EVIDENCED** by the three per-image figures above, each against the 500.0 MB decimal cap, asserted per image and never in aggregate.
+
+**CLAUSE 2 (BASE) IS EVIDENCED IN BOTH ITS PARTS** by the three *base ... verified* lines, each naming the expected repo:tag and reporting the layer-prefix match count.
+
+**MUTATION-PROVEN BY FORCING ALL FOUR REFUSALS - a clean result from an unproven scanner proves nothing (`LL-013`):**
+1. **Fails closed (trap 31):** run against a project name that built nothing -> *""inspected 0 of 3 expected images - refusing to pass on a partial set""*, exit 1, with a per-image *image not found* for each. It does not skip.
+2. **Size cap discriminates:** cap lowered 500 MB -> 100 MB -> `api` and `worker` FAIL with their real figures while `web` (57.0 MB) correctly PASSES. A cap that failed everything would prove nothing.
+3. **(A) catches the `-extra` scenario:** `deploy/Dockerfile.backend`'s `api` stage repointed to plain `10.0-noble-chiseled` -> **(A) fires on `api` alone**, naming the expected and actual refs; `worker` and `web` pass. ⚠⚠ **AND (B) COULD NOT HAVE CAUGHT THIS ONE** - the digest was unchanged, so the layers are identical and (B) would have passed. This is the measurement that proves (A) is load-bearing rather than decorative.
+4. **(B) catches what (A) cannot:** `web` repointed to the aspnet base in BOTH the Dockerfile and the expectation table, so (A) passes -> **(B) fires on `web` alone**, reporting *5 base layers vs 11 built - it was not built from that base*.
+Each mutant compiled/parsed and ran (trap 12). All were reverted: the gate verified **byte-identical by `cmp`**, both Dockerfiles clean by `git diff`, and a grep confirmed **zero** mutant markers remained.
+
+⚠ **THE REST OF THE `compose` JOB IS UNBROKEN**, verified locally before push: `check-self-contained`, `check-realm-export`, `check-cloud-images`, `check-runbook-drift` and `check-asvs-pack-paths` all exit 0, and both compose topologies still pass `config -q`.
+
+⚠ **COST, MEASURED RATHER THAN ESTIMATED:** the `compose` job went from **12 s** to **1 m 20 s** - the three builds cost ~68 s on a CI runner. `timeout-minutes` was raised 10 -> 30 in the same change, because a build added under a 10-minute ceiling fails as a timeout, which reads like an infrastructure fault rather than a budget nobody revisited.
+
+⛔ **WHAT THIS VERDICT DOES NOT CLAIM.** It does not claim anything about the database image beyond its exclusion from the size cap. It does not claim CVE posture - `trivy-image` stays report-only by design. And it does not claim the chosen bases are optimal, only that they are the expected ones and that the artifacts genuinely sit on them.",ci,auto-test,05f2bbd5,1,2026-08-31T20:18:00Z,,
