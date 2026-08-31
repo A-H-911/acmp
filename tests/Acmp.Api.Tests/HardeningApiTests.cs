@@ -21,7 +21,23 @@ public sealed class HardeningApiTests
     private static WebApplicationFactory<Program> WithLimit(AcmpWebApplicationFactory factory, string key, int permit) =>
         factory.WithWebHostBuilder(b => b.UseSetting($"RateLimiting:{key}", permit.ToString()));
 
-    [Fact] // C-API-03 — the per-user search policy returns 429 + Retry-After past the window.
+    // DEF-122: the requests are issued CONCURRENTLY and the assertion is on the COUNT of throttled
+    // responses, never on WHICH one is throttled. Both halves are load-bearing, and both were measured.
+    //
+    // Concurrent, because a FixedWindowRateLimiter's window opens when its partition is first ACQUIRED —
+    // middleware, at the start of request 1, before the endpoint filter. Sequential requests whose spacing
+    // nothing bounds can straddle the boundary, and then the limit under test is never reached inside one
+    // window. Isolated: a 65s gap between request 1 and request 2 makes the last response 200, while the
+    // SAME delay placed BEFORE request 1 leaves it 429 — identical wall clock, opposite outcomes, so the
+    // variable is elapsed time inside the window and not slowness. Issued together, every permit is taken
+    // within microseconds and the window cannot roll mid-sequence however slow the host is.
+    //
+    // Count, not position, because under concurrency the rejected request is NOT deterministically the
+    // last: over five runs the 429 landed at index 2, 0, 0, 2, 0.
+    private static Task<HttpResponseMessage[]> IssueConcurrently(int count, Func<Task<HttpResponseMessage>> send) =>
+        Task.WhenAll(Enumerable.Range(0, count).Select(_ => send()));
+
+    [Fact] // C-API-03 — the per-user search policy returns 429 + Retry-After past the limit.
     public async Task Search_over_the_per_user_limit_returns_429_with_retry_after()
     {
         await using var factory = new AcmpWebApplicationFactory();
@@ -29,12 +45,12 @@ public sealed class HardeningApiTests
         client.DefaultRequestHeaders.Add(TestAuthHandler.RolesHeader, "Member");
         client.DefaultRequestHeaders.Add(TestAuthHandler.SubHeader, "rate-user");
 
-        (await client.GetAsync("/api/search?q=x")).StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.GetAsync("/api/search?q=x")).StatusCode.Should().Be(HttpStatusCode.OK);
+        var responses = await IssueConcurrently(3, () => client.GetAsync("/api/search?q=x"));
 
-        var throttled = await client.GetAsync("/api/search?q=x");
-        throttled.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        throttled.Headers.Contains("Retry-After").Should().BeTrue();
+        responses.Where(r => r.StatusCode == HttpStatusCode.OK).Should().HaveCount(2);
+        var throttled = responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests).ToArray();
+        throttled.Should().ContainSingle("2 permits against 3 concurrent requests leaves exactly one rejected");
+        throttled[0].Headers.Contains("Retry-After").Should().BeTrue();
     }
 
     [Fact] // C-API-03 — the anonymous Webex webhook has ONE global bucket (no per-user sub to partition on).
@@ -43,14 +59,18 @@ public sealed class HardeningApiTests
         await using var factory = new AcmpWebApplicationFactory();
         var client = WithLimit(factory, "WebhookPermitPerMinute", 2).CreateClient();
 
-        // No valid HMAC signature: the first two are rejected by the signature filter (not 429), but the
-        // rate limiter still counts them (it runs before the endpoint filter), so the third is throttled.
-        async Task<HttpStatusCode> Post() =>
-            (await client.PostAsync("/api/webex/webhook", new StringContent("{}"))).StatusCode;
+        // These carry no valid HMAC signature, and the Webex adapter is OFF in the test host — so
+        // WebexSignatureFilter's `if (!_options.Enabled) return Results.Ok()` arm answers 200 and ignores
+        // the body. An un-throttled POST here is therefore 200, not 401. The limiter counts every one of
+        // them regardless: it is middleware and takes the permit before the endpoint filter ever runs,
+        // which is the property this test exists to prove. See IssueConcurrently for why these are
+        // concurrent and why the assertion counts rather than positions (DEF-122).
+        var responses = await IssueConcurrently(
+            3, () => client.PostAsync("/api/webex/webhook", new StringContent("{}")));
 
-        (await Post()).Should().NotBe(HttpStatusCode.TooManyRequests);
-        (await Post()).Should().NotBe(HttpStatusCode.TooManyRequests);
-        (await Post()).Should().Be(HttpStatusCode.TooManyRequests);
+        responses.Where(r => r.StatusCode == HttpStatusCode.TooManyRequests).Should()
+            .ContainSingle("2 permits against 3 concurrent requests leaves exactly one rejected");
+        responses.Where(r => r.StatusCode != HttpStatusCode.TooManyRequests).Should().HaveCount(2);
     }
 
     [Fact] // C-CON-003 — no KeysPath => framework default; provider still round-trips.
