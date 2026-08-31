@@ -55,7 +55,11 @@ jobs:
 
   compose:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Raised from 10 by WBS-26.3: this job ran in ~12s while it only validated config, and now builds three
+    # application images (web's node/vite stage is the expensive one). The ceiling and the build were changed
+    # together on purpose — a build added under a 10-minute ceiling fails as a timeout, which reads like an
+    # infrastructure fault rather than a budget that was never revisited.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -106,6 +110,29 @@ jobs:
       # indistinguishable from a working one on a healthy stack, which is the whole defect.
       - name: The one-shot convergence guard actually refuses (DEF-054)
         run: sh deploy/scripts/assert-oneshot.test.sh
+
+      # WBS-26.3 (DW-090 / NFR-054). NFR-054's own verification method names a CI check — "docker image
+      # inspect after build; assert size <= 500 MB; base image layer verified" — and measured across all
+      # three workflow files and every script, NOTHING asserted either half. The requirement's substance has
+      # been satisfied since DW-080 phase B while the requirement itself could not record Met.
+      #
+      # ⚠ THIS JOB PREVIOUSLY BUILT NO IMAGE AT ALL — it validated compose config and ran node checks, so it
+      # was a config validator whose name reads like a builder. DW-090's sketch said "after the compose build
+      # in CI"; there was no compose build in CI. DEC-102 d2 gives it a real one. Attaching an inspect step
+      # without this build would have inspected images the job never produced, and on a warm runner
+      # `docker image inspect` can SUCCEED against a leftover — reporting compliance it never measured, which
+      # is precisely the failure DW-090 was filed about.
+      #
+      # ⚠ A DISTINCT PROJECT NAME (-p acmpimg) IS DELIBERATE: it namespaces the built tags so this never
+      # collides with a developer's long-lived dev stack. This is `build` only — no container is started.
+      # sqlserver-fts is NOT built: NFR-054 excludes the database image from the size cap (the mssql/server
+      # base exceeds it before ACMP adds the FTS package AC-061 requires) and it is a 3.62 GB build.
+      - name: Build the application images (api, web, worker)
+        run: >-
+          docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example -p acmpimg
+          build api web worker
+      - name: Image contract — size <= 500 MB and base layer verified (NFR-054)
+        run: node scripts/check-image-contract.mjs --project acmpimg
 
   frontend:
     runs-on: ubuntu-latest
