@@ -1980,3 +1980,31 @@ THE FALSE CLAIM, AND IT WAS MEASURED-LOOKING. Sizing `WBS-26.3` I wrote, and rep
 ⚠ WHERE THE FALSE CLAIM REACHED, so it is not corrected in one artifact and left standing in its siblings - the failure this package records repeatedly. `DW-090`'s amended text (correction key added there); `DEC-102` d2's decision text and `PE-725`; commit messages `c4905fb8`, `8fbb3182` and `c615c3f2`, and PR `#333`'s body - **commit messages cannot be amended, so those four stand wrong permanently and this entry is their correction of record.**
 
 ⭐ **IT WAS FOUND BY THE HANDOFF SWEEP, NOT BY A GATE, AND ONLY BECAUSE `publish` CHANGED COLOUR.** Refreshing `prm-next.md` I noticed `publish=success` on the merge run where I had recorded it as gated off. Nothing mechanical could have caught it: every identifier resolved, every status was correct, and the false half was a CAUSE attached to a true observation - `LL-020`'s family, a conclusion that does not travel with the fact it was built on.",DW-090,Claude Opus 5 (session 5bebccc0),PE-725,PH-7,SL-035,2026-08-31T20:36:18Z,,
+PE-732,lesson-confirmed,LESSON CONFIRMED: LL-038 (confirmed_by operator) — operator_confirm attested,LL-038,system:lesson-guard,,,,2026-08-31T21:00:20Z,,
+PE-733,lesson-confirmed,LESSON CONFIRMED: LL-039 (confirmed_by operator) — operator_confirm attested,LL-039,system:lesson-guard,,,,2026-08-31T21:00:20Z,,
+PE-734,note,"`DEF-123`'s SEMANTIC INVESTIGATION (`DEC-104` d1) - THE BLANKET IS NOT A CONSIDERED POSITION, AND THE AUTHORITATIVE TEST REGISTER SAYS SO ITSELF.
+
+**PROVENANCE FIRST, INCLUDING THE SWEEP `LL-038` EXISTS FOR.** Progress entries naming `TEST-041` or `TEST-045`: **ZERO**, against a calibrated control of **8** progress entries that mention some `TEST-` id - so the scan had a subject and the zero is an absence. Narrative documents: zero. Decisions, ADRs, defects, scope changes: zero. **One** document section names them, and it is the decisive one.
+
+✅✅ **`SEC-631` IS `DOC-068`'s *Test register (TEST-)* TABLE, AND IT DOCUMENTS WHAT EACH ROW COVERS.**
+- `TEST-041` | core-loop.spec E2E (Playwright) | E2E | **`FR-042`, `FR-130`** intake to agenda to publish, cross-context fan-out (`AC-035`, `AC-051`) | Implemented
+- `TEST-045` | Global search integration suite | Integration | **`FR-143` to `FR-145`** grouped search and Arabic full-text (`AC-060`, `AC-061`) | **Planned**
+
+**THE SPECIFICATION SAYS TWO REQUIREMENTS EACH. THE TRACE REGISTER GIVES THEM 176 EDGES.**
+
+| | edges | documented in `SEC-631` | **undocumented** |
+|---|---|---|---|
+| `TEST-041` | 110 | **2** (`FR-042`, `FR-130`) | **108** - 63 NFR + 45 FR/INV |
+| `TEST-045` | 66 | **2** (`FR-143`, `FR-145`) | **64** - 63 NFR + 1 |
+
+**172 of 176 edges are undocumented by the register that defines these tests.** ⚠ `SEC-631` also marks `TEST-045` **Planned**, consistent with its `Proposed` status - the suite is not written, and it is one of the two edges carrying the test leg for 63 requirements.
+
+✅ **THE SEMANTIC SPLIT, BY AN EXPLICIT AUDITABLE RULE RATHER THAN BY OPINION.** An NFR is UNREACHABLE by these two if its subject is not exercised by driving the SPA over HTTP - build/packaging, deployment topology, backup/DR, capacity/load, infrastructure config, external assessment, or a feature that does not exist. **Of the 63 blanket-wired NFRs: 38 UNREACHABLE, 25 arguably reachable.**
+
+⛔⛔ **THREE OF THE 38 HAVE SUBJECTS THAT DO NOT EXIST IN THE PRODUCT AT ALL, AND THIS IS THE SHARPEST RESULT:** `NFR-005` and `NFR-038` are Tarseem diagram rendering - **`P14`/`SL-014`, DEFERRED INDEFINITELY by `DEC-028`, never built** - and `NFR-026` is OWASP LLM01 protection for **AI extraction, which is Phase 3**. **The trace register asserts that a Playwright core-loop spec tests three capabilities this project has not written.** No reading of *a broad E2E touches many properties* reaches a feature that does not exist.
+
+⚠ **AND THE 25 'REACHABLE' ONES DO NOT RESCUE IT EITHER.** Cross-checked against `SEC-631`'s own assignments: only **2** of the 25 (`NFR-001`, `NFR-002`) have a documented owner test at all - and that owner is **`TEST-047`, the k6 performance scenarios**, not `TEST-041` or `TEST-045`. The other 23 are documented as owned by **nothing**. So even where the subject matter is arguably in reach, the register does not say these two tests cover it.
+
+⭐⭐ **THE CONCLUSION `DEC-104` d1 ASKED FOR: THE NARRATIVE AND THE TRACE REGISTER DISAGREE, AND THE NARRATIVE IS THE SPECIFICATION.** `AGENTS.md` is explicit that the package is the record and its narrative documents are the contract. `SEC-631` scopes these two tests to four requirements between them; the edges claim 176. **This is an artefact of a bulk insert, not a position anyone took** - and unlike `AC-088`..`AC-093`, where `LL-038`'s investigation found a recorded reason and the uniformity turned out to be a decision, here the same sweep found the opposite: **uniformity with no record behind it, contradicted by the document that defines the rows.**
+
+⚠ **NO EDGE HAS BEEN TOUCHED.** `DEC-104` d1 authorised an investigation, not a repair, and `DEF-123`'s own text records why choosing a remedy now would be wrong: deleting the blanket turns `G-TRACE` red for 63 requirements at once, re-wiring individually is unscoped work, and writing `TEST-045`'s suite fixes one edge of 176. `LL-035` binds here - a remedy that reduces the problem without removing its condition cannot be falsified by the condition persisting. **The disposition is the operator's and is now supported by a count rather than a shape.**",DEF-123,Claude Opus 5 (session 5bebccc0),,PH-7,SL-035,2026-08-31T21:04:29Z,,
