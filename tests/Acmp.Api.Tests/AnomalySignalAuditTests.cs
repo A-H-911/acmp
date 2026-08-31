@@ -151,5 +151,32 @@ public class AnomalySignalAuditTests
         (await ActionsAsync(factory)).Should().Contain(AnomalyDetector.RestrictedAccessAnomalyEvent);
     }
 
+    [Fact] // DEF-124 / AC-157: a read the caller was not permitted must leave NO access row
+    public async Task A_refused_restricted_topic_read_leaves_no_access_row()
+    {
+        await using var factory = new AcmpWebApplicationFactory();
+        var topicKey = await RestrictedTopicKeyAsync(factory);
+
+        // A Member who is not a grantee. The refusal is a 404, NOT a 403 — a 403 would itself confirm
+        // that the key names a real topic, which is the fact the classification protects.
+        var outsider = Client(factory, "Member", "kc-outsider");
+        (await outsider.GetAsync($"/api/topics/{topicKey}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var actions = await ActionsAsync(factory);
+
+        // ⚠⚠ THE POSITIVE HALF IS NOT DECORATION. RefusalAuditTests records two NotContain assertions
+        // that passed the whole time against an empty list; asserting an ordinary row first proves the
+        // audit store was reachable and populated, so the NotContain below cannot pass vacuously.
+        actions.Should().NotBeEmpty();
+
+        // ⛔ AC-157's placement clause, at the API layer. The handler test pins the ORDER against a
+        // substitute; this pins the PATH — LL-030 says a defence layer needs both, because a front-door
+        // test cannot see the ordering and a handler test cannot prove the route reaches it.
+        actions.Should().NotContain(AnomalyDetector.AccessEvent,
+            "recording above the visibility check would log a read that never happened and leak, into the "
+            + "audit log, the existence of a topic the classification exists to hide");
+        actions.Should().NotContain(AnomalyDetector.RestrictedAccessAnomalyEvent);
+    }
+
     private sealed record SubmitResult(Guid Id, string Key);
 }
