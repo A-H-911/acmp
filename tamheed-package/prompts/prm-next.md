@@ -32,6 +32,13 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # paths-ignore against the WHOLE PR diff, so on an open PR
                                              # even a package-only push re-runs everything and CANCELS
                                              # the in-flight run (trap 38). Newest sha wins.
+                                             # ⛔⛔ A MERGE-COMMIT RUN IS ITS OWN RUN AND CAN DISAGREE
+                                             # WITH THE PR RUN OVER BYTE-IDENTICAL CODE - twice here
+                                             # now (LL-036, pinned). `gh pr checks` shows only the PR
+                                             # one. This command is what found `main` red on
+                                             # c273294c after #331 merged "with ten checks green".
+                                             # ⭐ Cite the RUN ID in anything you record, never a
+                                             # colour: an id cannot be attributed to the wrong tree.
 docker info                                  # ⚠ ASK IT — do not expect either answer. The daemon is
                                              # frequently DOWN here, and while it is,
                                              # `Acmp.Integration.Tests` cannot run: the ONLY place
@@ -66,7 +73,7 @@ carry** — the rows record it as an override, so do not read the activation as 
 ⚠ **The two open Dependabot PRs `#318`/`#319` ARE explained — `DEC-083` d3 left them alone deliberately**,
 so seeing them is not the unexplained state the warning below is about. A Dependabot queue moves; run the
 command rather than trusting this sentence's pair of numbers.
-**2026-08-30 MERGED THREE MORE PRs, ALL SQUASHED TO `main` WITH TEN CHECKS GREEN:** `#329` → `472b84d1`
+**2026-08-30 MERGED THREE MORE PRs, ALL SQUASHED TO `main`, EACH WITH TEN CHECKS GREEN *ON ITS PR RUN*:** `#329` → `472b84d1`
 (`scripts/gen-record-slate.mjs`, the general record-slate generator — the three earlier generators are each
 welded to one register, so a cross-register interview had none), `#330` → `42e948b8` (SoD-4 as
 warn-and-audit over topic owner AND agenda presenter, plus `NFR-064`'s evidence for all five SoD rules,
@@ -74,6 +81,15 @@ which upgraded SoD-2's audit assertion from a mock to a ROW), and `#331` → `c2
 anomaly signals, including `Topics.RestrictedTopicAccessed` — read-auditing that did not exist at all).
 ⚠ `#330`'s second CI run went red on `DEF-108` and was re-run by `DEC-097` d2 AFTER the disposition; see
 the annotation on `DEC-077` d3.
+⛔⛔ **AND `#331`'s TEN GREEN CHECKS WERE ITS *PR* RUN. ITS MERGE-COMMIT RUN ON `main` WENT RED, AND THIS
+FILE SAID OTHERWISE FOR A WHOLE SESSION — THE FORTY-FOURTH's FIRST MEMBER.** PR head `6e8d4b96` passed CI
+`33297195353` at 06:43:15Z; the squash-merge `c273294c` failed CI `33297623382` at 06:45:13Z on
+`SearchProvidersFtsTests`, with `git diff … -- src/ tests/` **EMPTY** between them. Filed as `DEF-121`.
+⭐⭐ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE AND `gh pr checks` SHOWS
+ONLY THE FIRST** — now `LL-036`, Approved and pinned. **Cite the run id, never a colour**: a run id cannot
+be attributed to the wrong tree. The same conflation put a false clause inside a `Met` verdict (`AV-235`,
+corrected by appending `AV-236`), which no gate can see because a verdict's evidence is free text and
+nothing compares it to the runs it names.
 ⚠ **That is a repository fact and NOT a slice status** — a merged row still owes the operator a verdict,
 and which rows are at `Review` is deliberately not written here. ⛔ **DO NOT NAME A SLICE ID IN THIS
 PARAGRAPH.** Two sentences here named `SL-033`, and that was the FORTY-SECOND: a command with an id in it
@@ -103,7 +119,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-three** times, and **thirteen** wrong assertions have escaped into
+file has carried a stale statement **forty-four** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -113,6 +129,53 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-FOURTH IS A CI COLOUR ATTRIBUTED TO THE WRONG RUN, AND IT LEFT `main` RED AND UNRECORDED
+FOR A WHOLE SESSION.** This file said the 2026-08-30 merges landed *"with ten checks green"*. True of each
+PR run; **false of `#331`'s merge-commit run**, which failed on `SearchProvidersFtsTests` two minutes after
+the byte-identical PR head passed. A fresh session pasting the kickoff block would have read `main` as
+green while `gh run list` said otherwise — and the previous session, having written exactly that sentence,
+made three package commits without ever running it (`DEC-077` d2's rule failing on its first test after
+`DEF-108`'s hold lifted). Filed as `DEF-121`, now carrying `DEC-089`'s end-condition structure via
+`DEC-103` d1.
+⭐⭐ **THE TRANSFERABLE POINT IS NOW A PINNED LESSON, `LL-036`: A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE
+DIFFERENT RUNS OVER IDENTICAL CODE, AND `gh pr checks` SHOWS ONLY THE FIRST.** *CI was green* is not a fact
+until you say WHICH RUN. **Cite the run id** — a run id cannot be attributed to the wrong tree, a colour
+can. On this repository the two runs have now disagreed twice (`DEF-108` occurrence 4, and `DEF-121`).
+⚠⚠ **IT IS A FAMILY OF THREE UNDER ONE ORDINAL, on the FIFTEENTH's and TWENTY-EIGHTH's precedent — one
+fault class, one pass.** (a) the kickoff block's *"ten checks green"*; (b) **`AV-235`'s EVIDENCE FIELD**,
+which asserted *"CI on the merged tree: frontend, backend and compose all success, plus E2E and Security"*
+— the backend job on that tree FAILED and E2E does not run on `push` at all, so no E2E result for it
+exists; corrected by appending `AV-236`, verdict unchanged because the criterion's four backing tests are
+in `Acmp.Api.Tests`, which passed 423 of 423 on that same failing run; and (c) **§6's `DW-090` block**,
+*"NO AC WAS WRITTEN AND THAT IS DELIBERATE … no such check exists"*, false in every clause once `WBS-26.3`
+built the check.
+⚠⚠⚠ **THE `AV-235` MEMBER IS THE ONE WITH NO INSTRUMENT AT ALL, AND THAT IS WHY IT MATTERS MOST.** A
+verdict's evidence is FREE TEXT and **nothing in the store compares an evidence claim to the runs it
+names** — `G-PROGRESS`, `acs-met`, `count-prompt-ids.py` and the prose-status checker all pass over it,
+because every identifier resolved and the verdict itself was correct. **A false fact inside a `Met` verdict
+is invisible by construction.** The only defence is the citation rule above.
+⚠ **THE FOURTEENTH ESCAPE IS SEPARATE AND IS MINE, FOUND BY THIS SWEEP:** I wrote that `ci.yml`'s `publish`
+job was gated off *"because it reported `skipped`, so the variable is unset"* — into `DW-090`, `DEC-102`
+d2, `PE-725` and **three commit messages** (`c4905fb8`, `8fbb3182`, `c615c3f2`) plus PR `#333`'s body.
+Measured with a control: `AWS_ROLE_ARN` has been set since **2026-08-04** and `publish` runs on every push
+to `main`; it was skipped that once because `backend` FAILED and it `needs:` it. **`skipped` conflates *the
+`if:` was false* with *a needed job did not succeed*.** `PE-731` is the correction of record; `LL-039`
+generalises it. ⛔ **It does NOT reopen `DEC-102` d2** — `compose` runs on every PR and `publish` does not,
+and a push-to-main-only variant was explicitly declined because a red would then arrive AFTER merge.
+⭐ **WHAT CAUGHT IT: `publish` CHANGED COLOUR.** Nothing mechanical could have — the false half was a CAUSE
+attached to a true observation (`LL-020`).
+⚠ **A SECOND, DIFFERENT CLASS RODE ALONG IN THE SAME PASS AND IS FOLDED IN RATHER THAN NUMBERED SEPARATELY**
+— the FORTY-THIRD's own precedent, and `LL-016`'s rule that an ordinal is the thing no check can see, so do
+not multiply them. §6's `DEC-077` d3 block read *"IT WAS OVERRIDDEN EXACTLY ONCE"*; `DEC-100` d2 made it
+twice within a day. **A count inside a rule block, where the rule survives and the number rots** — replaced
+with the register rather than with a fresher figure, which is the EIGHTH fix's standing remedy.
+⭐⭐ **WHAT THIS PASS PROVES ABOUT THE SWEEP ITSELF: THREE OF THE FOUR MEMBERS WERE FOUND BY *READING*, NOT
+BY GREPPING.** `count-prompt-ids.py` ran clean (347 of 348; the one unresolved is `DEF-082`, which
+`DEF-101` already records). The `— your verdict` and ``is at `Review` `` greps returned only historical
+quotes. The `item [0-9]` grep returned nine hits, all inside the error log. **Every instrument this file
+owns said it was clean, and it was carrying four false statements** — three about what FOLLOWS from a run's
+colour, one a count in a rule. `LL-009` inside this file's own tooling, for the fourth time.
 
 ⚠⚠⚠ **THE FORTY-THIRD IS A ROW CLOSING AND TAKING NINE STATEMENTS WITH IT — NONE OF WHICH NAMED ITS
 STATUS.** `DEC-097` d1 closed `DEF-108` as environmental, and everything that had REASONED FROM its being
@@ -1431,11 +1494,26 @@ d3). That test is the ONLY place any `FREETEXT` branch executes against real SQL
 the one test whose silent loss would be least visible and most expensive. ⚠ **This overrode the agent's
 recommendation** (re-run once and log it); the operator took the stricter reading, as they have four
 times now on a control that went red.
-⚠⚠ **IT WAS OVERRIDDEN EXACTLY ONCE, ON 2026-08-30, AND THE RULE ITSELF IS UNCHANGED.** `DEC-097` d2 re-ran
-a failed job on PR `#330` AFTER `DEF-108` had been dispositioned — the agent recommended an administrator
-merge instead, and the reasoning-against is preserved there. **`DEC-077` d3 as written is unconditional and
-contains no exception for a dispositioned cause**, so that was recorded as an override on its face. ⛔ **Do
-not read it as precedent: the response to a red here is still stop and investigate.**
+⚠⚠ **IT HAS BEEN OVERRIDDEN TWICE, AND THE RULE ITSELF IS UNCHANGED — READ THE DECISION REGISTER FOR THE
+CURRENT COUNT RATHER THAN THIS SENTENCE.** ⛔ It read *"EXACTLY ONCE"* and that went false within a day,
+which is the FORTY-FOURTH's folded member: **a count inside a rule block, where the rule is what survives
+and the number is what rots.** (1) `DEC-097` d2 re-ran a failed job on PR `#330` AFTER `DEF-108` had been
+dispositioned — the agent recommended an administrator merge instead. (2) `DEC-100` d2 re-ran the failed
+backend job on `main` for `DEF-121` — the agent recommended against on evidential grounds, since a green
+already existed on byte-identical code. **In both, the reasoning-against is preserved in the decision.**
+**`DEC-077` d3 as written is unconditional and contains no exception for a dispositioned cause**, so both
+were recorded as overrides on their face. ⛔ **Do not read either as precedent: the response to a red here
+is still stop and investigate.**
+⚠⚠⚠ **`DEC-100`'s RATIONALE FLAGS THE THING TO WATCH, AND IT IS NOW ONE STEP CLOSER: a rule overridden
+twice in two days while remaining unconditional in its own text is a rule being repealed by attrition
+rather than by decision.** The agent offered *re-run AND amend d3 so it stops being unconditional-in-name-
+only*; that was declined, so d3 stands as written. **A THIRD override should reopen whether the rule still
+says what the practice does.**
+⭐⭐ **AND THE SECOND OVERRIDE VINDICATED THE OPERATOR AGAINST THE AGENT, WHICH IS WHY IT IS WORTH READING
+RATHER THAN COUNTING.** The agent argued a re-run could produce no fact the register did not already hold.
+**It found `DEF-122`** — a rate-limit test whose timing assumption had held for hundreds of runs. A re-run
+is not a second sample of the question you are asking; it is a fresh sample of every OTHER question the
+suite asks (`LL-037`, Approved).
 ✅ **`DEF-108` IS CLOSED — `Won't-fix`, accepted as ENVIRONMENTAL by `DEC-097` d1 (2026-08-30), under
 clause (3) of the end condition `DEC-089` d1 gave it.** It had been carried `Open`/high since `DEC-077` d1
 specifically so that nothing could be declared done while it stood, and that hold is now released.
@@ -1819,10 +1897,16 @@ use `service_started`, not `service_healthy`, so **nothing consumes the healthch
 `DEF-078`/`DEF-079`'s shape a third time, with a compose comment asserting the opposite. The probe itself
 was then forced both ways through Docker's own plumbing (200 → healthy, 503 → unhealthy with the reason in
 `docker inspect`).
-⚠ **NO AC WAS WRITTEN AND THAT IS DELIBERATE (`DW-090`):** `NFR-054`'s own verification names a CI check
-— `docker image inspect`, assert ≤ 500 MB, base layer verified — and **no such check exists** in any of the
-three workflow files. ⭐ A size check ALONE would have passed on Debian at 326 MB, reporting compliance
-with a *minimal-base* clause while sitting on the base it excludes.
+⛔ **THIS BLOCK SAID *"NO AC WAS WRITTEN AND THAT IS DELIBERATE (`DW-090`) … no such check exists"* AND
+THAT IS NOW FALSE IN EVERY CLAUSE — `WBS-26.3` BUILT THE CHECK.** It is kept as the reason the AC was
+withheld for so long, which was correct at the time: `NFR-054`'s own verification names a CI check —
+`docker image inspect`, assert ≤ 500 MB, base layer verified — and until PR `#333` none existed in any of
+the three workflow files, so any criterion would have claimed a CI-verified property nothing verified.
+⭐ A size check ALONE would have passed on Debian at 326 MB, reporting compliance with a *minimal-base*
+clause while sitting on the base it excludes — which is why the base half is the half that matters.
+✅ **`entity_query("requirement", id="NFR-054")` is the live answer**; the check itself is
+`scripts/check-image-contract.mjs`, wired into `ci.yml`'s `compose` job behind a real
+`docker compose build api web worker`.
 ⚠ **`DW-066`'s recorded 257 MB is stale by a runtime major** — measured on .NET 8; .NET 10 made it 326 MB.
 
 ✅✅ **`WBS-25.2` (`DW-079`) IS `Implemented` (`DEC-093`) — PR `#327` → `58b900b0`, ten checks green, and
@@ -1870,13 +1954,24 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    names every open row, and `entity_query("wbs-item")` gives their statuses.**
    `DEC-094` activated six rows and **every one overrode the agent's recommendation to carry**; the rows
    record it as an override, so do not read the activation as agreement about HOW.
-   ⚠⚠ **EVERY REMAINING ITEM GETS A PRE-BUILD SWEEP BEFORE ANY CODE, AND ON THIS SLICE THAT HAS PAID ON
-   BOTH ITEMS BUILT SO FAR — IN A DIFFERENT DIRECTION EACH TIME.** `WBS-26.1`'s sweep found `FR-076`
-   already specified SoD-4's COI half, softly, at Phase 2 — building it would have contradicted a
+   ⚠⚠ **EVERY REMAINING ITEM GETS A PRE-BUILD SWEEP BEFORE ANY CODE, AND ON THIS SLICE IT HAS PAID ON
+   EVERY ITEM BUILT SO FAR — IN A DIFFERENT DIRECTION EACH TIME.** ⛔ No count is written here; the
+   sweep's value is the habit, and a tally of it goes stale on the next build. `WBS-26.1`'s sweep found
+   `FR-076` already specified SoD-4's COI half, softly, at Phase 2 — building it would have contradicted a
    requirement's own words. `WBS-26.2`'s found that its bound requirement `NFR-046` covered neither of its
    signals, AND that `DW-092`'s central data premise was false: nothing recorded Restricted-topic reads at
-   all, so the signal was undetectable by any mechanism. **Both were invisible to every id-and-status pass,
-   because every identifier resolved and every status was correct** (`LL-025`).
+   all, so the signal was undetectable by any mechanism. **`WBS-26.3`'s found its row's CENSUS exact and
+   its PRESCRIPTION too small in three ways at once** — two images where the requirement names three, one
+   base digest where the three images have two different bases, and *"after the compose build in CI"* when
+   **no CI job built an image at all**. That is `WBS-24.4`'s shape: the measurement was right and the
+   remedy was sized to it wrongly. **All of them were invisible to every id-and-status pass, because every
+   identifier resolved and every status was correct** (`LL-025`).
+   ⚠⚠ **AND `WBS-26.3` ADDED A WARNING ABOUT THE SWEEP ITSELF: I INVENTED A CAUSE FROM A JOB STATUS.** I
+   recorded that `ci.yml`'s `publish` job was gated off *"because it reported `skipped`, so the variable is
+   unset"*. Measured later: `AWS_ROLE_ARN` has been set since **2026-08-04** and `publish` runs on every
+   push to `main`; it was skipped that once because `backend` **failed** and it `needs:` it. **`skipped`
+   conflates *the `if:` was false* with *a needed job did not succeed*, and the API prints the same word
+   for both** (`LL-039`, Proposed). The `needs:` line was ONE LINE above the `if:` and I did not read it.
    ⛔ **`WBS-26.5` must NOT fan `useMeetingDetail` across the month** — `DEF-104`'s N+1 shape; the answer
    is a per-meeting agenda projection. ⚠ **`WBS-26.4`'s `service_healthy` switch is the risky one**:
    `/readyz` reaches SQL Server, Hangfire and object storage, so strict ordering can turn a slow cold boot

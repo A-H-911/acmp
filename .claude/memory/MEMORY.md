@@ -6,52 +6,55 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-08-29 · `SL-033`+`SL-034` DONE · **`SL-035` IS LIVE — SIX ACTIVATED ROWS**
+## ★★★ 2026-08-31 · **`SL-035` IS THE LIVE SLICE** · `SL-033`+`SL-034` CLOSED
 
-⚠ Live state is `prm-next.md`'s numbered list, never this file. `readiness_check("package")` is
-`ready:FALSE` on **`DEF-108` alone**, by `DEC-077` d1 — the intended state, not a fault.
-⛔ **`SL-033` is deliberately NOT closed** (`DEC-088`); **`SL-034` IS** (`DEC-093`). **`SL-035` =
-`WBS-26.1`–`26.5`**, security first (`DEC-094`/`SC-038`). ⚠⚠ **ALL SIX ACTIVATIONS OVERRODE THE AGENT'S
-RECOMMENDATION TO CARRY** — the `DEC-067` shape; rows record it as an override, so do not read it as
-agreement about HOW. ⛔ **`WBS-26.1`: settle SoD-4's STRENGTH before writing any guard** — hard refusal /
-warn+audit / COI workflow are three different products, and **building the strict one by default is the
-failure mode, not the safe choice**. `NFR-064` exists because **no requirement covered SoD at all**.
+⚠ Live state is `prm-next.md`'s numbered list, never this file. ⛔⛔ **NAME NO READINESS ANSWER HERE — ASK
+IT.** This block said *"`ready:FALSE` on `DEF-108` alone, the intended state"*; `DEC-097` d1 closed that row
+and the sentence went **doubly** false. `readiness_check("package")` is the answer, and
+`entity_query("slice", status="Approved")` resolves the live slice without naming one.
+⛔ **`SL-033`/`SL-034` are CLOSED** (`DEC-098` d2 / `DEC-093`). **`SL-035` = `WBS-26.1`–`26.5`**, security
+first (`DEC-094`/`SC-038`). ⚠⚠ **ALL SIX ACTIVATIONS OVERRODE THE AGENT'S RECOMMENDATION TO CARRY** — rows
+record it as an override, so do not read it as agreement about HOW.
 
-- ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row whose
-  `custom_attributes` hold a nested object is **silently deleted from the result**, not undercounted.
-  That produced the **FORTY-FIRST**: a next-action list wrong in BOTH directions (`DEC-089` d4 had already
-  ruled on `DW-088`, d3 on `DW-089`; `DW-086`/`DW-087` never had been, and were omitted). ⭐ **This index
-  carried the same wrong list** until the interview forced it — the sibling-copy failure again.
-- ⭐⭐ **`LL-005` PAID TWICE**: the pre-interview sweep produced two rulings that did not exist when the
-  interview was planned — SoD has no requirement, and `FR-035`'s words claim more than `AC-145` verified
-  (ruled a refinement; `FR-035` stays `Implemented`). **Sweep BEFORE the interview, never after.**
-- ⚠ **`LL-006` on a generator**: "every `Open` row no decision names" returns **35 rows, 34 already ruled**
-  by the 2026-08-20 BULK interview that named none. `Open` ≠ never-ruled; it now fails closed.
-- ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b) — two leaves it red, reading
-  like the fix failed. ⚠ `verification_method` is a CHECK over `Test|Demonstration|Inspection|Analysis`;
-  approving a lesson needs `"operator_confirm": true`; trace edges use `from_id`/`to_id`.
+★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md)
+— **read before recording anything about CI, or proposing a fix to an intermittent failure.**
+
+- ⚠⚠⚠ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE** (`LL-036`, pinned) —
+  disagreed twice here. `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.**
+- ⚠⚠ **`skipped` CONFLATES *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`) — reached 3 commit
+  messages. ⭐⭐ **A REMEDY THAT REDUCES A *PROBABILITY* CANNOT BE FALSIFIED BY THE FAILURE RECURRING**
+  (`LL-035`, pinned). ⭐ **A re-run samples every question the suite asks** (`LL-037`) — one found `DEF-122`.
+- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`, Proposed). `AC-088`–`AC-093` are
+  `Proposed` **on purpose**; promoting is **one-way**. ⭐ **Tell: uniformity** — six of six is a decision.
+  ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.**
+- ⚠ **`DEF-121` is the sole blocking readiness failure**; **greens satisfy no clause, by design.**
+  ⚠ **`DEC-077` d3 has been overridden TWICE** while staying unconditional — a third reopens the rule.
+
+- ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row with nested
+  `custom_attributes` is **silently deleted from the result**, not undercounted (the **FORTY-FIRST**).
+- ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — it has now produced rulings the agenda did
+  not contain **three** times, twice catching the agent's own gaps. ⚠ **`Open`/`Proposed` ≠ never-ruled**
+  (`LL-006`) — and a **progress entry is a ruling's record too**, not just DEC/ADR.
+- ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b). ⚠ `verification_method` is a
+  CHECK; `verified_by` ∈ `human|agent|ci`; approving a lesson needs `"operator_confirm": true` **plus
+  byte-identical content**; trace edges use `from_id`/`to_id`. ⚠ `entity_upsert` needs FULL rows — NOT NULL
+  is evaluated before conflict resolution — but **nullable fields are preserved by omission**.
 - ⭐⭐⭐ **A TARGETED SWEEP FINDS CLAIMS ABOUT WHAT YOU *CHANGED*; ONLY A FULL READ FINDS CLAIMS ABOUT WHAT
-  *REMAINS*.** The **FORTY-SECOND** — 8 stale claims in `prm-next.md` — survived four targeted sweeps in
-  one session, because *"the only remaining requirement"*, *"the end condition is met"*, *"every phase is
-  closed"* name **no row you touched**; they go false when something is **ADDED elsewhere**.
-  ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE WRONG SUBJECT** — `SL-033`'s
-  `wbs-done` **passes with zero entities**, so "read it for what's open" hid five `WBS-26.x` items.
-  ⭐ **Name no slice id in durable prose**: `entity_query("slice", status="Approved")` resolves the live one.
-  ⚠ **`PH-3` and `PH-7` are `Approved`, not closed** — `PH-7` is the LIVE phase; ⛔ release close-out is
-  **not** due while a slice is open.
+  *REMAINS*** (the **FORTY-SECOND**). ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE
+  WRONG SUBJECT** — a closed slice's `wbs-done` **passes with zero entities**. ⭐ **Name no slice id in
+  durable prose.** ⚠ **`PH-3` and `PH-7` are `Approved`, not closed** — release close-out is **not** due
+  while a slice is open.
 
 ★★★ [**`SL-034` — the slate generator's 3 refusals + the ASVS pack**](sl034-slate-generator-and-asvs-pack.md)
 — read it before touching `gen-slice-review-slate.mjs`, the ASVS pack, or any test that reads the package.
 
-- ⭐⭐⭐ **`LL-032` (Approved + pinned): A TEST WHOSE FIXTURE IS THE LIVE REGISTER CHANGES MEANING WHEN
-  SOMEBODY DOES ORDINARY WORK — AND THE DANGEROUS OUTCOME IS THE *PASS*.** ⭐ Stage the whole selection;
-  ask *what would a normal day's work change to make this stop testing what it names?*
-- ⭐⭐ **THE REGRESSION CASE WRITTEN AS A CONTROL FOUND A LIVE DEFECT** (`DEF-119`). **Multi-criterion ≠
-  multi-requirement.** ⛔⛔ **NEVER carry `security-controls.md` §20's *"L2 is met across all applicable
-  chapters"*** — the self-assertion `DW-079` forbids. ⭐ **ASVS levels are CUMULATIVE: "L2" = 253 at L1+L2.**
+- ⭐⭐⭐ **`LL-032` (pinned): A TEST WHOSE FIXTURE IS THE LIVE REGISTER CHANGES MEANING WHEN SOMEBODY DOES
+  ORDINARY WORK — AND THE DANGEROUS OUTCOME IS THE *PASS*.** ⭐ Ask *what would a normal day's work change?*
+- ⭐⭐ **THE REGRESSION CASE WRITTEN AS A CONTROL FOUND A LIVE DEFECT** (`DEF-119`). ⛔⛔ **NEVER carry
+  `security-controls.md` §20's *"L2 is met across all applicable chapters"*** — the self-assertion `DW-079`
+  forbids. ⭐ **ASVS levels are CUMULATIVE: "L2" = 253 at L1+L2.**
 - ⚠⚠ **`jq` IS NOT INSTALLED** — a monitor built on it emits **nothing**, and silence reads as "still
-  running". Use `gh --jq`. ⚠ **Pin the sha in a CI poller**; one re-reading `HEAD` prints `0 running /
-  0 runs` after you commit, which looks like success.
+  running". Use `gh --jq`. ⚠ **Pin the sha in a CI poller.**
 
 ★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) · [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md)
 
@@ -69,15 +72,14 @@ failure mode, not the safe choice**. `NFR-064` exists because **no requirement c
   `check-*.mjs` **are** the gates. ⚠ **`DEF-107`: approving+pinning a lesson does NOT bind it** — run
   `handoff_emit` in the SAME batch. ⚠ **Push package writes BETWEEN merge cycles.**
 - ⚠ **`DW-088`: `TopicDetail`'s download button is hardcoded `disabled`** — no principal but a guest
-  presenter can open a topic attachment. ⚠ **`WithIdentityProvider()` is opt-in** — without it the
-  guest-invite path is unreachable and API answers look like feature bugs.
+  presenter can open a topic attachment. ⚠ **`WithIdentityProvider()` is opt-in.**
 - ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`) — answer
   it BEFORE Phase 2 retention enforcement. ⚠ **Approved ACs are IMMUTABLE even against being marked
-  superseded** (`AC-147`); do not "repair" it. ⛔ **Never `PageSize.Clamp` an export.** ⚠ **`DEF-109`**:
-  append an occurrence, don't re-run a red into silence.
+  superseded** (`AC-147`). ⛔ **Never `PageSize.Clamp` an export.** ⚠ **`DEF-109`**: append an occurrence,
+  don't re-run a red into silence.
 - ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate`
-  · `test-gen-slice-review-slate.py` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` ·
-  `count-prompt-ids.py` · `number-render-scan`.
+  · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` ·
+  `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`.
 
 ## ★★ 2026-08-20 · the disposition session — durable rules only
 
