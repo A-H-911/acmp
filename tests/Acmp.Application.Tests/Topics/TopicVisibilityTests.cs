@@ -202,6 +202,32 @@ public class TopicVisibilityTests
         detail.Should().BeNull();
     }
 
+    [Fact] // DEF-124 / AC-157: the guard is the ORDER of two statements, and nothing else observed it
+    public async Task A_refused_read_records_NO_restricted_access_row()
+    {
+        var (user, clock) = (User(AcmpRoles.Member), Clock());
+        await using var db = await Seeded(user, clock, Restricted("TOP-2026-022"));
+        var visibility = new TopicVisibility(user, Capabilities());
+        var anomaly = Substitute.For<IAnomalyDetector>();
+
+        var detail = await new GetTopicDetailHandler(db, clock, visibility, anomaly)
+            .Handle(new GetTopicDetailQuery("TOP-2026-022"), CancellationToken.None);
+
+        detail.Should().BeNull();
+
+        // ⚠⚠ AC-157 states the PLACEMENT as part of the criterion: the recording sits AFTER the
+        // visibility check, so a read the caller was not permitted leaves NO access row. Above that
+        // line it would log reads that never happened AND leak, into the audit log, the existence of
+        // topics the classification exists to hide.
+        //
+        // ⛔ THIS ASSERTION EXISTS BECAUSE NOTHING ELSE CAN SEE THE ORDER (DEF-124, LL-030). Moving the
+        // call one statement up compiles and passes 423 of 423 Acmp.Api.Tests and 211 of 211 Topics
+        // cases here — both orders return an identical 404, so no response-level assertion can tell
+        // them apart, and the only observable difference is a row in the audit store.
+        await anomaly.DidNotReceive()
+            .ObserveRestrictedTopicAccessAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task Detail_by_key_is_served_to_a_grantee_with_its_materials()
     {
