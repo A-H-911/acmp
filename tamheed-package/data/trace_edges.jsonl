@@ -669,6 +669,7 @@
 {"from_id":"SC-041","to_id":"NFR-065","relation":"scope_adds"}
 {"from_id":"SC-041","to_id":"TEST-054","relation":"relates_to"}
 {"from_id":"SC-041","to_id":"WBS-26.2","relation":"scope_modifies"}
+{"from_id":"SC-042","to_id":"WBS-26.4","relation":"scope_modifies"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-018","relation":"tests"}
