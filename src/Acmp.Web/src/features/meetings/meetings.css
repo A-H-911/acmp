@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Meetings (P6c) — agenda builder + list. Composes shared components; only screen-specific
  * layout/cell styling lives here. Logical properties throughout so the screens mirror under
  * [dir="rtl"] with no per-direction overrides (guardrail 9).
@@ -158,7 +158,14 @@
 }
 .mt-cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* DEF-128's SIBLING, and it was found by measuring rather than by assuming. The defect was reported
+     against the BACKLOG calendar; this grid has the same `repeat(7, 1fr)` and `.mt-cal-event` is a
+     block with `white-space: nowrap`, whose min-content width is the whole title. Measured before any
+     change here: cells 128.1 / 209.4, an 81.3px spread, in BOTH locales — so fixing only the reported
+     grid would have left the sibling broken, which is the shape this project keeps recording.
+     `1fr` is `minmax(auto, 1fr)` and that `auto` floor is the content's min-content width; `minmax(0, …)`
+     lets the column shrink so the existing ellipsis governs the paint. Re-measured after: spread 0. */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px; /* design literal */
 }
 .mt-cal-dow {

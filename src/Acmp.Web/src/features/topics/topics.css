@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Backlog (P5b) — composes shared Table / Segmented / Select / MultiSelect / Pagination /
  * StatusChip / Tag / states. Only backlog-specific layout + cell styling lives here. All
  * logical properties so the screen mirrors under [dir="rtl"] with no per-direction overrides.
@@ -338,7 +338,16 @@
 .cal-leg-dot.due { background: var(--st-warn-dot); }
 .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--header); border-block-end: 1px solid var(--border); }
 .cal-weekday { padding: 9px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .4px; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+/* DEF-128 — `minmax(0, 1fr)`, NOT `1fr`. `1fr` is shorthand for `minmax(auto, 1fr)`, and that `auto`
+   MINIMUM is the column's content min-content width — so a column can never shrink below its widest
+   cell however small its `fr` share says it should be. One long meeting title made this grid
+   [129, 150.4, 254.8] wide, a 125.8px spread, while `.cal-weekdays` — a SEPARATE grid with no long
+   content — stayed at a uniform 150, so the weekday labels no longer sat over the columns they name.
+   `minmax(0, …)` lets the column shrink, at which point `.cal-event-label`'s ellipsis governs what is
+   PAINTED as well as what is measured.
+   ⚠ Measured, not reasoned: the spread was 125.8px before and 0 after, in a browser, in both locales.
+   No unit test can produce that evidence — nothing in this repository reads pixels (DEF-047). */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .cal-cell {
   min-block-size: 96px;
   border-inline-end: 1px solid var(--border-soft);
@@ -1006,7 +1015,11 @@
   inline-size: 5px; block-size: 5px; border-radius: 50%;
   background: var(--st-sched-dot); flex: 0 0 auto;
 }
-.cal-event-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* DEF-128 — `min-inline-size: 0` because a flex item's automatic minimum size is `auto`, i.e. its
+   content, and the ellipsis alone does not lower it. Belt and braces with the grid's `minmax(0, …)`:
+   the grid fix is what the measurement moved, this keeps the label from re-inflating the chip if the
+   grid rule is ever revisited. */
+.cal-event-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-inline-size: 0; }
 .cal-event-count {
   margin-inline-start: auto; flex: 0 0 auto;
   color: var(--text-2); font-variant-numeric: tabular-nums;
