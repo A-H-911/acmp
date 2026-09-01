@@ -204,12 +204,22 @@
 .notif-key {
   font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--accent);
   border: 0; background: none; padding: 0; cursor: pointer;
+  /* ADR-0045 d3. A <button>, so WCAG 2.2 target-size wants 24x24; at 11px with no padding it measured
+     ~16px. inline-flex + centring keeps it sitting on the meta row's baseline where the design puts it,
+     so the row grows by nothing the eye reads as a change. Found by the route sweep, which is the first
+     thing ever to look at /notifications (DEF-126's audit). */
+  min-block-size: 24px; display: inline-flex; align-items: center;
 }
 .notif-key:hover { text-decoration: underline; }
 .notif-row-time { font-size: 11px; color: var(--text-3); white-space: nowrap; }
 .notif-row-msg {
   display: block; inline-size: 100%; text-align: start; border: 0; background: none; cursor: pointer;
   font-size: 12.5px; color: var(--text); line-height: 1.45; padding: 0;
+  /* ADR-0045 d3. Also a <button>: a ONE-LINE message measured ~18px against the 24px minimum, while a
+     wrapped one already cleared it — so this violated only for short notifications, which is exactly the
+     kind of conditional failure a sweep over real data finds and a static reading does not. `display:
+     block` is kept so multi-line messages still wrap; the floor only lifts the short case. */
+  min-block-size: 24px;
 }
 .notif-dot { flex: 0 0 auto; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--accent); }
 /* Popover per-row mark-read = the dot as a button. */
