@@ -8,10 +8,9 @@
 
 ## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `DEC-112` interview · PR `#339` merged
 
-⛔⛔ **A COLOUR STOOD IN THIS HEADING (*`main` still red at `f91bf705`*) AND MY OWN SESSION FALSIFIED IT** —
-`52d89a73` greened `main` (CI `33568749035`, Security `33568749019`), lifting `DEC-110` d6's hold, so
-`WBS-26.5`→`Review` and `DW-086`→`Done` moved in one batch. **Never write a CI colour into durable prose:**
-`gh run list --branch main` is the answer, and a RUN ID can't be attributed to the wrong tree (`LL-036`).
+⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — this heading said *`main` still red* and my own session
+falsified it hours later (`52d89a73`, CI `33568749035`). `gh run list --branch main` is the answer; cite a
+RUN ID, which cannot be attributed to the wrong tree (`LL-036`).
 
 ★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
 before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
