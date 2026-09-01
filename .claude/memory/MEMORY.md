@@ -9,9 +9,7 @@
 ## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `DEC-112` interview · PR `#339` merged
 
 ⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — this heading said *`main` still red* and my own session
-falsified it hours later (`52d89a73`, CI `33568749035`). `gh run list --branch main` is the answer; cite a
-RUN ID, which cannot be attributed to the wrong tree (`LL-036`).
-
+falsified it hours later. `gh run list --branch main` is the answer; cite a RUN ID (`LL-036`).
 ★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
 before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
