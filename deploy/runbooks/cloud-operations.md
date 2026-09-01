@@ -209,6 +209,43 @@ bash deploy/scripts/check-budget-notification.sh
 It reads the message **body**. On a shared SNS topic a count can never discriminate between one
 alert and another (AV-118).
 
+### The container-health alert — the one you have to create in Seq
+
+`deploy/scripts/check-container-health.sh` runs from cron every 15 minutes (see
+`deploy/scripts/crontab.example`) and answers the question the boot assertions cannot: **is anything
+sitting unhealthy right now?** `up.sh`'s `up -d --wait` and `08-bootstrap-box.sh`'s `wait_healthy` both
+consume the healthcheck's verdict — but only at start-up. After that nothing watches it, because
+`DEF-079` measured what `condition: service_healthy` costs (a 30-second blip in SQL Server, Hangfire or
+object storage stops a dependent from starting at all), put it to the operator, and the decision was to
+**keep the signal and drop the gate**. This check is the signal's reader; it runs beside the stack and
+cannot fail it.
+
+When it finds an unhealthy container it POSTs one CLEF event to Seq:
+
+| Field | Value |
+|---|---|
+| `EventType` | **`Deploy.ContainerUnhealthy`** |
+| `@l` | `Error` |
+| `Unhealthy` | the service names and their states, e.g. `api(unhealthy)` |
+| `Checked` | how many containers declaring a healthcheck were inspected |
+| `Host` | the box's hostname |
+
+**Create the Seq signal on `EventType = 'Deploy.ContainerUnhealthy'`, not on message text.** The event
+type is a stable key; the message is prose and will be reworded. Set the alert to notify however this
+environment already routes Seq alerts.
+
+> ⚠ **The Seq alert rule is NOT in this repository and cannot be.** Seq is provisioned here as a
+> container with a first-run password and nothing else, so there is no versioned alert definition to
+> review or diff — this table is the only record of what to key on. That is exactly the *configuration
+> no gate can see* class (`DEF-078`, `DEF-079`), which is why the DETECTION lives in a committed script
+> with a forced-refusal suite (`deploy/scripts/check-container-health.test.sh`, run by CI) and only the
+> NOTIFICATION is configuration.
+
+The script additionally publishes to `ACMP_ALERT_TOPIC_ARN` when one is set, and says loudly in its log
+when it is not — on-prem that is expected, in cloud it is a finding. It exits non-zero when a container
+is unhealthy: unlike backup staleness, which is legitimately expected on a box that is stopped when
+idle, a container sitting unhealthy while the box is up is never an expected steady state.
+
 ---
 
 ## 6. Rolling back
