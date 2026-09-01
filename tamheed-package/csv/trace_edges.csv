@@ -673,6 +673,8 @@ SC-041,WBS-26.2,scope_modifies
 SC-042,WBS-26.4,scope_modifies
 SC-043,NFR-005,scope_modifies
 SC-043,NFR-038,scope_modifies
+SC-044,DW-086,scope_modifies
+SC-044,WBS-26.5,scope_modifies
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
