@@ -42,12 +42,29 @@ internal static class ContainerStartup
         // ⚠ MEASURED, and it is why a bound alone is not enough: the framework's own exception is
         // TimeoutException("The operation has timed out.") — no container, no bound, no log. Setting
         // TestcontainersSettings.WaitStrategyTimeout would stop the hang and still tell nobody what hung.
-        catch (Exception ex) when (ex is TimeoutException or OperationCanceledException && cts.IsCancellationRequested)
+        catch (Exception ex)
         {
-            throw new TimeoutException(
-                $"{name} container did not become ready in {bound.TotalSeconds:0} seconds. " +
-                $"Container startup log:{Environment.NewLine}{await LogTailAsync(container)}",
-                ex);
+            // DEF-121 — lift the container's own log directory out BEFORE anything disposes it. This runs on
+            // EVERY start failure, not just our timeout, because the occurrence that motivated it was neither
+            // a hang nor a timeout: the container exited with code 1 and Testcontainers threw
+            // ContainerNotRunningException, which this method used to let straight through.
+            //
+            // ⚠ The capture NEVER throws, so the original failure is always the exception that surfaces.
+            var artefacts = await CrashArtefacts.CaptureAsync(container, name);
+
+            if (ex is TimeoutException or OperationCanceledException && cts.IsCancellationRequested)
+                throw new TimeoutException(
+                    $"{name} container did not become ready in {bound.TotalSeconds:0} seconds. " +
+                    $"Container startup log:{Environment.NewLine}{await LogTailAsync(container)}" +
+                    $"{Environment.NewLine}{artefacts}",
+                    ex);
+
+            // Anything else — a crashed container, a bad image, a Docker API error — is reported as ITSELF.
+            // Wrapping it would hide the exception type the defect register discriminates on: DEF-121's
+            // signature is a ContainerNotRunningException, and DEF-109's is a TaskCanceledException in a
+            // different suite entirely.
+            Console.WriteLine($"[{name}] start failed: {ex.GetType().Name}. {artefacts}");
+            throw;
         }
     }
 
