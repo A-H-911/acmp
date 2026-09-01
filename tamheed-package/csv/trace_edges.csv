@@ -120,6 +120,7 @@ DW-030,FR-030,relates_to
 DW-074,DEF-100,relates_to
 DW-084,DEC-077,relates_to
 DW-084,DEF-108,relates_to
+DW-096,DEF-109,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
 FR-002,ADR-0002,derives_from
@@ -410,6 +411,8 @@ LL-025,WBS-24.6,learned_from
 LL-026,DEF-113,learned_from
 LL-027,DEF-113,learned_from
 LL-029,DEF-114,learned_from
+LL-047,DEF-109,learned_from
+LL-048,DEF-109,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
