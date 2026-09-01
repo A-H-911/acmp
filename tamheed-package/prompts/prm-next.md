@@ -28,6 +28,17 @@ gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap
                                              # PRs that became `DW-080`). A Dependabot queue MOVES, so
                                              # any count of it in prose is stale by construction.
 gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
+                                             # ⛔⛔ IF `main` IS RED, READ `DEF-109` AND `DEF-121` BEFORE
+                                             # ANYTHING ELSE, AND DO NOT RE-RUN IT. Both are open, both
+                                             # have recurred on trees whose PR run passed, and both carry
+                                             # end conditions that ACCUMULATED GREENS SATISFY BY DESIGN.
+                                             # Discriminate by SIGNATURE, never by which is nearer to
+                                             # hand: `DEF-109` is `Acmp.Api.Tests` alone, scattered
+                                             # 100-second `HttpClient` timeouts, every other suite green
+                                             # and fast. `DEF-121`/`DEF-108` are Integration container
+                                             # crashes with `lsasrv`/`AppLoader` frames. `DEC-110` d1
+                                             # ruled that a `DEF-109` red is INVESTIGATED, not re-run —
+                                             # and a re-run is the operator's call, never yours.
                                              # (trap 23). ⚠ For a `pull_request` event GitHub evaluates
                                              # paths-ignore against the WHOLE PR diff, so on an open PR
                                              # even a package-only push re-runs everything and CANCELS
@@ -93,6 +104,18 @@ probe, **and** `DEF-126`, the calendar `target-size` floor — merge-commit run 
 success); `#336` → `487bc7ea` (the a11y route sweep, 18 routes newly covered); `#337` → `b515fc64`
 (`WBS-26.4` — `check-container-health.sh` and its ten forced cases). `ADR-0045` is `Approved`;
 `LL-041`–`LL-044` are `Approved`; `SC-043` moved `NFR-005` and `NFR-038` to `Deferred`.
+**AND A FIFTH THE SAME DAY, `#338` → `f91bf705` (`WBS-26.5` — the per-meeting agenda projection), WHOSE
+PR RUN AND MERGE-COMMIT RUN DISAGREED. CITED BY ID BECAUSE THAT IS THE WHOLE POINT** (`LL-036`, and its
+FOURTH instance here): PR head `3c419702` passed CI `33546733297`, Security `33546733284` and E2E
+`33546733302` — ten checks — and the squash-merge of byte-identical source **FAILED** CI `33547719532` on
+`Acmp.Api.Tests`, while Security `33547719512` passed. **That is `DEF-109`'s third occurrence, appended to
+its row rather than re-run** (`DEC-110` d1), and it is the first time `DEC-077` d2's poll caught a
+merge-commit red PROSPECTIVELY instead of a later session tripping over it.
+⛔ **DO NOT READ *"a fifth merged"* AS *"the slice is finished"*.** Merging is a repository fact; what a
+row's STATUS is, and whether `main` is green now, are not — `entity_query`, `readiness_check` and
+`gh run list` are the only answers, and this paragraph deliberately gives none of them.
+`DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
+`LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
 `#336`, on the operator's instruction after `DEF-126`. **The gap was structural, not an oversight:**
 `DW-071`'s trigger fires *"whenever a NEW route ships"*, so every route that shipped **before that trigger
@@ -150,7 +173,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-six** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **forty-seven** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -160,6 +183,12 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-SEVENTH IS THE FORTY-FIFTH'S EXACT FAULT CLASS, ONE ITEM LATER IN THE SAME NUMBERED LIST — A LIVE INSTRUCTION TO BUILD WORK THAT HAS SINCE SHIPPED.** Item 1 read *"⛔ `WBS-26.5` must NOT fan `useMeetingDetail` across the month — the answer is a per-meeting agenda projection. ⚠ Its row also carries a RIDER (`DEC-105` d2): a one-line comment correction at `src/Acmp.Api/Endpoints/MeetingsEndpoints.cs` travels with its PR."* **Both clauses are now finished work.** The projection is `src/Modules/Meetings/Meetings.Application/Features/GetAgendaProjection/`, merged as PR `#338` → `f91bf705`; the rider is applied and `MeetingsEndpoints.cs:65` now reads *"(Chairman, Secretary, Auditor)"*. **A fresh session obeying item 1 would build a projection that exists and re-apply a comment fix that is already in.**
+⭐⭐ **THE FORTY-FIFTH WAS WRITTEN ABOUT THIS LIST AND DID NOT PROTECT THE ITEM BELOW IT.** That entry ruled *"the only safe form for an item's deliverable is the ITEM'S OWN ROW plus its `SC-`"* and deleted such a description from `WBS-26.4`'s block — and the very next item kept one, complete with a *"Read the row, not this sentence"* disclaimer that did not save it. **A disclaimer attached to a description is still a description**, exactly as the THIRTY-THIRD found that a count with a disclaimer attached is still a count.
+⚠ **THE DISTINCTION FROM THE FORTY-FIFTH, SO THE PAIR IS LEGIBLE:** that one went stale because a scope change WITHDREW the work; this one because the work was DONE. **Opposite causes, identical failure** — which is the argument for the rule being *never describe an item here at all*, rather than *keep the description current*.
+⛔ **DELETED, NOT REFRESHED.** The item's constraints live in its own row, in `SC-044`, and in `DEC-108`/`DEC-109`.
+⚠ **Not an escape** — the log was grepped and no commit message asserts the rider was still owed; `#338`'s own message records it as applied. ⚠ **Found by the pre-handoff sweep on the identifiers this session moved** (the TWENTY-EIGHTH's remedy), and confirmed by reading the two artifacts rather than the rows: the directory exists and line 65 was read directly (`LL-006`).
 
 ⚠⚠⚠ **THE FORTY-SIXTH IS THE FORTY-SECOND'S OWN FIX APPLIED TO TWO SITES AND MISSED AT THIRTEEN — AND EVERY
 ONE OF THE NINE WAS A COMMAND A FRESH SESSION WOULD HAVE RUN.** The FORTY-SECOND found two sentences in the
@@ -2045,8 +2074,10 @@ every cited path **exists** — never that it is sufficient — and **fails clos
 31). ⭐ It is positioned deliberately: `ci.yml` path-ignores markdown **and** `tamheed-package`, so editing
 the pack never runs it; it fires when **SOURCE moves**, which is how the pack actually goes stale.
 
-⚠⚠ **THE BUILD LADDER HAS NOTHING SCHEDULED ON IT. Every item below is an OPERATOR act or an interview,
-not code** — measure before believing that: `entity_query("deferred-work", status="Activated")` and
+⚠⚠ **THE BUILD LADDER HAS NOTHING SCHEDULED ON IT — BUT ITEM 1 IS NOT AN OPERATOR ACT, IT IS AN
+INVESTIGATION, AND THIS SENTENCE USED TO SAY OTHERWISE.** It read *"every item below is an OPERATOR act or
+an interview, not code"*, which stopped being true the moment `DEC-110` d1 put a diagnosis at the top of
+the list. **No FEATURE work is scheduled; debugging is still work** — measure before believing that: `entity_query("deferred-work", status="Activated")` and
 `readiness_check("package")` are the live answers, and the sentence you are reading is not.
 
 ⛔ **THE DISPOSITION ITEM THAT STOOD HERE IS DONE — `DEC-094` / `SC-038`, 2026-08-29 — AND ITS ROW LIST WAS
@@ -2058,8 +2089,34 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **FINISH THE LIVE SLICE, IN `DEC-094` d5's ORDER — security, then deployment/CI, then the calendar
-   projection.** ⛔ **DO NOT NAME WHICH ITEMS ARE LEFT HERE, AND DO NOT NAME THE SLICE EITHER.** Two
+1. ▶▶▶ **DIAGNOSE `DEF-109` — THE OPERATOR RULED THAT IT IS INVESTIGATED, NOT RE-RUN (`DEC-110` d1), AND
+   THAT RULING OVERRODE THE AGENT'S RECOMMENDATION.** ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB AND DO NOT
+   ASK CI THE SAME QUESTION AGAIN.** The row has three occurrences, all green either side, and `DEC-110`
+   d3 gave it an end condition that **accumulated greens satisfy by design** — so another green run moves
+   nothing and removes the pressure to diagnose. A re-run is the operator's call alone.
+   ⚠ **READ `PE-768` AND `PE-769` FIRST: they are the two passes already done, and the second is worth
+   more than the first.** Six candidates are ELIMINATED by measurement (sync-over-async in src and in the
+   test path, xunit over-parallelism, hosted services, Hangfire in the API, the audit-chain applock — plus
+   zero process-global locks in `src`). One number is MEASURED and stands alone: the `Acmp.Api.Tests`
+   testhost working set grows **monotonically to ~5 GB in a single local run, without one dip**, against a
+   7 GB hosted runner on which that suite runs CONCURRENTLY with four other projects and Testcontainers.
+   ⛔⛔ **AND THE ONE INTERVENTION TRIED SO FAR WAS INVALID — IT NEVER EXECUTED, AND THE PROBE IS WHY THAT
+   IS KNOWN.** Releasing the InMemory stores on factory disposal left the curve unchanged, which reads
+   exactly like a refutation; instrumenting the swallowed `catch` showed every attempt throwing
+   `ObjectDisposedException: IServiceProvider`, because the provider is already gone when `Dispose(bool)`
+   runs. **Without the probe the register would carry a confident REFUTED against a live lead** —
+   `DEF-056`'s vacuous control, and `LL-013`'s whole point. **The next attempt needs a seam that fires
+   while the provider is alive, and must be PROVED to have executed before its result is believed.**
+   ⚠ `LL-029` binds the method (an intervention that isolates a variable, never a reading that merely
+   fits) and `LL-035` binds any remedy (a probability reduction buys an unfalsifiable position).
+   ⚠⚠ **DISCRIMINATE BY SIGNATURE BEFORE ATTRIBUTING ANY RED**: `DEF-109` is `Acmp.Api.Tests` alone with
+   scattered 100-second `HttpClient` timeouts and every other suite green and fast; `DEF-121`/`DEF-108` are
+   Integration container crashes carrying `lsasrv`/`AppLoader` frames. **They are different families and
+   `DEC-077` d3 fires only on the second.**
+   ⛔ **WHAT ELSE THIS BLOCK ONCE SAID IS DELETED, NOT REFRESHED.** It named a slice, an order and an
+   item's deliverable; all three rot. `entity_query("slice", status="Approved")` resolves the live slice,
+   `readiness_check(scope="slice", id=<that id>)` names every row still open, and each row states its own
+   constraints. **The build order it carried is history and is preserved in `DEC-094` d5.** ⛔ **DO NOT NAME WHICH ITEMS ARE LEFT HERE, AND DO NOT NAME THE SLICE EITHER.** Two
    sentences rotted by naming items, and **nine commands rotted by naming a slice** (the FORTY-SIXTH) —
    a list is renumbered, and a slice closes, precisely when work completes, which is the event that makes
    somebody read this. **`entity_query("slice", status="Approved")` resolves the live slice; then
@@ -2107,10 +2164,12 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    INSTRUCTION to build work that `SC-042` withdrew, and a fresh session obeying it would have reversed an
    explicit operator decision. **The item's deliverable is now in its own row and in `SC-042`; read those,
    and never a description of it here.**
-   ⛔ **`WBS-26.5` must NOT fan `useMeetingDetail` across the month** — `DEF-104`'s N+1 shape; the answer
-   is a per-meeting agenda projection. ⚠ **Its row also carries a RIDER** (`DEC-105` d2): a one-line
-   comment correction at `src/Acmp.Api/Endpoints/MeetingsEndpoints.cs` travels with its PR, and the row
-   says what to do if the item is never built. Read the row, not this sentence.
+   ⛔⛔ **A DESCRIPTION OF AN ITEM'S DELIVERABLE STOOD HERE AND IS DELETED, NOT REFRESHED — THE
+   FORTY-SEVENTH.** It named what the last item must and must not do; that work has since shipped, so a
+   fresh session obeying it would rebuild what exists. **The FORTY-FIFTH deleted the same shape from the
+   item ABOVE this one and the description here survived** — opposite causes (that one withdrawn, this one
+   done), identical failure. **Never describe an item here at all; the row, its `SC-` and its `DEC-` are
+   the only forms that cannot rot.**
    ⚠⚠ **A SECOND REGISTER FINDING CAME OUT OF THE SAME ROUND AND IS CARRIED `Open` AT `medium` BY
    `DEC-106` d4: `DEF-123`.** ⛔ **AND IT WAS WIDENED ON 2026-09-01 — IT IS NOT THE TEST LEG, IT IS ALL
    THREE.** For `NFR-001`–`NFR-063`, contiguous, **63 of 65**, every leg `G-TRACE` requires is the same
@@ -2125,13 +2184,25 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    on three legs at once, re-wiring is 189 edges nobody has scoped, and fixing only the three
    phantom-capability rows leaves 60 (`LL-035`). `G-TRACE` and `G-REL` PASS and are right to:
    **`G-REL` validates an edge's shape; no rule validates its claim.**
-2. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
+2. **NO ITEM IS DONE-CLAIMED ON A RED TREE — `DEC-110` d6, AND ITS COST WAS ACCEPTED KNOWINGLY.** A
+   merged item whose merge-commit run is red stays `Approved` rather than moving to `Review`, however
+   green its own suites were. ⚠ **THE STATED COST, recorded there rather than discovered here: an
+   environmental defect with no diagnosis can hold a finished item, and its slice, indefinitely** — which
+   is why `DEC-110` d3 wrote an end condition in the same interview and why its clause (3), an explicit
+   operator disposition, exists. ⛔ **WHEN THE TREE GOES GREEN, THE ITEM AND ITS `DW-` ROW MOVE IN THE
+   SAME BATCH.** A `DW-` row does not close itself when its item ships and nothing compares them — the
+   register has recorded that omission four times, most recently when the batch that promoted an item left
+   its row `Activated` and only a pre-interview sweep caught it (`DEC-109` d5).
+   ⛔ **Which rows are in that state is deliberately not written here** —
+   `entity_query("slice", status="Approved")` then `readiness_check` on the id it returns.
+
+3. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
    `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
    (`node scripts/gen-slice-review-slate.mjs <the live slice id>`), never a summary — `LL-011`. ⛔ **Which rows are at
    `Review` is deliberately not written here**; the command above prints them. ⭐ The per-item mechanism
    has discriminated twice and is not ceremony: a slice-level verdict would have carried `WBS-24.4`
    through on its neighbours' strength on both occasions.
-3. **`release-close-out.md` has never been run.** ⛔ **AND IT IS NOT DUE — *"every phase is closed"* stood
+4. **`release-close-out.md` has never been run.** ⛔ **AND IT IS NOT DUE — *"every phase is closed"* stood
    here and was the FORTY-SECOND.** Measured: **`PH-3` and `PH-7` are `Approved`, not `Implemented`** —
    `PH-3` deliberately (§1: do not "repair" it), and **`PH-7` because it is the LIVE phase, holding the
    open slice.** ⛔ **A COUNT OF ITS OPEN ITEMS STOOD HERE AND IS DELETED, NOT REFRESHED** — it went stale
@@ -2144,7 +2215,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
 the answer, and the number moves every time a slice item ships.** ⚠⚠ **A `DW-` ROW DOES NOT CLOSE
 ITSELF WHEN ITS `WBS-` ITEM SHIPS, AND NOTHING COMPARES THEM** — three rows sat `Activated` after their
 items were built and merged, and the omission was found only by measuring the register while preparing
-this file. **When you done-claim an item, close its `DW-` row in the same batch**, as every `WBS-24.x`
+this file. ⚠ **THAT IS A COUNT OF ROWS IN ONE INSTANCE, NOT OF INSTANCES** — the failure itself has now
+recurred a FOURTH time (`DEC-109` d5), caught again by a pre-interview sweep and not by any gate. **Two
+different quantities; do not read either as the other** (`LL-015`). **When you done-claim an item, close its `DW-` row in the same batch**, as every `WBS-24.x`
 item did.
 `DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
 says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
