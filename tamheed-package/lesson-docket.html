@@ -118,7 +118,7 @@
 <div class="wrap">
   <header class="masthead">
     <p class="kicker">ACMP · lessons register · operator confirmation</p>
-    <h1>1 lessons are waiting on your word</h1>
+    <h1>2 lessons are waiting on your word</h1>
     <p class="standfirst">Each was recorded by the executing agent after execution taught it something. None of them binds anything yet. Only the ones you approve will.</p>
   </header>
 
@@ -143,54 +143,100 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-040</td>
-          <td>WHEN YOU SWEEP FOR *WHAT WAS DECIDED*, YOU SWEEP DECISIONS, ADRs AND OPEN QUESTIONS - AND A REAL DECISION MAY BE SITTING IN A `Fixed` DEFECT ROW, WHICH READS AS A CLOSED PROBLEM RATHER THAN AS A RULING.</td>
+          <td class="id">LL-045</td>
+          <td>TRAP 13 SAYS *build payloads from `data/*.jsonl`, never from `entity_query` output, because the store holds truncated rows* — and it names the STORE as the source of short text.</td>
           <td class="mono">improve</td>
-          <td class="mono">analysis</td>
+          <td class="mono">verification</td>
+        </tr>
+        <tr>
+          <td class="id">LL-046</td>
+          <td>`LL-033` warns that a pattern matching a spelling the corpus does not use hands back a confident wrong subject.</td>
+          <td class="mono">improve</td>
+          <td class="mono">verification</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-      <article class="motion" id="LL-040">
+      <article class="motion" id="LL-045">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-040</span>
+            <span class="id">LL-045</span>
             <span class="chip chip-kind">improve</span>
-            <span class="chip">analysis</span>
+            <span class="chip">verification</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>A CLOSED row is an unindexed decision store: operator decisions get recorded inside Fixed defects, where no decision-register sweep can ever find them</h2>
+          <h2>Text that has passed through a DISPLAY is unsafe to re-transmit, whatever its origin — and transcription fidelity is not a function of length, so length cannot be used to decide when to check.</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>WHEN YOU SWEEP FOR *WHAT WAS DECIDED*, YOU SWEEP DECISIONS, ADRs AND OPEN QUESTIONS - AND A REAL DECISION MAY BE SITTING IN A `Fixed` DEFECT ROW, WHICH READS AS A CLOSED PROBLEM RATHER THAN AS A RULING. Measured in this package: **10 of 113 closed defect rows record an operator decision**, including one - `DEF-079` - that a later work item was scoped to REVERSE without anyone noticing, because every sweep for a governing decision came back empty. **A row's lifecycle status tells you the problem is closed; it tells you nothing about whether the row also holds a ruling that still binds.** And the same rows' PROSE is not maintained after closure: a status is corrected when the work lands, the surrounding sentences usually are not.</p>
+          <p>TRAP 13 SAYS *build payloads from `data/*.jsonl`, never from `entity_query` output, because the store holds truncated rows* — and it names the STORE as the source of short text. THE TRUNCATION CAN JUST AS EASILY BE ON YOUR OWN SIDE OF THE PIPE. A field read from the canonical JSONL for the purpose of LOOKING at it, printed with a `[:400]` slice for readability, is exactly as dangerous as a truncated store read, and the guard *use the JSONL* does not fire on it because the JSONL genuinely was the source.</p>
+<p>THE GENERAL FORM IS WIDER THAN THE TRAP AS WRITTEN: A FIELD IS SAFE TO RE-TRANSMIT ONLY IF IT CAME FROM A READ WHOSE PURPOSE WAS TRANSMISSION. Any text that has passed through a display — a terminal print, a summary line, a table, a preview, an excerpt — is suspect regardless of where it originally came from.</p>
+<p>AND THE SECOND HALF IS WHAT MAKES A LENGTH HEURISTIC USELESS: TRANSCRIPTION FIDELITY DOES NOT DEGRADE WITH LENGTH IN THE WAY INTUITION PREDICTS. In one session a 9386-character field was re-transmitted byte-perfectly and a 2959-character field — shorter, and authored minutes earlier — came back with a silent word inserted. **So size cannot be used to decide which writes deserve a check. Every re-transmitted field gets the same hash-and-verify, or the practice is a coin flip dressed as a policy.**</p>
         </div>
         <div class="field">
           <h3>What happened</h3>
-          <p>WBS-26.4 was scoped to switch compose dependents from service_started to service_healthy, on DW-091's claim that a misleading comment had concealed an oversight. The pre-build sweep found the opposite: service_healthy had been declared, its total-outage consequence measured, put back to the operator, and reversed by their choice - all recorded in DEF-079, a Fixed defect row. Sweeping decisions, ADRs and open questions for the trade returned nothing. Generalising the class then found that 10 of 113 closed defect rows carry operator decisions, and that two of them (DEF-094, DEF-031) carry PROSE that is now false while their statuses are correct: DEF-094 still offers disposition options for a disposition long taken and says no AC exists when AC-122 is Approved and Met; DEF-031's open_gap says backup failures have no alerting path when backup.sh publishes to SNS from an EXIT trap.</p>
+          <p>2026-09-01. Amending `DW-071` required a full row because `deferred_work.title` is NOT NULL. The payload's title was composed from a line of the session's OWN earlier sweep output, which had printed `title[:400]` for terminal readability. The upsert returned `ok` and destroyed 1697 of 2097 characters — every sentence after the first paragraph, including the whole coverage-gap argument and the row's explanation of why it was a deferred-work row rather than an acceptance criterion. In the same session, `SC-044`'s 2959-character description drifted by one inserted word while `WBS-26.4`'s 9386-character title, `DW-091`'s 6079 and `WBS-26.5`'s 6775 all went byte-perfect.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>Add closed rows to the *what was decided* sweep, not only open ones - `Fixed`, `Won't-fix` and `Obsolete` defects, and closed deferred-work rows. Grep them for decision language (*put back to the operator*, *the operator chose*, *operator decision*) as well as for the identifier you care about. ⚠ **Read the hits rather than counting them: tense is invisible to a regex.** *"Needed an operator decision"* followed by *"✅ DECIDED"* is history, not an open question - two of the ten flagged that way and both were clean. And when a row's status changes, **re-read its prose in the same batch**: a status is one column and the sentences around it are another, and nothing in the store compares them.</p>
+          <p>Re-transmit a NOT NULL field only from a read taken FOR that transmission — emit it as a JSON literal from the canonical file and paste that, never a value that has been through a print, a summary or an excerpt. Hash the field BEFORE the write, compare after, and CALIBRATE the comparison by injecting a one-character corruption first (`LL-013`) — an equality check that has not been shown to discriminate proves nothing. Apply it to every field regardless of size, because size does not predict which one will drift. Where a row genuinely changed, prefer appending to it over re-typing it to preserve it, so the verification is a clean prefix check.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>It is LL-038's family - a state can be load-bearing and its reason may live where no register view looks - with the specific, checkable location this package keeps using. LL-038's instances have now been a progress entry, no record at all, a code comment, a closed defect row, and stale prose inside a correctly-statused row; this names the fourth and fifth and gives them a sweep. It also inherits LL-006's rule (read the thing itself) with a warning attached: the sweep that finds these rows CANNOT adjudicate them, because the discriminator between a live question and a narrated one is grammatical.</p>
+          <p>The failure is invisible to everything the package owns. `gate_run()` returns 7/7 over a 400-character title; `G-IDS` checks foreign keys and the entity index, not field lengths; `readiness_check` never reads the field; and no gate is column-level — the v2.3 migration already established that every gate is row-level, which is why it passed 7/7 while damaging register data. A truncated row simply stays truncated, and the loss is discoverable only by someone who happens to remember what used to be there. The pre-image that caught this existed only because hash-and-verify had been adopted earlier in the same session against a DIFFERENT hazard, so the catch was luck riding on an unrelated habit.</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>A work item is never scoped to reverse a decision nobody could find, and a closed row's prose is corrected when its status is. The sweep for governing decisions covers where decisions actually are, rather than where the schema suggests they should be.</p>
+          <p>A silent field truncation becomes a loud, immediate failure with a byte-exact restore path, and the check is applied uniformly instead of by a size intuition that this instance disproved.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>An item gets activated, decided and scheduled on a premise a closed row already refuted - which is exactly what happened to WBS-26.4, costing a scope change and a blocked build - and closed rows accumulate prose that reads as open work, inviting sessions to re-do settled things or to re-litigate settled ones.</p>
+          <p>Authoritative register rows lose most of their content on a write that reports success, with no gate, readiness rule or view able to report it — and the loss surfaces only if a human recalls the missing text.</p>
+        </div>
+      </article>
+      <article class="motion" id="LL-046">
+        <header class="motion-head">
+          <div class="eyebrow">
+            <span class="id">LL-046</span>
+            <span class="chip chip-kind">improve</span>
+            <span class="chip">verification</span>
+            <span class="chip chip-pending">Proposed</span>
+          </div>
+          <h2>A PRESCRIBED instrument can go stale against the artifact it measures, and it then returns a confident WRONG number rather than an error — so a documented command is a claim to re-verify, not an authority to quote.</h2>
+        </header>
+        
+        <div class="field">
+          <h3>The lesson</h3>
+          <p>`LL-033` warns that a pattern matching a spelling the corpus does not use hands back a confident wrong subject. THE SHARPER CASE IS WHEN THAT PATTERN IS THE ONE YOUR OWN DOCUMENTATION TELLS YOU TO RUN. A committed instruction to *measure it with this command* carries the authority of having been written deliberately, by someone who had checked — and it keeps that authority long after the artifact it measures has been rewritten underneath it.</p>
+<p>THE FAILURE IS NOT THAT THE COMMAND ERRORS. It runs, it has a subject, it returns a plausible number, and the number is wrong. A prescribed grep for literal `page.goto('/x')` calls returned FIVE routes for an accessibility sweep that visits TWENTY-THREE, because the sweep had been rewritten to iterate a `ROUTES` array through a helper — a change that made the sweep four times wider and the prescribed instrument blind at the same moment.</p>
+<p>**AN INSTRUMENT AND THE ARTIFACT IT MEASURES ARE ONE DECISION IN TWO PLACES, AND ONLY ONE OF THEM IS EXERCISED BY CI** — `LL-019`'s shape, moved from a pinned base image and its package repo onto a measurement and its subject. **What catches it is refusing a number that disagrees with something you independently know**, not re-reading the command.</p>
+        </div>
+        <div class="field">
+          <h3>What happened</h3>
+          <p>2026-09-01. `prm-next.md` carries the instruction *"DO NOT RE-QUOTE A COVERAGE RATIO FROM HERE; MEASURE IT"* followed by the exact command — a grep for `page.goto('…')` over `rtl-a11y.spec.ts`. Run as prescribed while measuring `DW-071`'s stale figure for an operator interview, it returned 5. PR `#336` had days earlier replaced the enumerated visits with a `SECRETARY_ROUTES` constant iterated by a `violationsByRoute` helper, adding 18 routes the literal pattern cannot see. The true figure is 23 distinct static routes. The wrong number was caught only because it contradicted a known event — `#336` was recorded as having swept 18 routes, which 5 cannot accommodate.</p>
+        </div>
+        <div class="field">
+          <h3>What to do instead</h3>
+          <p>Treat a documented measurement command as a claim with a date on it, not as an authority. Before quoting its output into anything durable, check it against something you know independently — a recorded event, a control term, a second key on a different property (`LL-009`: two instruments agreeing is one instrument when they share a mechanism). When an instrument and its subject can drift apart, say so where the instrument is written down, and prefer a pattern keyed on the artifact's STRUCTURE over one keyed on a spelling. Where a number will be put in front of the operator, state the instrument beside it so they can disagree with the instrument rather than with the figure (`PE-613`).</p>
+        </div>
+        <div class="field">
+          <h3>Why it generalises</h3>
+          <p>The prescription exists precisely because a stale COUNT was dangerous, so it was replaced with a command — the standing remedy of giving the command rather than the answer. But that remedy silently assumes the command is stable while only the answer moves. Here the command rotted and the answer it produced was worse than a stale figure would have been, because it arrived wearing the authority of a live measurement taken exactly as instructed. The instrument's own documentation cannot warn about this: it was correct when written, and nothing compares a documented pattern against the file it targets.</p>
+        </div>
+        <div class="field">
+          <h3>If followed</h3>
+          <p>A documented measurement is re-verified against an independent fact before it enters a decision, so a rotted instrument is caught at the moment it would otherwise have been most persuasive.</p>
+        </div>
+        <div class="field">
+          <h3>If ignored</h3>
+          <p>A wrong number reaches an operator interview or a durable record carrying the authority of the project's own prescribed method, and the disclaimer *measure it, do not quote it* actively vouches for it.</p>
         </div>
       </article>
 
   <footer>
     Generated from tamheed-package/data/lessons.jsonl by scripts/gen-lesson-docket.mjs.<br>
-    1 of 40 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    2 of 46 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>
