@@ -6,6 +6,26 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
+## ★★★ 2026-09-01 · four PRs merged · **`LL-041`–`LL-044` now BIND — read them, they are not restated here**
+
+⛔⛔ **NEVER WRITE A SLICE ID INTO A COMMAND IN `prm-next.md`.** Nine sites said
+``readiness_check(scope="slice", id="SL-033")`` — a CLOSED slice, so each returned a clean verdict about the
+wrong subject. The FORTY-SECOND fixed two such sites in the kickoff block and **missed nine in §6**: the fix
+went where the error was REPORTED, not where the pattern LIVED (the FORTY-SIXTH). `entity_query("slice",
+status="Approved")` resolves it without naming one. ⚠ `count-prompt-ids.py` cannot see this — the id is real
+and its status correct.
+⭐⭐ **A TEST-COUNT DELTA PROVES THE SPEC RAN, NEVER THAT THE ASSERTION HAD A SUBJECT** (`LL-041`). An axe
+sweep passed over an EMPTY calendar for weeks because the seed sat one day outside the rendered month; it
+went red when the clock reached that date, on a PR that changed only a C# storage adapter. Assert the
+subject is PRESENT before asserting an absence. ⚠ `LL-044`: a hardcoded date in a fixture is a **clock**
+fixture — vacuous, then meaningful for a month, then vacuous again, and only the middle state fails.
+⭐ **`LL-043`: a grep matching a DIFFERENT concept's spelling hands you a confident WRONG subject** — worse
+than a zero. `cal-grid` matched `mt-cal-grid`; a whole defect row was written about the wrong component.
+⭐ **`LL-042`: after setting an `SC-` to `Merged`, re-read every row its delta names** — `scope-changes-merged`
+passes on a `Merged` SC and never looks.
+⚠ **`ADR-0045`**: `INV-014` names the px literals AND `AA` in ONE statement, so where a `.dc.html` cannot
+satisfy both, **AA governs** — minimum change to conformance, nothing more.
+
 ## ★★★ 2026-08-31 · **`SL-035` IS THE LIVE SLICE** · `SL-033`+`SL-034` CLOSED
 
 ⚠ Live state is `prm-next.md`'s numbered list, never this file. ⛔⛔ **NAME NO READINESS ANSWER HERE — ASK
@@ -27,8 +47,12 @@ record it as an override, so do not read it as agreement about HOW.
 - ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`, Proposed). `AC-088`–`AC-093` are
   `Proposed` **on purpose**; promoting is **one-way**. ⭐ **Tell: uniformity** — six of six is a decision.
   ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.**
-- ⚠ **`DEF-121` is the sole blocking readiness failure**; **greens satisfy no clause, by design.**
-  ⚠ **`DEC-077` d3 has been overridden TWICE** while staying unconditional — a third reopens the rule.
+- ⛔ **A READINESS ANSWER STOOD HERE AND IS DELETED, NOT REFRESHED** — *"`DEF-121` is the sole blocking
+  readiness failure"*, which `DEF-125`/`DEF-126` falsified on 2026-09-01 and their fixes falsified back.
+  This block's header already says ASK IT. **`readiness_check("package")` is the answer**; greens satisfy
+  no clause, by design. ⚠ **`DEC-077` d3 overridden TWICE** while unconditional — a third reopens the rule.
+  ⭐ **d3 names `SearchProvidersFtsTests`**, and `DEF-109`'s row records d3 did NOT fire on
+  `Acmp.Api.Tests` — a re-run there is not a third override, but **record the occurrence FIRST**.
 
 - ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row with nested
   `custom_attributes` is **silently deleted from the result**, not undercounted (the **FORTY-FIRST**).
@@ -48,13 +72,12 @@ record it as an override, so do not read it as agreement about HOW.
 ★★★ [**`SL-034` — the slate generator's 3 refusals + the ASVS pack**](sl034-slate-generator-and-asvs-pack.md)
 — read it before touching `gen-slice-review-slate.mjs`, the ASVS pack, or any test that reads the package.
 
-- ⭐⭐⭐ **`LL-032` (pinned): A TEST WHOSE FIXTURE IS THE LIVE REGISTER CHANGES MEANING WHEN SOMEBODY DOES
-  ORDINARY WORK — AND THE DANGEROUS OUTCOME IS THE *PASS*.** ⭐ Ask *what would a normal day's work change?*
-- ⭐⭐ **THE REGRESSION CASE WRITTEN AS A CONTROL FOUND A LIVE DEFECT** (`DEF-119`). ⛔⛔ **NEVER carry
-  `security-controls.md` §20's *"L2 is met across all applicable chapters"*** — the self-assertion `DW-079`
-  forbids. ⭐ **ASVS levels are CUMULATIVE: "L2" = 253 at L1+L2.**
-- ⚠⚠ **`jq` IS NOT INSTALLED** — a monitor built on it emits **nothing**, and silence reads as "still
-  running". Use `gh --jq`. ⚠ **Pin the sha in a CI poller.**
+- ⭐⭐⭐ **`LL-032` (pinned): a fixture that is the LIVE REGISTER changes meaning when somebody does ordinary
+  work, and the dangerous outcome is the *PASS*.** Ask *what would a normal day's work change?* (`LL-044`
+  extends it to the CLOCK.) ⛔⛔ **NEVER carry `security-controls.md` §20's *"L2 is met across all applicable
+  chapters"*** — the self-assertion `DW-079` forbids. ⭐ ASVS levels are CUMULATIVE: "L2" = 253 at L1+L2.
+- ⚠⚠ **`jq` IS NOT INSTALLED** — a monitor built on it emits nothing and silence reads as "still running".
+  Use `gh --jq`. ⚠ Pin the sha in a CI poller.
 
 ★★★ [**`SL-033` per-item findings**](sl033-slice-findings.md) · [**`DW-082` / Dependabot arc**](dw082-sweep-and-vitest4.md)
 
@@ -87,9 +110,9 @@ record it as an override, so do not read it as agreement about HOW.
   **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's
   full text inline, **generated** from the JSONL. ⭐ `G-IDS` checks FKs, **not ids in prose** (`DEF-101`).
 - ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM** —
-  activating a `DW-` row → check its requirement in the same breath. ⚠ `assumptions-current`'s field is a
-  FUTURE due date; more will redden and that is the control working. ⛔ `DEF-087` untouched.
-  ⚠ **Measuring inside the set you are already holding is not measuring the register** (said "four"; eight).
+  activating a `DW-` row → check its requirement in the same breath (`LL-042` is the `SC-`/`WBS-` twin).
+  ⚠ `assumptions-current`'s field is a FUTURE due date; more will redden and that is the control working.
+  ⛔ `DEF-087` untouched. ⚠ **Measuring inside the set you hold is not measuring the register** (said 4; 8).
 ★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
 enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after
 a pipe, and production's reconciled state.
@@ -98,16 +121,14 @@ a pipe, and production's reconciled state.
 
 - ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck
   evaluating ZERO checks; gitleaks passing 153 commits over an allowlist exempting every markdown file.
-  ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded).
-- ★★ [**An absence needs a proven instrument**](an-absence-needs-a-proven-instrument.md) — `DEF-056`'s
-  "measured blocker" was not real; its two `NotContain` controls passed **VACUOUSLY**.
-- ⚠⚠ [**v4 store + 4.4.x mechanics**](tamheed-v4-and-liveness.md) — `lifecycle_status`; build payloads from
+  ⚠ Read `ADR-0043`, **not** `ADR-0042` (Superseded). · ★★ [**An absence needs a proven
+  instrument**](an-absence-needs-a-proven-instrument.md) — `DEF-056`'s two `NotContain` controls passed
+  **VACUOUSLY**. · ⚠⚠ [**v4 store + 4.4.x mechanics**](tamheed-v4-and-liveness.md) — build payloads from
   the JSONL; `WVR-` operator-only; approving a lesson needs `operator_confirm`.
 - ★★ **Requirement status measures whether anyone WROTE an AC, not whether it was built.** `DEF-012` is
   Won't-fix (`DEC-055`). ⚠⚠ **Stream scope had NEVER run on a real DB** (`DEF-066`) —
   [[inmemory-provider-hides-db-refusals]]; `DEF-068`: a stream-scoped policy is RESOURCE-ONLY.
-- **6 stale branches exist** (2026-08-21), all pre-dating `4c1b356` so **all carry `DEF-064`'s broken
-  `ar.json`**. ⚠ Merged branches also linger on `origin` against the "delete branch" rule.
+  ⚠ **6 stale branches** (2026-08-21) all pre-date `4c1b356`, so all carry `DEF-064`'s broken `ar.json`.
 - **ADR-0039 `AC-090`** per-request revalidation — ⚠ **an unknown subject must be ALLOWED** (ADR-0004
   provisions JIT, so failing closed refuses every first login). **`DEF-052`: there is NO read-side role
   gate** — every named policy is a WRITE capability; fixed by `GuestSurfaceMiddleware`, deny-by-default.
