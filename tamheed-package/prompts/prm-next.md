@@ -93,6 +93,18 @@ probe, **and** `DEF-126`, the calendar `target-size` floor — merge-commit run 
 success); `#336` → `487bc7ea` (the a11y route sweep, 18 routes newly covered); `#337` → `b515fc64`
 (`WBS-26.4` — `check-container-health.sh` and its ten forced cases). `ADR-0045` is `Approved`;
 `LL-041`–`LL-044` are `Approved`; `SC-043` moved `NFR-005` and `NFR-038` to `Deferred`.
+⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
+`#336`, on the operator's instruction after `DEF-126`. **The gap was structural, not an oversight:**
+`DW-071`'s trigger fires *"whenever a NEW route ships"*, so every route that shipped **before that trigger
+was written** was outside it by construction — which is how `/meetings` had no accessibility test at all.
+⚠ **THE AUDIT'S RESULT IS WORTH ITS NUMBER**: 18 routes newly swept in both locales, **96 passed / 4
+failed**, and the four are two sweep tests × two browser projects — **exactly ONE offending route**,
+`/notifications`. Everything else was clean, including `/admin/users` behind its own administrator login.
+⭐ **One of its two elements violated only for SHORT messages** (`.notif-row-msg`: one line ≈ 18 px, a
+wrapped one already cleared 24) — **a conditional failure a sweep over real data finds and a reading of
+the stylesheet does not.** ⛔ **Parameterised routes are still unswept** (`topics/:key`, `meetings/:key`
+and its six children, and ten more): they need seeded entities and a key each, and the spec says so in its
+own comment rather than letting the list read as complete.
 ⛔⛔ **AND `#334`'s MERGE-COMMIT RUN WENT RED WHILE ITS PR RUN WAS GREEN — `LL-036`'s THIRD INSTANCE HERE,
 ON A DIFFERENT TEST AGAIN.** PR head `75a34334` passed CI `33449435775`; the squash-merge `99ef8453` failed
 CI `33450264169` on `MinioFileStoreTests`, with `git diff … -- src/ tests/` **EMPTY**. **That is `DEF-125`,
@@ -1978,9 +1990,15 @@ attached to `minio-init`; the actual dependents each carry the OPPOSITE comment,
 is deliberate and naming its cost, at four sites across both topologies. **And `DEF-079` — cited above as
 the precedent — is the row that RECORDS the decision**: `service_healthy` was declared, its total-outage
 consequence measured, put back to the operator, and dropped by their choice (`fd98515`).
-⭐ **WHAT SURVIVES IS THE OBSERVATION, AND IT IS STILL TRUE**: nothing consumes the healthcheck's verdict.
-`SC-042` re-scoped `WBS-26.4` to close that WITHOUT restoring the interlock. ⛔ Restoring `service_healthy`
-needs a decision superseding `DEF-079`'s, not a scope change.
+⛔ **WHAT SURVIVED WAS NARROWED AGAIN ON 2026-09-01 AND THIS SENTENCE IS THE SIBLING COPY OF THE ONE THE
+ROW ITSELF CARRIED.** It read *"the observation is still true: nothing consumes the healthcheck's verdict"*.
+**Measured (`PE-753`): BOTH boot paths consume it** — `up.sh:24`'s `docker compose up -d --wait` blocks
+until every service declaring a healthcheck reports healthy, and `08-bootstrap-box.sh:221`'s `wait_healthy`
+runs over six services and **exits 1**. What is genuinely unconsumed is the **STEADY STATE**: after boot
+nothing observes a health TRANSITION, by the operator's own choice at `DEF-079`. `SC-042` re-scoped
+`WBS-26.4` to close THAT without restoring the interlock, and `WBS-26.4` built it. ⛔ Restoring
+`service_healthy` still needs a decision superseding `DEF-079`'s, not a scope change.
+⭐ **A PREMISE CAN SURVIVE ONE CORRECTION AND STILL BE WRONG** — this row was resized by a sweep twice.
 ⛔ **THIS BLOCK SAID *"NO AC WAS WRITTEN AND THAT IS DELIBERATE (`DW-090`) … no such check exists"* AND
 THAT IS NOW FALSE IN EVERY CLAUSE — `WBS-26.3` BUILT THE CHECK.** It is kept as the reason the AC was
 withheld for so long, which was correct at the time: `NFR-054`'s own verification names a CI check —
@@ -2031,11 +2049,15 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **CONTINUE `SL-035` IN `DEC-094` d5's ORDER — security first, then deployment/CI, then the
-   calendar projection.** ⛔ **DO NOT NAME WHICH ITEMS ARE LEFT HERE.** Two sentences in this file have
-   already rotted by doing exactly that, and a list is renumbered precisely when work completes, which is
-   the event that makes somebody read this. **`readiness_check(scope="slice", id="SL-035")`'s `wbs-done`
-   names every open row, and `entity_query("wbs-item")` gives their statuses.**
+1. ▶▶▶ **FINISH THE LIVE SLICE, IN `DEC-094` d5's ORDER — security, then deployment/CI, then the calendar
+   projection.** ⛔ **DO NOT NAME WHICH ITEMS ARE LEFT HERE, AND DO NOT NAME THE SLICE EITHER.** Two
+   sentences rotted by naming items, and **nine commands rotted by naming a slice** (the FORTY-SIXTH) —
+   a list is renumbered, and a slice closes, precisely when work completes, which is the event that makes
+   somebody read this. **`entity_query("slice", status="Approved")` resolves the live slice; then
+   `readiness_check(scope="slice", id=<that id>)`'s `wbs-done` names every open row, and
+   `entity_query("wbs-item")` gives their statuses.**
+   ⚠ **The order above is now mostly HISTORY and is kept for its reasoning, not as a schedule** — the
+   security and deployment/CI items are built. Read the rows, not this sentence.
    `DEC-094` activated six rows and **every one overrode the agent's recommendation to carry**; the rows
    record it as an override, so do not read the activation as agreement about HOW.
    ⚠⚠ **EVERY REMAINING ITEM GETS A PRE-BUILD SWEEP BEFORE ANY CODE, AND ON THIS SLICE IT HAS PAID ON
@@ -2096,7 +2118,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    **`G-REL` validates an edge's shape; no rule validates its claim.**
 2. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
    `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
-   (`node scripts/gen-slice-review-slate.mjs SL-035`), never a summary — `LL-011`. ⛔ **Which rows are at
+   (`node scripts/gen-slice-review-slate.mjs <the live slice id>`), never a summary — `LL-011`. ⛔ **Which rows are at
    `Review` is deliberately not written here**; the command above prints them. ⭐ The per-item mechanism
    has discriminated twice and is not ceremony: a slice-level verdict would have carried `WBS-24.4`
    through on its neighbours' strength on both occasions.
@@ -2104,8 +2126,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    here and was the FORTY-SECOND.** Measured: **`PH-3` and `PH-7` are `Approved`, not `Implemented`** —
    `PH-3` deliberately (§1: do not "repair" it), and **`PH-7` because it is the LIVE phase, holding the
    open slice.** ⛔ **A COUNT OF ITS OPEN ITEMS STOOD HERE AND IS DELETED, NOT REFRESHED** — it went stale
-   the moment an item closed, which is the FORTY-THIRD's cheapest member. `readiness_check(scope="slice",
-   id="SL-035")` is the count. Closing out a release while a slice is open is exactly what the deleted
+   the moment an item closed, which is the FORTY-THIRD's cheapest member. `readiness_check` on the live slice is the count. Closing out a release while a slice is open is exactly what the deleted
    sentence would have invited. It sits in the prompt library, production is live, and it is the ceremony
    that would formally end v1. ⚠ It is the operator's to start.
 
