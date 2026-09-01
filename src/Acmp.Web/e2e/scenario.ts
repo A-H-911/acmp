@@ -84,21 +84,42 @@ export interface ApiMeeting {
 }
 
 /**
+ * The 15th of the CURRENT month, 14:00–15:00 UTC — the default slot for a seeded meeting.
+ *
+ * ⛔⛔ DEF-126. THIS USED TO BE THE FIXED LITERAL `2026-09-01T14:00:00.000Z`, AND A FIXED DATE IS WHY THE
+ * CALENDAR'S AXE SWEEP PASSED OVER AN EMPTY GRID FOR WEEKS. Both calendars open on the CURRENT month
+ * (`features/topics/Calendar.tsx` holds `offset = 0`), so while the clock was in August every seeded
+ * meeting sat one day outside the rendered month, no chip existed, and `expect(axeViolations(page))
+ * .toEqual([])` asserted over nothing. It went red the morning the clock reached 1 September — not
+ * because anything changed, but because the assertion finally had a subject.
+ *
+ * ⚠ THE 15th IS NOT ARBITRARY: it is far enough from either boundary that no timezone offset, and no run
+ * that straddles midnight, can push the meeting into an adjacent month. A slot on the 1st or the 31st can.
+ *
+ * ⚠ SAFE FOR THE VR SPECS, CHECKED: they call `page.screenshot({ path })` to emit artifacts for human
+ * review — none of them compares a committed baseline — so a date that moves cannot fail them.
+ */
+function currentMonthSlot(hourUtc: number): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 15, hourUtc, 0, 0)).toISOString();
+}
+
+/**
  * Schedule a meeting via the API (single-day window); returns its id/key.
  *
- * `scheduledStart`/`scheduledEnd` default to the original fixed future slot, so every existing caller
- * is unchanged. They are overridable because AC-011's meeting-window leg needs a meeting that has
- * ALREADY ENDED — a guest invited onto it is expired on arrival, which is the only way to observe the
- * window being enforced without waiting a day. ScheduleMeeting validates only that the end follows the
- * start, so a past-dated meeting is legitimately creatable.
+ * `scheduledStart`/`scheduledEnd` default to a slot in the CURRENT month, so a seeded meeting is always
+ * inside the month a calendar renders by default. They are overridable because AC-011's meeting-window
+ * leg needs a meeting that has ALREADY ENDED — a guest invited onto it is expired on arrival, which is
+ * the only way to observe the window being enforced without waiting a day. ScheduleMeeting validates only
+ * that the end follows the start, so a past-dated meeting is legitimately creatable.
  */
 export async function apiScheduleMeeting(
   request: APIRequestContext,
   bearer: string,
   title: string,
   chair: ApiMember,
-  scheduledStart = '2026-09-01T14:00:00.000Z',
-  scheduledEnd = '2026-09-01T15:00:00.000Z',
+  scheduledStart = currentMonthSlot(14),
+  scheduledEnd = currentMonthSlot(15),
 ): Promise<ApiMeeting> {
   const res = await request.post('/api/meetings', {
     headers: { Authorization: bearer, ...JSON_HEADERS },

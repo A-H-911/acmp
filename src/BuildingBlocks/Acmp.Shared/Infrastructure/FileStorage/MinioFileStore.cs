@@ -37,15 +37,50 @@ public sealed class MinioFileStore : IFileStore
             .WithObject(objectName)
             .WithExpiry((int)expiry.TotalSeconds));
 
+    // DEF-125. THE PROBE RETRIES BECAUSE THE SDK DESTROYS THE ERROR, AND THAT IS THE WHOLE REASON.
+    // Minio.MinioClient.ParseErrorNoContent ends with `response.Exception.GetType()` and NEVER null-checks
+    // it — verified in the SDK's own source at tag 6.0.5, which this project pins, AND at 7.0.0, the latest
+    // release, so upgrading does not fix it. Its two earlier branches both call ParseWellKnownErrorNoContent
+    // (which throws) for exactly five statuses: Forbidden, BadRequest, NotFound, MethodNotAllowed,
+    // NotImplemented. An error response outside that set, with NO BODY and no transport exception, falls
+    // past them and null-dereferences — where the SDK's own next line meant to throw a descriptive
+    // InternalClientException. StatObject is a HEAD, so every error response it receives is body-less by
+    // construction, which is why this probe is where the bug surfaces.
+    //
+    // So a transient 5xx from the object store arrives here as a bare NullReferenceException carrying
+    // nothing: no status, no bucket, no object. A 404 never reaches it — that is well-known and throws
+    // ObjectNotFoundException — which is why this path passed on every CI run but one before DEF-125.
+    //
+    // ⛔ RETRYING IS NOT A PROBABILITY-FUDGE (LL-035) AND `return false` IS NOT AN OPTION. The probe is an
+    // idempotent HEAD, so asking again is free of side effects and is the ONLY way left to distinguish a
+    // transient condition from a persistent one once the SDK has thrown the detail away. And "the store
+    // could not tell me" is emphatically not "the object is absent": returning false here would convert an
+    // outage into a confident wrong answer — the DEF-023/051/054/078 family, on a path that decides whether
+    // a recording exists.
+    private const int ProbeAttempts = 3;
+
     public async Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default)
     {
-        try
+        for (var attempt = 1; ; attempt++)
         {
-            await _client.StatObjectAsync(new StatObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
-            return true;
+            try
+            {
+                await _client.StatObjectAsync(new StatObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
+                return true;
+            }
+            catch (ObjectNotFoundException) { return false; }
+            catch (BucketNotFoundException) { return false; }
+            catch (NullReferenceException ex)
+            {
+                // Narrow ON PURPOSE: this is the one signature DEF-125 diagnosed, not a guess at which
+                // failures are transient. Widening it to `Exception` would swallow real faults, and adding
+                // speculative SDK types would be unmeasured.
+                if (attempt >= ProbeAttempts)
+                    throw new ObjectStoreProbeException(bucket, objectName, attempt, ex);
+
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * attempt), ct);
+            }
         }
-        catch (ObjectNotFoundException) { return false; }
-        catch (BucketNotFoundException) { return false; }
     }
 
     public Task DeleteAsync(string bucket, string objectName, CancellationToken ct = default) =>
@@ -73,9 +108,44 @@ public sealed class MinioFileStore : IFileStore
     }
 }
 
+// DEF-125. What the SDK's null-dereference threw away, said out loud: which bucket, which object, how many
+// attempts, and the original exception as InnerException. The message names the upstream bug explicitly,
+// because the next person to see this will otherwise be reading a NullReferenceException stack that points
+// into a third-party parser and says nothing about ACMP at all.
+//
+// ⚠ THIS TYPE EXISTS SO THE FAILURE IS LEGIBLE, NOT SO CALLERS CAN BRANCH ON IT. Nothing catches it today
+// and nothing should: an unreadable answer from the object store is a real failure and belongs at the top
+// of the call stack, not converted into a boolean by whoever is nearest.
+public sealed class ObjectStoreProbeException : Exception
+{
+    public ObjectStoreProbeException(string bucket, string objectName, int attempts, Exception inner)
+        : base($"Object store probe for '{objectName}' in bucket '{bucket}' failed on all {attempts} attempts. "
+               + "The MinIO SDK raised a NullReferenceException from ParseErrorNoContent, which is its "
+               + "unguarded `response.Exception.GetType()` (present in 6.0.5 and 7.0.0) — it means the store "
+               + "returned an error with no body and a status outside the five it treats as well-known, "
+               + "typically a transient 5xx. It does NOT mean the object is absent. See DEF-125.", inner)
+    {
+        Bucket = bucket;
+        ObjectName = objectName;
+        Attempts = attempts;
+    }
+
+    public string Bucket { get; }
+
+    public string ObjectName { get; }
+
+    public int Attempts { get; }
+}
+
 // Holds the IMinioClient used for presigning — the public-endpoint client when configured (browser-reachable
 // via nginx), else the internal client. A distinct singleton so upload/exists/delete stay on the fast internal
-// endpoint. Lives in this file so it inherits the MinioFileStore coverage exclusion (ADR-0016 §1).
+// endpoint.
+//
+// ⚠ THE REASON THIS CLASS GIVES FOR LIVING HERE WAS STALE AND IS CORRECTED (DEF-125's PR, DEC-105 d2's
+// rider shape): it said "so it inherits the MinioFileStore coverage exclusion (ADR-0016 §1)", and that
+// exclusion NO LONGER EXISTS — coverlet.runsettings says so in its own words, because MinioFileStore is the
+// production recording store and is covered end-to-end by MinioFileStoreTests. A comment naming a rule that
+// was removed is the class DEF-094 and DW-091 both cost this project a build over.
 public sealed class MinioPresigner
 {
     public MinioPresigner(IMinioClient client) => Client = client;

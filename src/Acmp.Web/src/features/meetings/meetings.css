@@ -187,6 +187,16 @@
 /* Event pill — status-toned, links to the meeting. 9.5px / weight 600, radius 4, ellipsis. */
 .mt-cal-event {
   display: block;
+  /* DEF-126 / ADR-0045 — THE SIBLING, AND IT WAS WORSE THAN THE ONE CI CAUGHT. This chip is an <a> at
+     9.5px with padding-block 2px, about 17px against WCAG 2.2 target-size's 24x24 minimum. Nothing had
+     ever reported it: rtl-a11y.spec.ts visits /backlog, /backlog/submit and /audit, and /meetings was
+     swept by nothing at all until this change added it.
+     line-height carries the height rather than padding, because `display: block` + overflow/ellipsis is
+     what makes the label truncate, and turning this into a flex box to centre it would make the text an
+     anonymous flex item and break text-overflow. 20px line + 2px padding top and bottom = 24px exactly,
+     with the 9.5px type optically centred and the drawn size unchanged. */
+  min-block-size: 24px;
+  line-height: 20px;
   margin-block-start: 4px; /* design literal */
   font-size: 9.5px; /* design literal */
   font-weight: 600;

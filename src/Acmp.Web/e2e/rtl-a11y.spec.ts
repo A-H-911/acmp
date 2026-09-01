@@ -102,11 +102,31 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     const bearer = await captureBearer(page);
     await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
 
+    // ⛔ SEEDED HERE RATHER THAN INHERITED. Until DEF-126 this test relied on meetings other specs
+    // happened to leave behind — and `workers: 1` makes the run serial without making cross-FILE order a
+    // contract, so the subject of the assertion was an accident either way. One meeting of its own costs
+    // a request and makes the case self-sufficient; the default slot is now the 15th of the CURRENT
+    // month (scenario.ts), so it always lands in the month the grid opens on.
+    const members = await apiMembers(page.request, bearer);
+    await apiScheduleMeeting(page.request, bearer, `A11y calendar sweep ${Date.now()}`, members[0]);
+
     await page.goto('/backlog');
     await page.getByRole('button', { name: 'Calendar' }).click();
-    // The month grid is the frame; it renders whether or not any meeting is scheduled, so this
-    // wait does not depend on seeded data.
     await expect(page.locator('.cal-grid')).toBeVisible();
+
+    // ⛔⛔ DEF-126: THE ASSERTION BELOW MUST HAVE A SUBJECT, AND FOR WEEKS IT DID NOT.
+    // The line that stood here read "the month grid renders whether or not any meeting is scheduled, so
+    // this wait does not depend on seeded data" — true, and it is precisely why the sweep was worthless:
+    // the GRID does not depend on seeded data, but the CHIPS are the only thing on this view that can
+    // violate anything, and the seed put every meeting one day outside the rendered month. axe ran, found
+    // an empty calendar, and reported clean, from WBS-24.2 until the clock reached 2026-09-01.
+    //
+    // WBS-24.2's row recorded that this sweep was "PROVEN TO RUN, NOT INFERRED FROM A GREEN JOB" because
+    // the e2e count moved 86 → 88. That was sound and insufficient: a test-count delta proves the SPEC
+    // EXECUTED, never that the ASSERTION HAD A SUBJECT. This line is the missing half of LL-013 — a
+    // scanner must be shown to have looked at SOMETHING, not merely to have started.
+    await expect(page.locator('.cal-event').first()).toBeVisible();
+
     expect(await axeViolations(page), 'Calendar (EN) axe violations').toEqual([]);
 
     await switchToArabic(page);
@@ -179,5 +199,39 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     await switchToArabic(page);
     await expect(page.getByRole('heading', { name: 'Preview sweep topic', exact: true })).toBeVisible();
     expect(await axeViolations(page), 'Presenter preview (AR/RTL) axe violations').toEqual([]);
+  });
+
+  // DEF-126's SECOND HALF. /meetings has its own List ⇄ Calendar toggle and its own chip component
+  // (MeetingsCalendar, `.mt-cal-grid`/`.mt-cal-event`) — a DIFFERENT component from the Backlog calendar
+  // this spec already sweeps, and it carried the SAME target-size violation in a worse form: an <a> at
+  // 9.5px, about 17px tall.
+  //
+  // ⛔ NOTHING HAD EVER LOOKED AT IT. Before this test the sweep visited /backlog, /backlog/submit and
+  // /audit only, so a whole route with a near-identical component was outside every instrument. That is
+  // the sibling-copy failure this project keeps paying for — a correction applied to one artifact leaves
+  // the survivor as the one the next session reads — and fixing `.mt-cal-event` without adding this test
+  // would have left the fix itself unguarded.
+  test('Meetings calendar view is axe-clean in both English and Arabic', async ({ page }) => {
+    await loginAs(page, 'secretary');
+    const bearer = await captureBearer(page);
+    await page.request.post('/api/members/me', { headers: { Authorization: bearer } });
+
+    const members = await apiMembers(page.request, bearer);
+    await apiScheduleMeeting(page.request, bearer, `A11y meetings sweep ${Date.now()}`, members[0]);
+
+    await page.goto('/meetings');
+    // exact:true throughout — getByRole matches `name` as a case-insensitive SUBSTRING, which is how
+    // WBS-24.2's {name:'AR'} also matched "Regular" and "Extraordinary".
+    await page.getByRole('button', { name: 'Calendar', exact: true }).click();
+    await expect(page.locator('.mt-cal-grid')).toBeVisible();
+
+    // The subject clause again (DEF-126, LL-013): the grid renders with or without meetings, so without
+    // this the assertion below can pass over an empty month exactly as the Backlog one did.
+    await expect(page.locator('.mt-cal-event').first()).toBeVisible();
+    expect(await axeViolations(page), 'Meetings calendar (EN) axe violations').toEqual([]);
+
+    await switchToArabic(page);
+    await expect(page.locator('.mt-cal-event').first()).toBeVisible();
+    expect(await axeViolations(page), 'Meetings calendar (AR/RTL) axe violations').toEqual([]);
   });
 });
