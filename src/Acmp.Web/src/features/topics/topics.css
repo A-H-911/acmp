@@ -974,6 +974,33 @@
   text-align: start; cursor: pointer;
 }
 .cal-event:hover { filter: brightness(1.05); }
+
+/* WBS-26.5 / DEC-109 d3 — the nested topic chip, labelled with the topic KEY per
+   `ACMP Backlog & Topic.dc.html` (INV-014).
+
+   ⚠ FLOORED AT 24px FOR THE SAME REASON `.cal-event` IS, and by the same mechanism. WCAG 2.2
+   target-size (Minimum) wants 24x24 on an interactive target and this is a link. ADR-0045 d2 argues
+   the floor rather than more padding: padding is DERIVED from the type and has to be re-derived
+   whenever the type or the inherited line-height moves, while `min-block-size` states the
+   CONFORMANCE THRESHOLD ITSELF and keeps holding when someone changes the font stack.
+
+   ⛔ The e2e axe sweep over /backlog is no longer vacuous (DEF-126, LL-041), so a regression here
+   fails CI rather than passing over an empty grid. */
+.cal-topic {
+  display: flex; align-items: center; inline-size: 100%;
+  min-block-size: 24px;
+  padding-block: 3px; padding-inline: 7px;
+  margin-block-start: 2px;
+  border-radius: 6px; background: var(--subtle);
+  color: var(--text-2); font-size: 10px; font-weight: 600;
+  text-decoration: none; text-align: start;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-topic:hover { background: var(--primary-tint); color: var(--accent); }
+
+/* A Restricted topic: the server sends an empty key and title, so this renders the localized
+   placeholder and is deliberately NOT a link — there is nothing the caller may open. */
+.cal-topic.is-restricted { color: var(--text-3); font-style: italic; cursor: default; }
 .cal-event.is-selected { outline: 2px solid var(--focus); outline-offset: 1px; }
 .cal-event-dot {
   inline-size: 5px; block-size: 5px; border-radius: 50%;

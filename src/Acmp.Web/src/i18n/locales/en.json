@@ -1459,7 +1459,8 @@
       "openMeeting": "Open meeting",
       "noTopics": "No topics on this agenda yet",
       "noneThisMonth": "No meetings are scheduled this month",
-      "dueNote": "Due-date markers are not shown: topics do not carry a due date in v1."
+      "dueNote": "Due-date markers are not shown: topics do not carry a due date in v1.",
+      "restrictedTopic": "Restricted"
     },
     "timeline": {
       "week": "Wk {{n}}",

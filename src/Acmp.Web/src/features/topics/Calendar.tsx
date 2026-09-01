@@ -26,7 +26,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Icon } from '../../components/icons';
-import { useMeetingDetail, useMeetings, type MeetingSummary } from '../../api/meetings';
+import {
+  useAgendaProjection,
+  useMeetingDetail,
+  useMeetings,
+  type MeetingSummary,
+} from '../../api/meetings';
 
 const WEEKS = 6; // 6 rows × 7 = 42 cells covers any month
 
@@ -48,6 +53,17 @@ export function Calendar() {
   const month = new Date(now.getFullYear(), now.getMonth() + offset, 1);
   const year = month.getFullYear();
   const m = month.getMonth();
+
+  /*
+   * WBS-26.5 / DW-086 — ONE request for the whole visible month, never one per meeting.
+   *
+   * The range is exactly the month being rendered, so paging the chevrons refetches rather than
+   * accumulating. `to` is EXCLUSIVE (the first instant of the next month), matching the server.
+   */
+  const rangeFrom = new Date(year, m, 1).toISOString();
+  const rangeTo = new Date(year, m + 1, 1).toISOString();
+  const { data: projection } = useAgendaProjection(rangeFrom, rangeTo);
+  const topicsByMeeting = new Map((projection ?? []).map((p) => [p.meetingId, p.items]));
   const startDow = new Date(year, m, 1).getDay(); // 0 = Sunday
   const daysInMonth = new Date(year, m + 1, 0).getDate();
   const isThisMonth = offset === 0;
@@ -122,6 +138,42 @@ export function Calendar() {
                 </span>
               </button>
             ))}
+            {/*
+              WBS-26.5 / DEC-108 d1 / DEC-109 d3 — THE TOPIC CHIPS, KEYED AND NESTED.
+
+              THE LABEL IS THE TOPIC KEY, not its title: `ACMP Backlog & Topic.dc.html` draws day-cell
+              chips as `TOP-009`, and INV-014 makes the reference the visual source of truth. A full
+              title does not fit a 10.5px chip anyway.
+
+              THEY NEST UNDER THE MEETING CHIP RATHER THAN REPLACING IT. AC-145 is Met and immutable,
+              and its Then clause requires the meeting chip carrying title and topic count — removing
+              it would falsify a criterion that can never afterwards be corrected. The reference draws
+              one chip per cell because it assumes topics carry their own dates; ACMP topics do not
+              (Topic.Schedule raises an event with zero consumers), so a topic lands on its meeting's
+              day and one-chip-per-cell is unreachable from this data model. DEC-109 d3 is the record.
+
+              AN EMPTY KEY IS A RESTRICTED TOPIC. The server redacts key and title to empty rather
+              than sending an English word, so the localized placeholder is rendered here — and it is
+              NOT a link, because there is nothing the caller may open.
+            */}
+            {c.events.flatMap((e) =>
+              (topicsByMeeting.get(e.id) ?? []).map((it) =>
+                it.topicKey === '' ? (
+                  <span key={it.topicId} className="cal-topic is-restricted">
+                    {t('topics.calendar.restrictedTopic')}
+                  </span>
+                ) : (
+                  <Link
+                    key={it.topicId}
+                    className="cal-topic"
+                    to={`/topics/${it.topicKey}`}
+                    title={it.topicTitle}
+                  >
+                    {it.topicKey}
+                  </Link>
+                ),
+              ),
+            )}
           </div>
         ))}
       </div>
