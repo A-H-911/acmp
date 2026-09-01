@@ -6,6 +6,29 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
+## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `main` still red at `f91bf705`
+
+★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
+before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
+`WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
+forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
+declined on `LL-035`.
+- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`, Proposed).
+  Working set on a 64 GB box cannot tell a leak from lazy collection, so `PE-769`'s null result was
+  uninterpretable in BOTH directions. Use `GC.GetTotalMemory(true)` after a forced full collect.
+- ⭐⭐ **A ROOT-PATH TOOL NAMES *A* PATH, NEVER *THE* CAUSE** (`LL-048`, Proposed). `gcroot` named the rate
+  limiter; removing it changed nothing, and stripping ALL of OpenTelemetry freed **zero** hosts. **Read the
+  root COUNT first** (505 here); after two failed bisects, stop naming suspects and vary the QUANTITY.
+- ⚠⚠ **`DEC-077` d3's OVERRIDE COUNTER IS STILL TWO.** `DEC-111` d2 declined a re-run — that is compliance,
+  not a third override. ⛔ A third would reopen the rule; do not let a session mis-log this one as one.
+- ⚠ **A 14 KB hand-paste into `entity_upsert` is survivable IF you verify after:** `git show
+  HEAD:…/defects.jsonl`, then assert the new title **startswith** the old byte-for-byte (`LL-028`+`LL-001`).
+- ⚠ **`entity_upsert` FK trap:** `deferred_work.invariant_at_stake` is a **foreign key** — the JSONL prints
+  `None` for null, and sending the string `"None"` rolls the whole batch back. Omit nullable fields.
+- ⛔ **THE FORTY-EIGHTH was mine and is the THIRD IN A ROW of its class** — `prm-next.md` item 1 still said
+  *"DIAGNOSE `DEF-109`"* in the very commit whose message says DIAGNOSED. **A briefing on HOW is a
+  description too**, and the FORTY-FIFTH's rule (*never describe an item*) did not read as covering it.
+
 ## ★★★ 2026-09-01 · four PRs merged · **`LL-041`–`LL-044` now BIND — read them, they are not restated here**
 
 ⛔⛔ **NEVER WRITE A SLICE ID INTO A COMMAND IN `prm-next.md`.** Nine sites said
@@ -14,15 +37,9 @@ wrong subject. The FORTY-SECOND fixed two such sites in the kickoff block and **
 went where the error was REPORTED, not where the pattern LIVED (the FORTY-SIXTH). `entity_query("slice",
 status="Approved")` resolves it without naming one. ⚠ `count-prompt-ids.py` cannot see this — the id is real
 and its status correct.
-⭐⭐ **A TEST-COUNT DELTA PROVES THE SPEC RAN, NEVER THAT THE ASSERTION HAD A SUBJECT** (`LL-041`). An axe
-sweep passed over an EMPTY calendar for weeks because the seed sat one day outside the rendered month; it
-went red when the clock reached that date, on a PR that changed only a C# storage adapter. Assert the
-subject is PRESENT before asserting an absence. ⚠ `LL-044`: a hardcoded date in a fixture is a **clock**
-fixture — vacuous, then meaningful for a month, then vacuous again, and only the middle state fails.
-⭐ **`LL-043`: a grep matching a DIFFERENT concept's spelling hands you a confident WRONG subject** — worse
-than a zero. `cal-grid` matched `mt-cal-grid`; a whole defect row was written about the wrong component.
-⭐ **`LL-042`: after setting an `SC-` to `Merged`, re-read every row its delta names** — `scope-changes-merged`
-passes on a `Merged` SC and never looks.
+⛔ **`LL-041`–`LL-044` ARE APPROVED AND PINNED, SO THEY ALREADY BIND FROM THE TOOL-OWNED NOTE — the
+four-bullet restatement that stood here is DELETED, not refreshed. Two sources for one instruction is
+how the wrong one gets read; this block's own header said *not restated here* while restating them.
 ⚠ **`ADR-0045`**: `INV-014` names the px literals AND `AA` in ONE statement, so where a `.dc.html` cannot
 satisfy both, **AA governs** — minimum change to conformance, nothing more.
 
