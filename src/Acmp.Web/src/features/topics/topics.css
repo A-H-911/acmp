@@ -959,6 +959,15 @@
    thing clickable. Logical properties throughout so it mirrors in RTL. */
 .cal-event {
   display: flex; align-items: center; gap: 5px; inline-size: 100%;
+  /* DEF-126 / ADR-0045. WCAG 2.2 target-size (Minimum) wants 24x24 on an interactive target and this is
+     a <button>. At font-size 10.5px with padding-block 3px the box measured ~21px, and axe reported it
+     `serious` across every chip on the grid. inline-size:100% already satisfies the width, so this is the
+     height alone — and a floor rather than more padding, because padding is derived from the type and a
+     floor is not: it holds whatever the inherited line-height does. align-items:center (above) keeps the
+     content optically where the mock draws it, so the chip grows downward by ~3px and nothing shifts.
+     ⚠ INV-014 names the px literals AND `AA` in one statement, so this is one clause of that invariant
+     governing another, not the invariant being set aside. ADR-0045 is the record. */
+  min-block-size: 24px;
   padding-block: 3px; padding-inline: 7px;
   border: 0; border-radius: 6px; background: var(--st-sched-bg, var(--subtle));
   color: var(--text); font: inherit; font-size: 10.5px; font-weight: 600;
