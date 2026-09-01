@@ -87,6 +87,19 @@ tests now issue their requests CONCURRENTLY and assert the COUNT of throttled re
 cannot roll mid-sequence), and `#333` → `05f2bbd5` (`WBS-26.3` — `ci.yml`'s `compose` job now really BUILDS
 `api`, `web` and `worker` and asserts size ≤ 500 MB plus TWO base assertions; main CI run `33392572509`).
 **`NFR-054` reached `Implemented` for the first time** and `DW-090` is `Done`.
+**2026-09-01 MERGED FOUR MORE.** `#334` → `99ef8453` (`DEF-124` — two assertions pinning `AC-157`'s
+placement clause, each proven to fail against a mutant); `#335` → `906d8fb3` (`DEF-125`, the object-store
+probe, **and** `DEF-126`, the calendar `target-size` floor — merge-commit run `33458419757`, all four jobs
+success); `#336` → `487bc7ea` (the a11y route sweep, 18 routes newly covered); `#337` → `b515fc64`
+(`WBS-26.4` — `check-container-health.sh` and its ten forced cases). `ADR-0045` is `Approved`;
+`LL-041`–`LL-044` are `Approved`; `SC-043` moved `NFR-005` and `NFR-038` to `Deferred`.
+⛔⛔ **AND `#334`'s MERGE-COMMIT RUN WENT RED WHILE ITS PR RUN WAS GREEN — `LL-036`'s THIRD INSTANCE HERE,
+ON A DIFFERENT TEST AGAIN.** PR head `75a34334` passed CI `33449435775`; the squash-merge `99ef8453` failed
+CI `33450264169` on `MinioFileStoreTests`, with `git diff … -- src/ tests/` **EMPTY**. **That is `DEF-125`,
+not `DEF-121`** — different test, assembly and signature. ⭐ Unlike `DEF-108` and `DEF-121` its cause WAS
+diagnosed, in the SDK's source: `Minio.MinioClient.ParseErrorNoContent` dereferences `response.Exception`
+with no null check at tags **6.0.5 AND 7.0.0**, so a body-less 5xx null-derefs where a 404 never reaches
+the line. **Upgrading does not fix it.**
 ⛔⛔ **AND `#331`'s TEN GREEN CHECKS WERE ITS *PR* RUN. ITS MERGE-COMMIT RUN ON `main` WENT RED, AND THIS
 FILE SAID OTHERWISE FOR A WHOLE SESSION — THE FORTY-FOURTH's FIRST MEMBER.** PR head `6e8d4b96` passed CI
 `33297195353` at 06:43:15Z; the squash-merge `c273294c` failed CI `33297623382` at 06:45:13Z on
@@ -125,7 +138,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-five** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **forty-six** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -135,6 +148,28 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-SIXTH IS THE FORTY-SECOND'S OWN FIX APPLIED TO TWO SITES AND MISSED AT NINE — AND EVERY
+ONE OF THE NINE WAS A COMMAND A FRESH SESSION WOULD HAVE RUN.** The FORTY-SECOND found two sentences in the
+kickoff block pointing at `SL-033` for *what is actually open*, measured that **`SL-033`'s `wbs-done` passes
+with zero entities**, and fixed both. **It did not sweep §6.** Nine further sites carried the literal command
+``readiness_check(scope="slice", id="SL-033")`` — at lines 395, 1459, 1588, 1614, 1636, 1651, 1767, 2096 and
+2203 — each introduced as *\"the live answer\"*, *\"the answer\"*, or *\"names every row still open\"*.
+`SL-033` has been `Implemented` since 2026-08-30. **Every one of them hands a fresh session a clean verdict
+about a finished slice**, which is the failure mode the FORTY-SECOND had just finished measuring.
+⭐⭐ **THIS IS THE TWENTY-THIRD'S LESSON AT SCALE: A CORRECTION APPLIED TO SOME ARTIFACTS AND NOT THEIR
+SIBLINGS LEAVES THE SURVIVORS AS THE ONES THE NEXT SESSION READS** — and here the survivors outnumbered the
+fixed copies four to one. ⚠ **The fix went where the error was REPORTED, not where the pattern LIVED.** The
+FORTY-SECOND was found by reading the kickoff block, so the kickoff block is what got swept.
+⛔ **All nine are now the no-slice form** — `entity_query("slice", status="Approved")` then
+`readiness_check` on the id it returns. **Never write a slice id into a command in this file**; the id is
+what rots, and the query that resolves it never does.
+⚠ **Found by a full read at session close, not by any instrument.** `count-prompt-ids.py` resolves ids and
+statuses and would report `SL-033: Implemented` — **correctly**, because the id is real and its status is
+right. Nothing mechanical here can see that a CORRECT id inside a CORRECT command points at the wrong
+SUBJECT. ⚠ **Counted once, family of nine, on the FIFTEENTH's and TWENTY-EIGHTH's precedent**, and counted
+separately from the FORTY-SECOND because these survived that pass and rode into every commit since.
+⚠ **Not an escape** — no commit message carries the command.
 
 ⚠⚠⚠ **THE FORTY-FIFTH IS A LIVE INSTRUCTION TO BUILD WORK THAT A SCOPE CHANGE HAD ALREADY WITHDRAWN — AND
 IT SAT IN THE NUMBERED LIST, THE ONE PLACE THIS FILE SAYS THE NEXT ACTION LIVES.** The list read *"⚠
@@ -392,7 +427,7 @@ across. **A rule written about one register is not a rule about one register** �
 column, and prose cannot be kept in step with it) never mentioned lessons at all.
 ⭐⭐ **ONE ORDINAL FOR THREE INSTANCES, under the FIFTEENTH's and TWENTY-EIGHTH's family precedent: one
 fault class, found in one pass.** Replaced with the command rather than a fresher status, which is the only
-form that cannot rot — `readiness_check(scope="slice", id="SL-033")`.
+form that cannot rot — `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)`.
 ⚠ **FOUND BY THE FILE-NAME SWEEP, NOT BY AN ID PASS**: grepping `prm-next.md` for the artefacts I had
 touched surfaced it, while every identifier in those sentences was correct. A status is not an id.
 
@@ -942,14 +977,22 @@ then created `NFR-064` and made that false (the FORTY-SECOND). `WBS-26.1` and `W
 (the EIGHTH fix's rule, and the THIRTY-THIRD's: give the command or give nothing). **RUN THE RULE.** ⚠ Its
 step 2 is a substring PROXY and cannot make the judgement the rule needs — *does the row COVER the
 requirement, or merely NAME it?* — so treat its output as triage (`LL-006`).
-⚠ **The two externally-blocked ones are unchanged and still real:** `NFR-018` (needs an external OWASP
-ASVS 5.0 Level 2 assessment — the evidence pack `DOC-070` is an INPUT to it, never a substitute) and
-`NFR-038` (rides Tarseem, whose `P14` is deferred indefinitely and which has no endpoint in the product).
+⚠ **`NFR-018` is externally blocked and still real**: it needs an external OWASP ASVS 5.0 Level 2
+assessment, and the evidence pack `DOC-070` is an INPUT to it, never a substitute.
+⛔ **THIS SENTENCE USED TO NAME A SECOND ONE, `NFR-038`, AND `SC-043` REMOVED IT FROM THE SET ON
+2026-09-01.** `NFR-038` and `NFR-005` are both Tarseem, whose `P14`/`SL-014` `DEC-028` deferred
+**indefinitely** with no automatic trigger, so `OOS-02` puts the capability out of scope entirely — the
+same reasoning `SC-026` applied to `NFR-026` under `DEC-012`. Both are now `Deferred` and **neither enters
+the candidate set at all**, because step 1 selects `Approved` rows. ⚠ Nothing had ever ruled on them: a
+calibrated sweep of every register (control `NFR-054`: 55 rows including 11 decisions) returned **ZERO**
+decisions and **ZERO** ADRs for either. **Run the rule; do not read a set from here.**
 ⚠⚠ **RUN THE RULE; DO NOT READ AN ANSWER FROM HERE — AND KNOW THAT STEP 2 IS A PROXY.** Mechanised as
 written, step 2's *"named in a `deferred-work` row's TITLE"* is a substring test, and it removes BOTH
 `NFR-018` (named in `DW-079`'s title) and `NFR-064` (named in `DW-093`'s), leaving `NFR-038` alone.
-⚠ **THAT WORKED EXAMPLE IS DATED 2026-08-29 AND ITS ARITHMETIC HAS MOVED** — `NFR-064` is `Implemented` and
-so never enters the candidate set now. It is kept because the POINT survives its own numbers: step 2 removes
+⚠ **THAT WORKED EXAMPLE IS DATED 2026-08-29 AND ITS ARITHMETIC HAS MOVED TWICE** — `NFR-064` reached
+`Implemented` on 2026-08-30, and `SC-043` moved `NFR-038` to `Deferred` on 2026-09-01, so **neither enters
+the candidate set now and the example's *\"leaving `NFR-038` alone\"* is false**. It is kept because the
+POINT survives its own numbers: step 2 removes
 a requirement whose covering row merely NAMES it. The
 stated answer has always needed the judgement the script cannot make — *does the row COVER the
 requirement, or merely name it?* `DW-079` explicitly does NOT close `NFR-018`. **Treat the rule's output
@@ -1456,7 +1499,7 @@ under `START HERE`; every other section describes what happened, not what to do 
 **`SL-032` is `Implemented`** — the operator's verdict on the slice review (`PE-586`, applied `PE-588`).
 **`DEF-104` is `Fixed`** (`PE-589`). **`SL-033` was created by `DEC-071`** and holds eight rows the
 operator scheduled in one slice. ⚠ **Measure, do not trust this list** —
-`readiness_check(scope="slice", id="SL-033")` and `entity_query("wbs-item")`.
+`entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` and `entity_query("wbs-item")`.
 
 ✅ **THE SWEEP IS DONE AND SO IS `DW-082` (2026-08-25).** ⚠ **Measure, do not
 trust this block** — `entity_query("deferred-work", status="Activated")`, `gh pr list --state open`, and a
@@ -1585,7 +1628,7 @@ the framework already does PER CALL; the answer differs inside one library.**
 
 ✅✅ **`WBS-24.1` IS DONE-CLAIMED (PR `#311` → `f968703`)** — user-configurable backlog columns.
 `AC-144` is `Met` (`AV-222`) and **`FR-032` auto-advanced to `Implemented`**. ⚠ The row was done-claimed on merge and
-**no status is written here on purpose** — `readiness_check(scope="slice", id="SL-033")` is the
+**no status is written here on purpose** — `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` is the
 live answer, and the verdict is YOURS via `prompts/slice-review.md`.
 ⚠⚠ **ITS SIZING WAS WRONG IN THE CHEAP DIRECTION AND THE SAME TRAP IS LIVE FOR THE OTHER SEVEN.** The
 title said *"dense table … verified unbuilt"*; **the table had already shipped** and only the
@@ -1611,7 +1654,7 @@ no count is written here, and the reason is the THIRTY-THIRD below.
 ✅✅ **`WBS-24.2` IS DONE-CLAIMED (PR `#312` → `65c158c`)** — the calendar shows real scheduled meetings.
 `AC-145` `Met` (`AV-223`), **`FR-035` auto-advanced to `Implemented`**, `DW-037` `Done`. ⛔ A lifecycle
 status stood here too — the THIRTY-NINTH's **second instance**, found in the same pass and folded into one
-ordinal. `readiness_check(scope="slice", id="SL-033")` is the answer. **What `DEC-079` d3 established is
+ordinal. `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` is the answer. **What `DEC-079` d3 established is
 the RULE and it is what survives: done-claimed is `Review`, and `Implemented` is the operator's verdict,
 adjudicated per item.**
 ⭐ **`DW-037`'s own correction was load-bearing and it HELD** — the scheduled date really is not on the
@@ -1633,7 +1676,7 @@ silently; nothing compiles it.**
 `{name:'AR'}` also hit "Regul**ar**", "Extraordin**ar**y" and "**Ar**chitecture board". Use `exact: true`.
 
 ✅✅ **`WBS-24.3` IS DONE-CLAIMED (PR `#313` → `a794daa`)** — wiki version compare. `AC-146` `Met`
-(`AV-224`), **`FR-117` → `Implemented`**, `DW-039` `Done`. ⚠ **No status is written here** — `readiness_check(scope="slice", id="SL-033")` is the live answer.
+(`AV-224`), **`FR-117` → `Implemented`**, `DW-039` `Done`. ⚠ **No status is written here** — `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` is the live answer.
 ⭐ **The row was really about a SOURCE COMMENT, not a diff.** *"Diff is deferred to P14 — viewable
 satisfies FR-117"* was a requirement-satisfaction judgement living where no register view could see it,
 untrue as written (`FR-117` says viewable **AND** diffable), and pointed at a phase `DEC-028` deferred
@@ -1648,7 +1691,7 @@ of them will fail a test if it is missing.**
 pre-existing exact-text assertion here; the fix was to scope the new fixture, not relax the old test.
 
 ✅✅ **`WBS-24.4` IS DONE-CLAIMED (PR `#314` → `58052b4`)** — locale-appropriate NUMBER formatting.
-`AC-147` `Met` (`AV-225`), **`NFR-037` → `Implemented`**, `DW-068` `Done`. ⚠ **No status is written here** — `readiness_check(scope="slice", id="SL-033")` is the live answer.
+`AC-147` `Met` (`AV-225`), **`NFR-037` → `Implemented`**, `DW-068` `Done`. ⚠ **No status is written here** — `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` is the live answer.
 ⚠⚠ **ITS ROW WAS RIGHT ABOUT THE PROBLEM AND TOO SMALL ABOUT THE REMEDY — a FOURTH distinct way a row
 can mislead, after `24.1`'s wrong title-summary, `24.2`'s correction that held, and `24.3` being about a
 source comment.** `DW-068`'s census was exact (two `Intl.NumberFormat` sites in 347 files) but its
@@ -1764,7 +1807,7 @@ COMMENT rather than a feature; `24.4`'s measurement was right while its prescrib
 ADR the row never mentions.** ⭐⭐ **`24.5` and `24.6` each added a STEP to the habit: read the NARRATIVE
 documents by keyword, because reading `src` tells you what exists and nothing about what was specified;
 and read the ADR/DECISION registers, because a row can be a faithful quotation of a dead clause.**
-⚠ **Measure, do not trust this list** — `readiness_check(scope="slice", id="SL-033")` and
+⚠ **Measure, do not trust this list** — `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` and
 `entity_query("wbs-item")` are the live answer.
 
 ✅✅ **`DW-080` PHASE A IS DONE — PR `#320` → `df8d7c3a`, 2026-08-28, ten of ten checks green.** The
@@ -1996,7 +2039,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEC-094` activated six rows and **every one overrode the agent's recommendation to carry**; the rows
    record it as an override, so do not read the activation as agreement about HOW.
    ⚠⚠ **EVERY REMAINING ITEM GETS A PRE-BUILD SWEEP BEFORE ANY CODE, AND ON THIS SLICE IT HAS PAID ON
-   EVERY ITEM BUILT SO FAR — IN A DIFFERENT DIRECTION EACH TIME.** ⛔ No count is written here; the
+   EVERY ITEM BUILT SO FAR — IN A DIFFERENT DIRECTION EACH TIME, AND ON ONE ITEM TWICE.** ⭐ **`WBS-26.4`
+   was resized by a sweep, then resized AGAIN by the sweep before its build**: the first found `DW-091`'s
+   premise to be a misattributed quotation and stopped the item; the second found that `SC-042`'s
+   surviving clause — *\"nothing consumes the healthcheck's verdict\"* — was **also false**, because
+   `up.sh`'s `up -d --wait` and `08-bootstrap-box.sh`'s `wait_healthy` both consume it at BOOT. What was
+   genuinely unconsumed was the STEADY STATE, and that is what got built. **A premise can survive one
+   correction and still be wrong.** ⛔ No count is written here; the
    sweep's value is the habit, and a tally of it goes stale on the next build. `WBS-26.1`'s sweep found
    `FR-076` already specified SoD-4's COI half, softly, at Phase 2 — building it would have contradicted a
    requirement's own words. `WBS-26.2`'s found that its bound requirement `NFR-046` covered neither of its
@@ -2031,15 +2080,20 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    is a per-meeting agenda projection. ⚠ **Its row also carries a RIDER** (`DEC-105` d2): a one-line
    comment correction at `src/Acmp.Api/Endpoints/MeetingsEndpoints.cs` travels with its PR, and the row
    says what to do if the item is never built. Read the row, not this sentence.
-   ⚠⚠ **A SECOND REGISTER FINDING CAME OUT OF THE SAME ROUND AND IS OPEN: `DEF-123`.** Measured — of 346
-   `tests` edges, `TEST-041` carries **110** and `TEST-045` **66**, each reaching every requirement
-   `NFR-001`–`NFR-063`, and **63 of 65 NFRs have no test edge but those two**. `DOC-068`'s own test
-   register (`SEC-631`) documents them as covering **two requirements each**, so **172 of 176 edges are
-   undocumented**; `TEST-045` is `Proposed` — the suite is not written. Three of the blanket-wired NFRs
-   name capabilities that **do not exist** (Tarseem × 2, deferred indefinitely; AI extraction, Phase 3).
-   ⛔ **No edge has been touched** — `DEC-104` d1 authorised an investigation, not a repair, and the row
-   argues against choosing a remedy before the operator rules. `G-TRACE` and `G-REL` PASS and are right
-   to: **`G-REL` validates an edge's shape; no rule validates its claim.**
+   ⚠⚠ **A SECOND REGISTER FINDING CAME OUT OF THE SAME ROUND AND IS CARRIED `Open` AT `medium` BY
+   `DEC-106` d4: `DEF-123`.** ⛔ **AND IT WAS WIDENED ON 2026-09-01 — IT IS NOT THE TEST LEG, IT IS ALL
+   THREE.** For `NFR-001`–`NFR-063`, contiguous, **63 of 65**, every leg `G-TRACE` requires is the same
+   blanket: `implements ← WBS-1` (*Platform Foundation*, a `PH-1` item), `derives_from → ADR-0012 +
+   ADR-0016`, `tests ← TEST-041 + TEST-045`. Only `NFR-064`/`NFR-065` are wired individually. **The FR
+   register is the control and is NOT like this**, which is what makes it a finding rather than a house
+   style. ⭐ **The `derives_from` leg needs no judgement call where the test leg did:** `NFR-054`
+   (container images ≤ 500 MB from a minimal base) is recorded as **deriving from the React frontend
+   ADR**, as are `NFR-052` and `NFR-018`.
+   ⛔ **No edge has been touched and none should be** — `DEC-104` d1 authorised an investigation, not a
+   repair; `DEC-106` d4 then carried it deliberately, because deleting the blanket reddens 63 requirements
+   on three legs at once, re-wiring is 189 edges nobody has scoped, and fixing only the three
+   phantom-capability rows leaves 60 (`LL-035`). `G-TRACE` and `G-REL` PASS and are right to:
+   **`G-REL` validates an edge's shape; no rule validates its claim.**
 2. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
    `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
    (`node scripts/gen-slice-review-slate.mjs SL-035`), never a summary — `LL-011`. ⛔ **Which rows are at
@@ -2092,8 +2146,8 @@ command.**
 ⚠⚠ **THE RULE, NOT THE ROSTER: A ROW AT `Review` IS DONE-CLAIMED WORK AWAITING THE OPERATOR'S VERDICT, AND
 IT IS ALWAYS MERGED. `Review` counts as OPEN in `readiness_check`, so slice-scope `wbs-done` naming such a
 row is the rule working, not a fault to repair — and it is NEVER a reason to rebuild anything.**
-⛔ **Which rows are at `Review` is not written here on purpose** — `readiness_check(scope="slice",
-id="SL-033")` is the only answer that cannot go stale, and this block has now been wrong in BOTH
+⛔ **Which rows are at `Review` is not written here on purpose** — `entity_query("slice", status="Approved")` then `readiness_check` on the id it returns is the only
+answer that cannot go stale, and this block has now been wrong in BOTH
 directions within one session. It said *"no verdict is owed"* while `WBS-24.6` sat at `Review`, then said
 *"one is owed — `WBS-24.6`"* about ninety minutes before the operator promoted it (`DEC-082` d1). Both were
 true when written; both were falsified by the session's own next action, and both were caught before a
@@ -2200,7 +2254,7 @@ shipped — `Backlog.tsx` (`FR-031`), `Kanban.tsx` (`FR-033`), `Calendar.tsx` (`
 **THE ORDER (`DEC-071` d1), smallest and most contained first, riskiest LAST:**
 
 ⚠ **The status column is a convenience and it CAN go stale — `entity_query("wbs-item")` is the live
-answer, and `readiness_check(scope="slice", id="SL-033")` names every row still open.**
+answer, and `entity_query("slice", status="Approved")` then `readiness_check(scope="slice", id=<that id>)` names every row still open.**
 
 | # | row | what | status (2026-08-27) |
 |---|---|---|---|
