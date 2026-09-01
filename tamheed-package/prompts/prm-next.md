@@ -173,7 +173,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-seven** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **forty-eight** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -183,6 +183,11 @@ reports `indeterminate` because 0 of 17 rows carry a `validation_date`"* was mad
 disposition session that was reading it. A prompt that restates a number is a prompt that
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
+
+⚠⚠⚠ **THE FORTY-EIGHTH IS THE FORTY-SEVENTH'S FAULT CLASS FOR THE THIRD CONSECUTIVE TIME, IN THE SAME NUMBERED LIST, AND IT IS MINE — I WROTE THE COMMIT THAT FALSIFIED IT AND THE COMMIT MESSAGE SAYS SO.** Item 1 read *"▶▶▶ DIAGNOSE `DEF-109`"* followed by a briefing on how — `PE-768`/`PE-769`, the six eliminated candidates, the 5 GB working-set figure, and *"the next attempt needs a seam that fires while the provider is alive"*. **Every clause was true when written and all of it is finished work**: `DEC-110` d3 clause (1) is satisfied, the seam was built and proved to execute, and the store hypothesis it points at is REFUTED. A fresh session obeying item 1 would have re-run an investigation that has an answer.
+⚠ **COUNTED, AND COUNTED HONESTLY.** The package commit `b54a42c6` — whose own message is *"DEF-109 DIAGNOSED"* — was pushed with item 1 still saying `DIAGNOSE`. That is a false statement reaching a commit where a fresh session could read it, which is exactly what this counter counts. **Under-counting my own would defeat the instrument**, and the FORTY-THIRD's family already established that a session can falsify its own prose within the session.
+⭐⭐ **THE THREE-IN-A-ROW IS THE FINDING, NOT THE INSTANCE.** The FORTY-FIFTH rotted because a scope change WITHDREW the work; the FORTY-SEVENTH because the work was DONE; this one because the work was done **by the session writing the entry about the previous one**. Three different causes, one failure, all in the numbered list. ⛔ **The rule the FORTY-FIFTH wrote — *never describe an item here at all* — is correct and was still not enough, because a briefing on HOW is not obviously a description of WHAT.** Item 1 now names four rows and describes none of them.
+⚠ **THE INSTRUMENTS WERE CLEAN A FIFTH TIME.** `count-prompt-ids.py` resolves ids and statuses; `PE-768`, `PE-769`, `DEC-110` and `DEF-109` are all real and correctly statused. The prose-status checker wants a `(Status)` form; this is an imperative. **Nothing mechanical this file owns can see that a correct pointer sits under a finished instruction.**
 
 ⚠⚠⚠ **THE FORTY-SEVENTH IS THE FORTY-FIFTH'S EXACT FAULT CLASS, ONE ITEM LATER IN THE SAME NUMBERED LIST — A LIVE INSTRUCTION TO BUILD WORK THAT HAS SINCE SHIPPED.** Item 1 read *"⛔ `WBS-26.5` must NOT fan `useMeetingDetail` across the month — the answer is a per-meeting agenda projection. ⚠ Its row also carries a RIDER (`DEC-105` d2): a one-line comment correction at `src/Acmp.Api/Endpoints/MeetingsEndpoints.cs` travels with its PR."* **Both clauses are now finished work.** The projection is `src/Modules/Meetings/Meetings.Application/Features/GetAgendaProjection/`, merged as PR `#338` → `f91bf705`; the rider is applied and `MeetingsEndpoints.cs:65` now reads *"(Chairman, Secretary, Auditor)"*. **A fresh session obeying item 1 would build a projection that exists and re-apply a comment fix that is already in.**
 ⭐⭐ **THE FORTY-FIFTH WAS WRITTEN ABOUT THIS LIST AND DID NOT PROTECT THE ITEM BELOW IT.** That entry ruled *"the only safe form for an item's deliverable is the ITEM'S OWN ROW plus its `SC-`"* and deleted such a description from `WBS-26.4`'s block — and the very next item kept one, complete with a *"Read the row, not this sentence"* disclaimer that did not save it. **A disclaimer attached to a description is still a description**, exactly as the THIRTY-THIRD found that a count with a disclaimer attached is still a count.
@@ -2089,26 +2094,26 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **DIAGNOSE `DEF-109` — THE OPERATOR RULED THAT IT IS INVESTIGATED, NOT RE-RUN (`DEC-110` d1), AND
-   THAT RULING OVERRODE THE AGENT'S RECOMMENDATION.** ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB AND DO NOT
-   ASK CI THE SAME QUESTION AGAIN.** The row has three occurrences, all green either side, and `DEC-110`
-   d3 gave it an end condition that **accumulated greens satisfy by design** — so another green run moves
-   nothing and removes the pressure to diagnose. A re-run is the operator's call alone.
-   ⚠ **READ `PE-768` AND `PE-769` FIRST: they are the two passes already done, and the second is worth
-   more than the first.** Six candidates are ELIMINATED by measurement (sync-over-async in src and in the
-   test path, xunit over-parallelism, hosted services, Hangfire in the API, the audit-chain applock — plus
-   zero process-global locks in `src`). One number is MEASURED and stands alone: the `Acmp.Api.Tests`
-   testhost working set grows **monotonically to ~5 GB in a single local run, without one dip**, against a
-   7 GB hosted runner on which that suite runs CONCURRENTLY with four other projects and Testcontainers.
-   ⛔⛔ **AND THE ONE INTERVENTION TRIED SO FAR WAS INVALID — IT NEVER EXECUTED, AND THE PROBE IS WHY THAT
-   IS KNOWN.** Releasing the InMemory stores on factory disposal left the curve unchanged, which reads
-   exactly like a refutation; instrumenting the swallowed `catch` showed every attempt throwing
-   `ObjectDisposedException: IServiceProvider`, because the provider is already gone when `Dispose(bool)`
-   runs. **Without the probe the register would carry a confident REFUTED against a live lead** —
-   `DEF-056`'s vacuous control, and `LL-013`'s whole point. **The next attempt needs a seam that fires
-   while the provider is alive, and must be PROVED to have executed before its result is believed.**
-   ⚠ `LL-029` binds the method (an intervention that isolates a variable, never a reading that merely
-   fits) and `LL-035` binds any remedy (a probability reduction buys an unfalsifiable position).
+1. ▶▶▶ **`DEF-109` IS DIAGNOSED AND IS CARRIED, NOT FIXED — `DEC-111` d1, 2026-09-02. THERE IS NOTHING
+   TO INVESTIGATE HERE ANY MORE, AND NOTHING TO BUILD FOR IT.** ⛔⛔ **THIS ITEM READ *"DIAGNOSE
+   `DEF-109`"* AND CARRIED A BRIEFING ON HOW — THAT IS DELETED, NOT REFRESHED, AND IT IS THE
+   FORTY-EIGHTH.** `DEC-110` d3 clause (1) is satisfied; a fresh session obeying the old text would have
+   re-run an investigation that has an answer. **The rows are the record: `DEF-109` itself, `PE-771` for
+   the evidence, `DW-096` for the remedy, `DEC-111` for the operator's ruling. Read those; never a
+   description of them here.**
+   ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB.** `DEC-111` d2 declined a re-run at `f91bf705` and that is
+   COMPLIANCE with `DEC-077` d3, not an exception to it — **the override counter is UNCHANGED at two**
+   (`DEC-097` d2, `DEC-100` d2), and the standing note that a THIRD override reopens whether d3 still says
+   what the practice does is therefore not triggered. A re-run remains the operator's call alone.
+   ⚠ **WHAT THE DIAGNOSIS LICENCES AND WHAT IT DOES NOT**, because this is the half a later session will
+   get wrong: the falsifiable claim is **retention tracks host count**, measured as retained MANAGED bytes
+   after a forced full collection. **It licences NO claim that any remedy greens CI** (`LL-035`). Two
+   lessons came out of it and are `Proposed`, not binding until the operator confirms them: `LL-047` (an
+   instrument that cannot produce a meaningful NEGATIVE turns every refutation into a coin flip) and
+   `LL-048` (a root-path tool names A path, never THE cause).
+   ⚠ **`main` WAS RED AT `f91bf705` WHEN THIS WAS WRITTEN AND THAT IS A STATE, NOT A RULE** — `gh run
+   list --branch main` is the answer, and `DEC-110` d6's hold on the merged item lifts when the next code
+   merge greens `main`. ⛔ **Do not write a colour here.**
    ⚠⚠ **DISCRIMINATE BY SIGNATURE BEFORE ATTRIBUTING ANY RED**: `DEF-109` is `Acmp.Api.Tests` alone with
    scattered 100-second `HttpClient` timeouts and every other suite green and fast; `DEF-121`/`DEF-108` are
    Integration container crashes carrying `lsasrv`/`AppLoader` frames. **They are different families and
