@@ -44,6 +44,64 @@ async function switchToArabic(page: Page): Promise<void> {
   await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
 }
 
+/*
+ * ROUTE COVERAGE (operator decision, 2026-09-01, after DEF-126).
+ *
+ * ⛔ THE GAP THIS CLOSES WAS FOUND BY ACCIDENT AND IS STRUCTURAL. DEF-126 surfaced because /meetings had
+ * NO accessibility test at all — an EXISTING route, not a new one. DW-071's trigger fires "whenever a new
+ * route ships", so every route that shipped before that trigger was written is outside it by construction.
+ * Measured against App.tsx's route tree: 46 Route declarations, of which this spec reached five.
+ *
+ * WHY ONE TEST PER LOCALE RATHER THAN ONE PER ROUTE. An audit wants the WHOLE picture from one run: a
+ * per-route test stops the suite at the first offender and each CI cycle then reveals exactly one more.
+ * Collecting a route→violations map and asserting it empty names every offending route at once, which is
+ * what makes a single cycle worth its twenty minutes.
+ *
+ * ⚠ WHAT IS DELIBERATELY NOT COVERED, so the list does not read as complete: PARAMETERISED routes
+ * (topics/:key, meetings/:key and its six children, decisions/:key, votes/:key, actions/:key, adrs/:key,
+ * invariants/:key, risks/:key, dependencies/:key, research/:key, wiki/:key, traceability/:type/:key) need
+ * seeded entities and a key per route, which is a different piece of work. `dashboard` is a Navigate to
+ * `/` and `*` is the not-found page.
+ */
+const SECRETARY_ROUTES = [
+  '/', // index — the dashboard
+  '/notifications',
+  '/session',
+  '/meetings/new',
+  '/decisions',
+  '/actions',
+  '/adrs',
+  '/invariants',
+  '/risks',
+  '/dependencies',
+  '/research',
+  '/wiki',
+  '/templates',
+  '/diagrams',
+  '/reports',
+  '/search',
+  '/members',
+];
+
+/**
+ * Visit each route, prove it actually rendered, and collect its violations.
+ *
+ * ⛔ THE `#main` WAIT IS THE SUBJECT CLAUSE (DEF-126, LL-041). Without it a route that redirected to
+ * login, or rendered nothing, would be swept and reported clean — the exact failure that let the calendar
+ * sweep pass over an empty grid for weeks. `#main` is AppShell's own landmark, so it is present only when
+ * the authenticated shell actually rendered the route.
+ */
+async function violationsByRoute(page: Page, routes: readonly string[]): Promise<Record<string, Violation[]>> {
+  const offenders: Record<string, Violation[]> = {};
+  for (const route of routes) {
+    await page.goto(route);
+    await expect(page.locator('#main')).toBeVisible();
+    const violations = await axeViolations(page);
+    if (violations.length > 0) offenders[route] = violations;
+  }
+  return offenders;
+}
+
 test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
   test('the app flips to RTL Arabic from the top-bar control', async ({ page }) => {
     await loginAs(page, 'secretary');
@@ -233,5 +291,42 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     await switchToArabic(page);
     await expect(page.locator('.mt-cal-event').first()).toBeVisible();
     expect(await axeViolations(page), 'Meetings calendar (AR/RTL) axe violations').toEqual([]);
+  });
+
+  // ---- route coverage (operator decision, 2026-09-01) ----
+  // These carry their own timeout: seventeen full page loads plus an axe pass each is well past
+  // Playwright's default, and a sweep that dies on the default timeout reports nothing at all.
+
+  test('every static Secretary-reachable route is axe-clean in English', async ({ page }) => {
+    test.setTimeout(300_000);
+    await loginAs(page, 'secretary');
+    const offenders = await violationsByRoute(page, SECRETARY_ROUTES);
+    expect(offenders, `axe violations by route (EN), ${SECRETARY_ROUTES.length} routes swept`).toEqual({});
+  });
+
+  test('every static Secretary-reachable route is axe-clean in Arabic/RTL', async ({ page }) => {
+    test.setTimeout(300_000);
+    await loginAs(page, 'secretary');
+    // Switch once on a route known to carry the toggle, then sweep — the locale is persisted, so
+    // flipping per route would add seventeen redundant round trips.
+    await page.goto('/backlog');
+    await switchToArabic(page);
+    const offenders = await violationsByRoute(page, SECRETARY_ROUTES);
+    expect(offenders, `axe violations by route (AR/RTL), ${SECRETARY_ROUTES.length} routes swept`).toEqual({});
+  });
+
+  // The admin area needs its own login: RequireRole gates /admin on `administrator` alone, so the
+  // Secretary the rest of this spec uses would be bounced and the sweep would prove nothing.
+  test('the administration route is axe-clean in both English and Arabic', async ({ page }) => {
+    test.setTimeout(120_000);
+    await loginAs(page, 'administrator');
+
+    await page.goto('/admin/users');
+    await expect(page.locator('#main')).toBeVisible();
+    expect(await axeViolations(page), 'Administration (EN) axe violations').toEqual([]);
+
+    await switchToArabic(page);
+    await expect(page.locator('#main')).toBeVisible();
+    expect(await axeViolations(page), 'Administration (AR/RTL) axe violations').toEqual([]);
   });
 });
