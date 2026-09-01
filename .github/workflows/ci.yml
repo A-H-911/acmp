@@ -47,7 +47,31 @@ jobs:
       - name: Build
         run: dotnet build acmp.sln -c Release --no-restore
       - name: Test + coverage
+        # DEF-121 — where ContainerStartup lifts a crashed container's own log directory to, so the
+        # failure that motivated it has evidence beyond the stdout Testcontainers already surfaced.
+        env:
+          ACMP_CRASH_ARTEFACT_DIR: ${{ github.workspace }}/crash-artefacts
         run: dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+
+      # DEF-121 clause (2) asks for a captured log that NAMES A CAUSE. On the recorded occurrence the
+      # container's stdout was captured and named none, while /var/opt/mssql/log — errorlog, the SQLPAL
+      # stack dump handle-crash.sh writes, and the core file it referenced by path — died with the
+      # container and was "NOT retrievable from the run". Without this step the clause waits on an
+      # experiment whose instrument cannot answer it.
+      #
+      # ⚠ `if: failure()` on purpose: a green run captures nothing, so uploading unconditionally would
+      # attach an empty artifact to every build and teach a reader to ignore it. `if-no-files-found:
+      # ignore` because most backend failures are ordinary test failures with no container involved —
+      # this step must not turn one red job into two.
+      - name: Container crash artefacts (DEF-121)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: container-crash-artefacts
+          path: ${{ github.workspace }}/crash-artefacts
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Coverage gate (ADR-0016 ≥95% lines, global + per-file)
         run: node scripts/check-coverage.mjs .
       - name: Vulnerable packages gate (High/Critical block — C-SUP-02 / OQ-027)
