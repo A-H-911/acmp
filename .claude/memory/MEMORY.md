@@ -26,6 +26,22 @@ declined on `LL-035`.
   HEAD:…/defects.jsonl`, then assert the new title **startswith** the old byte-for-byte (`LL-028`+`LL-001`).
 - ⚠ **`entity_upsert` FK trap:** `deferred_work.invariant_at_stake` is a **foreign key** — the JSONL prints
   `None` for null, and sending the string `"None"` rolls the whole batch back. Omit nullable fields.
+- ⭐⭐⭐ **SWEEP BEFORE THE INTERVIEW PAID A FOURTH TIME — AND *DISSOLVED* AN ITEM, which nobody counts.**
+  `DEF-087` reads stale (*"155 of 155 `wbs_items`"*; measured 155 of **187**) — but `DEC-068` d2 ruled it
+  fixed-FORWARD-only with the 155 historical rows deliberately unbackfilled, so 155 NULL is the **intended
+  steady state** and a repair would have reversed an operator decision. ⛔ **Sweep the DECISION register for
+  a row's id before calling its numbers stale** (`LL-040`).
+- ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** — they ride onto the branch (package→`main`
+  direct, code→PR). Recovery without stash/reset: commit code on the branch, `git checkout main` (package
+  changes travel with you), commit+push there, then back to the branch and `git rebase main`.
+- ⭐⭐ **DEF-121's INSTRUMENT: Ryuk does NOT reap before you can copy.** A container that exits non-zero stays
+  `exited`, and `docker cp <id>:/path` reads it out — the capture line prints *before* Testcontainers'
+  `Delete Docker container`. ⚠ `docker cp`, **not** `ReadFileAsync`: the core file's name is timestamped.
+  ⚠ `StartOrFailFastAsync`'s `when (…TimeoutException…)` filter let a **crashed** container through uncaught
+  — move the filter *inside* the catch and rethrow **unwrapped**, because the register discriminates
+  `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`) on the type itself.
+- ⚠ **Coverage does not touch `tests/`** — coverlet's `IncludeTestAssembly` defaults false, so a new helper
+  under `tests/` carries no per-file ≥95% pressure (`LL-031` does not fire there).
 - ⛔ **THE FORTY-EIGHTH was mine and is the THIRD IN A ROW of its class** — `prm-next.md` item 1 still said
   *"DIAGNOSE `DEF-109`"* in the very commit whose message says DIAGNOSED. **A briefing on HOW is a
   description too**, and the FORTY-FIFTH's rule (*never describe an item*) did not read as covering it.
@@ -38,9 +54,7 @@ wrong subject. The FORTY-SECOND fixed two such sites in the kickoff block and **
 went where the error was REPORTED, not where the pattern LIVED (the FORTY-SIXTH). `entity_query("slice",
 status="Approved")` resolves it without naming one. ⚠ `count-prompt-ids.py` cannot see this — the id is real
 and its status correct.
-⛔ **`LL-041`–`LL-044` ARE APPROVED AND PINNED, SO THEY ALREADY BIND FROM THE TOOL-OWNED NOTE — the
-four-bullet restatement that stood here is DELETED, not refreshed. Two sources for one instruction is
-how the wrong one gets read; this block's own header said *not restated here* while restating them.
+⛔ **`LL-041`–`LL-044` bind from the tool-owned note; the restatement here was DELETED, not refreshed.**
 ⚠ **`ADR-0045`**: `INV-014` names the px literals AND `AA` in ONE statement, so where a `.dc.html` cannot
 satisfy both, **AA governs** — minimum change to conformance, nothing more.
 
@@ -130,10 +144,11 @@ record it as an override, so do not read it as agreement about HOW.
 - ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM** —
   activating a `DW-` row → check its requirement in the same breath (`LL-042` is the `SC-`/`WBS-` twin).
   ⚠ `assumptions-current`'s field is a FUTURE due date; more will redden and that is the control working.
-  ⛔ `DEF-087` untouched. ⚠ **Measuring inside the set you hold is not measuring the register** (said 4; 8).
+  ⚠ **Measuring inside the set you hold is not measuring the register** (said 4; 8). ⛔ **`DEF-087` is not
+  "untouched" — it is RULED** (`DEC-068` d2, fixed-forward-only); see the 2026-09-02 block.
 ★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
-enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after
-a pipe, and production's reconciled state.
+enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after a
+pipe, production's reconciled state.
 
 ## Earlier 2026-08 — durable findings only
 
@@ -165,22 +180,19 @@ a pipe, and production's reconciled state.
 - [A static file cannot configure a live realm](a-static-file-cannot-configure-a-live-realm.md) — `realm-export.json` reaches **fresh stacks only**; `reconcile.sh` is the only seam to prod/UAT.
 - [Write the handoff LAST](write-the-handoff-last.md) — it found `DEF-053`/`DEF-054` last time. Stamp superseded files with ⛔ immediately.
 - [Commit package writes before git ops](commit-package-writes-before-git-ops.md) · [Tamheed stale .lock + PID reuse](tamheed-stale-lock-pid-reuse.md) · [Tamheed data repair](tamheed-data-repair.md) · [migration history](tamheed-migration-reverted.md)
-- [Localhost CI hides load races](localhost-ci-hides-load-races.md) · [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) · [Run CI gates locally pre-push](ci-gates-run-locally-pre-push.md) · [Always stage .claude/memory in commits](always-stage-claude-memory-in-commits.md)
+- [Localhost CI hides load races](localhost-ci-hides-load-races.md) · [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) · [CI gates locally pre-push](ci-gates-run-locally-pre-push.md) · [Always stage .claude/memory](always-stage-claude-memory-in-commits.md)
 - [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — ≥95% FE+BE + adversarial E2E. ⚠ Playwright is **NOT UAT-only** (7 services + real Keycloak per PR) **but runs `KEYCLOAK_ADMIN_ENABLED=false`**, so it never touches the ADR-0038 write path.
 - [E2E local run (non-destructive)](e2e-local-run-nondestructive.md) — **`-p acmpe2e` ONLY**, never `npm run e2e:up`. · [Dev-stack rebuild pitfall](dev-stack-rebuild-pitfall.md) — **never `up --build`** the long-lived dev stack.
-- [Exact design fidelity + visual loop](exact-design-fidelity-visual-loop.md) · [A green suite is not a look](a-green-suite-is-not-a-look.md) — ⚠ the throwaway harness must import **only** the stylesheets the real route imports.
-- [Design: breadcrumb spacing](breadcrumb-spacing-rule.md) · [i18n parity ≠ completeness](i18n-parity-not-completeness.md) · [Web visual-verify cache busting](web-visual-verify-cache-busting.md)
+- [Exact design fidelity + visual loop](exact-design-fidelity-visual-loop.md) · [A green suite is not a look](a-green-suite-is-not-a-look.md) (⚠ the throwaway harness must import **only** the stylesheets the real route imports) · [breadcrumb spacing](breadcrumb-spacing-rule.md) · [i18n parity ≠ completeness](i18n-parity-not-completeness.md) · [visual-verify cache busting](web-visual-verify-cache-busting.md)
 - ⚠ **`.adm-detail-card` has no padding and clips its children** — a popover needs `.adm-card-overflow`. · **`userEvent.setup()` installs its own clipboard stub** — define a clipboard spy *after* it.
 - [User prefers simple English](user-prefers-simple-english.md) · [Phase prompt Standard Footer](phase-prompt-standard-footer.md) · [Install the schedule, not just the daemon](install-the-schedule-not-just-the-daemon.md) · [Arabic rename is a grammar rule](arabic-rename-grammar-not-substitution.md) · [A clean scan must prove it had a subject](scan-must-prove-it-had-a-subject.md) · [Guard the property, not the value](guard-the-property-not-the-value.md) · [The suite assumed a fresh database](e2e-assumes-a-fresh-database.md) · [The feature is often already half-built](check-before-building.md)
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`) — bolding breaks the G-PROGRESS gate. · **A new advisory can turn `main` red with no code change** (`GHSA-q939-rpr3-3284`). · **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — write mounted secrets unconditionally.
 
 ## ⚠ Unlinked topic files + the completed ladder
 
-**Named only so they are findable; current value NOT vouched for**: `absence-claims-need-untruncated-search`
-· `ask-every-time-never-bank-answers` · `audit-slice-literal-ac017` · `body-assertions-miss-the-envelope` ·
-`package-mechanics-proven-2026-08-18` · `reconciliation-and-voting-eligibility` ·
-`substring-checks-bind-to-prose` · `topic-prepare-ui-gap-d15` · `wbs233-csp-spike` · `wbs234-reclassify` ·
-`webex-coverage-gate-async-exclusion`. ⚠ **Re-run the inbound-link check after ANY compaction**
-(2026-08-29: 25 orphans, all `p*`/`keystone-*`/`ph5-*` ladder files — no non-ladder file orphaned).
-**The completed ladder P1–P19 + PH-5** lives in those `p*`/`keystone-*`/`ph5-*` files, all superseded by
-the package's slice rows — `ls` the directory when you need one. ⛔ Do not re-open them.
+**Findable by `ls`, current value NOT vouched for** — eleven unlinked topic files (`absence-claims-…`,
+`ask-every-time-…`, `audit-slice-literal-ac017`, `body-assertions-…`, `package-mechanics-2026-08-18`,
+`reconciliation-and-voting-eligibility`, `substring-checks-…`, `topic-prepare-ui-gap-d15`, `wbs233-csp-spike`,
+`wbs234-reclassify`, `webex-coverage-gate-async-exclusion`) plus **the completed ladder P1–P19 + PH-5** in the
+`p*`/`keystone-*`/`ph5-*` files, all superseded by the package's slice rows. ⛔ Do not re-open them.
+⚠ **Re-run the inbound-link check after ANY compaction** (2026-08-29: 25 orphans, all ladder files).
