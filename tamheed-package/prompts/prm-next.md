@@ -2119,9 +2119,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    refutation into a coin flip) and `LL-048` (a root-path tool names A path, never THE cause). ⛔ **WHETHER
    THEY BIND IS A STATUS AND IS NOT WRITTEN HERE** — `entity_query("lesson")` is the answer; a sentence
    reasoning from a row's state is the FORTY-THIRD's exact class and goes false at the next ceremony.
-   ⚠ **`main` WAS RED AT `f91bf705` WHEN THIS WAS WRITTEN AND THAT IS A STATE, NOT A RULE** — `gh run
-   list --branch main` is the answer, and `DEC-110` d6's hold on the merged item lifts when the next code
-   merge greens `main`. ⛔ **Do not write a colour here.**
+   ⛔⛔ **A COLOUR STOOD HERE AND IS DELETED, NOT REFRESHED** — the line said `main` was red at `f91bf705`,
+   which `DEC-112` d3's vehicle then falsified within the same session. `gh run list --branch main` is the
+   answer and a sentence here is not. **Never write a colour into this file**; cite a RUN ID or ask.
+   ⚠ **`DEC-110` d6's hold has been DISCHARGED once** — that is history, not a standing state, and what any
+   row's status is now comes from `entity_query`, never from here.
    ⚠⚠ **DISCRIMINATE BY SIGNATURE BEFORE ATTRIBUTING ANY RED**: `DEF-109` is `Acmp.Api.Tests` alone with
    scattered 100-second `HttpClient` timeouts and every other suite green and fast; `DEF-121`/`DEF-108` are
    Integration container crashes carrying `lsasrv`/`AppLoader` frames. **They are different families and
@@ -2197,7 +2199,12 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    on three legs at once, re-wiring is 189 edges nobody has scoped, and fixing only the three
    phantom-capability rows leaves 60 (`LL-035`). `G-TRACE` and `G-REL` PASS and are right to:
    **`G-REL` validates an edge's shape; no rule validates its claim.**
-2. **NO ITEM IS DONE-CLAIMED ON A RED TREE — `DEC-110` d6, AND ITS COST WAS ACCEPTED KNOWINGLY.** A
+2. **NO ITEM IS DONE-CLAIMED ON A RED TREE — `DEC-110` d6, AND ITS COST WAS ACCEPTED KNOWINGLY.**
+   ✅ **THE RULE HAS NOW BEEN EXERCISED END-TO-END ONCE AND IT WORKED**: an item sat `Approved` through a
+   red tree, `DEC-112` d3's PR greened `main`, and the item and its `DW-` row moved together in one batch
+   (`PE-779`). ⛔ **That is a worked example, NOT a statement of what is open** — which rows are where comes
+   from `entity_query`/`readiness_check` and from nowhere in this file.
+ A
    merged item whose merge-commit run is red stays `Approved` rather than moving to `Review`, however
    green its own suites were. ⚠ **THE STATED COST, recorded there rather than discovered here: an
    environmental defect with no diagnosis can hold a finished item, and its slice, indefinitely** — which
