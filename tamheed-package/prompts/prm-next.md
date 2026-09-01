@@ -161,25 +161,33 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
-⚠⚠⚠ **THE FORTY-SIXTH IS THE FORTY-SECOND'S OWN FIX APPLIED TO TWO SITES AND MISSED AT NINE — AND EVERY
+⚠⚠⚠ **THE FORTY-SIXTH IS THE FORTY-SECOND'S OWN FIX APPLIED TO TWO SITES AND MISSED AT THIRTEEN — AND EVERY
 ONE OF THE NINE WAS A COMMAND A FRESH SESSION WOULD HAVE RUN.** The FORTY-SECOND found two sentences in the
 kickoff block pointing at `SL-033` for *what is actually open*, measured that **`SL-033`'s `wbs-done` passes
 with zero entities**, and fixed both. **It did not sweep §6.** Nine further sites carried the literal command
-``readiness_check(scope="slice", id="SL-033")`` — at lines 395, 1459, 1588, 1614, 1636, 1651, 1767, 2096 and
-2203 — each introduced as *\"the live answer\"*, *\"the answer\"*, or *\"names every row still open\"*.
-`SL-033` has been `Implemented` since 2026-08-30. **Every one of them hands a fresh session a clean verdict
-about a finished slice**, which is the failure mode the FORTY-SECOND had just finished measuring.
+``readiness_check(scope="slice", id="SL-033")`` — each introduced as *\"the live answer\"*, *\"the answer\"*,
+or *\"names every row still open\"*. `SL-033` has been `Implemented` since 2026-08-30. **Every one of them
+hands a fresh session a clean verdict about a finished slice**, which is the failure mode the FORTY-SECOND
+had just finished measuring.
+⚠⚠ **THEN THE SWEEP'S OWN SCOPE WAS WRONG, AND THAT IS `LL-015` FIRING INSIDE THE ENTRY WRITTEN ABOUT IT.**
+The grep was keyed on `SL-033`, because `SL-033` is the id I had noticed, and it returned nine. **Widening
+it to ANY slice id returned FOUR MORE** — two on `SL-034` and two on `SL-032`, both also `Implemented`,
+including one reading *\"`readiness_check(scope=\"slice\", id=\"SL-034\")` is the answer that cannot go
+stale\"*. **Thirteen sites, not nine.** A sweep keyed on the instance you happened to see measures that
+instance, never the pattern; the fix is to key on the SHAPE — grep for the `scope=\"slice\"` ARGUMENT rather than for any
+particular slice, which is the same length and four sites wider. ⚠ **Three MORE were in the numbered list and item 2's slate command naming the
+LIVE slice** — not stale yet, and therefore exactly how the other thirteen were born.
 ⭐⭐ **THIS IS THE TWENTY-THIRD'S LESSON AT SCALE: A CORRECTION APPLIED TO SOME ARTIFACTS AND NOT THEIR
 SIBLINGS LEAVES THE SURVIVORS AS THE ONES THE NEXT SESSION READS** — and here the survivors outnumbered the
 fixed copies four to one. ⚠ **The fix went where the error was REPORTED, not where the pattern LIVED.** The
 FORTY-SECOND was found by reading the kickoff block, so the kickoff block is what got swept.
-⛔ **All nine are now the no-slice form** — `entity_query("slice", status="Approved")` then
+⛔ **All thirteen are now the no-slice form, and so are the three that named the LIVE slice** — `entity_query("slice", status="Approved")` then
 `readiness_check` on the id it returns. **Never write a slice id into a command in this file**; the id is
 what rots, and the query that resolves it never does.
 ⚠ **Found by a full read at session close, not by any instrument.** `count-prompt-ids.py` resolves ids and
 statuses and would report `SL-033: Implemented` — **correctly**, because the id is real and its status is
 right. Nothing mechanical here can see that a CORRECT id inside a CORRECT command points at the wrong
-SUBJECT. ⚠ **Counted once, family of nine, on the FIFTEENTH's and TWENTY-EIGHTH's precedent**, and counted
+SUBJECT. ⚠ **Counted once, family of thirteen, on the FIFTEENTH's and TWENTY-EIGHTH's precedent**, and counted
 separately from the FORTY-SECOND because these survived that pass and rode into every commit since.
 ⚠ **Not an escape** — no commit message carries the command.
 
@@ -399,7 +407,7 @@ stated, the ordinal was assigned, the register name was given — and the very n
 that pass carried a fresh inline status. The THIRTY-FIRST already recorded a remedy failing to reach the
 section it was about; this is the same shape at a distance of twenty lines instead of eleven hundred.
 ⭐⭐ **THE ONLY FORM THAT DOES NOT ROT IS THE COMMAND.** Not a fresher status, not a status with a date
-attached — `readiness_check(scope="slice", id="SL-034")`. ⭐ **AND THE MECHANICAL HABIT THAT CATCHES IT:
+attached — `readiness_check` on the live slice, resolved by `entity_query("slice", status="Approved")`. ⭐ **AND THE MECHANICAL HABIT THAT CATCHES IT:
 after writing ANY merge block here, grep this file for `— your verdict` and for `is at \`Review\`` before
 committing.** Neither is an id and neither is a status in the `(Status)` form the prose checker looks for,
 so both mechanical passes run clean straight over it — the THIRTY-FIRST's three blindnesses, again.
@@ -1966,7 +1974,8 @@ false because the work COMPLETED — that is an outcome arriving, which this sec
 e2e leg the row demanded.** `DEC-090` d1 chose **`aspnet:10.0-noble-chiseled-extra`**; d2 replaced the
 shell healthcheck with `Acmp.HealthProbe`. Same source, two bases: **326 MB → 258 MB (−21%)**, application
 CVEs **75 → 11 (−85%)**, zero criticals either side. ⛔ A lifecycle status stood here and it was the
-THIRTY-NINTH; `readiness_check(scope="slice", id="SL-034")` is the answer that cannot go stale.
+THIRTY-NINTH; `readiness_check` on the LIVE slice is the answer that cannot go stale — and naming a
+slice id in it, as this line once did, is the FORTY-SIXTH.
 ⭐⭐ **THE SPIKE FALSIFIED WHAT THIS FILE PREDICTED, AND THE CORRECTION IS THE VALUABLE PART.** A no-ICU
 base does **NOT** throw at runtime here. It starts, exits 0, and silently enters invariant mode, throwing
 only when a non-invariant culture is **touched** — and ACMP's API touches none (all 10 `CultureInfo` uses
@@ -2537,7 +2546,7 @@ a block; the live slice is whatever `entity_query("slice", status="Approved")` r
 action is the numbered list under `START HERE`.**
 
 **`PH-7` → `SL-032`**, four small activated rows in `DEC-068` d1's order. **Measure the statuses; do not
-trust this list** — `readiness_check(scope="slice", id="SL-032")`.
+trust this list** — `readiness_check` on the live slice (`entity_query("slice", status="Approved")`).
 
 - ✅ **`WBS-23.1` / `DW-061`** — mobile notice. PR #301 → `78b5ca2`, `AC-140` Met (`AV-218`).
 - ✅ **`WBS-23.2` / `DW-040`** — drag-to-reprioritize. PR #302 → `145d9bf`, `AC-141` Met (`AV-219`).
@@ -2548,7 +2557,7 @@ trust this list** — `readiness_check(scope="slice", id="SL-032")`.
   pre-build keyword sweep found **no requirement anywhere** covering reclassification, and `DEC-070` +
   `SC-031` created `FR-164` before the build could be recorded. **Read `PE-583`.**
   ⚠⚠ **CLOSING `23.4` DOES NOT MAKE `SL-032` READY BY ITSELF.** Slice-scope `wbs-done` also names
-  **`WBS-23`, the PARENT** — check with `readiness_check(scope="slice", id="SL-032")`. Precedent from
+  **`WBS-23`, the PARENT** — check with `readiness_check` on the slice that holds it. Precedent from
   `WBS-21` and `WBS-22`: the parent goes `Implemented` once every child is. ⚠ **The SLICE's own
   `Implemented` is the OPERATOR's verdict, not yours** — done-claimed is `Review`, and the ceremony is
   `prompts/slice-review.md`.
