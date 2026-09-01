@@ -64,3 +64,22 @@ ACMP_ENV_FILE=/opt/acmp/deploy/.env.cloud
 # is deliberately stopped for days, or the check becomes the noise it exists to avoid.
 @reboot        cd /opt/acmp && sleep 120 && deploy/scripts/check-backup-freshness.sh >> /var/log/acmp-backup.log 2>&1
 0 9 * * *      cd /opt/acmp && deploy/scripts/check-backup-freshness.sh >> /var/log/acmp-backup.log 2>&1
+
+# CONTAINER HEALTH (WBS-26.4 / SC-042, from DW-091). Answers "is anything sitting unhealthy RIGHT NOW?",
+# which the boot assertions cannot ask because they only ever run at boot. up.sh's `up -d --wait` and
+# 08-bootstrap-box.sh's wait_healthy both DO consume the healthcheck's verdict — at start-up. After that
+# nothing observes a health transition: DEF-079 measured what `condition: service_healthy` cost (a 30s blip
+# in SQL Server, Hangfire or object storage stops a dependent from starting at all), put it back to the
+# operator, and they chose to keep the signal and drop the gate. The signal has had no reader since.
+#
+# ⛔ NO @reboot LINE, AND THE ABSENCE IS DELIBERATE — TWO SEPARATE REASONS. (1) Boot is the one moment the
+# verdict IS already consumed, twice, so an @reboot check would duplicate a guard that exists. (2) Docker
+# reports `starting` during a healthcheck's start_period and this script counts `starting` as NOT healthy —
+# correct for steady state, a guaranteed false positive at boot. An alert that cries wolf every cold start
+# is the noise OQ-067 rejected, and it would train the operator to ignore the one that matters.
+#
+# Every 15 minutes: fast enough that an unhealthy container is noticed within a quarter hour, slow enough
+# that a genuine outage produces four notifications an hour rather than sixty. It emits a
+# `Deploy.ContainerUnhealthy` CLEF event to Seq (the notification path that exists in BOTH topologies —
+# on-prem has no SNS) and additionally publishes to ACMP_ALERT_TOPIC_ARN when one is configured.
+*/15 * * * *   cd /opt/acmp && deploy/scripts/check-container-health.sh -f deploy/docker-compose.cloud.yml --env-file deploy/.env.cloud >> /var/log/acmp-health.log 2>&1

@@ -111,6 +111,20 @@ jobs:
       - name: The one-shot convergence guard actually refuses (DEF-054)
         run: sh deploy/scripts/assert-oneshot.test.sh
 
+      # WBS-26.4 (DW-091 / SC-042). The api healthcheck's verdict had no STEADY-STATE consumer: both boot
+      # paths do assert it (up.sh's `up -d --wait`, and 08-bootstrap-box.sh's wait_healthy over six
+      # services, which exits 1), but after boot nothing observes a health TRANSITION — DEF-079 dropped the
+      # interlock by operator decision and kept the signal, so a probe that starts failing at 03:00 changes
+      # nothing and no job goes red.
+      #
+      # check-container-health.sh closes that WITHOUT restoring the interlock: it runs beside the stack on
+      # a schedule and cannot fail it. This step runs its FORCED-REFUSAL suite, not the script itself —
+      # `docker` and `curl` are stubbed on PATH so every branch is reachable with no runtime, exactly as
+      # assert-oneshot.test.sh does. A guard that always returns 0 is indistinguishable from a working one
+      # on a healthy stack, which is the whole reason this family of defects exists.
+      - name: The container-health check actually refuses, and tells (WBS-26.4)
+        run: sh deploy/scripts/check-container-health.test.sh
+
       # WBS-26.3 (DW-090 / NFR-054). NFR-054's own verification method names a CI check — "docker image
       # inspect after build; assert size <= 500 MB; base image layer verified" — and measured across all
       # three workflow files and every script, NOTHING asserted either half. The requirement's substance has
