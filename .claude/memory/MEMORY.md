@@ -6,7 +6,12 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `main` still red at `f91bf705`
+## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `DEC-112` interview · PR `#339` merged
+
+⛔⛔ **A COLOUR STOOD IN THIS HEADING (*`main` still red at `f91bf705`*) AND MY OWN SESSION FALSIFIED IT** —
+`52d89a73` greened `main` (CI `33568749035`, Security `33568749019`), lifting `DEC-110` d6's hold, so
+`WBS-26.5`→`Review` and `DW-086`→`Done` moved in one batch. **Never write a CI colour into durable prose:**
+`gh run list --branch main` is the answer, and a RUN ID can't be attributed to the wrong tree (`LL-036`).
 
 ★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
 before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
@@ -42,9 +47,8 @@ declined on `LL-035`.
   `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`) on the type itself.
 - ⚠ **Coverage does not touch `tests/`** — coverlet's `IncludeTestAssembly` defaults false, so a new helper
   under `tests/` carries no per-file ≥95% pressure (`LL-031` does not fire there).
-- ⛔ **THE FORTY-EIGHTH was mine and is the THIRD IN A ROW of its class** — `prm-next.md` item 1 still said
-  *"DIAGNOSE `DEF-109`"* in the very commit whose message says DIAGNOSED. **A briefing on HOW is a
-  description too**, and the FORTY-FIFTH's rule (*never describe an item*) did not read as covering it.
+- ⛔ **THE FORTY-EIGHTH was mine, THIRD IN A ROW of its class**: `prm-next.md` item 1 still said *"DIAGNOSE
+  `DEF-109`"* in the very commit whose message says DIAGNOSED. **A briefing on HOW is a description too.**
 
 ## ★★★ 2026-09-01 · four PRs merged · **`LL-041`–`LL-044` now BIND — read them, they are not restated here**
 
