@@ -2,6 +2,7 @@
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
+using Acmp.Modules.Meetings.Application.Features.GetAgendaProjection;
 using Acmp.Modules.Meetings.Application.Features.GetMeetingDetail;
 using Acmp.Modules.Meetings.Application.Features.GetMeetings;
 using Acmp.Modules.Meetings.Application.Features.GetRecordingUrl;
@@ -34,6 +35,19 @@ public static class MeetingsEndpoints
             return meeting is null ? Results.NotFound() : Results.Ok(meeting);
         });
 
+        // WBS-26.5 / DW-086 — which topics sit on which day, for the backlog calendar's month grid.
+        //
+        // ⚠ A LITERAL SEGMENT, SO IT CANNOT BE SWALLOWED BY "/{key}" ABOVE. ASP.NET routing prefers a
+        // literal over a parameter, and no meeting key can be "agenda-projection" anyway: keys are
+        // MTG-YYYY-###.
+        //
+        // ⛔ THIS IS THE ANSWER TO "SHOW TOPICS IN THE GRID", AND FANNING /meetings/{key} ACROSS THE
+        // MONTH IS NOT. DW-086 forbids it by name — that is DEF-104's N+1 shape, over a payload that
+        // also carries attendance, discussions and the recording.
+        group.MapGet("/agenda-projection", async (DateTimeOffset from, DateTimeOffset to,
+            ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new GetAgendaProjectionQuery(from, to), ct)));
+
         // FR-056: upload a meeting recording file (multipart). Size/MIME validated in the handler; Secretary/Chairman.
         group.MapPost("/{key}/recording", async (string key, IFormFile file, ISender sender, CancellationToken ct) =>
         {
@@ -48,7 +62,7 @@ public static class MeetingsEndpoints
               new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(RecordingUploadMaxBytes),
               new Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute { MultipartBodyLengthLimit = RecordingUploadMaxBytes });
 
-        // Playback: mint a short-lived presigned MinIO URL for an uploaded recording (any committee member).
+        // Playback: mint a short-lived presigned MinIO URL for an uploaded recording (Chairman, Secretary, Auditor).
         group.MapGet("/{key}/recording/url", async (string key, ISender sender, CancellationToken ct) =>
         {
             var url = await sender.Send(new GetRecordingUrlQuery(key), ct);

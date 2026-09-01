@@ -15,11 +15,16 @@ import { Calendar } from './Calendar';
  * What is new is the markers (FR-035 / DW-037). The dates come from the MEETINGS API — the
  * topic read model carries no scheduled date at all — so the API is mocked at that boundary.
  */
-vi.mock('../../api/meetings', () => ({ useMeetings: vi.fn(), useMeetingDetail: vi.fn() }));
-import { useMeetings, useMeetingDetail } from '../../api/meetings';
+vi.mock('../../api/meetings', () => ({
+  useMeetings: vi.fn(),
+  useMeetingDetail: vi.fn(),
+  useAgendaProjection: vi.fn(),
+}));
+import { useMeetings, useMeetingDetail, useAgendaProjection } from '../../api/meetings';
 
 const meetingsMock = useMeetings as unknown as Mock;
 const detailMock = useMeetingDetail as unknown as Mock;
+const projectionMock = useAgendaProjection as unknown as Mock;
 
 /** A meeting on a fixed day of the CURRENT month, so the default view always contains it. */
 function meetingOn(day: number, over: Record<string, unknown> = {}) {
@@ -48,8 +53,10 @@ const agenda = (items: { topicId: string; topicKey: string; topicTitle: string }
 beforeEach(() => {
   meetingsMock.mockReset();
   detailMock.mockReset();
+  projectionMock.mockReset();
   meetingsMock.mockReturnValue({ data: [] });
   detailMock.mockReturnValue({ data: undefined, isLoading: false });
+  projectionMock.mockReturnValue({ data: [] });
 });
 
 function setup() {
@@ -176,5 +183,53 @@ describe('Calendar markers (FR-035)', () => {
     setup();
     await user.click(screen.getByRole('button', { name: /Committee session 12/ }));
     expect(screen.getByText(i18n.t('topics.calendar.noTopics'))).toBeInTheDocument();
+  });
+});
+
+/*
+ * WBS-26.5 / DW-086 — TOPIC CHIPS IN THE GRID, keyed per the reference (DEC-108 d1) and nested under
+ * the meeting chip rather than replacing it (DEC-109 d3), because AC-145 is Met and immutable and its
+ * Then clause requires that meeting chip.
+ */
+describe('the agenda projection in the month grid', () => {
+  it('renders a topic KEY chip for each topic on a scheduled meeting', () => {
+    const meeting = meetingOn(12);
+    meetingsMock.mockReturnValue({ data: [meeting] });
+    projectionMock.mockReturnValue({
+      data: [{
+        meetingId: meeting.id,
+        meetingKey: meeting.key,
+        scheduledStart: meeting.scheduledStart,
+        items: [{ topicId: 't1', topicKey: 'TOP-2026-007', topicTitle: 'An open topic' }],
+      }],
+    });
+
+    setup();
+
+    // THE MEETING CHIP SURVIVES — asserted first, because removing it would falsify AC-145 and every
+    // assertion below would still pass.
+    expect(screen.getByRole('button', { name: new RegExp(meeting.title, 'i') })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'TOP-2026-007' })).toBeInTheDocument();
+  });
+
+  it('renders a localized placeholder, and NOT a link, for a redacted topic', () => {
+    const meeting = meetingOn(12);
+    meetingsMock.mockReturnValue({ data: [meeting] });
+    projectionMock.mockReturnValue({
+      data: [{
+        meetingId: meeting.id,
+        meetingKey: meeting.key,
+        scheduledStart: meeting.scheduledStart,
+        // The server redacts a Restricted topic to EMPTY key and title rather than sending an English
+        // word, because that would break the EN+AR guardrail. Mapping it is the client's job.
+        items: [{ topicId: 't2', topicKey: '', topicTitle: '' }],
+      }],
+    });
+
+    setup();
+
+    expect(screen.getByText(/restricted/i)).toBeInTheDocument();
+    // ⛔ THE POINT OF THE CASE: there is nothing the caller may open, so it must not be a link.
+    expect(screen.queryByRole('link', { name: /restricted/i })).not.toBeInTheDocument();
   });
 });

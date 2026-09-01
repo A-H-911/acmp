@@ -82,3 +82,23 @@ public sealed record MeetingDetailDto(
     IReadOnlyList<AttendanceDto> Attendance,
     IReadOnlyList<DiscussionDto> Discussions,
     RecordingDto? Recording);
+
+// WBS-26.5 / DW-086 — THE CALENDAR PROJECTION. Deliberately the narrowest shape that answers "which topics
+// sit on which day": the meeting's identity, its date, and its agenda's topic ids/keys/titles. Nothing else.
+//
+// ⚠ WHY THIS EXISTS RATHER THAN REUSING MeetingDetailDto. /meetings carries no topic ids and /meetings/{key}
+// carries far too much — attendance, discussions and the recording — so rendering a month from it would fan
+// one heavy detail request per meeting. That is DEF-104's N+1 shape, and DW-086 forbids it by name.
+//
+// ⚠ TopicKey and TopicTitle GO OUT EMPTY FOR A RESTRICTED TOPIC, exactly as AgendaItemDto does. A server-side
+// English word would break the EN+AR guardrail; the SPA maps empty to its own localized placeholder.
+public sealed record AgendaProjectionItemDto(
+    Guid TopicId,
+    string TopicKey,
+    string TopicTitle);
+
+public sealed record MeetingAgendaProjectionDto(
+    Guid MeetingId,
+    string MeetingKey,
+    DateTimeOffset ScheduledStart,
+    IReadOnlyList<AgendaProjectionItemDto> Items);

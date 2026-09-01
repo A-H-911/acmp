@@ -14,6 +14,10 @@ import { useBacklog } from '../../api/topics';
 vi.mock('../../api/meetings', () => ({
   useMeetings: () => ({ data: [] }),
   useMeetingDetail: () => ({ data: undefined, isLoading: false }),
+  // WBS-26.5: the calendar now also reads the agenda projection. A vi.mock factory REPLACES the whole
+  // module, so an export missing here is undefined at call time — and, exactly as the note above
+  // records, that would fail only in the FULL run, because nothing else in this file mounts it.
+  useAgendaProjection: () => ({ data: [] }),
 }));
 
 const mockBacklog = useBacklog as unknown as Mock;

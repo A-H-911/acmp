@@ -109,6 +109,43 @@ export function useMeetings() {
   });
 }
 
+/**
+ * WBS-26.5 / DW-086 — which topics sit on which day, for the backlog calendar month grid.
+ *
+ * ⛔ THIS EXISTS SO THE GRID NEVER FANS `useMeetingDetail` ACROSS THE MONTH. That is DEF-104's N+1
+ * shape and DW-086 forbids it by name: each detail response also carries attendance, discussions and
+ * the recording, so it is a heavy payload fetched for a handful of string fields.
+ *
+ * ⚠ `topicKey` AND `topicTitle` ARRIVE EMPTY FOR A RESTRICTED TOPIC, the same convention the agenda
+ * DTO uses. The server will not send an English word for it, because that would break the EN+AR
+ * guardrail — mapping empty to a localized placeholder is the CLIENT's job, and `Calendar.tsx` does it.
+ */
+export interface AgendaProjectionItem {
+  topicId: string;
+  topicKey: string;
+  topicTitle: string;
+}
+
+export interface MeetingAgendaProjection {
+  meetingId: string;
+  meetingKey: string;
+  scheduledStart: string;
+  items: AgendaProjectionItem[];
+}
+
+/** `from` inclusive, `to` exclusive, both ISO 8601. The server refuses a range it considers too wide
+ *  rather than narrowing it silently — a clamp would be DEF-103's shape. */
+export function useAgendaProjection(from: string | undefined, to: string | undefined) {
+  return useQuery({
+    queryKey: ['meetings', 'agenda-projection', from, to],
+    queryFn: () =>
+      api<MeetingAgendaProjection[]>(
+        `/meetings/agenda-projection?from=${encodeURIComponent(from!)}&to=${encodeURIComponent(to!)}`,
+      ),
+    enabled: !!from && !!to,
+  });
+}
+
 export interface ScheduleMeetingInput {
   title: string;
   chairUserId: string;
