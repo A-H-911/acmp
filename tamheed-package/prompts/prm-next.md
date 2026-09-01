@@ -37,8 +37,12 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # 100-second `HttpClient` timeouts, every other suite green
                                              # and fast. `DEF-121`/`DEF-108` are Integration container
                                              # crashes with `lsasrv`/`AppLoader` frames. `DEC-110` d1
-                                             # ruled that a `DEF-109` red is INVESTIGATED, not re-run —
-                                             # and a re-run is the operator's call, never yours.
+                                             # ruled that a `DEF-109` red is INVESTIGATED, not re-run,
+                                             # and a re-run is the operator's call, never yours. ⚠ BUT
+                                             # IT IS DIAGNOSED NOW (`DEC-111` d1), SO A FURTHER RED IS
+                                             # NOT A FOURTH INVESTIGATION: it wants clause (2) of the
+                                             # end condition — a CAPTURED ARTEFACT naming a cause, and
+                                             # the occurrence appended to the row. Read the row.
                                              # (trap 23). ⚠ For a `pull_request` event GitHub evaluates
                                              # paths-ignore against the WHOLE PR diff, so on an open PR
                                              # even a package-only push re-runs everything and CANCELS
@@ -1695,7 +1699,9 @@ popover (found by reading CSS), and the panel rendered OFF-SCREEN in **both** di
 ⚠⚠ **NEW: `DEF-109`** — `Acmp.Api.Tests` ran **20m35s / 17 failed** between two normal runs (3m18s and
 2m37s, 368/368), all 100-second `HttpClient` timeouts across TWELVE unrelated classes, on a backend tree
 byte-identical to both. **The mitigation cannot be credited: the run BEFORE it was also green.**
-⛔ **Do not re-run a red into silence** — append a second occurrence to `DEF-109` instead.
+⛔ **Do not re-run a red into silence** — append the occurrence to `DEF-109` instead. ⚠ **AN ORDINAL
+STOOD HERE (*"a second occurrence"*) AND IS DELETED, NOT INCREMENTED** — the row's own occurrence list
+is the count, and `LL-016` is that an ordinal in prose is what no check can see.
 ⚠ **`DEF-110` EXISTS AND THIS FILE NEVER CARRIED IT** (added 2026-08-26, after the resume was written).
 `DEC-079` d2 carried it Open at medium — *record it, change nothing*, the `DEF-102` disposition for the
 `DEF-102` shape: the topic urgency SLA thresholds are a hardcoded `switch` (3/7/21) while `ASM-011` and
@@ -2102,15 +2108,17 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    the evidence, `DW-096` for the remedy, `DEC-111` for the operator's ruling. Read those; never a
    description of them here.**
    ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB.** `DEC-111` d2 declined a re-run at `f91bf705` and that is
-   COMPLIANCE with `DEC-077` d3, not an exception to it — **the override counter is UNCHANGED at two**
-   (`DEC-097` d2, `DEC-100` d2), and the standing note that a THIRD override reopens whether d3 still says
-   what the practice does is therefore not triggered. A re-run remains the operator's call alone.
+   COMPLIANCE with `DEC-077` d3, not an exception to it, so it does NOT advance the override count. ⛔ **NO
+   NUMBER IS WRITTEN HERE — the decision register is the count**, and a count inside a rule block is the
+   FORTY-FOURTH's folded member, already fixed once in this very block. The standing note is that a THIRD
+   override reopens whether d3 still says what the practice does. A re-run is the operator's call alone.
    ⚠ **WHAT THE DIAGNOSIS LICENCES AND WHAT IT DOES NOT**, because this is the half a later session will
    get wrong: the falsifiable claim is **retention tracks host count**, measured as retained MANAGED bytes
    after a forced full collection. **It licences NO claim that any remedy greens CI** (`LL-035`). Two
-   lessons came out of it and are `Proposed`, not binding until the operator confirms them: `LL-047` (an
-   instrument that cannot produce a meaningful NEGATIVE turns every refutation into a coin flip) and
-   `LL-048` (a root-path tool names A path, never THE cause).
+   lessons came out of it — `LL-047` (an instrument that cannot produce a meaningful NEGATIVE turns every
+   refutation into a coin flip) and `LL-048` (a root-path tool names A path, never THE cause). ⛔ **WHETHER
+   THEY BIND IS A STATUS AND IS NOT WRITTEN HERE** — `entity_query("lesson")` is the answer; a sentence
+   reasoning from a row's state is the FORTY-THIRD's exact class and goes false at the next ceremony.
    ⚠ **`main` WAS RED AT `f91bf705` WHEN THIS WAS WRITTEN AND THAT IS A STATE, NOT A RULE** — `gh run
    list --branch main` is the answer, and `DEC-110` d6's hold on the merged item lifts when the next code
    merge greens `main`. ⛔ **Do not write a colour here.**

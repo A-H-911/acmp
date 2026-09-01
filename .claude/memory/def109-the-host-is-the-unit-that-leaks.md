@@ -6,7 +6,7 @@ metadata:
 ---
 
 **`DEF-109` IS DIAGNOSED (2026-09-02, `DEC-111` d1) AND CARRIED, NOT FIXED.** Evidence `PE-771`,
-remedy `DW-096`, lessons `LL-047`/`LL-048` (both **Proposed** — not binding until confirmed).
+remedy `DW-096`, lessons `LL-047`/`LL-048` — ⛔ **`entity_query("lesson")` says whether they bind; no status is written here.**
 
 ⭐⭐⭐ **THE UNIT THAT LEAKS IS THE HOST.** Identical work — 80 requests — retains **137 MB over
 twenty `AcmpWebApplicationFactory` hosts and 8 MB over one**. Twenty disposed factories held only

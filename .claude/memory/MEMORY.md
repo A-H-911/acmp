@@ -13,14 +13,15 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
 forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
 declined on `LL-035`.
-- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`, Proposed).
+- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`).
   Working set on a 64 GB box cannot tell a leak from lazy collection, so `PE-769`'s null result was
   uninterpretable in BOTH directions. Use `GC.GetTotalMemory(true)` after a forced full collect.
-- ⭐⭐ **A ROOT-PATH TOOL NAMES *A* PATH, NEVER *THE* CAUSE** (`LL-048`, Proposed). `gcroot` named the rate
+- ⭐⭐ **A ROOT-PATH TOOL NAMES *A* PATH, NEVER *THE* CAUSE** (`LL-048`). `gcroot` named the rate
   limiter; removing it changed nothing, and stripping ALL of OpenTelemetry freed **zero** hosts. **Read the
   root COUNT first** (505 here); after two failed bisects, stop naming suspects and vary the QUANTITY.
-- ⚠⚠ **`DEC-077` d3's OVERRIDE COUNTER IS STILL TWO.** `DEC-111` d2 declined a re-run — that is compliance,
-  not a third override. ⛔ A third would reopen the rule; do not let a session mis-log this one as one.
+- ⚠⚠ **`DEC-111` d2 DECLINED A RE-RUN — THAT IS COMPLIANCE WITH `DEC-077` d3, NOT AN OVERRIDE**, so it does
+  not advance the count. ⛔ **No number here — the decision register is the count.** A third override would
+  reopen the rule; do not let a session mis-log this one as one.
 - ⚠ **A 14 KB hand-paste into `entity_upsert` is survivable IF you verify after:** `git show
   HEAD:…/defects.jsonl`, then assert the new title **startswith** the old byte-for-byte (`LL-028`+`LL-001`).
 - ⚠ **`entity_upsert` FK trap:** `deferred_work.invariant_at_stake` is a **foreign key** — the JSONL prints
@@ -115,8 +116,8 @@ record it as an override, so do not read it as agreement about HOW.
   presenter can open a topic attachment. ⚠ **`WithIdentityProvider()` is opt-in.**
 - ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`) — answer
   it BEFORE Phase 2 retention enforcement. ⚠ **Approved ACs are IMMUTABLE even against being marked
-  superseded** (`AC-147`). ⛔ **Never `PageSize.Clamp` an export.** ⚠ **`DEF-109`**: append an occurrence,
-  don't re-run a red into silence.
+  superseded** (`AC-147`). ⛔ **Never `PageSize.Clamp` an export.** ⚠ **`DEF-109`** is DIAGNOSED — a further red
+  wants clause (2)'s CAPTURED ARTEFACT and an appended occurrence, never a re-run.
 - ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate`
   · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` ·
   `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`.
