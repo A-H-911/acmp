@@ -166,7 +166,15 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     // a request and makes the case self-sufficient; the default slot is now the 15th of the CURRENT
     // month (scenario.ts), so it always lands in the month the grid opens on.
     const members = await apiMembers(page.request, bearer);
-    await apiScheduleMeeting(page.request, bearer, `A11y calendar sweep ${Date.now()}`, members[0]);
+    const meeting = await apiScheduleMeeting(page.request, bearer, `A11y calendar sweep ${Date.now()}`, members[0]);
+
+    // ⛔ AND AN AGENDA ITEM, BECAUSE WBS-26.5 PUT A NEW INTERACTIVE ELEMENT IN THE DAY CELL. The grid now
+    // renders a `.cal-topic` chip per agenda topic beneath the meeting chip, and those chips carry their
+    // own WCAG target-size obligation (ADR-0045). A meeting with NO agenda items renders zero of them, so
+    // this case would sweep the meeting chip, pass, and say nothing whatever about the new ones — LL-041's
+    // shape, and precisely the vacuous pass DEF-126 records this very test having had for weeks.
+    const topic = await apiPreparedTopic(page.request, bearer, `A11y calendar topic ${Date.now()}`, members[0]);
+    await apiAddAgendaItem(page.request, bearer, meeting.id, topic, members[0]);
 
     await page.goto('/backlog');
     await page.getByRole('button', { name: 'Calendar' }).click();
