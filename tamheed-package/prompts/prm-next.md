@@ -2118,15 +2118,20 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **RESOLVE THE LIVE SLICE, READ ITS `readiness_check`, THEN READ THESE ROWS BEFORE COMPOSING
-   ANYTHING: `DEF-121`, `DW-097`, `DEC-116`, `LL-052`.** ⛔ **What is at what status, and what is owed to
-   whom, is deliberately NOT written here** — `entity_query("slice", status="Approved")` then
-   `readiness_check(scope="slice", id=<that id>)`. ⚠ **`DEC-116` records an obligation the agent owes back
-   to the operator, and this sentence deliberately does not name it. Read the row.**
+1. ▶▶▶ **RESOLVE THE STATE; DO NOT READ THIS FILE FOR IT.** `entity_query("slice", status="Approved")`,
+   then `readiness_check` on the id it returns, then `readiness_check("package")`, then
+   `gh run list --branch main`. **Then read `DEF-121`, `DEC-117` and `LL-052`.** ⛔ **What is at what
+   status, what is still open, and what anyone owes anyone is deliberately NOT written here.**
    ⛔ **THIS ITEM NO LONGER SAYS *"there is nothing to build"*, AND THE DELETION IS THE POINT — THAT WAS THE
    FORTY-NINTH.** It was a measured claim when written and `DEC-116` d2 falsified it the same day by
    commissioning code. **A claim about what REMAINS is a status wearing a measurement's clothes**, which is
    the THIRTY-EIGHTH's rule arriving in the one place this file says the next action lives.
+   ⚠⚠ **AND THE REPLACEMENT FOR IT ROTTED WITHIN THE HOUR TOO, WHICH IS WHY THIS SENTENCE EXISTS.** The
+   rewrite read *"`DEC-116` records an obligation the agent owes back to the operator, and this sentence
+   deliberately does not name it"* — a careful, un-describing pointer, and `DEC-117` d2 discharged that
+   obligation before the file was handed on. **Not counted: it never reached a commit.** ⭐ **The lesson is
+   that even a pointer at an OBLIGATION is a claim about the present.** Point at rows and commands; never
+   at what is owed.
    ⚠ **`LL-005` BINDS: SWEEP BEFORE THE INTERVIEW, NEVER AFTER.** It has produced an agenda item the agent
    did not have on six consecutive rounds, and **twice now it has *DISSOLVED* an item that would otherwise
    have reached the operator as a real question** (`LL-050`, and `PE-792`). Build the slate with
