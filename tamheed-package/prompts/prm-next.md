@@ -118,6 +118,10 @@ merge-commit red PROSPECTIVELY instead of a later session tripping over it.
 ⛔ **DO NOT READ *"a fifth merged"* AS *"the slice is finished"*.** Merging is a repository fact; what a
 row's STATUS is, and whether `main` is green now, are not — `entity_query`, `readiness_check` and
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
+`DEC-111`–`DEC-115`, `DEF-128`, `DW-096`/`DW-097` and `LL-047`–`LL-050` were all recorded on 2026-09-02;
+`LL-047` and `LL-049` are Approved and **pinned**. ⛔ **`DEF-121`'s clause (2) HAS NOW FIRED AND IS STILL
+NOT SATISFIED** — the `DEC-112` d2 instrument captured a 10.8 MB artefact and nothing in it names a
+cause; `DEC-115` d2 declined to read a successful capture as a satisfied clause. Read the row.
 `DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
 `LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
@@ -164,6 +168,12 @@ file names.** ⚠⚠ **MEASURED, because this is the FORTY-SECOND's sharpest hal
 here sent you to `SL-033`, whose `wbs-done` **passes with zero entities**, so a fresh session would have
 concluded nothing was open while five `WBS-26.x` items sat in another slice. **A pointer at a finished
 slice does not fail loudly — it returns a clean answer about the wrong subject** (`LL-015`).
+⚠ **PR `#340` WAS OPENED 2026-09-02 FOR `DEF-128` (even calendar columns) AND WAS BLOCKED BY `DEF-121`'s
+SECOND OCCURRENCE** — CI run `33573023967`. `DEC-115` d1 left it blocked and declined all three
+alternatives (a third `DEC-077` d3 override, re-running while amending d3, and an administrator merge), so
+**that rule's override count is still TWO**. ⛔ **Whether `#340` is still open is `gh pr list`, not this
+sentence** — this paragraph explains WHY it existed, so that its presence is not the unexplained state the
+next line is about.
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
 that is a state nothing here describes.
 
