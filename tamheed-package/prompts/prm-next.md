@@ -118,10 +118,10 @@ merge-commit red PROSPECTIVELY instead of a later session tripping over it.
 ⛔ **DO NOT READ *"a fifth merged"* AS *"the slice is finished"*.** Merging is a repository fact; what a
 row's STATUS is, and whether `main` is green now, are not — `entity_query`, `readiness_check` and
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
-`DEC-111`–`DEC-115`, `DEF-128`, `DW-096`/`DW-097` and `LL-047`–`LL-050` were all recorded on 2026-09-02;
-`LL-047` and `LL-049` are Approved and **pinned**. ⛔ **`DEF-121`'s clause (2) HAS NOW FIRED AND IS STILL
-NOT SATISFIED** — the `DEC-112` d2 instrument captured a 10.8 MB artefact and nothing in it names a
-cause; `DEC-115` d2 declined to read a successful capture as a satisfied clause. Read the row.
+`DEC-111`–`DEC-116`, `DEF-128`, `DW-096`/`DW-097` and `LL-047`–`LL-052` were all recorded on 2026-09-02;
+`LL-047`, `LL-049` and `LL-052` are Approved and **pinned**. ⛔ **`DEF-121`'s clause (2) HAS FIRED AND IS
+STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two sessions said the
+captured artefact contained. Neither a successful capture nor a refuted hypothesis is a cause.
 `DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
 `LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
@@ -168,12 +168,12 @@ file names.** ⚠⚠ **MEASURED, because this is the FORTY-SECOND's sharpest hal
 here sent you to `SL-033`, whose `wbs-done` **passes with zero entities**, so a fresh session would have
 concluded nothing was open while five `WBS-26.x` items sat in another slice. **A pointer at a finished
 slice does not fail loudly — it returns a clean answer about the wrong subject** (`LL-015`).
-⚠ **PR `#340` WAS OPENED 2026-09-02 FOR `DEF-128` (even calendar columns) AND WAS BLOCKED BY `DEF-121`'s
-SECOND OCCURRENCE** — CI run `33573023967`. `DEC-115` d1 left it blocked and declined all three
-alternatives (a third `DEC-077` d3 override, re-running while amending d3, and an administrator merge), so
-**that rule's override count is still TWO**. ⛔ **Whether `#340` is still open is `gh pr list`, not this
-sentence** — this paragraph explains WHY it existed, so that its presence is not the unexplained state the
-next line is about.
+✅ **PR `#340` (`DEF-128`, even calendar columns) IS MERGED — SQUASHED TO `5ab0220b` ON 2026-09-02**,
+after `DEC-116` d2 rebased it and added the pixel assertion `DEC-114` d3 had declined. **Cited by RUN ID,
+which is the whole point** (`LL-036`): head `a6d45013` passed CI `33643459506`, Security `33643459492` and
+E2E `33643459543`. ⚠ **Its FIRST head `e8682094` failed CI `33573023967` on `DEF-121`, and that occurrence
+stays on the row** — a new sha is a new tree and never a re-run, so `DEC-077` d3's override count is
+untouched at TWO. ⛔ **Whether anything is open NOW is `gh pr list`, not this sentence.**
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
 that is a state nothing here describes.
 
@@ -187,7 +187,7 @@ happened. Otherwise the number would drift into a log of every edit and stop mea
 the failure it exists to warn about.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-eight** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **forty-nine** times, and **fourteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -201,6 +201,10 @@ will lie to you. **Point at the live check, do not quote it.** If you find this 
 ⚠⚠ **A STRUCTURAL CORRUPTION, NOT A STALE STATEMENT — SO IT IS DELIBERATELY *NOT* COUNTED, AND SAYING WHY MATTERS MORE THAN THE INSTANCE.** Editing item 2 on 2026-09-02 I inserted a paragraph between a sentence's opening word and its remainder, leaving a line containing only ` A` followed by *"merged item whose merge-commit run is red stays `Approved`"*. It reached several commits. **It is not tallied above**, because the counter's own definition is a statement that WAS TRUE, BECAME FALSE, and reached a commit — this one was never false, it was unreadable. ⛔ **Widening the counter to cover it would destroy the counter**, which is `LL-016`'s point about ordinals: a number that counts two different things measures neither.
 ⭐⭐ **WHAT IT DOES PROVE IS THE PRE-HANDOFF SWEEP'S RANGE.** That sweep exists for STALENESS — identifiers this session moved, read for what the hits CONCLUDE. It caught a **formatting** fault it was never designed to find, because the pass reads the numbered list end-to-end rather than grepping it. ⚠ **No instrument this file owns could have:** `count-prompt-ids.py` resolves ids and every id here was correct; the prose-status checker wants a `(Status)` form; the colour and slice-id greps key on tokens. **A garbled rule is invisible to every one of them and obvious to a reader.**
 ⚠ **The lesson for the next editor is narrow and mechanical:** when inserting into a numbered item, re-read the item's LAST line and the following item's FIRST line, because a Python `str.replace` anchored mid-sentence splits it silently and the diff looks clean.
+
+⚠⚠⚠ **THE FORTY-NINTH IS A *MEASURED* CLAIM ABOUT WHAT REMAINS, IN THE NUMBERED LIST, FALSIFIED THE SAME DAY BY THE OPERATOR RATHER THAN BY DRIFT — AND IT IS A FAMILY OF THREE.** Item 1 opened *"START WITH AN INTERVIEW. THERE IS NOTHING TO BUILD, AND THAT IS A MEASURED CLAIM RATHER THAN A SHRUG"*, with the reasoning that every open thread terminates in a ruling only the operator can give. **It was true, and it was carefully argued, and `DEC-116` d2 commissioned code within hours** — the operator took an option that BUILT something, which is precisely the move the sentence said no thread could produce. ⭐⭐ **THE SHAPE IS NEW HERE AND WORTH MORE THAN THE INSTANCE: the FORTY-FIFTH/SEVENTH/EIGHTH all rotted because the WORK moved. This one rotted because a DECISION moved, and no amount of care in the measurement could have protected it** — *there is nothing to build* is not a fact about the repository, it is a prediction about what the operator will choose. **A claim about what REMAINS is a status wearing a measurement's clothes** (the THIRTY-EIGHTH's rule, arriving in the numbered list).
+⚠ **TWO MORE IN THE SAME FAULT CLASS AS EACH OTHER, FOLDED IN UNDER ONE ORDINAL** on the FIFTEENTH's and TWENTY-EIGHTH's precedent — **a LESSON's lifecycle status written inline in prose, which is the THIRTY-FIRST's exact class and which that entry already forbade**: *"(`LL-051`, Proposed)"* in item 1, falsified by `DEC-116` d3 in the session that read it, and *"(`LL-039`, Proposed)"* further down, which has been Approved for longer and rode into every commit since. ⛔ **Both are now the bare id.** A status is a column; do not put one in a sentence.
+⚠ **Found by the pre-handoff sweep on the identifiers this session moved**, and the `LL-039` one only because the sweep was keyed on the SHAPE — a grep for `` (`LL-0NN`, Proposed|Approved) `` — rather than on the ids I happened to have touched. **Keying on the pattern instead of the instance returned one site I could not have predicted**, which is the FORTY-SIXTH's remedy paying on its first outing. ⚠ **Not an escape**: the log was grepped and no commit message asserts any of the three.
 
 ⚠⚠⚠ **THE FORTY-EIGHTH IS THE FORTY-SEVENTH'S FAULT CLASS FOR THE THIRD CONSECUTIVE TIME, IN THE SAME NUMBERED LIST, AND IT IS MINE — I WROTE THE COMMIT THAT FALSIFIED IT AND THE COMMIT MESSAGE SAYS SO.** Item 1 read *"▶▶▶ DIAGNOSE `DEF-109`"* followed by a briefing on how — `PE-768`/`PE-769`, the six eliminated candidates, the 5 GB working-set figure, and *"the next attempt needs a seam that fires while the provider is alive"*. **Every clause was true when written and all of it is finished work**: `DEC-110` d3 clause (1) is satisfied, the seam was built and proved to execute, and the store hypothesis it points at is REFUTED. A fresh session obeying item 1 would have re-run an investigation that has an answer.
 ⚠ **COUNTED, AND COUNTED HONESTLY.** The package commit `b54a42c6` — whose own message is *"DEF-109 DIAGNOSED"* — was pushed with item 1 still saying `DIAGNOSE`. That is a false statement reaching a commit where a fresh session could read it, which is exactly what this counter counts. **Under-counting my own would defeat the instrument**, and the FORTY-THIRD's family already established that a session can falsify its own prose within the session.
@@ -2114,26 +2118,37 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **START WITH AN INTERVIEW. THERE IS NOTHING TO BUILD, AND THAT IS A MEASURED CLAIM RATHER THAN A
-   SHRUG.** Every open thread terminates in a ruling that is the operator's alone, so no amount of agent
-   effort advances one. ⛔ **What is at what status is deliberately NOT written here** — resolve the live
-   slice with `entity_query("slice", status="Approved")`, read its `readiness_check`, and read these rows
-   before composing anything: **`DEF-121`, `DEF-128`, `DW-097`, `LL-051`, and `DEC-113`/`DEC-114`/`DEC-115`.**
+1. ▶▶▶ **RESOLVE THE LIVE SLICE, READ ITS `readiness_check`, THEN READ THESE ROWS BEFORE COMPOSING
+   ANYTHING: `DEF-121`, `DW-097`, `DEC-116`, `LL-052`.** ⛔ **What is at what status, and what is owed to
+   whom, is deliberately NOT written here** — `entity_query("slice", status="Approved")` then
+   `readiness_check(scope="slice", id=<that id>)`. ⚠ **`DEC-116` records an obligation the agent owes back
+   to the operator, and this sentence deliberately does not name it. Read the row.**
+   ⛔ **THIS ITEM NO LONGER SAYS *"there is nothing to build"*, AND THE DELETION IS THE POINT — THAT WAS THE
+   FORTY-NINTH.** It was a measured claim when written and `DEC-116` d2 falsified it the same day by
+   commissioning code. **A claim about what REMAINS is a status wearing a measurement's clothes**, which is
+   the THIRTY-EIGHTH's rule arriving in the one place this file says the next action lives.
    ⚠ **`LL-005` BINDS: SWEEP BEFORE THE INTERVIEW, NEVER AFTER.** It has produced an agenda item the agent
-   did not have on five consecutive rounds, and once it *dissolved* a candidate the agent was about to file
-   as a defect (`LL-050`). Build the slate with `node scripts/gen-record-slate.mjs` — an identifier is a
-   POINTER, not a reference, and the operator once refused an interview over that (`LL-011`).
-   ⛔⛔ **AND CHECK EVERY PREMISE INSIDE AN OPTION BEFORE OFFERING IT** (`LL-051`, Proposed). An option
-   asserting a file was present was CHOSEN by the operator and the file did not exist — deleted by the
-   agent's own code, after the agent had quoted the line saying so. **The slate guarantees the RECORDS;
-   nothing guarantees the sentences you write around them, and they carry the same authority.**
-   ⚠ **`DEF-121`'s CLAUSE (2) HAS FIRED AND IS NOT SATISFIED, AND THOSE ARE COMPATIBLE.** The instrument
-   `DEC-112` d2 built worked on a real runner and what it captured names no cause; `DEC-115` d2 refused to
-   read a successful CAPTURE as a satisfied CLAUSE. ⛔ **Do not re-argue that as a technicality** — the
-   clause's wording is what stops accumulated evidence being confused with an explanation.
+   did not have on six consecutive rounds, and **twice now it has *DISSOLVED* an item that would otherwise
+   have reached the operator as a real question** (`LL-050`, and `PE-792`). Build the slate with
+   `node scripts/gen-record-slate.mjs` — an identifier is a POINTER, not a reference, and the operator once
+   refused an interview over that (`LL-011`).
+   ⛔⛔ **AND CHECK EVERY PREMISE INSIDE AN OPTION BEFORE OFFERING IT** (`LL-051`). An option asserting a
+   file was present was CHOSEN by the operator and the file did not exist. **The slate guarantees the
+   RECORDS; nothing guarantees the sentences you write around them, and they carry the same authority.**
+   ⛔⛔ **AND READ AN ARTEFACT TO THE END BEFORE SAYING WHAT IT CONTAINS** (`LL-052`, pinned). Two sessions
+   called `DEF-121`'s capture insufficient — one from a file's `file(1)` type, one from its first screen —
+   while the answer sat in two files it had KEPT. **A manifest saying `kept` is quotable only for what it
+   `DROPPED`.**
+   ⚠ **`DEF-121`'s CLAUSE (2) HAS FIRED AND IS NOT SATISFIED, AND THOSE ARE COMPATIBLE.** `DEC-115` d2
+   refused to read a successful CAPTURE as a satisfied clause; `DEC-116` d1 refused to read a REFUTED
+   HYPOTHESIS as one. ⛔ **Do not re-argue either as a technicality** — the clause asks for a CAUSE, and
+   neither collecting evidence nor eliminating a rival hypothesis is one.
    ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB.** `DEC-077` d3 is unconditional; **the decision register is its
-   override count, not a number here**, and the two most recent rounds each declined a re-run. A re-run is
-   the operator's call alone.
+   override count, not a number here**. ⚠ **A REBASE IS NOT A RE-RUN** — `DEC-116` d2 settled that a new sha
+   is a new run over a DIFFERENT TREE — **but `strict: true` is set on `main`, so ANY push to `main` leaves
+   every open PR `BEHIND` and unmergeable, whatever it touched, and the path-ignore that stops a package
+   commit RUNNING CI does nothing about that.** Push package writes to `main` FIRST, then rebase the branch
+   onto that, then push nothing to `main` until the PR lands.
    ⚠ **`DEF-109` IS DIAGNOSED AND CARRIED, NOT FIXED** (`DEC-111` d1). ⛔ **Its description is deleted, not
    refreshed** — the FORTY-FIFTH, FORTY-SEVENTH and FORTY-EIGHTH were all descriptions of items in this
    list that rotted. **The rows are the record: `DEF-109` itself, `PE-771` for evidence, `PE-785` for the
@@ -2182,7 +2197,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    unset"*. Measured later: `AWS_ROLE_ARN` has been set since **2026-08-04** and `publish` runs on every
    push to `main`; it was skipped that once because `backend` **failed** and it `needs:` it. **`skipped`
    conflates *the `if:` was false* with *a needed job did not succeed*, and the API prints the same word
-   for both** (`LL-039`, Proposed). The `needs:` line was ONE LINE above the `if:` and I did not read it.
+   for both** (`LL-039`). The `needs:` line was ONE LINE above the `if:` and I did not read it.
    ⚠⚠⚠ **AND THE FOURTH SWEEP DID NOT RESIZE AN ITEM — IT STOPPED ONE, WHICH IS THE STRONGEST RESULT THE
    HABIT HAS PRODUCED.** `WBS-26.4`'s sweep found `DW-091`'s central claim to be a **misattributed
    quotation**: the sentence it quoted sits in the `api` service's OWN `depends_on` block arguing for

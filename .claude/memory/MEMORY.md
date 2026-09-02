@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121` clause (2) FIRED and is NOT satisfied · `DEC-111`–`DEC-115`
+## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121`: memory pressure REFUTED, clause (2) still unmet · `DEC-111`–`DEC-116`
 
 ⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — this heading said *`main` still red* and my own session
 falsified it hours later. `gh run list --branch main` is the answer; cite a RUN ID (`LL-036`).
@@ -15,19 +15,19 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
 forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
 declined on `LL-035`.
-- ⛔⛔ **AN END-CONDITION CLAUSE CAN FIRE AND STILL BE UNMET, AND THAT IS NOT A FAILURE.** `DEF-121`'s
-  clause (2) wants a captured log that **names a cause**. The instrument built for it worked on a real
-  runner (10.8 MB artefact, Ryuk did not reap first) and **nothing captured names one** — `DEC-115` d2
-  refused to read a successful CAPTURE as a satisfied CLAUSE. ⭐ `DW-097` predicted both halves *before*
-  the run: a caveat shipped as a ROW is falsifiable on first firing; one shipped as prose is not.
+★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
+  the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
+  the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
+  ⛔⛔ **Also: `strict:true` means ANY push to `main` leaves every open PR unmergeable** — path-ignore
+  stops the CI RUN, not the staleness. Read it before touching CI, an artefact, or an open PR.
 - ⛔⛔ **THE HOSTED RUNNER IS ~16 GB, NOT 7** (`Total Memory: 16766414848`, and `DEF-121`'s row had it all
   along). I asserted 7 from memory into `PE-771`. **Every MEASURED `DEF-109` claim survives; the causal
   BRIDGE to the CI symptom does not** — it rested entirely on the sum not fitting (`LL-020`, `PE-785`).
   ⚠ So `DEF-109` holds a **measured leak** and an **unproven symptom explanation**, not one finding.
-- ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`, Proposed).
-  I offered *"take the .gdmp we still have locally"*, the operator **chose it**, and my own capture had
-  deleted the file — after I had quoted the `DROPPED` manifest line to them. One `find` would have caught
-  it; **no gate ever will.** Check every premise inside an option before offering it.
+- ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`, Approved).
+  I offered *"take the .gdmp we still have locally"*; the operator **chose it** and the file did not exist.
+  ⭐ **`LL-052`, PINNED:** a file's NAME and FIRST SCREEN describe its FORMAT, never its content, and a
+  manifest saying `kept` is quotable only for what it `DROPPED`. Check every premise before offering it.
 - ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`).
   Working set on a 64 GB box cannot tell a leak from lazy collection, so `PE-769`'s null result was
   uninterpretable in BOTH directions. Use `GC.GetTotalMemory(true)` after a forced full collect.
@@ -42,7 +42,7 @@ declined on `LL-035`.
   — a dropped provenance sentence. ⭐⭐ **`LL-049` (pinned): a measurement AFTER the action it gates is a
   report, not a control** — `wc -l` printed 202 in the same `&&` chain that had already pushed. Gate the
   commit on it: `if [ "$N" -lt 200 ]; then git commit …; fi`.
-- ⭐⭐⭐ **SWEEP BEFORE THE INTERVIEW PAID A FOURTH TIME — AND *DISSOLVED* AN ITEM, which nobody counts.**
+- ⭐⭐⭐ **SWEEP BEFORE THE INTERVIEW HAS NOW *DISSOLVED* AN AGENDA ITEM TWICE, which nobody counts.**
   `DEF-087` reads stale (155 of **187**) but `DEC-068` d2 RULED it fix-forward-only, so that is the intended
   steady state and a repair would reverse a decision. ⛔ **Sweep the DECISION register for a row's id before
   calling its numbers stale** (`LL-050`, Approved).
