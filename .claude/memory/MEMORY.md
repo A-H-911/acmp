@@ -15,6 +15,10 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
 forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
 declined on `LL-035`.
+- ⛔⛔ **APPROVAL PROMPTS COME FROM COMMAND *SHAPE*, NOT THE ALLOWLIST.** No `cd` prefix (cwd IS the repo), no
+  heredocs, no `&&` chains — a multi-statement string matches no prefix rule. **One simple command per
+  call**; use Write/Edit for files (`.claude/PERMISSIONS.md`). ⭐ Scratch → **`.scratch/<id>/`**; the memory
+  dir is a **junction to `<repo>/.claude/memory`** — use the REPO path. ⛔ `.gitignore`/`.github/**` → PR.
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
@@ -69,10 +73,8 @@ satisfy both, **AA governs** — minimum change to conformance, nothing more.
 
 ## ★★★ 2026-08-31 · **`SL-035` IS THE LIVE SLICE** · `SL-033`+`SL-034` CLOSED
 
-⚠ Live state is `prm-next.md`'s numbered list, never this file. ⛔⛔ **NAME NO READINESS ANSWER HERE — ASK
-IT**; a sentence here once went doubly false. `readiness_check("package")` and `entity_query("slice",
-status="Approved")` are the answers. ⚠⚠ **`SL-035`'s SIX ACTIVATIONS ALL OVERRODE THE AGENT'S RECOMMENDATION
-TO CARRY** — the rows record it, so do not read activation as agreement about HOW.
+⚠⚠ **`SL-035`'s SIX ACTIVATIONS ALL OVERRODE THE AGENT'S RECOMMENDATION TO CARRY** — never read an
+activation as agreement about HOW. (Live state: `prm-next.md`'s list, never this file.)
 
 ★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md)
 — **read before recording anything about CI, or proposing a fix to an intermittent failure.**
@@ -191,9 +193,7 @@ pipe, production's reconciled state.
 
 ## ⚠ Unlinked topic files + the completed ladder
 
-**Findable by `ls`, current value NOT vouched for** — eleven unlinked topic files (`absence-claims-…`,
-`ask-every-time-…`, `audit-slice-literal-ac017`, `body-assertions-…`, `package-mechanics-2026-08-18`,
-`reconciliation-and-voting-eligibility`, `substring-checks-…`, `topic-prepare-ui-gap-d15`, `wbs233-csp-spike`,
-`wbs234-reclassify`, `webex-coverage-gate-async-exclusion`) plus **the completed ladder P1–P19 + PH-5** in the
-`p*`/`keystone-*`/`ph5-*` files, all superseded by the package's slice rows. ⛔ Do not re-open them.
+**Findable by `ls`, current value NOT vouched for** — eleven unlinked topic files plus **the completed
+ladder P1–P19 + PH-5** (`p*`/`keystone-*`/`ph5-*`), all superseded by the package's slice rows.
+⛔ Do not re-open them.
 ⚠ **Re-run the inbound-link check after ANY compaction** (2026-08-29: 25 orphans, all ladder files).
