@@ -6,7 +6,7 @@
 > ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
 
 
-## ★★★ 2026-09-02 · **`DEF-109` DIAGNOSED** (`DEC-111` d1) · `DEC-112` interview · PR `#339` merged
+## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121` clause (2) FIRED and is NOT satisfied · `DEC-111`–`DEC-115`
 
 ⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — this heading said *`main` still red* and my own session
 falsified it hours later. `gh run list --branch main` is the answer; cite a RUN ID (`LL-036`).
@@ -15,6 +15,19 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
 forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
 declined on `LL-035`.
+- ⛔⛔ **AN END-CONDITION CLAUSE CAN FIRE AND STILL BE UNMET, AND THAT IS NOT A FAILURE.** `DEF-121`'s
+  clause (2) wants a captured log that **names a cause**. The instrument built for it worked on a real
+  runner (10.8 MB artefact, Ryuk did not reap first) and **nothing captured names one** — `DEC-115` d2
+  refused to read a successful CAPTURE as a satisfied CLAUSE. ⭐ `DW-097` predicted both halves *before*
+  the run: a caveat shipped as a ROW is falsifiable on first firing; one shipped as prose is not.
+- ⛔⛔ **THE HOSTED RUNNER IS ~16 GB, NOT 7** (`Total Memory: 16766414848`, and `DEF-121`'s row had it all
+  along). I asserted 7 from memory into `PE-771`. **Every MEASURED `DEF-109` claim survives; the causal
+  BRIDGE to the CI symptom does not** — it rested entirely on the sum not fitting (`LL-020`, `PE-785`).
+  ⚠ So `DEF-109` holds a **measured leak** and an **unproven symptom explanation**, not one finding.
+- ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`, Proposed).
+  I offered *"take the .gdmp we still have locally"*, the operator **chose it**, and my own capture had
+  deleted the file — after I had quoted the `DROPPED` manifest line to them. One `find` would have caught
+  it; **no gate ever will.** Check every premise inside an option before offering it.
 - ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`).
   Working set on a 64 GB box cannot tell a leak from lazy collection, so `PE-769`'s null result was
   uninterpretable in BOTH directions. Use `GC.GetTotalMemory(true)` after a forced full collect.
@@ -24,78 +37,65 @@ declined on `LL-035`.
 - ⚠⚠ **`DEC-111` d2 DECLINED A RE-RUN — THAT IS COMPLIANCE WITH `DEC-077` d3, NOT AN OVERRIDE**, so it does
   not advance the count. ⛔ **No number here — the decision register is the count.** A third override would
   reopen the rule; do not let a session mis-log this one as one.
-- ⚠ **A 14 KB hand-paste into `entity_upsert` is survivable IF you verify after:** `git show
-  HEAD:…/defects.jsonl`, then assert the new title **startswith** the old byte-for-byte (`LL-028`+`LL-001`).
-- ⚠ **`entity_upsert` FK trap:** `deferred_work.invariant_at_stake` is a **foreign key** — the JSONL prints
-  `None` for null, and sending the string `"None"` rolls the whole batch back. Omit nullable fields.
+- ⚠ **A 14 KB hand-paste is survivable IF you verify after:** `git show HEAD:…/defects.jsonl`, then assert
+  the new title **startswith** the old byte-for-byte (`LL-028`+`LL-001`). Ran 4×; **caught a real loss once**
+  — a dropped provenance sentence. ⭐⭐ **`LL-049` (pinned): a measurement AFTER the action it gates is a
+  report, not a control** — `wc -l` printed 202 in the same `&&` chain that had already pushed. Gate the
+  commit on it: `if [ "$N" -lt 200 ]; then git commit …; fi`.
 - ⭐⭐⭐ **SWEEP BEFORE THE INTERVIEW PAID A FOURTH TIME — AND *DISSOLVED* AN ITEM, which nobody counts.**
-  `DEF-087` reads stale (*"155 of 155 `wbs_items`"*; measured 155 of **187**) — but `DEC-068` d2 ruled it
-  fixed-FORWARD-only with the 155 historical rows deliberately unbackfilled, so 155 NULL is the **intended
-  steady state** and a repair would have reversed an operator decision. ⛔ **Sweep the DECISION register for
-  a row's id before calling its numbers stale** (`LL-040`).
+  `DEF-087` reads stale (155 of **187**) but `DEC-068` d2 RULED it fix-forward-only, so that is the intended
+  steady state and a repair would reverse a decision. ⛔ **Sweep the DECISION register for a row's id before
+  calling its numbers stale** (`LL-050`, Approved).
 - ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** — they ride onto the branch (package→`main`
   direct, code→PR). Recovery without stash/reset: commit code on the branch, `git checkout main` (package
   changes travel with you), commit+push there, then back to the branch and `git rebase main`.
-- ⭐⭐ **DEF-121's INSTRUMENT: Ryuk does NOT reap before you can copy.** A container that exits non-zero stays
-  `exited`, and `docker cp <id>:/path` reads it out — the capture line prints *before* Testcontainers'
-  `Delete Docker container`. ⚠ `docker cp`, **not** `ReadFileAsync`: the core file's name is timestamped.
-  ⚠ `StartOrFailFastAsync`'s `when (…TimeoutException…)` filter let a **crashed** container through uncaught
-  — move the filter *inside* the catch and rethrow **unwrapped**, because the register discriminates
-  `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`) on the type itself.
-- ⚠ **Coverage does not touch `tests/`** — coverlet's `IncludeTestAssembly` defaults false, so a new helper
-  under `tests/` carries no per-file ≥95% pressure (`LL-031` does not fire there).
-- ⛔ **THE FORTY-EIGHTH was mine, THIRD IN A ROW of its class**: `prm-next.md` item 1 still said *"DIAGNOSE
-  `DEF-109`"* in the very commit whose message says DIAGNOSED. **A briefing on HOW is a description too.**
+- ⭐⭐ **Ryuk does NOT reap before you can copy** — an exited container still yields to `docker cp <id>:/path`
+  (use that, **not** `ReadFileAsync`: crash filenames are timestamped). ⚠ `StartOrFailFastAsync`'s
+  `when (…TimeoutException…)` filter let a **crashed** container through uncaught: put the filter *inside*
+  the catch and rethrow **unwrapped** — the register discriminates `DEF-121`
+  (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`) on the type itself.
+  ⚠ Coverage does not touch `tests/` (coverlet `IncludeTestAssembly` = false), so no ≥95% pressure there.
+- ⛔ **THE FORTY-EIGHTH was mine, THIRD IN A ROW**: `prm-next.md` still said *"DIAGNOSE `DEF-109`"* in the
+  very commit whose message says DIAGNOSED. **A briefing on HOW is a description too.**
 
-## ★★★ 2026-09-01 · four PRs merged · **`LL-041`–`LL-044` now BIND — read them, they are not restated here**
+## ★★★ 2026-09-01 · four PRs merged · `LL-041`–`LL-044` bind from the tool-owned note
 
-⛔⛔ **NEVER WRITE A SLICE ID INTO A COMMAND IN `prm-next.md`.** Nine sites said
-``readiness_check(scope="slice", id="SL-033")`` — a CLOSED slice, so each returned a clean verdict about the
-wrong subject. The FORTY-SECOND fixed two such sites in the kickoff block and **missed nine in §6**: the fix
-went where the error was REPORTED, not where the pattern LIVED (the FORTY-SIXTH). `entity_query("slice",
-status="Approved")` resolves it without naming one. ⚠ `count-prompt-ids.py` cannot see this — the id is real
-and its status correct.
-⛔ **`LL-041`–`LL-044` bind from the tool-owned note; the restatement here was DELETED, not refreshed.**
+⛔⛔ **NEVER WRITE A SLICE ID INTO A COMMAND IN `prm-next.md`** — nine sites named a CLOSED slice, each
+returning a clean verdict about the wrong subject, and the fix went where the error was REPORTED rather than
+where the pattern LIVED (the FORTY-SIXTH). `entity_query("slice", status="Approved")` resolves it without
+naming one; `count-prompt-ids.py` cannot see this, because the id is real and its status correct.
 ⚠ **`ADR-0045`**: `INV-014` names the px literals AND `AA` in ONE statement, so where a `.dc.html` cannot
 satisfy both, **AA governs** — minimum change to conformance, nothing more.
 
 ## ★★★ 2026-08-31 · **`SL-035` IS THE LIVE SLICE** · `SL-033`+`SL-034` CLOSED
 
 ⚠ Live state is `prm-next.md`'s numbered list, never this file. ⛔⛔ **NAME NO READINESS ANSWER HERE — ASK
-IT.** This block said *"`ready:FALSE` on `DEF-108` alone, the intended state"*; `DEC-097` d1 closed that row
-and the sentence went **doubly** false. `readiness_check("package")` is the answer, and
-`entity_query("slice", status="Approved")` resolves the live slice without naming one.
-⛔ **`SL-033`/`SL-034` are CLOSED** (`DEC-098` d2 / `DEC-093`). **`SL-035` = `WBS-26.1`–`26.5`**, security
-first (`DEC-094`/`SC-038`). ⚠⚠ **ALL SIX ACTIVATIONS OVERRODE THE AGENT'S RECOMMENDATION TO CARRY** — rows
-record it as an override, so do not read it as agreement about HOW.
+IT**; a sentence here once went doubly false. `readiness_check("package")` and `entity_query("slice",
+status="Approved")` are the answers. ⚠⚠ **`SL-035`'s SIX ACTIVATIONS ALL OVERRODE THE AGENT'S RECOMMENDATION
+TO CARRY** — the rows record it, so do not read activation as agreement about HOW.
 
 ★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md)
 — **read before recording anything about CI, or proposing a fix to an intermittent failure.**
 
-- ⚠⚠⚠ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE** (`LL-036`, pinned) —
-  disagreed twice here. `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.**
-- ⚠⚠ **`skipped` CONFLATES *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`) — reached 3 commit
-  messages. ⭐⭐ **A REMEDY THAT REDUCES A *PROBABILITY* CANNOT BE FALSIFIED BY THE FAILURE RECURRING**
-  (`LL-035`, pinned). ⭐ **A re-run samples every question the suite asks** (`LL-037`) — one found `DEF-122`.
-- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`, Proposed). `AC-088`–`AC-093` are
-  `Proposed` **on purpose**; promoting is **one-way**. ⭐ **Tell: uniformity** — six of six is a decision.
-  ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.**
-- ⛔ **A READINESS ANSWER STOOD HERE AND IS DELETED, NOT REFRESHED** — *"`DEF-121` is the sole blocking
-  readiness failure"*, which `DEF-125`/`DEF-126` falsified on 2026-09-01 and their fixes falsified back.
-  This block's header already says ASK IT. **`readiness_check("package")` is the answer**; greens satisfy
-  no clause, by design. ⚠ **`DEC-077` d3 overridden TWICE** while unconditional — a third reopens the rule.
-  ⭐ **d3 names `SearchProvidersFtsTests`**, and `DEF-109`'s row records d3 did NOT fire on
-  `Acmp.Api.Tests` — a re-run there is not a third override, but **record the occurrence FIRST**.
+- ⚠⚠⚠ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE** (`LL-036`) — disagreed
+  twice; `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.** ⚠⚠ **`skipped` CONFLATES
+  *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`). ⭐⭐ **A remedy reducing a PROBABILITY cannot be
+  falsified by recurrence** (`LL-035`). ⭐ **A re-run samples every OTHER question** (`LL-037`) — found `DEF-122`.
+- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`) — `AC-088`–`AC-093` are `Proposed`
+  **on purpose** and promoting is one-way; tell is **uniformity**. ⭐⭐ **A progress entry is a ruling's
+  record too — sweep those, not just DEC/ADR.**
+- ⛔ **NAME NO READINESS ANSWER — `readiness_check("package")` is it**; greens satisfy no clause, by design.
+  ⚠ **`DEC-077` d3 overridden TWICE** while unconditional — a third reopens the rule; it names
+  `SearchProvidersFtsTests` only, so an `Acmp.Api.Tests` re-run is not a third, but **record first**.
 
 - ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row with nested
   `custom_attributes` is **silently deleted from the result**, not undercounted (the **FORTY-FIRST**).
-- ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — it has now produced rulings the agenda did
-  not contain **three** times, twice catching the agent's own gaps. ⚠ **`Open`/`Proposed` ≠ never-ruled**
-  (`LL-006`) — and a **progress entry is a ruling's record too**, not just DEC/ADR.
+- ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — it keeps producing rulings the agenda did not
+  contain, and once *dissolved* an item. ⚠ `Open`/`Proposed` ≠ never-ruled (`LL-006`).
 - ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b). ⚠ `verification_method` is a
   CHECK; `verified_by` ∈ `human|agent|ci`; approving a lesson needs `"operator_confirm": true` **plus
   byte-identical content**; trace edges use `from_id`/`to_id`. ⚠ `entity_upsert` needs FULL rows — NOT NULL
-  is evaluated before conflict resolution — but **nullable fields are preserved by omission**.
+  is evaluated before conflict resolution — but **nullable fields are preserved by omission**. ⚠ `deferred_work.invariant_at_stake` is an FK: omit it, never send `"None"`.
 - ⭐⭐⭐ **A TARGETED SWEEP FINDS CLAIMS ABOUT WHAT YOU *CHANGED*; ONLY A FULL READ FINDS CLAIMS ABOUT WHAT
   *REMAINS*** (the **FORTY-SECOND**). ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE
   WRONG SUBJECT** — a closed slice's `wbs-done` **passes with zero entities**. ⭐ **Name no slice id in
