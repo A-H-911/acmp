@@ -198,6 +198,10 @@ disposition session that was reading it. A prompt that restates a number is a pr
 will lie to you. **Point at the live check, do not quote it.** If you find this section wrong again,
 **fix it in the same session and bump this count.**
 
+⚠⚠ **A STRUCTURAL CORRUPTION, NOT A STALE STATEMENT — SO IT IS DELIBERATELY *NOT* COUNTED, AND SAYING WHY MATTERS MORE THAN THE INSTANCE.** Editing item 2 on 2026-09-02 I inserted a paragraph between a sentence's opening word and its remainder, leaving a line containing only ` A` followed by *"merged item whose merge-commit run is red stays `Approved`"*. It reached several commits. **It is not tallied above**, because the counter's own definition is a statement that WAS TRUE, BECAME FALSE, and reached a commit — this one was never false, it was unreadable. ⛔ **Widening the counter to cover it would destroy the counter**, which is `LL-016`'s point about ordinals: a number that counts two different things measures neither.
+⭐⭐ **WHAT IT DOES PROVE IS THE PRE-HANDOFF SWEEP'S RANGE.** That sweep exists for STALENESS — identifiers this session moved, read for what the hits CONCLUDE. It caught a **formatting** fault it was never designed to find, because the pass reads the numbered list end-to-end rather than grepping it. ⚠ **No instrument this file owns could have:** `count-prompt-ids.py` resolves ids and every id here was correct; the prose-status checker wants a `(Status)` form; the colour and slice-id greps key on tokens. **A garbled rule is invisible to every one of them and obvious to a reader.**
+⚠ **The lesson for the next editor is narrow and mechanical:** when inserting into a numbered item, re-read the item's LAST line and the following item's FIRST line, because a Python `str.replace` anchored mid-sentence splits it silently and the diff looks clean.
+
 ⚠⚠⚠ **THE FORTY-EIGHTH IS THE FORTY-SEVENTH'S FAULT CLASS FOR THE THIRD CONSECUTIVE TIME, IN THE SAME NUMBERED LIST, AND IT IS MINE — I WROTE THE COMMIT THAT FALSIFIED IT AND THE COMMIT MESSAGE SAYS SO.** Item 1 read *"▶▶▶ DIAGNOSE `DEF-109`"* followed by a briefing on how — `PE-768`/`PE-769`, the six eliminated candidates, the 5 GB working-set figure, and *"the next attempt needs a seam that fires while the provider is alive"*. **Every clause was true when written and all of it is finished work**: `DEC-110` d3 clause (1) is satisfied, the seam was built and proved to execute, and the store hypothesis it points at is REFUTED. A fresh session obeying item 1 would have re-run an investigation that has an answer.
 ⚠ **COUNTED, AND COUNTED HONESTLY.** The package commit `b54a42c6` — whose own message is *"DEF-109 DIAGNOSED"* — was pushed with item 1 still saying `DIAGNOSE`. That is a false statement reaching a commit where a fresh session could read it, which is exactly what this counter counts. **Under-counting my own would defeat the instrument**, and the FORTY-THIRD's family already established that a session can falsify its own prose within the session.
 ⭐⭐ **THE THREE-IN-A-ROW IS THE FINDING, NOT THE INSTANCE.** The FORTY-FIFTH rotted because a scope change WITHDREW the work; the FORTY-SEVENTH because the work was DONE; this one because the work was done **by the session writing the entry about the previous one**. Three different causes, one failure, all in the numbered list. ⛔ **The rule the FORTY-FIFTH wrote — *never describe an item here at all* — is correct and was still not enough, because a briefing on HOW is not obviously a description of WHAT.** Item 1 now names four rows and describes none of them.
@@ -2110,31 +2114,35 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 `PE-599`'s shape, where a truncated instrument does not undercount but DELETES the evidence that would
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
-1. ▶▶▶ **`DEF-109` IS DIAGNOSED AND IS CARRIED, NOT FIXED — `DEC-111` d1, 2026-09-02. THERE IS NOTHING
-   TO INVESTIGATE HERE ANY MORE, AND NOTHING TO BUILD FOR IT.** ⛔⛔ **THIS ITEM READ *"DIAGNOSE
-   `DEF-109`"* AND CARRIED A BRIEFING ON HOW — THAT IS DELETED, NOT REFRESHED, AND IT IS THE
-   FORTY-EIGHTH.** `DEC-110` d3 clause (1) is satisfied; a fresh session obeying the old text would have
-   re-run an investigation that has an answer. **The rows are the record: `DEF-109` itself, `PE-771` for
-   the evidence, `DW-096` for the remedy, `DEC-111` for the operator's ruling. Read those; never a
-   description of them here.**
-   ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB.** `DEC-111` d2 declined a re-run at `f91bf705` and that is
-   COMPLIANCE with `DEC-077` d3, not an exception to it, so it does NOT advance the override count. ⛔ **NO
-   NUMBER IS WRITTEN HERE — the decision register is the count**, and a count inside a rule block is the
-   FORTY-FOURTH's folded member, already fixed once in this very block. The standing note is that a THIRD
-   override reopens whether d3 still says what the practice does. A re-run is the operator's call alone.
+1. ▶▶▶ **START WITH AN INTERVIEW. THERE IS NOTHING TO BUILD, AND THAT IS A MEASURED CLAIM RATHER THAN A
+   SHRUG.** Every open thread terminates in a ruling that is the operator's alone, so no amount of agent
+   effort advances one. ⛔ **What is at what status is deliberately NOT written here** — resolve the live
+   slice with `entity_query("slice", status="Approved")`, read its `readiness_check`, and read these rows
+   before composing anything: **`DEF-121`, `DEF-128`, `DW-097`, `LL-051`, and `DEC-113`/`DEC-114`/`DEC-115`.**
+   ⚠ **`LL-005` BINDS: SWEEP BEFORE THE INTERVIEW, NEVER AFTER.** It has produced an agenda item the agent
+   did not have on five consecutive rounds, and once it *dissolved* a candidate the agent was about to file
+   as a defect (`LL-050`). Build the slate with `node scripts/gen-record-slate.mjs` — an identifier is a
+   POINTER, not a reference, and the operator once refused an interview over that (`LL-011`).
+   ⛔⛔ **AND CHECK EVERY PREMISE INSIDE AN OPTION BEFORE OFFERING IT** (`LL-051`, Proposed). An option
+   asserting a file was present was CHOSEN by the operator and the file did not exist — deleted by the
+   agent's own code, after the agent had quoted the line saying so. **The slate guarantees the RECORDS;
+   nothing guarantees the sentences you write around them, and they carry the same authority.**
+   ⚠ **`DEF-121`'s CLAUSE (2) HAS FIRED AND IS NOT SATISFIED, AND THOSE ARE COMPATIBLE.** The instrument
+   `DEC-112` d2 built worked on a real runner and what it captured names no cause; `DEC-115` d2 refused to
+   read a successful CAPTURE as a satisfied CLAUSE. ⛔ **Do not re-argue that as a technicality** — the
+   clause's wording is what stops accumulated evidence being confused with an explanation.
+   ⛔⛔ **DO NOT RE-RUN A RED BACKEND JOB.** `DEC-077` d3 is unconditional; **the decision register is its
+   override count, not a number here**, and the two most recent rounds each declined a re-run. A re-run is
+   the operator's call alone.
+   ⚠ **`DEF-109` IS DIAGNOSED AND CARRIED, NOT FIXED** (`DEC-111` d1). ⛔ **Its description is deleted, not
+   refreshed** — the FORTY-FIFTH, FORTY-SEVENTH and FORTY-EIGHTH were all descriptions of items in this
+   list that rotted. **The rows are the record: `DEF-109` itself, `PE-771` for evidence, `PE-785` for the
+   correction that weakened its causal half, `DW-096` for the remedy.**
    ⚠ **WHAT THE DIAGNOSIS LICENCES AND WHAT IT DOES NOT**, because this is the half a later session will
    get wrong: the falsifiable claim is **retention tracks host count**, measured as retained MANAGED bytes
-   after a forced full collection. **It licences NO claim that any remedy greens CI** (`LL-035`). Two
-   lessons came out of it — `LL-047` (an instrument that cannot produce a meaningful NEGATIVE turns every
-   refutation into a coin flip) and `LL-048` (a root-path tool names A path, never THE cause). ⛔ **WHETHER
-   THEY BIND IS A STATUS AND IS NOT WRITTEN HERE** — `entity_query("lesson")` is the answer; a sentence
-   reasoning from a row's state is the FORTY-THIRD's exact class and goes false at the next ceremony.
-   ⛔⛔ **A COLOUR STOOD HERE AND IS DELETED, NOT REFRESHED** — the line said `main` was red at `f91bf705`,
-   which `DEC-112` d3's vehicle then falsified within the same session. `gh run list --branch main` is the
-   answer and a sentence here is not. **Never write a colour into this file**; cite a RUN ID or ask.
-   ⚠ **`DEC-110` d6's hold has been DISCHARGED once** — that is history, not a standing state, and what any
-   row's status is now comes from `entity_query`, never from here.
-   ⚠⚠ **DISCRIMINATE BY SIGNATURE BEFORE ATTRIBUTING ANY RED**: `DEF-109` is `Acmp.Api.Tests` alone with
+   after a forced full collection. **It licences NO claim that any remedy greens CI** (`LL-035`), and
+   `PE-785` removed the arithmetic that had bridged the two.
+      ⚠⚠ **DISCRIMINATE BY SIGNATURE BEFORE ATTRIBUTING ANY RED**: `DEF-109` is `Acmp.Api.Tests` alone with
    scattered 100-second `HttpClient` timeouts and every other suite green and fast; `DEF-121`/`DEF-108` are
    Integration container crashes carrying `lsasrv`/`AppLoader` frames. **They are different families and
    `DEC-077` d3 fires only on the second.**
@@ -2214,8 +2222,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    red tree, `DEC-112` d3's PR greened `main`, and the item and its `DW-` row moved together in one batch
    (`PE-779`). ⛔ **That is a worked example, NOT a statement of what is open** — which rows are where comes
    from `entity_query`/`readiness_check` and from nowhere in this file.
- A
-   merged item whose merge-commit run is red stays `Approved` rather than moving to `Review`, however
+   A merged item whose merge-commit run is red stays `Approved` rather than moving to `Review`, however
    green its own suites were. ⚠ **THE STATED COST, recorded there rather than discovered here: an
    environmental defect with no diagnosis can hold a finished item, and its slice, indefinitely** — which
    is why `DEC-110` d3 wrote an end condition in the same interview and why its clause (3), an explicit

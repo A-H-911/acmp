@@ -417,6 +417,7 @@ LL-047,DEF-109,learned_from
 LL-048,DEF-109,learned_from
 LL-049,DEC-112,learned_from
 LL-050,DEF-087,learned_from
+LL-051,DEC-115,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
