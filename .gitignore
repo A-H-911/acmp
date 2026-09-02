@@ -64,3 +64,12 @@ Thumbs.db
 #   git show 967e75d:tamheed-package/data/<file>.jsonl
 tamheed-package/data-v3-backup/
 .slate-test-tmp/
+
+# ── Agent scratch, one sub-folder per session ─────────
+# .scratch/<session-id>/ holds generators, probes, pre-images and throwaway
+# harnesses. It lives INSIDE the repo on purpose: the harness's own scratchpad
+# sits outside every working directory, so each write there needs an approval.
+# ⛔ Trap 27 is unchanged and is what makes this safe — NOTHING A LATER SESSION
+# MUST READ MAY LIVE HERE. Anything another session needs goes in the repository
+# or the Tamheed package. Convention is stated in AGENTS.md.
+.scratch/
