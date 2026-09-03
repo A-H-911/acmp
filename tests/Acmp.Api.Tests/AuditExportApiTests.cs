@@ -18,8 +18,15 @@ namespace Acmp.Api.Tests;
 // register to it). The Administrator row in the 403 theory is therefore the POINT of that theory, not an
 // incidental case: the refusal is the feature, and it is proven by forcing it.
 [Trait("Category", "Security")]
-public class AuditExportApiTests
+public class AuditExportApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AuditExportApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "kc-aud")
     {
         var client = factory.CreateClient();
@@ -83,7 +90,7 @@ public class AuditExportApiTests
     [Fact] // AC-008
     public async Task Export_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).GetAsync("/api/audit/export"))
             .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -95,7 +102,7 @@ public class AuditExportApiTests
     [InlineData("Submitter")]
     public async Task Non_audit_role_cannot_export_403(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, role).GetAsync("/api/audit/export"))
             .StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -106,7 +113,7 @@ public class AuditExportApiTests
     [InlineData("Secretary")]
     public async Task Audit_role_can_export_200(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await SeedChainAsync(factory, 3);
         var res = await Client(factory, role).GetAsync("/api/audit/export");
         res.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -119,7 +126,7 @@ public class AuditExportApiTests
     [InlineData("")]
     public async Task Unknown_format_is_rejected_400(string format)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").GetAsync($"/api/audit/export?format={format}"))
             .StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -127,7 +134,7 @@ public class AuditExportApiTests
     [Fact] // FR-154 names CSV *or* JSON; both must actually be reachable.
     public async Task Json_format_returns_the_same_rows_as_json()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await SeedChainAsync(factory, 3);
 
         var res = await Client(factory, "Auditor").GetAsync("/api/audit/export?format=json");
@@ -147,7 +154,7 @@ public class AuditExportApiTests
     [Fact] // The BOM (Excel/Arabic) + RFC-4180 escaping, asserted on bytes.
     public async Task Csv_carries_a_utf8_bom_and_survives_arabic_and_embedded_commas()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await SeedChainAsync(factory, 1, arabic: true);
 
         var res = await Client(factory, "Auditor").GetAsync("/api/audit/export?format=csv");
@@ -169,7 +176,7 @@ public class AuditExportApiTests
     [Fact] // C-AUDIT-08: "every report/data export is an audited sensitive event (who, scope, volume)".
     public async Task Export_writes_an_audit_event_naming_who_scope_and_volume()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         // 37, not a single digit: a one-character assertion would match a stray character anywhere in the
         // payload and pass whether or not the volume was recorded — LL-015's shape in an assertion.
         var seeded = await SeedChainAsync(factory, 37);
@@ -202,7 +209,7 @@ public class AuditExportApiTests
     [Fact]
     public async Task Export_is_not_truncated_by_the_paged_read_cap()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         const int Beyond = 640; // > PageSize.Clamp's Max of 500
         await SeedChainAsync(factory, Beyond);
 
@@ -218,7 +225,7 @@ public class AuditExportApiTests
     [Fact] // The register and the export must select the same set — one predicate, two callers.
     public async Task Export_and_register_agree_on_the_same_filters()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await SeedChainAsync(factory, 5, action: "Topic.Edited");
         await SeedChainAsync(factory, 3, action: "Vote.Closed");
 

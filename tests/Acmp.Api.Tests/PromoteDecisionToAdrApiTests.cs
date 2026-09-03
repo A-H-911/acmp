@@ -13,8 +13,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for FR-068 promotion: POST /api/adrs/from-decision through the real pipeline + policy
 // (Adr.Promote = Chairman only) and the IDecisionReader / ITraceabilityWriter seams. An issued decision is
 // seeded straight into the (InMemory) DecisionsDbContext the reader reads from.
-public class PromoteDecisionToAdrApiTests
+public class PromoteDecisionToAdrApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public PromoteDecisionToAdrApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static readonly DateTimeOffset Now = new(2026, 3, 1, 9, 0, 0, TimeSpan.Zero);
 
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "kc-chair")
@@ -50,7 +57,7 @@ public class PromoteDecisionToAdrApiTests
     [Fact] // AC-008
     public async Task Promote_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/adrs/from-decision", Body(Guid.NewGuid())))
             .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -58,7 +65,7 @@ public class PromoteDecisionToAdrApiTests
     [Fact] // docs/10: Adr.Promote is Chairman-only — a Secretary may not promote.
     public async Task Secretary_cannot_promote_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/adrs/from-decision", Body(Guid.NewGuid())))
             .StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -66,7 +73,7 @@ public class PromoteDecisionToAdrApiTests
     [Fact] // unknown decision → 404 through the pipeline
     public async Task Chairman_promoting_an_unknown_decision_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Chairman").PostAsJsonAsync("/api/adrs/from-decision", Body(Guid.NewGuid())))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -74,7 +81,7 @@ public class PromoteDecisionToAdrApiTests
     [Fact] // happy path + idempotency: promote once (201, Draft, pre-filled title), second promote → 409
     public async Task Chairman_promotes_an_issued_decision_then_a_repeat_is_conflicted()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-chair", "Chair", CommitteeRole.Chairman));
         var decisionId = await SeedIssuedDecisionAsync(factory);
         var chair = Client(factory, "Chairman", "kc-chair");

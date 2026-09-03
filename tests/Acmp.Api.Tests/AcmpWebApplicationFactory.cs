@@ -79,14 +79,72 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
+        SeedStreams(host.Services);
+        return host;
+    }
 
-        using var scope = host.Services.CreateScope();
+    private static void SeedStreams(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MembershipDbContext>();
         foreach (var (code, en, ar) in SeededStreams)
             db.Streams.Add(MembershipStream.Create(code, LocalizedString.Create(en, ar)));
         db.SaveChanges();
+    }
 
-        return host;
+    // Every DbContext this host swapped onto the InMemory provider, recorded BY the swap itself so the
+    // two lists cannot drift. WBS-24.5's lesson is that a context has to be substituted in three
+    // places and omitting one fails confusingly; a hand-maintained second list here would have been a
+    // fourth place, and the only one whose omission fails SILENTLY — a context left unreset just
+    // carries state between tests.
+    private readonly List<Type> _swappedContexts = [];
+
+    /// <summary>
+    /// ⭐⭐ WBS-27.2's ISOLATION HALF, AND THE REASON THE CONVERSION IS CHEAP RATHER THAN INVASIVE.
+    /// What <c>DW-096</c> measured as expensive is the HOST — 6.9-8.6 MB retained per host, rooted
+    /// through <c>HostFactoryResolver</c> and unreachable by disposal. The fourteen InMemory databases
+    /// are not expensive at all; they were merely BUNDLED with the host, so building one host per test
+    /// bought isolation nobody had asked for and nobody was paying attention to.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Separating the two gives per-class hosts (~294 → ~50, <c>DEC-124</c> d1's measurement) while
+    /// every test still starts against empty tables. That keeps <c>LL-032</c>'s hazard — a test quietly
+    /// asserting over a sibling's rows, which <b>passes</b> — from being introduced at all, instead of
+    /// introducing it across forty files and then hunting for it.
+    /// </para>
+    /// <para>
+    /// ⚠ SAFE UNDER THE SUITE'S PARALLELISM, AND THAT IS A PROPERTY OF THE FIXTURE CHOICE. Each class
+    /// has its own host and therefore its own uniquely-named stores, and xUnit v2 never runs two tests
+    /// of the same class concurrently. Under the cross-class <c>ICollectionFixture</c> that
+    /// <c>DEC-124</c> d1 rejected, this reset would be a race instead of a guarantee.
+    /// </para>
+    /// <para>
+    /// ⚠ The stream taxonomy is re-seeded because it is reference data a migration provides in every
+    /// real environment (see <see cref="SeededStreams"/>) — clearing it would make the submit/update
+    /// validators refuse every topic, which is a property of the fixture rather than of the code.
+    /// </para>
+    /// Returns <c>this</c> so a converted test class's constructor stays one line.
+    /// </remarks>
+    public AcmpWebApplicationFactory Reset()
+    {
+        using (var scope = Services.CreateScope())
+        {
+            foreach (var contextType in _swappedContexts)
+            {
+                var db = (DbContext)scope.ServiceProvider.GetRequiredService(contextType);
+                db.Database.EnsureDeleted();
+            }
+        }
+
+        SeedStreams(Services);
+
+        // GetService, not the Identity property: the fake is registered only on the WithIdentityProvider
+        // host (ADR-0040 / SC-005), and Identity uses GetRequiredService, so reaching for it here would
+        // throw on every default host — which is most of them.
+        Services.GetService<FakeIdentityProvider>()?.Reset();
+
+        return this;
     }
 
     /*
@@ -116,42 +174,50 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
         services.AddDbContext<TContext>(o => o.UseInMemoryDatabase(dbName));
     }
 
+    // The same call that swaps a context records it, so Reset() cannot miss one. See _swappedContexts.
+    private void Swap<TContext>(IServiceCollection services, string suffix = "")
+        where TContext : DbContext
+    {
+        UseInMemory<TContext>(services, _dbName + suffix);
+        _swappedContexts.Add(typeof(TContext));
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureTestServices(services =>
         {
-            UseInMemory<MembershipDbContext>(services, _dbName);
+            Swap<MembershipDbContext>(services);
 
-            UseInMemory<TopicsDbContext>(services, _dbName + "-topics");
+            Swap<TopicsDbContext>(services, "-topics");
 
-            UseInMemory<MeetingsDbContext>(services, _dbName + "-meetings");
+            Swap<MeetingsDbContext>(services, "-meetings");
 
-            UseInMemory<DecisionsDbContext>(services, _dbName + "-decisions");
+            Swap<DecisionsDbContext>(services, "-decisions");
 
-            UseInMemory<ActionsDbContext>(services, _dbName + "-actions");
+            Swap<ActionsDbContext>(services, "-actions");
 
-            UseInMemory<RisksDbContext>(services, _dbName + "-risks");
+            Swap<RisksDbContext>(services, "-risks");
 
-            UseInMemory<TraceabilityDbContext>(services, _dbName + "-traceability");
+            Swap<TraceabilityDbContext>(services, "-traceability");
 
-            UseInMemory<DependenciesDbContext>(services, _dbName + "-dependencies");
+            Swap<DependenciesDbContext>(services, "-dependencies");
 
-            UseInMemory<GovernanceDbContext>(services, _dbName + "-governance");
+            Swap<GovernanceDbContext>(services, "-governance");
 
-            UseInMemory<ResearchDbContext>(services, _dbName + "-research");
+            Swap<ResearchDbContext>(services, "-research");
 
-            UseInMemory<KnowledgeDbContext>(services, _dbName + "-knowledge");
+            Swap<KnowledgeDbContext>(services, "-knowledge");
 
-            UseInMemory<NotificationsDbContext>(services, _dbName + "-notifications");
+            Swap<NotificationsDbContext>(services, "-notifications");
 
-            UseInMemory<AuditDbContext>(services, _dbName + "-audit");
+            Swap<AuditDbContext>(services, "-audit");
 
             // WBS-24.5: the externalized configuration store. A DbContext has to be substituted in
             // THREE places, not two — DI, MigrationRunner and here — and omitting this one fails
             // by trying to reach a real SQL Server, which reads like an environment problem
             // rather than a missing registration.
-            UseInMemory<ConfigurationDbContext>(services, _dbName + "-config");
+            Swap<ConfigurationDbContext>(services, "-config");
 
             // DEF-134 / DEC-125 d1 — record every request while it is in flight, so StallWatchdog has a
             // trigger keyed on DEF-109's OWN DEFINITION ("a request did not come back") instead of on a

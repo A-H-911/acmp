@@ -22,8 +22,15 @@ namespace Acmp.Api.Tests;
 //
 // ⛔ IT DOES NOT REPLACE MinutesHandlerTests' CASE. That one owns the negative half (a different approver
 // clears the flag) and the read-model round trip. This one adds the row, which is the half nothing asserted.
-public class Sod2SoleAuthorAuditRowTests
+public class Sod2SoleAuthorAuditRowTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public Sod2SoleAuthorAuditRowTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private const string SoleAuthorEvent = "Meetings.MinutesApprovedBySoleAuthor";
     private const string ApprovedEvent = "Meetings.MinutesApproved";
 
@@ -78,7 +85,7 @@ public class Sod2SoleAuthorAuditRowTests
     [Fact] // NFR-064 SoD-2: the warning is ALLOWED, and it leaves a row
     public async Task Approving_your_own_sole_authored_minutes_is_allowed_and_leaves_a_sole_author_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         const string author = "kc-sam";
         var id = await MinutesInReviewAsync(factory, author);
 
@@ -96,7 +103,7 @@ public class Sod2SoleAuthorAuditRowTests
     [Fact] // the discriminator: a different approver leaves the ordinary row and NOT the sole-author one
     public async Task Approving_someone_elses_minutes_leaves_no_sole_author_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var id = await MinutesInReviewAsync(factory, "kc-sam");
 
         var response = await Client(factory, "Chairman", "kc-chair")

@@ -16,8 +16,15 @@ namespace Acmp.Api.Tests;
 // Configured=false and Requeue is 503. This deterministically covers the authz gate + the tolerant
 // not-configured branch; the live Configured=true counts and real requeue+audit are E2E-verified on the
 // real SQL stack (the P8c-1 lesson: the Testing host can't tell "correctly off" from "broken in prod").
-public class AdminJobsEndpointTests
+public class AdminJobsEndpointTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AdminJobsEndpointTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private sealed record JobsResponse(bool Configured, CountsResponse Counts, List<JobRow> Jobs);
     private sealed record CountsResponse(long Succeeded, long Processing, long Scheduled, long Enqueued, long Failed);
     private sealed record JobRow(string Id, string Name, string Queue, string Status, bool CanRetry);
@@ -36,7 +43,7 @@ public class AdminJobsEndpointTests
     [Fact] // Administrator reads jobs; with Hangfire off the endpoint is honest (Configured=false, zero counts).
     public async Task Administrator_gets_not_configured_jobs_when_hangfire_is_off()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator").GetAsync("/api/admin/jobs");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -51,7 +58,7 @@ public class AdminJobsEndpointTests
     [Fact] // docs/10: Admin.Config is Administrator-only — a Member is forbidden.
     public async Task Non_admin_is_forbidden_on_jobs()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member", sub: "kc-member").GetAsync("/api/admin/jobs");
 
@@ -61,7 +68,7 @@ public class AdminJobsEndpointTests
     [Fact] // No bearer → 401 before anything runs.
     public async Task Unauthenticated_is_unauthorized_on_jobs()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null).GetAsync("/api/admin/jobs");
 
@@ -71,7 +78,7 @@ public class AdminJobsEndpointTests
     [Fact] // Requeue is Admin-only; with background jobs off it returns 503 (Service Unavailable), never 500.
     public async Task Requeue_is_service_unavailable_when_hangfire_is_off()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator").PostAsync("/api/admin/jobs/job-1/requeue", null);
 
@@ -81,7 +88,7 @@ public class AdminJobsEndpointTests
     [Fact] // A non-admin can't requeue.
     public async Task Non_admin_is_forbidden_on_requeue()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member", sub: "kc-member")
             .PostAsync("/api/admin/jobs/job-1/requeue", null);
@@ -128,7 +135,7 @@ public class AdminJobsEndpointTests
     [Fact] // With Hangfire wired, the endpoint projects live statistics and reports Configured=true.
     public async Task Administrator_gets_live_counts_when_hangfire_is_wired()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var storage = StorageReturning(new StatisticsDto { Succeeded = 42, Failed = 1 });
 
         var response = await WiredAdminClient(factory, storage, jobClient: null).GetAsync("/api/admin/jobs");
@@ -143,7 +150,7 @@ public class AdminJobsEndpointTests
     [Fact] // A successful requeue (ChangeState true) → 204 and an audit event is emitted.
     public async Task Requeue_succeeds_returns_no_content()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var jobClient = Substitute.For<IBackgroundJobClient>();
         jobClient.ChangeState(Arg.Any<string>(), Arg.Any<IState>(), Arg.Any<string>()).Returns(true);
 
@@ -157,7 +164,7 @@ public class AdminJobsEndpointTests
     [Fact] // An unknown / non-requeueable job (ChangeState false) → 404, not a 500.
     public async Task Requeue_unknown_job_returns_not_found()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var jobClient = Substitute.For<IBackgroundJobClient>(); // ChangeState defaults to false
 
         var response = await WiredAdminClient(factory, storage: null, jobClient)

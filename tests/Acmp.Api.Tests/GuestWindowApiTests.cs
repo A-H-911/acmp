@@ -17,8 +17,16 @@ namespace Acmp.Api.Tests;
 // and assigned only in the Schedule factory; there is no PUT/PATCH on /api/meetings and no feature
 // mutates them. DW-025 as raised assumed otherwise. IGuestWindowWriter takes an arbitrary instant so
 // a future reschedule can call it with the new end plus the grace.
-public class GuestWindowApiTests
+public class GuestWindowApiTests : IClassFixture<IdentityProviderHost>
 {
+    // WBS-27.2 / DEC-124 d1 - the SECOND shared host: WithIdentityProvider() composes a
+    // deliberately different one (ADR-0040 / SC-005). Fresh() clears FakeIdentityProvider's
+    // recorded calls, which accumulate and which these tests assert over; xUnit runs this ctor
+    // once per test method even though the fixture is built once per class.
+    private readonly AcmpWebApplicationFactory _idpFactory;
+
+    public GuestWindowApiTests(IdentityProviderHost identity) => _idpFactory = identity.Fresh();
+
     private static readonly DateTimeOffset FutureEnd = DateTimeOffset.Parse("2099-07-01T10:30:00Z");
 
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub)
@@ -74,7 +82,7 @@ public class GuestWindowApiTests
     [Fact] // a meeting that will not happen must not leave an outsider with live access
     public async Task Cancelling_a_meeting_closes_its_guest_presenters_windows()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var meetingId = await ScheduleAsync(sec);
         var topicId = Guid.NewGuid();
@@ -100,7 +108,7 @@ public class GuestWindowApiTests
     [Fact] // the slot the access was granted for no longer exists
     public async Task Removing_the_agenda_item_closes_its_guest_presenters_window()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var meetingId = await ScheduleAsync(sec);
         var topicId = Guid.NewGuid();
@@ -116,7 +124,7 @@ public class GuestWindowApiTests
     [Fact] // handing the slot to somebody else revokes the guest it was granted for
     public async Task Reassigning_the_slot_closes_the_replaced_guests_window()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var meetingId = await ScheduleAsync(sec);
         var topicId = Guid.NewGuid();
@@ -134,7 +142,7 @@ public class GuestWindowApiTests
     [Fact] // ⚠ THE CASE THAT MAKES THIS NON-TRIVIAL: a guest with a SECOND slot keeps their access
     public async Task A_guest_who_still_presents_elsewhere_keeps_their_window()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var sec = Client(factory, "Secretary", "kc-sec");
 
         var firstMeeting = await ScheduleAsync(sec);
@@ -161,7 +169,7 @@ public class GuestWindowApiTests
     [Fact] // an ORDINARY member presenting at a cancelled meeting must not acquire an expiry
     public async Task Cancelling_does_not_give_a_committee_member_an_access_window()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         await factory.SeedMembersAsync(("kc-omar", "Omar H", Modules.Membership.Domain.Enums.CommitteeRole.Member));
         Guid memberId;
         using (var scope = factory.Services.CreateScope())

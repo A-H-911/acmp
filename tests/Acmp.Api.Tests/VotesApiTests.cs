@@ -8,8 +8,15 @@ namespace Acmp.Api.Tests;
 // (detail) or topic Guid (list); mutations by the vote's Guid id. Configure/open/close are Vote.Manage
 // (Chairman/Secretary); cast/change/recuse are Vote.Cast (Chairman/Member). Votes with no linked meeting skip
 // the present-quorum check, so the flow needs no seeded attendance.
-public class VotesApiTests
+public class VotesApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public VotesApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub)
     {
         var client = factory.CreateClient();
@@ -43,7 +50,7 @@ public class VotesApiTests
     [Fact] // AC-008
     public async Task Configure_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await factory.CreateClient().PostAsJsonAsync("/api/votes", ConfigBody());
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -51,7 +58,7 @@ public class VotesApiTests
     [Fact] // docs/10: Vote.Manage is Chairman/Secretary — a Member is forbidden
     public async Task Member_cannot_configure_a_vote_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member", "u-mem").PostAsJsonAsync("/api/votes", ConfigBody());
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -59,7 +66,7 @@ public class VotesApiTests
     [Fact]
     public async Task Configure_with_one_option_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new
         {
             topicId = Guid.NewGuid(),
@@ -76,7 +83,7 @@ public class VotesApiTests
     [Fact] // W11 full round-trip: configure → open → cast → close, then read detail + list
     public async Task Full_vote_flow_configure_open_cast_close()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var topic = Guid.NewGuid();
 
@@ -107,7 +114,7 @@ public class VotesApiTests
     [Fact] // docs/10: cast is Vote.Cast (Chairman/Member) — a Secretary is forbidden
     public async Task Secretary_cannot_cast_a_ballot_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody())).Content.ReadFromJsonAsync<VoteSummary>();
         await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });
@@ -119,7 +126,7 @@ public class VotesApiTests
     [Fact] // AC-024: close below the cast quorum → 409 and the vote stays Open
     public async Task Close_without_quorum_returns_409_and_stays_open()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody(minCast: 2))).Content.ReadFromJsonAsync<VoteSummary>();
         await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });
@@ -135,7 +142,7 @@ public class VotesApiTests
     [Fact] // AC-025: a ballot cannot be cast after the vote is closed (immutable) → 409
     public async Task Cast_after_close_returns_409()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody(minCast: 1))).Content.ReadFromJsonAsync<VoteSummary>();
         await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });
@@ -151,7 +158,7 @@ public class VotesApiTests
     [Fact]
     public async Task Cast_second_ballot_returns_409()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody(minCast: 1))).Content.ReadFromJsonAsync<VoteSummary>();
         await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });
@@ -165,7 +172,7 @@ public class VotesApiTests
     [Fact]
     public async Task Open_unknown_vote_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var open = await Client(factory, "Secretary", "u-sec").PostAsJsonAsync($"/api/votes/{Guid.NewGuid()}/open", new { });
         open.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -173,7 +180,7 @@ public class VotesApiTests
     [Fact] // W11: while the vote is Open a voter recasts (change) and another recuses — both 204
     public async Task Change_ballot_and_recuse_while_open_return_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "u-sec");
         var vote = await (await sec.PostAsJsonAsync("/api/votes", ConfigBody(minCast: 1))).Content.ReadFromJsonAsync<VoteSummary>();
         await sec.PostAsJsonAsync($"/api/votes/{vote!.Id}/open", new { });

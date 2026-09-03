@@ -8,8 +8,15 @@ namespace Acmp.Api.Tests;
 // committee-wide; raise/mitigate/close/escalate are Risk.Manage; accept is the narrower Risk.Accept
 // (Chairman/Secretary only, no allow-if-owner). The acting subject/roles are set per request via the test
 // auth header, so the authorization narrowing is exercised end to end.
-public class RisksApiTests
+public class RisksApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public RisksApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -51,7 +58,7 @@ public class RisksApiTests
     [Fact] // AC-008
     public async Task Raise_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/risks", RaiseBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -59,7 +66,7 @@ public class RisksApiTests
     [Fact] // docs/10 row 16: Risk.Manage denies Auditor
     public async Task Auditor_cannot_raise_a_risk_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/risks", RaiseBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -67,7 +74,7 @@ public class RisksApiTests
     [Fact]
     public async Task Raise_with_empty_title_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { title = Loc("", ""), likelihood = "Medium", impact = "High", ownerUserId = "kc-owner", ownerName = "Owner", subjectType = "Topic", subjectId = Guid.NewGuid() };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/risks", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -76,7 +83,7 @@ public class RisksApiTests
     [Fact] // W15: raise → detail → register; unknown key 404; exposure projected
     public async Task Secretary_raises_then_reads_detail_and_register()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
 
         var risk = await RaiseAsync(sec);
@@ -93,7 +100,7 @@ public class RisksApiTests
     [Fact] // W15 mitigation → begin → close lifecycle
     public async Task Full_mitigation_lifecycle_closes_the_risk()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var risk = await RaiseAsync(sec);
 
@@ -117,7 +124,7 @@ public class RisksApiTests
     [Fact] // W15: set a mitigation's status via /mitigations/{mitigationId}/status
     public async Task Set_mitigation_status_advances_the_mitigation()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var risk = await RaiseAsync(sec);
 
@@ -138,7 +145,7 @@ public class RisksApiTests
     [Fact] // Risk.Accept: Secretary allowed (204); Member denied (403)
     public async Task Accept_is_allowed_for_secretary_and_denied_for_member()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var risk = await RaiseAsync(sec);
 
@@ -158,7 +165,7 @@ public class RisksApiTests
     [Fact] // escalate transitions to Escalated (empty roster → no recipients, still 204)
     public async Task Escalate_moves_the_risk_to_escalated()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var risk = await RaiseAsync(sec);
 

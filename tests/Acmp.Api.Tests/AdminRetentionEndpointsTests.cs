@@ -15,8 +15,15 @@ namespace Acmp.Api.Tests;
  * enforce it (DEF-066 — a write that had never run against SQL Server under four green suites). The
  * upsert-vs-duplicate behaviour needs Acmp.Integration.Tests, which is the only real SQL Server.
  */
-public class AdminRetentionEndpointsTests
+public class AdminRetentionEndpointsTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AdminRetentionEndpointsTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private sealed record RetentionPolicy(bool AutomaticPurgeEnabled, List<RetentionSetting> Settings);
     private sealed record RetentionSetting(string Key, string ValueJson);
 
@@ -31,7 +38,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // NFR-059/060's v1 posture is reported as a FACT, and v1 genuinely ships no periods.
     public async Task Retention_reads_empty_with_automatic_purge_reported_off()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator").GetAsync("/api/admin/retention");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -47,7 +54,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // SEC-077: a retention config change is PRIVILEGED. Prove the refusal by forcing it.
     public async Task Non_administrator_cannot_read_retention()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Secretary", sub: "kc-sec").GetAsync("/api/admin/retention");
 
@@ -57,7 +64,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // The write is the privileged half — a reader-adjacent role must not reach it either.
     public async Task Non_administrator_cannot_write_retention()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Auditor", sub: "kc-aud")
             .PutAsJsonAsync("/api/admin/retention/retention.topic.years", new { ValueJson = "{\"years\":7}" });
@@ -68,7 +75,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // The mechanism: an Administrator sets a period and it reads back. No value ships; one is SET.
     public async Task Administrator_sets_a_retention_period_and_reads_it_back()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var client = Client(factory, "Administrator");
 
         var put = await client.PutAsJsonAsync(
@@ -86,7 +93,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // The key is identity, so a second write REPLACES rather than duplicating.
     public async Task Writing_the_same_key_twice_replaces_the_value()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var client = Client(factory, "Administrator");
 
         await client.PutAsJsonAsync("/api/admin/retention/retention.topic.years", new { ValueJson = "{\"years\":7}" });
@@ -100,7 +107,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // Casing and whitespace are normalized, or one setting silently becomes two rows.
     public async Task Key_casing_and_whitespace_do_not_create_a_second_setting()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var client = Client(factory, "Administrator");
 
         await client.PutAsJsonAsync("/api/admin/retention/retention.topic.years", new { ValueJson = "{\"years\":7}" });
@@ -114,7 +121,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // The Configuration table is SHARED, so this endpoint owns the `retention.` namespace and no more.
     public async Task A_key_outside_the_retention_namespace_is_refused()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator")
             .PutAsJsonAsync("/api/admin/retention/smtp.password", new { ValueJson = "{\"v\":1}" });
@@ -125,7 +132,7 @@ public class AdminRetentionEndpointsTests
     [Fact] // Value is stored AS JSON (SEC-103), so malformed input is refused at the boundary, not later.
     public async Task A_value_that_is_not_json_is_refused()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator")
             .PutAsJsonAsync("/api/admin/retention/retention.topic.years", new { ValueJson = "seven years" });

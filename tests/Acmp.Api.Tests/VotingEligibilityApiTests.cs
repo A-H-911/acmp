@@ -10,8 +10,15 @@ namespace Acmp.Api.Tests;
 // The gate is the command's own AllowedRoles rather than a per-endpoint policy, so THIS is where it
 // is proven end to end: a handler test shows the rule, a request through the real pipeline shows an
 // unauthorised caller never reaching the handler.
-public class VotingEligibilityApiTests
+public class VotingEligibilityApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public VotingEligibilityApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private sealed record Body(bool IsVotingEligible);
 
     private sealed record MemberRow(Guid PublicId, string Role, bool IsVotingEligible);
@@ -37,7 +44,7 @@ public class VotingEligibilityApiTests
     [Fact]
     public async Task Changing_voting_eligibility_without_a_token_is_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null)
             .PutAsJsonAsync($"/api/members/{Guid.NewGuid()}/voting-eligibility", new Body(false));
@@ -53,7 +60,7 @@ public class VotingEligibilityApiTests
     [InlineData("Guest")]
     public async Task Changing_voting_eligibility_is_403_for_every_role_except_Chairman_and_Secretary(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var target = await SeedTargetAsync(factory);
 
         var response = await Client(factory, role, "kc-other")
@@ -71,7 +78,7 @@ public class VotingEligibilityApiTests
     [InlineData("Secretary")]
     public async Task Chairman_and_Secretary_can_both_turn_eligibility_off(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var target = await SeedTargetAsync(factory);
 
         var response = await Client(factory, role, "kc-" + role.ToLowerInvariant())
@@ -88,7 +95,7 @@ public class VotingEligibilityApiTests
     [Fact]
     public async Task An_unknown_member_is_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Chairman", "kc-chair")
             .PutAsJsonAsync($"/api/members/{Guid.NewGuid()}/voting-eligibility", new Body(true));

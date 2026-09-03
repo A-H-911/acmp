@@ -8,8 +8,15 @@ namespace Acmp.Api.Tests;
 // Reads are committee-wide; create + the lifecycle transitions are Action.Create; verify is Action.Verify
 // with the SoD-1 guard (verifier ≠ owner/completer) inside the handler (AC-012/013). The acting subject is
 // set per request via the test auth header, so owner-vs-verifier identity is exercised end to end.
-public class ActionsApiTests
+public class ActionsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public ActionsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -51,7 +58,7 @@ public class ActionsApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).PostAsJsonAsync("/api/actions", CreateBody());
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -59,7 +66,7 @@ public class ActionsApiTests
     [Fact] // docs/10: Action.Create denies Reviewer
     public async Task Reviewer_cannot_create_an_action_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Reviewer").PostAsJsonAsync("/api/actions", CreateBody());
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -67,7 +74,7 @@ public class ActionsApiTests
     [Fact]
     public async Task Create_with_empty_title_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { title = Loc("", ""), priority = "Normal", ownerUserId = "kc-owner", ownerName = "Owner", sourceType = "Decision", sourceId = Guid.NewGuid() };
         var response = await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/actions", body);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -76,7 +83,7 @@ public class ActionsApiTests
     [Fact] // W13: create → detail → register; unknown key 404
     public async Task Secretary_creates_then_reads_detail_and_register()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
 
         var action = await CreateAsync(sec);
@@ -96,7 +103,7 @@ public class ActionsApiTests
     [Fact] // AC-013: full W14 flow — an independent verifier closes it (Completed → Verified)
     public async Task Independent_verifier_completes_the_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var action = await CreateAsync(sec, owner: "kc-owner");
 
@@ -115,7 +122,7 @@ public class ActionsApiTests
     [Fact] // AC-012: the owner cannot verify their own action → 403, stays Completed
     public async Task Owner_cannot_verify_their_own_action_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var action = await CreateAsync(sec, owner: "kc-owner");
         await sec.PostAsync($"/api/actions/{action.Id}/start", null);
@@ -131,7 +138,7 @@ public class ActionsApiTests
     [Fact]
     public async Task Verify_unknown_action_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var res = await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/actions/{Guid.NewGuid()}/verify", null);
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -141,7 +148,7 @@ public class ActionsApiTests
     [Fact]
     public async Task Progress_block_unblock_cancel_transitions_return_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var action = await CreateAsync(sec);
 

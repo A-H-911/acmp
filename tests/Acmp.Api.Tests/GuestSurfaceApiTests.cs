@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // Every case here FORCES the refusal against the real pipeline. That matters more than usual for this
 // gate: the endpoints it protects have no authorization metadata of their own, so a test that merely
 // asserted the middleware was registered would pass while the record stayed readable.
-public class GuestSurfaceApiTests
+public class GuestSurfaceApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public GuestSurfaceApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub = "kc-guest")
     {
         var client = factory.CreateClient();
@@ -37,7 +44,7 @@ public class GuestSurfaceApiTests
     [InlineData("/api/admin/health")]
     public async Task A_guest_is_refused_on_every_content_api(string path)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest").GetAsync(path);
 
@@ -49,7 +56,7 @@ public class GuestSurfaceApiTests
     [Fact] // without this a guest cannot complete a single sign-in (ADR-0004 provisions on first login)
     public async Task A_guest_may_provision_their_own_profile()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest").PostAsync("/api/members/me", content: null);
 
@@ -59,7 +66,7 @@ public class GuestSurfaceApiTests
     [Fact] // 'agenda: view' in the design's role matrix
     public async Task A_guest_may_read_meetings()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest").GetAsync("/api/meetings");
 
@@ -69,7 +76,7 @@ public class GuestSurfaceApiTests
     [Fact] // VIEW, not full: the read allowance must not carry a write with it
     public async Task A_guest_may_not_write_to_meetings()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest").PostAsJsonAsync("/api/meetings", new { title = "x" });
 
@@ -80,7 +87,7 @@ public class GuestSurfaceApiTests
     [Fact] // the bell renders in the shell for every signed-in user
     public async Task A_guest_may_read_their_own_notifications()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest").GetAsync("/api/notifications");
 
@@ -90,7 +97,7 @@ public class GuestSurfaceApiTests
     [Fact] // the gate must not fire for anybody else — this is the regression that would hurt most
     public async Task A_committee_member_is_unaffected()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member", sub: "kc-member").GetAsync("/api/topics");
 
@@ -100,7 +107,7 @@ public class GuestSurfaceApiTests
     [Fact] // an insider who is ALSO listed as a guest keeps their committee access
     public async Task A_principal_holding_Guest_and_a_committee_role_is_treated_as_an_insider()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Guest,Member", sub: "kc-both").GetAsync("/api/topics");
 

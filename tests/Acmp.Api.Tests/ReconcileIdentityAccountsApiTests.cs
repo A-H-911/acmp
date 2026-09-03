@@ -22,8 +22,25 @@ namespace Acmp.Api.Tests;
 // side — two layers encode the same matrix and the outer one wins. The endpoint policy is kept for
 // consistency with its two sibling admin endpoints, and it carries the same consequence they do:
 // because it short-circuits before MediatR, a 403 from it is NOT audited until DEF-056 is fixed.
-public class ReconcileIdentityAccountsApiTests
+public class ReconcileIdentityAccountsApiTests : IClassFixture<AcmpWebApplicationFactory>, IClassFixture<IdentityProviderHost>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    // WBS-27.2 / DEC-124 d1 - the SECOND shared host: WithIdentityProvider() composes a
+    // deliberately different one (ADR-0040 / SC-005). Fresh() clears FakeIdentityProvider's
+    // recorded calls, which accumulate and which these tests assert over; xUnit runs this ctor
+    // once per test method even though the fixture is built once per class.
+    private readonly AcmpWebApplicationFactory _idpFactory;
+
+    public ReconcileIdentityAccountsApiTests(AcmpWebApplicationFactory factory, IdentityProviderHost identity)
+    {
+        _factory = factory.Reset();
+        _idpFactory = identity.Fresh();
+    }
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "kc-admin")
     {
         var client = factory.CreateClient();
@@ -38,7 +55,7 @@ public class ReconcileIdentityAccountsApiTests
     [Fact]
     public async Task Reconcile_without_a_token_is_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null).PostAsync("/api/members/reconcile", null);
 
@@ -54,7 +71,7 @@ public class ReconcileIdentityAccountsApiTests
     [InlineData("Guest")]
     public async Task Reconcile_is_403_for_every_role_except_Administrator(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, role, "kc-other").PostAsync("/api/members/reconcile", null);
 
@@ -68,7 +85,7 @@ public class ReconcileIdentityAccountsApiTests
     [Fact]
     public async Task An_authorised_caller_still_cannot_reconcile_when_no_identity_provider_is_configured()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator").PostAsync("/api/members/reconcile", null);
 
@@ -82,7 +99,7 @@ public class ReconcileIdentityAccountsApiTests
     [Fact]
     public async Task Reconcile_creates_the_member_over_HTTP_and_the_roster_then_shows_them()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var wildcardId = SeedWildcard(factory);
 
         factory.Identity.Accounts.Add(new IdentityAccount(
