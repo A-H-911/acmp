@@ -7,31 +7,47 @@ metadata:
   modified: 2026-09-03
 ---
 
-## ⛔⛔⛔ THE FIFTH CAUSE, 2026-09-03 — AND IT INVALIDATES THE DIAGNOSTIC METHOD BELOW
+## ⛔⛔⛔ THERE IS NO FIFTH CAUSE FOR `Edit`/`Write` — THERE IS NO RULE, AND THAT IS DELIBERATE
 
-Asked the question this file says to ask first, the operator answered **ALL FOUR tool families —
-`node`, `gh`, `grep`/`sed`/`cat`, AND `Edit`/`Write`**. Every one is covered by `settings.json`'s 322
-entries in *both* matcher syntaxes, plus ~90 more in `settings.local.json`; both parse; the `Edit`
-calls used repo-relative paths. ⭐ **When a correct allowlist is ignored across four unrelated tool
-families at once, the allowlist is not being consulted at all.**
+**2026-09-03. I published a "fifth cause" here and it was REFUTED the same day by the operator running
+the command.** The retraction is kept because the reasoning error is more useful than the claim was.
 
-**The evidence sat on line 3 of a file nobody had opened.** `.claude/settings.local.json`:
-`"env": { "ECC_DISABLED_HOOKS": "pre:bash:gateguard-fact-force,pre:edit-write:gateguard-fact-force" }`
-That proves the ECC hook system is installed, that it carries `PreToolUse` hooks whose matchers are
-literally **`bash` and `edit-write`**, and that someone has already had to disable two **by name**.
-⛔ **A `PreToolUse` hook returning `ask` overrides an allowlist completely — no number of entries
-outvotes it.**
+**What I claimed:** asked which tool the prompt names, the operator answered **all four families** —
+`node`, `gh`, `grep`/`sed`/`cat`, **and `Edit`/`Write`**. I reasoned: *every one of those is
+allowlisted, therefore the allowlist is not being consulted*, and pointed at a global `PreToolUse`
+hook.
 
-⚠ Second clue, found by being refused: reading `~/.claude/settings.json` fails with
-*"`permissions.blockReadsOutsideWorkingDirectories` blocks reads outside the working directories"*.
-**That setting is in NEITHER project file**, so a user-level file governs the session and the agent
-cannot read it.
+⛔⛔ **The premise was false and I never measured it.** I grepped `"Bash([^)]*)"` — **Bash only** —
+and took the `Edit` rules from `PERMISSIONS.md`'s *prose* about `.scratch/**`. Measured properly:
 
-⭐⭐ **THE STRUCTURAL POINT, which is bigger than the instance: every cause documented below is
-PROJECT-LEVEL, so `PERMISSIONS.md` and this file are both blind to a cause outside the repo.** They
-return a clean, confident, wrong answer — *the allowlist looks correct* — which is `LL-047`'s
-uninterpretable negative. **Ask the operator to run `! cat ~/.claude/settings.json`** and look for a
-`hooks.PreToolUse` matcher covering `Bash|Edit|Write`, and for `permissions.defaultMode`.
+```
+grep -o '"\(Edit\|Write\|Read\)([^)]*)"' .claude/settings.json .claude/settings.local.json
+```
+
+⭐ **`Edit(.scratch/**)` and its gitbash-absolute twin are the ONLY `Edit` rules that exist.** No
+`Edit(tests/**)`, no `Edit(src/**)`, no `Edit(.github/**)`, none for `tamheed-package/**`. So editing
+source, a workflow, or the package **prompts correctly and by design** — `PERMISSIONS.md` says so in
+its own words: *"fewer interruptions on READING, not fewer on ACTING."*
+
+⚠ **`~/.claude/settings.json`, once read:** `hooks.PreToolUse` has exactly two matchers — **`Bash`** →
+`npx block-no-verify@1.1.2`, and `Skill` → a statusline recorder. **Nothing matches `Edit` or
+`Write`.** User-level `permissions` holds only `blockReadsOutsideWorkingDirectories: true`, with **no
+`allow` array**, so it neither replaces nor shadows the project allowlist. No `defaultMode`.
+
+⭐⭐ **THE LESSON, AND IT IS THE ONE TO CARRY: I VERIFIED ONE HALF OF A PREMISE AND GENERALISED ACROSS
+THE WHOLE OF IT.** This file already says *"a dead rule and a missing rule produce the IDENTICAL
+symptom, so reading the allowlist can never tell them apart"* — and the remedy is to read it **for the
+tool in question**. I did that for `Bash` and not for `Edit`, then wrote a fifth cause on the gap.
+`LL-006`: read the implementation, not the document describing it.
+
+⚠ **What is still genuinely unexplained is smaller than I claimed:** only the `Bash` families, which
+*are* allowlisted in both syntaxes. **The one new candidate is `npx block-no-verify@1.1.2` running
+before every Bash call** — recorded as a candidate, not a cause (`LL-029`). The isolating step is the
+operator's: disable that hook for one session and see whether Bash prompts stop.
+
+## ⛔ `.claude/PERMISSIONS.md` LINE 48 TELLS YOU TO DO THE FORBIDDEN THING (`DEF-133`)
+
+**This one is independent of the retraction above and still stands.**
 
 ## ⛔ `.claude/PERMISSIONS.md` LINE 48 TELLS YOU TO DO THE FORBIDDEN THING (`DEF-133`)
 
@@ -40,6 +56,11 @@ forbids exactly that. **The document written to stop prompts instructs the agent
 I ran `node -p` with both files in context. ⚠ `CLAUDE.md`'s *"two sources for one instruction is how
 the wrong one gets read"* was written expecting MEMORY to be the stale copy; **here the repository
 document is.** A habit calibrated on one direction does not fire in the other.
+
+⚠ **Its EXCLUSION TABLE, by contrast, is accurate and is the answer to most of what prompts** — `rm`,
+`git push`, `gh pr create/merge`, `gh run rerun`, and (by the absence of any rule) every `Edit` outside
+`.scratch/**`. **Those are the last human checkpoint in front of the actions this project's decision
+register spends most of its words governing. Do not treat them as faults to fix.**
 
 ⭐ **The half you control: stop shelling out.** Package reads → `entity_query`/`trace_query` (MCP, no
 shell). File reads → `Read`. Searches → `Grep`. `LL-045`'s truncation warning is about building WRITE

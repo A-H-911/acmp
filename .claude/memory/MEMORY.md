@@ -12,10 +12,13 @@
 shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
 PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
 could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
-★★★ **PERMISSION PROMPTS HAVE A FIFTH CAUSE AND IT IS OUTSIDE THE REPO** — see the updated
-[four-causes file](permission-prompts-four-causes.md). All four tool families prompt ⇒ the allowlist is not
-consulted ⇒ a global `PreToolUse` hook. ⛔ `PERMISSIONS.md` line 48 recommends `node -e`, which the memory
-file forbids (`DEF-133`). ⭐ **Stop shelling out**: `entity_query`/`Read`/`Grep`, not `node`+`grep`.
+★★★ ⛔ **I PUBLISHED A "FIFTH PERMISSION CAUSE" AND IT WAS REFUTED THE SAME DAY** —
+[four-causes file](permission-prompts-four-causes.md) carries the retraction. **`Edit(.scratch/**)` is the
+ONLY `Edit` rule that exists**, so editing source / a workflow / the package prompts **by design**
+(*"fewer interruptions on READING, not on ACTING"*). ⛔⛔ **My error is the lesson: I grepped `Bash(` only,
+took the `Edit` rules from PROSE, and generalised a half-measured premise** (`LL-006`; `LL-055`'s shape, 3rd
+time in one day). ⭐ **Measure the allowlist FOR THE TOOL ACTUALLY PROMPTING** before concluding anything.
+⚠ `PERMISSIONS.md` line 48 recommends `node -e`, which the memory file forbids — that half stands (`DEF-133`).
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.
   ⛔ Still NOT clause (2) — an elimination is not an identification. `DEC-121` d2's 40-min ceiling is why the

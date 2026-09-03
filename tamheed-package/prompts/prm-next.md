@@ -284,8 +284,12 @@ the failure it exists to warn about.
 ⚠ **Found by the pre-handoff sweep on the identifiers this session moved** — grepping `DEF-132` and reading what the hit CONCLUDES rather than what it asserts. **No instrument here could have**: `count-prompt-ids.py` resolves ids and `DEF-132` is real and correctly statused; the prose-status checker wants a `(Status)` form; the colour and slice-id greps key on other tokens. **Sixth consecutive finding invisible to every check this file owns.**
 ⚠ **THE FIFTEENTH ESCAPE IS SEPARATE, IS ALSO MINE, AND IS COUNTED THOUGH IT IS TRIVIAL:** commit `ebe3ceb1`'s message says *"New memory topic: a-control-proves-firing-not-coverage -> coupling"*, naming a file that does not exist — the file is `a-control-proves-firing-not-coupling.md`, and the commit's own diff lists it correctly. **Counted rather than waved through as garble**, because it names a wrong artefact and a reader grepping for it finds nothing; the FORTY-EIGHTH's rule is that under-counting my own defeats the instrument. A commit message cannot be amended.
 
+⚠⚠⚠ **THE SIXTEENTH ESCAPE IS MINE, IS THE LARGEST YET IN SUBSTANCE, AND IS IN TWO PUSHED COMMIT MESSAGES.** `ebe3ceb1` asserts *"the permission-prompt file gains a FIFTH cause and it is outside the repository ... so the allowlist is not being consulted"*, and `cc92665a` carries the same claim through `PE-833`. **Both are false in their central assertion.** The operator ran `cat ~/.claude/settings.json`: `hooks.PreToolUse` matches only `Bash` and `Skill`, nothing matches `Edit`/`Write`, user-level `permissions` has no `allow` array, and there is no `defaultMode`. **`PE-834` is the correction of record.**
+⛔⛔ **THE REASONING FAULT, WHICH IS WHAT TO CARRY: I MEASURED HALF A PREMISE AND GENERALISED ACROSS ALL OF IT.** The inference was *all four tool families are allowlisted, therefore the allowlist is not being consulted*. I had grepped `"Bash([^)]*)"` — **Bash only** — and taken the `Edit` rules from `.claude/PERMISSIONS.md`'s PROSE. Measured: **`Edit(.scratch/**)` is the ONLY `Edit` rule in either settings file**, so editing source, a workflow or the package prompts CORRECTLY and BY DESIGN. **There was no fault to explain on that half at all.**
+⚠ **It is `LL-006` (read the implementation, not the document describing it) and `LL-055`'s shape for the THIRD time in one session** — a control, or a premise, verified on one part and assumed across the rest. ⭐ **What survives untouched: `DEF-133` itself** (line 48 really does recommend the shape cause (4) forbids), **and the exclusion table, which is accurate and explains most of what prompts.** ⛔ Do not read this retraction as licence to widen anything.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty** times, and **fifteen** wrong assertions have escaped into
+file has carried a stale statement **fifty** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -2225,12 +2229,17 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-134`, `DEF-109`, `DEF-130`,
    `DEF-121`, `DEF-133`, `DW-096`, `LL-055`, `LL-054`, `PE-825`, `PE-828`, `PE-829`, and
    the `wbs-item` rows the live slice's `wbs-done` names.**
-   ⚠ **`DEF-133` AND `PE-825` ARE IN THAT LIST BECAUSE THEY NAME AN ACT ONLY THE OPERATOR CAN PERFORM**,
-   and `.claude/**` is outside what this agent may write — the auto-mode classifier blocks self-widening of
-   the permission surface, and that guard is correct and must never be routed around. ⛔ **Do not re-derive
-   the diagnosis from the allowlist**: every cause `.claude/PERMISSIONS.md` and the memory file document is
-   project-level, and both are structurally blind to one that is not, so they return a clean, confident,
-   wrong answer. **Ask the operator to run the command `PE-825` names.** ⛔ **What is at what status, what is still
+   ⚠ **`DEF-133` IS IN THAT LIST BECAUSE ITS FIX IS AN ACT ONLY THE OPERATOR CAN PERFORM** — `.claude/**`
+   is outside what this agent may write, and the classifier blocking self-widening of the permission
+   surface is correct and must never be routed around.
+   ⛔⛔ **READ `PE-834` BEFORE `PE-825`, BECAUSE `PE-834` REFUTES IT.** `PE-825` published a "fifth,
+   non-project-level" cause for permission prompts and it is **WRONG**. `PE-834` is the correction, taken
+   from the operator running the command: `Edit(.scratch/**)` is the ONLY `Edit` rule that exists, so every
+   edit to source, a workflow or the package prompts **correctly and by design** — *fewer interruptions on
+   READING, not on ACTING*, which is `.claude/PERMISSIONS.md`'s stated intent. ⭐ **The error is the useful
+   part: I grepped `Bash(` only, inferred the `Edit` rules from that document's PROSE, and generalised a
+   half-measured premise across the whole of it** (`LL-006`). **Measure the allowlist for the tool actually
+   prompting, with `grep -o '\"\\(Edit\\|Write\\|Read\\)([^)]*)\"'`, before concluding anything about it.** ⛔ **What is at what status, what is still
    open, and what anyone owes anyone is deliberately NOT written here.** ⚠ **No `WBS-` prefix is written
    there on purpose** — naming one is the FORTY-SIXTH's fault in a smaller costume, wrong the moment a
    later slice opens; `readiness_check` returns them and never rots.
