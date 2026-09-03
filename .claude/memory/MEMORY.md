@@ -1,9 +1,9 @@
 # Memory Index — ACMP
 
 > One line per entry; detail lives in topic files and the package. Read the linked file before acting.
-> ⚠⚠ **MEASURED CEILING: 200 LINES** (not bytes — the old byte figure was disproven and the wrong
-> dimension). Past 200 is dropped **silently**, and it had already eaten the "Standing rules" section.
-> ⭐ **A limit disproven in one unit is not a limit disproven.** `wc -l` before adding; keep under ~140.
+> ⚠⚠ **MEASURED CEILING: 200 LINES** (not bytes — disproven, wrong dimension). Past 200 drops **silently**
+> and had already eaten "Standing rules". ⭐ **`wc -l` BEFORE *and AFTER* every edit** — 2026-09-03 went
+> 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
 ## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121`: memory pressure REFUTED, clause (2) still unmet · `DEC-111`–`DEC-116`
@@ -13,12 +13,14 @@ falsified it hours later. `gh run list --branch main` is the answer; cite a RUN 
 ★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
 before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
-forced GC. Carried, not fixed — remedy is `DW-096` (share hosts, ~56 classes); the 3% store fix was
-declined on `LL-035`.
-- ⛔⛔ **APPROVAL PROMPTS COME FROM COMMAND *SHAPE*, NOT THE ALLOWLIST.** No `cd` prefix (cwd IS the repo), no
-  heredocs, no `&&` chains — a multi-statement string matches no prefix rule. **One simple command per
-  call**; use Write/Edit for files (`.claude/PERMISSIONS.md`). ⭐ Scratch → **`.scratch/<id>/`**; the memory
-  dir is a **junction to `<repo>/.claude/memory`** — use the REPO path. ⛔ `.gitignore`/`.github/**` → PR.
+forced GC; 3% store fix declined on `LL-035`. ⭐ `DEC-120` ACTIVATED `DW-096` → `WBS-27.2` in new `SL-036`
+(**overrode carry**); may NOT claim to fix it. ⛔ Clause (2) is **UNREACHABLE** — the capture hooks the
+OTHER family's `ContainerNotRunningException` — so `WBS-27.1` builds the missing instrument.
+★★★ [**PERMISSION PROMPTS: FOUR CAUSES, ONLY TWO CONFIG**](permission-prompts-four-causes.md) — ⛔ *shape*
+  was ONE of them; that half-answer cost **five complaints**. `Write()` rules are DEAD (only `Edit()`);
+  pass Write/Edit a **REPO-RELATIVE** path; a PIPE is a compound like `&&`; `node -e` is an
+  allowlist-escape → script FILE. ⚠ You cannot SEE prompts — ask which tool. ⛔ `rm`/push/`Edit(.claude/**)`
+  prompt BY DESIGN; the classifier blocks self-widening. ⭐ Scratch `.scratch/<id>/`; memory = junction.
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
@@ -192,8 +194,6 @@ pipe, production's reconciled state.
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`) — bolding breaks the G-PROGRESS gate. · **A new advisory can turn `main` red with no code change** (`GHSA-q939-rpr3-3284`). · **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — write mounted secrets unconditionally.
 
 ## ⚠ Unlinked topic files + the completed ladder
-
-**Findable by `ls`, current value NOT vouched for** — eleven unlinked topic files plus **the completed
-ladder P1–P19 + PH-5** (`p*`/`keystone-*`/`ph5-*`), all superseded by the package's slice rows.
-⛔ Do not re-open them.
-⚠ **Re-run the inbound-link check after ANY compaction** (2026-08-29: 25 orphans, all ladder files).
+**Findable by `ls`, current value NOT vouched for** — eleven unlinked files plus the completed ladder
+P1–P19 + PH-5 (`p*`/`keystone-*`/`ph5-*`), superseded by the package's slice rows. ⛔ Do not re-open.
+⚠ Re-run the inbound-link check after ANY compaction (2026-08-29: 25 orphans, all ladder files).
