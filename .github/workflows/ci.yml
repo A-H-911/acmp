@@ -49,8 +49,14 @@ jobs:
       - name: Test + coverage
         # DEF-121 — where ContainerStartup lifts a crashed container's own log directory to, so the
         # failure that motivated it has evidence beyond the stdout Testcontainers already surfaced.
+        #
+        # WBS-27.1 / DEC-120 d3 — where Acmp.Api.Tests' StallWatchdog writes, so DEF-109's clause (2) has
+        # something to fire on. That clause asks for "a hang stack, a process dump, a runner resource
+        # metric" and NO artefact has ever existed for any of its four occurrences, because the capture
+        # above hooks ContainerNotRunningException — DEF-121/DEF-130's path, not this one.
         env:
           ACMP_CRASH_ARTEFACT_DIR: ${{ github.workspace }}/crash-artefacts
+          ACMP_STALL_ARTEFACT_DIR: ${{ github.workspace }}/stall-artefacts
         run: dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
       # DEF-121 clause (2) asks for a captured log that NAMES A CAUSE. On the recorded occurrence the
@@ -69,6 +75,24 @@ jobs:
         with:
           name: container-crash-artefacts
           path: ${{ github.workspace }}/crash-artefacts
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # DEF-109 clause (2). Same shape and the same two reasons as the step above: `if: failure()` so a
+      # green run does not attach an empty artifact and teach a reader to ignore it, and
+      # `if-no-files-found: ignore` because most backend failures involve no stall at all and this step
+      # must not turn one red job into two.
+      #
+      # ⚠ A DEF-109 red WITHOUT this artefact is itself informative and must be recorded as such: it means
+      # the suite failed on the 100-second ceiling while a dedicated AboveNormal thread was still being
+      # scheduled promptly, which points away from process-wide scheduling starvation and is the first
+      # thing any of its four occurrences has been able to say in that direction.
+      - name: Stall watchdog snapshots (DEF-109)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: stall-watchdog-snapshots
+          path: ${{ github.workspace }}/stall-artefacts
           if-no-files-found: ignore
           retention-days: 30
 
