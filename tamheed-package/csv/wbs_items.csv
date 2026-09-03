@@ -304,7 +304,7 @@ CONSTRAINTS ANY ATTEMPT INHERITS. It must not itself perturb the thing it measur
 
 WHAT IT MAY NOT CLAIM. It does not fix `DEF-109` and is not a remedy for it; it makes the row's clause (2) reachable. `LL-035` governs anything that follows.
 
-AND THE PRE-BUILD SWEEP IS MANDATORY BEFORE ANY CODE (SL-035's habit, which resized or stopped every item it was run on): sweep `requirements`, `adrs`, `decisions`, `open_questions`, `scope_changes`, `deferred_work`, `defects` AND `progress_entries` for existing coverage of test-host diagnostics, and choose the control from the register most likely to be MISSED (`LL-053`).",WBS-27,PH-7,SL-036,M,Approved,,,,,,
+AND THE PRE-BUILD SWEEP IS MANDATORY BEFORE ANY CODE (SL-035's habit, which resized or stopped every item it was run on): sweep `requirements`, `adrs`, `decisions`, `open_questions`, `scope_changes`, `deferred_work`, `defects` AND `progress_entries` for existing coverage of test-host diagnostics, and choose the control from the register most likely to be MISSED (`LL-053`).",WBS-27,PH-7,SL-036,M,Approved,,,,,,2026-09-03T07:46:17Z
 WBS-27.2,"`DW-096` - SHARE `WebApplicationFactory` HOSTS ACROSS `Acmp.Api.Tests` INSTEAD OF BUILDING ~293 OF THEM. SECOND IN THE SLICE, DELIBERATELY, BECAUSE ITS DANGEROUS FAILURE MODE IS A PASS.
 
 ⚠⚠ ACTIVATED BY `DEC-120` d2 **OVER THE AGENT'S RECOMMENDATION TO CARRY**, on the `DEC-071` d3 precedent - the reasoning-against is preserved in that decision so the activation is not later mistaken for agreement about HOW. Read `DEC-120` d2, `DEC-115` d3 and `DEC-116` d4 before sizing anything. The trigger that fired is `DW-096`'s own (b), *a FOURTH `DEF-109` occurrence*, which landed 2026-09-02 (PR `#341` head `dba8d483`, CI run `33660158581`).
