@@ -75,6 +75,34 @@ stale-`.lock` recipe — no longer need PowerShell at all.
 `Get-ChildItem`, `Get-Command`, `Test-Path`, `Get-Date`, `Select-String`, `Measure-Object`.
 **`Remove-Item` is deliberately NOT among them** — it is `rm`, and the table below governs it.
 
+## ⛔⛔ A `Write(…)` RULE IS DEAD. ONLY `Edit(…)` GOVERNS FILE WRITES — AND THE PATH FORM MATTERS
+
+Added 2026-09-03, and it is the one fault in this whole family that **neither the operator nor the
+agent could see**, because it fails exactly like a rule that is simply absent.
+
+**`Write(path)` is never consulted by file permission checks.** `Edit(path)` rules cover ALL
+file-editing tools, Write included. This file carried four `Write(.scratch/**)`-shaped entries across
+`settings.json` and `settings.local.json`, every one of them inert. They have been removed; the
+`Edit(…)` twin already sat on the next line in all four cases, so nothing was narrowed.
+
+⚠⚠ **AND THE SECOND HALF IS THE PATH FORM, WHICH IS THE PART THAT WAS ACTUALLY PROMPTING.** The rules
+are written `Edit(.scratch/**)` (repo-relative) and `Edit(//c/Users/ahammo/Repos/acmp/.scratch/**)`
+(gitbash-absolute). **A Windows absolute path — `C:\Users\ahammo\Repos\acmp\.scratch\…` — matches
+NEITHER.** So a Write whose `file_path` was the Windows form prompted while an identical Write on the
+relative form did not.
+
+⭐ **The habit: pass Write/Edit a REPO-RELATIVE path** (`.scratch/<session>/x.txt`). It matches the rule
+as written, it is shorter, and it does not depend on which of three absolute spellings the matcher
+normalises to.
+
+⭐⭐ **WHY THIS ONE COST FOUR ROUNDS, AND IT GENERALISES BEYOND PERMISSIONS.** A dead rule and a missing
+rule produce the identical symptom, so reading the allowlist can never distinguish them — the file
+*looked* correct, and was, apart from being inert. **The agent cannot observe permission prompts at
+all**: they never appear in a tool result, so every diagnosis was inference from the operator's timing.
+`DEF-078`'s shape — a green control with no subject — pointed at the config surface itself. **What
+settled it was the harness printing its own rule-validation warnings on session start**, which is an
+instrument neither party had; nothing either of us could read would have got there.
+
 ## Both matcher syntaxes are emitted, on purpose
 
 The pre-existing entries use the legacy glob form `Bash(gh pr *)`; current Claude Code documents the

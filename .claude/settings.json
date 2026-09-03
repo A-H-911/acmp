@@ -76,7 +76,6 @@
       "Read(.claude/**)",
       "Read(.scratch/**)",
       "Read(tamheed-package/**)",
-      "Write(.scratch/**)",
       "Edit(.scratch/**)",
       "mcp__plugin_tamheed_tamheed__server_info",
       "mcp__plugin_tamheed_tamheed__package_open",
@@ -278,7 +277,6 @@
       "Bash(docker compose config)",
       "Read(scripts/**)",
       "Read(//c/Users/ahammo/Repos/acmp/.scratch/**)",
-      "Write(//c/Users/ahammo/Repos/acmp/.scratch/**)",
       "Edit(//c/Users/ahammo/Repos/acmp/.scratch/**)",
       "Read(//c/Users/ahammo/Repos/acmp/.claude/**)",
       "Bash(ps:*)",
@@ -322,7 +320,9 @@
       "mcp__plugin_tamheed_tamheed__audit_record",
       "mcp__plugin_tamheed_tamheed__work_bind",
       "mcp__plugin_tamheed_tamheed__package_close",
-      "mcp__plugin_tamheed_tamheed__handoff_emit"
+      "mcp__plugin_tamheed_tamheed__handoff_emit",
+      "SendUserFile",
+      "ToolSearch"
     ]
   }
 }
