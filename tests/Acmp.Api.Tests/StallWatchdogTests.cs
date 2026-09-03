@@ -1,5 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Acmp.Api.Tests;
 
@@ -7,10 +10,19 @@ namespace Acmp.Api.Tests;
 // been shown to produce output is indistinguishable from one that is silently broken, and a clean run of
 // it reads exactly like a clean run of a working one (DEF-078).
 //
-// ⚠ These tests inject the CONDITION (a drift value) rather than a real stall. That is deliberate and its
-// limit is stated: they prove the trigger, the threshold and the file contents, and they prove nothing
-// about whether a real DEF-109 occurrence produces a large drift. Only an occurrence can show that, which
-// is exactly what clause (2) waits on.
+// ⚠ THE DRIFT TESTS INJECT THE CONDITION (a drift value) RATHER THAN A REAL STALL, AND THAT LIMIT WAS
+// STATED HERE BEFORE IT WAS PAID: "they prove nothing about whether a real DEF-109 occurrence produces a
+// large drift. Only an occurrence can show that." ⛔⛔ OCCURRENCE 6 ANSWERED, AND THE ANSWER WAS NO —
+// windowMaxDrift of 0.049s once and under 3ms in sixteen of seventeen windows, against a 15-second
+// threshold, while eighteen requests each burned a full 100-second ceiling. The fault leaves drift at its
+// healthy value. Declaring the gap was right and it was not enough (LL-055): a CHEAPER INJECTION EXISTED
+// the whole time, and the deferral to "only an occurrence can show that" cost two days and three PRs.
+//
+// ⭐⭐ SO THE IN-FLIGHT TESTS BELOW INJECT THE FAULT'S SYMPTOM INSTEAD OF THE TRIGGER'S PREDICATE, WHICH
+// IS THE WHOLE POINT OF DEF-134. A_real_hung_request_is_visible_... issues an actual HTTP request through
+// the actual middleware and holds it, then watches the register report it. That exercises the
+// fault-to-trigger path end to end BEFORE this ships, rather than waiting for occurrence 7 to say whether
+// the coupling was ever there.
 public sealed class StallWatchdogTests : IDisposable
 {
     private readonly string _dir = Path.Combine(
@@ -170,6 +182,170 @@ public sealed class StallWatchdogTests : IDisposable
         var text = File.ReadAllText(SnapshotFile);
         text.Should().Contain("watchdog STARTED");
         text.Should().NotContain("stall snapshot");
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────────────────────────
+    // DEF-134 / DEC-125 d1 — the trigger keyed on DEF-109's own definition.
+    // ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    private static readonly (string, string, TimeSpan)[] None = [];
+
+    [Fact]
+    public void No_outstanding_request_writes_nothing_at_all()
+    {
+        // The control that makes the next test mean something, and the same one the drift trigger has:
+        // if a snapshot appeared whatever the register said, its presence would prove only that the
+        // process was running.
+        StallWatchdog.CaptureIfRequestsHung(None, _dir).Should().BeFalse();
+        File.Exists(SnapshotFile).Should().BeFalse();
+    }
+
+    [Fact]
+    public void A_request_outstanding_past_the_bound_is_captured_and_the_snapshot_NAMES_IT()
+    {
+        // ⭐ THE LIST IS THE FINDING, not the fact that a bound was crossed. With scheduling refuted by
+        // occurrence 6, what tells a deadlock from a slow dependency is whether the hung requests share
+        // an endpoint — so a snapshot that recorded only "3 requests hung" would be the same dead end
+        // the resource figures already are.
+        (string, string, TimeSpan)[] hung =
+        [
+            ("GET", "/api/topics?page=1", TimeSpan.FromSeconds(97)),
+            ("POST", "/api/votes/close", TimeSpan.FromSeconds(41)),
+        ];
+
+        StallWatchdog.CaptureIfRequestsHung(hung, _dir).Should().BeTrue();
+        var text = File.ReadAllText(SnapshotFile);
+
+        text.Should().Contain("trigger: request in flight");
+        text.Should().Contain("/api/topics?page=1");
+        text.Should().Contain("/api/votes/close");
+        text.Should().Contain("97.0s");
+
+        // The thread/task state DEF-109's clause (2) named and WBS-27.1 shipped without.
+        text.Should().Contain("threadpool: threads=");
+        text.Should().Contain("threads by state:");
+        text.Should().Contain("gc: pauseTimePercentage=");
+        text.Should().Contain("host: processors=");
+    }
+
+    [Fact]
+    public void The_oldest_hung_request_is_listed_first_so_the_first_line_is_the_earliest_stall()
+    {
+        // Ordering is load-bearing for a reader: the earliest request to hang is the one whose cause is
+        // not itself a consequence of some other request already being stuck.
+        var outstanding = InFlightRequestsProbe.Sorted(
+            ("GET", "/api/second", TimeSpan.FromSeconds(40)),
+            ("GET", "/api/first", TimeSpan.FromSeconds(80)));
+
+        StallWatchdog.CaptureIfRequestsHung(outstanding, _dir);
+        var text = File.ReadAllText(SnapshotFile);
+
+        text.IndexOf("/api/first", StringComparison.Ordinal)
+            .Should().BeLessThan(text.IndexOf("/api/second", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_real_hung_request_is_visible_in_the_register_through_the_real_middleware()
+    {
+        // ⭐⭐ THE CONTROL LL-055 EXISTS FOR, AND IT IS THE ONE THE DRIFT TRIGGER COULD NEVER HAVE.
+        // It injects the FAULT'S SYMPTOM — a request that has entered the pipeline and not come back —
+        // and asserts the register sees it. The drift tests inject the trigger's own predicate, which is
+        // guaranteed to pass and says nothing about whether DEF-109 moves that quantity; occurrence 6
+        // then showed it does not. Here the fault-to-trigger path is exercised end to end, in-process,
+        // in milliseconds, with no occurrence required.
+        // ⛔ THE FIRST DRAFT OF THIS TEST CALLED InFlightRequests.Begin DIRECTLY while its comment
+        // claimed it went through the middleware. That is LL-055's tautology one layer up — it would
+        // have proved the register works and NOTHING about whether the pipeline ever calls it, so
+        // deleting the IStartupFilter registration would have left it green. It builds the real
+        // middleware now.
+        var pipeline = BuildRealTrackingPipeline(out var release);
+
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+        context.Request.Path = "/api/deliberately-hung";
+        context.Request.QueryString = new QueryString("?trace=1");
+
+        // The request enters the pipeline and does not come back until we release it. That is what
+        // DEF-109 looks like from the server's side.
+        var inFlight = pipeline(context);
+        inFlight.IsCompleted.Should().BeFalse("the request must still be hung when the register is read");
+
+        try
+        {
+            // Bound of zero: the assertion is that the register REPORTS an in-flight request, not that a
+            // particular wall-clock time has passed — pinning a real duration would make this a sleep,
+            // and a flaky one on a loaded runner (LL-032).
+            var outstanding = InFlightRequests.Outstanding(TimeSpan.Zero);
+
+            outstanding.Should().Contain(o => o.Path == "/api/deliberately-hung?trace=1",
+                "a request that entered the pipeline and has not returned is exactly what DEF-109 is");
+            StallWatchdog.CaptureIfRequestsHung(outstanding, _dir).Should().BeTrue();
+            File.ReadAllText(SnapshotFile).Should().Contain("/api/deliberately-hung?trace=1");
+        }
+        finally
+        {
+            release.SetResult();
+            await inFlight;
+        }
+
+        // ⛔ THE OTHER HALF OF THE CONTROL: once it completes it must LEAVE the register. Without the
+        // middleware's `finally` the first hang would become a permanent false positive for the rest of
+        // the run, and every later snapshot would report it as still stuck.
+        InFlightRequests.Outstanding(TimeSpan.Zero)
+            .Should().NotContain(o => o.Path == "/api/deliberately-hung?trace=1");
+    }
+
+    /// <summary>
+    /// The REAL <see cref="InFlightRequests.StartupFilter"/>, applied to a real
+    /// <see cref="ApplicationBuilder"/>, terminating in a delegate that blocks until released. Nothing
+    /// here is a stand-in for the tracking code: the filter, the middleware and its <c>finally</c> are
+    /// the shipped ones, so removing the registration or the middleware fails the test above.
+    /// </summary>
+    /// <remarks>
+    /// ⚠ WHAT IT DOES NOT COVER, STATED RATHER THAN IMPLIED: there is no HTTP transport and no
+    /// TestServer, so this proves the pipeline records a hung request and says nothing about a stall
+    /// that never reaches the pipeline. That case is deliberately readable from the artefact instead —
+    /// the header tells a reader that requests timing out against an EMPTY register point upstream of
+    /// the server.
+    /// </remarks>
+    private static RequestDelegate BuildRealTrackingPipeline(out TaskCompletionSource release)
+    {
+        InFlightRequests.Reset();
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        release = gate;
+
+        var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+        new InFlightRequests.StartupFilter()
+            .Configure(builder => builder.Run(_ => gate.Task))(app);
+
+        return app.Build();
+    }
+
+    [Fact]
+    public void The_header_teaches_a_reader_to_read_the_in_flight_trigger_and_states_what_it_cannot_do()
+    {
+        // DW-097's model: the reader who needs the artefact most did not write it, and an instrument
+        // that says in advance what it cannot do is falsifiable on its first firing. The stacks
+        // limitation is the one a reader will otherwise assume away.
+        StallWatchdog.CaptureIfRequestsHung([("GET", "/api/x", TimeSpan.FromSeconds(99))], _dir);
+        var flat = Regex.Replace(File.ReadAllText(SnapshotFile), @"\s+", " ");
+
+        flat.Should().Contain("THERE ARE NO MANAGED STACKS HERE");
+        flat.Should().Contain("the stall is UPSTREAM of the server pipeline");
+        flat.Should().Contain("An elimination is not an identification");
+    }
+
+    // Sorting is the production code's job; this mirrors only the ordering contract so the test above
+    // states its input in the order a reader finds natural rather than pre-sorted.
+    private static class InFlightRequestsProbe
+    {
+        internal static IReadOnlyList<(string Method, string Path, TimeSpan Age)> Sorted(
+            params (string Method, string Path, TimeSpan Age)[] items)
+        {
+            var copy = items.ToList();
+            copy.Sort((a, b) => b.Age.CompareTo(a.Age));
+            return copy;
+        }
     }
 
     public void Dispose()
