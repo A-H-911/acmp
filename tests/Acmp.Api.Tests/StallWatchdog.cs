@@ -58,12 +58,6 @@ internal static class StallWatchdog
 
     private static readonly object Gate = new();
 
-    // Whether the PREVIOUS sample saw the pool-starvation signature. Only the sampling thread writes it,
-    // and the tests drive CaptureIfDegraded directly, so no synchronisation is needed. Reset exists so a
-    // test can establish a known starting point rather than inheriting whatever the last one left.
-    private static bool _previousSampleStarved;
-
-    internal static void ResetSustainedState() => _previousSampleStarved = false;
 
     [ModuleInitializer]
     internal static void Start()
@@ -132,6 +126,12 @@ internal static class StallWatchdog
 
                 CaptureIfDegraded(actual);
 
+                // ⚠ The maxima are WINDOWED, not cumulative — DEC-122 d1. Cumulative maxima collapse a
+                // whole run into one number that only ever rises, so they cannot say WHEN the queue grew;
+                // per-window they are a time series, and during a stall the minute-by-minute profile is
+                // the finding. This is also the only place pool state is now recorded at all, the
+                // starvation TRIGGER having been deleted for firing on healthy runs.
+
                 // ⭐⭐ THE HEARTBEAT CARRIES THE CALIBRATION PAYLOAD, WHICH IS THE POINT OF ITS CONTENT
                 // RATHER THAN A BONUS. `DEC-121` d3 ruled the ORDER: the control first, the threshold
                 // calibrated only AFTERWARDS from real data. These maxima ARE that data — the next
@@ -139,8 +139,13 @@ internal static class StallWatchdog
                 // the threshold is chosen from measurement instead of from the guessing that has already
                 // made this predicate wrong twice (`LL-054`).
                 if (samples % HeartbeatEvery == 0)
+                {
                     Write($"heartbeat: samples={samples} elapsed={stopwatch.Elapsed:hh\\:mm\\:ss} " +
-                          $"maxDrift={maxDrift} maxPending={maxPending} maxThreads={maxThreads}\n", null);
+                          $"windowMaxDrift={maxDrift} windowMaxPending={maxPending} windowMaxThreads={maxThreads}\n", null);
+                    maxDrift = TimeSpan.Zero;
+                    maxPending = 0;
+                    maxThreads = 0;
+                }
             }
             catch
             {
@@ -175,55 +180,38 @@ internal static class StallWatchdog
     internal static bool CaptureIfDegraded(TimeSpan actualInterval, string? destinationRoot = null)
     {
         var drift = actualInterval - SampleInterval;
+        if (drift < DriftThreshold) return false;
+
         ThreadPool.GetAvailableThreads(out var availableWorkers, out var availableIo);
-        ThreadPool.GetMinThreads(out var minWorkers, out _);
-        var pending = ThreadPool.PendingWorkItemCount;
-
-        // ⛔⛔ SUSTAINED, NOT INSTANTANEOUS, AND THE INSTRUMENT ITSELF IS WHY. On its first CI run the
-        // instantaneous signature fired during an ORDINARY suite on a 4-core runner — `pending > 0` at the
-        // instant of sampling is routine, because any queued work item counts. A trigger that fires on
-        // every run is exactly as useless as one that never fires: it fills the artefact with noise and
-        // teaches its reader to ignore it, which is the failure the `if: failure()` upload guard exists to
-        // prevent. Requiring the condition on TWO CONSECUTIVE samples separates transient queuing, which
-        // drains in milliseconds, from starvation, which persists — and it is a principle rather than a
-        // magic number, which matters because nobody has measured what CI's normal pending depth is.
-        var starvedNow = IsPoolStarved(pending, ThreadPool.ThreadCount, minWorkers);
-        var starved = starvedNow && _previousSampleStarved;
-        _previousSampleStarved = starvedNow;
-
-        if (drift < DriftThreshold && !starved) return false;
-
-        Write(Snapshot(drift, actualInterval, availableWorkers, availableIo, pending, starved), destinationRoot);
+        Write(Snapshot(drift, actualInterval, availableWorkers, availableIo, ThreadPool.PendingWorkItemCount), destinationRoot);
         return true;
     }
 
-    /// <summary>
-    /// The ThreadPool-starvation signature: work is QUEUED while the pool has already grown to or past
-    /// its minimum, so further threads arrive only on the runtime's slow injection schedule and queued
-    /// work waits. Pure, and internal, so a test can inject the condition directly.
-    /// </summary>
-    /// <remarks>
-    /// ⛔⛔ THIS REPLACES A PREDICATE THAT COULD NOT FIRE, WHICH IS THE EXACT FAULT THIS WHOLE INSTRUMENT
-    /// EXISTS TO ESCAPE. The first version asked for <c>availableWorkers == 0</c>. `GetAvailableThreads`
-    /// counts against the pool MAXIMUM, which is 32767 here — so that condition needed 32,767 concurrent
-    /// work items and was dead code. It would have sat in the file looking like a working second trigger,
-    /// and its silence would have read as "the pool was fine" rather than as "nothing ever asked".
-    /// ⚠ AND DRIFT DOES NOT COVER IT. This sampler is a dedicated OS thread in Thread.Sleep; the kernel
-    /// schedules it on time whether or not the ThreadPool has a free worker. Drift catches CPU
-    /// saturation, a blocking GC, or the VM being descheduled — it is silent on pool starvation alone,
-    /// which is precisely where occurrence 2's timeline analysis said to look next. The two triggers are
-    /// complementary, not redundant, and neither is sufficient.
-    /// </remarks>
-    internal static bool IsPoolStarved(long pending, int threadCount, int minWorkers) =>
-        pending > 0 && threadCount >= minWorkers;
+    // ⛔⛔ THERE WAS A SECOND, POOL-STARVATION TRIGGER HERE AND IT IS DELETED, NOT RETUNED — DEC-122 d1.
+    // It was wrong THREE times on the same instrument (LL-054), and the third time is the one worth
+    // keeping in view because no local run could have shown it:
+    //   1. `availableWorkers == 0` — GetAvailableThreads counts against the pool MAXIMUM (32767), so it
+    //      needed 32,767 concurrent work items. Dead code, caught in review.
+    //   2. `pending > 0 && threadCount >= minWorkers` — fired on its FIRST CI run during an ordinary
+    //      passing suite, and turned main red.
+    //   3. The same condition SUSTAINED across two consecutive samples — still fired six times in six
+    //      minutes of a healthy run. ⭐ THE MEASURED CAUSE: `min workers` tracks processor count, so it
+    //      is 4 on the runner against 24 on a development box. `threadCount >= minWorkers` is therefore
+    //      trivially true there and the predicate DEGENERATES into `pending > 0`. The environment
+    //      changed what the code meant, which is why a calibration on a development box proves the
+    //      mechanism and never the deployment.
+    // ⭐ NOTHING IS LOST. The heartbeat below records maxPending and maxThreads per window, so a real
+    // starvation would show the queue climbing minute by minute — as DATA rather than as a trigger, and
+    // with no noise. Measured on a healthy run: maxPending reached 167, so no threshold below that is
+    // defensible, and n=1 is not a distribution. When enough windows have accumulated to BE one, a
+    // threshold can be chosen from it; until then there is nothing honest to choose.
 
     private static string Snapshot(
         TimeSpan drift,
         TimeSpan actualInterval,
         int availableWorkers,
         int availableIo,
-        long pending,
-        bool starved)
+        long pending)
     {
         ThreadPool.GetMaxThreads(out var maxWorkers, out var maxIo);
         ThreadPool.GetMinThreads(out var minWorkers, out var minIo);
@@ -233,8 +221,7 @@ internal static class StallWatchdog
 
         var sb = new StringBuilder();
         sb.Append("--- stall snapshot ").Append(DateTimeOffset.UtcNow.ToString("O")).AppendLine(" ---");
-        sb.Append("trigger: ").AppendLine(starved && drift >= DriftThreshold ? "drift AND pool starvation"
-            : starved ? "pool starvation" : "scheduling drift");
+        sb.AppendLine("trigger: scheduling drift");
         sb.Append("requested interval: ").Append(SampleInterval).Append("  actual: ").Append(actualInterval)
           .Append("  drift: ").Append(drift).Append("  (threshold ").Append(DriftThreshold).AppendLine(")");
 
@@ -308,12 +295,17 @@ internal static class StallWatchdog
         toward scheduling pressure or CPU starvation. Large drift WITH a high pause percentage is the
         first direct evidence for the causal step PE-785 weakened.
 
-        A "pool starvation" trigger means work was QUEUED while the pool had already grown to or past its
-        minimum, so further threads arrive only on the runtime's slow injection schedule. That is where
-        occurrence 2's timeline analysis said to look next and it has never been measured. Note that the
-        two triggers are complementary and neither is sufficient: this sampler is a dedicated OS thread,
-        so the kernel wakes it on time whether or not the pool has a free worker — drift alone is SILENT
-        on pool starvation, and pool starvation alone produces no drift.
+        POOL STATE IS DATA HERE, NOT A TRIGGER, AND THAT IS DELIBERATE (DEC-122 d1). A starvation trigger
+        was tried three times and fired on healthy runs twice, because `min workers` tracks processor
+        count — 4 on the runner against 24 on a development box — so its condition degenerated there.
+        The heartbeat's windowMaxPending / windowMaxThreads carry the same information WITHOUT asserting
+        anything: real starvation shows as the queue climbing across consecutive windows. Measured on a
+        healthy run, windowMaxPending reached 167, so treat single-window spikes as normal.
+
+        NOTE WHAT DRIFT CANNOT SEE. This sampler is a dedicated OS thread, so the kernel wakes it on time
+        whether or not the ThreadPool has a free worker. Drift catches CPU saturation, a blocking GC, or
+        the VM being descheduled; pool starvation ALONE produces no drift and will appear only in the
+        heartbeat numbers. An absence of snapshots is therefore not an absence of pool pressure.
 
         HOW TO READ AN ABSENCE — and this file exists BECAUSE that was got wrong once (DEF-131). On
         DEF-109 occurrence 5 the upload step ran and found no files at all, and that silence could not be

@@ -20,12 +20,10 @@ public sealed class StallWatchdogTests : IDisposable
 
     private string SnapshotFile => Path.Combine(_dir, "stall-snapshots.txt");
 
-    // The sustained-starvation gate keeps one bit of static state, so without this reset each test would
-    // inherit whatever the previous one left — the same cross-contamination that put a live-state
-    // classification into an assertion and turned main red. ⭐ It also makes the two "must not fire"
-    // controls DETERMINISTIC rather than lucky: after a reset a single sample can never satisfy the
-    // sustained rule, so those tests hold whether or not the runner's pool happens to be starved.
-    public StallWatchdogTests() => StallWatchdog.ResetSustainedState();
+    // ⭐ THESE TESTS ARE NOW ENVIRONMENT-INDEPENDENT BY CONSTRUCTION, which they were not before DEC-122
+    // d1. Drift is the only trigger, and drift is injected by the caller — so no assertion here depends
+    // on the live ThreadPool, whose min-thread count differs between a 24-core development box and a
+    // 4-core runner and which is what made an earlier version pass locally and fail on CI (LL-032).
 
     [Fact]
     public void A_normal_interval_writes_nothing_at_all()
@@ -123,38 +121,19 @@ public sealed class StallWatchdogTests : IDisposable
         File.Exists(SnapshotFile).Should().BeFalse();
     }
 
-    // ⛔ THE PREDICATE THESE PIN REPLACED ONE THAT COULD NOT FIRE. The first version asked for
-    // availableWorkers == 0; GetAvailableThreads counts against the pool MAXIMUM, which is 32767, so it
-    // needed 32,767 concurrent work items and was dead code — a second trigger that looked like a working
-    // one and whose silence would have read as "the pool was fine" rather than "nothing ever asked".
-    // That is DEF-078's shape inside the very instrument built to escape it, which is why the replacement
-    // is a PURE function: pool state cannot be forced from a test, and a predicate that cannot be
-    // exercised is exactly what went wrong the first time.
-    [Theory]
-    // Work queued while the pool is at or past its floor: further threads now arrive only on the
-    // runtime's slow injection schedule, so queued work waits. That is starvation.
-    [InlineData(1L, 24, 24, true)]
-    [InlineData(500L, 40, 24, true)]
-    // Nothing queued — a large pool is not evidence of anything.
-    [InlineData(0L, 40, 24, false)]
-    // Queued work while the pool is still BELOW its floor is normal: the runtime injects those threads
-    // immediately and without throttling, so the queue drains on its own.
-    [InlineData(5L, 10, 24, false)]
-    public void The_pool_starvation_signature_is_queued_work_against_a_pool_at_its_floor(
-        long pending, int threadCount, int minWorkers, bool expected) =>
-        StallWatchdog.IsPoolStarved(pending, threadCount, minWorkers).Should().Be(expected);
-
     [Fact]
-    public void One_starved_sample_is_not_enough_however_starved_the_pool_actually_is()
+    public void Pool_pressure_alone_never_writes_a_snapshot_however_loaded_the_runner_is()
     {
-        // The regression this pins, and the instrument found it about ITSELF on its first CI run: the
-        // instantaneous signature fired during an ORDINARY suite on a 4-core runner, because `pending > 0`
-        // at the instant of sampling is routine. A trigger that fires on every run is exactly as useless
-        // as one that never fires -- it fills the artefact with noise and teaches its reader to ignore it.
+        // ⛔ THE REGRESSION THIS PINS, AND THE INSTRUMENT FOUND IT ABOUT ITSELF. A pool-starvation trigger
+        // was tried three times and fired on HEALTHY runs twice -- six snapshots in six minutes of an
+        // ordinary suite. The measured cause was invisible on a development box: `min workers` tracks
+        // processor count, 4 on the runner against 24 locally, so `threadCount >= minWorkers` was
+        // trivially true there and the condition degenerated into `pending > 0`. DEC-122 d1 deleted it;
+        // pool state now lives in the heartbeat as DATA, where it asserts nothing.
         //
-        // Deterministic without being able to control the pool: after the constructor's reset, the
-        // sustained rule cannot be satisfied by a single sample no matter what the real pool state is.
-        // So this holds on an idle 24-core box and on a saturated runner alike.
+        // ⭐ This assertion holds whatever the real ThreadPool is doing, on an idle box and a saturated
+        // runner alike, because drift is the only trigger and drift is supplied by the caller. That is
+        // the property the earlier version lacked (LL-032).
         StallWatchdog.CaptureIfDegraded(StallWatchdog.SampleInterval, _dir).Should().BeFalse();
         File.Exists(SnapshotFile).Should().BeFalse();
     }
