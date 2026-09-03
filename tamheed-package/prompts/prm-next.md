@@ -2152,15 +2152,26 @@ action lives. ⚠ **The instrument that produced it dropped rows silently**: a r
 have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
 1. ▶▶▶ **RESOLVE THE STATE; DO NOT READ THIS FILE FOR IT.** `entity_query("slice", status="Approved")`,
-   then `readiness_check` on the id it returns, then `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEF-130` first: `DEF-130`, `DEF-109`,
-   `DW-096`, `DEF-129`, `DEF-121`, `LL-053`, and `DEC-119`.** ⛔ **What is at what status, what is still
-   open, and what anyone owes anyone is deliberately NOT written here.**
-   ⚠⚠ **TWO RULINGS ARE OWED AND THE ROWS CARRY THEM — THIS SENTENCE NAMES NEITHER, ONLY WHERE THEY LIVE.**
-   `DEC-119`'s rationale ends with a *what this did not decide* paragraph, and `DEF-109`'s newest occurrence
-   block ends with an activation consequence. **Read both; do not infer either from here.** ⭐ Written this
-   way because the previous two attempts at this item both rotted — one described work, one pointed at an
-   obligation — and **a pointer at a ROW survives what a pointer at a STATE cannot.**
+   then `readiness_check` on **every** id it returns — ⚠ **it can return MORE THAN ONE and the singular
+   phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
+   still be held open by another rule, so it stays `Approved` alongside a newer one — then
+   `readiness_check("package")`, then
+   `gh run list --branch main`. **Then read these rows, and read `DEC-120` first: `DEC-120`, `SC-045`,
+   `DEF-130`, `DEF-109`, `DW-096`, `DEF-121`, `DEF-129`, and `DEC-119`.** ⛔ **What is at what status, what
+   is still open, and what anyone owes anyone is deliberately NOT written here.**
+   ⛔⛔ **A CLAIM THAT *"TWO RULINGS ARE OWED"* STOOD HERE AND IS DELETED, NOT REFRESHED — `DEC-120` GAVE
+   BOTH.** It was the third attempt at this item and it rotted for the third distinct reason: the first
+   described work, the second pointed at an obligation `DEC-117` d2 then discharged, and this one named a
+   COUNT of obligations that an interview then paid off. ⭐⭐ **THE RULE THE THREE OF THEM ADD UP TO: a
+   pointer at a ROW survives what a pointer at a STATE cannot, and *what is owed* is a state no matter how
+   carefully it is phrased or how scrupulously it declines to name its contents.** Name rows and commands;
+   never a count, never an obligation, never what remains.
+   ⚠ **NOT COUNTED, AND THE REASONING IS RECORDED SO IT CAN BE ARGUED WITH.** The counter's own test is
+   *was true, became false, and REACHED A COMMIT where a fresh session could read it.* This sentence was
+   true in every commit that carried it; it became false when `DEC-120` was recorded, and it was deleted in
+   that same session, before any commit carried it false. **`PE-811`'s precedent governs** — wording caught
+   and fixed before it was committed is not tallied, exactly as the FORTY-EIGHTH WAS tallied because the
+   commit `b54a42c6` shipped with `DIAGNOSE` already false.
    ⛔ **THIS ITEM NO LONGER SAYS *"there is nothing to build"*, AND THE DELETION IS THE POINT — THAT WAS THE
    FORTY-NINTH.** It was a measured claim when written and `DEC-116` d2 falsified it the same day by
    commissioning code. **A claim about what REMAINS is a status wearing a measurement's clothes**, which is
@@ -2802,8 +2813,10 @@ in both halves — eleven, and one shared helper closed them all in one PR.
   trace data. ⚠ **`DEF-099` is fixed, so traces now actually arrive** — that blocker is gone.
 - **`release-close-out.md`** exists in the prompt library and has never been run. ⛔ **NOT DUE, and the
   phrase *"with every phase closed"* that stood here was the FORTY-SECOND**: `PH-3` and `PH-7` are
-  `Approved`, and `PH-7` is the LIVE phase holding `SL-035`. It is the ceremony that would formally end
-  v1 — **after** the open slice closes, not while it is open.
+  `Approved`, and `PH-7` is the LIVE phase. ⛔ **A SLICE ID STOOD HERE TOO AND IS DELETED — the FORTY-SIXTH's
+  rule is that this file never names one**, and it had already gone incomplete: `entity_query("slice",
+  status="Approved")` names them, and it can return more than one. It is the ceremony that would formally
+  end v1 — **after** the open slices close, not while any is open.
 
 ### ⚠ HOW TO RUN A STACK HERE — batch 17 proved this and the next stack batch should copy it exactly
 
