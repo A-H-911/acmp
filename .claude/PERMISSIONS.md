@@ -18,8 +18,11 @@ cd "C:/Users/ahammo/Repos/acmp" && git status --porcelain && gh run list …
 ```
 
 The working directory **already is** the repository and persists between calls, so the `cd` was pure
-noise — and it meant no prefix rule could ever match, because the command did not *start* with the
-thing being allowed. **No allowlist can fix a command shape that defeats matching.**
+noise. ⚠ **The reason it prompted is NOT that the command failed to *start* with the allowed thing** —
+that mechanism is refuted below; see `DEF-135`. Claude Code splits the chain and checks each part, so
+what actually defeats a chain is any *segment* with no rule behind it. **The `cd` is still worth
+dropping: it is noise, and on this machine the Windows-drive spelling appears not to resolve to the
+Git Bash cwd, which is enough to turn a free `cd` into a prompting one.**
 
 Two habits, and they matter more than this file:
 
@@ -28,25 +31,40 @@ Two habits, and they matter more than this file:
    `LL-049` already warns that a measurement inside a chain that has already acted is a report, not a
    control.
 
-## ⛔⛔ THE SHAPE RULE HAS THREE COSTUMES, AND NAMING ONLY THE FIRST IS WHY IT KEPT FIRING
+## ⛔⛔ THE SHAPE RULE: **EVERY SUBCOMMAND NEEDS ITS OWN RULE** (corrected 2026-09-04, `DEF-135`)
 
-Added 2026-09-03. In ONE session the same defect prompted the operator three separate times, and each
-time it wore different clothes. **The rule is not "don't use `cd`" — it is that the matcher matches the
-FIRST TOKEN of the whole command string, so anything that is not the allowed leader defeats it:**
+⛔ **This section asserted the wrong mechanism for a day and it produced a wrong prediction.** It read
+*"the matcher matches the FIRST TOKEN of the whole command string, so anything that is not the allowed
+leader defeats it"*. **That is false.** The official documentation
+([`code.claude.com/docs/en/permissions`](https://code.claude.com/docs/en/permissions), §*Compound
+commands*) states:
 
-| Costume | Example | Why it matches nothing |
+> Claude Code is aware of shell operators, so a rule like `Bash(safe-cmd *)` won't give it permission to
+> run the command `safe-cmd && other-cmd`. The recognized command separators are `&&`, `||`, `;`, `|`,
+> `|&`, `&`, and newlines. **A rule must match each subcommand independently.**
+
+⭐⭐ **THE TWO MODELS DISAGREE ON A PREDICTION, AND THE FALSE ONE LOST.** Under FIRST-TOKEN a pipeline is
+unmatchable and its leader is irrelevant. Under SUBCOMMAND a pipeline is allowed **exactly when every
+segment has a rule**. On 2026-09-04 an agent holding this file classified
+`Get-CimInstance … | Select-Object … | Format-List` as *allowed* — reasoning from the leader, which is
+allowlisted — and it prompted, because `Select-Object` and `Format-List` are in neither settings file.
+**Under the true model that was predictable before the command was sent.**
+
+| Shape | Example | Why it prompts |
 |---|---|---|
-| `cd` prefix | `cd "…" && grep -n x f` | the string starts with `cd`, not `grep` |
-| variable assignment | `$lock='…'; $p=Get-Process …` | starts with `$lock=`, not `Get-Process` |
-| **a pipe** | `tail -1 f \| python -m json.tool` | a pipeline is a compound command, exactly like `&&` |
+| `cd` prefix | `cd "C:/…/acmp" && grep -n x f` | ⚠ *should* be free — a `cd` inside the working directory is itself read-only and `cd packages/api && ls` is documented as prompting-free. **Measured here: it prompts.** Candidate cause (unproven): the Windows-drive spelling `C:/…` does not resolve to the Git Bash cwd `/c/…`, so it reads as a `cd` elsewhere |
+| variable assignment | `$lock='…'; $p=Get-Process …` | an assignment is a statement, not a command — **no rule can ever match it** |
+| a pipe / `&&` chain | `Get-CimInstance … \| Select-Object` | one segment (`Select-Object`) has no rule; the allowlisted leader does not carry the rest |
 
-⚠ **The pipe is the one that keeps getting missed**, because it *looks* like a single command and the
-leader *is* allowed. `Bash(tail:*)` no more matches `tail … | python` than it matches `tail … && python`.
+⭐ **THE HABIT IS UNCHANGED AND IT IS STILL ONE HABIT: ONE SIMPLE COMMAND PER CALL.** What changed is
+what to check when you must chain — **every segment**, not the first token. A pipeline of allowlisted
+programs (`grep … | sort | tail`) is fine; one unlisted segment sinks the whole line.
 
-⭐ **The remedy is one habit, not three rules: ONE SIMPLE COMMAND PER CALL, and the first token is the
-thing being allowed.** Where a pipeline was doing real work, push the work into the single program that
-is already allowed — `node -e '…'` or `python -c '…'` can read, parse and print in one allowed leader,
-which is both shorter and matchable. Use Write/Edit for files rather than `echo >`/heredocs.
+⛔ **DO NOT collapse a pipeline into `node -e '…'` or `python -c '…'`** — that was this section's advice
+and it was itself a defect (`DEF-133`). `Bash(node:*)` reads as *may run scripts* and inline `-e` grants
+arbitrary code, so it is gated **independently of the allowlist**. **Write a script FILE to
+`.scratch/<session>/` and run `node .scratch/…/x.mjs`** — matchable, reviewable, reusable. Use
+Write/Edit for files rather than `echo >`/heredocs.
 
 ## ⛔ The PowerShell tool is a SECOND tool with its OWN allowlist, and it had none
 
@@ -56,15 +74,18 @@ tool with a separate matcher, and this file had **280 entries and not one `Power
 so *every* PowerShell call prompted regardless of how harmless it was. Three read-only calls
 (`Get-Process`, `Get-Item`, `Get-CimInstance`) prompted for that reason alone.
 
-⚠ **And the shape rule applies here too, in a second costume.** A prefix matcher matches the FIRST
-TOKEN, so
+⚠ **And the shape rule applies here too, with its own parser.** The official documentation says Claude
+Code *"parses the PowerShell AST and checks each command in a compound command independently"* — `|` and
+`;` split, and `&&`/`||` split **only on PowerShell 7+**; this machine runs **Windows PowerShell 5.1**.
+Aliases are canonicalised, so `PowerShell(Get-ChildItem *)` also covers `gci`, `ls` and `dir`. So
 
 ```powershell
 $lock='...'; $raw=(Get-Content $lock -Raw).Trim()
 ```
 
-starts with `$lock=`, not with a cmdlet — and matches nothing, exactly as `cd "…" && grep` matches
-nothing. **One cmdlet per call, and the first token is the cmdlet name.**
+matches nothing — an assignment is a **statement**, and no rule can match a statement. And a pipeline
+needs a rule for **every** cmdlet in it: `Get-CimInstance … | Select-Object … | Format-List` prompted on
+2026-09-04 because only the first of the three is allowlisted. **One cmdlet per call.**
 
 ⭐ **Prefer Bash anyway.** The allowlist's coverage lives there, so a task doable in Bash should be
 done in Bash; reach for PowerShell only where Bash genuinely cannot (Windows process identity, CIM,

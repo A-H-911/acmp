@@ -12,13 +12,16 @@
 shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
 PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
 could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
-★★★ ⛔ **I PUBLISHED A "FIFTH PERMISSION CAUSE" AND IT WAS REFUTED THE SAME DAY** —
-[four-causes file](permission-prompts-four-causes.md) carries the retraction. **`Edit(.scratch/**)` is the
-ONLY `Edit` rule that exists**, so editing source / a workflow / the package prompts **by design**
-(*"fewer interruptions on READING, not on ACTING"*). ⛔⛔ **My error is the lesson: I grepped `Bash(` only,
-took the `Edit` rules from PROSE, and generalised a half-measured premise** (`LL-006`; `LL-055`'s shape, 3rd
-time in one day). ⭐ **Measure the allowlist FOR THE TOOL ACTUALLY PROMPTING** before concluding anything.
-⚠ `PERMISSIONS.md` line 48 recommends `node -e`, which the memory file forbids — that half stands (`DEF-133`).
+★★★ ⛔⛔ **THE MATCHER DOES *NOT* "MATCH THE FIRST TOKEN" — EVERY SUBCOMMAND NEEDS ITS OWN RULE**
+(`DEF-135`, 2026-09-04, from the OFFICIAL docs). [four-causes file](permission-prompts-four-causes.md) +
+`PERMISSIONS.md` both carried the false model for a day and **it cost a live prediction**: I called
+`Get-CimInstance … | Select-Object | Format-List` *allowed* from its leader and it prompted.
+⭐ **`grep … | sort | tail` is FINE** (all three allowlisted); one unlisted segment sinks the line.
+⚠ `cd "C:/…" && grep` still prompts though the docs say it should not — candidate, **unproven**: the
+Windows-drive form not resolving to `/c/…`. **Drop the `cd` either way.** ⛔ A claimed "FIFTH cause" was
+retracted the same day: **`Edit(.scratch/**)` is the ONLY `Edit` rule**, so editing source / a workflow /
+the package prompts **by design**. ⭐ **Measure for the TOOL ACTUALLY PROMPTING, and ASK which one it was**
+— one word from the operator beat four rounds of inference, twice. ⚠ `DEF-133` (line 48 `node -e`) fixed.
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.
   ⛔ Still NOT clause (2) — an elimination is not an identification. `DEC-121` d2's 40-min ceiling is why the

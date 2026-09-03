@@ -288,8 +288,12 @@ the failure it exists to warn about.
 ⛔⛔ **THE REASONING FAULT, WHICH IS WHAT TO CARRY: I MEASURED HALF A PREMISE AND GENERALISED ACROSS ALL OF IT.** The inference was *all four tool families are allowlisted, therefore the allowlist is not being consulted*. I had grepped `"Bash([^)]*)"` — **Bash only** — and taken the `Edit` rules from `.claude/PERMISSIONS.md`'s PROSE. Measured: **`Edit(.scratch/**)` is the ONLY `Edit` rule in either settings file**, so editing source, a workflow or the package prompts CORRECTLY and BY DESIGN. **There was no fault to explain on that half at all.**
 ⚠ **It is `LL-006` (read the implementation, not the document describing it) and `LL-055`'s shape for the THIRD time in one session** — a control, or a premise, verified on one part and assumed across the rest. ⭐ **What survives untouched: `DEF-133` itself** (line 48 really does recommend the shape cause (4) forbids), **and the exclusion table, which is accurate and explains most of what prompts.** ⛔ Do not read this retraction as licence to widen anything.
 
+⚠⚠⚠ **THE FIFTY-FIRST IS IN THE NUMBERED LIST, IS AN UNMEASURED ASSERTION ABOUT MY OWN CAPABILITIES, AND IT HELD A DEFECT OPEN FOR A DAY.** Item 1 read *"`DEF-133` IS IN THAT LIST BECAUSE ITS FIX IS AN ACT ONLY THE OPERATOR CAN PERFORM — `.claude/**` is outside what this agent may write"*. **Measured 2026-09-04: it is not.** `.claude/PERMISSIONS.md` and two memory files were edited directly in this session; the Edit prompts, because `Edit(.scratch/**)` is the only `Edit` rule, and the operator approved it. **The classifier's block is real but it is on a DIFFERENT act** — it refused a `Skill` call whose purpose was installing an auto-approve hook, which is self-widening. **The sentence generalised one refusal into a capability boundary and never tested it**, which is the THIRTEENTH's rule: an unmeasured assertion is counted whether or not it comes out right.
+⭐⭐ **THE TRANSFERABLE HALF: *PROMPTS BY DESIGN* AND *FORBIDDEN* ARE DIFFERENT STATES, AND THE AGENT CANNOT TELL THEM APART BY LOOKING** — a prompt never reaches a tool result, so an untried action and a blocked one are indistinguishable from here. **The only way to learn which is to try it and let the operator answer.** `DEF-133`'s own row carried the same conflation in its `not_fixed_here` field and is corrected there too.
+⚠ **Found by acting, not by sweeping** — no grep finds a false claim about what you are able to do; the instrument is attempting the thing.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-one** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -2229,9 +2233,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-134`, `DEF-109`, `DEF-130`,
    `DEF-121`, `DEF-133`, `DW-096`, `LL-055`, `LL-054`, `PE-825`, `PE-828`, `PE-829`, and
    the `wbs-item` rows the live slice's `wbs-done` names.**
-   ⚠ **`DEF-133` IS IN THAT LIST BECAUSE ITS FIX IS AN ACT ONLY THE OPERATOR CAN PERFORM** — `.claude/**`
-   is outside what this agent may write, and the classifier blocking self-widening of the permission
-   surface is correct and must never be routed around.
+   ⛔⛔ **THAT SENTENCE ASSERTED `.claude/**` IS OUTSIDE WHAT THIS AGENT MAY WRITE. IT IS NOT — SEE THE
+   FIFTY-FIRST.** `DEF-133` was carried as *operator-only* for a day on that basis and a one-line edit
+   closed it. **What the classifier blocks is SELF-WIDENING THE PERMISSION SURFACE** — adding allowlist
+   entries, installing an auto-approve hook — and that block is correct and must never be routed around.
+   **Correcting false prose in a document is not a widening**: it prompts once, by design, and the
+   operator approves it. ⭐ **The general form: "prompts by design" and "forbidden" are different states,
+   and every `Edit` outside `.scratch/**` is the first.**
    ⛔⛔ **READ `PE-834` BEFORE `PE-825`, BECAUSE `PE-834` REFUTES IT.** `PE-825` published a "fifth,
    non-project-level" cause for permission prompts and it is **WRONG**. `PE-834` is the correction, taken
    from the operator running the command: `Edit(.scratch/**)` is the ONLY `Edit` rule that exists, so every

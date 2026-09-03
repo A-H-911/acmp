@@ -1,6 +1,6 @@
 ---
 name: permission-prompts-four-causes
-description: "Why permission prompts keep firing under auto mode: FIVE causes, only two config. A Write() rule is DEAD, the path form must be repo-relative, the shape rule has three costumes, node -e is a semantic escape — and the FIFTH is outside the repo entirely, where every instrument here is blind."
+description: "Why permission prompts keep firing under auto mode: FOUR causes, only two config. A Write() rule is DEAD, the path form must be repo-relative, EVERY SUBCOMMAND of a chain or pipeline needs its own rule (NOT 'the first token wins' — refuted by the official docs, cost a wrong prediction, DEF-135), node -e is a semantic escape. A claimed FIFTH cause was retracted."
 metadata:
   node_type: memory
   type: feedback
@@ -92,16 +92,29 @@ Rules are written repo-relative (`Edit(.scratch/**)`) or gitbash-absolute (`Edit
 ⭐ **Always pass Write/Edit a REPO-RELATIVE path** (`.scratch/<session>/x.txt`). Verified: relative
 went through clean where the Windows-absolute form prompted.
 
-## (3) The shape rule has THREE costumes — the matcher matches the FIRST TOKEN
+## (3) The shape rule — ⛔ **EVERY SUBCOMMAND NEEDS ITS OWN RULE**, not "the first token wins"
 
-| Costume | Example | Why nothing matches |
+⛔⛔ **CORRECTED 2026-09-04 (`DEF-135`). This entry said *the matcher matches the FIRST TOKEN* and that
+is FALSE.** Official docs, `code.claude.com/docs/en/permissions` §*Compound commands*: *"The recognized
+command separators are `&&`, `||`, `;`, `|`, `|&`, `&`, and newlines. **A rule must match each
+subcommand independently.**"* PowerShell gets its own AST parse, same rule (`&&`/`||` split only on PS
+7+; this box is 5.1). And *"a `cd` into a path inside your working directory … is also read-only, and
+`cd packages/api && ls` runs without a prompt when each part qualifies"*.
+
+⭐⭐ **THE FALSE MODEL COST A PREDICTION, WHICH IS WHY IT IS A DEFECT AND NOT A QUIBBLE.** Holding this
+file, I classified `Get-CimInstance … | Select-Object … | Format-List` as **allowed** — reasoning from
+the allowlisted leader — and it **prompted**: `Select-Object` and `Format-List` have no rule anywhere.
+Under the true model that was predictable *before* sending it. ⚠ **A pipeline of allowlisted programs
+(`grep … | sort | tail`) is FINE.** One unlisted segment sinks the line.
+
+| Shape | Example | Why it prompts |
 |---|---|---|
-| `cd` prefix | `cd "…" && grep x f` | starts with `cd`, not `grep` |
-| variable assignment | `$lock='…'; $p=Get-Process` | starts with `$lock=` |
-| **a PIPE** | `tail -1 f \| python -m json.tool` | a pipeline is a compound command |
+| pipe / `&&` chain | `Get-CimInstance … \| Select-Object` | one segment has no rule; the leader does not carry the rest |
+| variable assignment | `$lock='…'; $p=Get-Process` | an assignment is a **statement**; no rule can match a statement |
+| `cd` prefix | `cd "C:/…/acmp" && grep x f` | ⚠ *should* be free per the docs. **Measured: it prompts.** Candidate, UNPROVEN: the Windows-drive `C:/…` does not resolve to the Git Bash cwd `/c/…`, so it reads as a `cd` elsewhere — cause (2), the PATH FORM, on a third surface |
 
-⚠ **The pipe is the one that keeps being missed** — it looks like one command and its leader IS
-allowed. **One simple command per call; first token is the thing being allowed.**
+⭐ **The habit is unchanged — ONE SIMPLE COMMAND PER CALL.** What changed is what to check when you must
+chain: **every segment**, never the leader alone.
 
 ## (4) `node -e` is an allowlist-semantic-escape (flagged by the commit security review)
 
