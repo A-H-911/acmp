@@ -31,10 +31,14 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # ⛔⛔ AND `cancelled` IS A THIRD CONCLUSION - NEITHER PASS
                                              # NOR FAIL. Any filter for `failure` steps straight over it
                                              # and the silence reads as health. `DEF-132`: the Security
-                                             # workflow's `secrets` job hit its own `timeout-minutes: 10`
+                                             # workflow's `secrets` job hit its own `timeout-minutes`
                                              # and was CANCELLED while CI on the SAME commit said
                                              # success - so the trunk was green on CI and its GATING
-                                             # SECRET SCAN HAD NOT EVALUATED. ⭐ TWO WORKFLOWS RUN ON
+                                             # SECRET SCAN HAD NOT EVALUATED. ⛔ THE NUMBER THAT STOOD
+                                             # HERE IS DELETED, NOT REFRESHED - the RULE survives and a
+                                             # bound rots, which is the EIGHTH fix's standing remedy.
+                                             # The workflow file is the bound; `DEF-132` is the reasoning.
+                                             # ⭐ TWO WORKFLOWS RUN ON
                                              # main (CI and Security) and this command lists BOTH: read
                                              # BOTH conclusions, because "main is green" is a claim
                                              # about every workflow on that sha and not about the one
@@ -245,6 +249,24 @@ pushed instead, and `DEC-116` d2 settles that *a new sha is a new run over a DIF
 — **so `DEC-077` d3's override count is UNCHANGED AT TWO.** ⛔ **Its caveat binds: a fresh sample of the
 same intermittent fault MAY red again, and if it does that is a NEW occurrence and NEVER a reason to push
 again. ONE SHOT, NOT A LEVER.**
+✅ **2026-09-03 MERGED TWO MORE, AND THE PAIR IS WORTH READING TOGETHER BECAUSE THE FIRST ONE'S MERGE RUN
+PRODUCED THE SECOND.** `#348` → `45e47c04` (`DEC-123` d1 — `security.yml`'s `secrets` job 10 → 30; ten
+checks green on its PR run, CI `33763940373`, Security `33763940388`, E2E `33763940348`). ⛔ **Its
+MERGE-COMMIT run then failed — CI `33765425613` — on `DEF-109` occurrence 6, `LL-036`'s SEVENTH instance**,
+while Security `33765425654` passed. `DEC-077` d3 did NOT fire (zero `SearchProvidersFts` anywhere in the
+log) and **its override count is unchanged at TWO**; nothing was re-run.
+⭐⭐ **THAT RED IS THE MOST VALUABLE THING THE DAY PRODUCED, AND `DEC-121` d2 IS WHY IT SURVIVED.** The
+backend job ran **19 m 38 s** — under the new 40-minute ceiling, so it finished, reported an attributable
+summary, and **ran its upload step**. `DEF-109` has an artefact for the first time in six occurrences
+(`stall-watchdog-snapshots`, id `9898069319`; `PE-829` is the reading, taken end to end). **Thread-pool
+starvation is REFUTED on 204 samples of direct evidence.** ⛔ That is an elimination and `DEC-115` d2 /
+`DEC-116` d1 have both already ruled an elimination is not an identification — do not re-argue it.
+✅ **`#353` → `d6cd4a66` (`DEC-125` d1 — `DEF-134`), and `main` then went GREEN ON BOTH WORKFLOWS**: CI
+`33787859037` and Security `33787858808` on the same sha, which is what `DEC-123` d2 requires. **Cited by
+run id, which is the whole point** (`LL-036`). ⛔ **Whether `main` is green NOW is `gh run list`, not this
+sentence** — this records what happened on a dated sha, the only durable form.
+⚠⚠ **`DEC-124` d2 AND `DEC-123` d4 EACH OVERRODE THE AGENT; `DEC-125` AND `DEC-126` DID NOT.** The rows
+record the reasoning-against, so do not read any of the four as agreement about HOW.
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
 that is a state nothing here describes.
 
@@ -257,8 +279,13 @@ before it was committed is not counted; nor is annotating a historical record wh
 happened. Otherwise the number would drift into a log of every edit and stop meaning anything, which is
 the failure it exists to warn about.
 
+⚠⚠⚠ **THE FIFTIETH IS A NUMBER INSIDE A RULE BLOCK, IN THE KICKOFF COMMANDS, AND IT IS MINE — I MERGED THE PR THAT FALSIFIED IT AND THEN PUSHED THREE COMMITS CARRYING IT.** The `gh run list` annotation read *"the Security workflow's `secrets` job hit its own `timeout-minutes: 10`"*. True when written; `DEC-123` d1 raised the bound to 30 in `#348` → `45e47c04`; commits `56942267`, `20371114` and `ebe3ceb1` then shipped `prm-next.md` still saying 10. **A fresh session pasting the block would have read the live bound as 10 and mis-sized every duration against it.**
+⭐⭐ **IT IS THE FORTY-FOURTH'S FOLDED MEMBER RECURRING EXACTLY — a count inside a rule block, where the RULE survives and the NUMBER rots** — and that entry is fifteen ordinals above this one, in this same file, saying so. ⛔ **The number is DELETED, not refreshed**, which is the EIGHTH fix's standing remedy: the rule (*`cancelled` is a third conclusion; read BOTH workflows*) is what a reader needs, the workflow file is the bound, and `DEF-132` is the reasoning.
+⚠ **Found by the pre-handoff sweep on the identifiers this session moved** — grepping `DEF-132` and reading what the hit CONCLUDES rather than what it asserts. **No instrument here could have**: `count-prompt-ids.py` resolves ids and `DEF-132` is real and correctly statused; the prose-status checker wants a `(Status)` form; the colour and slice-id greps key on other tokens. **Sixth consecutive finding invisible to every check this file owns.**
+⚠ **THE FIFTEENTH ESCAPE IS SEPARATE, IS ALSO MINE, AND IS COUNTED THOUGH IT IS TRIVIAL:** commit `ebe3ceb1`'s message says *"New memory topic: a-control-proves-firing-not-coverage -> coupling"*, naming a file that does not exist — the file is `a-control-proves-firing-not-coupling.md`, and the commit's own diff lists it correctly. **Counted rather than waved through as garble**, because it names a wrong artefact and a reader grepping for it finds nothing; the FORTY-EIGHTH's rule is that under-counting my own defeats the instrument. A commit message cannot be amended.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **forty-nine** times, and **fourteen** wrong assertions have escaped into
+file has carried a stale statement **fifty** times, and **fifteen** wrong assertions have escaped into
 commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
@@ -2194,12 +2221,20 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-122` first: `DEC-122`, `DEC-121`,
-   `DEC-120`, `SC-045`, `DEF-132`, `DEF-131`, `DEF-109`, `DEF-130`, `DW-096`, `DEF-121`, `LL-054`, and
+   `gh run list --branch main`. **Then read these rows, and read `DEC-126` first: `DEC-126`, `DEC-125`,
+   `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-134`, `DEF-109`, `DEF-130`,
+   `DEF-121`, `DW-096`, `LL-055`, `LL-054`, `PE-829`, and
    the `wbs-item` rows the live slice's `wbs-done` names.** ⛔ **What is at what status, what is still
    open, and what anyone owes anyone is deliberately NOT written here.** ⚠ **No `WBS-` prefix is written
    there on purpose** — naming one is the FORTY-SIXTH's fault in a smaller costume, wrong the moment a
    later slice opens; `readiness_check` returns them and never rots.
+   ⚠⚠ **A LESSON IN THAT LIST IS SOMETHING TO READ, NOT SOMETHING THAT BINDS. THE TOOL-OWNED NOTE IS THE
+   ONLY ROSTER OF WHAT BINDS** — `tamheed-package/CLAUDE.md`, refreshed by `handoff_emit`. ⛔ **Never infer
+   that a lesson binds from its presence in a register, in this list, or in a decision's text**; that is
+   `DEF-107`'s mechanism seen from the other side, where an Approved and pinned lesson bound nothing for
+   two days because the emit ran in a different batch. ⚠ **A status is a column — do not write one, or a
+   consequence of one, into this file.** The first draft of this very paragraph did exactly that, and it
+   was caught by the pre-handoff sweep rather than by any check (`DEC-126` carries the ceremony's ruling).
    ⚠ **`DEF-130` OCCURRENCE 2 IS NOT ON ITS ROW'S TITLE — it is in `DEC-122` d3 and `PE-820`**, a
    deliberate proportionality call recorded in `PE-820` itself. That row carries no occurrence counter;
    if it ever gains one, fold the entry onto it.
