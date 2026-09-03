@@ -28,6 +28,33 @@ Two habits, and they matter more than this file:
    `LL-049` already warns that a measurement inside a chain that has already acted is a report, not a
    control.
 
+## ⛔ The PowerShell tool is a SECOND tool with its OWN allowlist, and it had none
+
+Added 2026-09-03, after the same complaint fired twice in one session. Everything above was written
+about `Bash`, and it reads as though Bash is the whole story. It is not: `PowerShell` is a separate
+tool with a separate matcher, and this file had **280 entries and not one `PowerShell(...)` rule** —
+so *every* PowerShell call prompted regardless of how harmless it was. Three read-only calls
+(`Get-Process`, `Get-Item`, `Get-CimInstance`) prompted for that reason alone.
+
+⚠ **And the shape rule applies here too, in a second costume.** A prefix matcher matches the FIRST
+TOKEN, so
+
+```powershell
+$lock='...'; $raw=(Get-Content $lock -Raw).Trim()
+```
+
+starts with `$lock=`, not with a cmdlet — and matches nothing, exactly as `cd "…" && grep` matches
+nothing. **One cmdlet per call, and the first token is the cmdlet name.**
+
+⭐ **Prefer Bash anyway.** The allowlist's coverage lives there, so a task doable in Bash should be
+done in Bash; reach for PowerShell only where Bash genuinely cannot (Windows process identity, CIM,
+ACLs). `Bash(ps *)` and `Bash(tasklist *)` were added so PID-liveness checks — the recurring
+stale-`.lock` recipe — no longer need PowerShell at all.
+
+⛔ Only READ-ONLY cmdlets are allowed: `Get-Process`, `Get-CimInstance`, `Get-Content`, `Get-Item`,
+`Get-ChildItem`, `Get-Command`, `Test-Path`, `Get-Date`, `Select-String`, `Measure-Object`.
+**`Remove-Item` is deliberately NOT among them** — it is `rm`, and the table below governs it.
+
 ## Both matcher syntaxes are emitted, on purpose
 
 The pre-existing entries use the legacy glob form `Bash(gh pr *)`; current Claude Code documents the
@@ -48,6 +75,14 @@ Not allowed, and this is the point:
 | `gh pr create` / `merge` / `close` | outward-facing; the branch → PR → green CI → squash-merge convention in `AGENTS.md` |
 | `gh run rerun` | `DEC-077` d3 — a red backend job is **never** re-run; that is the operator's call alone |
 | `rm`, `docker compose up/down`, `npm publish` | destructive or environment-mutating |
+
+⚠ **The tamheed MCP WRITE tools were added on 2026-09-03, on the operator's explicit answer** —
+`progress_update`, `entity_upsert`, `audit_record`, `work_bind`, `package_close`, `handoff_emit`.
+Only the READ tools had been listed, so every recording batch prompted six or more times. They
+qualify under the "local, reversible" rule above: the canonical JSONL lives in the git working tree,
+so a bad write is `git checkout`-able, and **`git push` still prompts** — the checkpoint that
+matters is unchanged. ⛔ This was put to the operator rather than added silently, because the
+exclusion table above is a deliberate governance surface and was silent on MCP writes.
 
 An allowlist that removed those prompts would be removing the last human checkpoint in front of exactly
 the actions this project's decision register spends most of its words governing. The goal was fewer
