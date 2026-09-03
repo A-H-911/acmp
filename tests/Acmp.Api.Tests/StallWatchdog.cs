@@ -69,8 +69,14 @@ internal static class StallWatchdog
         {
             IsBackground = true,
             Name = "acmp-stall-watchdog",
-            // Above normal so that being descheduled is evidence about the PROCESS rather than about
-            // this thread losing a fair race for a core.
+            // A best-effort hint and NOT a guarantee, stated here so a reader of the artefact does not
+            // lean on it: the runtime documents that "operating systems are not required to honor the
+            // priority of a thread", and on Linux — where CI runs — it is typically ignored outright.
+            // (It cannot throw: Thread.Priority raises only on an invalid value or a dead thread;
+            // the Linux-throwing member is ProcessThread.BasePriority, a different type.) So a large
+            // drift does NOT by itself distinguish "the process was not scheduled" from "this thread
+            // lost an ordinary race for a core" — the snapshot records CPU seconds, processor count and
+            // pool state so a reader can tell those apart from the evidence rather than from this hint.
             Priority = ThreadPriority.AboveNormal,
         };
         thread.Start();
