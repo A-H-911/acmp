@@ -28,21 +28,30 @@ gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap
                                              # PRs that became `DW-080`). A Dependabot queue MOVES, so
                                              # any count of it in prose is stale by construction.
 gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
-                                             # ⛔⛔ IF `main` IS RED, READ `DEF-109` AND `DEF-121` BEFORE
-                                             # ANYTHING ELSE, AND DO NOT RE-RUN IT. Both are open, both
-                                             # have recurred on trees whose PR run passed, and both carry
-                                             # end conditions that ACCUMULATED GREENS SATISFY BY DESIGN.
-                                             # Discriminate by SIGNATURE, never by which is nearer to
-                                             # hand: `DEF-109` is `Acmp.Api.Tests` alone, scattered
-                                             # 100-second `HttpClient` timeouts, every other suite green
-                                             # and fast. `DEF-121`/`DEF-108` are Integration container
-                                             # crashes with `lsasrv`/`AppLoader` frames. `DEC-110` d1
-                                             # ruled that a `DEF-109` red is INVESTIGATED, not re-run,
-                                             # and a re-run is the operator's call, never yours. ⚠ BUT
-                                             # IT IS DIAGNOSED NOW (`DEC-111` d1), SO A FURTHER RED IS
-                                             # NOT A FOURTH INVESTIGATION: it wants clause (2) of the
-                                             # end condition — a CAPTURED ARTEFACT naming a cause, and
-                                             # the occurrence appended to the row. Read the row.
+                                             # ⛔⛔ IF `main` IS RED, READ `DEF-130`, `DEF-109` AND
+                                             # `DEF-121` BEFORE ANYTHING ELSE, AND DO NOT RE-RUN IT. All
+                                             # three are open, all have recurred on trees whose PR run
+                                             # passed, and all carry end conditions that ACCUMULATED
+                                             # GREENS SATISFY BY DESIGN.
+                                             # ⭐ DISCRIMINATE BY SIGNATURE, never by which is nearer to
+                                             # hand — the register does this on the EXCEPTION TYPE and on
+                                             # the crash frames, and it has now settled two attributions
+                                             # in seconds that would otherwise have been argued:
+                                             #  · `DEF-109` — `Acmp.Api.Tests` ALONE, scattered 100-second
+                                             #    `HttpClient` `TaskCanceledException`s, every other suite
+                                             #    green and fast.
+                                             #  · `DEF-130` — Integration `SearchProvidersFtsTests`,
+                                             #    `ContainerNotRunningException`, `Reason 0x00000002`,
+                                             #    errno 11 EAGAIN, `lsasrv.dll` + `lsass.exe` frames.
+                                             #    (`DEF-108`'s closed family; ITS closure text mandates a
+                                             #    NEW row each time and forbids citing itself.)
+                                             #  · `DEF-121` — same test, but `Reason 0x00000006`, errno 2
+                                             #    ENOENT, `AppLoader` frames, ZERO `lsasrv`/`lsass`.
+                                             # ⛔⛔ `DEC-077` d3 fires ONLY on a `SearchProvidersFtsTests`
+                                             # red, so it fires on `DEF-130`/`DEF-121` and NOT on
+                                             # `DEF-109`. Its override count is in the DECISION REGISTER,
+                                             # never in a number here. A re-run is the operator's call in
+                                             # every case; `DEC-110` d1 and `DEC-119` are the readings.
                                              # (trap 23). ⚠ For a `pull_request` event GitHub evaluates
                                              # paths-ignore against the WHOLE PR diff, so on an open PR
                                              # even a package-only push re-runs everything and CANCELS
@@ -118,10 +127,20 @@ merge-commit red PROSPECTIVELY instead of a later session tripping over it.
 ⛔ **DO NOT READ *"a fifth merged"* AS *"the slice is finished"*.** Merging is a repository fact; what a
 row's STATUS is, and whether `main` is green now, are not — `entity_query`, `readiness_check` and
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
-`DEC-111`–`DEC-116`, `DEF-128`, `DW-096`/`DW-097` and `LL-047`–`LL-052` were all recorded on 2026-09-02;
-`LL-047`, `LL-049` and `LL-052` are Approved and **pinned**. ⛔ **`DEF-121`'s clause (2) HAS FIRED AND IS
-STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two sessions said the
-captured artefact contained. Neither a successful capture nor a refuted hypothesis is a cause.
+`DEC-111`–`DEC-119`, `DEF-128`/`DEF-129`/`DEF-130`, `DW-096`/`DW-097` and `LL-047`–`LL-053` were all
+recorded on 2026-09-02; `LL-047`, `LL-049` and `LL-052` are Approved and **pinned**. ⛔ **`DEF-121`'s clause
+(2) HAS FIRED AND IS STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two
+sessions said the captured artefact contained. **Neither a successful capture nor a refuted hypothesis is a
+cause**, and `DEC-115` d2 and `DEC-116` d1 refused each of those readings in turn.
+⭐⭐ **SESSION MECHANICS, ADOPTED 2026-09-02 AND WORTH READING BEFORE THE FIRST TOOL CALL RATHER THAN AFTER
+THE FIFTIETH.** Scratch work goes in **`.scratch/<session-id>/`** — in-repo and gitignored, because the
+harness's own scratchpad sits outside every working directory. ⛔ **Trap 27 is UNCHANGED and is what makes
+that safe: nothing a later session must read may live there.** ⚠ **`~/.claude/projects/.../memory` is a
+JUNCTION to `<repo>/.claude/memory`** — address it by the REPO path or the Read tool refuses it. ⛔⛔ **AND
+APPROVAL PROMPTS COME FROM COMMAND *SHAPE*, NOT FROM THE ALLOWLIST**: no `cd` prefix (the cwd already IS the
+repo and persists), no heredocs, no `&&` chains — a multi-statement string matches no prefix rule, and the
+Bash tool's own docs say `cd` in a compound command triggers a prompt. **One simple command per call; use
+Write/Edit for files.** Full reasoning and the deliberate exclusions in `.claude/PERMISSIONS.md`.
 `DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
 `LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
@@ -174,6 +193,20 @@ which is the whole point** (`LL-036`): head `a6d45013` passed CI `33643459506`, 
 E2E `33643459543`. ⚠ **Its FIRST head `e8682094` failed CI `33573023967` on `DEF-121`, and that occurrence
 stays on the row** — a new sha is a new tree and never a re-run, so `DEC-077` d3's override count is
 untouched at TWO. ⛔ **Whether anything is open NOW is `gh pr list`, not this sentence.**
+✅ **PR `#341` (the `.scratch/` ignore rule + the `AGENTS.md` routing correction) MERGED 2026-09-02, SQUASHED
+TO `0ec0e938`**, branch deleted. Head `a90a46c7` was green on CI `33665248711`, E2E `33665248717` and
+Security `33665248727`. ⛔ **AND ITS MERGE-COMMIT RUN FAILED — CI `33666393228`, `SearchProvidersFtsTests`,
+filed as `DEF-130`.** `LL-036`'s FIFTH instance, caught prospectively by `DEC-077` d2's poll for the second
+time. `DEC-119` ruled it investigated and NOT re-run. ⛔ **Whether `main` is red NOW is `gh run list`, not
+this sentence** — this paragraph records what happened on a dated sha, which is the only durable form.
+⚠⚠ **THE STRUCTURAL LESSON FROM THAT PR, BECAUSE IT COMPOSES AND WILL RECUR:** it existed only because
+`.gitignore` is the one file in that change CI does **not** path-ignore, so a one-line convenience commit
+had to take the PR route and landed behind an intermittent fault, while `AGENTS.md` (a `*.md`) ran no CI at
+all. **The routing rule and the flakiness multiply.** ⛔ **AND `required_status_checks.strict` IS TRUE, so
+EVERY push to `main` leaves every open PR `BEHIND` and unmergeable whatever it touched** — path-ignore stops
+the CI RUN, not the staleness; they are unrelated mechanisms and *no run fired* reads far too easily as *no
+effect*. **Push package writes FIRST, then rebase the branch onto that, then push nothing to `main` until
+the PR lands.** That cost two rebases in one session, the second knowingly.
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
 that is a state nothing here describes.
 
@@ -2120,8 +2153,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
 
 1. ▶▶▶ **RESOLVE THE STATE; DO NOT READ THIS FILE FOR IT.** `entity_query("slice", status="Approved")`,
    then `readiness_check` on the id it returns, then `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read `DEF-121`, `DEC-117` and `LL-052`.** ⛔ **What is at what
-   status, what is still open, and what anyone owes anyone is deliberately NOT written here.**
+   `gh run list --branch main`. **Then read these rows, and read `DEF-130` first: `DEF-130`, `DEF-109`,
+   `DW-096`, `DEF-129`, `DEF-121`, `LL-053`, and `DEC-119`.** ⛔ **What is at what status, what is still
+   open, and what anyone owes anyone is deliberately NOT written here.**
+   ⚠⚠ **TWO RULINGS ARE OWED AND THE ROWS CARRY THEM — THIS SENTENCE NAMES NEITHER, ONLY WHERE THEY LIVE.**
+   `DEC-119`'s rationale ends with a *what this did not decide* paragraph, and `DEF-109`'s newest occurrence
+   block ends with an activation consequence. **Read both; do not infer either from here.** ⭐ Written this
+   way because the previous two attempts at this item both rotted — one described work, one pointed at an
+   obligation — and **a pointer at a ROW survives what a pointer at a STATE cannot.**
    ⛔ **THIS ITEM NO LONGER SAYS *"there is nothing to build"*, AND THE DELETION IS THE POINT — THAT WAS THE
    FORTY-NINTH.** It was a measured claim when written and `DEC-116` d2 falsified it the same day by
    commissioning code. **A claim about what REMAINS is a status wearing a measurement's clothes**, which is
