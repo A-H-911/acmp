@@ -28,6 +28,26 @@ Two habits, and they matter more than this file:
    `LL-049` already warns that a measurement inside a chain that has already acted is a report, not a
    control.
 
+## ⛔⛔ THE SHAPE RULE HAS THREE COSTUMES, AND NAMING ONLY THE FIRST IS WHY IT KEPT FIRING
+
+Added 2026-09-03. In ONE session the same defect prompted the operator three separate times, and each
+time it wore different clothes. **The rule is not "don't use `cd`" — it is that the matcher matches the
+FIRST TOKEN of the whole command string, so anything that is not the allowed leader defeats it:**
+
+| Costume | Example | Why it matches nothing |
+|---|---|---|
+| `cd` prefix | `cd "…" && grep -n x f` | the string starts with `cd`, not `grep` |
+| variable assignment | `$lock='…'; $p=Get-Process …` | starts with `$lock=`, not `Get-Process` |
+| **a pipe** | `tail -1 f \| python -m json.tool` | a pipeline is a compound command, exactly like `&&` |
+
+⚠ **The pipe is the one that keeps getting missed**, because it *looks* like a single command and the
+leader *is* allowed. `Bash(tail:*)` no more matches `tail … | python` than it matches `tail … && python`.
+
+⭐ **The remedy is one habit, not three rules: ONE SIMPLE COMMAND PER CALL, and the first token is the
+thing being allowed.** Where a pipeline was doing real work, push the work into the single program that
+is already allowed — `node -e '…'` or `python -c '…'` can read, parse and print in one allowed leader,
+which is both shorter and matchable. Use Write/Edit for files rather than `echo >`/heredocs.
+
 ## ⛔ The PowerShell tool is a SECOND tool with its OWN allowlist, and it had none
 
 Added 2026-09-03, after the same complaint fired twice in one session. Everything above was written
