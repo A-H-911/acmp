@@ -31,7 +31,14 @@ concurrency:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # DEC-121 d2 — raised from 25. The reason is EVIDENCE, not patience: a job killed by this bound is
+    # CANCELLED, which leaves no test summary to attribute the failure by signature and skips the artefact
+    # upload. DEF-109 occurrence 5 ran 24m34s and finished 26 SECONDS inside the old ceiling; occurrence 3
+    # ran 21m15s. A crossing occurrence would have been unattributable.
+    # ⚠ 40 is an ESTIMATE from those two, NOT a measured ceiling — nobody has seen where this fault tops
+    # out. ✅ It does not disturb DW-085's paired budgets (8 build + 10 start = 18), which only gain
+    # headroom; those two were chosen together and are still not being tuned apart.
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
@@ -87,8 +94,13 @@ jobs:
       # the suite failed on the 100-second ceiling while a dedicated AboveNormal thread was still being
       # scheduled promptly, which points away from process-wide scheduling starvation and is the first
       # thing any of its four occurrences has been able to say in that direction.
+      # ⚠ `cancelled()` as well as `failure()`, and it is NOT belt-and-braces (DEF-131). A job killed by
+      # `timeout-minutes` is CANCELLED, not failed, and DEF-109 is the fault that trends toward exactly
+      # that: occurrence 5 ran 24m34s and finished 26 SECONDS inside the old 25-minute ceiling. Without
+      # this the one occurrence long enough to cross it would upload nothing — losing the evidence for
+      # precisely the failure the artefact exists to explain. DEC-121 d2 also raised the ceiling to 40.
       - name: Stall watchdog snapshots (DEF-109)
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@v7
         with:
           name: stall-watchdog-snapshots

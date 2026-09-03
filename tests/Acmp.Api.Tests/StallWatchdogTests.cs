@@ -89,7 +89,13 @@ public sealed class StallWatchdogTests : IDisposable
 
         flat.Should().Contain("It is not a diagnosis and it names no cause on its own");
         flat.Should().Contain("An elimination is not an identification");
-        flat.Should().Contain("AN EMPTY OR ABSENT FILE MEANS NO STALL WAS OBSERVED");
+
+        // The header must teach a reader to tell the two absences apart, because getting that wrong is
+        // exactly what DEF-131 records: it previously said an absent file meant no stall was observed,
+        // and never said "or that the watchdog never started" -- which was the case actually in front of
+        // us on DEF-109 occurrence 5.
+        flat.Should().Contain("the watchdog never started");
+        flat.Should().Contain("watchdog STARTED");
     }
 
     [Fact]
@@ -151,6 +157,40 @@ public sealed class StallWatchdogTests : IDisposable
         // So this holds on an idle 24-core box and on a saturated runner alike.
         StallWatchdog.CaptureIfDegraded(StallWatchdog.SampleInterval, _dir).Should().BeFalse();
         File.Exists(SnapshotFile).Should().BeFalse();
+    }
+
+    [Fact]
+    public void The_startup_record_proves_the_watchdog_RAN_even_when_it_sees_nothing()
+    {
+        // DEF-131, and the whole point of the fix. On DEF-109 occurrence 5 the upload step ran and found
+        // NO FILES during a 24-minute run in which 37 requests each burned a 100-second ceiling -- and
+        // that silence was unreadable, because an empty directory is produced identically by "ran and saw
+        // nothing" and by "never ran". The startup record is what separates them.
+        StallWatchdog.WriteStartupRecord(_dir);
+
+        File.Exists(SnapshotFile).Should().BeTrue("the file's EXISTENCE is the positive control");
+        var flat = Regex.Replace(File.ReadAllText(SnapshotFile), @"\s+", " ");
+
+        flat.Should().Contain("watchdog STARTED");
+        // The configuration is recorded WITH the evidence, so a later reader knows which thresholds the
+        // absence of a snapshot was an absence against -- without it, "no stall observed" is unquotable.
+        flat.Should().Contain("driftThreshold=");
+        flat.Should().Contain("sampleInterval=");
+        flat.Should().Contain("processors=");
+    }
+
+    [Fact]
+    public void A_started_watchdog_that_sees_nothing_leaves_the_header_but_no_snapshot()
+    {
+        // The discrimination itself, asserted as one behaviour rather than inferred from two tests: after
+        // a startup record, a healthy sample must add NOTHING. That is what makes "started, no snapshot"
+        // a readable finding instead of an ambiguous silence.
+        StallWatchdog.WriteStartupRecord(_dir);
+        StallWatchdog.CaptureIfDegraded(StallWatchdog.SampleInterval, _dir).Should().BeFalse();
+
+        var text = File.ReadAllText(SnapshotFile);
+        text.Should().Contain("watchdog STARTED");
+        text.Should().NotContain("stall snapshot");
     }
 
     public void Dispose()

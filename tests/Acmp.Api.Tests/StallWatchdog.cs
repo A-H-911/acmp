@@ -72,6 +72,18 @@ internal static class StallWatchdog
         // be switched on for the run that happens to fail is an instrument that is never on.
         if (Environment.GetEnvironmentVariable("ACMP_STALL_WATCHDOG") == "off") return;
 
+        // ⛔⛔ THE POSITIVE CONTROL (`DEF-131`, `DEC-121` d3). Written UNCONDITIONALLY, before the thread
+        // starts, so the file's EXISTENCE proves the watchdog ran and its CONTENT distinguishes "ran and
+        // saw nothing" from "never ran". On `DEF-109` occurrence 5 both upload steps executed and found
+        // NO FILES during a 24-minute run in which 37 requests each burned a 100-second ceiling — and
+        // that silence was unreadable, because an empty directory is produced identically by both cases.
+        // `DEF-078`'s green control with no subject, inside the instrument built to escape that family.
+        // ⚠ It costs nothing on a green run: the upload is `if: failure()`, so a passing build uploads
+        // nothing whatever this writes. On a FAILING run, knowing the watchdog was alive is the point.
+        // ⭐ This project already required a positive control four times — `DW-068`, `DW-084`, `AV-213`,
+        // `AV-216` ("CONFIRMED LIVE, not only by source reading") — and recorded it in no rule register.
+        WriteStartupRecord();
+
         var thread = new Thread(Loop)
         {
             IsBackground = true,
@@ -89,9 +101,21 @@ internal static class StallWatchdog
         thread.Start();
     }
 
+    /// <summary>
+    /// One heartbeat per this many samples. At a 5-second interval that is roughly one line per minute,
+    /// so a 24-minute occurrence leaves ~24 lines — enough to prove the thread stayed alive and to show
+    /// WHEN it stopped if it died, and far too few to be noise.
+    /// </summary>
+    private const int HeartbeatEvery = 12;
+
     private static void Loop()
     {
         var stopwatch = Stopwatch.StartNew();
+        var samples = 0L;
+        var maxDrift = TimeSpan.Zero;
+        long maxPending = 0;
+        var maxThreads = 0;
+
         while (true)
         {
             var before = stopwatch.Elapsed;
@@ -100,7 +124,23 @@ internal static class StallWatchdog
 
             try
             {
+                samples++;
+                var drift = actual - SampleInterval;
+                if (drift > maxDrift) maxDrift = drift;
+                if (ThreadPool.PendingWorkItemCount > maxPending) maxPending = ThreadPool.PendingWorkItemCount;
+                if (ThreadPool.ThreadCount > maxThreads) maxThreads = ThreadPool.ThreadCount;
+
                 CaptureIfDegraded(actual);
+
+                // ⭐⭐ THE HEARTBEAT CARRIES THE CALIBRATION PAYLOAD, WHICH IS THE POINT OF ITS CONTENT
+                // RATHER THAN A BONUS. `DEC-121` d3 ruled the ORDER: the control first, the threshold
+                // calibrated only AFTERWARDS from real data. These maxima ARE that data — the next
+                // occurrence says what drift and queue depth actually look like on a loaded runner, so
+                // the threshold is chosen from measurement instead of from the guessing that has already
+                // made this predicate wrong twice (`LL-054`).
+                if (samples % HeartbeatEvery == 0)
+                    Write($"heartbeat: samples={samples} elapsed={stopwatch.Elapsed:hh\\:mm\\:ss} " +
+                          $"maxDrift={maxDrift} maxPending={maxPending} maxThreads={maxThreads}\n", null);
             }
             catch
             {
@@ -109,6 +149,21 @@ internal static class StallWatchdog
                 // (CrashArtefacts makes the same choice for the same reason).
             }
         }
+    }
+
+    /// <summary>
+    /// Write the header and a startup line. Internal so a test can prove the control actually appears —
+    /// a positive control nobody exercised is the fault it exists to prevent.
+    /// </summary>
+    internal static void WriteStartupRecord(string? destinationRoot = null)
+    {
+        ThreadPool.GetMinThreads(out var minWorkers, out _);
+        ThreadPool.GetMaxThreads(out var maxWorkers, out _);
+        Write(
+            $"watchdog STARTED {DateTimeOffset.UtcNow:O} — pid {Environment.ProcessId}, " +
+            $"processors={Environment.ProcessorCount}, pool min/max workers={minWorkers}/{maxWorkers}, " +
+            $"sampleInterval={SampleInterval}, driftThreshold={DriftThreshold}\n",
+            destinationRoot);
     }
 
     /// <summary>
@@ -260,8 +315,23 @@ internal static class StallWatchdog
         so the kernel wakes it on time whether or not the pool has a free worker — drift alone is SILENT
         on pool starvation, and pool starvation alone produces no drift.
 
-        AN EMPTY OR ABSENT FILE MEANS NO STALL WAS OBSERVED. It does not mean the run was healthy, and it
-        is not evidence about DEF-109 in either direction.
+        HOW TO READ AN ABSENCE — and this file exists BECAUSE that was got wrong once (DEF-131). On
+        DEF-109 occurrence 5 the upload step ran and found no files at all, and that silence could not be
+        read: an empty directory is produced identically by "the watchdog ran and saw nothing" and by
+        "the watchdog never ran". So:
+
+          · NO FILE AT ALL  -> the watchdog never started. Say nothing about DEF-109 from this; it is a
+            fact about the instrument, and it is now a reportable defect in its own right.
+          · A FILE WITH A "watchdog STARTED" LINE AND NO SNAPSHOT -> the watchdog ran and observed no
+            stall by its current thresholds. That IS a finding, and it is the one this instrument exists
+            to be able to make. It still does not mean the run was healthy.
+          · "heartbeat" LINES -> the thread stayed alive, and their maxDrift / maxPending / maxThreads
+            are the data a threshold should be calibrated FROM. If the heartbeats stop before the job
+            does, the thread died there.
+
+        NONE OF IT IS A DIAGNOSIS. DEF-109's clause (2) asks for an artefact that IDENTIFIES A CAUSE;
+        DEC-115 d2 ruled that a successful capture does not satisfy that, and DEC-116 d1 that a refuted
+        hypothesis does not either.
 
         """;
 }
