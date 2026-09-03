@@ -153,6 +153,24 @@ public sealed class AcmpWebApplicationFactory : WebApplicationFactory<Program>
             // rather than a missing registration.
             UseInMemory<ConfigurationDbContext>(services, _dbName + "-config");
 
+            // DEF-134 / DEC-125 d1 — record every request while it is in flight, so StallWatchdog has a
+            // trigger keyed on DEF-109's OWN DEFINITION ("a request did not come back") instead of on a
+            // proxy the fault does not disturb. Occurrence 6 measured max drift at 0.049s against a
+            // 15-second threshold while eighteen requests burned full 100-second ceilings, so no
+            // threshold on scheduling drift can ever fire on this fault (PE-829).
+            //
+            // ⚠ AN IStartupFilter, NOT A DelegatingHandler ON THE CLIENT, AND THE REASON IS MECHANICAL:
+            // WebApplicationFactory.CreateDefaultClient is NOT virtual, so there is no one place to
+            // install a client handler for all 258 call sites — only a `new` shadow, which any call
+            // through the base type would silently bypass. This registration is the one place, and no
+            // test opts in.
+            //
+            // ⭐ AND IT IS THE BETTER INSTRUMENT RATHER THAN THE AVAILABLE ONE. Server-side timing
+            // additionally DISCRIMINATES: if requests hang while this register stays empty, the stall is
+            // upstream of the pipeline (transport or client), which is a finding no client-side timer
+            // could report. Both answers are informative, which is the property LL-047 asks for.
+            services.AddSingleton<IStartupFilter, InFlightRequests.StartupFilter>();
+
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
 
