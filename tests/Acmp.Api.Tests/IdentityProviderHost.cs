@@ -1,4 +1,4 @@
-namespace Acmp.Api.Tests;
+﻿namespace Acmp.Api.Tests;
 
 /// <summary>
 /// The SECOND class fixture <c>DEC-124</c> d1 called for: one shared host built by

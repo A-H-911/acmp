@@ -1,4 +1,4 @@
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 using Xunit.Sdk;
 
 // Assembly-wide, so the control reaches every converted class at once rather than needing an attribute
