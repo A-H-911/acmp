@@ -12,8 +12,15 @@ namespace Acmp.Api.Tests;
 // unauthorised caller never reaches the handler at all. The two are not substitutes: hiding a
 // control in the SPA is presentation gating, and navModel.ts says so in as many words — "this is
 // presentation gating only; the API enforces authorization".
-public class UserManagementApiTests
+public class UserManagementApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public UserManagementApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -30,7 +37,7 @@ public class UserManagementApiTests
     [Fact]
     public async Task Invite_without_a_token_is_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null)
             .PostAsJsonAsync("/api/members/invite", new { Email = "x@acmp.gov", FullName = "X Y" });
@@ -46,7 +53,7 @@ public class UserManagementApiTests
     [InlineData("Guest")]
     public async Task Invite_is_403_for_every_role_except_Administrator_and_Secretary(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, role)
             .PostAsJsonAsync("/api/members/invite", new { Email = "x@acmp.gov", FullName = "X Y" });
@@ -63,7 +70,7 @@ public class UserManagementApiTests
     [InlineData("Guest")]
     public async Task Assigning_roles_is_403_for_a_role_that_may_not(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-target", "Target Person", CommitteeRole.Member));
 
         var members = await Client(factory, "Administrator", "kc-admin")
@@ -79,7 +86,7 @@ public class UserManagementApiTests
     [Fact]
     public async Task Assigning_roles_without_a_token_is_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null).PutAsJsonAsync(
             $"/api/members/{Guid.NewGuid()}/roles", new RolesBody(new[] { nameof(CommitteeRole.Member) }, false));
@@ -90,7 +97,7 @@ public class UserManagementApiTests
     [Fact]
     public async Task An_authorised_caller_still_cannot_invite_when_no_identity_provider_is_configured()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator", "kc-admin")
             .PostAsJsonAsync("/api/members/invite", new { Email = "x@acmp.gov", FullName = "X Y" });

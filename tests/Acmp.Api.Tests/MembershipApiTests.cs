@@ -6,8 +6,15 @@ using FluentAssertions;
 namespace Acmp.Api.Tests;
 
 // HTTP-contract tests through the real pipeline + policy authorization (the JWT injector P2 deferred).
-public class MembershipApiTests
+public class MembershipApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public MembershipApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -25,7 +32,7 @@ public class MembershipApiTests
     [Fact]
     public async Task No_token_returns_401() // AC-008
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).GetAsync("/api/members");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -42,7 +49,7 @@ public class MembershipApiTests
     // GuestSurfaceApiTests.
     public async Task Directory_is_readable_by_every_committee_role(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-dir", "Directory Member", CommitteeRole.Member));
 
         var response = await Client(factory, role).GetAsync("/api/members");
@@ -58,7 +65,7 @@ public class MembershipApiTests
     [InlineData("Member")]
     public async Task Non_admin_cannot_deactivate_member_403(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, role).PostAsync($"/api/members/{Guid.NewGuid()}/deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -66,7 +73,7 @@ public class MembershipApiTests
     [Fact] // AC-007 boundary: Administrator holds Admin.Users (and only platform-admin policies)
     public async Task Administrator_can_deactivate_member()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-bob", "Bob", CommitteeRole.Member));
         var admin = Client(factory, "Administrator", sub: "kc-admin");
 
@@ -84,7 +91,7 @@ public class MembershipApiTests
     [Fact]
     public async Task Administrator_can_reactivate_a_deactivated_member()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-bob", "Bob", CommitteeRole.Member));
         var admin = Client(factory, "Administrator", sub: "kc-admin");
 
@@ -107,7 +114,7 @@ public class MembershipApiTests
     [InlineData("Member")]
     public async Task Non_admin_cannot_reactivate_member_403(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, role).PostAsync($"/api/members/{Guid.NewGuid()}/reactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -115,7 +122,7 @@ public class MembershipApiTests
     [Fact] // AC-002: claim -> role, end to end over HTTP
     public async Task Provision_me_returns_role_from_claims()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Secretary", sub: "kc-sec").PostAsync("/api/members/me", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -126,7 +133,7 @@ public class MembershipApiTests
     [Fact] // BL-024: Administrator assigns a member's streams (empty set clears them) -> 204
     public async Task Administrator_assigns_streams_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-mem", "Mem One", CommitteeRole.Member));
         var admin = Client(factory, "Administrator", sub: "kc-admin");
 
@@ -141,7 +148,7 @@ public class MembershipApiTests
     [Fact] // docs/10 §E.3 (Auth.Delegate): Secretary delegates a capability for a bounded window -> 201
     public async Task Secretary_creates_a_delegation_returns_201()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(
             ("kc-sec", "Sec One", CommitteeRole.Secretary),
             ("kc-target", "Target One", CommitteeRole.Member));

@@ -13,8 +13,15 @@ namespace Acmp.Api.Tests;
 
 // P16-B4 request-pipeline hardening: proportional rate limiting (C-API-03) + read-only-FS-safe
 // DataProtection key-ring (C-CON-003). Limits are lowered via config so the tests need only a few requests.
-public sealed class HardeningApiTests
+public sealed class HardeningApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public HardeningApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     // Layers a small rate-limit override onto the standard test host so a policy trips after 2 permits.
     // UseSetting writes into the host configuration, which minimal-hosting `builder.Configuration` reads at
     // service-registration time (more reliable here than ConfigureAppConfiguration's ordering).
@@ -40,7 +47,7 @@ public sealed class HardeningApiTests
     [Fact] // C-API-03 — the per-user search policy returns 429 + Retry-After past the limit.
     public async Task Search_over_the_per_user_limit_returns_429_with_retry_after()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var client = WithLimit(factory, "SearchPermitPerMinute", 2).CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.RolesHeader, "Member");
         client.DefaultRequestHeaders.Add(TestAuthHandler.SubHeader, "rate-user");
@@ -56,7 +63,7 @@ public sealed class HardeningApiTests
     [Fact] // C-API-03 — the anonymous Webex webhook has ONE global bucket (no per-user sub to partition on).
     public async Task Webhook_over_the_global_limit_returns_429()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var client = WithLimit(factory, "WebhookPermitPerMinute", 2).CreateClient();
 
         // These carry no valid HMAC signature, and the Webex adapter is OFF in the test host — so

@@ -28,7 +28,7 @@ public class EndpointAuthorizationCoverageTests : IClassFixture<AcmpWebApplicati
 {
     private readonly AcmpWebApplicationFactory _factory;
 
-    public EndpointAuthorizationCoverageTests(AcmpWebApplicationFactory factory) => _factory = factory;
+    public EndpointAuthorizationCoverageTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
 
     // Routes that carry NO authorization metadata by design. ⚠ "No bearer" is NOT "no authentication":
     // three of these five are authenticated by a mechanism the routing table cannot see, and each entry

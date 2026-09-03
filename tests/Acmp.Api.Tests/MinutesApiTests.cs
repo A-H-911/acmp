@@ -11,8 +11,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for /api/minutes through the real pipeline + policy authorization (docs/10). Draft
 // needs a held meeting (seeded directly), since the MoM references a real meeting in its own module.
 // Draft/submit = Minutes.Capture; approve/publish/supersede = Minutes.Approve — both Chairman/Secretary.
-public class MinutesApiTests
+public class MinutesApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public MinutesApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -47,7 +54,7 @@ public class MinutesApiTests
     [Fact] // AC-008
     public async Task Draft_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null)
             .PostAsJsonAsync("/api/minutes", new { meetingId = Guid.NewGuid(), summary = Summary });
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -56,7 +63,7 @@ public class MinutesApiTests
     [Fact] // docs/10: Minutes.Capture is Secretary/Chairman — a Member is forbidden
     public async Task Member_cannot_draft_minutes_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member")
             .PostAsJsonAsync("/api/minutes", new { meetingId = Guid.NewGuid(), summary = Summary });
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -65,7 +72,7 @@ public class MinutesApiTests
     [Fact]
     public async Task Draft_with_empty_summary_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var response = await Client(factory, "Secretary", "kc-sec")
             .PostAsJsonAsync("/api/minutes", new { meetingId, summary = Loc("", "") });
@@ -75,7 +82,7 @@ public class MinutesApiTests
     [Fact]
     public async Task Draft_for_an_unknown_meeting_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Secretary", "kc-sec")
             .PostAsJsonAsync("/api/minutes", new { meetingId = Guid.NewGuid(), summary = Summary });
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -84,7 +91,7 @@ public class MinutesApiTests
     [Fact] // W10: draft → detail → version list; unknown key 404
     public async Task Secretary_drafts_then_reads_detail_and_list()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var sec = Client(factory, "Secretary", "kc-sec");
 
@@ -106,7 +113,7 @@ public class MinutesApiTests
     [Fact] // W10 full path: draft → submit → approve → publish (AC-038). Same actor → sole-author flagged (AC-014).
     public async Task Secretary_drafts_submits_approves_and_publishes()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var sec = Client(factory, "Secretary", "kc-sec");
 
@@ -123,7 +130,7 @@ public class MinutesApiTests
     [Fact] // AC-037: request-changes bounces InReview → Draft
     public async Task Chairman_requests_changes_returns_to_draft()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var sec = Client(factory, "Secretary", "kc-sec");
         var minutes = await (await sec.PostAsJsonAsync("/api/minutes", new { meetingId, summary = Summary })).Content.ReadFromJsonAsync<MinutesSummary>();
@@ -139,7 +146,7 @@ public class MinutesApiTests
     [Fact] // docs/10: Minutes.Approve is Chairman/Secretary — a Member cannot approve
     public async Task Member_cannot_approve_minutes_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var sec = Client(factory, "Secretary", "kc-sec");
         var minutes = await (await sec.PostAsJsonAsync("/api/minutes", new { meetingId, summary = Summary })).Content.ReadFromJsonAsync<MinutesSummary>();
@@ -152,7 +159,7 @@ public class MinutesApiTests
     [Fact] // AC-036: supersede a published MoM — successor 201 v2 Published, prior flips to Superseded with a back-link
     public async Task Secretary_supersedes_a_published_mom()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meetingId = await SeedHeldMeetingAsync(factory);
         var sec = Client(factory, "Secretary", "kc-sec");
         var minutes = await (await sec.PostAsJsonAsync("/api/minutes", new { meetingId, summary = Summary })).Content.ReadFromJsonAsync<MinutesSummary>();

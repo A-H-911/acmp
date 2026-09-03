@@ -6,8 +6,15 @@ namespace Acmp.Api.Tests;
 
 // System Health endpoint (NR-08). Admin-config gated (Administrator only). The report always includes
 // the synthetic "api" liveness entry; the SPA overlays these onto its fixed service catalog.
-public class AdminEndpointsTests
+public class AdminEndpointsTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AdminEndpointsTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private sealed record HealthResponse(string Status, List<HealthEntry> Entries);
     private sealed record HealthEntry(string Name, string Status, string? Description, double DurationMs);
 
@@ -25,7 +32,7 @@ public class AdminEndpointsTests
     [Fact] // Administrator reads the live health report; the "api" liveness check is always present.
     public async Task Administrator_gets_health_report_including_api_entry()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Administrator").GetAsync("/api/admin/health");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -39,7 +46,7 @@ public class AdminEndpointsTests
     [Fact] // docs/10: Admin.Config is Administrator-only — a Member is forbidden.
     public async Task Non_admin_is_forbidden()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member", sub: "kc-member").GetAsync("/api/admin/health");
 
@@ -49,7 +56,7 @@ public class AdminEndpointsTests
     [Fact] // No bearer → 401 before any health check runs.
     public async Task Unauthenticated_is_unauthorized()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null).GetAsync("/api/admin/health");
 

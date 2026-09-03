@@ -62,4 +62,28 @@ public sealed class FakeIdentityProvider : IIdentityProvider
 
     public Task<IReadOnlyList<IdentityAccount>> ListUsersAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<IdentityAccount>>(Accounts.ToArray());
+
+    /// <summary>
+    /// Forget everything recorded so far. Called from the constructor of each test class that shares an
+    /// identity host, which xUnit runs once PER TEST METHOD even though the fixture is built once.
+    /// </summary>
+    /// <remarks>
+    /// ⛔⛔ WITHOUT THIS, SHARING AN IDENTITY HOST IS THE EXACT DEFECT <c>WBS-27.2</c> IS WARNED ABOUT.
+    /// This type exists to let a test assert that the Keycloak side ACTUALLY HAPPENED, and every one of
+    /// those assertions reads an accumulating collection — <c>Created</c>, <c>Disabled</c>,
+    /// <c>Enabled</c>, <c>SignedOut</c>. Share the host without clearing them and a
+    /// <c>ContainSingle</c> quietly becomes an assertion about the whole class's history, which
+    /// <b>passes</b> for as long as the sibling that filled the bag keeps doing the same thing
+    /// (<c>LL-032</c>: the dangerous outcome is a pass). <c>Accounts</c> is worse still — a test
+    /// populates it to say what the realm contains, so a stale entry is a fixture lying about the world.
+    /// </remarks>
+    public void Reset()
+    {
+        Created.Clear();
+        Disabled.Clear();
+        Enabled.Clear();
+        SignedOut.Clear();
+        Roles.Clear();
+        Accounts.Clear();
+    }
 }

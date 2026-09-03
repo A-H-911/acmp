@@ -7,8 +7,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for /api/traceability through the real pipeline + policy authorization (docs/10,
 // docs/30 §6.1). The panel read is committee-wide; create/deactivate a typed edge is Traceability.Link
 // (Chairman/Secretary). AC-062 (panel up/downstream) + AC-063 (create → both panels show it, audited).
-public class TraceabilityApiTests
+public class TraceabilityApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public TraceabilityApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -41,7 +48,7 @@ public class TraceabilityApiTests
     [Fact] // AC-008: no token → 401
     public async Task Panel_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).GetAsync($"/api/traceability/Topic/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -49,7 +56,7 @@ public class TraceabilityApiTests
     [Fact] // docs/30 §6.1: Member is read-only — creating an edge is forbidden
     public async Task Member_cannot_create_an_edge_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/traceability", EdgeBody(Guid.NewGuid(), Guid.NewGuid()));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -57,7 +64,7 @@ public class TraceabilityApiTests
     [Fact] // A self-loop is rejected at the validator (400)
     public async Task Create_self_loop_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var id = Guid.NewGuid();
         var body = new
         {
@@ -79,7 +86,7 @@ public class TraceabilityApiTests
     [Fact] // AC-063: a Secretary creates an edge; it shows OUTGOING on the source panel and INCOMING on the target.
     public async Task Secretary_creates_an_edge_and_both_panels_show_it()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topicId = Guid.NewGuid();
         var decisionId = Guid.NewGuid();
@@ -106,7 +113,7 @@ public class TraceabilityApiTests
     [Fact] // A deactivated edge disappears from the panel (soft-delete, docs/30 §5).
     public async Task Deactivated_edge_leaves_the_panel()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topicId = Guid.NewGuid();
 
@@ -123,7 +130,7 @@ public class TraceabilityApiTests
     [Fact] // Deactivating an unknown edge → 404
     public async Task Deactivate_unknown_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/traceability/{Guid.NewGuid()}/deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -137,7 +144,7 @@ public class TraceabilityApiTests
     [Fact] // AC-008: no token → 401
     public async Task Graph_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).GetAsync($"/api/traceability/graph/Topic/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -145,7 +152,7 @@ public class TraceabilityApiTests
     [Fact] // FR-096: a real end-to-end walk — Topic→Decision→Action composes into signed tiers over 2 hops.
     public async Task Graph_composes_relationship_edges_into_tiers()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topicId = Guid.NewGuid();
         var decisionId = Guid.NewGuid();
@@ -184,7 +191,7 @@ public class TraceabilityApiTests
     [Fact] // Depth 1 stops one hop out — the Action (2 hops) is not in the graph.
     public async Task Graph_depth_one_stops_at_first_hop()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topicId = Guid.NewGuid();
         var decisionId = Guid.NewGuid();

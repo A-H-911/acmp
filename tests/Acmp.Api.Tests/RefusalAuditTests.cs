@@ -21,8 +21,15 @@ namespace Acmp.Api.Tests;
 // so it never reaches the middleware that short-circuits; the API tests go through HTTP but never
 // asserted an audit row for a DENIAL. Before this file, the string "Authorization.Forbidden" appeared
 // in no test anywhere in the solution - the emission had never been asserted by anything.
-public class RefusalAuditTests
+public class RefusalAuditTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public RefusalAuditTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub)
     {
         var client = factory.CreateClient();
@@ -55,7 +62,7 @@ public class RefusalAuditTests
     [Fact] // AC-006 — the refusal AND the record, asserted as a ROW rather than as an emission
     public async Task A_policy_refused_mutation_leaves_an_Authorization_Forbidden_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         // An Auditor is read-only by the permission matrix, so scheduling a meeting is refused by the
         // endpoint's own policy - before MediatR, which is the whole point.
@@ -76,7 +83,7 @@ public class RefusalAuditTests
     [Fact] // the record must not describe denials of an action nobody was identified to attempt
     public async Task An_unauthenticated_request_leaves_no_Forbidden_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         // No role/sub headers at all: the pipeline CHALLENGES rather than forbids, and that is a
         // different event. Emitting Forbidden here would fill the register with rows about a person
@@ -91,7 +98,7 @@ public class RefusalAuditTests
     [Fact] // AC-003 — the deny path that the DEF-056 middleware structurally cannot see
     public async Task A_token_with_no_committee_role_is_denied_AND_recorded()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         // ⚠ THIS ONE DOES NOT GO THROUGH THE POLICY LAYER AT ALL, and that is why it needs its own
         // emitter. Provisioning carries no capability policy - a caller must be able to provision
@@ -109,7 +116,7 @@ public class RefusalAuditTests
     [Fact] // the control: a caller who IS allowed writes no refusal row
     public async Task An_allowed_caller_leaves_no_refusal_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         // Without this, every assertion above is equally consistent with "this route refuses everyone"
         // or "something emits Authorization.Forbidden on every request". A refusal record that fires

@@ -19,7 +19,7 @@ public class WebexStatusApiTests : IClassFixture<AcmpWebApplicationFactory>
 
     private readonly AcmpWebApplicationFactory _factory;
 
-    public WebexStatusApiTests(AcmpWebApplicationFactory factory) => _factory = factory;
+    public WebexStatusApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
 
     private static HttpClient Authed(HttpClient client)
     {

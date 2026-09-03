@@ -10,8 +10,15 @@ namespace Acmp.Api.Tests;
 // the coordinator's fan-out/grouping over InMemory: every module's ISearchProvider runs its LIKE branch
 // (InMemory cannot translate FREETEXT — the Arabic word-breaker leg is proven in SearchProvidersFtsTests on a
 // real FTS SQL Server), a created Topic is found and returned grouped under "Topics" with its deep link.
-public sealed class SearchApiTests
+public sealed class SearchApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public SearchApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(WebApplicationFactory<Program> app, string? roles, string sub = "u1")
     {
         var client = app.CreateClient();
@@ -39,7 +46,7 @@ public sealed class SearchApiTests
     [Fact] // AC-060
     public async Task Global_search_returns_the_topic_grouped_with_a_deep_link()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("u1", "User One", CommitteeRole.Member));
         var client = Client(factory, "Member");
 
@@ -59,7 +66,7 @@ public sealed class SearchApiTests
     [Fact]
     public async Task Blank_query_returns_no_groups()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("u1", "User One", CommitteeRole.Member));
         var groups = await Client(factory, "Member").GetFromJsonAsync<List<SearchGroup>>("/api/search?q=%20");
         groups.Should().BeEmpty();
@@ -68,7 +75,7 @@ public sealed class SearchApiTests
     [Fact]
     public async Task Search_without_a_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).GetAsync("/api/search?q=anything");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

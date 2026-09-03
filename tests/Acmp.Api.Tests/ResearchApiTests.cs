@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // the ADR endpoints — the Research.Manage allow-if-owner (Member/Reviewer) has no ownership relationship to
 // resolve at a bare create and Chairman/Secretary are the effective writers (a Member/Reviewer create is 403).
 // The full P15a lifecycle is driven end to end.
-public class ResearchApiTests
+public class ResearchApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public ResearchApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -48,7 +55,7 @@ public class ResearchApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/research", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -56,7 +63,7 @@ public class ResearchApiTests
     [Fact] // docs/10 #26: Research.Manage denies Auditor outright
     public async Task Auditor_cannot_create_a_mission_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/research", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -65,7 +72,7 @@ public class ResearchApiTests
            // (a mission is not topic-scoped) — so a Member/Reviewer cannot create either (mirrors AdrsApiTests).
     public async Task Member_and_reviewer_cannot_create_a_mission_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Member", "kc-mem").PostAsJsonAsync("/api/research", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
         (await Client(factory, "Reviewer", "kc-rev").PostAsJsonAsync("/api/research", CreateBody())).StatusCode
@@ -75,7 +82,7 @@ public class ResearchApiTests
     [Fact]
     public async Task Create_with_empty_title_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { title = Loc("", ""), question = Loc("q", "q") };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/research", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -84,7 +91,7 @@ public class ResearchApiTests
     [Fact] // Chairman drives the full P15a flow: create → edit → activate → capture children → verify/decide → complete
     public async Task Chairman_drives_the_full_research_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
 
         var mission = await CreateAsync(chair);
@@ -141,7 +148,7 @@ public class ResearchApiTests
     [Fact] // Secretary may also manage missions (Research.Manage full-allow)
     public async Task Secretary_can_create_and_cancel_a_mission()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var mission = await CreateAsync(sec);
 
@@ -153,7 +160,7 @@ public class ResearchApiTests
     [Fact] // A terminal-state re-transition is a 409 Conflict (domain InvalidOperationException → 409)
     public async Task Re_completing_a_completed_mission_returns_409()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var mission = await CreateAsync(chair);
         (await chair.PostAsync($"/api/research/{mission.Id}/activate", null)).EnsureSuccessStatusCode();
@@ -169,7 +176,7 @@ public class ResearchApiTests
     [Fact] // Acting on an unknown mission id is a 404
     public async Task Activating_an_unknown_mission_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Chairman", "kc-chair").PostAsync($"/api/research/{Guid.NewGuid()}/activate", null))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

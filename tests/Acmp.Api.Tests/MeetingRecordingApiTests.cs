@@ -15,8 +15,15 @@ namespace Acmp.Api.Tests;
 
 // HTTP-contract tests for POST /api/meetings/{key}/recording (FR-056 manual upload) through the real pipeline
 // + policy authorization (Minutes.Capture = Secretary/Chairman). IFileStore is faked — no live MinIO needed.
-public class MeetingRecordingApiTests
+public class MeetingRecordingApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public MeetingRecordingApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     // Stand-in for the MinIO-backed store so the endpoint runs without a live object store.
     private sealed class FakeFileStore : IFileStore
     {
@@ -79,7 +86,7 @@ public class MeetingRecordingApiTests
     [Fact] // AC-008
     public async Task Upload_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), roles: null)
             .PostAsync("/api/meetings/MTG-2026-001/recording", VideoForm());
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -88,7 +95,7 @@ public class MeetingRecordingApiTests
     [Fact] // Minutes.Capture is Secretary/Chairman — a Member is forbidden
     public async Task Member_cannot_upload_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), "Member")
             .PostAsync("/api/meetings/MTG-2026-001/recording", VideoForm());
         resp.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -97,7 +104,7 @@ public class MeetingRecordingApiTests
     [Fact] // disallowed MIME rejected by validation before the handler
     public async Task Disallowed_type_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), "Secretary")
             .PostAsync("/api/meetings/MTG-2026-001/recording", VideoForm("application/x-msdownload", "x.exe"));
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -106,7 +113,7 @@ public class MeetingRecordingApiTests
     [Fact] // unknown meeting → 404
     public async Task Unknown_meeting_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), "Secretary")
             .PostAsync("/api/meetings/MTG-9999-999/recording", VideoForm());
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -115,7 +122,7 @@ public class MeetingRecordingApiTests
     [Fact] // Secretary uploads → 200; the meeting detail then surfaces the uploaded recording
     public async Task Secretary_uploads_and_detail_shows_recording()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         var sec = Client(app, "Secretary");
@@ -134,7 +141,7 @@ public class MeetingRecordingApiTests
     [Fact] // C-FILE-01: an allowed content type whose actual bytes don't match it is rejected by the magic-byte sniff
     public async Task Content_that_does_not_match_the_declared_type_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
 
@@ -152,7 +159,7 @@ public class MeetingRecordingApiTests
     [Fact] // AC-008
     public async Task Recording_url_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), roles: null).GetAsync("/api/meetings/MTG-2026-002/recording/url");
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -160,7 +167,7 @@ public class MeetingRecordingApiTests
     [Fact] // no uploaded recording → 404
     public async Task Recording_url_404_when_no_recording()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
 
@@ -183,7 +190,7 @@ public class MeetingRecordingApiTests
     [InlineData("Auditor")]
     public async Task Recording_url_200_for_an_authorized_role(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", VideoForm("video/mp4", "board.mp4"));
@@ -199,7 +206,7 @@ public class MeetingRecordingApiTests
     [InlineData("Submitter")]
     public async Task Recording_url_is_refused_for_an_unauthorized_role(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", VideoForm("video/mp4", "board.mp4"));
@@ -213,7 +220,7 @@ public class MeetingRecordingApiTests
     [Fact] // AC-008
     public async Task Delete_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var resp = await Client(WithFakeStore(factory), roles: null).DeleteAsync("/api/meetings/MTG-2026-002/recording");
         resp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -221,7 +228,7 @@ public class MeetingRecordingApiTests
     [Fact] // Minutes.Capture is Secretary/Chairman — a Member cannot delete
     public async Task Member_cannot_delete_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         var resp = await Client(app, "Member").DeleteAsync($"/api/meetings/{key}/recording");
@@ -231,7 +238,7 @@ public class MeetingRecordingApiTests
     [Fact] // Secretary deletes → 204 and the meeting detail no longer carries a recording
     public async Task Secretary_deletes_recording_then_detail_is_null()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var key = await SeedMeetingAsync(app);
         var sec = Client(app, "Secretary");

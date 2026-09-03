@@ -7,8 +7,15 @@ namespace Acmp.Api.Tests;
 // HTTP coverage for the agenda-building and conduct endpoints not exercised by MeetingsApiTests:
 // cancel, agenda move/timebox/presenter, and the live-meeting attendance/discussion/actual-time.
 // Drives the real lifecycle (schedule -> build -> publish -> start -> conduct -> end) over HTTP.
-public class MeetingsEndpointsCoverageTests
+public class MeetingsEndpointsCoverageTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public MeetingsEndpointsCoverageTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "kc-sec")
     {
         var client = factory.CreateClient();
@@ -56,7 +63,7 @@ public class MeetingsEndpointsCoverageTests
     [Fact] // W6: agenda building on a Draft agenda — move / timebox / presenter
     public async Task Secretary_builds_the_draft_agenda_with_move_timebox_and_presenter()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary");
         var meeting = await ScheduleAsync(sec);
 
@@ -82,7 +89,7 @@ public class MeetingsEndpointsCoverageTests
     [Fact] // W7/W8/W9: conduct the meeting — attendance, discussion, actual-time, end
     public async Task Secretary_conducts_a_published_meeting_end_to_end()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary");
         var meeting = await ScheduleAsync(sec);
 
@@ -110,7 +117,7 @@ public class MeetingsEndpointsCoverageTests
     [Fact] // W5: cancel a scheduled meeting with a reason
     public async Task Secretary_cancels_a_scheduled_meeting()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary");
         var meeting = await ScheduleAsync(sec);
 
@@ -124,7 +131,7 @@ public class MeetingsEndpointsCoverageTests
     [Fact] // docs/10: cancel is Chairman/Secretary — a Member is forbidden
     public async Task Member_cannot_cancel_a_meeting_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meeting = await ScheduleAsync(Client(factory, "Secretary"));
 
         var cancel = await Client(factory, "Member", sub: "kc-omar")

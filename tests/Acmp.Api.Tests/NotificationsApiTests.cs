@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // real notification to every active committee member (resolved via the cross-module directory), and each
 // member reads / marks-read only their own feed. Exercises the full pipeline + the three modules
 // (Meetings → Membership directory → Notifications) wired through Acmp.Shared contracts.
-public class NotificationsApiTests
+public class NotificationsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public NotificationsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub)
     {
         var client = factory.CreateClient();
@@ -59,7 +66,7 @@ public class NotificationsApiTests
     [Fact] // AC-008
     public async Task Notifications_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await factory.CreateClient().GetAsync("/api/notifications");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -67,7 +74,7 @@ public class NotificationsApiTests
     [Fact] // AC-051: publishing notifies every active committee member with date + agenda title + a deep link
     public async Task Publishing_an_agenda_notifies_committee_members()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         // Seed TWO members so the fan-out exercises the multi-recipient path (a single recipient hid the
         // owned-LocalizedString sharing bug that 500'd the 2nd notification).
         await factory.SeedMembersAsync(
@@ -90,7 +97,7 @@ public class NotificationsApiTests
     [Fact] // AC-053 path + IDOR guard: a member marks only their own notification read
     public async Task Mark_read_is_scoped_to_the_caller()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         // Seed TWO members so the fan-out exercises the multi-recipient path (a single recipient hid the
         // owned-LocalizedString sharing bug that 500'd the 2nd notification).
         await factory.SeedMembersAsync(
@@ -118,7 +125,7 @@ public class NotificationsApiTests
     [Fact] // an unknown notification id → 404
     public async Task Mark_unknown_notification_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member", sub: "kc-omar").PostAsync($"/api/notifications/{Guid.NewGuid()}/read", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -126,7 +133,7 @@ public class NotificationsApiTests
     [Fact] // full-page center (#79): GET pages the feed, and POST /read-all clears the caller's unread
     public async Task Get_supports_paging_and_read_all_clears_unread()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(
             ("kc-omar", "Omar H.", CommitteeRole.Member),
             ("kc-lena", "Lena K.", CommitteeRole.Member));

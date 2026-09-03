@@ -15,8 +15,15 @@ namespace Acmp.Api.Tests;
 //
 // Every test below sends a request whose token was issued BEFORE the change and asserts the request
 // FAILS. None of them asserts that the revalidator was consulted.
-public class PrincipalRevalidationApiTests
+public class PrincipalRevalidationApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public PrincipalRevalidationApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private const string Endpoint = "/api/members";
 
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub, DateTimeOffset? issuedAt = null)
@@ -32,7 +39,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_token_issued_BEFORE_a_role_change_is_refused_on_the_next_request()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-target", "Target Person", CommitteeRole.Member));
 
         var tokenIssuedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
@@ -50,7 +57,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_token_issued_AFTER_the_role_change_is_accepted()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-target", "Target Person", CommitteeRole.Member));
         await factory.SetRevalidationStateAsync("kc-target", rolesChangedAt: DateTimeOffset.UtcNow.AddMinutes(-10));
 
@@ -66,7 +73,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_guest_past_their_access_window_is_refused_by_the_API()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-guest", "Guest Presenter", CommitteeRole.Guest));
         await factory.SetRevalidationStateAsync("kc-guest", accessExpiresAt: DateTimeOffset.UtcNow.AddMinutes(-1));
 
@@ -82,7 +89,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_guest_INSIDE_their_access_window_is_served()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-guest", "Guest Presenter", CommitteeRole.Guest));
         await factory.SetRevalidationStateAsync("kc-guest", accessExpiresAt: DateTimeOffset.UtcNow.AddHours(1));
 
@@ -99,7 +106,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_disabled_member_is_refused_even_with_a_fresh_token()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-gone", "Departed Person", CommitteeRole.Member));
         await factory.SetRevalidationStateAsync("kc-gone", disable: true);
 
@@ -116,7 +123,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task A_caller_with_NO_member_row_is_still_served_so_first_login_can_provision()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member", "kc-never-provisioned", DateTimeOffset.UtcNow).GetAsync(Endpoint);
 
@@ -126,7 +133,7 @@ public class PrincipalRevalidationApiTests
     [Fact]
     public async Task An_unauthenticated_request_is_still_a_plain_401_and_carries_no_revalidation_reason()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await factory.CreateClient().GetAsync(Endpoint);
 

@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // committee-wide; create/edit/propose/request-changes are Adr.Create; approve is Adr.Approve; deprecate/
 // supersede are Adr.Supersede. The full W17/W21 lifecycle is driven end to end, exercising the notification
 // fan-out against the seeded committee roster.
-public class AdrsApiTests
+public class AdrsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AdrsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -61,7 +68,7 @@ public class AdrsApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/adrs", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -69,7 +76,7 @@ public class AdrsApiTests
     [Fact] // docs/10: Adr.Create denies Auditor
     public async Task Auditor_cannot_create_an_adr_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/adrs", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -77,7 +84,7 @@ public class AdrsApiTests
     [Fact]
     public async Task Create_with_empty_title_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { title = Loc("", ""), context = Loc("c", "c"), decisionText = Loc("d", "d") };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/adrs", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -88,7 +95,7 @@ public class AdrsApiTests
            // relationship, which a bare create has none of, so a Reviewer cannot create either.)
     public async Task Reviewer_cannot_approve_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var created = await CreateAsync(sec);
         (await sec.PostAsync($"/api/adrs/{created.Id}/propose", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -100,7 +107,7 @@ public class AdrsApiTests
     [Fact] // W17/W21: create → edit → propose → approve → supersede; reads along the way
     public async Task Secretary_drives_the_full_adr_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-sec", "Sam", CommitteeRole.Secretary), ("kc-m1", "M1", CommitteeRole.Member));
         var sec = Client(factory, "Secretary", "kc-sec");
 
@@ -135,7 +142,7 @@ public class AdrsApiTests
     [Fact] // W21: deprecate an approved ADR (Adr.Supersede)
     public async Task Secretary_deprecates_an_approved_adr()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-sec", "Sam", CommitteeRole.Secretary));
         var sec = Client(factory, "Secretary", "kc-sec");
 

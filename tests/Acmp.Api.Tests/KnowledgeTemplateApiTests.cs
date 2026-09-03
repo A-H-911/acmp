@@ -8,8 +8,15 @@ namespace Acmp.Api.Tests;
 // Reads are committee-wide; every mutation is Template.Manage. Unlike Document.Manage, Template.Manage's matrix
 // row grants Administrator too (and has no allow-if-owner), so an Administrator CAN create a template here — the
 // one behavioural difference from the document endpoints. The full FR-119 flow is driven end to end.
-public class KnowledgeTemplateApiTests
+public class KnowledgeTemplateApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public KnowledgeTemplateApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -44,7 +51,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/knowledge/templates", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -52,7 +59,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // Template.Manage has no allow-if-owner and excludes Member — a Member create is 403
     public async Task Member_cannot_create_a_template_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Member", "kc-mem").PostAsJsonAsync("/api/knowledge/templates", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -60,7 +67,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // The Template.Manage difference from Document.Manage: Administrator is granted.
     public async Task Administrator_can_create_a_template()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var tpl = await CreateAsync(Client(factory, "Administrator", "kc-admin"));
         tpl.Key.Should().Be("TPL-2026-001");
         tpl.Status.Should().Be("Active");
@@ -69,7 +76,7 @@ public class KnowledgeTemplateApiTests
     [Fact]
     public async Task Create_with_empty_name_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { name = Loc("", ""), targetType = "Topic", body = "b" };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/knowledge/templates", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -78,7 +85,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // Secretary drives the full FR-119 flow: create → edit (bumps Version) → deprecate
     public async Task Secretary_drives_the_full_template_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
 
         var tpl = await CreateAsync(sec);
@@ -109,7 +116,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // Editing/deprecating a Deprecated (terminal) template is a 409 Conflict
     public async Task Mutating_a_deprecated_template_returns_409()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var tpl = await CreateAsync(chair);
         (await chair.PostAsync($"/api/knowledge/templates/{tpl.Id}/deprecate", null)).EnsureSuccessStatusCode();
@@ -122,7 +129,7 @@ public class KnowledgeTemplateApiTests
     [Fact] // Acting on an unknown template id is a 404
     public async Task Deprecating_an_unknown_template_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Chairman", "kc-chair").PostAsync($"/api/knowledge/templates/{Guid.NewGuid()}/deprecate", null))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

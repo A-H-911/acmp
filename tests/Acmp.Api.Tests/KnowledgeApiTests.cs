@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // the ADR endpoints — the Document.Manage allow-if-owner (Member/Reviewer) has no ownership relationship to
 // resolve at a bare create and Chairman/Secretary are the effective writers (a Member/Reviewer create is 403).
 // The full P15d lifecycle is driven end to end.
-public class KnowledgeApiTests
+public class KnowledgeApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public KnowledgeApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -47,7 +54,7 @@ public class KnowledgeApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/knowledge/documents", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -55,7 +62,7 @@ public class KnowledgeApiTests
     [Fact] // docs/10: Document.Manage denies Auditor outright
     public async Task Auditor_cannot_create_a_document_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/knowledge/documents", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -64,7 +71,7 @@ public class KnowledgeApiTests
            // (a document is not topic-scoped) — so a Member/Reviewer cannot create either (mirrors AdrsApiTests).
     public async Task Member_and_reviewer_cannot_create_a_document_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Member", "kc-mem").PostAsJsonAsync("/api/knowledge/documents", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
         (await Client(factory, "Reviewer", "kc-rev").PostAsJsonAsync("/api/knowledge/documents", CreateBody())).StatusCode
@@ -74,7 +81,7 @@ public class KnowledgeApiTests
     [Fact]
     public async Task Create_with_empty_title_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { title = Loc("", ""), category = "Guides", body = Loc("b", "b") };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/knowledge/documents", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -83,7 +90,7 @@ public class KnowledgeApiTests
     [Fact] // Chairman drives the full P15d flow: create → edit (versions) → publish → archive
     public async Task Chairman_drives_the_full_document_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
 
         var doc = await CreateAsync(chair);
@@ -116,7 +123,7 @@ public class KnowledgeApiTests
     [Fact] // Secretary may also manage documents (Document.Manage full-allow)
     public async Task Secretary_can_create_and_publish_a_document()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var doc = await CreateAsync(sec);
 
@@ -127,7 +134,7 @@ public class KnowledgeApiTests
     [Fact] // Editing an archived (terminal) document is a 409 Conflict (domain InvalidOperationException → 409)
     public async Task Editing_an_archived_document_returns_409()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var doc = await CreateAsync(chair);
         (await chair.PostAsync($"/api/knowledge/documents/{doc.Id}/archive", null)).EnsureSuccessStatusCode();
@@ -141,7 +148,7 @@ public class KnowledgeApiTests
     [Fact] // Acting on an unknown document id is a 404
     public async Task Publishing_an_unknown_document_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Chairman", "kc-chair").PostAsync($"/api/knowledge/documents/{Guid.NewGuid()}/publish", null))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

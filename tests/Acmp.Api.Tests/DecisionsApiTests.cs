@@ -7,8 +7,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for /api/decisions through the real pipeline + policy authorization (docs/10).
 // Reads are by key (detail) or by topic Guid (list); mutations are by the decision's Guid id. Record is
 // Secretary/Chairman; issue/supersede are Chairman-only.
-public class DecisionsApiTests
+public class DecisionsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public DecisionsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -83,7 +90,7 @@ public class DecisionsApiTests
     [Fact] // AC-008
     public async Task Record_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).PostAsJsonAsync("/api/decisions", RecordBody());
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -91,7 +98,7 @@ public class DecisionsApiTests
     [Fact] // docs/10: Decision.Record is Secretary/Chairman — a Member is forbidden
     public async Task Member_cannot_record_a_decision_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/decisions", RecordBody());
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -99,7 +106,7 @@ public class DecisionsApiTests
     [Fact]
     public async Task Record_with_empty_rationale_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new
         {
             topicId = Guid.NewGuid(),
@@ -114,7 +121,7 @@ public class DecisionsApiTests
     [Fact] // W12: record → detail → list-by-topic; unknown key 404
     public async Task Secretary_records_then_reads_detail_and_list()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topic = Guid.NewGuid();
 
@@ -138,7 +145,7 @@ public class DecisionsApiTests
     [Fact] // W12: a Chairman issues a recorded decision (Draft → Issued) — AC-029 satisfied by a linked action
     public async Task Chairman_issues_a_recorded_decision()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
         await LinkActionTo(chair, decision!.Id);   // Approved is follow-up-bearing → needs ≥1 downstream link
@@ -153,7 +160,7 @@ public class DecisionsApiTests
     [Fact] // P10c: AC-029 widened — a follow-up decision with NO action but a downstream traceability edge issues
     public async Task Chairman_issues_a_followup_decision_satisfied_by_a_traceability_edge()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
         await LinkEdgeTo(chair, decision!.Id);   // downstream edge, no action
@@ -168,7 +175,7 @@ public class DecisionsApiTests
     [Fact] // AC-029 (OQ-045 failing-first): a follow-up-bearing decision with NO downstream link is rejected
     public async Task Issue_followup_decision_without_a_downstream_link_returns_409_and_stays_draft()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var decision = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
 
@@ -187,7 +194,7 @@ public class DecisionsApiTests
     [Fact] // AC-029 exemption: a non-follow-up outcome (Rejected) issues with no downstream link required
     public async Task Issue_non_followup_decision_without_a_link_succeeds()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var body = new
         {
@@ -210,7 +217,7 @@ public class DecisionsApiTests
     [Fact] // docs/10: issue is Chairman-only — a Secretary is forbidden
     public async Task Secretary_cannot_issue_a_decision_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var decision = await (await Client(factory, "Secretary", "kc-sec")
             .PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
 
@@ -222,7 +229,7 @@ public class DecisionsApiTests
     [Fact] // W21: supersede an issued decision — successor 201 Issued, prior flips to Superseded with a back-link
     public async Task Chairman_supersedes_an_issued_decision()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var chair = Client(factory, "Chairman", "kc-chair");
         var prior = await (await chair.PostAsJsonAsync("/api/decisions", RecordBody())).Content.ReadFromJsonAsync<DecisionSummary>();
         await LinkActionTo(chair, prior!.Id);   // AC-029: the prior (Approved) needs a link before it can be issued
@@ -251,7 +258,7 @@ public class DecisionsApiTests
     [Fact]
     public async Task Issue_unknown_decision_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var issue = await Client(factory, "Chairman", "kc-chair")
             .PostAsJsonAsync($"/api/decisions/{Guid.NewGuid()}/issue", new { chairOverride = false, overrideJustification = (object?)null });
         issue.StatusCode.Should().Be(HttpStatusCode.NotFound);

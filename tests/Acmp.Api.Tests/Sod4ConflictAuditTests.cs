@@ -17,8 +17,15 @@ namespace Acmp.Api.Tests;
 // handler CALLED the sink; it cannot prove a row was written, and it passes just as happily if the sink is
 // misconfigured, the column is wrong, or the write is rolled back. SoD-2's test asserts the call; this one
 // asserts the row, and DEC-096 d3 put the whole five-rule evidence set inside this item for that reason.
-public class Sod4ConflictAuditTests
+public class Sod4ConflictAuditTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public Sod4ConflictAuditTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private const string ConflictEvent = "Decisions.DecisionRecordedByConflictedActor";
 
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub)
@@ -104,7 +111,7 @@ public class Sod4ConflictAuditTests
     [Fact] // NFR-064 SoD-4: the overlap is ALLOWED, and it leaves a row
     public async Task Recording_a_decision_on_a_topic_you_own_is_allowed_and_leaves_a_conflict_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await OwnedTopicAsync(factory);
 
         // The OWNER records the decision on their own topic.
@@ -120,7 +127,7 @@ public class Sod4ConflictAuditTests
     [Fact] // the discriminator: a third-party recorder leaves NO conflict row
     public async Task Recording_a_decision_on_someone_elses_topic_leaves_no_conflict_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await OwnedTopicAsync(factory);
 
         // A DIFFERENT seeded member records it. Same endpoint, same body, same topic - only the actor
@@ -142,7 +149,7 @@ public class Sod4ConflictAuditTests
     [Fact] // NFR-064 SoD-4, the PRESENTER half - the other way a recorder is conflicted
     public async Task Recording_a_decision_on_a_topic_you_present_leaves_a_conflict_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await OwnedTopicAsync(factory);
 
         var sec = Client(factory, "Secretary", "kc-sec");
