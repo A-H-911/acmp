@@ -20,6 +20,13 @@ public sealed class StallWatchdogTests : IDisposable
 
     private string SnapshotFile => Path.Combine(_dir, "stall-snapshots.txt");
 
+    // The sustained-starvation gate keeps one bit of static state, so without this reset each test would
+    // inherit whatever the previous one left — the same cross-contamination that put a live-state
+    // classification into an assertion and turned main red. ⭐ It also makes the two "must not fire"
+    // controls DETERMINISTIC rather than lucky: after a reset a single sample can never satisfy the
+    // sustained rule, so those tests hold whether or not the runner's pool happens to be starved.
+    public StallWatchdogTests() => StallWatchdog.ResetSustainedState();
+
     [Fact]
     public void A_normal_interval_writes_nothing_at_all()
     {
@@ -45,8 +52,15 @@ public sealed class StallWatchdogTests : IDisposable
 
         // The trigger and the measured quantity, not merely the fact that a bound was crossed.
         text.Should().Contain("stall snapshot");
-        text.Should().Contain("scheduling drift");
         text.Should().Contain("drift: ");
+
+        // ⛔ ASSERTS THAT A TRIGGER WAS CLASSIFIED, NEVER *WHICH* ONE. The earlier version pinned the
+        // literal "scheduling drift" and went red on CI while passing locally: the classification is
+        // derived from LIVE ThreadPool state, which is not starved on an idle 24-core box and was starved
+        // on a loaded 4-core runner. That is LL-032's shape — a fixture that is live state changes meaning
+        // when the environment does — and the environment is exactly what this instrument exists to
+        // observe, so the test must not depend on it.
+        text.Should().Contain("trigger: ");
 
         // The state DEF-109 clause (2) names: thread/task state, and runner resource figures taken AT the
         // stall. Each of these is asserted because a snapshot missing one of them cannot answer the
@@ -123,6 +137,21 @@ public sealed class StallWatchdogTests : IDisposable
     public void The_pool_starvation_signature_is_queued_work_against_a_pool_at_its_floor(
         long pending, int threadCount, int minWorkers, bool expected) =>
         StallWatchdog.IsPoolStarved(pending, threadCount, minWorkers).Should().Be(expected);
+
+    [Fact]
+    public void One_starved_sample_is_not_enough_however_starved_the_pool_actually_is()
+    {
+        // The regression this pins, and the instrument found it about ITSELF on its first CI run: the
+        // instantaneous signature fired during an ORDINARY suite on a 4-core runner, because `pending > 0`
+        // at the instant of sampling is routine. A trigger that fires on every run is exactly as useless
+        // as one that never fires -- it fills the artefact with noise and teaches its reader to ignore it.
+        //
+        // Deterministic without being able to control the pool: after the constructor's reset, the
+        // sustained rule cannot be satisfied by a single sample no matter what the real pool state is.
+        // So this holds on an idle 24-core box and on a saturated runner alike.
+        StallWatchdog.CaptureIfDegraded(StallWatchdog.SampleInterval, _dir).Should().BeFalse();
+        File.Exists(SnapshotFile).Should().BeFalse();
+    }
 
     public void Dispose()
     {

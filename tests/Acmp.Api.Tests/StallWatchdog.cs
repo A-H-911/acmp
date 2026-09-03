@@ -58,6 +58,13 @@ internal static class StallWatchdog
 
     private static readonly object Gate = new();
 
+    // Whether the PREVIOUS sample saw the pool-starvation signature. Only the sampling thread writes it,
+    // and the tests drive CaptureIfDegraded directly, so no synchronisation is needed. Reset exists so a
+    // test can establish a known starting point rather than inheriting whatever the last one left.
+    private static bool _previousSampleStarved;
+
+    internal static void ResetSustainedState() => _previousSampleStarved = false;
+
     [ModuleInitializer]
     internal static void Start()
     {
@@ -117,7 +124,18 @@ internal static class StallWatchdog
         ThreadPool.GetMinThreads(out var minWorkers, out _);
         var pending = ThreadPool.PendingWorkItemCount;
 
-        var starved = IsPoolStarved(pending, ThreadPool.ThreadCount, minWorkers);
+        // ⛔⛔ SUSTAINED, NOT INSTANTANEOUS, AND THE INSTRUMENT ITSELF IS WHY. On its first CI run the
+        // instantaneous signature fired during an ORDINARY suite on a 4-core runner — `pending > 0` at the
+        // instant of sampling is routine, because any queued work item counts. A trigger that fires on
+        // every run is exactly as useless as one that never fires: it fills the artefact with noise and
+        // teaches its reader to ignore it, which is the failure the `if: failure()` upload guard exists to
+        // prevent. Requiring the condition on TWO CONSECUTIVE samples separates transient queuing, which
+        // drains in milliseconds, from starvation, which persists — and it is a principle rather than a
+        // magic number, which matters because nobody has measured what CI's normal pending depth is.
+        var starvedNow = IsPoolStarved(pending, ThreadPool.ThreadCount, minWorkers);
+        var starved = starvedNow && _previousSampleStarved;
+        _previousSampleStarved = starvedNow;
+
         if (drift < DriftThreshold && !starved) return false;
 
         Write(Snapshot(drift, actualInterval, availableWorkers, availableIo, pending, starved), destinationRoot);
