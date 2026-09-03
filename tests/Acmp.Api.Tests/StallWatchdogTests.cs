@@ -103,6 +103,27 @@ public sealed class StallWatchdogTests : IDisposable
         File.Exists(SnapshotFile).Should().BeFalse();
     }
 
+    // ⛔ THE PREDICATE THESE PIN REPLACED ONE THAT COULD NOT FIRE. The first version asked for
+    // availableWorkers == 0; GetAvailableThreads counts against the pool MAXIMUM, which is 32767, so it
+    // needed 32,767 concurrent work items and was dead code — a second trigger that looked like a working
+    // one and whose silence would have read as "the pool was fine" rather than "nothing ever asked".
+    // That is DEF-078's shape inside the very instrument built to escape it, which is why the replacement
+    // is a PURE function: pool state cannot be forced from a test, and a predicate that cannot be
+    // exercised is exactly what went wrong the first time.
+    [Theory]
+    // Work queued while the pool is at or past its floor: further threads now arrive only on the
+    // runtime's slow injection schedule, so queued work waits. That is starvation.
+    [InlineData(1L, 24, 24, true)]
+    [InlineData(500L, 40, 24, true)]
+    // Nothing queued — a large pool is not evidence of anything.
+    [InlineData(0L, 40, 24, false)]
+    // Queued work while the pool is still BELOW its floor is normal: the runtime injects those threads
+    // immediately and without throttling, so the queue drains on its own.
+    [InlineData(5L, 10, 24, false)]
+    public void The_pool_starvation_signature_is_queued_work_against_a_pool_at_its_floor(
+        long pending, int threadCount, int minWorkers, bool expected) =>
+        StallWatchdog.IsPoolStarved(pending, threadCount, minWorkers).Should().Be(expected);
+
     public void Dispose()
     {
         if (System.IO.Directory.Exists(_dir)) System.IO.Directory.Delete(_dir, recursive: true);

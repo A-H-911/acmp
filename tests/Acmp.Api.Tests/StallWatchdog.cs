@@ -114,14 +114,35 @@ internal static class StallWatchdog
     {
         var drift = actualInterval - SampleInterval;
         ThreadPool.GetAvailableThreads(out var availableWorkers, out var availableIo);
+        ThreadPool.GetMinThreads(out var minWorkers, out _);
         var pending = ThreadPool.PendingWorkItemCount;
 
-        var starved = availableWorkers == 0 && pending > 0;
+        var starved = IsPoolStarved(pending, ThreadPool.ThreadCount, minWorkers);
         if (drift < DriftThreshold && !starved) return false;
 
         Write(Snapshot(drift, actualInterval, availableWorkers, availableIo, pending, starved), destinationRoot);
         return true;
     }
+
+    /// <summary>
+    /// The ThreadPool-starvation signature: work is QUEUED while the pool has already grown to or past
+    /// its minimum, so further threads arrive only on the runtime's slow injection schedule and queued
+    /// work waits. Pure, and internal, so a test can inject the condition directly.
+    /// </summary>
+    /// <remarks>
+    /// ⛔⛔ THIS REPLACES A PREDICATE THAT COULD NOT FIRE, WHICH IS THE EXACT FAULT THIS WHOLE INSTRUMENT
+    /// EXISTS TO ESCAPE. The first version asked for <c>availableWorkers == 0</c>. `GetAvailableThreads`
+    /// counts against the pool MAXIMUM, which is 32767 here — so that condition needed 32,767 concurrent
+    /// work items and was dead code. It would have sat in the file looking like a working second trigger,
+    /// and its silence would have read as "the pool was fine" rather than as "nothing ever asked".
+    /// ⚠ AND DRIFT DOES NOT COVER IT. This sampler is a dedicated OS thread in Thread.Sleep; the kernel
+    /// schedules it on time whether or not the ThreadPool has a free worker. Drift catches CPU
+    /// saturation, a blocking GC, or the VM being descheduled — it is silent on pool starvation alone,
+    /// which is precisely where occurrence 2's timeline analysis said to look next. The two triggers are
+    /// complementary, not redundant, and neither is sufficient.
+    /// </remarks>
+    internal static bool IsPoolStarved(long pending, int threadCount, int minWorkers) =>
+        pending > 0 && threadCount >= minWorkers;
 
     private static string Snapshot(
         TimeSpan drift,
@@ -212,9 +233,14 @@ internal static class StallWatchdog
 
         HOW TO READ IT. Large drift with a low gc pauseTimePercentage points AWAY from GC thrash and
         toward scheduling pressure or CPU starvation. Large drift WITH a high pause percentage is the
-        first direct evidence for the causal step PE-785 weakened. availableWorkers=0 with a rising
-        pending count is thread-pool starvation, which is where occurrence 2's timeline analysis said to
-        look next and which has never been measured.
+        first direct evidence for the causal step PE-785 weakened.
+
+        A "pool starvation" trigger means work was QUEUED while the pool had already grown to or past its
+        minimum, so further threads arrive only on the runtime's slow injection schedule. That is where
+        occurrence 2's timeline analysis said to look next and it has never been measured. Note that the
+        two triggers are complementary and neither is sufficient: this sampler is a dedicated OS thread,
+        so the kernel wakes it on time whether or not the pool has a free worker — drift alone is SILENT
+        on pool starvation, and pool starvation alone produces no drift.
 
         AN EMPTY OR ABSENT FILE MEANS NO STALL WAS OBSERVED. It does not mean the run was healthy, and it
         is not evidence about DEF-109 in either direction.
