@@ -265,6 +265,19 @@ starvation is REFUTED on 204 samples of direct evidence.** ⛔ That is an elimin
 `33787859037` and Security `33787858808` on the same sha, which is what `DEC-123` d2 requires. **Cited by
 run id, which is the whole point** (`LL-036`). ⛔ **Whether `main` is green NOW is `gh run list`, not this
 sentence** — this records what happened on a dated sha, the only durable form.
+✅ **2026-09-04 MERGED `#354` → `1ebf3a5c` (`WBS-27.2`), AND BOTH RUNS AGREED FOR ONCE — CITED BY RUN ID,
+WHICH IS THE WHOLE POINT** (`LL-036`). Ten checks green on head `ac5ef909` (CI `33815041415`, Security
+`33815041401`, E2E `33815041372`), and the **merge-commit** runs on `1ebf3a5c` also passed — CI
+`33816259600`, Security `33816259683`. `LL-036`'s count is **unchanged at seven**: this was an opportunity
+for an eighth disagreement and it did not occur. ⛔ **A run that agrees is not evidence the lesson is
+weakening** — `DEC-077` d2's poll is what made the agreement a fact rather than an assumption.
+⭐ **287 host constructions across 43 files → 47 hosts (83.6%)**, and the backend job went **9m07s / 9m37s
+→ 5m36s** on matched `push` events. ⛔⛔ **NONE OF THAT IS A CLAIM ABOUT `DEF-109`** (`LL-035`, `DEC-115`
+d3): a green run is not evidence about an intermittent fault and a *faster* run is not either. `PE-837`,
+`PE-841` and `PE-842` are the record; `LL-057` is the transferable half.
+⚠ **Two things bit during it and both are recorded rather than summarised here**: a `CHARSET` red from
+Write-created `.cs` files with no BOM (`PE-839`), and C31 firing on a **committed** package write that
+`--delete-branch` took with it (`PE-841`).
 ⚠⚠ **`DEC-124` d2 AND `DEC-123` d4 EACH OVERRODE THE AGENT; `DEC-125` AND `DEC-126` DID NOT.** The rows
 record the reasoning-against, so do not read any of the four as agreement about HOW.
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
