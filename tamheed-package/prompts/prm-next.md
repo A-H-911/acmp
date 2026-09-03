@@ -28,6 +28,17 @@ gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap
                                              # PRs that became `DW-080`). A Dependabot queue MOVES, so
                                              # any count of it in prose is stale by construction.
 gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` BEFORE reading `conclusion`
+                                             # ⛔⛔ AND `cancelled` IS A THIRD CONCLUSION - NEITHER PASS
+                                             # NOR FAIL. Any filter for `failure` steps straight over it
+                                             # and the silence reads as health. `DEF-132`: the Security
+                                             # workflow's `secrets` job hit its own `timeout-minutes: 10`
+                                             # and was CANCELLED while CI on the SAME commit said
+                                             # success - so the trunk was green on CI and its GATING
+                                             # SECRET SCAN HAD NOT EVALUATED. ⭐ TWO WORKFLOWS RUN ON
+                                             # main (CI and Security) and this command lists BOTH: read
+                                             # BOTH conclusions, because "main is green" is a claim
+                                             # about every workflow on that sha and not about the one
+                                             # you happened to read first.
                                              # ⛔⛔ IF `main` IS RED, READ `DEF-130`, `DEF-109` AND
                                              # `DEF-121` BEFORE ANYTHING ELSE, AND DO NOT RE-RUN IT. All
                                              # three are open, all have recurred on trees whose PR run
@@ -219,6 +230,21 @@ EVERY push to `main` leaves every open PR `BEHIND` and unmergeable whatever it t
 the CI RUN, not the staleness; they are unrelated mechanisms and *no run fired* reads far too easily as *no
 effect*. **Push package writes FIRST, then rebase the branch onto that, then push nothing to `main` until
 the PR lands.** That cost two rebases in one session, the second knowingly.
+✅ **2026-09-03 MERGED THREE, ALL ON ONE ITEM, AND THE SEQUENCE IS THE DURABLE PART BECAUSE IT IS A WORKED
+EXAMPLE OF AN INSTRUMENT BEING WRONG IN EVERY DIRECTION.** `#342` → `d506b908` (the `DEF-109` capture
+instrument; PR head green on CI `33728716375`, and its MERGE-COMMIT run `33730291220` FAILED — `LL-036`'s
+sixth instance — on a test of its OWN whose assertion depended on live `ThreadPool` state); `#343` →
+`01fc4eb1` (that fix; merge-commit run `33732803634` then failed on **`DEF-109` occurrence 5**, 24 m 34 s,
+38 failed of 434, finishing **26 seconds** inside the old `timeout-minutes: 25` — which is why `DEC-121` d2
+raised it to 40); `#344` → `f5b87068` (`DEF-131`'s positive control + `DEC-122` d1's deletion of the
+starvation trigger; ten checks green on CI `33741717761`, Security `33741717836`, E2E `33741717902`).
+⭐⭐ **`#344` WAS UNBLOCKED WITHOUT AN OVERRIDE AND THAT ROUTE IS THE REUSABLE PART.** Its first head went
+red on **`DEF-130` occurrence 2** (`ContainerNotRunningException`, `Reason 0x00000002`, errno 11 EAGAIN,
+`lsasrv`+`lsass`), where `DEC-077` d3 FIRES. It was **not re-run**: a commit that was genuinely owed was
+pushed instead, and `DEC-116` d2 settles that *a new sha is a new run over a DIFFERENT tree, not a re-run*
+— **so `DEC-077` d3's override count is UNCHANGED AT TWO.** ⛔ **Its caveat binds: a fresh sample of the
+same intermittent fault MAY red again, and if it does that is a NEW occurrence and NEVER a reason to push
+again. ONE SHOT, NOT A LEVER.**
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
 that is a state nothing here describes.
 
@@ -2169,8 +2195,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
    `gh run list --branch main`. **Then read these rows, and read `DEC-122` first: `DEC-122`, `DEC-121`,
-   `DEC-120`, `SC-045`, `DEF-131`, `DEF-109`, `DEF-130`, `DW-096`, `DEF-121`, and `LL-054`.** ⛔ **What is
-   at what status, what is still open, and what anyone owes anyone is deliberately NOT written here.**
+   `DEC-120`, `SC-045`, `DEF-132`, `DEF-131`, `DEF-109`, `DEF-130`, `DW-096`, `DEF-121`, `LL-054`, and
+   the `wbs-item` rows the live slice's `wbs-done` names.** ⛔ **What is at what status, what is still
+   open, and what anyone owes anyone is deliberately NOT written here.** ⚠ **No `WBS-` prefix is written
+   there on purpose** — naming one is the FORTY-SIXTH's fault in a smaller costume, wrong the moment a
+   later slice opens; `readiness_check` returns them and never rots.
    ⚠ **`DEF-130` OCCURRENCE 2 IS NOT ON ITS ROW'S TITLE — it is in `DEC-122` d3 and `PE-820`**, a
    deliberate proportionality call recorded in `PE-820` itself. That row carries no occurrence counter;
    if it ever gains one, fold the entry onto it.
