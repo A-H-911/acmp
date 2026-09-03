@@ -160,7 +160,7 @@ recorded on 2026-09-02; `LL-047`, `LL-049` and `LL-052` are Approved and **pinne
 sessions said the captured artefact contained. **Neither a successful capture nor a refuted hypothesis is a
 cause**, and `DEC-115` d2 and `DEC-116` d1 refused each of those readings in turn.
 ⭐⭐ **SESSION MECHANICS, ADOPTED 2026-09-02 AND WORTH READING BEFORE THE FIRST TOOL CALL RATHER THAN AFTER
-THE FIFTIETH.** Scratch work goes in **`.scratch/<session-id>/`** — in-repo and gitignored, because the
+THE FIFTIETH TOOL CALL.** Scratch work goes in **`.scratch/<session-id>/`** — in-repo and gitignored, because the
 harness's own scratchpad sits outside every working directory. ⛔ **Trap 27 is UNCHANGED and is what makes
 that safe: nothing a later session must read may live there.** ⚠ **`~/.claude/projects/.../memory` is a
 JUNCTION to `<repo>/.claude/memory`** — address it by the REPO path or the Read tool refuses it. ⛔⛔ **AND
@@ -2223,8 +2223,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `readiness_check("package")`, then
    `gh run list --branch main`. **Then read these rows, and read `DEC-126` first: `DEC-126`, `DEC-125`,
    `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-134`, `DEF-109`, `DEF-130`,
-   `DEF-121`, `DW-096`, `LL-055`, `LL-054`, `PE-829`, and
-   the `wbs-item` rows the live slice's `wbs-done` names.** ⛔ **What is at what status, what is still
+   `DEF-121`, `DEF-133`, `DW-096`, `LL-055`, `LL-054`, `PE-825`, `PE-828`, `PE-829`, and
+   the `wbs-item` rows the live slice's `wbs-done` names.**
+   ⚠ **`DEF-133` AND `PE-825` ARE IN THAT LIST BECAUSE THEY NAME AN ACT ONLY THE OPERATOR CAN PERFORM**,
+   and `.claude/**` is outside what this agent may write — the auto-mode classifier blocks self-widening of
+   the permission surface, and that guard is correct and must never be routed around. ⛔ **Do not re-derive
+   the diagnosis from the allowlist**: every cause `.claude/PERMISSIONS.md` and the memory file document is
+   project-level, and both are structurally blind to one that is not, so they return a clean, confident,
+   wrong answer. **Ask the operator to run the command `PE-825` names.** ⛔ **What is at what status, what is still
    open, and what anyone owes anyone is deliberately NOT written here.** ⚠ **No `WBS-` prefix is written
    there on purpose** — naming one is the FORTY-SIXTH's fault in a smaller costume, wrong the moment a
    later slice opens; `readiness_check` returns them and never rots.
