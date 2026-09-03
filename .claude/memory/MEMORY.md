@@ -6,22 +6,38 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
+## ★★★ 2026-09-04 · `WBS-27.2` MERGED (`1ebf3a5c`) · `DEF-135` · `LL-056`/`LL-057`
+
+★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS STATED *MECHANISM* IS FALSE — AND THE MECHANISM IS WHAT YOU
+GENERALISE FROM** (`LL-056`, **3 instances in one day**). (1) *"matcher matches the FIRST TOKEN"* → refuted
+by the OFFICIAL docs: **every subcommand needs its own rule**, so `grep … | sort | tail` is FINE and
+`… | Select-Object` is not (`DEF-135`). (2) *format the SOLUTION* (right) because *a scoped run misses
+OTHER projects* (wrong) — **measured: my files were IN that project; solution 1 error vs project 0.**
+(3) I nearly published *"a store write re-flushes and repairs a JSONL divergence"* — it **REFUSES**.
+⭐ Examples are measured cases; the mechanism is a curve through them that diverges on the case you
+consult the document about. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** — the
+classifier blocks *widening*, not correcting prose; that conflation held `DEF-133` open a day.
+- ⭐⭐⭐ **`WBS-27.2`: THE EXPENSIVE THING WAS THE HOST, NOT THE DATABASES** (`LL-057`). Two weeks of rows
+  priced in *"sharing a host shares its 14 InMemory DBs"*. **Only bundled — nobody chose that isolation,
+  so nobody wrote it down.** A ~30-line `Reset()` separates them: **287 constructions → 47 hosts (83.6%)**,
+  suite 4m17s→38s, CI backend **9m07s/9m37s → 5m36s** (matched `push` events). ⚠ Naive share-everything
+  failed **72/445** first. ⛔ **Claims NOTHING about `DEF-109`** — a faster green is not evidence.
+- ⚠⚠ **C31 FIRES ON *COMMITTED* WRITES TOO** — `gh pr merge --delete-branch` took a branch-only package
+  commit; store had the row, JSONL did not. **Safe property = REACHABLE FROM A SURVIVING REF.** ⭐ Repair:
+  `git checkout <lost-sha> -- <file>` once `git diff` proves the delta. ⚠ `cancel-in-progress` is
+  `pull_request`-ONLY, so a push to `main` cannot kill a merge-commit run. ⚠ **`gh pr checks --watch`
+  right after a push exits 1** — a failed monitor reads as a finished one; use `gh run watch <run-id>`.
+
 ## ★★★ 2026-09-03 · `DEF-109` occ 6: SCHEDULING REFUTED · `DEC-123`–`DEC-125` · `LL-055`
 
 ★★★ [**A control proves FIRING, never COUPLING**](a-control-proves-firing-not-coupling.md) — **read before
 shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
 PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
 could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
-★★★ ⛔⛔ **THE MATCHER DOES *NOT* "MATCH THE FIRST TOKEN" — EVERY SUBCOMMAND NEEDS ITS OWN RULE**
-(`DEF-135`, 2026-09-04, from the OFFICIAL docs). [four-causes file](permission-prompts-four-causes.md) +
-`PERMISSIONS.md` both carried the false model for a day and **it cost a live prediction**: I called
-`Get-CimInstance … | Select-Object | Format-List` *allowed* from its leader and it prompted.
-⭐ **`grep … | sort | tail` is FINE** (all three allowlisted); one unlisted segment sinks the line.
-⚠ `cd "C:/…" && grep` still prompts though the docs say it should not — candidate, **unproven**: the
-Windows-drive form not resolving to `/c/…`. **Drop the `cd` either way.** ⛔ A claimed "FIFTH cause" was
-retracted the same day: **`Edit(.scratch/**)` is the ONLY `Edit` rule**, so editing source / a workflow /
-the package prompts **by design**. ⭐ **Measure for the TOOL ACTUALLY PROMPTING, and ASK which one it was**
-— one word from the operator beat four rounds of inference, twice. ⚠ `DEF-133` (line 48 `node -e`) fixed.
+★★ **Permission prompts:** see the 2026-09-04 block above and
+[four-causes](permission-prompts-four-causes.md). ⚠ `cd "C:/…" && grep` still prompts though the docs say
+it should not — **unproven** candidate: the Windows-drive form not resolving to `/c/…`. **Drop the `cd`.**
+⭐ **ASK which tool the prompt named** — one word from the operator beat four rounds of inference, twice.
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.
   ⛔ Still NOT clause (2) — an elimination is not an identification. `DEC-121` d2's 40-min ceiling is why the
@@ -31,11 +47,10 @@ the package prompts **by design**. ⭐ **Measure for the TOOL ACTUALLY PROMPTING
   the *allowlist-shape* clause: a clean confirming answer about the wrong clause (`LL-046`).
 - ⚠⚠ **`secrets` durations are NOT monotonic** — 5m34s…10m04s, an 80% spread; the *work* grows, the runtime
   varies. A bound sized for growth alone is undersized. Raised 10→30 (`DEC-123` d1).
-- ⚠⚠ **xUnit 2.5.3: tests in the SAME collection never run in parallel.** `IClassFixture` creates NO
-  collection (safe); `ICollectionFixture` does ⇒ cross-class host sharing **serialises the suite**.
-  `WBS-27.2` sized to the wrong one: per-class is ~294→~50 hosts, 83%, zero serialisation (`DEC-124`).
-- ⚠ **`WebApplicationFactory.CreateDefaultClient` is NOT virtual** — no single seam for a client handler
-  across 258 call sites. Use an `IStartupFilter`; it also discriminates a stall *upstream* of the pipeline.
+- ⚠⚠ **xUnit 2.5.3: same collection ⇒ never parallel.** `IClassFixture` creates NO collection (safe);
+  `ICollectionFixture` does ⇒ cross-class sharing **serialises the suite** (`DEC-124`). ⭐ **The test CLASS
+  is constructed per TEST** — that ctor is the per-test hook even when the fixture is per-class.
+  ⚠ **`CreateDefaultClient` is NOT virtual**; use an `IStartupFilter` for a suite-wide seam.
 
 ## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121`: memory pressure REFUTED, clause (2) still unmet · `DEC-111`–`DEC-116`
 
@@ -47,11 +62,11 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 forced GC; 3% fix declined. ⭐ `DEC-120` ACTIVATED `DW-096`→`WBS-27.2` in `SL-036`; occ 5 was 2026-09-03.
 ★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) — before shipping ANY
 detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive controls are practice here but in NO rule register.
-★★★ [**PERMISSION PROMPTS: FOUR CAUSES, ONLY TWO CONFIG**](permission-prompts-four-causes.md) — ⛔ *shape*
-  was ONE of them; that half-answer cost **five complaints**. `Write()` rules are DEAD (only `Edit()`);
-  pass Write/Edit a **REPO-RELATIVE** path; a PIPE is a compound like `&&`; `node -e` is an
-  allowlist-escape → script FILE. ⚠ You cannot SEE prompts — ask which tool. ⛔ `rm`/push/`Edit(.claude/**)`
-  prompt BY DESIGN; the classifier blocks self-widening. ⭐ Scratch `.scratch/<id>/`; memory = junction.
+★★★ [**PERMISSION PROMPTS: FOUR CAUSES, ONLY TWO CONFIG**](permission-prompts-four-causes.md) — `Write()`
+  rules are DEAD (only `Edit()`); pass Write/Edit a **REPO-RELATIVE** path; `node -e` is an
+  allowlist-escape → script FILE. ⛔ **This block used to say *"a PIPE is a compound like `&&`"* — that is
+  the FIRST-TOKEN model and it is REFUTED** (see 2026-09-04). ⚠ You cannot SEE prompts — ask which tool.
+  ⛔ `rm`/push prompt BY DESIGN. ⭐ Scratch `.scratch/<id>/`; memory = junction.
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
@@ -67,9 +82,9 @@ detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive control
   a 64 GB box cannot tell a leak from lazy collection. Use `GC.GetTotalMemory(true)` after a forced collect.
 - ⭐⭐ **A ROOT-PATH TOOL NAMES *A* PATH, NEVER *THE* CAUSE** (`LL-048`). `gcroot` named the rate limiter;
   removing it changed nothing. **Read the root COUNT first**; after two failed bisects, vary the QUANTITY.
-- ⚠ **A big hand-paste is survivable IF you verify after** — assert the new title equals the pre-image
-  byte-for-byte (`LL-028`+`LL-001`). Ran 6×; **caught a real loss once.** ⭐⭐ **`LL-049` (pinned): a
-  measurement AFTER the action it gates is a report, not a control** — gate the commit on it.
+- ⚠ **A big hand-paste is survivable IF you verify after** — byte-compare against the pre-image
+  (`LL-028`+`LL-001`); caught a real loss once. ⭐⭐ **`LL-049`: a measurement AFTER the action it gates
+  is a report, not a control.**
 - ⭐⭐ **SWEEP THE DECISION REGISTER FOR A ROW'S ID BEFORE CALLING ITS NUMBERS STALE** (`LL-050`) —
   `DEF-087` reads stale but `DEC-068` d2 ruled it fix-forward-only; a "repair" would reverse a decision.
 - ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** — they ride onto the branch (package→`main`
@@ -78,16 +93,15 @@ detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive control
 - ⭐⭐ **Ryuk does NOT reap before you can copy** — `docker cp <id>:/path`, not `ReadFileAsync`. ⚠ The
   register discriminates `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`)
   **on the exception type** — always discriminate by signature before attributing a red.
-- ⛔ **THE FORTY-EIGHTH was mine, THIRD IN A ROW**: `prm-next.md` said *"DIAGNOSE `DEF-109`"* in the very
-  commit whose message says DIAGNOSED. **A briefing on HOW is a description too.**
-- ⛔⛔ **NEVER WRITE A SLICE ID INTO A COMMAND IN `prm-next.md`** — nine sites named a CLOSED slice, each
-  returning a clean verdict about the wrong subject (the FORTY-SIXTH). ⚠ **`ADR-0045`**: where a `.dc.html`
-  cannot satisfy `INV-014`'s px literals AND `AA`, **AA governs**.
+- ⛔⛔ **NEVER NAME A SLICE ID OR DESCRIBE AN ITEM IN `prm-next.md`** — nine commands named a CLOSED slice
+  (46th); *"DIAGNOSE `DEF-109`"* shipped in the commit saying DIAGNOSED (48th). **A briefing on HOW is a
+  description too.** ⚠ **`ADR-0045`**: where a `.dc.html` cannot satisfy `INV-014`'s px AND `AA`, AA governs.
 
-## ★★★ 2026-08-31 · **`SL-035` IS THE LIVE SLICE** · `SL-033`+`SL-034` CLOSED
+## ★★★ 2026-08-31 · CI attribution · activations are not agreement
 
-⚠⚠ **`SL-035`'s SIX ACTIVATIONS ALL OVERRODE THE AGENT'S RECOMMENDATION TO CARRY** — never read an
-activation as agreement about HOW. (Live state: `prm-next.md`'s list, never this file.)
+⛔ **This heading named a live slice and went stale** — resolve it with
+`entity_query("slice", status="Approved")`, never from here. ⚠⚠ **Activations routinely OVERRIDE the
+agent's recommendation to carry** — never read one as agreement about HOW.
 
 ★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md)
 — **read before recording anything about CI, or proposing a fix to an intermittent failure.**
