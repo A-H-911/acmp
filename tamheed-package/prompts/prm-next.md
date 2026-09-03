@@ -57,12 +57,24 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # even a package-only push re-runs everything and CANCELS
                                              # the in-flight run (trap 38). Newest sha wins.
                                              # ⛔⛔ A MERGE-COMMIT RUN IS ITS OWN RUN AND CAN DISAGREE
-                                             # WITH THE PR RUN OVER BYTE-IDENTICAL CODE - twice here
-                                             # now (LL-036, pinned). `gh pr checks` shows only the PR
-                                             # one. This command is what found `main` red on
-                                             # c273294c after #331 merged "with ten checks green".
+                                             # WITH THE PR RUN OVER BYTE-IDENTICAL CODE (LL-036,
+                                             # pinned). `gh pr checks` shows only the PR one.
+                                             # ⛔ A COUNT OF ITS INSTANCES STOOD HERE ("twice here
+                                             # now") AND IS DELETED, NOT REFRESHED - a number inside
+                                             # a rule block where the RULE survives and the NUMBER
+                                             # rots, which the FORTY-FOURTH already recorded once.
+                                             # The lesson row and the defect rows are the count.
                                              # ⭐ Cite the RUN ID in anything you record, never a
                                              # colour: an id cannot be attributed to the wrong tree.
+                                             # ⭐⭐ TO UNBLOCK A PR WHOSE CI IS RED ON ONE OF THESE
+                                             # WITHOUT AN OVERRIDE: push a commit you genuinely owe.
+                                             # DEC-116 d2 - "a rebase produces a NEW sha and
+                                             # therefore a new run over a DIFFERENT tree; it is not
+                                             # a re-run" - so DEC-077 d3's count is untouched.
+                                             # ⛔ ITS CAVEAT BINDS: a fresh sample of the same
+                                             # intermittent fault MAY red again, and if it does that
+                                             # is a NEW occurrence - never a reason to push again.
+                                             # ONE SHOT, NOT A LEVER.
 docker info                                  # ⚠ ASK IT — do not expect either answer. The daemon is
                                              # frequently DOWN here, and while it is,
                                              # `Acmp.Integration.Tests` cannot run: the ONLY place
@@ -2156,9 +2168,12 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-120` first: `DEC-120`, `SC-045`,
-   `DEF-130`, `DEF-109`, `DW-096`, `DEF-121`, `DEF-129`, and `DEC-119`.** ⛔ **What is at what status, what
-   is still open, and what anyone owes anyone is deliberately NOT written here.**
+   `gh run list --branch main`. **Then read these rows, and read `DEC-122` first: `DEC-122`, `DEC-121`,
+   `DEC-120`, `SC-045`, `DEF-131`, `DEF-109`, `DEF-130`, `DW-096`, `DEF-121`, and `LL-054`.** ⛔ **What is
+   at what status, what is still open, and what anyone owes anyone is deliberately NOT written here.**
+   ⚠ **`DEF-130` OCCURRENCE 2 IS NOT ON ITS ROW'S TITLE — it is in `DEC-122` d3 and `PE-820`**, a
+   deliberate proportionality call recorded in `PE-820` itself. That row carries no occurrence counter;
+   if it ever gains one, fold the entry onto it.
    ⛔⛔ **A CLAIM THAT *"TWO RULINGS ARE OWED"* STOOD HERE AND IS DELETED, NOT REFRESHED — `DEC-120` GAVE
    BOTH.** It was the third attempt at this item and it rotted for the third distinct reason: the first
    described work, the second pointed at an obligation `DEC-117` d2 then discharged, and this one named a

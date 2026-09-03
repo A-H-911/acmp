@@ -13,9 +13,9 @@ falsified it hours later. `gh run list --branch main` is the answer; cite a RUN 
 ★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
 before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
 `WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
-forced GC; 3% store fix declined on `LL-035`. ⭐ `DEC-120` ACTIVATED `DW-096` → `WBS-27.2` in new `SL-036`
-(**overrode carry**); may NOT claim to fix it. ⛔ Clause (2) is **UNREACHABLE** — the capture hooks the
-OTHER family's `ContainerNotRunningException` — so `WBS-27.1` builds the missing instrument.
+forced GC; 3% fix declined. ⭐ `DEC-120` ACTIVATED `DW-096`→`WBS-27.2` in `SL-036`; occ 5 was 2026-09-03.
+★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) — before shipping ANY
+detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive controls are practice here but in NO rule register.
 ★★★ [**PERMISSION PROMPTS: FOUR CAUSES, ONLY TWO CONFIG**](permission-prompts-four-causes.md) — ⛔ *shape*
   was ONE of them; that half-answer cost **five complaints**. `Write()` rules are DEAD (only `Edit()`);
   pass Write/Edit a **REPO-RELATIVE** path; a PIPE is a compound like `&&`; `node -e` is an
