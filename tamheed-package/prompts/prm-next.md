@@ -101,18 +101,21 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
-⛔⛔⛔ **STANDING RULE, ADDED 2026-09-04 BY `DEC-127` d1, AND IT IS THE MOST IMPORTANT LINE IN THIS FILE
-FOR ANYONE WHO INHERITS A MACHINE WITH PERMISSION PROMPTS TURNED OFF.** `DEF-136` measured that the
-`Bash` allowlist is not consulted at all, and the operator resolved the SYMPTOM with a bypass permission
-mode. **That makes `.claude/PERMISSIONS.md`'s exclusion table INERT** — `rm`, `git push`,
-`gh pr create`/`merge`/`close` and `gh run rerun` no longer prompt, and that table describes them as
-*"the last human checkpoint in front of exactly the actions this project's decision register spends most
-of its words governing"*.
-⭐⭐ **SO THE CHECKPOINT MOVED FROM THE HARNESS TO YOU: ASK EXPLICITLY BEFORE ANYTHING DESTRUCTIVE OR
-OUTWARD-FACING** — a push to `main`, a PR merge, a re-run of a red job, a delete. The operator asked for
-the interruptions to stop; they did not ask for that guard to be removed, and the two were coupled only
-by the defect. ⚠ **`DEF-136` stays `Open`: a resolved symptom is not an identified cause** (`DEC-115` d2
-and `DEC-116` d1 are the precedents), and its two candidates and both isolating steps are on the row.
+⛔⛔⛔ **`DEF-136` IS LIVE AND UNRESOLVED: BASH COMMANDS PROMPT REGARDLESS OF SHAPE, INCLUDING BARE
+`grep`.** Measured by the operator across three separate answers on 2026-09-04. **The `Bash` allowlist is
+not being consulted** — a bare allowlisted leader with no arguments cannot fail a prefix match, so no
+shape hypothesis is needed and the "costumes" in `.claude/PERMISSIONS.md` are UNNECESSARY, not wrong.
+⚠ **`PowerShell` rules DO work**, so the settings files parse and are used for that tool.
+⛔ **DO NOT ADD ALLOWLIST ENTRIES** — if nothing is consulted they change nothing, and the auto-mode
+classifier correctly blocks the agent from widening its own permission surface.
+⚠⚠ **THIS PARAGRAPH REPLACED A FALSE ONE WRITTEN THE SAME HOUR — the FIFTY-SECOND, and it is mine.** It
+asserted that the operator had resolved the symptom with a BYPASS MODE and that `PERMISSIONS.md`'s
+exclusion table was therefore INERT. **Both false.** `/auto-mode-setup` wrote `autoMode.environment` and
+`soft_deny` into `~/.claude/settings.json` — classifier CONTEXT, not a permission mode — and there is no
+`defaultMode` anywhere. **I inferred the mechanism from a one-word answer instead of reading the file**,
+which is `LL-056` for the fifth time in one day, inside the very entry recording the fourth.
+⭐ **The exclusion table is therefore INTACT** — `rm`, `git push`, `gh pr create`/`merge`/`close` and
+`gh run rerun` still gate. ⭐ **The isolating steps remain the operator's** and are on `DEF-136`.
 
 ⚠⚠ **WHICH BRANCH YOU ARE ON IS THE FIRST THING TO ESTABLISH, AND THIS FILE DELIBERATELY DOES NOT SAY.**
 It said *"expect clean; you are on `main`, everything is merged"* for a long time, and it was true every
