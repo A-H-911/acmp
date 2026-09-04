@@ -20,9 +20,30 @@ building such theories, and both were wrong in a way that could not be seen from
 the auto-mode classifier correctly refuses to let the agent widen its own permission surface, so this is
 not something an agent can fix by editing config.
 
-`DEF-136` in the Tamheed package carries the two candidates and both isolating steps. **Both steps are
-the operator's**: disable the `Bash`-matched `PreToolUse` hook for one session, or restart and read the
-harness's own rule-validation warnings at startup.
+⭐⭐ **A THIRD CANDIDATE, FOUND 2026-09-04 IN THE SETTINGS SCHEMA ITSELF, AND IT IS THE FIRST ONE
+GROUNDED IN DOCUMENTATION RATHER THAN INFERENCE — BUT IT IS STILL A CANDIDATE.** This session runs in
+**auto mode**, and the official permissions documentation says that in auto mode *"a classifier reviews
+actions instead of you"* — the approval table it publishes describes **Manual** mode. The settings
+schema also documents `autoMode.classifyAllShell`: *"When true, every Bash/PowerShell allow rule is
+**suspended** while auto mode is active so all shell commands are routed through the classifier."*
+
+**So in auto mode the allowlist may simply not be the deciding mechanism — the classifier is.** That
+would explain every observation at once: allowlisted commands prompting, a bypass MODE fixing it
+instantly, and `/auto-mode-setup` (which only enriches classifier CONTEXT) not fixing it.
+⛔ **Not asserted as the cause.** `classifyAllShell` defaults to false and is not set here, so the
+mechanism is not established — only that auto mode routes decisions somewhere other than where this
+project spent two sessions looking. `DEF-136` carries all three candidates and their isolating steps,
+**all of which are the operator's**: disable the `Bash`-matched `PreToolUse` hook for one session,
+restart and read the harness's startup rule-validation warnings, or compare behaviour in Manual mode
+against auto mode.
+
+## 3. Where `defaultMode` belongs
+
+⚠ **Not in this file's sibling `settings.json`** — that file is tracked and **this repository is
+public**, so a bypass mode committed there disables permission prompts for everyone who clones it. A
+background security review flagged exactly that on 2026-09-04 and it was correct. Put it in
+`.claude/settings.local.json`, which is gitignored and personal; local settings take precedence over
+project settings, so it works from there and travels with nobody.
 
 ## 2. If you want prompts to stop, it is one setting
 

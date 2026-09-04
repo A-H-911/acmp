@@ -9,28 +9,29 @@
 ## ★★★ 2026-09-04 · `WBS-27.2` MERGED (`1ebf3a5c`) · `DEF-135` · `LL-056`/`LL-057`
 
 ★★★ ⛔⛔⛔ **`DEF-136`: FOR `Bash` THE ALLOWLIST IS NOT CONSULTED AT ALL.** Operator-measured: plain
-`grep`/`cat`/`ls`/`wc`/`git log` — no `cd`, no pipe, no heredoc, allowlisted in both files — **PROMPT**;
+`grep`/`cat`/`ls`/`sed`/`git log` — no `cd`, no pipe, no heredoc, allowlisted in both files — **PROMPT**;
 so does `python <script-file>`. A bare leader cannot fail a prefix match ⇒ **one cause, no shape
-hypothesis needed; the three "costumes" are UNNECESSARY, not wrong.** ⚠ `PowerShell` rules DO work, so
-the files parse. ⭐ Candidates only: the `Bash`-matched hook `npx block-no-verify@1.1.2`, or settings not
-loaded. **Both isolating steps are the OPERATOR's** (disable the hook one session; or restart and read
-the startup rule-validation warnings). ⛔ **Adding entries cannot help.** ⚠ Fails toward MORE friction.
-★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise
-from** (`LL-056`, pinned, **4 instances in one day**): the FIRST-TOKEN matcher model (`DEF-135`, refuted
-by the OFFICIAL docs — *every subcommand needs its own rule*); *format the SOLUTION* right-for-a-wrong-
-reason; a store re-flush claim that **REFUSED**; and `DEF-136` above, where even the CORRECTED curve is
-irrelevant. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** — the classifier blocks
-*widening*, not correcting prose; that conflation held `DEF-133` open a day.
+hypothesis needed; the "costumes" are UNNECESSARY, not wrong.** ⚠ `PowerShell` rules DO work.
+⛔ **ADDING ENTRIES CANNOT HELP — stopping prompts is a permission MODE** (`defaultMode`, Shift+Tab),
+which bypasses the broken matcher. ⚠ **`/auto-mode-setup` does NOT do it** — it writes
+`autoMode.environment`/`soft_deny`, classifier CONTEXT only. ⭐ 2026-09-04 reset: ~650 entries → ~130 in
+one file, one syntax; `PERMISSIONS.md` stubbed, its shape theory deleted to git history.
+⛔⛔ **I TOOK ONE WORD OF OUTCOME (*"prompts stopped"*) AND INVENTED ITS MECHANISM (*"they set bypass
+mode"*), THEN SHIPPED IT AS A STANDING RULE** — 52nd stale statement, refuted by one file read.
+★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise from**
+(`LL-056`, pinned, **5 instances in one day**): FIRST-TOKEN matching; *format the SOLUTION*
+right-for-a-wrong-reason; a store re-flush claim that REFUSED; `DEF-136`; and inventing a person's
+mechanism from their one-word outcome. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** —
+the classifier blocks *widening*, not correcting prose; that conflation held `DEF-133` open a day.
 - ⭐⭐⭐ **`WBS-27.2`: THE EXPENSIVE THING WAS THE HOST, NOT THE DATABASES** (`LL-057`). Two weeks of rows
   priced in *"sharing a host shares its 14 InMemory DBs"*. **Only bundled — nobody chose that isolation,
   so nobody wrote it down.** A ~30-line `Reset()` separates them: **287 constructions → 47 hosts (83.6%)**,
-  suite 4m17s→38s, CI backend **9m07s/9m37s → 5m36s** (matched `push` events). ⚠ Naive share-everything
-  failed **72/445** first. ⛔ **Claims NOTHING about `DEF-109`** — a faster green is not evidence.
+  suite 4m17s→38s, CI backend **9m07s/9m37s → 5m36s**. ⚠ Naive share-everything failed **72/445** first.
+  ⛔ **Claims NOTHING about `DEF-109`.**
 - ⚠⚠ **C31 FIRES ON *COMMITTED* WRITES TOO** — `gh pr merge --delete-branch` took a branch-only package
-  commit; store had the row, JSONL did not. **Safe property = REACHABLE FROM A SURVIVING REF.** ⭐ Repair:
+  commit; store had the row, JSONL did not. **Safe = REACHABLE FROM A SURVIVING REF.** ⭐ Repair:
   `git checkout <lost-sha> -- <file>` once `git diff` proves the delta. ⚠ `cancel-in-progress` is
-  `pull_request`-ONLY, so a push to `main` cannot kill a merge-commit run. ⚠ **`gh pr checks --watch`
-  right after a push exits 1** — a failed monitor reads as a finished one; use `gh run watch <run-id>`.
+  `pull_request`-ONLY. ⚠ **`gh pr checks --watch` right after a push exits 1** — use `gh run watch <id>`.
 
 ## ★★★ 2026-09-03 · `DEF-109` occ 6: SCHEDULING REFUTED · `DEC-123`–`DEC-125` · `LL-055`
 
