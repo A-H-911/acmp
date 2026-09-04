@@ -101,6 +101,19 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
+⛔⛔⛔ **STANDING RULE, ADDED 2026-09-04 BY `DEC-127` d1, AND IT IS THE MOST IMPORTANT LINE IN THIS FILE
+FOR ANYONE WHO INHERITS A MACHINE WITH PERMISSION PROMPTS TURNED OFF.** `DEF-136` measured that the
+`Bash` allowlist is not consulted at all, and the operator resolved the SYMPTOM with a bypass permission
+mode. **That makes `.claude/PERMISSIONS.md`'s exclusion table INERT** — `rm`, `git push`,
+`gh pr create`/`merge`/`close` and `gh run rerun` no longer prompt, and that table describes them as
+*"the last human checkpoint in front of exactly the actions this project's decision register spends most
+of its words governing"*.
+⭐⭐ **SO THE CHECKPOINT MOVED FROM THE HARNESS TO YOU: ASK EXPLICITLY BEFORE ANYTHING DESTRUCTIVE OR
+OUTWARD-FACING** — a push to `main`, a PR merge, a re-run of a red job, a delete. The operator asked for
+the interruptions to stop; they did not ask for that guard to be removed, and the two were coupled only
+by the defect. ⚠ **`DEF-136` stays `Open`: a resolved symptom is not an identified cause** (`DEC-115` d2
+and `DEC-116` d1 are the precedents), and its two candidates and both isolating steps are on the row.
+
 ⚠⚠ **WHICH BRANCH YOU ARE ON IS THE FIRST THING TO ESTABLISH, AND THIS FILE DELIBERATELY DOES NOT SAY.**
 It said *"expect clean; you are on `main`, everything is merged"* for a long time, and it was true every
 time until `DW-080` phase A left a branch open across a session boundary — the TWENTY-THIRD's shape, the
@@ -2242,10 +2255,12 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-126` first: `DEC-126`, `DEC-125`,
-   `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-134`, `DEF-109`, `DEF-130`,
-   `DEF-121`, `DEF-133`, `DW-096`, `LL-055`, `LL-054`, `PE-825`, `PE-828`, `PE-829`, and
-   the `wbs-item` rows the live slice's `wbs-done` names.**
+   `gh run list --branch main`. **Then read these rows, and read `DEC-127` first: `DEC-127`, `DEC-126`,
+   `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-136`, `DEF-135`,
+   `DEF-134`, `DEF-109`, `DEF-130`, `DEF-121`, `DW-096`, `LL-057`, `LL-056`, `LL-055`, `LL-054`,
+   `PE-828`, `PE-829`, `PE-846`, `PE-850`, and the `wbs-item` rows the live slice's `wbs-done` names.**
+   ⚠ **`DEC-127` d2 IS A RULING WITH WORK ATTACHED AND IT IS THE ONLY ONE** — read the row for what it
+   settled; `gh pr list --state open` is the live queue and this file deliberately states no count of it.
    ⛔⛔ **THAT SENTENCE ASSERTED `.claude/**` IS OUTSIDE WHAT THIS AGENT MAY WRITE. IT IS NOT — SEE THE
    FIFTY-FIRST.** `DEF-133` was carried as *operator-only* for a day on that basis and a one-line edit
    closed it. **What the classifier blocks is SELF-WIDENING THE PERMISSION SURFACE** — adding allowlist
