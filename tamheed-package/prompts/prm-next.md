@@ -108,14 +108,31 @@ shape hypothesis is needed and the "costumes" in `.claude/PERMISSIONS.md` are UN
 ⚠ **`PowerShell` rules DO work**, so the settings files parse and are used for that tool.
 ⛔ **DO NOT ADD ALLOWLIST ENTRIES** — if nothing is consulted they change nothing, and the auto-mode
 classifier correctly blocks the agent from widening its own permission surface.
-⚠⚠ **THIS PARAGRAPH REPLACED A FALSE ONE WRITTEN THE SAME HOUR — the FIFTY-SECOND, and it is mine.** It
-asserted that the operator had resolved the symptom with a BYPASS MODE and that `PERMISSIONS.md`'s
-exclusion table was therefore INERT. **Both false.** `/auto-mode-setup` wrote `autoMode.environment` and
-`soft_deny` into `~/.claude/settings.json` — classifier CONTEXT, not a permission mode — and there is no
-`defaultMode` anywhere. **I inferred the mechanism from a one-word answer instead of reading the file**,
-which is `LL-056` for the fifth time in one day, inside the very entry recording the fourth.
-⭐ **The exclusion table is therefore INTACT** — `rm`, `git push`, `gh pr create`/`merge`/`close` and
-`gh run rerun` still gate. ⭐ **The isolating steps remain the operator's** and are on `DEF-136`.
+⭐⭐ **A THIRD CANDIDATE AND THE ONLY ONE FROM DOCUMENTATION RATHER THAN INFERENCE: IN AUTO MODE THE
+ALLOWLIST MAY NOT BE THE DECIDING MECHANISM.** The permissions docs say that in auto mode *"a classifier
+reviews actions instead of you"*, and the approval table they publish describes **Manual** mode. The
+settings schema documents `autoMode.classifyAllShell`: *"When true, every Bash/PowerShell allow rule is
+**suspended** while auto mode is active so all shell commands are routed through the classifier."*
+**It explains every observation at once**, which neither earlier candidate did. ⛔ Still a CANDIDATE —
+`classifyAllShell` defaults to false and is not set here. All three, and their isolating steps, are on
+`DEF-136`, and **every step is the operator's**.
+
+⛔⛔⛔ **CHECK WHICH PERMISSION MODE YOU ARE IN BEFORE ASSUMING WHAT GATES. IF PROMPTS ARE OFF, THEN
+`.claude/PERMISSIONS.md`'s EXCLUSION TABLE IS INERT AND THE CHECKPOINT IS YOURS: ASK EXPLICITLY BEFORE
+ANYTHING DESTRUCTIVE OR OUTWARD-FACING** — a push to `main`, a PR merge, a re-run of a red job, a delete.
+⚠⚠ **THIS SENTENCE IS CONDITIONAL BECAUSE ITS TWO PREDECESSORS WERE NOT, AND BOTH WERE WRONG — the
+FIFTY-SECOND AND FIFTY-THIRD, BOTH MINE, IN ONE PARAGRAPH IN ONE SESSION, IN OPPOSITE DIRECTIONS.**
+(52) It asserted the exclusion table was INERT because the operator had set a bypass mode; there was no
+`defaultMode` anywhere and I had inferred it from a one-word answer instead of reading the file. (53) The
+correction then asserted the table was INTACT — and the operator added `"defaultMode":
+"bypassPermissions"` an hour later, which made *that* false, and it shipped in `a383ba21`.
+⭐⭐ **THE LESSON IS NOT ABOUT PERMISSIONS. A PARAGRAPH THAT STATES A STATE IS WRONG IN WHICHEVER
+DIRECTION THE STATE MOVES, AND WRITING THE FRESHER ANSWER JUST BUYS THE OTHER ERROR.** The only form
+that survives is the conditional above: name what to CHECK, never what is currently true.
+⚠ Where `defaultMode` belongs: `.claude/settings.local.json`, which is **gitignored**. ⛔ **Never in
+`.claude/settings.json`** — it is tracked and this repository is PUBLIC, so a bypass committed there
+disables prompts for everyone who clones it. A background security review caught exactly that on
+2026-09-04 and it was correct.
 
 ⚠⚠ **WHICH BRANCH YOU ARE ON IS THE FIRST THING TO ESTABLISH, AND THIS FILE DELIBERATELY DOES NOT SAY.**
 It said *"expect clean; you are on `main`, everything is merged"* for a long time, and it was true every
@@ -294,6 +311,22 @@ d3): a green run is not evidence about an intermittent fault and a *faster* run 
 ⚠ **Two things bit during it and both are recorded rather than summarised here**: a `CHARSET` red from
 Write-created `.cs` files with no BOM (`PE-839`), and C31 firing on a **committed** package write that
 `--delete-branch` took with it (`PE-841`).
+✅ **2026-09-04, THE INTERVIEW ROUND: `DEC-127` CARRIES FOUR RULINGS AND ONLY ONE HAS WORK ATTACHED.**
+d2 sweeps the WHOLE Dependabot queue (`DEC-072`'s precedent); d1 keeps `DEF-136` open because a resolved
+symptom is not an identified cause; d3 ended that session; d4 pinned `LL-055`. **Read the row, not this
+sentence** — and `gh pr list --state open` is the queue, which this file deliberately never counts.
+⚠ **THREE ROWS WERE FLAGGED IN d2 AND THE CAUTION IS PRESERVED RATHER THAN OVERRIDDEN**: `#351` moves
+`coverlet.collector` 6.0.0 → 10.0.1, **which is the collector `ADR-0016`'s per-file 95% gate runs on**,
+so it can move the gate's own measurement rather than the code's coverage; `#352` `dotnet-ef` 8.0.10 →
+10.0.11; `#350` `AspNetCore.HealthChecks.SqlServer` 8.0.2 → 9.0.0. `DEC-074` once carved a major pair
+OUT of a sweep; d2 does not, **so verify each major on its own evidence, never on the queue's green**.
+⭐⭐ **`LL-055`, `LL-056` AND `LL-057` ARE APPROVED AND PINNED, AND `handoff_emit` RAN IN THE SAME BATCH**
+(`DEF-107`), so they bind from the tool-owned note. `LL-057` is the one to read first if you are sizing
+anything: *the expensive thing may not be what the plan says it is.*
+⚠ **THE PERMISSION CONFIG WAS RESET THE SAME DAY**: ~650 allow-entries across two files → ~130 in one,
+one syntax, no one-off literals; `.claude/PERMISSIONS.md` reduced to a stub, its shape theory in git
+history. **That was DELETION, not a rebuild** — see `DEF-136`.
+
 ⚠⚠ **`DEC-124` d2 AND `DEC-123` d4 EACH OVERRODE THE AGENT; `DEC-125` AND `DEC-126` DID NOT.** The rows
 record the reasoning-against, so do not read any of the four as agreement about HOW.
 ⚠ **If a branch or an open PR exists that this paragraph does not explain, stop and ask the operator** —
@@ -316,14 +349,17 @@ the failure it exists to warn about.
 ⚠⚠⚠ **THE SIXTEENTH ESCAPE IS MINE, IS THE LARGEST YET IN SUBSTANCE, AND IS IN TWO PUSHED COMMIT MESSAGES.** `ebe3ceb1` asserts *"the permission-prompt file gains a FIFTH cause and it is outside the repository ... so the allowlist is not being consulted"*, and `cc92665a` carries the same claim through `PE-833`. **Both are false in their central assertion.** The operator ran `cat ~/.claude/settings.json`: `hooks.PreToolUse` matches only `Bash` and `Skill`, nothing matches `Edit`/`Write`, user-level `permissions` has no `allow` array, and there is no `defaultMode`. **`PE-834` is the correction of record.**
 ⛔⛔ **THE REASONING FAULT, WHICH IS WHAT TO CARRY: I MEASURED HALF A PREMISE AND GENERALISED ACROSS ALL OF IT.** The inference was *all four tool families are allowlisted, therefore the allowlist is not being consulted*. I had grepped `"Bash([^)]*)"` — **Bash only** — and taken the `Edit` rules from `.claude/PERMISSIONS.md`'s PROSE. Measured: **`Edit(.scratch/**)` is the ONLY `Edit` rule in either settings file**, so editing source, a workflow or the package prompts CORRECTLY and BY DESIGN. **There was no fault to explain on that half at all.**
 ⚠ **It is `LL-006` (read the implementation, not the document describing it) and `LL-055`'s shape for the THIRD time in one session** — a control, or a premise, verified on one part and assumed across the rest. ⭐ **What survives untouched: `DEF-133` itself** (line 48 really does recommend the shape cause (4) forbids), **and the exclusion table, which is accurate and explains most of what prompts.** ⛔ Do not read this retraction as licence to widen anything.
+⚠⚠ **ANNOTATED 2026-09-04, NOT REWRITTEN, BECAUSE THIS ENTRY RECORDS WHAT A PASS FOUND — BUT BOTH OF ITS CLOSING CLAIMS ARE NOW FALSE AND THEY ARE WRITTEN IN THE PRESENT TENSE, WHICH IS THE DANGEROUS KIND.** (a) `DEF-133` is **Fixed**: line 48's `node -e` recommendation was replaced by the script-file remedy, and `PERMISSIONS.md` has since been reduced to a stub entirely. (b) **The exclusion table does NOT explain most of what prompts** — `DEF-136` measured that bare allowlisted commands prompt, so nothing in that table was ever the explanation; and under a bypass mode the table is inert rather than merely uninformative. ⭐ The clause *\"do not read this as licence to widen anything\"* stands and is the half worth keeping.
 
 ⚠⚠⚠ **THE FIFTY-FIRST IS IN THE NUMBERED LIST, IS AN UNMEASURED ASSERTION ABOUT MY OWN CAPABILITIES, AND IT HELD A DEFECT OPEN FOR A DAY.** Item 1 read *"`DEF-133` IS IN THAT LIST BECAUSE ITS FIX IS AN ACT ONLY THE OPERATOR CAN PERFORM — `.claude/**` is outside what this agent may write"*. **Measured 2026-09-04: it is not.** `.claude/PERMISSIONS.md` and two memory files were edited directly in this session; the Edit prompts, because `Edit(.scratch/**)` is the only `Edit` rule, and the operator approved it. **The classifier's block is real but it is on a DIFFERENT act** — it refused a `Skill` call whose purpose was installing an auto-approve hook, which is self-widening. **The sentence generalised one refusal into a capability boundary and never tested it**, which is the THIRTEENTH's rule: an unmeasured assertion is counted whether or not it comes out right.
 ⭐⭐ **THE TRANSFERABLE HALF: *PROMPTS BY DESIGN* AND *FORBIDDEN* ARE DIFFERENT STATES, AND THE AGENT CANNOT TELL THEM APART BY LOOKING** — a prompt never reaches a tool result, so an untried action and a blocked one are indistinguishable from here. **The only way to learn which is to try it and let the operator answer.** `DEF-133`'s own row carried the same conflation in its `not_fixed_here` field and is corrected there too.
 ⚠ **Found by acting, not by sweeping** — no grep finds a false claim about what you are able to do; the instrument is attempting the thing.
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-one** times, and **sixteen** wrong assertions have escaped into
-commit messages, which cannot be amended. **SEVERAL were written and then invalidated within
+file has carried a stale statement **fifty-three** times, and **sixteen** wrong assertions have escaped into
+commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
+one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
+the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
 the SAME session** by the very work that session was doing — do not read the count above as anything but a
 reason to distrust every number here, including that one: on 2026-08-19 it said
 `readiness ready:TRUE` and `gate 7/7` hours after `DEF-093` made both false; its requirement tally
