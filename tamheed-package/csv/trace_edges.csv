@@ -117,7 +117,9 @@ DEF-121,DEF-108,relates_to
 DEF-122,DEF-109,relates_to
 DEF-128,WBS-24.2,relates_to
 DEF-137,DEC-128,relates_to
+DEF-137,DEC-132,relates_to
 DEF-138,DEC-128,relates_to
+DEF-138,DEC-132,relates_to
 DW-029,DEF-012,relates_to
 DW-030,FR-030,relates_to
 DW-074,DEF-100,relates_to
@@ -126,7 +128,9 @@ DW-084,DEF-108,relates_to
 DW-096,DEF-109,relates_to
 DW-097,DEF-121,relates_to
 DW-098,DEC-131,relates_to
+DW-098,DEC-132,relates_to
 DW-099,DEC-131,relates_to
+DW-099,DEC-132,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
 FR-002,ADR-0002,derives_from
@@ -424,8 +428,10 @@ LL-050,DEF-087,learned_from
 LL-051,DEC-115,learned_from
 LL-052,DEF-121,learned_from
 LL-053,DEF-101,learned_from
+LL-058,DEC-132,relates_to
 LL-058,PE-855,learned_from
 LL-058,PE-859,learned_from
+LL-059,DEC-132,relates_to
 LL-059,PE-860,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
@@ -694,6 +700,7 @@ SC-044,DW-086,scope_modifies
 SC-044,WBS-26.5,scope_modifies
 SC-046,DEC-128,relates_to
 SC-046,DEF-138,relates_to
+SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
 TEST-001,FR-018,tests
@@ -1249,6 +1256,7 @@ WBS-23.4,FR-164,implements
 WBS-24.8,FR-165,implements
 WBS-26.1,NFR-064,implements
 WBS-26.2,NFR-065,implements
+WBS-28,DW-098,relates_to
 WBS-3,FR-017,implements
 WBS-3,FR-019,implements
 WBS-3,FR-020,implements
