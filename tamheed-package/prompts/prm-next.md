@@ -101,21 +101,27 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
-⛔⛔⛔ **`DEF-136` IS LIVE AND UNRESOLVED: BASH COMMANDS PROMPT REGARDLESS OF SHAPE, INCLUDING BARE
-`grep`.** Measured by the operator across three separate answers on 2026-09-04. **The `Bash` allowlist is
-not being consulted** — a bare allowlisted leader with no arguments cannot fail a prefix match, so no
-shape hypothesis is needed and the "costumes" in `.claude/PERMISSIONS.md` are UNNECESSARY, not wrong.
-⚠ **`PowerShell` rules DO work**, so the settings files parse and are used for that tool.
-⛔ **DO NOT ADD ALLOWLIST ENTRIES** — if nothing is consulted they change nothing, and the auto-mode
-classifier correctly blocks the agent from widening its own permission surface.
-⭐⭐ **A THIRD CANDIDATE AND THE ONLY ONE FROM DOCUMENTATION RATHER THAN INFERENCE: IN AUTO MODE THE
-ALLOWLIST MAY NOT BE THE DECIDING MECHANISM.** The permissions docs say that in auto mode *"a classifier
-reviews actions instead of you"*, and the approval table they publish describes **Manual** mode. The
-settings schema documents `autoMode.classifyAllShell`: *"When true, every Bash/PowerShell allow rule is
-**suspended** while auto mode is active so all shell commands are routed through the classifier."*
-**It explains every observation at once**, which neither earlier candidate did. ⛔ Still a CANDIDATE —
-`classifyAllShell` defaults to false and is not set here. All three, and their isolating steps, are on
-`DEF-136`, and **every step is the operator's**.
+✅✅ **`DEF-136`'s CAUSE WAS IDENTIFIED ON 2026-09-04 AND IT IS TWO MECHANISMS, NEITHER OF THEM EITHER
+EARLIER CANDIDATE. `PE-855` IS THE IDENTIFICATION; `LL-058` IS THE TRANSFERABLE HALF; READ THOSE, NOT
+THIS PARAGRAPH.** (1) `permissions.defaultMode` is honoured at **user** scope (`~/.claude/settings.json`),
+in managed settings, or via a startup flag — set in a **project** file it is **SILENTLY IGNORED** and the
+session starts in the built-in default. (2) In auto mode **narrow** allow rules resolve before the
+classifier while **broad wildcard** rules are suspended; every entry here is the wildcard form
+(`Bash(grep:*)`), which is why a bare allowlisted `grep` prompted.
+⚠ **CONFIDENCE IS UNEQUAL AND `PE-855` SAYS SO:** (1) is documented and matched by two independent
+operator observations; (2) is documented as a rule but its application here rests on one prediction
+matching one prior observation. **The discriminating experiment is on the row.**
+⛔ **DO NOT ADD ALLOWLIST ENTRIES**, and do not write a bypass mode into global settings — that is the
+agent widening its own permission surface, and the classifier correctly refuses it. **The remedy was an
+operator act.**
+⚠⚠ **WHAT THIS COST, BECAUSE IT IS THE REASON `LL-058` EXISTS: THREE SESSIONS, FOUR PUBLISHED MECHANISMS,
+ALL FROM INFERENCE, TWO OF THEM SHIPPED INTO COMMIT MESSAGES THAT CANNOT BE AMENDED.** What settled it was
+reading the harness's own documentation for the tool that was prompting — `LL-006` aimed at the harness
+rather than at the codebase. ⛔ **AND THIS SESSION'S OWN PROMPT EVIDENCE WAS VOID AND IS RECORDED AS SUCH
+IN `PE-854`:** every Bash call the agent made before noticing carried a `cd "<repo>" && …` prefix — the
+exact shape the session-mechanics block below forbids — so the tools the operator named were the agent's
+own doing. **An investigator generating the signal it is measuring is not a shape problem; it is a
+control problem** (`LL-041`).
 
 ⛔⛔⛔ **CHECK WHICH PERMISSION MODE YOU ARE IN BEFORE ASSUMING WHAT GATES. IF PROMPTS ARE OFF, THEN
 `.claude/PERMISSIONS.md`'s EXCLUSION TABLE IS INERT AND THE CHECKPOINT IS YOURS: ASK EXPLICITLY BEFORE
@@ -129,10 +135,23 @@ correction then asserted the table was INTACT — and the operator added `"defau
 ⭐⭐ **THE LESSON IS NOT ABOUT PERMISSIONS. A PARAGRAPH THAT STATES A STATE IS WRONG IN WHICHEVER
 DIRECTION THE STATE MOVES, AND WRITING THE FRESHER ANSWER JUST BUYS THE OTHER ERROR.** The only form
 that survives is the conditional above: name what to CHECK, never what is currently true.
-⚠ Where `defaultMode` belongs: `.claude/settings.local.json`, which is **gitignored**. ⛔ **Never in
-`.claude/settings.json`** — it is tracked and this repository is PUBLIC, so a bypass committed there
-disables prompts for everyone who clones it. A background security review caught exactly that on
-2026-09-04 and it was correct.
+⛔⛔ **THIS PARAGRAPH USED TO SAY *"where `defaultMode` belongs: `.claude/settings.local.json`, which is
+gitignored"* AND THAT WAS NEVER TRUE — a project file cannot set it at all** (`PE-855`). It belongs in
+**`~/.claude/settings.json`**, at user scope, and a restart is required.
+⚠ **DELIBERATELY NOT ADDED TO THE COUNTER ABOVE, AND THE REASONING IS RECORDED SO IT CAN BE ARGUED
+WITH.** That counter's own test is *was true, became false, and reached a commit*. This statement was
+**never true** — it was wrong on the day it was written and wrong in every commit that carried it, which
+is a different fault class. The structural-corruption entry further down set the precedent and its
+argument governs here: **widening the counter to cover a second kind of error destroys it**, which is
+`LL-016`'s point that a number counting two things measures neither. ⛔ It is recorded here in full
+instead, which is what the counter was ever for.
+⛔ **The half that was right and stays right: NEVER put a bypass mode in `.claude/settings.json`** — that
+file is tracked and this repository is PUBLIC, so a bypass committed there disables prompts for everyone
+who clones it. A background security review caught exactly that on 2026-09-04 and it was correct.
+⭐ **THE GENERAL FORM, WHICH IS WHY THIS COST THREE SESSIONS:** a settings key can be valid, correctly
+spelled, and in a file the tool really loads, and still be inert because that key is only honoured at a
+different SCOPE — **and the scope is invisible at the site where the key is written**, so every reader
+who checks the file confirms it is correct. Nothing warns and nothing errors (`LL-058`).
 
 ⚠⚠ **WHICH BRANCH YOU ARE ON IS THE FIRST THING TO ESTABLISH, AND THIS FILE DELIBERATELY DOES NOT SAY.**
 It said *"expect clean; you are on `main`, everything is merged"* for a long time, and it was true every
@@ -2294,12 +2313,22 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-127` first: `DEC-127`, `DEC-126`,
-   `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-136`, `DEF-135`,
-   `DEF-134`, `DEF-109`, `DEF-130`, `DEF-121`, `DW-096`, `LL-057`, `LL-056`, `LL-055`, `LL-054`,
-   `PE-828`, `PE-829`, `PE-846`, `PE-850`, and the `wbs-item` rows the live slice's `wbs-done` names.**
-   ⚠ **`DEC-127` d2 IS A RULING WITH WORK ATTACHED AND IT IS THE ONLY ONE** — read the row for what it
+   `gh run list --branch main`. **Then read these rows, and read `DEC-128` first: `DEC-128`, `DEC-127`,
+   `DEC-126`, `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-136`,
+   `DEF-135`, `DEF-134`, `DEF-109`, `DEF-130`, `DEF-121`, `DW-096`, `LL-058`, `LL-057`, `LL-056`,
+   `LL-055`, `LL-054`, `PE-828`, `PE-829`, `PE-846`, `PE-850`, `PE-854`, `PE-855`, `PE-856`, and the
+   `wbs-item` rows the live slice's `wbs-done` names.**
+   ⚠ **`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED** — read both rows for what they
    settled; `gh pr list --state open` is the live queue and this file deliberately states no count of it.
+   ⛔⛔ **`PE-856` IS A PRE-MERGE DIAGNOSIS AND IT IS THE REASON `DEC-128` COULD BE ANSWERED AT ALL — READ
+   IT BEFORE REBASING ANYTHING.** Two of the queue's PRs were red on stale runs, and reading the CAUSE
+   reversed the obvious disposition of BOTH: one shows four red jobs and is a single restore conflict
+   every job inherits, the other is one of `DEC-127` d2's flagged majors whose red belongs to a carried
+   defect and not to the bump. ⛔ **Neither is described here — that is the FORTY-FIFTH/SEVENTH/EIGHTH's
+   fault class, and `PE-856` and the defect rows are the record.**
+   ⚠ **A REBASE IS PART OF THE AUTHORISED CYCLE AND IS NOT A RE-RUN** (`DEC-116` d2) — but `strict: true`
+   means every merge re-stales the rest, so the sweep is sequential by construction, and **both** the PR
+   run and the merge-commit run must be read before the next rebase (`LL-036`).
    ⛔⛔ **THAT SENTENCE ASSERTED `.claude/**` IS OUTSIDE WHAT THIS AGENT MAY WRITE. IT IS NOT — SEE THE
    FIFTY-FIRST.** `DEF-133` was carried as *operator-only* for a day on that basis and a one-line edit
    closed it. **What the classifier blocks is SELF-WIDENING THE PERMISSION SURFACE** — adding allowlist

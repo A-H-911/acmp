@@ -8,16 +8,14 @@
 
 ## ★★★ 2026-09-04 · `WBS-27.2` MERGED (`1ebf3a5c`) · `DEF-135` · `LL-056`/`LL-057`
 
-★★★ ⛔⛔⛔ **`DEF-136`: FOR `Bash` THE ALLOWLIST IS NOT CONSULTED AT ALL.** Operator-measured: plain
-`grep`/`cat`/`ls`/`sed`/`git log` — no `cd`, no pipe, no heredoc, allowlisted in both files — **PROMPT**;
-so does `python <script-file>`. A bare leader cannot fail a prefix match ⇒ **one cause, no shape
-hypothesis needed; the "costumes" are UNNECESSARY, not wrong.** ⚠ `PowerShell` rules DO work.
-⛔ **ADDING ENTRIES CANNOT HELP — stopping prompts is a permission MODE** (`defaultMode`, Shift+Tab),
-which bypasses the broken matcher. ⚠ **`/auto-mode-setup` does NOT do it** — it writes
-`autoMode.environment`/`soft_deny`, classifier CONTEXT only. ⭐ 2026-09-04 reset: ~650 entries → ~130 in
-one file, one syntax; `PERMISSIONS.md` stubbed, its shape theory deleted to git history.
-⛔⛔ **I TOOK ONE WORD OF OUTCOME (*"prompts stopped"*) AND INVENTED ITS MECHANISM (*"they set bypass
-mode"*), THEN SHIPPED IT AS A STANDING RULE** — 52nd stale statement, refuted by one file read.
+★★★ ✅ **`DEF-136` SOLVED 2026-09-04** — [[a-valid-key-can-be-inert]] (`LL-058`, `PE-855`). **TWO
+MECHANISMS, NEITHER A PRIOR CANDIDATE.** (1) **`permissions.defaultMode` IS USER-SCOPE ONLY** (`~/.claude/
+settings.json`, managed, or startup flag); **in a PROJECT file it is SILENTLY IGNORED** ⇒ falls back to
+`auto`, and bypass reaches Shift+Tab **only if armed at startup** ⇒ *"there is no bypass mode"* is the
+same fact. (2) Auto mode resolves **narrow** allow rules pre-classifier but **SUSPENDS BROAD WILDCARDS** —
+every entry here is `Bash(grep:*)` form ⇒ bare `grep` prompts. ⛔ Fix = user settings + **restart**; the
+AGENT MUST NOT (self-widening). ⚠ `PE-854`: my `cd … &&` prefix made this session's prompts — **the
+investigator was the signal source**; that evidence is VOID.
 ★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise from**
 (`LL-056`, pinned, **5 instances in one day**): FIRST-TOKEN matching; *format the SOLUTION*
 right-for-a-wrong-reason; a store re-flush claim that REFUSED; `DEF-136`; and inventing a person's
