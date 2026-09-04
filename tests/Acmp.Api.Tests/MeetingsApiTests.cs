@@ -7,8 +7,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for /api/meetings through the real pipeline + policy authorization (docs/10).
 // Reads are by key; mutations are by the meeting's Guid id. The committee is implicit server-side
 // (CON-001), so the schedule body carries no committee id.
-public class MeetingsApiTests
+public class MeetingsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public MeetingsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -50,7 +57,7 @@ public class MeetingsApiTests
     [Fact] // AC-008
     public async Task Schedule_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).PostAsJsonAsync("/api/meetings", ScheduleBody());
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -58,7 +65,7 @@ public class MeetingsApiTests
     [Fact] // docs/10: Meeting.Schedule is Chairman/Secretary only
     public async Task Member_cannot_schedule_a_meeting_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/meetings", ScheduleBody());
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -66,7 +73,7 @@ public class MeetingsApiTests
     [Fact] // W5: schedule → list → detail (with a Draft agenda) → unknown key 404
     public async Task Secretary_schedules_then_reads_list_and_detail()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
         var schedule = await sec.PostAsJsonAsync("/api/meetings", ScheduleBody());
@@ -90,7 +97,7 @@ public class MeetingsApiTests
     [Fact] // W6: build the agenda then publish it (the agenda flips Draft → Published, version 1)
     public async Task Secretary_adds_an_item_then_publishes_the_agenda()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", sub: "kc-sec");
         var meeting = await (await sec.PostAsJsonAsync("/api/meetings", ScheduleBody())).Content.ReadFromJsonAsync<MeetingSummary>();
 
@@ -107,7 +114,7 @@ public class MeetingsApiTests
     [Fact] // docs/10: agenda publish is Chairman/Secretary — a Member is forbidden
     public async Task Member_cannot_publish_an_agenda_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var meeting = await (await Client(factory, "Secretary", sub: "kc-sec")
             .PostAsJsonAsync("/api/meetings", ScheduleBody())).Content.ReadFromJsonAsync<MeetingSummary>();
 

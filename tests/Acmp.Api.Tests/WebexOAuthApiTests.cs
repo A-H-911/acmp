@@ -20,7 +20,7 @@ public class WebexOAuthApiTests : IClassFixture<AcmpWebApplicationFactory>
 
     private readonly AcmpWebApplicationFactory _factory;
 
-    public WebexOAuthApiTests(AcmpWebApplicationFactory factory) => _factory = factory;
+    public WebexOAuthApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
 
     // Enabled adapter with the operator setup key configured; the OAuth client + token store are faked so the
     // flow never touches the real SqlServer WebexDbContext or reaches out to Webex. AllowAutoRedirect is off so

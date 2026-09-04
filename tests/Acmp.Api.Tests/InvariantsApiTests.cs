@@ -9,8 +9,15 @@ namespace Acmp.Api.Tests;
 // 21/22). Reads are committee-wide; create/edit/propose/request-changes are Invariant.Create; approve is
 // Invariant.Approve; retire/supersede are Invariant.Approve. The full W18/W21 lifecycle is driven end to end,
 // exercising the notification fan-out against the seeded committee roster.
-public class InvariantsApiTests
+public class InvariantsApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public InvariantsApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -61,7 +68,7 @@ public class InvariantsApiTests
     [Fact] // AC-008
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/invariants", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -69,7 +76,7 @@ public class InvariantsApiTests
     [Fact] // docs/10 row 21: Invariant.Create denies Auditor
     public async Task Auditor_cannot_create_an_invariant_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/invariants", CreateBody())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -77,7 +84,7 @@ public class InvariantsApiTests
     [Fact]
     public async Task Create_with_empty_statement_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var body = new { category = "Security", scope = "Platform", statement = Loc("", ""), rationale = Loc("r", "r"), ownerUserId = "kc-sec", ownerName = "Sam" };
         (await Client(factory, "Secretary", "kc-sec").PostAsJsonAsync("/api/invariants", body)).StatusCode
             .Should().Be(HttpStatusCode.BadRequest);
@@ -86,7 +93,7 @@ public class InvariantsApiTests
     [Fact] // docs/10 row 22: Invariant.Approve is Chairman/Secretary only — a Reviewer may not approve.
     public async Task Reviewer_cannot_approve_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var created = await CreateAsync(sec);
         (await sec.PostAsync($"/api/invariants/{created.Id}/propose", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -98,7 +105,7 @@ public class InvariantsApiTests
     [Fact] // W18/W21: create → edit → propose → approve → supersede; reads along the way
     public async Task Secretary_drives_the_full_invariant_lifecycle()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-sec", "Sam", CommitteeRole.Secretary), ("kc-m1", "M1", CommitteeRole.Member));
         var sec = Client(factory, "Secretary", "kc-sec");
 
@@ -133,7 +140,7 @@ public class InvariantsApiTests
     [Fact] // W21: retire an active invariant (Invariant.Approve)
     public async Task Secretary_retires_an_active_invariant()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-sec", "Sam", CommitteeRole.Secretary));
         var sec = Client(factory, "Secretary", "kc-sec");
 

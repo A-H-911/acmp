@@ -8,8 +8,15 @@ namespace Acmp.Api.Tests;
 
 // HTTP-contract tests that exercise the request-body records in TopicEndpoints that are not yet
 // reached by TopicApiTests: DeferTopicBody, PriorityBody, UpdateTopicBody, and the /prepare lambda.
-public class TopicEndpointsCoverageTests
+public class TopicEndpointsCoverageTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public TopicEndpointsCoverageTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -40,10 +47,12 @@ public class TopicEndpointsCoverageTests
     // Shared setup: submit a topic as a Member, then accept it as Secretary (Submitted → Accepted).
     // AcceptTopicHandler calls BeginTriage() then Accept() in one shot (W2 + W3 rollup).
     // Secretary role satisfies Policies.TopicTriage directly (no ABAC needed).
-    private static async Task<(Guid TopicId, string Key, AcmpWebApplicationFactory Factory)>
+    // WBS-27.2: instance rather than static, because the host it hands back is now the class fixture
+    // and `_factory` is an instance field. Every call site destructures the same tuple, so none moved.
+    private async Task<(Guid TopicId, string Key, AcmpWebApplicationFactory Factory)>
         CreateAcceptedTopicAsync()
     {
-        var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
         var topic = await (await Client(factory, "Member", sub: "kc-submitter")
@@ -69,28 +78,27 @@ public class TopicEndpointsCoverageTests
     public async Task Defer_empty_reason_returns_400()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();
-        await using (factory)
-        {
-            var response = await Client(factory, "Secretary").PostAsJsonAsync(
-                $"/api/topics/{topicId}/defer",
-                new { reason = "", revisitOn = (DateTimeOffset?)null });
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        }
+        // WBS-27.2: the `await using (factory)` that stood here would now dispose the CLASS FIXTURE
+        // partway through the class, taking the host away from every later test. xUnit owns the
+        // fixture's lifetime.
+        var response = await Client(factory, "Secretary").PostAsJsonAsync(
+            $"/api/topics/{topicId}/defer",
+            new { reason = "", revisitOn = (DateTimeOffset?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact] // W20: DeferTopicBody happy path — Accepted topic deferred with reason → 204
     public async Task Secretary_defers_accepted_topic_returns_204()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();
-        await using (factory)
-        {
-            var response = await Client(factory, "Secretary").PostAsJsonAsync(
-                $"/api/topics/{topicId}/defer",
-                new { reason = "Pending architecture review.", revisitOn = (DateTimeOffset?)DateTimeOffset.Parse("2026-09-01T00:00:00Z") });
 
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        }
+        var response = await Client(factory, "Secretary").PostAsJsonAsync(
+            $"/api/topics/{topicId}/defer",
+            new { reason = "Pending architecture review.", revisitOn = (DateTimeOffset?)DateTimeOffset.Parse("2026-09-01T00:00:00Z") });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     // ---- /prepare lambda ---------------------------------------------------------------
@@ -99,15 +107,13 @@ public class TopicEndpointsCoverageTests
     public async Task Secretary_prepares_accepted_topic_returns_204()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();
-        await using (factory)
-        {
-            // No RequireAuthorization policy on /prepare; handler gates via IResourceAuthorizer
-            // with Policies.TopicEdit which grants Secretary/Chairman without ABAC ownership.
-            var response = await Client(factory, "Secretary", sub: "kc-sec")
-                .PostAsync($"/api/topics/{topicId}/prepare", null);
 
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        }
+        // No RequireAuthorization policy on /prepare; handler gates via IResourceAuthorizer
+        // with Policies.TopicEdit which grants Secretary/Chairman without ABAC ownership.
+        var response = await Client(factory, "Secretary", sub: "kc-sec")
+            .PostAsync($"/api/topics/{topicId}/prepare", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     // ---- PriorityBody ------------------------------------------------------------------
@@ -115,7 +121,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // docs/10: BacklogPrioritize is Chairman/Secretary only; Member is forbidden → 403
     public async Task Member_cannot_set_priority_returns_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-omar")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -129,7 +135,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // W3: PriorityBody happy path — Secretary sets priority → 204
     public async Task Secretary_sets_topic_priority_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-omar")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -143,7 +149,7 @@ public class TopicEndpointsCoverageTests
     [Fact] // AC-043: MoveBody happy path — Secretary reorders by a ±1 delta → 204 (single-item column = no-op)
     public async Task Secretary_moves_topic_priority_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-omar")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -160,7 +166,7 @@ public class TopicEndpointsCoverageTests
            // no ABAC check needed); covers all UpdateTopicBody fields → 204
     public async Task Submitter_updates_own_topic_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-submitter")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -186,7 +192,7 @@ public class TopicEndpointsCoverageTests
     [Fact]
     public async Task Emptying_a_topics_streams_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-submitter")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -204,7 +210,7 @@ public class TopicEndpointsCoverageTests
     [Fact]
     public async Task The_submitter_cannot_elevate_their_own_topics_scope_but_the_secretary_can()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topic = await (await Client(factory, "Member", sub: "kc-submitter")
             .PostAsJsonAsync("/api/topics", SubmitBody()))
             .Content.ReadFromJsonAsync<SubmitResult>();
@@ -235,7 +241,6 @@ public class TopicEndpointsCoverageTests
     public async Task A_member_who_is_not_the_owner_is_refused_editing_an_accepted_topic()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();
-        await using var _ = factory;
 
         var response = await Client(factory, "Member", sub: "kc-other").PutAsJsonAsync(
             $"/api/topics/{topicId}", UpdateBody(title: "Rewritten after the fact"));
@@ -250,7 +255,6 @@ public class TopicEndpointsCoverageTests
     public async Task After_acceptance_the_secretary_edits_metadata_and_the_content_stays_locked()
     {
         var (topicId, key, factory) = await CreateAcceptedTopicAsync();
-        await using var _ = factory;
         var before = await Client(factory, "Secretary", sub: "kc-sec")
             .GetFromJsonAsync<JsonElement>($"/api/topics/{key}");
         var originalTitle = before.GetProperty("title").GetString();
@@ -285,7 +289,6 @@ public class TopicEndpointsCoverageTests
     public async Task An_owner_assigned_to_another_stream_is_refused_and_the_same_owner_in_stream_is_allowed()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();   // the topic affects "core"
-        await using var _f = factory;
         var asOwner = Client(factory, "Member", sub: "kc-owner");
 
         await factory.AssignStreamsAsync("kc-owner", "government");
@@ -310,7 +313,6 @@ public class TopicEndpointsCoverageTests
     public async Task A_secretary_holding_no_streams_is_not_stream_scoped()
     {
         var (topicId, _, factory) = await CreateAcceptedTopicAsync();
-        await using var _f = factory;
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
             .PostAsync($"/api/topics/{topicId}/prepare", null);

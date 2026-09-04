@@ -28,8 +28,16 @@ namespace Acmp.Api.Tests;
 //     header plus the presence of an Authorization.Forbidden audit row.
 // The two are genuinely different mechanisms answering for different principals, and neither covers the
 // other's population.
-public class SessionPreviewApiTests
+public class SessionPreviewApiTests : IClassFixture<IdentityProviderHost>
 {
+    // WBS-27.2 / DEC-124 d1 - the SECOND shared host: WithIdentityProvider() composes a
+    // deliberately different one (ADR-0040 / SC-005). Fresh() clears FakeIdentityProvider's
+    // recorded calls, which accumulate and which these tests assert over; xUnit runs this ctor
+    // once per test method even though the fixture is built once per class.
+    private readonly AcmpWebApplicationFactory _idpFactory;
+
+    public SessionPreviewApiTests(IdentityProviderHost identity) => _idpFactory = identity.Fresh();
+
     private static readonly DateTimeOffset FutureEnd = DateTimeOffset.Parse("2099-08-01T10:30:00Z");
     private const string ReasonHeader = "X-Acmp-Auth-Reason";
 
@@ -134,7 +142,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task Preview_without_a_token_is_401()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
 
         var response = await Client(factory, roles: null).GetAsync(Url(Guid.NewGuid(), Guid.NewGuid()));
 
@@ -153,7 +161,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_guest_is_refused_at_the_PATH_before_any_handler_runs()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, guest) = await ScenarioAsync(factory);
 
         // The guest is the person this slot BELONGS to, which is the strongest form of the test: even the
@@ -179,7 +187,7 @@ public class SessionPreviewApiTests
     [InlineData("Submitter")]
     public async Task A_role_outside_Chairman_and_Secretary_is_refused_at_the_application_boundary(string role)
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, _) = await ScenarioAsync(factory);
 
         var response = await Client(factory, role, sub: $"kc-{role}").GetAsync(Url(meetingId, topicId));
@@ -199,7 +207,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_secretary_sees_the_TARGETED_presenters_slot_and_that_persons_expiry()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, guest) = await ScenarioAsync(factory);
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -225,7 +233,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_successful_preview_leaves_a_Session_PresenterPreviewed_row()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, _) = await ScenarioAsync(factory);
 
         var before = await AuditActionsAsync(factory);
@@ -250,7 +258,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_cancelled_meeting_is_204_because_the_presenter_would_see_nothing_either()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, _) = await ScenarioAsync(factory);
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -269,7 +277,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_topic_that_is_not_on_the_agenda_is_204()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, _) = await ScenarioAsync(factory);
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
@@ -284,7 +292,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_presenter_id_with_no_member_row_is_204_and_audits_nothing()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, _) = await ScenarioAsync(factory, withPresenter: false);
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -304,7 +312,7 @@ public class SessionPreviewApiTests
     [Fact]
     public async Task A_slot_with_no_presenter_assigned_is_204_and_audits_nothing()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, topicId, _) = await ScenarioAsync(factory, withPresenter: false);
 
         var response = await Client(factory, "Secretary", sub: "kc-sec").GetAsync(Url(meetingId, topicId));

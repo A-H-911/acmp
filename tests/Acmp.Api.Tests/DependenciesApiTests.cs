@@ -7,8 +7,15 @@ namespace Acmp.Api.Tests;
 // HTTP-contract tests for /api/dependencies through the real pipeline + policy authorization (docs/10).
 // Reads are committee-wide; create/resolve/remove are Dependency.Create (Chairman/Secretary). The acting
 // subject/roles are set per request via the test auth header, so the RBAC narrowing is exercised end to end.
-public class DependenciesApiTests
+public class DependenciesApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public DependenciesApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -51,7 +58,7 @@ public class DependenciesApiTests
     [Fact] // AC-008: no token → 401
     public async Task Create_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, roles: null).PostAsJsonAsync("/api/dependencies", Body())).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -59,7 +66,7 @@ public class DependenciesApiTests
     [Fact] // Dependency.Create denies Auditor
     public async Task Auditor_cannot_create_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Auditor").PostAsJsonAsync("/api/dependencies", Body())).StatusCode
             .Should().Be(HttpStatusCode.Forbidden);
     }
@@ -67,7 +74,7 @@ public class DependenciesApiTests
     [Fact] // A self-loop is rejected at the validator (400)
     public async Task Create_self_loop_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var id = Guid.NewGuid();
         var body = new
         {
@@ -89,7 +96,7 @@ public class DependenciesApiTests
     [Fact] // W: Secretary creates → detail → register → resolve
     public async Task Secretary_creates_reads_and_resolves()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
 
         var detail = await CreateAsync(sec);
@@ -111,7 +118,7 @@ public class DependenciesApiTests
     [Fact]
     public async Task Remove_soft_deletes_and_leaves_the_register()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var detail = await CreateAsync(sec);
 
@@ -124,7 +131,7 @@ public class DependenciesApiTests
     [Fact]
     public async Task Resolve_unknown_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/dependencies/{Guid.NewGuid()}/resolve", null))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -132,7 +139,7 @@ public class DependenciesApiTests
     [Fact]
     public async Task Remove_unknown_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         (await Client(factory, "Secretary", "kc-sec").PostAsync($"/api/dependencies/{Guid.NewGuid()}/remove", null))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -140,7 +147,7 @@ public class DependenciesApiTests
     [Fact] // The panel splits outbound/inbound; a Member (read-only) can view it.
     public async Task Artifact_panel_shows_outbound_and_inbound()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var sec = Client(factory, "Secretary", "kc-sec");
         var topicId = Guid.NewGuid();
 

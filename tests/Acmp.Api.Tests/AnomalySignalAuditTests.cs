@@ -17,8 +17,15 @@ namespace Acmp.Api.Tests;
 // to ignore the signal. Each control also asserts an ORDINARY row, so a NotContain cannot pass vacuously
 // over an empty list - RefusalAuditTests records that exact failure, where two NotContain assertions passed
 // the whole time against a helper reading the wrong column.
-public class AnomalySignalAuditTests
+public class AnomalySignalAuditTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public AnomalySignalAuditTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string roles, string sub)
     {
         var client = factory.CreateClient();
@@ -75,7 +82,7 @@ public class AnomalySignalAuditTests
     [Fact] // NFR-065 signal 1: an export at or above the threshold leaves a bulk-export anomaly ROW
     public async Task A_large_audit_export_leaves_a_bulk_export_anomaly_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await ThresholdAsync(factory, AnomalyDetector.BulkExportRowsKey, 1);
 
         // ⚠ A PRIOR *READ* WRITES NOTHING, AND THE FIRST VERSION OF THIS TEST ASSUMED IT DID. Reads are not
@@ -106,7 +113,7 @@ public class AnomalySignalAuditTests
     [Fact] // the control: below the threshold, the export is audited and NO anomaly row appears
     public async Task A_small_audit_export_leaves_no_anomaly_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await ThresholdAsync(factory, AnomalyDetector.BulkExportRowsKey, 100_000);
 
         var sec = Client(factory, "Secretary", "kc-sec");
@@ -122,7 +129,7 @@ public class AnomalySignalAuditTests
     [Fact] // NFR-065 signal 2, and the DATA half DEC-099 d1 found missing entirely
     public async Task Reading_a_restricted_topic_leaves_an_access_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await ThresholdAsync(factory, AnomalyDetector.RestrictedAccessCountKey, 100_000);
         var topicKey = await RestrictedTopicKeyAsync(factory);
 
@@ -140,7 +147,7 @@ public class AnomalySignalAuditTests
     [Fact] // NFR-065 signal 2: repeated Restricted reads by one principal leave an anomaly ROW
     public async Task Repeated_restricted_topic_reads_leave_an_anomaly_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await ThresholdAsync(factory, AnomalyDetector.RestrictedAccessCountKey, 2);
         var topicKey = await RestrictedTopicKeyAsync(factory);
 
@@ -154,7 +161,7 @@ public class AnomalySignalAuditTests
     [Fact] // DEF-124 / AC-157: a read the caller was not permitted must leave NO access row
     public async Task A_refused_restricted_topic_read_leaves_no_access_row()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicKey = await RestrictedTopicKeyAsync(factory);
 
         // A Member who is not a grantee. The refusal is a 404, NOT a 403 — a 403 would itself confirm

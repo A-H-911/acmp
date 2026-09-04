@@ -22,7 +22,7 @@ public class WebexWebhookApiTests : IClassFixture<AcmpWebApplicationFactory>
 
     private readonly AcmpWebApplicationFactory _factory;
 
-    public WebexWebhookApiTests(AcmpWebApplicationFactory factory) => _factory = factory;
+    public WebexWebhookApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
 
     private HttpClient EnabledClient(FakeScheduler fake) =>
         _factory.WithWebHostBuilder(builder =>

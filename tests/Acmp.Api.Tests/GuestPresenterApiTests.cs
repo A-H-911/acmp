@@ -15,8 +15,16 @@ namespace Acmp.Api.Tests;
 // column that was just written. Two meetings are scheduled — one whose window has already closed and
 // one whose has not — and the guest created by each is sent at the API. One is refused and one is
 // not, which is the only evidence that distinguishes "expiry is enforced" from "a date was stored".
-public class GuestPresenterApiTests
+public class GuestPresenterApiTests : IClassFixture<IdentityProviderHost>
 {
+    // WBS-27.2 / DEC-124 d1 - the SECOND shared host: WithIdentityProvider() composes a
+    // deliberately different one (ADR-0040 / SC-005). Fresh() clears FakeIdentityProvider's
+    // recorded calls, which accumulate and which these tests assert over; xUnit runs this ctor
+    // once per test method even though the fixture is built once per class.
+    private readonly AcmpWebApplicationFactory _idpFactory;
+
+    public GuestPresenterApiTests(IdentityProviderHost identity) => _idpFactory = identity.Fresh();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1")
     {
         var client = factory.CreateClient();
@@ -81,7 +89,7 @@ public class GuestPresenterApiTests
     [Fact] // AC-008
     public async Task Inviting_a_guest_presenter_without_a_token_is_401()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         var response = await Client(factory, roles: null)
@@ -98,7 +106,7 @@ public class GuestPresenterApiTests
     [InlineData("Auditor")]
     public async Task Inviting_a_guest_presenter_is_403_for_every_role_except_Secretary(string role)
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         var response = await Client(factory, role, sub: $"kc-{role}")
@@ -116,7 +124,7 @@ public class GuestPresenterApiTests
     [Fact] // AC-092 — the writer: the window is the meeting's end plus the approved grace (DEC-040)
     public async Task Inviting_a_guest_presenter_stores_the_meeting_end_plus_the_grace_as_the_access_window()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, key, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -150,7 +158,7 @@ public class GuestPresenterApiTests
     [Fact] // AC-093 — the governance record, asserted as ROWS rather than as an emission
     public async Task Inviting_a_guest_presenter_writes_both_audit_rows()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         await Client(factory, "Secretary", sub: "kc-sec")
@@ -169,7 +177,7 @@ public class GuestPresenterApiTests
     [Fact] // the irreversible half must not run for a slot that does not exist
     public async Task A_topic_that_is_not_on_the_agenda_creates_no_account_at_all()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, _) = await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
@@ -184,7 +192,7 @@ public class GuestPresenterApiTests
     [Fact] // an unknown meeting must fail before anything is created, for the same reason
     public async Task An_unknown_meeting_creates_no_account_at_all()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
@@ -197,7 +205,7 @@ public class GuestPresenterApiTests
     [Fact] // the duplicate guard runs BEFORE Keycloak, so a repeat invite leaves no stray account
     public async Task Inviting_the_same_email_twice_is_refused_without_creating_a_second_account()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -215,7 +223,7 @@ public class GuestPresenterApiTests
     [Fact] // AC-092 — FORCED REFUSAL. The window is real, and the invite alone is what closes it.
     public async Task A_guest_invited_for_a_meeting_that_has_already_passed_is_refused_on_their_next_request()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, PastEnd);
 
         var invited = await (await Client(factory, "Secretary", sub: "kc-sec")
@@ -234,7 +242,7 @@ public class GuestPresenterApiTests
     [Fact] // the other half of the boundary — an open window is NOT a blanket ban
     public async Task A_guest_invited_for_an_upcoming_meeting_is_admitted()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (meetingId, _, topicId) = await ScheduleWithOneItemAsync(factory, FutureEnd);
 
         var invited = await (await Client(factory, "Secretary", sub: "kc-sec")

@@ -28,12 +28,30 @@ permissions:
 jobs:
   secrets:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # DEF-132 / DEC-123 d1 — raised 10 -> 30. The scan covers the FULL history on every run
+    # (fetch-depth: 0 below), so the WORK grows monotonically with the repository: 822 commits now,
+    # against the 153 the step name below used to claim. At 10 minutes it had grown into its own bound
+    # and was CANCELLED rather than run — 10m04s on f5b87068 (run 33742781315) while every other job
+    # in this workflow passed under 90 seconds. `secrets` is a REQUIRED status check, so a cancelled
+    # run blocks the PR it fires on, and on a push to main it means the gating secret scan simply did
+    # not evaluate while CI reported success beside it.
+    # ⚠ 30 is sized against TWO quantities, not one. Growth is the obvious half; the other is runner
+    # variance, which DEF-132's own text missed by reasoning from the mechanism instead of measuring
+    # the series. Observed `secrets` durations: 8m18s, 8m41s, 10m03s CANCELLED, 7m08s, 9m23s, 10m04s
+    # CANCELLED — a 41% spread across one day on histories three commits apart. What crosses the line
+    # is variance riding on growth, so a bound sized for growth alone is undersized.
+    # ⛔ This BUYS TIME AND DOES NOT REMOVE THE CONDITION (LL-035), and 30 is an estimate from six
+    # observed durations, NOT a measured ceiling — the same honest form DEC-121 d2 used of the backend
+    # job's 40. Narrowing the scan instead (a pinned baseline, --log-opts) was REJECTED and is not a
+    # free choice: AC-126 asserts full-history scanning in its own Then clause, so it needs a
+    # scope change and an ADR, never a workflow edit.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0   # full history for gitleaks
-      - name: Gitleaks (gating — 153 commits scanned clean, .gitleaks.toml allowlist triaged)
+          fetch-depth: 0   # full history for gitleaks — AC-126: a secret committed and later deleted
+                           # is still a leaked secret. Load-bearing; do not narrow to a diff or a range.
+      - name: Gitleaks (gating — full history, .gitleaks.toml allowlist triaged entry by entry)
         run: |
           docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
             detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose --exit-code=1
@@ -88,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: SBOM (CycloneDX, informational — C-SUP-01 / NFR-051)
-        uses: anchore/sbom-action@v0.24.0
+        uses: anchore/sbom-action@v0.24.2
         with:
           path: .
           format: cyclonedx-json

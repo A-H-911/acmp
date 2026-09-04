@@ -15,8 +15,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Acmp.Api.Tests;
 
 // HTTP-contract tests for /api/topics through the real pipeline + policy authorization + ABAC.
-public class TopicApiTests
+public class TopicApiTests : IClassFixture<AcmpWebApplicationFactory>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    public TopicApiTests(AcmpWebApplicationFactory factory) => _factory = factory.Reset();
+
     private static HttpClient Client(AcmpWebApplicationFactory factory, string? roles, string sub = "u1") =>
         Client((WebApplicationFactory<Program>)factory, roles, sub);
 
@@ -73,7 +80,7 @@ public class TopicApiTests
     [Fact] // AC-008
     public async Task Submit_without_token_returns_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, roles: null).PostAsJsonAsync("/api/topics", SubmitBody("core"));
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -81,7 +88,7 @@ public class TopicApiTests
     [Fact] // AC-005/006: Auditor is not in Topic.Submit
     public async Task Auditor_cannot_submit_403()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Auditor").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -89,7 +96,7 @@ public class TopicApiTests
     [Fact] // AC-030
     public async Task Submit_without_a_stream_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/topics", SubmitBody());
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -102,7 +109,7 @@ public class TopicApiTests
     [Fact]
     public async Task Submit_with_a_stream_outside_the_taxonomy_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/topics", SubmitBody("Platform"));
 
@@ -115,7 +122,7 @@ public class TopicApiTests
     [Fact]
     public async Task Submit_with_the_wildcard_stream_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Member").PostAsJsonAsync("/api/topics", SubmitBody("all-streams"));
 
@@ -125,7 +132,7 @@ public class TopicApiTests
     [Fact] // W1 + backlog + detail round-trip over HTTP
     public async Task Submit_then_read_backlog_and_detail()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var member = Client(factory, "Member", sub: "kc-omar");
 
         var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core", "government"));
@@ -147,7 +154,7 @@ public class TopicApiTests
     [Fact] // W2: triage authorization (Member 403, Secretary 204) + grant-on-accept
     public async Task Only_secretary_can_accept_a_topic()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
@@ -169,7 +176,7 @@ public class TopicApiTests
     // a mocked unit test can't prove that. The Secretary roster fan-out is asserted at the handler level.
     public async Task Secretary_prepares_an_accepted_topic_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
@@ -200,7 +207,7 @@ public class TopicApiTests
     [Fact]
     public async Task Secretary_reopens_a_rejected_topic_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
         var sec = Client(factory, "Secretary", sub: "kc-sec");
@@ -221,7 +228,7 @@ public class TopicApiTests
     [Fact]
     public async Task Secretary_returns_a_deferred_topic_to_triage_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         await factory.SeedMembersAsync(("kc-owner", "Owner One", CommitteeRole.Member));
 
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
@@ -249,7 +256,7 @@ public class TopicApiTests
     [Fact]
     public async Task Secretary_closes_a_decided_topic_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await factory.SeedDecidedTopicAsync();
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -264,7 +271,7 @@ public class TopicApiTests
     [Fact]
     public async Task Secretary_converts_a_decided_topic_returns_201_with_the_successor()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await factory.SeedDecidedTopicAsync();
         var sec = Client(factory, "Secretary", sub: "kc-sec");
 
@@ -299,7 +306,7 @@ public class TopicApiTests
     [Fact] // FR-030: the reason is mandatory, refused at the boundary rather than by the aggregate
     public async Task Convert_without_a_reason_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var topicId = await factory.SeedDecidedTopicAsync();
 
         var response = await Client(factory, "Secretary", sub: "kc-sec")
@@ -314,7 +321,7 @@ public class TopicApiTests
     [Fact]
     public async Task Secretary_classifies_a_topic_and_a_member_cannot()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
@@ -335,7 +342,7 @@ public class TopicApiTests
     [Fact]
     public async Task A_restricted_topic_is_hidden_from_a_non_grantee_and_its_key_returns_404()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
@@ -359,7 +366,7 @@ public class TopicApiTests
     [Fact] // AC-031
     public async Task Reject_without_a_reason_returns_400()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
@@ -370,7 +377,7 @@ public class TopicApiTests
     [Fact] // BL-033: comment by any authenticated member
     public async Task Member_can_comment_on_a_topic()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var member = Client(factory, "Member", sub: "kc-omar");
         var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
@@ -382,7 +389,7 @@ public class TopicApiTests
     [Fact] // W20: Secretary rejects a submitted topic with a mandatory rationale -> 204
     public async Task Secretary_rejects_a_submitted_topic_returns_204()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var submit = await Client(factory, "Member", sub: "kc-omar").PostAsJsonAsync("/api/topics", SubmitBody("core"));
         var topic = await submit.Content.ReadFromJsonAsync<SubmitResult>();
 
@@ -395,7 +402,7 @@ public class TopicApiTests
     [Fact] // AC-049/050: the submitter attaches a PDF to their own topic (multipart) -> 201
     public async Task Submitter_attaches_a_file_to_their_topic_returns_201()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
         var app = WithFakeStore(factory);
         var member = Client(app, "Member", sub: "kc-omar");
         var submit = await member.PostAsJsonAsync("/api/topics", SubmitBody("core"));

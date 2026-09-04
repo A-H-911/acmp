@@ -19,8 +19,25 @@ namespace Acmp.Api.Tests;
 // the two halves fit: the person the Secretary invited is the person /session answers for, found
 // through the slot the invite assigned. Only the topic is seeded, because the invite does not create
 // topics and uploading a real file would need an object store.
-public class SessionApiTests
+public class SessionApiTests : IClassFixture<AcmpWebApplicationFactory>, IClassFixture<IdentityProviderHost>
 {
+    // WBS-27.2 / DEC-124 d1 - ONE host per class instead of one per test method. Every method
+    // below now shares this host's fourteen InMemory databases, so a test that asserts over a
+    // global count sees what its siblings wrote. SharedHostOrderGuard is the control for that.
+    private readonly AcmpWebApplicationFactory _factory;
+
+    // WBS-27.2 / DEC-124 d1 - the SECOND shared host: WithIdentityProvider() composes a
+    // deliberately different one (ADR-0040 / SC-005). Fresh() clears FakeIdentityProvider's
+    // recorded calls, which accumulate and which these tests assert over; xUnit runs this ctor
+    // once per test method even though the fixture is built once per class.
+    private readonly AcmpWebApplicationFactory _idpFactory;
+
+    public SessionApiTests(AcmpWebApplicationFactory factory, IdentityProviderHost identity)
+    {
+        _factory = factory.Reset();
+        _idpFactory = identity.Fresh();
+    }
+
     private static readonly DateTimeOffset FutureEnd = DateTimeOffset.Parse("2099-07-01T10:30:00Z");
 
     private sealed class FakeFileStore : IFileStore
@@ -137,7 +154,7 @@ public class SessionApiTests
     [Fact] // AC-008
     public async Task Session_without_a_token_is_401()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, roles: null).GetAsync("/api/session/me");
 
@@ -152,7 +169,7 @@ public class SessionApiTests
     [InlineData("Submitter")]
     public async Task Session_is_403_for_a_role_outside_the_guest_surface(string role)
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, role, sub: $"kc-{role}").GetAsync("/api/session/me");
 
@@ -162,7 +179,7 @@ public class SessionApiTests
     [Fact] // "you are not presenting" is a state, not a missing resource
     public async Task A_caller_with_no_slot_gets_no_content()
     {
-        await using var factory = new AcmpWebApplicationFactory();
+        var factory = _factory;
 
         var response = await Client(factory, "Secretary", sub: "kc-sec").GetAsync("/api/session/me");
 
@@ -172,7 +189,7 @@ public class SessionApiTests
     [Fact] // AC-092 / DEC-037 — the whole GUEST/PRESENTER SHELL, from the person the Secretary invited
     public async Task A_guest_sees_their_own_slot_the_topic_card_and_its_materials()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (topicId, _) = await SeedTopicAsync(factory);
         var (guest, meetingKey) = await InviteGuestForAsync(factory, topicId, timebox: 15, leadingItems: 2);
 
@@ -204,7 +221,7 @@ public class SessionApiTests
     [Fact] // FR-159 / NFR-027 — materials open by short-lived pre-signed URL
     public async Task A_guest_can_open_a_material_on_their_own_slot()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (topicId, deckId) = await SeedTopicAsync(factory);
         var (guest, _) = await InviteGuestForAsync(factory, topicId);
 
@@ -219,7 +236,7 @@ public class SessionApiTests
     [Fact] // the guarantee that matters: one slot does not open another topic's files
     public async Task A_guest_cannot_open_a_material_belonging_to_another_topic()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (mineId, _) = await SeedTopicAsync(factory);
         var (_, theirDeckId) = await SeedTopicAsync(factory, key: "TOP-2026-099");
         var (guest, _) = await InviteGuestForAsync(factory, mineId);
@@ -235,7 +252,7 @@ public class SessionApiTests
     [Fact]
     public async Task An_unknown_material_is_not_found()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (topicId, _) = await SeedTopicAsync(factory);
         var (guest, _) = await InviteGuestForAsync(factory, topicId);
 
@@ -259,7 +276,7 @@ public class SessionApiTests
     [Fact]
     public async Task A_caller_who_is_provisioned_but_presents_nothing_gets_no_content()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var chair = Client(factory, "Chairman", sub: "kc-chair");
         await chair.PostAsync("/api/members/me", null); // provision, so the directory resolves them
 
@@ -280,7 +297,7 @@ public class SessionApiTests
     [Fact]
     public async Task A_presenter_whose_only_meeting_was_cancelled_gets_no_content()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
         var (topicId, _) = await SeedTopicAsync(factory, key: "TOP-2026-055");
 
         var chair = Client(factory, "Chairman", sub: "kc-chair-cancelled");
@@ -324,7 +341,7 @@ public class SessionApiTests
     [Fact]
     public async Task A_material_request_from_a_caller_with_no_member_row_is_not_found()
     {
-        await using var factory = AcmpWebApplicationFactory.WithIdentityProvider();
+        var factory = _idpFactory;
 
         var response = await Client(WithFakeStore(factory), "Chairman", sub: "kc-never-provisioned")
             .GetAsync($"/api/session/materials/{Guid.NewGuid()}");
