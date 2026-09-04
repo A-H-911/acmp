@@ -11,8 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.4.1" />
-    <PackageReference Include="Hangfire.NetCore" Version="1.8.14" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.8.14" />
+    <!-- ⚠ One decision in four places — see the note in Acmp.Modules.Integrations.Webex.csproj.
+         Hangfire.NetCore and .SqlServer both pin Hangfire.Core EXACTLY; all four move together. -->
+    <PackageReference Include="Hangfire.NetCore" Version="1.8.25" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.25" />
   </ItemGroup>
 
   <!-- Same module set the API composes. Adding a module = one line here reaches both hosts. -->
