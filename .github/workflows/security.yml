@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: SBOM (CycloneDX, informational — C-SUP-01 / NFR-051)
-        uses: anchore/sbom-action@v0.24.0
+        uses: anchore/sbom-action@v0.24.2
         with:
           path: .
           format: cyclonedx-json
