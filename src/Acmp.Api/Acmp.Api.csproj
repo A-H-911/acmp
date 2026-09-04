@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.12.0" />
     <!-- ⚠ One decision in four places — see the note in Acmp.Modules.Integrations.Webex.csproj.
          Hangfire.SqlServer pins Hangfire.Core EXACTLY, so all four move together or restore fails NU1107. -->
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
