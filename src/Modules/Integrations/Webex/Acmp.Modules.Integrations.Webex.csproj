@@ -5,7 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.Core" Version="1.8.14" />
+    <!-- ⚠ Hangfire.Core, .SqlServer, .NetCore and .AspNetCore are ONE decision expressed in four places
+         (Api, Bootstrap, Webex). SqlServer and NetCore require Hangfire.Core at an EXACT version, so
+         bumping Core alone fails restore with NU1107 before a single test runs. Dependabot cannot see
+         the coupling and has proposed the broken shape twice (#349, #360) — move all four together. -->
+    <PackageReference Include="Hangfire.Core" Version="1.8.25" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
