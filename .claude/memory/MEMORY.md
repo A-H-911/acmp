@@ -6,17 +6,25 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
-## ★★★ 2026-09-04 · `WBS-27.2` MERGED (`1ebf3a5c`) · `DEF-135` · `LL-056`/`LL-057`
+## ★★★ 2026-09-04/05 · `WBS-27.2` (`1ebf3a5c`) · the Dependabot sweep · `DEF-136` CLOSED · `LL-056`–`LL-059`
 
-★★★ ⚠ **`DEF-136`: CANDIDATE + FIX APPLIED 2026-09-04, *UNVERIFIED*** — [[a-valid-key-can-be-inert]]
-(`LL-058`; **`PE-859` CORRECTS `PE-855`**). ✅ **`permissions.defaultMode` IS USER/MANAGED/FLAG SCOPE ONLY**
-— in a PROJECT file it does **NOT** take effect, and bypass enters Shift+Tab **only if armed at startup**
-⇒ *"there is no bypass mode"* = same fact. Fix = `~/.claude/settings.json` + **restart**; ⛔ AGENT MUST NOT
-(self-widening). ⛔ **WITHDRAWN: *"broad wildcards are suspended"*** — only `Bash(*)` + **wildcarded
-interpreters** are (`python:*` yes, `grep:*` NO) ⇒ **bare `grep` still unexplained.** ⭐⭐ **`blockReadsOutside
-WorkingDirectories` (ON, user scope) prompts reads outside the wd EVEN IN BYPASS** — it survives the fix.
-⛔⛔ **I READ A SUBAGENT'S *SUMMARY* OF THE DOCS, NOT THE DOCS — 6 surfaces + 3 commits (`LL-006`: a summary
-of a document IS a document).** ⚠ `PE-854`: my own `cd … &&` prefix made this session's prompts.
+★★★ ⭐⭐ **READS OUTSIDE THE WORKING DIR PROMPT IN *EVERY* MODE, BYPASS INCLUDED** —
+`blockReadsOutsideWorkingDirectories` is ON at user scope. **By design; never file it as a defect.**
+★★★ ✅ **`DEF-136` CLOSED `Won't-fix`** (`DEC-129` d1) — [[a-valid-key-can-be-inert]] (`LL-058`/`LL-059`).
+**The allowlist WAS working.** A controlled pair settled 3 sessions: `cat README.md` silent, `cat
+~/.claude/…` prompted. ⛔ **Command SHAPE was varied exhaustively; the PATHS were never recorded and the
+paths were the cause** (`LL-059` — an experiment forgets the variables it HOLDS). ⚠ `permissions.
+defaultMode` is **USER/managed/flag scope only** — inert in a project file. ⛔ **I read a subagent's
+*summary* of the docs, not the docs** (`PE-859` retracts `PE-855`); my own `cd … &&` prefix made the
+prompts I was diagnosing (`PE-854`).
+- ⭐⭐ **DEPENDENCY PRs: COLOUR AND CAUSE POINT OPPOSITE WAYS CONSTANTLY** (`PE-856`/`PE-867`). 4 cases in
+  one sweep: 4 red jobs = ONE `NU1107` every job inherits; a red belonging to `DEF-109` not to its bump;
+  a "risky major" that was a **repair** (`DEF-138`, `dotnet-ef` was 2 majors behind its EF Core); and
+  `MediatR` 12.5.0 **source-breaking in a MINOR** (`RequestHandlerDelegate<T>` gained a `CancellationToken`
+  — 9 test sites, **src/ compiles fine**) = `DW-098`. ⛔ **`xunit` 2.5.3→2.9.3 held: `DW-099`** — `LL-032`,
+  a test-isolation regression is a **PASS**, so stop-on-red is blind. ⭐ **Coverage baseline moved
+  99.62%→99.72% at `97e55de6`** (coverlet 10) on byte-identical code — never read as a code change.
+  ⭐ `@dependabot rebase` is silently ignored on some PRs ⇒ **`gh pr update-branch`** (no force push).
 ★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise from**
 (`LL-056`, pinned, **5 instances in one day**): FIRST-TOKEN matching; *format the SOLUTION*
 right-for-a-wrong-reason; a store re-flush claim that REFUSED; `DEF-136`; and inventing a person's
@@ -38,18 +46,14 @@ the classifier blocks *widening*, not correcting prose; that conflation held `DE
 shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
 PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
 could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
-★★ **Permission prompts: read the 2026-09-04 block above — `DEF-136` supersedes the shape story, and the
-`cd`/path-form candidate is DEAD.** ⭐ **ASK which tool the prompt named**: three times now, one word from
-the operator has settled what rounds of inference could not.
+⭐ **ASK the operator what they OBSERVE** — four times now one word has settled what inference could not.
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.
-  ⛔ Still NOT clause (2) — an elimination is not an identification. `DEC-121` d2's 40-min ceiling is why the
-  job finished and uploaded at all.
+  ⛔ Still NOT clause (2) — an elimination is not an identification.
 - ⛔⛔ **`AC-126` ASSERTS FULL-HISTORY SCANNING** (`fetch-depth: 0`) in its own `Then` clause — narrowing the
   gitleaks scan falsifies a `Met` AC and needs an `SC-`+ADR. `DEF-132` checked that AC and cleared it against
   the *allowlist-shape* clause: a clean confirming answer about the wrong clause (`LL-046`).
-- ⚠⚠ **`secrets` durations are NOT monotonic** — 5m34s…10m04s, an 80% spread; the *work* grows, the runtime
-  varies. A bound sized for growth alone is undersized. Raised 10→30 (`DEC-123` d1).
+- ⚠⚠ **`secrets` durations are NOT monotonic** (5m34s…10m45s) and now sit **at or over the old 10-min bound on most runs** — `DEC-123` d1's raise to 30 was necessary, not precautionary.
 - ⚠⚠ **xUnit 2.5.3: same collection ⇒ never parallel.** `IClassFixture` creates NO collection (safe);
   `ICollectionFixture` does ⇒ cross-class sharing **serialises the suite** (`DEC-124`). ⭐ **The test CLASS
   is constructed per TEST** — that ctor is the per-test hook even when the fixture is per-class.
@@ -65,9 +69,7 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 forced GC; 3% fix declined. ⭐ `DEC-120` ACTIVATED `DW-096`→`WBS-27.2` in `SL-036`; occ 5 was 2026-09-03.
 ★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) — before shipping ANY
 detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive controls are practice here but in NO rule register.
-★★★ [**PERMISSION PROMPTS**](permission-prompts-four-causes.md) — `Write()` rules are DEAD (only
-  `Edit()`); pass Write/Edit a **REPO-RELATIVE** path. ⛔ `rm`/push prompt BY DESIGN. ⭐ Scratch
-  `.scratch/<id>/`; memory = junction.
+⚠ Pass Write/Edit a **REPO-RELATIVE** path. ⭐ Scratch `.scratch/<id>/`; memory dir = a junction.
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
@@ -185,8 +187,7 @@ pipe, production's reconciled state.
 - ⚠ **Env one-offs:** the keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD` (read `/run/secrets/kc_bootstrap_admin_password`); Windows `python3` cannot see Git Bash's `/tmp`.
 - [⚠ Baselines are numbers, not properties](baselines-as-numbers-not-properties.md) · [⚠ Immutable history → cleanup is asymmetric](immutable-history-cleanup-asymmetry.md) — **disable a Keycloak user, never delete** · [A static file cannot configure a live realm](a-static-file-cannot-configure-a-live-realm.md) — `reconcile.sh` is the only seam to prod/UAT.
 - [Write the handoff LAST](write-the-handoff-last.md) — it found `DEF-053`/`DEF-054` last time. Stamp superseded files with ⛔ immediately.
-- [Commit package writes before git ops](commit-package-writes-before-git-ops.md) · [Tamheed stale .lock + PID reuse](tamheed-stale-lock-pid-reuse.md) · [Tamheed data repair](tamheed-data-repair.md) · [migration history](tamheed-migration-reverted.md)
-- [Localhost CI hides load races](localhost-ci-hides-load-races.md) · [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) · [CI gates locally pre-push](ci-gates-run-locally-pre-push.md) · [Always stage .claude/memory](always-stage-claude-memory-in-commits.md)
+- [Commit package writes before git ops](commit-package-writes-before-git-ops.md) · [Tamheed stale .lock + PID reuse](tamheed-stale-lock-pid-reuse.md) · [Tamheed data repair](tamheed-data-repair.md) · [migration history](tamheed-migration-reverted.md) · [Localhost CI hides load races](localhost-ci-hides-load-races.md) · [Git push hang → `gh auth setup-git`](git-push-hang-fix.md) · [CI gates locally pre-push](ci-gates-run-locally-pre-push.md) · [Always stage .claude/memory](always-stage-claude-memory-in-commits.md)
 - [Coverage & E2E mandate](coverage-and-e2e-mandate.md) — ≥95% FE+BE + adversarial E2E. ⚠ Playwright is **NOT UAT-only** (7 services + real Keycloak per PR) **but runs `KEYCLOAK_ADMIN_ENABLED=false`**, so it never touches the ADR-0038 write path.
 - [E2E local run (non-destructive)](e2e-local-run-nondestructive.md) — **`-p acmpe2e` ONLY**, never `npm run e2e:up`. · [Dev-stack rebuild pitfall](dev-stack-rebuild-pitfall.md) — **never `up --build`** the long-lived dev stack.
 - [Exact design fidelity + visual loop](exact-design-fidelity-visual-loop.md) · [A green suite is not a look](a-green-suite-is-not-a-look.md) (⚠ the throwaway harness must import **only** the stylesheets the real route imports) · [breadcrumb spacing](breadcrumb-spacing-rule.md) · [i18n parity ≠ completeness](i18n-parity-not-completeness.md) · [visual-verify cache busting](web-visual-verify-cache-busting.md)
@@ -195,6 +196,5 @@ pipe, production's reconciled state.
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`) — bolding breaks the G-PROGRESS gate. · **A new advisory can turn `main` red with no code change** (`GHSA-q939-rpr3-3284`). · **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — write mounted secrets unconditionally.
 
 ## ⚠ Unlinked topic files + the completed ladder
-**Findable by `ls`, value NOT vouched for** — eleven unlinked files + the completed ladder P1–P19 + PH-5
-(`p*`/`keystone-*`/`ph5-*`), superseded by the slice rows. ⛔ Do not re-open. ⚠ Re-run the inbound-link
-check after ANY compaction (2026-08-29: 25 orphans, all ladder files).
+**Findable by `ls`, value NOT vouched for** — unlinked files + the completed ladder P1–P19 + PH-5
+(`p*`/`keystone-*`/`ph5-*`), superseded by the slice rows. ⛔ Do not re-open. ⚠ Re-run the inbound-link check after ANY compaction.

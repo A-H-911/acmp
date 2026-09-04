@@ -1,15 +1,29 @@
 ---
 name: permission-prompts-four-causes
-description: "Why permission prompts keep firing under auto mode: FOUR causes, only two config. A Write() rule is DEAD, the path form must be repo-relative, EVERY SUBCOMMAND of a chain or pipeline needs its own rule (NOT 'the first token wins' — refuted by the official docs, cost a wrong prediction, DEF-135), node -e is a semantic escape. A claimed FIFTH cause was retracted."
+description: "⛔ SUPERSEDED 2026-09-05 — read [[a-valid-key-can-be-inert]] instead. This file's central claim (the Bash allowlist is not consulted) was REFUTED by a controlled pair; DEF-136 closed Won't-fix as working-as-designed. Kept only as the dated record of a three-session wrong turn."
 metadata:
   node_type: memory
   type: feedback
-  modified: 2026-09-03
+  modified: 2026-09-05
 ---
 
-## ⛔⛔⛔ 2026-09-04, `DEF-136`: FOR `Bash`, THE ALLOWLIST IS NOT BEING CONSULTED AT ALL
+## ⛔⛔⛔ SUPERSEDED 2026-09-05 — DO NOT ACT ON THIS FILE
 
-**Read this before any other section, because it makes most of them irrelevant to `Bash`.**
+**`DEF-136` closed `Won't-fix`, working as designed (`DEC-129` d1). The allowlist IS consulted.**
+A controlled pair settled it: `cat README.md` (inside the working directory) was **silent**;
+`cat ~/.claude/settings.json` (outside it) **prompted**. The real cause of the original observation is
+`permissions.blockReadsOutsideWorkingDirectories`, which makes outside-path reads prompt in **every**
+mode — and the whole investigation was about permission files, which live outside the repository.
+
+⭐ **The two lessons that survive are `LL-058` and `LL-059`, and [[a-valid-key-can-be-inert]] is the
+readable version.** Everything below is the dated record of what was believed, kept so the wrong turn
+can be audited — **not guidance.**
+
+---
+
+## ⛔ 2026-09-04 (also superseded): "FOR `Bash`, THE ALLOWLIST IS NOT BEING CONSULTED AT ALL"
+
+**This claim is the one refuted above.**
 
 ⭐ **MEASURED BY THE OPERATOR.** Plain single commands — `grep`, `cat`, `ls`, `wc`, `git log`, no `cd`,
 no pipe, no heredoc, all allowlisted in both files in both syntaxes — **prompted**. So did all four

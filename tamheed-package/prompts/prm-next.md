@@ -101,24 +101,20 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
-⚠⚠ **`DEF-136` HAS A CANDIDATE CAUSE FROM DOCUMENTATION AND A FIX THE OPERATOR APPLIED ON 2026-09-04.
-IT IS NOT VERIFIED. `PE-859` IS THE CORRECTION OF RECORD AND SUPERSEDES `PE-855`; READ THE ROW, NOT THIS
-PARAGRAPH.** ⛔ **THIS BLOCK ONCE OPENED *"CAUSE WAS IDENTIFIED"* — a status written into prose, which is
-the one thing this file forbids everywhere else.**
-✅ **CONFIRMED HALF:** `permissions.defaultMode: "bypassPermissions"` **does not take effect from a
-project file** and the mode enters the Shift+Tab cycle only when armed at startup from **user,
-`--settings`, or managed settings** — which is why *"there is no bypass mode"* and *"the indicator reads
-auto"* are the same fact. ⚠ **Open discrepancy, deliberately not resolved:** the same page says such a
-session *"starts in Manual mode"*, and this one was in **auto**.
-⛔ **WITHDRAWN HALF:** the claim that broad wildcard rules like `Bash(grep:*)` are suspended in auto mode.
-The source suspends **only rules granting arbitrary code execution — `Bash(*)` or wildcarded
-interpreters** — so `Bash(python:*)` is suspended and `Bash(grep:*)` is not. **The bare-`grep`
-observation is still unexplained.**
-⭐⭐ **AND A THIRD MECHANISM THAT SURVIVES THE FIX, WHICH IS WHY IT MATTERS MOST:** with
+⚠⚠ **THE PERMISSION THREAD IS SETTLED AND ITS ROW IS DISPOSITIONED — `DEC-129` d1, 2026-09-04. READ THE
+ROW AND `PE-860`, NOT THIS PARAGRAPH.** ⛔ **THIS BLOCK HAS TWICE OPENED WITH A STATUS WRITTEN INTO PROSE
+— *"CAUSE WAS IDENTIFIED"*, then *"HAS A CANDIDATE CAUSE"* — which is the one thing this file forbids
+everywhere else.**
+⭐⭐ **THE ONE FACT WORTH CARRYING, BECAUSE IT SURVIVES EVERY MODE AND WILL LOOK LIKE A BUG AGAIN:** with
 `permissions.blockReadsOutsideWorkingDirectories` on — **it is on, at user scope** — file-reading Bash
-commands aimed outside the working directories **prompt even in auto and `bypassPermissions` mode.**
-⚠ **So do not expect a bypass mode to silence reads outside the repository, and do not read a prompt
-there as this defect recurring.**
+commands aimed **outside the working directory** prompt in **every** permission mode, including a bypass
+one. **A prompt there is by design. Do not read it as a defect and do not file one.**
+⭐ **AND THE METHOD THAT SETTLED IT AFTER THREE SESSIONS OF INFERENCE — A CONTROLLED PAIR, TWO COMMANDS:**
+same tool, same shape, one path inside the repository and one outside. The inside one was silent; the
+outside one prompted. **Command SHAPE had been varied exhaustively for three sessions while the PATHS
+were never recorded, and the paths were the cause** (`LL-059`). ⛔ **`LL-058` is the other half and is
+separate on purpose:** a settings key can be valid, correctly spelled and in a file that really loads,
+and still be inert because it is only honoured at a different SCOPE.
 ⛔⛔ **HOW THE WITHDRAWN CLAIM GOT PUBLISHED, AND IT IS THE PART TO CARRY: I READ A SUBAGENT'S SUMMARY OF
 THE DOCUMENTATION INSTEAD OF THE DOCUMENTATION, AND PROMOTED IT TO A FINDING ACROSS SIX DURABLE SURFACES
 AND THREE COMMIT MESSAGES.** The summary's own examples contradicted the claim I drew from them and I did
@@ -2321,22 +2317,30 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-128` first: `DEC-128`, `DEC-127`,
-   `DEC-126`, `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`, `DEC-120`, `SC-045`, `DEF-136`,
-   `DEF-135`, `DEF-134`, `DEF-109`, `DEF-130`, `DEF-121`, `DW-096`, `LL-058`, `LL-057`, `LL-056`,
-   `LL-055`, `LL-054`, `PE-828`, `PE-829`, `PE-846`, `PE-850`, `PE-854`, `PE-855`, `PE-856`, and the
-   `wbs-item` rows the live slice's `wbs-done` names.**
-   ⚠ **`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED** — read both rows for what they
-   settled; `gh pr list --state open` is the live queue and this file deliberately states no count of it.
-   ⛔⛔ **`PE-856` IS A PRE-MERGE DIAGNOSIS AND IT IS THE REASON `DEC-128` COULD BE ANSWERED AT ALL — READ
-   IT BEFORE REBASING ANYTHING.** Two of the queue's PRs were red on stale runs, and reading the CAUSE
-   reversed the obvious disposition of BOTH: one shows four red jobs and is a single restore conflict
-   every job inherits, the other is one of `DEC-127` d2's flagged majors whose red belongs to a carried
-   defect and not to the bump. ⛔ **Neither is described here — that is the FORTY-FIFTH/SEVENTH/EIGHTH's
-   fault class, and `PE-856` and the defect rows are the record.**
-   ⚠ **A REBASE IS PART OF THE AUTHORISED CYCLE AND IS NOT A RE-RUN** (`DEC-116` d2) — but `strict: true`
-   means every merge re-stales the rest, so the sweep is sequential by construction, and **both** the PR
-   run and the merge-commit run must be read before the next rebase (`LL-036`).
+   `gh run list --branch main`. **Then read these rows, and read `DEC-131` first: `DEC-131`, `DEC-130`,
+   `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`,
+   `DEC-120`, `SC-046`, `SC-045`, `DEF-138`, `DEF-137`, `DEF-136`, `DEF-135`, `DEF-134`, `DEF-109`,
+   `DEF-130`, `DEF-121`, `DW-099`, `DW-098`, `DW-096`, `LL-059`, `LL-058`, `LL-057`, `LL-056`, `LL-055`,
+   `LL-054`, `PE-828`, `PE-829`, `PE-846`, `PE-850`, `PE-854`, `PE-859`, `PE-860`, `PE-866`, `PE-867`,
+   and the `wbs-item` rows the live slice's `wbs-done` names.**
+   ⛔ **A COUNT AND A NAMED RULING-WITH-WORK STOOD HERE AND ARE DELETED, NOT REFRESHED.** This line said
+   *"`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED"*; that work is finished. **What is
+   authorised and what is owed are STATES, and this file's whole error log is about writing states into
+   prose.** `entity_query` and `gh pr list --state open` are the answers.
+   ⛔⛔ **`PE-856` AND `PE-867` ARE PRE-MERGE AND POST-MERGE DIAGNOSES AND THEY ARE THE MOST REUSABLE
+   THING THE SWEEP PRODUCED — READ THEM BEFORE TOUCHING ANY DEPENDENCY PR.** Between them they record
+   four separate cases where a PR's COLOUR and a PR's CAUSE pointed opposite ways: a red that was one
+   restore conflict every job inherited; a red belonging to a carried defect rather than to its bump; a
+   flagged major that turned out to be a REPAIR; and a package that broke the build while the one being
+   guarded against did not. ⛔ **None of them is described here** — that is the FORTY-FIFTH/SEVENTH/
+   EIGHTH's fault class, and the rows are the record.
+   ⚠ **A REBASE IS PART OF AN AUTHORISED SWEEP CYCLE AND IS NOT A RE-RUN** (`DEC-116` d2) — but
+   `strict: true` means every merge re-stales the rest, so a sweep is sequential by construction, and
+   **both** the PR run and the merge-commit run must be read before the next rebase (`LL-036`).
+   ⭐ **AND TWO MECHANICS WORTH NOT REDISCOVERING:** `@dependabot rebase` is silently ignored on some
+   PRs, where **`gh pr update-branch` achieves the same end without the force push** that rebasing a
+   Dependabot branch would otherwise need; and **a package write to `main` must land in a window with no
+   PR cycle in flight**, or it stales the very branch about to be merged.
    ⛔⛔ **THAT SENTENCE ASSERTED `.claude/**` IS OUTSIDE WHAT THIS AGENT MAY WRITE. IT IS NOT — SEE THE
    FIFTY-FIRST.** `DEF-133` was carried as *operator-only* for a day on that basis and a one-line edit
    closed it. **What the classifier blocks is SELF-WIDENING THE PERMISSION SURFACE** — adding allowlist
