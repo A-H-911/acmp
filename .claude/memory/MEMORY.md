@@ -8,15 +8,19 @@
 
 ## ★★★ 2026-09-04 · `WBS-27.2` MERGED (`1ebf3a5c`) · `DEF-135` · `LL-056`/`LL-057`
 
-★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS STATED *MECHANISM* IS FALSE — AND THE MECHANISM IS WHAT YOU
-GENERALISE FROM** (`LL-056`, **3 instances in one day**). (1) *"matcher matches the FIRST TOKEN"* → refuted
-by the OFFICIAL docs: **every subcommand needs its own rule**, so `grep … | sort | tail` is FINE and
-`… | Select-Object` is not (`DEF-135`). (2) *format the SOLUTION* (right) because *a scoped run misses
-OTHER projects* (wrong) — **measured: my files were IN that project; solution 1 error vs project 0.**
-(3) I nearly published *"a store write re-flushes and repairs a JSONL divergence"* — it **REFUSES**.
-⭐ Examples are measured cases; the mechanism is a curve through them that diverges on the case you
-consult the document about. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** — the
-classifier blocks *widening*, not correcting prose; that conflation held `DEF-133` open a day.
+★★★ ⛔⛔⛔ **`DEF-136`: FOR `Bash` THE ALLOWLIST IS NOT CONSULTED AT ALL.** Operator-measured: plain
+`grep`/`cat`/`ls`/`wc`/`git log` — no `cd`, no pipe, no heredoc, allowlisted in both files — **PROMPT**;
+so does `python <script-file>`. A bare leader cannot fail a prefix match ⇒ **one cause, no shape
+hypothesis needed; the three "costumes" are UNNECESSARY, not wrong.** ⚠ `PowerShell` rules DO work, so
+the files parse. ⭐ Candidates only: the `Bash`-matched hook `npx block-no-verify@1.1.2`, or settings not
+loaded. **Both isolating steps are the OPERATOR's** (disable the hook one session; or restart and read
+the startup rule-validation warnings). ⛔ **Adding entries cannot help.** ⚠ Fails toward MORE friction.
+★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise
+from** (`LL-056`, pinned, **4 instances in one day**): the FIRST-TOKEN matcher model (`DEF-135`, refuted
+by the OFFICIAL docs — *every subcommand needs its own rule*); *format the SOLUTION* right-for-a-wrong-
+reason; a store re-flush claim that **REFUSED**; and `DEF-136` above, where even the CORRECTED curve is
+irrelevant. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** — the classifier blocks
+*widening*, not correcting prose; that conflation held `DEF-133` open a day.
 - ⭐⭐⭐ **`WBS-27.2`: THE EXPENSIVE THING WAS THE HOST, NOT THE DATABASES** (`LL-057`). Two weeks of rows
   priced in *"sharing a host shares its 14 InMemory DBs"*. **Only bundled — nobody chose that isolation,
   so nobody wrote it down.** A ~30-line `Reset()` separates them: **287 constructions → 47 hosts (83.6%)**,
@@ -34,10 +38,9 @@ classifier blocks *widening*, not correcting prose; that conflation held `DEF-13
 shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
 PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
 could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
-★★ **Permission prompts:** see the 2026-09-04 block above and
-[four-causes](permission-prompts-four-causes.md). ⚠ `cd "C:/…" && grep` still prompts though the docs say
-it should not — **unproven** candidate: the Windows-drive form not resolving to `/c/…`. **Drop the `cd`.**
-⭐ **ASK which tool the prompt named** — one word from the operator beat four rounds of inference, twice.
+★★ **Permission prompts: read the 2026-09-04 block above — `DEF-136` supersedes the shape story, and the
+`cd`/path-form candidate is DEAD.** ⭐ **ASK which tool the prompt named**: three times now, one word from
+the operator has settled what rounds of inference could not.
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.
   ⛔ Still NOT clause (2) — an elimination is not an identification. `DEC-121` d2's 40-min ceiling is why the
@@ -62,11 +65,9 @@ before any memory/perf investigation, and before trusting any `gcroot` output.**
 forced GC; 3% fix declined. ⭐ `DEC-120` ACTIVATED `DW-096`→`WBS-27.2` in `SL-036`; occ 5 was 2026-09-03.
 ★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) — before shipping ANY
 detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive controls are practice here but in NO rule register.
-★★★ [**PERMISSION PROMPTS: FOUR CAUSES, ONLY TWO CONFIG**](permission-prompts-four-causes.md) — `Write()`
-  rules are DEAD (only `Edit()`); pass Write/Edit a **REPO-RELATIVE** path; `node -e` is an
-  allowlist-escape → script FILE. ⛔ **This block used to say *"a PIPE is a compound like `&&`"* — that is
-  the FIRST-TOKEN model and it is REFUTED** (see 2026-09-04). ⚠ You cannot SEE prompts — ask which tool.
-  ⛔ `rm`/push prompt BY DESIGN. ⭐ Scratch `.scratch/<id>/`; memory = junction.
+★★★ [**PERMISSION PROMPTS**](permission-prompts-four-causes.md) — `Write()` rules are DEAD (only
+  `Edit()`); pass Write/Edit a **REPO-RELATIVE** path. ⛔ `rm`/push prompt BY DESIGN. ⭐ Scratch
+  `.scratch/<id>/`; memory = junction.
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
@@ -194,6 +195,6 @@ pipe, production's reconciled state.
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`) — bolding breaks the G-PROGRESS gate. · **A new advisory can turn `main` red with no code change** (`GHSA-q939-rpr3-3284`). · **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — write mounted secrets unconditionally.
 
 ## ⚠ Unlinked topic files + the completed ladder
-**Findable by `ls`, current value NOT vouched for** — eleven unlinked files plus the completed ladder
-P1–P19 + PH-5 (`p*`/`keystone-*`/`ph5-*`), superseded by the package's slice rows. ⛔ Do not re-open.
-⚠ Re-run the inbound-link check after ANY compaction (2026-08-29: 25 orphans, all ladder files).
+**Findable by `ls`, value NOT vouched for** — eleven unlinked files + the completed ladder P1–P19 + PH-5
+(`p*`/`keystone-*`/`ph5-*`), superseded by the slice rows. ⛔ Do not re-open. ⚠ Re-run the inbound-link
+check after ANY compaction (2026-08-29: 25 orphans, all ladder files).

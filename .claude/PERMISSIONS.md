@@ -1,5 +1,32 @@
 # Why `.claude/settings.json` exists, and what it deliberately does NOT allow
 
+> ## ⛔⛔⛔ READ THIS FIRST — 2026-09-04, `DEF-136`: FOR **`Bash`**, NOTHING BELOW IS BEING CONSULTED
+>
+> **Measured by the operator, not inferred.** Plain single commands — `grep`, `cat`, `ls`, `wc`,
+> `git log`, with no `cd`, no pipe and no heredoc, every one allowlisted in **both** settings files in
+> **both** matcher syntaxes — **prompted**. So did all four `python` shapes, **including
+> `python <script-file>`**, which is the shape this very document prescribes as the safe one.
+>
+> **A bare allowlisted leader with no arguments cannot fail a prefix match.** So no rule is matching for
+> `Bash`, every prompt is explained by ONE cause, and **no shape hypothesis is required.** The three
+> costumes below are not refuted — they are **unnecessary**, and a whole family of explanation in this
+> file was doing no work.
+>
+> ⚠ **`PowerShell` IS A DIFFERENT TOOL AND ITS RULES DO WORK** — `Select-Object`/`Format-List` really
+> have no rule, and a leading `$var=` really is a statement. The global `PreToolUse` hook matches `Bash`
+> and `Skill` only. So the files parse and are used; this is a `Bash`-specific failure.
+>
+> ⭐ **Two candidates, neither asserted** (`LL-029`): the global `PreToolUse` hook
+> `npx block-no-verify@1.1.2` (matcher `Bash`, runs before every call), or the settings not being loaded
+> for permission matching at all. **Both isolating steps are the operator's**: disable that hook for one
+> session, or restart and read the harness's own rule-validation warnings at startup.
+>
+> ⛔ **DO NOT ADD ALLOWLIST ENTRIES TO "FIX" THIS.** If nothing is consulted they change nothing, and the
+> auto-mode classifier correctly blocks the agent from widening its own permission surface.
+>
+> ⚠ **It fails toward MORE friction, never less** — everything asks, the deliberate exclusions still
+> gate, nothing ships wrong.
+
 ## The problem it fixes
 
 `settings.local.json` had accreted **90 entries, nearly all one-off literals** captured from single

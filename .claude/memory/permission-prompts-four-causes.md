@@ -7,6 +7,30 @@ metadata:
   modified: 2026-09-03
 ---
 
+## ⛔⛔⛔ 2026-09-04, `DEF-136`: FOR `Bash`, THE ALLOWLIST IS NOT BEING CONSULTED AT ALL
+
+**Read this before any other section, because it makes most of them irrelevant to `Bash`.**
+
+⭐ **MEASURED BY THE OPERATOR.** Plain single commands — `grep`, `cat`, `ls`, `wc`, `git log`, no `cd`,
+no pipe, no heredoc, all allowlisted in both files in both syntaxes — **prompted**. So did all four
+`python` shapes, **including `python <script-file>`**, the shape this file prescribes as safe.
+
+**A bare allowlisted leader cannot fail a prefix match**, so no rule matches for `Bash`, one cause
+explains every prompt, and **the shape costumes below are UNNECESSARY rather than wrong.**
+
+⚠ **`PowerShell` is unaffected and its rules demonstrably work** (`Select-Object` has no rule; `$var=`
+is a statement). The global `PreToolUse` hook matches `Bash` and `Skill` only. **The files parse.**
+
+⭐ **Candidates, not causes** (`LL-029`): the `Bash`-matched `PreToolUse` hook `npx block-no-verify@1.1.2`,
+or the settings not being loaded for permission matching. **Both isolating steps are the operator's** —
+disable the hook for one session, or restart and read the harness's startup rule-validation warnings,
+which is the instrument that settled the previous round. ⛔ **Adding entries cannot help.**
+
+⚠⚠ **AND THIS IS `LL-056`'s FOURTH INSTANCE IN ONE DAY, AT THE TOP LEVEL.** This file's EXAMPLES were
+real prompts; its MECHANISM was a fit through them; I corrected that mechanism against the vendor's docs
+and the correction is TRUE — **and the actual cause sits outside the whole model.** A corrected curve
+through correct points is still a curve.
+
 ## ⛔⛔⛔ THERE IS NO FIFTH CAUSE FOR `Edit`/`Write` — THERE IS NO RULE, AND THAT IS DELIBERATE
 
 **2026-09-03. I published a "fifth cause" here and it was REFUTED the same day by the operator running
