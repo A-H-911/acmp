@@ -6,6 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <!-- ⚠ DEF-138: this version and `dotnet-ef` in .config/dotnet-tools.json are ONE decision
+         expressed in two places. The manifest is NOT a csproj and holds no PackageReference, so a
+         framework retarget that correctly sweeps every project file walks straight past it — DW-080
+         phase A (#320) did exactly that and left the tool TWO MAJORS behind (8.0.10 vs 10.0.11)
+         until #352 repaired it. Nothing in the repo compares them, and dotnet-ef is invoked by no
+         workflow, script or deploy file, so the whole pipeline stays green on a manifest that could
+         not run. Move both together. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
   </ItemGroup>
 
