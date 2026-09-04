@@ -116,6 +116,8 @@ DEF-085,DEF-084,relates_to
 DEF-121,DEF-108,relates_to
 DEF-122,DEF-109,relates_to
 DEF-128,WBS-24.2,relates_to
+DEF-137,DEC-128,relates_to
+DEF-138,DEC-128,relates_to
 DW-029,DEF-012,relates_to
 DW-030,FR-030,relates_to
 DW-074,DEF-100,relates_to
@@ -123,6 +125,8 @@ DW-084,DEC-077,relates_to
 DW-084,DEF-108,relates_to
 DW-096,DEF-109,relates_to
 DW-097,DEF-121,relates_to
+DW-098,DEC-131,relates_to
+DW-099,DEC-131,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
 FR-002,ADR-0002,derives_from

@@ -2327,6 +2327,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    *"`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED"*; that work is finished. **What is
    authorised and what is owed are STATES, and this file's whole error log is about writing states into
    prose.** `entity_query` and `gh pr list --state open` are the answers.
+   ⚠⚠ **A FAILING `lessons-confirmed` IN THAT `readiness_check("package")` IS AN OWED INTERVIEW, NOT A
+   FAULT AND NOT NOISE.** `entity_query("lesson", status="Proposed")` names which rows are waiting.
+   **Run the interview with the operator — never infer approval from a lesson being well-written, and
+   never approve one to clear the advisory.** ⛔ **`handoff_emit(target_dir=<repo root>)` goes in the
+   SAME batch as any approval and the rebuilt note gets committed** (`DEF-107`: a lesson approved,
+   pinned and operator-attributed **bound nothing for two days** because the note was not rebuilt —
+   the advisory goes green on approval whether or not anything propagated). ⛔ **No lesson id or status
+   is named here** — that is the THIRTY-FIRST's fault class, already committed twice in this file.
    ⛔⛔ **`PE-856` AND `PE-867` ARE PRE-MERGE AND POST-MERGE DIAGNOSES AND THEY ARE THE MOST REUSABLE
    THING THE SWEEP PRODUCED — READ THEM BEFORE TOUCHING ANY DEPENDENCY PR.** Between them they record
    four separate cases where a PR's COLOUR and a PR's CAUSE pointed opposite ways: a red that was one
