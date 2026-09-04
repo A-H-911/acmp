@@ -101,27 +101,35 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
-✅✅ **`DEF-136`'s CAUSE WAS IDENTIFIED ON 2026-09-04 AND IT IS TWO MECHANISMS, NEITHER OF THEM EITHER
-EARLIER CANDIDATE. `PE-855` IS THE IDENTIFICATION; `LL-058` IS THE TRANSFERABLE HALF; READ THOSE, NOT
-THIS PARAGRAPH.** (1) `permissions.defaultMode` is honoured at **user** scope (`~/.claude/settings.json`),
-in managed settings, or via a startup flag — set in a **project** file it is **SILENTLY IGNORED** and the
-session starts in the built-in default. (2) In auto mode **narrow** allow rules resolve before the
-classifier while **broad wildcard** rules are suspended; every entry here is the wildcard form
-(`Bash(grep:*)`), which is why a bare allowlisted `grep` prompted.
-⚠ **CONFIDENCE IS UNEQUAL AND `PE-855` SAYS SO:** (1) is documented and matched by two independent
-operator observations; (2) is documented as a rule but its application here rests on one prediction
-matching one prior observation. **The discriminating experiment is on the row.**
-⛔ **DO NOT ADD ALLOWLIST ENTRIES**, and do not write a bypass mode into global settings — that is the
-agent widening its own permission surface, and the classifier correctly refuses it. **The remedy was an
-operator act.**
-⚠⚠ **WHAT THIS COST, BECAUSE IT IS THE REASON `LL-058` EXISTS: THREE SESSIONS, FOUR PUBLISHED MECHANISMS,
-ALL FROM INFERENCE, TWO OF THEM SHIPPED INTO COMMIT MESSAGES THAT CANNOT BE AMENDED.** What settled it was
-reading the harness's own documentation for the tool that was prompting — `LL-006` aimed at the harness
-rather than at the codebase. ⛔ **AND THIS SESSION'S OWN PROMPT EVIDENCE WAS VOID AND IS RECORDED AS SUCH
-IN `PE-854`:** every Bash call the agent made before noticing carried a `cd "<repo>" && …` prefix — the
-exact shape the session-mechanics block below forbids — so the tools the operator named were the agent's
-own doing. **An investigator generating the signal it is measuring is not a shape problem; it is a
-control problem** (`LL-041`).
+⚠⚠ **`DEF-136` HAS A CANDIDATE CAUSE FROM DOCUMENTATION AND A FIX THE OPERATOR APPLIED ON 2026-09-04.
+IT IS NOT VERIFIED. `PE-859` IS THE CORRECTION OF RECORD AND SUPERSEDES `PE-855`; READ THE ROW, NOT THIS
+PARAGRAPH.** ⛔ **THIS BLOCK ONCE OPENED *"CAUSE WAS IDENTIFIED"* — a status written into prose, which is
+the one thing this file forbids everywhere else.**
+✅ **CONFIRMED HALF:** `permissions.defaultMode: "bypassPermissions"` **does not take effect from a
+project file** and the mode enters the Shift+Tab cycle only when armed at startup from **user,
+`--settings`, or managed settings** — which is why *"there is no bypass mode"* and *"the indicator reads
+auto"* are the same fact. ⚠ **Open discrepancy, deliberately not resolved:** the same page says such a
+session *"starts in Manual mode"*, and this one was in **auto**.
+⛔ **WITHDRAWN HALF:** the claim that broad wildcard rules like `Bash(grep:*)` are suspended in auto mode.
+The source suspends **only rules granting arbitrary code execution — `Bash(*)` or wildcarded
+interpreters** — so `Bash(python:*)` is suspended and `Bash(grep:*)` is not. **The bare-`grep`
+observation is still unexplained.**
+⭐⭐ **AND A THIRD MECHANISM THAT SURVIVES THE FIX, WHICH IS WHY IT MATTERS MOST:** with
+`permissions.blockReadsOutsideWorkingDirectories` on — **it is on, at user scope** — file-reading Bash
+commands aimed outside the working directories **prompt even in auto and `bypassPermissions` mode.**
+⚠ **So do not expect a bypass mode to silence reads outside the repository, and do not read a prompt
+there as this defect recurring.**
+⛔⛔ **HOW THE WITHDRAWN CLAIM GOT PUBLISHED, AND IT IS THE PART TO CARRY: I READ A SUBAGENT'S SUMMARY OF
+THE DOCUMENTATION INSTEAD OF THE DOCUMENTATION, AND PROMOTED IT TO A FINDING ACROSS SIX DURABLE SURFACES
+AND THREE COMMIT MESSAGES.** The summary's own examples contradicted the claim I drew from them and I did
+not notice. **`LL-006` says read the implementation, not the document describing it — and a summary of a
+document is a document describing a document.**
+⛔ **AND THIS SESSION'S OWN PROMPT EVIDENCE WAS VOID — `PE-854`:** every Bash call the agent made before
+noticing carried a `cd "<repo>" && …` prefix, the exact shape the session-mechanics block below forbids,
+so the tools the operator named were the agent's own doing. **An investigator generating the signal it is
+measuring is not a shape problem; it is a control problem** (`LL-041`).
+⛔ **DO NOT ADD ALLOWLIST ENTRIES**, and never write a bypass mode into global settings yourself — that is
+the agent widening its own permission surface, and the classifier correctly refuses it.
 
 ⛔⛔⛔ **CHECK WHICH PERMISSION MODE YOU ARE IN BEFORE ASSUMING WHAT GATES. IF PROMPTS ARE OFF, THEN
 `.claude/PERMISSIONS.md`'s EXCLUSION TABLE IS INERT AND THE CHECKPOINT IS YOURS: ASK EXPLICITLY BEFORE
