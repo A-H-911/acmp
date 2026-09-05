@@ -20,6 +20,13 @@ internal sealed class DockerBuildLog : ILogger
 {
     internal static readonly DockerBuildLog Instance = new();
 
+    // Bounded so a chatty build cannot turn one failure message into a megabyte. 200 lines is far more
+    // than the FTS image's ~40 steps and still shows the whole run-up to a stall.
+    private const int MaxLines = 200;
+
+    private static readonly object Gate = new();
+    private static readonly Queue<string> Lines = new();
+
     private DockerBuildLog()
     {
     }
@@ -35,13 +42,58 @@ internal sealed class DockerBuildLog : ILogger
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        // Timestamped because the fault this exists for is a STALL: the useful signal is the gap
-        // between lines, which a bare message cannot show.
-        Console.WriteLine($"[docker-build {DateTime.UtcNow:HH:mm:ss}] {formatter(state, exception)}");
+        // Timestamped because the fault this exists for is a STALL: the useful signal is the GAP between
+        // two lines, which a bare message cannot show.
+        var line = $"[docker-build {DateTime.UtcNow:HH:mm:ss}] {formatter(state, exception)}";
 
         if (exception is not null)
         {
-            Console.WriteLine($"[docker-build {DateTime.UtcNow:HH:mm:ss}] {exception.GetType().Name}: {exception.Message}");
+            line += $"{Environment.NewLine}[docker-build {DateTime.UtcNow:HH:mm:ss}] {exception.GetType().Name}: {exception.Message}";
+        }
+
+        // ponytail: one static buffer, because this suite builds exactly one image. If a second image ever
+        // gets a logger, give each builder its own instance rather than untangling a shared queue.
+        lock (Gate)
+        {
+            Lines.Enqueue(line);
+
+            while (Lines.Count > MaxLines)
+            {
+                Lines.Dequeue();
+            }
+        }
+
+        // Kept for local runs (`--logger "console;verbosity=detailed"`), where it is the nicer view.
+        // ⚠ IT IS NOT THE DELIVERY MECHANISM — see Tail().
+        Console.WriteLine(line);
+    }
+
+    /// <summary>
+    /// The captured build output, for embedding in a failure message.
+    /// </summary>
+    /// <remarks>
+    /// ⚠⚠ THIS EXISTS BECAUSE `Console.WriteLine` DOES NOT REACH THE CI JOB LOG. CI runs
+    /// `dotnet test acmp.sln -c Release --no-build --collect:...` with no `--logger
+    /// "console;verbosity=detailed"`, so console output written from a test is discarded. The first
+    /// version of this class printed and nothing else, and CI run 33938255263 proved it: 18m25s, two
+    /// 480-second build timeouts, and ZERO `[docker-build ...]` lines in the job log — the same silence
+    /// it was written to remove.
+    ///
+    /// `LL-055`: a control proves FIRING, never COUPLING. The logger demonstrably RECEIVED Testcontainers'
+    /// output; that says nothing about whether the output reaches a reader. Worse, the calibration hid it:
+    /// the probe was run with `--logger "console;verbosity=detailed"` in order to SEE the output, and that
+    /// flag supplied the very channel whose absence breaks it in CI.
+    ///
+    /// So delivery is via the exception message, which always reaches the log — the same choice
+    /// <see cref="ContainerStartup.StartOrFailFastAsync"/> already makes by embedding the container log.
+    /// </remarks>
+    internal static string Tail()
+    {
+        lock (Gate)
+        {
+            return Lines.Count == 0
+                ? "(no build output was captured - the image was built without .WithLogger(DockerBuildLog.Instance))"
+                : string.Join(Environment.NewLine, Lines);
         }
     }
 }
