@@ -105,8 +105,10 @@ internal static class ContainerStartup
             // is worse than a bare timeout.
             throw new TimeoutException(
                 $"{name} image did not finish building in {bound.TotalSeconds:0} seconds. " +
-                "No container exists at this point, so there is no container log to attach and this message " +
-                "is the whole of the diagnosis - read the Docker build output above it.",
+                "No container exists at this point, so there is no container log to attach. " +
+                "The captured Docker build output follows; the GAP between two timestamps is where the " +
+                "build stalled." +
+                $"{Environment.NewLine}{DockerBuildLog.Tail()}",
                 ex);
         }
     }

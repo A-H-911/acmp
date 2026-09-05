@@ -45,6 +45,9 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
         .WithDockerfile("Dockerfile.sqlserver")
         .WithName("acmp/sqlserver-fts:test")
         .WithCleanUp(false) // keep the built image cached across runs (~160s to build)
+                            // DEF-140: without this the build is SILENT, and BuildOrFailFastAsync's timeout message tells
+                            // the reader to "read the Docker build output above it" when none was ever captured.
+        .WithLogger(DockerBuildLog.Instance)
         .Build();
 
     private MsSqlContainer _container = null!;
