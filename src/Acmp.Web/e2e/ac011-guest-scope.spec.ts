@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { test, expect, type APIRequestContext, type BrowserContext, type Page, type TestInfo } from '@playwright/test';
 import { roleSession, captureBearer } from './apiHelpers';
 import { loginWithTemporaryPassword } from './login';
 import { apiPreparedTopic, apiScheduleMeeting, apiAddAgendaItem, type ApiMember, type ApiMeeting, type ApiTopic } from './scenario';
@@ -42,7 +42,7 @@ let guestPage: Page;
 let guestBearer: string;
 let accessExpiresAt: string;
 
-test.beforeAll(async ({ browser }) => {
+test.beforeAll(async ({ browser }, testInfo) => {
   // TWO full PKCE round-trips (the Secretary's, then the guest's — the second including Keycloak's
   // forced password change) plus seven API calls, against a real seven-service stack. The 60s default
   // is a per-TEST budget and this setup honestly exceeds it.
@@ -78,12 +78,52 @@ test.beforeAll(async ({ browser }) => {
   accessExpiresAt = invited.accessExpiresAt;
 
   const guestCtx = await browser.newContext();
+
+  // ⚠⚠ DEF-139: THIS CONTEXT IS TRACED BY HAND BECAUSE NOTHING ELSE TRACES IT. playwright.config.ts sets
+  // `trace: 'retain-on-failure'`, but that binds to the FIXTURE-provided page — a context created here
+  // with browser.newContext() inherits none of it. The consequence was measured on CI run 33933554121:
+  // both trace.zip files in the artifact were the SECRETARY's context, and error-context.md rendered as
+  // "E2E Secretary", so a captureBearer timeout on the GUEST produced a confident picture of a different
+  // page in a different context. DEF-129 sends a reader to that trace for the evidence that decides
+  // between its two opposite remedies; the evidence was never recorded.
+  await guestCtx.tracing.start({ screenshots: true, snapshots: true, sources: true });
+
   guestPage = await guestCtx.newPage();
-  await loginWithTemporaryPassword(guestPage, GUEST_EMAIL, invited.temporaryPassword, GUEST_NEW_PASSWORD);
-  // /session and not /backlog: a guest is refused every topic route, so the token has to be captured
-  // off a page they can actually load.
-  guestBearer = await captureBearer(guestPage, '/session');
+
+  try {
+    await loginWithTemporaryPassword(guestPage, GUEST_EMAIL, invited.temporaryPassword, GUEST_NEW_PASSWORD);
+    // /session and not /backlog: a guest is refused every topic route, so the token has to be captured
+    // off a page they can actually load.
+    guestBearer = await captureBearer(guestPage, '/session');
+    // Nothing failed, so the trace is noise — drop it rather than pay to store it.
+    await guestCtx.tracing.stop();
+  } catch (err) {
+    await saveGuestTrace(guestCtx, testInfo);
+    throw err;
+  }
 });
+
+/**
+ * Writes the guest context's trace where CI will actually collect it, and NEVER throws.
+ *
+ * ⚠⚠ THE ATTACHMENT IS THE DELIVERY MECHANISM, NOT THE FILE PATH, AND THAT DISTINCTION IS THE WHOLE
+ * POINT (LL-060). The e2e workflow uploads `src/Acmp.Web/playwright-report` and NOTHING ELSE — writing
+ * a trace to the default `test-results/` would produce an artefact CI never collects, which is the same
+ * blindness DEF-139 exists to remove. `testInfo.attach` is what makes the html reporter copy it into
+ * playwright-report, and it is why the Secretary's traces appeared there at all.
+ *
+ * It swallows its own errors on purpose: a diagnostic that throws would replace the failure it was
+ * capturing. ContainerStartup.CrashArtefacts makes the same choice for the same reason.
+ */
+async function saveGuestTrace(ctx: BrowserContext, testInfo: TestInfo): Promise<void> {
+  try {
+    const file = testInfo.outputPath('guest-context-trace.zip');
+    await ctx.tracing.stop({ path: file });
+    await testInfo.attach('guest-context-trace', { path: file, contentType: 'application/zip' });
+  } catch {
+    // Swallowed deliberately — see above.
+  }
+}
 
 const asGuest = (url: string) => guestPage.request.get(url, { headers: { Authorization: guestBearer } });
 
