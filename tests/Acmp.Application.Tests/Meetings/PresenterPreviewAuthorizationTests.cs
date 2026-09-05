@@ -39,7 +39,7 @@ public class PresenterPreviewAuthorizationTests
     private static AuthorizationBehavior<GetPresenterSessionPreviewQuery, PresenterSessionDto?> Behavior(ICurrentUser user) =>
         new(user, Substitute.For<IAuditSink>());
 
-    private static Task<PresenterSessionDto?> Next() => Task.FromResult<PresenterSessionDto?>(null);
+    private static Task<PresenterSessionDto?> Next(CancellationToken ct) => Task.FromResult<PresenterSessionDto?>(null);
 
     // THE ONE THAT MATTERS. A guest is bounded by a TIME WINDOW, not by scope
     // (permission-role-matrix E.3), so a targeting parameter must never become the way a guest reads

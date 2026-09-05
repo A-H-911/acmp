@@ -463,7 +463,7 @@ public class DecisionHandlerTests
         member.IsInRole("Member").Returns(true);
         var behavior = new AuthorizationBehavior<RecordDecisionCommand, DecisionSummaryDto>(member, Substitute.For<IAuditSink>());
 
-        var act = () => behavior.Handle(RecordCmd(), () => Task.FromResult<DecisionSummaryDto>(null!), default);
+        var act = () => behavior.Handle(RecordCmd(), _ => Task.FromResult<DecisionSummaryDto>(null!), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }

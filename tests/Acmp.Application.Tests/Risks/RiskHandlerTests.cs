@@ -311,7 +311,7 @@ public class RiskHandlerTests
         var behavior = new AuthorizationBehavior<AcceptRiskCommand, Unit>(member, Substitute.For<IAuditSink>());
 
         var act = () => behavior.Handle(new AcceptRiskCommand(Guid.NewGuid(), Plan, "Chairman"),
-            () => Task.FromResult(Unit.Value), default);
+            _ => Task.FromResult(Unit.Value), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }

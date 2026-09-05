@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
     <!-- ⚠ One decision in four places — see the note in Acmp.Modules.Integrations.Webex.csproj.
          Hangfire.NetCore and .SqlServer both pin Hangfire.Core EXACTLY; all four move together. -->
     <PackageReference Include="Hangfire.NetCore" Version="1.8.25" />

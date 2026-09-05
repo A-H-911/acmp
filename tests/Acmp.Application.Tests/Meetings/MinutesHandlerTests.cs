@@ -404,7 +404,7 @@ public class MinutesHandlerTests
         var behavior = new AuthorizationBehavior<DraftMinutesCommand, MinutesSummaryDto>(member, Substitute.For<IAuditSink>());
 
         var act = () => behavior.Handle(new DraftMinutesCommand(Guid.NewGuid(), Summary),
-            () => Task.FromResult<MinutesSummaryDto>(null!), default);
+            _ => Task.FromResult<MinutesSummaryDto>(null!), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }

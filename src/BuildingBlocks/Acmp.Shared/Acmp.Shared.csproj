@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="FluentValidation" Version="11.12.0" />
     <!-- ⚠ DEF-138: this version and `dotnet-ef` in .config/dotnet-tools.json are ONE decision
          expressed in two places. The manifest is NOT a csproj and holds no PackageReference, so a

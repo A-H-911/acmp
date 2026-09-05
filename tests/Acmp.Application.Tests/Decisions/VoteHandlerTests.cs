@@ -508,7 +508,7 @@ public class VoteHandlerTests
         member.IsInRole("Member").Returns(true);
         var behavior = new AuthorizationBehavior<ConfigureVoteCommand, VoteSummaryDto>(member, Substitute.For<IAuditSink>());
 
-        var act = () => behavior.Handle(ConfigCmd(), () => Task.FromResult<VoteSummaryDto>(null!), default);
+        var act = () => behavior.Handle(ConfigCmd(), _ => Task.FromResult<VoteSummaryDto>(null!), default);
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }
 }
