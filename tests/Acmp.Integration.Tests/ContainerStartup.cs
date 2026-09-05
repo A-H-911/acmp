@@ -76,17 +76,30 @@ internal static class ContainerStartup
     // The budgets are chosen together, not separately: a build and a start can BOTH be slow in one run, and
     // 8 + 10 = 18 minutes leaves the backend job room under its own timeout-minutes to fail, report and finish.
     //
-    // ⚠⚠ TWO NUMBERS IN THIS COMMENT WENT STALE AND BOTH ARE CORRECTED HERE (DEF-140, 2026-09-05).
-    // It said eight minutes is "roughly 3x the ~160s a genuine cold build takes". MEASURED with --no-cache
-    // and a warm base image: 421 SECONDS, dominated by 297 MB of mssql-server plus 380 MB of
-    // mssql-server-fts from packages.microsoft.com; CI additionally pulls the ~1.75 GB base (~35s).
-    // SO 480s IS ON THE ORDER OF 1.1x A COLD BUILD, NOT 3x - the margin this comment claimed does not exist.
-    // It also said the job ceiling is "timeout-minutes: 25"; DEC-121 d2 raised that to 40.
+    // ⚠ ONE NUMBER HERE WENT STALE: this said the job ceiling is "timeout-minutes: 25"; DEC-121 d2 raised
+    // it to 40. That correction stands.
     //
-    // ⛔ THE BUDGET VALUE IS DELIBERATELY LEFT AT 8 MINUTES. 421s is one developer machine, and the CI
-    // occurrence never reached the package download at all - it was still fetching apt indices when it died -
-    // so the package leg is UNTESTED against this bound. Changing a threshold on that evidence would be
-    // guessing. What is fixed here is the false margin in the prose, not the number it described.
+    // ⛔⛔ AND ONE "CORRECTION" WAS ITSELF WRONG, WHICH IS THE PART WORTH READING (DEC-133 d2, 2026-09-05).
+    // An earlier pass replaced "roughly 3x the ~160s cold build" with "480s is ~1.1x a cold build, not 3x",
+    // on a 421-second build MEASURED ON A DEVELOPER LAPTOP. This bound governs GITHUB RUNNERS, and the two
+    // are not comparable: 421s was dominated by pulling 297 MB of mssql-server plus 380 MB of
+    // mssql-server-fts, and a hosted runner's link to packages.microsoft.com is far faster.
+    //
+    // MEASURED WHERE THE BOUND ACTUALLY APPLIES (CI runs 33965060323 and 33965652781, after DEF-140's apt
+    // fix): Acmp.Integration.Tests completes in 2 m 14 s TOTAL on a fresh runner with no image cache - image
+    // build, container start AND all 73 tests. So the cold build is comfortably under 134 s and 480 s is at
+    // least 3.6x it. THE ORIGINAL "roughly 3x" WAS APPROXIMATELY RIGHT; the 1.1x figure was not.
+    //
+    // ⭐ LL-060's shape on a second axis: that lesson is about CALIBRATING through a channel production
+    // lacks; this was MEASURING in an environment the number does not govern. The wrong figure even carried
+    // its own hedge - "421s is one developer machine" - and a hedge is not a substitute for measuring in the
+    // right place. Before replacing a number in a comment, check that your measurement and the number
+    // describe the same environment.
+    //
+    // ⛔ THE BUDGET VALUE STAYS AT 8 MINUTES, and now for a positive reason rather than for want of evidence:
+    // it is ~3.6x a measured CI cold build, which is the margin this comment always claimed. Tightening it
+    // toward the measurement would manufacture failures on a slow-but-healthy runner, which is the hazard
+    // DW-085 wrote this bound to avoid.
     internal static readonly TimeSpan BuildBudget = TimeSpan.FromMinutes(8);
 
     public static async Task BuildOrFailFastAsync(IFutureDockerImage image, string name, TimeSpan? budget = null)
