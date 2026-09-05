@@ -91,4 +91,4 @@ SL-037,"DW-098's MediatR adaptation: take the source-breaking minor bump off the
 
 ⛔ **WHAT THIS SLICE DOES NOT COVER.** `DW-099` (xunit), carried by `DEC-132` d6 with its trigger unchanged - and explicitly NOT to be bundled here, on `DEC-131` d1's structural reasoning, which already proved itself by catching MediatR while aimed at xunit. `DEF-138`'s coupling comment, which `DEC-132` d4 authorised as its own separate change. `DEF-121` and `DEF-130`, the two blocking defects, chased on their own end conditions. And `DEF-137`, carried open with nothing built.
 
-⚠ **ROUTE.** Test code is not path-ignored: branch → reviewable PR → green CI → squash-merge, and **both** the PR run and the merge-commit run read before the branch is deleted (`LL-036`).",37,Approved,,,1,,,
+⚠ **ROUTE.** Test code is not path-ignored: branch → reviewable PR → green CI → squash-merge, and **both** the PR run and the merge-commit run read before the branch is deleted (`LL-036`).",37,Implemented,,,1,,,2026-09-05T13:13:16Z

@@ -334,21 +334,27 @@ d3): a green run is not evidence about an intermittent fault and a *faster* run 
 ⚠ **Two things bit during it and both are recorded rather than summarised here**: a `CHARSET` red from
 Write-created `.cs` files with no BOM (`PE-839`), and C31 firing on a **committed** package write that
 `--delete-branch` took with it (`PE-841`).
-✅ **2026-09-04, THE INTERVIEW ROUND: `DEC-127` CARRIES FOUR RULINGS AND ONLY ONE HAS WORK ATTACHED.**
-d2 sweeps the WHOLE Dependabot queue (`DEC-072`'s precedent); d1 keeps `DEF-136` open because a resolved
-symptom is not an identified cause; d3 ended that session; d4 pinned `LL-055`. **Read the row, not this
-sentence** — and `gh pr list --state open` is the queue, which this file deliberately never counts.
-⚠ **THREE ROWS WERE FLAGGED IN d2 AND THE CAUTION IS PRESERVED RATHER THAN OVERRIDDEN**: `#351` moves
-`coverlet.collector` 6.0.0 → 10.0.1, **which is the collector `ADR-0016`'s per-file 95% gate runs on**,
-so it can move the gate's own measurement rather than the code's coverage; `#352` `dotnet-ef` 8.0.10 →
-10.0.11; `#350` `AspNetCore.HealthChecks.SqlServer` 8.0.2 → 9.0.0. `DEC-074` once carved a major pair
-OUT of a sweep; d2 does not, **so verify each major on its own evidence, never on the queue's green**.
-⭐⭐ **`LL-055`, `LL-056` AND `LL-057` ARE APPROVED AND PINNED, AND `handoff_emit` RAN IN THE SAME BATCH**
-(`DEF-107`), so they bind from the tool-owned note. `LL-057` is the one to read first if you are sizing
-anything: *the expensive thing may not be what the plan says it is.*
-⚠ **THE PERMISSION CONFIG WAS RESET THE SAME DAY**: ~650 allow-entries across two files → ~130 in one,
-one syntax, no one-off literals; `.claude/PERMISSIONS.md` reduced to a stub, its shape theory in git
-history. **That was DELETION, not a rebuild** — see `DEF-136`.
+✅ **THE 2026-09-04/05 INTERVIEW ROUNDS ARE FINISHED AND THEIR ROWS ARE THE RECORD — `DEC-127` ONWARD.**
+⛔ **A LIST OF WHICH RULINGS HAD WORK ATTACHED, WHICH PRs WERE FLAGGED, AND WHETHER `DEF-136` WAS OPEN
+STOOD HERE AND IS DELETED, NOT REFRESHED.** All three were STATES, all three moved within a day, and the
+`DEF-136` one was outright FALSE by the next session. **`entity_query` and `gh pr list --state open` are
+the answers, and this file deliberately never counts the queue.**
+⭐⭐ **WHAT SURVIVES IS THE RULE RATHER THAN ITS INSTANCES: VERIFY EACH MAJOR ON ITS OWN EVIDENCE, NEVER
+ON THE QUEUE'S GREEN** (`DEC-127` d2, which declined `DEC-074`'s carve-out precedent). It paid in three
+different currencies inside one sweep — a green that meant NOTHING, because the tool being upgraded is
+invoked by no workflow, script or deploy file; a green that was INSUFFICIENT, because the package moves
+the coverage gate's own measurement rather than the code's coverage; and a green that was REAL evidence,
+because the package sits on a path CI actually exercises. **`PE-856` and `PE-867` carry which was which.**
+⛔⛔ **NO LESSON'S LIFECYCLE STATUS IS WRITTEN HERE, AND A SENTENCE NAMING THREE OF THEM AS APPROVED AND
+PINNED STOOD HERE AND IS DELETED.** That is the THIRTY-FIRST's fault class, which this file has now
+committed three times in three different paragraphs. **`tamheed-package/CLAUDE.md` is the tool-owned list
+of what actually binds**, rebuilt by `handoff_emit`; `readiness_check`'s `lessons-confirmed` row says
+whether an interview is owed. ⛔ **`handoff_emit` goes in the SAME batch as any approval** (`DEF-107`).
+⚠⚠ **THE PERMISSION CONFIG HAS BEEN REWRITTEN, RESET AND THEN EMPTIED, AND AN ENTRY COUNT STOOD HERE.**
+**Read `.claude/settings.json` if you need to know what it grants; never read a number for it from this
+file.** ⛔ That whole surface was rewritten against a cause that did not exist — see `DEF-136`, `LL-058`
+and `LL-059`. **Permission prompts are expected and are not a defect**, and reads outside the working
+directory prompt in EVERY mode by design.
 
 ⚠⚠ **`DEC-124` d2 AND `DEC-123` d4 EACH OVERRODE THE AGENT; `DEC-125` AND `DEC-126` DID NOT.** The rows
 record the reasoning-against, so do not read any of the four as agreement about HOW.
@@ -2317,11 +2323,12 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-131` first: `DEC-131`, `DEC-130`,
-   `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-125`, `DEC-124`, `DEC-123`, `DEC-122`, `DEC-121`,
-   `DEC-120`, `SC-046`, `SC-045`, `DEF-138`, `DEF-137`, `DEF-136`, `DEF-135`, `DEF-134`, `DEF-109`,
-   `DEF-130`, `DEF-121`, `DW-099`, `DW-098`, `DW-096`, `LL-059`, `LL-058`, `LL-057`, `LL-056`, `LL-055`,
-   `LL-054`, `PE-828`, `PE-829`, `PE-846`, `PE-850`, `PE-854`, `PE-859`, `PE-860`, `PE-866`, `PE-867`,
+   `gh run list --branch main`. **Then read these rows, and read `DEC-133` first: `DEC-133`, `DEC-132`,
+   `DEC-131`, `DEC-130`, `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-124`, `DEC-123`, `DEC-121`,
+   `DEC-120`, `DEC-118`, `SC-046`, `SC-045`, `DEF-140`, `DEF-139`, `DEF-138`, `DEF-137`, `DEF-136`,
+   `DEF-135`, `DEF-130`, `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-098`, `DW-096`, `LL-060`,
+   `LL-059`, `LL-058`, `LL-057`, `LL-056`, `LL-055`, `PE-854`, `PE-859`, `PE-860`, `PE-867`, `PE-873`,
+   `PE-875`, `PE-876`, `PE-877`, `PE-883`,
    and the `wbs-item` rows the live slice's `wbs-done` names.**
    ⛔ **A COUNT AND A NAMED RULING-WITH-WORK STOOD HERE AND ARE DELETED, NOT REFRESHED.** This line said
    *"`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED"*; that work is finished. **What is
@@ -2342,6 +2349,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    flagged major that turned out to be a REPAIR; and a package that broke the build while the one being
    guarded against did not. ⛔ **None of them is described here** — that is the FORTY-FIFTH/SEVENTH/
    EIGHTH's fault class, and the rows are the record.
+   ⛔⛔ **`PE-875`, `PE-876` AND `PE-883` ARE THE MOST REUSABLE THING THE LATEST SESSION PRODUCED, AND
+   ALL THREE ARE RETRACTIONS OF SOMETHING THE AGENT HAD JUST WRITTEN.** Between them: a mechanism
+   inferred from a REAL compile-level fact and never measured; a detector calibrated through a channel
+   CI does not have, so it shipped silent; and an artefact declared empty that held the answer in a
+   stream nobody read separately. ⭐ **The one question that would have caught all three, asked BEFORE
+   believing a measurement: *what did I change in order to observe this, and does the environment this
+   claim governs have it?*** `LL-060` is the row; `DEF-140` and `DEF-139` are the worked cases.
    ⚠ **A REBASE IS PART OF AN AUTHORISED SWEEP CYCLE AND IS NOT A RE-RUN** (`DEC-116` d2) — but
    `strict: true` means every merge re-stales the rest, so a sweep is sequential by construction, and
    **both** the PR run and the merge-commit run must be read before the next rebase (`LL-036`).

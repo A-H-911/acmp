@@ -6,39 +6,38 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
-## ★★★ 2026-09-04/05 · `WBS-27.2` (`1ebf3a5c`) · the Dependabot sweep · `DEF-136` CLOSED · `LL-056`–`LL-059`
+## ★★★ 2026-09-05 · sweep done · `DEF-136`/`DEF-138`/`DEF-140` closed · `DEF-129` diagnosed · `LL-056`–`LL-060`
 
 ★★★ ⭐⭐ **READS OUTSIDE THE WORKING DIR PROMPT IN *EVERY* MODE, BYPASS INCLUDED** —
 `blockReadsOutsideWorkingDirectories` is ON at user scope. **By design; never file it as a defect.**
-★★★ ✅ **`DEF-136` CLOSED `Won't-fix`** (`DEC-129` d1) — [[a-valid-key-can-be-inert]] (`LL-058`/`LL-059`).
-**The allowlist WAS working.** A controlled pair settled 3 sessions: `cat README.md` silent, `cat
-~/.claude/…` prompted. ⛔ **Command SHAPE was varied exhaustively; the PATHS were never recorded and the
-paths were the cause** (`LL-059` — an experiment forgets the variables it HOLDS). ⚠ `permissions.
-defaultMode` is **USER/managed/flag scope only** — inert in a project file. ⛔ **I read a subagent's
-*summary* of the docs, not the docs** (`PE-859` retracts `PE-855`); my own `cd … &&` prefix made the
-prompts I was diagnosing (`PE-854`).
-- ⭐⭐ **DEPENDENCY PRs: COLOUR AND CAUSE POINT OPPOSITE WAYS CONSTANTLY** (`PE-856`/`PE-867`). 4 cases in
-  one sweep: 4 red jobs = ONE `NU1107` every job inherits; a red belonging to `DEF-109` not to its bump;
-  a "risky major" that was a **repair** (`DEF-138`, `dotnet-ef` was 2 majors behind its EF Core); and
-  `MediatR` 12.5.0 **source-breaking in a MINOR** (`RequestHandlerDelegate<T>` gained a `CancellationToken`
-  — 9 test sites, **src/ compiles fine**) = `DW-098`. ⛔ **`xunit` 2.5.3→2.9.3 held: `DW-099`** — `LL-032`,
-  a test-isolation regression is a **PASS**, so stop-on-red is blind. ⭐ **Coverage baseline moved
-  99.62%→99.72% at `97e55de6`** (coverlet 10) on byte-identical code — never read as a code change.
-  ⭐ `@dependabot rebase` is silently ignored on some PRs ⇒ **`gh pr update-branch`** (no force push).
-★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS `MECHANISM` IS FALSE — the mechanism is what you generalise from**
-(`LL-056`, pinned, **5 instances in one day**): FIRST-TOKEN matching; *format the SOLUTION*
-right-for-a-wrong-reason; a store re-flush claim that REFUSED; `DEF-136`; and inventing a person's
-mechanism from their one-word outcome. ⭐ **`Edit(.claude/**)` prompts BY DESIGN but is NOT forbidden** —
-the classifier blocks *widening*, not correcting prose; that conflation held `DEF-133` open a day.
-- ⭐⭐⭐ **`WBS-27.2`: THE EXPENSIVE THING WAS THE HOST, NOT THE DATABASES** (`LL-057`). Two weeks of rows
-  priced in *"sharing a host shares its 14 InMemory DBs"*. **Only bundled — nobody chose that isolation,
-  so nobody wrote it down.** A ~30-line `Reset()` separates them: **287 constructions → 47 hosts (83.6%)**,
-  suite 4m17s→38s, CI backend **9m07s/9m37s → 5m36s**. ⚠ Naive share-everything failed **72/445** first.
-  ⛔ **Claims NOTHING about `DEF-109`.**
+`DEF-136` closed: **the allowlist WAS working** — [[a-valid-key-can-be-inert]] (`LL-058`/`LL-059`).
+⚠ **The project allowlist is now `{}`** (operator emptied it, `313e8ff9`) — more prompts, not a fault.
+★★★ ⛔⛔ **ADVICE CAN BE RIGHT WHILE ITS MECHANISM IS FALSE — the mechanism is what you generalise from**
+(`LL-056`, pinned): **5 instances in one day**, then two more on 09-05.
+★★★ [**AN INSTRUMENT MUST DELIVER, NOT JUST FIRE**](an-instrument-must-deliver-not-just-fire.md) —
+**`LL-060`, PINNED. Read before building ANY detector, before trusting a calibration, and before calling
+an artefact empty.** To watch an instrument you add a channel and that channel is often what production
+lacks; **a `trace.zip` holds TWO streams and I merged them**; `DEF-140`'s cause was `archive.ubuntu.com`,
+absent from the Dockerfile; **`DEF-129` is the guest's `POST …/token` returning `status=-1`** — neither
+of its two standing remedies. ⭐ *What did I change in order to watch this, and does production have it?*
+- ⛔ **MediatR 12.5.0 does NOT drop the token** (`PE-875` retracts `PE-873`): the new `CancellationToken`
+  param is **defaulted**, so bare `next()` still receives the caller's token. Only test *lambdas* break —
+  arity at CONSTRUCTION, invisible at INVOCATION. ⛔ **`DW-099` corrected: the suite's 72/445 ARE a
+  red-detector for lost isolation**, so stop-on-red is NOT blind there.
+- ⚠⚠ **BACKEND DURATION IS A SIGNATURE:** ~1m34s = **Format check**; ~5m = healthy; 11–18m = `DEF-140`.
+  ⭐ **Run the gate's OWN command BEFORE pushing** — `dotnet format acmp.sln --verify-no-changes
+  --no-restore`. **Heredoc/Write-created `.cs` files carry NO BOM ⇒ `error CHARSET`.**
+- ⛔ **A comment is not free: JSON admits none** (breaks `dotnet-tools.json`) **and XML forbids `--`
+  inside one** (breaks a csproj). Both hit in one session, both while fixing the same row.
+- ⭐⭐ **DEPENDENCY PRs: COLOUR AND CAUSE POINT OPPOSITE WAYS** (`PE-856`/`PE-867`) — 4 cases in one
+  sweep, incl. a "risky major" that was a **repair** (`DEF-138`). ⭐ Coverage baseline moved
+  99.62%→99.72% at `97e55de6` (coverlet 10) on byte-identical code. ⭐ `@dependabot rebase` is silently
+  ignored ⇒ **`gh pr update-branch`**. ⚠ **`gh pr checks --watch` right after a push exits 1** — use
+  `gh run watch <id>`; it can also return before every workflow is done.
+- ⭐⭐ **`WBS-27.2`** (`LL-057`, pinned): the expensive thing was the HOST, not the databases —
+  **287 constructions → 47**, CI backend 9m → 5m36s. ⛔ **Claims NOTHING about `DEF-109`.**
 - ⚠⚠ **C31 FIRES ON *COMMITTED* WRITES TOO** — `gh pr merge --delete-branch` took a branch-only package
-  commit; store had the row, JSONL did not. **Safe = REACHABLE FROM A SURVIVING REF.** ⭐ Repair:
-  `git checkout <lost-sha> -- <file>` once `git diff` proves the delta. ⚠ `cancel-in-progress` is
-  `pull_request`-ONLY. ⚠ **`gh pr checks --watch` right after a push exits 1** — use `gh run watch <id>`.
+  commit. **Safe = REACHABLE FROM A SURVIVING REF.** ⚠ `cancel-in-progress` is `pull_request`-ONLY.
 
 ## ★★★ 2026-09-03 · `DEF-109` occ 6: SCHEDULING REFUTED · `DEC-123`–`DEC-125` · `LL-055`
 
@@ -73,8 +72,6 @@ detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive control
 ★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
   the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
   the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
-  ⛔⛔ **Also: `strict:true` means ANY push to `main` leaves every open PR unmergeable** — path-ignore
-  stops the CI RUN, not the staleness. Read it before touching CI, an artefact, or an open PR.
 - ⛔⛔ **THE HOSTED RUNNER IS ~16 GB, NOT 7.** I asserted 7 from memory into `PE-771`. **Every MEASURED
   `DEF-109` claim survives; the causal BRIDGE to the CI symptom does not** (`LL-020`, `PE-785`). ⚠ So it
   holds a **measured leak** and an **unproven symptom explanation** — and 2026-09-03 refuted scheduling too.
@@ -92,7 +89,8 @@ detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive control
   `DEF-087` reads stale but `DEC-068` d2 ruled it fix-forward-only; a "repair" would reverse a decision.
 - ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** — they ride onto the branch (package→`main`
   direct, code→PR). ⚠⚠ **`strict: true`: ANY push to `main` leaves every open PR stale**, whatever it
-  touched — push package writes FIRST, then rebase, then nothing to `main` until the PR lands.
+  touched — **path-ignore stops the CI RUN, not the staleness.** Push package writes FIRST, then rebase,
+  then nothing to `main` until the PR lands. ⚠ Each re-stale costs a FULL cycle (~15-18 min).
 - ⭐⭐ **Ryuk does NOT reap before you can copy** — `docker cp <id>:/path`, not `ReadFileAsync`. ⚠ The
   register discriminates `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`)
   **on the exception type** — always discriminate by signature before attributing a red.

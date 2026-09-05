@@ -120,6 +120,12 @@ DEF-137,DEC-128,relates_to
 DEF-137,DEC-132,relates_to
 DEF-138,DEC-128,relates_to
 DEF-138,DEC-132,relates_to
+DEF-139,DEC-132,relates_to
+DEF-139,DEC-133,relates_to
+DEF-139,DEF-129,relates_to
+DEF-140,DEF-114,relates_to
+DEF-140,DEF-137,relates_to
+DEF-140,DEF-139,relates_to
 DW-029,DEF-012,relates_to
 DW-030,FR-030,relates_to
 DW-074,DEF-100,relates_to
@@ -433,6 +439,9 @@ LL-058,PE-855,learned_from
 LL-058,PE-859,learned_from
 LL-059,DEC-132,relates_to
 LL-059,PE-860,learned_from
+LL-060,DEC-133,relates_to
+LL-060,DEF-140,learned_from
+LL-060,PE-876,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
