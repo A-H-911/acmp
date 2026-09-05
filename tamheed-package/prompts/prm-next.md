@@ -127,9 +127,12 @@ measuring is not a shape problem; it is a control problem** (`LL-041`).
 ⛔ **DO NOT ADD ALLOWLIST ENTRIES**, and never write a bypass mode into global settings yourself — that is
 the agent widening its own permission surface, and the classifier correctly refuses it.
 
-⛔⛔⛔ **CHECK WHICH PERMISSION MODE YOU ARE IN BEFORE ASSUMING WHAT GATES. IF PROMPTS ARE OFF, THEN
-`.claude/PERMISSIONS.md`'s EXCLUSION TABLE IS INERT AND THE CHECKPOINT IS YOURS: ASK EXPLICITLY BEFORE
-ANYTHING DESTRUCTIVE OR OUTWARD-FACING** — a push to `main`, a PR merge, a re-run of a red job, a delete.
+⛔⛔⛔ **CHECK WHICH PERMISSION MODE YOU ARE IN BEFORE ASSUMING WHAT GATES. THE CHECKPOINT IS YOURS
+EITHER WAY: ASK EXPLICITLY BEFORE ANYTHING DESTRUCTIVE OR OUTWARD-FACING** — a push to `main`, a PR
+merge, a re-run of a red job, a delete. ⚠ **THIS SENTENCE USED TO MAKE THE OBLIGATION CONDITIONAL ON
+PROMPTS BEING OFF, AND POINTED AT AN EXCLUSION TABLE THAT NO LONGER EXISTS ANYWHERE** — `.claude/PERMISSIONS.md`
+was reduced to a stub and then **DELETED** on 2026-09-05 (`DEC-134` d3, `DEF-141`). `DEC-127` d1 is the
+standing ruling and it is unconditional: where a prompt used to be the checkpoint, an explicit ask has to be.
 ⚠⚠ **THIS SENTENCE IS CONDITIONAL BECAUSE ITS TWO PREDECESSORS WERE NOT, AND BOTH WERE WRONG — the
 FIFTY-SECOND AND FIFTY-THIRD, BOTH MINE, IN ONE PARAGRAPH IN ONE SESSION, IN OPPOSITE DIRECTIONS.**
 (52) It asserted the exclusion table was INERT because the operator had set a bypass mode; there was no
@@ -223,7 +226,14 @@ JUNCTION to `<repo>/.claude/memory`** — address it by the REPO path or the Rea
 APPROVAL PROMPTS COME FROM COMMAND *SHAPE*, NOT FROM THE ALLOWLIST**: no `cd` prefix (the cwd already IS the
 repo and persists), no heredocs, no `&&` chains — a multi-statement string matches no prefix rule, and the
 Bash tool's own docs say `cd` in a compound command triggers a prompt. **One simple command per call; use
-Write/Edit for files.** Full reasoning and the deliberate exclusions in `.claude/PERMISSIONS.md`.
+Write/Edit for files.**
+⛔ **THE POINTER THAT STOOD HERE — *\"full reasoning and the deliberate exclusions in `.claude/PERMISSIONS.md`\"* —
+IS DELETED WITH ITS TARGET** (`DEC-134` d3, `DEF-141`, 2026-09-05). ⚠⚠ **AND THE REASON IT GAVE WAS THE
+REFUTED ONE:** *a multi-statement string matches no prefix rule* is the FIRST-TOKEN model, which `DEF-135`
+records as false. The documented rule is **`A RULE MUST MATCH EACH SUBCOMMAND INDEPENDENTLY`** — so a
+pipeline of allowlisted programs is FINE and one unlisted segment sinks the line. **The advice above
+survives; only its mechanism changed**, which is `LL-056` exactly. `.claude/memory/permission-prompts-four-causes.md`
+is now the single surviving account.
 `DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
 `LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
