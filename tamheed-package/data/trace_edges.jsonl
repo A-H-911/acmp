@@ -136,6 +136,7 @@
 {"from_id":"DW-098","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"DW-099","to_id":"DEC-131","relation":"relates_to"}
 {"from_id":"DW-099","to_id":"DEC-132","relation":"relates_to"}
+{"from_id":"DW-100","to_id":"DEC-135","relation":"relates_to"}
 {"from_id":"FR-001","to_id":"ADR-0002","relation":"derives_from"}
 {"from_id":"FR-001","to_id":"ADR-0013","relation":"derives_from"}
 {"from_id":"FR-002","to_id":"ADR-0002","relation":"derives_from"}
@@ -709,6 +710,7 @@
 {"from_id":"SC-044","to_id":"WBS-26.5","relation":"scope_modifies"}
 {"from_id":"SC-046","to_id":"DEC-128","relation":"relates_to"}
 {"from_id":"SC-046","to_id":"DEF-138","relation":"relates_to"}
+{"from_id":"SC-048","to_id":"WBS-30","relation":"scope_adds"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
@@ -1271,6 +1273,7 @@
 {"from_id":"WBS-3","to_id":"FR-020","relation":"implements"}
 {"from_id":"WBS-3","to_id":"FR-021","relation":"implements"}
 {"from_id":"WBS-3","to_id":"FR-023","relation":"implements"}
+{"from_id":"WBS-30","to_id":"DEF-142","relation":"relates_to"}
 {"from_id":"WBS-5","to_id":"FR-031","relation":"implements"}
 {"from_id":"WBS-5","to_id":"FR-035","relation":"implements"}
 {"from_id":"WBS-5","to_id":"FR-037","relation":"implements"}

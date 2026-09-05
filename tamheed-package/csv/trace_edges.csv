@@ -137,6 +137,7 @@ DW-098,DEC-131,relates_to
 DW-098,DEC-132,relates_to
 DW-099,DEC-131,relates_to
 DW-099,DEC-132,relates_to
+DW-100,DEC-135,relates_to
 FR-001,ADR-0002,derives_from
 FR-001,ADR-0013,derives_from
 FR-002,ADR-0002,derives_from
@@ -710,6 +711,7 @@ SC-044,DW-086,scope_modifies
 SC-044,WBS-26.5,scope_modifies
 SC-046,DEC-128,relates_to
 SC-046,DEF-138,relates_to
+SC-048,WBS-30,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
@@ -1272,6 +1274,7 @@ WBS-3,FR-019,implements
 WBS-3,FR-020,implements
 WBS-3,FR-021,implements
 WBS-3,FR-023,implements
+WBS-30,DEF-142,relates_to
 WBS-5,FR-031,implements
 WBS-5,FR-035,implements
 WBS-5,FR-037,implements

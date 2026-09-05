@@ -6,6 +6,12 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
+## ★★★ 2026-09-06 · `DEC-135` d1 · PACKAGE ACCESS IS MCP-EXCLUSIVE · `DEF-142`
+
+⛔⛔⛔ **ALL PACKAGE READS *AND* WRITES GO THROUGH THE `tamheed` MCP TOOLS — NO EXCEPTIONS** (`DEC-135` d1, an operator OVERRIDE). **Never read `tamheed-package/data/*.jsonl` yourself**; 78 ad-hoc `.scratch/` scripts were deleted for it. ⚠ `entity_query` has no text search, no join, no aggregation and caps output — that is a reason to **ASK**, never to route around. ⚠⚠ **It CONTRADICTS pinned trap 13/`LL-045` and the four committed `gen-*.mjs`; carried UNRESOLVED as `DW-100`** — and its deciding premise (*does `entity_query` truncate?*) is now UNTESTABLE, because the reference copy is the barred file.
+⭐ **JSONL flushes on EVERY write, NOT on `package_close`** — `tamheed-package/CLAUDE.md` and `AGENTS.md` both say otherwise and are wrong (measured: `git status` after an upsert).
+- ⚠⚠ **`DEF-142`** (4th in `DEF-116`→`117`→`119`): `gen-slice-review-slate.mjs` REFUSES an **instrument** item — criterion-less AND naming no requirement — so `WBS-29`'s verdict cannot be taken the mandated way, and `WBS-27.x`/`WBS-28` were adjudicated around it silently. `WBS-30`/`SC-048` is the fix. ⭐ Found by **RUNNING** item 3's command, not reading the row citing it; `SL-035` was the control (`LL-013`).
+
 ## ★★★ 2026-09-05 · `DEC-134` · `WBS-29` capture shipped · `PERMISSIONS.md` DELETED · `DEF-141`
 
 ⛔⛔ **`.claude/PERMISSIONS.md` NO LONGER EXISTS** (`DEC-134` d3 / `DEF-141`): 4 false claims incl. *"the
@@ -153,23 +159,15 @@ agent's recommendation to carry** — never read one as agreement about HOW.
   ⚠⚠ **`scripts/**` and `.gitignore` are NOT path-ignored** — PR route; **poll CI after ANY push to `main`**.
   ⚠ **`DEF-107`: approving+pinning a lesson does NOT bind it** — run `handoff_emit` in the SAME batch.
 - ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`). ⚠ **Approved ACs are IMMUTABLE** (`AC-147`). ⛔ Never `PageSize.Clamp` an export. ⚠ `DW-088`: `TopicDetail`'s download button is hardcoded `disabled`.
-- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate` · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`.
+- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate` · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`. ⛔ **The four `gen-*.mjs` read the JSONL directly ⇒ NON-COMPLIANT under `DEC-135` d1** — they still work; see `DW-100` before running/editing one.
 
-## ★★ 2026-08-20 · the disposition session — durable rules only
-
-- ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
-  **refused an interview** over it. `LL-011`, pinned. ⭐ `G-IDS` checks FKs, **not ids in prose**.
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS** — activating a `DW-` row →
-  check its requirement too. ⚠ Measuring inside the set you hold is not measuring the register.
-★★ [**Durable rules, batches 13–21**](batches-13-21-durable-rules.md) · [**`SL-034`**](sl034-slate-generator-and-asvs-pack.md) · [**`SL-033`**](sl033-slice-findings.md) · [**`DW-082`**](dw082-sweep-and-vitest4.md)
+- ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — operator **refused an interview** over it. `LL-011`, pinned. ⭐ `G-IDS` checks FKs, **not ids in prose**. ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS.** ⚠ Measuring inside the set you hold is not measuring the register.
+★★ 2026-08-20 disposition session: [**batches 13–21**](batches-13-21-durable-rules.md) · [**`SL-034`**](sl034-slate-generator-and-asvs-pack.md) · [**`SL-033`**](sl033-slice-findings.md) · [**`DW-082`**](dw082-sweep-and-vitest4.md)
 
 ## Earlier 2026-08 — durable findings only
 
-- ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck
-  evaluating ZERO checks; gitleaks passing over an allowlist exempting every markdown file. ⚠ Read
-  `ADR-0043`, **not** `ADR-0042`. · ★★ [**An absence needs a proven
-  instrument**](an-absence-needs-a-proven-instrument.md) · ⚠⚠ [**v4 store + 4.4.x
-  mechanics**](tamheed-v4-and-liveness.md) — build payloads from the JSONL; `WVR-` operator-only.
+- ★★★ [**`DEF-078`: a green control can be blind**](a-green-control-can-be-blind.md) — a healthcheck evaluating ZERO checks; gitleaks passing over an allowlist exempting every markdown file. ⚠ Read `ADR-0043`, **not** `ADR-0042`. · ★★ [**An absence needs a proven instrument**](an-absence-needs-a-proven-instrument.md)
+- ⚠⚠ [**v4 store + 4.4.x mechanics**](tamheed-v4-and-liveness.md) — ⛔ its *"build payloads from the JSONL"* is **SUPERSEDED by `DEC-135` d1**; `WVR-` operator-only.
 - ★★ **Requirement status measures whether anyone WROTE an AC, not whether it was built.** ⚠⚠ **Stream
   scope had NEVER run on a real DB** (`DEF-066`) — [[inmemory-provider-hides-db-refusals]].
 - **ADR-0039 `AC-090`** per-request revalidation — ⚠ **an unknown subject must be ALLOWED** (ADR-0004
