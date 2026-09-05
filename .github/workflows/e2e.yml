@@ -201,6 +201,50 @@ jobs:
           echo "===== all services (tail) ====="
           docker compose -f deploy/docker-compose.yml logs --no-color --tail 2000
 
+      # ⚠⚠ WBS-29 / DEF-129. THE STEP ABOVE IS GATED ON `failure()`, AND THAT IS EXACTLY BACKWARDS FOR
+      # THIS DEFECT. DEF-129's founding finding is that a GREEN run carried the warning the next run
+      # cashed in — `retries: 1` means a test can fail its first attempt, pass on retry, and leave the
+      # job `success`. Measured on run 33933554121 (job 101220601640), which is the run PE-883 read to
+      # give DEF-129 its mechanism: step 12 "Upload Playwright report" (`!cancelled()`) SUCCEEDED and
+      # step 13 "Stack logs on failure" (`failure()`) was SKIPPED. So the client-side trace uploaded
+      # normally and the server side was captured by nothing — on the one occurrence that mattered.
+      #
+      # PE-883 read the guest's trace stream alone and found 50 requests, ZERO /api/ calls, and a final
+      # `POST …/openid-connect/token` returning status=-1 that never completes. WHY Keycloak never
+      # answered is on the SERVER side, and this is what makes that side readable.
+      #
+      # ⭐ UNCONDITIONAL ON PURPOSE — IT REMOVES THE CONDITION RATHER THAN REDUCING THE PROBABILITY OF
+      # CATCHING IT (LL-035). The obvious alternative — parse the Playwright report, detect a flaky
+      # retry, capture only then — needs a channel CI does not otherwise have, and building the watcher
+      # out of the thing being watched is LL-060's exact trap. Capturing always is smaller AND stronger.
+      #
+      # ⚠ NO `--tail`, for the reason the api dump above already gives: you do not know how far back the
+      # evidence is until you have found it. These three services are quiet compared with `api`.
+      # ⛔ MUST STAY BEFORE THE TEARDOWN — `down -v` destroys the containers and their logs.
+      - name: Keycloak logs (DEF-129 — captured on EVERY outcome, not just failure)
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: |
+          mkdir -p keycloak-logs
+          for svc in keycloak keycloak-db keycloak-config; do
+            docker compose -f deploy/docker-compose.yml logs --no-color --timestamps "$svc" \
+              > "keycloak-logs/$svc.log" 2>&1 || true
+          done
+          # ⭐ THE ACCEPTANCE BAR IS DELIVERY, NOT EXECUTION (LL-055, LL-060). "The step ran" is not the
+          # claim; "the artefact exists and is non-empty" is. DEF-121's capture shipped dmesg.tail.txt,
+          # journalctl.tail.txt and journalctl.sql.txt at ZERO BYTES, which is this instrument class
+          # shipping silent. Printing the sizes puts the proof in the job log itself.
+          echo "===== captured (a zero-line file here means the instrument shipped silent) ====="
+          wc -l keycloak-logs/*.log
+
+      - name: Upload Keycloak logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: keycloak-logs
+          path: keycloak-logs
+          retention-days: 7
+
       - name: Tear down the stack
         if: ${{ always() }}
         working-directory: .
