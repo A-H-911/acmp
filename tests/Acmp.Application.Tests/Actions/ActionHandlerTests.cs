@@ -322,7 +322,7 @@ public class ActionHandlerTests
         var behavior = new AuthorizationBehavior<CreateActionCommand, Acmp.Modules.Actions.Application.Contracts.ActionSummaryDto>(
             reviewer, Substitute.For<IAuditSink>());
 
-        var act = () => behavior.Handle(CreateCmd(), () => Task.FromResult<Acmp.Modules.Actions.Application.Contracts.ActionSummaryDto>(null!), default);
+        var act = () => behavior.Handle(CreateCmd(), _ => Task.FromResult<Acmp.Modules.Actions.Application.Contracts.ActionSummaryDto>(null!), default);
 
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }
