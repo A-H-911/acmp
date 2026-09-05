@@ -442,6 +442,7 @@ LL-059,PE-860,learned_from
 LL-060,DEC-133,relates_to
 LL-060,DEF-140,learned_from
 LL-060,PE-876,learned_from
+LL-061,PE-890,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
