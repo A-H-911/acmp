@@ -60,8 +60,15 @@ def rewrite(path, fn):
             f.write(json.dumps(fn(r), ensure_ascii=False) + "\n")
 
 
-def stage(slice_id, item_id, title=None):
-    """Put EXACTLY item_id at Review inside slice_id, optionally replacing its title.
+def stage(slice_id, item_id, title=None, source_span=None):
+    """Put EXACTLY item_id at Review inside slice_id, optionally replacing title/source_span.
+
+    ⚠ DEF-142 ADDED `source_span`, AND IT IS NOT A CONVENIENCE. That fix made the criterion-less
+    DEC- lookup read `title` AND `source_span`, so a case that overrides only the title no longer
+    controls the whole input: case 3 asserts "nothing here records the reason" while a DEC- id could
+    still be sitting in the untouched source_span. It would fail loudly rather than pass hollowly,
+    but it would be testing a fact about today's register instead of a property of the generator —
+    exactly what DEF-120 rewrote this helper to stop.
 
     ⚠ DEF-120 — AN EARLIER VERSION SET ONE ROW TO Review AND LEFT THE REST ALONE, so each case
     silently depended on which OTHER rows happened to be at Review in the live store. Promoting
@@ -81,6 +88,8 @@ def stage(slice_id, item_id, title=None):
                     r["lifecycle_status"] = "Review"
                     if title is not None:
                         r["title"] = title
+                    if source_span is not None:
+                        r["source_span"] = source_span
                 else:
                     r["lifecycle_status"] = "Implemented"
             return r
@@ -125,8 +134,32 @@ def main():
     results.append(case(
         "CALIBRATION: no criterion AND no recorded reason still exits non-zero",
         stage("SL-034", "WBS-25.1",
-              "Requirement NFR-054. Nothing here records why there is no criterion."),
+              "Requirement NFR-054. Nothing here records why there is no criterion.",
+              source_span=""),
         "SL-034", 2, "nothing here can be adjudicated"))
+
+    # DEF-142 — AN INSTRUMENT ITEM: criterion-less AND naming no requirement at all. WBS-29 was
+    # commissioned by DEC-134 d1 to make a DEF-129 occurrence answerable; its own row says it
+    # "diagnoses nothing", so it satisfies no FR/NFR by construction. The old guard scraped a
+    # requirement id out of the title and fatalled when it found none, which silently re-narrowed
+    # what DEF-117 had just opened. Note the deciding DEC- lives in source_span, which is where this
+    # store puts provenance — the title cites only decisions the item REFERENCES.
+    results.append(case(
+        "DEF-142: instrument item (no criterion, NO requirement) renders from its deciding DEC-",
+        stage("SL-038", "WBS-29",
+              "An instrument. It diagnoses nothing and satisfies no requirement.",
+              source_span="Commissioned by DEC-134 d1; scoped by SC-047."),
+        "SL-038", 0, "item(s) at Review"))
+
+    # CALIBRATION for the DEF-142 arm, and it is the pair that earns it. Identical to the case above
+    # in every respect EXCEPT that nothing anywhere records the reason. If this ever exits 0, the
+    # requirement guard has been widened into the fail-closed case that DEF-117 deliberately kept.
+    results.append(case(
+        "CALIBRATION: no criterion, no requirement AND no reason still exits non-zero",
+        stage("SL-038", "WBS-29",
+              "An instrument. It diagnoses nothing and satisfies no requirement.",
+              source_span="No deciding row is named anywhere on this item."),
+        "SL-038", 2, "nothing here can be adjudicated"))
 
     shutil.rmtree(SCRATCH, ignore_errors=True)
     print()

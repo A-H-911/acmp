@@ -87,8 +87,21 @@ const criteriaOf = (item) => {
 /* Every row of a named family the item cites, in citation order, skipping ids the register does not
    hold — an unresolvable id is a typo in prose, not a missing record, and fatal() belongs to the
    rows the page structurally needs. */
-const citedRows = (item, prefix, table) =>
-  [...new Set((item.title.match(new RegExp(`\\b${prefix}-\\d+\\b`, 'g')) ?? []))]
+/* ⚠ DEF-142, second arm. This scanned `title` ALONE, and for an instrument item that omits the one
+   record the operator most needs. WBS-29's title cites DEC-079/115/116/118 — decisions it merely
+   REFERENCES — while DEC-134, the decision that COMMISSIONED it, lives in `source_span`, which is
+   where this store puts provenance by convention (SC-047 and WBS-30 do the same). The slate therefore
+   rendered four decisions and silently dropped the deciding one: a page that looks complete with its
+   most load-bearing record missing, which is exactly the "slate with a hole" this file's header calls
+   the dangerous shape because it reads exactly like a whole one.
+   ⛔ SCOPED NARROWLY ON PURPOSE. `fields` defaults to title-only, so every existing call — including
+   the DW- lookup that feeds `d`, the "row it closed" — keeps its current behaviour and no previously
+   generated slate changes. Only the criterion-less DEC- lookup opts into source_span. */
+const citedRows = (item, prefix, table, fields = ['title']) =>
+  [...new Set(
+    fields
+      .flatMap((f) => (item[f] ?? '').match(new RegExp(`\\b${prefix}-\\d+\\b`, 'g')) ?? []),
+  )]
     .map((id) => table[id])
     .filter(Boolean);
 
@@ -114,7 +127,7 @@ const sections = items
 
     /* DEF-117's fail-closed half. A criterion-less item is adjudicable only if the store carries the
        reason; with neither a DW- nor a DEC- row to quote there is genuinely nothing on the page. */
-    const decsCited = criterionLess ? citedRows(w, 'DEC', decs) : [];
+    const decsCited = criterionLess ? citedRows(w, 'DEC', decs, ['title', 'source_span']) : [];
     const dwsCited = citedRows(w, 'DW', dws);
     if (criterionLess && !dwsCited.length && !decsCited.length) {
       fatal(`${w.id} names no acceptance criterion and no DW-/DEC- row that records why; nothing here can be adjudicated`);
@@ -128,10 +141,27 @@ const sections = items
        was verified against WBS-24.8, whose two criteria happen to share one requirement, so the guard
        never fired. Render one section per DISTINCT requirement instead; a criterion-less item has no
        criterion to read one from, so its own citation is the only source. */
+    /* ⚠ DEF-142 — AN INSTRUMENT ITEM NAMES NO REQUIREMENT AT ALL, AND THAT IS NOT A GAP. WBS-29 was
+       commissioned by DEC-134 d1 to make a future DEF-129 occurrence answerable; its own row says it
+       "diagnoses nothing", and it satisfies no FR/NFR by construction, so there is nothing for the title
+       scrape to find. The old unconditional guard fatalled on it — which SILENTLY RE-NARROWED what
+       DEF-117's fix had opened eighteen lines above, in the very same commit (964ab01a). DEF-117's
+       stated fail-closed condition is the citedRows test above (nothing in the store records the
+       reason), and WBS-29 PASSES it by citing DEC-134; this guard then killed it anyway. WBS-27,
+       WBS-27.1, WBS-27.2 and WBS-28 share the shape and were adjudicated OUTSIDE the slate because of
+       it, with nothing recording the exception.
+       So: a criterion-less item may name ZERO requirements and renders with no requirement section.
+       ⛔ THE REFUSAL IS NARROWED, NOT REMOVED — an item with no criterion AND no cited DEC-/DW- row
+       still fatals at the citedRows test, and a criterion-BEARING item whose criteria name no
+       requirement is still a real fault and still fatals here. Over-narrowing this would look exactly
+       like a passing suite, which is why the DEF-142 render case is PAIRED with a calibration that
+       differs from it only in whether a reason exists, and asserts the refusal still fires. */
     const reqIds = criterionLess
       ? [...new Set((w.title.match(/\b(?:FR|NFR)-\d+\b/g) ?? []))].slice(0, 1)
       : [...new Set(criteria.map((c) => c.requirement_id))];
-    if (!reqIds.length) fatal(`${w.id} names no requirement and carries no criterion that names one`);
+    if (!criterionLess && !reqIds.length) {
+      fatal(`${w.id} carries acceptance criteria but none of them names a requirement`);
+    }
     const qs = reqIds.map((id) => reqs[id] ?? fatal(`requirement ${id} (of ${w.id}) not found`));
     /* The DW- row is optional: not every work item closes one. Absent is fine; wrong is not.
        A criterion-less item gets EVERY cited row, because the reason may sit in any of them. */
@@ -139,19 +169,30 @@ const sections = items
     return `
   <section>
     <h2>${esc(w.id)} <span class="st">${esc(w.lifecycle_status)}</span></h2>
-    <p class="meta">${criterionLess
-      ? '<b>no acceptance criterion</b>'
-      : criteria.map((c) => {
-          const cv = latestVerdict(c.id);
-          return `${esc(c.id)} verdict <b>${esc(cv.verdict)}</b> (${esc(cv.id)})`;
-        }).join(' &middot; ')} &middot;
-      ${qs.map((q) => `${esc(q.id)} <b>${esc(q.lifecycle_status)}</b>`).join(' &middot; ')}${d ? ` &middot; ${esc(d.id)} <b>${esc(d.lifecycle_status)}</b>` : ''}</p>
+    <p class="meta">${[
+      criterionLess
+        ? '<b>no acceptance criterion</b>'
+        : criteria.map((c) => {
+            const cv = latestVerdict(c.id);
+            return `${esc(c.id)} verdict <b>${esc(cv.verdict)}</b> (${esc(cv.id)})`;
+          }).join(' &middot; '),
+      /* DEF-142: spread rather than join-into-a-fixed-separator. With zero requirements the old form
+         emitted a dangling " &middot; " — cosmetic, but this page is the acceptance bar. */
+      ...(qs.length ? qs.map((q) => `${esc(q.id)} <b>${esc(q.lifecycle_status)}</b>`) : ['<b>no requirement</b>']),
+      ...(d ? [`${esc(d.id)} <b>${esc(d.lifecycle_status)}</b>`] : []),
+    ].filter(Boolean).join(' &middot; ')}</p>
 
     ${criterionLess ? `<div class="lead"><p><b>This item carries NO acceptance criterion, and that is
     deliberate rather than missing.</b> Nothing below is a verdict record, so there is no <code>Met</code>
     to lean on: you are adjudicating the completion record itself, and the recorded reason for the
     criterion's absence, both quoted verbatim from the store. If that reason does not persuade you, the
-    right outcome is to leave the item at <b>Review</b> and say what evidence would settle it.</p></div>` : ''}
+    right outcome is to leave the item at <b>Review</b> and say what evidence would settle it.</p>${
+      qs.length ? '' : `<p><b>It also names no requirement, which is what an INSTRUMENT item looks like</b>
+    &mdash; work commissioned to make a fault answerable rather than to satisfy an <code>FR-</code> or
+    <code>NFR-</code>. There is no requirement section below because there is no requirement, not because
+    one could not be found. <b>The decision that commissioned it is quoted in full instead, and that is
+    the thing to adjudicate</b>: was this the right instrument to build, and does its completion record
+    show it actually delivering? (<code>DEF-142</code>.)</p>`}</div>` : ''}
 
     <h3>The work item &mdash; ${esc(w.id)}</h3>
     ${block('As stored', w.title)}
