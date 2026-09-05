@@ -101,8 +101,21 @@ docker info                                  # ⚠ ASK IT — do not expect eith
                                              # something "needs Docker".
 ```
 
+⚠⚠⚠ **IF YOU RUN `readiness_check` ON A *CLOSED PHASE* AND IT COMES BACK `ready:false` ON `wbs-done`,
+THAT IS BOOKKEEPING AND NOT A LIVE PROBLEM — READ `PE-886` BEFORE INVESTIGATING IT.** The `P1`–`P19`
+planning tree was executed through the SLICE rows and its own `wbs-item` rows were never status-flipped
+behind it, so they sit `Approved` with `slice_id` NULL under phases that are `Implemented`. **`DEC-134` d2
+ruled *leave and record*, and `PE-886` is the record half** — written to be found by a session that has not
+read this one. ⛔ **DO NOT "REPAIR" IT**, and the reason is not that it is harmless: **nobody has measured
+whether that status is doing work**, and `LL-038`'s tell for a load-bearing status is UNIFORMITY, which a
+large block of rows at one status is. A bulk flip is full-row upserts against a constraint whose behaviour
+on those rows is unknown. ⚠ **No count is written here** — the numbers move and `PE-886` carries the
+measurement with the command that produced it.
+
 ⚠⚠ **THE PERMISSION THREAD IS SETTLED AND ITS ROW IS DISPOSITIONED — `DEC-129` d1, 2026-09-04. READ THE
-ROW AND `PE-860`, NOT THIS PARAGRAPH.** ⛔ **THIS BLOCK HAS TWICE OPENED WITH A STATUS WRITTEN INTO PROSE
+ROW AND `PE-860`, NOT THIS PARAGRAPH.** ⛔ **`.claude/PERMISSIONS.md` NO LONGER EXISTS** — deleted
+2026-09-05 (`DEC-134` d3, `DEF-141`), because the stub that replaced its shape theory had itself become
+false in four places. **`.claude/memory/permission-prompts-four-causes.md` is the single surviving account.** ⛔ **THIS BLOCK HAS TWICE OPENED WITH A STATUS WRITTEN INTO PROSE
 — *"CAUSE WAS IDENTIFIED"*, then *"HAS A CANDIDATE CAUSE"* — which is the one thing this file forbids
 everywhere else.**
 ⭐⭐ **THE ONE FACT WORTH CARRYING, BECAUSE IT SURVIVES EVERY MODE AND WILL LOOK LIKE A BUG AGAIN:** with
@@ -2333,7 +2346,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-133` first: `DEC-133`, `DEC-132`,
+   `gh run list --branch main`. **Then read these rows, and read `DEC-134` first: `DEC-134`, `SC-047`,
+   `DEF-141`, `PE-883`, `PE-885`, `PE-886`, `PE-889`, `PE-890`, `DEC-133`, `DEC-132`,
    `DEC-131`, `DEC-130`, `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-124`, `DEC-123`, `DEC-121`,
    `DEC-120`, `DEC-118`, `SC-046`, `SC-045`, `DEF-140`, `DEF-139`, `DEF-138`, `DEF-137`, `DEF-136`,
    `DEF-135`, `DEF-130`, `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-098`, `DW-096`, `LL-060`,

@@ -6,7 +6,26 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
-## ★★★ 2026-09-05 · sweep done · `DEF-136`/`DEF-138`/`DEF-140` closed · `DEF-129` diagnosed · `LL-056`–`LL-060`
+## ★★★ 2026-09-05 · `DEC-134` · `WBS-29` capture shipped · `PERMISSIONS.md` DELETED · `DEF-141`
+
+⛔⛔ **`.claude/PERMISSIONS.md` NO LONGER EXISTS** (`DEC-134` d3 / `DEF-141`): 4 false claims incl. *"the
+allowlist is not consulted"* — what `DEC-129` d1 closed `DEF-136` for. **`permission-prompts-four-causes.md` is now the only account.**
+★★★ ⚠⚠ **`readiness_check` ON A CLOSED PHASE RETURNS `ready:false` ON `wbs-done` — BOOKKEEPING, NOT A
+PROBLEM** (`PH-1` fails on `WBS-1..16`): the `P1`–`P19` tree ran via SLICE rows and was never flipped.
+**`DEC-134` d2 = leave and record; `PE-886` is the record.** ⛔ Don't "repair" — `LL-038`'s load-bearing
+tell is UNIFORMITY and nobody measured whether that status does work.
+- ⭐⭐ **AN INSTRUMENT CAN BE HALF-UNCONDITIONAL AND STILL READ AS AN INSTRUMENT.** `e2e`'s CLIENT capture
+  was `!cancelled()`, its SERVER capture `failure()` — so a **flaked-GREEN** run uploaded traces and no
+  Keycloak. That is every `DEF-129` occurrence. `WBS-29` (#370 → `32efd525`) fixed it. ⭐ **Bar = DELIVERY,
+  not execution:** artefact 5,354 B, `keycloak.log` **50 lines**, on a GREEN run.
+- ⚠⚠ **`work_bind`/`progress_update`/`export_html` WRITE *AFTER* THE COMMIT THEY RECORD** — package data
+  is dirty again exactly when you `git checkout -b`. ⭐ **Run `git status --porcelain -uall` immediately
+  before branching**; a memory of having committed is not the check. Cost one `gh pr update-branch`.
+- ⚠ **`gh api …/jobs/<id>/logs` gave ZERO BYTES**; `gh run view --log` gave 267 KB. ⛔ My control was a
+  **step name**, which that format never writes (`UNKNOWN STEP`) — a control that cannot appear proves
+  nothing (`LL-033`). ⚠ `entity_upsert` **refuses** a status-only payload (NOT NULL on title).
+
+## ★★★ 2026-09-05 (earlier) · `DEF-136`/`DEF-138`/`DEF-140` closed · `LL-056`–`LL-060`
 
 ★★★ ⭐⭐ **READS OUTSIDE THE WORKING DIR PROMPT IN *EVERY* MODE, BYPASS INCLUDED** —
 `blockReadsOutsideWorkingDirectories` is ON at user scope. **By design; never file it as a defect.**
@@ -78,22 +97,15 @@ detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive control
 - ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`). I offered a
   file that did not exist and the operator **chose it**. ⭐ **`LL-052`, PINNED:** a file's NAME and FIRST
   SCREEN describe its FORMAT, never its content; a manifest saying `kept` is quotable only for its `DROPPED`.
-- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* RESULT WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`). Working set on
-  a 64 GB box cannot tell a leak from lazy collection. Use `GC.GetTotalMemory(true)` after a forced collect.
-- ⭐⭐ **A ROOT-PATH TOOL NAMES *A* PATH, NEVER *THE* CAUSE** (`LL-048`). `gcroot` named the rate limiter;
-  removing it changed nothing. **Read the root COUNT first**; after two failed bisects, vary the QUANTITY.
-- ⚠ **A big hand-paste is survivable IF you verify after** — byte-compare against the pre-image
-  (`LL-028`+`LL-001`); caught a real loss once. ⭐⭐ **`LL-049`: a measurement AFTER the action it gates
-  is a report, not a control.**
-- ⭐⭐ **SWEEP THE DECISION REGISTER FOR A ROW'S ID BEFORE CALLING ITS NUMBERS STALE** (`LL-050`) —
-  `DEF-087` reads stale but `DEC-068` d2 ruled it fix-forward-only; a "repair" would reverse a decision.
-- ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** — they ride onto the branch (package→`main`
-  direct, code→PR). ⚠⚠ **`strict: true`: ANY push to `main` leaves every open PR stale**, whatever it
-  touched — **path-ignore stops the CI RUN, not the staleness.** Push package writes FIRST, then rebase,
-  then nothing to `main` until the PR lands. ⚠ Each re-stale costs a FULL cycle (~15-18 min).
-- ⭐⭐ **Ryuk does NOT reap before you can copy** — `docker cp <id>:/path`, not `ReadFileAsync`. ⚠ The
-  register discriminates `DEF-121` (`ContainerNotRunningException`) from `DEF-109` (`TaskCanceledException`)
-  **on the exception type** — always discriminate by signature before attributing a red.
+- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`); use
+  `GC.GetTotalMemory(true)`. ⭐⭐ **A root-path tool names *A* path, never *THE* cause** (`LL-048`).
+- ⚠ **A big hand-paste is survivable IF you verify after** — byte-compare vs the pre-image
+  (`LL-028`+`LL-001`). ⭐⭐ **`LL-049`: a measurement AFTER the action it gates is a report, not a control.**
+- ⭐⭐ **SWEEP THE DECISION REGISTER FOR A ROW'S ID BEFORE CALLING ITS NUMBERS STALE** (`LL-050`).
+- ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** (package→`main` direct, code→PR). ⚠⚠
+  **`strict: true`: ANY push to `main` stales every open PR** — path-ignore stops the RUN, not the
+  staleness. Each re-stale ≈ a full cycle. ⭐ Ryuk doesn't reap first: `docker cp`. ⚠ Discriminate a red
+  by SIGNATURE — `DEF-121` `ContainerNotRunningException` vs `DEF-109` `TaskCanceledException`.
 - ⛔⛔ **NEVER NAME A SLICE ID OR DESCRIBE AN ITEM IN `prm-next.md`** — nine commands named a CLOSED slice
   (46th); *"DIAGNOSE `DEF-109`"* shipped in the commit saying DIAGNOSED (48th). **A briefing on HOW is a
   description too.** ⚠ **`ADR-0045`**: where a `.dc.html` cannot satisfy `INV-014`'s px AND `AA`, AA governs.
@@ -111,8 +123,7 @@ agent's recommendation to carry** — never read one as agreement about HOW.
   twice; `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.** ⚠⚠ **`skipped` CONFLATES
   *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`). ⭐⭐ **A remedy reducing a PROBABILITY cannot be
   falsified by recurrence** (`LL-035`). ⭐ **A re-run samples every OTHER question** (`LL-037`) — found `DEF-122`.
-- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`) — tell is **uniformity**. ⭐⭐ **A
-  progress entry is a ruling's record too — sweep those, not just DEC/ADR.** ⛔ **Name no readiness answer.**
+- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`; tell = uniformity). ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.** ⛔ Name no readiness answer.
 - ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row with nested
   `custom_attributes` is **silently deleted from the result**, not undercounted (the **FORTY-FIRST**).
 - ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — keeps producing rulings the agenda lacked, has
@@ -126,8 +137,6 @@ agent's recommendation to carry** — never read one as agreement about HOW.
   *REMAINS***. ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE WRONG SUBJECT.** ⭐ **Name
   no slice id in durable prose.** ⚠ **`PH-3`/`PH-7` are `Approved`, not closed** — close-out is not due.
 
-★★★ [**`SL-034` — slate generator + ASVS pack**](sl034-slate-generator-and-asvs-pack.md) ·
-[**`SL-033` findings**](sl033-slice-findings.md) · [**`DW-082`/Dependabot**](dw082-sweep-and-vitest4.md)
 
 - ⭐⭐⭐ **`LL-032` (pinned): a fixture that is the LIVE REGISTER changes meaning when somebody does ordinary
   work, and the dangerous outcome is the *PASS*.** ⛔⛔ **NEVER carry `security-controls.md` §20's *"L2 is met
@@ -143,24 +152,16 @@ agent's recommendation to carry** — never read one as agreement about HOW.
   TWICE; a third reopens the rule). It names that test ONLY, so a `DEF-109` red does not fire it.
   ⚠⚠ **`scripts/**` and `.gitignore` are NOT path-ignored** — PR route; **poll CI after ANY push to `main`**.
   ⚠ **`DEF-107`: approving+pinning a lesson does NOT bind it** — run `handoff_emit` in the SAME batch.
-- ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`).
-  ⚠ **Approved ACs are IMMUTABLE** (`AC-147`). ⛔ **Never `PageSize.Clamp` an export.** ⚠ **`DW-088`:
-  `TopicDetail`'s download button is hardcoded `disabled`.**
-- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate`
-  · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` ·
-  `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`.
+- ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`). ⚠ **Approved ACs are IMMUTABLE** (`AC-147`). ⛔ Never `PageSize.Clamp` an export. ⚠ `DW-088`: `TopicDetail`'s download button is hardcoded `disabled`.
+- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate` · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`.
 
 ## ★★ 2026-08-20 · the disposition session — durable rules only
 
 - ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — the operator
-  **refused an interview** over it. `LL-011`, pinned. Anything they read to DECIDE carries each record's
-  full text inline, **generated** from the JSONL. ⭐ `G-IDS` checks FKs, **not ids in prose** (`DEF-101`).
-- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS AND NOTHING COMPARES THEM** —
-  activating a `DW-` row → check its requirement in the same breath (`LL-042` is the `SC-`/`WBS-` twin).
-  ⚠ **Measuring inside the set you hold is not measuring the register.**
-★★ [**Durable rules from batches 13–21**](batches-13-21-durable-rules.md) — `Met`-verdict scope, the
-enforcing-mechanism trap, never leave a Pending AC, Hangfire process-globals, union coverage, `$?` after a
-pipe, production's reconciled state.
+  **refused an interview** over it. `LL-011`, pinned. ⭐ `G-IDS` checks FKs, **not ids in prose**.
+- ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS** — activating a `DW-` row →
+  check its requirement too. ⚠ Measuring inside the set you hold is not measuring the register.
+★★ [**Durable rules, batches 13–21**](batches-13-21-durable-rules.md) · [**`SL-034`**](sl034-slate-generator-and-asvs-pack.md) · [**`SL-033`**](sl033-slice-findings.md) · [**`DW-082`**](dw082-sweep-and-vitest4.md)
 
 ## Earlier 2026-08 — durable findings only
 
