@@ -74,8 +74,19 @@ internal static class ContainerStartup
     // which is the same conditional visibility that let the startup hang sit unnoticed.
     //
     // The budgets are chosen together, not separately: a build and a start can BOTH be slow in one run, and
-    // 8 + 10 = 18 minutes still leaves the backend job room under its own timeout-minutes: 25 to fail, report,
-    // and finish. Eight minutes is roughly 3x the ~160s a genuine cold build of that image takes.
+    // 8 + 10 = 18 minutes leaves the backend job room under its own timeout-minutes to fail, report and finish.
+    //
+    // ⚠⚠ TWO NUMBERS IN THIS COMMENT WENT STALE AND BOTH ARE CORRECTED HERE (DEF-140, 2026-09-05).
+    // It said eight minutes is "roughly 3x the ~160s a genuine cold build takes". MEASURED with --no-cache
+    // and a warm base image: 421 SECONDS, dominated by 297 MB of mssql-server plus 380 MB of
+    // mssql-server-fts from packages.microsoft.com; CI additionally pulls the ~1.75 GB base (~35s).
+    // SO 480s IS ON THE ORDER OF 1.1x A COLD BUILD, NOT 3x - the margin this comment claimed does not exist.
+    // It also said the job ceiling is "timeout-minutes: 25"; DEC-121 d2 raised that to 40.
+    //
+    // ⛔ THE BUDGET VALUE IS DELIBERATELY LEFT AT 8 MINUTES. 421s is one developer machine, and the CI
+    // occurrence never reached the package download at all - it was still fetching apt indices when it died -
+    // so the package leg is UNTESTED against this bound. Changing a threshold on that evidence would be
+    // guessing. What is fixed here is the false margin in the prose, not the number it described.
     internal static readonly TimeSpan BuildBudget = TimeSpan.FromMinutes(8);
 
     public static async Task BuildOrFailFastAsync(IFutureDockerImage image, string name, TimeSpan? budget = null)

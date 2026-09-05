@@ -16,10 +16,27 @@
 # WAS BROKEN — ldd reports nothing missing in either. See DW-078 / PE-606.
 FROM mcr.microsoft.com/mssql/server:2025-latest@sha256:4bab24f36c1ecd48e85f7d37df26e6bf301641d84c3fe652f9a0dcc947d512e1
 USER root
+# ⚠⚠ DEF-140: THE FIRST TWO LINES OF THE RUN BLOCK ARE A FIX, NOT TIDYING — THEY REMOVE THE ONLY
+# THIRD-PARTY DEPENDENCY IN THIS BUILD THAT EVER STALLED IT, AND THE BUILD NEVER READ IT.
+# The base image ships `Components: main universe restricted multiverse` over `noble noble-updates
+# noble-backports`, so `apt-get update` refreshed every one of them. On CI run 33939406843 the
+# 19.3 MB `noble/universe` index from archive.ubuntu.com never finished: the build sat on it for
+# 5m31s and died on its 480-second budget, having downloaded an index nothing here consults.
+# Trimmed to `main` on `noble noble-updates`, EVERY index fetch completes in ~3 seconds — measured.
+# ⚠ packages.microsoft.com was never the problem; it served all four of its indices in under a second.
+#
+# ⛔ AND THIS IS WHY THE KEY IS NO LONGER PIPED THROUGH gpg: `Components: main` ALONE FAILS with
+# "E: Package 'gnupg2' has no installation candidate" — gnupg2 lives in UNIVERSE, so keeping it
+# would keep the very index that caused the stall. apt reads ASCII-armored keys straight from
+# /etc/apt/trusted.gpg.d/*.asc, so writing microsoft.asc there removes the only reason gnupg2 was
+# ever installed. The two halves are ONE change; reverting either alone breaks the build.
+#
 # --no-install-recommends keeps the layer minimal (C-CON-002 / DS-0029) — no suggested extras.
-RUN apt-get update \
- && apt-get install -y --no-install-recommends curl gnupg2 \
- && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg \
+RUN sed -i 's/^Components: main universe restricted multiverse/Components: main/' /etc/apt/sources.list.d/ubuntu.sources \
+ && sed -i 's/^Suites: noble noble-updates noble-backports/Suites: noble noble-updates/' /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates \
+ && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/trusted.gpg.d/microsoft.asc \
  && curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/mssql-server-2025.list -o /etc/apt/sources.list.d/mssql-server-2025.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends mssql-server-fts \
