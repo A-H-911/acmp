@@ -18,9 +18,9 @@ tell is UNIFORMITY and nobody measured whether that status does work.
   was `!cancelled()`, its SERVER capture `failure()` — so a **flaked-GREEN** run uploaded traces and no
   Keycloak. That is every `DEF-129` occurrence. `WBS-29` (#370 → `32efd525`) fixed it. ⭐ **Bar = DELIVERY,
   not execution:** artefact 5,354 B, `keycloak.log` **50 lines**, on a GREEN run.
-- ⚠⚠ **`work_bind`/`progress_update`/`export_html` WRITE *AFTER* THE COMMIT THEY RECORD** — package data
-  is dirty again exactly when you `git checkout -b`. ⭐ **Run `git status --porcelain -uall` immediately
-  before branching**; a memory of having committed is not the check. Cost one `gh pr update-branch`.
+- ⚠⚠ **`work_bind`/`progress_update`/`export_html` WRITE *AFTER* THE COMMIT THEY RECORD** (`LL-061`, Proposed) — dirty again exactly when you `git checkout -b`.
+  ⭐ **`git status --porcelain -uall` right before branching**; a memory of committing is not the check.
+  ⚠ **Clean tree ≠ pushed**: `git fetch -q` then `git rev-list --left-right --count @{u}...HEAD`.
 - ⚠ **`gh api …/jobs/<id>/logs` gave ZERO BYTES**; `gh run view --log` gave 267 KB. ⛔ My control was a
   **step name**, which that format never writes (`UNKNOWN STEP`) — a control that cannot appear proves
   nothing (`LL-033`). ⚠ `entity_upsert` **refuses** a status-only payload (NOT NULL on title).

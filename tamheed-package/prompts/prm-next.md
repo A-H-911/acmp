@@ -23,6 +23,24 @@ readiness_check("package")                   # ⚠ ASK IT. Do NOT expect either 
                                              # and its eventual close was an evidenced disposition,
                                              # not a re-grading.
 git status --porcelain -uall                 # expect a CLEAN TREE
+git fetch -q                                 # ⚠ NOT OPTIONAL — the next command compares against the
+                                             # TRACKING ref, and a stale one reports `0 0` for a
+                                             # divergence that really exists.
+git rev-list --left-right --count @{u}...HEAD
+                                             # ⚠ ASK IT — do not expect either answer. A nonzero RIGHT
+                                             # number is LOCAL COMMITS NOT ON `origin`: report them and
+                                             # do NOT push them without the operator's word (`DEC-127`
+                                             # d1 is unconditional). A nonzero LEFT number means main
+                                             # moved under you.
+                                             # ⭐⭐ A CLEAN TREE DOES NOT IMPLY A PUSHED ONE, AND THE
+                                             # TWO COMMANDS ANSWER DIFFERENT QUESTIONS. Committing the
+                                             # package and publishing it are separate steps, and the
+                                             # recording obligations make the gap routine rather than
+                                             # exceptional: `work_bind` needs a sha that must ALREADY
+                                             # EXIST, and the closing `progress_update` narrates a
+                                             # commit that has already landed — so both flush JSONL
+                                             # AFTER the commit they describe. A session can end
+                                             # correctly committed and still unpublished.
 git rev-parse --abbrev-ref HEAD              # ⚠ ASK IT, never assume — read the conditional below
 gh pr list --state open                      # ⚠ NO `--limit` (`PE-599`: a cap at ten is what hid the two
                                              # PRs that became `DW-080`). A Dependabot queue MOVES, so
@@ -407,8 +425,20 @@ the failure it exists to warn about.
 ⭐⭐ **THE TRANSFERABLE HALF: *PROMPTS BY DESIGN* AND *FORBIDDEN* ARE DIFFERENT STATES, AND THE AGENT CANNOT TELL THEM APART BY LOOKING** — a prompt never reaches a tool result, so an untried action and a blocked one are indistinguishable from here. **The only way to learn which is to try it and let the operator answer.** `DEF-133`'s own row carried the same conflation in its `not_fixed_here` field and is corrected there too.
 ⚠ **Found by acting, not by sweeping** — no grep finds a false claim about what you are able to do; the instrument is attempting the thing.
 
+⚠⚠⚠ **THE FIFTY-FOURTH IS IN THE NUMBERED LIST, IS MINE, AND RODE OUT IN TEN COMMITS — AND WHAT MAKES IT
+WORTH ITS ORDINAL IS THAT A SESSION CORRECTED THE IDENTICAL SENTENCE ON ANOTHER SURFACE THE SAME DAY AND
+DID NOT COME BACK FOR THIS COPY.** Item 1 asserted *"`Edit(.scratch/**)` is the ONLY `Edit` rule that
+exists … which is `.claude/PERMISSIONS.md`'s stated intent"*. True when measured on 2026-09-04; falsified
+on 2026-09-05 at 15:40 when the operator emptied the project allowlist (`313e8ff9`); and the handoff
+refresh at 17:06 plus every commit after it shipped it false. **Its trailing clause also credited an
+intent to a file deleted that same day.** ⛔ **The full entry is in item 1 where the sentence stood, and
+is deliberately NOT restated here** — a second copy is the exact failure being logged (`LL-056`).
+⭐ **Found by a pattern sweep, not by a full read**: grepping `allowlist\|Edit(\|settings\.json` across the
+whole file while preparing a resume. **No instrument here could have found it** — every identifier
+resolves, no status is wrong, and the claim is about a file outside the package.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-three** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-four** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -1477,8 +1507,26 @@ which is what makes it invisible.
    `verification_method`, `custom_attributes` **byte-identically**. A status-only requirement update
    needs just `id, kind, title, mvp, lifecycle_status, source_kind, source_span, introduced_in`.
 14. ⚠ **A GENERATED payload must be PASTED, not RE-TYPED** (`LL-001`). Where composition is
-   unavoidable, **hash a pre-image and assert byte-identity after** — done twice last session over
+   unavoidable, **hash a pre-image and assert byte-identity after** — done twice over
    24 requirements and 4 WBS items, both identical.
+14a. ⛔⛔ **WORKED INSTANCE, 2026-09-05, AND IT IS THE CASE 14b CALLS *"elsewhere there is no such
+   guard"*: A LONG FIELD RE-SENT IN FULL LOST AN ENTIRE PARAGRAPH AND THE TOOL SAID `ok: true`.**
+   Appending one dated block to a defect title meant re-sending all 4,296 characters (upserts replace
+   whole rows). The paste was faithful everywhere except that it **silently dropped a complete paragraph
+   3,208 characters in** — no truncation, no error, `applied: 1`. ⚠ **Nothing in the result could have
+   revealed it**, and re-reading the payload would not have either: the eye skips a missing paragraph in
+   4 KB of prose far more easily than it invents one. **A defect row has none of the byte-compare and
+   attribution guards that make a LESSON approval fail loudly.**
+   ⭐⭐ **THE REUSABLE HALF IS THE REPAIR, NOT THE MISTAKE — DO NOT RE-TYPE THE CORRECTION EITHER.**
+   Reconstruct it mechanically from the two pieces you already hold:
+   `corrected = pre_image_title + separator + block_extracted_from_the_STORED_row`, dump it to a file,
+   send that, then assert `stored == corrected` **exactly** rather than by prefix. The second pass then
+   verified 6,388 = 6,388 characters with the original 4,296 byte-identical and every other field
+   preserved by omission. ⚠ **Save the pre-image BEFORE the first write, always** — it is the only thing
+   that made the loss detectable at all, and after the write the original is gone.
+   ⭐ **And prefix-matching is the right control here but needs its own control**: `startswith` answers
+   *"was anything appended?"*, never *"was anything removed from the middle?"* — it returned False, and
+   the divergence index is what named the missing paragraph.
 14b. ⚠⚠ **APPROVING A LESSON IS GUARDED IN TWO WAYS THE OTHER REGISTERS DO NOT HAVE, AND BOTH ARE
    FRIENDS.** (a) *Approval is not an edit* — `entity_upsert` refuses unless the content you send is
    **byte-identical** to the stored row (*"content drifted on [...]; send the stored content
@@ -2350,10 +2398,19 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEF-141`, `PE-883`, `PE-885`, `PE-886`, `PE-889`, `PE-890`, `DEC-133`, `DEC-132`,
    `DEC-131`, `DEC-130`, `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-124`, `DEC-123`, `DEC-121`,
    `DEC-120`, `DEC-118`, `SC-046`, `SC-045`, `DEF-140`, `DEF-139`, `DEF-138`, `DEF-137`, `DEF-136`,
-   `DEF-135`, `DEF-130`, `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-098`, `DW-096`, `LL-060`,
+   `DEF-135`, `DEF-130`, `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-098`, `DW-096`, `LL-061`,
+   `LL-060`,
    `LL-059`, `LL-058`, `LL-057`, `LL-056`, `LL-055`, `PE-854`, `PE-859`, `PE-860`, `PE-867`, `PE-873`,
-   `PE-875`, `PE-876`, `PE-877`, `PE-883`,
-   and the `wbs-item` rows the live slice's `wbs-done` names.**
+   `PE-875`, `PE-876`, `PE-877`, `PE-891`, `PE-892`,
+   and, **for EVERY id `entity_query("slice", status="Approved")` returned above**, the `wbs-item` rows
+   that slice's `wbs-done` names.**
+   ⚠ **THAT CLOSING PHRASE READ *"the live slice's `wbs-done`"* AND THE SINGULAR WAS ALREADY WRONG** —
+   the same fault the opening of this item warns about, three lines below its own warning. **Not tallied:
+   caught while preparing a resume, before any commit carried it** (`PE-811`'s precedent).
+   ⚠ **`DEF-129` IS IN THAT LIST FOR A REASON THAT IS EASY TO MISREAD: ITS *"WHAT WOULD MOVE THIS ROW"*
+   PARAGRAPH IS FALSIFIED AND HAS BEEN LEFT STANDING, WITH A DATED BLOCK APPENDED UNDER IT.** Read the row
+   to its END — the correction is below the claim it replaces, deliberately, and a reader who stops at the
+   original paragraph will come away with two opposite remedies that were both rejected (`LL-052`).
    ⛔ **A COUNT AND A NAMED RULING-WITH-WORK STOOD HERE AND ARE DELETED, NOT REFRESHED.** This line said
    *"`DEC-128` AND `DEC-127` d2 ARE THE RULINGS WITH WORK ATTACHED"*; that work is finished. **What is
    authorised and what is owed are STATES, and this file's whole error log is about writing states into
@@ -2373,8 +2430,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    flagged major that turned out to be a REPAIR; and a package that broke the build while the one being
    guarded against did not. ⛔ **None of them is described here** — that is the FORTY-FIFTH/SEVENTH/
    EIGHTH's fault class, and the rows are the record.
-   ⛔⛔ **`PE-875`, `PE-876` AND `PE-883` ARE THE MOST REUSABLE THING THE LATEST SESSION PRODUCED, AND
-   ALL THREE ARE RETRACTIONS OF SOMETHING THE AGENT HAD JUST WRITTEN.** Between them: a mechanism
+   ⛔⛔ **`PE-875`, `PE-876` AND `PE-883` ARE THE MOST REUSABLE THING 2026-09-05 PRODUCED, AND
+   ALL THREE ARE RETRACTIONS OF SOMETHING THE AGENT HAD JUST WRITTEN.** ⚠ **This line said *"THE LATEST
+   SESSION"* — a relative-time pointer, which rots on the next commit exactly as a status does. Dated
+   instead; not tallied, because it was fixed before shipping false** (`LL-016`). Between them: a mechanism
    inferred from a REAL compile-level fact and never measured; a detector calibrated through a channel
    CI does not have, so it shipped silent; and an artefact declared empty that held the answer in a
    stream nobody read separately. ⭐ **The one question that would have caught all three, asked BEFORE
@@ -2396,12 +2455,27 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    and every `Edit` outside `.scratch/**` is the first.**
    ⛔⛔ **READ `PE-834` BEFORE `PE-825`, BECAUSE `PE-834` REFUTES IT.** `PE-825` published a "fifth,
    non-project-level" cause for permission prompts and it is **WRONG**. `PE-834` is the correction, taken
-   from the operator running the command: `Edit(.scratch/**)` is the ONLY `Edit` rule that exists, so every
-   edit to source, a workflow or the package prompts **correctly and by design** — *fewer interruptions on
-   READING, not on ACTING*, which is `.claude/PERMISSIONS.md`'s stated intent. ⭐ **The error is the useful
-   part: I grepped `Bash(` only, inferred the `Edit` rules from that document's PROSE, and generalised a
+   from the operator running the command. ⛔⛔ **WHAT `PE-834` MEASURED IS NOT WHAT IS TRUE NOW, AND THE
+   SENTENCE THAT STOOD HERE IS THE FIFTY-FOURTH — DELETED, NOT REFRESHED.** It read *"`Edit(.scratch/**)`
+   is the ONLY `Edit` rule that exists, so every edit to source, a workflow or the package prompts
+   correctly and by design — fewer interruptions on READING, not on ACTING, which is
+   `.claude/PERMISSIONS.md`'s stated intent."* **Every clause of that has since failed in a different
+   way**, and it is counted because it was TRUE when written (2026-09-04), became FALSE the next day, and
+   then **rode out in ten commits** where a fresh session could read it: the operator emptied the project
+   allowlist on 2026-09-05 (`313e8ff9`, 15:40), and the handoff refresh at 17:06 and everything after it
+   shipped the claim false. ⛔ **The trailing attribution was worse than stale — it credited an intent to
+   a file this project DELETED the same day** (`DEC-134` d3, `DEF-141`), and the identical quotation was
+   corrected in `.claude/memory/permission-prompts-four-causes.md` **in the very session that missed this
+   copy**. **That is `LL-056` in its exact recorded form: two surfaces carrying one instruction, and the
+   one nobody re-read is the one that stays wrong.**
+   ⭐ **NO REPLACEMENT STATE IS WRITTEN HERE, WHICH IS THE WHOLE LESSON OF THE FIFTY-SECOND AND
+   FIFTY-THIRD** — an allowlist is a file the operator edits between sessions, so any sentence describing
+   its contents is wrong in whichever direction it next moves. ⭐ **The error and the method are what
+   survive: I grepped `Bash(` only, inferred the `Edit` rules from a DOCUMENT'S PROSE, and generalised a
    half-measured premise across the whole of it** (`LL-006`). **Measure the allowlist for the tool actually
-   prompting, with `grep -o '\"\\(Edit\\|Write\\|Read\\)([^)]*)\"'`, before concluding anything about it.** ⛔ **What is at what status, what is still
+   prompting — `grep -o '\"\\(Edit\\|Write\\|Read\\)([^)]*)\"' .claude/settings.json ~/.claude/settings.json`
+   — before concluding anything about it, and remember a file that parses to `{}` grants nothing at all
+   while looking perfectly valid.** ⛔ **What is at what status, what is still
    open, and what anyone owes anyone is deliberately NOT written here.** ⚠ **No `WBS-` prefix is written
    there on purpose** — naming one is the FORTY-SIXTH's fault in a smaller costume, wrong the moment a
    later slice opens; `readiness_check` returns them and never rots.
@@ -2560,9 +2634,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `entity_query("slice", status="Approved")` then `readiness_check` on the id it returns.
 
 3. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
-   `Implemented` is theirs alone, adjudicated per item against a GENERATED slate
-   (`node scripts/gen-slice-review-slate.mjs <the live slice id>`), never a summary — `LL-011`. ⛔ **Which rows are at
-   `Review` is deliberately not written here**; the command above prints them. ⭐ The per-item mechanism
+   `Implemented` is theirs alone, adjudicated per item against a GENERATED slate — run
+   `node scripts/gen-slice-review-slate.mjs <id>` **once for EVERY id
+   `entity_query("slice", status="Approved")` returns**, never a summary (`LL-011`). ⛔ **Which rows are at
+   `Review` is deliberately not written here**; the command above prints them.
+   ⚠ **THE ARGUMENT USED TO READ `<the live slice id>`, WHICH ASSUMES THERE IS EXACTLY ONE.** A slice
+   whose `wbs-done` passes can stay `Approved` beside a newer one, so the singular silently adjudicates
+   one slice and leaves another's `Review` rows unasked — **a clean answer about the wrong subject, which
+   is this file's most-repeated failure and not a typo.** Not tallied: fixed before any commit carried it. ⭐ The per-item mechanism
    has discriminated twice and is not ceremony: a slice-level verdict would have carried `WBS-24.4`
    through on its neighbours' strength on both occasions.
 4. **`release-close-out.md` has never been run.** ⛔ **AND IT IS NOT DUE — *"every phase is closed"* stood
