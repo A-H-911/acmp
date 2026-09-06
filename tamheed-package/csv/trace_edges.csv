@@ -712,6 +712,7 @@ SC-044,WBS-26.5,scope_modifies
 SC-046,DEC-128,relates_to
 SC-046,DEF-138,relates_to
 SC-048,WBS-30,scope_adds
+SC-049,DEC-135,relates_to
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
