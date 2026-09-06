@@ -709,11 +709,9 @@
 {"from_id":"SC-044","to_id":"DW-086","relation":"scope_modifies"}
 {"from_id":"SC-044","to_id":"WBS-26.5","relation":"scope_modifies"}
 {"from_id":"SC-046","to_id":"DEC-128","relation":"amends"}
-{"from_id":"SC-046","to_id":"DEC-128","relation":"relates_to"}
 {"from_id":"SC-046","to_id":"DEF-138","relation":"relates_to"}
 {"from_id":"SC-048","to_id":"WBS-30","relation":"scope_adds"}
 {"from_id":"SC-049","to_id":"DEC-135","relation":"amends"}
-{"from_id":"SC-049","to_id":"DEC-135","relation":"relates_to"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}

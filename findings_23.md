@@ -1,5 +1,15 @@
 # findings_23 — a new relation that cannot replace the old one, and an honesty counter pointed at the wrong population
 
+> ✅ **CLOSED IN TAMHEED 4.6.0, VERIFIED 2026-09-06 — ALL THREE SECTIONS, plus one clause of my own
+> retracted.** §1 → the `retire` flag on the trace-edge write path (this report's remedy 1), exercised
+> here: two edges retired in one batch, journal rows `PE-906`/`PE-907`, and `SC-046`'s unrelated
+> `relates_to → DEF-138` **survived**, which is the check that proves it keys on the full triple.
+> §2 → `audit_evidence` now reads each active AC's LATEST verdict and splits `narrated` from
+> `ungraded`; this package went 225 → **142 / 0 / 0**. §3 → the relocate text now states what the
+> server verified and what it did not. **`G-REL`'s note no longer advises a delete that never
+> existed.** ⛔ §3 also carried a false clause of mine about who generates `.gitignore` — retracted
+> in place below. Stamped so a later session does not read a settled finding as live.
+
 2026-09-06, against **4.5.0** (`server_info`: version 4.5.0, `migrations_head` 004_amends_verify.sql,
 schema_version 4, 17 tools). **Two design gaps, one wording fix — and every section of `findings_22`
 verified closed by observation rather than by the release notes.**
@@ -118,9 +128,19 @@ The registry-sync preview reported, correctly and usefully:
 ```
 
 I verified the claim before confirming (`cmp` → byte-identical, 11,003 bytes) and it is true. **But
-`data-v3-backup/` is gitignored** — `.gitignore:65`, by tamheed's own generated block. A copy in an
-ignored directory is not a durable backup: it exists on one machine and is one `git clean -xdf` from
-gone.
+`data-v3-backup/` is gitignored** — `.gitignore:65`. A copy in an ignored directory is not a durable
+backup: it exists on one machine and is one `git clean -xdf` from gone.
+
+⛔ **CORRECTED 2026-09-06 BY THE MAINTAINER, AND THE RETRACTED CLAUSE IS MINE.** This paragraph
+originally read *"`.gitignore:65`, **by tamheed's own generated block**"*. **That is false: tamheed
+generates no gitignore.** Verified rather than accepted — the only `gitignore` occurrences in the 4.6.0
+server are two advisory strings (*"a directory operators commonly gitignore"*), with no file-writing
+code anywhere; and `git log -L 59,66:.gitignore` attributes that block to **`964ab01a`, 2026-08-29,
+A-H-911** — our own commit. ⚠ **The error's shape is worth more than the error**: the block's COMMENT
+talks about `package_migrate`, so I read authorship off the subject matter. That is `LL-056` exactly —
+a document's content is not evidence of its author — and `LL-006` in its original form, read the
+implementation rather than the text describing it. **The finding itself stands**: the relocate message
+did name the ignored copy rather than the tracked one, and 4.6.0 fixed it.
 
 The actual safety net is that `data/prompts.jsonl.converted` was a **tracked** file, so the removal is
 an ordinary recoverable deletion. That is the stronger guarantee and the message does not mention it.

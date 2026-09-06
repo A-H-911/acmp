@@ -65,7 +65,10 @@ is the only wrong answer.
     active slices — finish them and **STOP for operator approval**.
 13. **Unwired requirements** (`requirements-wired`): every listed requirement gets its
     real edges — `derives_from` the deciding DEC-/ADR-, `implements` from its slice/
-    work item, `tests` from its test. `relates_to` only when nothing typed fits.
+    work item, `tests` from its test. `relates_to` only when nothing typed fits — and
+    when a typed edge replaces an old `relates_to` (or any wrong edge), RETIRE the old
+    one in the same batch (`retire: true` on the trace-edge item; journaled): edges
+    are keyed (from, to, relation), so the new one never replaces the old by itself.
 14. **Lessons awaiting confirmation** (`lessons-confirmed`): walk each Proposed `LL-`
     row WITH the operator — this is their interview, not yours; the store ENFORCES it
     (an approving upsert without `"operator_confirm": true` is refused, in every

@@ -89,7 +89,7 @@ If you cannot record (lock held, package missing), STOP and tell the operator �
 - `work_bind(ref, entity_ids=[...], note?)` — stamp a commit/PR onto entities
 - `entity_query(type, id?, status?, columns?, limit?, after_id?, ids?, search?)` — rows + total + next_after (page with after_id; quote a known set via ids; keyword-sweep via search)
 - `trace_query(entity_id, direction: out|in|both, relation?)` — typed links
-- `entity_upsert(entities=[{type, id, ...}])` — FULL rows, even for updates
+- `entity_upsert(entities=[{type, id, ...}])` — FULL rows, even for updates; `{type: trace-edge, from_id, to_id, relation, retire: true}` removes that edge (journaled — retype in ONE batch: retire + the corrected edge)
 - `gate_run()` — mechanical gate verdict · `readiness_check(scope, id?)` — is it actually DONE (waivers honored, Review counts open)
 - `export_html()` — refresh review.html · `server_info()` — version + root
 - `package_verify(name?, record?)` — canonical round-trip of the on-disk store (per-file byte-equality, foreign files, digest); `record=true` journals it

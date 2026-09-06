@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.5.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.6.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -99,7 +99,8 @@ upsert without `"operator_confirm": true`, your words, in every mode. Entity pro
 screened for placeholder tokens (G-COMPLETE): to QUOTE a token like `TODO` in prose,
 wrap it in backticks; journal text (progress entries, verdict evidence) is exempt —
 reports are never "unfinished" — and a `correction` entry collapses its target under
-itself in review.html. The journal's server-appended kinds (`forced-override`,
+itself in review.html when it names one (the server's own edge-retire `correction` row
+names no entry and folds nothing). The journal's server-appended kinds (`forced-override`,
 `lesson-confirmed`, `lesson-promoted`, `integrity-verified`) are REFUSED from
 `progress_update` — the server records those facts itself. Approved lessons
 with a shared theme can be distilled into a SKILL (`skill-promote.md`) that Claude Code
@@ -111,6 +112,12 @@ promotion candidates. Registers are read THROUGH the tools, whatever their size:
 reading `data/*.jsonl` to dodge a payload cap is drift. A scope change that touches a
 RULING carries an `amends` edge (DEC-: merged by full-row upsert; ADR-: by
 supersession); `Merged` is set LAST, after every delta row is applied and re-read.
+Trace edges are keyed (from, to, relation), so a new relation never replaces an old
+one — a WRONG edge is retired (`retire: true` on the trace-edge item; the server
+journals it) and the correct edge written in the same batch; retire a wrong edge
+only, never to make a gate pass. A remedy a tool's note or a release note names is
+always an operation the server exposes — if you cannot find it, report that as a
+finding rather than improvising.
 `package_verify()` proves the on-disk store is canonical (per-file byte-equality, foreign
 files, a citable digest; `record=true` journals it on the operator's words). Recording
 FLUSHES `data/*.jsonl` after the commit it records (`work_bind`, the closing
