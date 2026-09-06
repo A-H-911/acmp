@@ -9,7 +9,7 @@
  * gen-dw-disposition-slate (deferred work), gen-lesson-docket (lessons), gen-slice-review-slate (wbs items
  * + their criteria). A question that spans a requirement, an ADR, a deferred-work row AND a source file has
  * no generator at all, so its slate would be hand-built — which is exactly the harm DEF-116 named. This one
- * is keyed on NOTHING: it indexes every *.jsonl in the package and also quotes FILE line-ranges, so the next
+ * is keyed on NOTHING: it indexes every register you exported to tamheed-package/exports/ and also quotes FILE line-ranges, so the next
  * cross-register question needs no new script.
  *
  * WHAT IT GUARANTEES, AND WHAT IT DOES NOT. It asserts PROVENANCE: every quoted byte was read from the
@@ -34,9 +34,10 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readdirSync } from 'node:fs';
+import { loadSnapshot, exportsDir, exportHint, ExportError } from './lib/package-export.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DATA = join(ROOT, 'tamheed-package', 'data');
+const EXPORTS = exportsDir(ROOT);
 
 const fatal = (m) => {
   console.error(`FATAL: ${m}`);
@@ -59,14 +60,37 @@ if (!out) fatal('--out <file.html> is required');
 if (introFile && !existsSync(resolve(ROOT, introFile))) fatal(`intro file not found: ${introFile}`);
 if (cites.length === 0) fatal('name at least one ID or path:start-end to quote');
 
-/* ---- the store: every register, indexed by id --------------------------- */
-const registers = readdirSync(DATA).filter((f) => f.endsWith('.jsonl'));
+/* ---- the store: every EXPORTED register, indexed by id ------------------- */
+/* This generator is keyed on nothing — it indexes whatever registers are present so the next
+   citation of an unforeseen kind still resolves. Under DEC-135 d1 the source is the tamheed
+   exports rather than data/*.jsonl, so "whatever is present" now means "whatever you exported".
+   ⛔ That is a REAL narrowing and it is made loud rather than silent: an id that does not resolve
+   now reports which families were loaded, because "no such row" and "you did not export that
+   family" are otherwise the same observation — and the second one is the one that produces a
+   confident wrong answer. */
+if (!existsSync(EXPORTS)) {
+  fatal(
+    `no exports directory: ${EXPORTS}\n` +
+      `  export the registers you intend to quote FIRST, e.g.\n    ${exportHint('decisions')}\n` +
+      `  (exports/ is gitignored by DEC-139 d4 — it is regenerated, never committed)`,
+  );
+}
+const registers = readdirSync(EXPORTS).filter((f) => f.endsWith('.json'));
+if (registers.length === 0) fatal(`no exports in ${EXPORTS} — export the registers you intend to quote first`);
+const families = registers.map((f) => f.slice(0, -5)).sort();
+
+let snapshot;
+try {
+  snapshot = loadSnapshot(ROOT, families);
+} catch (e) {
+  if (e instanceof ExportError) fatal(e.message);
+  throw e;
+}
+const DIGEST = snapshot.digest;
+
 const byId = new Map();
-for (const f of registers) {
-  const family = f.slice(0, -6);
-  for (const line of readFileSync(join(DATA, f), 'utf8').split('\n')) {
-    if (!line.trim()) continue;
-    const row = JSON.parse(line); // PARSE — never regex a JSONL row (the FORTY-FIRST)
+for (const family of families) {
+  for (const row of snapshot.families[family]) {
     if (row.id) byId.set(row.id, { family, row });
   }
 }
@@ -89,7 +113,12 @@ for (const cite of cites) {
     continue;
   }
   const hit = byId.get(cite);
-  if (!hit) fatal(`identifier does not resolve in any register: ${cite}`);
+  if (!hit)
+    fatal(
+      `identifier does not resolve in any EXPORTED register: ${cite}\n` +
+        `  loaded (${families.length}): ${families.join(', ')}\n` +
+        `  if its register is not in that list the row may exist and simply not be exported — export it and re-run.`,
+    );
   const fields = Object.entries(hit.row)
     .filter(([, v]) => v !== null && v !== '' && v !== undefined)
     .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
@@ -123,8 +152,10 @@ const html = `<!doctype html>
  text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
 </style></head><body>
 <h1>${esc(title)}</h1>
-<p class="note">Every block below is quoted <b>verbatim</b> in one process from
-<code>tamheed-package/data/*.jsonl</code> or from the working tree, and each was re-read from its own source
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>${esc(DIGEST)}</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
 and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
 <code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
 part of what is being asked. The connective prose around these blocks carries no such guarantee

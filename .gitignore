@@ -30,6 +30,14 @@ test-results/
 # ── Tamheed package (transient single-writer lock) ────
 tamheed-package/data/.lock
 
+# ── Tamheed exports (derived, point-in-time; DEC-139 d4) ──
+# entity_export writes a read tool's whole result here for a committed generator to quote.
+# NOT committed on purpose: an export is a point-in-time copy and the rule is to export
+# immediately before generating and never reuse one across sessions. A checked-in export is a
+# standing invitation to read a stale one, and a stale slate reads exactly like a whole one.
+# What makes a run auditable is the digest recorded in the slate header, not a file in git.
+tamheed-package/exports/
+
 # ── Env & secrets (NEVER commit) ──────────────────────
 *.env
 !*.env.example

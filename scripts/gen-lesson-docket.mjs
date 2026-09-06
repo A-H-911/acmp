@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /*
- * Generate the operator's lesson-confirmation docket from data/lessons.jsonl.
+ * Generate the operator's lesson-confirmation docket from the tamheed export
+ * tamheed-package/exports/lessons.json, written by the MCP tool entity_export (DEC-135 d1 / DEC-139 d1).
+ * ⛔ Export immediately before generating — an export is a point-in-time copy.
  *
  * WHY THIS EXISTS. LL-011 (Approved, pinned): an identifier is a POINTER, not a reference. The
  * operator once refused an interview because the slate cited ~40 records by id alone, handing the
@@ -17,14 +19,25 @@
  *   node scripts/gen-lesson-docket.mjs [outfile]      # default: docket written beside the package
  */
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { loadSnapshot, ExportError } from './lib/package-export.mjs'
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const LESSONS = path.join(REPO_ROOT, 'tamheed-package', 'data', 'lessons.jsonl')
 
-const rows = readFileSync(LESSONS, 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+let snapshot
+try {
+  snapshot = loadSnapshot(REPO_ROOT, ['lessons'])
+} catch (e) {
+  if (e instanceof ExportError) {
+    console.error(`FATAL: ${e.message}`)
+    process.exit(2)
+  }
+  throw e
+}
+const rows = snapshot.families.lessons
+const DIGEST = snapshot.digest
 const pending = rows.filter((r) => r.lifecycle_status === 'Proposed')
 
 if (pending.length === 0) {
@@ -249,7 +262,10 @@ const html = `<title>ACMP Lessons Docket</title>
 ${entries}
 
   <footer>
-    Generated from tamheed-package/data/lessons.jsonl by scripts/gen-lesson-docket.mjs.<br>
+    Generated from the tamheed export tamheed-package/exports/lessons.json, written by the MCP tool
+    <code>entity_export</code>, by scripts/gen-lesson-docket.mjs.<br>
+    Package digest at export: <code>${DIGEST}</code> &mdash; run <code>package_verify()</code>; the same
+    digest means nothing has changed since this page was generated.<br>
     ${pending.length} of ${rows.length} rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>

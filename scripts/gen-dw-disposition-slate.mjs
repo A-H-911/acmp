@@ -14,7 +14,8 @@
  * printing a partial page.
  *
  * WHAT IT PRINTS AND WHY EACH PART EARNS ITS PLACE:
- *   - the row's own title and activation_trigger, VERBATIM from data/deferred_work.jsonl — never summarised.
+ *   - the row's own title and activation_trigger, VERBATIM from the tamheed export
+ *     tamheed-package/exports/deferred_work.json (entity_export; DEC-135 d1 / DEC-139 d1) — never summarised.
  *     A summary of a row is how DEC-064 d2's failure happened (the summary dropped half of what the row said).
  *   - every decision, ADR, scope-change and open-question that NAMES the row, with its status — so the
  *     operator can see whether they have ruled on this before (LL-002: run the interview every time, but do
@@ -28,18 +29,27 @@
  *
  * ⚠ Paths resolve from this file's own location, never cwd (trap 29).
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadSnapshot, ExportError } from './lib/package-export.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DATA = join(ROOT, 'tamheed-package', 'data');
 
-const load = (f) =>
-  readFileSync(join(DATA, `${f}.jsonl`), 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((l) => JSON.parse(l));
+const FAMILIES = ['deferred_work', 'decisions', 'adrs', 'scope_changes', 'open_questions'];
+
+let snapshot;
+try {
+  snapshot = loadSnapshot(ROOT, FAMILIES);
+} catch (e) {
+  if (e instanceof ExportError) {
+    console.error(`FATAL: ${e.message}`);
+    process.exit(2);
+  }
+  throw e;
+}
+const DIGEST = snapshot.digest;
+const load = (f) => snapshot.families[f];
 
 const fatal = (m) => {
   console.error(`FATAL: ${m}`);
@@ -170,10 +180,14 @@ const html = `<!doctype html>
 </style></head><body>
 <h1>Deferred-work disposition &mdash; ${ids.length} row(s) awaiting your judgement</h1>
 <div class="lead">
-<p>Every block below is quoted <b>verbatim</b> from <code>tamheed-package/data/deferred_work.jsonl</code> by
+<p>Every block below is quoted <b>verbatim</b> from the tamheed export
+<code>tamheed-package/exports/deferred_work.json</code>, written by the MCP tool
+<code>entity_export</code>, by
 the generator that produced this page, never summarised &mdash; a summary of a row is how a decision once
 dropped half of what its row said. Nothing here is re-typed, so the text you are reading is the text the
 store holds.</p>
+<p><b>Package digest at export:</b> <code>${DIGEST}</code> &mdash; run <code>package_verify()</code>; the
+same digest means nothing in the package has changed since this page was generated.</p>
 <p><b>Carrying a row is a legitimate ruling</b> and the <code>deferred-work-reviewed</code> advisory will
 stay red either way: it selects <code>Open</code>, <code>Activated</code> and <code>Scheduled</code> alike
 and has no "reviewed" field, so only <i>closing</i> a row removes it. A review's deliverable is the

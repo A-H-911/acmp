@@ -17,6 +17,18 @@ HOW IT AVOIDS TOUCHING THE PACKAGE. The generator resolves its data directory fr
 layout exercises the real code with zero changes to it and zero risk to tamheed-package/ (C31: the
 package lives in the git working tree, and a test that mutated it would be indistinguishable from work).
 
+⚠ WHAT WBS-31 CHANGED HERE, AND WHY IT IS NOT COSMETIC. The generator now reads the tamheed exports
+under tamheed-package/exports/ rather than data/*.jsonl (DEC-135 d1, ruled compliant by DEC-139 d1), so
+this harness mirrors exports/ and mutates JSON. It deliberately no longer copies data/ AT ALL — that
+copy was itself a read of the store, which is the thing the ruling forbids, and it would have been a
+non-compliant read hiding inside the instrument that proves compliance.
+
+⚠ THE HARNESS ITSELF CHANGED SHAPE, SO THE HARNESS ITSELF IS CALIBRATED. Cases 6 and 7 inject faults
+into the EXPORT (a short read, and two families from different package states) and assert the generator
+refuses. Those two guards replaced the old paging walk and are brand new, so a suite that never exercised
+them would be reporting on machinery nobody has seen fail — LL-013 applied to the test tree rather than
+to the code under it.
+
 ⚠ CASE 3 IS A CALIBRATION, NOT A FEATURE TEST, AND IT IS THE ONE THAT EARNS THE OTHER TWO. LL-013: a
 suite that only ever passes has not been shown to discriminate. It strips the reason out of a
 criterion-less item and asserts the generator still exits non-zero — because DEF-117's fix is a
@@ -34,15 +46,29 @@ SCRATCH = os.path.join(ROOT, ".slate-test-tmp")
 
 
 def build(mutate=None):
-    """Mirror <root>/scripts/gen.mjs + <root>/tamheed-package/data/ so ROOT resolution works."""
+    """Mirror <root>/scripts/{gen.mjs,lib/} + <root>/tamheed-package/exports/ so ROOT resolution works."""
+    src = os.path.join(ROOT, "tamheed-package", "exports")
+    present = [f for f in os.listdir(src) if f.endswith(".json")] if os.path.isdir(src) else []
+    if not present:
+        # Fail LOUD. An empty exports/ would make every case exit 2 for a reason that has nothing to
+        # do with what it tests, and a suite of uniform failures reads like a broken generator.
+        sys.exit(
+            "FATAL: no exports in %s\n"
+            "  This harness reads the tamheed exports, never data/*.jsonl (DEC-135 d1 / DEC-139 d1).\n"
+            "  Export the seven families the slate needs FIRST, e.g.\n"
+            '    entity_export("wbs_items.json", args={"type": "wbs-item", "limit": 5000})\n'
+            "  ...then acceptance_criteria, requirements, deferred_work, decisions, audit_verdicts, slices."
+            % src
+        )
     shutil.rmtree(SCRATCH, ignore_errors=True)
     os.makedirs(os.path.join(SCRATCH, "scripts"))
-    data = os.path.join(SCRATCH, "tamheed-package", "data")
-    shutil.copytree(os.path.join(ROOT, "tamheed-package", "data"), data)
+    exports = os.path.join(SCRATCH, "tamheed-package", "exports")
+    shutil.copytree(src, exports)
     shutil.copy(SCRIPT, os.path.join(SCRATCH, "scripts", "gen.mjs"))
+    shutil.copytree(os.path.join(ROOT, "scripts", "lib"), os.path.join(SCRATCH, "scripts", "lib"))
     if mutate:
-        mutate(data)
-    return data
+        mutate(exports)
+    return exports
 
 
 def run(slice_id):
@@ -53,11 +79,19 @@ def run(slice_id):
     return p.returncode, (p.stdout + p.stderr).strip()
 
 
-def rewrite(path, fn):
-    rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
+def rewrite(path, fn, envelope=None):
+    """Map fn over an export's rows in place. `envelope` may mutate the whole document.
+
+    Row count is preserved, so result.count/total stay honest — a case that silently made an export
+    look partial would be testing the short-read guard while claiming to test something else.
+    """
+    with open(path, encoding="utf-8") as f:
+        doc = json.load(f)
+    doc["result"]["rows"] = [fn(r) for r in doc["result"]["rows"]]
+    if envelope:
+        envelope(doc)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
-        for r in rows:
-            f.write(json.dumps(fn(r), ensure_ascii=False) + "\n")
+        json.dump(doc, f, ensure_ascii=False)
 
 
 def stage(slice_id, item_id, title=None, source_span=None):
@@ -81,7 +115,7 @@ def stage(slice_id, item_id, title=None, source_span=None):
     the shape under test written into the title. The tests assert a PROPERTY of the generator, not
     a fact about today's register.
     """
-    def mutate(data):
+    def mutate(exports):
         def f(r):
             if r.get("slice_id") == slice_id:
                 if r.get("id") == item_id:
@@ -93,7 +127,7 @@ def stage(slice_id, item_id, title=None, source_span=None):
                 else:
                     r["lifecycle_status"] = "Implemented"
             return r
-        rewrite(os.path.join(data, "wbs_items.jsonl"), f)
+        rewrite(os.path.join(exports, "wbs_items.json"), f)
     return mutate
 
 
@@ -160,6 +194,49 @@ def main():
               "An instrument. It diagnoses nothing and satisfies no requirement.",
               source_span="No deciding row is named anywhere on this item."),
         "SL-038", 2, "nothing here can be adjudicated"))
+
+    # ---- WBS-31: the two guards that replaced the paging walk, each calibrated ----------------
+    # Both faults are injected into an otherwise-PASSING invocation — the same stage() as the
+    # multi-criterion case above, which exits 0. So the pair is controlled: identical input except
+    # for the injected fault, and any exit-2 is attributable to the guard rather than to the shape.
+
+    def combine(*mutators):
+        def mutate(exports):
+            for m in mutators:
+                m(exports)
+        return mutate
+
+    def short_read(exports):
+        """Make one export look truncated: total > count, as a limit below total would produce."""
+        rewrite(
+            os.path.join(exports, "requirements.json"),
+            lambda r: r,
+            envelope=lambda doc: doc["result"].update(total=doc["result"]["count"] + 5),
+        )
+
+    def mixed_digest(exports):
+        """Make one family come from a different package state than its siblings."""
+        rewrite(
+            os.path.join(exports, "decisions.json"),
+            lambda r: r,
+            envelope=lambda doc: doc["tamheed_export"].update(digest="0" * 64),
+        )
+
+    # A SHORT READ IS THE DANGEROUS ONE: it yields a slate with a hole, which reads exactly like a
+    # slate without one. The old generator walked after_id to prevent it; entity_export pages
+    # internally, so this assertion is now the only thing standing there.
+    results.append(case(
+        "WBS-31 CALIBRATION: a partial export is refused, not silently rendered",
+        combine(stage("SL-033", "WBS-24.5"), short_read),
+        "SL-033", 2, "PARTIAL"))
+
+    # The digest is the PACKAGE digest, so two families exported either side of a write disagree.
+    # Such a slate quotes two different states of the store while looking entirely consistent, and
+    # nothing else in the pipeline can see it.
+    results.append(case(
+        "WBS-31 CALIBRATION: exports from two package states are refused as a mixed snapshot",
+        combine(stage("SL-033", "WBS-24.5"), mixed_digest),
+        "SL-033", 2, "NOT one snapshot"))
 
     shutil.rmtree(SCRATCH, ignore_errors=True)
     print()
