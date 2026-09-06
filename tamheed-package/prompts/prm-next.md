@@ -260,7 +260,7 @@ placement clause, each proven to fail against a mutant); `#335` → `906d8fb3` (
 probe, **and** `DEF-126`, the calendar `target-size` floor — merge-commit run `33458419757`, all four jobs
 success); `#336` → `487bc7ea` (the a11y route sweep, 18 routes newly covered); `#337` → `b515fc64`
 (`WBS-26.4` — `check-container-health.sh` and its ten forced cases). `ADR-0045` is `Approved`;
-`LL-041`–`LL-044` are `Approved`; `SC-043` moved `NFR-005` and `NFR-038` to `Deferred`.
+`LL-041`–`LL-044` were filed; `SC-043` moved `NFR-005` and `NFR-038` to `Deferred`.
 **AND A FIFTH THE SAME DAY, `#338` → `f91bf705` (`WBS-26.5` — the per-meeting agenda projection), WHOSE
 PR RUN AND MERGE-COMMIT RUN DISAGREED. CITED BY ID BECAUSE THAT IS THE WHOLE POINT** (`LL-036`, and its
 FOURTH instance here): PR head `3c419702` passed CI `33546733297`, Security `33546733284` and E2E
@@ -272,7 +272,7 @@ merge-commit red PROSPECTIVELY instead of a later session tripping over it.
 row's STATUS is, and whether `main` is green now, are not — `entity_query`, `readiness_check` and
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
 `DEC-111`–`DEC-119`, `DEF-128`/`DEF-129`/`DEF-130`, `DW-096`/`DW-097` and `LL-047`–`LL-053` were all
-recorded on 2026-09-02; `LL-047`, `LL-049` and `LL-052` are Approved and **pinned**. ⛔ **`DEF-121`'s clause
+recorded on 2026-09-02. ⛔ **`DEF-121`'s clause
 (2) HAS FIRED AND IS STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two
 sessions said the captured artefact contained. **Neither a successful capture nor a refuted hypothesis is a
 cause**, and `DEC-115` d2 and `DEC-116` d1 refused each of those readings in turn.
@@ -292,8 +292,10 @@ records as false. The documented rule is **`A RULE MUST MATCH EACH SUBCOMMAND IN
 pipeline of allowlisted programs is FINE and one unlisted segment sinks the line. **The advice above
 survives; only its mechanism changed**, which is `LL-056` exactly. `.claude/memory/permission-prompts-four-causes.md`
 is now the single surviving account.
-`DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01;
-`LL-045` and `LL-046` are Approved and **pinned**, so they bind every session from the tool-owned note.
+`DEC-107`–`DEC-110`, `SC-044`, `DEF-127` and `LL-045`/`LL-046` were all recorded on 2026-09-01.
+⛔ **NEITHER OF THOSE TWO IS IN THE TOOL-OWNED NOTE ANY MORE, AND THIS SENTENCE USED TO SAY THEY BOTH
+BOUND EVERY SESSION FROM IT** — `LL-045` was superseded by `LL-063` and `LL-046` was promoted into
+`SKL-001` (2026-09-06). **Resolve every lesson's status with `entity_query`, never from a sentence here.**
 ⭐⭐ **THE a11y SWEEP NOW COVERS EVERY STATIC AUTHENTICATED ROUTE, NOT THE FIVE IT HAPPENED TO HAVE** —
 `#336`, on the operator's instruction after `DEF-126`. **The gap was structural, not an oversight:**
 `DW-071`'s trigger fires *"whenever a NEW route ships"*, so every route that shipped **before that trigger
@@ -464,8 +466,30 @@ is deliberately NOT restated here** — a second copy is the exact failure being
 whole file while preparing a resume. **No instrument here could have found it** — every identifier
 resolves, no status is wrong, and the claim is about a file outside the package.
 
+⚠⚠⚠ **THE FIFTY-FIFTH IS A FAMILY OF SEVEN, IS THE THIRTY-FIRST'S EXACT CLASS — A LESSON'S LIFECYCLE
+STATUS WRITTEN INLINE — AND THAT ENTRY ALREADY FORBADE IT TWICE ABOVE.** This session superseded `LL-045`
+and promoted twenty-three lessons into `SKL-001`, and seven sentences across two files still described
+those statuses. Folded under ONE ordinal on the FIFTEENTH's and TWENTY-EIGHTH's precedent, because it is
+one fault found in one pass. **Two of the seven reached PUSHED commits** (`de0bd792`, `52e47222`): the
+narrative sentence saying `LL-045` and `LL-046` *"bind every session from the tool-owned note"* — neither
+is in the note now — and trap 13's clause saying `LL-045` *"needs the operator's supersession; until then,
+read `LL-045`"*, **a stale INSTRUCTION pointing at a superseded row**, which is the dangerous kind. Three
+more (`LL-041`–`LL-044`, `LL-047`/`LL-049`, `LL-030`/`LL-031`) reached only the local `5908686d`; the
+memory index's *"Next act = `skill-promote.md`"* reached only the local `6f58cf57`. **All are now bare ids
+or corrected pointers.** ⭐ **No escape is added: the two commit messages of this session state the
+supersession and the promotions in the past tense and neither asserts a live status.**
+⭐⭐ **THE FINDING WORTH THE ORDINAL IS THAT KEYING THE SWEEP ON THE *SHAPE* RETURNED TWO SITES I COULD NOT
+HAVE PREDICTED FROM MY OWN CHANGE SET** — `LL-023` described as *"Approved and PINNED — it binds"* when it
+is `Superseded`, and `LL-021` as *"Proposed"* when it is Approved and pinned, plus `LL-061` as *"Proposed"*
+in the memory index. **None was moved by this session**; a sweep keyed on the ids I touched would have
+returned a clean answer over all three. That is the FORTY-SIXTH's remedy paying for the second time.
+⚠ **No instrument here could have found any of it, and the reason is structural**: `G-IDS` checks foreign
+keys, so it sees that `LL-041` RESOLVES and never that the sentence claims the wrong column value; the
+prose-status checker matches a `(Status)` form and *"so they bind every session from the tool-owned note"*
+is a sentence ABOUT a status. **Seventh consecutive finding invisible to every check this file owns.**
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-four** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-five** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -1021,7 +1045,7 @@ recommendation to carry `DW-085`. They overrode it and activated the row anyway,
 not change the outcome — **that is luck, not process.** ⭐ **A false constraint in a decision slate is
 worse than the same sentence in a note: a note is read later by someone with the register open, where
 checking is cheap; a slate is read AT THE MOMENT OF DECIDING, by the one person who cannot check it.**
-⭐⭐ **THE STRUCTURAL GAP IS `LL-023` (Approved and PINNED, `DEC-079` d1 — it binds): `LL-011`'s generator guarantees the QUOTED records — and
+⭐⭐ **THE STRUCTURAL GAP IS `LL-023` (`DEC-079` d1): `LL-011`'s generator guarantees the QUOTED records — and
 on that docket fifteen fields were verified byte-identical, the verifier itself calibrated against two
 injected faults — but NOTHING guarantees the agent's connective prose, and the connective prose is what
 frames the question.** Worse, the verification machinery makes the surrounding prose read as MORE
@@ -1555,11 +1579,11 @@ which is what makes it invisible.
    *field text is truncated*, which it never was.
    ⚠ **THE PERMISSION HALF IS NOW FORBIDDEN:** `DEC-135` d1 makes the MCP tools the only read path.
    ⛔⛔ **THIS TRAP IS WHY THE PRACTICE SPREAD, SO IT IS CORRECTED IN PLACE RATHER THAN DELETED** — a
-   session meeting the old wording would have obeyed it. `LL-045` (Approved, **pinned**) still rests on
-   its refuted premise and needs the operator's supersession; until then, read `LL-045` for its SECOND
-   half, which stands and is unrelated: text that has passed through a DISPLAY is unsafe to re-transmit
+   session meeting the old wording would have obeyed it. ⭐ **THE SUPERSESSION HAS HAPPENED: read
+   `LL-063`, not `LL-045`.** `LL-045` rested on the refuted premise and is now `Superseded`; `LL-063`
+   restates the half that stands — text that has passed through a DISPLAY is unsafe to re-transmit
    whatever its origin, and transcription fidelity does not degrade with length in the way intuition
-   predicts.
+   predicts — and adds the reason both records called the premise untestable in the first place.
    ⭐ **THE REPLACEMENT, WHICH THE TOOL NOW SUPPORTS:** `entity_query(<type>, ids=[...])` returns whole
    rows untruncated — that is the payload source. ⚠ `entity_upsert` still needs FULL rows (13b), and a
    status flip therefore re-transmits every NOT NULL column, so fetch the row back first and paste it.
@@ -2356,8 +2380,8 @@ how `LL-011` is discharged, so an item it cannot render is one whose review woul
 the build to NAME the criteria it satisfied — `24.8`'s never was. **Nothing enforces that amendment and no
 gate sees its absence**, so an item can be merged, verdicted and left permanently unreviewable. When you
 finish an item, make its row a completion record naming its `AC-` ids.
-✅ **`LL-030` and `LL-031` are Approved + PINNED (`DEC-087` d2/d3) and `handoff_emit` ran in the SAME
-batch**, so they bind now rather than in two days (`DEF-107`'s failure mode).
+✅ **`LL-030` and `LL-031` were confirmed by `DEC-087` d2/d3 and `handoff_emit` ran in the SAME
+batch**, so they bound immediately rather than in two days (`DEF-107`'s failure mode).
 
 ⭐ **THE COUNTER IS NOT BUMPED FOR ANY OF THIS, and the reasoning is recorded so it does not read as an
 oversight.** *"`SL-033` has ONE item left"* and *"`WBS-24.8` still owes its route"* were TRUE and became
@@ -3036,7 +3060,7 @@ requirement or a slice), and `deferred_work.source_kind` is a CHECK over `brief|
   different feature on a different branch, no error anywhere. ⭐ **An `&&` chain fails CLOSED for the
   command that breaks and OPEN for any later command that reads a file the chain was supposed to write.**
   Amended before pushing. **Write generated inputs to `/tmp/name-$$.txt` and `rm` them**, and read back
-  `git log -1 --format=%s`. (`LL-021`, Proposed.)
+  `git log -1 --format=%s`. (`LL-021`.)
 - ⚠⚠ **THE MEMORY INDEX HAD BEEN SILENTLY TRUNCATED AND NOBODY KNEW.** The tooling reports a **200-LINE**
   read limit; the file was at 275, so its *"Standing rules & gotchas"* section — the most durable content
   in it — **was already invisible**. Compacted, with the detail moved to `dw082-sweep-and-vitest4.md`.
