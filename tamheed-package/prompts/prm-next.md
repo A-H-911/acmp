@@ -11,10 +11,16 @@ Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` be
 EXCEPTIONS.** `DEC-135` d1, an operator OVERRIDE. **Never open, `cat`, `grep` or `wc -l` a
 `tamheed-package/data/*.jsonl` file** — not to count, not to build a payload, not "just to look". 78
 ad-hoc scripts were deleted for it and an integrity audit followed.
-⚠⚠ **THE COMMITTED `scripts/gen-*.mjs` SLATE GENERATORS AND `scripts/count-prompt-ids.py` ALL READ THE
-JSONL DIRECTLY, SO RUNNING ONE IS NON-COMPLIANT** — that is `DW-100`, not a licence. ⛔ **This file's own
-prescribed instrument is therefore among them**: do not reach for `count-prompt-ids.py` because a
-paragraph here names it.
+⭐⭐ **THE FOUR `scripts/gen-*.mjs` SLATE GENERATORS ARE COMPLIANT AGAIN AS OF 2026-09-07** — they read
+`tamheed-package/exports/<family>.json`, written by the MCP tool `entity_export`, through the shared reader
+`scripts/lib/package-export.mjs` (`WBS-31`, PR `#372` → `1fdb33c0`; ruled compliant by `DEC-139` d1, because
+the store read is performed BY the tool). ⛔ **`entity_export` EACH FAMILY IMMEDIATELY BEFORE GENERATING** —
+an export is a point-in-time copy, `exports/` is gitignored, and reusing one across sessions is the stale
+slate this whole arc was about. A generator with a missing, partial or mixed-digest export **fails closed and
+prints the exact call to run**, so you never have to guess.
+⚠⚠ **`scripts/count-prompt-ids.py` STILL READS THE JSONL AND IS STILL NON-COMPLIANT** — deliberately out of
+scope by `DEC-138` d3. ⛔ **This file's own prescribed instrument is therefore the one that is left**: do not
+reach for `count-prompt-ids.py` because a paragraph here names it.
 ⭐⭐ **AND THE TOOL SURFACE IS NOW SUFFICIENT, WHICH IT WAS NOT WHEN THE PRACTICE STARTED.** `entity_query`
 takes `after_id` (page until `next_after` is null), `ids=[...]` (a known set, in full) and `search=`
 (keyword), returns `total` beside every page, and **truncates no field**. ⚠ **A `search` returning zero
@@ -488,8 +494,30 @@ keys, so it sees that `LL-041` RESOLVES and never that the sentence claims the w
 prose-status checker matches a `(Status)` form and *"so they bind every session from the tool-owned note"*
 is a sentence ABOUT a status. **Seventh consecutive finding invisible to every check this file owns.**
 
+⚠⚠⚠ **THE FIFTY-SIXTH IS A FAMILY OF FOUR, IS MINE, AND EVERY MEMBER WAS FALSIFIED BY A RULING I MYSELF
+RECORDED HOURS EARLIER — THEN SHIPPED IN THE COMMITS THAT RECORDED IT.** `DEC-139` d1 (2026-09-07) ruled
+that a generator reading `exports/` satisfies `DEC-135` d1, and `WBS-31` then shipped. Still asserting the
+old world afterwards: this file's *"the committed `scripts/gen-*.mjs` … ALL READ THE JSONL DIRECTLY, SO
+RUNNING ONE IS NON-COMPLIANT"*, its *"the rebuild is HELD behind an upstream capability"* block, its
+*"`findings_24.md` … is the ONLY ONE SOMETHING HERE IS WAITING ON — `WBS-31` is blocked on it"*, and the
+memory index's *"`DW-100` IS **HELD**, NOT NEXT"*. **All four rode into `94a89b17` and `e62425c1`, both
+PUSHED**, and the first of those commits is the one that filed the ruling. ⛔ **All are corrected in place
+rather than deleted** — each explains what changed, because a session meeting the old wording would have
+obeyed it.
+⭐⭐ **WHAT MAKES IT WORTH AN ORDINAL RATHER THAN A TIDY-UP: THE WINDOW BETWEEN RULING AND PROSE IS THE
+DANGEROUS ONE, AND IT IS WIDEST EXACTLY WHEN THE WORK IS GOING WELL.** The falsifying ruling and the stale
+sentences were in the SAME COMMIT. There was no drift over time to notice — the commit was internally
+inconsistent at the moment it was written, and every id in it resolved, every status was right, and
+`gate_run` was 7/7. ⚠ **The counter-measure is not more care, it is ordering**: sweep the prose keyed on the
+ids the ruling MOVED before committing the ruling, not after shipping it.
+⚠ **Found by the pre-handoff sweep, keyed on the SHAPE again** — `DW-100|WBS-31|findings_24|HELD|BLOCKED|
+NON-COMPLIANT` across both files, reading what each hit CONCLUDES rather than what it names. **No instrument
+here could have found any of it**: every identifier resolves, no lifecycle status is misstated, and the
+falsehood is a claim about a CAPABILITY. **Eighth consecutive finding invisible to every check this file
+owns.** ⚠ **Not an escape**: no commit message asserts any of the four, and the count stays at sixteen.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-five** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-six** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -2497,19 +2525,24 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    ⛔ **`SKL-001`'s FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`.** tamheed
    never touches it again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-`
    row superseding it. **Never regenerate or "refresh" it.**
-   ⚠⚠ **`DW-100` STOOD HERE AS THE FIRST ACTION AND IS DISPOSITIONED — `DEC-138` d1, 2026-09-06, AN
-   OVERRIDE. DO NOT START IT, AND DO NOT RE-SETTLE ITS FIRST TASK.** The rebuild is HELD behind an
-   upstream capability requested as `findings_24`; the work is scheduled as `WBS-31` in `SL-038` and
-   the row's own trigger names what releases it. ⛔ **A CONSEQUENCE OF THAT HOLD IS DELIBERATELY
-   STATED, BECAUSE IT IS THE ONE THING A FRESH SESSION WOULD OTHERWISE TRY TO FIX**: the mandated
-   per-item verdict route is non-compliant until it lands, so rows at `Review` **stay** there. **Taking
+   ✅✅ **`DW-100` IS `Done` AND ITS HOLD LASTED ONE DAY.** It stood here as the first action, was
+   dispositioned by `DEC-138` d1 (an OVERRIDE that sent the missing capability upstream as
+   `findings_24` rather than building the workaround the agent had proven), and tamheed **4.7.0 shipped
+   `entity_export` in answer**. `DEC-139` d1 ruled that reading `exports/` SATISFIES `DEC-135` d1;
+   `WBS-31` rebuilt all four generators in one pass (PR `#372` → `1fdb33c0`) and the `SL-038` slate was
+   byte-compared across both read paths. ⛔ **DO NOT RE-SETTLE ANY OF IT.**
+   ⭐ **THE CONSEQUENCE THAT WAS STATED HERE AS A COST IS NOW DISCHARGED**: the mandated per-item verdict
+   route is compliant again, so whatever still sits at `Review` is **adjudicatable** — by the operator
+   alone, against a freshly generated slate. ⛔ **This sentence deliberately names no row: that set changes
+   the moment anybody acts on it. Resolve it with `entity_query`, never from here.** **Taking
    a verdict without the slate is the exact bypass `DEF-142` exists to record** — it is not a shortcut,
    and it is not yours to authorise.
    ⚠ **ONE THING `DW-100` SAID IS SETTLED AND MUST NOT BE RE-RUN**: `entity_query` does not truncate
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
+   under: `DEC-139`, `SC-052`, `PE-942`, `PE-944`,
+   `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
    `LL-061`, `LL-063`, `SKL-001`,
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
    `PE-910`, `PE-913`, `PE-938`,
@@ -2522,11 +2555,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    ⚠ **`findings_22.md` and `findings_23.md` are BOTH stamped closed at their heads** and are maintainer
    reports to the tamheed upstream, not live work. ⛔ **Do not re-open a stamped finding**; read them only
    for the reasoning, and note that `findings_23` §3 carries a retracted clause of the agent's own.
-   ⚠⚠ **`findings_24.md` CARRIES NO SUCH STAMP AND THAT IS THE WHOLE DIFFERENCE — IT IS THE ONLY ONE
-   SOMETHING HERE IS WAITING ON.** `WBS-31` is blocked on it. ⛔ **Do not read its absence of a stamp as
-   an invitation to re-argue it**: `DEC-138` d1 chose it over a workaround the agent had already proven,
-   and the reasoning-against is preserved there. **Whether it has been answered is the maintainer's
-   release, not a sentence here** — `server_info()`'s version and the upstream repository are the answer.
+   ✅ **`findings_24.md` WAS ANSWERED BY tamheed 4.7.0 AND NOTHING HERE WAITS ON IT ANY MORE.** It asked
+   for a way for a committed generator to read the store without an MCP client and without touching the
+   JSONL; `entity_export` is that, and `WBS-31` is built on it. ⭐ **Its closing instruction is what paid
+   off and is worth reusing: *whether it has been answered is the maintainer's release, not a sentence
+   here* — `server_info()` said `4.7.0`, and that is what settled it, not this paragraph.** ⛔ Do not
+   re-argue the report: `DEC-138` d1 chose it over a workaround the agent had already proven, and the
+   reasoning-against is preserved there.
    ⚠ **THAT CLOSING PHRASE READ *"the live slice's `wbs-done`"* AND THE SINGULAR WAS ALREADY WRONG** —
    the same fault the opening of this item warns about, three lines below its own warning. **Not tallied:
    caught while preparing a resume, before any commit carried it** (`PE-811`'s precedent).
