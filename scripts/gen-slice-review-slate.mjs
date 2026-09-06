@@ -15,14 +15,20 @@
  *
  * ⚠ NOTHING HERE IS HARD-CODED TO A PARTICULAR SLICE OR COMMIT. An earlier version carried the three
  * item ids and their PR shas inline; that is a stale-data vector in a file whose whole purpose is to
- * be trustworthy. Everything is read from data/*.jsonl at run time.
+ * be trustworthy. Everything is read at run time from the tamheed exports under
+ * tamheed-package/exports/, written by the MCP tool `entity_export` (DEC-135 d1, ruled compliant
+ * by DEC-139 d1 — the store read is performed BY the tool and this file quotes its output).
+ *
+ * ⛔ EXPORT IMMEDIATELY BEFORE GENERATING. An export is a point-in-time copy and a stale slate
+ * reads exactly like a current one. The generator refuses a partial or mixed-digest snapshot and
+ * prints the exact entity_export call to run; see scripts/lib/package-export.mjs.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadSnapshot, ExportError } from './lib/package-export.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DATA = join(ROOT, 'tamheed-package', 'data');
 
 const SLICE = process.argv[2];
 if (!SLICE || !/^SL-\d+$/.test(SLICE)) {
@@ -30,17 +36,36 @@ if (!SLICE || !/^SL-\d+$/.test(SLICE)) {
   process.exit(2);
 }
 
-const load = (f) =>
-  readFileSync(join(DATA, `${f}.jsonl`), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+const FAMILIES = [
+  'wbs_items',
+  'acceptance_criteria',
+  'requirements',
+  'deferred_work',
+  'decisions',
+  'audit_verdicts',
+  'slices',
+];
+
+let snapshot;
+try {
+  snapshot = loadSnapshot(ROOT, FAMILIES);
+} catch (e) {
+  if (e instanceof ExportError) {
+    console.error(`FATAL: ${e.message}`);
+    process.exit(2);
+  }
+  throw e;
+}
+const { families, digest: DIGEST } = snapshot;
 const byId = (rows) => Object.fromEntries(rows.map((r) => [r.id, r]));
 
-const wbs = load('wbs_items');
-const acs = byId(load('acceptance_criteria'));
-const reqs = byId(load('requirements'));
-const dws = byId(load('deferred_work'));
-const decs = byId(load('decisions'));
-const verdicts = load('audit_verdicts');
-const slices = byId(load('slices'));
+const wbs = families.wbs_items;
+const acs = byId(families.acceptance_criteria);
+const reqs = byId(families.requirements);
+const dws = byId(families.deferred_work);
+const decs = byId(families.decisions);
+const verdicts = families.audit_verdicts;
+const slices = byId(families.slices);
 
 const fatal = (msg) => {
   console.error(`FATAL: ${msg}`);
@@ -246,11 +271,16 @@ const html = `<!doctype html>
 <p>${esc(slices[SLICE].title)}</p>
 <p>Every item below sits at <b>Review</b>, which is <i>done-claimed by the agent</i>.
 <b>Implemented is the operator's verdict, adjudicated per item.</b></p>
-<p>Every block is quoted verbatim from <code>tamheed-package/data/*.jsonl</code> by the generator that
+<p>Every block is quoted verbatim from the tamheed exports under <code>tamheed-package/exports/</code>,
+written by the MCP tool <code>entity_export</code>, by the generator that
 produced this page (LL-011). The generator exits non-zero rather than print an empty block. An item may
 name any number of acceptance criteria, including none &mdash; but a criterion-less item is refused
 unless the store also carries a <code>DW-</code> or <code>DEC-</code> row recording why, which is then
 quoted in full below it.</p>
+<p><b>Package digest at export:</b> <code>${esc(DIGEST)}</code> &mdash; this is the package digest,
+not a file hash, and every family on this page carried it (the generator refuses a mixed snapshot).
+Run <code>package_verify()</code>: the same digest means nothing in the package has changed since
+this page was generated, and a different one means the page is stale.</p>
 </div>
 ${sections}
 </body></html>`;
