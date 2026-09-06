@@ -17,7 +17,10 @@ Onboard yourself onto the `tamheed-package` Tamheed package from zero:
    re-litigate.
 4. The shape of the work: `entity_query("phase")` and `entity_query("slice")` in
    order; `entity_query("wbs-item")` for the open backlog; `trace_query` from the MVP
-   requirements to see how needs → decisions → work → tests connect.
+   requirements to see how needs → decisions → work → tests connect. Registers are
+   read THROUGH the tool, whatever their size: `limit` cuts rows (never fields),
+   `total` is exact, and the result's `next_after` pages the rest (`after_id`);
+   quote a known set verbatim with `ids=[...]`, sweep by keyword with `search=`.
 5. The lessons: `entity_query("lesson", status="Approved")` — operator-confirmed
    lessons BIND you (the pinned ones also sit in this project's CLAUDE.md note);
    read them before writing code.

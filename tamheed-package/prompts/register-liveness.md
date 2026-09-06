@@ -41,7 +41,13 @@ is the only wrong answer.
    (full-row upsert) so the nag has an answer on record.
 8. **Unmerged scope changes** (`scope-changes-merged`): an Approved `SC-` whose deltas
    never landed — apply the row changes its `scope_adds`/`scope_modifies`/
-   `scope_removes` edges name (via `entity_upsert`), then set the `SC-` to `Merged`.
+   `scope_removes` edges name (via `entity_upsert`); an `amends` edge merges its
+   RULING (a `DEC-` by full-row upsert; an `ADR-` by supersession — the successor ADR
+   is the merge). **`Merged` is the LAST step, not the first**: after applying, RE-READ
+   every row the edges name (`trace_query("<SC-x>")` — the edges are the checklist),
+   rewrite any sentence in those rows that the change discharges ("needs an SC- first",
+   "do not edit X"), and only then set the `SC-` to `Merged` — nothing mechanical
+   checks the assertion `Merged` makes.
 9. **Unbound ACs** (`acs-slice-bound`): bind each to its slice (full-row upsert —
    NOTE: an Approved AC's content is immutable; if the binding itself is the change,
    supersede instead), or record the deliberate choice to verify at package scope
@@ -73,7 +79,13 @@ is the only wrong answer.
     theme, offer PROMOTION: point the operator at `skill-promote.md` — the
     distillation ceremony is its own interview. **STOP for the operator's words on
     every lesson — you never self-approve, mechanically.**
-15. Close the sweep: `progress_update([{"entry": "liveness sweep: <per-family tally —
+15. **Note budget** (`lessons-note-budget`): the always-loaded CLAUDE.md note renders
+    every pinned lesson; past the curation ceiling (20 rendered lines) the rule names
+    the rows that render beyond it — the promotion candidates. Put them to the
+    operator: distil the shared themes into a skill (`skill-promote.md` — promoted
+    lessons graduate out of the note) or unpin what no longer needs to bind every
+    session. Pinning stays their choice; the rule only makes its cost visible.
+16. Close the sweep: `progress_update([{"entry": "liveness sweep: <per-family tally —
     resolved / carried / escalated / awaiting operator>", "event_type": "note",
     "actor": "agent:<session>"}])`, then `readiness_check("package")` again and report
     the advisory delta plus everything now awaiting operator words (promotions,

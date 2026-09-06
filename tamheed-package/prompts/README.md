@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.4.2)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.5.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -99,7 +99,22 @@ upsert without `"operator_confirm": true`, your words, in every mode. Entity pro
 screened for placeholder tokens (G-COMPLETE): to QUOTE a token like `TODO` in prose,
 wrap it in backticks; journal text (progress entries, verdict evidence) is exempt —
 reports are never "unfinished" — and a `correction` entry collapses its target under
-itself in review.html. Approved lessons
+itself in review.html. The journal's server-appended kinds (`forced-override`,
+`lesson-confirmed`, `lesson-promoted`, `integrity-verified`) are REFUSED from
+`progress_update` — the server records those facts itself. Approved lessons
 with a shared theme can be distilled into a SKILL (`skill-promote.md`) that Claude Code
-loads natively — promoted lessons graduate out of the note, the skill file carries them. The package is the record — when code and package disagree, fix the code
-or record the change; never let them drift.
+loads natively — promoted lessons graduate out of the note, the skill file carries them;
+past the note's curation ceiling the `lessons-note-budget` advisory names the
+promotion candidates. Registers are read THROUGH the tools, whatever their size:
+`entity_query` cuts rows never fields, `total` is exact, `after_id` pages (the result's
+`next_after`), `ids=[...]` quotes a known set verbatim, `search=` sweeps by keyword —
+reading `data/*.jsonl` to dodge a payload cap is drift. A scope change that touches a
+RULING carries an `amends` edge (DEC-: merged by full-row upsert; ADR-: by
+supersession); `Merged` is set LAST, after every delta row is applied and re-read.
+`package_verify()` proves the on-disk store is canonical (per-file byte-equality, foreign
+files, a citable digest; `record=true` journals it on the operator's words). Recording
+FLUSHES `data/*.jsonl` after the commit it records (`work_bind`, the closing
+`progress_update`, `export_html`, `handoff_emit`) — `git status --porcelain -uall`
+before any branch operation, never a memory of having committed. The package is the
+record — when code and package disagree, fix the code or record the change; never let
+them drift.

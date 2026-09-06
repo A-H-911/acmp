@@ -14,7 +14,9 @@ Review and activate deferred work in the `tamheed-package` Tamheed package:
 3. For each item to activate: the `scope-change` row FIRST (status Proposed,
    `decision_ref` naming the deciding `DEC-`/`ADR-` — upsert a Proposed decision if
    none exists) with `scope_adds`/`scope_modifies` delta edges to the rows the
-   activation will touch. **STOP for operator approval of the proposed scope.**
+   activation will touch (an `amends` edge instead when the activation carves an
+   exception out of a `DEC-`/`ADR-` ruling — the ruling row is not a plan row).
+   **STOP for operator approval of the proposed scope.**
 4. After approval, apply each `SC-` IN THIS ORDER, then set it Merged:
    - flip the `DW-` status to Activated (full-row upsert);
    - upsert the `wbs-item`/`slice` rows the work becomes, with `phase_id`/`slice_id`;

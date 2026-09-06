@@ -1265,17 +1265,33 @@ see. The fix is applied either way; only the number is withheld.
 
 ### Measure, do not trust — the three commands that replace every tally
 
-⚠ **`entity_query("requirement", ...)` OVERFLOWS THE TOOL'S TOKEN LIMIT** — the whole register is tens
-of KB even with `columns` set, because `columns` does not actually narrow the payload. (A row count sat
-in this sentence and went stale the moment `SC-031` added `FR-164`. `wc -l` is the answer.) **Count from the canonical
-JSONL instead**, which is also what trap 13 already tells you to do when building any payload:
+⚠ **`limit` CUTS ROWS, NEVER FIELDS. There is no field truncation in the query path.** Page with
+`after_id`, fetch a known set with `ids`, narrow with `columns`, `status` or `search`. **A payload cap
+belongs to the client, not the tool** — and `total` always tells you when `limit` cut you, so the tool
+never lies about the truncation it does perform.
+
+⛔⛔ **THE CLAIM THAT STOOD HERE WAS FALSE, AND IT IS WHAT PUSHED THIS PROJECT ONTO THE JSONL FOR THREE
+WEEKS.** It read *"the whole register is tens of KB even with `columns` set, because `columns` does not
+actually narrow the payload"*, and on that basis instructed every session to **count from the canonical
+JSONL**, citing trap 13 as precedent. **Measured 2026-09-06:** `entity_query("requirement",
+columns=["id","lifecycle_status","kind","priority"], limit=200)` returns 200 rows compactly with
+`total: 230`; `columns` narrows the `SELECT` directly. An agent hit a token-limit overflow,
+misattributed it to `columns` rather than to the missing paging, and wrote the wrong cause into the one
+file every later session reads. **`findings_22` §1 is the record; 4.5.0 shipped `after_id`, `ids` and
+`search` in response, and `DEC-135` d1 then made MCP the only read path.**
 
 ```
-tamheed-package/data/requirements.jsonl     # wc -l for the total; count by lifecycle_status/kind/priority
-tamheed-package/data/deferred_work.jsonl    # the DW register: count by lifecycle_status / severity
-entity_query("defect", status="Open")       # small enough to query directly
-gate_run() / readiness_check("package")     # the live verdicts — never quote a remembered one
+entity_query("requirement", columns=["id","lifecycle_status"], limit=200)    # `total` is the count
+entity_query("defect", columns=["id"], limit=25, after_id=<prev next_after>) # walk until next_after is null
+entity_query("defect", ids=[...])                                           # a known set, in full
+entity_query("defect", search="<phrase>")                                   # ⚠ prove a ZERO with a control
+gate_run() / readiness_check("package")                                     # the live verdicts — never a remembered one
 ```
+
+⛔ **NEVER `wc -l` A `data/*.jsonl` FILE, AND NEVER OPEN ONE.** `DEC-135` d1 makes the MCP tools the only
+read path; `total` is the count. ⚠ **A `search` returning zero proves nothing until a control proves the
+scanner reached the corpus** (`LL-013`, `LL-033`) — verified once by `search="NavigationFixer"`
+returning `DEF-112` beside a genuine zero.
 
 ⚠ **No count is written into this file on purpose.** Ten stale tallies, and an eleventh that reached an
 unamendable commit message, are why. The one structural fact worth stating is a *shape*, not a number:

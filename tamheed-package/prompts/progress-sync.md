@@ -23,8 +23,10 @@ Sync the `tamheed-package` Tamheed package with the work just completed:
    beats a narrated one; never record Met without pointing at the proof.
 5. If scope changed (something deferred, cancelled, expanded): write the typed
    `scope-change` row FIRST (Proposed, with `scope_adds`/`scope_modifies`/
-   `scope_removes` delta edges to the affected rows); only after operator approval
-   apply the mutation it authorizes and set the `SC-` Merged.
+   `scope_removes` delta edges to the affected plan rows — `amends` when it carves
+   an exception out of a `DEC-`/`ADR-` ruling: DEC- full-row upsert, ADR-
+   supersede); only after operator approval apply the mutation it authorizes,
+   RE-READ the rows the edges name, and set the `SC-` Merged LAST.
 6. Did this work teach something durable — a mistake whose fix future sessions must
    know, or a practice worth repeating? Record it NOW: a `lesson` row (`LL-`, born
    Proposed; kind improve|sustain, statement + impact_if_ignored) + a

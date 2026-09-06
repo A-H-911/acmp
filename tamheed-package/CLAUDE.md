@@ -2,7 +2,7 @@
 ## Tamheed progress tracking
 <!-- tamheed:note v4 -->
 
-This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\Repos\acmp`). **The package is the record — when code and package disagree, fix the code or record a scope change; never let them drift.** **Package data lives in the git working tree** (C31): uncommitted package writes are destroyed by `git reset --hard` / `git checkout` / `git stash` exactly like uncommitted source — commit the package `data/` before branch operations. The `tamheed` MCP server is provided by the installed tamheed plugin (no project-level .mcp.json entry needed). All package reads/writes go through the `tamheed` MCP tools; ready-made task prompts live in `tamheed-package/prompts/` — start with `tamheed-package/prompts/README.md`, the operator guide (which prompt for which situation, semi-auto vs fully-auto); the human review surface is `tamheed-package/review.html`.
+This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\Repos\acmp`). **The package is the record — when code and package disagree, fix the code or record a scope change; never let them drift.** **Package data lives in the git working tree** (C31): uncommitted package writes are destroyed by `git reset --hard` / `git checkout` / `git stash` exactly like uncommitted source — commit the package `data/` before branch operations. `work_bind`, the closing `progress_update`, `export_html` and `handoff_emit` all FLUSH `data/*.jsonl` AFTER the commit they record, so the tree is dirty again the moment you finish recording: run `git status --porcelain -uall` immediately before ANY branch operation — never a memory of having committed. The `tamheed` MCP server is provided by the installed tamheed plugin (no project-level .mcp.json entry needed). All package reads/writes go through the `tamheed` MCP tools; ready-made task prompts live in `tamheed-package/prompts/` — start with `tamheed-package/prompts/README.md`, the operator guide (which prompt for which situation, semi-auto vs fully-auto); the human review surface is `tamheed-package/review.html`.
 
 ### Recording obligations (mandatory — unrecorded work is drift)
 
@@ -10,7 +10,7 @@ This project executes Tamheed package `tamheed-package` (under `C:\Users\ahammo\
 |---|---|
 | you find a defect | `entity_upsert` a `defect` row (`DEF-`, honest severity — open critical/high BLOCK readiness) — then fix it |
 | you find needed work that is out of scope | `entity_upsert` a `deferred-work` row (`DW-`) with an activation trigger |
-| you deviate from the approved plan in any way | a `scope-change` row (`SC-`) FIRST, `decision_ref` naming the deciding `DEC-`/`ADR-`, delta edges (`scope_adds`/`scope_modifies`/`scope_removes`) naming the affected rows — after approval, apply the row changes and set the `SC-` to Merged |
+| you deviate from the approved plan in any way | a `scope-change` row (`SC-`) FIRST, `decision_ref` naming the deciding `DEC-`/`ADR-`, delta edges (`scope_adds`/`scope_modifies`/`scope_removes` for plan rows; `amends` for a ruling — DEC-: full-row upsert, ADR-: supersede) naming the affected rows — after approval, apply the row changes, RE-READ them, and only then set the `SC-` to Merged |
 | you hit genuine ambiguity | an `open-question` row (`OQ-`, with owner + due_by) and `[NEEDS-CLARIFICATION: OQ-NNN]` at the exact spot — NEVER assume |
 | execution teaches you something durable (a mistake's fix, a practice worth repeating) | `entity_upsert` a `lesson` row (`LL-`, born Proposed; kind improve\|sustain, statement + impacts) + a `learned_from` edge to the source — the OPERATOR confirms later; only Approved lessons bind |
 | you finish a unit of work | `progress_update(...)` — event_type `work-done`, `subject_id`, your `actor` string, phase/slice ids |
@@ -71,6 +71,7 @@ If you cannot record (lock held, package missing), STOP and tell the operator �
 - **LL-003** [improve, pinned] When something needs the OPERATOR — a decision that is theirs to make, or an action only they can perform — START THE INTERVIEW IMMEDIATELY. Do not report the blocker and wait t...
 - **LL-002** [improve, pinned] When a decision belongs to the operator, run the interview EVERY time. Do not bank their earlier answers as a starting position, a default, or a shortcut for a later ceremony. A...
 - **LL-001** [improve, pinned] When a repair payload has been generated from canonical source data, PASTE it into the tool call — never re-type or re-transcribe it. The hand is the untrusted transport: re-typ...
+- **LL-062** [improve] `LL-013` says prove the scanner looked at something before trusting a clean scan. `LL-055` says make the artefact's existence prove the instrument ran. **THE UNCOVERED CASE IS A...
 - **LL-058** [improve] `DEF-136` ran for three sessions across two agents and one operator. The symptom: allowlisted `Bash` commands prompted, and `permissions.defaultMode: "bypassPermissions"` did no...
 - **LL-051** [improve] `LL-011` and `gen-record-slate.mjs` exist so that every record put in front of the operator is byte-identical to the store, and the generator's own header already states the lim...
 - **LL-050** [improve] `LL-038` says: before repairing a row whose STATUS looks behind its evidence, ask whether the status is doing work. THE SAME TRAP IS SET ON A NUMBER, AND `LL-038`'s WORDING DOES...
@@ -86,9 +87,10 @@ If you cannot record (lock held, package missing), STOP and tell the operator �
 - `progress_update(entries=[{entry, event_type?, subject_id?, actor?, corrects?, phase_id?, slice_id?}])` — append TYPED progress (correct via a `correction` event, never edit)
 - `audit_record(verdicts=[{ac_id, verdict: Met|Partial|Not-met|Pending, evidence?, verified_by?, verification_method?, against_commit?}])` — evidence ref = evidenced, not narrated
 - `work_bind(ref, entity_ids=[...], note?)` — stamp a commit/PR onto entities
-- `entity_query(type, id?, status?, columns?, limit?)` — rows + total
+- `entity_query(type, id?, status?, columns?, limit?, after_id?, ids?, search?)` — rows + total + next_after (page with after_id; quote a known set via ids; keyword-sweep via search)
 - `trace_query(entity_id, direction: out|in|both, relation?)` — typed links
 - `entity_upsert(entities=[{type, id, ...}])` — FULL rows, even for updates
 - `gate_run()` — mechanical gate verdict · `readiness_check(scope, id?)` — is it actually DONE (waivers honored, Review counts open)
 - `export_html()` — refresh review.html · `server_info()` — version + root
+- `package_verify(name?, record?)` — canonical round-trip of the on-disk store (per-file byte-equality, foreign files, digest); `record=true` journals it
 <!-- /tamheed:note -->

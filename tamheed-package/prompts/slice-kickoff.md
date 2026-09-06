@@ -12,9 +12,10 @@ Kick off the next slice of the `tamheed-package` Tamheed package:
 2. Find the next open slice: `entity_query("slice")` + `entity_query("phase")` in
    roadmap order — the first slice not in a terminal status whose phase is active.
 3. Read its contract: `entity_query("execution-plan")` for the slice's `EP-` row, the
-   bound criteria via `trace_query("<SL-x>", direction="both")` and
-   `entity_query("acceptance-criterion")`, and the invariants in force
-   (`entity_query("invariant")`).
+   bound criteria via `trace_query("<SL-x>", direction="both")` then
+   `entity_query("acceptance-criterion", ids=[...the bound AC ids...])` (full rows
+   in one call), and the invariants in force (`entity_query("invariant")`; a large
+   family pages — pass `next_after` back as `after_id`).
 4. Propose a bounded, acceptance-criteria-first plan: per `AC-`, the failing test you
    will write, the implementation step, and the pass/fail observable. **STOP for
    operator approval before writing any code.**

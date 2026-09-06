@@ -19,9 +19,11 @@ Register every piece of drift between reality and the `tamheed-package` Tamheed 
      `scope-change` row (`SC-`) FIRST (lifecycle Proposed → Approved → Merged),
      `decision_ref` naming the deciding `DEC-`/`ADR-` — upsert the decision row
      (status Proposed) if none exists — plus `scope_adds`/`scope_modifies`/
-     `scope_removes` delta edges to the affected rows; STOP for approval, and only
-     after it apply the row changes and set the `SC-` Merged (the
-     scope-changes-merged advisory flags Approved-never-Merged);
+     `scope_removes` delta edges to the affected plan rows, and an `amends` edge
+     when the change carves an exception out of a RULING (`DEC-` merges by
+     full-row upsert; `ADR-` by supersession); STOP for approval, and only
+     after it apply the row changes, RE-READ them, and set the `SC-` Merged
+     LAST (the scope-changes-merged advisory flags Approved-never-Merged);
    - work simply unrecorded → `progress_update` per unit (event_type "work-done",
      actor "agent:<session>"; a WRONG earlier entry is compensated by a new event
      with `corrects: "<PE-x>"` — journals are never edited) + `work_bind` per orphan
