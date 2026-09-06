@@ -6,7 +6,9 @@
 > 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
 
 
-## ★★★ 2026-09-06 · `DEC-135`/`DEC-138` · MCP-EXCLUSIVE · `DW-100` **HELD** · `findings_24`
+## ★★★ 2026-09-06 · `DEC-135`/`DEC-138` · MCP-EXCLUSIVE · `DW-100` **HELD** · `findings_24` · `SKL-001`
+
+⭐⭐⭐ **`SKL-001` `trusting-a-measurement` EXISTS — `.claude/skills/trusting-a-measurement/SKILL.md`, OPERATOR-OWNED, never regenerate it.** 23 lessons **Promoted** and gone from the always-loaded note (`LL-006 009 013 015 017 018 020 029 030 033 035 041 043 046 047 048 049 053 054 055 059 060 062`) — **so if you want one of those, it is IN THE SKILL, not in the note.** Note 58→**35** lines vs a ceiling of 20; `skill-promote.md` is re-runnable and 2 clusters remain (`PE-938`). ⚠ **`Approved`→`Promoted` needs EVERY content column byte-identical and an OMITTED column reads as DRIFT** — but `trg_lessons_immutable` ABORTS on drift, so `ok:true` IS the proof (calibrate it first).
 
 ⛔⛔⛔ **ALL PACKAGE READS *AND* WRITES GO THROUGH THE `tamheed` MCP TOOLS — NO EXCEPTIONS** (`DEC-135` d1, an OVERRIDE). **Never open/`cat`/`grep`/`wc -l` a `tamheed-package/data/*.jsonl`** — 78 ad-hoc scripts deleted, integrity audit followed (engine clean, `PE-897`/`PE-898`). ⛔ **The 4 `gen-*.mjs` slates + `count-prompt-ids.py` all read the JSONL ⇒ running one is NON-COMPLIANT.** ⛔⛔ **`DW-100` IS *HELD*, NOT NEXT** (`DEC-138` d1, 2nd OVERRIDE): I **proved** a node script can spawn `uv run tamheed_server.py --package-dir <repo>` and speak stdio JSON-RPC — declined as *a workaround shaped like compliance*. Gap sent upstream as **`findings_24`**; work = `WBS-31`/`SC-051` in `SL-038`. ⚠ **So `WBS-29`/`WBS-30` STAY at `Review`** — a verdict without the slate is `DEF-142`'s bypass. **Next act = `skill-promote.md`** (`PE-909` item 4).
 ⭐⭐ **`entity_query` TRUNCATES NO FIELD** — `tamheed_server.py:993-1076`, `SELECT {cols}`→`dict(zip(...))`, **read in source** (`PE-910`). **TRAP 13 IS REVERSED**; `LL-045`→**`LL-063`**. ⭐⭐⭐ **HOW: `DW-100` AND `DEC-135` d1 BOTH CALLED IT UNTESTABLE — both framed the instruments as *OUTPUTS to compare*, so the CODE THAT PRODUCES one was invisible.** Ask that whenever a premise looks circular. ⚠ JSONL flushes on EVERY write (`AGENTS.md` line 38 fixed). ⭐⭐ **TWO GUARDS FROM EARLIER SESSIONS CAUGHT ME IN ONE HOUR:** `DEC-137` d4 (*`decision_ref` == `amends` target ⇒ provenance, not amendment*) refused my `SC-051`→`DEC-138` edge; and **`trg_lessons_immutable` ABORTS any content drift on an `Approved` lesson ⇒ a supersession paste is SELF-VERIFYING** (calibrated with a corrupt title — rolled back atomically). ⛔ **`deferred_work`/`wbs_items`/`scope_changes` have NO such trigger** — `DEF-127`'s register.
@@ -66,10 +68,7 @@ of its two standing remedies. ⭐ *What did I change in order to watch this, and
 
 ## ★★★ 2026-09-03 · `DEF-109` occ 6: SCHEDULING REFUTED · `DEC-123`–`DEC-125` · `LL-055`
 
-★★★ [**A control proves FIRING, never COUPLING**](a-control-proves-firing-not-coupling.md) — **read before
-shipping any detector or writing the test that proves it.** The watchdog's trigger measured whether the
-PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it
-could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 minutes after filing it.
+★★★ [**A control proves FIRING, never COUPLING**](a-control-proves-firing-not-coupling.md) — the watchdog's trigger measured whether the PROCESS was scheduled; occ 6 showed drift **under 3 ms** while 18 requests burned 100-second ceilings, so it could never fire. ⛔ I then committed the same fault **twice inside the fix**, 40 min after filing it. ⚠ **Its rule now lives in `SKL-001` step 4 (`LL-055`); the topic file keeps the worked case.**
 ⭐ **ASK the operator what they OBSERVE** — four times now one word has settled what inference could not.
 - ⭐⭐⭐ **`DEF-109` occ 6 left the FIRST artefact in six occurrences** (CI `33765425613`): 204 heartbeats,
   ZERO snapshots, `windowMaxPending` never climbing ⇒ **thread-pool starvation REFUTED**, deadlock survives.

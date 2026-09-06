@@ -2460,10 +2460,19 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **THE NEXT ACTION IS THE `skill-promote.md` CEREMONY — the operator's standing direction,
-   `PE-909` item 4.** ⛔ **IT IS NOT DESCRIBED HERE.** Read the prompt: three consecutive entries in the
-   error log below are descriptions of items in THIS list that rotted (the FORTY-FIFTH, FORTY-SEVENTH,
-   FORTY-EIGHTH), and a briefing on HOW is a description too.
+   ▶▶▶ **BOTH STANDING DIRECTIONS FROM `PE-909` ARE DISCHARGED, AND THIS LINE NAMES NO REPLACEMENT ON
+   PURPOSE.** Item 2 (`DW-100`) was dispositioned by `DEC-138` d1; item 4 (`skill-promote.md`) was run to
+   completion and produced `SKL-001` (`PE-938`). ⛔ **DO NOT READ THAT AS *nothing is next*** — that was
+   the FORTY-NINTH, a measured claim about what remains that a decision falsified within hours, and **a
+   claim about what REMAINS is a status wearing a measurement's clothes.** The commands at the top of this
+   block are the answer; a sentence here is not.
+   ⚠ **`lessons-note-budget` STILL FAILS AND THAT IS EXPECTED, NOT A REGRESSION** — `skill-promote.md` is
+   re-runnable, and two further clusters were proposed to the operator and deliberately not taken. **Read
+   `PE-938` for which, and `readiness_check("package")` for where the number stands now**; no count is
+   written here.
+   ⛔ **`SKL-001`'s FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`.** tamheed
+   never touches it again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-`
+   row superseding it. **Never regenerate or "refresh" it.**
    ⚠⚠ **`DW-100` STOOD HERE AS THE FIRST ACTION AND IS DISPOSITIONED — `DEC-138` d1, 2026-09-06, AN
    OVERRIDE. DO NOT START IT, AND DO NOT RE-SETTLE ITS FIRST TASK.** The rebuild is HELD behind an
    upstream capability requested as `findings_24`; the work is scheduled as `WBS-31` in `SL-038` and
@@ -2477,9 +2486,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
    under: `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
-   `LL-061`, `LL-062`, `LL-063`,
+   `LL-061`, `LL-063`, `SKL-001`,
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
-   `PE-910`, `PE-913`,
+   `PE-910`, `PE-913`, `PE-938`,
    `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
    `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
    `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
