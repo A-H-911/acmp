@@ -444,6 +444,8 @@ LL-060,DEC-133,relates_to
 LL-060,DEF-140,learned_from
 LL-060,PE-876,learned_from
 LL-061,PE-890,learned_from
+LL-063,DEC-138,learned_from
+LL-063,PE-910,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -713,6 +715,7 @@ SC-046,DEC-128,amends
 SC-046,DEF-138,relates_to
 SC-048,WBS-30,scope_adds
 SC-049,DEC-135,amends
+SC-051,WBS-31,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests

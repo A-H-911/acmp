@@ -2460,16 +2460,26 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **THE NEXT ACTION IS `DW-100`, AND THEN THE `skill-promote.md` CEREMONY — the operator's standing
-   direction of 2026-09-06, recorded in `PE-909`.** ⛔ **NEITHER IS DESCRIBED HERE.** Read the rows and
-   the prompt: three consecutive entries in the error log below are descriptions of items in THIS list
-   that rotted (the FORTY-FIFTH, FORTY-SEVENTH, FORTY-EIGHTH), and a briefing on HOW is a description too.
-   ⚠⚠ **THE ORDER IS LOAD-BEARING AND IS THE ONLY THING ABOUT THEM WORTH STATING**: `DW-100` first,
-   because it is what makes the mandated per-item verdict route compliant again — taking a verdict before
-   it is the exact bypass `DEF-142` exists to record.
+   ▶▶▶ **THE NEXT ACTION IS THE `skill-promote.md` CEREMONY — the operator's standing direction,
+   `PE-909` item 4.** ⛔ **IT IS NOT DESCRIBED HERE.** Read the prompt: three consecutive entries in the
+   error log below are descriptions of items in THIS list that rotted (the FORTY-FIFTH, FORTY-SEVENTH,
+   FORTY-EIGHTH), and a briefing on HOW is a description too.
+   ⚠⚠ **`DW-100` STOOD HERE AS THE FIRST ACTION AND IS DISPOSITIONED — `DEC-138` d1, 2026-09-06, AN
+   OVERRIDE. DO NOT START IT, AND DO NOT RE-SETTLE ITS FIRST TASK.** The rebuild is HELD behind an
+   upstream capability requested as `findings_24`; the work is scheduled as `WBS-31` in `SL-038` and
+   the row's own trigger names what releases it. ⛔ **A CONSEQUENCE OF THAT HOLD IS DELIBERATELY
+   STATED, BECAUSE IT IS THE ONE THING A FRESH SESSION WOULD OTHERWISE TRY TO FIX**: the mandated
+   per-item verdict route is non-compliant until it lands, so rows at `Review` **stay** there. **Taking
+   a verdict without the slate is the exact bypass `DEF-142` exists to record** — it is not a shortcut,
+   and it is not yours to authorise.
+   ⚠ **ONE THING `DW-100` SAID IS SETTLED AND MUST NOT BE RE-RUN**: `entity_query` does not truncate
+   fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
+   untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-135`, `DEC-136`, `DEC-137`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `LL-061`, `LL-062`,
-   `DEF-142`, `WBS-29`, `WBS-30`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
+   under: `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
+   `LL-061`, `LL-062`, `LL-063`,
+   `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
+   `PE-910`, `PE-913`,
    `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
    `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
    `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
@@ -2479,6 +2489,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    ⚠ **`findings_22.md` and `findings_23.md` are BOTH stamped closed at their heads** and are maintainer
    reports to the tamheed upstream, not live work. ⛔ **Do not re-open a stamped finding**; read them only
    for the reasoning, and note that `findings_23` §3 carries a retracted clause of the agent's own.
+   ⚠⚠ **`findings_24.md` CARRIES NO SUCH STAMP AND THAT IS THE WHOLE DIFFERENCE — IT IS THE ONLY ONE
+   SOMETHING HERE IS WAITING ON.** `WBS-31` is blocked on it. ⛔ **Do not read its absence of a stamp as
+   an invitation to re-argue it**: `DEC-138` d1 chose it over a workaround the agent had already proven,
+   and the reasoning-against is preserved there. **Whether it has been answered is the maintainer's
+   release, not a sentence here** — `server_info()`'s version and the upstream repository are the answer.
    ⚠ **THAT CLOSING PHRASE READ *"the live slice's `wbs-done`"* AND THE SINGULAR WAS ALREADY WRONG** —
    the same fault the opening of this item warns about, three lines below its own warning. **Not tallied:
    caught while preparing a resume, before any commit carried it** (`PE-811`'s precedent).
