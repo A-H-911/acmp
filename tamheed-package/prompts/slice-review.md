@@ -9,7 +9,14 @@ Review the just-completed slice of the `tamheed-package` Tamheed package:
 
 1. `package_open("tamheed-package")`. Identify the slice: `entity_query("slice")` and its
    bound ACs (`trace_query("<SL-x>", direction="in")`).
-2. For every AC bound to the slice: verify against the actual code/tests, then
+2. The per-item verdict is taken against the criterion's OWN text, quoted from the
+   store — never paraphrased, never re-typed: `entity_export("<slice>-review.json",
+   args={"type": "acceptance-criterion", "ids": [...]})` IMMEDIATELY before the
+   review (an export predates every write after it; never reuse one across
+   sessions) and quote from that file — through the project's committed slate
+   generator if it has one, otherwise directly; cite the export's `digest` so the
+   operator can check currency against a fresh `package_verify()`. For every AC
+   bound to the slice: verify against the actual code/tests, then
    `audit_record([{"ac_id": ..., "verdict": ..., "evidence":
    "tests/...::test_...; commit <sha>", "verified_by": "human|agent|ci",
    "verification_method": "auto-test|manual|inspection", "against_commit":

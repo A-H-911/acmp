@@ -38,7 +38,10 @@ is the only wrong answer.
    draft the `adr` row (context/decision/consequences/`confirmation`) and set
    `promoted_to` — **STOP for operator approval before the ADR leaves Proposed**.
    If it genuinely is a two-way door, note why in the decision's `rationale`
-   (full-row upsert) so the nag has an answer on record.
+   (full-row upsert) so the nag has an answer on record. Every full-row upsert in
+   this sweep that only means to change ONE column re-fetches the row through
+   `entity_query` and names the rest in `"expect_unchanged": [...]` — the store
+   refuses transport drift on the columns you did not mean to touch.
 8. **Unmerged scope changes** (`scope-changes-merged`): an Approved `SC-` whose deltas
    never landed — apply the row changes its `scope_adds`/`scope_modifies`/
    `scope_removes` edges name (via `entity_upsert`); an `amends` edge merges its

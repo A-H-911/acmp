@@ -21,6 +21,9 @@ Onboard yourself onto the `tamheed-package` Tamheed package from zero:
    read THROUGH the tool, whatever their size: `limit` cuts rows (never fields),
    `total` is exact, and the result's `next_after` pages the rest (`after_id`);
    quote a known set verbatim with `ids=[...]`, sweep by keyword with `search=`.
+   A committed script that must quote the store (a review slate, a docket) reads
+   an `entity_export` file the tool wrote under `exports/` — never `data/*.jsonl`,
+   never rows you pasted by hand.
 5. The lessons: `entity_query("lesson", status="Approved")` — operator-confirmed
    lessons BIND you (the pinned ones also sit in this project's CLAUDE.md note);
    read them before writing code.

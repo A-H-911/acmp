@@ -12,7 +12,10 @@ Sync the `tamheed-package` Tamheed package with the work just completed:
    "subject_id": "<WBS-x/AC-x>", "actor": "agent:<session>"}])` — concrete entries,
    not summaries. A `wbs-item` you believe finished: full-row upsert to
    `lifecycle_status: "Review"` (done-claimed; `Implemented` means verified, and
-   readiness counts Review as open).
+   readiness counts Review as open) — re-fetch the row through `entity_query`
+   first and send it with `"expect_unchanged": ["title"]` (and every other long
+   column you did not mean to change): the store refuses the write if the transport
+   altered any of them.
 3. For each commit/PR that satisfies package entities:
    `work_bind(ref="<commit-or-PR>", entity_ids=["FR-x", "AC-y", "SL-z"], note="...")`.
 4. For each acceptance criterion now verifiable:

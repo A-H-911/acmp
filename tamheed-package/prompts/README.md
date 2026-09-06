@@ -1,4 +1,4 @@
-# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.6.0)
+# How to use this folder — the `tamheed-package` prompt guide (tamheed v4.7.0)
 
 This folder is the **single prompt surface** for the `tamheed-package` Tamheed package. Every
 file is a paste-ready prompt for a Claude Code session. Two kinds live here:
@@ -109,7 +109,16 @@ past the note's curation ceiling the `lessons-note-budget` advisory names the
 promotion candidates. Registers are read THROUGH the tools, whatever their size:
 `entity_query` cuts rows never fields, `total` is exact, `after_id` pages (the result's
 `next_after`), `ids=[...]` quotes a known set verbatim, `search=` sweeps by keyword —
-reading `data/*.jsonl` to dodge a payload cap is drift. A scope change that touches a
+reading `data/*.jsonl` to dodge a payload cap is drift. A committed script that must
+QUOTE the store (a review slate, a docket, an evidence page) reads an `entity_export`
+file the tool wrote under `exports/` — whole rows, digest-stamped, deterministic; export
+immediately before generating and cite the digest, never reuse an export across
+sessions, never hand-paste rows into a script's input (the hand is the untrusted
+transport). A full-row update that only flips a status names the columns it did not
+mean to change (`expect_unchanged`) so the store refuses transport drift; apply it to
+every long row regardless of size — transcription fidelity does not degrade with
+length. Before recording a premise as untestable, list the instruments: the SOURCE that
+produces an output is one, and an output-versus-output frame hides it. A scope change that touches a
 RULING carries an `amends` edge (DEC-: merged by full-row upsert; ADR-: by
 supersession); `Merged` is set LAST, after every delta row is applied and re-read.
 Trace edges are keyed (from, to, relation), so a new relation never replaces an old

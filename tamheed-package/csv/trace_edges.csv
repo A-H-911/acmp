@@ -107,6 +107,7 @@ DEC-064,DW-029,relates_to
 DEC-064,DW-030,relates_to
 DEC-064,DW-037,relates_to
 DEC-064,DW-038,relates_to
+DEC-139,DEC-135,relates_to
 DEF-079,DEF-078,relates_to
 DEF-080,DEC-056,relates_to
 DEF-081,DEF-080,relates_to
@@ -716,6 +717,7 @@ SC-046,DEF-138,relates_to
 SC-048,WBS-30,scope_adds
 SC-049,DEC-135,amends
 SC-051,WBS-31,scope_adds
+SC-052,WBS-31,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
