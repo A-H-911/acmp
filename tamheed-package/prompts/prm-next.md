@@ -7,11 +7,38 @@ when the work changes, **edit it — do not create a new `prm-*.md`.**
 
 Read `tamheed-package/prompts/README.md` (the operator guide) and `AGENTS.md` before anything else.
 
+⛔⛔⛔ **BEFORE ANY COMMAND: EVERY PACKAGE READ *AND* WRITE GOES THROUGH THE `tamheed` MCP TOOLS. NO
+EXCEPTIONS.** `DEC-135` d1, an operator OVERRIDE. **Never open, `cat`, `grep` or `wc -l` a
+`tamheed-package/data/*.jsonl` file** — not to count, not to build a payload, not "just to look". 78
+ad-hoc scripts were deleted for it and an integrity audit followed.
+⚠⚠ **THE COMMITTED `scripts/gen-*.mjs` SLATE GENERATORS AND `scripts/count-prompt-ids.py` ALL READ THE
+JSONL DIRECTLY, SO RUNNING ONE IS NON-COMPLIANT** — that is `DW-100`, not a licence. ⛔ **This file's own
+prescribed instrument is therefore among them**: do not reach for `count-prompt-ids.py` because a
+paragraph here names it.
+⭐⭐ **AND THE TOOL SURFACE IS NOW SUFFICIENT, WHICH IT WAS NOT WHEN THE PRACTICE STARTED.** `entity_query`
+takes `after_id` (page until `next_after` is null), `ids=[...]` (a known set, in full) and `search=`
+(keyword), returns `total` beside every page, and **truncates no field**. ⚠ **A `search` returning zero
+proves nothing until a control proves the scanner reached the corpus** (`LL-013`, `LL-033`).
+⛔ **A carve-out from d1 existed for ONE audit and it has LAPSED** — `SC-049` records both the grant and
+the lapse. **Never cite it as precedent**; read the row rather than this sentence for where it stands.
+
 ```
-server_info()                                # expect tamheed 4.4.2, root = C:\Users\ahammo\Repos\acmp
+server_info()                                # ⚠ READ the version; do NOT expect one. Two version bounds
+                                             # stood in this block and both rotted on an upgrade (the
+                                             # FIFTIETH). root = C:\Users\ahammo\Repos\acmp
 package_open("tamheed-package")
-gate_run()                                   # 7/7 is the NORM again (tamheed >= 4.4.2). A red gate is a
-                                             # REAL finding - read its failure list, it names the token.
+package_verify()                             # ⛔⛔ THE INTEGRITY INSTRUMENT THE GATES CANNOT REPLACE, and
+                                             # gate_run has never claimed to: `verified` true with
+                                             # `dirty: []` (a NAMED file is a non-canonical hand edit),
+                                             # `loadable`, `memory_matches_disk`, and `foreign: []` (a file
+                                             # the engine does not own sitting in data/). ⚠ `digest` is
+                                             # THIS state's fingerprint and it CHANGES on the next call if
+                                             # you record one - recording rewrites the journal, so that is
+                                             # by construction and not damage. `record=true` is the
+                                             # OPERATOR's call, never yours.
+gate_run()                                   # A red gate is a REAL finding - read its failure list, it
+                                             # names the token. ⛔ Do NOT quote a pass count from here into
+                                             # anything durable; the count is what rots, the rule survives.
 readiness_check("package")                   # ⚠ ASK IT. Do NOT expect either answer - this line said
                                              # "EXPECT ready:FALSE - DELIBERATELY" for days and that
                                              # became false when DEC-097 d1 closed DEF-108 (the
@@ -1363,8 +1390,11 @@ instruments, living inside the package's own controls. See §6.
 
 ### The mechanical guarantee, and the token rule
 
-`gate_run()` returns **7/7** and that is the norm (tamheed ≥ 4.4.2). **A red gate is a REAL finding —
-read its failure list, it names the token.** ⚠ **Journal text is EXEMPT** (`progress_entries.entry`,
+⛔ **A PASS COUNT AND A VERSION BOUND STOOD HERE — *"`gate_run()` returns 7/7 and that is the norm
+(tamheed ≥ 4.4.2)"* — AND BOTH ARE DELETED, NOT REFRESHED.** That is the FIFTIETH's exact class twice in
+one sentence: a number inside a rule block where the RULE survives and the NUMBER rots, beside a version
+floor that three upgrades have already passed. **Run the gate; do not carry its count.** **A red gate is a
+REAL finding — read its failure list, it names the token.** ⚠ **Journal text is EXEMPT** (`progress_entries.entry`,
 `audit_verdicts.evidence`), so a progress note may quote marker tokens freely. **Every live ENTITY row is
 still screened** — `title`, `statement`, `description` — so there, name the concept or backtick the token.
 
@@ -1515,8 +1545,27 @@ which is what makes it invisible.
 
 ### D — Writing to the package
 
-13. **Build payloads from `data/*.jsonl`, never from `entity_query` output** — v4 needs FULL rows and
-   the store holds **truncated** ones.
+13. ⛔⛔ **REVERSED 2026-09-06 — THIS TRAP IS NOW THE OPPOSITE OF WHAT IT SAID, ON BOTH HALVES.** It read
+   *"Build payloads from `data/*.jsonl`, never from `entity_query` output — v4 needs FULL rows and the
+   store holds truncated ones."* **Build payloads from `entity_query`. Never open the JSONL.**
+   ⚠ **THE FACTUAL HALF WAS FALSE:** `entity_query` runs `SELECT {cols} … LIMIT {n}` with **no per-field
+   truncation anywhere in the query path** — read in the source, not inferred. What truncates is the ROW
+   SET, and `total` discloses it. The original concern was a row-count cut (a 218-row family lost to
+   `limit=100`), and the engine fixed that by returning `total`; the concern was then mis-generalised into
+   *field text is truncated*, which it never was.
+   ⚠ **THE PERMISSION HALF IS NOW FORBIDDEN:** `DEC-135` d1 makes the MCP tools the only read path.
+   ⛔⛔ **THIS TRAP IS WHY THE PRACTICE SPREAD, SO IT IS CORRECTED IN PLACE RATHER THAN DELETED** — a
+   session meeting the old wording would have obeyed it. `LL-045` (Approved, **pinned**) still rests on
+   its refuted premise and needs the operator's supersession; until then, read `LL-045` for its SECOND
+   half, which stands and is unrelated: text that has passed through a DISPLAY is unsafe to re-transmit
+   whatever its origin, and transcription fidelity does not degrade with length in the way intuition
+   predicts.
+   ⭐ **THE REPLACEMENT, WHICH THE TOOL NOW SUPPORTS:** `entity_query(<type>, ids=[...])` returns whole
+   rows untruncated — that is the payload source. ⚠ `entity_upsert` still needs FULL rows (13b), and a
+   status flip therefore re-transmits every NOT NULL column, so fetch the row back first and paste it.
+   ⛔ **SEVERAL PARAGRAPHS ELSEWHERE IN THIS FILE STILL INSTRUCT A JSONL READ OR A `wc -l`** — every one of
+   them is SUPERSEDED by `DEC-135` d1 without exception. They are annotated rather than hunted down one by
+   one, because this file's standing convention is to annotate; **the rule above governs, not they.**
 13b. ⚠ **PROVEN 2026-08-18: OMITTING A NULLABLE FIELD *PRESERVES* IT; NOT NULL FIELDS ARE REQUIRED.**
    `{type, id, lifecycle_status}` alone is refused (`NOT NULL constraint failed: requirements.kind`),
    but sending only the NOT NULL columns preserves `statement`, `priority`, `rationale`,
@@ -2409,17 +2458,27 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    then `readiness_check` on **every** id it returns — ⚠ **it can return MORE THAN ONE and the singular
    phrasing that stood here would have had you check one and stop**; a slice whose `wbs-done` passes can
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
-   `readiness_check("package")`, then
-   `gh run list --branch main`. **Then read these rows, and read `DEC-134` first: `DEC-134`, `SC-047`,
-   `DEF-141`, `PE-883`, `PE-885`, `PE-886`, `PE-889`, `PE-890`, `DEC-133`, `DEC-132`,
-   `DEC-131`, `DEC-130`, `DEC-129`, `DEC-128`, `DEC-127`, `DEC-126`, `DEC-124`, `DEC-123`, `DEC-121`,
-   `DEC-120`, `DEC-118`, `SC-046`, `SC-045`, `DEF-140`, `DEF-139`, `DEF-138`, `DEF-137`, `DEF-136`,
-   `DEF-135`, `DEF-130`, `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-098`, `DW-096`, `LL-061`,
-   `LL-060`,
-   `LL-059`, `LL-058`, `LL-057`, `LL-056`, `LL-055`, `PE-854`, `PE-859`, `PE-860`, `PE-867`, `PE-873`,
-   `PE-875`, `PE-876`, `PE-877`, `PE-891`, `PE-892`,
+   `readiness_check("package")`, `package_verify()`, then
+   `gh run list --branch main`.
+   ▶▶▶ **THE NEXT ACTION IS `DW-100`, AND THEN THE `skill-promote.md` CEREMONY — the operator's standing
+   direction of 2026-09-06, recorded in `PE-909`.** ⛔ **NEITHER IS DESCRIBED HERE.** Read the rows and
+   the prompt: three consecutive entries in the error log below are descriptions of items in THIS list
+   that rotted (the FORTY-FIFTH, FORTY-SEVENTH, FORTY-EIGHTH), and a briefing on HOW is a description too.
+   ⚠⚠ **THE ORDER IS LOAD-BEARING AND IS THE ONLY THING ABOUT THEM WORTH STATING**: `DW-100` first,
+   because it is what makes the mandated per-item verdict route compliant again — taking a verdict before
+   it is the exact bypass `DEF-142` exists to record.
+   **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
+   under: `DEC-135`, `DEC-136`, `DEC-137`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `LL-061`, `LL-062`,
+   `DEF-142`, `WBS-29`, `WBS-30`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
+   `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
+   `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
+   `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
+   `LL-056`, `LL-055`,
    and, **for EVERY id `entity_query("slice", status="Approved")` returned above**, the `wbs-item` rows
    that slice's `wbs-done` names.**
+   ⚠ **`findings_22.md` and `findings_23.md` are BOTH stamped closed at their heads** and are maintainer
+   reports to the tamheed upstream, not live work. ⛔ **Do not re-open a stamped finding**; read them only
+   for the reasoning, and note that `findings_23` §3 carries a retracted clause of the agent's own.
    ⚠ **THAT CLOSING PHRASE READ *"the live slice's `wbs-done`"* AND THE SINGULAR WAS ALREADY WRONG** —
    the same fault the opening of this item warns about, three lines below its own warning. **Not tallied:
    caught while preparing a resume, before any commit carried it** (`PE-811`'s precedent).
