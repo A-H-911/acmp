@@ -453,6 +453,7 @@ LL-066,DEC-140,learned_from
 LL-066,PE-951,learned_from
 LL-067,DEC-142,learned_from
 LL-068,WBS-32,learned_from
+LL-069,DEF-143,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -727,6 +728,15 @@ SC-052,WBS-31,scope_modifies
 SC-053,SL-039,scope_adds
 SC-053,WBS-32,scope_adds
 SC-053,WBS-33,scope_adds
+SC-054,SL-040,scope_adds
+SC-054,WBS-34,scope_adds
+SC-054,WBS-35,scope_adds
+SC-054,WBS-36,scope_adds
+SC-055,SL-041,scope_adds
+SC-055,SL-042,scope_adds
+SC-055,WBS-37,scope_adds
+SC-055,WBS-38,scope_adds
+SC-055,WBS-39,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests

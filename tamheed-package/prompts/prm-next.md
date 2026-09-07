@@ -2541,21 +2541,27 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    slice with work items BEFORE any branch was cut; read `DEC-142` and `SC-053` for the arms, the sizing and
    the one design element `LL-060` fixed rather than asked. **`DEC-143` (the same day, fifty-second round)
    RECORDS THAT IT RAN AND WHAT IT ISOLATED** — two variables, one still at p=0.06 and therefore EXTENDED by a
-   further run whose reading is an entry under `DEC-143`, not a sentence here — and the `slice`/`wbs-item`
-   registers say where the work stands; **this line does not name them.** ⚠ The harness is a dispatch-only
+   further run whose reading is an entry under `DEC-143`, not a sentence here. **`DEC-144` (fifty-third)
+   RECORDS THE OPERATOR'S REDIRECT** — *verify/test and prove, then recommend* — and scoped the proof by
+   `SC-054`; **`DEC-145` (fifty-fourth, 2026-09-07) RECORDS THAT THE PROOF WAS ACCEPTED, THAT `ADR-0046`
+   IS `Approved` ON IT, THAT THE SWITCH AND `DEF-143` WERE SCOPED BY `SC-055`, AND THAT ONE ROW'S
+   DISPOSITION WAITS ON TWO NAMED RUNS** — read `DEC-145` for which, and the `slice`/`wbs-item` registers
+   for where each piece stands; **this line does not name them.** ⚠ `DEC-145` also records a status flip
+   the STORE REFUSED on a readiness guard, and that the refusal was kept rather than routed around; whether
+   it was later forced is the operator's word in a later ruling, never a sentence here. ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
    the live answers for what has been sampled since. ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
    ATTEMPT** (`LL-052`): each carries an end condition whose clause (2) asks for a CAUSE, and `DEC-115` d2 /
    `DEC-116` d1 have ruled that neither a capture nor an elimination is one; `DEC-119` d3 declined the
    environmental disposition and `DEC-142` re-offered it on NEW evidence (`mssql-rs#387`) and it was again not
    taken; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say accumulated greens satisfy no
-   clause. ⚠ **Whether this direction still stands is the decision register from `DEC-143` onward, never this
+   clause. ⚠ **Whether this direction still stands is the decision register from `DEC-145` onward, never this
    line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-143` onward says whether either has since been scheduled; this line does not.** Read `DEC-140`,
-   `DEC-141`, `DEC-142` and `DEC-143` for the reasoning
+   `DEC-145` onward says whether either has since been scheduled (neither `DEC-144` nor `DEC-145` raised
+   them); this line does not.** Read `DEC-140` through `DEC-145` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2596,7 +2602,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-143`, `LL-068`, `PE-961`, `PE-962`, `PE-963`, `PE-965`, `PE-966`, `PE-967`,
+   under: `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `LL-069`, `PE-970`, `PE-973`,
+   `PE-974`, `PE-975`, `PE-976`, `PE-977`, `PE-978`, `PE-979`,
+   `DEC-143`, `LL-068`, `PE-961`, `PE-962`, `PE-963`, `PE-965`, `PE-966`, `PE-967`,
    `DEC-142`, `SC-053`, `LL-067`, `PE-958`,
    `DEC-141`, `LL-066`, `PE-953`, `PE-954`, `PE-955`,
    `DEC-140`, `LL-064`, `LL-065`, `DW-101`, `PE-948`, `PE-949`, `PE-951`,
