@@ -35,4 +35,14 @@ RUN_CMD="sleep 60" READY_CMD=false BOUND_SECONDS=3 POLL_SECONDS=1 \
   "$here/sql-startup-sample.sh" "$img" 1 "$tmp/timeout" >/dev/null
 expect timeout "$tmp/timeout/tally.json" timeout 1
 
-echo "PASS: classifier reaches ok, crash and timeout"
+# 4. sidecar — a contention container is started alongside, its state is reported, and it is cleaned up.
+SIDECARS="$img" RUN_CMD="sleep 60" READY_CMD=true BOUND_SECONDS=20 POLL_SECONDS=1 \
+  "$here/sql-startup-sample.sh" "$img" 1 "$tmp/side" >"$tmp/side.out"
+expect sidecar "$tmp/side/tally.json" ok 1
+# alpine's default shell exits at once with no TTY, so `exited` is the state a live sidecar of THIS image shows.
+grep -q 'sidecar=exited' "$tmp/side.out" || { echo "FAIL sidecar: state not reported"; cat "$tmp/side.out"; exit 1; }
+echo "ok   sidecar: state reported on the line"
+[[ -z "$(docker ps -aq --filter ancestor="$img")" ]] || { echo "FAIL sidecar: containers left behind"; exit 1; }
+echo "ok   sidecar: nothing left behind"
+
+echo "PASS: classifier reaches ok, crash and timeout; sidecar reported and cleaned up"
