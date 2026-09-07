@@ -1,7 +1,7 @@
 name: Integration suite on the candidate SQL Server image
 
-# SL-040 / WBS-35 (DEC-144 d3) — the REAL fixture path on the ADR-0046 candidate. MANUAL ONLY. The
-# candidate Dockerfile is copied over deploy/Dockerfile.sqlserver in THIS checkout only (never committed),
+# SL-040 / WBS-35 (DEC-144 d3) — the REAL fixture path on a CANDIDATE Dockerfile. MANUAL ONLY. The
+# candidate is copied over deploy/Dockerfile.sqlserver in THIS checkout only (never committed),
 # so SearchProvidersFtsTests builds and boots it through its own ImageFromDockerfileBuilder + MsSqlBuilder
 # path, beside SqlBackstopFixture's 2022 container and MinIO — the concurrency that crashes in CI.
 # The suite is run N times in one job so the ~2-minute image build is paid once.
@@ -13,10 +13,11 @@ on:
   workflow_dispatch:
     inputs:
       candidate:
-        description: Dockerfile to substitute for deploy/Dockerfile.sqlserver
+        # No default: the ADR-0046 candidate this was built for became deploy/Dockerfile.sqlserver itself
+        # (SL-041 / WBS-37). Name the candidate you mean — a path in the dispatched ref's checkout.
+        description: Dockerfile to substitute for deploy/Dockerfile.sqlserver (path in this checkout)
         required: true
         type: string
-        default: deploy/Dockerfile.sqlserver.2022-candidate
       runs:
         description: how many times to run Acmp.Integration.Tests
         required: true

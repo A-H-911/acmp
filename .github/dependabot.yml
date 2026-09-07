@@ -25,6 +25,15 @@ updates:
     directory: "/deploy"
     schedule:
       interval: "weekly"
+    # ADR-0046 d2: the SQL Server image stays on the 2022 line (the 2025 line crashes at startup under
+    # concurrent boot — DEF-121/DEF-130, isolated by SL-039/SL-040). Major bumps of that image are not
+    # proposed; digest (CU) bumps within 2022-latest still are. Whether Dependabot classes a
+    # `2022-latest` -> `2025-latest` tag move as semver-major is VERIFIED BY OBSERVATION on the weekly
+    # runs after this lands, not assumed — if a 2025 PR appears, close it and tighten this to a
+    # `versions` range (recorded on ADR-0046).
+    ignore:
+      - dependency-name: "mcr.microsoft.com/mssql/server"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
