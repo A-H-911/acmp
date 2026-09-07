@@ -96,9 +96,13 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # you happened to read first.
                                              # ⛔⛔ IF `main` IS RED, READ `DEF-130`, `DEF-109` AND
                                              # `DEF-121` BEFORE ANYTHING ELSE, AND DO NOT RE-RUN IT. All
-                                             # three are open, all have recurred on trees whose PR run
-                                             # passed, and all carry end conditions that ACCUMULATED
-                                             # GREENS SATISFY BY DESIGN.
+                                             # three have recurred on trees whose PR run passed. `DEF-109`
+                                             # is open with an end condition that ACCUMULATED GREENS
+                                             # SATISFY BY DESIGN; `DEF-130` and `DEF-121` are `Fixed` by
+                                             # `ADR-0046` (`DEC-145` d1, `DEC-146` d1) on clause (1) with
+                                             # NO mechanism claimed, and that ADR says a crash of either
+                                             # signature on the 2022 line is a NEW defect row, never an
+                                             # append — read them for the SIGNATURE, then file; never re-run.
                                              # ⭐ DISCRIMINATE BY SIGNATURE, never by which is nearer to
                                              # hand — the register does this on the EXCEPTION TYPE and on
                                              # the crash frames, and it has now settled two attributions
@@ -279,7 +283,7 @@ row's STATUS is, and whether `main` is green now, are not — `entity_query`, `r
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
 `DEC-111`–`DEC-119`, `DEF-128`/`DEF-129`/`DEF-130`, `DW-096`/`DW-097` and `LL-047`–`LL-053` were all
 recorded on 2026-09-02. ⛔ **`DEF-121`'s clause
-(2) HAS FIRED AND IS STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two
+(2) HAS FIRED AND WAS NEVER SATISFIED — the row is `Fixed` on clause (1) ALONE (`ADR-0046`, `DEC-146` d1), and that is not a satisfied clause (2)** — read the row, and read `PE-790`, which corrects what two
 sessions said the captured artefact contained. **Neither a successful capture nor a refuted hypothesis is a
 cause**, and `DEC-115` d2 and `DEC-116` d1 refused each of those readings in turn.
 ⭐⭐ **SESSION MECHANICS, ADOPTED 2026-09-02 AND WORTH READING BEFORE THE FIRST TOOL CALL RATHER THAN AFTER
@@ -2535,9 +2539,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth
-   round) named DIAGNOSING `DEF-121` / `DEF-130` as the next unit of work, and `DEC-142` (the same day,
-   fifty-first round) RULED ON HOW** — a controlled sampling experiment, scoped by `SC-053` and recorded as a
+   ▶▶▶ **THE STANDING DIRECTION `DEC-141` d5 GAVE IS DISCHARGED — READ THIS CHAIN AS HISTORY, NOT AS A
+   BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth round) named DIAGNOSING `DEF-121` / `DEF-130` as the next
+   unit of work; both rows are `Fixed` as of `DEC-146`. `DEC-142` (the same day, fifty-first round) RULED
+   ON HOW** — a controlled sampling experiment, scoped by `SC-053` and recorded as a
    slice with work items BEFORE any branch was cut; read `DEC-142` and `SC-053` for the arms, the sizing and
    the one design element `LL-060` fixed rather than asked. **`DEC-143` (the same day, fifty-second round)
    RECORDS THAT IT RAN AND WHAT IT ISOLATED** — two variables, one still at p=0.06 and therefore EXTENDED by a
@@ -2551,15 +2556,18 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    DAY** — read `DEC-145` and `DEC-146` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
-   has been done), and a deferred-work row whose activation trigger is a scheduled external run. ⚠ The harness is a dispatch-only
+   has been done), a deferred-work row whose activation trigger is a scheduled external run, and the lessons
+   this arc filed, which bind only once the OPERATOR confirms them — `entity_query("lesson", status="Proposed")`
+   with a `Promoted` control is the check, never a count here. ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
-   the live answers for what has been sampled since. ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
-   ATTEMPT** (`LL-052`): each carries an end condition whose clause (2) asks for a CAUSE, and `DEC-115` d2 /
-   `DEC-116` d1 have ruled that neither a capture nor an elimination is one; `DEC-119` d3 declined the
-   environmental disposition and `DEC-142` re-offered it on NEW evidence (`mssql-rs#387`) and it was again not
-   taken; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say accumulated greens satisfy no
-   clause. ⚠ **Whether this direction still stands is the decision register from `DEC-146` onward, never this
-   line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
+   the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
+   DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
+   whose clause (2) asks for a CAUSE, and `DEC-115` d2 / `DEC-116` d1 ruled that neither a capture nor an
+   elimination is one; both were closed on clause (1) ALONE — an exercised remedy (`ADR-0046`) with NO
+   mechanism claimed — and `ADR-0046` d4 names the only thing that reopens the question; `DEC-077` d3 still
+   binds on any `SearchProvidersFtsTests` red, and a crash of either signature on the 2022 line is a NEW row,
+   never an append. ⚠ **What remains, and whether any of it has since been scheduled, is the decision
+   register from `DEC-146` onward, never this line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
@@ -2753,7 +2761,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    called `DEF-121`'s capture insufficient — one from a file's `file(1)` type, one from its first screen —
    while the answer sat in two files it had KEPT. **A manifest saying `kept` is quotable only for what it
    `DROPPED`.**
-   ⚠ **`DEF-121`'s CLAUSE (2) HAS FIRED AND IS NOT SATISFIED, AND THOSE ARE COMPATIBLE.** `DEC-115` d2
+   ⚠ **`DEF-121`'s CLAUSE (2) FIRED AND WAS NEVER SATISFIED, AND THOSE ARE COMPATIBLE — the row is `Fixed` on
+   clause (1) alone (`ADR-0046`, `DEC-146` d1), which changes nothing below.** `DEC-115` d2
    refused to read a successful CAPTURE as a satisfied clause; `DEC-116` d1 refused to read a REFUTED
    HYPOTHESIS as one. ⛔ **Do not re-argue either as a technicality** — the clause asks for a CAUSE, and
    neither collecting evidence nor eliminating a rival hypothesis is one.
