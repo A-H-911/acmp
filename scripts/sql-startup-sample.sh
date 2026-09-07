@@ -24,6 +24,9 @@
 #   RUN_CMD        command appended to `docker run <image>`, word-split (default: the image's own entrypoint)
 #   BOUND_SECONDS  per-start readiness bound (default 300; a healthy start is ~10-40 s, a crash <10 s)
 #   POLL_SECONDS   poll interval (default 2)
+#
+# ⚠ Git Bash on Windows: run with MSYS_NO_PATHCONV=1, or the /opt/... probe path is rewritten to a Windows
+#   path before Docker sees it and EVERY healthy start reads as `timeout` (measured; cost ten minutes).
 set -euo pipefail
 
 IMAGE="${1:?usage: $0 <image> <starts> <out-dir>}"

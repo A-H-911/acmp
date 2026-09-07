@@ -8,8 +8,13 @@ name: SQL startup sampling
 #   fts-2025          the shipped deploy/Dockerfile.sqlserver as-is — RUN THIS FIRST. It is the harness's
 #                     positive control (LL-060): until it has produced a captured crash with a SQLPAL
 #                     `Reason:` line, a clean tally on any other arm means nothing.
-#   fts-2022-premove  the pre-move Dockerfile, byte-for-byte from git (0794dcaf^): 2022-latest@fc010e5c
-#                     + the ubuntu/22.04 repo — the image that ran 453 CI runs with no filed crash.
+#   fts-2022-premove  the pre-move DOCKERFILE, byte-for-byte from git (0794dcaf^): 2022-latest@fc010e5c
+#                     + the ubuntu/22.04 repo. ⚠ The Dockerfile is what ran 453 CI runs with no filed
+#                     crash; the IMAGE is not — its base is digest-pinned, but `mssql-server-fts` pulls in
+#                     whatever 2022 CU the repo serves on dispatch day (the Dockerfile's own comment says it
+#                     drags mssql-server with it), exactly as it did on each of those 453 days. All three
+#                     arms are built the same day, so the isolation BETWEEN arms is unaffected; reading a
+#                     clean arm (ii) against the 453 is not a same-binary comparison and WBS-33 must say so.
 #   stock-2025        the shipped base digest with NO FTS package — separates the base from the package.
 on:
   workflow_dispatch:
@@ -35,7 +40,11 @@ jobs:
     # would push past this, and that is a finding in itself.
     timeout-minutes: 180
     steps:
+      # fetch-depth 0: arm (ii) reads a Dockerfile out of history with `git show`, which a shallow clone
+      # cannot serve ("bad object" would read like a harness bug). security.yml does the same for AC-126.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Self-check the classifier
         run: bash scripts/test-sql-startup-sample.sh
@@ -46,12 +55,14 @@ jobs:
           set -euo pipefail
           case "${{ inputs.arm }}" in
             fts-2025)
-              docker build -f deploy/Dockerfile.sqlserver -t acmp/sample:fts-2025 deploy
+              timeout 15m docker build -f deploy/Dockerfile.sqlserver -t acmp/sample:fts-2025 deploy
               echo "ref=acmp/sample:fts-2025" >> "$GITHUB_OUTPUT" ;;
             fts-2022-premove)
               git show 0794dcaf^:deploy/Dockerfile.sqlserver > /tmp/Dockerfile.premove
               grep -n '^FROM' /tmp/Dockerfile.premove
-              docker build -f /tmp/Dockerfile.premove -t acmp/sample:fts-2022-premove deploy
+              sha256sum /tmp/Dockerfile.premove   # provenance of what was built, in the job log
+              # 15m: the pre-move Dockerfile still fetches jammy/universe, DEF-140's stall shape on noble.
+              timeout 15m docker build -f /tmp/Dockerfile.premove -t acmp/sample:fts-2022-premove deploy
               echo "ref=acmp/sample:fts-2022-premove" >> "$GITHUB_OUTPUT" ;;
             stock-2025)
               ref=$(sed -n 's/^FROM \(mcr\.microsoft\.com\/mssql\/server:[^ ]*\).*/\1/p' deploy/Dockerfile.sqlserver)
