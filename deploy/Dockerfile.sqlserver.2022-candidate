@@ -1,0 +1,29 @@
+# ADR-0046 CANDIDATE (Proposed) — SL-040 / WBS-34. NOT the shipped image: deploy/Dockerfile.sqlserver is.
+# This file exists so the remedy can be PROVEN before it is adopted: the sampling harness builds it as arm
+# `fts-2022-candidate`, and integration-on-candidate.yml copies it over Dockerfile.sqlserver in a runner's
+# checkout to run the real fixture path. If ADR-0046 is approved, its content replaces Dockerfile.sqlserver
+# and this file is deleted; if not, this file is deleted. Either way it does not outlive SL-040.
+#
+# Same image as the shipped file, on the SQL Server 2022 line: stock 2022 + Full-Text Search (FR-143/145,
+# AC-061; the Arabic word-breaker, LCID 1025, rides in with mssql-server-fts).
+#
+# ⚠⚠ THE `FROM` AND THE REPO URL ARE ONE DECISION IN TWO PLACES (DW-078): ubuntu/<release>/mssql-server-<major>.
+# 2022-latest == 2022-CU26-ubuntu-22.04 == sha256:ba4c8329… on 2026-09-07 (docker buildx imagetools inspect).
+FROM mcr.microsoft.com/mssql/server:2022-latest@sha256:ba4c8329f48fb8f02e1416be6a930ebfd71268caee78aa985f3af4315e457c89
+USER root
+# DEF-140's fix, in the form 22.04 needs: the jammy base lists its suites in /etc/apt/sources.list (no
+# ubuntu.sources), so the universe/multiverse/backports lines are DROPPED rather than the Components edited.
+# Only `main` on jammy/jammy-updates/jammy-security is consulted; nothing here needs universe (gnupg2 is not
+# installed — apt reads the ASCII-armored key from /etc/apt/trusted.gpg.d/*.asc, as in the shipped file).
+# --no-install-recommends keeps the layer minimal (C-CON-002 / DS-0029).
+RUN sed -i -E '/universe|multiverse|backports/d' /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates \
+ && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/trusted.gpg.d/microsoft.asc \
+ && curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list -o /etc/apt/sources.list.d/mssql-server-2022.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends mssql-server-fts \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+USER mssql
+# Docker-secrets shim (ADR-0032) — byte-identical to the shipped file's ENTRYPOINT.
+ENTRYPOINT ["/bin/sh", "-c", "if [ -n \"${MSSQL_SA_PASSWORD_FILE:-}\" ] && [ -f \"$MSSQL_SA_PASSWORD_FILE\" ]; then MSSQL_SA_PASSWORD=\"$(cat \"$MSSQL_SA_PASSWORD_FILE\")\"; export MSSQL_SA_PASSWORD; fi; exec /opt/mssql/bin/sqlservr"]

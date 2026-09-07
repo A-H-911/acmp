@@ -16,6 +16,8 @@ name: SQL startup sampling
 #                     arms are built the same day, so the isolation BETWEEN arms is unaffected; reading a
 #                     clean arm (ii) against the 453 is not a same-binary comparison and WBS-33 must say so.
 #   stock-2025        the shipped base digest with NO FTS package — separates the base from the package.
+#   fts-2022-candidate  deploy/Dockerfile.sqlserver.2022-candidate — the ADR-0046 remedy AS IT WOULD SHIP
+#                     (SL-040 / WBS-34). Distinct from fts-2022-premove, which is the archaeological file.
 on:
   workflow_dispatch:
     inputs:
@@ -23,7 +25,7 @@ on:
         description: which image to sample
         required: true
         type: choice
-        options: [fts-2025, fts-2022-premove, stock-2025]
+        options: [fts-2025, fts-2022-premove, stock-2025, fts-2022-candidate]
       starts:
         description: container starts (DEC-142 d3 sized 120; a faulty arm reads clean ~1.4% of the time there)
         required: true
@@ -36,7 +38,9 @@ on:
         description: sidecar containers booted at the same moment as each start
         required: true
         type: choice
-        options: [none, backstop]
+        # `heavy` (WBS-36): two sidecars per start — the backstop AND a stock 2025 — the nearest cheap
+        # approximation to CI's two SQL Servers plus MinIO plus a busy dotnet process, to try for DEF-121.
+        options: [none, backstop, heavy]
         default: none
 
 permissions:
@@ -77,14 +81,19 @@ jobs:
               ref=$(sed -n 's/^FROM \(mcr\.microsoft\.com\/mssql\/server:[^ ]*\).*/\1/p' deploy/Dockerfile.sqlserver)
               docker pull "$ref"
               echo "ref=$ref" >> "$GITHUB_OUTPUT" ;;
+            fts-2022-candidate)
+              grep -n '^FROM' deploy/Dockerfile.sqlserver.2022-candidate
+              sha256sum deploy/Dockerfile.sqlserver.2022-candidate
+              timeout 15m docker build -f deploy/Dockerfile.sqlserver.2022-candidate -t acmp/sample:fts-2022-candidate deploy
+              echo "ref=acmp/sample:fts-2022-candidate" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Sample ${{ inputs.starts }} starts (contention ${{ inputs.contention }})
         env:
           # tests/Acmp.Integration.Tests/SqlBackstopFixture.cs:29 - the exact image CI boots alongside.
-          SIDECARS: ${{ inputs.contention == 'backstop' && 'mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04' || '' }}
+          SIDECARS: ${{ inputs.contention == 'backstop' && 'mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04' || inputs.contention == 'heavy' && 'mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04 mcr.microsoft.com/mssql/server:2025-latest@sha256:4bab24f36c1ecd48e85f7d37df26e6bf301641d84c3fe652f9a0dcc947d512e1' || '' }}
         run: |
-          [ -z "$SIDECARS" ] || docker pull "$SIDECARS"
+          for s in $SIDECARS; do docker pull "$s"; done
           bash scripts/sql-startup-sample.sh "${{ steps.image.outputs.ref }}" "${{ inputs.starts }}" sampling-out
 
       - name: Summary
