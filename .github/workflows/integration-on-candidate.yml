@@ -1,0 +1,87 @@
+name: Integration suite on the candidate SQL Server image
+
+# SL-040 / WBS-35 (DEC-144 d3) — the REAL fixture path on the ADR-0046 candidate. MANUAL ONLY. The
+# candidate Dockerfile is copied over deploy/Dockerfile.sqlserver in THIS checkout only (never committed),
+# so SearchProvidersFtsTests builds and boots it through its own ImageFromDockerfileBuilder + MsSqlBuilder
+# path, beside SqlBackstopFixture's 2022 container and MinIO — the concurrency that crashes in CI.
+# The suite is run N times in one job so the ~2-minute image build is paid once.
+#
+# ⚠ Every run's result is recorded by SIGNATURE, not colour: a SearchProvidersFtsTests crash is the finding
+# this workflow exists to see or not see; any other red is a different finding. DEC-077 d3 governs a red
+# here as anywhere — it is never re-run to see whether it passes.
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: Dockerfile to substitute for deploy/Dockerfile.sqlserver
+        required: true
+        type: string
+        default: deploy/Dockerfile.sqlserver.2022-candidate
+      runs:
+        description: how many times to run Acmp.Integration.Tests
+        required: true
+        type: number
+        default: 10
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    # ~2m14s per green run on a fresh runner (ContainerStartup.cs measured it), 10 runs + build ≈ 30 min.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Substitute the candidate (working tree only)
+        run: |
+          set -euo pipefail
+          sha256sum "${{ inputs.candidate }}" deploy/Dockerfile.sqlserver
+          cp "${{ inputs.candidate }}" deploy/Dockerfile.sqlserver
+          grep -n '^FROM' deploy/Dockerfile.sqlserver
+          git status --porcelain -- deploy/   # shows the substitution; nothing is committed
+
+      - name: Build once
+        run: dotnet build tests/Acmp.Integration.Tests -c Release
+
+      - name: Run Acmp.Integration.Tests ${{ inputs.runs }} times
+        env:
+          ACMP_CRASH_ARTEFACT_DIR: ${{ github.workspace }}/crash-artefacts
+        run: |
+          set -uo pipefail
+          mkdir -p results
+          for i in $(seq 1 "${{ inputs.runs }}"); do
+            tag=$(printf 'run-%02d' "$i")
+            t0=$SECONDS
+            if dotnet test tests/Acmp.Integration.Tests -c Release --no-build --logger "trx;LogFileName=$tag.trx" --results-directory results > "results/$tag.log" 2>&1; then
+              outcome=green
+            else
+              outcome=red
+            fi
+            fts=$(grep -c -E 'SearchProvidersFtsTests.*\[FAIL\]|ContainerNotRunningException' "results/$tag.log" || true)
+            printf '%s %-5s %4ss fts-signature-lines=%s\n' "$tag" "$outcome" "$((SECONDS - t0))" "$fts" | tee -a results/summary.txt
+          done
+          echo '## Results'; cat results/summary.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## candidate: \`${{ inputs.candidate }}\` — ${{ inputs.runs }} runs"
+            echo '```'; cat results/summary.txt 2>/dev/null || echo '(no summary written)'; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Uploaded on EVERY outcome (WBS-29's lesson): the logs, the trx files, and any crash artefacts.
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: integration-on-candidate-${{ github.run_id }}
+          path: |
+            results
+            crash-artefacts
+          if-no-files-found: warn
+          retention-days: 30
