@@ -531,6 +531,10 @@ subject: after a ruling, also grep for `no |none|nothing|names no|not scheduled|
 each hit denies.** `LL-064` is Approved and immutable, so this refinement is a supersession the operator
 has not yet been asked for; it is recorded here and in `PE-951` rather than left in a session that ends.
 ⚠ **Not an escape**: no commit message asserts it, so the count stays at sixteen.
+✅ **ANNOTATED 2026-09-07 (fiftieth round), NOT REWRITTEN: THE SUPERSESSION WAS OFFERED AND TAKEN.** `LL-066`
+carries `LL-064`'s rule whole plus the second key, and `LL-064` is superseded by it (`DEC-141` d2, against a
+generated record slate). *"has not yet been asked for"* above is therefore historical. Not tallied: corrected
+in the session that made it false, before any commit carried it (`PE-811`'s precedent).
 
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
 file has carried a stale statement **fifty-seven** times, and **sixteen** wrong assertions have escaped into
@@ -2528,14 +2532,19 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-140` d3 (2026-09-07) named
-   THE PER-ITEM VERDICTS as the next unit of work.** ⛔ **WHETHER ANY REMAIN IS ITEM 3's COMMAND AND
-   `readiness_check`, NEVER THIS LINE** — the direction is durable, the set it applies to is not, and
-   naming a row here is the FORTY-SIXTH's and FORTY-EIGHTH's exact fault.
-   ⚠ **`DEC-140` d3 DECLINED THREE OPTIONS AND CLOSED NONE**, so each stays available without being
-   scheduled: diagnosing `DEF-121`/`DEF-130`, the `deferred-work-reviewed` backlog, and a second
-   `skill-promote` round. **Read `DEC-140` for the reasoning and the registers for what is still true of
-   each** — that list is a record of a ruling, not a statement about today.
+   ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth
+   round) named DIAGNOSING `DEF-121` / `DEF-130` as the next unit of work** — the operator's choice among the
+   three options `DEC-140` d3 had declined without closing. ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
+   ATTEMPT** (`LL-052`): each carries an end condition whose clause (2) asks for a CAUSE, and `DEC-115` d2 /
+   `DEC-116` d1 have ruled that neither a capture nor an elimination is one; `DEC-119` d3 declined the
+   environmental disposition; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say
+   accumulated greens satisfy no clause. ⚠ **Whether this direction still stands is the decision register
+   from `DEC-141` onward, never this line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3,
+   whose subject (the `SL-038` per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
+   ⚠ **The two options `DEC-141` d5 did not take — the `deferred-work-reviewed` backlog and a second
+   `skill-promote` round — stay available and unscheduled.** Read `DEC-140` and `DEC-141` for the reasoning
+   and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
+   FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
    (`skill-promote.md`) by the run that produced `SKL-001` (`PE-938`). ⛔ **DO NOT READ THAT AS *nothing is
    next*** — that was the FORTY-NINTH, a measured claim about what remains that a decision falsified within
@@ -2566,12 +2575,16 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    alone, against a freshly generated slate. ⛔ **This sentence deliberately names no row: that set changes
    the moment anybody acts on it. Resolve it with `entity_query`, never from here.** **Taking
    a verdict without the slate is the exact bypass `DEF-142` exists to record** — it is not a shortcut,
-   and it is not yours to authorise.
+   and it is not yours to authorise. ✅ **The route has now been exercised once, end to end** (`DEC-141` d1,
+   2026-09-07): three verdicts taken against a slate whose header digest `package_verify()` returned at
+   generation, with the `SL-035` refusal as the control and every status flip guarded by `expect_unchanged`
+   — the first batch was refused for three omitted columns, which is the guard proving it fires.
    ⚠ **ONE THING `DW-100` SAID IS SETTLED AND MUST NOT BE RE-RUN**: `entity_query` does not truncate
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-140`, `LL-064`, `LL-065`, `DW-101`, `PE-948`, `PE-949`,
+   under: `DEC-141`, `LL-066`, `PE-953`, `PE-954`, `PE-955`,
+   `DEC-140`, `LL-064`, `LL-065`, `DW-101`, `PE-948`, `PE-949`, `PE-951`,
    `DEC-139`, `SC-052`, `PE-942`, `PE-944`,
    `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
    `LL-061`, `LL-063`, `SKL-001`,

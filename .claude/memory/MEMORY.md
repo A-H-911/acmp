@@ -1,18 +1,21 @@
 # Memory Index — ACMP
 
 > One line per entry; detail lives in topic files and the package. Read the linked file before acting.
-> ⚠⚠ **MEASURED CEILING: 200 LINES** (not bytes — disproven, wrong dimension). Past 200 drops **silently**
-> and had already eaten "Standing rules". ⭐ **`wc -l` BEFORE *and AFTER* every edit** — 2026-09-03 went
-> 199→201→202 *while trimming*: replacing 2 lines with 4 is an ADD. Keep under ~140.
+> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4 KB** — past either the loader drops the tail SILENTLY (the byte cap was denied here once and then hit on 2026-09-07). ⭐ `wc -l` AND `wc -c` before and after every edit; keep under ~140 lines / 24 KB.
 
+
+## ★★★ 2026-09-07 (later) · `DEC-141` · `SL-038` CLOSED through the slate route · `LL-066` supersedes `LL-064`
+
+- ⭐⭐ **THE MANDATED VERDICT ROUTE WORKS END TO END** (`DEC-141` d1): export EVERY family the generator names in ONE pass → `package_verify()` digest == exports' digest → `gen-slice-review-slate` (+ the other Approved slice's *nothing at Review* refusal as the CONTROL) → operator rules → full-row flips with `expect_unchanged` on `title, phase_id, slice_id, effort, source_kind, source_span`. ⚠ **An OMITTED guarded column REFUSES THE WHOLE BATCH** — calibrated by accident (2 rows omitted 3 short columns → rolled back), which also PROVED the 4–9 KB pasted titles byte-identical. ⭐ **`gen-record-slate` indexes EVERY file in `exports/` ⇒ delete stale exports of OTHER families first** or it refuses the mixed digest. ⛔ Offer no verdict and no "(Recommended)" on the operator's own questions (`DEC-140` d3).
+- ⚠ **`DEC-141` d5: NEXT UNIT = diagnose `DEF-121`/`DEF-130`.** Read both rows to the END; clause (2) needs a CAUSE (`DEC-115` d2/`DEC-116` d1); `DEC-077` d3 binds. Resolve whether it still stands from the decision register, never from this line.
 
 ## ★★★ 2026-09-07 · `DEC-139`/`DEC-140` · `entity_export` · `WBS-31` SHIPPED · `DW-100` **DONE** · `SKL-001`
 
-⭐⭐⭐ **`SKL-001` `trusting-a-measurement` EXISTS — `.claude/skills/trusting-a-measurement/SKILL.md`, OPERATOR-OWNED, never regenerate it.** 23 lessons **Promoted** and gone from the always-loaded note (`LL-006 009 013 015 017 018 020 029 030 033 035 041 043 046 047 048 049 053 054 055 059 060 062`) — **so if you want one of those, it is IN THE SKILL, not in the note.** Note 58→35→**37** lines vs a ceiling of 20 (`LL-064`/`LL-065` added 2); `skill-promote.md` is re-runnable and 2 clusters remain (`PE-938`). ⚠ **`Approved`→`Promoted` needs EVERY content column byte-identical and an OMITTED column reads as DRIFT** — but `trg_lessons_immutable` ABORTS on drift, so `ok:true` IS the proof (calibrate it first).
+⭐⭐⭐ **`SKL-001` `trusting-a-measurement` EXISTS — `.claude/skills/trusting-a-measurement/SKILL.md`, OPERATOR-OWNED, never regenerate it.** 23 lessons **Promoted** and gone from the always-loaded note (`entity_query("lesson", status="Promoted")` lists them) — **if you want one of those, it is IN THE SKILL, not in the note.** Note 58→35→**37** lines vs a ceiling of 20 (`LL-064`/`LL-065` added 2); `skill-promote.md` is re-runnable and 2 clusters remain (`PE-938`). ⚠ **`Approved`→`Promoted` needs EVERY content column byte-identical and an OMITTED column reads as DRIFT** — but `trg_lessons_immutable` ABORTS on drift, so `ok:true` IS the proof (calibrate it first).
 
 ⛔⛔⛔ **ALL PACKAGE READS *AND* WRITES GO THROUGH THE `tamheed` MCP TOOLS — NO EXCEPTIONS** (`DEC-135` d1, an OVERRIDE). **Never open/`cat`/`grep`/`wc -l` a `tamheed-package/data/*.jsonl`** — 78 ad-hoc scripts deleted (`PE-897`/`PE-898`). ⭐⭐⭐ **RESOLVED 2026-09-07 BY tamheed 4.7.0 + `DEC-139` d1: a committed script reads `tamheed-package/exports/<family>.json`, written by the MCP tool `entity_export` — that SATISFIES d1 (the tool does the store read), it is not an exception.** All 4 `gen-*.mjs` rebuilt onto it (`WBS-31`, PR #372 → `1fdb33c0`); shared reader `scripts/lib/package-export.mjs`; `DW-100` **Done**. ⛔ `count-prompt-ids.py` still reads JSONL — out of scope by `DEC-138` d3. ⚠ **`exports/` is GITIGNORED** — export immediately before generating, never reuse. ⛔ **Per-item verdicts are the OPERATOR's (`DEC-079` d3) and are now TAKEABLE again — resolve which rows are at `Review` from the register, never from this line.**
 ⭐⭐ **`entity_query` TRUNCATES NO FIELD** — `tamheed_server.py:993-1076`, `SELECT {cols}`→`dict(zip(...))`, **read in source** (`PE-910`). **TRAP 13 IS REVERSED**; `LL-045`→**`LL-063`**. ⭐⭐⭐ **HOW: `DW-100` AND `DEC-135` d1 BOTH CALLED IT UNTESTABLE — both framed the instruments as *OUTPUTS to compare*, so the CODE THAT PRODUCES one was invisible.** Ask that whenever a premise looks circular. ⚠ JSONL flushes on EVERY write (`AGENTS.md` line 38 fixed). ⭐⭐ **TWO GUARDS FROM EARLIER SESSIONS CAUGHT ME IN ONE HOUR:** `DEC-137` d4 (*`decision_ref` == `amends` target ⇒ provenance, not amendment*) refused my `SC-051`→`DEC-138` edge; and **`trg_lessons_immutable` ABORTS any content drift on an `Approved` lesson ⇒ a supersession paste is SELF-VERIFYING** (calibrated with a corrupt title — rolled back atomically). ⛔ **`deferred_work`/`wbs_items`/`scope_changes` have NO such trigger** — `DEF-127`'s register. ⭐⭐⭐ **4.7.0 FIXES THAT: `expect_unchanged: [cols]` on an `entity_upsert` item REFUSES the write if those columns differ from stored ⇒ a long-row status flip is SELF-VERIFYING. An OMITTED named column counts as CHANGED. CALIBRATE IT (I did: `effort` M→L was refused, batch rolled back).** ⭐ Cheaper still: **omit a nullable column entirely and it is preserved untouched** — no transit, no risk.
-- ⭐⭐⭐ **`DEC-140`: A GREEN `lessons-confirmed` CAN MEAN *NOTHING WAS RECORDED*** — it counts `Proposed` rows, so it goes green precisely when you filed no lesson. ⭐ **`entity_query("lesson", status="Proposed")` + a `Promoted` control is the real check.** `LL-064` (a ruling and the prose it falsifies ship in the SAME commit — the fix is ORDERING, sweep before committing the ruling) and `LL-065` (a PROVEN premise argues FEASIBILITY, never DESIRABILITY) Approved unpinned; `DW-101` files two readiness gates that pass because their subject is missing (5 defects w/ null `found_in`, `AC-109`–`112` unbound). ⛔ **`SL-035` is BUILD-COMPLETE, held by `DEF-121`+`DEF-130` alone.**
+- ⭐⭐⭐ **`DEC-140`: A GREEN `lessons-confirmed` CAN MEAN *NOTHING WAS RECORDED*** — it counts `Proposed` rows, so it goes green precisely when you filed no lesson. ⭐ **`entity_query("lesson", status="Proposed")` + a `Promoted` control is the real check.** `LL-064` (a ruling and the prose it falsifies ship in the SAME commit — the fix is ORDERING, sweep before committing the ruling; **superseded 2026-09-07 by `LL-066`, which keeps that rule and adds a SECOND sweep keyed on the SHAPE of an absence-claim — `no |none|nothing|names no|not scheduled|deliberately` — read for what each hit DENIES**) and `LL-065` (a PROVEN premise argues FEASIBILITY, never DESIRABILITY) Approved unpinned; `DW-101` files two readiness gates that pass because their subject is missing (5 defects w/ null `found_in`, `AC-109`–`112` unbound). ⛔ **`SL-035` is BUILD-COMPLETE, held by `DEF-121`+`DEF-130` alone.**
 - ⚠⚠⚠ **THE DIGEST IS PACKAGE-WIDE ⇒ *ANY* WRITE AFTER GENERATING A SLATE INVALIDATES ITS CURRENCY CLAIM — AND `progress_update` IS SUCH A WRITE** (`PE-949`, measured on first use). ⭐ **Do EVERY package write first — rows, progress, `work_bind`+flush — then export, then generate, then hand over.** ⛔ **Never "fix" it by narrowing the digest to the families a slate reads**: the check would pass while a register the slate QUOTES changed underneath.
 - ⭐⭐ **`ids` + `search` COMPOSE ⇒ a substring test scoped to ONE row:** `entity_query(t, ids=["X"], search="phrase")` → 1/0. Used it as a **paragraph-level** survival check on a 4,405-char re-send (7 phrases, 1 per paragraph — trap 14a's real failure is a vanished paragraph, not a short total); control differed by **one word** and returned 0. ⚠ `DEF-142` (4th in `DEF-116`→`117`→`119`) is Fixed by `WBS-30`, merged `10e4be96` — found by **RUNNING** item 3's command, not reading the row citing it.
 
@@ -45,24 +48,10 @@ an artefact empty.** To watch an instrument you add a channel and that channel i
 lacks; **a `trace.zip` holds TWO streams and I merged them**; `DEF-140`'s cause was `archive.ubuntu.com`,
 absent from the Dockerfile; **`DEF-129` is the guest's `POST …/token` returning `status=-1`** — neither
 of its two standing remedies. ⭐ *What did I change in order to watch this, and does production have it?*
-- ⛔ **MediatR 12.5.0 does NOT drop the token** (`PE-875` retracts `PE-873`): the new `CancellationToken`
-  param is **defaulted**, so bare `next()` still receives the caller's token. Only test *lambdas* break —
-  arity at CONSTRUCTION, invisible at INVOCATION. ⛔ **`DW-099` corrected: the suite's 72/445 ARE a
-  red-detector for lost isolation**, so stop-on-red is NOT blind there.
-- ⚠⚠ **BACKEND DURATION IS A SIGNATURE:** ~1m34s = **Format check**; ~5m = healthy; 11–18m = `DEF-140`.
-  ⭐ **Run the gate's OWN command BEFORE pushing** — `dotnet format acmp.sln --verify-no-changes
-  --no-restore`. **Heredoc/Write-created `.cs` files carry NO BOM ⇒ `error CHARSET`.**
-- ⛔ **A comment is not free: JSON admits none** (breaks `dotnet-tools.json`) **and XML forbids `--`
-  inside one** (breaks a csproj). Both hit in one session, both while fixing the same row.
-- ⭐⭐ **DEPENDENCY PRs: COLOUR AND CAUSE POINT OPPOSITE WAYS** (`PE-856`/`PE-867`) — 4 cases in one
-  sweep, incl. a "risky major" that was a **repair** (`DEF-138`). ⭐ Coverage baseline moved
-  99.62%→99.72% at `97e55de6` (coverlet 10) on byte-identical code. ⭐ `@dependabot rebase` is silently
-  ignored ⇒ **`gh pr update-branch`**. ⚠ **`gh pr checks --watch` right after a push exits 1** — use
-  `gh run watch <id>`; it can also return before every workflow is done.
-- ⭐⭐ **`WBS-27.2`** (`LL-057`, pinned): the expensive thing was the HOST, not the databases —
-  **287 constructions → 47**, CI backend 9m → 5m36s. ⛔ **Claims NOTHING about `DEF-109`.**
-- ⚠⚠ **C31 FIRES ON *COMMITTED* WRITES TOO** — `gh pr merge --delete-branch` took a branch-only package
-  commit. **Safe = REACHABLE FROM A SURVIVING REF.** ⚠ `cancel-in-progress` is `pull_request`-ONLY.
+- ⛔ **MediatR 12.5.0 does NOT drop the token** (`PE-875`): the new `CancellationToken` param is defaulted; only test *lambdas* break — arity at CONSTRUCTION, invisible at INVOCATION. ⛔ `DW-099` corrected: the suite's 72/445 ARE a red-detector for lost isolation.
+- ⚠⚠ **BACKEND DURATION IS A SIGNATURE:** ~1m34s = Format check; ~5m = healthy; 11–18m = `DEF-140`. ⭐ Run the gate's OWN command BEFORE pushing — `dotnet format acmp.sln --verify-no-changes --no-restore`. **Write-created `.cs` files carry NO BOM ⇒ `error CHARSET`.** ⛔ JSON admits no comment; XML forbids `--` inside one.
+- ⭐⭐ **DEPENDENCY PRs: COLOUR AND CAUSE POINT OPPOSITE WAYS** (`PE-856`/`PE-867`) — a "risky major" was a REPAIR (`DEF-138`). ⭐ `@dependabot rebase` is silently ignored ⇒ `gh pr update-branch`. ⚠ `gh pr checks --watch` right after a push exits 1 — use `gh run watch <id>`.
+- ⭐⭐ **`WBS-27.2`** (`LL-057`, pinned): the expensive thing was the HOST — 287 constructions → 47, backend 9m → 5m36s. ⛔ Claims NOTHING about `DEF-109`. ⚠⚠ **C31 FIRES ON *COMMITTED* WRITES TOO** — `--delete-branch` took a branch-only package commit; **safe = REACHABLE FROM A SURVIVING REF.**
 
 ## ★★★ 2026-09-03 · `DEF-109` occ 6: SCHEDULING REFUTED · `DEC-123`–`DEC-125` · `LL-055`
 
@@ -82,83 +71,27 @@ of its two standing remedies. ⭐ *What did I change in order to watch this, and
 
 ## ★★★ 2026-09-02 · `DEF-109` diagnosed · `DEF-121`: memory pressure REFUTED, clause (2) still unmet · `DEC-111`–`DEC-116`
 
-⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — this heading said *`main` still red* and my own session
-falsified it hours later. `gh run list --branch main` is the answer; cite a RUN ID (`LL-036`).
-★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — **read
-before any memory/perf investigation, and before trusting any `gcroot` output.** 137 MB over 20
-`WebApplicationFactory` hosts vs 8 MB over 1 for identical work; 20/20 disposed factories alive after a
-forced GC; 3% fix declined. ⭐ `DEC-120` ACTIVATED `DW-096`→`WBS-27.2` in `SL-036`; occ 5 was 2026-09-03.
-★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) — before shipping ANY
-detector: 4 failure modes, the 2 that PRODUCE OUTPUT are worst; positive controls are practice here but in NO rule register.
-⚠ Pass Write/Edit a **REPO-RELATIVE** path. ⭐ Scratch `.scratch/<id>/`; memory dir = a junction.
-★★★ [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) —
-  the memory-pressure hypothesis is **REFUTED** from two files the capture KEPT; `DW-097`'s *"it is in
-  the dropped dump"* was FALSE; clause (2) is STILL unmet (an elimination is not an identification).
-- ⛔⛔ **THE HOSTED RUNNER IS ~16 GB, NOT 7.** I asserted 7 from memory into `PE-771`. **Every MEASURED
-  `DEF-109` claim survives; the causal BRIDGE to the CI symptom does not** (`LL-020`, `PE-785`). ⚠ So it
-  holds a **measured leak** and an **unproven symptom explanation** — and 2026-09-03 refuted scheduling too.
-- ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`). I offered a
-  file that did not exist and the operator **chose it**. ⭐ **`LL-052`, PINNED:** a file's NAME and FIRST
-  SCREEN describe its FORMAT, never its content; a manifest saying `kept` is quotable only for its `DROPPED`.
-- ⭐⭐⭐ **ASK WHAT A *NEGATIVE* WOULD MEAN BEFORE RUNNING THE EXPERIMENT** (`LL-047`); use
-  `GC.GetTotalMemory(true)`. ⭐⭐ **A root-path tool names *A* path, never *THE* cause** (`LL-048`).
-- ⚠ **A big hand-paste is survivable IF you verify after** — byte-compare vs the pre-image
-  (`LL-028`+`LL-001`). ⭐⭐ **`LL-049`: a measurement AFTER the action it gates is a report, not a control.**
-- ⭐⭐ **SWEEP THE DECISION REGISTER FOR A ROW'S ID BEFORE CALLING ITS NUMBERS STALE** (`LL-050`).
-- ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`** (package→`main` direct, code→PR). ⚠⚠
-  **`strict: true`: ANY push to `main` stales every open PR** — path-ignore stops the RUN, not the
-  staleness. Each re-stale ≈ a full cycle. ⭐ Ryuk doesn't reap first: `docker cp`. ⚠ Discriminate a red
-  by SIGNATURE — `DEF-121` `ContainerNotRunningException` vs `DEF-109` `TaskCanceledException`.
-- ⛔⛔ **NEVER NAME A SLICE ID OR DESCRIBE AN ITEM IN `prm-next.md`** — nine commands named a CLOSED slice
-  (46th); *"DIAGNOSE `DEF-109`"* shipped in the commit saying DIAGNOSED (48th). **A briefing on HOW is a
-  description too.** ⚠ **`ADR-0045`**: where a `.dc.html` cannot satisfy `INV-014`'s px AND `AA`, AA governs.
+⛔⛔ **NEVER WRITE A CI COLOUR INTO DURABLE PROSE** — `gh run list --branch main` is the answer; cite a RUN ID (`LL-036`).
+★★★ [**`DEF-109`: the HOST is the unit that leaks**](def109-the-host-is-the-unit-that-leaks.md) — read before any memory/perf investigation or trusting `gcroot`; 137 MB over 20 hosts vs 8 MB over 1; `DEC-120` activated `DW-096`→`WBS-27.2`.
+★★★ [**AN INSTRUMENT MUST REPORT ON ITSELF**](an-instrument-must-report-on-itself.md) · [**READ THE ARTEFACT, NOT THE ENTRY ABOUT IT**](read-the-artefact-not-the-entry-about-it.md) — memory pressure REFUTED from files the capture KEPT; clause (2) STILL unmet (an elimination is not an identification).
+- ⛔⛔ **THE HOSTED RUNNER IS ~16 GB, NOT 7** (`PE-785`): every MEASURED `DEF-109` claim survives, the causal BRIDGE to the CI symptom does not (`LL-020`). ⚠ Pass Write/Edit a REPO-RELATIVE path; scratch `.scratch/<id>/`; memory dir = a junction.
+- ⛔⛔ **A QUESTION'S OPTIONS ARE UNVERIFIED PROSE WEARING THE SLATE'S AUTHORITY** (`LL-051`); **`LL-052`, PINNED:** a file's NAME and FIRST SCREEN describe its FORMAT, never its content. ⭐ Ask what a NEGATIVE would mean before the experiment (`LL-047`); a root-path tool names A path, never THE cause (`LL-048`); a measurement AFTER the action it gates is a report (`LL-049`); sweep the decision register for a row's id before calling its numbers stale (`LL-050`).
+- ⚠⚠ **COMMIT PACKAGE WRITES *BEFORE* `git checkout -b`**; **`strict: true`: ANY push to `main` stales every open PR** — path-ignore stops the RUN, not the staleness. ⭐ Ryuk doesn't reap first: `docker cp`. ⚠ Discriminate a red by SIGNATURE — `DEF-121` `ContainerNotRunningException` vs `DEF-109` `TaskCanceledException`.
+- ⛔⛔ **NEVER NAME A SLICE ID OR DESCRIBE AN ITEM IN `prm-next.md`** (46th, 48th) — **a briefing on HOW is a description too.** ⚠ **`ADR-0045`**: where a `.dc.html` cannot satisfy `INV-014`'s px AND `AA`, AA governs.
 
 ## ★★★ 2026-08-31 · CI attribution · activations are not agreement
 
-⛔ **This heading named a live slice and went stale** — resolve it with
-`entity_query("slice", status="Approved")`, never from here. ⚠⚠ **Activations routinely OVERRIDE the
-agent's recommendation to carry** — never read one as agreement about HOW.
-
-★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md)
-— **read before recording anything about CI, or proposing a fix to an intermittent failure.**
-
-- ⚠⚠⚠ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE** (`LL-036`) — disagreed
-  twice; `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.** ⚠⚠ **`skipped` CONFLATES
-  *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`). ⭐⭐ **A remedy reducing a PROBABILITY cannot be
-  falsified by recurrence** (`LL-035`). ⭐ **A re-run samples every OTHER question** (`LL-037`) — found `DEF-122`.
-- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`; tell = uniformity). ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.** ⛔ Name no readiness answer.
-- ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW.** `[^}]*` stops at the first `}`, so a row with nested
-  `custom_attributes` is **silently deleted from the result**, not undercounted (the **FORTY-FIRST**).
-- ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — keeps producing rulings the agenda lacked, has
-  *dissolved* items 4×, and on 2026-09-03 **removed an OPTION from inside a row**. ⚠ `Open` ≠ never-ruled.
-- ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b). ⚠ `verification_method` is a
-  CHECK; `verified_by` ∈ `human|agent|ci`; approving a lesson needs `"operator_confirm": true` **plus
-  byte-identical content**; trace edges use `from_id`/`to_id`. ⚠ `entity_upsert` needs FULL rows — NOT NULL
-  is evaluated before conflict resolution — but **nullable fields are preserved by omission** (so a status
-  flip can omit `custom_attributes`; generate the payload from `entity_query` — **never the JSONL**, `DEC-135` d1 — and verify byte-identity after).
-- ⭐⭐⭐ **A TARGETED SWEEP FINDS CLAIMS ABOUT WHAT YOU *CHANGED*; ONLY A FULL READ FINDS CLAIMS ABOUT WHAT
-  *REMAINS***. ⚠⚠ **A POINTER AT A FINISHED SLICE RETURNS A CLEAN ANSWER ABOUT THE WRONG SUBJECT.** ⭐ **Name
-  no slice id in durable prose.** ⚠ **`PH-3`/`PH-7` are `Approved`, not closed** — close-out is not due.
-
-
-- ⭐⭐⭐ **`LL-032` (pinned): a fixture that is the LIVE REGISTER changes meaning when somebody does ordinary
-  work, and the dangerous outcome is the *PASS*.** ⛔⛔ **NEVER carry `security-controls.md` §20's *"L2 is met
-  across all applicable chapters"***. ⚠⚠ **`jq` IS NOT INSTALLED** — use `gh --jq`; a monitor built on it is
-  silent, and silence reads as "still running". ⭐ **Emit on EVERY terminal conclusion** — `cancelled` is a
-  third one and a `failure` filter steps over it (`DEF-132`).
-- ⭐⭐ **THE HABIT THAT PAID ON ALL TEN `SL-033` ITEMS:** read the row's own text, then sweep the NARRATIVE
-  docs **and** the ADR/decision/OQ registers by keyword before sizing (`LL-008`, `LL-025`).
-- ⚠⚠ **A DEFENCE LAYER CAN BE INVISIBLE TO ANY FRONT-DOOR TEST** (`LL-030`). ⚠⚠ **A REFACTOR CAN CROSS THE
-  PER-FILE COVERAGE FLOOR WITH NO NEW UNTESTED LINE** (`LL-031`) — ⛔ **RUN THE GATE, NOT THE TESTS**, and
-  never lower `ADR-0016`'s 95%. ⚠ Coverage excludes `tests/`, so test-only files add no pressure.
-- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3, overridden
-  TWICE; a third reopens the rule). It names that test ONLY, so a `DEF-109` red does not fire it.
-  ⚠⚠ **`scripts/**` and `.gitignore` are NOT path-ignored** — PR route; **poll CI after ANY push to `main`**.
-  ⚠ **`DEF-107`: approving+pinning a lesson does NOT bind it** — run `handoff_emit` in the SAME batch.
+★★★ [**CI run attribution · `skipped` · probability-remedies · `DEF-121` · the image gate**](ci-run-attribution-and-probability-remedies.md) — read before recording anything about CI or proposing a fix to an intermittent failure. ⚠⚠ **Activations routinely OVERRIDE the agent's recommendation to carry** — never read one as agreement about HOW.
+- ⚠⚠⚠ **A PR-HEAD RUN AND A MERGE-COMMIT RUN ARE DIFFERENT RUNS OVER IDENTICAL CODE** (`LL-036`); `gh pr checks` shows only the PR one. **Cite the RUN ID, never a colour.** ⚠⚠ **`skipped` CONFLATES *`if:` was false* WITH *a `needs:` job failed*** (`LL-039`). ⭐⭐ A remedy reducing a PROBABILITY cannot be falsified by recurrence (`LL-035`). ⭐ A re-run samples every OTHER question (`LL-037`).
+- ⚠⚠ **A LIFECYCLE STATUS CAN BE LOAD-BEARING, NOT LAGGING** (`LL-038`; tell = uniformity). ⭐⭐ **A progress entry is a ruling's record too — sweep those, not just DEC/ADR.** ⚠⚠⚠ **PARSE THE JSON; NEVER REGEX A JSONL ROW** — `[^}]*` silently DELETES rows with nested `custom_attributes` (41st).
+- ⭐⭐ **SWEEP BEFORE THE INTERVIEW, NEVER AFTER** (`LL-005`) — has dissolved items 4× and removed an OPTION from inside a row. ⚠ `Open` ≠ never-ruled. ⭐⭐⭐ **A TARGETED SWEEP FINDS CLAIMS ABOUT WHAT YOU *CHANGED*; ONLY A FULL READ FINDS CLAIMS ABOUT WHAT *REMAINS*.** ⚠⚠ A pointer at a FINISHED slice returns a clean answer about the wrong subject — name no slice id in durable prose. ⚠ `PH-3`/`PH-7` are `Approved`, not closed.
+- ⚠ **`G-TRACE` needs THREE legs** for a new `mvp=1` requirement (trap 16b). `verification_method` is a CHECK; `verified_by` ∈ `human|agent|ci`; approving a lesson needs `"operator_confirm": true` plus byte-identical content; trace edges use `from_id`/`to_id`. `entity_upsert` needs FULL rows (NOT NULL evaluated before conflict resolution) but **nullable fields are preserved by omission**; build payloads from `entity_query`, never the JSONL (`DEC-135` d1).
+- ⭐⭐⭐ **`LL-032` (pinned): a fixture that is the LIVE REGISTER changes meaning when somebody does ordinary work, and the dangerous outcome is the PASS.** ⛔ NEVER carry `security-controls.md` §20's *"L2 is met across all applicable chapters"*. ⚠⚠ **`jq` IS NOT INSTALLED** — use `gh --jq`. ⭐ **Emit on EVERY terminal conclusion** — `cancelled` is a third one (`DEF-132`).
+- ⭐⭐ Read the row's own text, then sweep the NARRATIVE docs and the ADR/decision/OQ registers by keyword before sizing (`LL-008`, `LL-025`). ⚠⚠ A defence layer can be invisible to any front-door test (`LL-030`). ⚠⚠ A refactor can cross the per-file coverage floor with no new untested line (`LL-031`) — **RUN THE GATE, NOT THE TESTS**; never lower `ADR-0016`'s 95%; coverage excludes `tests/`.
+- ⛔⛔ **A RED FROM `SearchProvidersFtsTests` IS REAL — STOP, DO NOT RE-RUN** (`DEC-077` d3, overridden TWICE; a third reopens the rule). It names that test ONLY. ⚠⚠ **`scripts/**` and `.gitignore` are NOT path-ignored** — PR route; **poll CI after ANY push to `main`**. ⚠ **`DEF-107`: approving+pinning a lesson does NOT bind it** — `handoff_emit` in the SAME batch.
 - ⛔ **`SEC-080` asserts a legal hold overrides any purge and NO HOLD MECHANISM EXISTS** (`OQ-080`). ⚠ **Approved ACs are IMMUTABLE** (`AC-147`). ⛔ Never `PageSize.Clamp` an export. ⚠ `DW-088`: `TopicDetail`'s download button is hardcoded `disabled`.
-- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate` · `gen-record-slate` (cross-register) · `check-image-contract` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`. ⭐ **The four `gen-*.mjs` now read `exports/` via `scripts/lib/package-export.mjs` — run `entity_export` for each family FIRST or they fail closed and print the exact call.**
-
-- ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — operator **refused an interview** over it. `LL-011`, pinned. ⭐ `G-IDS` checks FKs, **not ids in prose**. ⚠⚠ **A REQUIREMENT'S STATUS AND ITS `DW-` ROW'S ARE UNRELATED COLUMNS.** ⚠ Measuring inside the set you hold is not measuring the register.
+- ⭐ **Instruments to USE, not re-derive:** `coverage-triage` · `gen-lesson-docket` · `gen-slice-review-slate` · `gen-record-slate` · `check-image-contract` · `check-asvs-pack-paths` · `gen-dw-disposition-slate` · `count-prompt-ids.py` · `number-render-scan`. The four `gen-*.mjs` read `exports/` via `scripts/lib/package-export.mjs` — `entity_export` each family FIRST or they fail closed and print the call.
+- ⚠⚠⚠ [**AN ID IS A POINTER, NOT A REFERENCE**](an-id-is-a-pointer-not-a-reference.md) — operator refused an interview over it (`LL-011`, pinned). `G-IDS` checks FKs, not ids in prose. ⚠⚠ A requirement's status and its `DW-` row's are UNRELATED columns.
 ★★ 2026-08-20 disposition session: [**batches 13–21**](batches-13-21-durable-rules.md) · [**`SL-034`**](sl034-slate-generator-and-asvs-pack.md) · [**`SL-033`**](sl033-slice-findings.md) · [**`DW-082`**](dw082-sweep-and-vitest4.md)
 
 ## Earlier 2026-08 — durable findings only
@@ -189,6 +122,4 @@ agent's recommendation to carry** — never read one as agreement about HOW.
 - [User prefers simple English](user-prefers-simple-english.md) · [Phase prompt Standard Footer](phase-prompt-standard-footer.md) · [Install the schedule, not just the daemon](install-the-schedule-not-just-the-daemon.md) · [Arabic rename is a grammar rule](arabic-rename-grammar-not-substitution.md) · [A clean scan must prove it had a subject](scan-must-prove-it-had-a-subject.md) · [Guard the property, not the value](guard-the-property-not-the-value.md) · [The suite assumed a fresh database](e2e-assumes-a-fresh-database.md) · [The feature is often already half-built](check-before-building.md)
 - ⚠ **AC id cells in markdown tables must stay BARE** (`| AC-001 |`) — bolding breaks the G-PROGRESS gate. · **A new advisory can turn `main` red with no code change** (`GHSA-q939-rpr3-3284`). · **A compose `secrets:` entry whose FILE IS MISSING fails the WHOLE stack** — write mounted secrets unconditionally.
 
-## ⚠ Unlinked topic files + the completed ladder
-**Findable by `ls`, value NOT vouched for** — unlinked files + the completed ladder P1–P19 + PH-5
-(`p*`/`keystone-*`/`ph5-*`), superseded by the slice rows. ⛔ Do not re-open. ⚠ Re-run the inbound-link check after ANY compaction.
+## ⚠ Unlinked topic files (`p*`/`keystone-*`/`ph5-*`) = the completed ladder P1–P19 + PH-5, superseded by the slice rows. ⛔ Do not re-open.
