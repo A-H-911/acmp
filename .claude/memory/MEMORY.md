@@ -1,7 +1,7 @@
 # Memory Index — ACMP
 
 > One line per entry; detail lives in topic files and the package. Read the linked file before acting.
-> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4 KB** — past either the loader drops the tail SILENTLY (the byte cap was denied here once and then hit on 2026-09-07). ⭐ `wc -l` AND `wc -c` before and after every edit; keep under ~140 lines / 24 KB.
+> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4K CHARACTERS (not bytes — `wc -c` over-reads this emoji-heavy file by ~4%)** — past either the loader drops the tail SILENTLY; the char cap was denied here once and hit on 2026-09-07 (warning at ~26,000 chars). ⭐ Check with `wc -l` and `python -c "import io;print(len(io.open('.claude/memory/MEMORY.md',encoding='utf-8').read()))"` before and after every edit; keep under ~140 lines / 24,000 chars.
 
 
 ## ★★★ 2026-09-07 (later) · `DEC-141` · `SL-038` CLOSED through the slate route · `LL-066` supersedes `LL-064`

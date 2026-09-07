@@ -2541,8 +2541,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    accumulated greens satisfy no clause. ⚠ **Whether this direction still stands is the decision register
    from `DEC-141` onward, never this line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3,
    whose subject (the `SL-038` per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
-   ⚠ **The two options `DEC-141` d5 did not take — the `deferred-work-reviewed` backlog and a second
-   `skill-promote` round — stay available and unscheduled.** Read `DEC-140` and `DEC-141` for the reasoning
+   ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
+   `skill-promote` round — and the decision register from `DEC-141` onward says whether either has since
+   been scheduled; this line does not.** Read `DEC-140` and `DEC-141` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
