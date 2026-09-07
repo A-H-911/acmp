@@ -516,8 +516,24 @@ here could have found any of it**: every identifier resolves, no lifecycle statu
 falsehood is a claim about a CAPABILITY. **Eighth consecutive finding invisible to every check this file
 owns.** ⚠ **Not an escape**: no commit message asserts any of the four, and the count stays at sixteen.
 
+⚠⚠⚠ **THE FIFTY-SEVENTH IS `LL-064`'s OWN FAULT CLASS, COMMITTED IN THE ROUND THAT APPROVED `LL-064`, AND
+IT EXPOSES A BLIND SPOT IN THAT LESSON'S REMEDY.** Item 1 read *"BOTH STANDING DIRECTIONS FROM `PE-909` ARE
+DISCHARGED, AND THIS LINE NAMES NO REPLACEMENT ON PURPOSE."* `DEC-140` d3 named the per-item verdicts as
+the next unit of work, so the sentence went false the moment that ruling landed - and it shipped in
+`b7dd0f58` and again in `871bd812`, **both pushed**.
+⛔⛔ **WHY THE REMEDY DID NOT CATCH IT, WHICH IS THE PART WORTH CARRYING.** `LL-064` says to sweep the prose
+keyed on the ids a ruling MOVED, before committing. That sweep ran: `DW-100|WBS-31|findings_24|HELD|
+BLOCKED|NON-COMPLIANT`. **None of those words appears in the falsified sentence, because the sentence's
+claim is that NOTHING moved.** ⭐ **AN ABSENCE-CLAIM HAS NO KEYWORD** - *"this names no replacement"*,
+*"nothing is scheduled"*, *"no row is at X"* are invisible to any grep keyed on what changed, and they are
+exactly the sentences a new ruling falsifies first. **The second key is the SHAPE OF THE CLAIM, not the
+subject: after a ruling, also grep for `no |none|nothing|names no|not scheduled|deliberately` and read what
+each hit denies.** `LL-064` is Approved and immutable, so this refinement is a supersession the operator
+has not yet been asked for; it is recorded here and in `PE-951` rather than left in a session that ends.
+⚠ **Not an escape**: no commit message asserts it, so the count stays at sixteen.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-six** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-seven** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -2512,16 +2528,30 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **BOTH STANDING DIRECTIONS FROM `PE-909` ARE DISCHARGED, AND THIS LINE NAMES NO REPLACEMENT ON
-   PURPOSE.** Item 2 (`DW-100`) was dispositioned by `DEC-138` d1; item 4 (`skill-promote.md`) was run to
-   completion and produced `SKL-001` (`PE-938`). ⛔ **DO NOT READ THAT AS *nothing is next*** — that was
-   the FORTY-NINTH, a measured claim about what remains that a decision falsified within hours, and **a
-   claim about what REMAINS is a status wearing a measurement's clothes.** The commands at the top of this
-   block are the answer; a sentence here is not.
+   ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-140` d3 (2026-09-07) named
+   THE PER-ITEM VERDICTS as the next unit of work.** ⛔ **WHETHER ANY REMAIN IS ITEM 3's COMMAND AND
+   `readiness_check`, NEVER THIS LINE** — the direction is durable, the set it applies to is not, and
+   naming a row here is the FORTY-SIXTH's and FORTY-EIGHTH's exact fault.
+   ⚠ **`DEC-140` d3 DECLINED THREE OPTIONS AND CLOSED NONE**, so each stays available without being
+   scheduled: diagnosing `DEF-121`/`DEF-130`, the `deferred-work-reviewed` backlog, and a second
+   `skill-promote` round. **Read `DEC-140` for the reasoning and the registers for what is still true of
+   each** — that list is a record of a ruling, not a statement about today.
+   ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
+   (`skill-promote.md`) by the run that produced `SKL-001` (`PE-938`). ⛔ **DO NOT READ THAT AS *nothing is
+   next*** — that was the FORTY-NINTH, a measured claim about what remains that a decision falsified within
+   hours, and **a claim about what REMAINS is a status wearing a measurement's clothes.** The commands at
+   the top of this block are the answer; a sentence here is not.
    ⚠ **`lessons-note-budget` STILL FAILS AND THAT IS EXPECTED, NOT A REGRESSION** — `skill-promote.md` is
    re-runnable, and two further clusters were proposed to the operator and deliberately not taken. **Read
    `PE-938` for which, and `readiness_check("package")` for where the number stands now**; no count is
    written here.
+   ⛔⛔ **AND READ THE OTHER LESSON ADVISORY THE OPPOSITE WAY ROUND: A GREEN `lessons-confirmed` CAN MEAN
+   NOTHING WAS RECORDED.** It counts `Proposed` rows, so it goes green when every lesson has been
+   adjudicated **and** when the session filed none at all — the two are indistinguishable at the pass bit.
+   `DEC-140` d1 was reached that way: the sweep ran `entity_query("lesson", status="Proposed")`, got ZERO,
+   and only a control (`status="Promoted"` returning 23) made the zero mean anything. **Before trusting a
+   green advisory, ask what its denominator was** — this is the third instance in one day of a check
+   passing because its SUBJECT was missing rather than clean (`DW-101` carries the other two).
    ⛔ **`SKL-001`'s FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`.** tamheed
    never touches it again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-`
    row superseding it. **Never regenerate or "refresh" it.**
