@@ -2553,7 +2553,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    DISPOSITION WAITS ON TWO NAMED RUNS** — and **`DEC-146` (fifty-fifth, the same day) RECORDS THOSE RUNS
    READ, THAT DISPOSITION TAKEN, THE SWITCH SHIPPED AND CLOSED ON ITS FALSIFIER, THE STORE-REFUSED FLIP
    HELD RATHER THAN FORCED ON THE OPERATOR'S WORD, AND A RE-VERIFICATION OF EVERY WORK ITEM CONFIRMED THAT
-   DAY** — read `DEC-145` and `DEC-146` for which rows, and the `slice`/`wbs-item`/`defect` registers for
+   DAY**; and **`DEC-147` (fifty-sixth) RECORDS THE RE-VERIFICATION EXTENDED TWO DAYS BACK ON THE OPERATOR'S WORD —
+   ONE ITEM ADDED, ITS WORK SOUND ON ARTEFACTS, ITS RECORD HOLLOW (`DEF-145`: no ruling behind an `Implemented`) AND ITS
+   SHIPPED COMMENT CARRYING A RETRACTED MECHANISM (`DEF-144`), BOTH CLOSED ON ARTEFACTS AND THE OPERATOR'S WORDS** —
+   read `DEC-145`, `DEC-146` and `DEC-147` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
    has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
@@ -2573,8 +2576,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-146` onward says whether either has since been scheduled (none of `DEC-144`–`DEC-146` raised
-   them); this line does not.** Read `DEC-140` through `DEC-146` for the reasoning
+   `DEC-146` onward says whether either has since been scheduled (none of `DEC-144`–`DEC-147` raised
+   them); this line does not.** Read `DEC-140` through `DEC-147` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2615,7 +2618,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
+   under: `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
    `PE-980`, `PE-981`, `PE-982`, `PE-983`, `PE-984`, `PE-985`, `PE-970`, `PE-973`,
    `PE-974`, `PE-975`, `PE-976`, `PE-977`, `PE-978`, `PE-979`,
    `DEC-143`, `LL-068`, `PE-961`, `PE-962`, `PE-963`, `PE-965`, `PE-966`, `PE-967`,
