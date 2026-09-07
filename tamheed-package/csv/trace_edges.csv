@@ -454,6 +454,7 @@ LL-066,PE-951,learned_from
 LL-067,DEC-142,learned_from
 LL-068,WBS-32,learned_from
 LL-069,DEF-143,learned_from
+LL-070,DEF-144,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
