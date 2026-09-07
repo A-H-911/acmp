@@ -88,15 +88,34 @@ log "pinned $env_file (previous kept as $(basename "$env_file").bak)"
 # image an environment is pinned to can no longer be expired by the count rule. Set AFTER the env file
 # is pinned and the digests printed; idempotent (an alias already on this digest is left alone). The
 # alias MOVES: the image it leaves falls back under the count rule -- rollback depth as designed.
+# ⛔⛔ DEF-148: THE MANIFEST GOES THROUGH A FILE, NEVER THROUGH A SHELL $( ). ECR keys an image on the
+# DIGEST OF THE MANIFEST BYTES, so a command substitution -- which strips trailing newlines, and whose
+# text rendering need not reproduce what was stored -- makes put-image create a SECOND image object
+# carrying the alias while the original keeps the <sha> tag. Measured 2026-09-08 on all four
+# repositories: acmp/api:prod resolved to ca1fb2b8 while acmp/api:<sha> resolved to 4771b141, so the
+# protective rule guarded an image nothing is pinned to and the PINNED tag stayed on the count rule --
+# the exact condition DEF-143 exists to remove, restored silently while every log line below said
+# success. With file:// the bytes survive, the digest is preserved, and put-image ADDS the tag to the
+# existing image. VERIFY IN THE REGISTRY, NOT ON THE EXIT CODE (DEF-147): one image must carry BOTH
+# tags, and `aws ecr start-lifecycle-policy-preview` must list no prod/uat-tagged image for expiry.
 alias_tag() { # repo tag
-  local want have manifest mtype
+  local want have manifest mtype mfile
   want=$(digest_of "$1" "$2")
   have=$(aws ecr describe-images --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$env_name" --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)
   if [ "$have" = "$want" ]; then log "acmp/$1:$env_name already -> $want"; return; fi
-  manifest=$(aws ecr batch-get-image --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$2" --query 'images[0].imageManifest' --output text)
+  # ⚠ CWD-RELATIVE, NOT mktemp: on Git Bash for Windows mktemp returns /tmp/... , which the Windows
+  # aws CLI cannot open (ParamValidation: Unable to load paramfile). A relative path resolves for both.
+  mfile="./.promote-manifest.$$.$1"
+  trap 'rm -f "$mfile"' RETURN
+  aws ecr batch-get-image --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$2" --query 'images[0].imageManifest' --output text > "$mfile"
+  # --output text appends a newline that the stored manifest does not have; strip it or the digest moves.
+  printf '%s' "$(cat "$mfile")" > "$mfile.exact" && mv "$mfile.exact" "$mfile"
   mtype=$(aws ecr batch-get-image --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$2" --query 'images[0].imageManifestMediaType' --output text)
-  aws ecr put-image --region "$REGION" --repository-name "acmp/$1" --image-tag "$env_name" --image-manifest "$manifest" --image-manifest-media-type "$mtype" >/dev/null
-  log "acmp/$1:$env_name -> $want (protected from the lifecycle count rule, DEF-143)"
+  aws ecr put-image --region "$REGION" --repository-name "acmp/$1" --image-tag "$env_name" --image-manifest "file://$mfile" --image-manifest-media-type "$mtype" >/dev/null
+  rm -f "$mfile"
+  got=$(aws ecr describe-images --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$env_name" --query 'imageDetails[0].imageDigest' --output text)
+  [ "$got" = "$want" ] || die "acmp/$1:$env_name landed on $got, not the pinned $want -- the alias split (DEF-148); the pinned tag is NOT protected"
+  log "acmp/$1:$env_name -> $want (same image object as the pinned tag; protected by the priority-1 rule, DEF-143)"
 }
 alias_tag api "$sha"; alias_tag worker "$sha"; alias_tag sqlserver-fts "$sha"; alias_tag web "$sha-$env_name"
 log "next: on the box -> docker compose -f deploy/docker-compose.cloud.yml --env-file $env_file pull && ... up -d"

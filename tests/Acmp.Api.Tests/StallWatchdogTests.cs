@@ -255,9 +255,13 @@ public sealed class StallWatchdogTests : IDisposable
         // in milliseconds, with no occurrence required.
         // ⛔ THE FIRST DRAFT OF THIS TEST CALLED InFlightRequests.Begin DIRECTLY while its comment
         // claimed it went through the middleware. That is LL-055's tautology one layer up — it would
-        // have proved the register works and NOTHING about whether the pipeline ever calls it, so
-        // deleting the IStartupFilter registration would have left it green. It builds the real
-        // middleware now.
+        // have proved the register works and NOTHING about whether the pipeline ever calls it. It
+        // builds the real middleware now.
+        // ⚠ WHAT THIS ONE STILL DOES NOT COVER, MEASURED RATHER THAN ASSUMED (DEF-146): it constructs
+        // the filter ITSELF, so deleting the registration in AcmpWebApplicationFactory leaves it green
+        // — all 13 tests here passed with that line commented out. The factory's wiring is guarded by
+        // The_real_factory_applies_the_tracking_filter below, and mutating this filter's own middleware
+        // is what fails THIS test (12 passed / 1 failed).
         var pipeline = BuildRealTrackingPipeline(out var release);
 
         var context = new DefaultHttpContext();
@@ -299,7 +303,8 @@ public sealed class StallWatchdogTests : IDisposable
     /// The REAL <see cref="InFlightRequests.StartupFilter"/>, applied to a real
     /// <see cref="ApplicationBuilder"/>, terminating in a delegate that blocks until released. Nothing
     /// here is a stand-in for the tracking code: the filter, the middleware and its <c>finally</c> are
-    /// the shipped ones, so removing the registration or the middleware fails the test above.
+    /// the shipped ones, so changing the MIDDLEWARE fails the test above. Removing the factory's
+    /// REGISTRATION does not — that is a different layer and a different test (DEF-146).
     /// </summary>
     /// <remarks>
     /// ⚠ WHAT IT DOES NOT COVER, STATED RATHER THAN IMPLIED: there is no HTTP transport and no
@@ -319,6 +324,29 @@ public sealed class StallWatchdogTests : IDisposable
             .Configure(builder => builder.Run(_ => gate.Task))(app);
 
         return app.Build();
+    }
+
+    [Fact(DisplayName = "The real factory applies the in-flight tracking filter to its pipeline")]
+    public async Task The_real_factory_applies_the_tracking_filter()
+    {
+        // ⭐ DEF-146: the coupling test above builds the filter itself, so it proves the MIDDLEWARE and
+        // says nothing about whether AcmpWebApplicationFactory ever APPLIES it. Measured: commenting out
+        // services.AddSingleton<IStartupFilter, InFlightRequests.StartupFilter>() left all 13 tests green.
+        // This one goes through the real factory, so that deletion fails it.
+        // ⚠ COUNTED, NOT RESET: other classes share this process and run in parallel, and they can only
+        // ADD tickets — so strictly-greater is stable where an equality or a Reset() would not be (LL-032).
+        // The path is deliberately one no route serves: a 404 still traverses the filter, which wraps
+        // everything ahead of routing, so the assertion never depends on an endpoint staying alive.
+        await using var factory = new AcmpWebApplicationFactory();
+        using var client = factory.CreateDefaultClient();
+
+        var before = InFlightRequests.TicketsIssued;
+        using var response = await client.GetAsync("/def-146-wiring-probe");
+
+        InFlightRequests.TicketsIssued.Should().BeGreaterThan(before,
+            "a request through the real factory must pass through the registered tracking middleware, or "
+            + "the watchdog reports an EMPTY register during a stall and its own header reads that as "
+            + "'the stall is UPSTREAM of the server pipeline'");
     }
 
     [Fact]

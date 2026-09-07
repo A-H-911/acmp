@@ -77,6 +77,14 @@ internal static class InFlightRequests
         return hits;
     }
 
+    /// <summary>
+    /// How many tickets have EVER been issued. DEF-146: a test can hold this before and after a real
+    /// request through <see cref="AcmpWebApplicationFactory"/> and prove the factory actually applied
+    /// <see cref="StartupFilter"/>. Monotonic, so a strictly-greater assertion is stable while other
+    /// test classes run in parallel and only ever add to it (LL-032).
+    /// </summary>
+    internal static long TicketsIssued => Interlocked.Read(ref _nextTicket);
+
     /// <summary>How many requests are in flight, regardless of age — context for a snapshot.</summary>
     internal static int LiveCount => Live.Count;
 
