@@ -83,5 +83,21 @@ set_var ACMP_IMAGE_TAG "$sha"
 set_var ACMP_WEB_TAG   "$sha-$env_name"
 
 log "pinned $env_file (previous kept as $(basename "$env_file").bak)"
+
+# DEF-143 / LL-069: the alias tag `<env>` is what deploy/aws/04-ecr.sh's protective rule keys on, so an
+# image an environment is pinned to can no longer be expired by the count rule. Set AFTER the env file
+# is pinned and the digests printed; idempotent (an alias already on this digest is left alone). The
+# alias MOVES: the image it leaves falls back under the count rule -- rollback depth as designed.
+alias_tag() { # repo tag
+  local want have manifest mtype
+  want=$(digest_of "$1" "$2")
+  have=$(aws ecr describe-images --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$env_name" --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)
+  if [ "$have" = "$want" ]; then log "acmp/$1:$env_name already -> $want"; return; fi
+  manifest=$(aws ecr batch-get-image --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$2" --query 'images[0].imageManifest' --output text)
+  mtype=$(aws ecr batch-get-image --region "$REGION" --repository-name "acmp/$1" --image-ids imageTag="$2" --query 'images[0].imageManifestMediaType' --output text)
+  aws ecr put-image --region "$REGION" --repository-name "acmp/$1" --image-tag "$env_name" --image-manifest "$manifest" --image-manifest-media-type "$mtype" >/dev/null
+  log "acmp/$1:$env_name -> $want (protected from the lifecycle count rule, DEF-143)"
+}
+alias_tag api "$sha"; alias_tag worker "$sha"; alias_tag sqlserver-fts "$sha"; alias_tag web "$sha-$env_name"
 log "next: on the box -> docker compose -f deploy/docker-compose.cloud.yml --env-file $env_file pull && ... up -d"
 log "the three agnostic digests above are the bytes UAT tested; record them with the deployment."
