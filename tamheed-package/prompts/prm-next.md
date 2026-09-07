@@ -2541,7 +2541,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-139`, `SC-052`, `PE-942`, `PE-944`,
+   under: `DEC-140`, `LL-064`, `LL-065`, `DW-101`, `PE-948`, `PE-949`,
+   `DEC-139`, `SC-052`, `PE-942`, `PE-944`,
    `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,
    `LL-061`, `LL-063`, `SKL-001`,
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
@@ -2794,7 +2795,16 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
 3. **THE OPERATOR OWES A PER-ITEM VERDICT ON ANY ROW AT `Review`.** Done-claimed is `Review`;
    `Implemented` is theirs alone, adjudicated per item against a GENERATED slate — run
    `node scripts/gen-slice-review-slate.mjs <id>` **once for EVERY id
-   `entity_query("slice", status="Approved")` returns**, never a summary (`LL-011`). ⛔ **Which rows are at
+   `entity_query("slice", status="Approved")` returns**, never a summary (`LL-011`).
+   ⛔⛔ **EXPORT FIRST OR IT WILL REFUSE TO RUN** (`WBS-31`, 2026-09-07). The generator reads
+   `tamheed-package/exports/`, not `data/*.jsonl`, so `entity_export` each of its seven families —
+   `wbs_items`, `acceptance_criteria`, `requirements`, `deferred_work`, `decisions`, `audit_verdicts`,
+   `slices` — with a `limit` above `total`. It fails closed on a missing, partial or mixed-digest
+   snapshot and **prints the exact call to run**, so you cannot get this wrong silently.
+   ⚠⚠ **GENERATE IT LAST, AFTER EVERY PACKAGE WRITE INCLUDING THE PROGRESS ENTRY** (`PE-949`, measured).
+   The digest is the PACKAGE digest, so ANY write moves it — and a slate generated before your closing
+   `progress_update` prints a digest `package_verify()` no longer returns, which turns a check the
+   operator can RUN into an explanation you have to GIVE. ⛔ **Which rows are at
    `Review` is deliberately not written here**; the command above prints them.
    ⚠ **THE ARGUMENT USED TO READ `<the live slice id>`, WHICH ASSUMES THERE IS EXACTLY ONE.** A slice
    whose `wbs-done` passes can stay `Approved` beside a newer one, so the singular silently adjudicates
