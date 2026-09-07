@@ -1,0 +1,82 @@
+name: SQL startup sampling
+
+# WBS-32 / SL-039 (DEC-142) — the DEF-121 / DEF-130 sampling experiment. MANUAL ONLY: no push, no
+# pull_request trigger, so it never changes what CI runs (SC-053). Dispatch one ARM at a time; the
+# tally and every crash log are uploaded on every outcome.
+#
+# Arms (DEC-142 d1/d4/d5), all on ubuntu-latest because that is the runner the crash happens on:
+#   fts-2025          the shipped deploy/Dockerfile.sqlserver as-is — RUN THIS FIRST. It is the harness's
+#                     positive control (LL-060): until it has produced a captured crash with a SQLPAL
+#                     `Reason:` line, a clean tally on any other arm means nothing.
+#   fts-2022-premove  the pre-move Dockerfile, byte-for-byte from git (0794dcaf^): 2022-latest@fc010e5c
+#                     + the ubuntu/22.04 repo — the image that ran 453 CI runs with no filed crash.
+#   stock-2025        the shipped base digest with NO FTS package — separates the base from the package.
+on:
+  workflow_dispatch:
+    inputs:
+      arm:
+        description: which image to sample
+        required: true
+        type: choice
+        options: [fts-2025, fts-2022-premove, stock-2025]
+      starts:
+        description: container starts (DEC-142 d3 sized 120; a faulty arm reads clean ~1.4% of the time there)
+        required: true
+        type: number
+        default: 120
+
+permissions:
+  contents: read
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    # 120 starts x <=40 s healthy = 80 min; the per-start bound is 300 s, so a run of timeouts is what
+    # would push past this, and that is a finding in itself.
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Self-check the classifier
+        run: bash scripts/test-sql-startup-sample.sh
+
+      - name: Prepare the arm's image
+        id: image
+        run: |
+          set -euo pipefail
+          case "${{ inputs.arm }}" in
+            fts-2025)
+              docker build -f deploy/Dockerfile.sqlserver -t acmp/sample:fts-2025 deploy
+              echo "ref=acmp/sample:fts-2025" >> "$GITHUB_OUTPUT" ;;
+            fts-2022-premove)
+              git show 0794dcaf^:deploy/Dockerfile.sqlserver > /tmp/Dockerfile.premove
+              grep -n '^FROM' /tmp/Dockerfile.premove
+              docker build -f /tmp/Dockerfile.premove -t acmp/sample:fts-2022-premove deploy
+              echo "ref=acmp/sample:fts-2022-premove" >> "$GITHUB_OUTPUT" ;;
+            stock-2025)
+              ref=$(sed -n 's/^FROM \(mcr\.microsoft\.com\/mssql\/server:[^ ]*\).*/\1/p' deploy/Dockerfile.sqlserver)
+              docker pull "$ref"
+              echo "ref=$ref" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Sample ${{ inputs.starts }} starts
+        run: bash scripts/sql-startup-sample.sh "${{ steps.image.outputs.ref }}" "${{ inputs.starts }}" sampling-out
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## ${{ inputs.arm }} — \`${{ steps.image.outputs.ref }}\`"
+            echo '```json'; cat sampling-out/tally.json 2>/dev/null || echo '(no tally written)'; echo '```'
+            echo; echo '### Reason codes among crashes'
+            grep -ho 'Reason: 0x[0-9A-Fa-f]*' sampling-out/start-*.log 2>/dev/null | sort | uniq -c || echo '(none)'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Uploaded on EVERY outcome (WBS-29's lesson: `if: failure()` skips exactly the run that carries the signal).
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: sampling-${{ inputs.arm }}-${{ github.run_id }}
+          path: sampling-out
+          if-no-files-found: warn
+          retention-days: 30
