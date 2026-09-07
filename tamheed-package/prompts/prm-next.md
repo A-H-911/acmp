@@ -2511,11 +2511,14 @@ every cited path **exists** — never that it is sufficient — and **fails clos
 31). ⭐ It is positioned deliberately: `ci.yml` path-ignores markdown **and** `tamheed-package`, so editing
 the pack never runs it; it fires when **SOURCE moves**, which is how the pack actually goes stale.
 
-⚠⚠ **THE BUILD LADDER HAS NOTHING SCHEDULED ON IT — BUT ITEM 1 IS NOT AN OPERATOR ACT, IT IS AN
-INVESTIGATION, AND THIS SENTENCE USED TO SAY OTHERWISE.** It read *"every item below is an OPERATOR act or
-an interview, not code"*, which stopped being true the moment `DEC-110` d1 put a diagnosis at the top of
-the list. **No FEATURE work is scheduled; debugging is still work** — measure before believing that: `entity_query("deferred-work", status="Activated")` and
-`readiness_check("package")` are the live answers, and the sentence you are reading is not.
+⚠⚠ **THIS PARAGRAPH HAS DECLARED THE LADDER EMPTY TWICE AND BEEN FALSIFIED TWICE.** It read *"every item
+below is an OPERATOR act or an interview, not code"* until `DEC-110` d1 put a diagnosis at the top of the
+list; it then read *"THE BUILD LADDER HAS NOTHING SCHEDULED ON IT"* until `DEC-142` (2026-09-07, fifty-first
+round) turned that diagnosis into a scoped slice with work items the plan did not have — caught by `LL-066`'s
+absence-claim sweep in the same commit as the ruling, which is the remedy working, not a fifty-eighth. **What
+is scheduled is `entity_query("slice", status="Approved")` and the `wbs-item` rows it holds,
+`entity_query("deferred-work", status="Activated")` and `readiness_check("package")` — the live answers;
+the sentence you are reading is not, and it names no slice on purpose.**
 
 ⛔ **THE DISPOSITION ITEM THAT STOOD HERE IS DONE — `DEC-094` / `SC-038`, 2026-08-29 — AND ITS ROW LIST WAS
 THE FORTY-FIRST.** It named `DW-088, DW-090, DW-091, DW-092, DW-093` and was wrong in BOTH directions:
@@ -2533,17 +2536,21 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
    ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth
-   round) named DIAGNOSING `DEF-121` / `DEF-130` as the next unit of work** — the operator's choice among the
-   three options `DEC-140` d3 had declined without closing. ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
+   round) named DIAGNOSING `DEF-121` / `DEF-130` as the next unit of work, and `DEC-142` (the same day,
+   fifty-first round) RULED ON HOW** — a controlled sampling experiment, scoped by `SC-053` and recorded as a
+   slice with work items BEFORE any branch was cut; read `DEC-142` and `SC-053` for the arms, the sizing and
+   the one design element `LL-060` fixed rather than asked, and the `slice`/`wbs-item` registers for where it
+   stands — **this line does not name them.** ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
    ATTEMPT** (`LL-052`): each carries an end condition whose clause (2) asks for a CAUSE, and `DEC-115` d2 /
    `DEC-116` d1 have ruled that neither a capture nor an elimination is one; `DEC-119` d3 declined the
-   environmental disposition; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say
-   accumulated greens satisfy no clause. ⚠ **Whether this direction still stands is the decision register
-   from `DEC-141` onward, never this line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3,
-   whose subject (the `SL-038` per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
+   environmental disposition and `DEC-142` re-offered it on NEW evidence (`mssql-rs#387`) and it was again not
+   taken; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say accumulated greens satisfy no
+   clause. ⚠ **Whether this direction still stands is the decision register from `DEC-142` onward, never this
+   line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
+   per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
-   `skill-promote` round — and the decision register from `DEC-141` onward says whether either has since
-   been scheduled; this line does not.** Read `DEC-140` and `DEC-141` for the reasoning
+   `skill-promote` round — `DEC-142` did not raise them, and the decision register from `DEC-142` onward says
+   whether either has since been scheduled; this line does not.** Read `DEC-140`, `DEC-141` and `DEC-142` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2584,7 +2591,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-141`, `LL-066`, `PE-953`, `PE-954`, `PE-955`,
+   under: `DEC-142`, `SC-053`, `LL-067`, `PE-958`,
+   `DEC-141`, `LL-066`, `PE-953`, `PE-954`, `PE-955`,
    `DEC-140`, `LL-064`, `LL-065`, `DW-101`, `PE-948`, `PE-949`, `PE-951`,
    `DEC-139`, `SC-052`, `PE-942`, `PE-944`,
    `DEC-135`, `DEC-136`, `DEC-137`, `DEC-138`, `DW-100`, `SC-048`, `SC-049`, `SC-050`, `SC-051`,

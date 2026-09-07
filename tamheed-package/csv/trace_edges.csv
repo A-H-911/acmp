@@ -722,6 +722,9 @@ SC-048,WBS-30,scope_adds
 SC-049,DEC-135,amends
 SC-051,WBS-31,scope_adds
 SC-052,WBS-31,scope_modifies
+SC-053,SL-039,scope_adds
+SC-053,WBS-32,scope_adds
+SC-053,WBS-33,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests

@@ -1,13 +1,13 @@
 # Memory Index — ACMP
 
 > One line per entry; detail lives in topic files and the package. Read the linked file before acting.
-> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4K CHARACTERS (not bytes — `wc -c` over-reads this emoji-heavy file by ~4%)** — past either the loader drops the tail SILENTLY; the char cap was denied here once and hit on 2026-09-07 (warning at ~26,000 chars). ⭐ Check with `wc -l` and `python -c "import io;print(len(io.open('.claude/memory/MEMORY.md',encoding='utf-8').read()))"` before and after every edit; keep under ~140 lines / 24,000 chars.
+> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4K CHARACTERS (not bytes — `wc -c` over-reads this emoji-heavy file by ~4%)** — past either the loader drops the tail SILENTLY; hit 2026-09-07 at ~26,000 chars. ⭐ Check with `wc -l` and `python -c "import io;print(len(io.open('.claude/memory/MEMORY.md',encoding='utf-8').read()))"` before and after every edit; keep under ~140 lines / 24,000 chars.
 
 
 ## ★★★ 2026-09-07 (later) · `DEC-141` · `SL-038` CLOSED through the slate route · `LL-066` supersedes `LL-064`
 
 - ⭐⭐ **THE MANDATED VERDICT ROUTE WORKS END TO END** (`DEC-141` d1): export EVERY family the generator names in ONE pass → `package_verify()` digest == exports' digest → `gen-slice-review-slate` (+ the other Approved slice's *nothing at Review* refusal as the CONTROL) → operator rules → full-row flips with `expect_unchanged` on `title, phase_id, slice_id, effort, source_kind, source_span`. ⚠ **An OMITTED guarded column REFUSES THE WHOLE BATCH** — calibrated by accident (2 rows omitted 3 short columns → rolled back), which also PROVED the 4–9 KB pasted titles byte-identical. ⭐ **`gen-record-slate` indexes EVERY file in `exports/` ⇒ delete stale exports of OTHER families first** or it refuses the mixed digest. ⛔ Offer no verdict and no "(Recommended)" on the operator's own questions (`DEC-140` d3).
-- ⚠ **`DEC-141` d5: NEXT UNIT = diagnose `DEF-121`/`DEF-130`.** Read both rows to the END; clause (2) needs a CAUSE (`DEC-115` d2/`DEC-116` d1); `DEC-077` d3 binds. Resolve whether it still stands from the decision register, never from this line.
+- ⚠ **`DEC-142` (fifty-first): the `DEF-121`/`DEF-130` diagnosis is a SCOPED SAMPLING EXPERIMENT** (`SC-053`): three arms — current FTS-2025 / FTS on the pre-move pin `fc010e5c` / stock 2025 — N=120, **arm (i) FIRST as the harness's positive control** (`LL-060`: zero crashes there ⇒ fix the harness, never read the arms). ⭐ **`LL-067`: the control was the COUNT — 453 CI runs of the 2022 image before the move, no filed crash** (`gh run list --created A..B`); upstream `mssql-rs#387` carries both signatures. Resolve where it stands from the slice/wbs registers, never here.
 
 ## ★★★ 2026-09-07 · `DEC-139`/`DEC-140` · `entity_export` · `WBS-31` SHIPPED · `DW-100` **DONE** · `SKL-001`
 
@@ -32,7 +32,6 @@ tell is UNIFORMITY and nobody measured whether that status does work.
   Keycloak. That is every `DEF-129` occurrence. `WBS-29` (#370 → `32efd525`) fixed it. ⭐ **Bar = DELIVERY,
   not execution:** artefact 5,354 B, `keycloak.log` **50 lines**, on a GREEN run.
 - ⚠⚠ **`work_bind`/`progress_update`/`export_html` WRITE *AFTER* THE COMMIT THEY RECORD** (`LL-061`) — dirty again exactly when you `git checkout -b`. ⭐ **`git status --porcelain -uall` right before branching**; a memory of committing is not the check. ⚠ **Clean tree ≠ pushed**: `git fetch -q` then `git rev-list --left-right --count @{u}...HEAD`.
-- ⚠ **`gh api …/jobs/<id>/logs` gave ZERO BYTES**; `gh run view --log` gave 267 KB. ⛔ My control was a **step name**, which that format never writes (`UNKNOWN STEP`) — a control that cannot appear proves nothing (`LL-033`). ⚠ `entity_upsert` **refuses** a status-only payload (NOT NULL on title).
 
 ## ★★★ 2026-09-05 (earlier) · `DEF-136`/`DEF-138`/`DEF-140` closed · `LL-056`–`LL-060`
 
