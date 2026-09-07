@@ -2555,15 +2555,19 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    HELD RATHER THAN FORCED ON THE OPERATOR'S WORD, AND A RE-VERIFICATION OF EVERY WORK ITEM CONFIRMED THAT
    DAY**; and **`DEC-147` (fifty-sixth) RECORDS THE RE-VERIFICATION EXTENDED TWO DAYS BACK ON THE OPERATOR'S WORD —
    ONE ITEM ADDED, ITS WORK SOUND ON ARTEFACTS, ITS RECORD HOLLOW (`DEF-145`: no ruling behind an `Implemented`) AND ITS
-   SHIPPED COMMENT CARRYING A RETRACTED MECHANISM (`DEF-144`), BOTH CLOSED ON ARTEFACTS AND THE OPERATOR'S WORDS** —
-   read `DEC-145`, `DEC-146` and `DEC-147` for which rows, and the `slice`/`wbs-item`/`defect` registers for
+   SHIPPED COMMENT CARRYING A RETRACTED MECHANISM (`DEF-144`), BOTH CLOSED ON ARTEFACTS AND THE OPERATOR'S WORDS**;
+   and **`DEC-148` (fifty-seventh, 2026-09-08) RECORDS THE INTERVIEW THAT FOLLOWED — four lessons confirmed, one slice
+   closed, the cycle extended once more with a latent blind spot filed (`DEF-146`), and THE NEXT UNIT OF WORK NAMED IN
+   ITS d6** — read `DEC-145` through `DEC-148` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
    has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
    this arc filed, which bind only once the OPERATOR confirms them — `entity_query("lesson", status="Proposed")`
    with a `Promoted` control is the check, never a count here. ⚠ **`DEC-147` d3 is the shape to reach for when a row's
    `Implemented` has no ruling behind it (`DEF-145`): the register, not the commit log, says who ruled — sweep
-   the decision AND progress registers for the row's id before treating a status as the operator's.** ⚠ The harness is a dispatch-only
+   the decision AND progress registers for the row's id before treating a status as the operator's.**
+   ▶ **THE NEXT UNIT OF WORK IS NAMED BY `DEC-148` d6 AND BY NOTHING HERE** — read that entry and the register from it
+   onward; a later ruling replaces it, and this line does not say whether one has. ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
    the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
    DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
@@ -2576,8 +2580,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-146` onward says whether either has since been scheduled (none of `DEC-144`–`DEC-147` raised
-   them); this line does not.** Read `DEC-140` through `DEC-147` for the reasoning
+   `DEC-146` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST — the deferred-work review round — as the next unit of work; the second was
+   untaken as of that ruling); this line does not say whether either is still true.** Read `DEC-140` through `DEC-148` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2618,7 +2622,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
+   under: `DEC-148`, `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
    `PE-980`, `PE-981`, `PE-982`, `PE-983`, `PE-984`, `PE-985`, `PE-970`, `PE-973`,
    `PE-974`, `PE-975`, `PE-976`, `PE-977`, `PE-978`, `PE-979`,
    `DEC-143`, `LL-068`, `PE-961`, `PE-962`, `PE-963`, `PE-965`, `PE-966`, `PE-967`,
@@ -2631,6 +2635,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
    `PE-910`, `PE-913`, `PE-938`,
    `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
+   `DEC-148`, `DEF-146`, `PE-997`, `PE-993`, `PE-992`,
    `DEC-147`, `DEF-145`, `DEF-144`, `LL-070`, `PE-989`, `PE-990`, `PE-991`,
    `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
    `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
