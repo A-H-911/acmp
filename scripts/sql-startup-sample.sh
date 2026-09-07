@@ -19,6 +19,14 @@
 # CURRENT image first as the positive control; nothing this script prints means anything until that arm
 # has produced at least one `crash` whose saved log carries a SQLPAL `Reason:` line.
 #
+# Contention (a real arm option, not just for the self-check):
+#   SIDECARS       word-split images started `docker run -d` at the SAME MOMENT as each subject start,
+#                  with the same env and no command, and removed after classification. Their state at
+#                  classification time is printed on the line (`sidecar=running,exited`), so the reader
+#                  can see the contention existed. Why: arm (i) on an idle runner, one container at a
+#                  time, gave 0/120 (run 34098382664) while the CI job - where it crashes at ~3.5% - boots
+#                  SqlBackstopFixture's 2022 container and MinIO concurrently with it (WBS-32, LL-060).
+#
 # Overridable for the self-check (scripts/test-sql-startup-sample.sh), never in a real arm:
 #   READY_CMD      readiness command run via `docker exec`, word-split (default: the sqlcmd probe)
 #   RUN_CMD        command appended to `docker run <image>`, word-split (default: the image's own entrypoint)
@@ -40,12 +48,17 @@ SA_PASSWORD="${MSSQL_SA_PASSWORD:-Sample-$(date +%s)-aZ9!}"
 if [[ -n "${READY_CMD:-}" ]]; then read -ra ready <<<"$READY_CMD"
 else ready=(/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1"); fi
 run_cmd=(); [[ -n "${RUN_CMD:-}" ]] && read -ra run_cmd <<<"$RUN_CMD"
+sidecars=(); [[ -n "${SIDECARS:-}" ]] && read -ra sidecars <<<"$SIDECARS"
 
 mkdir -p "$OUT"
 ok=0; crash=0; timeout=0
 
 for ((i = 1; i <= STARTS; i++)); do
   tag=$(printf 'start-%03d' "$i")
+  side_ids=()
+  for s in "${sidecars[@]}"; do
+    side_ids+=("$(docker run -d -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SA_PASSWORD" "$s")")
+  done
   cid=$(docker run -d -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SA_PASSWORD" "$IMAGE" "${run_cmd[@]}")
   t0=$SECONDS
   outcome=timeout
@@ -61,6 +74,10 @@ for ((i = 1; i <= STARTS; i++)); do
     sleep "$POLL_SECONDS"
   done
   elapsed=$((SECONDS - t0))
+  side_state=
+  for sid in "${side_ids[@]}"; do
+    side_state+="${side_state:+,}$(docker inspect -f '{{.State.Status}}' "$sid" 2>/dev/null || echo gone)"
+  done
 
   if [[ "$outcome" != ok ]]; then
     docker logs "$cid" >"$OUT/$tag.log" 2>&1 || true
@@ -70,7 +87,7 @@ for ((i = 1; i <= STARTS; i++)); do
       find "$OUT/$tag-mssql-log" -type f -size +5M -delete || true
     fi
   fi
-  docker rm -f "$cid" >/dev/null 2>&1 || true
+  docker rm -f "$cid" "${side_ids[@]}" >/dev/null 2>&1 || true
 
   reason=
   if [[ "$outcome" == crash ]]; then
@@ -81,8 +98,10 @@ for ((i = 1; i <= STARTS; i++)); do
     crash) crash=$((crash + 1)) ;;
     *) timeout=$((timeout + 1)) ;;
   esac
-  printf '%s %-7s %4ss exit=%-3s %s\n' "$tag" "$outcome" "$elapsed" "${exit_code:--}" "$reason"
+  printf '%s %-7s %4ss exit=%-3s %s%s\n' "$tag" "$outcome" "$elapsed" "${exit_code:--}" \
+    "${side_state:+sidecar=$side_state }" "$reason"
 done
 
-tally=$(printf '{"image":"%s","starts":%d,"ok":%d,"crash":%d,"timeout":%d}' "$IMAGE" "$STARTS" "$ok" "$crash" "$timeout")
+tally=$(printf '{"image":"%s","sidecars":"%s","starts":%d,"ok":%d,"crash":%d,"timeout":%d}' \
+  "$IMAGE" "${SIDECARS:-}" "$STARTS" "$ok" "$crash" "$timeout")
 echo "$tally" | tee "$OUT/tally.json"

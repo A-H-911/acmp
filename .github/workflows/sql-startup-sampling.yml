@@ -29,6 +29,15 @@ on:
         required: true
         type: number
         default: 120
+      contention:
+        # Arm (i) alone on an idle runner gave 0/120 (run 34098382664). The CI job where it crashes boots
+        # SqlBackstopFixture's 2022 container and MinIO concurrently with the FTS one. One variable at a
+        # time (WBS-32): `backstop` starts the same 2022-CU14 image alongside EVERY subject start.
+        description: sidecar containers booted at the same moment as each start
+        required: true
+        type: choice
+        options: [none, backstop]
+        default: none
 
 permissions:
   contents: read
@@ -70,14 +79,20 @@ jobs:
               echo "ref=$ref" >> "$GITHUB_OUTPUT" ;;
           esac
 
-      - name: Sample ${{ inputs.starts }} starts
-        run: bash scripts/sql-startup-sample.sh "${{ steps.image.outputs.ref }}" "${{ inputs.starts }}" sampling-out
+      - name: Sample ${{ inputs.starts }} starts (contention ${{ inputs.contention }})
+        env:
+          # tests/Acmp.Integration.Tests/SqlBackstopFixture.cs:29 - the exact image CI boots alongside.
+          SIDECARS: ${{ inputs.contention == 'backstop' && 'mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04' || '' }}
+        run: |
+          [ -z "$SIDECARS" ] || docker pull "$SIDECARS"
+          bash scripts/sql-startup-sample.sh "${{ steps.image.outputs.ref }}" "${{ inputs.starts }}" sampling-out
 
       - name: Summary
         if: always()
         run: |
           {
             echo "## ${{ inputs.arm }} — \`${{ steps.image.outputs.ref }}\`"
+            echo "contention: ${{ inputs.contention }}"
             echo '```json'; cat sampling-out/tally.json 2>/dev/null || echo '(no tally written)'; echo '```'
             echo; echo '### Reason codes among crashes'
             grep -ho 'Reason: 0x[0-9A-Fa-f]*' sampling-out/start-*.log 2>/dev/null | sort | uniq -c || echo '(none)'
@@ -87,7 +102,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: sampling-${{ inputs.arm }}-${{ github.run_id }}
+          name: sampling-${{ inputs.arm }}-${{ inputs.contention }}-${{ github.run_id }}
           path: sampling-out
           if-no-files-found: warn
           retention-days: 30
