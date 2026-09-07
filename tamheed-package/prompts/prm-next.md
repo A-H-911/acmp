@@ -2556,9 +2556,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    DAY** — read `DEC-145` and `DEC-146` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
-   has been done), a deferred-work row whose activation trigger is a scheduled external run, and the lessons
+   has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
    this arc filed, which bind only once the OPERATOR confirms them — `entity_query("lesson", status="Proposed")`
-   with a `Promoted` control is the check, never a count here. ⚠ The harness is a dispatch-only
+   with a `Promoted` control is the check, never a count here. ⚠ **`DEC-147` d3 is the shape to reach for when a row's
+   `Implemented` has no ruling behind it (`DEF-145`): the register, not the commit log, says who ruled — sweep
+   the decision AND progress registers for the row's id before treating a status as the operator's.** ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
    the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
    DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
@@ -2626,6 +2628,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
    `PE-910`, `PE-913`, `PE-938`,
    `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
+   `DEC-147`, `DEF-145`, `DEF-144`, `LL-070`, `PE-989`, `PE-990`, `PE-991`,
    `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
    `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
    `LL-056`, `LL-055`,
