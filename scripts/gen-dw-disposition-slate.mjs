@@ -83,20 +83,35 @@ const namedBy = (id) => {
 
 const ids = process.argv.slice(2);
 if (!ids.length) {
-  /* ⚠ LL-006 — A PROXY IS NOT THE ARTIFACT, AND THIS ONE WAS MEASURED AND REJECTED RATHER THAN REASONED
-     ABOUT. The obvious auto-selection is "every Open row that no decision names", on the theory that a
-     decision naming a row is the only evidence a human considered it. Run against this store it returns
-     THIRTY-FIVE rows — and thirty-four of them WERE dispositioned, on 2026-08-20, by an interview that
-     confirmed every then-open row in BULK and therefore named none of them individually.
-     So the proxy does not measure "undispositioned"; it measures "not individually cited", and the two
-     diverge by an entire register. There is no column that answers the real question, so this refuses to
-     guess: a page listing thirty-four settled rows as though they awaited judgement is worse than no page,
-     and DEF-116's rule is that this generator fails closed rather than rendering something misleading. */
+  /* ⚠ LL-006 — A PROXY IS NOT THE ARTIFACT. The obvious auto-selection is "every Open row that no
+     decision names", on the theory that a decision naming a row is the only evidence a human considered
+     it. That proxy CANNOT WORK, and the reason needs no history at all: an unruled row and a row
+     confirmed by a ruling that named no ids are INDISTINGUISHABLE from every column this store has,
+     because there is no "reviewed" field. So the test measures "not individually cited", never
+     "undispositioned", and this refuses to guess — DEF-116's rule is that the generator fails closed
+     rather than rendering something misleading.
+
+     ⛔ THIS COMMENT USED TO JUSTIFY THE REFUSAL WITH A HISTORICAL CLAIM, AND THE CLAIM WAS FALSE
+     (DEF-149 / LL-071, 2026-09-08). It asserted that thirty-four of the then thirty-five never-named
+     rows "WERE dispositioned, on 2026-08-20, by an interview that confirmed every then-open row in
+     BULK". No such ruling exists in this store. PE-554 IS that day's own record and it ends: "NOTHING
+     WRITTEN TO THE REGISTER. No disposition applied, no row status changed. The slate was published as
+     an operator-facing artifact and the interview offered." DEC-067, the ruling that did land, activated
+     twelve rows and named every one individually; DW-029's closure describes DW-043..DW-060 as that
+     programme's RESIDUE, i.e. created rather than judged. The session opening the very round this file
+     governs read the sentence as settled, and would have carried thirty unjudged rows past a disposition
+     review — the precise failure LL-011 built this file to prevent. The BEHAVIOUR above was right all
+     along; only its stated reason was wrong, which is why the refusal is unchanged and the
+     justification is not.
+
+     ⚠ AND THE COUNT MOVES: 35 when this was written, 30 on 2026-09-08. Never cite a number here as
+     though it were stable — run the test and read what it returns. */
   fatal(
-    'no ids given, and this cannot be inferred. "Open" does NOT mean "never ruled on": the 2026-08-20\n' +
-      '       interview confirmed every then-open row in bulk, naming none of them, so a decision-mention\n' +
-      '       test reports 35 rows of which 34 are settled. Pass the ids you mean, chosen by reading the\n' +
-      '       decision register for the period since a row was filed.'
+    'no ids given, and this cannot be inferred. "Open" does NOT mean "never ruled on", and the mention\n' +
+      '       test cannot tell those apart: a row nobody has judged and a row confirmed by a ruling that\n' +
+      '       named no ids look identical from every column, because no "reviewed" field exists. Pass the\n' +
+      '       ids you mean, chosen by reading the decision AND progress registers for the period since a\n' +
+      '       row was filed - a ruling can be recorded as a progress entry (DEF-149, LL-071).'
   );
 }
 
