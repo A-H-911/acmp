@@ -127,3 +127,16 @@ SL-042,`DEF-143`: put the pinned images back in ECR and make the lifecycle rule 
 **WHAT IT DELIVERS.** `WBS-38` (the OPERATOR's act, on the box): the two pinned image sets re-pushed from the prod box's local store into ECR under their original tags. `WBS-39` (PR): `deploy/aws/04-ecr.sh`'s lifecycle policy protects promoted images before the count rule runs, and `deploy/scripts/promote-image.sh` marks what it promotes so the policy can see it.
 
 ⛔ **THE BAR.** `aws ecr describe-images` finds every pinned tag in all four repositories; the policy text on each repository shows the protective rule ahead of the count rule; a promotion after the change leaves an image the count rule cannot select. Nothing in this slice runs on a box from an agent session.",42,Implemented,,,1,,,2026-09-08T00:11:15Z
+SL-043,"The 29 rows `DEC-150` put into live work: one slice ordered by dependency, with the glossary and the preference surface ahead of everything that needs them",PH-7,"Give every row the deferred-work review activated a home, because an Activated row with no `WBS-` item is invisible to every readiness view (`DEF-087`'s shape) — and two of these rows have been live work with no home since 2026-08-20.
+
+**WHY ONE SLICE AND NOT THIRTEEN** (`DEC-150` d8, operator's *""one slice, ordered by dependency""*): the ordering IS the deliverable here. Four chains decide what can be built when, and splitting them across slices would let a later session pick the dependent half first.
+
+**THE FOUR CHAINS, WHICH ARE THE REASON THE ORDER IS LOAD-BEARING.**
+1. `DW-069` (the canonical EN-AR glossary that does not exist) → `DW-076` (the nine `TopicSource` values). Building the picker first means INVENTING nine Arabic governance terms inside a feature, which is exactly what `NFR-039` forbids and what the glossary would later have to bless or contradict.
+2. `DW-008` (per-user notification preferences) → `DW-034` (the digest job). `DW-034`'s own trigger says do not build the digest before the preference surface, because a digest to *opted-in users* presupposes an opt-in that does not exist.
+3. `DW-022` + `DW-077` are ONE item. Both rows name the same trigger — a design-system pass — and each says to do it with the other; `DW-077`'s cost is not the CSS rule, it is looking at the ~20 dialogs that shift.
+4. `DW-001` and `DW-014` each carry a domain or contract change BEFORE their visible half: topics have no planned start or span (so the timeline draws an honest empty track), and `ICommitteeDirectory` projects no email (measured again 2026-09-08).
+
+**WHAT THIS SLICE IS NOT.** It is not the sixteen NFR verification rows — those stay `Open` pending the prod-and-uat run `DEC-150` d7 ordered, and `DW-065` is the one member of that group that IS here, because its trigger fires when a stack runs. It is not `NFR-005`: `DW-047` is closed with `DW-011`, and the requirement itself is untouched.
+
+⚠ **THIS SLICE IS LARGE AND SAYING SO IS PART OF THE RECORD.** More than twice `DEC-067`'s twelve. `DEC-068` chose four rows for one slice on the reasoning that a slice should match the work; the operator chose the opposite shape here deliberately, so nobody should later 'correct' it into thirteen slices without a ruling.",43,Approved,,,1,,,

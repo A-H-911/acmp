@@ -333,3 +333,16 @@ SC-055,DEC-145,"TWO PIECES OF WORK THE PLAN DID NOT HAVE, BOTH RULED AT `DEC-145
 **WHAT IT DOES NOT DO.** It does not disposition `DEF-121` (a later ruling on runs 34131383519 / 34131386718). It does not run anything on a box from this session.
 
 ⚠ **TO BE SET `Merged` ONLY AFTER `SL-041`, `SL-042`, `WBS-37`, `WBS-38` AND `WBS-39` EXIST AND HAVE BEEN RE-READ** (`LL-042`).",1,Merged,"{""approved_by"": ""Operator, 2026-09-07 (DEC-145 d5): 'Scope now, build this round' for the switch; 'Scope it now as its own slice' for DEF-143; 'Push now'."", ""routing"": ""Dockerfile, workflows, dependabot.yml, 04-ecr.sh, promote-image.sh go via PR; this row, DEC-145 and the slice/WBS rows are package-only and go direct to main on the operator's push word."", ""delta_verified"": ""DONE 2026-09-07 before this flip (LL-042): WBS-37/38/39 probed by 'DONE-CLAIMED WHEN' with ids composed (3/3), negative control on WBS-37 differing by one letter ('stock-shipped-bases') returned 0; short columns re-read (SL-041 Approved/PH-7/41/1, SL-042 Approved/PH-7/42/1; WBS-37 SL-041, WBS-38/39 SL-042, all Approved/S); trace_query(SC-055, out) returns exactly five scope_adds edges. This flip re-sends decision_ref, description and iteration under expect_unchanged.""}",
+SC-056,DEC-150,"THE PLAN GROWS BY ONE SLICE AND TWENTY-EIGHT WORK ITEMS, CARRYING THE 29 ROWS `DEC-150` PUT INTO LIVE WORK.
+
+**WHAT IS ADDED.** `SL-043` under `PH-7`, plus `WBS-40.1`..`WBS-40.28` beneath it. Twenty-seven rows were Activated by `DEC-150` d4 and two already-Activated rows (`DW-069`, `DW-071`) are finally given homes; `DW-022` and `DW-077` share one item because both rows name the same design-system trigger and each says to do them together, which is why 29 rows map to 28 items.
+
+**WHY A SCOPE CHANGE AT ALL.** `DEC-067` set the precedent: activating deferred rows in bulk is a plan expansion and was recorded through `SC-029`/`SC-031`/`SC-032` rather than applied silently. This one is larger — more than twice the twelve — and it changes what `PH-7` contains.
+
+**WHAT IS NOT ADDED.** No requirement row moves. `NFR-005` still reads as written even though `DW-047` is closed Won't-do with `DW-011`; retiring the requirement itself would be a separate scope change the operator has not been asked for, and `DEC-150` d5 records the closure reason as *the subject is permanently gone*, explicitly NOT as verified. The sixteen `Open` NFR rows are untouched by this row: they are pending a verification, not pending a plan decision.
+
+**ORDERING IS PART OF THE DELTA, NOT A NOTE ON IT** (`DEC-150` d8, operator's *""one slice, ordered by dependency""*): `DW-069`→`DW-076`, `DW-008`→`DW-034`, `DW-022`+`DW-077` together, and the two rows whose visible half sits behind a domain or contract change (`DW-001` needs a planned start/span on Topics; `DW-014` needs member email projected through the Membership seam).
+
+---
+
+✅ **MERGED 2026-09-08.** All 29 rows applied and RE-READ before this flip: `entity_query` over `WBS-40.1`..`WBS-40.28` returns 28 of 28, every one bound to `SL-043` and `PH-7`; the deferred-work register returns exactly 18 `Open` rows (the 2 carried plus the 16 awaiting the `DEC-150` d7 verification), which is the arithmetic this delta predicts. 29 `scope_adds` edges written.",1,Merged,,
