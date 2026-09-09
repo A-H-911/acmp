@@ -10,8 +10,9 @@
  *    renders the live workspace header + 3-column grid.
  *  - The design's Pause button is mock chrome → rendered disabled (coming soon).
  *  - Discussion notes: the design editor (toolbar + content box) is rendered; the toolbar
- *    buttons insert markdown into the plain-text body (no backend change). Autosave-on-blur
- *    POSTs /discussion and shows the "Autosaved" indicator (no explicit Save button).
+ *    buttons insert markdown into the plain-text body (no backend change). Autosave POSTs
+ *    /discussion and shows the "Autosaved" indicator (no explicit Save button); it fires on a
+ *    2s typing pause AND on blur (FR-052 / NFR-006 — blur alone was DEF-153).
  *  - "End → Minutes" ends the meeting (POST /end); the Minutes screen itself is P7, so on
  *    success we navigate back to the meetings list (no minutes UI here).
  *  - Record decision / Create action / Call vote are disabled stubs → P7 / P8 / P9.
@@ -25,7 +26,7 @@
  *  - Elapsed timer is derived from startedAt via a 1s interval. Meeting/topic titles are
  *    single-language user content; only chrome is i18n'd (guardrail 9).
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Num } from '../../lib/numberFmt';
@@ -411,19 +412,43 @@ function CapturedOnItem() {
   );
 }
 
+/* FR-052 wants the note persisted within 2s of a typing pause; NFR-006 bounds the round trip from
+   that same trigger. DEF-153: blur was the ONLY trigger, so a Secretary who keeps typing — the
+   normal state while taking live notes — persisted nothing until focus happened to leave. */
+const AUTOSAVE_IDLE_MS = 2000;
+
 function DiscussionNote({ initialBody, onSave }: { initialBody: string; onSave: (body: string) => void }) {
   const { t } = useTranslation();
   const [body, setBody] = useState(initialBody);
   const [saved, setSaved] = useState(initialBody.trim().length > 0);
   const trimmed = body.trim();
-  // Autosave on blur. Skip if empty (server rejects) or unchanged from the loaded value.
-  const dirty = trimmed.length > 0 && trimmed !== initialBody.trim();
+  // Compare against what was last SENT, not what was last loaded: `initialBody` does not change
+  // until the query refetches, so a timer keyed off it would re-send the same body every window.
+  const [lastSent, setLastSent] = useState(initialBody.trim());
+  const dirty = trimmed.length > 0 && trimmed !== lastSent;
 
-  const save = () => {
+  // Latest-ref: the parent passes a fresh arrow every render, and depending on it directly would
+  // restart the debounce window on any unrelated parent re-render and starve the save. Written in
+  // an effect rather than during render, which is where a ref may be touched.
+  const onSaveRef = useRef(onSave);
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  });
+
+  const save = useCallback(() => {
     if (!dirty) return;
-    onSave(trimmed);
+    setLastSent(trimmed);
+    onSaveRef.current(trimmed);
     setSaved(true);
-  };
+  }, [dirty, trimmed]);
+
+  // The typing-pause trigger. Blur stays as the immediate flush when focus leaves; this covers the
+  // case where it never does. Each keystroke clears the pending timer, so it fires once per pause.
+  useEffect(() => {
+    if (!dirty) return;
+    const timer = setTimeout(save, AUTOSAVE_IDLE_MS);
+    return () => clearTimeout(timer);
+  }, [dirty, save]);
 
   return (
     <div className="mt-note">
