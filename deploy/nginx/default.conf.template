@@ -4,6 +4,25 @@ server {
     listen 8080;
     server_name _;
     root /usr/share/nginx/html;
+
+    # DEF-152: the SPA shipped UNCOMPRESSED in BOTH environments. Measured 2026-09-09: the 1.1 MB
+    # bundle returned no Content-Encoding under `Accept-Encoding: gzip, deflate, br`, and identical
+    # bytes under `identity`, so the server was not compressing rather than the client refusing. The
+    # same bytes are 3.69x smaller under gzip -9 (1,158,274 -> 313,737), and that was the proximate
+    # cause of a 13.7 s cold page load against NFR-001's 2,000 ms bound.
+    #
+    # gzip ONLY. The runtime image is nginxinc/nginx-unprivileged:1.31-alpine, which ships NO brotli
+    # module. Adding `brotli on` here does not degrade gracefully - nginx refuses to start on an
+    # unknown directive, so the mistake takes the whole stack down. Change the base image first.
+    #
+    # text/html is compressed implicitly by nginx and must NOT be repeated in gzip_types.
+    gzip on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_types text/plain text/css application/javascript application/json
+               application/manifest+json image/svg+xml font/ttf font/otf;
     index index.html;
 
     # Security headers (docs/domain/security-controls.md). script-src 'self' only (OQ-028); Vite emits no inline scripts.
@@ -101,6 +120,22 @@ server {
         # reads. NOTE: this only stops the PROXY buffering; ASP.NET still spools the multipart section to the
         # api's own /tmp, which is why that one is a disk volume (see docker-compose.yml).
         proxy_request_buffering off;
+    }
+
+    # DEF-152: Vite emits content-hashed filenames (index-<hash>.js), so a year is safe by
+    # construction - a changed asset arrives under a NEW name rather than as new bytes at the old one.
+    #
+    # `expires`, NOT `add_header Cache-Control`. The warning at the top of this file is load-bearing
+    # here: add_header does not merge across levels, so a SINGLE add_header in this location would
+    # silently drop every server-level security header - nosniff, X-Frame-Options, Referrer-Policy,
+    # HSTS, CSP - for every asset the SPA loads. `expires` emits Cache-Control without touching
+    # add_header inheritance, which is why it is used instead.
+    location /assets/ {
+        expires 1y;
+        access_log off;
+        # A missing asset must 404. Falling through to `location /`'s try_files would return
+        # index.html - HTML served with a JavaScript content-type, which fails confusingly.
+        try_files $uri =404;
     }
 
     location / {
