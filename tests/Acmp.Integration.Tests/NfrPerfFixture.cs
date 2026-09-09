@@ -143,6 +143,24 @@ public sealed class NfrPerfFixture : IAsyncLifetime
             await db.Database.MigrateAsync();
     }
 
+    /*
+     * ⛔⛔ SEED THROUGH THIS, NEVER THROUGH THE HOST'S SERVICE SCOPE — AND THE REASON IS INVISIBLE ON
+     * THE InMemory PROVIDER EVERY OTHER API TEST USES. The host wires every module DbContext onto ONE
+     * shared connection with an AmbientTransaction (ADR-0026 / NFR-042) that opens LAZILY on the first
+     * module write and is committed by TransactionBehavior — a MediatR pipeline behaviour. A raw
+     * SaveChangesAsync outside a MediatR command therefore opens that transaction and nothing ever
+     * commits it: the scope disposes, it rolls back, and SaveChangesAsync REPORTS SUCCESS THROUGHOUT.
+     *
+     * That is the design working (state change and audit append commit together), not a defect. But it
+     * means the seeding idiom used all over Acmp.Api.Tests — CreateScope, add, SaveChanges — silently
+     * writes nothing here, because InMemory has no transaction to leave uncommitted. Measured: the
+     * first NFR-006 run 404'd, and a read-back through a fresh scope proved the row was never there.
+     *
+     * A context built here has its OWN connection and no ambient transaction, so its writes autocommit.
+     */
+    public MeetingsDbContext NewMeetingsContext() =>
+        new(Options<MeetingsDbContext>(MeetingsDbContext.Schema), _clock, _user);
+
     private DbContextOptions<T> Options<T>(string schema) where T : DbContext =>
         new DbContextOptionsBuilder<T>()
             .UseSqlServer(ConnectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", schema))

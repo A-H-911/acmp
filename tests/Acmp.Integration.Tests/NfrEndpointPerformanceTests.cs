@@ -194,30 +194,55 @@ public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
         Percentile(samples, 95).Should().BeLessThan(2000);
     }
 
+    /*
+     * ⚠ THE READ-BACK IS NOT DEFENSIVE PADDING — THE FIRST RUN 404'd HERE AND THE CAUSE WAS AMBIGUOUS.
+     * A 404 from the endpoint has two completely different explanations: the seed never committed, or
+     * it committed and the request scope cannot see it. Those need opposite fixes, and the endpoint's
+     * status code cannot tell them apart. Reading the row back through a SEPARATE scope splits them:
+     * if this assertion fails the write is at fault; if it passes and the POST still 404s, the fault is
+     * in how the request scope resolves the context (ADR-0026 shares one connection per scope), which
+     * would itself be a finding worth recording.
+     */
     private async Task<Guid> SeedMeetingAsync()
     {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<MeetingsDbContext>();
-        var clock = scope.ServiceProvider.GetRequiredService<IClock>();
+        Guid publicId;
 
-        var now = clock.UtcNow;
-        var meeting = Meeting.Schedule(
-            key: "MTG-PERF-0001",
-            title: "NFR-006 autosave measurement",
-            committeeId: Guid.NewGuid(),
-            chairUserId: Guid.NewGuid(),
-            chairName: "Perf Chair",
-            scheduledStart: now.AddHours(1),
-            scheduledEnd: now.AddHours(2),
-            type: MeetingType.Regular,
-            mode: MeetingMode.Remote,
-            location: null,
-            joinUrl: null,
-            now: now);
+        // NOT the host's scope — see NfrPerfFixture.NewMeetingsContext. A write there joins an ambient
+        // transaction only TransactionBehavior commits, so it rolls back while reporting success.
+        await using (var db = _fixture.NewMeetingsContext())
+        {
+            var now = DateTimeOffset.UtcNow;
+            var meeting = Meeting.Schedule(
+                key: "MTG-PERF-0001",
+                title: "NFR-006 autosave measurement",
+                // The product anchors every meeting to this well-known id (CON-001, one committee).
+                // A random guid would have been a variable the product never has.
+                committeeId: Meeting.SingleCommitteeId,
+                chairUserId: Guid.NewGuid(),
+                chairName: "Perf Chair",
+                scheduledStart: now.AddHours(1),
+                scheduledEnd: now.AddHours(2),
+                type: MeetingType.Regular,
+                mode: MeetingMode.Remote,
+                location: null,
+                joinUrl: null,
+                now: now);
 
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
-        return meeting.PublicId;
+            db.Meetings.Add(meeting);
+            await db.SaveChangesAsync();
+            publicId = meeting.PublicId;
+        }
+
+        using (var verify = _factory.Services.CreateScope())
+        {
+            var db = verify.ServiceProvider.GetRequiredService<MeetingsDbContext>();
+            var found = await db.Meetings.AsNoTracking().FirstOrDefaultAsync(m => m.PublicId == publicId);
+            found.Should().NotBeNull(
+                "the seeded meeting must be readable from a fresh scope before the round trip is timed — " +
+                "if this fails the seed never committed, which is a different fault from the endpoint not finding it");
+        }
+
+        return publicId;
     }
 
     /// <summary>Drives <see cref="Concurrency"/> requests at a time for <see cref="Rounds"/> rounds.</summary>
