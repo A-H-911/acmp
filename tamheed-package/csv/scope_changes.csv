@@ -363,3 +363,21 @@ SC-057,DEC-153,"`NFR-013` LOSES ITS COLUMNSTORE MECHANISM CLAUSE AND KEEPS ITS L
 ✅ **MERGED 2026-09-09.** `NFR-013` applied and RE-READ before this flip. Its `title` and `statement` now begin *""The SQL Server database shall support reporting queries (dashboard aggregations)""* — the words *columnstore-indexed* are gone from both, and every other clause, the `Must` priority, `mvp=1` and the `source_span` are byte-identical (guarded with `expect_unchanged` on `source_span`, `priority`, `mvp`, which the write accepted).
 
 ⚠ **AND THE OBVIOUS VERIFICATION INSTRUMENT LIES HERE, WHICH IS WORTH RECORDING.** `entity_query(requirement, ids=[""NFR-013""], search=""columnstore-indexed reporting queries"")` still returns the row — not because the title kept the phrase, but because `search` also reads `custom_attributes`, and the `v1` key DELIBERATELY preserves the brief's original wording as the historical import. Read as a substring test on the requirement, that result says the amendment failed; read correctly, it says the evidence of the old wording was kept on purpose. The `title` FIELD is the instrument, not the search over the row.",1,Merged,,
+SC-058,DEC-155,"`NFR-001` GAINS THE ONE CONDITION IT WAS MISSING — THE CACHE STATE — AND NOTHING ELSE. ONE REQUIREMENT ROW IS MODIFIED.
+
+**WHY THIS IS SMALLER THAN THE SCOPE CHANGE THAT WAS NEARLY WRITTEN.** An earlier plan would have amended `NFR-001` to *name a vantage point*, on the belief that it named none. It names one, in its own text: *on a standard office network connection (>=10 Mbps)*. That belief was false and is retracted in `PE-1020` / `DEC-155` d1. So the amendment shrinks to the clause genuinely absent.
+
+**WHAT IS ADDED.** *measured on a COLD first visit with an empty cache*. `DEC-151` d3 already ruled that the cold load is what the requirement means — and the difference is not cosmetic: the same page measured warm came in at 1,455.8 ms and cold at 13,701 ms, on the same link minutes apart. That ruling lived only in a decision row, so a reader of the requirement alone could not know which of two answers differing by roughly 9x was intended. Now they can.
+
+**WHAT IS DELIBERATELY NOT ADDED.**
+- The **>=10 Mbps office network** clause is untouched. It was already there, and restating it would imply it had been missing — which is the very error this round retracted.
+- The **subject pages** are untouched. *any page rendered with full data (topic list, dashboard, meeting detail)* already names three concrete screens; taking the measurements on `/login` was an execution error, not a specification gap, and amending a requirement to fix a measuring mistake would put the fault in the wrong place.
+- **No CI regression gate is introduced.** A pinned throttled profile was considered and deliberately left out: attaching a verification mechanism is a different change from completing a requirement's conditions.
+
+**⚠ THE AMENDMENT DOES NOT MOVE THE VERDICT.** `NFR-001` is UNMEASURED against its own conditions — every figure recorded so far was taken at roughly 0.1-1.2 Mbps against a >=10 Mbps floor, and on a page the requirement does not name. Writing the cache state in makes the requirement fully stated; it does not make it satisfied, and it does not make the existing figures usable.
+
+---
+
+✅ **MERGED 2026-09-09.** `NFR-001` applied and RE-READ before this flip. Its `title` and `statement` now both end *""...on a standard office network connection (>=10 Mbps), **measured on a cold first visit with an empty cache**. Target: P95 <= 2 000 ms.""* — the added clause is present, the `>=10 Mbps` condition and the three named pages survive verbatim, and `Approved` / `Must` / `mvp=1` are unchanged (guarded with `expect_unchanged` on `source_span`, `priority`, `mvp`, which the write accepted).
+
+⚠ THE RE-READ WAS DONE ON THE `title` FIELD, NOT VIA `search`. `SC-057` recorded the reason earlier the same day: `search` also reads `custom_attributes`, where the `v1` key deliberately preserves the pre-amendment wording, so a substring query over the row reports the old text as still present and reads as a failed amendment.",1,Merged,,
