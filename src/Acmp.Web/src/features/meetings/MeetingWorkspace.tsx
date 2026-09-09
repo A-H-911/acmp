@@ -10,8 +10,9 @@
  *    renders the live workspace header + 3-column grid.
  *  - The design's Pause button is mock chrome → rendered disabled (coming soon).
  *  - Discussion notes: the design editor (toolbar + content box) is rendered; the toolbar
- *    buttons insert markdown into the plain-text body (no backend change). Autosave-on-blur
- *    POSTs /discussion and shows the "Autosaved" indicator (no explicit Save button).
+ *    buttons insert markdown into the plain-text body (no backend change). Autosave POSTs
+ *    /discussion and shows the "Autosaved" indicator (no explicit Save button); it fires on a
+ *    2s typing pause AND on blur (FR-052 / NFR-006 — blur alone was DEF-153).
  *  - "End → Minutes" ends the meeting (POST /end); the Minutes screen itself is P7, so on
  *    success we navigate back to the meetings list (no minutes UI here).
  *  - Record decision / Create action / Call vote are disabled stubs → P7 / P8 / P9.
