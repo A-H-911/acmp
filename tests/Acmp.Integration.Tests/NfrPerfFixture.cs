@@ -22,31 +22,50 @@ using Testcontainers.MsSql;
 namespace Acmp.Integration.Tests;
 
 /*
- * DEC-160 g1. The 10 000-row stack every NFR performance clause asks for, in one fixture.
+ * DEC-160 g1 and DEC-162 j1. TWO seeded databases in ONE container — the scales the two governing
+ * requirements name.
  *
  * ⚠⚠ WHY THIS EXISTS, AND WHY IT IS NOT THE ROUTE FIRST AUTHORISED. DEC-159 f2 ruled that a
  * requirement's Verification clause is PART OF THE REQUIREMENT, not advice about how to check it.
  * Read that way, NFR-002/003/004/006 all name an INTEGRATION TEST — not a browser, not curl against
- * a deployed box — and three of them name a 10 000-record dataset. DW-103's existing numbers were
- * taken at the DATABASE layer, and its own title says that is insufficient BECAUSE THE REQUIREMENTS
- * NAME ENDPOINTS. So this measures through a real HTTP host, over real SQL Server, at that scale.
+ * a deployed box — and three of them name a 10 000-record dataset. DW-103's numbers were taken at the
+ * DATABASE layer, and its own title says that is insufficient BECAUSE THE REQUIREMENTS NAME ENDPOINTS.
+ * So this measures through a real HTTP host, over real SQL Server, at the scales they name.
  *
- * ⭐ THE SEED IS COMMITTED THIS TIME, AND THAT IS AS MUCH THE POINT AS THE MEASUREMENT. The
- * 10 216-topic dataset DW-103 measured against was produced by a script that lived only in a
- * throwaway .scratch/ folder, so the number was never reproducible by anyone — and the dataset is
- * now gone (uat holds 216 topics; PE-1045). Trap 27 says nothing a later session must read may live
- * in .scratch, and an unreproducible measurement is exactly the cost of breaking that rule.
+ * ⭐⭐ TWO SCALES, BECAUSE TWO APPROVED `Must` REQUIREMENTS NAME DIFFERENT ONES FOR THE SAME QUERY.
+ * NFR-002 says "up to 10 000 topic records". NFR-009 says 2 500 total over a five-year operational
+ * life and cross-references NFR-002 for the bound at THAT scale, with its own Verification clause
+ * reading "Load test with 2 500 seeded topic records; re-run NFR-002 target assertion". Both are
+ * measured here; which one governs a disposition is the operator's (DEC-162 j1).
+ *
+ * ⛔⛔ BOTH DATABASES LIVE IN ONE CONTAINER AND BOTH TEST CLASSES SHARE ONE COLLECTION, AND THAT IS A
+ * MEASUREMENT REQUIREMENT RATHER THAN THRIFT. xUnit runs separate COLLECTIONS in parallel by default,
+ * and this assembly sets no CollectionBehavior — so a second collection fixture would boot a second
+ * SQL Server container CONCURRENTLY with the first. Two containers competing for CPU would corrupt
+ * both sets of latency numbers, which is the one thing this fixture exists to produce.
+ *
+ * ⭐ THE SEED IS COMMITTED, AND THAT IS AS MUCH THE POINT AS THE MEASUREMENT. The 10 216-topic dataset
+ * DW-103 measured against was produced by a script that lived only in a throwaway .scratch/ folder, so
+ * the number was never reproducible by anyone — and the dataset is now gone (uat holds 216 topics;
+ * PE-1045). Trap 27 exists to prevent exactly this.
  *
  * ⚠ THE FTS IMAGE IS REQUIRED, NOT PREFERRED. NFR-004 measures full-text search and the stock mssql
  * image ships WITHOUT it, so this boots deploy/Dockerfile.sqlserver — the image SearchProvidersFtsTests
  * builds. It is deliberately a SEPARATE fixture from that suite: DEC-077 d3 puts a standing
  * STOP-on-red rule on SearchProvidersFtsTests, and folding a perf measurement into a suite nobody may
  * re-run would muddy both verdicts.
+ *
+ * ⚠ A LIMITATION OF THE SEED, STATED SO IT IS NOT REDISCOVERED AS A SURPRISE: it writes only
+ * topics.topics and no topic_status_events, so `Include(t => t.History)` joins nothing here. uat
+ * carries roughly 2.3 events per topic, so these figures probably UNDERSTATE the real cost.
  */
 public sealed class NfrPerfFixture : IAsyncLifetime
 {
-    /// <summary>Rows seeded. NFR-002 and NFR-004 both name 10 000 records in their own statements.</summary>
+    /// <summary>NFR-002's stated scale: "up to 10 000 topic records".</summary>
     public const int SeededTopics = 10_000;
+
+    /// <summary>NFR-009's stated scale: 2 500 total over a five-year operational life.</summary>
+    public const int SeededTopicsAtOperationalCeiling = 2_500;
 
     /// <summary>The key prefix every seeded row carries, so a test can prove it measured THESE rows.</summary>
     public const string SeedKeyPrefix = "TOP-PERF-";
@@ -64,10 +83,13 @@ public sealed class NfrPerfFixture : IAsyncLifetime
     private readonly IClock _clock = new TestClock();
     private readonly ICurrentUser _user = new TestCurrentUser();
 
-    /// <summary>Connection string for the migrated, seeded application database.</summary>
+    /// <summary>Connection string for the 10 000-topic database (NFR-002's scale).</summary>
     public string ConnectionString { get; private set; } = string.Empty;
 
-    /// <summary>Wall-clock seconds the seed took — reported alongside every measurement.</summary>
+    /// <summary>Connection string for the 2 500-topic database (NFR-009's scale).</summary>
+    public string ConnectionStringAtOperationalCeiling { get; private set; } = string.Empty;
+
+    /// <summary>Wall-clock seconds the 10 000-row seed took — reported alongside every measurement.</summary>
     public double SeedSeconds { get; private set; }
 
     public async Task InitializeAsync()
@@ -76,31 +98,38 @@ public sealed class NfrPerfFixture : IAsyncLifetime
         _container = new MsSqlBuilder(_image).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS, NFR perf)");
 
-        // A full-text catalog cannot live in master/tempdb/model, and MsSqlBuilder connects to master.
-        await CreateApplicationDatabaseAsync();
-        await MigrateEveryModuleAsync();
-
         var started = System.Diagnostics.Stopwatch.StartNew();
-        await SeedTopicsAsync();
+        ConnectionString = await BuildSeededDatabaseAsync("Acmp", SeededTopics);
         SeedSeconds = started.Elapsed.TotalSeconds;
 
-        await WaitForFullTextPopulationAsync();
+        ConnectionStringAtOperationalCeiling =
+            await BuildSeededDatabaseAsync("AcmpCeiling", SeededTopicsAtOperationalCeiling);
     }
 
     public async Task DisposeAsync() => await _container.DisposeAsync();
 
-    private async Task CreateApplicationDatabaseAsync()
+    /// <summary>Create one catalog, migrate every module into it, seed it, and wait out full-text population.</summary>
+    private async Task<string> BuildSeededDatabaseAsync(string catalog, int topicCount)
     {
-        await using var conn = new SqlConnection(_container.GetConnectionString());
-        await conn.OpenAsync();
-        await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "IF DB_ID('Acmp') IS NULL CREATE DATABASE Acmp;";
-        await cmd.ExecuteNonQueryAsync();
-
-        ConnectionString = new SqlConnectionStringBuilder(_container.GetConnectionString())
+        // A full-text catalog cannot live in master/tempdb/model, and MsSqlBuilder connects to master.
+        await using (var conn = new SqlConnection(_container.GetConnectionString()))
         {
-            InitialCatalog = "Acmp",
+            await conn.OpenAsync();
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"IF DB_ID('{catalog}') IS NULL CREATE DATABASE [{catalog}];";
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        var connectionString = new SqlConnectionStringBuilder(_container.GetConnectionString())
+        {
+            InitialCatalog = catalog,
         }.ConnectionString;
+
+        await MigrateEveryModuleAsync(connectionString);
+        await SeedTopicsAsync(connectionString, topicCount);
+        await WaitForFullTextPopulationAsync(connectionString);
+
+        return connectionString;
     }
 
     /*
@@ -111,35 +140,35 @@ public sealed class NfrPerfFixture : IAsyncLifetime
      * being a statement about which schemas this measurement needs. A missing context fails LOUDLY on
      * the first request that touches it, not silently.
      */
-    private async Task MigrateEveryModuleAsync()
+    private async Task MigrateEveryModuleAsync(string cs)
     {
-        await using (var db = new MembershipDbContext(Options<MembershipDbContext>(MembershipDbContext.Schema), _clock, _user))
+        await using (var db = new MembershipDbContext(Options<MembershipDbContext>(cs, MembershipDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new TopicsDbContext(Options<TopicsDbContext>(TopicsDbContext.Schema), _clock, _user))
+        await using (var db = new TopicsDbContext(Options<TopicsDbContext>(cs, TopicsDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new MeetingsDbContext(Options<MeetingsDbContext>(MeetingsDbContext.Schema), _clock, _user))
+        await using (var db = new MeetingsDbContext(Options<MeetingsDbContext>(cs, MeetingsDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new DecisionsDbContext(Options<DecisionsDbContext>(DecisionsDbContext.Schema), _clock, _user))
+        await using (var db = new DecisionsDbContext(Options<DecisionsDbContext>(cs, DecisionsDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new ActionsDbContext(Options<ActionsDbContext>(ActionsDbContext.Schema), _clock, _user))
+        await using (var db = new ActionsDbContext(Options<ActionsDbContext>(cs, ActionsDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new RisksDbContext(Options<RisksDbContext>(RisksDbContext.Schema), _clock, _user))
+        await using (var db = new RisksDbContext(Options<RisksDbContext>(cs, RisksDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new NotificationsDbContext(Options<NotificationsDbContext>(NotificationsDbContext.Schema), _clock, _user))
+        await using (var db = new NotificationsDbContext(Options<NotificationsDbContext>(cs, NotificationsDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new DependenciesDbContext(Options<DependenciesDbContext>(DependenciesDbContext.Schema), _clock, _user))
+        await using (var db = new DependenciesDbContext(Options<DependenciesDbContext>(cs, DependenciesDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new TraceabilityDbContext(Options<TraceabilityDbContext>(TraceabilityDbContext.Schema), _clock, _user))
+        await using (var db = new TraceabilityDbContext(Options<TraceabilityDbContext>(cs, TraceabilityDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new GovernanceDbContext(Options<GovernanceDbContext>(GovernanceDbContext.Schema), _clock, _user))
+        await using (var db = new GovernanceDbContext(Options<GovernanceDbContext>(cs, GovernanceDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new KnowledgeDbContext(Options<KnowledgeDbContext>(KnowledgeDbContext.Schema), _clock, _user))
+        await using (var db = new KnowledgeDbContext(Options<KnowledgeDbContext>(cs, KnowledgeDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new ResearchDbContext(Options<ResearchDbContext>(ResearchDbContext.Schema), _clock, _user))
+        await using (var db = new ResearchDbContext(Options<ResearchDbContext>(cs, ResearchDbContext.Schema), _clock, _user))
             await db.Database.MigrateAsync();
-        await using (var db = new AuditDbContext(Options<AuditDbContext>(AuditDbContext.Schema)))
+        await using (var db = new AuditDbContext(Options<AuditDbContext>(cs, AuditDbContext.Schema)))
             await db.Database.MigrateAsync();
-        await using (var db = new ConfigurationDbContext(Options<ConfigurationDbContext>(ConfigurationDbContext.Schema)))
+        await using (var db = new ConfigurationDbContext(Options<ConfigurationDbContext>(cs, ConfigurationDbContext.Schema)))
             await db.Database.MigrateAsync();
     }
 
@@ -150,20 +179,16 @@ public sealed class NfrPerfFixture : IAsyncLifetime
      * module write and is committed by TransactionBehavior — a MediatR pipeline behaviour. A raw
      * SaveChangesAsync outside a MediatR command therefore opens that transaction and nothing ever
      * commits it: the scope disposes, it rolls back, and SaveChangesAsync REPORTS SUCCESS THROUGHOUT.
-     *
-     * That is the design working (state change and audit append commit together), not a defect. But it
-     * means the seeding idiom used all over Acmp.Api.Tests — CreateScope, add, SaveChanges — silently
-     * writes nothing here, because InMemory has no transaction to leave uncommitted. Measured: the
-     * first NFR-006 run 404'd, and a read-back through a fresh scope proved the row was never there.
+     * That is LL-079, measured here on 2026-09-09.
      *
      * A context built here has its OWN connection and no ambient transaction, so its writes autocommit.
      */
     public MeetingsDbContext NewMeetingsContext() =>
-        new(Options<MeetingsDbContext>(MeetingsDbContext.Schema), _clock, _user);
+        new(Options<MeetingsDbContext>(ConnectionString, MeetingsDbContext.Schema), _clock, _user);
 
-    private DbContextOptions<T> Options<T>(string schema) where T : DbContext =>
+    private static DbContextOptions<T> Options<T>(string cs, string schema) where T : DbContext =>
         new DbContextOptionsBuilder<T>()
-            .UseSqlServer(ConnectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", schema))
+            .UseSqlServer(cs, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", schema))
             .Options;
 
     /*
@@ -174,7 +199,7 @@ public sealed class NfrPerfFixture : IAsyncLifetime
      * Ported from the generator that produced DW-103's original dataset, which survived only by
      * accident in a previous session's .scratch/ folder. Committing it is the repair.
      */
-    private async Task SeedTopicsAsync()
+    private static async Task SeedTopicsAsync(string cs, int topicCount)
     {
         const string sql =
             "SET NOCOUNT ON; " +
@@ -205,12 +230,12 @@ public sealed class NfrPerfFixture : IAsyncLifetime
             "  'perf-seed', 0, 0 " +
             "FROM n;";
 
-        await using var conn = new SqlConnection(ConnectionString);
+        await using var conn = new SqlConnection(cs);
         await conn.OpenAsync();
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = sql;
         cmd.CommandTimeout = 300;
-        cmd.Parameters.AddWithValue("@count", SeededTopics);
+        cmd.Parameters.AddWithValue("@count", topicCount);
         await cmd.ExecuteNonQueryAsync();
     }
 
@@ -220,9 +245,9 @@ public sealed class NfrPerfFixture : IAsyncLifetime
      * against an unpopulated index returns nothing, very quickly. That is the empty-subject failure
      * LL-074 names — a clean, confident measurement over no data.
      */
-    private async Task WaitForFullTextPopulationAsync()
+    private static async Task WaitForFullTextPopulationAsync(string cs)
     {
-        await using var conn = new SqlConnection(ConnectionString);
+        await using var conn = new SqlConnection(cs);
         await conn.OpenAsync();
 
         for (var attempt = 0; attempt < 180; attempt++)

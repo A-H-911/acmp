@@ -261,6 +261,21 @@ public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
                 joinUrl: null,
                 now: now);
 
+            /*
+             * ⛔⛔ THE MEETING MUST BE STARTED, AND OMITTING THIS COST TWO ROUNDS OF MISDIAGNOSIS.
+             * Meeting.SetDiscussionNote calls RequireStatus(MeetingStatus.InProgress); Meeting.Schedule
+             * produces a Scheduled meeting, so the capture threw "This operation is not allowed while
+             * the meeting is Scheduled" — which GlobalExceptionHandler maps to 409 Conflict along with
+             * every other InvalidOperationException (DEF-156). The only DOCUMENTED cause of a 409 here
+             * is a stale write, so the failure was read as DbUpdateConcurrencyException for two rounds.
+             * The server log held the real answer throughout.
+             *
+             * ⭐ AND THE CORRECT SETUP IS ALSO THE FAITHFUL ONE: NFR-006 bounds autosave DURING A LIVE
+             * MEETING. A Scheduled meeting cannot take notes by design, so the earlier test was not
+             * merely broken — it was measuring a state the requirement does not describe.
+             */
+            meeting.Start(now);
+
             db.Meetings.Add(meeting);
             await db.SaveChangesAsync();
             publicId = meeting.PublicId;
@@ -329,6 +344,138 @@ public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
 
     // Printed so a green run still carries its numbers: a pass with no figure cannot be compared to
     // the next one, and a regression that stays inside the budget would be invisible.
+    private static void Report(string label, IReadOnlyCollection<double> samples) =>
+        Console.WriteLine(
+            $"[perf] {label}: n={samples.Count} " +
+            $"P50={Percentile(samples, 50):F1}ms P95={Percentile(samples, 95):F1}ms " +
+            $"max={samples.Max():F1}ms cores={Environment.ProcessorCount}");
+}
+
+/*
+ * DEC-162 j1 — NFR-009's OWN VERIFICATION CLAUSE, RUN FOR THE FIRST TIME.
+ *
+ * ⭐⭐ TWO APPROVED `Must` REQUIREMENTS NAME DIFFERENT SCALES FOR THE SAME QUERY, AND ONLY ONE OF THEM
+ * HAD EVER BEEN MEASURED. NFR-002 says "up to 10 000 topic records". NFR-009 says 2 500 total over a
+ * five-year operational life, adds "list query P95 <= 1 s (see NFR-002)", and its Verification clause
+ * reads: "Load test with 2 500 seeded topic records; re-run NFR-002 target assertion." Under DEC-159
+ * f2 a Verification clause is part of its requirement, so this measurement is owed regardless of what
+ * it shows.
+ *
+ * ⚠⚠ THIS CLASS TAKES NO VERDICT ON WHICH SCALE GOVERNS. NFR-002 is not met at 10 000 (DEF-155,
+ * reproduced five times). If it is met at 2 500 then the shortfall sits at four times the operational
+ * ceiling the system is specified to reach — which is a materially different fact, and what to do
+ * about it is the operator's (DEC-079 d3).
+ *
+ * ⛔ SAME COLLECTION AS NfrEndpointPerformanceTests ON PURPOSE. xUnit runs separate collections in
+ * PARALLEL and this assembly sets no CollectionBehavior, so a second collection would boot a second
+ * SQL Server container concurrently — and two containers competing for CPU would corrupt both sets of
+ * latency numbers. Sharing the collection makes these run sequentially against one container.
+ */
+[Collection(NfrPerfCollection.Name)]
+public sealed class NfrOperationalCeilingPerformanceTests : IAsyncLifetime
+{
+    private const int Concurrency = 15;
+    private const int Rounds = 20;
+
+    private readonly NfrPerfFixture _fixture;
+    private NfrPerfWebFactory _factory = null!;
+    private HttpClient _client = null!;
+
+    public NfrOperationalCeilingPerformanceTests(NfrPerfFixture fixture) => _fixture = fixture;
+
+    public Task InitializeAsync()
+    {
+        _factory = new NfrPerfWebFactory(_fixture.ConnectionStringAtOperationalCeiling);
+        _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.RolesHeader, "Secretary");
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.SubHeader, "perf-secretary");
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        _client.Dispose();
+        await _factory.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task NFR_009_list_query_p95_is_within_1000ms_at_the_2500_record_operational_ceiling()
+    {
+        const string route = "/api/topics/?page=1&pageSize=25";
+
+        // ⛔ THE CONTROL FIRST. A measurement against the WRONG database would be the whole point lost:
+        // this factory must be pointed at the 2 500-row catalog, not the 10 000-row one, and the totals
+        // differ by exactly that. Without this assertion a mis-wired connection string would produce a
+        // fast, clean, entirely meaningless pass.
+        var probe = await _client.GetAsync("/api/topics/?page=1&pageSize=1");
+        probe.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await probe.Content.ReadFromJsonAsync<JsonElement>();
+        var total = payload.GetProperty("total").GetInt32();
+
+        total.Should().Be(NfrPerfFixture.SeededTopicsAtOperationalCeiling,
+            "this test measures NFR-009's stated scale and must be reading the 2 500-row catalog — " +
+            $"a total of {total} means it is pointed at the wrong database");
+
+        var serial = await MeasureSerialAsync(() => _client.GetAsync(route), samples: 40);
+        Report("NFR-009 list @2500 (SERIAL diagnostic)", serial);
+
+        var concurrent = await MeasureAsync(() => _client.GetAsync(route));
+        Report("NFR-009 list @2500", concurrent);
+
+        var serialP95 = Percentile(serial, 95);
+        var concurrentP95 = Percentile(concurrent, 95);
+
+        concurrentP95.Should().BeLessThan(1000,
+            "NFR-009 specifies 2 500 topic records and re-runs NFR-002's P95 <= 1000 ms assertion at " +
+            $"that scale. Serial P95 {serialP95:F1} ms, concurrent P95 {concurrentP95:F1} ms at " +
+            $"{Concurrency}-way over {concurrent.Count} samples on {Environment.ProcessorCount} cores. " +
+            "COMPARE AGAINST THE 10 000-ROW FIGURES in NfrEndpointPerformanceTests: if this passes while " +
+            "those fail, DEF-155's shortfall sits at four times the operational ceiling rather than at " +
+            "the scale the system is specified to reach (DEC-162 j1)");
+    }
+
+    // Deliberate duplicates of the helpers in NfrEndpointPerformanceTests rather than a shared base:
+    // an inherited fixture-bearing base class across two collections is exactly the ICollectionFixture
+    // sharing DEC-124 records as silently serialising a suite. Three short private statics are cheaper
+    // than that coupling.
+    private static async Task<IReadOnlyList<double>> MeasureSerialAsync(Func<Task<HttpResponseMessage>> request, int samples)
+    {
+        var timings = new List<double>(samples);
+        for (var i = 0; i < samples; i++)
+        {
+            var started = Stopwatch.GetTimestamp();
+            using var response = await request();
+            timings.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        return timings;
+    }
+
+    private static async Task<IReadOnlyList<double>> MeasureAsync(Func<Task<HttpResponseMessage>> request)
+    {
+        var samples = new List<double>(Concurrency * Rounds);
+        for (var round = 0; round < Rounds; round++)
+        {
+            var inFlight = Enumerable.Range(0, Concurrency).Select(async _ =>
+            {
+                var started = Stopwatch.GetTimestamp();
+                using var response = await request();
+                var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                return elapsed;
+            });
+            samples.AddRange(await Task.WhenAll(inFlight));
+        }
+        return samples;
+    }
+
+    private static double Percentile(IReadOnlyCollection<double> samples, int percentile)
+    {
+        var ordered = samples.OrderBy(x => x).ToArray();
+        var rank = (int)Math.Ceiling(percentile / 100.0 * ordered.Length);
+        return ordered[Math.Clamp(rank - 1, 0, ordered.Length - 1)];
+    }
+
     private static void Report(string label, IReadOnlyCollection<double> samples) =>
         Console.WriteLine(
             $"[perf] {label}: n={samples.Count} " +
