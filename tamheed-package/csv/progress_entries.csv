@@ -572,6 +572,30 @@ PE-1054,work-done,"**`DEC-161` EXECUTED — EVERY RULING APPLIED, AND THE APPLIC
 ⚠ **ONE DEVIATION FROM `SC-060`'s OWN TEXT, STATED RATHER THAN GLOSSED.** That description says *""No `lifecycle_status` moves""*. `DW-103` DID move to `Done` in the same write — but by `DEC-161` i2, a ruling taken after `SC-060` was written, not by the scope change. They were applied together to avoid writing one row twice; the authority for the status is `i2` and the authority for the text is `SC-060`. Recorded in the row's own merge note so a later reader does not find an unexplained contradiction.
 
 ⚠ **`i1` IS NOT YET DONE.** The serial list measurement that attributes `DEF-155`'s number — intrinsic cost versus concurrency amplification — is the remaining work of this round.",DEF-155,Claude Opus 5 (1M context),,PH-7,SL-043,2026-09-09T20:52:34Z,,
+PE-1055,work-done,"**`DEC-161` i1 EXECUTED. THE SERIAL DIAGNOSTIC IS IN, AND IT SPLITS `DEF-155` INTO TWO COSTS THAT WERE FUSED — WITH A RATIO THAT CHANGES WHAT A FIX SHOULD TARGET.** Branch commit `35e4b393`.
+
+**MEASURED, same run, same host, 24 cores:**
+| | n | P50 | P95 |
+|---|---|---|---|
+| SERIAL, one at a time | 40 | 287.6 ms | **384.4 ms** |
+| 15-CONCURRENT | 300 | 1 331.2 ms | **1 487.6 ms** |
+
+⭐⭐⭐ **THE ANSWER IS BOTH, AND THE PROPORTION IS THE USEFUL PART.**
+- **INTRINSIC — roughly 30x.** 384 ms serial against the ~13 ms database-plus-framework-floor figure `DW-044` was closed on. That is real per-request work no database-layer measurement could see: JWT validation, authorization policy evaluation, EF materialisation, JSON serialization. **Large — and INSIDE the 1 000 ms budget.**
+- **AMPLIFICATION — only ~3.9x.** 384 -> 1 488 ms under 15-way load. **That is what takes it over.**
+
+⭐⭐ **WHY THE PROPORTION IS ACTIONABLE.** Because amplification is modest, **reducing the SERIAL cost is very likely sufficient on its own**: 384 ms down to ~150 ms puts the concurrent figure near 580 ms, inside budget, without touching connection pooling or locking. The fix targets the single-request path, and the open question narrows to which of the four costs dominates the ~371 ms above the database layer.
+
+⚠⚠ **A CORRECTION TO `DEC-161`'s OWN RATIONALE, MADE THE SAME DAY IT WAS WRITTEN.** That rationale reads as though the ~230x gap were intrinsic. **It is not.** Intrinsic is ~30x — about 1.5 orders of magnitude — and the remainder is load. `DW-044`'s *""two orders of magnitude""* closure argument is still falsified, but **by the CONCURRENT figure its own Verification clause specifies, not by the serial one**, which does not reach two orders. The reopening stands; the reasoning behind it is now more precise.
+
+✅ **THE VERDICT IS UNCHANGED AND THAT IS DELIBERATE.** `NFR-002`'s Verification clause names 15 concurrent list requests, so the concurrent figure IS the requirement's condition. **Serially the endpoint would be inside budget** — diagnostic, not a pass. The assertion therefore stays on the concurrent figure; asserting on the serial one would invent a bound the requirement never states.
+
+⭐ **BOTH NUMBERS ARE CARRIED INTO THE FAILURE MESSAGE**, with a sentence on how to read them together, so whoever meets a red gets the attribution rather than re-deriving it. That is `LL-060` and *controls must detect AND tell*, applied to a perf assertion.
+
+⚠ **A WARMUP ARTEFACT NAMED SO IT IS NOT REDISCOVERED:** serial max was 1 139.8 ms against a P50 of 287.6 — the first request carries EF model build and query-plan compilation. P95 at rank 38 of 40 excludes it, but **a serial run with fewer than ~20 samples would be dominated by it.**
+
+**Five independent confirmations now:** local P95 1 875.1 / 1 692.3 / 1 715.1 / 1 487.6 ms and CI at 2 914.6 ms, all against 1 000 ms.",DEF-155,Claude Opus 5 (1M context),,PH-7,SL-043,2026-09-09T21:02:05Z,,
+PE-1056,note,"DEC-161 i1: serial diagnostic attributes DEF-155 - ~30x intrinsic (384ms serial, inside budget) plus ~3.9x concurrency amplification (1488ms at 15-way, over budget). Verdict unchanged; fix direction narrowed to the single-request path.",,,,,,2026-09-09T21:02:24Z,"{""ref"": ""35e4b393"", ""binds"": [""DEF-155"", ""NFR-002"", ""DW-044""]}",
 PE-106,note,P15b live pixel visual review (pass) + audit-append race reproduced,,,,PH-2,SL-015,2026-07-13,"{""date_provenance"":""authored""}",
 PE-107,note,P15a + P15b (Research module: backend + UI),,,,PH-2,SL-015,2026-07-13,"{""date_provenance"":""authored""}",
 PE-108,note,P15e Knowledge UI: wiki + template management (FR-116/117/119),,,,PH-2,SL-015,2026-07-14,"{""date_provenance"":""authored""}",
