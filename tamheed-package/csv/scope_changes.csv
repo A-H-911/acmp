@@ -410,3 +410,19 @@ SC-060,DEC-160,"**THREE `deferred-work` ROWS CARRY REASONING THAT `DEC-159` f2 S
 - **`DW-103`'s 10 000-row sizing stands.** It is not an over-specification to be relaxed: `NFR-002` and `NFR-004` name 10 000 records in their own statements. What changes is WHERE the 10 000 rows live — a seeded test database rather than uat, which holds 216 topics and whose audit rows are hash-chained and immutable.
 
 ⚠ **PROPOSED. NOTHING IS APPLIED.** `DEC-160` g3 authorised FILING this row; the operator approves its content before any `DW-` row is edited. After approval: apply, RE-READ each row, and only then set this row to `Merged` (`LL-042`).",1,Proposed,,
+SC-061,DEC-160,"**`NFR-002` AND `NFR-004`'s VERIFICATION CLAUSES SPECIFY A REQUEST RATE THE PRODUCT'S OWN SECURITY CONTROL IS BUILT TO REFUSE. TWO REQUIREMENT ROWS ARE MODIFIED — THE VERIFICATION CLAUSE ONLY. NO TARGET, NO SCALE AND NO STATUS CHANGES.**
+
+**WHAT IS WRONG, AND IT WAS FOUND BY MEASUREMENT RATHER THAN BY READING.** `NFR-002`'s clause says *""seed 10 000 topics, run 15 concurrent list requests; assert P95 <= 1 s via OTel metrics""*, and `NFR-004`'s names an FTS query over the same dataset. Driving `/api/search` at that rate returned **HTTP 429**: `HardeningExtensions` applies a PER-USER FIXED WINDOW of `SearchPermitPerMinute = 60`. **The product is behaving correctly** — the rate limit is a deliberate hardening control — but under `DEC-159` f2 the Verification clause is part of the requirement, so as written these requirements ask for something the system is designed to reject.
+
+⭐ **THE CONFLICT IS REAL AND NARROW.** `/api/topics` is NOT limited the same way: all 300 of its requests returned 200 in the same run. Only the search path is affected, and only because sustained bursts exceed 60/minute for one user — 15 SIMULTANEOUS requests are fine; 300 in a burst are not.
+
+**WHAT IS ADDED.** To each clause, a sentence recording that the measurement must stay inside the endpoint's rate limit where one applies, and that the sample count is therefore bounded by `SearchPermitPerMinute` rather than chosen for statistical comfort. The as-built measurement uses 15 concurrent x 3 rounds = 45 requests on search, against 15 x 20 = 300 on the unlimited list path.
+
+**WHAT IS DELIBERATELY NOT CHANGED.**
+- **The 15-concurrent figure survives.** It was never the problem: fifteen simultaneous requests are permitted. The problem is total volume per minute, which the clause never stated either way.
+- **No target moves.** `NFR-002` stays at P95 <= 1 000 ms and `NFR-004` at <= 800 ms. This changes how they are measured, not what they must achieve.
+- **The 10 000-record scale survives**, in both statements and both clauses.
+- **The rate limit itself is untouched.** Relaxing a hardening control to make a measurement convenient would be the wrong direction entirely, and is not proposed.
+- **No `lifecycle_status` moves**, and `DEF-155` is unaffected — that defect is about `NFR-002`'s TARGET being missed on the list path, which is not rate-limited and whose 300-sample measurement was never in doubt.
+
+⚠ **PROPOSED. NOTHING IS APPLIED.** `DEC-160` (h3) authorised FILING this; the operator approves its content before either requirement row is edited. After approval: apply, RE-READ both rows, and only then set this row to `Merged` (`LL-042`). ⚠ Re-read the `title`/`statement` FIELD, not via `search` — `search` also reads `custom_attributes`, where the `v1` key preserves the original wording on purpose and would report the amendment as failed (`SC-057`, `SC-058`).",1,Proposed,,
