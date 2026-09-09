@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -158,6 +158,29 @@ describe('MeetingWorkspace (P6d)', () => {
     await user.tab(); // blur the textarea → autosave (no explicit Save button)
     expect(captureSpy).toHaveBeenCalledTimes(1);
     expect(captureSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', body: 'Agreed to pilot Keycloak.' });
+  });
+
+  // DEF-153 / FR-052 / NFR-006: the note must persist on a TYPING PAUSE, not only when focus
+  // leaves. The first assertion is the one that fails against blur-only autosave — the editor is
+  // still focused there, which is the normal state while taking live notes.
+  // Real timers on purpose: userEvent and vi.useFakeTimers deadlock here, and a fake-timer test
+  // that times out never reaches its cleanup — it leaves them installed and hangs the rest of the
+  // file. Two seconds of real wall clock is the cheaper trade.
+  it('autosaves a discussion note on a typing pause, with the editor still focused', async () => {
+    const user = userEvent.setup();
+    setup();
+    const ta = screen.getByLabelText('Discussion notes');
+    await user.type(ta, 'Agreed to pilot Keycloak.');
+    expect(ta).toHaveFocus();
+    expect(captureSpy).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(captureSpy).toHaveBeenCalledTimes(1), { timeout: 5000 });
+    expect(captureSpy).toHaveBeenCalledWith({ meetingId: 'm1', topicId: 't1', body: 'Agreed to pilot Keycloak.' });
+
+    // The blur that follows must not re-send a body the pause already persisted — this is what
+    // comparing against the last SENT value buys, and it fails if that reverts to `initialBody`.
+    await user.tab();
+    expect(captureSpy).toHaveBeenCalledTimes(1);
   });
 
   it('toolbar Bold wraps the selection in markdown marks', async () => {
