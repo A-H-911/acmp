@@ -346,3 +346,20 @@ SC-056,DEC-150,"THE PLAN GROWS BY ONE SLICE AND TWENTY-EIGHT WORK ITEMS, CARRYIN
 ---
 
 ✅ **MERGED 2026-09-08.** All 29 rows applied and RE-READ before this flip: `entity_query` over `WBS-40.1`..`WBS-40.28` returns 28 of 28, every one bound to `SL-043` and `PH-7`; the deferred-work register returns exactly 18 `Open` rows (the 2 carried plus the 16 awaiting the `DEC-150` d7 verification), which is the arithmetic this delta predicts. 29 `scope_adds` edges written.",1,Merged,,
+SC-057,DEC-153,"`NFR-013` LOSES ITS COLUMNSTORE MECHANISM CLAUSE AND KEEPS ITS LATENCY BOUND. ONE REQUIREMENT ROW IS MODIFIED; NOTHING IS ADDED OR REMOVED.
+
+**WHY.** `NFR-013` (Approved) mandates *columnstore-indexed* dashboard aggregations at P95 <= 3 000 ms over ~50 000 rows. Production carries **ZERO columnstore indexes**, and the reason is not an omission: `ADR-0022` (Approved) REMOVED that technology. So an Approved requirement and a ratified ADR contradict each other, and have since `ADR-0022` was accepted. `DW-054` was filed as a verification gap and is not one — the measurement was never the problem.
+
+**WHAT CHANGES.** The mechanism clause is struck. The requirement keeps what it is actually about: dashboard aggregations answering inside 3 000 ms at P95 over roughly 50 000 rows, by whatever means the architecture provides.
+
+**WHY AMEND RATHER THAN RETIRE.** The latency expectation is still real and still unverified — a dashboard that takes ten seconds would be a genuine failure. Retiring the row would delete a live obligation along with a stale mechanism. `DEC-153` d2 is the operator's ruling to that effect.
+
+**WHAT DOES NOT CHANGE, STATED SO THE DELTA IS NOT READ AS WIDER THAN IT IS.** `ADR-0022` is untouched — it is the record that WINS here, not one being adjusted. No other requirement moves. `DW-054` STAYS `Open` against the surviving latency clause; the amendment resolves the contradiction, not the measurement, and the dashboard being composed CLIENT-SIDE over several registers rather than by one aggregation query means what to time is itself still unsettled.
+
+**⚠ THE SURVIVING CLAUSE IS NOT THEREBY VERIFIED.** Striking a clause the system was never going to satisfy must not read as progress on the one it still owes.
+
+---
+
+✅ **MERGED 2026-09-09.** `NFR-013` applied and RE-READ before this flip. Its `title` and `statement` now begin *""The SQL Server database shall support reporting queries (dashboard aggregations)""* — the words *columnstore-indexed* are gone from both, and every other clause, the `Must` priority, `mvp=1` and the `source_span` are byte-identical (guarded with `expect_unchanged` on `source_span`, `priority`, `mvp`, which the write accepted).
+
+⚠ **AND THE OBVIOUS VERIFICATION INSTRUMENT LIES HERE, WHICH IS WORTH RECORDING.** `entity_query(requirement, ids=[""NFR-013""], search=""columnstore-indexed reporting queries"")` still returns the row — not because the title kept the phrase, but because `search` also reads `custom_attributes`, and the `v1` key DELIBERATELY preserves the brief's original wording as the historical import. Read as a substring test on the requirement, that result says the amendment failed; read correctly, it says the evidence of the old wording was kept on purpose. The `title` FIELD is the instrument, not the search over the row.",1,Merged,,

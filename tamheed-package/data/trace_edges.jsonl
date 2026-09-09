@@ -768,6 +768,7 @@
 {"from_id":"SC-056","to_id":"WBS-40.7","relation":"scope_adds"}
 {"from_id":"SC-056","to_id":"WBS-40.8","relation":"scope_adds"}
 {"from_id":"SC-056","to_id":"WBS-40.9","relation":"scope_adds"}
+{"from_id":"SC-057","to_id":"NFR-013","relation":"scope_modifies"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
@@ -1114,6 +1115,7 @@
 {"from_id":"TEST-052","to_id":"FR-163","relation":"tests"}
 {"from_id":"TEST-053","to_id":"FR-164","relation":"tests"}
 {"from_id":"TEST-054","to_id":"NFR-065","relation":"tests"}
+{"from_id":"TEST-055","to_id":"FR-052","relation":"tests"}
 {"from_id":"WBS-1","to_id":"FR-001","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-003","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-004","relation":"implements"}
