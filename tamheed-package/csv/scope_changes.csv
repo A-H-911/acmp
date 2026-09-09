@@ -381,3 +381,18 @@ SC-058,DEC-155,"`NFR-001` GAINS THE ONE CONDITION IT WAS MISSING — THE CACHE S
 ✅ **MERGED 2026-09-09.** `NFR-001` applied and RE-READ before this flip. Its `title` and `statement` now both end *""...on a standard office network connection (>=10 Mbps), **measured on a cold first visit with an empty cache**. Target: P95 <= 2 000 ms.""* — the added clause is present, the `>=10 Mbps` condition and the three named pages survive verbatim, and `Approved` / `Must` / `mvp=1` are unchanged (guarded with `expect_unchanged` on `source_span`, `priority`, `mvp`, which the write accepted).
 
 ⚠ THE RE-READ WAS DONE ON THE `title` FIELD, NOT VIA `search`. `SC-057` recorded the reason earlier the same day: `search` also reads `custom_attributes`, where the `v1` key deliberately preserves the pre-amendment wording, so a substring query over the row reports the old text as still present and reads as a failed amendment.",1,Merged,,
+SC-059,DEC-156,"ONE WORK ITEM'S DONE-CLAIM IS CORRECTED. NO ROW IS ADDED, REMOVED OR RESEQUENCED.
+
+**WHAT CHANGES.** `WBS-40.1`'s DONE-CLAIMED-WHEN clause only. It read *""a check can show no term has two Arabic renderings in the locale bundles""* and becomes *a check covering EVERY paired label, with each context-correct variant pair recorded as an explicit reviewed allowlist entry* (`DEC-156` d2). The item's BUILD half, its effort, its slice, its ordering and its gate on `WBS-40.2` are all untouched.
+
+**WHY A SCOPE CHANGE AND NOT AN EDIT.** The clause is what *done* means for a plan row, so changing it changes the plan. `SC-056`'s precedent governs: that row added `SL-043` and its 28 items through an `SC-` rather than applying them silently, and narrowing or widening what one of those items must deliver is the same kind of act.
+
+**WHY IT WAS NECESSARY.** The clause was **unsatisfiable against a correct codebase**, not merely demanding. Measured 2026-09-09: 1,976 keys paired, 1,098 distinct short English labels, **77** carrying more than one Arabic rendering (76 on 2026-08-20 over 1,901 keys). `DW-069` records that most are gender and definiteness agreement and are CORRECT - `Cancelled` is `مُلغى`, `ملغى` and `ملغاة` on three surfaces and all three are right. A check of the literal clause reports 77 failures over code nobody should touch.
+
+**WHAT IS NOT CHANGED, DELIBERATELY.** `NFR-039` itself is untouched - the requirement is not at fault and its text was never the problem. No acceptance criterion is created: `DW-069` forbids one in its own words and trap 16c is why. `DW-069`'s own status is untouched. The other 27 items are untouched. And the narrower glossary-scoped check the agent offered was **declined** by the operator; the reasoning-against is preserved in `DEC-156` d2 rather than here.
+
+**ONE THING IS ALSO RECORDED ON THE ITEM RATHER THAN ADDED TO SCOPE:** the Arabic reviewer `NFR-039` marks *[unverified]* is confirmed as the operator (`DEC-156` d3). That discharges a blocker `DW-069` called structural; it adds no work.
+
+---
+
+✅ **MERGED 2026-09-09.** The delta was applied and RE-READ before this flip: `WBS-40.1`'s stored title was exported through `entity_export` and byte-compared against the intended text — **4,185 = 4,185 characters, IDENTICAL**, with the comparator calibrated first by a one-character mutation that made it diverge at index 1159 and exit non-zero (trap 14a, `LL-013`). One `scope_modifies` edge written. No other row was touched.",1,Merged,,

@@ -540,8 +540,35 @@ carries `LL-064`'s rule whole plus the second key, and `LL-064` is superseded by
 generated record slate). *"has not yet been asked for"* above is therefore historical. Not tallied: corrected
 in the session that made it false, before any commit carried it (`PE-811`'s precedent).
 
+⚠⚠⚠ **THE FIFTY-EIGHTH IS A LIVE READING INSTRUCTION IN §6, FALSIFIED BY A RULING THE PREVIOUS SESSION
+RECORDED, AND IT IS `LL-066`'s SECOND KEY PAYING FOR THE SECOND TIME.** The `SL-032` history block read
+*"`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text route coverage)
+therefore do NOT fire — their triggers name 'before release sign-off'."* True when `DEC-071` d4 wrote it.
+**`DEC-150` d4 ACTIVATED all three on 2026-09-08 and `SC-056` gave each a home** (`WBS-40.9`, `WBS-40.10`,
+`WBS-40.6`), and it shipped false in `a69ea7d5`, `ff39b841` and every commit since. **A fresh session
+obeying it would have treated three scheduled items as dormant** — the FORTIETH's *actively recruits the
+wrong behaviour* running in reverse.
+⚠ **A SECOND MEMBER, FOLDED IN UNDER ONE ORDINAL** on the FIFTEENTH's and TWENTY-EIGHTH's precedent: the
+same block's `DW-069` paragraph reasoned in the PRESENT TENSE that *"`NFR-039` stays unmeetable … and
+`DW-076` stays blocked"*. Both rows were scheduled by the same ruling. **Neither sentence names a status**,
+which is the FORTY-THIRD's class exactly — a consequence is a sentence, a status is a column.
+⭐⭐ **WHAT FOUND IT, AND IT IS THE REUSABLE HALF: THE SWEEP WAS KEYED ON THE SHAPE OF THE CLAIM, NOT ON THE
+IDS THIS ROUND MOVED.** This round moved `WBS-40.1`, `DEC-156` and `SC-059`; **none of those ids appears in
+either falsified sentence**, so `LL-064`'s original remedy could not have reached them. Grepping
+`do NOT fire|still not scheduled|stays blocked|stays unmeetable` did. **An absence-claim has no keyword of
+its own** — that is `LL-066`'s whole point, and this is the second consecutive round where its second key
+returned a site the first key structurally could not.
+⚠⚠ **NOT AN ESCAPE, AND THE REASONING IS RECORDED BECAUSE THE GREP DID HIT.** `bc348658` — the commit that
+recorded `DEC-071` itself — carries *"stays unmeetable and DW-076 stays blocked"* in its message. **It was
+TRUE in that commit**, which is the counter's own carve-out: *annotating a historical record whose outcome
+later happened* is not tallied, and a commit message that was accurate when written does not become an
+escape retroactively as the world moves. Counting it would make every truthful historical commit message a
+future escape and destroy the instrument, which is `LL-016`'s rule about a number that counts two things.
+⛔ **Reported rather than waved through**, because the FORTY-EIGHTH's standard is that under-counting my own
+defeats the instrument — so the hit is named and the reason it does not count is argued, not assumed.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-seven** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **fifty-eight** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -2593,7 +2620,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    list-role-policies` and `aws ec2 describe-instances` are the answers.**
    ▶ **THE NEXT UNIT OF WORK IS NAMED BY THE LATEST RULING IN THE DECISION REGISTER AND BY NOTHING HERE**
    — `DEC-148` d6's round HAS SINCE BEEN RUN and `DEC-150`/`DEC-151` record it, so do not read that d6 as
-   pending; read from `DEC-155` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
+   pending; read from `DEC-156` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
    what was left unmeasured HAS SINCE MOVED IN BOTH DIRECTIONS AND ITS COUNT IS STALE** — `DEC-152` d6,
    `DEC-153` d9 and `DEC-155` d3/d5 each changed which requirements are blocked and on what, including one
    whose recorded verdict was withdrawn rather than improved. **Read those clauses and the
@@ -2610,7 +2637,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-155` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
+   `DEC-156` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
    of work and `DEC-150` records it RUN; the SECOND was taken on 2026-09-09 and `PE-1033` records it, which
    moved the note-budget number WITHOUT clearing the advisory —
    `readiness_check("package")` is where it stands); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
@@ -2965,7 +2992,11 @@ different quantities; do not read either as the other** (`LL-015`). **When you d
 item did.
 `DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
 says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
-stays *undecidable* until the artifact exists. `DW-071`'s new-route clause was discharged by `SL-033`;
+stays *undecidable* until the artifact exists. ⭐ **THE REVIEWER HALF OF THAT IS DISCHARGED AS OF
+`DEC-156` d3 — IT IS THE OPERATOR** (`NFR-039`'s Verification clause had marked availability
+*[unverified]*), so this sentence's *cannot be closed by a reader of code* survives only in the sense
+that the ADJUDICATION is not the agent's. ⛔ **The dependency order is untouched** (`LL-010`): the
+artefact first, then the reviewed variant allowlist, then the check. `DW-071`'s new-route clause was discharged by `SL-033`;
 its SECOND clause is release sign-off, parked by `DEC-071` d4.
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
@@ -3341,14 +3372,25 @@ of an authorization surface. The mitigation is per-item: **each row gets its OWN
 recorded in the batch that produces its evidence**, so the exit is adjudicated per item, never in aggregate.
 
 ⚠ **`DW-069` IS DELIBERATELY NOT IN THIS SLICE** (`DEC-071` d2). The operator said "all" to the nine and
-"leave it, not now" to the glossary; the narrower answer governs. **Consequence:** `NFR-039` stays
-unmeetable — its clause two is *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
-picker) stays blocked, because the nine Arabic source labels have no canonical source.
+"leave it, not now" to the glossary; the narrower answer governs. **Consequence at the time:** `NFR-039`
+was unmeetable — its clause two *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
+picker) was blocked, because the nine Arabic source labels had no canonical source.
+⛔⛔ **BOTH CONSEQUENCE CLAUSES WERE WRITTEN IN THE PRESENT TENSE AND ARE NOW HISTORY — `DEC-150` d4/d8 and
+`SC-056` SCHEDULED BOTH ROWS (2026-09-08), AND `DEC-156` (2026-09-09) CORRECTED THE FIRST ONE'S DONE-CLAIM.**
+The heading's *"NOT IN THIS SLICE"* is still true of the slice it names and is left alone; **it is the
+consequences that rotted, which is the FORTY-THIRD's class — a sentence that reasons FROM a row's state and
+never mentions it.** ⛔ **Which rows are scheduled and where is `entity_query`, never this paragraph.**
 
-⚠ **STILL NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1
-release close-out. **`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text
-route coverage) therefore do NOT fire** — their triggers name "before release sign-off". `DEF-087` stays
-carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
+⚠ **NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1 release close-out.
+⛔⛔ **THE CLAUSE THAT FOLLOWED IT IS FALSE AND WAS A LIVE READING INSTRUCTION, WHICH IS THE DANGEROUS
+KIND.** It read *"`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text route
+coverage) therefore do NOT fire — their triggers name 'before release sign-off'."* **`DEC-150` d4 ACTIVATED
+all three on 2026-09-08 and `SC-056` gave each a home**; a fresh session obeying the sentence would have
+treated three scheduled items as dormant. ⭐ **Found by an `LL-066` shape sweep — keyed on *do NOT fire* /
+*still not scheduled* rather than on any id this round moved** — which is exactly the second key `LL-066`
+added, paying on a claim about what does NOT happen. **No instrument here could have seen it: every
+identifier resolves and no lifecycle status is stated.**
+`DEF-087` stays carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
 
 ---
 

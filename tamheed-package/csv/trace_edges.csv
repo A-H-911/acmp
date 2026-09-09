@@ -771,6 +771,7 @@ SC-056,WBS-40.8,scope_adds
 SC-056,WBS-40.9,scope_adds
 SC-057,NFR-013,scope_modifies
 SC-058,NFR-001,scope_modifies
+SC-059,WBS-40.1,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
