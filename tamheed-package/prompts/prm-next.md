@@ -2566,8 +2566,19 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    and a gating scan found failing on every pull request over published package commits (`DEF-150`)**;
    and **`DEC-151` (sixtieth, 2026-09-09) RECORDS THE VERIFICATION CLOSE-OUT — an environment found
    165 commits stale and reporting healthy while unready (`DEF-151`), assets found shipping uncompressed
-   in BOTH environments (`DEF-152`), and ONE OPERATOR INSTRUCTION DECLINED AND RECORDED IN ITS d5** —
-   read `DEC-145` through `DEC-151` for which rows, and the `slice`/`wbs-item`/`defect` registers for
+   in BOTH environments (`DEF-152`), and ONE OPERATOR INSTRUCTION DECLINED AND RECORDED IN ITS d5**;
+   and **`DEC-152` (sixty-first, 2026-09-09) RECORDS A REQUIREMENT'S NAMED MECHANISM FOUND ABSENT FROM THE
+   CODE WHILE EVERY GATE STAYED GREEN (`DEF-153`)** — found by asking where a probe would start its clock,
+   not by any test; **`DEC-153` (sixty-second) RECORDS FOURTEEN DEFERRED-WORK DISPOSITIONS TAKEN ROW BY ROW
+   FROM A DIGEST-VERIFIED SLATE, ONE REQUIREMENT AMENDED RATHER THAN MEASURED BECAUSE A RATIFIED ADR HAD
+   ALREADY DELETED THE TECHNOLOGY IT MANDATED (`SC-057`), AND ONE MEASURED AND FOUND NOT MET (`DEF-154`)**;
+   **`DEC-154` (sixty-third) RECORDS A FAILURE MODE MEASURED ON TWO FURTHER SERVICES BEFORE AN ENVIRONMENT
+   WAS STOPPED, AND A PRODUCTION DEPLOY DECLINED ON THE SIZE OF ITS DELTA RATHER THAN ON RISK**; and
+   **`DEC-155` (sixty-fourth, 2026-09-09) RECORDS A FALSE PREMISE OF THE AGENT'S OWN RETRACTED ACROSS FOUR
+   ENTRIES, WITH `DEC-154` d4 SUPERSEDED FOR RESTING ON IT** — a requirement described as silent about a
+   condition it had always stated, with two rounds of measurement and one operator ruling built on the
+   error (`PE-1020`), and a second skill distilled in the same round (`SKL-002`) —
+   read `DEC-145` through `DEC-155` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
    has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
@@ -2582,8 +2593,11 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    list-role-policies` and `aws ec2 describe-instances` are the answers.**
    ▶ **THE NEXT UNIT OF WORK IS NAMED BY THE LATEST RULING IN THE DECISION REGISTER AND BY NOTHING HERE**
    — `DEC-148` d6's round HAS SINCE BEEN RUN and `DEC-150`/`DEC-151` record it, so do not read that d6 as
-   pending; read from `DEC-151` onward, and a later ruling replaces it again. ⚠ `DEC-151` d5 names two
-   requirements left unmeasured and WHY — they are blocked on an operator choice, not on an obstacle. ⚠ The harness is a dispatch-only
+   pending; read from `DEC-155` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
+   what was left unmeasured HAS SINCE MOVED IN BOTH DIRECTIONS AND ITS COUNT IS STALE** — `DEC-152` d6,
+   `DEC-153` d9 and `DEC-155` d3/d5 each changed which requirements are blocked and on what, including one
+   whose recorded verdict was withdrawn rather than improved. **Read those clauses and the
+   `requirement`/`deferred-work` registers; never the number in d5.** ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
    the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
    DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
@@ -2596,9 +2610,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-151` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
-   of work and `DEC-150` records it RUN; the second was untaken as of that ruling and the note-budget
-   advisory says whether it still is); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
+   `DEC-155` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
+   of work and `DEC-150` records it RUN; the SECOND was taken on 2026-09-09 and `PE-1033` records it, which
+   moved the note-budget number WITHOUT clearing the advisory —
+   `readiness_check("package")` is where it stands); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2607,9 +2622,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    hours, and **a claim about what REMAINS is a status wearing a measurement's clothes.** The commands at
    the top of this block are the answer; a sentence here is not.
    ⚠ **`lessons-note-budget` STILL FAILS AND THAT IS EXPECTED, NOT A REGRESSION** — `skill-promote.md` is
-   re-runnable, and two further clusters were proposed to the operator and deliberately not taken. **Read
-   `PE-938` for which, and `readiness_check("package")` for where the number stands now**; no count is
-   written here.
+   re-runnable and HAS been re-run: a second cluster was distilled on 2026-09-09 (`SKL-002`, `PE-1033`),
+   which REDUCED the rendered lesson count without clearing the advisory. Further clusters were proposed
+   and not taken. **Read `PE-938` and `PE-1033` for which, and `readiness_check("package")` for where the
+   number stands now**; no count is written here.
    ⛔⛔ **AND READ THE OTHER LESSON ADVISORY THE OPPOSITE WAY ROUND: A GREEN `lessons-confirmed` CAN MEAN
    NOTHING WAS RECORDED.** It counts `Proposed` rows, so it goes green when every lesson has been
    adjudicated **and** when the session filed none at all — the two are indistinguishable at the pass bit.
@@ -2617,9 +2633,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    and only a control (`status="Promoted"` returning 23) made the zero mean anything. **Before trusting a
    green advisory, ask what its denominator was** — this is the third instance in one day of a check
    passing because its SUBJECT was missing rather than clean (`DW-101` carries the other two).
-   ⛔ **`SKL-001`'s FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`.** tamheed
-   never touches it again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-`
-   row superseding it. **Never regenerate or "refresh" it.**
+   ⛔ **EVERY PROMOTED SKILL'S FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`
+   (`SKL-001`) and `.claude/skills/before-you-cite-a-record/SKILL.md` (`SKL-002`).** tamheed never touches
+   them again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-` row superseding
+   the old. **Never regenerate or "refresh" one.**
+   ⛔⛔ **A LESSON PROMOTED INTO A SKILL HAS LEFT THE ALWAYS-LOADED NOTE BY DESIGN, AND ITS ABSENCE THERE IS
+   NOT EVIDENCE IT DOES NOT BIND.** If you want one of those rules it is in the skill file;
+   `entity_query("lesson", status="Promoted")` lists which lessons went where. **Resolve which skills exist
+   from the `skill` register, never from this line.**
    ✅✅ **`DW-100` IS `Done` AND ITS HOLD LASTED ONE DAY.** It stood here as the first action, was
    dispositioned by `DEC-138` d1 (an OVERRIDE that sent the missing capability upstream as
    `findings_24` rather than building the workaround the agent had proven), and tamheed **4.7.0 shipped
@@ -2639,7 +2660,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-151`, `DEC-150`, `DEF-152`, `DEF-151`, `DEF-150`, `DEF-149`, `LL-072`, `LL-071`, `SC-056`,
+   under: `DEC-155`, `DEC-154`, `DEC-153`, `DEC-152`, `SKL-002`, `SC-058`, `SC-057`, `DEF-154`, `DEF-153`,
+   `LL-073`, `LL-074`, `LL-075`, `PE-1020`, `PE-1033`, `PE-1015`, `PE-1018`, `PE-1019`,
+   `DW-103`, `DW-104`, `DW-105`, `DW-106`, `DW-107`, `NFR-001`, `NFR-013`,
+   `DEC-151`, `DEC-150`, `DEF-152`, `DEF-151`, `DEF-150`, `DEF-149`, `LL-072`, `LL-071`, `SC-056`,
    `PE-1012`, `PE-1011`, `PE-1010`, `PE-1009`, `PE-1008`, `PE-1007`, `PE-1006`, `PE-1005`, `PE-1004`, `PE-1002`,
    `DEC-149`, `DEF-148`, `DEF-147`, `PE-1000`, `PE-999`,
    `DEC-148`, `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
