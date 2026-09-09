@@ -396,3 +396,17 @@ SC-059,DEC-156,"ONE WORK ITEM'S DONE-CLAIM IS CORRECTED. NO ROW IS ADDED, REMOVE
 ---
 
 ✅ **MERGED 2026-09-09.** The delta was applied and RE-READ before this flip: `WBS-40.1`'s stored title was exported through `entity_export` and byte-compared against the intended text — **4,185 = 4,185 characters, IDENTICAL**, with the comparator calibrated first by a one-character mutation that made it diverge at index 1159 and exit non-zero (trap 14a, `LL-013`). One `scope_modifies` edge written. No other row was touched.",1,Merged,,2026-09-09T14:47:53Z
+SC-060,DEC-160,"**THREE `deferred-work` ROWS CARRY REASONING THAT `DEC-159` f2 SUPERSEDED, PLUS ONE STALE FACTUAL CAVEAT. THREE ROWS ARE MODIFIED; NO REQUIREMENT AND NO STATUS CHANGES.**
+
+**WHAT IS WRONG.** `DW-043`, `DW-048` and `DW-103` each assert, in their own titles, that their requirement *""IS NOT VERIFIABLE FROM THIS REPOSITORY""* and needs a vantage inside the deployment — `DW-048` adding that `NFR-006` *""needs an end-to-end timing capture rather than a unit or integration test""*. **Their own requirements' Verification clauses say the opposite.** `NFR-001` names a load test measuring P95 via OpenTelemetry trace duration; `NFR-002`, `NFR-003`, `NFR-004` and `NFR-006` each name an **integration test**, and integration tests run in this repository — `Acmp.Integration.Tests` is the project that runs against real SQL Server. Under `DEC-159` f2, *a requirement's Verification clause is part of the requirement, not advice about how to check it*, so the clause governs and the `DW-` rows' reasoning does not.
+
+**WHAT IS ADDED TO EACH ROW.** A correction recording that the requirement's own Verification clause names an integration test and/or OTel, that this repository can therefore host the measurement, and that the deployment vantage is corroboration rather than the discharging route.
+
+**ONE ADDITIONAL, PURELY FACTUAL CORRECTION TO `DW-048`.** Its title says `NFR-006`'s statement *""IS ITSELF TRUNCATED AT 200 CHARACTERS""* and that its wording *""may need recovering from the brief before anyone measures against it""*. **`NFR-006` is not truncated.** Read in full: *""Meeting notes auto-save (debounce on typing pause) shall complete a server-side persist within 2 seconds of the debounce trigger. Target: <= 2 000 ms round-trip from debounce trigger to server ACK.""* Its `v1` key carries the same wording. `DEF-092` could not repair it when that caveat was written; it reads complete now, so the caveat no longer gates the work.
+
+**WHAT IS DELIBERATELY NOT CHANGED.**
+- **No `lifecycle_status` moves.** All three rows stay `Open`. Nothing has been measured; this corrects HOW they are to be measured, not WHETHER they have been.
+- **No requirement row is touched.** The Verification clauses are correct as written — they are what settled the question.
+- **`DW-103`'s 10 000-row sizing stands.** It is not an over-specification to be relaxed: `NFR-002` and `NFR-004` name 10 000 records in their own statements. What changes is WHERE the 10 000 rows live — a seeded test database rather than uat, which holds 216 topics and whose audit rows are hash-chained and immutable.
+
+⚠ **PROPOSED. NOTHING IS APPLIED.** `DEC-160` g3 authorised FILING this row; the operator approves its content before any `DW-` row is edited. After approval: apply, RE-READ each row, and only then set this row to `Merged` (`LL-042`).",1,Proposed,,
