@@ -395,4 +395,4 @@ SC-059,DEC-156,"ONE WORK ITEM'S DONE-CLAIM IS CORRECTED. NO ROW IS ADDED, REMOVE
 
 ---
 
-✅ **MERGED 2026-09-09.** The delta was applied and RE-READ before this flip: `WBS-40.1`'s stored title was exported through `entity_export` and byte-compared against the intended text — **4,185 = 4,185 characters, IDENTICAL**, with the comparator calibrated first by a one-character mutation that made it diverge at index 1159 and exit non-zero (trap 14a, `LL-013`). One `scope_modifies` edge written. No other row was touched.",1,Merged,,
+✅ **MERGED 2026-09-09.** The delta was applied and RE-READ before this flip: `WBS-40.1`'s stored title was exported through `entity_export` and byte-compared against the intended text — **4,185 = 4,185 characters, IDENTICAL**, with the comparator calibrated first by a one-character mutation that made it diverge at index 1159 and exit non-zero (trap 14a, `LL-013`). One `scope_modifies` edge written. No other row was touched.",1,Merged,,2026-09-09T14:47:53Z

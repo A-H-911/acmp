@@ -457,6 +457,7 @@ LL-069,DEF-143,learned_from
 LL-070,DEF-144,learned_from
 LL-071,DEF-149,learned_from
 LL-072,PE-1009,learned_from
+LL-076,DEC-156,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from

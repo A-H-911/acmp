@@ -456,6 +456,7 @@
 {"from_id":"LL-070","to_id":"DEF-144","relation":"learned_from"}
 {"from_id":"LL-071","to_id":"DEF-149","relation":"learned_from"}
 {"from_id":"LL-072","to_id":"PE-1009","relation":"learned_from"}
+{"from_id":"LL-076","to_id":"DEC-156","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
