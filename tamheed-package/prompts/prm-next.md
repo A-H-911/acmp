@@ -2561,7 +2561,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    ITS d6**; and **`DEC-149` (fifty-eighth, 2026-09-08) RECORDS THAT LIST EXECUTED BY THE AGENT ON THE
    OPERATOR'S REASSIGNMENT — cloud work, with two temporary IAM grants created and revoked and each revoke
    PROVEN, and with the remedy's own tool found reporting success while protecting the wrong object
-   (`DEF-147`, `DEF-148`)** — read `DEC-145` through `DEC-149` for which rows, and the `slice`/`wbs-item`/`defect` registers for
+   (`DEF-147`, `DEF-148`)**; **`DEC-150` (fifty-ninth, 2026-09-08) RECORDS THE DEFERRED-WORK REVIEW ITSELF —
+   every live row ruled ONE BY ONE, opened by FALSIFYING the premise its own generator states (`DEF-149`),
+   and a gating scan found failing on every pull request over published package commits (`DEF-150`)**;
+   and **`DEC-151` (sixtieth, 2026-09-09) RECORDS THE VERIFICATION CLOSE-OUT — an environment found
+   165 commits stale and reporting healthy while unready (`DEF-151`), assets found shipping uncompressed
+   in BOTH environments (`DEF-152`), and ONE OPERATOR INSTRUCTION DECLINED AND RECORDED IN ITS d5** —
+   read `DEC-145` through `DEC-151` for which rows, and the `slice`/`wbs-item`/`defect` registers for
    where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
    OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
    has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
@@ -2574,8 +2580,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    on its own, CALIBRATE the instrument that will later prove the revoke, and read the REGISTRY rather
    than the script's exit code. ⛔ Nothing here says what is still granted or still running — `aws iam
    list-role-policies` and `aws ec2 describe-instances` are the answers.**
-   ▶ **THE NEXT UNIT OF WORK IS NAMED BY `DEC-148` d6 AND BY NOTHING HERE** — read that entry and the register from it
-   onward; a later ruling replaces it, and this line does not say whether one has. ⚠ The harness is a dispatch-only
+   ▶ **THE NEXT UNIT OF WORK IS NAMED BY THE LATEST RULING IN THE DECISION REGISTER AND BY NOTHING HERE**
+   — `DEC-148` d6's round HAS SINCE BEEN RUN and `DEC-150`/`DEC-151` record it, so do not read that d6 as
+   pending; read from `DEC-151` onward, and a later ruling replaces it again. ⚠ `DEC-151` d5 names two
+   requirements left unmeasured and WHY — they are blocked on an operator choice, not on an obstacle. ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
    the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
    DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
@@ -2588,8 +2596,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-149` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST — the deferred-work review round — as the next unit of work; the second was
-   untaken as of that ruling); this line does not say whether either is still true.** Read `DEC-140` through `DEC-149` for the reasoning
+   `DEC-151` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
+   of work and `DEC-150` records it RUN; the second was untaken as of that ruling and the note-budget
+   advisory says whether it still is); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2630,7 +2639,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-149`, `DEF-148`, `DEF-147`, `PE-1000`, `PE-999`,
+   under: `DEC-151`, `DEC-150`, `DEF-152`, `DEF-151`, `DEF-150`, `DEF-149`, `LL-072`, `LL-071`, `SC-056`,
+   `PE-1012`, `PE-1011`, `PE-1010`, `PE-1009`, `PE-1008`, `PE-1007`, `PE-1006`, `PE-1005`, `PE-1004`, `PE-1002`,
+   `DEC-149`, `DEF-148`, `DEF-147`, `PE-1000`, `PE-999`,
    `DEC-148`, `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
    `PE-980`, `PE-981`, `PE-982`, `PE-983`, `PE-984`, `PE-985`, `PE-970`, `PE-973`,
    `PE-974`, `PE-975`, `PE-976`, `PE-977`, `PE-978`, `PE-979`,
