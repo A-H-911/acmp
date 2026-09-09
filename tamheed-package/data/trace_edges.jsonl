@@ -460,6 +460,7 @@
 {"from_id":"LL-076","to_id":"DEC-156","relation":"learned_from"}
 {"from_id":"LL-077","to_id":"DEC-157","relation":"learned_from"}
 {"from_id":"LL-078","to_id":"DEC-159","relation":"learned_from"}
+{"from_id":"LL-079","to_id":"PE-1047","relation":"learned_from"}
 {"from_id":"NFR-001","to_id":"ADR-0012","relation":"derives_from"}
 {"from_id":"NFR-001","to_id":"ADR-0016","relation":"derives_from"}
 {"from_id":"NFR-002","to_id":"ADR-0012","relation":"derives_from"}
@@ -778,6 +779,8 @@
 {"from_id":"SC-060","to_id":"DW-043","relation":"scope_modifies"}
 {"from_id":"SC-060","to_id":"DW-048","relation":"scope_modifies"}
 {"from_id":"SC-060","to_id":"DW-103","relation":"scope_modifies"}
+{"from_id":"SC-061","to_id":"NFR-002","relation":"scope_modifies"}
+{"from_id":"SC-061","to_id":"NFR-004","relation":"scope_modifies"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
