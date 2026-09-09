@@ -105,13 +105,46 @@ public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
             $"seeded {NfrPerfFixture.SeededTopics} in {_fixture.SeedSeconds:F1}s but the backlog reports {total}");
     }
 
+    /*
+     * ⛔⛔ THE SERIAL PASS IS NOT EXTRA CREDIT — WITHOUT IT THE CONCURRENT NUMBER IS UNATTRIBUTABLE,
+     * AND THIS PROJECT HAS ALREADY PAID FOR THAT MISTAKE ONCE THIS WEEK. DEF-155's first version
+     * compared THIS endpoint's 15-concurrent P95 against DW-044's SERIAL database figure and charged
+     * the whole ~230x gap to the endpoint. PE-1040 records the same error with the polarity reversed:
+     * the committed NFR-008 probe reported a 20-way concurrency figure it could not attribute, because
+     * it ran no concurrent baseline. A concurrent number compared to a serial one explains nothing.
+     *
+     * ⭐ THE DETAIL TEST IS ALREADY A CONTROL FOR ONE HALF: it runs at the SAME concurrency and returns
+     * single-digit milliseconds, which excludes generic framework, JWT and machine contention. What it
+     * cannot say is whether THIS endpoint's cost is intrinsic to one request or created by load. The
+     * serial pass below settles exactly that, and both numbers are carried into the failure message so
+     * whoever reads a red has the attribution in front of them rather than having to re-derive it.
+     *
+     * ⚠ THE ASSERTION REMAINS ON THE CONCURRENT FIGURE, because NFR-002's Verification clause names
+     * "15 concurrent list requests". The serial pass is a diagnostic, not a second verdict — asserting
+     * on it would invent a bound the requirement never states.
+     */
     [Fact]
     public async Task NFR_002_backlog_list_p95_is_within_1000ms_at_15_concurrent_users()
     {
-        var samples = await MeasureAsync(() => _client.GetAsync("/api/topics/?page=1&pageSize=25"));
+        const string route = "/api/topics/?page=1&pageSize=25";
 
-        Report("NFR-002 list", samples);
-        Percentile(samples, 95).Should().BeLessThan(1000);
+        var serial = await MeasureSerialAsync(() => _client.GetAsync(route), samples: 40);
+        Report("NFR-002 list (SERIAL diagnostic)", serial);
+
+        var concurrent = await MeasureAsync(() => _client.GetAsync(route));
+        Report("NFR-002 list", concurrent);
+
+        var serialP95 = Percentile(serial, 95);
+        var concurrentP95 = Percentile(concurrent, 95);
+
+        concurrentP95.Should().BeLessThan(1000,
+            "NFR-002 bounds list/query endpoints at P95 <= 1000 ms with 15 concurrent requests over 10 000 " +
+            $"topics. Serial P95 was {serialP95:F1} ms over {serial.Count} samples and concurrent P95 was " +
+            $"{concurrentP95:F1} ms over {concurrent.Count} at {Concurrency}-way on {Environment.ProcessorCount} " +
+            "cores. READ THE TWO TOGETHER: a serial figure already near the budget means the cost is intrinsic " +
+            "to one request (query plan, materialisation, serialization); a small serial figure with a large " +
+            "concurrent one means the cost is created by load (connection pool, locking, CPU saturation). " +
+            "Those need different fixes, which is why both are measured (DEF-155, DEC-161 i1)");
     }
 
     [Fact]
@@ -267,6 +300,23 @@ public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
         }
 
         return samples;
+    }
+
+    /// <summary>One request at a time — the diagnostic half, with no concurrency in the path at all.</summary>
+    private static async Task<IReadOnlyList<double>> MeasureSerialAsync(Func<Task<HttpResponseMessage>> request, int samples)
+    {
+        var timings = new List<double>(samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            var started = Stopwatch.GetTimestamp();
+            using var response = await request();
+            timings.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            response.StatusCode.Should().Be(HttpStatusCode.OK,
+                "a non-200 short-circuits the handler and would be timed as if it were a success");
+        }
+
+        return timings;
     }
 
     /// <summary>Nearest-rank percentile — no interpolation, so the value is always an observed sample.</summary>
