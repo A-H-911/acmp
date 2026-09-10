@@ -1288,7 +1288,7 @@
       "event": {
         "topicSubmitted": "تقديم موضوع",
         "topicReturned": "إعادة موضوع للعمل",
-        "agendaPublished": "نشر الأجندة",
+        "agendaPublished": "نشر جدول الأعمال",
         "meetingScheduled": "جدولة اجتماع",
         "minutesReady": "جاهزية المحضر للمراجعة",
         "decisionApproved": "اعتماد قرار",
@@ -2383,7 +2383,7 @@
       "fTitle": "العنوان",
       "fTitlePh": "سمِّ عنصر العمل…",
       "fType": "النوع",
-      "fUrgency": "الإلحاح",
+      "fUrgency": "الأهمية",
       "fDescription": "الوصف",
       "fDescriptionPh": "ما الذي يجب إنجازه…",
       "fJustification": "المبرر",
