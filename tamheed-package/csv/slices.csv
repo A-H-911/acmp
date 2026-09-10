@@ -139,4 +139,4 @@ SL-043,"The 29 rows `DEC-150` put into live work: one slice ordered by dependenc
 
 **WHAT THIS SLICE IS NOT.** It is not the sixteen NFR verification rows — those stay `Open` pending the prod-and-uat run `DEC-150` d7 ordered, and `DW-065` is the one member of that group that IS here, because its trigger fires when a stack runs. It is not `NFR-005`: `DW-047` is closed with `DW-011`, and the requirement itself is untouched.
 
-⚠ **THIS SLICE IS LARGE AND SAYING SO IS PART OF THE RECORD.** More than twice `DEC-067`'s twelve. `DEC-068` chose four rows for one slice on the reasoning that a slice should match the work; the operator chose the opposite shape here deliberately, so nobody should later 'correct' it into thirteen slices without a ruling.",43,Approved,,,1,,,2026-09-09T14:47:53Z
+⚠ **THIS SLICE IS LARGE AND SAYING SO IS PART OF THE RECORD.** More than twice `DEC-067`'s twelve. `DEC-068` chose four rows for one slice on the reasoning that a slice should match the work; the operator chose the opposite shape here deliberately, so nobody should later 'correct' it into thirteen slices without a ruling.",43,Approved,,,1,,,2026-09-10T11:23:04Z
