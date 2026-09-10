@@ -229,6 +229,86 @@
       "status": "ruled",
       "source": "DOC-049",
       "ruling": "canonical: التتبّع"
+    },
+    {
+      "en": "Committee member",
+      "ar": "عضو اللجنة",
+      "status": "ruled",
+      "code": "TopicSource.CommitteeMember",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: عضو اللجنة (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Stream request",
+      "ar": "طلب مسار",
+      "status": "ruled",
+      "code": "TopicSource.StreamRequest",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: طلب مسار (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Urgent org need",
+      "ar": "احتياج مؤسسي عاجل",
+      "status": "ruled",
+      "code": "TopicSource.UrgentOrgNeed",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: احتياج مؤسسي عاجل (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Operational incident",
+      "ar": "حادث تشغيلي",
+      "status": "ruled",
+      "code": "TopicSource.OperationalIncident",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: حادث تشغيلي (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Security finding",
+      "ar": "ملاحظة أمنية",
+      "status": "ruled",
+      "code": "TopicSource.SecurityFinding",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: ملاحظة أمنية (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Modernization",
+      "ar": "تحديث تقني",
+      "status": "ruled",
+      "code": "TopicSource.Modernization",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: تحديث تقني (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Innovation initiative",
+      "ar": "مبادرة ابتكار",
+      "status": "ruled",
+      "code": "TopicSource.InnovationInitiative",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: مبادرة ابتكار (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Cross-stream problem",
+      "ar": "مشكلة متعددة المسارات",
+      "status": "ruled",
+      "code": "TopicSource.CrossStreamProblem",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: مشكلة متعددة المسارات (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Regulatory",
+      "ar": "متطلب تنظيمي",
+      "status": "ruled",
+      "code": "TopicSource.Regulatory",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: متطلب تنظيمي (operator, DEC-171 round 3; picked from drafted candidates)"
+    },
+    {
+      "en": "External",
+      "ar": "جهة خارجية",
+      "status": "ruled",
+      "code": "TopicSource.External",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: جهة خارجية (operator, DEC-171 round 3; picked from drafted candidates)"
     }
   ],
   "allowedVariants": [
