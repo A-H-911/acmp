@@ -111,12 +111,29 @@ public sealed class NfrPerfFixture : IAsyncLifetime
     /// <summary>Create one catalog, migrate every module into it, seed it, and wait out full-text population.</summary>
     private async Task<string> BuildSeededDatabaseAsync(string catalog, int topicCount)
     {
-        // A full-text catalog cannot live in master/tempdb/model, and MsSqlBuilder connects to master.
+        /*
+         * A full-text catalog cannot live in master/tempdb/model, and MsSqlBuilder connects to master.
+         *
+         * ⚠ THIS WAS `$"IF DB_ID('{catalog}') IS NULL CREATE DATABASE [{catalog}];"` AND SEMGREP'S
+         * `csharp.lang.security.sqli` BLOCKED THE BUILD ON IT. Both call sites pass a compile-time
+         * constant, so it was not exploitable — but the SCANNER IS RIGHT ABOUT THE SHAPE, and the right
+         * response to a true finding about unreachable code is to fix the shape rather than suppress the
+         * rule: the parameter is what keeps this safe when someone later feeds `catalog` from a config
+         * value or a test argument. An identifier cannot be a bind parameter, which is what QUOTENAME is
+         * for — it escapes the name for the dynamic statement while the VALUE still travels as a
+         * parameter rather than as concatenated C#.
+         */
         await using (var conn = new SqlConnection(_container.GetConnectionString()))
         {
             await conn.OpenAsync();
             await using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"IF DB_ID('{catalog}') IS NULL CREATE DATABASE [{catalog}];";
+            // ⚠ QUOTENAME GOES IN A DECLARE, NOT INSIDE `EXEC(...)`. T-SQL's EXEC(string) accepts only
+            // variables and string literals concatenated — a FUNCTION CALL in that position is a syntax
+            // error ("Incorrect syntax near 'QUOTENAME'"), which the first attempt here earned.
+            cmd.CommandText =
+                "DECLARE @sql nvarchar(max) = N'CREATE DATABASE ' + QUOTENAME(@catalog); " +
+                "IF DB_ID(@catalog) IS NULL EXEC sp_executesql @sql;";
+            cmd.Parameters.AddWithValue("@catalog", catalog);
             await cmd.ExecuteNonQueryAsync();
         }
 
