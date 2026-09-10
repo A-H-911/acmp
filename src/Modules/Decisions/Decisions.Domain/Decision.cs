@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Modules.Decisions.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -64,10 +65,10 @@ public sealed class Decision : AuditableEntity
         Guid? voteId, IEnumerable<DecisionConditionInput> conditions,
         bool recordedByConflictedActor, DateTimeOffset now)
     {
-        if (topicId == Guid.Empty) throw new InvalidOperationException("A decision must reference a topic.");
-        if (title is null) throw new InvalidOperationException("A decision title is required.");
-        if (statement is null) throw new InvalidOperationException("A decision statement is required.");
-        if (rationale is null) throw new InvalidOperationException("A decision rationale is required.");
+        if (topicId == Guid.Empty) throw new DomainRuleException("A decision must reference a topic.");
+        if (title is null) throw new DomainRuleException("A decision title is required.");
+        if (statement is null) throw new DomainRuleException("A decision statement is required.");
+        if (rationale is null) throw new DomainRuleException("A decision rationale is required.");
 
         var decision = new Decision
         {
@@ -88,7 +89,7 @@ public sealed class Decision : AuditableEntity
             decision._conditions.Add(new DecisionCondition(c.Text, c.DueDate));
 
         if (outcome == DecisionOutcome.ConditionallyApproved && decision._conditions.Count == 0)
-            throw new InvalidOperationException("A conditionally-approved decision requires at least one condition.");
+            throw new DomainRuleException("A conditionally-approved decision requires at least one condition.");
 
         decision.Raise(new DecisionDraftedEvent(decision.PublicId, decision.Key, topicId, now));
         return decision;
@@ -101,7 +102,7 @@ public sealed class Decision : AuditableEntity
     {
         RequireStatus(DecisionStatus.Draft);
         if (chairOverride && overrideJustification is null)
-            throw new InvalidOperationException("A chair override requires a justification.");
+            throw new DomainRuleException("A chair override requires a justification.");
 
         Status = DecisionStatus.Issued;
         IssuedAt = now;
@@ -118,8 +119,8 @@ public sealed class Decision : AuditableEntity
     {
         RequireStatus(DecisionStatus.Issued);
         if (supersededByDecisionId == Guid.Empty)
-            throw new InvalidOperationException("A superseding decision is required.");
-        if (reason is null) throw new InvalidOperationException("A supersession reason is required.");
+            throw new DomainRuleException("A superseding decision is required.");
+        if (reason is null) throw new DomainRuleException("A supersession reason is required.");
 
         Status = DecisionStatus.Superseded;
         SupersededByDecisionId = supersededByDecisionId;
@@ -130,7 +131,7 @@ public sealed class Decision : AuditableEntity
     private void RequireStatus(params DecisionStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the decision is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the decision is {Status}.");
     }
 }
 

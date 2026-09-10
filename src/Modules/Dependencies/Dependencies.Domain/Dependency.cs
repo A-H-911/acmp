@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Dependencies.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Dependencies.Domain;
@@ -41,10 +42,10 @@ public sealed class Dependency : AuditableEntity
         DependencyKind kind, string? note)
     {
         if (fromId == Guid.Empty || toId == Guid.Empty)
-            throw new InvalidOperationException("Both endpoints of a dependency are required.");
+            throw new DomainRuleException("Both endpoints of a dependency are required.");
         if (fromType == toType && fromId == toId)
-            throw new InvalidOperationException("A dependency cannot link an artifact to itself.");
-        if (!Enum.IsDefined(kind)) throw new InvalidOperationException("A valid dependency kind is required.");
+            throw new DomainRuleException("A dependency cannot link an artifact to itself.");
+        if (!Enum.IsDefined(kind)) throw new DomainRuleException("A valid dependency kind is required.");
 
         return new Dependency
         {
@@ -67,7 +68,7 @@ public sealed class Dependency : AuditableEntity
     public void Resolve()
     {
         if (Status != DependencyStatus.Open)
-            throw new InvalidOperationException("Only an open dependency can be resolved.");
+            throw new DomainRuleException("Only an open dependency can be resolved.");
         Status = DependencyStatus.Resolved;
     }
 
@@ -76,7 +77,7 @@ public sealed class Dependency : AuditableEntity
     public void Remove()
     {
         if (Status != DependencyStatus.Open)
-            throw new InvalidOperationException("Only an open dependency can be removed.");
+            throw new DomainRuleException("Only an open dependency can be removed.");
         Status = DependencyStatus.Removed;
     }
 }

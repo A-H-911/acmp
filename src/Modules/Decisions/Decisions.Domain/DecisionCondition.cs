@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Decisions.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -18,7 +19,7 @@ public sealed class DecisionCondition : BaseEntity
 
     internal DecisionCondition(LocalizedString text, DateTimeOffset? dueDate)
     {
-        Text = text ?? throw new InvalidOperationException("A condition requires bilingual text.");
+        Text = text ?? throw new DomainRuleException("A condition requires bilingual text.");
         DueDate = dueDate;
         Status = DecisionConditionStatus.Open;
     }

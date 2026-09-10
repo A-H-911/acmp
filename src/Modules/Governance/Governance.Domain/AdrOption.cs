@@ -1,4 +1,5 @@
-﻿using Acmp.Shared.Domain.Entities;
+﻿using Acmp.Shared.Domain;
+using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Governance.Domain;
@@ -17,7 +18,7 @@ public sealed class AdrOption : BaseEntity
 
     internal static AdrOption Create(LocalizedString name, LocalizedString? body, bool isChosen)
     {
-        if (name is null) throw new InvalidOperationException("An option name is required.");
+        if (name is null) throw new DomainRuleException("An option name is required.");
         return new AdrOption { Name = name, Body = body, IsChosen = isChosen };
     }
 }

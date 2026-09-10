@@ -3,6 +3,7 @@ using Acmp.Modules.Membership.Application.Internal;
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -85,7 +86,7 @@ public sealed class ReconcileIdentityAccountsHandler
         ReconcileIdentityAccountsCommand request, CancellationToken ct)
     {
         var identity = _identity.FirstOrDefault()
-            ?? throw new InvalidOperationException(
+            ?? throw new DomainRuleException(
                 "Reconciliation cannot run because no identity provider is configured, so the accounts to " +
                 "reconcile cannot be read. Set KeycloakAdmin:Enabled=true AND pin a real " +
                 "KeycloakAdmin:ClientSecret — enabling the feature is two variables, not one (DEC-047).");
@@ -163,7 +164,7 @@ public sealed class ReconcileIdentityAccountsHandler
             // row has NO wildcard. Creating the rows anyway would produce exactly the locked-out
             // members this command exists to prevent, while reporting success.
             if (wildcardId == 0)
-                throw new InvalidOperationException(
+                throw new DomainRuleException(
                     "Reconciliation stopped before writing anything: no membership.streams row has " +
                     "IsWildcard = 1, so there is no wildcard to grant and every row created here would " +
                     "be refused every stream-scoped write. Insert the wildcard row and re-run.");

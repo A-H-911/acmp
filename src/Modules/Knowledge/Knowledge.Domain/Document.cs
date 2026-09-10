@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Knowledge.Domain.Enums;
 using Acmp.Modules.Knowledge.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -44,9 +45,9 @@ public sealed class Document : AuditableEntity
     public static Document Create(string key, LocalizedString title, string category, LocalizedString body,
         string ownerUserId, IEnumerable<string>? tags, DateTimeOffset now)
     {
-        if (title is null) throw new InvalidOperationException("A document title is required.");
-        if (body is null) throw new InvalidOperationException("A document body is required.");
-        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new InvalidOperationException("A document owner is required.");
+        if (title is null) throw new DomainRuleException("A document title is required.");
+        if (body is null) throw new DomainRuleException("A document body is required.");
+        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new DomainRuleException("A document owner is required.");
 
         var document = new Document
         {
@@ -70,10 +71,10 @@ public sealed class Document : AuditableEntity
     public void Edit(LocalizedString title, string category, LocalizedString body, DateTimeOffset now, string editorUserId)
     {
         if (Status == DocumentStatus.Archived)
-            throw new InvalidOperationException("An archived document cannot be edited.");
+            throw new DomainRuleException("An archived document cannot be edited.");
 
-        Title = title ?? throw new InvalidOperationException("A document title is required.");
-        Body = body ?? throw new InvalidOperationException("A document body is required.");
+        Title = title ?? throw new DomainRuleException("A document title is required.");
+        Body = body ?? throw new DomainRuleException("A document body is required.");
         Category = (category ?? string.Empty).Trim();
         Version++;
         AppendSnapshot(now, editorUserId);
@@ -110,6 +111,6 @@ public sealed class Document : AuditableEntity
     private void RequireStatus(params DocumentStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the document is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the document is {Status}.");
     }
 }

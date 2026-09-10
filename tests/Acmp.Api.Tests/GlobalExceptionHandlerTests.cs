@@ -1,5 +1,6 @@
 ﻿using Acmp.Api.Infrastructure;
 using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Domain;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -45,8 +46,17 @@ public sealed class GlobalExceptionHandlerTests
         (await StatusForAsync(new KeyNotFoundException())).Should().Be(StatusCodes.Status404NotFound);
 
     [Fact]
-    public async Task InvalidOperationException_MapsTo409() =>
-        (await StatusForAsync(new InvalidOperationException())).Should().Be(StatusCodes.Status409Conflict);
+    public async Task DomainRuleException_MapsTo409() =>
+        (await StatusForAsync(new DomainRuleException("This operation is not allowed while the meeting is Scheduled")))
+            .Should().Be(StatusCodes.Status409Conflict);
+
+    // DEF-156: a BARE InvalidOperationException is a framework or programming fault, not a conflict the client
+    // can resolve. It used to map to 409 "Conflict" — which hid every such fault from a 5xx alert and sent
+    // NFR-006's measurement chasing a stale write for two rounds. It now falls through to 500.
+    [Fact]
+    public async Task BareInvalidOperationException_MapsTo500() =>
+        (await StatusForAsync(new InvalidOperationException("Sequence contains no elements")))
+            .Should().Be(StatusCodes.Status500InternalServerError);
 
     [Fact]
     public async Task UnknownException_MapsTo500() =>

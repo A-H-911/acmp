@@ -4,6 +4,7 @@ using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -76,7 +77,7 @@ public sealed class AssignRolesHandler : IRequestHandler<AssignRolesCommand>
         // GUARD 2 — granting Administrator or Chairman needs an explicit confirmation.
         var privileged = request.Roles.Where(r => PrivilegedRoles.Contains(r, StringComparer.Ordinal)).ToArray();
         if (privileged.Length > 0 && !request.ConfirmedPrivileged)
-            throw new InvalidOperationException(
+            throw new DomainRuleException(
                 $"Granting {string.Join(" and ", privileged)} must be confirmed explicitly.");
 
         // GUARD 3 — the committee may never be left with zero Administrators. Without this, one bad
@@ -91,7 +92,7 @@ public sealed class AssignRolesHandler : IRequestHandler<AssignRolesCommand>
                      && m.Status == MembershipStatus.Active
                      && m.PublicId != member.PublicId, ct);
             if (otherAdmins == 0)
-                throw new InvalidOperationException("The committee would be left with no Administrator.");
+                throw new DomainRuleException("The committee would be left with no Administrator.");
         }
 
         // Keycloak is the source of truth, so it is written FIRST. If it refuses, nothing local moved.
@@ -101,7 +102,7 @@ public sealed class AssignRolesHandler : IRequestHandler<AssignRolesCommand>
         // rule the token path uses — so the cached value matches what the next login would compute
         // rather than a second, divergent interpretation of the same role set.
         var primary = CommitteeRoleResolver.PrimaryRole(request.Roles)
-            ?? throw new InvalidOperationException("No recognised committee role in the requested set.");
+            ?? throw new DomainRuleException("No recognised committee role in the requested set.");
         // ADR-0039: the timestamp is the half that actually enforces AC-090. Authorization reads
         // roles from the TOKEN, so the mirrored Role above changes nothing about access on its own —
         // it is the stamp, compared against the token's `iat` on every request, that refuses a token

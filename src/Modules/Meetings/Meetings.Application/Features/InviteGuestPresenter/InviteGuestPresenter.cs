@@ -4,6 +4,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Membership;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -94,7 +95,7 @@ public sealed class InviteGuestPresenterHandler : IRequestHandler<InviteGuestPre
         // deleted — so a wrong topic id must fail here, while nothing exists yet, rather than after
         // an external identity has been created for a slot that is not on this agenda.
         if (agenda.Items.All(i => i.TopicId != request.TopicId))
-            throw new InvalidOperationException("That topic is not on this meeting's agenda.");
+            throw new DomainRuleException("That topic is not on this meeting's agenda.");
 
         var accessExpiresAt = meeting.ScheduledEnd + GuestAccess.Grace;
 

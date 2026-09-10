@@ -7,6 +7,7 @@ using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Research;
 using Acmp.Shared.Contracts.Traceability;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -82,7 +83,7 @@ public sealed class ConvertResearchToTopicHandler : IRequestHandler<ConvertResea
             var rec = await _research.GetRecommendationForConvertAsync(request.MissionId, recId, ct)
                 ?? throw new KeyNotFoundException("Recommendation not found on this mission.");
             if (!string.Equals(rec.Status, RecommendationAccepted, StringComparison.Ordinal))
-                throw new InvalidOperationException("Only an accepted recommendation can be converted to a topic.");
+                throw new DomainRuleException("Only an accepted recommendation can be converted to a topic.");
 
             // One topic per recommendation — a second convert is blocked (409) naming the existing topic. The
             // retry HEALS a missing reverse edge first (idempotent). A same-instant concurrent double-convert that
@@ -94,7 +95,7 @@ public sealed class ConvertResearchToTopicHandler : IRequestHandler<ConvertResea
                 await _trace.RecordEdgeAsync(
                     "Recommendation", recId, rec.Key, rec.StatementEn,
                     "Topic", existing.PublicId, existing.Key, existing.Title, relTypeName: "Informs", ct);
-                throw new InvalidOperationException($"This recommendation has already been converted to topic {existing.Key}.");
+                throw new DomainRuleException($"This recommendation has already been converted to topic {existing.Key}.");
             }
 
             sourceType = "Recommendation";
@@ -105,7 +106,7 @@ public sealed class ConvertResearchToTopicHandler : IRequestHandler<ConvertResea
         else
         {
             if (!string.Equals(mission.Status, MissionCompleted, StringComparison.Ordinal))
-                throw new InvalidOperationException("Only a completed mission can be converted to a topic.");
+                throw new DomainRuleException("Only a completed mission can be converted to a topic.");
             sourceType = "ResearchMission";
             sourceId = mission.Id;
             sourceKey = mission.Key;
