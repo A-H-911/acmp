@@ -1,0 +1,33 @@
+{
+  "$comment": "THE CANONICAL EN-AR TERMINOLOGY GLOSSARY NFR-039 NAMES (WBS-40.1 / DW-069, DEC-167 q1). One file, no mirror: docs/README.md §G, docs/governance/glossary.md and design-handoff/claude-design-input-package.md all point HERE, and this file points nowhere. The application's strings stay in locales/en.json and locales/ar.json; this file governs them through scripts/check-i18n-terms.mjs, which reads `terms` and `allowedVariants` and fails on any short English label carrying more than one Arabic rendering that is not a reviewed variant. EN definitions stay in docs/governance/glossary.md (DOC-049); this file carries TERMS. ⛔ EVERY `ar` VALUE AND EVERY `allowedVariants` ENTRY IS THE OPERATOR'S RULING (DEC-156 d3: the Arabic reviewer is the operator; DEC-165 n4: rulings come from ONE slate grouped by term) — an agent never fills one in from ar.json, because ar.json is the artefact this glossary is checked AGAINST and cannot also be the source (DW-069). `status: proposed` with `ar: null` means not yet ruled. `aliases` are the other English labels the same concept appears under in en.json, so the slate and the check can find every surface. Regenerate the slate with `node scripts/gen-i18n-term-slate.mjs`.",
+  "version": 1,
+  "owner": "operator (Arabic reviewer, DEC-156 d3); lead-secretary per DOC-049",
+  "governs": ["locales/en.json", "locales/ar.json"],
+  "terms": [
+    { "en": "Architecture", "ar": "الهيكلة", "status": "canonical", "source": "DEC-032 — whole term family; a noun in an إضافة drops its ال; definiteness preserved (definite الهيكلة, indefinite هيكلة)" },
+    { "en": "Secretary of the Committee", "ar": "أمين سر اللجنة", "status": "canonical", "source": "design-handoff/claude-design-input-package.md line 20 — the one authored bilingual term the claimants held (DEC-156 rationale)" },
+    { "en": "Architecture Committee", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Backlog", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Topic", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Agenda", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Meeting", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Minutes", "aliases": ["Minutes of Meeting", "MoM"], "ar": null, "status": "proposed", "source": "DOC-049 (Minutes (MoM))" },
+    { "en": "Decision", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Vote", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Quorum", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Action", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Risk", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Dependency", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "ADR", "aliases": ["Architecture Decision Record"], "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Architecture Invariant", "aliases": ["Invariant"], "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Principle", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Standard", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Stream", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "System/Service", "aliases": ["System", "Service"], "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Research Mission", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Finding", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Recommendation", "ar": null, "status": "proposed", "source": "DOC-049" },
+    { "en": "Traceability", "ar": null, "status": "proposed", "source": "DOC-049" }
+  ],
+  "allowedVariants": []
+}
