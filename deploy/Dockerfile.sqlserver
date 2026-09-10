@@ -40,13 +40,33 @@ USER root
 # ever installed. The two halves are ONE change; reverting either alone breaks the build.
 #
 # --no-install-recommends keeps the layer minimal (C-CON-002 / DS-0029) — no suggested extras.
+#
+# ⚠ DEF-157 (DEC-165 n3): THE APT LAYER IS RETRIED, AND THE RETRY IS FAIL-CLOSED. On 2026-09-10
+# packages.microsoft.com served a corrupt InRelease ONCE ("Splitting up ... InRelease into data and signature
+# failed" → "The repository ... is not signed"), and with no retry that single response killed the e2e job at
+# 1m21s while the backend job built this same file green minutes earlier (run 34441522959). Three attempts,
+# 20 s apart, with /var/lib/apt/lists wiped between them — a corrupt InRelease sits under lists/partial and
+# would otherwise be re-read. Acquire::Retries and curl --retry cover the plain transport failures those tools
+# retry themselves; the loop covers the VERIFICATION failure they do not.
+# ⛔ A `for` loop that never `break`s still exits 0, so the `dpkg -s` line after it is the part that turns
+# exhaustion into a red: without it an image WITHOUT full-text search builds, boots, passes its healthcheck,
+# and fails the FREETEXT tests three layers later (trap 31: a gate with no subject must fail, not pass).
+# ⚠ This reduces a probability rather than removing a condition (LL-035): it cannot be confirmed by absence,
+# and DEC-132 d3 declined this shape for DEF-137's Docker Hub leg. DEC-165 n3 ordered it here. The removal
+# route — build once, pull a pinned digest — is DEF-157's own upgrade path and is not taken in this change.
 RUN sed -i -E '/universe|multiverse|backports/d' /etc/apt/sources.list \
- && apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates \
- && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/trusted.gpg.d/microsoft.asc \
- && curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list -o /etc/apt/sources.list.d/mssql-server-2022.list \
- && apt-get update \
- && apt-get install -y --no-install-recommends mssql-server-fts \
+ && for attempt in 1 2 3; do \
+      rm -rf /var/lib/apt/lists/* \
+      && apt-get -o Acquire::Retries=3 update \
+      && apt-get install -y --no-install-recommends curl ca-certificates \
+      && curl -fsSL --retry 3 https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/trusted.gpg.d/microsoft.asc \
+      && curl -fsSL --retry 3 https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list -o /etc/apt/sources.list.d/mssql-server-2022.list \
+      && apt-get -o Acquire::Retries=3 update \
+      && apt-get install -y --no-install-recommends mssql-server-fts \
+      && break; \
+      echo "DEF-157: apt layer attempt $attempt failed; retrying in 20 s" >&2; sleep 20; \
+    done \
+ && dpkg -s mssql-server-fts >/dev/null \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 USER mssql
 # Docker-secrets shim (ADR-0032): if MSSQL_SA_PASSWORD_FILE is set, load the SA password from it; no-op otherwise
