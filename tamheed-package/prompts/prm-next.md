@@ -2739,7 +2739,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
+   under: `DEC-170`, `DEF-160`, `PE-1074`, `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
    `DEF-156`, `PE-1065`, `PE-1066`,
    `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
    `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,
