@@ -30,34 +30,34 @@ Ruling: canonical: أمين سر اللجنة
 Source: DOC-049
 - label `Architecture Committee`:
   - `لجنة الهيكلة` — app.committee, meetings.mom.committee
-Ruling: 
+Ruling: canonical: لجنة الهيكلة
 
 ### Backlog
 Source: DOC-049
 - label `Backlog`:
   - `قائمة المواضيع` — nav.backlog, topics.backlog
-Ruling: 
+Ruling: canonical: قائمة المواضيع
 
 ### Topic
 Source: DOC-049
 - label `Topic`:
   - `الموضوع` — topics.col.topic
   - `موضوع` — actions.source.Topic, audit.entity.Topic, notif.type.topicPrepared, templates.targetType.Topic, trace.type.Topic
-Ruling: 
+Ruling: allowed: الموضوع | موضوع — definite form in a column header, indefinite as an entity/type name (operator, DEC-169 round 1)
 
 ### Agenda
 Source: DOC-049
 - label `Agenda`:
   - `جدول أعمال` — trace.type.Agenda
   - `جدول الأعمال` — meetings.agendaSpine, meetings.agendaView, meetings.col.agenda, meetings.tab.agenda, notif.type.agendaPublished
-Ruling: 
+Ruling: allowed: جدول أعمال | جدول الأعمال — indefinite as an entity type name, definite on the meeting surfaces (operator, DEC-169 round 2)
 
 ### Meeting
 Source: DOC-049
 - label `Meeting`:
   - `اجتماع` — actions.source.Meeting, audit.entity.Meeting, notif.type.meetingScheduled, trace.type.Meeting
   - `الاجتماع` — meetings.col.title, meetings.meeting
-Ruling: 
+Ruling: allowed: اجتماع | الاجتماع — indefinite as an entity/type name, definite as a title/column (operator, DEC-169 round 2)
 
 ### Minutes
 Source: DOC-049 (Minutes (MoM))
@@ -68,47 +68,47 @@ Source: DOC-049 (Minutes (MoM))
 - label `Minutes of meeting`:
   - `محضر اجتماع` — templates.targetType.MinutesOfMeeting
   - `محضر الاجتماع` — meetings.mom.title
-Ruling: 
+Ruling: allowed: المحاضر | المحضر | محضر | محضر اجتماع | محضر الاجتماع — plural group heading, definite/indefinite singular, and the two-word 'minutes of (the) meeting' forms are each correct where used (operator, DEC-169 rounds 2-3)
 
 ### Decision
 Source: DOC-049
 - label `Decision`:
   - `القرار` — adrs.create.decision
   - `قرار` — actions.source.Decision, audit.entity.Decision, notif.type.decisionApproved, trace.type.Decision
-Ruling: 
+Ruling: allowed: القرار | قرار — definite in the ADR create dialog, indefinite as an entity/type name (operator, DEC-169 round 3)
 
 ### Vote
 Source: DOC-049
 - label `Vote`:
   - `التصويت` — voting.voteTitle
   - `تصويت` — audit.entity.Vote, trace.type.Vote
-Ruling: 
+Ruling: allowed: التصويت | تصويت — definite as the voting panel title, indefinite as an entity/type name (operator, DEC-169 round 3)
 
 ### Quorum
 Source: DOC-049
 - label `Quorum`:
   - `النصاب` — voting.quorum
-Ruling: 
+Ruling: canonical: النصاب
 
 ### Action
 Source: DOC-049
 - label `Action`:
   - `إجراء` — audit.entity.ActionItem, notif.type.actionAssigned, trace.type.Action
   - `الإجراء` — actions.col.action, audit.col.action, audit.filter.action, kanban.return.mode
-Ruling: 
+Ruling: allowed: إجراء | الإجراء — indefinite as an entity/type name, definite as a column/filter label (operator, DEC-169 round 3)
 
 ### Risk
 Source: DOC-049
 - label `Risk`:
   - `المخاطرة` — risks.col.risk
   - `مخاطرة` — audit.entity.Risk, trace.type.Risk
-Ruling: 
+Ruling: allowed: المخاطرة | مخاطرة — definite as a column label, indefinite as an entity/type name (operator, DEC-169 round 4)
 
 ### Dependency
 Source: DOC-049
 - label `Dependency`:
   - `اعتمادية` — audit.entity.Dependency, trace.type.Dependency
-Ruling: 
+Ruling: canonical: اعتمادية
 
 ### ADR
 Source: DOC-049
@@ -118,7 +118,7 @@ Source: DOC-049
   - `قرار هيكلة` — trace.type.Adr
 - label `Architecture Decision Record`:
   - `سجل قرار هيكلة` — adrs.recordLabel
-Ruling: 
+Ruling: allowed: سجل قرار | سجل قرار هيكلة | قرار هيكلة — all three forms correct where used - the template target, the record label on audit/ADR surfaces (also under the alias Architecture Decision Record), and the trace type (operator, DEC-169 round 4)
 
 ### Architecture Invariant
 Source: DOC-049
@@ -126,56 +126,56 @@ Source: DOC-049
   - `ثابت هيكلة` — invariants.recordLabel
 - label `Invariant`:
   - `ثابت` — audit.entity.Invariant, trace.type.Invariant
-Ruling: 
+Ruling: allowed: ثابت هيكلة | ثابت — full form on the invariants record label, short form as entity/trace type under the alias Invariant (operator, DEC-169 round 4)
 
 ### Principle
 Source: DOC-049
 - (no surface carries this label or an alias as a whole label)
-Ruling: 
+Ruling: canonical: مبدأ (operator, DEC-169 round 2; no surface yet)
 
 ### Standard
 Source: DOC-049
 - (no surface carries this label or an alias as a whole label)
-Ruling: 
+Ruling: canonical: معيار (operator, DEC-169 round 1; no surface yet)
 
 ### Stream
 Source: DOC-049
 - label `Stream`:
   - `المسار` — admin.streams.col.stream, reports.filter.stream, topics.filter.stream, trace.graph.stream
   - `المسارات` — reports.view.stream
-Ruling: 
+Ruling: allowed: المسار | المسارات — singular on filters/columns, plural on the reports view (operator, DEC-169 round 4)
 
 ### System/Service
 Source: DOC-049
 - label `System`:
   - `النظام` — audit.system, navGroup.system
   - `نظام` — trace.type.System
-Ruling: 
+Ruling: allowed: النظام | نظام — definite as a nav group / audit actor, indefinite as a trace type (operator, DEC-169 round 5)
 
 ### Research Mission
 Source: DOC-049
 - label `Research mission`:
   - `مهمة بحث` — trace.type.ResearchMission
   - `مهمة بحثية` — research.missionTag, templates.targetType.ResearchMission
-Ruling: 
+Ruling: allowed: مهمة بحث | مهمة بحثية — genitive and adjectival forms both correct where used (operator, DEC-169 round 5)
 
 ### Finding
 Source: DOC-049
 - label `Finding`:
   - `نتيجة` — trace.type.Finding
-Ruling: 
+Ruling: canonical: نتيجة
 
 ### Recommendation
 Source: DOC-049
 - label `Recommendation`:
   - `توصية` — trace.type.Recommendation
-Ruling: 
+Ruling: canonical: توصية
 
 ### Traceability
 Source: DOC-049
 - label `Traceability`:
   - `التتبّع` — trace.graph.crumb, trace.panel.title
-Ruling: 
+Ruling: canonical: التتبّع
 
 ## B. Every other short label with more than one Arabic rendering (64 of the 77)
 
@@ -184,329 +184,329 @@ Grouped by English label, alphabetical. Labels already ruled in section A are no
 ### `{{count}} blocked`
 - `{{count}} محجوب` — deps.blockedCount
 - `{{count}} محجوبة` — reports.blockedCount
-Ruling: 
+Ruling: allowed: {{count}} محجوب | {{count}} محجوبة — gender agreement with the counted noun on each surface (operator, DEC-169 round 5)
 
 ### `{{count}} items`
 - `{{count}} بنود` — dashboard.itemsCount
 - `{{count}} عنصر` — meetings.itemCount
-Ruling: 
+Ruling: allowed: {{count}} بنود | {{count}} عنصر — different counted nouns on the dashboard and the meeting surface (operator, DEC-169 round 5)
 
 ### `Accepted`
 - `مقبول` — dashboard.bucket.accepted, kanban.bucket.accepted, reports.status.accepted, risks.status.Accepted, topics.status.Accepted
 - `مقبولة` — research.recStatus.Accepted
-Ruling: 
+Ruling: allowed: مقبول | مقبولة — gender agreement - masculine for topics/risks, feminine for a recommendation (operator, DEC-169 round 6)
 
 ### `Actions`
 - `إجراءات` — admin.streams.col.actions
 - `الإجراءات` — actions.title, nav.actions
-Ruling: 
+Ruling: allowed: إجراءات | الإجراءات — indefinite as a column header, definite as a page title / nav label (operator, DEC-169 round 6)
 
 ### `Active`
 - `نشط` — admin.notif.channel.active, admin.status.active, deps.status.Open, invariants.status.Active, templates.status.Active
 - `نشطة` — reports.supersede.active
-Ruling: 
+Ruling: allowed: نشط | نشطة — gender agreement with the noun on each surface (operator, DEC-169 round 6)
 
 ### `Add stream`
 - `إضافة المسار` — admin.streams.form.addConfirm
 - `إضافة مسار` — admin.streams.add
-Ruling: 
+Ruling: allowed: إضافة المسار | إضافة مسار — definite on the confirm button, indefinite on the primary action (operator, DEC-169 round 6)
 
 ### `Agenda published`
 - `تم نشر جدول الأعمال` — meetings.overview.agendaPublished
 - `نشر الأجندة` — admin.notif.event.agendaPublished
-Ruling: 
+Ruling: allowed: تم نشر جدول الأعمال — status line, correct as is (operator, DEC-169 round 7); defect: نشر الأجندة — replace with نشر جدول الأعمال - the operator's text, DEC-169 round 7; الأجندة is not the glossary term for Agenda
 
 ### `Approved`
 - `معتمد` — adrs.status.Approved, meetings.mom.status.Approved
 - `موافق عليه` — reports.outcome.approved
 - `موافقة` — decisions.outcome.Approved
-Ruling: 
+Ruling: allowed: معتمد | موافق عليه | موافقة — different surfaces - a record status, a report outcome, a decision outcome - each correct where used (operator, DEC-169 round 7)
 
 ### `Blocked`
 - `محجوب` — actions.status.Blocked, dashboard.action.Blocked, deps.blocked, deps.col.blocked, deps.fact.blocked, reports.action.Blocked, trace.graph.blocked
 - `محجوبة` — reports.dep.blocked
-Ruling: 
+Ruling: allowed: محجوب | محجوبة — gender agreement with the noun on each surface (operator, DEC-169 round 7)
 
 ### `Blocked work`
 - `الأعمال المحجوبة` — deps.filter.blockedWork
 - `عمل محجوب` — trace.graph.blockedWork
-Ruling: 
+Ruling: allowed: الأعمال المحجوبة | عمل محجوب — definite plural as a filter label, indefinite singular as a graph legend (operator, DEC-169 round 7)
 
 ### `Cancelled`
 - `ملغاة` — research.status.Cancelled
 - `ملغى` — meetings.status.Cancelled
 - `مُلغى` — actions.status.Cancelled
-Ruling: 
+Ruling: allowed: ملغاة | ملغى | مُلغى — gender agreement with the noun on each surface; the damma on the actions form is accepted (operator, DEC-169 round 8)
 
 ### `Chair`
 - `الرئيس` — meetings.col.chair
 - `رئيس` — meetings.attendanceRole.Chair
 - `رئيس الجلسة` — meetings.schedule.chairLabel
-Ruling: 
+Ruling: allowed: الرئيس | رئيس | رئيس الجلسة — definite column header, indefinite attendance role, and the session-chair form label are each correct where used (operator, DEC-169 round 8)
 
 ### `Clear filters`
 - `مسح المرشّحات` — actions.clearFilters, adrs.clearFilters, deps.clearFilters, invariants.clearFilters, risks.clearFilters, templates.clearFilters, topics.clearFilters
 - `مسح عوامل التصفية` — research.clearFilters
-Ruling: 
+Ruling: allowed: مسح المرشّحات | مسح عوامل التصفية — both phrasings accepted where used (operator, DEC-169 round 8)
 
 ### `Closed`
 - `مغلق` — meetings.agendaStatus.Closed, meetings.status.Closed, risks.status.Closed, topics.status.Closed
 - `مُغلقة` — reports.verify.closed
-Ruling: 
+Ruling: allowed: مغلق | مُغلقة — gender agreement with the noun on each surface (operator, DEC-169 round 8)
 
 ### `committee-wide snapshot`
 - `لمحة عامة` — reports.card.riskStat.sub
 - `لمحة عامة عن اللجنة` — reports.sub.openItems
-Ruling: 
+Ruling: allowed: لمحة عامة | لمحة عامة عن اللجنة — short and full forms both accepted where used (operator, DEC-169 round 9)
 
 ### `Converted`
 - `محوّل` — decisions.outcome.Converted, topics.status.Converted
 - `محوَّلة` — research.recStatus.Converted
-Ruling: 
+Ruling: allowed: محوّل | محوَّلة — gender agreement with the noun on each surface (operator, DEC-169 round 9)
 
 ### `Create action`
 - `إنشاء إجراء` — meetings.createAction
 - `إنشاء الإجراء` — actions.create.confirm
-Ruling: 
+Ruling: allowed: إنشاء إجراء | إنشاء الإجراء — indefinite on the meeting action button, definite on the confirm button (operator, DEC-169 round 9)
 
 ### `Created`
 - `أُنشئ` — actions.fact.created
 - `أُنشئت` — research.col.created
-Ruling: 
+Ruling: allowed: أُنشئ | أُنشئت — gender agreement with the noun on each surface (operator, DEC-169 round 9)
 
 ### `Critical`
 - `حرج` — risks.exposure.Critical, topics.urgency.Critical
 - `حرِج` — dashboard.exposure.Critical
 - `حرجة` — reports.risk.critical
-Ruling: 
+Ruling: allowed: حرج | حرِج | حرجة — the kasra variant and the feminine agreement are both accepted where used (operator, DEC-169 round 10)
 
 ### `Decided`
 - `تم البتّ` — topics.status.Decided
 - `مُقرّر` — dashboard.bucket.done, reports.status.done
-Ruling: 
+Ruling: allowed: تم البتّ | مُقرّر — a topic status phrase and a bucket/report status word, both accepted where used (operator, DEC-169 round 10)
 
 ### `Decisions`
 - `القرارات` — nav.decisions, search.groups.Decisions
 - `قرارات` — reports.audit.decisions
-Ruling: 
+Ruling: allowed: القرارات | قرارات — definite as a nav/search group, indefinite in the audit report (operator, DEC-169 round 10)
 
 ### `Deprecated`
 - `مهجور` — adrs.status.Deprecated
 - `موقوف` — templates.status.Deprecated
-Ruling: 
+Ruling: allowed: مهجور | موقوف — an ADR is deprecated, a template is stopped - different words accepted for different records (operator, DEC-169 round 10)
 
 ### `Detail`
 - `التفاصيل` — audit.col.detail
 - `التفصيل` — research.findingDialog.detail
-Ruling: 
+Ruling: allowed: التفاصيل | التفصيل — plural column header, singular dialog field, both accepted where used (operator, DEC-169 round 11)
 
 ### `Done`
 - `تم` — meetings.guest.close
 - `منجز` — kanban.bucket.done
-Ruling: 
+Ruling: allowed: تم | منجز — a close button and a kanban column - different words accepted for different surfaces (operator, DEC-169 round 11)
 
 ### `Edit`
 - `تحرير` — wiki.edit
 - `تعديل` — detail.edit
-Ruling: 
+Ruling: allowed: تحرير | تعديل — wiki editing and record editing keep their different words (operator, DEC-169 round 11)
 
 ### `Email`
 - `البريد` — admin.notif.col.email
 - `البريد الإلكتروني` — admin.notif.channel.email.name, meetings.guest.email
-Ruling: 
+Ruling: allowed: البريد | البريد الإلكتروني — short form in a column header, full form as a channel/field name (operator, DEC-169 round 11)
 
 ### `Failed`
 - `فاشلة` — admin.jobs.stat.failed, admin.jobs.status.Failed
 - `فشل` — audit.outcome.Failure
-Ruling: 
+Ruling: allowed: فاشلة | فشل — a job status adjective and an audit outcome noun, both accepted where used (operator, DEC-169 round 12)
 
 ### `Formatting`
 - `التنسيق` — wiki.toolbarLabel
 - `تنسيق` — editor.toolbar
-Ruling: 
+Ruling: allowed: التنسيق | تنسيق — definite/indefinite on two toolbars, both accepted (operator, DEC-169 round 12)
 
 ### `Governance`
 - `الحوكمة` — navGroup.governance, wiki.category.Governance
 - `حوكمة` — topics.type.GovernanceStandardization
-Ruling: 
+Ruling: allowed: الحوكمة | حوكمة — definite as a nav group / category, indefinite inside a topic type name (operator, DEC-169 round 12)
 
 ### `High`
 - `عالٍ` — reports.impactLevel.High, risks.exposure.High, risks.level.High
 - `عالية` — actions.priority.High, reports.level.High
 - `مرتفع` — dashboard.exposure.High
-Ruling: 
+Ruling: allowed: عالٍ | عالية | مرتفع — gender agreement and the dashboard's synonym are all accepted where used (operator, DEC-169 round 12)
 
 ### `In progress`
 - `جارٍ` — meetings.status.InProgress
 - `قيد التنفيذ` — dashboard.action.InProgress, reports.action.InProgress
-Ruling: 
+Ruling: allowed: جارٍ | قيد التنفيذ — a meeting in session and an action under way keep different phrasings (operator, DEC-169 round 13)
 
 ### `Justification`
 - `المبرر` — research.convert.fJustification
 - `المبرّر` — detail.sec.justification, submit.sec.justification
-Ruling: 
+Ruling: allowed: المبرر | المبرّر — with and without the shadda both accepted (operator, DEC-169 round 13)
 
 ### `Key`
 - `المعرّف` — topics.col.key
 - `المفتاح` — admin.retention.col.key
-Ruling: 
+Ruling: allowed: المعرّف | المفتاح — a record identifier and a configuration key are different concepts sharing one English word (operator, DEC-169 round 13)
 
 ### `Low`
 - `منخفض` — dashboard.exposure.Low, reports.impactLevel.Low, risks.exposure.Low, risks.level.Low
 - `منخفضة` — actions.priority.Low, reports.level.Low
-Ruling: 
+Ruling: allowed: منخفض | منخفضة — gender agreement with the noun on each surface (operator, DEC-169 round 13)
 
 ### `Med`
 - `متوسط` — reports.impactLevel.Medium
 - `متوسطة` — reports.level.Medium
-Ruling: 
+Ruling: allowed: متوسط | متوسطة — gender agreement with the noun on each surface (operator, DEC-169 round 14)
 
 ### `Medium`
 - `متوسط` — dashboard.exposure.Medium, risks.exposure.Medium, risks.level.Medium
 - `متوسطة` — actions.priority.Normal
-Ruling: 
+Ruling: allowed: متوسط | متوسطة — gender agreement with the noun on each surface (operator, DEC-169 round 14)
 
 ### `No matches`
 - `لا تطابقات` — topics.noMatches
 - `لا توجد نتائج` — search.empty.title
-Ruling: 
+Ruling: allowed: لا تطابقات | لا توجد نتائج — both phrasings accepted where used (operator, DEC-169 round 14)
 
 ### `Notes`
 - `الملاحظات` — meetings.tab.notes
 - `ملاحظات` — deps.create.notes, deps.fact.notes, trace.create.notes
-Ruling: 
+Ruling: allowed: الملاحظات | ملاحظات — definite as a tab title, indefinite as a form field (operator, DEC-169 round 14)
 
 ### `Open`
 - `فتح` — session.open
 - `مفتوح` — actions.status.Open, dashboard.action.Open, decisions.conditionStatus.Open, reports.action.Open, risks.status.Open
 - `مفتوحة` — reports.dep.open, reports.risk.open
-Ruling: 
+Ruling: allowed: فتح | مفتوح | مفتوحة — the verb on the session button, and the masculine/feminine adjective by noun, all accepted where used (operator, DEC-169 round 15)
 
 ### `Overdue`
 - `المتأخرة` — actions.filter.overdue
 - `متأخر` — dashboard.action.overdue
 - `متأخّر` — actions.overdue
 - `متأخرة` — reports.verify.overdue
-Ruling: 
+Ruling: allowed: المتأخرة | متأخر | متأخّر | متأخرة — definite filter form, masculine with and without shadda, feminine - all accepted where used (operator, DEC-169 round 15)
 
 ### `Presenter`
 - `المُقدِّم` — meetings.presenter
 - `مُقدِّم` — meetings.attendanceRole.Presenter
-Ruling: 
+Ruling: allowed: المُقدِّم | مُقدِّم — definite label and indefinite role name both accepted (operator, DEC-169 round 15)
 
 ### `Probability`
 - `الاحتمال` — risks.fact.prob
 - `الاحتمالية` — reports.probability
-Ruling: 
+Ruling: allowed: الاحتمال | الاحتمالية — both nouns accepted where used (operator, DEC-169 round 15)
 
 ### `Proposed`
 - `مقترح` — adrs.status.Proposed, invariants.status.Proposed
 - `مقترحة` — research.recStatus.Proposed, research.status.Proposed
-Ruling: 
+Ruling: allowed: مقترح | مقترحة — gender agreement with the noun on each surface (operator, DEC-169 round 16)
 
 ### `Publish & notify`
 - `النشر والإشعار` — meetings.publish.confirm, meetings.publishNotify
 - `نشر وإشعار` — meetings.mom.publishNotify
-Ruling: 
+Ruling: allowed: النشر والإشعار | نشر وإشعار — definite and indefinite forms both accepted where used (operator, DEC-169 round 16)
 
 ### `Published`
 - `منشور` — meetings.agendaStatus.Published, meetings.mom.status.Published
 - `منشورة` — wiki.status.Published
-Ruling: 
+Ruling: allowed: منشور | منشورة — gender agreement with the noun on each surface (operator, DEC-169 round 16)
 
 ### `Rejected`
 - `مرفوض` — decisions.outcome.Rejected, reports.outcome.rejected, topics.status.Rejected
 - `مرفوضة` — research.recStatus.Rejected
-Ruling: 
+Ruling: allowed: مرفوض | مرفوضة — gender agreement with the noun on each surface (operator, DEC-169 round 16)
 
 ### `Related`
 - `ذات صلة` — risks.related
 - `مرتبط` — actions.related, trace.dir.related
-Ruling: 
+Ruling: allowed: ذات صلة | مرتبط — both phrasings accepted where used (operator, DEC-169 round 17)
 
 ### `Relationship`
 - `العلاقة` — deps.create.relationship, trace.create.relationship
 - `علاقة` — audit.entity.Relationship
-Ruling: 
+Ruling: allowed: العلاقة | علاقة — definite as a form field, indefinite as an entity name (operator, DEC-169 round 17)
 
 ### `Research`
 - `البحث` — nav.research
 - `بحث` — topics.type.ResearchDiscovery
-Ruling: 
+Ruling: allowed: البحث | بحث — definite as a nav label, indefinite inside a topic type name (operator, DEC-169 round 17)
 
 ### `Resolved`
 - `محلول` — deps.status.Resolved
 - `محلولة` — reports.dep.resolved
-Ruling: 
+Ruling: allowed: محلول | محلولة — gender agreement with the noun on each surface (operator, DEC-169 round 17)
 
 ### `Restricted`
 - `مقيّد` — topics.calendar.restrictedTopic
 - `مُقيَّد` — meetings.restrictedKey, topicEdit.restrictedOn, topics.restricted.badge
-Ruling: 
+Ruling: allowed: مقيّد | مُقيَّد — with and without full vowelling both accepted (operator, DEC-169 round 18)
 
 ### `Retry`
 - `إعادة` — admin.jobs.retry
 - `إعادة المحاولة` — common.retry
-Ruling: 
+Ruling: allowed: إعادة | إعادة المحاولة — short form on the job action, full form on the shared button (operator, DEC-169 round 18)
 
 ### `Reviewer`
 - `مُراجع` — meetings.attendanceRole.Reviewer
 - `مُراجِع` — role.reviewer
-Ruling: 
+Ruling: allowed: مُراجع | مُراجِع — both vowellings accepted (operator, DEC-169 round 18)
 
 ### `Scheduled`
 - `مجدول` — dashboard.bucket.scheduled, kanban.bucket.scheduled, meetings.status.Scheduled, reports.status.scheduled, topics.calendar.scheduled, topics.status.Scheduled
 - `مجدولة` — admin.jobs.stat.scheduled, admin.jobs.status.Scheduled
-Ruling: 
+Ruling: allowed: مجدول | مجدولة — gender agreement with the noun on each surface (operator, DEC-169 round 18)
 
 ### `Secretary`
 - `أمين السر` — meetings.attendanceRole.Secretary
 - `أمين سر اللجنة` — role.secretary
-Ruling: 
+Ruling: allowed: أمين السر | أمين سر اللجنة — short form as an attendance role, the full glossary term as the role name (operator, DEC-169 round 19)
 
 ### `Superseded`
 - `مُستبدل` — meetings.mom.status.Superseded
 - `مُستبدَل` — adrs.status.Superseded, decisions.supersededBadge, invariants.status.Superseded
 - `مُستبدَلة` — reports.audit.superseded, reports.supersede.superseded
-Ruling: 
+Ruling: allowed: مُستبدل | مُستبدَل | مُستبدَلة — vowelling variants and gender agreement all accepted where used (operator, DEC-169 round 19)
 
 ### `Supersedes`
 - `يحلّ محلّ` — adrs.supersedes, invariants.supersedes
 - `يَحلّ محلّ` — trace.rel.Supersedes
-Ruling: 
+Ruling: allowed: يحلّ محلّ | يَحلّ محلّ — with and without the fatha both accepted (operator, DEC-169 round 19)
 
 ### `Traceability — both directions`
 - `إمكانية التتبّع — بالاتجاهين` — detail.rel.sub
 - `إمكانية التتبّع — كلا الاتجاهين` — risks.relatedSub
-Ruling: 
+Ruling: allowed: إمكانية التتبّع — بالاتجاهين | إمكانية التتبّع — كلا الاتجاهين — both phrasings of 'both directions' accepted (operator, DEC-169 round 19)
 
 ### `Updated`
 - `آخر تحديث` — research.col.updated
 - `التحديث` — templates.col.updated
 - `حُدّثت` — wiki.updated
-Ruling: 
+Ruling: allowed: آخر تحديث | التحديث | حُدّثت — 'last updated' column, 'the update' column and the past-tense wiki note are each accepted where used (operator, DEC-169 round 20)
 
 ### `Urgency`
 - `الإلحاح` — research.convert.fUrgency
 - `الأهمية` — submit.sec.urgency, topics.col.urgency, topics.filter.urgency
-Ruling: 
+Ruling: canonical: الأهمية; defect: الإلحاح — the research convert form must use the canonical term; the operator kept الأهمية over DW-069's suspicion that it means importance (operator, DEC-169 round 20)
 
 ### `Verified`
 - `مُتحقَّق` — actions.status.Verified, reports.action.Verified, reports.verify.rate
 - `مُثبَتة` — research.finding.verified
-Ruling: 
+Ruling: allowed: مُتحقَّق | مُثبَتة — a verified action and a verified finding keep different words (operator, DEC-169 round 20)
 
 ### `Verify`
 - `التحقّق` — actions.op.verify
 - `تحقّق` — research.verify
-Ruling: 
+Ruling: allowed: التحقّق | تحقّق — definite as an operation label, indefinite as a button (operator, DEC-169 round 20)
 
 ### `Version history`
 - `سجل الإصدارات` — wiki.versions.title
 - `سجل النسخ` — meetings.mom.versionHistory
-Ruling: 
+Ruling: allowed: سجل الإصدارات | سجل النسخ — wiki versions and minutes copies keep their different nouns (operator, DEC-169 round 21)
 
 ### `When`
 - `الموعد` — meetings.col.when
 - `الوقت` — admin.jobs.col.when
-Ruling: 
+Ruling: allowed: الموعد | الوقت — a meeting's date and a job's time are different concepts sharing one English word (operator, DEC-169 round 21)
