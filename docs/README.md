@@ -50,7 +50,7 @@ The pre-migration `docs/README.md` carried the single-source-of-truth canon in l
 - **§D — Canonical topic taxonomy** → [domain/topic-taxonomy.md](domain/topic-taxonomy.md).
 - **§E — Canonical status models** (entity lifecycles + the 11-outcome decision vocabulary) → [domain/entity-lifecycles.md](domain/entity-lifecycles.md) and [architecture/architecture.md](architecture/architecture.md).
 - **§F — Identifier scheme** → [governance/naming-conventions.md](governance/naming-conventions.md) (§Runtime entity keys).
-- **§G — Glossary** (EN ↔ AR) → [governance/glossary.md](governance/glossary.md).
+- **§G — Glossary** (EN ↔ AR) → the canonical bilingual terms live in [`src/Acmp.Web/src/i18n/glossary.json`](../src/Acmp.Web/src/i18n/glossary.json) (`WBS-40.1`, `DEC-167`); the EN definitions stay in [governance/glossary.md](governance/glossary.md).
 
 ## The non-negotiables (read these first)
 
