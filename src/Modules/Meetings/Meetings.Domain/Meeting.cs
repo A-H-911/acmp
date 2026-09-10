@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
@@ -71,9 +72,9 @@ public sealed class Meeting : AuditableEntity
         MeetingType type, MeetingMode mode,
         string? location, string? joinUrl, DateTimeOffset now)
     {
-        if (string.IsNullOrWhiteSpace(title)) throw new InvalidOperationException("A meeting title is required.");
-        if (scheduledEnd <= scheduledStart) throw new InvalidOperationException("Meeting end must be after its start.");
-        if (chairUserId == Guid.Empty) throw new InvalidOperationException("A chair must be assigned to the meeting.");
+        if (string.IsNullOrWhiteSpace(title)) throw new DomainRuleException("A meeting title is required.");
+        if (scheduledEnd <= scheduledStart) throw new DomainRuleException("Meeting end must be after its start.");
+        if (chairUserId == Guid.Empty) throw new DomainRuleException("A chair must be assigned to the meeting.");
 
         var meeting = new Meeting
         {
@@ -116,7 +117,7 @@ public sealed class Meeting : AuditableEntity
     public void Cancel(string reason, DateTimeOffset now)
     {
         RequireStatus(MeetingStatus.Scheduled);
-        if (string.IsNullOrWhiteSpace(reason)) throw new InvalidOperationException("A cancellation reason is required.");
+        if (string.IsNullOrWhiteSpace(reason)) throw new DomainRuleException("A cancellation reason is required.");
         Status = MeetingStatus.Cancelled;
         CancelledAt = now;
         CancellationReason = reason.Trim();
@@ -140,7 +141,7 @@ public sealed class Meeting : AuditableEntity
     {
         RequireStatus(MeetingStatus.Scheduled, MeetingStatus.InProgress);
         var attendee = _attendees.FirstOrDefault(a => a.UserId == userId)
-            ?? throw new InvalidOperationException("This participant is not on the attendance roster.");
+            ?? throw new DomainRuleException("This participant is not on the attendance roster.");
         attendee.Mark(status, now);
     }
 
@@ -168,7 +169,7 @@ public sealed class Meeting : AuditableEntity
     public void SetWebexMeeting(string webexMeetingId, string? joinUrl)
     {
         if (string.IsNullOrWhiteSpace(webexMeetingId))
-            throw new InvalidOperationException("A Webex meeting id is required.");
+            throw new DomainRuleException("A Webex meeting id is required.");
         WebexMeetingId = webexMeetingId.Trim();
         if (!string.IsNullOrWhiteSpace(joinUrl)) JoinUrl = joinUrl.Trim();
     }
@@ -187,7 +188,7 @@ public sealed class Meeting : AuditableEntity
     public void AttachUploadedRecording(string objectKey, string fileName, string contentType, long sizeBytes)
     {
         if (string.IsNullOrWhiteSpace(objectKey))
-            throw new InvalidOperationException("A stored recording object key is required.");
+            throw new DomainRuleException("A stored recording object key is required.");
         RecordingObjectKey = objectKey.Trim();
         RecordingFileName = Clean(fileName);
         RecordingContentType = Clean(contentType);
@@ -211,7 +212,7 @@ public sealed class Meeting : AuditableEntity
     private void RequireStatus(params MeetingStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the meeting is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the meeting is {Status}.");
     }
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

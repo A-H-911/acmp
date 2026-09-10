@@ -1,4 +1,5 @@
 ﻿using Acmp.Shared.Application.Exceptions;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             // Optimistic-concurrency stale write (RowVersion mismatch) → 409 (docs/domain/data-architecture.md §1.5, docs/domain/architecture-detail.md §7.4, ADR-0018).
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The record was modified by another user; reload and try again."),
-            InvalidOperationException => (StatusCodes.Status409Conflict, "Conflict"),
+            // A deliberate rule refusal — illegal transition, duplicate, frozen vote/decision → 409
+            // (docs/domain/architecture-detail.md §7.4, NFR-041 / ADR-0009). DEF-156: ONLY the domain-rule type
+            // maps here. A bare InvalidOperationException (.Single() on empty, an EF tracking conflict, a
+            // framework fault) deliberately has NO arm: it falls through to 500, where a 5xx alert can see it
+            // and the client is not told to resolve a conflict that is not theirs.
+            DomainRuleException => (StatusCodes.Status409Conflict, "Conflict"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 

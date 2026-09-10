@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
@@ -29,7 +30,7 @@ public sealed class Agenda : AuditableEntity
 
     public static Agenda Draft(string key, Guid meetingId)
     {
-        if (meetingId == Guid.Empty) throw new InvalidOperationException("An agenda must belong to a meeting.");
+        if (meetingId == Guid.Empty) throw new DomainRuleException("An agenda must belong to a meeting.");
         return new Agenda { Key = key.Trim(), MeetingId = meetingId, Status = AgendaStatus.Draft, Version = 0 };
     }
 
@@ -39,7 +40,7 @@ public sealed class Agenda : AuditableEntity
     {
         RequireEditable();
         if (_items.Any(i => i.TopicId == topicId))
-            throw new InvalidOperationException("This topic is already on the agenda.");
+            throw new DomainRuleException("This topic is already on the agenda.");
         var order = _items.Count == 0 ? 1 : _items.Max(i => i.Order) + 1;
         var item = new AgendaItem(topicId, topicKey, topicTitle, urgent, order, timeboxMinutes, presenterUserId, presenterName);
         _items.Add(item);
@@ -59,7 +60,7 @@ public sealed class Agenda : AuditableEntity
         RequireEditable();
         var ordered = _items.OrderBy(i => i.Order).ToList();
         var index = ordered.FindIndex(i => i.TopicId == topicId);
-        if (index < 0) throw new InvalidOperationException("Agenda item not found.");
+        if (index < 0) throw new DomainRuleException("Agenda item not found.");
         var target = index + delta;
         if (target < 0 || target >= ordered.Count) return;
         (ordered[index], ordered[target]) = (ordered[target], ordered[index]);
@@ -83,11 +84,11 @@ public sealed class Agenda : AuditableEntity
     public void Publish(DateTimeOffset now)
     {
         if (Status is not (AgendaStatus.Draft or AgendaStatus.Published))
-            throw new InvalidOperationException($"An agenda cannot be published while {Status}.");
+            throw new DomainRuleException($"An agenda cannot be published while {Status}.");
         if (_items.Count == 0)
-            throw new InvalidOperationException("Add at least one item before publishing the agenda.");
+            throw new DomainRuleException("Add at least one item before publishing the agenda.");
         if (_items.Any(i => i.PresenterUserId is null))
-            throw new InvalidOperationException("Every agenda item needs a presenter before publishing.");
+            throw new DomainRuleException("Every agenda item needs a presenter before publishing.");
         Status = AgendaStatus.Published;
         Version += 1;
         PublishedAt = now;
@@ -122,7 +123,7 @@ public sealed class Agenda : AuditableEntity
 
     private AgendaItem Find(Guid topicId) =>
         _items.FirstOrDefault(i => i.TopicId == topicId)
-        ?? throw new InvalidOperationException("Agenda item not found.");
+        ?? throw new DomainRuleException("Agenda item not found.");
 
     private void Renumber()
     {
@@ -133,12 +134,12 @@ public sealed class Agenda : AuditableEntity
     private void RequireEditable()
     {
         if (Status is not (AgendaStatus.Draft or AgendaStatus.Published))
-            throw new InvalidOperationException($"An agenda cannot be edited while {Status}.");
+            throw new DomainRuleException($"An agenda cannot be edited while {Status}.");
     }
 
     private void RequireStatus(params AgendaStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the agenda is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the agenda is {Status}.");
     }
 }

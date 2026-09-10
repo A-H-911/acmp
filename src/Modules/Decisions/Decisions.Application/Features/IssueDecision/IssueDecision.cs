@@ -10,6 +10,7 @@ using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Contracts.Topics;
 using Acmp.Shared.Contracts.Traceability;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -108,7 +109,7 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         if (DecisionOutcomeRules.RequiresDownstreamLink(decision.Outcome)
             && !await _links.DecisionHasLinkedActionAsync(decision.PublicId, ct)
             && !await _traceLinks.DecisionHasDownstreamEdgeAsync(decision.PublicId, ct))
-            throw new InvalidOperationException(
+            throw new DomainRuleException(
                 "At least one downstream link (Action, Risk, or other artifact) is required before a decision can be Issued.");
 
         var (sub, name) = CurrentActor.Of(_user);
@@ -120,11 +121,11 @@ public sealed class IssueDecisionHandler : IRequestHandler<IssueDecisionCommand>
         if (decision.VoteId is { } voteId)
         {
             vote = await _db.Votes.FirstOrDefaultAsync(v => v.PublicId == voteId, ct)
-                ?? throw new InvalidOperationException("The decision references a vote that does not exist.");
+                ?? throw new DomainRuleException("The decision references a vote that does not exist.");
             if (vote.TopicId != decision.TopicId)
-                throw new InvalidOperationException("The linked vote belongs to a different topic.");
+                throw new DomainRuleException("The linked vote belongs to a different topic.");
             if (vote.Status is not (VoteStatus.Closed or VoteStatus.Ratified))
-                throw new InvalidOperationException("The linked vote must be closed before the decision can be issued.");
+                throw new DomainRuleException("The linked vote must be closed before the decision can be issued.");
 
             // SoD-3: the issuing chair may not be the vote's counter of record (the actor who closed it).
             if (!SegregationOfDuties.HasIndependentCoAttestation(sub, vote.CounterUserId))

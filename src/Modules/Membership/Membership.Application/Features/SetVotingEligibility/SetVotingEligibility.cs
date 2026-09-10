@@ -2,6 +2,7 @@
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +59,7 @@ public sealed class SetVotingEligibilityHandler : IRequestHandler<SetVotingEligi
         // eligible to vote would put someone who cannot sign in into the quorum arithmetic, where
         // they would count toward a threshold nobody can meet.
         if (!member.IsActive)
-            throw new InvalidOperationException(
+            throw new DomainRuleException(
                 "Voting eligibility cannot be changed for a member who is not active; reactivate them first.");
 
         member.SetVotingEligibility(request.IsVotingEligible);

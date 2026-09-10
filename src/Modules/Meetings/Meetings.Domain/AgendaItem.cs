@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
@@ -29,7 +30,7 @@ public sealed class AgendaItem : BaseEntity
     internal AgendaItem(Guid topicId, string topicKey, string topicTitle, bool urgent, int order,
         int timeboxMinutes, Guid? presenterUserId, string? presenterName, Guid? carryOverFromAgendaId = null)
     {
-        if (topicId == Guid.Empty) throw new InvalidOperationException("An agenda item must reference a topic.");
+        if (topicId == Guid.Empty) throw new DomainRuleException("An agenda item must reference a topic.");
         TopicId = topicId;
         TopicKey = topicKey.Trim();
         TopicTitle = topicTitle.Trim();
@@ -51,7 +52,7 @@ public sealed class AgendaItem : BaseEntity
 
     internal void AssignPresenter(Guid presenterUserId, string presenterName)
     {
-        if (presenterUserId == Guid.Empty) throw new InvalidOperationException("A presenter must be a valid user.");
+        if (presenterUserId == Guid.Empty) throw new DomainRuleException("A presenter must be a valid user.");
         PresenterUserId = presenterUserId;
         PresenterName = presenterName.Trim();
     }

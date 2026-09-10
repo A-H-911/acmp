@@ -1,6 +1,7 @@
 ﻿using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Modules.Topics.Domain.Events;
 using Acmp.Shared.Authorization.Abac;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Topics.Domain;
@@ -111,9 +112,9 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public void Submit(DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Draft);
-        if (string.IsNullOrWhiteSpace(Title)) throw new InvalidOperationException("Title is required to submit.");
-        if (string.IsNullOrWhiteSpace(Description)) throw new InvalidOperationException("Description is required to submit.");
-        if (_streams.Count == 0) throw new InvalidOperationException("At least one affected stream is required to submit.");
+        if (string.IsNullOrWhiteSpace(Title)) throw new DomainRuleException("Title is required to submit.");
+        if (string.IsNullOrWhiteSpace(Description)) throw new DomainRuleException("Description is required to submit.");
+        if (_streams.Count == 0) throw new DomainRuleException("At least one affected stream is required to submit.");
         Scope = DeriveScope();
         Transition(TopicStatus.Submitted, null, SubmittedBySub, SubmittedByName, now);
         Raise(new TopicSubmittedEvent(PublicId, Key, now));
@@ -131,7 +132,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public void Accept(Guid ownerId, string ownerName, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Triage);
-        if (ownerId == Guid.Empty) throw new InvalidOperationException("An owner must be assigned on accept.");
+        if (ownerId == Guid.Empty) throw new DomainRuleException("An owner must be assigned on accept.");
         OwnerId = ownerId;
         OwnerName = ownerName.Trim();
         Transition(TopicStatus.Accepted, null, actorSub, actorName, now);
@@ -185,7 +186,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     public void Schedule(Guid meetingId, string actorSub, string actorName, DateTimeOffset now)
     {
         RequireStatus(TopicStatus.Prepared);
-        if (meetingId == Guid.Empty) throw new InvalidOperationException("A meeting is required to schedule.");
+        if (meetingId == Guid.Empty) throw new DomainRuleException("A meeting is required to schedule.");
         Transition(TopicStatus.Scheduled, null, actorSub, actorName, now);
         Raise(new TopicScheduledEvent(PublicId, Key, meetingId, now));
     }
@@ -261,7 +262,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
         var next = new List<string>();
         ReplaceStrings(next, streams);
         if (next.Count == 0 && Status != TopicStatus.Draft)
-            throw new InvalidOperationException("A submitted topic must affect at least one stream.");
+            throw new DomainRuleException("A submitted topic must affect at least one stream.");
         ReplaceStrings(_streams, next);
     }
 
@@ -303,7 +304,7 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
 
     public void AddComment(string body, string authorSub, string authorName, DateTimeOffset now)
     {
-        if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("A comment cannot be empty.");
+        if (string.IsNullOrWhiteSpace(body)) throw new DomainRuleException("A comment cannot be empty.");
         _comments.Add(new TopicComment(body, authorSub, authorName, now));
     }
 
@@ -332,19 +333,19 @@ public sealed class Topic : AuditableEntity, IStreamScopedResource, ITopicScoped
     private void RequireStatus(params TopicStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the topic is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the topic is {Status}.");
     }
 
     private static void RequireReason(string reason, string message)
     {
-        if (string.IsNullOrWhiteSpace(reason)) throw new InvalidOperationException(message);
+        if (string.IsNullOrWhiteSpace(reason)) throw new DomainRuleException(message);
     }
 
     // Field edits are blocked once Decided (docs/domain/entity-lifecycles.md §1): Decided/Closed/Converted are immutable.
     private void EnsureMutable()
     {
         if (Status is TopicStatus.Decided or TopicStatus.Closed or TopicStatus.Converted)
-            throw new InvalidOperationException($"A {Status} topic is immutable; supersede the linked decision instead.");
+            throw new DomainRuleException($"A {Status} topic is immutable; supersede the linked decision instead.");
     }
 
     private TopicScope DeriveScope() =>

@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Decisions.Domain.Enums;
 using Acmp.Modules.Decisions.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -61,14 +62,14 @@ public sealed class Vote : AuditableEntity
         bool allowAbstain, QuorumRule quorumRule, IEnumerable<VoteEligibleVoter> eligibleVoters,
         string actorSub, DateTimeOffset now)
     {
-        if (topicId == Guid.Empty) throw new InvalidOperationException("A vote must reference a topic.");
-        if (quorumRule is null) throw new InvalidOperationException("A quorum rule is required.");
+        if (topicId == Guid.Empty) throw new DomainRuleException("A vote must reference a topic.");
+        if (quorumRule is null) throw new DomainRuleException("A quorum rule is required.");
 
         var optionList = (options ?? Enumerable.Empty<string>())
             .Select(o => (o ?? string.Empty).Trim()).Where(o => o.Length > 0).Distinct(StringComparer.Ordinal).ToList();
-        if (optionList.Count < 2) throw new InvalidOperationException("A vote requires at least two options.");
-        if (quorumRule.MinCast < 1) throw new InvalidOperationException("The cast quorum (MinCast) must be at least 1.");
-        if (quorumRule.MinPresent < 0) throw new InvalidOperationException("The present quorum (MinPresent) cannot be negative.");
+        if (optionList.Count < 2) throw new DomainRuleException("A vote requires at least two options.");
+        if (quorumRule.MinCast < 1) throw new DomainRuleException("The cast quorum (MinCast) must be at least 1.");
+        if (quorumRule.MinPresent < 0) throw new DomainRuleException("The present quorum (MinPresent) cannot be negative.");
 
         var vote = new Vote
         {
@@ -83,7 +84,7 @@ public sealed class Vote : AuditableEntity
 
         foreach (var voter in eligibleVoters ?? Enumerable.Empty<VoteEligibleVoter>())
             vote.SeedVoter(voter.UserId, voter.Name);
-        if (vote._ballots.Count == 0) throw new InvalidOperationException("A vote requires at least one eligible voter.");
+        if (vote._ballots.Count == 0) throw new DomainRuleException("A vote requires at least one eligible voter.");
 
         vote.Raise(new VoteConfiguredEvent(vote.PublicId, vote.Key, topicId, now));
         return vote;
@@ -102,7 +103,7 @@ public sealed class Vote : AuditableEntity
     {
         RequireStatus(VoteStatus.Configured);
         if (presentEligibleCount < QuorumRule.MinPresent)
-            throw new InvalidOperationException(
+            throw new DomainRuleException(
                 $"Present quorum not met: {presentEligibleCount} of {QuorumRule.MinPresent} eligible voters present.");
 
         Status = VoteStatus.Open;
@@ -115,7 +116,7 @@ public sealed class Vote : AuditableEntity
     public void Cast(string voterSub, string choice, LocalizedString? comment, DateTimeOffset now)
     {
         var ballot = RequireEligibleBallot(voterSub);
-        if (ballot.HasCast) throw new InvalidOperationException("You have already voted.");
+        if (ballot.HasCast) throw new DomainRuleException("You have already voted.");
         ballot.Record(ValidateChoice(choice), comment, now);
         Raise(new BallotCastEvent(PublicId, Key, voterSub, now));
     }
@@ -144,7 +145,7 @@ public sealed class Vote : AuditableEntity
 
         var castCount = _ballots.Count(b => b.HasCast);
         if (castCount < QuorumRule.MinCast)
-            throw new InvalidOperationException(
+            throw new DomainRuleException(
                 $"Quorum not met: {castCount} of {QuorumRule.MinCast} required votes cast.");
 
         Tally = ComputeTally();
@@ -249,11 +250,11 @@ public sealed class Vote : AuditableEntity
         var value = (choice ?? string.Empty).Trim();
         if (string.Equals(value, AbstainChoice, StringComparison.Ordinal))
         {
-            if (!AllowAbstain) throw new InvalidOperationException("Abstention is not allowed on this vote.");
+            if (!AllowAbstain) throw new DomainRuleException("Abstention is not allowed on this vote.");
             return AbstainChoice;
         }
         if (!Options.Contains(value, StringComparer.Ordinal))
-            throw new InvalidOperationException($"'{value}' is not a valid option for this vote.");
+            throw new DomainRuleException($"'{value}' is not a valid option for this vote.");
         return value;
     }
 
@@ -261,15 +262,15 @@ public sealed class Vote : AuditableEntity
     {
         RequireStatus(VoteStatus.Open);
         var ballot = _ballots.FirstOrDefault(b => string.Equals(b.VoterUserId, voterSub, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException("This voter is not eligible for this vote.");
-        if (ballot.Recused) throw new InvalidOperationException("This voter has been recused from this vote.");
+            ?? throw new DomainRuleException("This voter is not eligible for this vote.");
+        if (ballot.Recused) throw new DomainRuleException("This voter has been recused from this vote.");
         return ballot;
     }
 
     private void RequireStatus(params VoteStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the vote is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the vote is {Status}.");
     }
 }
 

@@ -6,6 +6,7 @@ using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Decisions;
 using Acmp.Shared.Contracts.Traceability;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +59,7 @@ public sealed class PromoteDecisionToAdrHandler : IRequestHandler<PromoteDecisio
             ?? throw new KeyNotFoundException("Decision not found.");
 
         if (!string.Equals(decision.Status, IssuedStatus, StringComparison.Ordinal))
-            throw new InvalidOperationException("Only an issued decision can be promoted to an ADR.");
+            throw new DomainRuleException("Only an issued decision can be promoted to an ADR.");
 
         // One ADR per decision — a second promotion is blocked (409) and names the existing ADR. The retry also
         // HEALS a missing reverse edge: the ADR insert and the Decision→ADR edge commit in two transactions
@@ -73,7 +74,7 @@ public sealed class PromoteDecisionToAdrHandler : IRequestHandler<PromoteDecisio
                 "Decision", decision.Id, decision.Key, decision.Title.En,
                 "Adr", existing.PublicId, existing.Key, existing.Title.En,
                 relTypeName: "RecordedAs", ct);
-            throw new InvalidOperationException($"This decision has already been promoted to ADR {existing.Key}.");
+            throw new DomainRuleException($"This decision has already been promoted to ADR {existing.Key}.");
         }
 
         var now = _clock.UtcNow;

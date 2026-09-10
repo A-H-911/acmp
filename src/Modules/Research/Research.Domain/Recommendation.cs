@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Research.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -26,8 +27,8 @@ public sealed class Recommendation : AuditableEntity
     internal static Recommendation Create(string key, LocalizedString statement, LocalizedString? rationale,
         RecommendationPriority priority, Guid? linkedTopicId)
     {
-        if (statement is null) throw new InvalidOperationException("A recommendation statement is required.");
-        if (!Enum.IsDefined(priority)) throw new InvalidOperationException("A valid priority is required.");
+        if (statement is null) throw new DomainRuleException("A recommendation statement is required.");
+        if (!Enum.IsDefined(priority)) throw new DomainRuleException("A valid priority is required.");
         return new Recommendation
         {
             Key = key,
@@ -42,8 +43,8 @@ public sealed class Recommendation : AuditableEntity
     internal void Update(LocalizedString statement, LocalizedString? rationale, RecommendationPriority priority,
         Guid? linkedTopicId)
     {
-        Statement = statement ?? throw new InvalidOperationException("A recommendation statement is required.");
-        if (!Enum.IsDefined(priority)) throw new InvalidOperationException("A valid priority is required.");
+        Statement = statement ?? throw new DomainRuleException("A recommendation statement is required.");
+        if (!Enum.IsDefined(priority)) throw new DomainRuleException("A valid priority is required.");
         Rationale = rationale;
         Priority = priority;
         LinkedTopicId = linkedTopicId;
@@ -54,9 +55,9 @@ public sealed class Recommendation : AuditableEntity
     internal void SetStatus(RecommendationStatus status)
     {
         if (status is not (RecommendationStatus.Accepted or RecommendationStatus.Rejected))
-            throw new InvalidOperationException("A recommendation can only be Accepted or Rejected.");
+            throw new DomainRuleException("A recommendation can only be Accepted or Rejected.");
         if (Status != RecommendationStatus.Proposed)
-            throw new InvalidOperationException($"This recommendation is already {Status}.");
+            throw new DomainRuleException($"This recommendation is already {Status}.");
         Status = status;
     }
 
@@ -66,9 +67,9 @@ public sealed class Recommendation : AuditableEntity
     // successor for the mission detail's "Converted → TOP-" chip.
     internal void MarkConverted(Guid topicId)
     {
-        if (topicId == Guid.Empty) throw new InvalidOperationException("The successor topic id is required.");
+        if (topicId == Guid.Empty) throw new DomainRuleException("The successor topic id is required.");
         if (Status != RecommendationStatus.Accepted)
-            throw new InvalidOperationException("Only an accepted recommendation can be converted.");
+            throw new DomainRuleException("Only an accepted recommendation can be converted.");
         Status = RecommendationStatus.Converted;
         LinkedTopicId = topicId;
     }

@@ -8,6 +8,7 @@ using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Meetings;
 using Acmp.Shared.Contracts.Membership;
 using Acmp.Shared.Contracts.Topics;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -110,9 +111,9 @@ public sealed class RecordDecisionHandler : IRequestHandler<RecordDecisionComman
         if (request.VoteId is { } voteId)
         {
             var vote = await _db.Votes.AsNoTracking().FirstOrDefaultAsync(v => v.PublicId == voteId, ct)
-                ?? throw new InvalidOperationException("The referenced vote does not exist.");
+                ?? throw new DomainRuleException("The referenced vote does not exist.");
             if (vote.TopicId != request.TopicId)
-                throw new InvalidOperationException("The referenced vote belongs to a different topic.");
+                throw new DomainRuleException("The referenced vote belongs to a different topic.");
         }
 
         var key = await _keys.NextDecisionKeyAsync(now.Year, ct);

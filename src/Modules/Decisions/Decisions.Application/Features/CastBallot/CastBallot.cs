@@ -3,6 +3,7 @@ using Acmp.Modules.Decisions.Application.Internal;
 using Acmp.Modules.Decisions.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -57,7 +58,7 @@ public sealed class CastBallotHandler : IRequestHandler<CastBallotCommand>
         if (existing is { HasCast: true })
         {
             await _audit.EmitEnrichedAsync("Decisions.BallotDenied", nameof(Vote), vote.PublicId.ToString(), AuditOutcome.Denied, ct);
-            throw new InvalidOperationException("You have already voted.");
+            throw new DomainRuleException("You have already voted.");
         }
 
         vote.Cast(sub, request.Choice, request.Comment, _clock.UtcNow);

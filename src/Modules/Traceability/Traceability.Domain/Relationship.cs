@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Traceability.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Traceability.Domain;
@@ -39,10 +40,10 @@ public sealed class Relationship : AuditableEntity
         RelationshipType relType, string? notes)
     {
         if (sourceId == Guid.Empty || targetId == Guid.Empty)
-            throw new InvalidOperationException("Both endpoints of a relationship are required.");
+            throw new DomainRuleException("Both endpoints of a relationship are required.");
         if (sourceType == targetType && sourceId == targetId)
-            throw new InvalidOperationException("A relationship cannot link an artifact to itself.");
-        if (!Enum.IsDefined(relType)) throw new InvalidOperationException("A valid relationship type is required.");
+            throw new DomainRuleException("A relationship cannot link an artifact to itself.");
+        if (!Enum.IsDefined(relType)) throw new DomainRuleException("A valid relationship type is required.");
 
         return new Relationship
         {

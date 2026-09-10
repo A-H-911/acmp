@@ -1,4 +1,5 @@
-﻿using Acmp.Shared.Domain.Entities;
+﻿using Acmp.Shared.Domain;
+using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
 namespace Acmp.Modules.Decisions.Domain;
@@ -26,7 +27,7 @@ public sealed class Ballot : BaseEntity
     // Seed an eligible-but-awaiting ballot (at Configure). Eligibility = "has a ballot row".
     internal Ballot(string voterUserId, string voterName)
     {
-        if (string.IsNullOrWhiteSpace(voterUserId)) throw new InvalidOperationException("A ballot requires a voter.");
+        if (string.IsNullOrWhiteSpace(voterUserId)) throw new DomainRuleException("A ballot requires a voter.");
         VoterUserId = voterUserId;
         VoterName = (voterName ?? string.Empty).Trim();
     }
