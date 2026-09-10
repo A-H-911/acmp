@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Research.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -27,8 +28,8 @@ public sealed class Finding : AuditableEntity
 
     internal static Finding Create(string key, LocalizedString summary, LocalizedString? detail, Confidence confidence)
     {
-        if (summary is null) throw new InvalidOperationException("A finding summary is required.");
-        if (!Enum.IsDefined(confidence)) throw new InvalidOperationException("A valid confidence is required.");
+        if (summary is null) throw new DomainRuleException("A finding summary is required.");
+        if (!Enum.IsDefined(confidence)) throw new DomainRuleException("A valid confidence is required.");
         return new Finding
         {
             Key = key,
@@ -40,8 +41,8 @@ public sealed class Finding : AuditableEntity
 
     internal void Update(LocalizedString summary, LocalizedString? detail, Confidence confidence)
     {
-        Summary = summary ?? throw new InvalidOperationException("A finding summary is required.");
-        if (!Enum.IsDefined(confidence)) throw new InvalidOperationException("A valid confidence is required.");
+        Summary = summary ?? throw new DomainRuleException("A finding summary is required.");
+        if (!Enum.IsDefined(confidence)) throw new DomainRuleException("A valid confidence is required.");
         Detail = detail;
         Confidence = confidence;
     }

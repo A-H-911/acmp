@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Risks.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -22,7 +23,7 @@ public sealed class Mitigation : BaseEntity
     internal static Mitigation Create(LocalizedString description, MitigationType type,
         string? ownerUserId, Guid? linkedActionId, DateTimeOffset? dueDate)
     {
-        if (description is null) throw new InvalidOperationException("A mitigation description is required.");
+        if (description is null) throw new DomainRuleException("A mitigation description is required.");
         return new Mitigation
         {
             Description = description,
@@ -38,7 +39,7 @@ public sealed class Mitigation : BaseEntity
     internal void SetStatus(MitigationStatus status)
     {
         if (status < Status)
-            throw new InvalidOperationException($"A mitigation cannot move back from {Status} to {status}.");
+            throw new DomainRuleException($"A mitigation cannot move back from {Status} to {status}.");
         Status = status;
     }
 

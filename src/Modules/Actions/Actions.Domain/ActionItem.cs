@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Actions.Domain.Enums;
 using Acmp.Modules.Actions.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -78,9 +79,9 @@ public sealed class ActionItem : AuditableEntity
         ActionPriority priority, string ownerUserId, string ownerName, DateTimeOffset? dueDate,
         ActionSourceType sourceType, Guid sourceId, string? sourceKey, string? meetingKey, DateTimeOffset now)
     {
-        if (title is null) throw new InvalidOperationException("An action title is required.");
-        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new InvalidOperationException("An action owner is required.");
-        if (sourceId == Guid.Empty) throw new InvalidOperationException("An action must reference a source artifact.");
+        if (title is null) throw new DomainRuleException("An action title is required.");
+        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new DomainRuleException("An action owner is required.");
+        if (sourceId == Guid.Empty) throw new DomainRuleException("An action must reference a source artifact.");
 
         var action = new ActionItem
         {
@@ -114,7 +115,7 @@ public sealed class ActionItem : AuditableEntity
     public void Block(LocalizedString reason, DateTimeOffset now)
     {
         RequireStatus(ActionStatus.InProgress);
-        BlockedReason = reason ?? throw new InvalidOperationException("A blocking reason is required.");
+        BlockedReason = reason ?? throw new DomainRuleException("A blocking reason is required.");
         Status = ActionStatus.Blocked;
         Raise(new ActionBlockedEvent(PublicId, Key, now));
     }
@@ -131,7 +132,7 @@ public sealed class ActionItem : AuditableEntity
     public void UpdateProgress(int pct)
     {
         RequireStatus(ActionStatus.Open, ActionStatus.InProgress, ActionStatus.Blocked);
-        if (pct is < 0 or > 100) throw new InvalidOperationException("Progress must be between 0 and 100.");
+        if (pct is < 0 or > 100) throw new DomainRuleException("Progress must be between 0 and 100.");
         ProgressPct = pct;
     }
 
@@ -139,7 +140,7 @@ public sealed class ActionItem : AuditableEntity
     public void Complete(LocalizedString? completionNote, string completedByUserId, DateTimeOffset now)
     {
         RequireStatus(ActionStatus.InProgress);
-        if (string.IsNullOrWhiteSpace(completedByUserId)) throw new InvalidOperationException("The completer is required.");
+        if (string.IsNullOrWhiteSpace(completedByUserId)) throw new DomainRuleException("The completer is required.");
         Status = ActionStatus.Completed;
         ProgressPct = 100;
         CompletionNote = completionNote;
@@ -154,7 +155,7 @@ public sealed class ActionItem : AuditableEntity
     public void Verify(string verifierUserId, string verifierName, DateTimeOffset now)
     {
         RequireStatus(ActionStatus.Completed);
-        if (string.IsNullOrWhiteSpace(verifierUserId)) throw new InvalidOperationException("A verifier is required.");
+        if (string.IsNullOrWhiteSpace(verifierUserId)) throw new DomainRuleException("A verifier is required.");
         Status = ActionStatus.Verified;
         VerifiedByUserId = verifierUserId;
         VerifiedByName = (verifierName ?? string.Empty).Trim();
@@ -166,7 +167,7 @@ public sealed class ActionItem : AuditableEntity
     public void Cancel(LocalizedString reason, DateTimeOffset now)
     {
         RequireStatus(ActionStatus.Open, ActionStatus.InProgress, ActionStatus.Blocked, ActionStatus.Completed);
-        CancelReason = reason ?? throw new InvalidOperationException("A cancellation reason is required.");
+        CancelReason = reason ?? throw new DomainRuleException("A cancellation reason is required.");
         Status = ActionStatus.Cancelled;
         Raise(new ActionCancelledEvent(PublicId, Key, now));
     }
@@ -174,6 +175,6 @@ public sealed class ActionItem : AuditableEntity
     private void RequireStatus(params ActionStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the action is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the action is {Status}.");
     }
 }

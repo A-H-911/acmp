@@ -157,7 +157,7 @@ public class ResearchApiTests : IClassFixture<AcmpWebApplicationFactory>
         (await (await sec.GetAsync($"/api/research/{mission.Key}")).Content.ReadFromJsonAsync<MissionDetail>())!.Status.Should().Be("Cancelled");
     }
 
-    [Fact] // A terminal-state re-transition is a 409 Conflict (domain InvalidOperationException → 409)
+    [Fact] // A terminal-state re-transition is a 409 Conflict (domain DomainRuleException → 409, DEF-156)
     public async Task Re_completing_a_completed_mission_returns_409()
     {
         var factory = _factory;

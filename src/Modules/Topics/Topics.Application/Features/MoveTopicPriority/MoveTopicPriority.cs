@@ -4,6 +4,7 @@ using Acmp.Modules.Topics.Domain;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -85,7 +86,7 @@ public sealed class MoveTopicPriorityHandler : IRequestHandler<MoveTopicPriority
 
         // Decided/Closed/Converted topics have left the backlog and are immutable — not reorderable (AC-034).
         if (topic.Status is TopicStatus.Decided or TopicStatus.Closed or TopicStatus.Converted)
-            throw new InvalidOperationException("A decided topic cannot be reordered.");
+            throw new DomainRuleException("A decided topic cannot be reordered.");
 
         // C-AUTHZ-04 / FR-163: this full-table load is deliberately NOT visibility-filtered, and the
         // reason is the gate above it. Policies.BacklogPrioritize allows Chairman and Secretary ONLY,

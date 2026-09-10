@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Acmp.Modules.Membership.Application.Abstractions;
+using Acmp.Shared.Domain;
 using Microsoft.Extensions.Options;
 
 namespace Acmp.Modules.Membership.Infrastructure.Identity;
@@ -54,7 +55,7 @@ public sealed class KeycloakAdminClient : IIdentityProvider
         // 409 here means the account exists in Keycloak but not in ACMP's roster — a real state, and
         // one the caller must be able to tell apart from its own duplicate check.
         if (create.StatusCode == System.Net.HttpStatusCode.Conflict)
-            throw new InvalidOperationException($"An identity-provider account already exists for {email}.");
+            throw new DomainRuleException($"An identity-provider account already exists for {email}.");
         create.EnsureSuccessStatusCode();
 
         // Keycloak returns the new id in the Location header, not the body.

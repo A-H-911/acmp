@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Governance.Domain.Enums;
 using Acmp.Modules.Governance.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -61,10 +62,10 @@ public sealed class Adr : AuditableEntity
         LocalizedString? consequencesNegative, IEnumerable<AdrOptionInput> options,
         string authorUserId, string authorName, Guid? sourceDecisionId, DateTimeOffset now)
     {
-        if (title is null) throw new InvalidOperationException("An ADR title is required.");
-        if (context is null) throw new InvalidOperationException("An ADR context is required.");
-        if (decisionText is null) throw new InvalidOperationException("An ADR decision is required.");
-        if (string.IsNullOrWhiteSpace(authorUserId)) throw new InvalidOperationException("An ADR author is required.");
+        if (title is null) throw new DomainRuleException("An ADR title is required.");
+        if (context is null) throw new DomainRuleException("An ADR context is required.");
+        if (decisionText is null) throw new DomainRuleException("An ADR decision is required.");
+        if (string.IsNullOrWhiteSpace(authorUserId)) throw new DomainRuleException("An ADR author is required.");
 
         var adr = new Adr
         {
@@ -92,9 +93,9 @@ public sealed class Adr : AuditableEntity
         IEnumerable<AdrOptionInput> options)
     {
         RequireStatus(AdrStatus.Draft);
-        Title = title ?? throw new InvalidOperationException("An ADR title is required.");
-        Context = context ?? throw new InvalidOperationException("An ADR context is required.");
-        DecisionText = decisionText ?? throw new InvalidOperationException("An ADR decision is required.");
+        Title = title ?? throw new DomainRuleException("An ADR title is required.");
+        Context = context ?? throw new DomainRuleException("An ADR context is required.");
+        DecisionText = decisionText ?? throw new DomainRuleException("An ADR decision is required.");
         DecisionDrivers = decisionDrivers;
         ConsequencesPositive = consequencesPositive;
         ConsequencesNegative = consequencesNegative;
@@ -121,7 +122,7 @@ public sealed class Adr : AuditableEntity
     public void Approve(string approverUserId, string approverName, DateTimeOffset now)
     {
         RequireStatus(AdrStatus.Proposed);
-        if (string.IsNullOrWhiteSpace(approverUserId)) throw new InvalidOperationException("An approver is required.");
+        if (string.IsNullOrWhiteSpace(approverUserId)) throw new DomainRuleException("An approver is required.");
         Status = AdrStatus.Approved;
         ApprovedAt = now;
         ApprovedByUserId = approverUserId;
@@ -134,8 +135,8 @@ public sealed class Adr : AuditableEntity
     public void Supersede(Guid supersededByAdrId, LocalizedString reason, DateTimeOffset now)
     {
         RequireStatus(AdrStatus.Approved);
-        if (supersededByAdrId == Guid.Empty) throw new InvalidOperationException("A superseding ADR is required.");
-        if (reason is null) throw new InvalidOperationException("A supersession reason is required.");
+        if (supersededByAdrId == Guid.Empty) throw new DomainRuleException("A superseding ADR is required.");
+        if (reason is null) throw new DomainRuleException("A supersession reason is required.");
         Status = AdrStatus.Superseded;
         SupersededByAdrId = supersededByAdrId;
         SupersessionReason = reason;
@@ -145,7 +146,7 @@ public sealed class Adr : AuditableEntity
     // Record the forward link on the successor (it supersedes the prior ADR). Set once, at supersession time.
     public void MarkSupersedes(Guid priorAdrId)
     {
-        if (priorAdrId == Guid.Empty) throw new InvalidOperationException("A prior ADR is required.");
+        if (priorAdrId == Guid.Empty) throw new DomainRuleException("A prior ADR is required.");
         SupersedesAdrId = priorAdrId;
     }
 
@@ -153,7 +154,7 @@ public sealed class Adr : AuditableEntity
     public void Deprecate(LocalizedString reason, DateTimeOffset now)
     {
         RequireStatus(AdrStatus.Approved);
-        DeprecationReason = reason ?? throw new InvalidOperationException("A deprecation rationale is required.");
+        DeprecationReason = reason ?? throw new DomainRuleException("A deprecation rationale is required.");
         Status = AdrStatus.Deprecated;
         Raise(new AdrDeprecatedEvent(PublicId, Key, now));
     }
@@ -168,6 +169,6 @@ public sealed class Adr : AuditableEntity
     private void RequireStatus(params AdrStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the ADR is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the ADR is {Status}.");
     }
 }

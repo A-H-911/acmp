@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Research.Domain.Enums;
 using Acmp.Modules.Research.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -51,9 +52,9 @@ public sealed class ResearchMission : AuditableEntity
     public static ResearchMission Propose(string key, LocalizedString title, LocalizedString question,
         string ownerUserId, string ownerName, string? keystonePackageRef, Guid? sourceTopicId, DateTimeOffset now)
     {
-        if (title is null) throw new InvalidOperationException("A mission title is required.");
-        if (question is null) throw new InvalidOperationException("A research question is required.");
-        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new InvalidOperationException("A mission owner is required.");
+        if (title is null) throw new DomainRuleException("A mission title is required.");
+        if (question is null) throw new DomainRuleException("A research question is required.");
+        if (string.IsNullOrWhiteSpace(ownerUserId)) throw new DomainRuleException("A mission owner is required.");
 
         var mission = new ResearchMission
         {
@@ -75,8 +76,8 @@ public sealed class ResearchMission : AuditableEntity
     public void UpdateDraft(LocalizedString title, LocalizedString question, string? keystonePackageRef, Guid? sourceTopicId)
     {
         RequireStatus(ResearchMissionStatus.Proposed);
-        Title = title ?? throw new InvalidOperationException("A mission title is required.");
-        Question = question ?? throw new InvalidOperationException("A research question is required.");
+        Title = title ?? throw new DomainRuleException("A mission title is required.");
+        Question = question ?? throw new DomainRuleException("A research question is required.");
         KeystonePackageRef = string.IsNullOrWhiteSpace(keystonePackageRef) ? null : keystonePackageRef.Trim();
         SourceTopicId = sourceTopicId;
     }
@@ -103,7 +104,7 @@ public sealed class ResearchMission : AuditableEntity
     public void Cancel(LocalizedString reason, DateTimeOffset now)
     {
         RequireStatus(ResearchMissionStatus.Proposed, ResearchMissionStatus.Active);
-        CancellationReason = reason ?? throw new InvalidOperationException("A cancellation reason is required.");
+        CancellationReason = reason ?? throw new DomainRuleException("A cancellation reason is required.");
         Status = ResearchMissionStatus.Cancelled;
         Raise(new ResearchCancelledEvent(PublicId, Key, now));
     }
@@ -172,6 +173,6 @@ public sealed class ResearchMission : AuditableEntity
     private void RequireStatus(params ResearchMissionStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the mission is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the mission is {Status}.");
     }
 }
