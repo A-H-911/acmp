@@ -2618,7 +2618,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    ENTRIES, WITH `DEC-154` d4 SUPERSEDED FOR RESTING ON IT** — a requirement described as silent about a
    condition it had always stated, with two rounds of measurement and one operator ruling built on the
    error (`PE-1020`), and a second skill distilled in the same round (`SKL-002`) —
-   and **`DEC-156` through `DEC-164` (sixty-fifth to seventy-third, 2026-09-09/10) RECORD AN ARC THAT
+   and **`DEC-156` through `DEC-166` (sixty-fifth to seventy-fifth, 2026-09-09/10) RECORD AN ARC THAT
    BEGAN AS A MEASUREMENT ERRAND AND ENDED IN A PRODUCT FIX.** In order: a done-claim corrected because it
    asserted a check the row it derived from proves cannot exist; an agent's own closing advice caught by the
    mandated pre-interview sweep; a requirement measured for the first time with the control that made its
@@ -2628,7 +2628,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    harness's first run and reproduced six times; a second requirement found naming a DIFFERENT SCALE for the
    same query, with its own clause never run; the handler fixed; and the suite finally RECORDED — a `test`
    row wired to the requirements it measures, because a sweep found five of them verified in CI and held in
-   the register as prose alone. ⛔ **Read the rulings for what was decided and the registers for where each
+   the register as prose alone; the work MERGED; and a register tidy-up ORDERED TWICE AND THEN REVERSED BY ITS
+   OWN EXECUTION, when reading the rows showed the value it would have written did not exist. ⛔ **Read the rulings for what was decided and the registers for where each
    row stands — this line names no status deliberately, and THREE of these rounds exist ONLY because a
    sentence like it was wrong.**
    ⭐ **THE LAST ROUND'S SWEEP IS THE ONE TO COPY: IT NEARLY GOT THE RIGHT ANSWER FOR THE WRONG REASON.**
@@ -2655,7 +2656,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    list-role-policies` and `aws ec2 describe-instances` are the answers.**
    ▶ **THE NEXT UNIT OF WORK IS NAMED BY THE LATEST RULING IN THE DECISION REGISTER AND BY NOTHING HERE**
    — `DEC-148` d6's round HAS SINCE BEEN RUN and `DEC-150`/`DEC-151` record it, so do not read that d6 as
-   pending; read from `DEC-164` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
+   pending; read from `DEC-166` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
    what was left unmeasured HAS SINCE MOVED IN BOTH DIRECTIONS AND ITS COUNT IS STALE** — `DEC-152` d6,
    `DEC-153` d9 and `DEC-155` d3/d5 each changed which requirements are blocked and on what, including one
    whose recorded verdict was withdrawn rather than improved. **Read those clauses and the
@@ -2672,7 +2673,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-164` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
+   `DEC-166` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
    of work and `DEC-150` records it RUN; the SECOND was taken on 2026-09-09 and `PE-1033` records it, which
    moved the note-budget number WITHOUT clearing the advisory —
    `readiness_check("package")` is where it stands); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
@@ -2725,7 +2726,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,
+   under: `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
+   `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,
    `DEC-163`, `DEC-162`, `DEC-161`, `DEC-160`, `DEC-159`, `DEC-158`, `DEC-157`,
    `DEF-156`, `DEF-155`, `SC-061`, `SC-060`, `LL-079`, `LL-078`, `LL-077`,
    `NFR-002`, `NFR-009`, `DW-044`, `DW-048`, `DW-050`, `DW-103`,
