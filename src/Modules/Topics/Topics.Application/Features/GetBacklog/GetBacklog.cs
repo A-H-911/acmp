@@ -10,9 +10,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Topics.Application.Features.GetBacklog;
 
-// The Backlog as a filtered/sorted/paged view over Topics (W3). Readable by any authenticated user
-// (committee-wide read, README §C). Stream/text filters and sort run in memory after the DB-translatable
-// predicates — right-sized for a single low-traffic committee (≤ a few hundred topics).
+/*
+ * The Backlog as a filtered/sorted/paged view over Topics (W3). Readable by any authenticated user
+ * (committee-wide read, README §C).
+ *
+ * ⚠⚠ THIS COMMENT USED TO SAY "Stream/text filters and sort run in memory after the DB-translatable
+ * predicates — right-sized for a single low-traffic committee (≤ a few hundred topics)". THAT
+ * RIGHT-SIZING WAS DELIBERATE AND ITS STATED BOUND WAS EXCEEDED BY THE REQUIREMENTS THEMSELVES:
+ * NFR-009 specifies 2 500 topics over a five-year life and NFR-002 bounds this endpoint at 10 000 —
+ * eight to forty times "a few hundred". Measured at 10 000 the endpoint returned P95 1 362.7 ms
+ * against a 1 000 ms budget (DEF-155), because it built 10 000 entity graphs to return 25 of them.
+ *
+ * ⭐ NOW: the search, the sort, the count and the page all run in SQL, and History is Included only
+ * for the rows actually returned. P95 57.4 ms at 10 000. ONLY the stream filter still runs in
+ * memory — AffectedStreams is projected from a JSON column and matched OrdinalIgnoreCase, so no
+ * provider can push it down, and that path deliberately keeps the original shape.
+ *
+ * ⚠ The right-sizing was not wrong to make; it was wrong to leave unrevisited once the requirements
+ * named a scale an order of magnitude past its stated bound. The bound was written down, which is
+ * why this was findable at all.
+ */
 public sealed record GetBacklogQuery(
     IReadOnlyList<TopicStatus>? Statuses = null,
     TopicType? Type = null,
