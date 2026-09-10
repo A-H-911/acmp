@@ -1128,6 +1128,11 @@
 {"from_id":"TEST-053","to_id":"FR-164","relation":"tests"}
 {"from_id":"TEST-054","to_id":"NFR-065","relation":"tests"}
 {"from_id":"TEST-055","to_id":"FR-052","relation":"tests"}
+{"from_id":"TEST-056","to_id":"NFR-002","relation":"tests"}
+{"from_id":"TEST-056","to_id":"NFR-003","relation":"tests"}
+{"from_id":"TEST-056","to_id":"NFR-004","relation":"tests"}
+{"from_id":"TEST-056","to_id":"NFR-006","relation":"tests"}
+{"from_id":"TEST-056","to_id":"NFR-009","relation":"tests"}
 {"from_id":"WBS-1","to_id":"FR-001","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-003","relation":"implements"}
 {"from_id":"WBS-1","to_id":"FR-004","relation":"implements"}
