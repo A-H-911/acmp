@@ -3043,7 +3043,11 @@ stays *undecidable* until the artifact exists. ⭐ **THE REVIEWER HALF OF THAT I
 `DEC-156` d3 — IT IS THE OPERATOR** (`NFR-039`'s Verification clause had marked availability
 *[unverified]*), so this sentence's *cannot be closed by a reader of code* survives only in the sense
 that the ADJUDICATION is not the agent's. ⛔ **The dependency order is untouched** (`LL-010`): the
-artefact first, then the reviewed variant allowlist, then the check. `DW-071`'s new-route clause was discharged by `SL-033`;
+artefact first, then the reviewed variant allowlist, then the check. ✅ **THE ARTEFACT EXISTS AS OF
+2026-09-10 (`DOC-071`, `DEC-167`, PR `#392`) with only the two already-authorised Arabic values filled**, so
+*"until the artifact exists"* above is history and the clause is now decidable ONCE THE RULINGS LAND — where
+they stand is `entity_query("narrative-document", id="DOC-071")` and the `Ruling:` lines in
+`tamheed-package/docs/i18n-term-slate.md`, never this sentence. `DW-071`'s new-route clause was discharged by `SL-033`;
 its SECOND clause is release sign-off, parked by `DEC-071` d4.
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
