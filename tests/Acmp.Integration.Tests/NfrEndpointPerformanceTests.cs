@@ -1,0 +1,484 @@
+﻿using System.Diagnostics;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Acmp.Modules.Meetings.Domain;
+using Acmp.Modules.Meetings.Domain.Enums;
+using Acmp.Modules.Meetings.Infrastructure.Persistence;
+using Acmp.Shared.Application.Abstractions;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Acmp.Integration.Tests;
+
+/*
+ * DEC-160 g1 — NFR-002, NFR-003, NFR-004 and NFR-006 measured the way their own Verification clauses
+ * specify: an integration test, over endpoints, at 10 000 records, reading OTel spans.
+ *
+ * ⚠⚠ THE VARIABILITY LIMITATION, STATED BEFORE ANY NUMBER EXISTS (the DEC-157 d4 discipline).
+ * These assert on a SHARED GitHub runner, so a red here can arrive with no code change at all. That
+ * is a real cost and it is accepted deliberately, because the operator chose a route that runs in CI
+ * and every clause says "assert". It is also unlikely to bite: DW-103 measured the database layer at
+ * 8-13 ms against budgets of 500-1000 ms, and adding the HTTP hop costs tens of milliseconds, so a
+ * runner would have to be roughly fifty times slower than the reference box to manufacture a red.
+ * If one does arrive, read it as an environment signal and confirm against a second run BEFORE
+ * treating it as a regression — LL-035: a remedy that moves a probability cannot be falsified by a
+ * single recurrence.
+ *
+ * ⭐ WHAT THIS SUITE DOES NOT COVER, SEQUENCED RATHER THAN QUIETLY DROPPED. NFR-001's clause names a
+ * LOAD TEST — "Locust or k6, 15 concurrent users, typical navigation paths" — which is a different
+ * instrument from an integration test, so DW-043 stays Open and is the next unit of work.
+ */
+[Collection(NfrPerfCollection.Name)]
+public sealed class NfrEndpointPerformanceTests : IAsyncLifetime
+{
+    // NFR-002 and NFR-001 both name 15 concurrent users; NFR-003 says "light concurrent load".
+    private const int Concurrency = 15;
+    private const int Rounds = 20;   // 15 x 20 = 300 samples, enough for a P95 that means something
+
+    private const string SecretaryRoles = "Secretary";
+
+    private readonly NfrPerfFixture _fixture;
+    private readonly List<Activity> _sqlSpans = [];
+    private readonly ActivityListener _listener;
+
+    private NfrPerfWebFactory _factory = null!;
+    private HttpClient _client = null!;
+
+    public NfrEndpointPerformanceTests(NfrPerfFixture fixture)
+    {
+        _fixture = fixture;
+
+        /*
+         * ⭐ NFR-004 SAYS "measure via OTel trace span for the SQL query step", SO THE SQL SPAN IS READ
+         * DIRECTLY RATHER THAN INFERRED FROM THE REQUEST. Filtering by source is what keeps the two
+         * apart: without ShouldListenTo, an AspNetCore server span and a SqlClient span both land in
+         * the same list and the "SQL step" figure silently becomes whole-request latency.
+         */
+        _listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name.Contains("SqlClient", StringComparison.OrdinalIgnoreCase),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity =>
+            {
+                lock (_sqlSpans) _sqlSpans.Add(activity);
+            },
+        };
+        ActivitySource.AddActivityListener(_listener);
+    }
+
+    public Task InitializeAsync()
+    {
+        _factory = new NfrPerfWebFactory(_fixture.ConnectionString);
+        _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.RolesHeader, SecretaryRoles);
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.SubHeader, "perf-secretary");
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        _listener.Dispose();
+        _client.Dispose();
+        await _factory.DisposeAsync();
+    }
+
+    /*
+     * ⛔⛔ THE CONTROL, AND IT RUNS BEFORE ANY TIMING IS TRUSTED. DW-103's own text warns that SL-030's
+     * per-request visibility resolution is the thing most likely to have moved, and every seeded row
+     * carries SubmittedBySub='perf-seed-sub'. If visibility filtered them out, every endpoint below
+     * would return an EMPTY page — fast, clean, and completely meaningless. That is LL-074's
+     * empty-subject failure, and an assertion is the only thing that separates it from a pass.
+     */
+    [Fact]
+    public async Task Seed_is_visible_through_the_api_before_any_latency_is_measured()
+    {
+        var response = await _client.GetAsync("/api/topics/?page=1&pageSize=1");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var total = payload.GetProperty("total").GetInt32();
+
+        total.Should().BeGreaterThanOrEqualTo(NfrPerfFixture.SeededTopics,
+            "every later measurement is meaningless if the seeded rows are not reachable through the API — " +
+            $"seeded {NfrPerfFixture.SeededTopics} in {_fixture.SeedSeconds:F1}s but the backlog reports {total}");
+    }
+
+    /*
+     * ⛔⛔ THE SERIAL PASS IS NOT EXTRA CREDIT — WITHOUT IT THE CONCURRENT NUMBER IS UNATTRIBUTABLE,
+     * AND THIS PROJECT HAS ALREADY PAID FOR THAT MISTAKE ONCE THIS WEEK. DEF-155's first version
+     * compared THIS endpoint's 15-concurrent P95 against DW-044's SERIAL database figure and charged
+     * the whole ~230x gap to the endpoint. PE-1040 records the same error with the polarity reversed:
+     * the committed NFR-008 probe reported a 20-way concurrency figure it could not attribute, because
+     * it ran no concurrent baseline. A concurrent number compared to a serial one explains nothing.
+     *
+     * ⭐ THE DETAIL TEST IS ALREADY A CONTROL FOR ONE HALF: it runs at the SAME concurrency and returns
+     * single-digit milliseconds, which excludes generic framework, JWT and machine contention. What it
+     * cannot say is whether THIS endpoint's cost is intrinsic to one request or created by load. The
+     * serial pass below settles exactly that, and both numbers are carried into the failure message so
+     * whoever reads a red has the attribution in front of them rather than having to re-derive it.
+     *
+     * ⚠ THE ASSERTION REMAINS ON THE CONCURRENT FIGURE, because NFR-002's Verification clause names
+     * "15 concurrent list requests". The serial pass is a diagnostic, not a second verdict — asserting
+     * on it would invent a bound the requirement never states.
+     */
+    [Fact]
+    public async Task NFR_002_backlog_list_p95_is_within_1000ms_at_15_concurrent_users()
+    {
+        const string route = "/api/topics/?page=1&pageSize=25";
+
+        var serial = await MeasureSerialAsync(() => _client.GetAsync(route), samples: 40);
+        Report("NFR-002 list (SERIAL diagnostic)", serial);
+
+        var concurrent = await MeasureAsync(() => _client.GetAsync(route));
+        Report("NFR-002 list", concurrent);
+
+        var serialP95 = Percentile(serial, 95);
+        var concurrentP95 = Percentile(concurrent, 95);
+
+        concurrentP95.Should().BeLessThan(1000,
+            "NFR-002 bounds list/query endpoints at P95 <= 1000 ms with 15 concurrent requests over 10 000 " +
+            $"topics. Serial P95 was {serialP95:F1} ms over {serial.Count} samples and concurrent P95 was " +
+            $"{concurrentP95:F1} ms over {concurrent.Count} at {Concurrency}-way on {Environment.ProcessorCount} " +
+            "cores. READ THE TWO TOGETHER: a serial figure already near the budget means the cost is intrinsic " +
+            "to one request (query plan, materialisation, serialization); a small serial figure with a large " +
+            "concurrent one means the cost is created by load (connection pool, locking, CPU saturation). " +
+            "Those need different fixes, which is why both are measured (DEF-155, DEC-161 i1)");
+    }
+
+    [Fact]
+    public async Task NFR_003_topic_detail_p95_is_within_500ms()
+    {
+        // A key from the middle of the seeded range, so it is neither the first nor the last row.
+        const string key = NfrPerfFixture.SeedKeyPrefix + "0005000";
+
+        var probe = await _client.GetAsync($"/api/topics/{key}");
+        probe.StatusCode.Should().Be(HttpStatusCode.OK, "the detail measurement must resolve a real seeded topic");
+
+        var samples = await MeasureAsync(() => _client.GetAsync($"/api/topics/{key}"));
+
+        Report("NFR-003 detail", samples);
+        Percentile(samples, 95).Should().BeLessThan(500);
+    }
+
+    [Fact]
+    public async Task NFR_004_full_text_search_sql_span_p95_is_within_800ms()
+    {
+        lock (_sqlSpans) _sqlSpans.Clear();
+
+        var probe = await _client.GetAsync("/api/search?q=observability");
+        probe.StatusCode.Should().Be(HttpStatusCode.OK);
+        var groups = await probe.Content.ReadFromJsonAsync<JsonElement>();
+        groups.GetArrayLength().Should().BeGreaterThan(0,
+            "FTS returning nothing would make every duration below a measurement of an empty index");
+
+        /*
+         * ⛔ THE SAMPLE COUNT HERE IS SET BY A SECURITY CONTROL, NOT BY STATISTICS, AND THE FIRST RUN
+         * PROVED IT. /api/search carries a PER-USER FIXED WINDOW of SearchPermitPerMinute = 60
+         * (HardeningExtensions), so the standard 15 x 20 = 300 burst returned HTTP 429 partway through.
+         * That is the product behaving correctly, not a fault. 15 x 3 = 45, plus the probe above, stays
+         * inside the window — and the status assertion inside MeasureAsync is what caught it, because a
+         * 429 is FAST and would otherwise have been timed as a very healthy P95 over rejections.
+         */
+        var samples = await MeasureAsync(() => _client.GetAsync("/api/search?q=observability"), rounds: 3);
+        Report("NFR-004 search (whole request)", samples);
+
+        // The clause names the SQL query STEP, so the verdict is taken on the SqlClient spans.
+        double[] sqlDurations;
+        lock (_sqlSpans)
+            sqlDurations = _sqlSpans.Select(a => a.Duration.TotalMilliseconds).ToArray();
+
+        sqlDurations.Should().NotBeEmpty("NFR-004 is verified 'via OTel trace span for the SQL query step', " +
+            "so an empty span list means the instrument, not the system, is what was measured");
+
+        Report("NFR-004 search (SQL span)", sqlDurations);
+        Percentile(sqlDurations, 95).Should().BeLessThan(800);
+    }
+
+    /*
+     * ⚠ NFR-006's VERIFICATION CLAUSE SAYS "measure HTTP round-trip for the PATCH request", AND THERE
+     * IS NO PATCH. The autosave note is captured by POST /api/meetings/{id}/discussion — the only
+     * write path for a discussion note in the API. The substance of the clause (the autosave round
+     * trip) is unambiguous, so the POST is what is measured; the verb mismatch is recorded here rather
+     * than silently mapped, because under DEC-159 f2 the clause is part of the requirement and
+     * correcting it is the operator's call, not this test's.
+     */
+    [Fact]
+    public async Task NFR_006_discussion_note_round_trip_is_within_2000ms()
+    {
+        var meetingId = await SeedMeetingAsync();
+        var body = new { topicId = Guid.NewGuid(), body = "Synthetic autosave payload for the NFR-006 round trip." };
+
+        var probe = await _client.PostAsJsonAsync($"/api/meetings/{meetingId}/discussion", body);
+        probe.StatusCode.Should().Be(HttpStatusCode.NoContent, "the round trip must actually persist to be worth timing");
+
+        // Serial, not concurrent: the clause bounds ONE round trip from a typing pause, not throughput.
+        var samples = new List<double>();
+        for (var i = 0; i < 30; i++)
+        {
+            var started = Stopwatch.GetTimestamp();
+            var response = await _client.PostAsJsonAsync($"/api/meetings/{meetingId}/discussion", body);
+            samples.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        Report("NFR-006 discussion round trip", samples);
+        Percentile(samples, 95).Should().BeLessThan(2000);
+    }
+
+    /*
+     * ⚠ THE READ-BACK IS NOT DEFENSIVE PADDING — THE FIRST RUN 404'd HERE AND THE CAUSE WAS AMBIGUOUS.
+     * A 404 from the endpoint has two completely different explanations: the seed never committed, or
+     * it committed and the request scope cannot see it. Those need opposite fixes, and the endpoint's
+     * status code cannot tell them apart. Reading the row back through a SEPARATE scope splits them:
+     * if this assertion fails the write is at fault; if it passes and the POST still 404s, the fault is
+     * in how the request scope resolves the context (ADR-0026 shares one connection per scope), which
+     * would itself be a finding worth recording.
+     */
+    private async Task<Guid> SeedMeetingAsync()
+    {
+        Guid publicId;
+
+        // NOT the host's scope — see NfrPerfFixture.NewMeetingsContext. A write there joins an ambient
+        // transaction only TransactionBehavior commits, so it rolls back while reporting success.
+        await using (var db = _fixture.NewMeetingsContext())
+        {
+            var now = DateTimeOffset.UtcNow;
+            var meeting = Meeting.Schedule(
+                key: "MTG-PERF-0001",
+                title: "NFR-006 autosave measurement",
+                // The product anchors every meeting to this well-known id (CON-001, one committee).
+                // A random guid would have been a variable the product never has.
+                committeeId: Meeting.SingleCommitteeId,
+                chairUserId: Guid.NewGuid(),
+                chairName: "Perf Chair",
+                scheduledStart: now.AddHours(1),
+                scheduledEnd: now.AddHours(2),
+                type: MeetingType.Regular,
+                mode: MeetingMode.Remote,
+                location: null,
+                joinUrl: null,
+                now: now);
+
+            /*
+             * ⛔⛔ THE MEETING MUST BE STARTED, AND OMITTING THIS COST TWO ROUNDS OF MISDIAGNOSIS.
+             * Meeting.SetDiscussionNote calls RequireStatus(MeetingStatus.InProgress); Meeting.Schedule
+             * produces a Scheduled meeting, so the capture threw "This operation is not allowed while
+             * the meeting is Scheduled" — which GlobalExceptionHandler maps to 409 Conflict along with
+             * every other InvalidOperationException (DEF-156). The only DOCUMENTED cause of a 409 here
+             * is a stale write, so the failure was read as DbUpdateConcurrencyException for two rounds.
+             * The server log held the real answer throughout.
+             *
+             * ⭐ AND THE CORRECT SETUP IS ALSO THE FAITHFUL ONE: NFR-006 bounds autosave DURING A LIVE
+             * MEETING. A Scheduled meeting cannot take notes by design, so the earlier test was not
+             * merely broken — it was measuring a state the requirement does not describe.
+             */
+            meeting.Start(now);
+
+            db.Meetings.Add(meeting);
+            await db.SaveChangesAsync();
+            publicId = meeting.PublicId;
+        }
+
+        using (var verify = _factory.Services.CreateScope())
+        {
+            var db = verify.ServiceProvider.GetRequiredService<MeetingsDbContext>();
+            var found = await db.Meetings.AsNoTracking().FirstOrDefaultAsync(m => m.PublicId == publicId);
+            found.Should().NotBeNull(
+                "the seeded meeting must be readable from a fresh scope before the round trip is timed — " +
+                "if this fails the seed never committed, which is a different fault from the endpoint not finding it");
+        }
+
+        return publicId;
+    }
+
+    /// <summary>Drives <see cref="Concurrency"/> requests at a time for <see cref="Rounds"/> rounds.</summary>
+    private static async Task<IReadOnlyList<double>> MeasureAsync(Func<Task<HttpResponseMessage>> request, int? rounds = null)
+    {
+        var roundCount = rounds ?? Rounds;
+        var samples = new List<double>(Concurrency * roundCount);
+
+        for (var round = 0; round < roundCount; round++)
+        {
+            var inFlight = Enumerable.Range(0, Concurrency).Select(async _ =>
+            {
+                var started = Stopwatch.GetTimestamp();
+                using var response = await request();
+                var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                response.StatusCode.Should().Be(HttpStatusCode.OK,
+                    "a non-200 short-circuits the handler and would be timed as if it were a success");
+                return elapsed;
+            });
+
+            samples.AddRange(await Task.WhenAll(inFlight));
+        }
+
+        return samples;
+    }
+
+    /// <summary>One request at a time — the diagnostic half, with no concurrency in the path at all.</summary>
+    private static async Task<IReadOnlyList<double>> MeasureSerialAsync(Func<Task<HttpResponseMessage>> request, int samples)
+    {
+        var timings = new List<double>(samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            var started = Stopwatch.GetTimestamp();
+            using var response = await request();
+            timings.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            response.StatusCode.Should().Be(HttpStatusCode.OK,
+                "a non-200 short-circuits the handler and would be timed as if it were a success");
+        }
+
+        return timings;
+    }
+
+    /// <summary>Nearest-rank percentile — no interpolation, so the value is always an observed sample.</summary>
+    private static double Percentile(IReadOnlyCollection<double> samples, int percentile)
+    {
+        var ordered = samples.OrderBy(x => x).ToArray();
+        var rank = (int)Math.Ceiling(percentile / 100.0 * ordered.Length);
+        return ordered[Math.Clamp(rank - 1, 0, ordered.Length - 1)];
+    }
+
+    // Printed so a green run still carries its numbers: a pass with no figure cannot be compared to
+    // the next one, and a regression that stays inside the budget would be invisible.
+    private static void Report(string label, IReadOnlyCollection<double> samples) =>
+        Console.WriteLine(
+            $"[perf] {label}: n={samples.Count} " +
+            $"P50={Percentile(samples, 50):F1}ms P95={Percentile(samples, 95):F1}ms " +
+            $"max={samples.Max():F1}ms cores={Environment.ProcessorCount}");
+}
+
+/*
+ * DEC-162 j1 — NFR-009's OWN VERIFICATION CLAUSE, RUN FOR THE FIRST TIME.
+ *
+ * ⭐⭐ TWO APPROVED `Must` REQUIREMENTS NAME DIFFERENT SCALES FOR THE SAME QUERY, AND ONLY ONE OF THEM
+ * HAD EVER BEEN MEASURED. NFR-002 says "up to 10 000 topic records". NFR-009 says 2 500 total over a
+ * five-year operational life, adds "list query P95 <= 1 s (see NFR-002)", and its Verification clause
+ * reads: "Load test with 2 500 seeded topic records; re-run NFR-002 target assertion." Under DEC-159
+ * f2 a Verification clause is part of its requirement, so this measurement is owed regardless of what
+ * it shows.
+ *
+ * ⚠⚠ THIS CLASS TAKES NO VERDICT ON WHICH SCALE GOVERNS. NFR-002 is not met at 10 000 (DEF-155,
+ * reproduced five times). If it is met at 2 500 then the shortfall sits at four times the operational
+ * ceiling the system is specified to reach — which is a materially different fact, and what to do
+ * about it is the operator's (DEC-079 d3).
+ *
+ * ⛔ SAME COLLECTION AS NfrEndpointPerformanceTests ON PURPOSE. xUnit runs separate collections in
+ * PARALLEL and this assembly sets no CollectionBehavior, so a second collection would boot a second
+ * SQL Server container concurrently — and two containers competing for CPU would corrupt both sets of
+ * latency numbers. Sharing the collection makes these run sequentially against one container.
+ */
+[Collection(NfrPerfCollection.Name)]
+public sealed class NfrOperationalCeilingPerformanceTests : IAsyncLifetime
+{
+    private const int Concurrency = 15;
+    private const int Rounds = 20;
+
+    private readonly NfrPerfFixture _fixture;
+    private NfrPerfWebFactory _factory = null!;
+    private HttpClient _client = null!;
+
+    public NfrOperationalCeilingPerformanceTests(NfrPerfFixture fixture) => _fixture = fixture;
+
+    public Task InitializeAsync()
+    {
+        _factory = new NfrPerfWebFactory(_fixture.ConnectionStringAtOperationalCeiling);
+        _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.RolesHeader, "Secretary");
+        _client.DefaultRequestHeaders.Add(PerfAuthHandler.SubHeader, "perf-secretary");
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        _client.Dispose();
+        await _factory.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task NFR_009_list_query_p95_is_within_1000ms_at_the_2500_record_operational_ceiling()
+    {
+        const string route = "/api/topics/?page=1&pageSize=25";
+
+        // ⛔ THE CONTROL FIRST. A measurement against the WRONG database would be the whole point lost:
+        // this factory must be pointed at the 2 500-row catalog, not the 10 000-row one, and the totals
+        // differ by exactly that. Without this assertion a mis-wired connection string would produce a
+        // fast, clean, entirely meaningless pass.
+        var probe = await _client.GetAsync("/api/topics/?page=1&pageSize=1");
+        probe.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await probe.Content.ReadFromJsonAsync<JsonElement>();
+        var total = payload.GetProperty("total").GetInt32();
+
+        total.Should().Be(NfrPerfFixture.SeededTopicsAtOperationalCeiling,
+            "this test measures NFR-009's stated scale and must be reading the 2 500-row catalog — " +
+            $"a total of {total} means it is pointed at the wrong database");
+
+        var serial = await MeasureSerialAsync(() => _client.GetAsync(route), samples: 40);
+        Report("NFR-009 list @2500 (SERIAL diagnostic)", serial);
+
+        var concurrent = await MeasureAsync(() => _client.GetAsync(route));
+        Report("NFR-009 list @2500", concurrent);
+
+        var serialP95 = Percentile(serial, 95);
+        var concurrentP95 = Percentile(concurrent, 95);
+
+        concurrentP95.Should().BeLessThan(1000,
+            "NFR-009 specifies 2 500 topic records and re-runs NFR-002's P95 <= 1000 ms assertion at " +
+            $"that scale. Serial P95 {serialP95:F1} ms, concurrent P95 {concurrentP95:F1} ms at " +
+            $"{Concurrency}-way over {concurrent.Count} samples on {Environment.ProcessorCount} cores. " +
+            "COMPARE AGAINST THE 10 000-ROW FIGURES in NfrEndpointPerformanceTests: if this passes while " +
+            "those fail, DEF-155's shortfall sits at four times the operational ceiling rather than at " +
+            "the scale the system is specified to reach (DEC-162 j1)");
+    }
+
+    // Deliberate duplicates of the helpers in NfrEndpointPerformanceTests rather than a shared base:
+    // an inherited fixture-bearing base class across two collections is exactly the ICollectionFixture
+    // sharing DEC-124 records as silently serialising a suite. Three short private statics are cheaper
+    // than that coupling.
+    private static async Task<IReadOnlyList<double>> MeasureSerialAsync(Func<Task<HttpResponseMessage>> request, int samples)
+    {
+        var timings = new List<double>(samples);
+        for (var i = 0; i < samples; i++)
+        {
+            var started = Stopwatch.GetTimestamp();
+            using var response = await request();
+            timings.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        return timings;
+    }
+
+    private static async Task<IReadOnlyList<double>> MeasureAsync(Func<Task<HttpResponseMessage>> request)
+    {
+        var samples = new List<double>(Concurrency * Rounds);
+        for (var round = 0; round < Rounds; round++)
+        {
+            var inFlight = Enumerable.Range(0, Concurrency).Select(async _ =>
+            {
+                var started = Stopwatch.GetTimestamp();
+                using var response = await request();
+                var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                return elapsed;
+            });
+            samples.AddRange(await Task.WhenAll(inFlight));
+        }
+        return samples;
+    }
+
+    private static double Percentile(IReadOnlyCollection<double> samples, int percentile)
+    {
+        var ordered = samples.OrderBy(x => x).ToArray();
+        var rank = (int)Math.Ceiling(percentile / 100.0 * ordered.Length);
+        return ordered[Math.Clamp(rank - 1, 0, ordered.Length - 1)];
+    }
+
+    private static void Report(string label, IReadOnlyCollection<double> samples) =>
+        Console.WriteLine(
+            $"[perf] {label}: n={samples.Count} " +
+            $"P50={Percentile(samples, 50):F1}ms P95={Percentile(samples, 95):F1}ms " +
+            $"max={samples.Max():F1}ms cores={Environment.ProcessorCount}");
+}
