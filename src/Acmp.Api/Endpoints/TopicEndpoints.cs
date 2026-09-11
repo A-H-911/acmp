@@ -37,10 +37,10 @@ public static class TopicEndpoints
             TopicStatus[]? status = null, TopicType? type = null, string? stream = null,
             TopicUrgency? urgency = null, Guid? ownerId = null, string? search = null,
             bool includeClosed = false, string sortBy = "age", string sortDir = "desc",
-            int page = 1, int pageSize = 25) =>
+            int page = 1, int pageSize = 25, TopicSource? source = null) =>
             Results.Ok(await sender.Send(new GetBacklogQuery(
                 status is { Length: > 0 } ? status : null, type, stream, urgency, ownerId, search,
-                includeClosed, sortBy, sortDir, page, pageSize), ct)));
+                includeClosed, sortBy, sortDir, page, pageSize, source), ct)));
 
         group.MapGet("/{key}", async (string key, ISender sender, CancellationToken ct) =>
         {

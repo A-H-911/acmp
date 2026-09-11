@@ -300,7 +300,7 @@ describe('TopicDetail (P5b)', () => {
   it.each([
     ['Rejected', /^Reopen$/i, /Reopen topic/i],
     ['Decided', /Convert type/i, /Convert topic/i],
-    ['Submitted', 'Reclassify', 'Apply new type'],
+    ['Submitted', 'Reclassify', 'Apply changes'],
   ])('cancels the %s lifecycle dialog without committing', async (status, opener, confirmName) => {
     result({ data: { ...TOPIC, status } });
     const user = userEvent.setup();
@@ -356,10 +356,10 @@ describe('TopicDetail (P5b)', () => {
     setup();
 
     await user.click(screen.getByRole('button', { name: 'Reclassify' }));
-    await userEvent.selectOptions(screen.getByLabelText('New type'), 'ResearchDiscovery');
-    await user.click(screen.getByRole('button', { name: 'Apply new type' }));
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Type' }), 'ResearchDiscovery');
+    await user.click(screen.getByRole('button', { name: 'Apply changes' }));
 
-    expect(screen.queryByRole('button', { name: 'Apply new type' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Apply changes' })).toBeNull();
   });
 
   // The 403 arm was covered and the OTHER arm was not. They produce different copy on purpose: a 403
@@ -440,8 +440,8 @@ describe('TopicDetail (P5b)', () => {
     result({ data: { ...TOPIC, status: 'Submitted', source: 'SecurityFinding' } });
     setup();
     await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
-    await userEvent.selectOptions(screen.getByLabelText('New type'), 'ResearchDiscovery');
-    await userEvent.click(screen.getByRole('button', { name: 'Apply new type' }));
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Type' }), 'ResearchDiscovery');
+    await userEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
     expect(reclassifyMutate).toHaveBeenCalledTimes(1);
     expect(reclassifyMutate.mock.calls[0][0]).toEqual({
       topicId: 'g1', type: 'ResearchDiscovery', source: 'SecurityFinding',
@@ -466,13 +466,43 @@ describe('TopicDetail (P5b)', () => {
     expect(screen.queryByRole('button', { name: 'Reclassify' })).toBeNull();
   });
 
-  it('excludes the current type from the choices — the server treats it as a no-op', async () => {
-    result({ data: { ...TOPIC, status: 'Submitted' } });
+  // ---- WBS-40.2 / DEC-171: the source picker DW-076 carried ----
+
+  it('reclassifies the source alone, carrying the existing type unchanged', async () => {
+    // Mirror of the type-only test: the type sent back must be the topic's own, not a default.
+    result({ data: { ...TOPIC, status: 'Submitted', type: 'GovernanceStandardization' } });
     setup();
     await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
-    const options = Array.from(screen.getByLabelText('New type').querySelectorAll('option'))
-      .map((o) => (o as HTMLOptionElement).value).filter(Boolean);
-    expect(options).not.toContain('ArchitectureDecision');
-    expect(options).toContain('ResearchDiscovery');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Source' }), 'Regulatory');
+    await userEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
+    expect(reclassifyMutate.mock.calls[0][0]).toEqual({
+      topicId: 'g1', type: 'GovernanceStandardization', source: 'Regulatory',
+    });
+  });
+
+  it('opens on the current type and source, with the confirm disabled until one changes', async () => {
+    // The server treats an unchanged pair as a no-op, so an enabled confirm would do nothing.
+    result({ data: { ...TOPIC, status: 'Submitted', source: 'SecurityFinding' } });
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Reclassify' }));
+    const type = screen.getByRole('combobox', { name: 'Type' }) as HTMLSelectElement;
+    const source = screen.getByRole('combobox', { name: 'Source' }) as HTMLSelectElement;
+    expect(type.value).toBe('ArchitectureDecision');
+    expect(source.value).toBe('SecurityFinding');
+    // Every value is offered, the current one included — it is the pre-selected option.
+    expect(type.options).toHaveLength(4);
+    expect(source.options).toHaveLength(10);
+    const confirm = screen.getByRole('button', { name: 'Apply changes' });
+    expect(confirm).toBeDisabled();
+    await userEvent.selectOptions(source, 'External');
+    expect(confirm).toBeEnabled();
+    await userEvent.selectOptions(source, 'SecurityFinding');
+    expect(confirm).toBeDisabled();
+  });
+
+  it('shows the topic source on the overview, in its glossary label', () => {
+    result({ data: { ...TOPIC, source: 'CrossStreamProblem' } });
+    setup();
+    expect(screen.getByText('Cross-stream problem')).toBeInTheDocument();
   });
 });

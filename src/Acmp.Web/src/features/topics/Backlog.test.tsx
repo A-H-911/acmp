@@ -196,6 +196,21 @@ describe('Backlog (P5b)', () => {
     expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ type: 'ArchitectureDecision', urgency: 'Critical' });
   });
 
+  // WBS-40.2 / DEC-171: the source facet, asserted through the server params like its siblings, and
+  // through Clear filters — a facet the clear forgets leaves the backlog filtered with no chip saying so.
+  it('passes the source filter to the query and clears it with the others', async () => {
+    result({ data: paged([]) }); // Clear filters lives in the empty state — a facet matching nothing
+    const user = userEvent.setup();
+    renderWithAuth(<Backlog />, { roles: ['secretary'] });
+
+    await user.click(screen.getByRole('button', { name: 'Source' }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Security finding' }));
+    expect(mockBacklog.mock.calls.at(-1)?.[0]).toMatchObject({ source: 'SecurityFinding' });
+
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() => expect(mockBacklog.mock.calls.at(-1)?.[0]?.source).toBeUndefined());
+  });
+
   it('debounces the search box into the query', async () => {
     result({ data: paged(TOPICS) });
     const user = userEvent.setup();

@@ -29,7 +29,7 @@ import { Button } from '../../components/ui/Button';
 import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
-import { statusTone, initials, TOPIC_TYPE_VALUES } from './topicMeta';
+import { statusTone, initials, TOPIC_TYPE_VALUES, TOPIC_SOURCE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import { AcmpAuthContext, hasRole } from '../../auth/AcmpAuthContext';
 import './topics.css';
@@ -121,6 +121,7 @@ function DetailHeader({ topic }: { topic: Topic }) {
   const reclassify = useReclassifyTopic(topic.key);
   const [reclassifyOpen, setReclassifyOpen] = useState(false);
   const [reclassifyType, setReclassifyType] = useState('');
+  const [reclassifySource, setReclassifySource] = useState('');
   const auth = useContext(AcmpAuthContext);
   const mayReclassify = !!auth && hasRole(auth, 'secretary', 'chairman');
   const preAccept = ['Draft', 'Submitted', 'Triage', 'Reopened'].includes(topic.status);
@@ -221,7 +222,7 @@ function DetailHeader({ topic }: { topic: Topic }) {
             NO-REFERENCE COMPOSITION (INV-014): "ACMP Backlog & Topic.dc.html" specifies no triage
             reclassification affordance, so this reuses the verified convert-button pattern beside it. */}
         {preAccept && mayReclassify && (
-          <Button variant="secondary" onClick={() => { setReclassifyType(''); setReclassifyOpen(true); }}>
+          <Button variant="secondary" onClick={() => { setReclassifyType(topic.type); setReclassifySource(topic.source); setReclassifyOpen(true); }}>
             <Icon name="funnel" size={15} aria-hidden /> {t('topics.reclassify.button')}
           </Button>
         )}
@@ -359,13 +360,13 @@ function DetailHeader({ topic }: { topic: Topic }) {
           </div>
         </Dialog>
         {/*
-          AC-143 / FR-164 — triage-time reclassification. ONE field, not two: TopicSource is also
-          correctable through the endpoint (the domain method takes both), but no surface in this
-          product has ever displayed or offered a source, and it has no bilingual labels at all —
-          inventing nine Arabic governance terms against no canonical glossary is what NFR-039 and
-          DW-069 forbid. The topic's existing source is sent back unchanged, and DW-076 carries the
-          picker. No reason field: unlike convert and reopen, reclassification records no status
-          transition, so there is nothing for a reason to attach to — the audit diff is the record.
+          AC-143 / FR-164 — triage-time reclassification of type AND source (WBS-40.2, DEC-171, SC-062:
+          the source picker DW-076 carried, now that the ten TopicSource labels are ruled into the
+          NFR-039 glossary). Both fields open on the topic's current values and the confirm stays
+          disabled until one differs — the server treats an unchanged pair as a no-op, so enabling it
+          would be a control that cannot do anything. No reason field: unlike convert and reopen,
+          reclassification records no status transition, so there is nothing for a reason to attach
+          to — the audit diff is the record.
         */}
         <Dialog
           open={reclassifyOpen}
@@ -379,11 +380,11 @@ function DetailHeader({ topic }: { topic: Topic }) {
               <Button
                 variant="primary"
                 loading={reclassify.isPending}
-                disabled={reclassifyType === ''}
+                disabled={reclassifyType === topic.type && reclassifySource === topic.source}
                 onClick={() =>
                   onLifecycle(() =>
                     reclassify.mutate(
-                      { topicId: topic.id, type: reclassifyType, source: topic.source },
+                      { topicId: topic.id, type: reclassifyType, source: reclassifySource },
                       { onSuccess: () => setReclassifyOpen(false), onError: lifecycleError },
                     ))}
               >
@@ -400,11 +401,21 @@ function DetailHeader({ topic }: { topic: Topic }) {
               value={reclassifyType}
               onChange={(e) => setReclassifyType(e.target.value)}
             >
-              <option value="">{t('topics.reclassify.typePlaceholder')}</option>
-              {/* The current type is excluded — the server treats it as a no-op, so offering it would
-                  be a control that cannot do anything. */}
-              {TOPIC_TYPE_VALUES.filter((v) => v !== topic.type).map((v) => (
+              {TOPIC_TYPE_VALUES.map((v) => (
                 <option key={v} value={v}>{t(`topics.type.${v}`)}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="reclassify-source">{t('topics.reclassify.sourceLabel')}</label>
+            <select
+              id="reclassify-source"
+              className="input"
+              value={reclassifySource}
+              onChange={(e) => setReclassifySource(e.target.value)}
+            >
+              {TOPIC_SOURCE_VALUES.map((v) => (
+                <option key={v} value={v}>{t(`topics.source.${v}`)}</option>
               ))}
             </select>
           </div>
@@ -429,6 +440,7 @@ function Overview({ topic }: { topic: Topic }) {
     <div className="dt-overview">
       <Section label={t('detail.sec.description')}><p className="dt-body">{topic.description}</p></Section>
       <Section label={t('detail.sec.justification')}><p className="dt-body">{topic.justification}</p></Section>
+      <Section label={t('detail.sec.source')}><p className="dt-body">{t(`topics.source.${topic.source}`)}</p></Section>
       <div className="dt-two">
         <Section label={t('detail.sec.streams')}>
           <div className="bk-streams">{topic.streams.length ? topic.streams.map((s) => <Tag key={s} tone="info">{s}</Tag>) : <span className="bk-muted">—</span>}</div>

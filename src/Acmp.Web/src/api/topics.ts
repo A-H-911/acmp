@@ -40,6 +40,7 @@ export interface BacklogParams {
   type?: string;
   stream?: string;
   urgency?: string;
+  source?: string;
   ownerId?: string;
   search?: string;
   includeClosed?: boolean;
@@ -56,6 +57,7 @@ function toQuery(p: BacklogParams): string {
   if (p.type) q.set('type', p.type);
   if (p.stream) q.set('stream', p.stream);
   if (p.urgency) q.set('urgency', p.urgency);
+  if (p.source) q.set('source', p.source);
   if (p.ownerId) q.set('ownerId', p.ownerId);
   if (p.search) q.set('search', p.search);
   if (p.includeClosed) q.set('includeClosed', 'true');

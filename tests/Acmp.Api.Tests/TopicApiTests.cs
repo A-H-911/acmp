@@ -151,6 +151,36 @@ public class TopicApiTests : IClassFixture<AcmpWebApplicationFactory>
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    // WBS-40.2 / DEC-171: the backlog source facet THROUGH THE REAL HOST. The handler test proves the
+    // filter; this proves the web app's wire form — the enum NAME in the query string — binds to it,
+    // and that a name outside TopicSource is refused rather than silently read as "no filter".
+    [Fact]
+    public async Task Backlog_filters_by_source_name_and_refuses_an_unknown_one()
+    {
+        var member = Client(_factory, "Member", sub: "kc-omar");
+        (await member.PostAsJsonAsync("/api/topics", SubmitBody("core"))).EnsureSuccessStatusCode(); // CommitteeMember
+        (await member.PostAsJsonAsync("/api/topics", new
+        {
+            title = "Rotate leaked keys",
+            description = "A scan found keys in a repo.",
+            justification = "Exposure risk.",
+            type = "ArchitectureDecision",
+            urgency = "Urgent",
+            source = "SecurityFinding",
+            streams = new[] { "core" },
+            systems = Array.Empty<string>(),
+            tags = Array.Empty<string>(),
+        })).EnsureSuccessStatusCode();
+
+        var filtered = await (await member.GetAsync("/api/topics?source=SecurityFinding")).Content.ReadFromJsonAsync<Backlog>();
+        filtered!.Total.Should().Be(1);
+        filtered.Items[0].Title.Should().Be("Rotate leaked keys");
+        // Control: unfiltered, both topics are visible — so the 1 above is the filter, not the fixture.
+        (await (await member.GetAsync("/api/topics")).Content.ReadFromJsonAsync<Backlog>())!.Total.Should().Be(2);
+
+        (await member.GetAsync("/api/topics?source=NotASource")).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     [Fact] // W2: triage authorization (Member 403, Secretary 204) + grant-on-accept
     public async Task Only_secretary_can_accept_a_topic()
     {
