@@ -701,7 +701,7 @@ WBS-40.5,"`DW-022` + `DW-077`: THE DESIGN-SYSTEM PASS — ONE ITEM CARRYING BOTH
 
 **`DW-022`** — ~110 inline `style={{}}` sites across ~25 components, static to CSS classes and dynamic to a CSSOM hook. ⛔ **NOT FOR CSP REASONS**: that rationale was verified wrong on 2026-07-16 and `style-src 'self'` already ships with the code as-is. This is hygiene only, and the row says so explicitly.
 
-**DONE-CLAIMED WHEN** the spacing rule lands with each affected dialog looked at rather than only tested, and the inline-style count is reduced with no CSP claim attached to the work.",,PH-7,SL-043,M,Review,,,clarification,"DW-022 and DW-077 — one item because both rows name the same trigger and each says to do them together; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.",,2026-09-11T14:44:51Z
+**DONE-CLAIMED WHEN** the spacing rule lands with each affected dialog looked at rather than only tested, and the inline-style count is reduced with no CSP claim attached to the work.",,PH-7,SL-043,M,Implemented,,,clarification,"DW-022 and DW-077 — one item because both rows name the same trigger and each says to do them together; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.",,2026-09-11T14:44:51Z
 WBS-40.6,"`DW-071`: EXTEND THE axe SWEEP FROM THREE ROUTES TO FIFTY-TWO. `NFR-032` (Must) requires every non-decorative image, icon and data visualization to carry alt text or an ARIA label in BOTH languages and targets zero axe failures; the instrument exists and covers three routes of fifty-two.
 
 **BUILD.** The sweep across the full route set, in both EN and AR, with the ratio itself asserted so a new route cannot silently make it worse — the row's own point is that every shipped route moves the denominator.

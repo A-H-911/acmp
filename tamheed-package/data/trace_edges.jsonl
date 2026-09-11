@@ -108,6 +108,7 @@
 {"from_id":"DEC-064","to_id":"DW-037","relation":"relates_to"}
 {"from_id":"DEC-064","to_id":"DW-038","relation":"relates_to"}
 {"from_id":"DEC-139","to_id":"DEC-135","relation":"relates_to"}
+{"from_id":"DEC-176","to_id":"WBS-40.5","relation":"relates_to"}
 {"from_id":"DEF-079","to_id":"DEF-078","relation":"relates_to"}
 {"from_id":"DEF-080","to_id":"DEC-056","relation":"relates_to"}
 {"from_id":"DEF-081","to_id":"DEF-080","relation":"relates_to"}
