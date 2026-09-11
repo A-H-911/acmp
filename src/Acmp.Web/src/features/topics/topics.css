@@ -114,6 +114,14 @@
 .bk-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
 .bk-skel-row:last-child { border-block-end: 0; }
 .bk-skel-bar { block-size: 10px; }
+.bk-skel-head .bk-skel-bar { inline-size: 54px; }
+/* Per-column bar widths; the title column varies row by row (--w, set on the row). */
+.bk-skel-row > :nth-child(1) { inline-size: 70px; }
+.bk-skel-row > :nth-child(2) { inline-size: var(--w); }
+.bk-skel-row > :nth-child(3) { inline-size: 60px; }
+.bk-skel-row > :nth-child(4) { inline-size: 50px; }
+.bk-skel-row > :nth-child(5),
+.bk-skel-row > :nth-child(6) { inline-size: 64px; }
 
 /* ---- shared cell bits (table + list) ---- */
 .bk-key {

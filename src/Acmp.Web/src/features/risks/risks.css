@@ -82,7 +82,7 @@
   display: block;
 }
 .rsk-title-link:hover { color: var(--accent); }
-.rsk-level { font-size: 12px; font-weight: 600; font-feature-settings: 'tnum'; }
+.rsk-level { font-size: 12px; font-weight: 600; font-feature-settings: 'tnum'; color: var(--c); /* levelColor() */ }
 .rsk-linked {
   font-family: var(--mono);
   font-size: 11px;
@@ -125,7 +125,7 @@
   gap: 2px;
   flex: 0 0 auto;
 }
-.rsk-hc { border-radius: 1.5px; }
+.rsk-hc { border-radius: 1.5px; background: var(--c); /* heatCells() */ }
 
 /* ---------- loading skeleton (8-col gRsk grid, 8 rows) ---------- */
 .rsk-skel-head,
@@ -139,7 +139,16 @@
 .rsk-skel-head { block-size: 42px; border-block-end: 1px solid var(--border); background: var(--header); }
 .rsk-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
 .rsk-skel-bar { block-size: 10px; border-radius: 5px; }
-.rsk-skel-head .rsk-skel-bar { block-size: 9px; }
+.rsk-skel-head .rsk-skel-bar { block-size: 9px; inline-size: 54px; }
+/* Per-column bar widths; the title column varies row by row (--w, set on the row). */
+.rsk-skel-row > :nth-child(1) { inline-size: 66px; }
+.rsk-skel-row > :nth-child(2) { inline-size: var(--w); }
+.rsk-skel-row > :nth-child(3),
+.rsk-skel-row > :nth-child(4) { inline-size: 44px; }
+.rsk-skel-row > :nth-child(5) { inline-size: 78px; }
+.rsk-skel-row > :nth-child(6) { inline-size: 72px; }
+.rsk-skel-row > :nth-child(7) { inline-size: 64px; }
+.rsk-skel-row > :nth-child(8) { inline-size: 56px; }
 
 /* ---------- detail ---------- */
 .rsk-detail-grid {
@@ -183,7 +192,7 @@
   text-transform: uppercase;
   color: var(--text-3);
 }
-.rsk-fact-value { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.rsk-fact-value { font-size: 13.5px; font-weight: 600; color: var(--fact-fg, var(--text)); /* a toned fact sets --fact-fg */ }
 
 /* ---------- large exposure matrix + legend ---------- */
 .rsk-matrix-wrap {
@@ -202,7 +211,8 @@
   inline-size: 26px;
   block-size: 20px;
   border-radius: 4px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--bd);
+  background: var(--bg); /* exposureMatrix(): --bg/--bd per cell */
 }
 .rsk-legend {
   margin: 0;
@@ -213,7 +223,7 @@
 .rsk-legend div { display: flex; gap: 6px; }
 .rsk-legend dt { color: var(--text-2); }
 .rsk-legend dt::after { content: ':'; }
-.rsk-legend dd { margin: 0; font-weight: 700; color: var(--text); }
+.rsk-legend dd { margin: 0; font-weight: 700; color: var(--fact-fg, var(--text)); /* the exposure line sets --fact-fg */ }
 
 /* ---------- mitigation plan ---------- */
 .rsk-plan { padding: 18px 20px; }

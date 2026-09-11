@@ -73,7 +73,7 @@ function Directory({ members, isArabic, onView }: { members: Member[]; isArabic:
           <span className="adm-avatar" aria-hidden="true">
             {initials(m.fullName)}
           </span>
-          <span style={{ minInlineSize: 0 }}>
+          <span className="adm-user-text">
             <span className="adm-name">{m.fullName}</span>
             <span className="adm-email" dir="ltr">
               {m.email}
@@ -242,7 +242,7 @@ export function UserDetail({ member, isArabic, onBack }: { member: Member; isAra
           <span className="adm-avatar adm-avatar-lg" aria-hidden="true">
             {initials(current.fullName)}
           </span>
-          <div style={{ minInlineSize: 0 }}>
+          <div className="adm-user-text">
             <div className="adm-detail-name">{current.fullName}</div>
             <div className="adm-email" dir="ltr">
               {current.email}

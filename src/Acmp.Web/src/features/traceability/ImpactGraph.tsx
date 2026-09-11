@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Icon } from '../../components/icons';
 import type { ImpactGraph as ImpactGraphDto, ImpactGraphNode } from '../../api/traceability';
 import { GRAPH_FOCUS_TYPES, hrefFor, typeColor } from './traceMeta';
+import { cssVars, setCssVars } from '../../lib/cssVars';
 import {
   layoutGraph,
   nextFocusIndex,
@@ -79,7 +80,7 @@ export function ImpactGraph({ graph, focusKey, focusTitle, highlight }: Props) {
     <>
       <div className="ig-sr" aria-live="polite">{liveMsg}</div>
       <div className="ig-scroll">
-        <div className="ig-canvas" style={{ inlineSize: layout.canvasW, blockSize: layout.canvasH }}>
+        <div className="ig-canvas" ref={cssVars({ '--canvas-w': `${layout.canvasW}px`, '--canvas-h': `${layout.canvasH}px` })}>
           <svg
             width={layout.canvasW}
             height={layout.canvasH}
@@ -101,7 +102,7 @@ export function ImpactGraph({ graph, focusKey, focusTitle, highlight }: Props) {
           </svg>
 
           {layout.tierLabels.map((tl) => (
-            <div key={tl.tier} className="ig-tier-label" style={{ insetInlineStart: tl.x, inlineSize: 152 }}>
+            <div key={tl.tier} className="ig-tier-label" ref={cssVars({ '--x': `${tl.x}px` })}>
               {tierLabel(tl.tier, t)}
             </div>
           ))}
@@ -134,7 +135,7 @@ export function ImpactGraph({ graph, focusKey, focusTitle, highlight }: Props) {
         <div className="ig-legend">
           {LEGEND_TYPES.map((type) => (
             <span className="ig-legend-item" key={type}>
-              <span className="ig-legend-dot" style={{ background: typeColor(type) }} aria-hidden />
+              <span className="ig-legend-dot" ref={cssVars({ '--c': typeColor(type) })} aria-hidden />
               {t(`trace.type.${type}`)}
             </span>
           ))}
@@ -161,10 +162,12 @@ function GraphNode({ ln, roving, refCb, onKeyDown, onActivate }: NodeProps) {
   const { node } = ln;
   return (
     <button
-      ref={refCb}
+      ref={(el) => {
+        refCb(el);
+        if (el) setCssVars(el, { '--x': `${ln.x}px`, '--y': `${ln.y}px` });
+      }}
       type="button"
-      className={`ig-node${ln.isFocus ? ' ig-node--focus' : ''}${ln.hit === 'blocked' ? ' ig-node--hitBlocked' : ln.hit === 'cross' ? ' ig-node--hitCross' : ''}`}
-      style={{ insetInlineStart: ln.x, insetBlockStart: ln.y, inlineSize: 152, blockSize: 94, opacity: ln.dim ? 0.3 : 1 }}
+      className={`ig-node${ln.isFocus ? ' ig-node--focus' : ''}${ln.hit === 'blocked' ? ' ig-node--hitBlocked' : ln.hit === 'cross' ? ' ig-node--hitCross' : ''}${ln.dim ? ' ig-node--dim' : ''}`}
       tabIndex={roving ? 0 : -1}
       aria-current={ln.isFocus ? 'true' : undefined}
       aria-label={nodeAria(ln, t)}
@@ -172,7 +175,7 @@ function GraphNode({ ln, roving, refCb, onKeyDown, onActivate }: NodeProps) {
       onClick={onActivate}
     >
       <span className="ig-node-row">
-        <span className="ig-node-typedot" style={{ background: typeColor(node.type) }} aria-hidden />
+        <span className="ig-node-typedot" ref={cssVars({ '--c': typeColor(node.type) })} aria-hidden />
         <span className="ig-node-key">{node.key}</span>
         {node.blocked && (
           <span className="ig-node-blocked"><Icon name="lock" size={8} aria-hidden /> {t('trace.graph.blocked')}</span>

@@ -29,6 +29,7 @@ import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, exposureTone, levelColor, heatCells, initials, RISK_STATUSES, RISK_EXPOSURES } from './riskMeta';
 import { CreateRiskDialog } from './CreateRiskDialog';
+import { cssVars } from '../../lib/cssVars';
 import './risks.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetRisksRegister.Sort: key/status/exposure).
@@ -164,19 +165,15 @@ function RisksSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="rsk-skel-head" aria-hidden="true">
         {Array.from({ length: 8 }).map((_, i) => (
-          <span key={i} className="skeleton rsk-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton rsk-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in risks.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="rsk-skel-row" aria-hidden="true">
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 66 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 44 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 44 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 78 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 72 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 64 }} />
-          <span className="skeleton rsk-skel-bar" style={{ inlineSize: 56 }} />
+        <div key={i} className="rsk-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 8 }).map((_, c) => (
+            <span key={c} className="skeleton rsk-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
@@ -201,7 +198,7 @@ function Heat({ row }: { row: RiskSummary }) {
     <span className="rsk-exposure">
       <span className="rsk-heat" aria-hidden="true">
         {cells.map((bg, i) => (
-          <span key={i} className="rsk-hc" style={{ background: bg }} />
+          <span key={i} className="rsk-hc" ref={cssVars({ '--c': bg })} />
         ))}
       </span>
       <StatusChip tone={exposureTone(row.exposure)} label={t(`risks.exposure.${row.exposure}`)} size="sm" />
@@ -215,8 +212,8 @@ function RisksTable({ rows, lang, sort, onSort }: { rows: RiskSummary[]; lang: s
   const columns: Column<RiskSummary>[] = [
     { id: 'key', header: t('risks.col.key'), width: '104px', sortable: true, cell: (r) => <span className="rsk-key">{r.key}</span> },
     { id: 'risk', header: t('risks.col.risk'), cell: (r) => <Link className="rsk-title-link" to={`/risks/${r.key}`}>{pick(r.title)}</Link> },
-    { id: 'prob', header: t('risks.col.prob'), width: '80px', cell: (r) => <span className="rsk-level" style={{ color: levelColor(r.likelihood) }}>{t(`risks.level.${r.likelihood}`)}</span> },
-    { id: 'impact', header: t('risks.col.impact'), width: '78px', cell: (r) => <span className="rsk-level" style={{ color: levelColor(r.impact) }}>{t(`risks.level.${r.impact}`)}</span> },
+    { id: 'prob', header: t('risks.col.prob'), width: '80px', cell: (r) => <span className="rsk-level" ref={cssVars({ '--c': levelColor(r.likelihood) })}>{t(`risks.level.${r.likelihood}`)}</span> },
+    { id: 'impact', header: t('risks.col.impact'), width: '78px', cell: (r) => <span className="rsk-level" ref={cssVars({ '--c': levelColor(r.impact) })}>{t(`risks.level.${r.impact}`)}</span> },
     { id: 'exposure', header: t('risks.col.exposure'), width: '120px', sortable: true, cell: (r) => <Heat row={r} /> },
     { id: 'owner', header: t('risks.col.owner'), width: '130px', cell: (r) => <Owner name={r.ownerName} /> },
     { id: 'status', header: t('risks.col.status'), width: '112px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`risks.status.${r.status}`)} size="sm" /> },

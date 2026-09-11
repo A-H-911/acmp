@@ -5,7 +5,7 @@
  * item type; feature screens (kanban, agenda builder) consume it at their
  * phases. P3 ships the component + its test only.
  */
-import { type ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect } from 'react';
 import {
   DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors,
   closestCenter, type DragEndEvent,
@@ -17,6 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './icons';
+import { setCssVars } from '../lib/cssVars';
 
 interface SortableListProps<T> {
   items: T[];
@@ -40,10 +41,16 @@ interface RowProps<T> {
 
 function SortableRow<T>({ id, label, index, count, onMove, children }: RowProps<T>) {
   const { t } = useTranslation();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const { attributes, listeners, node, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  // The drag offset reaches `.sortable-item` as custom properties (DEC-174). Set in a layout effect on
+  // the node @dnd-kit already tracks, NOT through a second callback ref: a fresh ref each render would
+  // detach and re-attach setNodeRef every frame of a drag, and @dnd-kit re-observes the node on each.
+  // Idle, both are undefined and setCssVars removes them, so the item falls back to no transform.
+  useLayoutEffect(() => {
+    if (node.current) setCssVars(node.current, { '--dnd-transform': CSS.Transform.toString(transform), '--dnd-transition': transition });
+  });
   return (
-    <li ref={setNodeRef} style={style} className={`sortable-item ${isDragging ? 'dragging' : ''}`}>
+    <li ref={setNodeRef} className={`sortable-item ${isDragging ? 'dragging' : ''}`}>
       <button
         type="button"
         className="sortable-handle"
@@ -53,7 +60,7 @@ function SortableRow<T>({ id, label, index, count, onMove, children }: RowProps<
       >
         <Icon name="grip" size={16} />
       </button>
-      <div style={{ flex: '1 1 auto', minInlineSize: 0 }}>{children}</div>
+      <div className="sortable-body">{children}</div>
       <button
         type="button"
         className="sortable-move"
@@ -103,7 +110,7 @@ export function SortableList<T>({ items, getId, onReorder, renderItem, getLabel,
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={items.map(getId)} strategy={verticalListSortingStrategy}>
-        <ul aria-label={ariaLabel} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <ul aria-label={ariaLabel} className="sortable-list">
           {items.map((item, index) => (
             <SortableRow
               key={getId(item)}

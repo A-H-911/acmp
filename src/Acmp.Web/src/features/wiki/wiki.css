@@ -113,6 +113,16 @@
 }
 .wiki-skeleton { max-inline-size: 760px; margin: 0 auto; padding: 30px 32px; }
 .wiki-skeleton .skeleton { block-size: 12px; border-radius: 5px; margin-block-end: 12px; }
+/* A title bar, then an article's ragged line lengths. */
+.wiki-skeleton > div:nth-of-type(1) { inline-size: 200px; }
+.wiki-skeleton > div:nth-of-type(2) { inline-size: 70%; }
+.wiki-skeleton > div:nth-of-type(3) { inline-size: 48%; }
+.wiki-skeleton > div:nth-of-type(4) { inline-size: 100%; }
+.wiki-skeleton > div:nth-of-type(5) { inline-size: 96%; }
+.wiki-skeleton > div:nth-of-type(6) { inline-size: 90%; }
+.wiki-skeleton > div:nth-of-type(7) { inline-size: 40%; }
+.wiki-skeleton > div:nth-of-type(8) { inline-size: 98%; }
+.wiki-skeleton > div:nth-of-type(9) { inline-size: 88%; }
 .wiki-empty { max-inline-size: 520px; margin: 0 auto; padding: 80px 24px; text-align: center; }
 
 /* ---------- reading view ---------- */

@@ -43,6 +43,7 @@ import { Kanban } from './Kanban';
 import { Calendar } from './Calendar';
 import { Timeline } from './Timeline';
 import { ColumnPicker, applyColumnPrefs, useColumnPrefs, type ColumnPrefs } from './columnPrefs';
+import { cssVars } from '../../lib/cssVars';
 import './topics.css';
 
 /**
@@ -290,17 +291,15 @@ function BacklogSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="bk-skel-head" aria-hidden="true">
         {Array.from({ length: 6 }).map((_, i) => (
-          <span key={i} className="skeleton bk-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton bk-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in topics.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="bk-skel-row" aria-hidden="true">
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 70 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 60 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 50 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
+        <div key={i} className="bk-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 6 }).map((_, c) => (
+            <span key={c} className="skeleton bk-skel-bar" />
+          ))}
         </div>
       ))}
     </div>

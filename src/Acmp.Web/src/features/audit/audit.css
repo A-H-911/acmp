@@ -52,7 +52,12 @@
 .aud-skel-head { block-size: 42px; background: var(--header); }
 .aud-skel-row { min-block-size: 48px; }
 .aud-skel-bar { block-size: 10px; border-radius: 5px; }
-.aud-skel-head .aud-skel-bar { block-size: 9px; }
+.aud-skel-head .aud-skel-bar { block-size: 9px; inline-size: 54px; }
+.aud-skel-row > :nth-child(1) { inline-size: 70%; }
+.aud-skel-row > :nth-child(2) { inline-size: 58%; }
+.aud-skel-row > :nth-child(3) { inline-size: 46%; }
+.aud-skel-row > :nth-child(4) { inline-size: 52%; }
+.aud-skel-row > :nth-child(5) { inline-size: 80%; }
 
 .aud-foot { margin-block-start: 16px; }
 
