@@ -90,6 +90,7 @@ AC-111,FR-162,verifies
 AC-112,FR-045,verifies
 AC-143,FR-164,verifies
 AC-152,FR-154,verifies
+AC-159,FR-164,verifies
 ADR-0017,ADR-0012,relates_to
 ADR-0019,ADR-0008,relates_to
 ADR-0020,ADR-0019,relates_to
@@ -784,6 +785,8 @@ SC-061,NFR-002,scope_modifies
 SC-061,NFR-004,scope_modifies
 SC-062,DW-076,scope_modifies
 SC-062,WBS-40.2,scope_modifies
+SC-063,AC-143,scope_modifies
+SC-063,AC-159,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
