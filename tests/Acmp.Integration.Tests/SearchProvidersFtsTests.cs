@@ -11,8 +11,6 @@ using Acmp.Modules.Topics.Infrastructure.Persistence;
 using Acmp.Modules.Topics.Infrastructure.Search;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Search;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Images;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -40,16 +38,6 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
         return v;
     }
 
-    private readonly IFutureDockerImage _image = new ImageFromDockerfileBuilder()
-        .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "deploy")
-        .WithDockerfile("Dockerfile.sqlserver")
-        .WithName("acmp/sqlserver-fts:test")
-        .WithCleanUp(false) // keep the built image cached across runs (~160s to build)
-                            // DEF-140: without this the build is SILENT, and BuildOrFailFastAsync's timeout message tells
-                            // the reader to "read the Docker build output above it" when none was ever captured.
-        .WithLogger(DockerBuildLog.Instance)
-        .Build();
-
     private MsSqlContainer _container = null!;
     private string _appConnectionString = null!;
 
@@ -64,8 +52,8 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await ContainerStartup.BuildOrFailFastAsync(_image, "SQL Server FTS (deploy/Dockerfile.sqlserver)");
-        _container = new MsSqlBuilder(_image).Build();
+        // DEF-161: this class is IAsyncLifetime, so this runs once PER TEST - it used to build the image each time.
+        _container = new MsSqlBuilder(await FtsImage.BuildOnceAsync()).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS)");
 
         // A full-text catalog cannot live in master/tempdb/model (MsSqlBuilder connects to master) — so create
