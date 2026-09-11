@@ -41,7 +41,10 @@ public sealed record GetBacklogQuery(
     string SortBy = "age",
     string SortDir = "desc",
     int Page = 1,
-    int PageSize = 25)
+    int PageSize = 25,
+    // WBS-40.2 / DEC-171 u3: the submitter channel as a backlog facet. Appended LAST with a default so no
+    // existing positional caller changes meaning; a persisted enum column, so it filters in SQL.
+    TopicSource? Source = null)
     : IRequest<PagedResult<TopicSummaryDto>>, IAuthorizedRequest
 {
     public IReadOnlyCollection<string> AllowedRoles { get; } = Array.Empty<string>();
@@ -80,6 +83,7 @@ public sealed class GetBacklogHandler : IRequestHandler<GetBacklogQuery, PagedRe
 
         if (request.Type is { } type) query = query.Where(t => t.Type == type);
         if (request.Urgency is { } urg) query = query.Where(t => t.Urgency == urg);
+        if (request.Source is { } src) query = query.Where(t => t.Source == src);
         if (request.OwnerId is { } owner) query = query.Where(t => t.OwnerId == owner);
 
         var now = _clock.UtcNow;

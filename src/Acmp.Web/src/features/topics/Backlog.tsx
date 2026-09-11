@@ -38,7 +38,7 @@ import { Tag } from '../../components/ui/Chip';
 import { Button } from '../../components/ui/Button';
 import { ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
-import { statusTone, initials } from './topicMeta';
+import { statusTone, initials, TOPIC_SOURCE_VALUES } from './topicMeta';
 import { Kanban } from './Kanban';
 import { Calendar } from './Calendar';
 import { Timeline } from './Timeline';
@@ -89,6 +89,7 @@ interface Filters {
   statuses: string[];
   type: string;
   urgency: string;
+  source: string;
 }
 
 export function Backlog() {
@@ -100,7 +101,7 @@ export function Backlog() {
   const { prefs: columnPrefs, toggle: toggleColumn, move: moveColumn, reset: resetColumns } = useColumnPrefs(COLUMN_IDS);
   const [search, setSearch] = useState('');
   const [searchParam, setSearchParam] = useState('');
-  const [filters, setFilters] = useState<Filters>({ statuses: [], type: '', urgency: '' });
+  const [filters, setFilters] = useState<Filters>({ statuses: [], type: '', urgency: '', source: '' });
   const [sortCol, setSortCol] = useState('age');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
@@ -118,6 +119,7 @@ export function Backlog() {
     statuses: filters.statuses.length ? filters.statuses : undefined,
     type: filters.type || undefined,
     urgency: filters.urgency || undefined,
+    source: filters.source || undefined,
     search: searchParam || undefined,
     // AC-043: the kanban reorders by priority, so its cards must arrive priority-ordered (ascending) for
     // move-up/down to reflect the persisted order; the table/list keep the user's chosen column sort.
@@ -130,7 +132,7 @@ export function Backlog() {
 
   const patch = (p: Partial<Filters>) => setFilters((f) => ({ ...f, ...p }));
   const clearFilters = () => {
-    setFilters({ statuses: [], type: '', urgency: '' });
+    setFilters({ statuses: [], type: '', urgency: '', source: '' });
     setSearch('');
   };
   const onSort = (col: string) => {
@@ -225,6 +227,13 @@ export function Backlog() {
           options={URGENCY_VALUES.map((v) => ({ value: v, label: t(`topics.urgency.${v}`) }))}
           value={filters.urgency}
           onChange={(urgency) => patch({ urgency })}
+        />
+        <FilterChip
+          label={t('topics.filter.source')}
+          anyLabel={t('topics.filter.anySource')}
+          options={TOPIC_SOURCE_VALUES.map((v) => ({ value: v, label: t(`topics.source.${v}`) }))}
+          value={filters.source}
+          onChange={(source) => patch({ source })}
         />
         {data && (
           <span className="bk-count"><Icon name="backlog" size={13} aria-hidden /> {t('topics.showing', { shown, total })}</span>
