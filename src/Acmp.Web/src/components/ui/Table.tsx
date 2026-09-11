@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Icon } from '../icons';
+import { cssVars } from '../../lib/cssVars';
 
 export type SortDir = 'asc' | 'desc';
 
@@ -38,7 +39,7 @@ export function Table<T>({ columns, rows, getRowKey, caption, sort, onSortChange
         <caption className="visually-hidden">{caption}</caption>
         <colgroup>
           {columns.map((c) => (
-            <col key={c.id} style={c.width ? { width: c.width } : undefined} />
+            <col key={c.id} ref={cssVars({ '--col-w': c.width })} />
           ))}
         </colgroup>
         <thead className="table-head">
@@ -55,10 +56,9 @@ export function Table<T>({ columns, rows, getRowKey, caption, sort, onSortChange
               return (
                 <th
                   key={c.id}
-                  className="table-hcell"
+                  className={`table-hcell${c.align === 'end' ? ' table-align-end' : ''}`}
                   scope="col"
                   aria-sort={ariaSort}
-                  style={{ textAlign: c.align ?? 'start' }}
                 >
                   {c.sortable && onSortChange ? (
                     <button type="button" className={`table-sort ${isSorted ? 'active' : ''}`} onClick={() => onSortChange(c.id)}>
@@ -77,7 +77,7 @@ export function Table<T>({ columns, rows, getRowKey, caption, sort, onSortChange
           {rows.map((row) => (
             <tr key={getRowKey(row)} className="table-row">
               {columns.map((c) => (
-                <td key={c.id} className="table-cell" style={{ textAlign: c.align ?? 'start' }}>
+                <td key={c.id} className={`table-cell${c.align === 'end' ? ' table-align-end' : ''}`}>
                   {c.cell(row)}
                 </td>
               ))}

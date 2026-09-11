@@ -35,6 +35,7 @@ import { Icon } from '../../components/icons';
 import { statusTone, progressColor, initials, ACTION_STATUSES } from './actionMeta';
 import { RaiseActionFromDialog } from './RaiseActionFromDialog';
 import { CreateActionDialog, type ActionSource } from './CreateActionDialog';
+import { cssVars } from '../../lib/cssVars';
 import './actions.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetActionsRegister.Sort).
@@ -192,18 +193,15 @@ function ActionsSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="act-skel-head" aria-hidden="true">
         {Array.from({ length: 7 }).map((_, i) => (
-          <span key={i} className="skeleton act-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton act-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in actions.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="act-skel-row" aria-hidden="true">
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 70 }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 60 }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 84 }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 60 }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 72 }} />
-          <span className="skeleton act-skel-bar" style={{ inlineSize: 64 }} />
+        <div key={i} className="act-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 7 }).map((_, c) => (
+            <span key={c} className="skeleton act-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
@@ -238,7 +236,7 @@ function Progress({ pct }: { pct: number }) {
   return (
     <span className="act-progress">
       <span className="act-pbar" aria-hidden="true">
-        <span className="act-pbar-fill" style={{ inlineSize: `${pct}%`, background: progressColor(pct) }} />
+        <span className="act-pbar-fill" ref={cssVars({ '--pct': `${pct}%`, '--c': progressColor(pct) })} />
       </span>
       <span className="act-pct"><Pct value={pct} /></span>
     </span>

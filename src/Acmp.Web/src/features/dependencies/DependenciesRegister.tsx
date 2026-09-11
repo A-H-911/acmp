@@ -29,6 +29,7 @@ import { ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, kindColor, kindPointsUp, DEP_KINDS } from './depMeta';
 import { CreateDependencyDialog } from './CreateDependencyDialog';
+import { cssVars } from '../../lib/cssVars';
 import './dependencies.css';
 
 // Column id → API sortBy. Only key + status have a server sort (GetDependenciesRegister).
@@ -172,16 +173,15 @@ function DepsSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="dep-skel-head" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className="skeleton dep-skel-bar" style={{ inlineSize: 50 }} />
+          <span key={i} className="skeleton dep-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in dependencies.css; only the From column's per-row width is passed in. */}
       {widths.map((w, i) => (
-        <div key={i} className="dep-skel-row" aria-hidden="true">
-          <span className="skeleton dep-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton dep-skel-bar" style={{ inlineSize: 90 }} />
-          <span className="skeleton dep-skel-bar" style={{ inlineSize: '66%' }} />
-          <span className="skeleton dep-skel-bar" style={{ inlineSize: 40 }} />
-          <span className="skeleton dep-skel-bar" style={{ inlineSize: 72 }} />
+        <div key={i} className="dep-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 5 }).map((_, c) => (
+            <span key={c} className="skeleton dep-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
@@ -192,7 +192,7 @@ function DepsSkeleton() {
 function Relation({ row }: { row: DependencySummary }) {
   const { t } = useTranslation();
   return (
-    <span className="dep-rel" style={{ color: kindColor(row.kind) }}>
+    <span className="dep-rel" ref={cssVars({ '--c': kindColor(row.kind) })}>
       <Icon name="arrowRight" size={13} className={kindPointsUp(row.kind) ? 'dep-rel-back' : 'dir-flip'} aria-hidden />
       {t(`deps.kind.${row.kind}`)}
     </span>
