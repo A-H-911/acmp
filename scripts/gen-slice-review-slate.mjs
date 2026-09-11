@@ -189,7 +189,9 @@ const block = (label, text) => (text ? `<div class="f"><h4>${esc(label)}</h4>${p
    re-sending a long title by hand is what LL-001 forbids), and this page used to render every column
    but that one. One block per key, each value quoted as stored; a value that is not a string is shown
    as its JSON. A blob that does not parse as a JSON object is quoted whole rather than dropped.
-   Nothing is printed for an item with no attributes, so no empty block. */
+   Nothing is printed for an item with no attributes, so no empty block. A key whose stored value is
+   the empty string says so rather than vanishing: block() omits falsy text, and a silently dropped
+   key reads exactly like one that was never there. */
 const attributeBlocks = (w) => {
   const raw = w.custom_attributes;
   if (!raw) return '';
@@ -200,8 +202,8 @@ const attributeBlocks = (w) => {
   const entries = obj && typeof obj === 'object' && !Array.isArray(obj)
     ? Object.entries(obj).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v, null, 2)])
     : [['custom_attributes (not a JSON object), as stored', typeof raw === 'string' ? raw : JSON.stringify(raw)]];
-  const rendered = entries.map(([k, v]) => block(k, v)).filter(Boolean);
-  if (!rendered.length) return '';
+  if (!entries.length) return '';
+  const rendered = entries.map(([k, v]) => block(k, v || '(the stored value is an empty string)'));
   return `
     <h3>The work item's own attributes &mdash; ${esc(w.id)}</h3>
     <p class="meta">The row's own <code>custom_attributes</code>, one block per key, each quoted verbatim. For an

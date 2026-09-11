@@ -267,6 +267,16 @@ def main():
               custom_attributes=json.dumps({"DONE_CLAIMED_TEST": record})),
         "SL-034", 0, "item(s) at Review", html_has="DONE_CLAIMED_TEST</h4><p>" + record))
 
+    # An attribute whose stored value is the empty string must still show its key. block() omits falsy
+    # text, which once dropped such a key without trace, and dropped the whole section if it was the
+    # only one, so the page read exactly like an item with no attributes.
+    results.append(case(
+        "DEF-160: an attribute with an empty-string value still shows its key",
+        stage("SL-034", "WBS-25.1",
+              "Criterion-less by design. Requirement NFR-054; the reason is recorded in DW-090.",
+              custom_attributes=json.dumps({"EMPTY_VALUE_KEY": ""})),
+        "SL-034", 0, "item(s) at Review", html_has="EMPTY_VALUE_KEY</h4>"))
+
     # CALIBRATION: same item with no attributes. The heading must be absent, which proves the case
     # above found the rendered block and not some fixed text that is always on the page.
     results.append(case(
