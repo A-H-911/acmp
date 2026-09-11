@@ -358,8 +358,8 @@ export function useReopenTopic(key: string | undefined) {
  * was looking at has just been retired to Converted and is no longer the live artifact.
  */
 // FR-164 / DW-032: correct a topic's classification during triage. The endpoint takes BOTH type and
-// source because the domain method does; the UI sends the topic's existing source unchanged, since no
-// surface in the product has ever displayed or offered a TopicSource (DW-076).
+// source because the domain method does, and since WBS-40.2 (DEC-171) the reclassify dialog offers
+// both — each pre-set to the topic's current value, so an unchanged field is sent back as it was.
 export function useReclassifyTopic(key: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
