@@ -10,8 +10,10 @@ name: Publish the FTS test image (GHCR)
 # public, and a public package can never be made private again. That is how the first name,
 # acmp-sqlserver-fts-test, came out public (DEF-163). So the operator created this package private
 # and granted this repository Write, and the guard step below refuses to push unless the package
-# already EXISTS (an authenticated read succeeds) and is NOT PUBLIC (an anonymous read is refused).
-# Anonymous 403 alone cannot tell "private" from "missing" - both read 403 - hence both halves.
+# already EXISTS (an authenticated read succeeds) and is NOT PUBLIC (an anonymous read is refused
+# with 401 or 403). Both halves fail CLOSED: any other answer, a network error included, refuses.
+# Measured 2026-09-12: GHCR's anonymous token endpoint answers 200 for a public package, 401 for a
+# private one and 403 for a missing one; with a token, a public read is 200.
 #
 # MANUAL ONLY, AND REF-AGNOSTIC ON PURPOSE. DEC-182 f4: every Dependabot digest bump to mssql/server
 # changes the Dockerfile, so this is dispatched ON THAT BRANCH and the new pin is committed there. It
@@ -62,14 +64,31 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # Defined once here and sourced again by the push step, which re-reads the pushed digest.
+          cat > "$RUNNER_TEMP/ghcr-read.sh" <<'EOF'
           repo="${IMAGE#ghcr.io/}"
-          bearer() { curl -fsS "$@" "https://ghcr.io/token?scope=repository:$repo:pull" | jq -r .token; }
-          tags() { curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $1" "https://ghcr.io/v2/$repo/tags/list"; }
-          authed=$(tags "$(bearer -u "$GITHUB_ACTOR:$TOKEN")")
-          anon=$(tags "$(bearer)")
-          echo "tags/list: authenticated $authed (must be 200), anonymous $anon (must not be 200)"
+          # read <token> <v2 path> -> HTTP status of GET /v2/$repo/<path> with that bearer token
+          read_as() {
+            curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $1" \
+              -H 'Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json' \
+              "https://ghcr.io/v2/$repo/$2"
+          }
+          # anon_read <v2 path> -> status of an ANONYMOUS read, or the token endpoint's own refusal
+          anon_read() {
+            local r code
+            r=$(curl -s -w '\n%{http_code}' "https://ghcr.io/token?scope=repository:$repo:pull")
+            code=${r##*$'\n'}
+            if [ "$code" != 200 ]; then echo "$code"; return; fi
+            read_as "$(printf '%s' "${r%$'\n'*}" | jq -r '.token // empty')" "$1"
+          }
+          EOF
+          . "$RUNNER_TEMP/ghcr-read.sh"
+          token=$(curl -s -u "$GITHUB_ACTOR:$TOKEN" "https://ghcr.io/token?scope=repository:$repo:pull" | jq -r '.token // empty')
+          authed=$(read_as "$token" tags/list)
+          anon=$(anon_read tags/list)
+          echo "tags/list: authenticated $authed (must be 200); anonymous $anon (must be 401 or 403)"
           [ "$authed" = 200 ] || { echo "::error::$IMAGE is missing or not granted to this repository; a push would CREATE it, and it would inherit this public repository's visibility"; exit 1; }
-          [ "$anon" != 200 ] || { echo "::error::$IMAGE is PUBLIC; refusing to push"; exit 1; }
+          case "$anon" in 401|403) ;; *) echo "::error::$IMAGE: an anonymous read answered $anon (public, or unreadable); refusing to push"; exit 1 ;; esac
 
       - name: Build and push
         env:
@@ -82,13 +101,10 @@ jobs:
           digest=$(jq -r '."containerimage.digest"' meta.json)
           case "$digest" in sha256:*) ;; *) echo "::error::no digest in the build metadata"; exit 1 ;; esac
           # The second half of the visibility read: the pushed digest must still refuse an anonymous pull.
-          repo="${IMAGE#ghcr.io/}"
-          anon=$(curl -fsS "https://ghcr.io/token?scope=repository:$repo:pull" | jq -r .token)
-          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $anon" \
-            -H 'Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json' \
-            "https://ghcr.io/v2/$repo/manifests/$digest")
-          echo "anonymous manifest GET of the pushed digest: $code (must not be 200)"
-          [ "$code" != 200 ] || { echo "::error::$IMAGE@$digest is anonymously pullable"; exit 1; }
+          . "$RUNNER_TEMP/ghcr-read.sh"
+          code=$(anon_read "manifests/$digest")
+          echo "anonymous read of the pushed digest: $code (must be 401 or 403)"
+          case "$code" in 401|403) ;; *) echo "::error::$IMAGE@$digest: an anonymous read answered $code"; exit 1 ;; esac
           {
             echo "## FTS test image published"
             echo ""
