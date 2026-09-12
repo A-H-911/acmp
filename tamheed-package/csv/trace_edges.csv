@@ -594,6 +594,7 @@ NFR-063,ADR-0012,derives_from
 NFR-063,ADR-0016,derives_from
 NFR-064,DEC-094,derives_from
 NFR-065,DEC-098,derives_from
+OQ-081,DEF-163,relates_to
 SC-013,AC-017,scope_modifies
 SC-013,AC-018,scope_modifies
 SC-013,AC-019,scope_modifies
@@ -809,6 +810,9 @@ SC-065,SL-044,scope_adds
 SC-065,WBS-41,scope_adds
 SC-065,WBS-41.1,scope_adds
 SC-065,WBS-41.2,scope_adds
+SC-066,ADR-0047,relates_to
+SC-066,DEC-182,amends
+SC-066,WBS-41.1,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
