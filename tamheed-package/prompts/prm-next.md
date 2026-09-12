@@ -2487,8 +2487,11 @@ gate sees its absence**, so an item can be merged, verdicted and left permanentl
 finish an item, make its row a completion record naming its `AC-` ids.
 ⚠ **THAT "NO GATE SEES IT" IS NOW HALF-TRUE (2026-09-12):** still no GATE, but a SCAN sees it —
 `node scripts/gen-slice-review-slate.mjs --scan` (`WBS-40.23`, PR `#403`) lists every shipped item whose
-title names no criterion. **What it counts as a finding and when it fails are `DEC-177`'s, not this line's;
-run it rather than trusting any count of its findings written anywhere.**
+title names no criterion. **What it counts as a finding and when it fails are `DEC-177`'s as amended by
+`DEC-180` (`SC-064`), not this line's; run it rather than trusting any count of its findings written anywhere.**
+⭐ **An item done-claimed WITHOUT a criterion carries `custom_attributes.NO_CRITERION_BY_DESIGN`, citing the
+ruling that scoped it that way, in the SAME batch as its `Review` flip (`DEC-180` i3)** — a cite that does
+not resolve in the export does not exempt it.
 ✅ **`LL-030` and `LL-031` were confirmed by `DEC-087` d2/d3 and `handoff_emit` ran in the SAME
 batch**, so they bound immediately rather than in two days (`DEF-107`'s failure mode).
 
@@ -2743,7 +2746,7 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-179`, `PE-1095`, `PE-1094`, `DEC-178`, `DEC-177`, `DEF-162`, `LL-081`, `PE-1093`, `PE-1092`, `PE-1091`, `PE-1090`, `DEC-176`, `PE-1089`, `DEC-175`, `DEF-161`, `PE-1088`, `PE-1087`, `DEC-174`, `DEC-173`, `LL-080`, `PE-1083`, `DEC-172`, `SC-063`, `AC-159`, `PE-1077`, `PE-1076`, `DEC-171`, `SC-062`, `DEC-170`, `DEF-160`, `PE-1074`, `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
+   under: `DEC-180`, `SC-064`, `PE-1097`, `PE-1096`, `DEC-179`, `PE-1095`, `PE-1094`, `DEC-178`, `DEC-177`, `DEF-162`, `LL-081`, `PE-1093`, `PE-1092`, `PE-1091`, `PE-1090`, `DEC-176`, `PE-1089`, `DEC-175`, `DEF-161`, `PE-1088`, `PE-1087`, `DEC-174`, `DEC-173`, `LL-080`, `PE-1083`, `DEC-172`, `SC-063`, `AC-159`, `PE-1077`, `PE-1076`, `DEC-171`, `SC-062`, `DEC-170`, `DEF-160`, `PE-1074`, `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
    `DEF-156`, `PE-1065`, `PE-1066`,
    `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
    `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,

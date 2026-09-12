@@ -1,7 +1,7 @@
 # Memory Index — ACMP
 
 > One line per entry; detail lives in topic files and the package. Read the linked file before acting.
-> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4K CHARACTERS (not bytes — `wc -c` over-reads this emoji-heavy file by ~4%)** — past either the loader drops the tail SILENTLY; hit 2026-09-07 at ~26,000 chars. ⭐ Check with `wc -l` and `python -c "import io;print(len(io.open('.claude/memory/MEMORY.md',encoding='utf-8').read()))"` before and after every edit; keep under ~140 lines / 24,000 chars.
+> ⚠⚠ **TWO CEILINGS, BOTH MEASURED: 200 LINES and ~24.4K CHARACTERS (chars, not bytes)** — past either the loader drops the tail SILENTLY. ⭐ Check with `wc -l` and `python -c "import io;print(len(io.open('.claude/memory/MEMORY.md',encoding='utf-8').read()))"` before and after every edit; keep under ~140 lines / 24,000 chars.
 
 
 ## ★★★ 2026-09-08/09 · `DEC-150`→`DEC-153` · the DW review, the NFR verification, the 14 dispositions
@@ -84,7 +84,7 @@
 - [★ Read the implementation before calling it a defect](read-before-calling-it-a-defect.md) — **ten**+ instances, never caught by a gate. **Read the predicate, not the doc comment describing it.** ⚠ The LSP panel is stale constantly, but a fresh diagnostic on your OWN edit is usually right — it caught `CreateDefaultClient` not being virtual.
 - [★ The InMemory provider hides DB refusals](inmemory-provider-hides-db-refusals.md) — always ask "has this write ever run against SQL Server?" ⚠ Only `Acmp.Integration.Tests` is real SQL Server.
 - [★ Controls must DETECT **and** TELL](controls-must-detect-and-tell.md) — **nine** instances; the "tell" half is normally the untested one.
-- [★ Verify mechanically, not carefully](verify-mechanically-not-carefully.md) — `entity_upsert` replaces FULL rows; the JSONL flushes on EVERY write, so git HEAD is a live baseline. ⚠ **A measurement that indicts known-good code is measuring itself.** ⚠ PowerShell: always `--body-file`/`-F <file>`, never `-m` with backticks; it also joins arrays with SPACES.
+- [★ Verify mechanically, not carefully](verify-mechanically-not-carefully.md) — `entity_upsert` replaces FULL rows; the JSONL flushes on EVERY write, so git HEAD is a live baseline. ⚠ **A measurement that indicts known-good code is measuring itself.** ⚠ PowerShell: always `--body-file`/`-F <file>`, never `-m` with backticks; it also joins arrays with SPACES. ⛔ PS `Get-Content -Raw` = ANSI on BOM-less UTF-8 ⇒ a restore through it double-encodes (`PE-1097`).
 - ⚠ **`open_question.lifecycle_status` is a CHECK** over `Draft/Proposed/Approved/Rejected/Deferred/Implemented/Superseded/Obsolete` — "Resolved" rolls the whole batch back. `defect.fixed_by` is a **FK**; PR refs go in `custom_attributes`. ⚠ `progress_update` `event_type` is a CHECK too — `finding` is NOT valid; use `note`.
 - ⚠ **Env one-offs:** the keycloak container's `docker exec` shell has no `KC_BOOTSTRAP_ADMIN_PASSWORD` (read `/run/secrets/kc_bootstrap_admin_password`); Windows `python3` cannot see Git Bash's `/tmp`.
 - [⚠ Baselines are numbers, not properties](baselines-as-numbers-not-properties.md) · [⚠ Immutable history → cleanup is asymmetric](immutable-history-cleanup-asymmetry.md) — **disable a Keycloak user, never delete** · [A static file cannot configure a live realm](a-static-file-cannot-configure-a-live-realm.md) — `reconcile.sh` is the only seam to prod/UAT.
