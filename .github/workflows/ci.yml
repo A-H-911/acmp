@@ -225,6 +225,13 @@ jobs:
         run: npm ci
       - name: i18n parity (EN/AR)
         run: node ../../scripts/check-i18n.mjs
+      # NFR-039 second clause (WBS-40.1 / DW-069 step c). check-i18n compares KEYS; this gate compares VALUES
+      # against the canonical glossary (src/i18n/glossary.json, every entry the operator's - DEC-169): a short
+      # English label may carry two Arabic renderings only where the glossary allows both. --self-test first
+      # injects a divergence into an in-memory copy and requires the check to catch it (LL-013), so a green
+      # here is a check that was shown to fire, not one that ran over nothing.
+      - name: i18n terminology against the glossary (NFR-039)
+        run: node ../../scripts/check-i18n-terms.mjs --self-test
       # NFR-035 second clause (DW-042). check-i18n compares the two resource files against EACH OTHER, so it
       # is structurally blind to a label typed straight into JSX: the string never enters either file and
       # parity stays perfect. This gate reads the components instead.

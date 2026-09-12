@@ -100,6 +100,13 @@
   border-block-end: 1px solid var(--border-soft);
 }
 .rsc-skel-bar { block-size: 10px; border-radius: 5px; }
+/* Per-column bar widths; the title column varies row by row (--w, set on the row). */
+.rsc-skel-row > :nth-child(1) { inline-size: var(--w); }
+.rsc-skel-row > :nth-child(2) { inline-size: 90px; }
+.rsc-skel-row > :nth-child(3),
+.rsc-skel-row > :nth-child(4) { inline-size: 40px; }
+.rsc-skel-row > :nth-child(5) { inline-size: 78px; }
+.rsc-skel-row > :nth-child(6) { inline-size: 72px; }
 
 /* ---------- detail: header card ---------- */
 .rsc-detail { display: flex; flex-direction: column; gap: var(--sp-4); }

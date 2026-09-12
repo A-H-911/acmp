@@ -3,69 +3,44 @@
 // Emits tamheed-package/docs/i18n-term-slate.md from the two locale bundles and the glossary artefact
 // (src/Acmp.Web/src/i18n/glossary.json). DEC-165 n4 settled the shape — ONE slate, grouped by term, each
 // term's Arabic renderings side by side with the surfaces (keys) they appear on — and DEC-167 q3 settled the
-// medium: generated markdown with a `Ruling:` line per term that the operator fills in and hands back.
+// medium: generated markdown with a `Ruling:` line per term. DEC-169 filled the first one by interview.
 //
-// METHOD IS DW-069's OWN, restated so the numbers stay comparable with its 2026-08-20 census (76 of 1,037)
-// and DEC-156's 2026-09-09 re-measurement (77 of 1,098): pair every key present in BOTH bundles, keep English
-// labels of four words or fewer, group by the English string, list the distinct Arabic renderings.
+// METHOD IS DW-069's OWN (scripts/lib/i18n-terms.mjs), so the numbers stay comparable with its 2026-08-20
+// census (76 of 1,037) and DEC-156's 2026-09-09 re-measurement (77 of 1,098).
 //
 // ⚠ A LABEL WITH TWO RENDERINGS IS A CANDIDATE, NOT A DEFECT (DW-069, DEC-156 d2). Arabic adjectives agree in
 // gender and number and a noun in an إضافة drops its ال (DEC-032), so `مقبول`/`مقبولة` and `موضوع`/`الموضوع`
 // are both correct in their contexts. That is exactly why the ruling is a human's: the slate presents, it
-// does not judge, and the reviewed variant pairs become glossary.json's `allowedVariants`.
+// does not judge, and scripts/apply-i18n-term-slate.mjs turns the rulings into glossary.json.
 //
 // ⛔ THIS SCRIPT NEVER WRITES AN ARABIC VALUE INTO glossary.json AND NEVER READS THE PACKAGE STORE. It reads
 // three files under src/ and writes one markdown file under tamheed-package/docs/, which every CI workflow
 // path-ignores, so regenerating the slate runs no job.
 //
+// ⛔ IT REFUSES TO OVERWRITE A SLATE THAT CARRIES RULINGS unless --force is passed: the filled slate is the
+// record of what the operator ruled over the corpus its header names (DEC-168 r3, DEC-169), and regenerating
+// over changed bundles would silently discard those rulings. Apply them first; regenerate only for a new round.
+//
 // Trap 31: a gate with no subject must fail — the floors below refuse to emit a slate over an implausibly
 // small bundle, and a census with ZERO multi-rendering labels is refused too, because DEF-037 proved the
 // shape exists and a clean zero here would mean the pairing broke, not that the bundles are consistent.
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
+import { ROOT, MAX_WORDS, loadBundles, groupByLabel } from './lib/i18n-terms.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '..');
-const i18n = resolve(root, 'src/Acmp.Web/src/i18n');
-const out = resolve(root, 'tamheed-package/docs/i18n-term-slate.md');
-
-const MAX_WORDS = 4; // DW-069's "short label" bound
+const out = resolve(ROOT, 'tamheed-package/docs/i18n-term-slate.md');
 const MIN_PAIRED_KEYS = 1000; // bundles hold ~1,976 today; below this the pairing is broken, not small
 const MIN_LABELS = 500;
-
-const read = (p) => readFileSync(p, 'utf8');
 const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
-const enRaw = read(resolve(i18n, 'locales/en.json'));
-const arRaw = read(resolve(i18n, 'locales/ar.json'));
-const glossaryRaw = read(resolve(i18n, 'glossary.json'));
-const en = JSON.parse(enRaw);
-const ar = JSON.parse(arRaw);
-const glossary = JSON.parse(glossaryRaw);
 
-const flat = (o, p = '', acc = {}) => {
-  for (const [k, v] of Object.entries(o)) {
-    const key = p ? `${p}.${k}` : k;
-    if (v && typeof v === 'object' && !Array.isArray(v)) flat(v, key, acc);
-    else acc[key] = String(v);
-  }
-  return acc;
-};
-const E = flat(en);
-const A = flat(ar);
-const paired = Object.keys(E).filter((k) => k in A).sort();
-
-// label -> Map<arabic rendering, sorted keys>
-const groups = new Map();
-for (const k of paired) {
-  const label = E[k].trim();
-  if (!label || label.split(/\s+/).length > MAX_WORDS) continue;
-  const m = groups.get(label) ?? new Map();
-  const rendering = A[k].trim();
-  m.set(rendering, [...(m.get(rendering) ?? []), k]);
-  groups.set(label, m);
+if (existsSync(out) && /^Ruling: \S/m.test(readFileSync(out, 'utf8')) && !process.argv.includes('--force')) {
+  console.error(`refusing: ${relative(ROOT, out)} carries rulings. Apply them (scripts/apply-i18n-term-slate.mjs) and pass --force to start a new round.`);
+  process.exit(1);
 }
+
+const { enRaw, arRaw, glossaryRaw, en, ar, glossary } = loadBundles();
+const { paired, groups } = groupByLabel(en, ar);
 const multi = [...groups].filter(([, m]) => m.size > 1);
 
 if (paired.length < MIN_PAIRED_KEYS || groups.size < MIN_LABELS || multi.length === 0) {
@@ -75,23 +50,17 @@ if (paired.length < MIN_PAIRED_KEYS || groups.size < MIN_LABELS || multi.length 
   );
   process.exit(1);
 }
-for (const t of glossary.terms) {
-  const canonical = t.status === 'canonical';
-  if (canonical !== (typeof t.ar === 'string' && t.ar.length > 0)) {
-    console.error(`glossary.json: "${t.en}" is ${t.status} but ar is ${JSON.stringify(t.ar)} — canonical needs an ar, proposed needs null`);
-    process.exit(1);
-  }
-}
 
 const byLower = new Map([...groups].map(([label, m]) => [label.toLowerCase(), [label, m]]));
 const md = (s) => `\`${s}\``;
+const arList = (t) => (Array.isArray(t.ar) ? t.ar : [t.ar]);
 const lines = [];
 const push = (...ls) => lines.push(...ls);
 
 push(
   '# EN-AR term slate — `WBS-40.1` / `NFR-039` (generated; edit ONLY the `Ruling:` lines)',
   '',
-  `Generated by \`node scripts/${relative(here, fileURLToPath(import.meta.url))}\` from \`locales/en.json\` (sha256 ${sha(enRaw)}), ` +
+  `Generated by \`node scripts/gen-i18n-term-slate.mjs\` from \`locales/en.json\` (sha256 ${sha(enRaw)}), ` +
     `\`locales/ar.json\` (sha256 ${sha(arRaw)}) and \`glossary.json\` (sha256 ${sha(glossaryRaw)}). ` +
     'Regenerating over the same three files produces this file byte-identical; a different header means a different corpus.',
   '',
@@ -102,7 +71,7 @@ push(
   '**Ruling vocabulary** — write one or more clauses on the `Ruling:` line, separated by `;`:',
   '- `canonical: <ar>` — that rendering is the canonical form of the term; every other rendering listed becomes a defect to align.',
   '- `allowed: <ar> | <ar> [| <ar>] — <reason>` — those renderings are all correct in their contexts; they become a reviewed `allowedVariants` entry.',
-  '- `defect: <ar> — <note>` — that rendering is wrong (mistranslation, typo, wrong word); it becomes a `DEF-` row.',
+  '- `defect: <ar> — replace with <ar> - <note>` — that rendering is wrong; the applier replaces it on its keys with the text after `replace with`, and files nothing else.',
   '- `skip — <reason>` — leave as is, with the reason recorded.',
   '',
   '## A. Glossary terms (DOC-049\'s 22, plus the two that already have an authority)',
@@ -116,6 +85,7 @@ for (const t of glossary.terms) {
   const names = [t.en, ...(t.aliases ?? [])];
   push(`### ${t.en}`);
   if (t.status === 'canonical') push(`Canonical: ${md(t.ar)} — ${t.source}`);
+  else if (t.status === 'ruled') push(`Ruled: ${arList(t).map(md).join(' | ')} — ${t.ruling}`);
   else push(`Source: ${t.source}`);
   let any = false;
   for (const n of names) {
@@ -150,6 +120,6 @@ for (const [label, m] of sectionB) {
 
 writeFileSync(out, lines.join('\n'), 'utf8');
 console.log(
-  `wrote ${relative(root, out)}: paired=${paired.length} labels=${groups.size} multi=${multi.length} ` +
+  `wrote ${relative(ROOT, out)}: paired=${paired.length} labels=${groups.size} multi=${multi.length} ` +
     `glossaryTerms=${glossary.terms.length} sectionB=${sectionB.length}`,
 );

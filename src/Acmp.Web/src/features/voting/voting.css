@@ -38,6 +38,9 @@
 .vote-card-pad { padding: 18px 20px; }
 .vote-card-h { padding: 13px 16px; border-block-end: 1px solid var(--border); background: var(--subtle); display: flex; align-items: center; justify-content: space-between; }
 .vote-card-h h2 { margin: 0; font-size: 13px; font-weight: 600; }
+.vote-card-count { color: var(--text-3); font-weight: 500; }
+.vote-card-note { font-size: 11.5px; color: var(--text-3); }
+.vote-card-body { padding: 16px; }
 .vote-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text-3); margin-block-end: 8px; }
 .vote-motion { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.45; }
 
@@ -59,12 +62,13 @@
 .tally-swatch { inline-size: 9px; block-size: 9px; border-radius: 3px; }
 .tally-count { font-weight: 700; font-feature-settings: 'tnum'; color: var(--text); }
 .tally-track { block-size: 9px; border-radius: 5px; background: var(--sunken); overflow: hidden; }
-.tally-fill { display: block; block-size: 100%; transition: inline-size .3s; }
+.tally-fill { display: block; block-size: 100%; inline-size: var(--pct); transition: inline-size .3s; } /* --pct: the option's share */
 .tally-swatch.success, .tally-fill.success { background: var(--st-success-dot); }
 .tally-swatch.danger, .tally-fill.danger { background: var(--st-danger-dot); }
 .tally-swatch.neutral, .tally-fill.neutral { background: var(--st-neutral-dot); }
 .quorum-block { margin-block-start: 16px; padding-block-start: 14px; border-block-start: 1px solid var(--border-soft); }
 .quorum-row { display: flex; align-items: center; justify-content: space-between; margin-block-end: 8px; font-size: 12px; }
+.quorum-label { color: var(--text-2); }
 .quorum-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 .quorum-state.met { color: var(--st-success-fg); }
 .quorum-state.pending { color: var(--st-warn-fg); }
@@ -105,6 +109,7 @@
 .btn.ballot-recuse-warn:hover:not(:disabled) { background: var(--st-warn-bg); }
 .ballot-note { font-size: 10.5px; color: var(--text-3); text-align: center; margin-block-start: 8px; }
 .ballot-recorded { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-block-end: 11px; background: var(--subtle); border-radius: 9px; font-size: 12px; }
+.ballot-recorded-label { color: var(--text-3); }
 
 /* closed / chairman */
 .vote-closed { background: var(--st-success-bg); border: 1px solid var(--st-success-dot); border-radius: 12px; box-shadow: var(--shadow); padding: 14px 16px; }
@@ -115,6 +120,8 @@
 .vote-closed-panel { background: var(--surface); border: 1px solid var(--st-success-dot); border-radius: 9px; padding: 11px 13px; }
 .vote-closed-panel .vote-eyebrow { margin-block-end: 5px; }
 .vote-closed-result { font-size: 13px; font-weight: 600; }
+.vote-closed-meta { font-size: 11.5px; color: var(--text-3); margin-block-start: 6px; }
+.vote-closed-meta.ratified { color: var(--st-success-fg); }
 
 /* not-open / ineligible / recused mini-cards */
 .vote-mini { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 16px; text-align: center; }

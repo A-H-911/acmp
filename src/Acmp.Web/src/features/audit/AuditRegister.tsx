@@ -189,19 +189,19 @@ function ExportLog({ entityType }: { entityType: string }) {
 // Table-shaped loading skeleton — 8 shimmer rows over the 5-column gAudit grid.
 function AuditSkeleton() {
   const { t } = useTranslation();
-  const rowWidths = ['70%', '58%', '46%', '52%', '80%'];
+  // Bar widths per column live in audit.css.
   return (
     <div className="table-wrap" role="status" aria-busy="true">
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="aud-skel-head" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className="skeleton aud-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton aud-skel-bar" />
         ))}
       </div>
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="aud-skel-row" aria-hidden="true">
-          {rowWidths.map((w, c) => (
-            <span key={c} className="skeleton aud-skel-bar" style={{ inlineSize: w }} />
+          {Array.from({ length: 5 }).map((_, c) => (
+            <span key={c} className="skeleton aud-skel-bar" />
           ))}
         </div>
       ))}

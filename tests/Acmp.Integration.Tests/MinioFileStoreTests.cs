@@ -17,8 +17,9 @@ public sealed class MinioFileStoreTests : IAsyncLifetime
 
     // Pinned RELEASE tag, no floating :latest (reproducible). Passed explicitly rather than relying on the
     // builder default: the parameterless ctor is obsolete, and an explicit tag means a Testcontainers
-    // upgrade can't silently move which MinIO these tests run against.
-    private readonly MinioContainer _minio = new MinioBuilder("minio/minio:RELEASE.2023-01-31T02-24-19Z")
+    // upgrade can't silently move which MinIO these tests run against. From quay.io, because minio/minio
+    // was withdrawn from Docker Hub on 2026-09-11 (DEF-162); quay.io serves the same RELEASE tag.
+    private readonly MinioContainer _minio = new MinioBuilder("quay.io/minio/minio:RELEASE.2023-01-31T02-24-19Z")
         .WithUsername("minioadmin")
         .WithPassword("minioadmin")
         .Build();

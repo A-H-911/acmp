@@ -226,12 +226,12 @@ function WikiArticlePane({ docKey, canManage }: { docKey: string; canManage: boo
 
 function WikiSkeleton() {
   const { t } = useTranslation();
-  const bars = ['200px', '70%', '48%', '100%', '96%', '90%', '40%', '98%', '88%'];
+  // Nine placeholder lines; their widths live in wiki.css.
   return (
     <div className="wiki-skeleton" role="status" aria-busy="true">
       <span className="visually-hidden">{t('common.loading')}</span>
-      {bars.map((w, i) => (
-        <div key={i} className="skeleton" style={{ inlineSize: w }} aria-hidden="true" />
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div key={i} className="skeleton" aria-hidden="true" />
       ))}
     </div>
   );

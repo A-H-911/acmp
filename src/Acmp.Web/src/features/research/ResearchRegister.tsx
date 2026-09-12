@@ -29,6 +29,7 @@ import { Icon } from '../../components/icons';
 import { statusTone, initials, RESEARCH_STATUSES } from './researchMeta';
 import { formatDmy } from '../../lib/p15Date';
 import { CreateMissionDialog } from './CreateMissionDialog';
+import { cssVars } from '../../lib/cssVars';
 import './research.css';
 
 // Column id → API sortBy. Only these have a server sort (GetMissionsRegister.Sort: title/status/updated).
@@ -145,14 +146,12 @@ function ResearchSkeleton() {
   return (
     <div className="table-wrap" role="status" aria-busy="true">
       <span className="visually-hidden">{t('common.loading')}</span>
+      {/* Column widths live in research.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="rsc-skel-row" aria-hidden="true">
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: 90 }} />
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: 40 }} />
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: 40 }} />
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: 78 }} />
-          <span className="skeleton rsc-skel-bar" style={{ inlineSize: 72 }} />
+        <div key={i} className="rsc-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 6 }).map((_, c) => (
+            <span key={c} className="skeleton rsc-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
