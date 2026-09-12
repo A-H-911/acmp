@@ -31,6 +31,7 @@ import { Icon } from '../../components/icons';
 import { statusTone, categoryDot, INVARIANT_STATUSES } from './invariantMeta';
 import { CreateInvariantDialog } from './CreateInvariantDialog';
 import { GovernanceTabs } from './GovernanceTabs';
+import { cssVars } from '../../lib/cssVars';
 import './governance.css';
 
 // Column id → API sortBy. Only these have a server sort (register query: key/statement/category/status).
@@ -142,16 +143,15 @@ function InvariantsSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="inv-skel-head" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className="skeleton adr-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton adr-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in governance.css; only the statement column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="inv-skel-row" aria-hidden="true">
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 92 }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 70 }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 84 }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 78 }} />
+        <div key={i} className="inv-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 5 }).map((_, c) => (
+            <span key={c} className="skeleton adr-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
@@ -162,7 +162,7 @@ function Category({ row }: { row: InvariantSummary }) {
   const { t } = useTranslation();
   return (
     <span className="inv-cat">
-      <span className="inv-cat-dot" style={{ background: categoryDot(row.category) }} aria-hidden />
+      <span className="inv-cat-dot" ref={cssVars({ '--c': categoryDot(row.category) })} aria-hidden />
       {t(`invariants.category.${row.category}`)}
     </span>
   );

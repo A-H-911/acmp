@@ -580,8 +580,21 @@ list but the rewrite: **the corrected text names no state at all and points at t
 already recorded as this file's most common escape route — an author cannot rely on remembering what their
 own rulings just broke, so the sweep runs over the whole file, keyed on shape, every time.
 
+⚠⚠⚠ **THE SIXTIETH IS A CONTENT CLAIM ABOUT AN ARTEFACT, WRITTEN BY THE SESSION THAT WAS ABOUT TO FILL IT.**
+The `DW-069` paragraph in §6 was annotated on 2026-09-10 to say the glossary existed *"with only the two
+already-authorised Arabic values filled"* and that the clause was decidable *"ONCE THE RULINGS LAND"*. True at
+`2d87d9ec`. The same session then ran the rulings interview (`DEC-169`) and merged PR `#396`, which filled all
+24 terms — so `main` at `421a8139` carried the sentence beside the filled glossary it denied, and the
+paragraph also still called `DW-069` *"live work"* while its row was about to close `Done`. ⚠ **Not an
+escape**: no commit message asserts either clause.
+⭐ **THE SHAPE IS THE FIFTY-SIXTH's, AND ITS REMEDY WAS WRITTEN THERE:** the annotation described a state the
+author's own next unit of work was built to change. **A sentence that says how much of an artefact is done is
+a status**, however carefully it points at the register beside it — the pointer half survived and the count
+half rotted. The rewrite names no content at all. Found by the pre-export sweep keyed on the ids the round
+moved (`DW-069`, `DOC-071`, `WBS-40.1`), which is the FIFTY-SIXTH's own remedy paying.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-nine** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **sixty** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -2472,6 +2485,13 @@ how `LL-011` is discharged, so an item it cannot render is one whose review woul
 the build to NAME the criteria it satisfied — `24.8`'s never was. **Nothing enforces that amendment and no
 gate sees its absence**, so an item can be merged, verdicted and left permanently unreviewable. When you
 finish an item, make its row a completion record naming its `AC-` ids.
+⚠ **THAT "NO GATE SEES IT" IS NOW HALF-TRUE (2026-09-12):** still no GATE, but a SCAN sees it —
+`node scripts/gen-slice-review-slate.mjs --scan` (`WBS-40.23`, PR `#403`) lists every shipped item whose
+title names no criterion. **What it counts as a finding and when it fails are `DEC-177`'s as amended by
+`DEC-180` (`SC-064`), not this line's; run it rather than trusting any count of its findings written anywhere.**
+⭐ **An item done-claimed WITHOUT a criterion carries `custom_attributes.NO_CRITERION_BY_DESIGN`, citing the
+ruling that scoped it that way, in the SAME batch as its `Review` flip (`DEC-180` i3)** — a cite that does
+not resolve in the export does not exempt it.
 ✅ **`LL-030` and `LL-031` were confirmed by `DEC-087` d2/d3 and `handoff_emit` ran in the SAME
 batch**, so they bound immediately rather than in two days (`DEF-107`'s failure mode).
 
@@ -2726,7 +2746,9 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
+   under: `DEC-180`, `SC-064`, `PE-1097`, `PE-1096`, `DEC-179`, `PE-1095`, `PE-1094`, `DEC-178`, `DEC-177`, `DEF-162`, `LL-081`, `PE-1093`, `PE-1092`, `PE-1091`, `PE-1090`, `DEC-176`, `PE-1089`, `DEC-175`, `DEF-161`, `PE-1088`, `PE-1087`, `DEC-174`, `DEC-173`, `LL-080`, `PE-1083`, `DEC-172`, `SC-063`, `AC-159`, `PE-1077`, `PE-1076`, `DEC-171`, `SC-062`, `DEC-170`, `DEF-160`, `PE-1074`, `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
+   `DEF-156`, `PE-1065`, `PE-1066`,
+   `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
    `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,
    `DEC-163`, `DEC-162`, `DEC-161`, `DEC-160`, `DEC-159`, `DEC-158`, `DEC-157`,
    `DEF-156`, `DEF-155`, `SC-061`, `SC-060`, `LL-079`, `LL-078`, `LL-077`,
@@ -3037,17 +3059,15 @@ this file. ⚠ **THAT IS A COUNT OF ROWS IN ONE INSTANCE, NOT OF INSTANCES** —
 recurred a FOURTH time (`DEC-109` d5), caught again by a pre-interview sweep and not by any gate. **Two
 different quantities; do not read either as the other** (`LL-015`). **When you done-claim an item, close its `DW-` row in the same batch**, as every `WBS-24.x`
 item did.
-`DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
-says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
-stays *undecidable* until the artifact exists. ⭐ **THE REVIEWER HALF OF THAT IS DISCHARGED AS OF
-`DEC-156` d3 — IT IS THE OPERATOR** (`NFR-039`'s Verification clause had marked availability
-*[unverified]*), so this sentence's *cannot be closed by a reader of code* survives only in the sense
-that the ADJUDICATION is not the agent's. ⛔ **The dependency order is untouched** (`LL-010`): the
-artefact first, then the reviewed variant allowlist, then the check. ✅ **THE ARTEFACT EXISTS AS OF
-2026-09-10 (`DOC-071`, `DEC-167`, PR `#392`) with only the two already-authorised Arabic values filled**, so
-*"until the artifact exists"* above is history and the clause is now decidable ONCE THE RULINGS LAND — where
-they stand is `entity_query("narrative-document", id="DOC-071")` and the `Ruling:` lines in
-`tamheed-package/docs/i18n-term-slate.md`, never this sentence. `DW-071`'s new-route clause was discharged by `SL-033`;
+`DW-069`, the bilingual glossary — **its arc is HISTORY and its state is the register's**
+(`entity_query("deferred-work", id="DW-069")`, `DOC-071`, `WBS-40.1`), never this paragraph. What survives is
+the METHOD, and it is reusable for any requirement that names an authority (`LL-010`): the artefact first
+(PR `#392`, `DEC-167`), then the operator's rulings over a generated slate (`DEC-169`), then the check (PR
+`#396`) — and **every Arabic value in the product or the glossary was copied out of the slate by code, none
+typed by an agent**. ⛔ The adjudication was the operator's alone (`DEC-156` d3) and stays so: a future
+term round regenerates the slate with `--force` only after the current one is applied, and
+`scripts/apply-i18n-term-slate.mjs` refuses any corpus but the one the slate's header hashes name.
+⛔ **THIS PARAGRAPH WAS THE SIXTIETH** — see the error log at the top. `DW-071`'s new-route clause was discharged by `SL-033`;
 its SECOND clause is release sign-off, parked by `DEC-071` d4.
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling

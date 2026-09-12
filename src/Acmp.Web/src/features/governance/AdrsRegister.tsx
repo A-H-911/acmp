@@ -32,6 +32,7 @@ import { Icon } from '../../components/icons';
 import { statusTone, ADR_STATUSES } from './adrMeta';
 import { CreateAdrDialog } from './CreateAdrDialog';
 import { GovernanceTabs } from './GovernanceTabs';
+import { cssVars } from '../../lib/cssVars';
 import './governance.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetAdrsRegister.Sort: key/title/status).
@@ -143,15 +144,15 @@ function AdrsSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="adr-skel-head" aria-hidden="true">
         {Array.from({ length: 4 }).map((_, i) => (
-          <span key={i} className="skeleton adr-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton adr-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in governance.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="adr-skel-row" aria-hidden="true">
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 92 }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 78 }} />
-          <span className="skeleton adr-skel-bar" style={{ inlineSize: 96 }} />
+        <div key={i} className="adr-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 4 }).map((_, c) => (
+            <span key={c} className="skeleton adr-skel-bar" />
+          ))}
         </div>
       ))}
     </div>

@@ -122,6 +122,10 @@
   animation: skeleton-shimmer 1.4s ease infinite;
 }
 .skeleton-row { block-size: 14px; margin-block-end: var(--sp-3); }
+/* LoadingState's three placeholder lines: 60% · full · 80%. */
+.state-skeleton { inline-size: 100%; max-inline-size: 32rem; }
+.state-skeleton > .skeleton-row:first-child { inline-size: 60%; }
+.state-skeleton > .skeleton-row:last-child { inline-size: 80%; }
 @keyframes skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
 
@@ -129,6 +133,8 @@
 /* Bell popover — ACMP.dc.html L92–131. role="dialog" + click-away scrim, flex column with a
    scrolling list between a sticky header/tabs and a sticky "View all" footer. */
 .notif-scrim { position: fixed; inset: 0; z-index: 60; }
+/* TopBar: the bell wrapper is the panel's containing block; the bell button anchors .notif-badge. */
+.notif-anchor, .notif-bell { position: relative; }
 .notif-panel {
   position: absolute; inset-block-start: 46px; inset-inline-end: var(--sp-4); z-index: 70;
   inline-size: 388px; max-block-size: 560px; display: flex; flex-direction: column; overflow: hidden;
@@ -302,6 +308,8 @@
   font: inherit; font-size: 13px; cursor: pointer;
 }
 .md-editor-tool:hover { background: var(--sunken); color: var(--text); }
+.md-editor-glyph-bold { font-weight: 700; font-style: normal; }
+.md-editor-glyph-italic { font-weight: 400; font-style: italic; }
 .md-editor-input {
   display: block; inline-size: 100%; min-block-size: 96px; padding: 12px 13px; border: 0;
   background: var(--surface); color: var(--text); font: inherit; font-size: 13.5px;
@@ -309,11 +317,15 @@
 }
 
 /* ============================ Sortable list (DnD) ============================ */
+.sortable-list { list-style: none; margin: 0; padding: 0; }
+/* --dnd-transform / --dnd-transition are set by SortableRow from @dnd-kit's drag state; unset when idle. */
 .sortable-item {
   display: flex; align-items: center; gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4); margin-block-end: var(--sp-2);
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+  transform: var(--dnd-transform, none); transition: var(--dnd-transition, none);
 }
+.sortable-body { flex: 1 1 auto; min-inline-size: 0; }
 .sortable-item.dragging { box-shadow: var(--shadow-lg); border-color: var(--accent); }
 .sortable-handle {
   display: flex; align-items: center; color: var(--text-3); cursor: grab;

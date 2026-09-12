@@ -45,6 +45,13 @@
 .dialog-icon-accent { background: var(--primary-tint); color: var(--accent); }
 .dialog-title { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
 .dialog-desc { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.6; }
+/* WBS-40.5 / DW-077: whatever a dialog renders under its description starts 12px below it (--sp-3), as
+   'ACMP Create Flows & Dialogs.dc.html' draws it (the confirm-input block: padding 12px 20px 0). Keyed on
+   the description's NEXT SIBLING, not on .field: most dialogs wrap their body in a feature container
+   (.rsc-create-form, .dec-record-form, ...), so a .field-only rule would have missed nearly all of them.
+   :not(:empty) because a confirm-only dialog (ActionActions' start/unblock/verify) renders an EMPTY body
+   container, and a margin on it is blank space above the footer. */
+.dialog-desc + :not(:empty) { margin-block-start: var(--sp-3); }
 .dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 22px; }
 
 /* ============================ Toast ============================ */

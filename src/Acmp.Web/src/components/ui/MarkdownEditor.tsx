@@ -14,8 +14,6 @@ type EditorTool = {
   id: 'bold' | 'italic' | 'bulletList' | 'numberedList' | 'link';
   kind: 'text' | 'icon';
   glyph?: string;
-  weight?: number;
-  italic?: boolean;
   path?: string;
   wrap?: string;
   prefix?: string;
@@ -23,8 +21,9 @@ type EditorTool = {
 };
 
 const EDITOR_TOOLS: EditorTool[] = [
-  { id: 'bold', kind: 'text', glyph: 'B', weight: 700, wrap: '**' },
-  { id: 'italic', kind: 'text', glyph: 'I', italic: true, wrap: '*' },
+  // A text tool's glyph is drawn in its own style by `.md-editor-glyph-<id>` (components.css).
+  { id: 'bold', kind: 'text', glyph: 'B', wrap: '**' },
+  { id: 'italic', kind: 'text', glyph: 'I', wrap: '*' },
   { id: 'bulletList', kind: 'icon', path: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01', prefix: '- ' },
   { id: 'numberedList', kind: 'icon', path: 'M10 6h10M10 12h10M10 18h10M4 5l1 2M4 11l1 2', prefix: '1. ' },
   { id: 'link', kind: 'icon', path: 'M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1', link: true },
@@ -99,9 +98,8 @@ export function MarkdownEditor({
           <button
             key={tool.id}
             type="button"
-            className="md-editor-tool"
+            className={tool.kind === 'text' ? `md-editor-tool md-editor-glyph-${tool.id}` : 'md-editor-tool'}
             aria-label={t(`editor.${tool.id}`)}
-            style={tool.kind === 'text' ? { fontWeight: tool.weight ?? 400, fontStyle: tool.italic ? 'italic' : 'normal' } : undefined}
             onMouseDown={(ev) => ev.preventDefault()}
             onClick={() => onTool(tool)}
           >

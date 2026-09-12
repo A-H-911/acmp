@@ -52,3 +52,8 @@ working. `TEST-053` was the missing leg.
 and there are **zero** bilingual labels for it anywhere. Authoring nine Arabic governance terms against a
 canonical glossary that `DW-069` says does not exist is what `NFR-039` forbids. The endpoint accepts a
 corrected source; the SPA sends the topic's existing one back unchanged, and `AC-143` says so in its text.
+
+⛔ **SUPERSEDED 2026-09-11 — the section above is history.** `WBS-40.2` (PR #398, `daeaf1b0`) built the
+source picker with ten glossary labels (`TopicSource` has TEN values; `External` was missed), plus a
+read-only source on topic detail and a backlog source filter. `AC-143` is `Superseded` by `AC-159`
+(`DEC-172`, `SC-063`), which covers both fields in the dialog. Read `AC-159`, not this file.

@@ -58,7 +58,9 @@ services:
 
   minio:
     # Digest-pinned (C-SUP-01, P16b/B2b) — tag kept before @sha256: for Dependabot. e2e pulls + exercises it.
-    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    # quay.io, not Docker Hub: minio/minio was withdrawn from Docker Hub on 2026-09-11 (DEF-162). Same
+    # digest, so the same image bytes; only the registry moved.
+    image: quay.io/minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     security_opt: ["no-new-privileges:true"]   # sidecar: see the sqlserver note (C-CON-003 scoping)
     command: server /data --console-address ":9001"
     environment:
@@ -94,7 +96,7 @@ services:
   # Same pinned digest as the minio server above — that image already ships /usr/bin/mc, so this adds no new
   # supply-chain surface and nothing further to pin (C-SUP-01).
   minio-init:
-    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    image: quay.io/minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     security_opt: ["no-new-privileges:true"]
     entrypoint: ["/bin/sh", "-c"]
     # Bucket names track StorageOptions' defaults (acmp-recordings / acmp-topics). --ignore-existing keeps

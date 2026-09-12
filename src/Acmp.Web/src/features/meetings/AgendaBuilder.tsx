@@ -63,6 +63,7 @@ import { Icon } from '../../components/icons';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { agendaTone } from './agendaStatus';
 import { GuestPresenterInvite } from './GuestPresenterInvite';
+import { cssVars } from '../../lib/cssVars';
 import './meetings.css';
 
 const TIMEBOX_STEP = 5;
@@ -360,8 +361,8 @@ function BudgetBar({ used, total, remaining, over, usedPct }: { used: number; to
         </div>
       </div>
       <div className="mt-budget-track" role="progressbar" aria-valuenow={used} aria-valuemin={0} aria-valuemax={total} aria-label={t('meetings.budget.title')}>
-        <span className={`mt-budget-fill ${fillClass}`} style={{ inlineSize: `${usedPct}%` }} />
-        {bufferPct > 0 && <span className="mt-budget-buffer" style={{ inlineSize: `${bufferPct}%` }} />}
+        <span className={`mt-budget-fill ${fillClass}`} ref={cssVars({ '--pct': `${usedPct}%` })} />
+        {bufferPct > 0 && <span className="mt-budget-buffer" ref={cssVars({ '--pct': `${bufferPct}%` })} />}
       </div>
     </div>
   );

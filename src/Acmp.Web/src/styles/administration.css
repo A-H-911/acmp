@@ -90,6 +90,8 @@
   font-weight: 700;
   flex: 0 0 auto;
 }
+/* The name + email block beside an avatar (directory row, detail header): may shrink below its text. */
+.adm-user-text { min-inline-size: 0; }
 .adm-name {
   display: block;
   font-size: 13.5px;

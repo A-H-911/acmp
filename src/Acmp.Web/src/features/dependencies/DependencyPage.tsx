@@ -17,6 +17,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, kindColor } from './depMeta';
 import { hrefFor } from '../traceability/traceMeta';
+import { cssVars } from '../../lib/cssVars';
 import './dependencies.css';
 
 export function DependencyPage() {
@@ -61,7 +62,7 @@ export function DependencyPage() {
             </div>
             <h1 className="dep-detail-title">
               <span className="dep-detail-endpoint">{dep.fromKey}</span>
-              <span className="dep-detail-rel" style={{ color: kindColor(dep.kind) }}>{t(`deps.kind.${dep.kind}`)}</span>
+              <span className="dep-detail-rel" ref={cssVars({ '--c': kindColor(dep.kind) })}>{t(`deps.kind.${dep.kind}`)}</span>
               <span className="dep-detail-endpoint">{dep.toKey}</span>
             </h1>
           </header>
@@ -71,7 +72,7 @@ export function DependencyPage() {
               {facts.map((f) => (
                 <div className="dep-fact" key={f.label}>
                   <span className="dep-fact-label">{f.label}</span>
-                  <span className="dep-fact-value" style={f.color ? { color: f.color } : undefined}>{f.value}</span>
+                  <span className="dep-fact-value" ref={cssVars({ '--fact-fg': f.color })}>{f.value}</span>
                 </div>
               ))}
             </div>
