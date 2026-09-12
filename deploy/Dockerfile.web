@@ -20,7 +20,7 @@ RUN npm run build
 # (unprivileged port). Same official-nginx envsubst entrypoint (/docker-entrypoint.d) so the
 # ${KEYCLOAK_ORIGIN} template substitution is unchanged; only the listen port moves 80 -> 8080
 # (default.conf.template + compose port map + healthcheck follow).
-FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:aa8c9087d36d93e9d650c5365f883b421e8214aedbad24ade52b844c583358f1 AS final
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:2ddec616f1cb58bcac057aa388f28cb81e35137641ef4226d321714499329bd1 AS final
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown
