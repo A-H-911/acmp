@@ -1,15 +1,26 @@
 name: Publish the FTS test image (GHCR)
 
-# SL-044 / WBS-41.1 (DEC-182 f1/f2, DEC-180 i6; ADR-0047 Proposed). Builds deploy/Dockerfile.sqlserver
-# AT THE DISPATCHED REF and pushes it to a PRIVATE GHCR package, so test consumers can pull a pinned
-# digest instead of building the 4 GB image on every run (the DEF-157 / DEF-158 / DEF-161 exposure).
+# SL-044 / WBS-41.1 (DEC-182 f1/f2 as amended by DEC-183 g3, DEC-180 i6; ADR-0047 Proposed). Builds
+# deploy/Dockerfile.sqlserver AT THE DISPATCHED REF and pushes it INTO a private GHCR package, so test
+# consumers can pull a pinned digest instead of building the 4 GB image on every run (the DEF-157 /
+# DEF-158 / DEF-161 exposure).
+#
+# THIS WORKFLOW MUST NEVER BE THE FIRST TO PUSH A NAME. A package a workflow CREATES "inherits the
+# visibility and permissions model of the repository where the workflow is run"; this repository is
+# public, and a public package can never be made private again. That is how the first name,
+# acmp-sqlserver-fts-test, came out public (DEF-163). So the operator created this package private
+# and granted this repository Write, and the guard step below refuses to push unless the package
+# already EXISTS (an authenticated read succeeds) and is NOT PUBLIC (an anonymous read is refused
+# with 401 or 403). Both halves fail CLOSED: any other answer, a network error included, refuses.
+# Measured 2026-09-12: GHCR's anonymous token endpoint answers 200 for a public package, 401 for a
+# private one and 403 for a missing one; with a token, a public read is 200.
 #
 # MANUAL ONLY, AND REF-AGNOSTIC ON PURPOSE. DEC-182 f4: every Dependabot digest bump to mssql/server
 # changes the Dockerfile, so this is dispatched ON THAT BRANCH and the new pin is committed there. It
 # therefore builds whatever Dockerfile the ref holds and never assumes main.
 #
 # NOT production. ci.yml's `publish` job still pushes acmp/sqlserver-fts to ECR from main only
-# (ADR-0046's path, ADR-0047 e5). This package is the TEST image and stays private: it contains
+# (ADR-0046's path, ADR-0047 e5). This package is the TEST image and is private: it contains
 # SQL Server binaries.
 #
 # The summary prints the two values WBS-41.2's pin file records: the image DIGEST, and the sha256 of
@@ -37,7 +48,7 @@ jobs:
           set -euo pipefail
           sha=$(sha256sum deploy/Dockerfile.sqlserver | cut -d' ' -f1)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/acmp-sqlserver-fts-test" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/acmp-sqlserver-fts-private" >> "$GITHUB_OUTPUT"
           grep -n '^FROM' deploy/Dockerfile.sqlserver   # which base was built, in the job log
 
       - uses: docker/setup-buildx-action@v4
@@ -46,6 +57,38 @@ jobs:
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Refuse unless the package already exists and is not public (DEC-183 g3, DEF-163)
+        env:
+          IMAGE: ${{ steps.src.outputs.image }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Defined once here and sourced again by the push step, which re-reads the pushed digest.
+          cat > "$RUNNER_TEMP/ghcr-read.sh" <<'EOF'
+          repo="${IMAGE#ghcr.io/}"
+          # read <token> <v2 path> -> HTTP status of GET /v2/$repo/<path> with that bearer token
+          read_as() {
+            curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $1" \
+              -H 'Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json' \
+              "https://ghcr.io/v2/$repo/$2"
+          }
+          # anon_read <v2 path> -> status of an ANONYMOUS read, or the token endpoint's own refusal
+          anon_read() {
+            local r code
+            r=$(curl -s -w '\n%{http_code}' "https://ghcr.io/token?scope=repository:$repo:pull")
+            code=${r##*$'\n'}
+            if [ "$code" != 200 ]; then echo "$code"; return; fi
+            read_as "$(printf '%s' "${r%$'\n'*}" | jq -r '.token // empty')" "$1"
+          }
+          EOF
+          . "$RUNNER_TEMP/ghcr-read.sh"
+          token=$(curl -s -u "$GITHUB_ACTOR:$TOKEN" "https://ghcr.io/token?scope=repository:$repo:pull" | jq -r '.token // empty')
+          authed=$(read_as "$token" tags/list)
+          anon=$(anon_read tags/list)
+          echo "tags/list: authenticated $authed (must be 200); anonymous $anon (must be 401 or 403)"
+          [ "$authed" = 200 ] || { echo "::error::$IMAGE is missing or not granted to this repository; a push would CREATE it, and it would inherit this public repository's visibility"; exit 1; }
+          case "$anon" in 401|403) ;; *) echo "::error::$IMAGE: an anonymous read answered $anon (public, or unreadable); refusing to push"; exit 1 ;; esac
 
       - name: Build and push
         env:
@@ -57,6 +100,11 @@ jobs:
             -f deploy/Dockerfile.sqlserver -t "$IMAGE:df-$SHA" -t "$IMAGE:run-$GITHUB_RUN_ID" deploy
           digest=$(jq -r '."containerimage.digest"' meta.json)
           case "$digest" in sha256:*) ;; *) echo "::error::no digest in the build metadata"; exit 1 ;; esac
+          # The second half of the visibility read: the pushed digest must still refuse an anonymous pull.
+          . "$RUNNER_TEMP/ghcr-read.sh"
+          code=$(anon_read "manifests/$digest")
+          echo "anonymous read of the pushed digest: $code (must be 401 or 403)"
+          case "$code" in 401|403) ;; *) echo "::error::$IMAGE@$digest: an anonymous read answered $code"; exit 1 ;; esac
           {
             echo "## FTS test image published"
             echo ""
