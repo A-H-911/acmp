@@ -804,6 +804,11 @@ SC-064,WBS-26.4,scope_modifies
 SC-064,WBS-40.1,scope_modifies
 SC-064,WBS-40.23,scope_modifies
 SC-064,WBS-40.5,scope_modifies
+SC-065,ADR-0046,amends
+SC-065,SL-044,scope_adds
+SC-065,WBS-41,scope_adds
+SC-065,WBS-41.1,scope_adds
+SC-065,WBS-41.2,scope_adds
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
