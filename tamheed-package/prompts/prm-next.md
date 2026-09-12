@@ -2485,6 +2485,10 @@ how `LL-011` is discharged, so an item it cannot render is one whose review woul
 the build to NAME the criteria it satisfied — `24.8`'s never was. **Nothing enforces that amendment and no
 gate sees its absence**, so an item can be merged, verdicted and left permanently unreviewable. When you
 finish an item, make its row a completion record naming its `AC-` ids.
+⚠ **THAT "NO GATE SEES IT" IS NOW HALF-TRUE (2026-09-12):** still no GATE, but a SCAN sees it —
+`node scripts/gen-slice-review-slate.mjs --scan` (`WBS-40.23`, PR `#403`) lists every shipped item whose
+title names no criterion. **What it counts as a finding and when it fails are `DEC-177`'s, not this line's;
+run it rather than trusting any count of its findings written anywhere.**
 ✅ **`LL-030` and `LL-031` were confirmed by `DEC-087` d2/d3 and `handoff_emit` ran in the SAME
 batch**, so they bound immediately rather than in two days (`DEF-107`'s failure mode).
 
