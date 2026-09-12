@@ -3,8 +3,9 @@
  * Slice-review slate generator.  Usage:  node scripts/gen-slice-review-slate.mjs SL-033
  *                                       node scripts/gen-slice-review-slate.mjs --scan
  *
- * --scan is DW-089's check (WBS-40.23, ruled by DEC-177): it renders nothing and lists every shipped
- * item whose title names no acceptance criterion. See the SCAN block below for its rules.
+ * --scan is DW-089's check (WBS-40.23, ruled by DEC-177, amended by DEC-180): it renders nothing and
+ * lists every shipped leaf item whose title names no acceptance criterion and which carries no
+ * resolvable exemption. See the SCAN block below for its rules.
  *
  * WHY THIS EXISTS. LL-011 (Approved, pinned): an identifier is a POINTER, not a REFERENCE. An
  * artifact the operator reads to DECIDE must carry each cited record's OWN TEXT where it cites it,
@@ -102,7 +103,8 @@ const fatal = (msg) => {
  * ⛔ DEF-160 RENDERS AN ITEM'S custom_attributes BUT DELIBERATELY DOES NOT WIDEN THIS TO READ AC- IDS
  * FROM THEM. Doing so would change which criteria the slate treats as verdict-bearing for an item, and
  * no ruling says it should. The title stays the one place a completion record names its criteria;
- * --scan (DEC-177) holds rows to exactly that.
+ * --scan (DEC-177) holds rows to exactly that. The one attribute --scan does read, DEC-180's
+ * NO_CRITERION_BY_DESIGN, names a RULING, never a criterion, so it changes nothing here.
  */
 const criteriaOf = (item) => {
   const found = [...new Set((item.title.match(/\bAC-\d+\b/g) ?? []))]
@@ -142,34 +144,55 @@ const latestVerdict = (acId) => {
 
 const byNumericId = (a, b) => a.id.localeCompare(b.id, undefined, { numeric: true });
 
-/* ---- SCAN: DW-089, built by WBS-40.23, ruled by DEC-177 ------------------------------------------
+/* ---- SCAN: DW-089, built by WBS-40.23, ruled by DEC-177, amended by DEC-180 (SC-064) -------------
    The generator refuses an item that names no criterion only when somebody asks it for a slate, which
    is after merge and after verdicts; an item nobody reviews is never noticed at all (DW-089). This
    mode checks every shipped item up front instead.
    SUBJECT: every work item at Review or Implemented whose slice has at least one acceptance criterion
    bound (acceptance_criteria.slice_id, any status). Items that never shipped are outside DW-089.
-   FINDING (DEC-177 z1): the item's TITLE names no AC-, read by criteriaOf, so the scan and the slate
-   cannot drift apart. DW-089's literal reading: a criterion-less item with a recorded DW-/DEC- reason
-   is still a finding, and so is a roll-up parent.
-   EXIT (DEC-177 z2): 1 on any finding, Implemented rows included; 2 on a fault. Measured over digest
-   87ef5e58 on 2026-09-11: 32 subject items, 17 findings. The scan therefore fails on today's register
-   by the operator's choice, until those rows are amended.
-   ⚠ THE FLOOR tests the SUBJECT count, not the finding count. A scan that finds nothing among zero
-   items reads exactly like a clean one (DW-089's own warning), so fewer than SCAN_FLOOR subject items
-   is a fault, not a pass. Set at half the 32 measured on 2026-09-11; the subject set only grows as
-   items ship, so tripping it means the export or the predicate is wrong. */
+   PARENTS (DEC-180 i1, amending DEC-177 z1's "roll-up parents included"): an item that another row
+   names as parent_id is a roll-up judged through its children. It is left out by structure and
+   COUNTED on the output, so a clean result says what it did not look at.
+   FINDING (DEC-177 z1): a leaf whose TITLE names no AC-, read by criteriaOf, so the scan and the slate
+   cannot drift apart — unless it carries a valid exemption.
+   EXEMPTION (DEC-180 i1): custom_attributes.NO_CRITERION_BY_DESIGN, whose value must cite at least one
+   DEC- or DW- that RESOLVES in the export. A bare flag is a bypass anyone can write; a cite that does
+   not resolve leaves the item a finding. DEC-177 z2's premise — every finding clears by amending its
+   title — was false for items with no criterion to name, which is why this exists.
+   EXIT (DEC-177 z2): 1 on any finding, Implemented rows included; 2 on a fault.
+   ⚠ THE FLOOR tests the LEAF count, not the finding count. A scan that finds nothing among zero
+   items reads exactly like a clean one (DW-089's own warning), so fewer than SCAN_FLOOR leaves is a
+   fault, not a pass. Measured over digest 05af1441 on 2026-09-12: 33 subject items, 5 parents, 28
+   leaves. The set only grows as items ship, so tripping it means the export or the predicate is wrong. */
 const SCAN_FLOOR = 16;
+const EXEMPT_KEY = 'NO_CRITERION_BY_DESIGN';
+const exemptionOf = (w) => {
+  let attrs = w.custom_attributes;
+  if (typeof attrs === 'string') {
+    try { attrs = JSON.parse(attrs); } catch { return null; }
+  }
+  const cite = attrs && typeof attrs === 'object' ? attrs[EXEMPT_KEY] : null;
+  if (typeof cite !== 'string') return null;
+  const resolved = (cite.match(/\b(?:DEC|DW)-\d+\b/g) ?? []).filter((id) => decs[id] || dws[id]);
+  return resolved.length ? resolved : null;
+};
 if (SCAN) {
   const boundSlices = new Set(families.acceptance_criteria.map((a) => a.slice_id).filter(Boolean));
+  const hasChildren = new Set(wbs.map((w) => w.parent_id).filter(Boolean));
   const subject = wbs
     .filter((w) => ['Review', 'Implemented'].includes(w.lifecycle_status) && boundSlices.has(w.slice_id))
     .sort(byNumericId);
-  if (subject.length < SCAN_FLOOR) {
-    fatal(`scan subject is ${subject.length} item(s), below the floor of ${SCAN_FLOOR} — the export or the predicate is wrong, and a clean result over it would mean nothing`);
+  const leaves = subject.filter((w) => !hasChildren.has(w.id));
+  if (leaves.length < SCAN_FLOOR) {
+    fatal(`scan subject is ${leaves.length} leaf item(s), below the floor of ${SCAN_FLOOR} — the export or the predicate is wrong, and a clean result over it would mean nothing`);
   }
-  const findings = subject.filter((w) => criteriaOf(w).length === 0);
+  const criterionLess = leaves.filter((w) => criteriaOf(w).length === 0);
+  const exempt = criterionLess.filter((w) => exemptionOf(w));
+  const findings = criterionLess.filter((w) => !exemptionOf(w));
   console.log(`scanned ${subject.length} item(s) at Review/Implemented in slices with bound acceptance criteria (package digest ${DIGEST})`);
-  for (const w of findings) console.log(`FINDING  ${w.id}  ${w.slice_id}  ${w.lifecycle_status}  title names no AC-`);
+  console.log(`${subject.length - leaves.length} roll-up parent(s) excluded; ${leaves.length} leaf item(s) checked`);
+  for (const w of exempt) console.log(`EXEMPT   ${w.id}  ${w.slice_id}  ${EXEMPT_KEY} cites ${exemptionOf(w).join(', ')}`);
+  for (const w of findings) console.log(`FINDING  ${w.id}  ${w.slice_id}  ${w.lifecycle_status}  title names no AC-, no resolvable ${EXEMPT_KEY}`);
   console.log(`${findings.length} finding(s)`);
   process.exit(findings.length ? 1 : 0);
 }
