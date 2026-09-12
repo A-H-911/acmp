@@ -72,7 +72,7 @@ export function RelationshipsAside({ groups, total, loading, onOpenGraph }: Prop
                   aria-expanded={open}
                   onClick={() => toggle(g.key)}
                 >
-                  <span className={`rg-group-icon rg-dir-${g.dir}`} style={groupIconStyle(g.dir)}>
+                  <span className={`rg-group-icon rg-dir-${g.dir}`}>
                     <Icon name={(g.artifactType && TYPE_ICON[g.artifactType]) ?? 'deps'} size={13} aria-hidden />
                   </span>
                   <span className="rg-group-main">
@@ -119,10 +119,4 @@ export function RelationshipsAside({ groups, total, loading, onOpenGraph }: Prop
       </div>
     </aside>
   );
-}
-
-/** Direction-tinted icon chip background (design: warn/info/neutral bg by group direction). */
-function groupIconStyle(dir: TypeGroup['dir']): React.CSSProperties {
-  const tone = dir === 'up' ? 'warn' : dir === 'down' ? 'info' : 'neutral';
-  return { background: `var(--st-${tone}-bg)`, color: `var(--st-${tone}-fg)` };
 }

@@ -113,7 +113,7 @@
   font-size: 12px;
   color: var(--text-2);
 }
-.inv-cat-dot { inline-size: 7px; block-size: 7px; border-radius: 50%; flex: 0 0 auto; }
+.inv-cat-dot { inline-size: 7px; block-size: 7px; border-radius: 50%; flex: 0 0 auto; background: var(--c); }
 
 /* ---------- invariant loading skeleton (5-col gInv grid, 8 rows) ---------- */
 .inv-skel-head,
@@ -140,6 +140,15 @@
 .adr-skel-row { min-block-size: 46px; border-block-end: 1px solid var(--border-soft); }
 .adr-skel-bar { block-size: 10px; border-radius: 5px; }
 .adr-skel-head .adr-skel-bar { block-size: 9px; }
+/* Skeleton bar widths per column (both registers); the text column varies row by row (--w, set on the row). */
+.adr-skel-head .adr-skel-bar, .inv-skel-head .adr-skel-bar { inline-size: 54px; }
+.adr-skel-row > :nth-child(1), .inv-skel-row > :nth-child(1) { inline-size: 92px; }
+.adr-skel-row > :nth-child(2), .inv-skel-row > :nth-child(2) { inline-size: var(--w); }
+.adr-skel-row > :nth-child(3) { inline-size: 78px; }
+.adr-skel-row > :nth-child(4) { inline-size: 96px; }
+.inv-skel-row > :nth-child(3) { inline-size: 70px; }
+.inv-skel-row > :nth-child(4) { inline-size: 84px; }
+.inv-skel-row > :nth-child(5) { inline-size: 78px; }
 
 /* ---------- detail header ---------- */
 .adr-detail-top {

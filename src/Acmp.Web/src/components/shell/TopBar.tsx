@@ -121,11 +121,10 @@ export function TopBar() {
         <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
       </button>
 
-      <div style={{ position: 'relative' }}>
+      <div className="notif-anchor">
         <button
           type="button"
-          className="icon-btn"
-          style={{ position: 'relative' }}
+          className="icon-btn notif-bell"
           aria-label={unread > 0 ? t('notif.titleUnread', { count: unread }) : t('notif.title')}
           aria-expanded={notifOpen}
           onClick={() => setNotifOpen((o) => !o)}

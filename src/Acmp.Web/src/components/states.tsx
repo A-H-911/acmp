@@ -52,10 +52,10 @@ export function LoadingState({ label }: { label?: string }) {
   return (
     <div className="state" role="status" aria-live="polite" aria-busy="true">
       <span className="visually-hidden">{label ?? t('common.loading')}</span>
-      <div style={{ inlineSize: '100%', maxInlineSize: '32rem' }}>
-        <div className="skeleton skeleton-row" style={{ inlineSize: '60%' }} />
+      <div className="state-skeleton">
         <div className="skeleton skeleton-row" />
-        <div className="skeleton skeleton-row" style={{ inlineSize: '80%' }} />
+        <div className="skeleton skeleton-row" />
+        <div className="skeleton skeleton-row" />
       </div>
     </div>
   );

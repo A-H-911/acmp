@@ -143,8 +143,8 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-076</td>
-          <td>THE INSTANCE. `WBS-40.1` was written on 2026-09-08 from `DW-069`, and its DONE-CLAIMED-WHEN clause asserted a check that `DW-069` spends four hundred words prov…</td>
+          <td class="id">LL-081</td>
+          <td>THE INSTANCE. 2026-09-11/12, polling PR #403's, #404's and main's CI runs. Every background poller was `do { sleep; $s = gh run list ... --jq '[.[] | select(.st…</td>
           <td class="mono">improve</td>
           <td class="mono">process</td>
         </tr>
@@ -152,49 +152,44 @@
     </table>
   </div>
 
-      <article class="motion" id="LL-076">
+      <article class="motion" id="LL-081">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-076</span>
+            <span class="id">LL-081</span>
             <span class="chip chip-kind">improve</span>
             <span class="chip">process</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>A PLAN ROW DERIVED FROM A REGISTER ROW CAN INVERT THAT ROW'S OWN CONCLUSION WHILE KEEPING EVERY ONE OF ITS FACTS, BECAUSE SUMMARISING DROPS HEDGES — AND NO GATE CAN SEE IT, SINCE EVERY IDENTIFIER RESOLVES AND EVERY STATUS IS RIGHT.</h2>
+          <h2>A POLLER WHOSE EXIT TEST CANNOT EVALUATE NEVER EXITS, AND ITS SILENCE READS EXACTLY LIKE 'STILL RUNNING'. IN WINDOWS POWERSHELL 5.1 A DOUBLE QUOTE INSIDE A NATIVE COMMAND'S ARGUMENT IS STRIPPED, SO `gh ... --jq` WITH A QUOTED STRING IN THE FILTER FAILS EVERY TIME. PROVE THE PREDICATE ONCE IN THE FOREGROUND BEFORE BACKGROUNDING THE LOOP, AND BOUND EVERY LOOP.</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>THE INSTANCE. `WBS-40.1` was written on 2026-09-08 from `DW-069`, and its DONE-CLAIMED-WHEN clause asserted a check that `DW-069` spends four hundred words proving cannot exist: *"a check can show no term has two Arabic renderings in the locale bundles"*. The source row records that 55 of 76 such divergences are Arabic gender and definiteness agreement and are **CORRECT** — `Cancelled` renders as `مُلغى`, `ملغى` and `ملغاة` across three surfaces and all three are right — so collapsing them would be the bug, not the fix. Re-measured 2026-09-09: **77 of 1,098 labels**, essentially unchanged. **A check of the literal clause reports 77 failures over a correct codebase.**</p>
-<p>THE SHAPE, AND IT IS NOT A DUPLICATE OF THE TWO NEAREST LESSONS. `LL-052` says read an ARTEFACT to its end before saying what it contains. `LL-010` says open the AUTHORITY a requirement names before writing an instrument for the conformance half. **This is neither: the row WAS read, and by an author who plainly had it open, because the item is a faithful precis of it in every other clause.** What went wrong is that compressing a long row into a short done-claim **silently drops the row's HEDGES** — and a hedge is precisely the part a done-claim must keep. `DW-069`'s conclusion is *undecidable*; the item's compression of it is *decidable, and here is the check*. **The derivation inverted the source's own finding while preserving every fact in it.**</p>
-<p>WHY NOTHING MECHANICAL CAN SEE IT, WHICH IS WHAT MAKES IT WORTH A ROW. Every identifier in `WBS-40.1` resolves. Its lifecycle status is right. It is bound to the correct slice and phase. `gate_run` was **7/7** and `readiness_check("package")` was **`ready:true`** on the exact tree that carried it. `G-IDS` checks foreign keys; `G-COMPLETE` screens for placeholder tokens; **no rule compares a derived row's CLAIM against the row it was derived FROM**, and none could without reading both for meaning. The item reads as ordinary, competent scoping right up until you measure it.</p>
+          <p>THE INSTANCE. 2026-09-11/12, polling PR #403's, #404's and main's CI runs. Every background poller was `do { sleep; $s = gh run list ... --jq '[.[] | select(.status != "completed")] | length' } while ($s -ne '0')`. Windows PowerShell 5.1 strips the embedded double quotes when it passes the argument to `gh.exe`, so jq received `select(.status != completed)` and failed with `function not defined: completed/0` on every iteration. `$s` held the error text, which is never `'0'`, so all three loops would have run forever. They printed nothing, and 'nothing yet' is exactly what a running poller prints. They were found only when a fourth, BOUNDED loop printed its raw output. No decision rested on them, because every run result had been read directly; that was luck, not design.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>**WHEN A PLAN ROW (`WBS-`, `AC-`, a slice objective) IS DERIVED FROM A REGISTER ROW, RE-READ THE SOURCE ROW TO ITS END AT THE MOMENT YOU WOULD ACT ON THE DERIVED ONE — not when you wrote it — and check specifically whether the source states a LIMIT the derivation dropped.**</p>
-<p>The tells are cheap and they are all words the source uses about itself: *undecidable*, *not adjudicable by a reader of code*, *candidate set rather than a finding set*, *must not be reported as*, *cannot be closed by*, *do not let a later session*. **`DW-069` contains four of those six.**</p>
-<p>**If the derived row asserts something the source explicitly says cannot be asserted, THE DERIVED ROW IS WRONG AND THE SOURCE IS NOT.** Be sure of that direction: the derived row is newer, shorter and looks more actionable, which is exactly why it wins arguments it should lose.</p>
-<p>⭐ THE COROLLARY, WHICH SAVES TIME RATHER THAN COSTING IT: **this is what the pre-build sweep is FOR, and it works.** The sweep is the scheduled moment when the source gets re-read against the derivation. It has now STOPPED an item twice — `WBS-26.4`, where `DW-091`'s central claim was a misattributed quotation, and this one — and resized four more. ⛔ **Do not treat the sweep as ceremony to be shortened when an item looks well-specified; an item that looks well-specified is the case this lesson is about.**</p>
+          <p>(1) Before backgrounding any poll loop, run its predicate ONCE in the foreground and read the value it produces. (2) Keep quotes out of native-command filters in PowerShell: select a bare field (`--jq '.[].status'`) and do the comparison in PowerShell. (3) Bound every loop by an iteration count, and print the raw predicate value at exit, so that a loop which cannot evaluate says so instead of waiting. (4) Treat a poller that has gone quiet as suspect, not as a sign the runs are still going.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>Every mechanical check this package owns operates on identifiers, statuses, foreign keys and token patterns. A derivation error preserves all four perfectly — it is a claim about MEANING, made in prose, inside a row whose every column is correct. That is why the failure survives a green board, and why the only instrument that reaches it is a human re-reading the source at the moment of action. Recording it as a lesson rather than leaving it inside `DEC-156`'s rationale matters because the decision row explains one instance, while the pattern applies to every `WBS-` and `AC-` this project derives from a register row — which is most of them.</p>
+          <p>An unbounded loop turns an evaluation failure into a hang, and a hang in the background is invisible. The fault sits in the shell's argument passing, not in the filter, so reading the filter cannot reveal it; only running it does. The project already recorded the same silence-as-health failure once, when jq was not installed at all (see the `jq IS NOT INSTALLED` memory note); this is the next form of it.</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>An item whose done-claim cannot be satisfied is caught before any code is written, at the cost of re-reading one row. The two instances so far each stopped an item that would otherwise have produced either a check reporting failures over correct code, or a reversal of an explicit operator decision.</p>
+          <p>A broken poller fails loudly on its first iteration, or at worst at its bound, and never stands in for a CI result.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>A session builds to a done-claim that cannot be met, and discovers it only after writing the check and watching it report dozens of failures over code nobody should change — at which point the tempting repair is to weaken the check rather than the claim, which enshrines the inversion in a committed instrument.</p>
+          <p>A session waits on a poller that can never report, or worse, reads its silence as 'CI still running' and makes a decision on that.</p>
         </div>
       </article>
 
   <footer>
     Generated from the tamheed export tamheed-package/exports/lessons.json, written by the MCP tool
     <code>entity_export</code>, by scripts/gen-lesson-docket.mjs.<br>
-    Package digest at export: <code>a93c594a58e9e4f4c1a56795083a377869b04f2a25606b1589d22d3629ee0e55</code> &mdash; run <code>package_verify()</code>; the same
+    Package digest at export: <code>8eaf448b365336111b5d065b96de181f74b608413146764a5ce5ed79cb89eb88</code> &mdash; run <code>package_verify()</code>; the same
     digest means nothing has changed since this page was generated.<br>
-    1 of 76 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    1 of 81 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>

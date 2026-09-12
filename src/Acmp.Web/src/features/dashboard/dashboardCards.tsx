@@ -11,6 +11,7 @@ import { Num } from '../../lib/numberFmt';
 import type { StatusTone } from '../../components/ui/StatusChip';
 import { Icon } from '../../components/icons';
 import { LoadingState, ErrorState } from '../../components/states';
+import { cssVars } from '../../lib/cssVars';
 
 /** StatusChip tones and the design's status CSS-var groups differ for one name
  *  ('scheduled' → --st-sched-*). Map before building a token reference. */
@@ -23,7 +24,7 @@ export function DashCard({
   span, title, headerRight, children,
 }: { span: number; title: string; headerRight?: ReactNode; children: ReactNode }) {
   return (
-    <section className="dash-card" style={{ gridColumn: `span ${span}` }}>
+    <section className="dash-card" ref={cssVars({ '--span': String(span) })}>
       <div className="dash-card-head">
         <h2 className="dash-card-title">{title}</h2>
         {headerRight}
@@ -44,14 +45,14 @@ export function SegmentBar({ segments, total }: { segments: Segment[]; total: nu
       <div className="dash-seg" aria-hidden="true">
         {total > 0
           ? segments.filter((s) => s.count > 0).map((s) => (
-              <span key={s.key} style={{ inlineSize: `${(s.count / total) * 100}%`, background: dotVar(s.tone) }} />
+              <span key={s.key} ref={cssVars({ '--pct': `${(s.count / total) * 100}%`, '--c': dotVar(s.tone) })} />
             ))
           : null}
       </div>
       <ul className="dash-legend">
         {segments.map((s) => (
           <li key={s.key}>
-            <span className="dash-legend-dot" style={{ background: dotVar(s.tone) }} />
+            <span className="dash-legend-dot" ref={cssVars({ '--c': dotVar(s.tone) })} />
             <b><Num value={s.count} /></b> {s.label}
           </li>
         ))}
@@ -67,7 +68,7 @@ export function StatTiles({ tiles }: { tiles: StatTile[] }) {
     <div className="dash-stats">
       {tiles.map((s) => (
         <div key={s.key} className="dash-stat">
-          <div className="dash-stat-v" style={s.tone ? { color: `var(--st-${TONE_VAR[s.tone]}-fg)` } : undefined}>{typeof s.value === 'number' ? <Num value={s.value} /> : s.value}</div>
+          <div className="dash-stat-v" ref={cssVars({ '--stat-fg': s.tone && `var(--st-${TONE_VAR[s.tone]}-fg)` })}>{typeof s.value === 'number' ? <Num value={s.value} /> : s.value}</div>
           <div className="dash-stat-l">{s.label}</div>
         </div>
       ))}

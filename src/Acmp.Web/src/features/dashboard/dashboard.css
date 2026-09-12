@@ -44,9 +44,10 @@
   gap: 16px;
 }
 @media (max-width: 900px) {
-  .dash-grid { grid-template-columns: 1fr; } /* inline `span N` clamps to the single column */
+  .dash-grid { grid-template-columns: 1fr; } /* `span N` clamps to the single column */
 }
 .dash-card {
+  grid-column: span var(--span); /* DashCard's span, set as --span */
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -102,6 +103,8 @@
   background: var(--sunken);
   margin-block-end: 13px;
 }
+/* One segment per non-empty bucket: its share as --pct, its tone's dot colour as --c. */
+.dash-seg > span { inline-size: var(--pct); background: var(--c); }
 .dash-legend {
   display: flex;
   gap: 16px;
@@ -123,6 +126,7 @@
   block-size: 8px;
   border-radius: 2px;
   flex: 0 0 auto;
+  background: var(--c);
 }
 .dash-urgency {
   display: flex;
@@ -153,6 +157,7 @@
   font-weight: 700;
   letter-spacing: -0.5px;
   font-feature-settings: 'tnum';
+  color: var(--stat-fg, inherit); /* a toned tile sets --stat-fg; an untoned one inherits */
 }
 .dash-stat-l {
   margin-block-start: 2px;

@@ -154,6 +154,8 @@
   font-size: 14px;
   font-weight: 700;
   font-feature-settings: 'tnum';
+  background: var(--bg); /* the cell's zone: --bg/--fg */
+  color: var(--fg);
 }
 .rpt-matrix-cap {
   text-align: center;
@@ -182,6 +184,7 @@
   font-weight: 700;
   letter-spacing: -0.5px;
   font-feature-settings: 'tnum';
+  color: var(--stat-fg, inherit); /* a zoned tile sets --stat-fg; an unzoned one inherits */
 }
 .rpt-stat-l {
   margin-block-start: 2px;
@@ -213,6 +216,8 @@
   display: block;
   block-size: 100%;
   border-radius: 5px;
+  inline-size: var(--pct);
+  background: var(--c);
 }
 .rpt-bars-empty {
   margin: 0;
@@ -341,7 +346,7 @@
   block-size: 100%;
 }
 .rpt-col-v { font-size: 10.5px; color: var(--text-3); font-feature-settings: 'tnum'; }
-.rpt-col-bar { inline-size: 100%; border-radius: 5px 5px 0 0; min-block-size: 3px; }
+.rpt-col-bar { inline-size: 100%; border-radius: 5px 5px 0 0; min-block-size: 3px; block-size: var(--pct); background: var(--c); }
 .rpt-cols-labels {
   display: flex;
   gap: 8px;
@@ -357,6 +362,7 @@
   overflow: hidden;
   background: var(--sunken);
 }
+.rpt-stack > span { inline-size: var(--pct); background: var(--c); } /* one segment per non-empty zone */
 .rpt-stack-legend {
   display: flex;
   flex-wrap: wrap;
@@ -371,7 +377,7 @@
   color: var(--text-2);
 }
 .rpt-stack-legend b { color: var(--text); font-weight: 600; font-feature-settings: 'tnum'; }
-.rpt-stack-dot { inline-size: 9px; block-size: 9px; border-radius: 3px; flex: 0 0 auto; }
+.rpt-stack-dot { inline-size: 9px; block-size: 9px; border-radius: 3px; flex: 0 0 auto; background: var(--c); }
 
 /* ---------- honest-empty (trend / seam) card body ---------- */
 .rpt-empty-card {
@@ -418,6 +424,7 @@
 .rpt-skel-head .rpt-skel-bar {
   block-size: 13px;
   border-radius: 6px;
+  inline-size: 40%;
 }
 .rpt-skel-kpi {
   display: block;
@@ -431,6 +438,10 @@
   flex-direction: column;
   gap: 12px;
 }
+.rpt-skel-lines > :nth-child(1) { inline-size: 100%; }
+.rpt-skel-lines > :nth-child(2) { inline-size: 85%; }
+.rpt-skel-lines > :nth-child(3) { inline-size: 70%; }
+.rpt-skel-lines > :nth-child(4) { inline-size: 90%; }
 @media (prefers-reduced-motion: reduce) {
   .rpt-skel { animation: none; }
 }

@@ -243,9 +243,9 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['traceability'] });
   });
 
-  // FR-164 / DW-032. Sends BOTH fields because the endpoint and the domain method take both; the
-  // caller supplies the topic's existing source unchanged, since no surface offers a TopicSource yet
-  // (DW-076). Invalidates the BACKLOG as well as the detail: type is a backlog column and a facet.
+  // FR-164 / DW-032. Sends BOTH fields because the endpoint and the domain method take both (the
+  // dialog offers both since WBS-40.2). Invalidates the BACKLOG as well as the detail: type is a
+  // backlog column and facet, and source a facet.
   it('useReclassifyTopic POSTs the type and source, and invalidates backlog + detail', async () => {
     const spy = stubFetch(() => ({ status: 204 }));
     const { client, wrapper } = makeQueryWrapper();
