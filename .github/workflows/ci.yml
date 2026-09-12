@@ -75,6 +75,13 @@ jobs:
           ACMP_STALL_ARTEFACT_DIR: ${{ github.workspace }}/stall-artefacts
         run: dotnet test acmp.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
+      # ADR-0047's confirmation: the job log names the FTS image the tests ran on. FtsImage's own "pulled" line
+      # does not reach this log at dotnet test's default verbosity (measured on PR #408's first run), so Docker
+      # is asked directly. `always()`: a red run is exactly when the digest matters.
+      - name: FTS image the integration tests used (ADR-0047)
+        if: always()
+        run: docker image inspect acmp/sqlserver-fts:pinned --format 'acmp/sqlserver-fts:pinned = {{json .RepoDigests}}' || echo "acmp/sqlserver-fts:pinned is not present (the tests did not reach the pull)"
+
       # DEF-121 clause (2) asks for a captured log that NAMES A CAUSE. On the recorded occurrence the
       # container's stdout was captured and named none, while /var/opt/mssql/log — errorlog, the SQLPAL
       # stack dump handle-crash.sh writes, and the core file it referenced by path — died with the
