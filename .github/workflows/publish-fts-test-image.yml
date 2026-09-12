@@ -1,0 +1,71 @@
+name: Publish the FTS test image (GHCR)
+
+# SL-044 / WBS-41.1 (DEC-182 f1/f2, DEC-180 i6; ADR-0047 Proposed). Builds deploy/Dockerfile.sqlserver
+# AT THE DISPATCHED REF and pushes it to a PRIVATE GHCR package, so test consumers can pull a pinned
+# digest instead of building the 4 GB image on every run (the DEF-157 / DEF-158 / DEF-161 exposure).
+#
+# MANUAL ONLY, AND REF-AGNOSTIC ON PURPOSE. DEC-182 f4: every Dependabot digest bump to mssql/server
+# changes the Dockerfile, so this is dispatched ON THAT BRANCH and the new pin is committed there. It
+# therefore builds whatever Dockerfile the ref holds and never assumes main.
+#
+# NOT production. ci.yml's `publish` job still pushes acmp/sqlserver-fts to ECR from main only
+# (ADR-0046's path, ADR-0047 e5). This package is the TEST image and stays private: it contains
+# SQL Server binaries.
+#
+# The summary prints the two values WBS-41.2's pin file records: the image DIGEST, and the sha256 of
+# the Dockerfile it was built from. A tag is movable; the digest is what consumers pull.
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Granted per-job, as `publish` in ci.yml does with id-token: nothing else in this file can write.
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Identify what is being built
+        id: src
+        run: |
+          set -euo pipefail
+          sha=$(sha256sum deploy/Dockerfile.sqlserver | cut -d' ' -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/acmp-sqlserver-fts-test" >> "$GITHUB_OUTPUT"
+          grep -n '^FROM' deploy/Dockerfile.sqlserver   # which base was built, in the job log
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build and push
+        env:
+          IMAGE: ${{ steps.src.outputs.image }}
+          SHA: ${{ steps.src.outputs.sha }}
+        run: |
+          set -euo pipefail
+          docker buildx build --push --provenance=false --metadata-file meta.json \
+            -f deploy/Dockerfile.sqlserver -t "$IMAGE:df-$SHA" -t "$IMAGE:run-$GITHUB_RUN_ID" deploy
+          digest=$(jq -r '."containerimage.digest"' meta.json)
+          case "$digest" in sha256:*) ;; *) echo "::error::no digest in the build metadata"; exit 1 ;; esac
+          {
+            echo "## FTS test image published"
+            echo ""
+            echo "- ref: \`$GITHUB_REF\` @ \`$GITHUB_SHA\`"
+            echo "- dockerfile_sha256: \`$SHA\`"
+            echo "- image: \`$IMAGE@$digest\`"
+            echo ""
+            echo "Pin (WBS-41.2):"
+            echo '```json'
+            printf '{ "dockerfile_sha256": "%s", "image": "%s@%s" }\n' "$SHA" "$IMAGE" "$digest"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
