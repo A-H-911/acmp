@@ -7,7 +7,7 @@ owner: lead-secretary
 
 # Glossary — ACMP
 
-The committee terms ACMP is built around, one line each (from `README.md` §G). The precise distinctions between *principle / standard / policy / constraint / invariant / decision / ADR* are defined once in [governance.md](governance.md) § "Concept disambiguation" and are not repeated here. EN↔AR term pairing is maintained in the design and i18n resources, not in this file.
+The committee terms ACMP is built around, one line each (from `README.md` §G). The precise distinctions between *principle / standard / policy / constraint / invariant / decision / ADR* are defined once in [governance.md](governance.md) § "Concept disambiguation" and are not repeated here. EN↔AR term pairing is maintained in `src/Acmp.Web/src/i18n/glossary.json` (the canonical bilingual glossary, `WBS-40.1` / `DEC-167`), not in this file.
 
 | Term | Definition |
 |---|---|

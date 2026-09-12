@@ -25,6 +25,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, exposureTone, exposureMatrix } from './riskMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
+import { cssVars } from '../../lib/cssVars';
 import './risks.css';
 
 export function RiskPage() {
@@ -78,7 +79,7 @@ export function RiskPage() {
               {facts.map((f) => (
                 <div className="rsk-fact" key={f.label}>
                   <span className="rsk-fact-label">{f.label}</span>
-                  <span className="rsk-fact-value" style={f.color ? { color: f.color } : undefined}>{f.value}</span>
+                  <span className="rsk-fact-value" ref={cssVars({ '--fact-fg': f.color })}>{f.value}</span>
                 </div>
               ))}
             </div>
@@ -93,7 +94,7 @@ export function RiskPage() {
                   {matrix.map((mr, r) => (
                     <div className="rsk-matrix-row" key={r}>
                       {mr.map((mc, c) => (
-                        <span key={c} className="rsk-matrix-cell" style={{ background: mc.bg, borderColor: mc.bd }} />
+                        <span key={c} className="rsk-matrix-cell" ref={cssVars({ '--bg': mc.bg, '--bd': mc.bd })} />
                       ))}
                     </div>
                   ))}
@@ -102,7 +103,7 @@ export function RiskPage() {
               <dl className="rsk-legend">
                 <div><dt>{t('risks.fact.prob')}</dt><dd>{t(`risks.level.${risk.likelihood}`)}</dd></div>
                 <div><dt>{t('risks.fact.impact')}</dt><dd>{t(`risks.level.${risk.impact}`)}</dd></div>
-                <div><dt>{t('risks.fact.exposure')}</dt><dd style={{ color: expFg }}>{t(`risks.exposure.${risk.exposure}`)}</dd></div>
+                <div><dt>{t('risks.fact.exposure')}</dt><dd ref={cssVars({ '--fact-fg': expFg })}>{t(`risks.exposure.${risk.exposure}`)}</dd></div>
               </dl>
             </div>
           </section>

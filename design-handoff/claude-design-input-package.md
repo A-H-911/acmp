@@ -110,7 +110,7 @@ The hardest UX problem: make traceability **understandable, not overwhelming**. 
 - **Permission-denied:** clear, non-alarming "you don't have access" with who to contact.
 
 ## 18. Arabic & RTL requirements
-Full RTL mirroring of layout, navigation, icons (directional), tables, kanban, and DnD. **Consistent EN↔AR terminology** (a shared glossary — see `/docs/README §G`). Arabic typography with a proper Arabic font and correct shaping. Numerals and dates: **Gregorian**, localized formatting. Every screen must be designed and reviewed in both directions; AR is first-class, not an afterthought.
+Full RTL mirroring of layout, navigation, icons (directional), tables, kanban, and DnD. **Consistent EN↔AR terminology** (a shared glossary — `src/Acmp.Web/src/i18n/glossary.json`, the canonical bilingual terms per `WBS-40.1`). Arabic typography with a proper Arabic font and correct shaping. Numerals and dates: **Gregorian**, localized formatting. Every screen must be designed and reviewed in both directions; AR is first-class, not an afterthought.
 
 ## 19. Light & dark mode
 Both first-class via design tokens. Ensure status/semantic colors keep meaning and contrast in both. Sensitive, calm palette suitable for a government tool.

@@ -40,6 +40,7 @@ export interface BacklogParams {
   type?: string;
   stream?: string;
   urgency?: string;
+  source?: string;
   ownerId?: string;
   search?: string;
   includeClosed?: boolean;
@@ -56,6 +57,7 @@ function toQuery(p: BacklogParams): string {
   if (p.type) q.set('type', p.type);
   if (p.stream) q.set('stream', p.stream);
   if (p.urgency) q.set('urgency', p.urgency);
+  if (p.source) q.set('source', p.source);
   if (p.ownerId) q.set('ownerId', p.ownerId);
   if (p.search) q.set('search', p.search);
   if (p.includeClosed) q.set('includeClosed', 'true');
@@ -356,8 +358,8 @@ export function useReopenTopic(key: string | undefined) {
  * was looking at has just been retired to Converted and is no longer the live artifact.
  */
 // FR-164 / DW-032: correct a topic's classification during triage. The endpoint takes BOTH type and
-// source because the domain method does; the UI sends the topic's existing source unchanged, since no
-// surface in the product has ever displayed or offered a TopicSource (DW-076).
+// source because the domain method does, and since WBS-40.2 (DEC-171) the reclassify dialog offers
+// both — each pre-set to the topic's current value, so an unchanged field is sent back as it was.
 export function useReclassifyTopic(key: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

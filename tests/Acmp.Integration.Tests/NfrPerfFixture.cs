@@ -13,8 +13,6 @@ using Acmp.Modules.Traceability.Infrastructure.Persistence;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
 using Acmp.Shared.Infrastructure.Configuration;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Images;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
@@ -50,8 +48,9 @@ namespace Acmp.Integration.Tests;
  * PE-1045). Trap 27 exists to prevent exactly this.
  *
  * ⚠ THE FTS IMAGE IS REQUIRED, NOT PREFERRED. NFR-004 measures full-text search and the stock mssql
- * image ships WITHOUT it, so this boots deploy/Dockerfile.sqlserver — the image SearchProvidersFtsTests
- * builds. It is deliberately a SEPARATE fixture from that suite: DEC-077 d3 puts a standing
+ * image ships WITHOUT it, so this boots deploy/Dockerfile.sqlserver — the image FtsImage builds once per
+ * run for this fixture and SearchProvidersFtsTests alike (DEF-161). It is deliberately a SEPARATE fixture
+ * from that suite: DEC-077 d3 puts a standing
  * STOP-on-red rule on SearchProvidersFtsTests, and folding a perf measurement into a suite nobody may
  * re-run would muddy both verdicts.
  *
@@ -70,14 +69,6 @@ public sealed class NfrPerfFixture : IAsyncLifetime
     /// <summary>The key prefix every seeded row carries, so a test can prove it measured THESE rows.</summary>
     public const string SeedKeyPrefix = "TOP-PERF-";
 
-    private readonly IFutureDockerImage _image = new ImageFromDockerfileBuilder()
-        .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "deploy")
-        .WithDockerfile("Dockerfile.sqlserver")
-        .WithName("acmp/sqlserver-fts:test")   // same tag as SearchProvidersFtsTests, so the ~160s build is shared
-        .WithCleanUp(false)                    // DEF-140: keep it cached, and keep the build output visible
-        .WithLogger(DockerBuildLog.Instance)
-        .Build();
-
     private MsSqlContainer _container = null!;
 
     private readonly IClock _clock = new TestClock();
@@ -94,8 +85,10 @@ public sealed class NfrPerfFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await ContainerStartup.BuildOrFailFastAsync(_image, "SQL Server FTS (deploy/Dockerfile.sqlserver)");
-        _container = new MsSqlBuilder(_image).Build();
+        // DEF-161: the image is built once per test run and shared with SearchProvidersFtsTests - the BUILD only.
+        // The container, the databases and the verdicts stay separate, as the header above requires; what is
+        // now shared is that one failed build reds both, which both DEF-158 occurrences already did.
+        _container = new MsSqlBuilder(await FtsImage.BuildOnceAsync()).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS, NFR perf)");
 
         var started = System.Diagnostics.Stopwatch.StartNew();

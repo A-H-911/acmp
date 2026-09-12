@@ -28,6 +28,10 @@
 .rg-group-btn { display: flex; align-items: center; gap: 9px; inline-size: 100%; text-align: start; border: 0; background: transparent; padding: 10px 16px; color: var(--text); }
 .rg-group-btn:hover { background: var(--subtle); }
 .rg-group-icon { inline-size: 24px; block-size: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+/* Direction-tinted icon chip (design: warn/info/neutral by group direction); the fg comes from .rg-dir-*. */
+.rg-group-icon.rg-dir-up { background: var(--st-warn-bg); }
+.rg-group-icon.rg-dir-down { background: var(--st-info-bg); }
+.rg-group-icon.rg-dir-related { background: var(--st-neutral-bg); }
 .rg-group-main { flex: 1 1 auto; min-inline-size: 0; }
 .rg-group-label-row { display: flex; align-items: center; gap: 7px; }
 .rg-group-label { font-size: 12.5px; font-weight: 600; }
@@ -68,6 +72,8 @@
 .ig-toggles { display: flex; align-items: center; gap: 9px; }
 .ig-toggle { display: inline-flex; align-items: center; gap: 7px; block-size: 30px; padding-inline: 11px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-2); border-radius: 8px; font-size: 12px; font-weight: 600; }
 .ig-toggle-dot { inline-size: 9px; block-size: 9px; border-radius: 3px; }
+.ig-toggle--blocked .ig-toggle-dot { background: var(--st-danger-dot); }
+.ig-toggle--cross .ig-toggle-dot { background: var(--st-warn-dot); }
 .ig-toggle--blocked[aria-pressed='true'] { border-color: var(--st-danger-dot); background: var(--st-danger-bg); color: var(--st-danger-fg); }
 .ig-toggle--cross[aria-pressed='true'] { border-color: var(--st-warn-dot); background: var(--st-warn-bg); color: var(--st-warn-fg); }
 
@@ -76,22 +82,25 @@
 /* ---------- SVG canvas ---------- */
 .ig-sr { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .ig-scroll { position: relative; overflow: auto; }
-.ig-canvas { position: relative; margin: 0 auto; }
+.ig-canvas { position: relative; margin: 0 auto; inline-size: var(--canvas-w); block-size: var(--canvas-h); }
 .ig-edges { position: absolute; inset: 0; transform-origin: center; pointer-events: none; }
 .ig-edges--rtl { transform: scaleX(-1); }
 @media (prefers-reduced-motion: no-preference) {
   @keyframes acmpDash { to { stroke-dashoffset: -12; } }
   .ig-edge--animated { animation: acmpDash 0.6s linear infinite; }
 }
-.ig-tier-label { position: absolute; inset-block-start: 8px; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-3); }
-.ig-node { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; gap: 5px; padding: 9px 11px; border-radius: 10px; text-align: start; overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); transition: opacity 0.15s, border-color 0.15s; }
+/* Tier labels and nodes are placed by graphLayout: --x / --y are the layout's logical offsets.
+   152 × 94 is the node card size graphLayout lays out against (and a tier label spans one column). */
+.ig-tier-label { position: absolute; inset-block-start: 8px; inset-inline-start: var(--x); inline-size: 152px; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-3); }
+.ig-node { position: absolute; inset-inline-start: var(--x); inset-block-start: var(--y); inline-size: 152px; block-size: 94px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; gap: 5px; padding: 9px 11px; border-radius: 10px; text-align: start; overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); transition: opacity 0.15s, border-color 0.15s; }
 .ig-node:hover { border-color: var(--accent); }
+.ig-node--dim { opacity: 0.3; } /* outside the active highlight */
 .ig-node--focus { border-width: 2px; border-color: var(--accent); background: var(--primary-tint); box-shadow: var(--shadow-lg); }
 /* A node matched by an active toggle gets the affirmative coloured border (reference `bd`). */
 .ig-node--hitBlocked { border-color: var(--st-danger-dot); }
 .ig-node--hitCross { border-color: var(--st-warn-dot); }
 .ig-node-row { display: flex; align-items: center; gap: 6px; }
-.ig-node-typedot { inline-size: 7px; block-size: 7px; border-radius: 2px; flex: 0 0 auto; }
+.ig-node-typedot { inline-size: 7px; block-size: 7px; border-radius: 2px; flex: 0 0 auto; background: var(--c); } /* typeColor() */
 .ig-node-key { font-family: var(--mono); font-size: 10px; color: var(--text-2); }
 .ig-node--focus .ig-node-key { color: var(--accent); }
 .ig-node-blocked { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 3px; font-size: 8.5px; font-weight: 700; color: var(--st-danger-fg); background: var(--st-danger-bg); border-radius: 4px; padding: 0 4px; }
@@ -107,7 +116,7 @@
 .ig-focusbar-title { color: var(--text-2); }
 .ig-legend { display: flex; align-items: center; gap: 14px; margin-inline-start: auto; flex-wrap: wrap; }
 .ig-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
-.ig-legend-dot { inline-size: 9px; block-size: 9px; border-radius: 2px; }
+.ig-legend-dot { inline-size: 9px; block-size: 9px; border-radius: 2px; background: var(--c); } /* typeColor() */
 .ig-hint { padding: 8px 16px 12px; font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 7px; }
 .ig-empty { padding: 48px 16px; text-align: center; font-size: 13px; color: var(--text-3); }
 
@@ -119,7 +128,7 @@
 .igl-path-key--focus { color: var(--accent); font-weight: 700; }
 .igl-path-key--stream { color: var(--text-3); font-weight: 500; }
 .igl-tree { display: flex; flex-direction: column; gap: 3px; }
-.igl-row { position: relative; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface); text-decoration: none; }
+.igl-row { position: relative; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface); text-decoration: none; margin-inline-start: var(--indent); } /* --indent: the row's tier depth */
 .igl-row:hover, .igl-row:focus-visible { border-color: var(--accent); }
 .igl-row--hitBlocked { border-color: var(--st-danger-dot); background: var(--st-danger-bg); }
 .igl-row--hitCross { border-color: var(--st-warn-dot); background: var(--st-warn-bg); }
@@ -129,7 +138,7 @@
 .igl-rel-up { color: var(--st-warn-fg); }
 .igl-rel-down { color: var(--st-info-fg); }
 .igl-rel-related { color: var(--st-neutral-fg); }
-.igl-typedot { inline-size: 8px; block-size: 8px; border-radius: 2px; flex: 0 0 auto; }
+.igl-typedot { inline-size: 8px; block-size: 8px; border-radius: 2px; flex: 0 0 auto; background: var(--c); } /* typeColor() */
 .igl-key { font-family: var(--mono); font-size: 11px; color: var(--accent); flex: 0 0 auto; }
 .igl-title { flex: 1 1 auto; min-inline-size: 0; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .igl-blocked { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; color: var(--st-danger-fg); background: var(--st-danger-bg); border-radius: 5px; padding: 1px 6px; flex: 0 0 auto; }

@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 /*
  * Slice-review slate generator.  Usage:  node scripts/gen-slice-review-slate.mjs SL-033
+ *                                       node scripts/gen-slice-review-slate.mjs --scan
+ *
+ * --scan is DW-089's check (WBS-40.23, ruled by DEC-177, amended by DEC-180): it renders nothing and
+ * lists every shipped leaf item whose title names no acceptance criterion and which carries no
+ * resolvable exemption. See the SCAN block below for its rules.
  *
  * WHY THIS EXISTS. LL-011 (Approved, pinned): an identifier is a POINTER, not a REFERENCE. An
  * artifact the operator reads to DECIDE must carry each cited record's OWN TEXT where it cites it,
@@ -30,9 +35,10 @@ import { loadSnapshot, ExportError } from './lib/package-export.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const SLICE = process.argv[2];
-if (!SLICE || !/^SL-\d+$/.test(SLICE)) {
-  console.error('usage: node scripts/gen-slice-review-slate.mjs <SL-nnn>');
+const SCAN = process.argv[2] === '--scan';
+const SLICE = SCAN ? null : process.argv[2];
+if (!SCAN && (!SLICE || !/^SL-\d+$/.test(SLICE))) {
+  console.error('usage: node scripts/gen-slice-review-slate.mjs <SL-nnn> | --scan');
   process.exit(2);
 }
 
@@ -72,12 +78,6 @@ const fatal = (msg) => {
   process.exit(2);
 };
 
-if (!slices[SLICE]) fatal(`slice ${SLICE} not found`);
-
-/* Items awaiting the operator: Review is done-claimed by the agent, never a verdict. */
-const items = wbs.filter((w) => w.slice_id === SLICE && w.lifecycle_status === 'Review');
-if (!items.length) fatal(`no work items in ${SLICE} are at Review — there is nothing to adjudicate`);
-
 /**
  * A completion record names its criteria; anything else is a guess, and a guess is a hole.
  *
@@ -99,6 +99,12 @@ if (!items.length) fatal(`no work items in ${SLICE} are at Review — there is n
  * and no DW-/DEC- row that could carry the reason really is a page with nothing on it, and that is
  * the true statement the old comment over-generalised from. Returning [] here is not a relaxation:
  * the caller re-checks and still exits non-zero when nothing explains the absence.
+ *
+ * ⛔ DEF-160 RENDERS AN ITEM'S custom_attributes BUT DELIBERATELY DOES NOT WIDEN THIS TO READ AC- IDS
+ * FROM THEM. Doing so would change which criteria the slate treats as verdict-bearing for an item, and
+ * no ruling says it should. The title stays the one place a completion record names its criteria;
+ * --scan (DEC-177) holds rows to exactly that. The one attribute --scan does read, DEC-180's
+ * NO_CRITERION_BY_DESIGN, names a RULING, never a criterion, so it changes nothing here.
  */
 const criteriaOf = (item) => {
   const found = [...new Set((item.title.match(/\bAC-\d+\b/g) ?? []))]
@@ -136,13 +142,100 @@ const latestVerdict = (acId) => {
   return v[v.length - 1];
 };
 
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const byNumericId = (a, b) => a.id.localeCompare(b.id, undefined, { numeric: true });
+
+/* ---- SCAN: DW-089, built by WBS-40.23, ruled by DEC-177, amended by DEC-180 (SC-064) -------------
+   The generator refuses an item that names no criterion only when somebody asks it for a slate, which
+   is after merge and after verdicts; an item nobody reviews is never noticed at all (DW-089). This
+   mode checks every shipped item up front instead.
+   SUBJECT: every work item at Review or Implemented whose slice has at least one acceptance criterion
+   bound (acceptance_criteria.slice_id, any status). Items that never shipped are outside DW-089.
+   PARENTS (DEC-180 i1, amending DEC-177 z1's "roll-up parents included"): an item that another row
+   names as parent_id is a roll-up judged through its children. It is left out by structure and
+   COUNTED on the output, so a clean result says what it did not look at.
+   FINDING (DEC-177 z1): a leaf whose TITLE names no AC-, read by criteriaOf, so the scan and the slate
+   cannot drift apart — unless it carries a valid exemption.
+   EXEMPTION (DEC-180 i1): custom_attributes.NO_CRITERION_BY_DESIGN, whose value must cite at least one
+   DEC- or DW- that RESOLVES in the export. A bare flag is a bypass anyone can write; a cite that does
+   not resolve leaves the item a finding. DEC-177 z2's premise — every finding clears by amending its
+   title — was false for items with no criterion to name, which is why this exists.
+   EXIT (DEC-177 z2): 1 on any finding, Implemented rows included; 2 on a fault.
+   ⚠ THE FLOOR tests the LEAF count, not the finding count. A scan that finds nothing among zero
+   items reads exactly like a clean one (DW-089's own warning), so fewer than SCAN_FLOOR leaves is a
+   fault, not a pass. Measured over digest 05af1441 on 2026-09-12: 33 subject items, 5 parents, 28
+   leaves. The set only grows as items ship, so tripping it means the export or the predicate is wrong. */
+const SCAN_FLOOR = 16;
+const EXEMPT_KEY = 'NO_CRITERION_BY_DESIGN';
+const exemptionOf = (w) => {
+  let attrs = w.custom_attributes;
+  if (typeof attrs === 'string') {
+    try { attrs = JSON.parse(attrs); } catch { return null; }
+  }
+  const cite = attrs && typeof attrs === 'object' ? attrs[EXEMPT_KEY] : null;
+  if (typeof cite !== 'string') return null;
+  const resolved = (cite.match(/\b(?:DEC|DW)-\d+\b/g) ?? []).filter((id) => decs[id] || dws[id]);
+  return resolved.length ? resolved : null;
+};
+if (SCAN) {
+  const boundSlices = new Set(families.acceptance_criteria.map((a) => a.slice_id).filter(Boolean));
+  const hasChildren = new Set(wbs.map((w) => w.parent_id).filter(Boolean));
+  const subject = wbs
+    .filter((w) => ['Review', 'Implemented'].includes(w.lifecycle_status) && boundSlices.has(w.slice_id))
+    .sort(byNumericId);
+  const leaves = subject.filter((w) => !hasChildren.has(w.id));
+  if (leaves.length < SCAN_FLOOR) {
+    fatal(`scan subject is ${leaves.length} leaf item(s), below the floor of ${SCAN_FLOOR} — the export or the predicate is wrong, and a clean result over it would mean nothing`);
+  }
+  const criterionLess = leaves.filter((w) => criteriaOf(w).length === 0);
+  const exempt = criterionLess.filter((w) => exemptionOf(w));
+  const findings = criterionLess.filter((w) => !exemptionOf(w));
+  console.log(`scanned ${subject.length} item(s) at Review/Implemented in slices with bound acceptance criteria (package digest ${DIGEST})`);
+  console.log(`${subject.length - leaves.length} roll-up parent(s) excluded; ${leaves.length} leaf item(s) checked`);
+  for (const w of exempt) console.log(`EXEMPT   ${w.id}  ${w.slice_id}  ${EXEMPT_KEY} cites ${exemptionOf(w).join(', ')}`);
+  for (const w of findings) console.log(`FINDING  ${w.id}  ${w.slice_id}  ${w.lifecycle_status}  title names no AC-, no resolvable ${EXEMPT_KEY}`);
+  console.log(`${findings.length} finding(s)`);
+  process.exit(findings.length ? 1 : 0);
+}
+
+if (!slices[SLICE]) fatal(`slice ${SLICE} not found`);
+
+/* Items awaiting the operator: Review is done-claimed by the agent, never a verdict. */
+const items = wbs.filter((w) => w.slice_id === SLICE && w.lifecycle_status === 'Review');
+if (!items.length) fatal(`no work items in ${SLICE} are at Review — there is nothing to adjudicate`);
+
+const esc =(s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 /* Preserve the register's own paragraphing; never reflow the evidence. */
 const paras = (s) => esc(s).split('\n\n').map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 const block = (label, text) => (text ? `<div class="f"><h4>${esc(label)}</h4>${paras(text)}</div>` : '');
 
+/* DEF-160: an item's completion record can live in its own custom_attributes (WBS-40.1's did, because
+   re-sending a long title by hand is what LL-001 forbids), and this page used to render every column
+   but that one. One block per key, each value quoted as stored; a value that is not a string is shown
+   as its JSON. A blob that does not parse as a JSON object is quoted whole rather than dropped.
+   Nothing is printed for an item with no attributes, so no empty block. A key whose stored value is
+   the empty string says so rather than vanishing: block() omits falsy text, and a silently dropped
+   key reads exactly like one that was never there. */
+const attributeBlocks = (w) => {
+  const raw = w.custom_attributes;
+  if (!raw) return '';
+  let obj = raw;
+  if (typeof raw === 'string') {
+    try { obj = JSON.parse(raw); } catch { obj = null; }
+  }
+  const entries = obj && typeof obj === 'object' && !Array.isArray(obj)
+    ? Object.entries(obj).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v, null, 2)])
+    : [['custom_attributes (not a JSON object), as stored', typeof raw === 'string' ? raw : JSON.stringify(raw)]];
+  if (!entries.length) return '';
+  const rendered = entries.map(([k, v]) => block(k, v || '(the stored value is an empty string)'));
+  return `
+    <h3>The work item's own attributes &mdash; ${esc(w.id)}</h3>
+    <p class="meta">The row's own <code>custom_attributes</code>, one block per key, each quoted verbatim. For an
+    item with no acceptance criterion this may be the only place its completion record lives.</p>
+    ${rendered.join('\n    ')}`;
+};
+
 const sections = items
-  .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+  .sort(byNumericId)
   .map((w) => {
     const criteria = criteriaOf(w);
     const criterionLess = criteria.length === 0;
@@ -221,6 +314,7 @@ const sections = items
 
     <h3>The work item &mdash; ${esc(w.id)}</h3>
     ${block('As stored', w.title)}
+    ${attributeBlocks(w)}
 
     ${qs.map((q) => `
     <h3>The requirement &mdash; ${esc(q.id)}</h3>

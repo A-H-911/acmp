@@ -89,6 +89,15 @@
 .tpl-icon-btn:hover { background: var(--subtle); color: var(--text); }
 .tpl-icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .tpl-foot { margin-block-start: 14px; }
+.tpl-foot-center { display: flex; justify-content: center; }
+
+/* Loading skeleton: one bar per data column; the name column varies row by row (--w, set on the row). */
+.tpl-skel-row .skeleton { block-size: 12px; border-radius: 5px; }
+.tpl-skel-row > :nth-child(1) > .skeleton { inline-size: var(--w); }
+.tpl-skel-row > :nth-child(2) > .skeleton { inline-size: 60px; }
+.tpl-skel-row > :nth-child(3) > .skeleton { inline-size: 30px; }
+.tpl-skel-row > :nth-child(4) > .skeleton { inline-size: 70px; }
+.tpl-skel-row > :nth-child(5) > .skeleton { inline-size: 80px; }
 
 /* ---------- form dialog ---------- */
 .tpl-form { display: flex; flex-direction: column; gap: var(--field-gap); }

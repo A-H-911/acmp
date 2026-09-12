@@ -32,6 +32,7 @@ import { Textarea } from '../../components/ui/Field';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
+import { cssVars } from '../../lib/cssVars';
 import './voting.css';
 
 const ABSTAIN = 'Abstain';
@@ -133,8 +134,8 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
         <div className="vote-col">
           <section className="vote-card">
             <div className="vote-card-h">
-              <h2>{t('voting.eligibleVoters')} <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>· {eligibleCount}</span></h2>
-              <span style={{ fontSize: 11.5, color: 'var(--text-3)' }}>{t('voting.castSummary')}</span>
+              <h2>{t('voting.eligibleVoters')} <span className="vote-card-count">· {eligibleCount}</span></h2>
+              <span className="vote-card-note">{t('voting.castSummary')}</span>
             </div>
             <div>
               {vote.ballots.map((b) => (
@@ -151,7 +152,7 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
               <h2>{t('voting.liveTally')}</h2>
               {ctx.isOpen && <span className="tally-live"><span className="tally-live-dot" aria-hidden="true" />{t('voting.live')}</span>}
             </div>
-            <div style={{ padding: 16 }}>
+            <div className="vote-card-body">
               <div className="tally-list">
                 {tallyRows.map((r) => (
                   <div key={r.opt}>
@@ -159,13 +160,13 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
                       <span className="tally-label"><span className={`tally-swatch ${r.tone}`} aria-hidden="true" />{t(`voting.option.${r.opt}`, r.opt)}</span>
                       <span className="tally-count"><Num value={r.count} /></span>
                     </div>
-                    <div className="tally-track"><span className={`tally-fill ${r.tone}`} style={{ inlineSize: r.pct }} /></div>
+                    <div className="tally-track"><span className={`tally-fill ${r.tone}`} ref={cssVars({ '--pct': r.pct })} /></div>
                   </div>
                 ))}
               </div>
               <div className="quorum-block">
                 <div className="quorum-row">
-                  <span style={{ color: 'var(--text-2)' }}>{t('voting.quorum')}</span>
+                  <span className="quorum-label">{t('voting.quorum')}</span>
                   <span className={`quorum-state ${quorumMet ? 'met' : 'pending'}`}>
                     <Icon name={quorumMet ? 'check' : 'alertCircle'} size={14} aria-hidden />
                     {quorumMet ? t('voting.quorumMet') : t('voting.quorumPending')}
@@ -230,8 +231,8 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
               <div className="vote-closed-panel">
                 <div className="vote-eyebrow">{t('voting.result')}</div>
                 {vote.resultSummary && <div className="vote-closed-result">{vote.resultSummary}</div>}
-                {vote.counterName && <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginBlockStart: 6 }}>{t('voting.countedBy')} {vote.counterName}</div>}
-                {vote.status === 'Ratified' && <div style={{ fontSize: 11.5, color: 'var(--st-success-fg)', marginBlockStart: 6 }}>{t('voting.ratified')}</div>}
+                {vote.counterName && <div className="vote-closed-meta">{t('voting.countedBy')} {vote.counterName}</div>}
+                {vote.status === 'Ratified' && <div className="vote-closed-meta ratified">{t('voting.ratified')}</div>}
               </div>
             </section>
           )}
@@ -304,7 +305,7 @@ function BallotForm({ vote, cacheKey, myBallot }: { vote: VoteDetail; cacheKey: 
       <div className="vote-ballot-body">
         {already && (
           <div className="ballot-recorded">
-            <span style={{ color: 'var(--text-3)' }}>{t('voting.recordedVote')}</span>
+            <span className="ballot-recorded-label">{t('voting.recordedVote')}</span>
             <StatusChip tone={optionTone(myBallot.choice!)} size="sm" label={t(`voting.option.${myBallot.choice}`, myBallot.choice!)} />
           </div>
         )}
@@ -361,7 +362,7 @@ function BallotForm({ vote, cacheKey, myBallot }: { vote: VoteDetail; cacheKey: 
         }
       >
         <div className="ballot-recorded">
-          <span style={{ color: 'var(--text-3)' }}>{t('voting.youAreVoting')}</span>
+          <span className="ballot-recorded-label">{t('voting.youAreVoting')}</span>
           {choice && <StatusChip tone={optionTone(choice)} size="sm" label={t(`voting.option.${choice}`, choice)} />}
         </div>
       </Dialog>

@@ -18,6 +18,7 @@ import { Icon } from '../../components/icons';
 import { statusTone, TEMPLATE_STATUSES, TARGET_TYPES } from './templatesMeta';
 import { TemplateFormDialog } from './TemplateFormDialog';
 import { formatDmy } from '../../lib/p15Date';
+import { cssVars } from '../../lib/cssVars';
 import './templates.css';
 
 export function TemplatesRegister() {
@@ -92,7 +93,7 @@ export function TemplatesRegister() {
         hasFilters ? (
           <div>
             <EmptyState icon="search" title={t('templates.filterEmpty.title')} body={t('templates.filterEmpty.body')} />
-            <div className="tpl-foot" style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="tpl-foot tpl-foot-center">
               <Button variant="secondary" onClick={clearAllFilters}>{t('templates.clearFilters')}</Button>
             </div>
           </div>
@@ -100,7 +101,7 @@ export function TemplatesRegister() {
           <div>
             <EmptyState icon="template" title={t('templates.empty.title')} body={t('templates.empty.body')} />
             {canManage && (
-              <div className="tpl-foot" style={{ display: 'flex', justifyContent: 'center' }}>
+              <div className="tpl-foot tpl-foot-center">
                 <Button variant="primary" onClick={() => setCreateOpen(true)}>
                   <Icon name="plus" size={16} aria-hidden /> {t('templates.newTemplate')}
                 </Button>
@@ -179,13 +180,12 @@ function TemplatesSkeleton() {
   return (
     <div className="tpl-card" role="status" aria-busy="true">
       <span className="visually-hidden">{t('common.loading')}</span>
+      {/* Bar sizes live in templates.css; only the name column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="gTpl tpl-row" aria-hidden="true">
-          <span className="tpl-cell"><span className="skeleton" style={{ blockSize: 12, borderRadius: 5, inlineSize: w }} /></span>
-          <span className="tpl-cell"><span className="skeleton" style={{ blockSize: 12, borderRadius: 5, inlineSize: 60 }} /></span>
-          <span className="tpl-cell"><span className="skeleton" style={{ blockSize: 12, borderRadius: 5, inlineSize: 30 }} /></span>
-          <span className="tpl-cell"><span className="skeleton" style={{ blockSize: 12, borderRadius: 5, inlineSize: 70 }} /></span>
-          <span className="tpl-cell"><span className="skeleton" style={{ blockSize: 12, borderRadius: 5, inlineSize: 80 }} /></span>
+        <div key={i} className="gTpl tpl-row tpl-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 5 }).map((_, c) => (
+            <span key={c} className="tpl-cell"><span className="skeleton" /></span>
+          ))}
           <span className="tpl-cell" />
         </div>
       ))}

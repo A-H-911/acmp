@@ -84,3 +84,22 @@ export const TOPIC_TYPE_VALUES = [
   'EnhancementInnovation',
   'GovernanceStandardization',
 ] as const;
+
+/**
+ * WBS-40.2 (DEC-171, SC-062). The submitter channel, mirroring `TopicSource` in the Topics domain and
+ * docs/domain/topic-taxonomy.md §B.3 — TEN values (External was missing from DW-076's list of nine).
+ * Their labels live in `topics.source.*`, transcribed from src/i18n/glossary.json; check-i18n-terms
+ * holds every rendering to the glossary, so a label is never authored here.
+ */
+export const TOPIC_SOURCE_VALUES = [
+  'CommitteeMember',
+  'StreamRequest',
+  'UrgentOrgNeed',
+  'OperationalIncident',
+  'SecurityFinding',
+  'Modernization',
+  'InnovationInitiative',
+  'CrossStreamProblem',
+  'Regulatory',
+  'External',
+] as const;

@@ -22,6 +22,7 @@ import { StatusChip } from '../../components/ui/StatusChip';
 import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, progressColorDetail } from './actionMeta';
+import { cssVars } from '../../lib/cssVars';
 import { ActionActions } from './ActionActions';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import './actions.css';
@@ -92,7 +93,7 @@ export function ActionPage() {
                 <span className="act-facts-pct"><Pct value={act.progressPct} /></span>
               </div>
               <div className="act-pbar act-pbar-lg" aria-hidden="true">
-                <span className="act-pbar-fill" style={{ inlineSize: `${act.progressPct}%`, background: progressColorDetail(act.progressPct) }} />
+                <span className="act-pbar-fill" ref={cssVars({ '--pct': `${act.progressPct}%`, '--c': progressColorDetail(act.progressPct) })} />
               </div>
             </div>
           </section>

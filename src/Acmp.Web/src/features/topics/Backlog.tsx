@@ -38,11 +38,12 @@ import { Tag } from '../../components/ui/Chip';
 import { Button } from '../../components/ui/Button';
 import { ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
-import { statusTone, initials } from './topicMeta';
+import { statusTone, initials, TOPIC_SOURCE_VALUES } from './topicMeta';
 import { Kanban } from './Kanban';
 import { Calendar } from './Calendar';
 import { Timeline } from './Timeline';
 import { ColumnPicker, applyColumnPrefs, useColumnPrefs, type ColumnPrefs } from './columnPrefs';
+import { cssVars } from '../../lib/cssVars';
 import './topics.css';
 
 /**
@@ -89,6 +90,7 @@ interface Filters {
   statuses: string[];
   type: string;
   urgency: string;
+  source: string;
 }
 
 export function Backlog() {
@@ -100,7 +102,7 @@ export function Backlog() {
   const { prefs: columnPrefs, toggle: toggleColumn, move: moveColumn, reset: resetColumns } = useColumnPrefs(COLUMN_IDS);
   const [search, setSearch] = useState('');
   const [searchParam, setSearchParam] = useState('');
-  const [filters, setFilters] = useState<Filters>({ statuses: [], type: '', urgency: '' });
+  const [filters, setFilters] = useState<Filters>({ statuses: [], type: '', urgency: '', source: '' });
   const [sortCol, setSortCol] = useState('age');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
@@ -118,6 +120,7 @@ export function Backlog() {
     statuses: filters.statuses.length ? filters.statuses : undefined,
     type: filters.type || undefined,
     urgency: filters.urgency || undefined,
+    source: filters.source || undefined,
     search: searchParam || undefined,
     // AC-043: the kanban reorders by priority, so its cards must arrive priority-ordered (ascending) for
     // move-up/down to reflect the persisted order; the table/list keep the user's chosen column sort.
@@ -130,7 +133,7 @@ export function Backlog() {
 
   const patch = (p: Partial<Filters>) => setFilters((f) => ({ ...f, ...p }));
   const clearFilters = () => {
-    setFilters({ statuses: [], type: '', urgency: '' });
+    setFilters({ statuses: [], type: '', urgency: '', source: '' });
     setSearch('');
   };
   const onSort = (col: string) => {
@@ -226,6 +229,13 @@ export function Backlog() {
           value={filters.urgency}
           onChange={(urgency) => patch({ urgency })}
         />
+        <FilterChip
+          label={t('topics.filter.source')}
+          anyLabel={t('topics.filter.anySource')}
+          options={TOPIC_SOURCE_VALUES.map((v) => ({ value: v, label: t(`topics.source.${v}`) }))}
+          value={filters.source}
+          onChange={(source) => patch({ source })}
+        />
         {data && (
           <span className="bk-count"><Icon name="backlog" size={13} aria-hidden /> {t('topics.showing', { shown, total })}</span>
         )}
@@ -281,17 +291,15 @@ function BacklogSkeleton() {
       <span className="visually-hidden">{t('common.loading')}</span>
       <div className="bk-skel-head" aria-hidden="true">
         {Array.from({ length: 6 }).map((_, i) => (
-          <span key={i} className="skeleton bk-skel-bar" style={{ inlineSize: 54 }} />
+          <span key={i} className="skeleton bk-skel-bar" />
         ))}
       </div>
+      {/* Column widths live in topics.css; only the title column's per-row width is passed in. */}
       {rowWidths.map((w, i) => (
-        <div key={i} className="bk-skel-row" aria-hidden="true">
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 70 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: w }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 60 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 50 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
-          <span className="skeleton bk-skel-bar" style={{ inlineSize: 64 }} />
+        <div key={i} className="bk-skel-row" aria-hidden="true" ref={cssVars({ '--w': w })}>
+          {Array.from({ length: 6 }).map((_, c) => (
+            <span key={c} className="skeleton bk-skel-bar" />
+          ))}
         </div>
       ))}
     </div>
