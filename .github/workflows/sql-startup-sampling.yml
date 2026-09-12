@@ -53,6 +53,7 @@ on:
 
 permissions:
   contents: read
+  packages: read   # WBS-41.2: fts-shipped pulls the private pinned FTS test image
 
 jobs:
   sample:
@@ -67,19 +68,35 @@ jobs:
         with:
           fetch-depth: 0
 
+      # fts-shipped runs scripts/check-fts-pin.mjs (WBS-41.2); pinned like the compose and e2e jobs.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
       - name: Self-check the classifier
         run: bash scripts/test-sql-startup-sample.sh
 
       - name: Prepare the arm's image
         id: image
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           case "${{ inputs.arm }}" in
             fts-shipped)
               grep -n '^FROM' deploy/Dockerfile.sqlserver   # which line was built, in the job log
               sha256sum deploy/Dockerfile.sqlserver
-              timeout 15m docker build -f deploy/Dockerfile.sqlserver -t acmp/sample:fts-shipped deploy
-              echo "ref=acmp/sample:fts-shipped" >> "$GITHUB_OUTPUT" ;;
+              # WBS-41.2 (DEC-182 f3): the shipped file pulls the pinned image; a branch CANDIDATE (a changed
+              # Dockerfile, exit 1) is built, because building it is the point. Exit 2 is a broken pin: stop.
+              if ref=$(node scripts/check-fts-pin.mjs); then
+                echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+                timeout 15m docker pull "$ref"
+              else
+                rc=$?; [ "$rc" = 1 ] || exit "$rc"
+                timeout 15m docker build -f deploy/Dockerfile.sqlserver -t acmp/sample:fts-shipped deploy
+                ref=acmp/sample:fts-shipped
+              fi
+              echo "ref=$ref" >> "$GITHUB_OUTPUT" ;;
             fts-2022-premove)
               git show 0794dcaf^:deploy/Dockerfile.sqlserver > /tmp/Dockerfile.premove
               grep -n '^FROM' /tmp/Dockerfile.premove
