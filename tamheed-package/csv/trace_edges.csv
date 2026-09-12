@@ -813,6 +813,10 @@ SC-065,WBS-41.2,scope_adds
 SC-066,ADR-0047,relates_to
 SC-066,DEC-182,amends
 SC-066,WBS-41.1,scope_modifies
+SC-067,ADR-0047,relates_to
+SC-067,DEC-183,amends
+SC-067,DEF-163,scope_modifies
+SC-067,OQ-081,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
