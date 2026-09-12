@@ -319,8 +319,10 @@
   overflow: hidden;
   display: flex;
 }
+/* Fill and buffer widths arrive as --pct (AgendaBuilder's BudgetBar). */
 .mt-budget-fill {
   block-size: 100%;
+  inline-size: var(--pct);
   background: var(--st-success-dot);
   transition: inline-size 0.3s ease;
 }
@@ -333,6 +335,7 @@
 /* Remaining capacity shown as a hatched buffer segment (design ref). */
 .mt-budget-buffer {
   block-size: 100%;
+  inline-size: var(--pct);
   background: repeating-linear-gradient(
     135deg,
     var(--border-strong),

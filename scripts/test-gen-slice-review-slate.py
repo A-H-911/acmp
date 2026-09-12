@@ -94,7 +94,10 @@ def rewrite(path, fn, envelope=None):
         json.dump(doc, f, ensure_ascii=False)
 
 
-def stage(slice_id, item_id, title=None, source_span=None):
+KEEP = object()  # stage(): leave the row's custom_attributes as exported
+
+
+def stage(slice_id, item_id, title=None, source_span=None, custom_attributes=KEEP):
     """Put EXACTLY item_id at Review inside slice_id, optionally replacing title/source_span.
 
     ⚠ DEF-142 ADDED `source_span`, AND IT IS NOT A CONVENIENCE. That fix made the criterion-less
@@ -124,6 +127,8 @@ def stage(slice_id, item_id, title=None, source_span=None):
                         r["title"] = title
                     if source_span is not None:
                         r["source_span"] = source_span
+                    if custom_attributes is not KEEP:
+                        r["custom_attributes"] = custom_attributes
                 else:
                     r["lifecycle_status"] = "Implemented"
             return r
@@ -131,14 +136,27 @@ def stage(slice_id, item_id, title=None, source_span=None):
     return mutate
 
 
-def case(name, mutate, slice_id, want_code, want_sub):
+def case(name, mutate, slice_id, want_code, want_sub, html_has=None, html_lacks=None):
+    """html_has / html_lacks are checked against the page the generator WROTE, not its stdout."""
     build(mutate)
     code, out = run(slice_id)
-    ok = code == want_code and want_sub in out
+    html = ""
+    if html_has is not None or html_lacks is not None:
+        page = os.path.join(SCRATCH, "tamheed-package", "slice-review-slate.html")
+        if os.path.exists(page):
+            with open(page, encoding="utf-8") as f:
+                html = f.read()
+    ok = (code == want_code and want_sub in out
+          and (html_has is None or html_has in html)
+          and (html_lacks is None or (html and html_lacks not in html)))
     print(("PASS  " if ok else "FAIL  ") + name)
     if not ok:
         print("        exit=%d (want %d)" % (code, want_code))
         print("        want substring: %r" % want_sub)
+        if html_has is not None:
+            print("        page must contain: %r (%s)" % (html_has, html_has in html))
+        if html_lacks is not None:
+            print("        page must be written and lack: %r (written=%s)" % (html_lacks, bool(html)))
         print("        got: %s" % out.replace("\n", " | ")[:400])
     return ok
 
@@ -237,6 +255,118 @@ def main():
         "WBS-31 CALIBRATION: exports from two package states are refused as a mixed snapshot",
         combine(stage("SL-033", "WBS-24.5"), mixed_digest),
         "SL-033", 2, "NOT one snapshot"))
+
+    # ---- DEF-160: the item's own custom_attributes reach the page ---------------------------------
+    # WBS-40.1's completion record lived only in custom_attributes and the page never showed it. The
+    # marker is a value no real row carries, so finding it on the page can only mean it was rendered.
+    record = "COMPLETION-RECORD-ONLY-IN-AN-ATTRIBUTE merged as abc123, run 42"
+    results.append(case(
+        "DEF-160: a criterion-less item's custom_attributes are rendered, key and value",
+        stage("SL-034", "WBS-25.1",
+              "Criterion-less by design. Requirement NFR-054; the reason is recorded in DW-090.",
+              custom_attributes=json.dumps({"DONE_CLAIMED_TEST": record})),
+        "SL-034", 0, "item(s) at Review", html_has="DONE_CLAIMED_TEST</h4><p>" + record))
+
+    # An attribute whose stored value is the empty string must still show its key. block() omits falsy
+    # text, which once dropped such a key without trace, and dropped the whole section if it was the
+    # only one, so the page read exactly like an item with no attributes.
+    results.append(case(
+        "DEF-160: an attribute with an empty-string value still shows its key",
+        stage("SL-034", "WBS-25.1",
+              "Criterion-less by design. Requirement NFR-054; the reason is recorded in DW-090.",
+              custom_attributes=json.dumps({"EMPTY_VALUE_KEY": ""})),
+        "SL-034", 0, "item(s) at Review", html_has="EMPTY_VALUE_KEY</h4>"))
+
+    # CALIBRATION: same item with no attributes. The heading must be absent, which proves the case
+    # above found the rendered block and not some fixed text that is always on the page.
+    results.append(case(
+        "DEF-160 CALIBRATION: no custom_attributes, no attributes heading",
+        stage("SL-034", "WBS-25.1",
+              "Criterion-less by design. Requirement NFR-054; the reason is recorded in DW-090.",
+              custom_attributes=None),
+        "SL-034", 0, "item(s) at Review", html_lacks="own attributes"))
+
+    # ---- WBS-40.23 / DEC-177: --scan ---------------------------------------------------------------
+    # Controlled input: every row gets a title naming a real criterion, so the live register's own
+    # findings cannot leak into the case. Then exactly one subject item has its criterion removed.
+    # Which item is the subject is read from the export, not hard-coded (DEF-120's lesson).
+    def scan_input(strip=None, keep_subject=None, exempt=None):
+        """exempt: the NO_CRITERION_BY_DESIGN value written onto the stripped item (DEC-180 i1)."""
+        def mutate(exports):
+            with open(os.path.join(exports, "acceptance_criteria.json"), encoding="utf-8") as fh:
+                acs = json.load(fh)["result"]["rows"]
+            some_ac = acs[0]["id"]
+            bound = {a["slice_id"] for a in acs if a.get("slice_id")}
+
+            def f(r):
+                r["title"] = "Named criterion %s." % some_ac
+                if r.get("id") == strip:
+                    r["title"] = "This title names no criterion."
+                    if exempt is not None:
+                        r["custom_attributes"] = json.dumps({"NO_CRITERION_BY_DESIGN": exempt})
+                is_subject = r.get("lifecycle_status") in ("Review", "Implemented") and r.get("slice_id") in bound
+                if keep_subject is not None and is_subject and r.get("id") not in keep_subject:
+                    r["lifecycle_status"] = "Approved"
+                return r
+            rewrite(os.path.join(exports, "wbs_items.json"), f)
+        return mutate
+
+    def export_rows(family):
+        with open(os.path.join(ROOT, "tamheed-package", "exports", family + ".json"), encoding="utf-8") as fh:
+            return json.load(fh)["result"]["rows"]
+
+    def subject_ids():
+        """(leaves, parents) of the scan subject. A parent is any row another row names as parent_id."""
+        bound = {a["slice_id"] for a in export_rows("acceptance_criteria") if a.get("slice_id")}
+        rows = export_rows("wbs_items")
+        has_kids = {r["parent_id"] for r in rows if r.get("parent_id")}
+        subject = sorted(r["id"] for r in rows
+                         if r.get("lifecycle_status") in ("Review", "Implemented") and r.get("slice_id") in bound)
+        return [i for i in subject if i not in has_kids], [i for i in subject if i in has_kids]
+
+    leaves, parents = subject_ids()
+    target = leaves[0]
+    real_dec = export_rows("decisions")[0]["id"]
+    real_dw = export_rows("deferred_work")[0]["id"]
+
+    # CONTROL: every subject names a criterion, so the scan must pass. Without this, the finding case
+    # below could pass because the scan fails on everything.
+    results.append(case(
+        "WBS-40.23 CONTROL: --scan exits 0 when every shipped item names a criterion",
+        scan_input(), "--scan", 0, "0 finding(s)"))
+
+    # The target is a LEAF: under DEC-180 a parent is excluded, so stripping one proves nothing here.
+    results.append(case(
+        "WBS-40.23: --scan reports an Implemented/Review leaf whose title names no AC- and exits 1",
+        scan_input(strip=target), "--scan", 1, "FINDING  %s " % target))
+
+    # CALIBRATION of the floor: keep three subject items, so the scan has almost nothing to look at.
+    # It must refuse rather than report a clean result over a near-empty set.
+    results.append(case(
+        "WBS-40.23 CALIBRATION: --scan refuses a subject set below its floor",
+        scan_input(keep_subject=set(leaves[:3])), "--scan", 2, "below the floor"))
+
+    # ---- DEC-180 i1: roll-up parents are excluded by structure, and say so ------------------------
+    # Paired with the leaf case above: same strip, different item, opposite verdict. The count line
+    # makes the exclusion visible, so a clean 0 can never hide what it left out.
+    results.append(case(
+        "DEC-180: a roll-up parent naming no AC- is excluded, not a finding, and the exclusion is counted",
+        scan_input(strip=parents[0]), "--scan", 0, "%d roll-up parent(s) excluded" % len(parents)))
+
+    # ---- DEC-180 i1: NO_CRITERION_BY_DESIGN exempts only when its cite resolves -------------------
+    results.append(case(
+        "DEC-180: an exemption citing a DEC- in the register exempts the leaf",
+        scan_input(strip=target, exempt="%s d1 - by design" % real_dec), "--scan", 0, "EXEMPT   %s " % target))
+
+    results.append(case(
+        "DEC-180: an exemption citing a DW- in the register exempts the leaf",
+        scan_input(strip=target, exempt="%s - by design" % real_dw), "--scan", 0, "EXEMPT   %s " % target))
+
+    # CALIBRATION: identical except the cite does not resolve. A flag anyone can write is a bypass;
+    # if this ever exits 0, the exemption has stopped checking what it cites.
+    results.append(case(
+        "DEC-180 CALIBRATION: an exemption citing nothing that resolves still fails",
+        scan_input(strip=target, exempt="DEC-99999 d1 - by design"), "--scan", 1, "FINDING  %s " % target))
 
     shutil.rmtree(SCRATCH, ignore_errors=True)
     print()

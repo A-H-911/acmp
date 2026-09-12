@@ -51,9 +51,10 @@ public class GetBacklogCoverageTests
     // ---- Domain helpers (mirror SeedTopicAsync in TopicHandlerTests) ----
 
     private static Topic Submitted(string key, TopicType type = TopicType.ArchitectureDecision,
-        TopicUrgency urgency = TopicUrgency.Normal, string stream = "platform", string title = "Test Topic")
+        TopicUrgency urgency = TopicUrgency.Normal, string stream = "platform", string title = "Test Topic",
+        TopicSource source = TopicSource.CommitteeMember)
     {
-        var t = Topic.Draft(key, title, "Desc", "Just", type, urgency, TopicSource.CommitteeMember,
+        var t = Topic.Draft(key, title, "Desc", "Just", type, urgency, source,
             "kc-sub", "Actor", new[] { stream }, Array.Empty<string>(), Array.Empty<string>());
         t.Submit(T0);
         return t;
@@ -186,6 +187,29 @@ public class GetBacklogCoverageTests
         // Assert
         result.Total.Should().Be(1);
         result.Items.Single().Key.Should().Be("TOP-2026-030");
+    }
+
+    // ---- Filter: Source (WBS-40.2 / DEC-171 u3) ----
+
+    [Fact]
+    public async Task Filter_by_source_returns_only_matching_source()
+    {
+        // Arrange — the same type and urgency on both, so only the source can separate them.
+        await using var db = NewDb();
+        db.Topics.AddRange(
+            Submitted("TOP-2026-040", source: TopicSource.SecurityFinding),
+            Submitted("TOP-2026-041", source: TopicSource.CommitteeMember));
+        await db.SaveChangesAsync();
+        var handler = new GetBacklogHandler(db, ClockAt(T0), SeesEverything());
+
+        // Act
+        var filtered = await handler.Handle(new GetBacklogQuery(Source: TopicSource.SecurityFinding), default);
+        var unfiltered = await handler.Handle(new GetBacklogQuery(), default);
+
+        // Assert — the control: without the filter both rows come back, so the 1 is the filter's doing.
+        filtered.Total.Should().Be(1);
+        filtered.Items.Single().Key.Should().Be("TOP-2026-040");
+        unfiltered.Total.Should().Be(2);
     }
 
     // ---- Filter: OwnerId ----

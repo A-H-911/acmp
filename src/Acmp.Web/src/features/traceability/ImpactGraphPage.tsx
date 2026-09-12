@@ -116,10 +116,10 @@ export function ImpactGraphPage() {
             <div className="ig-divider" aria-hidden />
             <div className="ig-toggles">
               <button type="button" className="ig-toggle ig-toggle--blocked" aria-pressed={highlight.blocked} onClick={() => setHighlight((h) => ({ ...h, blocked: !h.blocked }))}>
-                <span className="ig-toggle-dot" style={{ background: 'var(--st-danger-dot)' }} aria-hidden /> {t('trace.graph.blockedWork')}
+                <span className="ig-toggle-dot" aria-hidden /> {t('trace.graph.blockedWork')}
               </button>
               <button type="button" className="ig-toggle ig-toggle--cross" aria-pressed={highlight.cross} onClick={() => setHighlight((h) => ({ ...h, cross: !h.cross }))}>
-                <span className="ig-toggle-dot" style={{ background: 'var(--st-warn-dot)' }} aria-hidden /> {t('trace.graph.crossStream')}
+                <span className="ig-toggle-dot" aria-hidden /> {t('trace.graph.crossStream')}
               </button>
             </div>
           </div>

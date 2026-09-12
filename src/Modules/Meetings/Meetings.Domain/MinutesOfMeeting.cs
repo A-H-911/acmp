@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Modules.Meetings.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -58,7 +59,7 @@ public sealed class MinutesOfMeeting : AuditableEntity
     public void Revise(LocalizedString summary, DateTimeOffset now)
     {
         RequireStatus(MinutesStatus.Draft);
-        Summary = summary ?? throw new InvalidOperationException("A summary is required.");
+        Summary = summary ?? throw new DomainRuleException("A summary is required.");
     }
 
     // W10: submit for review. Draft → InReview.
@@ -106,10 +107,10 @@ public sealed class MinutesOfMeeting : AuditableEntity
     {
         RequireStatus(MinutesStatus.Approved, MinutesStatus.Published);
         if (supersededByMinutesId == Guid.Empty)
-            throw new InvalidOperationException("A superseding minutes version is required.");
+            throw new DomainRuleException("A superseding minutes version is required.");
         Status = MinutesStatus.Superseded;
         SupersededByMinutesId = supersededByMinutesId;
-        SupersessionReason = reason ?? throw new InvalidOperationException("A supersession reason is required.");
+        SupersessionReason = reason ?? throw new DomainRuleException("A supersession reason is required.");
         Raise(new MinutesSupersededEvent(PublicId, Key, supersededByMinutesId, now));
     }
 
@@ -132,9 +133,9 @@ public sealed class MinutesOfMeeting : AuditableEntity
     private static MinutesOfMeeting NewVersion(string key, Guid meetingId, string meetingKey, string meetingTitle,
         LocalizedString summary, int version, MinutesStatus status)
     {
-        if (meetingId == Guid.Empty) throw new InvalidOperationException("Minutes must reference a meeting.");
-        if (string.IsNullOrWhiteSpace(key)) throw new InvalidOperationException("A minutes key is required.");
-        if (summary is null) throw new InvalidOperationException("A summary is required.");
+        if (meetingId == Guid.Empty) throw new DomainRuleException("Minutes must reference a meeting.");
+        if (string.IsNullOrWhiteSpace(key)) throw new DomainRuleException("A minutes key is required.");
+        if (summary is null) throw new DomainRuleException("A summary is required.");
 
         return new MinutesOfMeeting
         {
@@ -151,6 +152,6 @@ public sealed class MinutesOfMeeting : AuditableEntity
     private void RequireStatus(params MinutesStatus[] allowed)
     {
         if (Array.IndexOf(allowed, Status) < 0)
-            throw new InvalidOperationException($"This operation is not allowed while the minutes are {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the minutes are {Status}.");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
@@ -23,8 +24,8 @@ public sealed class Discussion : BaseEntity
     internal Discussion(Guid topicId, string body, string authorSub, string authorName,
         DiscussionOrigin origin, bool isApproved, DateTimeOffset now)
     {
-        if (topicId == Guid.Empty) throw new InvalidOperationException("A discussion must reference a topic.");
-        if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("Discussion notes cannot be empty.");
+        if (topicId == Guid.Empty) throw new DomainRuleException("A discussion must reference a topic.");
+        if (string.IsNullOrWhiteSpace(body)) throw new DomainRuleException("Discussion notes cannot be empty.");
         TopicId = topicId;
         Body = body.Trim();
         AuthorSub = authorSub.Trim();
@@ -36,7 +37,7 @@ public sealed class Discussion : BaseEntity
 
     internal void UpdateBody(string body, DateTimeOffset now)
     {
-        if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("Discussion notes cannot be empty.");
+        if (string.IsNullOrWhiteSpace(body)) throw new DomainRuleException("Discussion notes cannot be empty.");
         Body = body.Trim();
         UpdatedAt = now;
     }

@@ -28,6 +28,7 @@ import {
   REPORT_VIEWS, type ReportView, type ReportCard, type ReportData, type Column, type Segment,
   buildView, viewToCsv, applyStreamFilter,
 } from './reportViews';
+import { cssVars } from '../../lib/cssVars';
 import './reports.css';
 
 const ALL = 500;
@@ -255,7 +256,7 @@ function MatrixView({ matrix }: { matrix: RiskMatrix }) {
         <div key={row.impact} className="rpt-matrix-row" role="row">
           <span className="rpt-matrix-rowhead" role="rowheader">{t(`reports.impactLevel.${row.impact}`)}</span>
           {row.cells.map((cell: MatrixCell, ci) => (
-            <span key={ci} role="cell" className="rpt-cell" style={{ background: `var(--st-${cell.zone}-bg)`, color: `var(--st-${cell.zone}-fg)` }}
+            <span key={ci} role="cell" className="rpt-cell" ref={cssVars({ '--bg': `var(--st-${cell.zone}-bg)`, '--fg': `var(--st-${cell.zone}-fg)` })}
               aria-label={t('reports.cellLabel', { count: cell.count, impact: t(`reports.impactLevel.${row.impact}`), prob: t(`reports.level.${cols[ci]}`) })}>
               {cell.count}
             </span>
@@ -273,7 +274,7 @@ function StatGrid({ stats }: { stats: StatTile[] }) {
     <div className="rpt-stats">
       {stats.map((s, i) => (
         <div key={s.label ?? (s.labelKey || String(i))} className="rpt-stat">
-          <div className="rpt-stat-v" style={s.zone ? { color: `var(--st-${s.zone}-fg)` } : undefined}>{s.kind === 'percent' ? <Pct value={s.value} /> : <Num value={s.value} />}</div>
+          <div className="rpt-stat-v" ref={cssVars({ '--stat-fg': s.zone && `var(--st-${s.zone}-fg)` })}>{s.kind === 'percent' ? <Pct value={s.value} /> : <Num value={s.value} />}</div>
           <div className="rpt-stat-l">{s.label ?? t(s.labelKey)}</div>
         </div>
       ))}
@@ -292,7 +293,7 @@ function BarsView({ bars }: { bars: Bar[] }) {
             <span className="rpt-bar-label">{b.label ?? t(b.labelKey!)}</span>
             <span className="rpt-bar-val"><Num value={b.count} /></span>
           </div>
-          <div className="rpt-bar-track"><span className="rpt-bar-fill" style={{ inlineSize: `${b.pct}%`, background: `var(--st-${b.zone}-dot)` }} /></div>
+          <div className="rpt-bar-track"><span className="rpt-bar-fill" ref={cssVars({ '--pct': `${b.pct}%`, '--c': `var(--st-${b.zone}-dot)` })} /></div>
         </div>
       ))}
     </div>
@@ -306,7 +307,7 @@ function ColumnsView({ cols }: { cols: Column[] }) {
         {cols.map((c) => (
           <div key={c.key} className="rpt-col">
             <span className="rpt-col-v"><Num value={c.value} /></span>
-            <span className="rpt-col-bar" style={{ blockSize: `${c.pct}%`, background: `var(--st-${c.zone}-dot)` }} />
+            <span className="rpt-col-bar" ref={cssVars({ '--pct': `${c.pct}%`, '--c': `var(--st-${c.zone}-dot)` })} />
           </div>
         ))}
       </div>
@@ -323,13 +324,13 @@ function StackView({ segments }: { segments: Segment[] }) {
       {/* Decorative — the legend below is the accessible source of the same counts. */}
       <div className="rpt-stack" aria-hidden="true">
         {total > 0 && segments.filter((s) => s.value > 0).map((s) => (
-          <span key={s.key} style={{ inlineSize: `${s.pct}%`, background: `var(--st-${s.zone}-dot)` }} />
+          <span key={s.key} ref={cssVars({ '--pct': `${s.pct}%`, '--c': `var(--st-${s.zone}-dot)` })} />
         ))}
       </div>
       <div className="rpt-stack-legend">
         {segments.map((s) => (
           <span key={s.key}>
-            <span className="rpt-stack-dot" style={{ background: `var(--st-${s.zone}-dot)` }} />
+            <span className="rpt-stack-dot" ref={cssVars({ '--c': `var(--st-${s.zone}-dot)` })} />
             <b><Num value={s.value} /></b> {t(s.labelKey)}
           </span>
         ))}
@@ -353,9 +354,9 @@ function ReportsSkeleton() {
     <div className="rpt-grid" aria-hidden>
       {[0, 1, 2, 3].map((i) => (
         <section key={i} className="rpt-card rpt-skel">
-          <div className="rpt-skel-head"><span className="rpt-skel-bar" style={{ inlineSize: '40%' }} /><span className="rpt-skel-sq" /></div>
+          <div className="rpt-skel-head"><span className="rpt-skel-bar" /><span className="rpt-skel-sq" /></div>
           <span className="rpt-skel-bar rpt-skel-kpi" />
-          <div className="rpt-skel-lines">{['100%', '85%', '70%', '90%'].map((w, j) => <span key={j} className="rpt-skel-bar" style={{ inlineSize: w }} />)}</div>
+          <div className="rpt-skel-lines">{[0, 1, 2, 3].map((j) => <span key={j} className="rpt-skel-bar" />)}</div>
         </section>
       ))}
     </div>

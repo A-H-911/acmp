@@ -1,0 +1,33 @@
+# Gitleaks fingerprint exemptions. DEF-150.
+#
+# A fingerprint pins COMMIT + FILE + RULE + LINE, so each entry exempts exactly one historic finding and
+# nothing else. The same value appearing in a new commit produces a different fingerprint and STILL FAILS
+# the gate. That narrowness is the point: DEF-081 records that the `.*\.md` PATH allowlist which once sat
+# in .gitleaks.toml exempted every markdown file in the repository forever, and three of DEF-080's five
+# real leak sites were .md files this gating scan then walked straight past.
+#
+# ⛔ THE RULE FROM .gitleaks.toml STILL APPLIES: a genuine finding outside these exemptions is a real leak.
+# ROTATE the credential; do not add it here.
+#
+# ── DEF-150 ────────────────────────────────────────────────────────────────────────────────────────────
+# Two findings, one logical row. Both are `generic-api-key` at entropy 3.546594 over DEF-147's alias-split
+# evidence, which recorded ECR image digests as a label, an equals sign and eight hex characters. Those hex
+# strings are CONTAINER IMAGE DIGEST PREFIXES — public, non-secret, derivable by anyone with pull access to
+# the registry. Nothing is leaked and nothing needs rotating.
+#
+# The two entries below are the same row serialized twice (the canonical JSONL and its derived CSV), in two
+# package-only commits. Both are reachable from origin/main, so the history is permanent and cannot be
+# scrubbed without rewriting published commits.
+#
+# ⚠ THE RECURRENCE IS FIXED AT THE SOURCE, NOT HERE. DEF-147's attribute was rewritten so the assignment
+# shape no longer appears in the register, which is why this file needs exactly two entries rather than a
+# new one every round. If a third entry is ever needed for this pattern, that fix regressed — look there
+# before adding a line to this file.
+#
+# ⚠ WHY THIS SURFACED ONLY NOW: all three workflows share a paths-ignore covering tamheed-package/**, so
+# package-only pushes run NO jobs. Both commits below were package-only and were never scanned. The gate
+# fires on the first PR touching a non-ignored path and scans full history (AC-126, fetch-depth: 0), so an
+# unrelated PR inherits the failure. A path-ignored commit is not unscanned forever — it is unscanned until
+# someone else's PR pays for it.
+ade289b3d9078f14b458f4d4de9f40568404cf7e:tamheed-package/csv/defects.csv:generic-api-key:879
+2e0948116f75ded7130f07efb4ced6a8421f928d:tamheed-package/data/defects.jsonl:generic-api-key:146

@@ -96,9 +96,13 @@ gh run list --branch main --limit 5          # ⚠ poll `status` to `completed` 
                                              # you happened to read first.
                                              # ⛔⛔ IF `main` IS RED, READ `DEF-130`, `DEF-109` AND
                                              # `DEF-121` BEFORE ANYTHING ELSE, AND DO NOT RE-RUN IT. All
-                                             # three are open, all have recurred on trees whose PR run
-                                             # passed, and all carry end conditions that ACCUMULATED
-                                             # GREENS SATISFY BY DESIGN.
+                                             # three have recurred on trees whose PR run passed. `DEF-109`
+                                             # is open with an end condition that ACCUMULATED GREENS
+                                             # SATISFY BY DESIGN; `DEF-130` and `DEF-121` are `Fixed` by
+                                             # `ADR-0046` (`DEC-145` d1, `DEC-146` d1) on clause (1) with
+                                             # NO mechanism claimed, and that ADR says a crash of either
+                                             # signature on the 2022 line is a NEW defect row, never an
+                                             # append — read them for the SIGNATURE, then file; never re-run.
                                              # ⭐ DISCRIMINATE BY SIGNATURE, never by which is nearer to
                                              # hand — the register does this on the EXCEPTION TYPE and on
                                              # the crash frames, and it has now settled two attributions
@@ -279,7 +283,7 @@ row's STATUS is, and whether `main` is green now, are not — `entity_query`, `r
 `gh run list` are the only answers, and this paragraph deliberately gives none of them.
 `DEC-111`–`DEC-119`, `DEF-128`/`DEF-129`/`DEF-130`, `DW-096`/`DW-097` and `LL-047`–`LL-053` were all
 recorded on 2026-09-02. ⛔ **`DEF-121`'s clause
-(2) HAS FIRED AND IS STILL NOT SATISFIED** — read the row, and read `PE-790`, which corrects what two
+(2) HAS FIRED AND WAS NEVER SATISFIED — the row is `Fixed` on clause (1) ALONE (`ADR-0046`, `DEC-146` d1), and that is not a satisfied clause (2)** — read the row, and read `PE-790`, which corrects what two
 sessions said the captured artefact contained. **Neither a successful capture nor a refuted hypothesis is a
 cause**, and `DEC-115` d2 and `DEC-116` d1 refused each of those readings in turn.
 ⭐⭐ **SESSION MECHANICS, ADOPTED 2026-09-02 AND WORTH READING BEFORE THE FIRST TOOL CALL RATHER THAN AFTER
@@ -536,8 +540,61 @@ carries `LL-064`'s rule whole plus the second key, and `LL-064` is superseded by
 generated record slate). *"has not yet been asked for"* above is therefore historical. Not tallied: corrected
 in the session that made it false, before any commit carried it (`PE-811`'s precedent).
 
+⚠⚠⚠ **THE FIFTY-EIGHTH IS A LIVE READING INSTRUCTION IN §6, FALSIFIED BY A RULING THE PREVIOUS SESSION
+RECORDED, AND IT IS `LL-066`'s SECOND KEY PAYING FOR THE SECOND TIME.** The `SL-032` history block read
+*"`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text route coverage)
+therefore do NOT fire — their triggers name 'before release sign-off'."* True when `DEC-071` d4 wrote it.
+**`DEC-150` d4 ACTIVATED all three on 2026-09-08 and `SC-056` gave each a home** (`WBS-40.9`, `WBS-40.10`,
+`WBS-40.6`), and it shipped false in `a69ea7d5`, `ff39b841` and every commit since. **A fresh session
+obeying it would have treated three scheduled items as dormant** — the FORTIETH's *actively recruits the
+wrong behaviour* running in reverse.
+⚠ **A SECOND MEMBER, FOLDED IN UNDER ONE ORDINAL** on the FIFTEENTH's and TWENTY-EIGHTH's precedent: the
+same block's `DW-069` paragraph reasoned in the PRESENT TENSE that *"`NFR-039` stays unmeetable … and
+`DW-076` stays blocked"*. Both rows were scheduled by the same ruling. **Neither sentence names a status**,
+which is the FORTY-THIRD's class exactly — a consequence is a sentence, a status is a column.
+⭐⭐ **WHAT FOUND IT, AND IT IS THE REUSABLE HALF: THE SWEEP WAS KEYED ON THE SHAPE OF THE CLAIM, NOT ON THE
+IDS THIS ROUND MOVED.** This round moved `WBS-40.1`, `DEC-156` and `SC-059`; **none of those ids appears in
+either falsified sentence**, so `LL-064`'s original remedy could not have reached them. Grepping
+`do NOT fire|still not scheduled|stays blocked|stays unmeetable` did. **An absence-claim has no keyword of
+its own** — that is `LL-066`'s whole point, and this is the second consecutive round where its second key
+returned a site the first key structurally could not.
+⚠⚠ **NOT AN ESCAPE, AND THE REASONING IS RECORDED BECAUSE THE GREP DID HIT.** `bc348658` — the commit that
+recorded `DEC-071` itself — carries *"stays unmeetable and DW-076 stays blocked"* in its message. **It was
+TRUE in that commit**, which is the counter's own carve-out: *annotating a historical record whose outcome
+later happened* is not tallied, and a commit message that was accurate when written does not become an
+escape retroactively as the world moves. Counting it would make every truthful historical commit message a
+future escape and destroy the instrument, which is `LL-016`'s rule about a number that counts two things.
+⛔ **Reported rather than waved through**, because the FORTY-EIGHTH's standard is that under-counting my own
+defeats the instrument — so the hit is named and the reason it does not count is argued, not assumed.
+
+⚠⚠⚠ **THE FIFTY-NINTH IS A STATUS CLAIM ABOUT THIS FILE'S OWN BACKLOG, FALSIFIED BY THE RULING RECORDED
+IN THE SAME ROUND THAT WROTE THE SWEEP.** §6's `lessons-note-budget` paragraph read *"Further clusters were
+proposed and not taken."* True when written. **`DEC-162` j4 (2026-09-10) TOOK one**, so the sentence went
+false the moment that ruling landed and shipped false in the commit recording it.
+⭐ **WHAT IS WORTH MORE THAN THE ORDINAL: THE SENTENCE IS THE *SAME SHAPE* AS THE FIFTY-EIGHTH DIRECTLY
+ABOVE IT** — a claim that something *is not scheduled*, written as prose, in a file whose every mechanical
+check reads ids and statuses and can see neither. **Two consecutive rounds, two absence-claims about
+scheduling, both found only by `LL-066`'s second key.** The remedy that keeps working is not a better grep
+list but the rewrite: **the corrected text names no state at all and points at the register instead.**
+⚠ **AND THE ROUND THAT FALSIFIED IT IS THE ROUND THAT SWEPT FOR IT**, which `DEC-155`'s FIFTY-FOURTH
+already recorded as this file's most common escape route — an author cannot rely on remembering what their
+own rulings just broke, so the sweep runs over the whole file, keyed on shape, every time.
+
+⚠⚠⚠ **THE SIXTIETH IS A CONTENT CLAIM ABOUT AN ARTEFACT, WRITTEN BY THE SESSION THAT WAS ABOUT TO FILL IT.**
+The `DW-069` paragraph in §6 was annotated on 2026-09-10 to say the glossary existed *"with only the two
+already-authorised Arabic values filled"* and that the clause was decidable *"ONCE THE RULINGS LAND"*. True at
+`2d87d9ec`. The same session then ran the rulings interview (`DEC-169`) and merged PR `#396`, which filled all
+24 terms — so `main` at `421a8139` carried the sentence beside the filled glossary it denied, and the
+paragraph also still called `DW-069` *"live work"* while its row was about to close `Done`. ⚠ **Not an
+escape**: no commit message asserts either clause.
+⭐ **THE SHAPE IS THE FIFTY-SIXTH's, AND ITS REMEDY WAS WRITTEN THERE:** the annotation described a state the
+author's own next unit of work was built to change. **A sentence that says how much of an artefact is done is
+a status**, however carefully it points at the register beside it — the pointer half survived and the count
+half rotted. The rewrite names no content at all. Found by the pre-export sweep keyed on the ids the round
+moved (`DW-069`, `DOC-071`, `WBS-40.1`), which is the FIFTY-SIXTH's own remedy paying.
+
 ⚠ **Do not trust any tally written into a prompt, including this one.** Read the live numbers. This
-file has carried a stale statement **fifty-seven** times, and **sixteen** wrong assertions have escaped into
+file has carried a stale statement **sixty** times, and **sixteen** wrong assertions have escaped into
 commit messages, which cannot be amended. ⚠ **The FIFTY-SECOND and FIFTY-THIRD are the same paragraph,
 one session apart, wrong in OPPOSITE directions** — see the permission block near the top; that pair is
 the strongest argument in this file for writing what to CHECK rather than what is currently true. **SEVERAL were written and then invalidated within
@@ -2428,6 +2485,13 @@ how `LL-011` is discharged, so an item it cannot render is one whose review woul
 the build to NAME the criteria it satisfied — `24.8`'s never was. **Nothing enforces that amendment and no
 gate sees its absence**, so an item can be merged, verdicted and left permanently unreviewable. When you
 finish an item, make its row a completion record naming its `AC-` ids.
+⚠ **THAT "NO GATE SEES IT" IS NOW HALF-TRUE (2026-09-12):** still no GATE, but a SCAN sees it —
+`node scripts/gen-slice-review-slate.mjs --scan` (`WBS-40.23`, PR `#403`) lists every shipped item whose
+title names no criterion. **What it counts as a finding and when it fails are `DEC-177`'s as amended by
+`DEC-180` (`SC-064`), not this line's; run it rather than trusting any count of its findings written anywhere.**
+⭐ **An item done-claimed WITHOUT a criterion carries `custom_attributes.NO_CRITERION_BY_DESIGN`, citing the
+ruling that scoped it that way, in the SAME batch as its `Review` flip (`DEC-180` i3)** — a cite that does
+not resolve in the export does not exempt it.
 ✅ **`LL-030` and `LL-031` were confirmed by `DEC-087` d2/d3 and `handoff_emit` ran in the SAME
 batch**, so they bound immediately rather than in two days (`DEF-107`'s failure mode).
 
@@ -2535,9 +2599,10 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    still be held open by another rule, so it stays `Approved` alongside a newer one — then
    `readiness_check("package")`, `package_verify()`, then
    `gh run list --branch main`.
-   ▶▶▶ **A STANDING DIRECTION EXISTS AND IT IS A RULING, NOT A BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth
-   round) named DIAGNOSING `DEF-121` / `DEF-130` as the next unit of work, and `DEC-142` (the same day,
-   fifty-first round) RULED ON HOW** — a controlled sampling experiment, scoped by `SC-053` and recorded as a
+   ▶▶▶ **THE STANDING DIRECTION `DEC-141` d5 GAVE IS DISCHARGED — READ THIS CHAIN AS HISTORY, NOT AS A
+   BACKLOG: `DEC-141` d5 (2026-09-07, fiftieth round) named DIAGNOSING `DEF-121` / `DEF-130` as the next
+   unit of work; both rows are `Fixed` as of `DEC-146`. `DEC-142` (the same day, fifty-first round) RULED
+   ON HOW** — a controlled sampling experiment, scoped by `SC-053` and recorded as a
    slice with work items BEFORE any branch was cut; read `DEC-142` and `SC-053` for the arms, the sizing and
    the one design element `LL-060` fixed rather than asked. **`DEC-143` (the same day, fifty-second round)
    RECORDS THAT IT RAN AND WHAT IT ISOLATED** — two variables, one still at p=0.06 and therefore EXTENDED by a
@@ -2545,23 +2610,93 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    RECORDS THE OPERATOR'S REDIRECT** — *verify/test and prove, then recommend* — and scoped the proof by
    `SC-054`; **`DEC-145` (fifty-fourth, 2026-09-07) RECORDS THAT THE PROOF WAS ACCEPTED, THAT `ADR-0046`
    IS `Approved` ON IT, THAT THE SWITCH AND `DEF-143` WERE SCOPED BY `SC-055`, AND THAT ONE ROW'S
-   DISPOSITION WAITS ON TWO NAMED RUNS** — read `DEC-145` for which, and the `slice`/`wbs-item` registers
-   for where each piece stands; **this line does not name them.** ⚠ `DEC-145` also records a status flip
-   the STORE REFUSED on a readiness guard, and that the refusal was kept rather than routed around; whether
-   it was later forced is the operator's word in a later ruling, never a sentence here. ⚠ The harness is a dispatch-only
+   DISPOSITION WAITS ON TWO NAMED RUNS** — and **`DEC-146` (fifty-fifth, the same day) RECORDS THOSE RUNS
+   READ, THAT DISPOSITION TAKEN, THE SWITCH SHIPPED AND CLOSED ON ITS FALSIFIER, THE STORE-REFUSED FLIP
+   HELD RATHER THAN FORCED ON THE OPERATOR'S WORD, AND A RE-VERIFICATION OF EVERY WORK ITEM CONFIRMED THAT
+   DAY**; and **`DEC-147` (fifty-sixth) RECORDS THE RE-VERIFICATION EXTENDED TWO DAYS BACK ON THE OPERATOR'S WORD —
+   ONE ITEM ADDED, ITS WORK SOUND ON ARTEFACTS, ITS RECORD HOLLOW (`DEF-145`: no ruling behind an `Implemented`) AND ITS
+   SHIPPED COMMENT CARRYING A RETRACTED MECHANISM (`DEF-144`), BOTH CLOSED ON ARTEFACTS AND THE OPERATOR'S WORDS**;
+   and **`DEC-148` (fifty-seventh, 2026-09-08) RECORDS THE INTERVIEW THAT FOLLOWED — four lessons confirmed, one slice
+   closed, the cycle extended once more with a latent blind spot filed (`DEF-146`), and THE NEXT UNIT OF WORK NAMED IN
+   ITS d6**; and **`DEC-149` (fifty-eighth, 2026-09-08) RECORDS THAT LIST EXECUTED BY THE AGENT ON THE
+   OPERATOR'S REASSIGNMENT — cloud work, with two temporary IAM grants created and revoked and each revoke
+   PROVEN, and with the remedy's own tool found reporting success while protecting the wrong object
+   (`DEF-147`, `DEF-148`)**; **`DEC-150` (fifty-ninth, 2026-09-08) RECORDS THE DEFERRED-WORK REVIEW ITSELF —
+   every live row ruled ONE BY ONE, opened by FALSIFYING the premise its own generator states (`DEF-149`),
+   and a gating scan found failing on every pull request over published package commits (`DEF-150`)**;
+   and **`DEC-151` (sixtieth, 2026-09-09) RECORDS THE VERIFICATION CLOSE-OUT — an environment found
+   165 commits stale and reporting healthy while unready (`DEF-151`), assets found shipping uncompressed
+   in BOTH environments (`DEF-152`), and ONE OPERATOR INSTRUCTION DECLINED AND RECORDED IN ITS d5**;
+   and **`DEC-152` (sixty-first, 2026-09-09) RECORDS A REQUIREMENT'S NAMED MECHANISM FOUND ABSENT FROM THE
+   CODE WHILE EVERY GATE STAYED GREEN (`DEF-153`)** — found by asking where a probe would start its clock,
+   not by any test; **`DEC-153` (sixty-second) RECORDS FOURTEEN DEFERRED-WORK DISPOSITIONS TAKEN ROW BY ROW
+   FROM A DIGEST-VERIFIED SLATE, ONE REQUIREMENT AMENDED RATHER THAN MEASURED BECAUSE A RATIFIED ADR HAD
+   ALREADY DELETED THE TECHNOLOGY IT MANDATED (`SC-057`), AND ONE MEASURED AND FOUND NOT MET (`DEF-154`)**;
+   **`DEC-154` (sixty-third) RECORDS A FAILURE MODE MEASURED ON TWO FURTHER SERVICES BEFORE AN ENVIRONMENT
+   WAS STOPPED, AND A PRODUCTION DEPLOY DECLINED ON THE SIZE OF ITS DELTA RATHER THAN ON RISK**; and
+   **`DEC-155` (sixty-fourth, 2026-09-09) RECORDS A FALSE PREMISE OF THE AGENT'S OWN RETRACTED ACROSS FOUR
+   ENTRIES, WITH `DEC-154` d4 SUPERSEDED FOR RESTING ON IT** — a requirement described as silent about a
+   condition it had always stated, with two rounds of measurement and one operator ruling built on the
+   error (`PE-1020`), and a second skill distilled in the same round (`SKL-002`) —
+   and **`DEC-156` through `DEC-166` (sixty-fifth to seventy-fifth, 2026-09-09/10) RECORD AN ARC THAT
+   BEGAN AS A MEASUREMENT ERRAND AND ENDED IN A PRODUCT FIX.** In order: a done-claim corrected because it
+   asserted a check the row it derived from proves cannot exist; an agent's own closing advice caught by the
+   mandated pre-interview sweep; a requirement measured for the first time with the control that made its
+   headline number mean anything; **a ruling that a requirement's VERIFICATION CLAUSE IS PART OF THE
+   REQUIREMENT**, which then invalidated a route authorised one question later in the same interview;
+   an environment stopped and the work re-scoped onto the route those clauses name; a defect found on the
+   harness's first run and reproduced six times; a second requirement found naming a DIFFERENT SCALE for the
+   same query, with its own clause never run; the handler fixed; and the suite finally RECORDED — a `test`
+   row wired to the requirements it measures, because a sweep found five of them verified in CI and held in
+   the register as prose alone; the work MERGED; and a register tidy-up ORDERED TWICE AND THEN REVERSED BY ITS
+   OWN EXECUTION, when reading the rows showed the value it would have written did not exist. ⛔ **Read the rulings for what was decided and the registers for where each
+   row stands — this line names no status deliberately, and THREE of these rounds exist ONLY because a
+   sentence like it was wrong.**
+   ⭐ **THE LAST ROUND'S SWEEP IS THE ONE TO COPY: IT NEARLY GOT THE RIGHT ANSWER FOR THE WRONG REASON.**
+   A text search of the acceptance criteria for the requirement's id returned zero — true, but an `AC` links
+   by EDGE and need not name its requirement in prose, so the zero proved nothing. **`trace_query` is what
+   settled it.** When the question is *does a link exist*, search the EDGES; text search answers a different
+   question and answers it confidently.
+   ⚠ **THREE OF THE EIGHT CORRECTED THE AGENT'S OWN WORK FROM EARLIER THE SAME DAY** — a projection that
+   returned a confident answer over a silently edited corpus (`LL-077`), a defect row comparing a concurrent
+   figure to a serial one, and a ruling's rationale that survived its own measurement by an hour. **Read
+   `PE-1039`, `PE-1042`, `PE-1055` and `PE-1058` for how each was caught; none was caught by a gate.**
+   read `DEC-145` through `DEC-155` for which rows, and the `slice`/`wbs-item`/`defect` registers for
+   where each piece stands now; **this line does not name them.** ⚠ What remains open from that arc is
+   OPERATOR work on the account and the box (`DEC-145` d5 names it; the `wbs-item` register says whether it
+   has been done), a deferred-work row whose activation trigger is a scheduled external run, the lessons
+   this arc filed, which bind only once the OPERATOR confirms them — `entity_query("lesson", status="Proposed")`
+   with a `Promoted` control is the check, never a count here. ⚠ **`DEC-147` d3 is the shape to reach for when a row's
+   `Implemented` has no ruling behind it (`DEF-145`): the register, not the commit log, says who ruled — sweep
+   the decision AND progress registers for the row's id before treating a status as the operator's.**
+   ▶ **A CLOUD ACT IS NOW SOMETHING THIS PROJECT DOES FROM THE SESSION, AND `DEC-149` IS ITS PATTERN:
+   measure the premise inside the instruction before acting on it, grant the narrowest thing that expires
+   on its own, CALIBRATE the instrument that will later prove the revoke, and read the REGISTRY rather
+   than the script's exit code. ⛔ Nothing here says what is still granted or still running — `aws iam
+   list-role-policies` and `aws ec2 describe-instances` are the answers.**
+   ▶ **THE NEXT UNIT OF WORK IS NAMED BY THE LATEST RULING IN THE DECISION REGISTER AND BY NOTHING HERE**
+   — `DEC-148` d6's round HAS SINCE BEEN RUN and `DEC-150`/`DEC-151` record it, so do not read that d6 as
+   pending; read from `DEC-166` onward, and a later ruling replaces it again. ⚠ **`DEC-151` d5's account of
+   what was left unmeasured HAS SINCE MOVED IN BOTH DIRECTIONS AND ITS COUNT IS STALE** — `DEC-152` d6,
+   `DEC-153` d9 and `DEC-155` d3/d5 each changed which requirements are blocked and on what, including one
+   whose recorded verdict was withdrawn rather than improved. **Read those clauses and the
+   `requirement`/`deferred-work` registers; never the number in d5.** ⚠ The harness is a dispatch-only
    workflow that CI never runs; `readiness_check` and `gh run list --workflow sql-startup-sampling.yml` are
-   the live answers for what has been sampled since. ⛔ **READ BOTH DEFECT ROWS TO THEIR END BEFORE ANY
-   ATTEMPT** (`LL-052`): each carries an end condition whose clause (2) asks for a CAUSE, and `DEC-115` d2 /
-   `DEC-116` d1 have ruled that neither a capture nor an elimination is one; `DEC-119` d3 declined the
-   environmental disposition and `DEC-142` re-offered it on NEW evidence (`mssql-rs#387`) and it was again not
-   taken; `DEC-077` d3 binds on any `SearchProvidersFtsTests` red; both rows say accumulated greens satisfy no
-   clause. ⚠ **Whether this direction still stands is the decision register from `DEC-145` onward, never this
-   line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
+   the live answers for what has been sampled since. ⛔ **THERE IS NO ATTEMPT TO PREPARE FOR — BUT READ BOTH
+   DEFECT ROWS TO THEIR END BEFORE FILING ANYTHING IN THAT FAMILY** (`LL-052`): each carries an end condition
+   whose clause (2) asks for a CAUSE, and `DEC-115` d2 / `DEC-116` d1 ruled that neither a capture nor an
+   elimination is one; both were closed on clause (1) ALONE — an exercised remedy (`ADR-0046`) with NO
+   mechanism claimed — and `ADR-0046` d4 names the only thing that reopens the question; `DEC-077` d3 still
+   binds on any `SearchProvidersFtsTests` red, and a crash of either signature on the 2022 line is a NEW row,
+   never an append. ⚠ **What remains, and whether any of it has since been scheduled, is the decision
+   register from `DEC-146` onward, never this line** — a later ruling replaces it exactly as d5 replaced `DEC-140` d3, whose subject (the `SL-038`
    per-item verdicts) was discharged by `DEC-141` d1 and d3 the same day.
    ⚠ **`DEC-141` d5 did not take the other two — the `deferred-work-reviewed` backlog and a second
    `skill-promote` round — neither `DEC-142` nor `DEC-143` raised them, and the decision register from
-   `DEC-145` onward says whether either has since been scheduled (neither `DEC-144` nor `DEC-145` raised
-   them); this line does not.** Read `DEC-140` through `DEC-145` for the reasoning
+   `DEC-166` onward says whether either has since been scheduled (`DEC-148` d6 took the FIRST as the next unit
+   of work and `DEC-150` records it RUN; the SECOND was taken on 2026-09-09 and `PE-1033` records it, which
+   moved the note-budget number WITHOUT clearing the advisory —
+   `readiness_check("package")` is where it stands); this line does not say whether either is still true.** Read `DEC-140` through `DEC-151` for the reasoning
    and the registers for what is still true of each; naming a row's state here is the FORTY-SIXTH's and
    FORTY-EIGHTH's exact fault.
    ⛔ **BOTH EARLIER DIRECTIONS FROM `PE-909` ARE DISCHARGED** — item 2 (`DW-100`) by `DEC-138` d1, item 4
@@ -2570,9 +2705,13 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    hours, and **a claim about what REMAINS is a status wearing a measurement's clothes.** The commands at
    the top of this block are the answer; a sentence here is not.
    ⚠ **`lessons-note-budget` STILL FAILS AND THAT IS EXPECTED, NOT A REGRESSION** — `skill-promote.md` is
-   re-runnable, and two further clusters were proposed to the operator and deliberately not taken. **Read
-   `PE-938` for which, and `readiness_check("package")` for where the number stands now**; no count is
-   written here.
+   re-runnable and HAS been re-run: a second cluster was distilled on 2026-09-09 (`SKL-002`, `PE-1033`),
+   which REDUCED the rendered lesson count without clearing the advisory. ⛔ **THIS READ *"Further clusters
+   were proposed and not taken"* AND THAT WAS THE FIFTY-NINTH — a ruling took one, and the sentence shipped
+   false in the commit that recorded the ruling.** Whether that pass has been RUN is the decision and
+   progress registers from `DEC-162` onward, never this line; a later ruling replaces that too.
+   **Read `PE-938` and `PE-1033` for which clusters went before, and `readiness_check("package")` for where
+   the number stands now**; no count is written here.
    ⛔⛔ **AND READ THE OTHER LESSON ADVISORY THE OPPOSITE WAY ROUND: A GREEN `lessons-confirmed` CAN MEAN
    NOTHING WAS RECORDED.** It counts `Proposed` rows, so it goes green when every lesson has been
    adjudicated **and** when the session filed none at all — the two are indistinguishable at the pass bit.
@@ -2580,9 +2719,14 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    and only a control (`status="Promoted"` returning 23) made the zero mean anything. **Before trusting a
    green advisory, ask what its denominator was** — this is the third instance in one day of a check
    passing because its SUBJECT was missing rather than clean (`DW-101` carries the other two).
-   ⛔ **`SKL-001`'s FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`.** tamheed
-   never touches it again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-`
-   row superseding it. **Never regenerate or "refresh" it.**
+   ⛔ **EVERY PROMOTED SKILL'S FILE IS OPERATOR-OWNED — `.claude/skills/trusting-a-measurement/SKILL.md`
+   (`SKL-001`) and `.claude/skills/before-you-cite-a-record/SKILL.md` (`SKL-002`).** tamheed never touches
+   them again, a revision is the operator's hand-edit, and a re-distillation is a NEW `SKL-` row superseding
+   the old. **Never regenerate or "refresh" one.**
+   ⛔⛔ **A LESSON PROMOTED INTO A SKILL HAS LEFT THE ALWAYS-LOADED NOTE BY DESIGN, AND ITS ABSENCE THERE IS
+   NOT EVIDENCE IT DOES NOT BIND.** If you want one of those rules it is in the skill file;
+   `entity_query("lesson", status="Promoted")` lists which lessons went where. **Resolve which skills exist
+   from the `skill` register, never from this line.**
    ✅✅ **`DW-100` IS `Done` AND ITS HOLD LASTED ONE DAY.** It stood here as the first action, was
    dispositioned by `DEC-138` d1 (an OVERRIDE that sent the missing capability upstream as
    `findings_24` rather than building the workaround the agent had proven), and tamheed **4.7.0 shipped
@@ -2602,7 +2746,24 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    fields (`PE-910`, read in the server's source). Both `DW-100` and `DEC-135` d1 had called that
    untestable; `LL-063` records why they were wrong in the same way.
    **Then read these rows, and read `DEC-135` first — it is the standing rule everything else now sits
-   under: `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `LL-069`, `PE-970`, `PE-973`,
+   under: `DEC-180`, `SC-064`, `PE-1097`, `PE-1096`, `DEC-179`, `PE-1095`, `PE-1094`, `DEC-178`, `DEC-177`, `DEF-162`, `LL-081`, `PE-1093`, `PE-1092`, `PE-1091`, `PE-1090`, `DEC-176`, `PE-1089`, `DEC-175`, `DEF-161`, `PE-1088`, `PE-1087`, `DEC-174`, `DEC-173`, `LL-080`, `PE-1083`, `DEC-172`, `SC-063`, `AC-159`, `PE-1077`, `PE-1076`, `DEC-171`, `SC-062`, `DEC-170`, `DEF-160`, `PE-1074`, `DEC-169`, `DEC-168`, `DEC-167`, `PE-1072`, `PE-1071`, `DOC-071`, `DEF-159`, `DEF-158`,
+   `DEF-156`, `PE-1065`, `PE-1066`,
+   `DEC-166`, `DEC-165`, `PE-1062`, `DEF-087`,
+   `DEC-164`, `TEST-056`, `DEF-157`, `PE-1060`,
+   `DEC-163`, `DEC-162`, `DEC-161`, `DEC-160`, `DEC-159`, `DEC-158`, `DEC-157`,
+   `DEF-156`, `DEF-155`, `SC-061`, `SC-060`, `LL-079`, `LL-078`, `LL-077`,
+   `NFR-002`, `NFR-009`, `DW-044`, `DW-048`, `DW-050`, `DW-103`,
+   `PE-1039`, `PE-1040`, `PE-1041`, `PE-1042`, `PE-1045`, `PE-1047`, `PE-1049`, `PE-1051`,
+   `PE-1055`, `PE-1057`, `PE-1058`,
+   `DEC-156`, `SC-059`, `LL-076`, `PE-1034`, `PE-1035`,
+   `DEC-155`, `DEC-154`, `DEC-153`, `DEC-152`, `SKL-002`, `SC-058`, `SC-057`, `DEF-154`, `DEF-153`,
+   `LL-073`, `LL-074`, `LL-075`, `PE-1020`, `PE-1033`, `PE-1015`, `PE-1018`, `PE-1019`,
+   `DW-103`, `DW-104`, `DW-105`, `DW-106`, `DW-107`, `NFR-001`, `NFR-013`,
+   `DEC-151`, `DEC-150`, `DEF-152`, `DEF-151`, `DEF-150`, `DEF-149`, `LL-072`, `LL-071`, `SC-056`,
+   `PE-1012`, `PE-1011`, `PE-1010`, `PE-1009`, `PE-1008`, `PE-1007`, `PE-1006`, `PE-1005`, `PE-1004`, `PE-1002`,
+   `DEC-149`, `DEF-148`, `DEF-147`, `PE-1000`, `PE-999`,
+   `DEC-148`, `DEC-147`, `DEC-146`, `DEC-145`, `DEC-144`, `ADR-0046`, `SC-055`, `SC-054`, `DEF-143`, `DW-102`, `LL-069`,
+   `PE-980`, `PE-981`, `PE-982`, `PE-983`, `PE-984`, `PE-985`, `PE-970`, `PE-973`,
    `PE-974`, `PE-975`, `PE-976`, `PE-977`, `PE-978`, `PE-979`,
    `DEC-143`, `LL-068`, `PE-961`, `PE-962`, `PE-963`, `PE-965`, `PE-966`, `PE-967`,
    `DEC-142`, `SC-053`, `LL-067`, `PE-958`,
@@ -2614,6 +2775,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    `DEF-142`, `WBS-29`, `WBS-30`, `WBS-31`, `PE-897`, `PE-898`, `PE-903`, `PE-904`, `PE-908`, `PE-909`,
    `PE-910`, `PE-913`, `PE-938`,
    `DEC-134`, `SC-047`, `DEF-141`, `PE-883`, `PE-886`, `PE-890`, `DEC-133`, `DEC-132`, `DEC-129`,
+   `DEC-148`, `DEF-146`, `PE-997`, `PE-993`, `PE-992`,
+   `DEC-147`, `DEF-145`, `DEF-144`, `LL-070`, `PE-989`, `PE-990`, `PE-991`,
    `DEC-128`, `DEC-127`, `DEC-123`, `DEC-121`, `DEC-120`, `DEC-118`, `DEF-140`, `DEF-137`, `DEF-130`,
    `DEF-129`, `DEF-121`, `DEF-109`, `DW-099`, `DW-096`, `LL-060`, `LL-059`, `LL-058`, `LL-057`,
    `LL-056`, `LL-055`,
@@ -2749,7 +2912,8 @@ have changed the answer. **Parse the JSON; never regex a JSONL row.**
    called `DEF-121`'s capture insufficient — one from a file's `file(1)` type, one from its first screen —
    while the answer sat in two files it had KEPT. **A manifest saying `kept` is quotable only for what it
    `DROPPED`.**
-   ⚠ **`DEF-121`'s CLAUSE (2) HAS FIRED AND IS NOT SATISFIED, AND THOSE ARE COMPATIBLE.** `DEC-115` d2
+   ⚠ **`DEF-121`'s CLAUSE (2) FIRED AND WAS NEVER SATISFIED, AND THOSE ARE COMPATIBLE — the row is `Fixed` on
+   clause (1) alone (`ADR-0046`, `DEC-146` d1), which changes nothing below.** `DEC-115` d2
    refused to read a successful CAPTURE as a satisfied clause; `DEC-116` d1 refused to read a REFUTED
    HYPOTHESIS as one. ⛔ **Do not re-argue either as a technicality** — the clause asks for a CAUSE, and
    neither collecting evidence nor eliminating a rival hypothesis is one.
@@ -2895,9 +3059,15 @@ this file. ⚠ **THAT IS A COUNT OF ROWS IN ONE INSTANCE, NOT OF INSTANCES** —
 recurred a FOURTH time (`DEC-109` d5), caught again by a pre-interview sweep and not by any gate. **Two
 different quantities; do not read either as the other** (`LL-015`). **When you done-claim an item, close its `DW-` row in the same batch**, as every `WBS-24.x`
 item did.
-`DW-069`, the bilingual glossary, is live work that **cannot be closed by a reader of code**: its own row
-says adjudicating Arabic divergences needs an Arabic-reading stakeholder, and `NFR-039`'s second clause
-stays *undecidable* until the artifact exists. `DW-071`'s new-route clause was discharged by `SL-033`;
+`DW-069`, the bilingual glossary — **its arc is HISTORY and its state is the register's**
+(`entity_query("deferred-work", id="DW-069")`, `DOC-071`, `WBS-40.1`), never this paragraph. What survives is
+the METHOD, and it is reusable for any requirement that names an authority (`LL-010`): the artefact first
+(PR `#392`, `DEC-167`), then the operator's rulings over a generated slate (`DEC-169`), then the check (PR
+`#396`) — and **every Arabic value in the product or the glossary was copied out of the slate by code, none
+typed by an agent**. ⛔ The adjudication was the operator's alone (`DEC-156` d3) and stays so: a future
+term round regenerates the slate with `--force` only after the current one is applied, and
+`scripts/apply-i18n-term-slate.mjs` refuses any corpus but the one the slate's header hashes name.
+⛔ **THIS PARAGRAPH WAS THE SIXTIETH** — see the error log at the top. `DW-071`'s new-route clause was discharged by `SL-033`;
 its SECOND clause is release sign-off, parked by `DEC-071` d4.
 
 ⚠ **WHAT `DEF-114` ACTUALLY IS, AND WHY IT WAS KEPT OUT OF `#320` — the reasoning binds the next bundling
@@ -3273,14 +3443,25 @@ of an authorization surface. The mitigation is per-item: **each row gets its OWN
 recorded in the batch that produces its evidence**, so the exit is adjudicated per item, never in aggregate.
 
 ⚠ **`DW-069` IS DELIBERATELY NOT IN THIS SLICE** (`DEC-071` d2). The operator said "all" to the nine and
-"leave it, not now" to the glossary; the narrower answer governs. **Consequence:** `NFR-039` stays
-unmeetable — its clause two is *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
-picker) stays blocked, because the nine Arabic source labels have no canonical source.
+"leave it, not now" to the glossary; the narrower answer governs. **Consequence at the time:** `NFR-039`
+was unmeetable — its clause two *undecidable*, not merely unverified — and `DW-076` (the `TopicSource`
+picker) was blocked, because the nine Arabic source labels had no canonical source.
+⛔⛔ **BOTH CONSEQUENCE CLAUSES WERE WRITTEN IN THE PRESENT TENSE AND ARE NOW HISTORY — `DEC-150` d4/d8 and
+`SC-056` SCHEDULED BOTH ROWS (2026-09-08), AND `DEC-156` (2026-09-09) CORRECTED THE FIRST ONE'S DONE-CLAIM.**
+The heading's *"NOT IN THIS SLICE"* is still true of the slice it names and is left alone; **it is the
+consequences that rotted, which is the FORTY-THIRD's class — a sentence that reasons FROM a row's state and
+never mentions it.** ⛔ **Which rows are scheduled and where is `entity_query`, never this paragraph.**
 
-⚠ **STILL NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1
-release close-out. **`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text
-route coverage) therefore do NOT fire** — their triggers name "before release sign-off". `DEF-087` stays
-carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
+⚠ **NOT SCHEDULED, and this is deliberate (`DEC-071` d4, holding `DEC-068` d3):** the v1 release close-out.
+⛔⛔ **THE CLAUSE THAT FOLLOWED IT IS FALSE AND WAS A LIVE READING INSTRUCTION, WHICH IS THE DANGEROUS
+KIND.** It read *"`DW-041` (WCAG manual pass), `DW-067` (Firefox/WebKit matrix) and `DW-071` (alt-text route
+coverage) therefore do NOT fire — their triggers name 'before release sign-off'."* **`DEC-150` d4 ACTIVATED
+all three on 2026-09-08 and `SC-056` gave each a home**; a fresh session obeying the sentence would have
+treated three scheduled items as dormant. ⭐ **Found by an `LL-066` shape sweep — keyed on *do NOT fire* /
+*still not scheduled* rather than on any id this round moved** — which is exactly the second key `LL-066`
+added, paying on a claim about what does NOT happen. **No instrument here could have seen it: every
+identifier resolves and no lifecycle status is stated.**
+`DEF-087` stays carried and **open** rather than Won't-fix (`DEC-071` d5), so the historical blindness stays visible.
 
 ---
 

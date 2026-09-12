@@ -131,17 +131,24 @@ public class MembershipPipelineTests
     // ── DW-098 / WBS-28 — THE CALLER'S CancellationToken MUST SURVIVE EVERY BEHAVIOR ─────────────
     //
     // ⚠⚠ THIS TEST EXISTS BECAUSE THE FAILURE IT GUARDS AGAINST IS A PASS, NOT A FAILURE. MediatR
-    // 12.5.0 gave RequestHandlerDelegate<T> a CancellationToken parameter WITH A DEFAULT VALUE. A
-    // behavior that calls bare next() therefore still compiles, still passes every other test in
-    // this suite, and silently forwards CancellationToken.None instead of the caller's token —
-    // cancellation stops propagating and nothing anywhere reports it. Measured: `next()` compiles
-    // under both 12.4.1 and 12.5.0, while `next(ct)` compiles only under 12.5.0 (CS1593 before).
-    // No compilation check at any scope can see this; only an assertion on the forwarded token can.
-    // LL-032: when the dangerous outcome is a PASS, the guard has to be explicit.
+    // 12.5.0 gave RequestHandlerDelegate<T> a CancellationToken parameter WITH A DEFAULT VALUE, so a
+    // behavior may now call next(ct) as well as bare next(). Measured: `next()` compiles under both
+    // 12.4.1 and 12.5.0, while `next(ct)` compiles only under 12.5.0 (CS1593 before).
     //
-    // ⭐ THIS GUARD WAS VERIFIED TO FAIL BEFORE THE FOUR BEHAVIORS WERE FIXED — it observed
-    // CancellationToken.None while every other test in the suite stayed green. A guard that has
-    // never been shown to fail proves nothing (LL-013, LL-041).
+    // ⛔ WHAT THAT DOES NOT MEAN (PE-875, measured three ways on this real DI pipeline; an earlier
+    // claim to the contrary, PE-873, was RETRACTED): a bare next() does NOT drop the caller's token.
+    // MediatR falls back to the original token when the default is used, so the four behaviors in
+    // Acmp.Shared are correct as written and were never changed. What CAN go wrong, and what no
+    // other test in this suite would notice, is a behavior forwarding a DIFFERENT token (its own
+    // CancellationTokenSource, a linked token built wrongly): every other test still passes, and
+    // cancellation quietly stops reaching the handler. LL-032: when the dangerous outcome is a
+    // PASS, the guard has to be explicit.
+    //
+    // ⭐ CALIBRATED, NOT ASSUMED: with a behavior that forwards a foreign token registered upstream
+    // of the probe this test FAILS; with one that calls bare next() upstream it still PASSES (the
+    // PE-875 measurement reproduced on this guard, DEF-144); against the real chain it passes. A
+    // guard that has never been shown to fail proves nothing (LL-013, LL-041). LIMIT: the probe is
+    // a BEHAVIOR, so this pins what the innermost behavior receives, not what the handler receives.
     [Fact(DisplayName = "Pipeline: the caller's CancellationToken is forwarded through every behavior")]
     public async Task Cancellation_token_is_forwarded_through_every_behavior()
     {
@@ -156,7 +163,7 @@ public class MembershipPipelineTests
 
         probe.Ran.Should().BeTrue("the probe behavior must actually execute, or a green result here means nothing");
         probe.Seen.Should().Be(cts.Token,
-            "every behavior must forward the caller's token with next(ct); a bare next() silently substitutes CancellationToken.None");
+            "the innermost behavior must receive the caller's token; a behavior forwarding a different token is caught here and nowhere else (a bare next() is fine: MediatR falls back to the original token, PE-875)");
     }
 
     // Records the token the innermost behavior was handed. One instance per test, supplied by the

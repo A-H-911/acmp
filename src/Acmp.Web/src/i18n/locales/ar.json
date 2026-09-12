@@ -1288,7 +1288,7 @@
       "event": {
         "topicSubmitted": "تقديم موضوع",
         "topicReturned": "إعادة موضوع للعمل",
-        "agendaPublished": "نشر الأجندة",
+        "agendaPublished": "نشر جدول الأعمال",
         "meetingScheduled": "جدولة اجتماع",
         "minutesReady": "جاهزية المحضر للمراجعة",
         "decisionApproved": "اعتماد قرار",
@@ -1412,7 +1412,9 @@
       "anyType": "أي نوع",
       "anyUrgency": "أي أهمية",
       "anyStream": "أي مسار",
-      "anyOwner": "أي مالك"
+      "anyOwner": "أي مالك",
+      "source": "المصدر",
+      "anySource": "أي مصدر"
     },
     "showing": "عرض {{shown}} من {{total}}",
     "pageNav": "صفحات القائمة",
@@ -1506,10 +1508,10 @@
     "reclassify": {
       "button": "إعادة التصنيف",
       "title": "إعادة تصنيف الموضوع",
-      "subtitle": "تصحيح نوع الموضوع. متاح أثناء الفرز، قبل قبول الموضوع.",
-      "typeLabel": "النوع الجديد",
-      "typePlaceholder": "اختر نوعًا",
-      "confirm": "تطبيق النوع الجديد"
+      "subtitle": "تصحيح نوع الموضوع أو مصدره. متاح أثناء الفرز، قبل قبول الموضوع.",
+      "typeLabel": "النوع",
+      "confirm": "تطبيق التغييرات",
+      "sourceLabel": "المصدر"
     },
     "reopen": {
       "button": "إعادة فتح",
@@ -1537,6 +1539,18 @@
       "pinned": "عمود الموضوع ظاهر دائمًا",
       "moveUp": "تقديم عمود {{column}}",
       "moveDown": "تأخير عمود {{column}}"
+    },
+    "source": {
+      "CommitteeMember": "عضو اللجنة",
+      "StreamRequest": "طلب مسار",
+      "UrgentOrgNeed": "احتياج مؤسسي عاجل",
+      "OperationalIncident": "حادث تشغيلي",
+      "SecurityFinding": "ملاحظة أمنية",
+      "Modernization": "تحديث تقني",
+      "InnovationInitiative": "مبادرة ابتكار",
+      "CrossStreamProblem": "مشكلة متعددة المسارات",
+      "Regulatory": "متطلب تنظيمي",
+      "External": "جهة خارجية"
     }
   },
   "submit": {
@@ -1676,7 +1690,8 @@
       "justification": "المبرّر",
       "streams": "المسارات المتأثرة",
       "systems": "الأنظمة المتأثرة",
-      "attachments": "المرفقات"
+      "attachments": "المرفقات",
+      "source": "المصدر"
     },
     "commentLabel": "أضف تعليقًا",
     "commentPlaceholder": "أضف تعليقًا…",
@@ -2383,7 +2398,7 @@
       "fTitle": "العنوان",
       "fTitlePh": "سمِّ عنصر العمل…",
       "fType": "النوع",
-      "fUrgency": "الإلحاح",
+      "fUrgency": "الأهمية",
       "fDescription": "الوصف",
       "fDescriptionPh": "ما الذي يجب إنجازه…",
       "fJustification": "المبرر",

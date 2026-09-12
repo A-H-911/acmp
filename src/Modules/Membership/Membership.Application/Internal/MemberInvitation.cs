@@ -2,6 +2,7 @@
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Membership.Application.Internal;
@@ -48,7 +49,7 @@ public static class MemberInvitation
         // the insert would fail anyway — but only AFTER the account existed in Keycloak, leaving a
         // real user behind for a request that reported failure.
         if (await db.Members.AnyAsync(m => m.Email == normalized, ct))
-            throw new InvalidOperationException($"A member with the email {normalized} already exists.");
+            throw new DomainRuleException($"A member with the email {normalized} already exists.");
 
         var account = await identity.CreateUserAsync(normalized, fullName, ct);
 

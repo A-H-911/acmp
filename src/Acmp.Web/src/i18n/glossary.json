@@ -1,0 +1,837 @@
+{
+  "$comment": "THE CANONICAL EN-AR TERMINOLOGY GLOSSARY NFR-039 NAMES (WBS-40.1 / DW-069, DEC-167 q1). One file, no mirror: docs/README.md §G, docs/governance/glossary.md and design-handoff/claude-design-input-package.md all point HERE, and this file points nowhere. The application's strings stay in locales/en.json and locales/ar.json; this file governs them through scripts/check-i18n-terms.mjs, which reads `terms` and `allowedVariants` and fails on any short English label carrying more than one Arabic rendering that is not a reviewed variant. EN definitions stay in docs/governance/glossary.md (DOC-049); this file carries TERMS. ⛔ EVERY `ar` VALUE AND EVERY `allowedVariants` ENTRY IS THE OPERATOR'S RULING (DEC-156 d3: the Arabic reviewer is the operator; DEC-165 n4: rulings come from ONE slate grouped by term) — an agent never fills one in from ar.json, because ar.json is the artefact this glossary is checked AGAINST and cannot also be the source (DW-069). `status: proposed` with `ar: null` means not yet ruled. `aliases` are the other English labels the same concept appears under in en.json, so the slate and the check can find every surface. Regenerate the slate with `node scripts/gen-i18n-term-slate.mjs`.",
+  "version": 1,
+  "owner": "operator (Arabic reviewer, DEC-156 d3); lead-secretary per DOC-049",
+  "governs": [
+    "locales/en.json",
+    "locales/ar.json"
+  ],
+  "terms": [
+    {
+      "en": "Architecture",
+      "ar": "الهيكلة",
+      "status": "canonical",
+      "source": "DEC-032 — whole term family; a noun in an إضافة drops its ال; definiteness preserved (definite الهيكلة, indefinite هيكلة)"
+    },
+    {
+      "en": "Secretary of the Committee",
+      "ar": "أمين سر اللجنة",
+      "status": "canonical",
+      "source": "design-handoff/claude-design-input-package.md line 20 — the one authored bilingual term the claimants held (DEC-156 rationale)"
+    },
+    {
+      "en": "Architecture Committee",
+      "ar": "لجنة الهيكلة",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: لجنة الهيكلة"
+    },
+    {
+      "en": "Backlog",
+      "ar": "قائمة المواضيع",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: قائمة المواضيع"
+    },
+    {
+      "en": "Topic",
+      "ar": [
+        "الموضوع",
+        "موضوع"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: الموضوع | موضوع — definite form in a column header, indefinite as an entity/type name (operator, DEC-169 round 1)"
+    },
+    {
+      "en": "Agenda",
+      "ar": [
+        "جدول أعمال",
+        "جدول الأعمال"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: جدول أعمال | جدول الأعمال — indefinite as an entity type name, definite on the meeting surfaces (operator, DEC-169 round 2)"
+    },
+    {
+      "en": "Meeting",
+      "ar": [
+        "اجتماع",
+        "الاجتماع"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: اجتماع | الاجتماع — indefinite as an entity/type name, definite as a title/column (operator, DEC-169 round 2)"
+    },
+    {
+      "en": "Minutes",
+      "aliases": [
+        "Minutes of Meeting",
+        "MoM"
+      ],
+      "ar": [
+        "المحاضر",
+        "المحضر",
+        "محضر",
+        "محضر اجتماع",
+        "محضر الاجتماع"
+      ],
+      "status": "ruled",
+      "source": "DOC-049 (Minutes (MoM))",
+      "ruling": "allowed: المحاضر | المحضر | محضر | محضر اجتماع | محضر الاجتماع — plural group heading, definite/indefinite singular, and the two-word 'minutes of (the) meeting' forms are each correct where used (operator, DEC-169 rounds 2-3)"
+    },
+    {
+      "en": "Decision",
+      "ar": [
+        "القرار",
+        "قرار"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: القرار | قرار — definite in the ADR create dialog, indefinite as an entity/type name (operator, DEC-169 round 3)"
+    },
+    {
+      "en": "Vote",
+      "ar": [
+        "التصويت",
+        "تصويت"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: التصويت | تصويت — definite as the voting panel title, indefinite as an entity/type name (operator, DEC-169 round 3)"
+    },
+    {
+      "en": "Quorum",
+      "ar": "النصاب",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: النصاب"
+    },
+    {
+      "en": "Action",
+      "ar": [
+        "إجراء",
+        "الإجراء"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: إجراء | الإجراء — indefinite as an entity/type name, definite as a column/filter label (operator, DEC-169 round 3)"
+    },
+    {
+      "en": "Risk",
+      "ar": [
+        "المخاطرة",
+        "مخاطرة"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: المخاطرة | مخاطرة — definite as a column label, indefinite as an entity/type name (operator, DEC-169 round 4)"
+    },
+    {
+      "en": "Dependency",
+      "ar": "اعتمادية",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: اعتمادية"
+    },
+    {
+      "en": "ADR",
+      "aliases": [
+        "Architecture Decision Record"
+      ],
+      "ar": [
+        "سجل قرار",
+        "سجل قرار هيكلة",
+        "قرار هيكلة"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: سجل قرار | سجل قرار هيكلة | قرار هيكلة — all three forms correct where used - the template target, the record label on audit/ADR surfaces (also under the alias Architecture Decision Record), and the trace type (operator, DEC-169 round 4)"
+    },
+    {
+      "en": "Architecture Invariant",
+      "aliases": [
+        "Invariant"
+      ],
+      "ar": [
+        "ثابت هيكلة",
+        "ثابت"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: ثابت هيكلة | ثابت — full form on the invariants record label, short form as entity/trace type under the alias Invariant (operator, DEC-169 round 4)"
+    },
+    {
+      "en": "Principle",
+      "ar": "مبدأ",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: مبدأ (operator, DEC-169 round 2; no surface yet)"
+    },
+    {
+      "en": "Standard",
+      "ar": "معيار",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: معيار (operator, DEC-169 round 1; no surface yet)"
+    },
+    {
+      "en": "Stream",
+      "ar": [
+        "المسار",
+        "المسارات"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: المسار | المسارات — singular on filters/columns, plural on the reports view (operator, DEC-169 round 4)"
+    },
+    {
+      "en": "System/Service",
+      "aliases": [
+        "System",
+        "Service"
+      ],
+      "ar": [
+        "النظام",
+        "نظام"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: النظام | نظام — definite as a nav group / audit actor, indefinite as a trace type (operator, DEC-169 round 5)"
+    },
+    {
+      "en": "Research Mission",
+      "ar": [
+        "مهمة بحث",
+        "مهمة بحثية"
+      ],
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "allowed: مهمة بحث | مهمة بحثية — genitive and adjectival forms both correct where used (operator, DEC-169 round 5)"
+    },
+    {
+      "en": "Finding",
+      "ar": "نتيجة",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: نتيجة"
+    },
+    {
+      "en": "Recommendation",
+      "ar": "توصية",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: توصية"
+    },
+    {
+      "en": "Traceability",
+      "ar": "التتبّع",
+      "status": "ruled",
+      "source": "DOC-049",
+      "ruling": "canonical: التتبّع"
+    },
+    {
+      "en": "Committee member",
+      "ar": "عضو اللجنة",
+      "status": "ruled",
+      "code": "TopicSource.CommitteeMember",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: عضو اللجنة (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Stream request",
+      "ar": "طلب مسار",
+      "status": "ruled",
+      "code": "TopicSource.StreamRequest",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: طلب مسار (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Urgent org need",
+      "ar": "احتياج مؤسسي عاجل",
+      "status": "ruled",
+      "code": "TopicSource.UrgentOrgNeed",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: احتياج مؤسسي عاجل (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Operational incident",
+      "ar": "حادث تشغيلي",
+      "status": "ruled",
+      "code": "TopicSource.OperationalIncident",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: حادث تشغيلي (operator, DEC-171 round 1; picked from drafted candidates)"
+    },
+    {
+      "en": "Security finding",
+      "ar": "ملاحظة أمنية",
+      "status": "ruled",
+      "code": "TopicSource.SecurityFinding",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: ملاحظة أمنية (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Modernization",
+      "ar": "تحديث تقني",
+      "status": "ruled",
+      "code": "TopicSource.Modernization",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: تحديث تقني (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Innovation initiative",
+      "ar": "مبادرة ابتكار",
+      "status": "ruled",
+      "code": "TopicSource.InnovationInitiative",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: مبادرة ابتكار (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Cross-stream problem",
+      "ar": "مشكلة متعددة المسارات",
+      "status": "ruled",
+      "code": "TopicSource.CrossStreamProblem",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: مشكلة متعددة المسارات (operator, DEC-171 round 2; picked from drafted candidates)"
+    },
+    {
+      "en": "Regulatory",
+      "ar": "متطلب تنظيمي",
+      "status": "ruled",
+      "code": "TopicSource.Regulatory",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: متطلب تنظيمي (operator, DEC-171 round 3; picked from drafted candidates)"
+    },
+    {
+      "en": "External",
+      "ar": "جهة خارجية",
+      "status": "ruled",
+      "code": "TopicSource.External",
+      "source": "TopicSource enum; docs/domain/topic-taxonomy.md section B.3",
+      "ruling": "canonical: جهة خارجية (operator, DEC-171 round 3; picked from drafted candidates)"
+    }
+  ],
+  "allowedVariants": [
+    {
+      "en": "{{count}} blocked",
+      "ar": [
+        "{{count}} محجوب",
+        "{{count}} محجوبة"
+      ],
+      "ruling": "allowed: {{count}} محجوب | {{count}} محجوبة — gender agreement with the counted noun on each surface (operator, DEC-169 round 5)"
+    },
+    {
+      "en": "{{count}} items",
+      "ar": [
+        "{{count}} بنود",
+        "{{count}} عنصر"
+      ],
+      "ruling": "allowed: {{count}} بنود | {{count}} عنصر — different counted nouns on the dashboard and the meeting surface (operator, DEC-169 round 5)"
+    },
+    {
+      "en": "Accepted",
+      "ar": [
+        "مقبول",
+        "مقبولة"
+      ],
+      "ruling": "allowed: مقبول | مقبولة — gender agreement - masculine for topics/risks, feminine for a recommendation (operator, DEC-169 round 6)"
+    },
+    {
+      "en": "Actions",
+      "ar": [
+        "إجراءات",
+        "الإجراءات"
+      ],
+      "ruling": "allowed: إجراءات | الإجراءات — indefinite as a column header, definite as a page title / nav label (operator, DEC-169 round 6)"
+    },
+    {
+      "en": "Active",
+      "ar": [
+        "نشط",
+        "نشطة"
+      ],
+      "ruling": "allowed: نشط | نشطة — gender agreement with the noun on each surface (operator, DEC-169 round 6)"
+    },
+    {
+      "en": "Add stream",
+      "ar": [
+        "إضافة المسار",
+        "إضافة مسار"
+      ],
+      "ruling": "allowed: إضافة المسار | إضافة مسار — definite on the confirm button, indefinite on the primary action (operator, DEC-169 round 6)"
+    },
+    {
+      "en": "Agenda published",
+      "ar": [
+        "تم نشر جدول الأعمال",
+        "نشر جدول الأعمال"
+      ],
+      "ruling": "allowed: تم نشر جدول الأعمال — status line, correct as is (operator, DEC-169 round 7); defect: نشر الأجندة — replace with نشر جدول الأعمال - the operator's text, DEC-169 round 7; الأجندة is not the glossary term for Agenda"
+    },
+    {
+      "en": "Approved",
+      "ar": [
+        "معتمد",
+        "موافق عليه",
+        "موافقة"
+      ],
+      "ruling": "allowed: معتمد | موافق عليه | موافقة — different surfaces - a record status, a report outcome, a decision outcome - each correct where used (operator, DEC-169 round 7)"
+    },
+    {
+      "en": "Blocked",
+      "ar": [
+        "محجوب",
+        "محجوبة"
+      ],
+      "ruling": "allowed: محجوب | محجوبة — gender agreement with the noun on each surface (operator, DEC-169 round 7)"
+    },
+    {
+      "en": "Blocked work",
+      "ar": [
+        "الأعمال المحجوبة",
+        "عمل محجوب"
+      ],
+      "ruling": "allowed: الأعمال المحجوبة | عمل محجوب — definite plural as a filter label, indefinite singular as a graph legend (operator, DEC-169 round 7)"
+    },
+    {
+      "en": "Cancelled",
+      "ar": [
+        "ملغاة",
+        "ملغى",
+        "مُلغى"
+      ],
+      "ruling": "allowed: ملغاة | ملغى | مُلغى — gender agreement with the noun on each surface; the damma on the actions form is accepted (operator, DEC-169 round 8)"
+    },
+    {
+      "en": "Chair",
+      "ar": [
+        "الرئيس",
+        "رئيس",
+        "رئيس الجلسة"
+      ],
+      "ruling": "allowed: الرئيس | رئيس | رئيس الجلسة — definite column header, indefinite attendance role, and the session-chair form label are each correct where used (operator, DEC-169 round 8)"
+    },
+    {
+      "en": "Clear filters",
+      "ar": [
+        "مسح المرشّحات",
+        "مسح عوامل التصفية"
+      ],
+      "ruling": "allowed: مسح المرشّحات | مسح عوامل التصفية — both phrasings accepted where used (operator, DEC-169 round 8)"
+    },
+    {
+      "en": "Closed",
+      "ar": [
+        "مغلق",
+        "مُغلقة"
+      ],
+      "ruling": "allowed: مغلق | مُغلقة — gender agreement with the noun on each surface (operator, DEC-169 round 8)"
+    },
+    {
+      "en": "committee-wide snapshot",
+      "ar": [
+        "لمحة عامة",
+        "لمحة عامة عن اللجنة"
+      ],
+      "ruling": "allowed: لمحة عامة | لمحة عامة عن اللجنة — short and full forms both accepted where used (operator, DEC-169 round 9)"
+    },
+    {
+      "en": "Converted",
+      "ar": [
+        "محوّل",
+        "محوَّلة"
+      ],
+      "ruling": "allowed: محوّل | محوَّلة — gender agreement with the noun on each surface (operator, DEC-169 round 9)"
+    },
+    {
+      "en": "Create action",
+      "ar": [
+        "إنشاء إجراء",
+        "إنشاء الإجراء"
+      ],
+      "ruling": "allowed: إنشاء إجراء | إنشاء الإجراء — indefinite on the meeting action button, definite on the confirm button (operator, DEC-169 round 9)"
+    },
+    {
+      "en": "Created",
+      "ar": [
+        "أُنشئ",
+        "أُنشئت"
+      ],
+      "ruling": "allowed: أُنشئ | أُنشئت — gender agreement with the noun on each surface (operator, DEC-169 round 9)"
+    },
+    {
+      "en": "Critical",
+      "ar": [
+        "حرج",
+        "حرِج",
+        "حرجة"
+      ],
+      "ruling": "allowed: حرج | حرِج | حرجة — the kasra variant and the feminine agreement are both accepted where used (operator, DEC-169 round 10)"
+    },
+    {
+      "en": "Decided",
+      "ar": [
+        "تم البتّ",
+        "مُقرّر"
+      ],
+      "ruling": "allowed: تم البتّ | مُقرّر — a topic status phrase and a bucket/report status word, both accepted where used (operator, DEC-169 round 10)"
+    },
+    {
+      "en": "Decisions",
+      "ar": [
+        "القرارات",
+        "قرارات"
+      ],
+      "ruling": "allowed: القرارات | قرارات — definite as a nav/search group, indefinite in the audit report (operator, DEC-169 round 10)"
+    },
+    {
+      "en": "Deprecated",
+      "ar": [
+        "مهجور",
+        "موقوف"
+      ],
+      "ruling": "allowed: مهجور | موقوف — an ADR is deprecated, a template is stopped - different words accepted for different records (operator, DEC-169 round 10)"
+    },
+    {
+      "en": "Detail",
+      "ar": [
+        "التفاصيل",
+        "التفصيل"
+      ],
+      "ruling": "allowed: التفاصيل | التفصيل — plural column header, singular dialog field, both accepted where used (operator, DEC-169 round 11)"
+    },
+    {
+      "en": "Done",
+      "ar": [
+        "تم",
+        "منجز"
+      ],
+      "ruling": "allowed: تم | منجز — a close button and a kanban column - different words accepted for different surfaces (operator, DEC-169 round 11)"
+    },
+    {
+      "en": "Edit",
+      "ar": [
+        "تحرير",
+        "تعديل"
+      ],
+      "ruling": "allowed: تحرير | تعديل — wiki editing and record editing keep their different words (operator, DEC-169 round 11)"
+    },
+    {
+      "en": "Email",
+      "ar": [
+        "البريد",
+        "البريد الإلكتروني"
+      ],
+      "ruling": "allowed: البريد | البريد الإلكتروني — short form in a column header, full form as a channel/field name (operator, DEC-169 round 11)"
+    },
+    {
+      "en": "Failed",
+      "ar": [
+        "فاشلة",
+        "فشل"
+      ],
+      "ruling": "allowed: فاشلة | فشل — a job status adjective and an audit outcome noun, both accepted where used (operator, DEC-169 round 12)"
+    },
+    {
+      "en": "Formatting",
+      "ar": [
+        "التنسيق",
+        "تنسيق"
+      ],
+      "ruling": "allowed: التنسيق | تنسيق — definite/indefinite on two toolbars, both accepted (operator, DEC-169 round 12)"
+    },
+    {
+      "en": "Governance",
+      "ar": [
+        "الحوكمة",
+        "حوكمة"
+      ],
+      "ruling": "allowed: الحوكمة | حوكمة — definite as a nav group / category, indefinite inside a topic type name (operator, DEC-169 round 12)"
+    },
+    {
+      "en": "High",
+      "ar": [
+        "عالٍ",
+        "عالية",
+        "مرتفع"
+      ],
+      "ruling": "allowed: عالٍ | عالية | مرتفع — gender agreement and the dashboard's synonym are all accepted where used (operator, DEC-169 round 12)"
+    },
+    {
+      "en": "In progress",
+      "ar": [
+        "جارٍ",
+        "قيد التنفيذ"
+      ],
+      "ruling": "allowed: جارٍ | قيد التنفيذ — a meeting in session and an action under way keep different phrasings (operator, DEC-169 round 13)"
+    },
+    {
+      "en": "Justification",
+      "ar": [
+        "المبرر",
+        "المبرّر"
+      ],
+      "ruling": "allowed: المبرر | المبرّر — with and without the shadda both accepted (operator, DEC-169 round 13)"
+    },
+    {
+      "en": "Key",
+      "ar": [
+        "المعرّف",
+        "المفتاح"
+      ],
+      "ruling": "allowed: المعرّف | المفتاح — a record identifier and a configuration key are different concepts sharing one English word (operator, DEC-169 round 13)"
+    },
+    {
+      "en": "Low",
+      "ar": [
+        "منخفض",
+        "منخفضة"
+      ],
+      "ruling": "allowed: منخفض | منخفضة — gender agreement with the noun on each surface (operator, DEC-169 round 13)"
+    },
+    {
+      "en": "Med",
+      "ar": [
+        "متوسط",
+        "متوسطة"
+      ],
+      "ruling": "allowed: متوسط | متوسطة — gender agreement with the noun on each surface (operator, DEC-169 round 14)"
+    },
+    {
+      "en": "Medium",
+      "ar": [
+        "متوسط",
+        "متوسطة"
+      ],
+      "ruling": "allowed: متوسط | متوسطة — gender agreement with the noun on each surface (operator, DEC-169 round 14)"
+    },
+    {
+      "en": "No matches",
+      "ar": [
+        "لا تطابقات",
+        "لا توجد نتائج"
+      ],
+      "ruling": "allowed: لا تطابقات | لا توجد نتائج — both phrasings accepted where used (operator, DEC-169 round 14)"
+    },
+    {
+      "en": "Notes",
+      "ar": [
+        "الملاحظات",
+        "ملاحظات"
+      ],
+      "ruling": "allowed: الملاحظات | ملاحظات — definite as a tab title, indefinite as a form field (operator, DEC-169 round 14)"
+    },
+    {
+      "en": "Open",
+      "ar": [
+        "فتح",
+        "مفتوح",
+        "مفتوحة"
+      ],
+      "ruling": "allowed: فتح | مفتوح | مفتوحة — the verb on the session button, and the masculine/feminine adjective by noun, all accepted where used (operator, DEC-169 round 15)"
+    },
+    {
+      "en": "Overdue",
+      "ar": [
+        "المتأخرة",
+        "متأخر",
+        "متأخّر",
+        "متأخرة"
+      ],
+      "ruling": "allowed: المتأخرة | متأخر | متأخّر | متأخرة — definite filter form, masculine with and without shadda, feminine - all accepted where used (operator, DEC-169 round 15)"
+    },
+    {
+      "en": "Presenter",
+      "ar": [
+        "المُقدِّم",
+        "مُقدِّم"
+      ],
+      "ruling": "allowed: المُقدِّم | مُقدِّم — definite label and indefinite role name both accepted (operator, DEC-169 round 15)"
+    },
+    {
+      "en": "Probability",
+      "ar": [
+        "الاحتمال",
+        "الاحتمالية"
+      ],
+      "ruling": "allowed: الاحتمال | الاحتمالية — both nouns accepted where used (operator, DEC-169 round 15)"
+    },
+    {
+      "en": "Proposed",
+      "ar": [
+        "مقترح",
+        "مقترحة"
+      ],
+      "ruling": "allowed: مقترح | مقترحة — gender agreement with the noun on each surface (operator, DEC-169 round 16)"
+    },
+    {
+      "en": "Publish & notify",
+      "ar": [
+        "النشر والإشعار",
+        "نشر وإشعار"
+      ],
+      "ruling": "allowed: النشر والإشعار | نشر وإشعار — definite and indefinite forms both accepted where used (operator, DEC-169 round 16)"
+    },
+    {
+      "en": "Published",
+      "ar": [
+        "منشور",
+        "منشورة"
+      ],
+      "ruling": "allowed: منشور | منشورة — gender agreement with the noun on each surface (operator, DEC-169 round 16)"
+    },
+    {
+      "en": "Rejected",
+      "ar": [
+        "مرفوض",
+        "مرفوضة"
+      ],
+      "ruling": "allowed: مرفوض | مرفوضة — gender agreement with the noun on each surface (operator, DEC-169 round 16)"
+    },
+    {
+      "en": "Related",
+      "ar": [
+        "ذات صلة",
+        "مرتبط"
+      ],
+      "ruling": "allowed: ذات صلة | مرتبط — both phrasings accepted where used (operator, DEC-169 round 17)"
+    },
+    {
+      "en": "Relationship",
+      "ar": [
+        "العلاقة",
+        "علاقة"
+      ],
+      "ruling": "allowed: العلاقة | علاقة — definite as a form field, indefinite as an entity name (operator, DEC-169 round 17)"
+    },
+    {
+      "en": "Research",
+      "ar": [
+        "البحث",
+        "بحث"
+      ],
+      "ruling": "allowed: البحث | بحث — definite as a nav label, indefinite inside a topic type name (operator, DEC-169 round 17)"
+    },
+    {
+      "en": "Resolved",
+      "ar": [
+        "محلول",
+        "محلولة"
+      ],
+      "ruling": "allowed: محلول | محلولة — gender agreement with the noun on each surface (operator, DEC-169 round 17)"
+    },
+    {
+      "en": "Restricted",
+      "ar": [
+        "مقيّد",
+        "مُقيَّد"
+      ],
+      "ruling": "allowed: مقيّد | مُقيَّد — with and without full vowelling both accepted (operator, DEC-169 round 18)"
+    },
+    {
+      "en": "Retry",
+      "ar": [
+        "إعادة",
+        "إعادة المحاولة"
+      ],
+      "ruling": "allowed: إعادة | إعادة المحاولة — short form on the job action, full form on the shared button (operator, DEC-169 round 18)"
+    },
+    {
+      "en": "Reviewer",
+      "ar": [
+        "مُراجع",
+        "مُراجِع"
+      ],
+      "ruling": "allowed: مُراجع | مُراجِع — both vowellings accepted (operator, DEC-169 round 18)"
+    },
+    {
+      "en": "Scheduled",
+      "ar": [
+        "مجدول",
+        "مجدولة"
+      ],
+      "ruling": "allowed: مجدول | مجدولة — gender agreement with the noun on each surface (operator, DEC-169 round 18)"
+    },
+    {
+      "en": "Secretary",
+      "ar": [
+        "أمين السر",
+        "أمين سر اللجنة"
+      ],
+      "ruling": "allowed: أمين السر | أمين سر اللجنة — short form as an attendance role, the full glossary term as the role name (operator, DEC-169 round 19)"
+    },
+    {
+      "en": "Superseded",
+      "ar": [
+        "مُستبدل",
+        "مُستبدَل",
+        "مُستبدَلة"
+      ],
+      "ruling": "allowed: مُستبدل | مُستبدَل | مُستبدَلة — vowelling variants and gender agreement all accepted where used (operator, DEC-169 round 19)"
+    },
+    {
+      "en": "Supersedes",
+      "ar": [
+        "يحلّ محلّ",
+        "يَحلّ محلّ"
+      ],
+      "ruling": "allowed: يحلّ محلّ | يَحلّ محلّ — with and without the fatha both accepted (operator, DEC-169 round 19)"
+    },
+    {
+      "en": "Traceability — both directions",
+      "ar": [
+        "إمكانية التتبّع — بالاتجاهين",
+        "إمكانية التتبّع — كلا الاتجاهين"
+      ],
+      "ruling": "allowed: إمكانية التتبّع — بالاتجاهين | إمكانية التتبّع — كلا الاتجاهين — both phrasings of 'both directions' accepted (operator, DEC-169 round 19)"
+    },
+    {
+      "en": "Updated",
+      "ar": [
+        "آخر تحديث",
+        "التحديث",
+        "حُدّثت"
+      ],
+      "ruling": "allowed: آخر تحديث | التحديث | حُدّثت — 'last updated' column, 'the update' column and the past-tense wiki note are each accepted where used (operator, DEC-169 round 20)"
+    },
+    {
+      "en": "Urgency",
+      "ar": [
+        "الأهمية"
+      ],
+      "ruling": "canonical: الأهمية; defect: الإلحاح — the research convert form must use the canonical term; the operator kept الأهمية over DW-069's suspicion that it means importance (operator, DEC-169 round 20)"
+    },
+    {
+      "en": "Verified",
+      "ar": [
+        "مُتحقَّق",
+        "مُثبَتة"
+      ],
+      "ruling": "allowed: مُتحقَّق | مُثبَتة — a verified action and a verified finding keep different words (operator, DEC-169 round 20)"
+    },
+    {
+      "en": "Verify",
+      "ar": [
+        "التحقّق",
+        "تحقّق"
+      ],
+      "ruling": "allowed: التحقّق | تحقّق — definite as an operation label, indefinite as a button (operator, DEC-169 round 20)"
+    },
+    {
+      "en": "Version history",
+      "ar": [
+        "سجل الإصدارات",
+        "سجل النسخ"
+      ],
+      "ruling": "allowed: سجل الإصدارات | سجل النسخ — wiki versions and minutes copies keep their different nouns (operator, DEC-169 round 21)"
+    },
+    {
+      "en": "When",
+      "ar": [
+        "الموعد",
+        "الوقت"
+      ],
+      "ruling": "allowed: الموعد | الوقت — a meeting's date and a job's time are different concepts sharing one English word (operator, DEC-169 round 21)"
+    }
+  ]
+}

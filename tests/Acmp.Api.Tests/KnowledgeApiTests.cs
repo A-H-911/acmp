@@ -131,7 +131,7 @@ public class KnowledgeApiTests : IClassFixture<AcmpWebApplicationFactory>
         (await (await sec.GetAsync($"/api/knowledge/documents/{doc.Key}")).Content.ReadFromJsonAsync<DocumentDetail>())!.Status.Should().Be("Published");
     }
 
-    [Fact] // Editing an archived (terminal) document is a 409 Conflict (domain InvalidOperationException → 409)
+    [Fact] // Editing an archived (terminal) document is a 409 Conflict (domain DomainRuleException → 409, DEF-156)
     public async Task Editing_an_archived_document_returns_409()
     {
         var factory = _factory;

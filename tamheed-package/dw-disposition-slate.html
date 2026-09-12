@@ -15,12 +15,16 @@
  .lead{background:#fff8e6;border:1px solid #e8c986;padding:1rem 1.25rem;border-radius:6px}
  .warn{background:#fdecec;border:1px solid #e0a3a3;padding:.7rem 1rem;border-radius:6px;margin:.6rem 0}
 </style></head><body>
-<h1>Deferred-work disposition &mdash; 2 row(s) awaiting your judgement</h1>
+<h1>Deferred-work disposition &mdash; 14 row(s) awaiting your judgement</h1>
 <div class="lead">
-<p>Every block below is quoted <b>verbatim</b> from <code>tamheed-package/data/deferred_work.jsonl</code> by
+<p>Every block below is quoted <b>verbatim</b> from the tamheed export
+<code>tamheed-package/exports/deferred_work.json</code>, written by the MCP tool
+<code>entity_export</code>, by
 the generator that produced this page, never summarised &mdash; a summary of a row is how a decision once
 dropped half of what its row said. Nothing here is re-typed, so the text you are reading is the text the
 store holds.</p>
+<p><b>Package digest at export:</b> <code>8e9d8ac82fff436f02790fc8483db41465548f98d90ee061fcff99e9bae62a0f</code> &mdash; run <code>package_verify()</code>; the
+same digest means nothing in the package has changed since this page was generated.</p>
 <p><b>Carrying a row is a legitimate ruling</b> and the <code>deferred-work-reviewed</code> advisory will
 stay red either way: it selects <code>Open</code>, <code>Activated</code> and <code>Scheduled</code> alike
 and has no "reviewed" field, so only <i>closing</i> a row removes it. A review's deliverable is the
@@ -28,18 +32,18 @@ recorded judgement, not a colour change.</p>
 </div>
 
   <section>
-    <h2>DW-091 <span class="st">Activated</span>
+    <h2>DW-043 <span class="st">Open</span>
         <span class="sev">low</span></h2>
 
-    <p class="meta">Previously named by: DEC-092 <b>Approved</b> &middot; DEC-094 <b>Approved</b> &middot; DEC-099 <b>Approved</b> &middot; DEC-104 <b>Approved</b> &middot; DEC-105 <b>Approved</b> &middot; DEC-106 <b>Approved</b> &middot; DEC-107 <b>Approved</b> &middot; SC-038 <b>Merged</b> &middot; SC-042 <b>Merged</b> &mdash; read those before ruling again.</p>
+    <p class="meta">Previously named by: DEC-150 <b>Approved</b> &middot; DEC-151 <b>Approved</b> &mdash; read those before ruling again.</p>
 
     <h3>The row, as stored</h3>
-    <div class="f"><h4>title</h4><p>⛔⛔ **THIS ROW'S CENTRAL CLAIM IS A MISATTRIBUTED QUOTATION AND IS WITHDRAWN. `service_started` IS NOT AN OVERSIGHT - IT IS AN EXPLICIT OPERATOR DECISION, RECORDED IN `DEF-079`, TAKEN AFTER `service_healthy` WAS BUILT AND MEASURED.** Corrected in place by `DEC-104` d2 rather than only in a decision, because a correction applied to one artifact leaves the surviving copy as the one the next session reads.</p><p>⛔ **THE WITHDRAWN CLAIM, QUOTED SO THE CORRECTION IS LEGIBLE.** This row read: *"THE COMMENT IN THE COMPOSE FILE ASSERTS THE OPPOSITE AND IS THE REASON THIS WENT UNNOTICED. It reads that the container healthcheck gates on /readyz and that 'without this the api is correctly unhealthy on a fresh stack and nothing that depends on it ever starts'. That sentence describes service_healthy semantics; the file uses service_started. The comment is not merely stale - it states a dependency the file does not have, so a reader checking whether the healthcheck matters finds a confident yes written next to the code that makes it no."*</p><p>**MEASURED 2026-09-01: THE QUOTED SENTENCE IS NOT ABOUT `api`'s DEPENDENTS.** It sits at `deploy/docker-compose.yml:301-303`, **inside the `api` service's OWN `depends_on` block, attached to the `minio-init` entry**: *"DEF-078: the buckets must EXIST before the api starts, because /readyz now probes them and the container healthcheck gates on /readyz. Without this the api is correctly unhealthy on a fresh stack and nothing that depends on it ever starts."* It argues for `minio-init: service_completed_successfully`, and its trailing clause is a HYPOTHETICAL about a world where the api never becomes healthy. **This row read a sentence about `api` → `minio-init` as a claim about `web`/`worker` → `api`.** `LL-025`'s family: a faithful quotation of the wrong clause.</p><p>✅ **AND THE FILE SAYS EXACTLY WHAT IT DOES, IN FOUR PLACES ACROSS BOTH TOPOLOGIES.** Each `api` dependent carries: *"⚠ `service_started`, NOT `service_healthy`, and the distinction is load-bearing (`DEF-079` follow-up). The api healthcheck probes `/readyz`, which reaches SQL Server, Hangfire and object storage. Gating startup on it means a 30-second blip in ANY of those stops this service from starting at all - a dependency hiccup becomes a total outage, where the stack previously came up and served degraded. The honest health signal is kept (`docker ps` still reports unhealthy); only the interlock is dropped."* Measured: `docker-compose.yml` lines 370-377 (`web`) and 459-462 (`worker`); `docker-compose.cloud.yml` lines 339-342 and 394-397. **Consistent across on-prem and cloud, with the reasoning and the cost written beside the code.**</p><p>⛔⛔ **AND `DEF-079` - WHICH THIS ROW CITES AS ITS PRECEDENT - IS THE ROW THAT RECORDS THE DECISION.** In its own words: *"REPOINTING IT ALSO MADE READINESS A STARTUP INTERLOCK: web and worker both declared `depends_on api condition:service_healthy`, so a blip in SQL Server, Hangfire or object storage would have stopped the stack from starting at all - a degraded stack turned into a total outage. **That consequence was not on the table when `DEC-056` d2 was decided; it was measured afterwards, put back to the operator, and they chose to keep the signal and drop the gate.** All four dependencies are now `service_started` (`fd98515`)."* **So `service_healthy` was implemented, its consequence was MEASURED, it was put to the OPERATOR, and the OPERATOR reversed it.** `git log -S` confirms the rationale comments and the `minio-init` sentence entered together in `0a747fff` (PR `#286`, the `DEF-078`/`DEF-079` fix), and `fd98515` applied the reversal.</p><p>⭐⭐ **WHY NO SWEEP FOUND IT, AND THIS IS THE PART THAT GENERALISES: THE DECISION IS RECORDED INSIDE A `Fixed` DEFECT ROW.** A sweep of the decision, ADR and open-question registers - the `LL-008` habit - returns nothing that rules on this trade. **`DEF-079` reads as a closed defect, not as a decision record**, so it is invisible to anyone looking for what was decided. `LL-038` says a state can be load-bearing and its reason may live where no register view looks; this is a fourth distinct hiding place, after a progress entry, no record at all, and a code comment.</p><p>✅ **WHAT SURVIVES, UNCHANGED AND STILL TRUE: NOTHING CONSUMES THE HEALTHCHECK'S VERDICT.** Both dependents wait on `service_started`, so a broken probe would leave the container permanently unhealthy while no start-up failed, no job went red and nothing reported it. The compose comment concedes exactly this - *"only the interlock is dropped"*. **The observation is real. Only the FRAMING was wrong**: it is not an oversight that a misleading comment concealed, it is a trade somebody made, wrote down four times, and costed.</p><p>⚠ **THE ORIGINAL REPORT'S ACCURATE HALF FOLLOWS, unchanged.** THE api CONTAINER HEALTHCHECK IS A CONTROL NOTHING CONSUMES - EVERY DEPENDENT WAITS ON `service_started`, NOT `service_healthy`. Measured 2026-08-29 in `deploy/docker-compose.yml`: both services that depend on `api` use `condition: service_started`. ✅ The probe ITSELF is correct and was forced in both directions through Docker's own plumbing during `DW-080` phase B - a 200 marks the container healthy, a 503 marks it unhealthy and the reason is captured in `docker inspect`'s health log. **The defect is not the check.**</p><p>▸▸ ACTIVATED 2026-08-29 by `DEC-094` / `SC-038`, scheduled as `WBS-26.4` in `SL-035`. ⚠ **THAT WAS AN OVERRIDE**: the agent recommended carrying this row Open and the reasoning-against is preserved in `DEC-094`. ⚠⚠ **THE FULL SWITCH TO `service_healthy` WAS TAKEN AT `DEC-094` d2 ON THIS ROW'S FRAMING, AND THAT FRAMING IS NOW WITHDRAWN.** The item's stated second half - *fix the compose comment that asserts it already is* - **has no referent: there is no such comment.** And its first half is not *making a control consume its input*; it is **reversing an explicit operator decision**, which needs a `scope-change` and a fresh ruling rather than a build. ⛔ **NO CODE WAS WRITTEN.** The disposition is the operator's; `PE-735` and the `DEC-104` d1 investigation are the record.</p></div>
+    <div class="f"><h4>title</h4><p>NFR-001 (page load P95 &lt;= 2000 ms) IS NOT VERIFIABLE FROM THIS REPOSITORY. A P95 over real page loads needs either production telemetry or a load harness driving the SPA; neither exists. No acceptance criterion was written, deliberately: an AC recording Partial holds package readiness false permanently because acs-met counts by retired_in and demands the latest verdict be Met (trap 16c). SIZING: browser-timing capture (OTel front-end or Playwright tracing) over the primary routes against a seeded dataset, reported as a distribution rather than a mean.</p></div>
 
     <h3>Its activation trigger, as stored</h3>
-    <div class="f"><h4>activation_trigger</h4><p>Fires when start-up ordering is next examined for any reason - a deployment change, a slow-boot investigation, or a report that the stack came up with a broken api and nothing complained. Also fires if any future work makes a dependent genuinely unable to function against a not-yet-ready api, since that is the point at which service_started stops being merely weak and becomes wrong. ⚠ It does NOT fire on a green e2e run: the whole finding is that a green run proves nothing about this control.</p></div>
+    <div class="f"><h4>activation_trigger</h4><p>The first complaint that a page feels slow, or before any release whose exit criteria cite NFR conformance. A P95 is a distribution, so it needs traffic - synthetic timing of one render would answer a different question.</p></div>
 
-    <h3>How it was found</h3><div class="f"><h4>claim_withdrawn</h4><p>That the compose comment asserts the file uses service_healthy and that this is why the gap went unnoticed. Measured 2026-09-01: the quoted sentence sits in the api service's OWN depends_on block attached to minio-init (docker-compose.yml:301-303) and argues for service_completed_successfully. The row attributed a claim about api -&gt; minio-init to web/worker -&gt; api. LL-025's family.</p></div><div class="f"><h4>what_the_file_actually_says</h4><p>Four sites across two topologies carry: 'service_started, NOT service_healthy, and the distinction is load-bearing (DEF-079 follow-up)... a 30-second blip in ANY of those stops this service from starting at all - a dependency hiccup becomes a total outage... The honest health signal is kept; only the interlock is dropped.' docker-compose.yml:370-377 (web) and :459-462 (worker); docker-compose.cloud.yml:339-342 and :394-397.</p></div><div class="f"><h4>the_decision_exists</h4><p>DEF-079 records it: service_healthy WAS declared on web and worker, the total-outage consequence was MEASURED afterwards, it was PUT BACK TO THE OPERATOR, and they chose to keep the signal and drop the gate. All four dependencies moved to service_started in fd98515. The rationale comments and the minio-init sentence entered together in 0a747fff (PR #286).</p></div><div class="f"><h4>why_no_sweep_found_it</h4><p>The decision is recorded inside a FIXED DEFECT ROW. A sweep of decisions, ADRs and open questions returns nothing ruling on the trade, because DEF-079 reads as a closed defect rather than as a decision record. LL-038's fourth distinct hiding place, after a progress entry, no record at all, and a code comment.</p></div><div class="f"><h4>what_survives</h4><p>The observation: nothing consumes the healthcheck's verdict. Both dependents wait on service_started, so a broken probe would leave the container permanently unhealthy while nothing failed. The compose comment concedes it - 'only the interlock is dropped'. Real finding, wrong framing.</p></div><div class="f"><h4>item_status</h4><p>NO CODE WRITTEN. WBS-26.4's stated second half (fix the misleading comment) has no referent. Its first half is a reversal of an explicit operator decision, needing a scope-change and a fresh ruling. Disposition is the operator's; PE-735 and DEC-104 d1's investigation are the record.</p></div>
+    
 
     <h3>Your options</h3>
     <ul>
@@ -51,18 +55,312 @@ recorded judgement, not a colour change.</p>
   </section>
 
   <section>
-    <h2>DW-071 <span class="st">Activated</span>
-        <span class="sev">medium</span></h2>
+    <h2>DW-044 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
 
-    <p class="meta">Previously named by: DEC-068 <b>Approved</b> &middot; DEC-071 <b>Approved</b> &middot; DEC-072 <b>Approved</b> &middot; SC-032 <b>Merged</b> &mdash; read those before ruling again.</p>
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
 
     <h3>The row, as stored</h3>
-    <div class="f"><h4>title</h4><p>NFR-032'S TARGET NAMES AN axe-core SCAN AND ONE EXISTS, BUT IT COVERS THREE ROUTES OF FIFTY-TWO. NFR-032 (Must, Approved) requires all non-decorative images, icons and data visualizations to carry alternative text or ARIA labels in both EN and AR, and targets '0 non-decorative images without alt text per axe-core scan'. THE INSTRUMENT THE TARGET NAMES IS REAL AND IS BETTER THAN ITS REPUTATION: axe-core is already a dependency, and it runs in two places. In jsdom, src/Acmp.Web/src/test/a11y.test.tsx sweeps 5 component surfaces on every change. Live under Playwright, src/Acmp.Web/e2e/rtl-a11y.spec.ts sweeps Backlog, Submit-Topic and the Backlog kanban in BOTH locales with the wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa tag sets - so image-alt, svg-img-alt, role-img-alt, button-name and link-name, the rules that decide this requirement, all run against the real rendered app in Arabic as well as English. Every one passes. THE GAP IS COVERAGE, NOT CAPABILITY, and it is the whole finding. The application has 52 routes. The live sweep visits three of them. A requirement whose target is a scan is satisfied only over what the scan visited, and 'zero violations on three screens' is a true statement that does not answer 'all non-decorative images'. This is the denominator problem in its most literal form: the numerator is genuinely zero and the denominator is six percent. WORTH RECORDING BECAUSE IT CUTS THE OTHER WAY TOO: the three screens chosen are not arbitrary. Backlog is the densest data surface, Submit-Topic is the largest form, and the kanban case was added specifically because the AC-043 reorder controls and drag handles are where target-size bites - the spec says so in its own comment. So the sample is deliberately adversarial rather than convenient, which raises the value of its zero without changing the denominator. WHY A DEFERRED-WORK ROW: an AC written today would have to say 'zero violations on the three routes scanned', which covers less than the requirement, and a Partial verdict holds package readiness false forever. The honest instrument is this row.</p></div>
+    <div class="f"><h4>title</h4><p>NFR-002 (list/query endpoint P95 &lt;= 1000 ms with up to 10 000 records) IS NOT VERIFIABLE FROM THIS REPOSITORY. It needs a seeded dataset at the stated scale plus repeated timing; the integration suite runs against a container seeded per test with a handful of rows, which is the right shape for correctness and the wrong shape for latency. SIZING: seed 10 000 topics, drive the list endpoints repeatedly, report P95 per endpoint. Shares its harness with DW-045 and DW-046.</p></div>
 
     <h3>Its activation trigger, as stored</h3>
-    <div class="f"><h4>activation_trigger</h4><p>Whenever a new route ships - that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the sweep. Also fires before any release sign-off that wants to claim WCAG conformance, since three routes of fifty-two cannot support that claim. CHEAPEST FIRST STEP: the live sweep is a loop over page.goto plus an axe run, so extending it is a list of routes rather than new machinery. The real cost is wall clock - the e2e workflow already runs seven services with a real Keycloak per pull request - so a nightly full-route sweep beside the per-PR three is likely the right shape.</p><p>ACTIVATED 2026-08-23 by DEC-072 d2: the operator judged that the FIRST clause above has fired. SL-033 ships three new user-visible surfaces - the calendar view (WBS-24.2), audit-log export (WBS-24.6) and the presenter preview (WBS-24.8) - so each of those items adds its route to e2e/rtl-a11y.spec.ts in the SAME batch that builds it, and says so in its own acceptance criterion. The release-sign-off clause is NOT what fired and stays parked under DEC-071 d4, so DW-041 and DW-067 are unaffected and remain Open.</p></div>
+    <div class="f"><h4>activation_trigger</h4><p>When the backlog, search or audit-log list first feels slow, or when the topic count approaches the NFR-009 ceiling of 2500 - whichever comes first. The number is only meaningful against a realistic dataset, so it should be measured then rather than now on an empty database.</p></div>
 
-    <h3>How it was found</h3><div class="f"><h4>found_by</h4><p>DW-029 batch 16, 2026-08-20, the browser batch.</p></div><div class="f"><h4>measured</h4><p>52 routes in the SPA. rtl-a11y.spec.ts visits 3 (Backlog table, Submit-Topic, Backlog kanban), each in EN and AR. a11y.test.tsx covers 5 component surfaces in jsdom. color-contrast is disabled in BOTH passes by deliberate convention - that clause belongs to NFR-033 and is recorded as DW-072.</p></div><div class="f"><h4>scope</h4><p>NOTHING WAS BUILT. Batch 16 measured and recorded only.</p></div>
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-045 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-003 (artifact detail retrieval P95 &lt;= 500 ms) IS NOT VERIFIABLE FROM THIS REPOSITORY. Same reason as NFR-002: a percentile needs repeated measurement against a realistic dataset. Worth noting the detail reads are the ones SL-030 added a per-request visibility resolution to, so this is the number most likely to have MOVED recently - which is an argument for measuring it before assuming it still holds, not for assuming it does not.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>Alongside DW-044 - detail retrieval and list query share a harness and a dataset, so measuring one without the other wastes the setup.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-046 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <p class="meta">Previously named by: DEC-150 <b>Approved</b> &mdash; read those before ruling again.</p>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-004 (SQL full-text search P95 &lt;= 800 ms over up to 10 000 records) IS NOT VERIFIABLE FROM THIS REPOSITORY. The FTS path DOES have real coverage for CORRECTNESS - SearchProvidersFtsTests is the only place any FREETEXT branch executes against real SQL Server - but it asserts results, not latency, and runs over a handful of seeded rows. Latency at 10 000 records is a different measurement on the same seam.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>Alongside DW-044/DW-045, and specifically before any decision to widen what global search indexes - the FTS query cost is the thing that would move.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-048 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <p class="meta">Previously named by: DEC-150 <b>Approved</b> &mdash; read those before ruling again.</p>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-006 (meeting-notes auto-save round-trip &lt;= 2000 ms from debounce trigger to server ACK) IS NOT VERIFIABLE FROM THIS REPOSITORY. It spans the browser debounce, the network and the server persist, so it needs an end-to-end timing capture rather than a unit or integration test. NOTE FR-006 IS ALSO ONE OF THE THREE REQUIREMENTS WHOSE STATEMENT IS ITSELF TRUNCATED AT 200 CHARACTERS (DEF-092 could not repair NFR-006, FR-032 or FR-153 because both their title and statement were cut), so its full wording may need recovering from the brief before anyone measures against it.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When a Secretary reports losing meeting notes or seeing a save lag during a live meeting - the situation the requirement protects. A live meeting is the only realistic setting for this measurement, since the debounce behaviour depends on actual typing rhythm.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-049 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-007 (Hangfire overdue-action job processes all open actions within 5 min of its scheduled run) IS NOT VERIFIABLE FROM THIS REPOSITORY. The sweep's logic is tested, but processing LAG is a property of the running scheduler under a realistic action volume, which needs a deployed Hangfire instance and timing instrumentation rather than a test.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When an overdue-action notification is first reported as late, or when the action volume grows enough that the sweep's runtime becomes non-trivial. The job's CORRECTNESS is already covered by ActionReminderSweepTests; only its lag under load is open.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-050 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-008 (20 user accounts without degradation; auth check &lt;= 200 ms P95) IS PART-DEMONSTRATED AND PART-UNMEASURED, which is why it gets its own row rather than joining a blanket deferral. The capacity half is close to shown - production is deployed and reconciled with 27 committee_members rows - but that is an observation, not a measurement, and the 200 ms P95 auth-check figure has never been timed. Both halves need the deployed stack, not the repository.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When committee membership approaches 20 accounts, or if authentication latency is ever reported as noticeable. Production already runs 27 committee_members rows, so the ACCOUNT-COUNT half is arguably already demonstrated in the field and only the 200 ms auth-check figure is open.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-051 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-009 (2 500 topics over 5 years with no schema migration, index degradation or query-plan regression) IS NOT VERIFIABLE FROM THIS REPOSITORY AND WILL NOT BE FOR YEARS. Two of its three clauses are structural rather than temporal and could be checked earlier against a seeded 2 500-row dataset - index usage and query plans - while 'no schema migration over 5 years' can only be observed. The seeded half shares its harness with DW-044.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When the topic count passes roughly 500, which on the requirement's own projection is the end of year one. That is the point at which an index or query-plan regression would start to show, and it is early enough to fix cheaply.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-052 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-011 (single file &lt;= 100 MB; no application cap on total storage) IS MOSTLY CHECKABLE AND WAS NOT SEPARATED OUT, which this row records honestly. The per-file ceiling is a CONFIGURED VALUE - MeetingRecordingOptions and the topic attachment options carry it, and MeetingRecordingApiTests already forces the oversize refusal - so a criterion over the validators would verify most of it. What cannot be verified from the repository is that a 100 MB upload actually SUCCEEDS end to end through nginx, Kestrel and MinIO, which is where request-size limits usually bite, and the 'no application-level cap on total storage' clause is a negative about code that would need a stated instrument.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>The CONFIGURED-LIMIT half could be closed today by an acceptance criterion over the upload validators; it is grouped here only so the requirement is tracked as one thing. Activate when someone actually needs the 100 MB ceiling confirmed end to end - a large recording upload failing is the realistic trigger.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-053 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <p class="meta">Previously named by: DEC-099 <b>Approved</b> &mdash; read those before ruling again.</p>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-012 (audit log sustains &gt;= 100 append-only writes/second for 60 s without data loss or lock contention) IS NOT VERIFIABLE FROM THIS REPOSITORY, and it is the performance row most worth eventually measuring. The audit chain is HASH-LINKED, so every append depends on the previous row's hash - a design that is correct and inherently serialising, and exactly the shape where sustained throughput can surprise you. AuditAtomicityTests already proves concurrent commands do not FORK the chain, which is the correctness question; the throughput question is separate and unmeasured. SIZING: a sustained-write harness against the real SQL Server container, measuring inserts/second and lock waits over 60 s.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>Before any change to how audit rows are written - batching, an outbox, or moving the hash chain - since those are the changes that would break sustained throughput. Also if audit writes are ever implicated in a lock-contention incident.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-054 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-013 (columnstore-indexed dashboard aggregations &lt;= 3 000 ms P95 over ~50 000 rows) IS NOT VERIFIABLE FROM THIS REPOSITORY, and it carries a second question worth separating: the requirement asserts a columnstore index as the mechanism, and whether one exists is a SCHEMA fact checkable today, independent of any timing. The dashboard is also composed CLIENT-SIDE over several existing registers rather than by a single aggregation query, so what to time is itself a design question the measurement would have to settle first.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When the dashboard first feels slow, or when total governed rows approach the stated 50 000. ⚠ Also check whether the columnstore index the requirement assumes was ever actually created - the requirement names a technology, and a plan that never used it would be a finding rather than a timing.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-055 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-014 (&gt;= 99.9% monthly uptime, &lt;= ~44 min downtime/month) CANNOT BE VERIFIED BY ANY AMOUNT OF CODE READING - it is an OBSERVED operational metric over a calendar month, and the only instrument is production monitoring. Recorded so nobody mistakes it for unmeasured engineering work. NOTE the requirement was WIDENED by ADR-0015: the bundled Keycloak and SQL Server are now inside ACMP's own availability scope rather than external dependencies, so the number covers more surface than a reader of the original brief would assume.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>After a full month of production operation with monitoring in place - the metric is defined over a calendar month and cannot be shortened. The RISK-007 adoption clock started 2026-08-17, so the first meaningful window closes about a month later.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-056 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <div class="warn"><b>NO DECISION HAS EVER NAMED THIS ROW.</b> It was filed by an executing
+           agent and has never been put to you. Carrying it is a legitimate outcome &mdash; but it should
+           be a recorded judgement rather than an omission.</div>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-016 (recovery &lt;= 2 min after a process failure, zero data loss for committed transactions) IS PART-STRUCTURAL AND PART-OPERATIONAL. The ZERO-DATA-LOSS half follows from committed transactions and is already load-bearing in AuditAtomicityTests, which proves a failed audit append rolls its command back rather than leaving a partial write - a stronger property than the requirement asks. The RECOVERY-TIME half is a property of the container restart policy and the deployment, not of the code, and needs an observed restart.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>After any unplanned process restart in production - the event itself is the measurement opportunity, and it is cheap to record recovery time then. Deliberately not simulated: killing the production process to time it would cause the outage it is meant to measure.</p></div>
+
+    
+
+    <h3>Your options</h3>
+    <ul>
+      <li><b>Activate</b> &mdash; it becomes live work and needs a <code>WBS-</code> row in a slice, or it
+          is invisible to every readiness view (<code>DEF-087</code>'s shape).</li>
+      <li><b>Carry Open</b> &mdash; the trigger has not fired. This is a ruling, not a deferral of one.</li>
+      <li><b>Close Won't-do</b> &mdash; the gap is accepted permanently, with the reasoning recorded.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>DW-058 <span class="st">Open</span>
+        <span class="sev">low</span></h2>
+
+    <p class="meta">Previously named by: DEC-094 <b>Approved</b> &middot; DEC-150 <b>Approved</b> &mdash; read those before ruling again.</p>
+
+    <h3>The row, as stored</h3>
+    <div class="f"><h4>title</h4><p>NFR-046 (Seq alerts for error rate, failed Hangfire jobs, health-check failures and audit write failures; alert fires within 60 s) IS NOT VERIFIABLE FROM THIS REPOSITORY. Seq alert rules live in the Seq instance's own configuration rather than in source, so neither the rules' existence nor their latency can be read here. This is a CONFIGURATION-IN-A-RUNNING-SYSTEM requirement, the same family as NFR-014, and its evidence would be a screenshot or an export from the deployed Seq rather than anything in the repository.</p></div>
+
+    <h3>Its activation trigger, as stored</h3>
+    <div class="f"><h4>activation_trigger</h4><p>When Seq alerting is first configured in a real environment, or before any release that relies on alerting to detect failures. ⚠ Verify the rules EXIST before timing them - an alert that fires within 60 s is meaningless if no rule was ever created, which is the DEF-078 shape.</p></div>
+
+    
 
     <h3>Your options</h3>
     <ul>

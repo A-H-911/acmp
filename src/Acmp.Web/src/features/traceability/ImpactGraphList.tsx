@@ -10,6 +10,7 @@ import { Icon } from '../../components/icons';
 import type { ImpactGraph } from '../../api/traceability';
 import { hrefFor } from './traceMeta';
 import { buildListRows, type HighlightState } from './graphLayout';
+import { cssVars } from '../../lib/cssVars';
 
 interface Props {
   graph: ImpactGraph;
@@ -46,7 +47,7 @@ export function ImpactGraphList({ graph, focusKey, highlight }: Props) {
                 />
                 {r.relLabel ? t(r.relLabel) : t(`trace.dir.${r.dir}`)}
               </span>
-              <span className="igl-typedot" style={{ background: r.typeColor }} aria-hidden />
+              <span className="igl-typedot" ref={cssVars({ '--c': r.typeColor })} aria-hidden />
               <span className="igl-key">{r.node.key}</span>
               <span className="igl-title">{r.node.title}</span>
               {r.node.blocked && (
@@ -58,13 +59,13 @@ export function ImpactGraphList({ graph, focusKey, highlight }: Props) {
               {href && <Icon name="chevron" size={14} className="igl-chev dir-flip" aria-label={t('trace.graph.goTo')} />}
             </>
           );
-          const common = { role: 'treeitem' as const, 'aria-level': r.level };
+          const common = { role: 'treeitem' as const, 'aria-level': r.level, ref: cssVars({ '--indent': `${r.indent}px` }) };
           return href ? (
-            <Link key={r.key} to={href} className={`igl-row${hitClass}`} style={{ marginInlineStart: r.indent }} {...common}>
+            <Link key={r.key} to={href} className={`igl-row${hitClass}`} {...common}>
               {inner}
             </Link>
           ) : (
-            <div key={r.key} className={`igl-row${hitClass}`} style={{ marginInlineStart: r.indent }} tabIndex={0} {...common}>
+            <div key={r.key} className={`igl-row${hitClass}`} tabIndex={0} {...common}>
               {inner}
             </div>
           );

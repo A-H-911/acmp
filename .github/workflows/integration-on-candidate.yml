@@ -77,7 +77,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Uploaded on EVERY outcome (WBS-29's lesson): the logs, the trx files, and any crash artefacts.
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-on-candidate-${{ github.run_id }}

@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Knowledge.Domain.Enums;
 using Acmp.Modules.Knowledge.Domain.Events;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 using Acmp.Shared.Domain.ValueObjects;
 
@@ -33,8 +34,8 @@ public sealed class Template : AuditableEntity
     public static Template Create(string key, LocalizedString name, TemplateTargetType targetType, string body,
         DateTimeOffset now)
     {
-        if (name is null) throw new InvalidOperationException("A template name is required.");
-        if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("A template body is required.");
+        if (name is null) throw new DomainRuleException("A template name is required.");
+        if (string.IsNullOrWhiteSpace(body)) throw new DomainRuleException("A template body is required.");
 
         var template = new Template
         {
@@ -54,10 +55,10 @@ public sealed class Template : AuditableEntity
     public void Edit(LocalizedString name, string body, DateTimeOffset now)
     {
         if (Status == TemplateStatus.Deprecated)
-            throw new InvalidOperationException("A deprecated template cannot be edited.");
+            throw new DomainRuleException("A deprecated template cannot be edited.");
 
-        Name = name ?? throw new InvalidOperationException("A template name is required.");
-        if (string.IsNullOrWhiteSpace(body)) throw new InvalidOperationException("A template body is required.");
+        Name = name ?? throw new DomainRuleException("A template name is required.");
+        if (string.IsNullOrWhiteSpace(body)) throw new DomainRuleException("A template body is required.");
         Body = body.Trim();
         Version++;
         Raise(new TemplateEditedEvent(PublicId, Key, Version, now));
@@ -67,7 +68,7 @@ public sealed class Template : AuditableEntity
     public void Deprecate(DateTimeOffset now)
     {
         if (Status != TemplateStatus.Active)
-            throw new InvalidOperationException($"This operation is not allowed while the template is {Status}.");
+            throw new DomainRuleException($"This operation is not allowed while the template is {Status}.");
         Status = TemplateStatus.Deprecated;
         Raise(new TemplateDeprecatedEvent(PublicId, Key, now));
     }

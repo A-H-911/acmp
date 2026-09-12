@@ -5,6 +5,7 @@ using Acmp.Modules.Meetings.Domain;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -62,9 +63,9 @@ public sealed class DraftMinutesHandler : IRequestHandler<DraftMinutesCommand, M
         var meeting = await _db.Meetings.FirstOrDefaultAsync(m => m.PublicId == request.MeetingId, ct)
             ?? throw new KeyNotFoundException("Meeting not found.");
         if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Held))
-            throw new InvalidOperationException("Minutes can only be drafted for a meeting that is in progress or held.");
+            throw new DomainRuleException("Minutes can only be drafted for a meeting that is in progress or held.");
         if (await _db.Minutes.AnyAsync(m => m.MeetingId == request.MeetingId, ct))
-            throw new InvalidOperationException("Minutes already exist for this meeting; correct them by superseding.");
+            throw new DomainRuleException("Minutes already exist for this meeting; correct them by superseding.");
 
         var key = await _keys.NextMinutesKeyAsync(now.Year, ct);
         var minutes = MinutesOfMeeting.Draft(key, meeting.PublicId, meeting.Key, meeting.Title, request.Summary, now);

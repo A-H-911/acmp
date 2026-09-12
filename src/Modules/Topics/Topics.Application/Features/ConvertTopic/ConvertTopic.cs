@@ -6,6 +6,7 @@ using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Authorization;
 using Acmp.Shared.Contracts.Traceability;
+using Acmp.Shared.Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -77,7 +78,7 @@ public sealed class ConvertTopicHandler : IRequestHandler<ConvertTopicCommand, S
         // Converting to the type it already is would retire a Decided topic and hand back a duplicate — a
         // destructive no-op. Refused here rather than in the validator because it needs the loaded topic.
         if (original.Type == request.TargetType)
-            throw new InvalidOperationException("The topic is already of that type.");
+            throw new DomainRuleException("The topic is already of that type.");
 
         var now = _clock.UtcNow;
         var (sub, name) = CurrentActor.Of(_user);

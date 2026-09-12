@@ -1,4 +1,5 @@
 ﻿using Acmp.Modules.Meetings.Domain.Enums;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.Entities;
 
 namespace Acmp.Modules.Meetings.Domain;
@@ -19,7 +20,7 @@ public sealed class Attendance : BaseEntity
 
     internal Attendance(Guid userId, string name, AttendanceRole role, bool isVotingEligible)
     {
-        if (userId == Guid.Empty) throw new InvalidOperationException("An attendee must reference a user.");
+        if (userId == Guid.Empty) throw new DomainRuleException("An attendee must reference a user.");
         UserId = userId;
         Name = name.Trim();
         Role = role;

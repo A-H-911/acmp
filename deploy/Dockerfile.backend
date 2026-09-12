@@ -58,7 +58,7 @@ RUN dotnet publish src/Acmp.Api/Acmp.Api.csproj -c Release -o /app/api --no-rest
 # because DEF-079 was exactly a healthcheck that could only fail if the process stopped answering TCP.
 # Runs as the image's built-in non-root `app` user (UID 1654, ships in the aspnet images) — C-CON-001 / DS-0002.
 # Kestrel binds 8080 (unprivileged port), so no root/cap_net_bind is needed.
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:f5b3b2e2e548828d50e349726f51a5de001286f02c4bbde77db0dd34eb9f55ff AS api
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:6385dc0eaef704fad88d3f65c334e791a371bbe448f52ca39d83d2df49251e28 AS api
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown
@@ -77,7 +77,7 @@ ENTRYPOINT ["dotnet", "Acmp.Api.dll"]
 
 # --- Worker runtime (headless; aspnet base, NOT runtime — the shared kernel's CurrentUserService pulls in
 # IHttpContextAccessor / Microsoft.AspNetCore.App transitively, so the slim runtime image crashes at startup) ---
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:f5b3b2e2e548828d50e349726f51a5de001286f02c4bbde77db0dd34eb9f55ff AS worker
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:6385dc0eaef704fad88d3f65c334e791a371bbe448f52ca39d83d2df49251e28 AS worker
 ARG IMAGE_VERSION=dev
 ARG IMAGE_REVISION=unknown
 ARG IMAGE_CREATED=unknown

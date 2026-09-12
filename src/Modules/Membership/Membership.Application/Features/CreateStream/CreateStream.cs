@@ -2,6 +2,7 @@
 using Acmp.Modules.Membership.Domain;
 using Acmp.Modules.Membership.Domain.Enums;
 using Acmp.Shared.Application.Abstractions;
+using Acmp.Shared.Domain;
 using Acmp.Shared.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
@@ -64,7 +65,7 @@ public sealed class CreateStreamHandler : IRequestHandler<CreateStreamCommand, G
         var code = request.Code.Trim().ToLowerInvariant();
 
         if (await _db.Streams.AnyAsync(s => s.Code == code, ct))
-            throw new InvalidOperationException($"A stream with code '{code}' already exists.");
+            throw new DomainRuleException($"A stream with code '{code}' already exists.");
 
         var stream = DomainStream.Create(code, new LocalizedString(request.NameEn.Trim(), request.NameAr.Trim()));
         _db.Streams.Add(stream);
