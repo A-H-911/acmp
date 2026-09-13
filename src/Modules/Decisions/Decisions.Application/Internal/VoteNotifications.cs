@@ -10,7 +10,7 @@ namespace Acmp.Modules.Decisions.Application.Internal;
 // notification center with a deep link").
 internal static class VoteNotifications
 {
-    public const string CategoryVoteOpened = "VoteOpened";
+    public const string CategoryVoteOpened = NotificationCategories.VoteOpened;
 
     private static string VoteLink(string voteKey) => $"/votes/{voteKey}";
 

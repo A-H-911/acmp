@@ -7,5 +7,6 @@ namespace Acmp.Modules.Notifications.Application.Abstractions;
 public interface INotificationsDbContext
 {
     DbSet<Notification> Notifications { get; }
+    DbSet<NotificationPreference> NotificationPreferences { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

@@ -20,8 +20,10 @@ export interface NotifType {
 const TYPES: Record<string, NotifType> = {
   AgendaPublished: { labelKey: 'notif.type.agendaPublished', tone: 'info', icon: 'calendar' },
   MeetingScheduled: { labelKey: 'notif.type.meetingScheduled', tone: 'accent', icon: 'calendar' },
-  MinutesReady: { labelKey: 'notif.type.minutesReady', tone: 'success', icon: 'doc' },
-  DecisionApproved: { labelKey: 'notif.type.decisionApproved', tone: 'success', icon: 'decision' },
+  // DEF-164: keyed by the categories the backend actually publishes (was MinutesReady/DecisionApproved,
+  // which nothing ever sent, so both rows fell through to the neutral default).
+  MinutesPublished: { labelKey: 'notif.type.minutesPublished', tone: 'success', icon: 'doc' },
+  DecisionIssued: { labelKey: 'notif.type.decisionIssued', tone: 'success', icon: 'decision' },
   ActionAssigned: { labelKey: 'notif.type.actionAssigned', tone: 'warn', icon: 'action' },
   TopicPrepared: { labelKey: 'notif.type.topicPrepared', tone: 'info', icon: 'checkCircle' },
 };

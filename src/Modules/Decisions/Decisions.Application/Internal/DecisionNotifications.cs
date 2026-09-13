@@ -10,7 +10,7 @@ namespace Acmp.Modules.Decisions.Application.Internal;
 // decision view so the SPA navigates straight to it (AC-052 navigation shape).
 internal static class DecisionNotifications
 {
-    public const string CategoryDecisionIssued = "DecisionIssued";
+    public const string CategoryDecisionIssued = NotificationCategories.DecisionIssued;
 
     private static string DecisionLink(string decisionKey) => $"/decisions/{decisionKey}";
 

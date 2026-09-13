@@ -10,9 +10,9 @@ namespace Acmp.Modules.Governance.Application.Internal;
 // notified when an ADR is Superseded/Deprecated. The deep link targets the routed ADR view (/adrs/{key}).
 internal static class AdrNotifications
 {
-    public const string CategoryAdrProposed = "AdrProposed";
-    public const string CategoryAdrApproved = "AdrApproved";
-    public const string CategoryAdrSuperseded = "AdrSuperseded";
+    public const string CategoryAdrProposed = NotificationCategories.AdrProposed;
+    public const string CategoryAdrApproved = NotificationCategories.AdrApproved;
+    public const string CategoryAdrSuperseded = NotificationCategories.AdrSuperseded;
 
     private static string AdrLink(string adrKey) => $"/adrs/{adrKey}";
 

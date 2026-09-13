@@ -78,6 +78,7 @@ function OidcBridge({ children }: { children: ReactNode }) {
       userId: profile?.sub,
       displayName: name,
       initials: initialsFrom(name),
+      email: profile?.email,
       signIn: (returnTo?: string) => {
         // Set-or-clear (never leave a stale value): stash a real deep link for AuthCallbackPage to
         // restore, but a plain sign-in must wipe any leftover key from an earlier abandoned attempt.

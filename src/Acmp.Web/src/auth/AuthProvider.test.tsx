@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthProvider } from './AuthProvider';
 import { useAuth } from './AcmpAuthContext';
@@ -66,6 +66,7 @@ function Probe() {
       <span data-testid="roles">{[...a.roles].sort().join(',')}</span>
       <span data-testid="name">{a.displayName}</span>
       <span data-testid="initials">{a.initials}</span>
+      <span data-testid="email">{a.email ?? ''}</span>
       <span data-testid="err">{a.error ?? ''}</span>
       <button onClick={a.signOut}>sign out</button>
       <button onClick={() => a.signIn('/meetings/new')}>signin deep</button>
@@ -115,6 +116,16 @@ describe('AuthProvider — fail closed (unconfigured, production)', () => {
     expect(screen.getByTestId('auth')).toHaveTextContent('false');
     expect(screen.getByTestId('roles')).toHaveTextContent('');
     expect(screen.getByTestId('err')).toHaveTextContent('Identity provider is not configured.');
+    // Sign-in/out are inert here: nothing to redirect to, and nothing must throw.
+    fireEvent.click(screen.getByRole('button', { name: 'signin deep' }));
+    fireEvent.click(screen.getByRole('button', { name: 'sign out' }));
+    expect(screen.getByTestId('auth')).toHaveTextContent('false');
+  });
+
+  it('useAuth outside the provider fails loudly rather than returning a fake session', () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => render(<Probe />)).toThrow('useAuth must be used within <AuthProvider>');
+    quiet.mockRestore();
   });
 });
 
@@ -128,6 +139,10 @@ describe('AuthProvider — DEV stub (unconfigured, development)', () => {
     );
     expect(screen.getByTestId('auth')).toHaveTextContent('true');
     expect(screen.getByTestId('roles')).toHaveTextContent('secretary');
+    // The stub's sign-in/out are no-ops: the DEV session stays up.
+    fireEvent.click(screen.getByRole('button', { name: 'signin deep' }));
+    fireEvent.click(screen.getByRole('button', { name: 'sign out' }));
+    expect(screen.getByTestId('auth')).toHaveTextContent('true');
   });
 
   it('reads previously chosen dev roles from sessionStorage', () => {
@@ -159,7 +174,7 @@ describe('AuthProvider — OidcBridge (configured Keycloak)', () => {
     oidc.isAuthenticated = true;
     oidc.user = {
       access_token: 'tok',
-      profile: { name: 'Dr Sara Noor', realm_access: { roles: ['acmp-chairman', 'member'] } },
+      profile: { name: 'Dr Sara Noor', email: 'sara.noor@acmp.test', realm_access: { roles: ['acmp-chairman', 'member'] } },
     };
     render(
       <AuthProvider>
@@ -170,6 +185,8 @@ describe('AuthProvider — OidcBridge (configured Keycloak)', () => {
     expect(screen.getByTestId('roles')).toHaveTextContent('chairman,member');
     expect(screen.getByTestId('name')).toHaveTextContent('Dr Sara Noor');
     expect(screen.getByTestId('initials')).toHaveTextContent('DN');
+    // WBS-40.3: the ID token's email claim reaches the context for /profile.
+    expect(screen.getByTestId('email')).toHaveTextContent('sara.noor@acmp.test');
   });
 
   it('provisions the local profile once on login, carrying the bearer token (post-login never 401)', async () => {

@@ -1,8 +1,8 @@
 /*
  * Top chrome (docs/domain/information-architecture.md §2; design "ACMP" app shell + "Navigation & IA"): brand,
  * global search, locale + theme toggles, notification bell, and the profile
- * menu — avatar + name + role trigger → role="menu" panel holding the identity
- * and a Log out item (OIDC end-session against the self-hosted Keycloak realm,
+ * menu — avatar + name + role trigger → role="menu" panel holding the identity,
+ * a Profile & preferences item (/profile, WBS-40.3) and a Log out item (OIDC end-session against the self-hosted Keycloak realm,
  * ADR-0015). Present on every page.
  */
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -65,6 +65,11 @@ export function TopBar() {
 
   // OIDC end-session (oidc-client-ts signoutRedirect): clears the local session/
   // tokens and redirects to the post-logout (login) route. See AuthProvider.
+  const onProfile = () => {
+    setProfileOpen(false);
+    navigate('/profile');
+  };
+
   const onLogout = () => {
     setProfileOpen(false);
     signOut();
@@ -166,6 +171,10 @@ export function TopBar() {
                 </span>
               </div>
               <div className="profile-sep" role="separator" />
+              <button type="button" className="profile-item" role="menuitem" onClick={onProfile}>
+                <Icon name="user" size={17} aria-hidden />
+                <span className="profile-item-label">{t('profile.title')}</span>
+              </button>
               <button type="button" className="profile-item" role="menuitem" onClick={onLogout}>
                 <Icon name="logout" size={17} className="dir-flip" aria-hidden />
                 <span className="profile-item-label">{t('auth.logout')}</span>

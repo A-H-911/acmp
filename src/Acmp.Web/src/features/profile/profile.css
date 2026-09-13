@@ -1,0 +1,95 @@
+/*
+ * WBS-40.3 — /profile and /profile/preferences, matched to "ACMP System States.dc.html":
+ * `profile` L84–110 and `notif` L112–133 (+ its local .card/.seg/.tag/.flabel/.lab/.ghostbtn rules,
+ * L50–59). Values below are the design's, token-driven; logical properties only (DEC-022).
+ */
+
+/* Content column: the design's 860px frame minus its 24px side padding (L78). Start-aligned inside
+   .page so it lines up with the shell breadcrumb. */
+.prof-wrap { max-inline-size: 812px; }
+
+/* .flabel (L56) */
+.prof-flabel {
+  margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3);
+}
+/* .lab (L59) */
+.prof-lab { display: block; font-size: 12px; font-weight: 600; margin-block-end: 6px; color: var(--text); }
+/* .tag (L57) — a pill, unlike the design system's squarer .tag. */
+.prof-tag {
+  display: inline-flex; align-items: center; block-size: 22px; padding-inline: 9px; border-radius: 11px;
+  font-size: 11.5px; font-weight: 500; background: var(--subtle); color: var(--text-2); border: 1px solid var(--border);
+}
+.prof-tag-info { background: var(--st-info-bg); color: var(--st-info-fg); border-color: transparent; }
+
+/* ---- profile: identity card (L87–94) ---- */
+.prof-id { padding: 22px; margin-block-end: 16px; display: flex; align-items: center; gap: 16px; }
+.avatar.prof-avatar { inline-size: 58px; block-size: 58px; font-size: 21px; }
+.prof-id-text { flex: 1 1 auto; min-inline-size: 0; }
+.prof-name { margin: 0; font-size: 19px; font-weight: 700; }
+.prof-email { margin-block-start: 2px; font-size: 13px; color: var(--text-2); }
+.prof-tags { margin-block-start: 9px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---- profile: preferences + account (L95–109) ---- */
+.prof-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.prof-card { padding: 18px; }
+.prof-card > .prof-flabel { margin-block-end: 14px; }
+/* .seg inside the full-width sunken track (L52, L98–99), on the shared Segmented component. */
+.prof-seg .segmented { display: flex; inline-size: 100%; gap: 0; padding: 3px; }
+.prof-seg + .prof-seg { margin-block-start: 14px; }
+.prof-seg .segmented-item {
+  flex: 1 1 0; justify-content: center; gap: 5px;
+  block-size: 28px; padding-inline: 11px; font-size: 12px; font-weight: 600;
+}
+.prof-account { display: flex; flex-direction: column; gap: 11px; }
+.prof-sso { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); }
+.prof-sso svg { color: var(--text-3); flex: 0 0 auto; }
+.prof-sso span { flex: 1 1 auto; }
+/* .ghostbtn (L55): 38px, 14px inline padding, 13px/600 — a touch tighter than .btn-secondary. */
+.prof-btn.btn { padding-inline: 14px; font-size: 13px; }
+.prof-logout.btn { color: var(--st-danger-fg); border-color: color-mix(in srgb, var(--st-danger-fg) 30%, transparent); }
+.prof-logout.btn:hover:not(:disabled) { background: var(--st-danger-bg); }
+
+/* ---- notification preferences (L114–133) ---- */
+.np-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-block-end: 16px;
+}
+.np-title { margin: 0; font-size: 20px; font-weight: 700; }
+.np-sub { margin-block-start: 4px; font-size: 13px; color: var(--text-2); }
+.np-saved { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--st-success-fg); font-weight: 600; }
+.np-error { margin-block: 0 12px; }
+.np-card { overflow: hidden; }
+/* Two channel columns, not the design's three: no Email column (DEC-150 d5 / DEC-186). */
+.np-cols, .np-row { display: grid; grid-template-columns: 1fr 92px 92px; align-items: center; }
+.np-cols { padding: 11px 18px; border-block-end: 1px solid var(--border); background: var(--header); }
+.np-ch { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-3); }
+.np-ch-on { color: var(--text-2); }
+/* Group header — no .dc.html reference (the design has six ungrouped rows); composed from .flabel. */
+.np-group {
+  margin: 0; padding: 10px 18px 6px; background: var(--subtle); border-block-end: 1px solid var(--border-soft);
+  font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-3);
+}
+.np-row { padding: 13px 18px; border-block-end: 1px solid var(--border-soft); }
+.np-event { display: flex; align-items: center; gap: 10px; min-inline-size: 0; }
+.np-event svg { color: var(--text-3); flex: 0 0 auto; }
+.np-label { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-cell { display: flex; justify-content: center; }
+/* Toggle (L127): 38×22 track, 18px knob; on = success dot, off = border-strong. */
+.np-switch {
+  position: relative; inline-size: 38px; block-size: 22px; flex: 0 0 auto;
+  padding: 0; border: 0; border-radius: 11px; background: var(--border-strong); cursor: pointer;
+}
+.np-switch[aria-checked='true'] { background: var(--st-success-dot); }
+.np-switch:disabled { cursor: progress; opacity: .7; }
+.np-knob {
+  position: absolute; inset-block-start: 2px; inset-inline-start: 2px;
+  inline-size: 18px; block-size: 18px; border-radius: 50%; background: #fff; box-shadow: var(--shadow);
+}
+.np-switch[aria-checked='true'] .np-knob { inset-inline-start: 18px; }
+/* Phase 2 tag (L128): the .tag at 10px / 20px. */
+.np-phase { font-size: 10px; block-size: 20px; }
+.np-foot {
+  padding: 12px 18px; display: flex; align-items: center; gap: 8px;
+  font-size: 11.5px; color: var(--text-3); background: var(--subtle);
+}
+.np-foot svg { flex: 0 0 auto; }

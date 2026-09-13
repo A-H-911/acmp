@@ -74,6 +74,10 @@ export function deriveBreadcrumbs(pathname: string, t: TFunction): Crumb[] {
 
   if (seg0 === 'notifications') {
     crumbs.push({ label: t('notif.title') });
+  } else if (seg0 === 'profile') {
+    // WBS-40.3 — System States `profile` / `notif`: Profile & preferences › Notification preferences.
+    crumbs.push({ label: t('profile.title'), href: '/profile' });
+    if (segs[1] === 'preferences') crumbs.push({ label: t('notifPrefs.title') });
   } else if (seg0 === 'traceability') {
     const [, type, key] = segs;
     const map = type ? TRACE_TYPE[type] : undefined;

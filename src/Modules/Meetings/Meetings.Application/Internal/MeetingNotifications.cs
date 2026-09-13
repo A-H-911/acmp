@@ -14,8 +14,8 @@ namespace Acmp.Modules.Meetings.Application.Internal;
 // but a stable Gregorian string in the body is honest and locale-safe.
 internal static class MeetingNotifications
 {
-    public const string CategoryMeetingScheduled = "MeetingScheduled";
-    public const string CategoryAgendaPublished = "AgendaPublished";
+    public const string CategoryMeetingScheduled = NotificationCategories.MeetingScheduled;
+    public const string CategoryAgendaPublished = NotificationCategories.AgendaPublished;
 
     private static string MeetingLink(string meetingKey) => $"/meetings/{meetingKey}";
 

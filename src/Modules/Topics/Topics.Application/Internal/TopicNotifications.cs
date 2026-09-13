@@ -9,9 +9,9 @@ namespace Acmp.Modules.Topics.Application.Internal;
 // to it. Mirrors DecisionNotifications — the message is built once, then delivered per recipient.
 internal static class TopicNotifications
 {
-    public const string CategoryTopicPrepared = "TopicPrepared";
-    public const string CategoryTopicRejected = "TopicRejected";
-    public const string CategoryTopicSlaBreach = "TopicSlaBreach";
+    public const string CategoryTopicPrepared = NotificationCategories.TopicPrepared;
+    public const string CategoryTopicRejected = NotificationCategories.TopicRejected;
+    public const string CategoryTopicSlaBreach = NotificationCategories.TopicSlaBreach;
 
     public static Func<string, NotificationMessage> TopicPrepared(string topicKey)
     {

@@ -3,6 +3,7 @@ using Acmp.Modules.Notifications.Domain;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Contracts.Notifications;
 using Acmp.Shared.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace Acmp.Modules.Notifications.Application.Channels;
 
@@ -18,6 +19,15 @@ public sealed class InAppNotificationChannel : INotificationSink
 
     public async Task PublishAsync(NotificationMessage message, CancellationToken ct = default)
     {
+        // FR-133 / AC-160 (DEC-186): the RECIPIENT's own opt-out withholds the in-app write. Keyed on the
+        // recipient, never ICurrentUser, because worker jobs publish with no signed-in user. No row = on. Only
+        // this sink asks: the shared Webex space card (AC-067) is never governed by one member's choice. The
+        // audit row of the act that raised the event is written by its command, so it is unaffected.
+        var optedOut = await _db.NotificationPreferences.AsNoTracking().AnyAsync(p =>
+            p.UserId == message.RecipientUserId && p.Category == message.Category &&
+            p.Channel == NotificationChannels.InApp && !p.IsEnabled, ct);
+        if (optedOut) return;
+
         // Copy the bilingual values into FRESH LocalizedString instances. A single NotificationMessage is
         // fanned out to many recipients (one PublishAsync each, sharing the same scoped DbContext), and EF
         // can't track the same OWNED LocalizedString instance under two Notification principals — reusing it

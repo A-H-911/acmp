@@ -18,6 +18,15 @@ describe('notifType', () => {
     });
   });
 
+  // DEF-164: the backend publishes MinutesPublished and DecisionIssued; the old MinutesReady /
+  // DecisionApproved keys matched nothing and must not come back.
+  it('maps the categories the backend actually publishes for minutes and decisions', () => {
+    expect(notifType('MinutesPublished')).toEqual({ labelKey: 'notif.type.minutesPublished', tone: 'success', icon: 'doc' });
+    expect(notifType('DecisionIssued')).toEqual({ labelKey: 'notif.type.decisionIssued', tone: 'success', icon: 'decision' });
+    expect(notifType('MinutesReady').labelKey).toBe('notif.type.default');
+    expect(notifType('DecisionApproved').labelKey).toBe('notif.type.default');
+  });
+
   it('falls back to a neutral default for an unknown category (never blank)', () => {
     const t = notifType('SomethingNew');
     expect(t.labelKey).toBe('notif.type.default');
