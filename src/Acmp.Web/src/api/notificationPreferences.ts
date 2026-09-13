@@ -11,7 +11,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './apiClient';
 
-export type NotificationGroup = 'meetings' | 'topics' | 'decisions' | 'actions' | 'risks' | 'governance';
+export type NotificationGroup = 'meetings' | 'topics' | 'decisions' | 'actions' | 'risks' | 'governance' | 'notifications';
 
 export interface NotificationPreference {
   category: string;

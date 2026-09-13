@@ -27,6 +27,11 @@ describe('notifType', () => {
     expect(notifType('DecisionApproved').labelKey).toBe('notif.type.default');
   });
 
+  it('labels both digest categories as a digest (FR-134 / AC-161)', () => {
+    expect(notifType('DailyDigest')).toEqual({ labelKey: 'notif.type.digest', tone: 'neutral', icon: 'bell' });
+    expect(notifType('WeeklyDigest')).toEqual({ labelKey: 'notif.type.digest', tone: 'neutral', icon: 'bell' });
+  });
+
   it('falls back to a neutral default for an unknown category (never blank)', () => {
     const t = notifType('SomethingNew');
     expect(t.labelKey).toBe('notif.type.default');

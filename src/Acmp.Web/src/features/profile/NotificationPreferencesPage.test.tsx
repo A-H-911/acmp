@@ -77,6 +77,25 @@ describe('NotificationPreferencesPage — layout', () => {
     expect(screen.getAllByText('Phase 2')).toHaveLength(4);
   });
 
+  // AC-161 (DEC-188): the daily and weekly digests are two rows of their own under Notifications, each switchable.
+  it('lists the daily and weekly digests as two switchable rows under Notifications', async () => {
+    stub(async () => res(200, { items: [
+      ...LIST.items,
+      { category: 'DailyDigest', group: 'notifications', inApp: true },
+      { category: 'WeeklyDigest', group: 'notifications', inApp: false },
+    ] }));
+    renderWithAuth(<NotificationPreferencesPage />);
+
+    const section = await screen.findByRole('region', { name: 'Notifications' });
+    expect(within(section).getAllByRole('switch').map((s) => s.getAttribute('aria-label'))).toEqual([
+      'Daily digest',
+      'Weekly digest',
+    ]);
+    expect(within(section).getByRole('switch', { name: 'Daily digest' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(section).getByRole('switch', { name: 'Weekly digest' })).toHaveAttribute('aria-checked', 'false');
+    within(section).getAllByRole('switch').forEach((s) => expect(s).toBeEnabled());
+  });
+
   it('still renders an unknown category and group from a newer server under their raw names', async () => {
     stub(async () => res(200, { items: [{ category: 'SomethingNew', group: 'future', inApp: true }] }));
     renderWithAuth(<NotificationPreferencesPage />);

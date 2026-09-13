@@ -28,6 +28,7 @@ public static class ActionsInfrastructureExtensions
 
         // Cross-module seam for the Decisions AC-029 downstream-link gate (ADR-0001, FR-067, OQ-045).
         services.AddScoped<IActionLinkDirectory, ActionLinkDirectory>();
+        services.AddScoped<IActionDigestSource, ActionDigestSource>();
 
         services.AddActionsApplication();
         return services;

@@ -25,6 +25,7 @@ const GROUP_ICON: Record<string, IconName> = {
   actions: 'action',
   risks: 'risk',
   governance: 'adr',
+  notifications: 'bell',
 };
 
 /** Items grouped by `group`, groups and rows both kept in the server's order. */
