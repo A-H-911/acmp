@@ -68,11 +68,15 @@ internal static class ContainerStartup
         }
     }
 
-    // DW-085 (DEC-078 d2). The image BUILD is the other unbounded await on this path: FtsImage builds
+    // DW-085 (DEC-078 d2). The image BUILD is the other unbounded await on this path: FtsImage built
     // deploy/Dockerfile.sqlserver - the 3.62 GB FTS image (DW-059 measured it) - before any container
     // exists, once per test run since DEF-161. Normally cached, so the hazard only appears on a runner with
     // a cold cache or a stalled build, which is the same conditional visibility that let the startup hang
     // sit unnoticed.
+    //
+    // ⚠ SINCE WBS-41.2 FtsImage PULLS the pinned image instead, and this same budget bounds that `docker pull`
+    // (it stands on the same path to the first container); the build below runs only under ACMP_FTS_BUILD=1.
+    // The measurements that follow are of the BUILD, and were not re-taken for the pull.
     //
     // The budgets are chosen together, not separately: a build and a start can BOTH be slow in one run, and
     // 8 + 10 = 18 minutes leaves the backend job room under its own timeout-minutes to fail, report and finish.

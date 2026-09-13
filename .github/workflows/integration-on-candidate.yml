@@ -52,6 +52,10 @@ jobs:
       - name: Run Acmp.Integration.Tests ${{ inputs.runs }} times
         env:
           ACMP_CRASH_ARTEFACT_DIR: ${{ github.workspace }}/crash-artefacts
+          # WBS-41.2 (DEC-182 f3): this workflow exists to boot the SUBSTITUTED candidate, so FtsImage must
+          # build it. Without the switch the changed Dockerfile no longer matches the pin and FtsImage fails red;
+          # it would never pull the shipped image and pass hollow (LL-060).
+          ACMP_FTS_BUILD: '1'
         run: |
           set -uo pipefail
           mkdir -p results

@@ -53,7 +53,7 @@ public sealed class SearchProvidersFtsTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // DEF-161: this class is IAsyncLifetime, so this runs once PER TEST - it used to build the image each time.
-        _container = new MsSqlBuilder(await FtsImage.BuildOnceAsync()).Build();
+        _container = new MsSqlBuilder(await FtsImage.GetOnceAsync()).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS)");
 
         // A full-text catalog cannot live in master/tempdb/model (MsSqlBuilder connects to master) — so create

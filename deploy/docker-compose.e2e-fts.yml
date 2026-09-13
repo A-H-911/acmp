@@ -1,0 +1,11 @@
+# WBS-41.2 (DEC-182 f3, ADR-0047 e1). Layered over docker-compose.yml by e2e.yml ONLY: the sqlserver service
+# runs the pinned, pre-built FTS image instead of building deploy/Dockerfile.sqlserver on every run (DEF-157
+# struck in exactly that build). ACMP_FTS_IMAGE is what scripts/check-fts-pin.mjs prints on a match; it has no
+# default, so a run that skipped the check fails here rather than pulling something unpinned.
+#
+# `build: !reset null` REMOVES the base file's build section, which `up --build` would otherwise rebuild. The
+# local dev stack and production never read this file.
+services:
+  sqlserver:
+    image: ${ACMP_FTS_IMAGE:?set ACMP_FTS_IMAGE from scripts/check-fts-pin.mjs}
+    build: !reset null

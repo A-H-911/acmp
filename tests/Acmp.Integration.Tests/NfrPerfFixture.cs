@@ -48,7 +48,7 @@ namespace Acmp.Integration.Tests;
  * PE-1045). Trap 27 exists to prevent exactly this.
  *
  * ⚠ THE FTS IMAGE IS REQUIRED, NOT PREFERRED. NFR-004 measures full-text search and the stock mssql
- * image ships WITHOUT it, so this boots deploy/Dockerfile.sqlserver — the image FtsImage builds once per
+ * image ships WITHOUT it, so this boots deploy/Dockerfile.sqlserver — the image FtsImage pulls once per
  * run for this fixture and SearchProvidersFtsTests alike (DEF-161). It is deliberately a SEPARATE fixture
  * from that suite: DEC-077 d3 puts a standing
  * STOP-on-red rule on SearchProvidersFtsTests, and folding a perf measurement into a suite nobody may
@@ -88,7 +88,7 @@ public sealed class NfrPerfFixture : IAsyncLifetime
         // DEF-161: the image is built once per test run and shared with SearchProvidersFtsTests - the BUILD only.
         // The container, the databases and the verdicts stay separate, as the header above requires; what is
         // now shared is that one failed build reds both, which both DEF-158 occurrences already did.
-        _container = new MsSqlBuilder(await FtsImage.BuildOnceAsync()).Build();
+        _container = new MsSqlBuilder(await FtsImage.GetOnceAsync()).Build();
         await ContainerStartup.StartOrFailFastAsync(_container, "SQL Server (FTS, NFR perf)");
 
         var started = System.Diagnostics.Stopwatch.StartNew();
