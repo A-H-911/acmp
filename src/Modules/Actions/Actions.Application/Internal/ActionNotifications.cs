@@ -10,11 +10,11 @@ namespace Acmp.Modules.Actions.Application.Internal;
 // overdue escalation (AC-054/055) are Hangfire-driven and land in P8c.
 internal static class ActionNotifications
 {
-    public const string CategoryActionAssigned = "ActionAssigned";
-    public const string CategoryActionVerified = "ActionVerified";
-    public const string CategoryActionDueReminder = "ActionDueReminder";
-    public const string CategoryActionOverdue = "ActionOverdue";
-    public const string CategoryActionOverdueEscalation = "ActionOverdueEscalation";
+    public const string CategoryActionAssigned = NotificationCategories.ActionAssigned;
+    public const string CategoryActionVerified = NotificationCategories.ActionVerified;
+    public const string CategoryActionDueReminder = NotificationCategories.ActionDueReminder;
+    public const string CategoryActionOverdue = NotificationCategories.ActionOverdue;
+    public const string CategoryActionOverdueEscalation = NotificationCategories.ActionOverdueEscalation;
 
     private static string ActionLink(string actionKey) => $"/actions/{actionKey}";
 

@@ -38,6 +38,12 @@ describe('TopBar notification bell', () => {
     expect(screen.getByText('3')).toBeTruthy();
   });
 
+  it('caps the badge at 9+', () => {
+    mockNotifs.mockReturnValue({ data: { items: [], unreadCount: 12 } });
+    renderWithAuth(<TopBar />);
+    expect(screen.getByText('9+')).toBeTruthy();
+  });
+
   it('shows no badge when the inbox is fully read', () => {
     mockNotifs.mockReturnValue({ data: { items: [], unreadCount: 0 } });
     renderWithAuth(<TopBar />);
@@ -75,6 +81,32 @@ describe('TopBar profile menu', () => {
     logout.focus();
     await user.keyboard('{Enter}');
     expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers Profile & preferences above Log out and navigates to /profile, closing the menu', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(<TopBar />);
+
+    await user.click(screen.getByRole('button', { name: /account menu/i }));
+    const items = screen.getAllByRole('menuitem').map((el) => el.textContent);
+    expect(items).toEqual(['Profile & preferences', 'Log out']);
+
+    await user.click(screen.getByRole('menuitem', { name: 'Profile & preferences' }));
+
+    expect(navigate).toHaveBeenCalledWith('/profile');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('keeps the menu open on keys other than Escape, and names it generically without a display name', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(<TopBar />, { auth: makeAuth([], { displayName: '' }) });
+
+    await user.click(screen.getByRole('button', { name: /account menu/i }));
+    await user.keyboard('a');
+    expect(screen.getByRole('menu', { name: 'Account menu' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('renders the Arabic Log out label when the locale is AR', async () => {
@@ -132,6 +164,16 @@ describe('TopBar controls', () => {
     await user.click(screen.getByRole('button', { name: /Switch to العربية/ }));
 
     expect(i18n.language).toBe('ar');
+  });
+
+  it('offers Light mode (sun) when the stored theme is dark', () => {
+    localStorage.setItem('acmp-theme', 'dark');
+    try {
+      renderWithAuth(<TopBar />);
+      expect(screen.getByRole('button', { name: 'Light mode' })).toBeInTheDocument();
+    } finally {
+      localStorage.removeItem('acmp-theme');
+    }
   });
 
   it('opens the notification panel from the bell and closes it with Escape', async () => {

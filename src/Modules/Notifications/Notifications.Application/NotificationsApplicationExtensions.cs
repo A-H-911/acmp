@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Acmp.Modules.Notifications.Application;
 
@@ -6,7 +7,11 @@ public static class NotificationsApplicationExtensions
 {
     public static readonly System.Reflection.Assembly Assembly = typeof(NotificationsApplicationExtensions).Assembly;
 
-    // No FluentValidation validators here — the two requests are guarded by current-user scoping, not
-    // field rules. The handle exists for symmetry + to expose Assembly for the host's MediatR scan.
-    public static IServiceCollection AddNotificationsApplication(this IServiceCollection services) => services;
+    // The feed and mark-read requests are guarded by current-user scoping alone; the preferences update
+    // (FR-133 / AC-160) also carries field rules, so the module's validators are registered.
+    public static IServiceCollection AddNotificationsApplication(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssembly(Assembly);
+        return services;
+    }
 }

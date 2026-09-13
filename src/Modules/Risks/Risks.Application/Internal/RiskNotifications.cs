@@ -8,8 +8,8 @@ namespace Acmp.Modules.Risks.Application.Internal;
 // view (/risks/{key}) so the SPA navigates straight to it (AC-052/053).
 internal static class RiskNotifications
 {
-    public const string CategoryRiskAssigned = "RiskAssigned";
-    public const string CategoryRiskEscalated = "RiskEscalated";
+    public const string CategoryRiskAssigned = NotificationCategories.RiskAssigned;
+    public const string CategoryRiskEscalated = NotificationCategories.RiskEscalated;
 
     private static string RiskLink(string riskKey) => $"/risks/{riskKey}";
 

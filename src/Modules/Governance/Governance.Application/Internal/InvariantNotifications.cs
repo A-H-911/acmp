@@ -13,9 +13,9 @@ namespace Acmp.Modules.Governance.Application.Internal;
 // so activation notifies the committee (P11d flag: add a stream link if per-stream targeting is ever wanted).
 internal static class InvariantNotifications
 {
-    public const string CategoryInvariantProposed = "InvariantProposed";
-    public const string CategoryInvariantActivated = "InvariantActivated";
-    public const string CategoryInvariantSuperseded = "InvariantSuperseded";
+    public const string CategoryInvariantProposed = NotificationCategories.InvariantProposed;
+    public const string CategoryInvariantActivated = NotificationCategories.InvariantActivated;
+    public const string CategoryInvariantSuperseded = NotificationCategories.InvariantSuperseded;
 
     private static string InvariantLink(string key) => $"/invariants/{key}";
 

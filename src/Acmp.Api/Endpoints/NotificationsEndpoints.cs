@@ -1,5 +1,6 @@
 ﻿using Acmp.Modules.Notifications.Application.Features.GetNotifications;
 using Acmp.Modules.Notifications.Application.Features.MarkRead;
+using Acmp.Modules.Notifications.Application.Features.Preferences;
 using MediatR;
 
 namespace Acmp.Api.Endpoints;
@@ -28,6 +29,13 @@ public static class NotificationsEndpoints
             var marked = await sender.Send(new MarkAllNotificationsReadCommand(), ct);
             return Results.Ok(new { marked });
         });
+
+        // FR-133 / AC-160: the caller's own preferences — no user parameter, so no way to name another member.
+        group.MapGet("/preferences", async (ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new GetNotificationPreferencesQuery(), ct)));
+
+        group.MapPut("/preferences", async (UpdateNotificationPreferencesCommand command, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(command, ct)));
 
         return app;
     }

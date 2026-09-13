@@ -10,8 +10,8 @@ namespace Acmp.Modules.Meetings.Application.Internal;
 // targets the minutes tab of its meeting so the SPA navigates straight there (AC-052/AC-038 shape).
 internal static class MinutesNotifications
 {
-    public const string CategoryMinutesPublished = "MinutesPublished";
-    public const string CategoryMinutesChangesRequested = "MinutesChangesRequested";
+    public const string CategoryMinutesPublished = NotificationCategories.MinutesPublished;
+    public const string CategoryMinutesChangesRequested = NotificationCategories.MinutesChangesRequested;
 
     // Minutes live under their meeting (P7d wires the /minutes tab); the meeting key is the stable route seg.
     private static string MinutesLink(string meetingKey) => $"/meetings/{meetingKey}/minutes";

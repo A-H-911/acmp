@@ -10,11 +10,26 @@ import { applyTheme, getStoredTheme, systemTheme, type Theme } from './theme';
  *
  * AC-042 is unaffected: it grades that a chosen dark theme is still active after logging in again.
  * An explicit choice is still persisted and still beats the OS.
+ *
+ * WBS-40.3: the hook has more than one consumer (TopBar's toggle and the Profile page's Light/Dark
+ * control are mounted together), and each call holds its own state. A choice made in one is fanned
+ * out to every mounted instance, or TopBar's icon would go stale and its next click would re-apply
+ * the theme already showing.
+ * ponytail: a module-level listener set, not a context — upgrade if a third kind of consumer appears.
  */
-export function useTheme(): { theme: Theme; toggle: () => void } {
+const listeners = new Set<(t: Theme) => void>();
+
+export function useTheme(): { theme: Theme; toggle: () => void; setTheme: (t: Theme) => void } {
   const [explicit, setExplicit] = useState<Theme | null>(getStoredTheme);
   const [system, setSystem] = useState<Theme>(systemTheme);
   const theme = explicit ?? system;
+
+  useEffect(() => {
+    listeners.add(setExplicit);
+    return () => {
+      listeners.delete(setExplicit);
+    };
+  }, []);
 
   // Follow the OS live, but ONLY while no explicit choice exists — otherwise changing the system
   // theme would silently discard the user's decision.
@@ -31,6 +46,7 @@ export function useTheme(): { theme: Theme; toggle: () => void } {
   // preference nobody expressed, and the app could never follow the OS again.
   useEffect(() => applyTheme(theme, explicit !== null), [theme, explicit]);
 
-  const toggle = () => setExplicit(theme === 'dark' ? 'light' : 'dark');
-  return { theme, toggle };
+  const setTheme = (t: Theme) => listeners.forEach((set) => set(t));
+  const toggle = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  return { theme, toggle, setTheme };
 }

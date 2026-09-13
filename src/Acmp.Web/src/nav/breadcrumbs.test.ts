@@ -64,4 +64,32 @@ describe('deriveBreadcrumbs', () => {
     // Unknown path (the 404 catch-all) collapses to Home as the current page.
     expect(labels('/totally-unknown')).toEqual([t('nav.home')]);
   });
+
+  it('shows the record key for every register detail route', () => {
+    for (const [path, area] of [
+      ['/decisions/DECN-2026-003', 'nav.decisions'],
+      ['/votes/VOTE-2026-001', 'nav.decisions'],
+      ['/adrs/ADR-0001', 'nav.adrs'],
+      ['/invariants/INV-001', 'nav.adrs'],
+      ['/risks/RSK-2026-002', 'nav.risks'],
+      ['/dependencies/DEP-2026-004', 'nav.deps'],
+      ['/wiki/KB-12', 'nav.wiki'],
+    ] as const) {
+      const key = path.split('/')[2];
+      expect(labels(path)).toEqual([t('nav.home'), t(area), key]);
+    }
+  });
+
+  it('falls back to the area alone for an incomplete traceability path', () => {
+    expect(labels('/traceability')).toEqual([t('nav.home')]);
+    expect(labels('/traceability/Topic')).toEqual([t('nav.home'), t('nav.backlog'), t('trace.graph.crumb')]);
+  });
+
+  it('builds the profile trail, linking back to /profile from notification preferences (WBS-40.3)', () => {
+    expect(labels('/profile')).toEqual([t('nav.home'), t('profile.title')]);
+    const prefs = deriveBreadcrumbs('/profile/preferences', t);
+    expect(prefs.map((c) => c.label)).toEqual([t('nav.home'), t('profile.title'), t('notifPrefs.title')]);
+    expect(prefs[1]).toMatchObject({ href: '/profile' });
+    expect(prefs[2]).toMatchObject({ current: true });
+  });
 });

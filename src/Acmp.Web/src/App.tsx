@@ -42,6 +42,8 @@ import { DependencyPage } from './features/dependencies/DependencyPage';
 import { ImpactGraphPage } from './features/traceability/ImpactGraphPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { AuditRegister } from './features/audit/AuditRegister';
+import { ProfilePage } from './features/profile/ProfilePage';
+import { NotificationPreferencesPage } from './features/profile/NotificationPreferencesPage';
 
 /*
  * Route tree for the app. Defined as a data-router config (createRoutesFromElements)
@@ -60,6 +62,9 @@ export const appRoutes = createRoutesFromElements(
         {/* Legacy alias — keep deep links to /dashboard working; Home is now '/' (Usage Map §G). */}
         <Route path="dashboard" element={<Navigate to="/" replace />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        {/* WBS-40.3 — every signed-in role reaches its own profile and notification preferences. */}
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile/preferences" element={<NotificationPreferencesPage />} />
         {/* FR-159 / DEC-037 — the guest presenter surface, restricted to Guest plus Chairman and
             Secretary (preview). DEF-053: the API half always enforced this (both queries carry
             AllowedRoles and SessionApiTests forces a 403 for the other five roles), but the route
