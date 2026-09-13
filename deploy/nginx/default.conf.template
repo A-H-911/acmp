@@ -103,6 +103,20 @@ server {
         proxy_buffering off;
     }
 
+    # DW-108 / AC-163: the same for topic attachments (the on-prem acmp-topics bucket). Opening an
+    # attachment - the committee's /api/topics/{id}/attachments/{id}/url and the guest's /session
+    # materials - hands the browser a presigned URL on this path; without this location nginx served it
+    # the SPA instead. Same shape as /acmp-recordings/ above, for the same reasons. Not taken on cloud.
+    location /acmp-topics/ {
+        resolver 127.0.0.11 ipv6=off valid=10s;
+        set $topics_upstream "minio:9000";
+        proxy_pass http://$topics_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        chunked_transfer_encoding off;
+        proxy_buffering off;
+    }
+
     location /api/ {
         proxy_pass http://api:8080;
         proxy_http_version 1.1;

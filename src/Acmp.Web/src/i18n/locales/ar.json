@@ -1758,7 +1758,9 @@
     "noHistory": "لا سجل بعد.",
     "attach": {
       "empty": "لا مرفقات بعد. أفلت الملفات لإضافتها.",
-      "download": "تنزيل"
+      "download": "تنزيل",
+      "downloadFile": "تنزيل {{name}}",
+      "openFailed": "تعذّر فتح الملف."
     },
     "votes": {
       "emptyTitle": "لا تصويتات بعد",

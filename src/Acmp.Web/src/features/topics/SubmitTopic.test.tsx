@@ -17,7 +17,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useNavigate: () => navigateSpy };
 });
 
-vi.mock('../../api/topics', () => ({ useSubmitTopic: vi.fn(), uploadTopicAttachment: vi.fn() }));
+vi.mock('../../api/topics', () => ({ useSubmitTopic: vi.fn(), uploadTopicAttachment: vi.fn(), MAX_ATTACHMENT_BYTES: 100 * 1024 * 1024 }));
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 
 // Stub the react-query-backed TemplatePicker to a plain apply button (covered in
@@ -164,10 +164,10 @@ describe('SubmitTopic (P5b)', () => {
     const user = userEvent.setup();
     setup();
     const big = new File([new Uint8Array(2)], 'huge.pdf', { type: 'application/pdf' });
-    Object.defineProperty(big, 'size', { value: 51 * 1024 * 1024 });
+    Object.defineProperty(big, 'size', { value: 100 * 1024 * 1024 + 1 }); // AC-162: one byte over 100 MB
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, big);
-    expect(screen.getByText(/50 MB or smaller/)).toBeInTheDocument();
+    expect(screen.getByText(/100 MB or smaller/)).toBeInTheDocument();
   });
 
   it('uploads attached files after the topic is created', async () => {

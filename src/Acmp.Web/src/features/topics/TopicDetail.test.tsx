@@ -19,10 +19,11 @@ vi.mock('../../api/topics', () => ({
   useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(),
   usePrepareTopic: vi.fn(), useReactivateTopic: vi.fn(), useCloseTopic: vi.fn(), useReopenTopic: vi.fn(),
   useConvertTopic: vi.fn(), useReclassifyTopic: vi.fn(),
+  MAX_ATTACHMENT_BYTES: 100 * 1024 * 1024, openTopicAttachment: vi.fn(),
 }));
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, openTopicAttachment,
 } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
@@ -238,6 +239,43 @@ describe('TopicDetail (P5b)', () => {
     const file = new File(['x'], 'design.pdf', { type: 'application/pdf' });
     await user.upload(screen.getByLabelText(/Drop files/i), file);
     expect(uploadMutate).toHaveBeenCalledWith({ topicId: 'g1', file });
+  });
+
+  // AC-162: the Attachments tab refuses an over-maximum file in the browser, as the submit page does.
+  it('refuses a file over the maximum on the Attachments tab with the translated message and uploads nothing', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    const big = new File([new Uint8Array(2)], 'huge.pdf', { type: 'application/pdf' });
+    Object.defineProperty(big, 'size', { value: 100 * 1024 * 1024 + 1 });
+    await user.upload(screen.getByLabelText(/Drop files/i), big);
+    expect(screen.getByRole('alert')).toHaveTextContent(/100 MB or smaller/);
+    expect(uploadMutate).not.toHaveBeenCalled();
+  });
+
+  // WBS-40.12 / AC-163: the open control is live and opens that attachment of THIS topic.
+  it('opens an attachment through the topic-scoped URL when its download control is clicked', async () => {
+    (openTopicAttachment as unknown as Mock).mockResolvedValue(undefined);
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    const button = screen.getByRole('button', { name: 'Download eval.pdf' });
+    expect(button).toBeEnabled();
+    await user.click(button);
+    expect(openTopicAttachment).toHaveBeenCalledWith('g1', 'a1');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('shows that the file could not be opened when the URL is refused', async () => {
+    (openTopicAttachment as unknown as Mock).mockRejectedValue(new ApiError(404));
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    await user.click(screen.getByRole('button', { name: 'Download eval.pdf' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('That file could not be opened.');
   });
 
   it('renders the Votes tab as an honest empty state (Voting → P9)', async () => {
