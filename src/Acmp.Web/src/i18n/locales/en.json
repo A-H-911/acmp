@@ -986,6 +986,7 @@
       "decisionIssued": "Decision",
       "actionAssigned": "Action",
       "topicPrepared": "Topic",
+      "digest": "Digest",
       "default": "Update"
     },
     "noUnreadTitle": "No unread notifications",
@@ -1018,7 +1019,8 @@
       "decisions": "Decisions",
       "actions": "Actions",
       "risks": "Risks",
-      "governance": "Governance"
+      "governance": "Governance",
+      "notifications": "Notifications"
     },
     "event": {
       "MeetingScheduled": "Meeting scheduled",
@@ -1042,7 +1044,9 @@
       "AdrSuperseded": "ADR superseded",
       "InvariantProposed": "Invariant proposed",
       "InvariantActivated": "Invariant activated",
-      "InvariantSuperseded": "Invariant superseded"
+      "InvariantSuperseded": "Invariant superseded",
+      "DailyDigest": "Daily digest",
+      "WeeklyDigest": "Weekly digest"
     }
   },
   "editor": {

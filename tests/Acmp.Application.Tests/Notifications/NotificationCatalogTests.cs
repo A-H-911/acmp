@@ -31,8 +31,8 @@ public class NotificationCatalogTests
     [Fact]
     public void The_scan_has_a_subject()
     {
-        // A scan that found nothing would pass the next two tests vacuously; 22 today, across six modules.
-        ModuleCategories().Should().HaveCountGreaterThanOrEqualTo(22);
+        // A scan that found nothing would pass the next two tests vacuously; 24 today, across seven modules.
+        ModuleCategories().Should().HaveCountGreaterThanOrEqualTo(24);
     }
 
     [Fact]
@@ -55,13 +55,22 @@ public class NotificationCatalogTests
     {
         NotificationCategories.All.Select(c => c.Name).Should().OnlyHaveUniqueItems();
         NotificationCategories.All.Select(c => c.Group).Distinct()
-            .Should().BeSubsetOf(new[] { "meetings", "topics", "decisions", "actions", "risks", "governance" });
+            .Should().BeSubsetOf(new[] { "meetings", "topics", "decisions", "actions", "risks", "governance", "notifications" });
     }
 
     [Fact]
     public void The_webex_allowlist_names_only_catalog_categories()
     {
         WebexEligibleEvents.Categories.Where(c => !NotificationCategories.Contains(c)).Should().BeEmpty();
+    }
+
+    [Fact] // AC-161 (DEC-188): the two digests are catalog rows a member can switch, and never reach the shared space.
+    public void Both_digest_types_are_in_the_catalog_under_notifications_and_not_in_the_webex_space_set()
+    {
+        NotificationCategories.All.Where(c => c.Group == "notifications").Select(c => c.Name)
+            .Should().Equal(NotificationCategories.DailyDigest, NotificationCategories.WeeklyDigest);
+        WebexEligibleEvents.Includes(NotificationCategories.DailyDigest).Should().BeFalse();
+        WebexEligibleEvents.Includes(NotificationCategories.WeeklyDigest).Should().BeFalse();
     }
 
     [Fact]

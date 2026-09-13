@@ -26,6 +26,9 @@ const TYPES: Record<string, NotifType> = {
   DecisionIssued: { labelKey: 'notif.type.decisionIssued', tone: 'success', icon: 'decision' },
   ActionAssigned: { labelKey: 'notif.type.actionAssigned', tone: 'warn', icon: 'action' },
   TopicPrepared: { labelKey: 'notif.type.topicPrepared', tone: 'info', icon: 'checkCircle' },
+  // FR-134 / AC-161: the daily and weekly digests share one label; the row title says which.
+  DailyDigest: { labelKey: 'notif.type.digest', tone: 'neutral', icon: 'bell' },
+  WeeklyDigest: { labelKey: 'notif.type.digest', tone: 'neutral', icon: 'bell' },
 };
 
 const DEFAULT_TYPE: NotifType = { labelKey: 'notif.type.default', tone: 'neutral', icon: 'bell' };

@@ -16,6 +16,7 @@ using Acmp.Modules.Meetings.Infrastructure;
 using Acmp.Modules.Membership.Application;
 using Acmp.Modules.Membership.Infrastructure;
 using Acmp.Modules.Notifications.Application;
+using Acmp.Modules.Notifications.Application.Features.Digest;
 using Acmp.Modules.Notifications.Infrastructure;
 using Acmp.Modules.Research.Application;
 using Acmp.Modules.Research.Infrastructure;
@@ -80,6 +81,9 @@ public static class AcmpCompositionRoot
         // recurring sweep; binding here keeps both hosts' options identical.
         services.Configure<ActionReminderOptions>(
             configuration.GetSection(ActionReminderOptions.SectionName));
+
+        // FR-134 / AC-161 digest schedule + time zone (DEC-188); the worker registers the two jobs.
+        services.Configure<DigestOptions>(configuration.GetSection(DigestOptions.SectionName));
 
         return services;
     }

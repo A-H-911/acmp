@@ -986,6 +986,7 @@
       "decisionIssued": "قرار",
       "actionAssigned": "إجراء",
       "topicPrepared": "موضوع",
+      "digest": "ملخص",
       "default": "تحديث"
     },
     "noUnreadTitle": "لا إشعارات غير مقروءة",
@@ -1018,7 +1019,8 @@
       "decisions": "القرارات",
       "actions": "الإجراءات",
       "risks": "المخاطر",
-      "governance": "الحوكمة"
+      "governance": "الحوكمة",
+      "notifications": "الإشعارات"
     },
     "event": {
       "MeetingScheduled": "جدولة اجتماع",
@@ -1042,7 +1044,9 @@
       "AdrSuperseded": "استبدال سجل قرار",
       "InvariantProposed": "اقتراح ثابت هيكلة",
       "InvariantActivated": "تفعيل ثابت هيكلة",
-      "InvariantSuperseded": "استبدال ثابت هيكلة"
+      "InvariantSuperseded": "استبدال ثابت هيكلة",
+      "DailyDigest": "الملخص اليومي",
+      "WeeklyDigest": "الملخص الأسبوعي"
     }
   },
   "editor": {

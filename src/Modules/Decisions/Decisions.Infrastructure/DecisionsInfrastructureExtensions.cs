@@ -32,6 +32,7 @@ public static class DecisionsInfrastructureExtensions
 
         // Cross-module read seam powering the FR-068 Decision→ADR promotion (Governance consumes it).
         services.AddScoped<IDecisionReader, DecisionReader>();
+        services.AddScoped<IBallotDigestSource, BallotDigestSource>();
 
         // Global-search provider (P15f, FR-143): the host fans out over every registered ISearchProvider.
         services.AddScoped<ISearchProvider, DecisionSearchProvider>();

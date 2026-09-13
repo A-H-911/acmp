@@ -28,6 +28,7 @@ public static class MeetingsInfrastructureExtensions
 
         // Cross-module seam for the Decisions Vote present-quorum gate (ADR-0001, docs/domain/entity-lifecycles.md §4).
         services.AddScoped<IMeetingQuorumSource, MeetingQuorumSource>();
+        services.AddScoped<IMeetingDigestSource, MeetingDigestSource>();
         // SoD-4 (NFR-064): the Decisions module's recorder-vs-presenter lookup (ADR-0001 port).
         services.AddScoped<IAgendaPresenterReader, AgendaPresenterReader>();
         // Inbound Webex write seam (ADR-0021, P13): the Webex integration stores the correlation id + recording.

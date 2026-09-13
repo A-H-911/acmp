@@ -29,6 +29,8 @@ public static class NotificationCategories
     public const string InvariantProposed = "InvariantProposed";
     public const string InvariantActivated = "InvariantActivated";
     public const string InvariantSuperseded = "InvariantSuperseded";
+    public const string DailyDigest = "DailyDigest";
+    public const string WeeklyDigest = "WeeklyDigest";
 
     public static IReadOnlyList<NotificationCategory> All { get; } = new NotificationCategory[]
     {
@@ -54,6 +56,8 @@ public static class NotificationCategories
         new(InvariantProposed, "governance"),
         new(InvariantActivated, "governance"),
         new(InvariantSuperseded, "governance"),
+        new(DailyDigest, "notifications"),
+        new(WeeklyDigest, "notifications"),
     };
 
     private static readonly HashSet<string> Names = new(All.Select(c => c.Name), StringComparer.Ordinal);

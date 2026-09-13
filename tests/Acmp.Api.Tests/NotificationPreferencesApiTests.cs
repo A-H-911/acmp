@@ -79,11 +79,13 @@ public class NotificationPreferencesApiTests : IClassFixture<AcmpWebApplicationF
     }
 
     [Fact]
-    public async Task Get_lists_all_22_event_types_on_by_default()
+    public async Task Get_lists_all_24_event_types_on_by_default()
     {
         var prefs = await (await Client("Member", "kc-fresh").GetAsync("/api/notifications/preferences")).Content.ReadFromJsonAsync<Prefs>();
-        prefs!.Items.Should().HaveCount(22).And.OnlyContain(p => p.InApp);
+        prefs!.Items.Should().HaveCount(24).And.OnlyContain(p => p.InApp);
         prefs.Items[0].Should().Be(new Pref("MeetingScheduled", "meetings", true));
+        // AC-161 (DEC-188): the two digests close the list, under Notifications, on by default like every other type.
+        prefs.Items.TakeLast(2).Should().Equal(new Pref("DailyDigest", "notifications", true), new Pref("WeeklyDigest", "notifications", true));
     }
 
     [Fact]

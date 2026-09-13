@@ -1,6 +1,7 @@
 ﻿using Acmp.Bootstrap;
 using Acmp.Modules.Actions.Application.Reminders;
 using Acmp.Modules.Membership.Application.Features.ExpireGuestAccess;
+using Acmp.Modules.Notifications.Application.Features.Digest;
 using Acmp.Modules.Topics.Application.Features.SweepTopicSla;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Observability;
@@ -97,6 +98,18 @@ if (backgroundJobsEnabled)
     host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("guest-access-expiry",
         sender => sender.Send(new ExpireGuestAccessCommand(), CancellationToken.None),
         Cron.Hourly());
+
+    // FR-134 / AC-161 (DEC-188): the daily and weekly notification digests — one handler (SendDigestHandler),
+    // two schedules, both read in Digest:TimeZone (UTC when unset). ResolveTimeZone throws on an unknown name,
+    // so a typo stops the worker here instead of quietly running on UTC.
+    var digestOptions = builder.Configuration.GetSection(DigestOptions.SectionName).Get<DigestOptions>() ?? new DigestOptions();
+    var digestSchedule = new RecurringJobOptions { TimeZone = digestOptions.ResolveTimeZone() };
+    host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("digest-daily",
+        sender => sender.Send(new SendDigestCommand(DigestPeriod.Daily), CancellationToken.None),
+        digestOptions.DailyCron, digestSchedule);
+    host.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ISender>("digest-weekly",
+        sender => sender.Send(new SendDigestCommand(DigestPeriod.Weekly), CancellationToken.None),
+        digestOptions.WeeklyCron, digestSchedule);
 }
 
 host.Run();
