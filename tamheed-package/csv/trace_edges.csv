@@ -91,6 +91,7 @@ AC-112,FR-045,verifies
 AC-143,FR-164,verifies
 AC-152,FR-154,verifies
 AC-159,FR-164,verifies
+AC-160,FR-133,verifies
 ADR-0017,ADR-0012,relates_to
 ADR-0019,ADR-0008,relates_to
 ADR-0020,ADR-0019,relates_to
@@ -817,6 +818,10 @@ SC-067,ADR-0047,relates_to
 SC-067,DEC-183,amends
 SC-067,DEF-163,scope_modifies
 SC-067,OQ-081,scope_modifies
+SC-068,AC-160,scope_adds
+SC-068,FR-133,scope_modifies
+SC-068,WBS-40.19,relates_to
+SC-068,WBS-40.3,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
