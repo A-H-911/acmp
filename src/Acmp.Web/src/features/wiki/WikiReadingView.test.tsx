@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WikiReadingView } from './WikiReadingView';
 import { renderWithAuth } from '../../test/render';
+import i18n from '../../i18n';
 import type { DocumentDetail } from '../../api/wiki';
 
 const fns = vi.hoisted(() => ({ publish: vi.fn().mockResolvedValue(undefined), archive: vi.fn().mockResolvedValue(undefined) }));
@@ -54,6 +55,17 @@ describe('WikiReadingView (P15e)', () => {
     setup({ ownerUserId: 'kc-unknown' });
     expect(screen.queryByText('kc-unknown')).not.toBeInTheDocument();
     expect(screen.getByText('A former member').tagName).toBe('BDI');
+  });
+
+  it('in Arabic, isolates the author and names a former member with the Arabic placeholder (AC-168)', async () => {
+    await i18n.changeLanguage('ar');
+    try {
+      setup({ ownerUserId: 'kc-unknown' });
+      expect(screen.getByText('عضو سابق', { selector: 'bdi' })).toBeInTheDocument();
+      expect(screen.queryByText('kc-unknown')).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   it('isolates the author name from the meta line around it', () => {

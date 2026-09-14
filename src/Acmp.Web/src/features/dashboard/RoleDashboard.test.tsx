@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import axe from 'axe-core';
 import RoleDashboard from './RoleDashboard';
+import i18n from '../../i18n';
 import type { CommitteeRole } from '../../auth/roles';
 import type { TopicSummary } from '../../api/topics';
 import type { ActionSummary } from '../../api/actions';
@@ -85,7 +86,20 @@ describe('RoleDashboard — role gating', () => {
   // "مساء الخير، E2E Secretary" reordered the Latin name against the Arabic greeting.
   it('isolates the signed-in name inside the greeting', () => {
     setup();
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('⁨Omar⁩');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('\u2068Omar\u2069');
+  });
+
+  it('in Arabic, greets with the Arabic sentence and the name held between FSI and PDI', async () => {
+    const [fsi, pdi] = [String.fromCharCode(0x2068), String.fromCharCode(0x2069)];
+    await i18n.changeLanguage('ar');
+    try {
+      setup();
+      const greeting = screen.getByRole('heading', { level: 1 }).textContent ?? '';
+      expect(greeting).toMatch(/^(صباح|مساء) الخير، /);
+      expect(greeting.endsWith(`${fsi}Omar${pdi}`)).toBe(true);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   it('falls back to the committee variant for a non-dashboard role (auditor)', () => {

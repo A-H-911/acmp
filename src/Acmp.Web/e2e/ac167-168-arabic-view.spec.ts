@@ -63,7 +63,7 @@ async function audit(page: Page, screen: string, ctx: { phrases: string[]; codes
       const name = names.find((x) => (n!.nodeValue ?? '').includes(x));
       const start = n.parentElement;
       if (!name || !start || !visible(start)) continue;
-      if ((n.nodeValue ?? '').includes(`⁨${name}⁩`)) continue; // isolated in the text itself (FSI...PDI)
+      if ((n.nodeValue ?? '').includes(`\u2068${name}\u2069`)) continue; // isolated in the text itself (FSI...PDI)
       let e: HTMLElement | null = start;
       let isolated = false;
       while (e && e !== document.body) {

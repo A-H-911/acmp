@@ -2,8 +2,9 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import {
   useMembers, useInviteUser, useAssignRoles, useStreams, useAssignStreams,
-  useSetVotingEligibility, useCreateStream, useRenameStream,
+  useSetVotingEligibility, useCreateStream, useRenameStream, useStreamLabel,
 } from './members';
+import i18n from '../i18n';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
 
 /** The headers of the most recent fetch call. */
@@ -281,5 +282,31 @@ describe('useRenameStream', () => {
     result.current.mutate({ publicId: 'missing', nameEn: 'X', nameAr: 'س' });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// AC-168: a stream is SHOWN by its name in the reader's language, never its code. This hook is where the language is
+// chosen; the screens (Backlog, TopicDetail, Kanban, Reports, the impact graph) only render what it returns.
+describe('useStreamLabel', () => {
+  const STREAMS = [{ publicId: 's1', code: 'smart-cities', nameEn: 'Smart Cities', nameAr: 'المدن الذكية', isWildcard: false }];
+
+  it('names a stream in ARABIC when the app is in Arabic', async () => {
+    await i18n.changeLanguage('ar');
+    try {
+      stubFetch(() => ({ jsonBody: STREAMS }));
+      const { wrapper } = makeQueryWrapper();
+      const { result } = renderHook(() => useStreamLabel(), { wrapper });
+      await waitFor(() => expect(result.current('smart-cities')).toBe('المدن الذكية'));
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('names it in English in English, and falls back to the code only for a code the taxonomy lacks', async () => {
+    stubFetch(() => ({ jsonBody: STREAMS }));
+    const { wrapper } = makeQueryWrapper();
+    const { result } = renderHook(() => useStreamLabel(), { wrapper });
+    await waitFor(() => expect(result.current('smart-cities')).toBe('Smart Cities'));
+    expect(result.current('retired-stream')).toBe('retired-stream');
   });
 });

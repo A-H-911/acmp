@@ -3,6 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WikiVersionHistory } from './WikiVersionHistory';
 import { renderWithAuth } from '../../test/render';
+import i18n from '../../i18n';
 import type { DocumentDetail, DocumentVersion } from '../../api/wiki';
 
 vi.mock('../../api/members', () => ({
@@ -37,6 +38,22 @@ describe('WikiVersionHistory (P15e)', () => {
     // AC-168: a member the directory no longer lists gets a translated placeholder, never the raw user id.
     expect(screen.getByText('A former member').tagName).toBe('BDI');
     expect(screen.queryByText(/kc-unknown/)).toBeNull();
+  });
+
+  // AC-168, IN ARABIC: '{date} · {saver}' - the saver is isolated from the Latin-digit date, and a member the directory
+  // no longer lists is the Arabic placeholder, never the raw id.
+  it('in Arabic, isolates the saver beside a Latin-digit date and names a former member in Arabic', async () => {
+    await i18n.changeLanguage('ar');
+    try {
+      setup();
+      const saver = screen.getByText('Khalid Ahmed', { selector: 'bdi' });
+      expect(saver.parentElement!.textContent).toMatch(/2026.* · Khalid Ahmed/);
+      expect(saver.parentElement!.textContent).not.toMatch(/[٠-٩]/);
+      expect(screen.getByText('عضو سابق', { selector: 'bdi' })).toBeInTheDocument();
+      expect(screen.queryByText(/kc-unknown/)).toBeNull();
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   it('renders a snapshot body when a version is selected, and clears it on re-click', async () => {
