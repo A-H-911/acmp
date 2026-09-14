@@ -518,3 +518,14 @@ SC-071,DEC-192,"**`AC-164` REPLACES `AC-163` AND `AC-167` REPLACES `AC-147` (BOT
 **HOW THE ROWS CLOSE.** `WBS-40.29` is done-claimed on `AC-164`..`AC-169` Met; the defects close Fixed as their criteria are graded; `DEF-177` closes Fixed on the documentation change (`DEC-192` r3).
 
 **APPLICATION ORDER (`LL-042`, `SC-070`'s precedent):** this row Approved and `WBS-40.29` Approved -> `AC-164`..`AC-169` written `Proposed` -> the OPERATOR approves the texts -> the six Approved and `AC-163` / `AC-147` Superseded (superseded_by `AC-164` / `AC-167`, retired_in 1) in one batch -> all re-read -> this row `Merged`.",1,Merged,,
+SC-072,DEC-196,"**`AC-170` IS ADDED (THE AUTOMATED LEG OF `NFR-032` OVER EVERY SERVED ROUTE); `WBS-40.6`'S TEXT IS CORRECTED AND NAMES `AC-170`; `WBS-40.9` TAKES `NFR-032`'S MANUAL SCREEN-READER SPOT-CHECK. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.6`'s title says *""from three routes to fifty-two""*; `DW-071`'s amendment (`DEC-109` d2) shows 23 static routes already swept, so the premise is stale and the remainder is the parameterised routes plus a route guard. `DEC-196` f1 adds a criterion the item did not have; f3 moves a clause of `NFR-032`'s Verification into another item's scope.
+
+**THE NEW TEXT OF `WBS-40.6`, applied after `AC-170` is approved:** *`DW-071` / `NFR-032` (automated leg): SWEEP EVERY SERVED ROUTE WITH axe, EN AND AR, ON EVERY PR. The live sweep already covers 23 static routes in both languages (`DEC-109` d2, PR #336); this item adds the PARAMETERISED routes, each opened on a real seeded record (topics/:key and its edit page, meetings/:key and its tabs, decisions/:key, votes/:key, actions/:key, adrs/:key, invariants/:key, risks/:key, dependencies/:key, research/:key, wiki/:key, traceability/:type/:key), any static route still unswept, and a guard that compares the sweep's routes with the app's route table so an unswept new route fails by name. It runs on every PR in both browser projects (`DEC-196` f2). NFR-032's manual screen-reader spot-check is `WBS-40.9`'s (`DEC-196` f3). **DONE-CLAIMED WHEN** `AC-170` is Met.*
+
+**THE ADDITION TO `WBS-40.9`, applied in the same batch:** its text gains *""It also performs `NFR-032`'s manual screen-reader spot-check on the dashboard and diagram views, in EN and AR (`DEC-196` f3); its route - who listens - is still undecided (`DEC-195` e2).""*
+
+**HOW THE ROWS CLOSE.** `WBS-40.6` is done-claimed on `AC-170` Met. `NFR-032` is fully verified only when `WBS-40.9` has also run.
+
+**APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -> `AC-170` written `Proposed` -> the OPERATOR approves its text -> `AC-170` Approved and the two `WBS` texts applied in one batch -> all re-read -> this row `Merged`.",1,Merged,,

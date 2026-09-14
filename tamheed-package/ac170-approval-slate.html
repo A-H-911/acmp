@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AC-170 approval (WBS-40.6, SC-072)</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>AC-170 approval (WBS-40.6, SC-072)</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>c0d25761cd64c5187d4ca49e50ce0b20c95a5807a1700bd2538cd1ed6eb4f9d9</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>AC-170 approval, 2026-09-15. Every record below is quoted from the store by the generator; this paragraph is the
+only text on the page that is not.</p>
+<p>The question: approve <code>AC-170</code>'s text as written (Proposed, below), or change it. On approval, and in the same
+batch, <code>WBS-40.6</code> and <code>WBS-40.9</code> take the new texts written inside <code>SC-072</code> (quoted below), the three
+rows are re-read, and <code>SC-072</code> is set Merged. Then the build starts. <code>DEC-196</code> is the ruling; <code>WBS-40.6</code>,
+<code>WBS-40.9</code>, <code>NFR-032</code> and <code>DW-071</code> are quoted as they stand today.</p>
+</div>
+<h2>AC-170  [acceptance_criteria]</h2>
+<pre>id: AC-170
+title: **Given** the SPA in the E2E stack with seeded records, and each route opened as a principal who may open it &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`; colour contrast excluded, which is `NFR-033`'s) reports ZERO violations on EVERY route the application serves, in BOTH English and Arabic - the 23 static routes swept today, any static route not yet swept, and every PARAMETERISED route opened on a real seeded record (`topics/:key` and its edit page, `meetings/:key` and each of its tabs, `decisions/:key`, `votes/:key`, `actions/:key`, `adrs/:key`, `invariants/:key`, `risks/:key`, `dependencies/:key`, `research/:key`, `wiki/:key`, `traceability/:type/:key`) - and each route is proven to have rendered before it is scanned, so a redirect or an empty page cannot pass as clean; **And** the sweep's routes are compared with the application's own route table, so a route added to the app without being added to the sweep fails the run BY NAME, while the entries that are not screens (the sign-in callback, a redirect, the not-found page) are excluded by an explicit, commented list; **And** the sweep runs on every pull request in both browser projects, chromium and msedge (`DEC-196` f2). `NFR-032`'s manual screen-reader spot-check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-196` f3). **Verified by** the Playwright spec in the E2E stack, passing in CI with the full route set in both projects; a mutation control in which a route is added to the route table without being added to the sweep and the guard fails naming it; and a planted violation - an unlabelled icon button on one parameterised route - that the sweep reports.
+statement: **Given** the SPA in the E2E stack with seeded records, and each route opened as a principal who may open it &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`; colour contrast excluded, which is `NFR-033`'s) reports ZERO violations on EVERY route the application serves, in BOTH English and Arabic - the 23 static routes swept today, any static route not yet swept, and every PARAMETERISED route opened on a real seeded record (`topics/:key` and its edit page, `meetings/:key` and each of its tabs, `decisions/:key`, `votes/:key`, `actions/:key`, `adrs/:key`, `invariants/:key`, `risks/:key`, `dependencies/:key`, `research/:key`, `wiki/:key`, `traceability/:type/:key`) - and each route is proven to have rendered before it is scanned, so a redirect or an empty page cannot pass as clean; **And** the sweep's routes are compared with the application's own route table, so a route added to the app without being added to the sweep fails the run BY NAME, while the entries that are not screens (the sign-in callback, a redirect, the not-found page) are excluded by an explicit, commented list; **And** the sweep runs on every pull request in both browser projects, chromium and msedge (`DEC-196` f2). `NFR-032`'s manual screen-reader spot-check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-196` f3). **Verified by** the Playwright spec in the E2E stack, passing in CI with the full route set in both projects; a mutation control in which a route is added to the route table without being added to the sweep and the guard fails naming it; and a planted violation - an unlabelled icon button on one parameterised route - that the sweep reports.
+requirement_id: NFR-032
+slice_id: SL-043
+lifecycle_status: Proposed
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-196 f1/f2/f3; DW-071 (as amended by DEC-109 d2); written before the build per SC-072.</pre>
+<h2>SC-072  [scope_changes]</h2>
+<pre>id: SC-072
+decision_ref: DEC-196
+description: **`AC-170` IS ADDED (THE AUTOMATED LEG OF `NFR-032` OVER EVERY SERVED ROUTE); `WBS-40.6`'S TEXT IS CORRECTED AND NAMES `AC-170`; `WBS-40.9` TAKES `NFR-032`'S MANUAL SCREEN-READER SPOT-CHECK. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.6`'s title says *"from three routes to fifty-two"*; `DW-071`'s amendment (`DEC-109` d2) shows 23 static routes already swept, so the premise is stale and the remainder is the parameterised routes plus a route guard. `DEC-196` f1 adds a criterion the item did not have; f3 moves a clause of `NFR-032`'s Verification into another item's scope.
+
+**THE NEW TEXT OF `WBS-40.6`, applied after `AC-170` is approved:** *`DW-071` / `NFR-032` (automated leg): SWEEP EVERY SERVED ROUTE WITH axe, EN AND AR, ON EVERY PR. The live sweep already covers 23 static routes in both languages (`DEC-109` d2, PR #336); this item adds the PARAMETERISED routes, each opened on a real seeded record (topics/:key and its edit page, meetings/:key and its tabs, decisions/:key, votes/:key, actions/:key, adrs/:key, invariants/:key, risks/:key, dependencies/:key, research/:key, wiki/:key, traceability/:type/:key), any static route still unswept, and a guard that compares the sweep's routes with the app's route table so an unswept new route fails by name. It runs on every PR in both browser projects (`DEC-196` f2). NFR-032's manual screen-reader spot-check is `WBS-40.9`'s (`DEC-196` f3). **DONE-CLAIMED WHEN** `AC-170` is Met.*
+
+**THE ADDITION TO `WBS-40.9`, applied in the same batch:** its text gains *"It also performs `NFR-032`'s manual screen-reader spot-check on the dashboard and diagram views, in EN and AR (`DEC-196` f3); its route - who listens - is still undecided (`DEC-195` e2)."*
+
+**HOW THE ROWS CLOSE.** `WBS-40.6` is done-claimed on `AC-170` Met. `NFR-032` is fully verified only when `WBS-40.9` has also run.
+
+**APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -&gt; `AC-170` written `Proposed` -&gt; the OPERATOR approves its text -&gt; `AC-170` Approved and the two `WBS` texts applied in one batch -&gt; all re-read -&gt; this row `Merged`.
+iteration: 1
+lifecycle_status: Approved</pre>
+<h2>DEC-196  [decisions]</h2>
+<pre>id: DEC-196
+title: OPERATOR INTERVIEW, 2026-09-15 (`WBS-40.6`): AN ACCEPTANCE CRITERION IS WRITTEN FIRST; THE FULL ROUTE SWEEP RUNS ON EVERY PR IN BOTH BROWSER PROJECTS; `NFR-032`'S MANUAL SCREEN-READER SPOT-CHECK MOVES INTO `WBS-40.9`.
+decision: Asked after a pre-build sweep that found `WBS-40.6`'s title premise stale: *"from three routes to fifty-two"* was true when `DW-071` was written, but `DW-071`'s own amendment (`DEC-109` d2, PR #336) records the live sweep already covering 23 static routes in both languages. What remains, per `WBS-40.6`'s own done-claim, is the parameterised routes (each needs seeded data) and a guard that fails when the app gains a route the sweep does not visit. The item named no acceptance criterion.
+
+f1 - **VERIFIED BY A CRITERION WRITTEN FIRST** (operator: *"Write an AC first"*; the other option was no AC by design, as `WBS-41.1`). `AC-170` is drafted `Proposed` for the automated leg and built only after the operator approves its text (`SC-072`).
+
+f2 - **CADENCE: EVERY PR, BOTH BROWSER PROJECTS** (operator: *"Every PR, both projects"*; the other options were every PR in chromium only, and a new nightly schedule with PRs keeping today's 23 routes). The E2E workflow has no schedule today (PR and dispatch only); none is added.
+
+f3 - **`NFR-032`'S MANUAL CLAUSE MOVES INTO `WBS-40.9`** (operator: *"Fold into WBS-40.9"*; the other options were the operator listening now, or recording it open with no plan). `NFR-032`'s Verification names *"Automated: axe-core in CI; manual: screen reader spot-check on dashboard and diagram views"*; `WBS-40.6` covers the first only and the agent cannot perform a real screen-reader listen. `NFR-032` therefore stays short of fully verified until `WBS-40.9` runs, whose route `DEC-195` e2 left undecided.
+rationale: Options were put without a recommendation (`DEC-140` d3). The stale title is corrected through `SC-072` rather than silently, because a plan row's premise is part of the record.
+lifecycle_status: Approved
+source_kind: clarification
+source_span: Operator interview 2026-09-15, round three (WBS-40.6).</pre>
+<h2>WBS-40.6  [wbs_items]</h2>
+<pre>id: WBS-40.6
+title: `DW-071`: EXTEND THE axe SWEEP FROM THREE ROUTES TO FIFTY-TWO. `NFR-032` (Must) requires every non-decorative image, icon and data visualization to carry alt text or an ARIA label in BOTH languages and targets zero axe failures; the instrument exists and covers three routes of fifty-two.
+
+**BUILD.** The sweep across the full route set, in both EN and AR, with the ratio itself asserted so a new route cannot silently make it worse — the row's own point is that every shipped route moves the denominator.
+
+**DONE-CLAIMED WHEN** the scan covers the routes the application actually serves, runs in both locales, and fails on a route that is added without being included.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-071 (Activated 2026-08-20 under DEC-067, never scheduled); DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.9  [wbs_items]</h2>
+<pre>id: WBS-40.9
+title: `DW-041`: THE MANUAL WCAG 2.2 AA PASS axe CANNOT PERFORM. `NFR-030` (Must) claims all UI components conform to AA at 100% of applicable criteria; axe-core runs across ~40 component suites and a dedicated `a11y.test.tsx`, and every one is axe-clean — which is genuinely strong and is a different property. axe cannot judge whether alt text is MEANINGFUL, whether focus order is LOGICAL, whether an error message is ACTIONABLE, or whether a reading sequence works in Arabic RTL.
+
+**BUILD.** A keyboard-and-screen-reader pass over the primary flows in EN and RTL against the AA checklist, recording what it finds per criterion. Sized by the row itself as a day or two, not a project.
+
+⚠ **DO NOT ADD AN ACCEPTANCE CRITERION FOR `NFR-030` TO CLOSE THIS.** A `Partial` verdict holds package readiness false permanently (acs-met counts by `retired_in` and needs the latest verdict Met), which is why the row exists instead of an AC.
+
+**DONE-CLAIMED WHEN** the pass is run and its findings recorded — including findings of conformance, so a later reader can tell a clean result from an unrun one.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-041; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>NFR-032  [requirements]</h2>
+<pre>id: NFR-032
+kind: non-functional
+title: All non-decorative images, icons, and data visualizations (charts, diagrams) shall have appropriate alternative text or ARIA labels in both EN and AR. **Target:** 0 non-decorative images without alt text per axe-core scan.
+statement: All non-decorative images, icons, and data visualizations (charts, diagrams) shall have appropriate alternative text or ARIA labels in both EN and AR. **Target:** 0 non-decorative images without alt text per axe-core scan.
+priority: Must
+mvp: 1
+lifecycle_status: Approved
+source_kind: brief
+source_span: ADR-0012; WCAG 2.2 AA
+introduced_in: 1
+custom_attributes: {"v1": {"ID": "NFR-032", "Requirement": "All non-decorative images, icons, and data visualizations (charts, diagrams) shall have appropriate alternative text or ARIA labels in both EN and AR. **Target:** 0 non-decorative images without alt text per axe-core scan.", "Source": "ADR-0012; WCAG 2.2 AA", "Priority": "Must", "Verification": "Automated: axe-core in CI; manual: screen reader spot-check on dashboard and diagram views."}}</pre>
+<h2>DW-071  [deferred_work]</h2>
+<pre>id: DW-071
+title: NFR-032'S TARGET NAMES AN axe-core SCAN AND ONE EXISTS, BUT IT COVERS THREE ROUTES OF FIFTY-TWO. NFR-032 (Must, Approved) requires all non-decorative images, icons and data visualizations to carry alternative text or ARIA labels in both EN and AR, and targets '0 non-decorative images without alt text per axe-core scan'. THE INSTRUMENT THE TARGET NAMES IS REAL AND IS BETTER THAN ITS REPUTATION: axe-core is already a dependency, and it runs in two places. In jsdom, src/Acmp.Web/src/test/a11y.test.tsx sweeps 5 component surfaces on every change. Live under Playwright, src/Acmp.Web/e2e/rtl-a11y.spec.ts sweeps Backlog, Submit-Topic and the Backlog kanban in BOTH locales with the wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa tag sets - so image-alt, svg-img-alt, role-img-alt, button-name and link-name, the rules that decide this requirement, all run against the real rendered app in Arabic as well as English. Every one passes. THE GAP IS COVERAGE, NOT CAPABILITY, and it is the whole finding. The application has 52 routes. The live sweep visits three of them. A requirement whose target is a scan is satisfied only over what the scan visited, and 'zero violations on three screens' is a true statement that does not answer 'all non-decorative images'. This is the denominator problem in its most literal form: the numerator is genuinely zero and the denominator is six percent. WORTH RECORDING BECAUSE IT CUTS THE OTHER WAY TOO: the three screens chosen are not arbitrary. Backlog is the densest data surface, Submit-Topic is the largest form, and the kanban case was added specifically because the AC-043 reorder controls and drag handles are where target-size bites - the spec says so in its own comment. So the sample is deliberately adversarial rather than convenient, which raises the value of its zero without changing the denominator. WHY A DEFERRED-WORK ROW: an AC written today would have to say 'zero violations on the three routes scanned', which covers less than the requirement, and a Partial verdict holds package readiness false forever. The honest instrument is this row.
+
+⛔⛔ **RESTORED 2026-09-01 AFTER THIS TITLE WAS TRUNCATED BY A BAD WRITE, AND THE CAUSE IS RECORDED BECAUSE IT IS TRAP 13 EXACTLY.** An upsert sent only the first 400 characters of this field, destroying 1697 of 2097. The payload was built from a **truncated print in the agent's own sweep output** (`title[:400]`) rather than from `tamheed-package/data/deferred_work.jsonl` — which is precisely what trap 13 forbids: *build payloads from `data/*.jsonl`, never from `entity_query` output, because v4 needs FULL rows and the store holds truncated ones.* The truncation was on the AGENT's side of the pipe, not the store's, which is the variant the trap does not spell out. ✅ Restored byte-identically from a pre-image hashed BEFORE the write; nothing was lost. ⚠ **The pre-image existed only because a hash-and-verify step had already been adopted for a different reason** — without it this row would have been silently 400 characters long and no gate would ever have said so.
+
+✅✅ **AMENDED BY `DEC-109` d2, 2026-09-01 — THE FIGURE ABOVE IS STALE AND THE ROW STAYS `Activated` ON ITS SECOND CLAUSE.** *"Three routes of fifty-two"* was true when written and is not now. **MEASURED 2026-09-01: the live sweep visits 23 distinct static routes** — 17 in `SECRETARY_ROUTES`, iterated by the `violationsByRoute` helper, plus 6 reached by a literal `page.goto`. PR `#336` covered every static authenticated route in both locales on the operator's instruction after `DEF-126`, scoring 96 passed / 4 failed, where the four are two sweep tests times two browser projects — **exactly ONE offending route, `/notifications`**.
+⚠⚠ **THE DENOMINATOR IS DELIBERATELY NOT RE-ASSERTED.** This row says fifty-two, a `&lt;Route&gt;` count says fifty-two, and the spec's own comment says **forty-six**. Two instruments disagree, no hand-countable artefact was adjudicated between them (`LL-017`), and `PE-613` records this package's earlier case of one pass producing two numbers that were never reconcilable afterwards. **Only the numerator is claimed.** The original *six percent* sentence is left standing as the dated statement it was, not refreshed with a second unverified ratio (the EIGHTH fix: give the command or give nothing).
+⚠ **WHY THE ROW STAYS OPEN, NAMED RATHER THAN IMPLIED.** Trigger clause one (*whenever a new route ships*) is substantially discharged. **Clause two — before any release sign-off claiming WCAG conformance — has not fired and is parked by `DEC-071` d4.** What genuinely remains is the **PARAMETERISED** routes, which the spec excludes in its own comment rather than letting its list read as complete: `topics/:key`, `meetings/:key` and its six children, `decisions/:key`, `votes/:key`, `actions/:key`, `adrs/:key`, `invariants/:key`, `risks/:key`, `dependencies/:key`, `research/:key`, `wiki/:key`, `traceability/:type/:key` — each needing seeded entities and a key, which is a different piece of work. **An open row with no named remainder is how `DEF-087` became invisible.**
+⭐ **AND THE MEASUREMENT ITSELF CARRIES A WARNING: THE FIRST ATTEMPT RETURNED FIVE.** The pattern `prm-next.md` prescribes for this — literal `page.goto('...')` occurrences — **cannot see the array-driven sweep `#336` added**, so it reported 5 where the answer is 23. `LL-033`: a pattern matching a spelling the corpus no longer uses returns a confident WRONG subject rather than nothing. **A prescribed instrument can go stale against the artifact it measures**, and what caught it was disbelieving a number that disagreed with a known event.
+severity: low
+activation_trigger: Whenever a new route ships - that is the moment the ratio gets worse, and the moment it is cheapest to add the route to the sweep. Also fires before any release sign-off that wants to claim WCAG conformance, since three routes of fifty-two cannot support that claim. CHEAPEST FIRST STEP: the live sweep is a loop over page.goto plus an axe run, so extending it is a list of routes rather than new machinery. The real cost is wall clock - the e2e workflow already runs seven services with a real Keycloak per pull request - so a nightly full-route sweep beside the per-PR three is likely the right shape.
+
+ACTIVATED 2026-08-23 by DEC-072 d2: the operator judged that the FIRST clause above has fired. SL-033 ships three new user-visible surfaces - the calendar view (WBS-24.2), audit-log export (WBS-24.6) and the presenter preview (WBS-24.8) - so each of those items adds its route to e2e/rtl-a11y.spec.ts in the SAME batch that builds it, and says so in its own acceptance criterion. The release-sign-off clause is NOT what fired and stays parked under DEC-071 d4, so DW-041 and DW-067 are unaffected and remain Open.
+lifecycle_status: Activated
+source_kind: code
+source_span: NFR-032; src/Acmp.Web/e2e/rtl-a11y.spec.ts; src/Acmp.Web/src/test/a11y.test.tsx; DW-029 batch 16
+custom_attributes: {"found_by": "DW-029 batch 16, 2026-08-20, the browser batch.", "measured": "52 routes in the SPA. rtl-a11y.spec.ts visits 3 (Backlog table, Submit-Topic, Backlog kanban), each in EN and AR. a11y.test.tsx covers 5 component surfaces in jsdom. color-contrast is disabled in BOTH passes by deliberate convention - that clause belongs to NFR-033 and is recorded as DW-072.", "scope": "NOTHING WAS BUILT. Batch 16 measured and recorded only."}
+last_referenced: 2026-08-29T00:24:20Z</pre>
+</body></html>
