@@ -36,6 +36,7 @@ import { statusTone, progressColor, initials, ACTION_STATUSES } from './actionMe
 import { RaiseActionFromDialog } from './RaiseActionFromDialog';
 import { CreateActionDialog, type ActionSource } from './CreateActionDialog';
 import { cssVars } from '../../lib/cssVars';
+import { numberLocale } from '../../lib/numberFmt';
 import './actions.css';
 
 // Column id → API sortBy. Only these three have a server sort (GetActionsRegister.Sort).
@@ -222,7 +223,7 @@ function Owner({ name }: { name: string }) {
 function Due({ iso, overdue, lang }: { iso: string | null; overdue: boolean; lang: string }) {
   const { t } = useTranslation();
   if (!iso) return <span className="act-muted">—</span>;
-  const label = new Intl.DateTimeFormat(lang, { dateStyle: 'medium' }).format(new Date(iso));
+  const label = new Intl.DateTimeFormat(numberLocale(lang), { dateStyle: 'medium' }).format(new Date(iso));
   return (
     <span className={`act-due ${overdue ? 'overdue' : ''}`}>
       {overdue && <Icon name="clock" size={13} aria-hidden />}

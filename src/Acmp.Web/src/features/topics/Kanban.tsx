@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Num } from '../../lib/numberFmt';
 import { type TopicSummary, useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
-import { useMembers } from '../../api/members';
+import { useMembers, useStreamLabel } from '../../api/members';
 import { bucketOf, moveAction, KANBAN_BUCKETS, BUCKET_TONE, initials, type KanbanBucket } from './topicMeta';
 import { Dialog } from '../../components/ui/Dialog';
 import { Select } from '../../components/ui/Select';
@@ -177,6 +177,7 @@ function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable,
   onDropOnCard: (e: React.DragEvent) => void; isDropTarget: boolean;
 }) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel();
   const urgent = topic.urgency !== 'Normal';
   return (
     <div
@@ -229,7 +230,7 @@ function Card({ topic, dragging, onDragStart, onDragEnd, onMoveKey, reorderable,
       </div>
       <Link className="kb-card-title" to={`/topics/${topic.key}`}>{topic.title}</Link>
       <div className="kb-card-foot">
-        <span className="bk-streams">{topic.streams.slice(0, 2).map((s) => <Tag key={s}>{s}</Tag>)}</span>
+        <span className="bk-streams">{topic.streams.slice(0, 2).map((s) => <Tag key={s}>{streamLabel(s)}</Tag>)}</span>
         <span className="kb-card-side">
           <span className={`bk-age ${topic.slaBreached ? 'breached' : ''}`}>{t('topics.age', { days: topic.ageDays })}</span>
           {topic.ownerName && <span className="bk-avatar" aria-hidden="true">{initials(topic.ownerName)}</span>}

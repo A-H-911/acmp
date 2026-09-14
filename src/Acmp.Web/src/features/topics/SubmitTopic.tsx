@@ -20,7 +20,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bytes, Num } from '../../lib/numberFmt';
-import { useSubmitTopic, uploadTopicAttachment, MAX_ATTACHMENT_BYTES } from '../../api/topics';
+import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
+import { useUploadLimits, toMb } from '../../api/uploads';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
 import { Field, Input, Textarea } from '../../components/ui/Field';
@@ -28,7 +29,7 @@ import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { StreamPicker } from '../../components/ui/StreamPicker';
-import { UploadProgress } from './UploadProgress';
+import { UploadProgress } from '../../components/ui/UploadProgress';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { Icon, type IconName } from '../../components/icons';
 import { TemplatePicker } from '../templates/TemplatePicker';
@@ -43,9 +44,6 @@ const TYPES: { v: string; icon: IconName }[] = [
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
 const STEPS = ['type', 'justification', 'scope', 'attachments', 'urgency'];
 const MAX_TITLE = 120;
-// The ENFORCED client cap (AC-162), not a hint: files above it are rejected before upload, so a value below
-// the server's makes the server's default unreachable through the UI - which is exactly what 25 MB did.
-const MAX_FILE_BYTES = MAX_ATTACHMENT_BYTES;
 const DRAFT_KEY = 'acmp-topic-draft-v1';
 const SOURCE_DEFAULT = 'CommitteeMember';
 
@@ -71,6 +69,11 @@ function loadDraft(): FormState | null {
 
 export function SubmitTopic() {
   const { t } = useTranslation();
+  // The ENFORCED client cap (AC-162), and AC-169: it is the server's configured limit (GET /api/uploads/limits),
+  // not a copy - a copy below the server's made the server unreachable through the UI (25 MB), and one above it
+  // told users the wrong number (DEF-167).
+  const limits = useUploadLimits();
+  const MAX_FILE_BYTES = limits.attachmentMaxBytes;
   const navigate = useNavigate();
   const submit = useSubmitTopic();
 
@@ -228,7 +231,7 @@ export function SubmitTopic() {
       if (f.size > MAX_FILE_BYTES) rejected = true;
       else next.push(f);
     }
-    setFileError(rejected ? t('submit.err.fileSize', { max: MAX_FILE_BYTES / (1024 * 1024) }) : null);
+    setFileError(rejected ? t('submit.err.fileSize', { max: toMb(MAX_FILE_BYTES) }) : null);
     if (next.length) setFiles((prev) => [...prev, ...next]);
   }
 
@@ -385,7 +388,7 @@ export function SubmitTopic() {
           <fieldset id="sec-attachments" className="sub-fieldset">
             <legend className="sub-legend">{t('submit.sec.attachments')}</legend>
             <p className="sub-sub">{t('submit.sec.attachmentsHelp')}</p>
-            <FileDrop onFiles={addFiles} hint={t('submit.dropHint', { max: MAX_FILE_BYTES / (1024 * 1024) })} label={t('submit.dropFiles')} />
+            <FileDrop onFiles={addFiles} hint={t('submit.dropHint', { max: toMb(MAX_FILE_BYTES) })} label={t('submit.dropFiles')} accept={limits.attachmentContentTypes.join(',')} />
             {fileError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{fileError}</p>}
             {files.length > 0 && (
               <ul className="sub-files">
@@ -463,7 +466,7 @@ export function SubmitTopic() {
   );
 }
 
-function FileDrop({ onFiles, label, hint }: { onFiles: (l: FileList | null) => void; label: string; hint: string }) {
+function FileDrop({ onFiles, label, hint, accept }: { onFiles: (l: FileList | null) => void; label: string; hint: string; accept: string }) {
   const ref = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
   return (
@@ -473,7 +476,9 @@ function FileDrop({ onFiles, label, hint }: { onFiles: (l: FileList | null) => v
       onDragLeave={() => setOver(false)}
       onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
     >
-      <input ref={ref} type="file" multiple aria-label={label} className="visually-hidden" onChange={(e) => onFiles(e.target.files)} />
+      {/* AC-169: only allowed types; the value is cleared so the same file can be picked again (DEF-179). */}
+      <input ref={ref} type="file" multiple accept={accept} aria-label={label} className="visually-hidden"
+        onChange={(e) => { onFiles(e.target.files); e.target.value = ''; }} />
       <div className="sub-drop-ic" aria-hidden="true"><Icon name="upload" size={19} /></div>
       <button type="button" className="sub-drop-btn" onClick={() => ref.current?.click()}>{label}</button>
       <div className="sub-drop-hint">{hint}</div>

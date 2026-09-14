@@ -32,8 +32,11 @@ describe('WikiVersionHistory (P15e)', () => {
     const rows = screen.getAllByRole('button', { name: /^v/ });
     expect(within(rows[0]).getByText('v2')).toBeInTheDocument();
     expect(within(rows[1]).getByText('v1')).toBeInTheDocument();
-    expect(screen.getByText(/Khalid Ahmed/)).toBeInTheDocument();
-    expect(screen.getByText(/kc-unknown/)).toBeInTheDocument(); // fallback when no member matches
+    // AC-168: the saver is isolated from the date beside it ("14/09/2026, 5:21 PM · E2E Secretary" reordered in RTL).
+    expect(screen.getByText('Khalid Ahmed').tagName).toBe('BDI');
+    // AC-168: a member the directory no longer lists gets a translated placeholder, never the raw user id.
+    expect(screen.getByText('A former member').tagName).toBe('BDI');
+    expect(screen.queryByText(/kc-unknown/)).toBeNull();
   });
 
   it('renders a snapshot body when a version is selected, and clears it on re-click', async () => {

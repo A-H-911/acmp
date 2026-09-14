@@ -6,6 +6,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, apiUpload } from './apiClient';
+import { startDownload } from '../lib/download';
 
 export interface TopicSummary {
   id: string;
@@ -140,18 +141,15 @@ export function useConvertResearchToTopic() {
   });
 }
 
-/** AC-162: the attachment maximum. MUST track TopicAttachmentOptions.MaxSizeBytes (100 MB, DEC-190 a2). Both
- *  upload surfaces refuse a larger file before sending it: a request much larger than this is refused by the
- *  server's own body limit with no message the SPA can translate (DEF-166). */
-export const MAX_ATTACHMENT_BYTES = 100 * 1024 * 1024;
-
 /**
- * WBS-40.12 / AC-163: opens a topic attachment via a short-lived pre-signed URL (NFR-027), fetched ON CLICK
- * because it expires in minutes - the same shape as the guest's openSessionMaterial.
+ * AC-164: DOWNLOADS a topic attachment under its original name. The short-lived pre-signed URL (NFR-027) is
+ * fetched ON CLICK because it expires in minutes, and it is signed with an attachment disposition, so the file
+ * saves instead of opening in a tab (DEF-172). The attachment maximum the pages state now comes from the server
+ * (api/uploads.ts, AC-169), not a constant copied from TopicAttachmentOptions.
  */
-export async function openTopicAttachment(topicId: string, attachmentId: string): Promise<void> {
+export async function downloadTopicAttachment(topicId: string, attachmentId: string): Promise<void> {
   const { url } = await api<{ url: string }>(`/topics/${topicId}/attachments/${attachmentId}/url`);
-  window.open(url, '_blank', 'noopener,noreferrer');
+  startDownload(url);
 }
 
 /** Upload one staged file to a created topic (AC-049/050). Multipart — no Content-Type header so the

@@ -6,11 +6,10 @@ describe('formatNumber', () => {
     expect(formatNumber(12345, 'en')).toBe('12,345');
   });
 
-  it('renders Arabic-Indic digits for Arabic', () => {
-    // MUTATION CHECK: drop the `ar-u-nu-arab` pin and this goes red under Node, whose ICU resolves
-    // bare `ar` to Latin digits while a browser resolves it to Arabic-Indic. Asserting the digits is
-    // the only assertion that can tell the two runtimes apart.
-    expect(formatNumber(12345, 'ar')).toBe('١٢٬٣٤٥');
+  it('renders LATIN digits and separators for Arabic too (AC-167)', () => {
+    // AC-167 (DEC-192 r2) superseded AC-147's Arabic-Indic rule. MUTATION CHECK: pin `ar-u-nu-arab` again
+    // and this goes red; leave the tag bare and it depends on the runtime's ICU default instead of a rule.
+    expect(formatNumber(12345, 'ar')).toBe('12,345');
   });
 
   it('treats an undefined language as English rather than throwing', () => {
@@ -18,7 +17,8 @@ describe('formatNumber', () => {
   });
 
   it('matches on the `ar` PREFIX, so a regional Arabic tag is still Arabic', () => {
-    expect(formatNumber(5, 'ar-SA')).toBe('٥');
+    // ar-SA's own default is Arabic-Indic, so this proves the prefix match reaches the Latin pin.
+    expect(formatNumber(5, 'ar-SA')).toBe('5');
   });
 
   it('passes Intl options through', () => {
@@ -31,16 +31,11 @@ describe('formatPercent', () => {
     expect(formatPercent(87, 'en')).toBe('87%');
   });
 
-  it('uses the ARABIC percent sign, not an ASCII one beside Arabic-Indic digits', () => {
-    /*
-     * ٪ is U+066A, not U+0025. This is the assertion the whole function exists for: the mockups draw
-     * `٤٠٪` and the app was gluing an ASCII `%` onto the digits (INV-014). Asserting only the digits
-     * would pass with the wrong sign, which is what shipped before.
-     */
+  it('uses Latin digits and the % sign in Arabic (AC-167), with bidi marks keeping it in order', () => {
     const ar = formatPercent(87, 'ar');
-    expect(ar).toContain('٪');
-    expect(ar).not.toContain('%');
-    expect(ar).toContain('٨٧');
+    expect(ar).toContain('87');
+    expect(ar).toContain('%');
+    expect(ar).not.toMatch(/[٠-٩٪]/);
   });
 
   it('rounds to whole percents rather than exposing the division', () => {
@@ -56,9 +51,10 @@ describe('formatBytes', () => {
     expect(formatBytes(3 * 1024 ** 3, 'en')).toBe('3 GB');
   });
 
-  it('renders the numeral in Arabic-Indic while the unit symbol stays as the mockups draw it', () => {
-    // ١٫٥ — Arabic decimal separator, not a full stop. The unit suffix is deliberately unchanged.
-    expect(formatBytes(1_572_864, 'ar')).toBe('١٫٥ MB');
+  it('renders Latin digits with the Arabic unit the mockups draw (AC-167, AC-168)', () => {
+    expect(formatBytes(1_572_864, 'ar')).toBe('1.5 م.ب');
+    expect(formatBytes(2048, 'ar')).toBe('2 ك.ب');
+    expect(formatBytes(512, 'ar')).toBe('512 ب');
   });
 
   it('caps at the largest unit rather than inventing one past the table', () => {

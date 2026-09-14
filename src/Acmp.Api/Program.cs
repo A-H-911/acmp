@@ -167,6 +167,7 @@ app.MapHealthChecks("/readyz", new HealthCheckOptions
 app.MapMembershipEndpoints();
 app.MapTopicEndpoints();
 app.MapMeetingEndpoints();
+app.MapUploadEndpoints(); // AC-169: the upload limits the SPA states
 app.MapSessionEndpoints();
 // FR-165 — deliberately its own group, OUTSIDE GuestSurfaceMiddleware's /api/session allowlist, so a
 // guest-only principal is refused at the path rather than only by the query's role set (DEC-086 d1).

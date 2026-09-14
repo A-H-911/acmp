@@ -115,7 +115,10 @@ export function SystemHealth() {
             <div className="adm-tile-metric">
               {tl.health === 'unmonitored'
                 ? t('admin.health.notMonitored')
-                : `${tl.entry?.durationMs ?? 0} ${t('admin.health.ms')}${tl.entry?.description ? ` · ${tl.entry.description}` : ''}`}
+                // AC-168 (DEF-178): a translated status and a formatted duration. The server's description is
+                // an English diagnostic (bucket names, exception text) that cannot be translated, so it moves
+                // to the tooltip for the administrator instead of sitting in the Arabic line.
+                : <span title={tl.entry?.description ?? undefined}>{t('admin.health.duration', { n: tl.entry?.durationMs ?? 0 })} · {t(`admin.health.detail.${tl.health}`)}</span>}
             </div>
             <div className="adm-tile-foot">
               <Icon name="clock" size={12} aria-hidden />

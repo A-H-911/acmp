@@ -37,6 +37,11 @@ public interface ITopicReader
     /// </remarks>
     Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default);
 
+    /// <summary>The same scoped lookup as <see cref="GetMaterialUrlAsync"/>, but the URL DOWNLOADS the file under
+    /// its original name (AC-164) instead of opening it inline. The committee's Download uses this; the guest's
+    /// Open keeps the inline URL.</summary>
+    Task<string?> GetMaterialDownloadUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default);
+
     /// <summary>The topic's assigned owner as a <c>CommitteeMember.PublicId</c>, or null when the topic
     /// has none or does not exist.</summary>
     /// <remarks>

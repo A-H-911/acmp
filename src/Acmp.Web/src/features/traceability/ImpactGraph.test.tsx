@@ -8,6 +8,8 @@ import { ImpactGraph } from './ImpactGraph';
 import type { ImpactGraph as ImpactGraphDto } from '../../api/traceability';
 
 const navigate = vi.fn();
+// AC-168: the graph carries stream CODES (TopicStreamReader); a node shows the stream's name.
+vi.mock('../../api/members', () => ({ useStreamLabel: () => (c: string) => ({ Payments: 'Payments & Billing' } as Record<string, string>)[c] ?? c }));
 vi.mock('react-router-dom', async (orig) => ({
   ...(await orig<typeof import('react-router-dom')>()),
   useNavigate: () => navigate,
@@ -54,7 +56,7 @@ describe('ImpactGraph (P10f)', () => {
     const action = screen.getByRole('button', { name: /ACT-9/ });
     expect(action).toHaveTextContent('Blocked');
     expect(action).toHaveTextContent('Action'); // type chip (status chip is omitted by design, ADR-0001)
-    expect(action).toHaveTextContent('Payments'); // cross-stream code
+    expect(action).toHaveTextContent('Payments & Billing'); // cross-stream: the stream's name, not its code
   });
 
   it('is a single roving tab-stop starting on the focus, and arrow keys move it (no wrap)', async () => {

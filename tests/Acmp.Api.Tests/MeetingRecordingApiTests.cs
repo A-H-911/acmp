@@ -31,6 +31,9 @@ public class MeetingRecordingApiTests : IClassFixture<AcmpWebApplicationFactory>
             => Task.FromResult($"{bucket}/{objectName}");
         public Task<string> GetPreSignedUrlAsync(string bucket, string objectName, TimeSpan expiry, CancellationToken ct = default)
             => Task.FromResult($"https://minio.test/{bucket}/{objectName}");
+        // AC-164/165: the download link names the file, so a test can tell it from the inline one.
+        public Task<string> GetDownloadUrlAsync(string bucket, string objectName, string downloadFileName, TimeSpan expiry, CancellationToken ct = default)
+            => Task.FromResult($"https://minio.test/{bucket}/{objectName}?download={Uri.EscapeDataString(downloadFileName)}");
         public Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default) => Task.FromResult(true);
         public Task DeleteAsync(string bucket, string objectName, CancellationToken ct = default) => Task.CompletedTask;
     }
@@ -200,6 +203,21 @@ public class MeetingRecordingApiTests : IClassFixture<AcmpWebApplicationFactory>
         (await resp.Content.ReadFromJsonAsync<UrlResponse>())!.Url.Should().StartWith("https://minio.test/");
     }
 
+    [Fact] // AC-165: ?download=true is a link that saves under the ORIGINAL name; the player's link is not
+    public async Task Recording_download_url_names_the_original_file_while_playback_stays_inline()
+    {
+        var app = WithFakeStore(_factory);
+        var key = await SeedMeetingAsync(app);
+        await Client(app, "Secretary").PostAsync($"/api/meetings/{key}/recording", VideoForm("video/mp4", "board.mp4"));
+        var auditor = Client(app, "Auditor");
+
+        var download = await auditor.GetFromJsonAsync<UrlResponse>($"/api/meetings/{key}/recording/url?download=true");
+        var playback = await auditor.GetFromJsonAsync<UrlResponse>($"/api/meetings/{key}/recording/url");
+
+        download!.Url.Should().EndWith("?download=board.mp4");
+        playback!.Url.Should().NotContain("download=");
+    }
+
     [Theory] // AC-122 / DEF-094: everyone else is refused, including roles that can read the meeting itself
     [InlineData("Member")]
     [InlineData("Reviewer")]
@@ -248,5 +266,69 @@ public class MeetingRecordingApiTests : IClassFixture<AcmpWebApplicationFactory>
 
         var detail = await (await sec.GetAsync($"/api/meetings/{key}")).Content.ReadFromJsonAsync<MeetingRecordingSlice>();
         detail!.Recording.Should().BeNull();
+    }
+}
+
+// AC-166 / DEF-173: the recording endpoint's own body limit FOLLOWS the configured maximum plus the 1 MiB
+// multipart margin, on REAL Kestrel (TestServer enforces no body limit). A 1 MiB configured maximum keeps the test
+// fast: a file at it is stored, one just over it reaches the validator's FILE_TOO_LARGE rather than a bare 413.
+// Runs in the Kestrel collection, alone (fixed port; UseSerilog's static logger).
+[Collection(KestrelHostCollection.Name)]
+public sealed class MeetingRecordingKestrelLimitTests : IDisposable
+{
+    private const int Max = 1024 * 1024;
+    private readonly WebApplicationFactory<Program> _app;
+
+    public MeetingRecordingKestrelLimitTests()
+    {
+        _app = TopicAttachmentHttp.WithFakeStore(new AcmpWebApplicationFactory())
+            .WithWebHostBuilder(b => b.UseSetting("Meetings:Recording:MaxSizeBytes", Max.ToString()));
+        _app.UseKestrel(0);
+        _app.StartServer();
+    }
+
+    public void Dispose() => _app.Dispose();
+
+    // A real ISO-BMFF "ftyp" box, then zeros, so the magic-byte sniff accepts it as video/mp4 at any size.
+    private static MultipartFormDataContent Video(long size)
+    {
+        var bytes = new byte[size];
+        new byte[] { 0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D, 0x00, 0x00, 0x02, 0x00,
+                     0x69, 0x73, 0x6F, 0x6D, 0x69, 0x73, 0x6F, 0x32, 0x61, 0x76, 0x63, 0x31, 0x6D, 0x70, 0x34, 0x31 }.CopyTo(bytes, 0);
+        var file = new ByteArrayContent(bytes);
+        file.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+        return new MultipartFormDataContent { { file, "file", "board.mp4" } };
+    }
+
+    [Fact]
+    public async Task A_recording_at_the_configured_maximum_is_stored_and_one_just_over_gets_FILE_TOO_LARGE()
+    {
+        string key;
+        using (var scope = _app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MeetingsDbContext>();
+            var m = Meeting.Schedule("MTG-2026-001", "Weekly Committee", Meeting.SingleCommitteeId, Guid.NewGuid(), "Chair",
+                DateTimeOffset.Parse("2026-07-01T09:00:00Z"), DateTimeOffset.Parse("2026-07-01T10:30:00Z"),
+                MeetingType.Regular, MeetingMode.Remote, null, null, DateTimeOffset.UtcNow);
+            db.Meetings.Add(m);
+            await db.SaveChangesAsync();
+            key = m.Key;
+        }
+        var secretary = TopicAttachmentHttp.Client(_app, "Secretary", "kc-sec");
+
+        (await secretary.PostAsync($"/api/meetings/{key}/recording", Video(Max))).StatusCode
+            .Should().Be(HttpStatusCode.OK, "a file at the configured maximum crosses Kestrel and is stored");
+
+        var over = await secretary.PostAsync($"/api/meetings/{key}/recording", Video(Max + 512 * 1024));
+        over.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await over.Content.ReadAsStringAsync()).Should().Contain("FILE_TOO_LARGE");
+
+        // ...and the limit really FOLLOWS the configured maximum: well beyond maximum + margin, Kestrel refuses
+        // before the body is read (413, or the connection reset DEF-166 measured). Under the old 2 GiB constant
+        // this file would have reached the validator instead.
+        HttpStatusCode? farOver;
+        try { farOver = (await secretary.PostAsync($"/api/meetings/{key}/recording", Video(Max + 3 * 1024 * 1024))).StatusCode; }
+        catch (HttpRequestException) { farOver = HttpStatusCode.RequestEntityTooLarge; }
+        farOver.Should().Be(HttpStatusCode.RequestEntityTooLarge);
     }
 }

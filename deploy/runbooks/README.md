@@ -31,8 +31,10 @@ On-prem, single-VM, Docker Compose (deployment.md). All commands run from the ch
 - **C-CRYPTO Step B / TDE / MinIO+Seq TLS / backup encryption** remain operator steps (deployment.md §3.4). ⚠ The
   **SQL edition** you choose (OQ-040) is a security decision: **Express/Web support neither TDE nor backup
   encryption** — pick Standard+ if those P1 controls are required. The bundled image is Developer (full features).
-- **Keycloak session policy (OQ-003, AC-004):** in the ACMP realm set the **60-minute idle timeout** and MFA for
-  Chairman + Secretary. This closes AC-004 and is a realm-config action (no code change).
+- **Keycloak session policy (AC-004, OQ-076):** in the ACMP realm set the **30-minute idle timeout** (SSO Session Idle
+  = 1800 s) and MFA for Chairman + Secretary. The app signs a user out after the same 30 minutes of inactivity
+  (`IDLE_TIMEOUT_MS`, OQ-076), so the two must agree. This line said 60 minutes, from OQ-003's older resolution;
+  OQ-076 built 30 and AC-004 is Met on it (DEF-180).
 
 ## First-time install
 

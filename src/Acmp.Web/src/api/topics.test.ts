@@ -18,8 +18,7 @@ import {
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
-  openTopicAttachment,
-  MAX_ATTACHMENT_BYTES,
+  downloadTopicAttachment,
   useConvertResearchToTopic,
 } from './topics';
 import { ApiError } from './apiClient';
@@ -379,25 +378,26 @@ describe('topic mutations', () => {
   });
 
   // WBS-40.12 / AC-163: the URL is fetched on click from the topic-scoped route and opened in a new tab.
-  it('openTopicAttachment fetches the topic-scoped URL and opens it without an opener', async () => {
+  // AC-164: Download fetches the topic-scoped URL on click and follows it in place - no new tab, no popup.
+  it('downloadTopicAttachment fetches the topic-scoped URL and follows it without opening a window', async () => {
     const spy = stubFetch(() => ({ jsonBody: { url: 'https://storage.example/presigned' } }));
     const open = vi.fn();
     vi.stubGlobal('open', open);
-    await openTopicAttachment('t1', 'a1');
+    const clicked: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { clicked.push(this.href); });
+    await downloadTopicAttachment('t1', 'a1');
     expect(urlOf(spy)).toBe('/api/topics/t1/attachments/a1/url');
-    expect(open).toHaveBeenCalledWith('https://storage.example/presigned', '_blank', 'noopener,noreferrer');
-  });
-
-  it('openTopicAttachment rejects on a 404 and opens nothing', async () => {
-    stubFetch(() => ({ status: 404, jsonBody: {} }));
-    const open = vi.fn();
-    vi.stubGlobal('open', open);
-    await expect(openTopicAttachment('t1', 'gone')).rejects.toBeInstanceOf(ApiError);
+    expect(clicked).toEqual(['https://storage.example/presigned']);
     expect(open).not.toHaveBeenCalled();
+    click.mockRestore();
   });
 
-  it('the attachment maximum is the 100 MB NFR-011 grants (AC-162)', () => {
-    expect(MAX_ATTACHMENT_BYTES).toBe(100 * 1024 * 1024);
+  it('downloadTopicAttachment rejects on a 404 and follows nothing', async () => {
+    stubFetch(() => ({ status: 404, jsonBody: {} }));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    await expect(downloadTopicAttachment('t1', 'gone')).rejects.toBeInstanceOf(ApiError);
+    expect(click).not.toHaveBeenCalled();
+    click.mockRestore();
   });
 
   it('useUploadTopicAttachment invalidates the detail query on success', async () => {

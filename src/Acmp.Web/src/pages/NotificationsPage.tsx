@@ -23,6 +23,7 @@ import { notifType, notifKey } from '../api/notifPresentation';
 import { Button } from '../components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '../components/states';
 import { Icon } from '../components/icons';
+import { numberLocale } from '../lib/numberFmt';
 
 type Filter = 'unread' | 'all';
 
@@ -42,7 +43,7 @@ export default function NotificationsPage() {
 
   const localize = (en: string, ar: string) => (i18n.language === 'ar' ? ar : en);
   const fmtTime = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+    new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   const openLink = (n: NotificationItem) => {
     if (!n.isRead) markRead.mutate(n.id);

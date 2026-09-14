@@ -41,7 +41,9 @@ describe('SystemHealth (NR-08)', () => {
     renderWithAuth(<SystemHealth />, { roles: ['administrator'] });
     expect(screen.getByText('Service degraded — core services operational')).toBeInTheDocument();
     expect(screen.getByText('Degraded')).toBeInTheDocument();
-    expect(screen.getByText(/120 ms · slow/)).toBeInTheDocument();
+    // AC-168: a translated status and a formatted duration; the server's English diagnostic is the tooltip.
+    const line = screen.getByText(/120 ms · Responding with problems/);
+    expect(line).toHaveAttribute('title', 'slow');
   });
 
   it('reflects an unhealthy check as a down core service', () => {

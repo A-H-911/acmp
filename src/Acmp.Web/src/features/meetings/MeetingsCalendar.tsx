@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import type { MeetingSummary } from '../../api/meetings';
 import { Icon } from '../../components/icons';
 import { meetingTone } from './meetingStatus';
+import { numberLocale } from '../../lib/numberFmt';
 
 interface CalCell {
   key: string;
@@ -41,7 +42,7 @@ function buildCells(year: number, month: number, byDay: Map<number, MeetingSumma
 /** Sun..Sat short weekday labels, localized. 2023-01-01 (UTC) is a Sunday. */
 function useDowLabels(lang: string): string[] {
   return useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+    const fmt = new Intl.DateTimeFormat(numberLocale(lang), { weekday: 'short' });
     return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(Date.UTC(2023, 0, 1 + i))));
   }, [lang]);
 }
@@ -69,11 +70,11 @@ export function MeetingsCalendar({ meetings }: { meetings: MeetingSummary[] }) {
 
   const cells = useMemo(() => buildCells(view.year, view.month, byDay), [view, byDay]);
   const monthLabel = useMemo(
-    () => new Intl.DateTimeFormat(i18n.language, { month: 'long', year: 'numeric' }).format(new Date(view.year, view.month, 1)),
+    () => new Intl.DateTimeFormat(numberLocale(i18n.language), { month: 'long', year: 'numeric' }).format(new Date(view.year, view.month, 1)),
     [i18n.language, view],
   );
   const formatWhen = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+    new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   const step = (delta: number) =>
     setView((v) => {

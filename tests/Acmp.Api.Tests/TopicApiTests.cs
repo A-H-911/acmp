@@ -45,6 +45,9 @@ public class TopicApiTests : IClassFixture<AcmpWebApplicationFactory>
             => Task.FromResult($"{bucket}/{objectName}");
         public Task<string> GetPreSignedUrlAsync(string bucket, string objectName, TimeSpan expiry, CancellationToken ct = default)
             => Task.FromResult($"https://minio.test/{bucket}/{objectName}");
+        // AC-164/165: the download link names the file, so a test can tell it from the inline one.
+        public Task<string> GetDownloadUrlAsync(string bucket, string objectName, string downloadFileName, TimeSpan expiry, CancellationToken ct = default)
+            => Task.FromResult($"https://minio.test/{bucket}/{objectName}?download={Uri.EscapeDataString(downloadFileName)}");
         public Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default) => Task.FromResult(true);
         public Task DeleteAsync(string bucket, string objectName, CancellationToken ct = default) => Task.CompletedTask;
     }

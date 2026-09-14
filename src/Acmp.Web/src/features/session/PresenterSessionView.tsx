@@ -38,7 +38,8 @@ export function PresenterSessionView({
 
   // DEF-115 — numberLocale(), not the bare tag. Intl.DateTimeFormat('ar') emits LATIN digits, so this
   // card rendered "10:40–10:55 · ١٥ دقيقة": two digit systems on one line, the times Latin and the
-  // minute count Arabic-Indic, because only the number path had WBS-24.4's ar-u-nu-arab pin.
+  // minute count Arabic-Indic, because only the number path had WBS-24.4's Arabic-Indic pin (AC-167 later
+  // made every formatter Latin, through this same numberLocale()).
   // numberFmt.tsx exports numberLocale for exactly this and says so — "ANY Intl formatter that emits
   // digits needs it" — and a DATE formatter is one. No unit test could see it (jsdom does not render,
   // and an assertion on formatted output agrees with whatever the formatter produced); it was found by

@@ -64,6 +64,7 @@ import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { agendaTone } from './agendaStatus';
 import { GuestPresenterInvite } from './GuestPresenterInvite';
 import { cssVars } from '../../lib/cssVars';
+import { numberLocale } from '../../lib/numberFmt';
 import './meetings.css';
 
 const TIMEBOX_STEP = 5;
@@ -109,7 +110,7 @@ export function AgendaBuilder() {
   const dragPool = useRef<TopicSummary | null>(null);
   const dragItem = useRef<AgendaItem | null>(null);
 
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  const fmtDate = (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   if (meetingQuery.isLoading) {
     return <section className="page"><LoadingState /></section>;

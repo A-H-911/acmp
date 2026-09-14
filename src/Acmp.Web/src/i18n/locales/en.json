@@ -1258,6 +1258,12 @@
       "lastRefresh": "Auto-refreshes every 30 seconds",
       "refresh": "Refresh",
       "ms": "ms",
+      "duration": "{{n}} ms",
+      "detail": {
+        "operational": "Responding normally",
+        "degraded": "Responding with problems",
+        "down": "Not responding"
+      },
       "checkedNow": "checked just now",
       "notMonitored": "Monitoring not configured",
       "service": {
@@ -1760,7 +1766,7 @@
       "empty": "No attachments yet. Drop files to add them.",
       "download": "Download",
       "downloadFile": "Download {{name}}",
-      "openFailed": "That file could not be opened.",
+      "openFailed": "That file could not be downloaded.",
       "uploading": "Uploading {{name}}…"
     },
     "votes": {
@@ -2082,9 +2088,10 @@
         "body": "The recording is removed from this meeting. For an uploaded file the stored copy is deleted too. This can't be undone."
       },
       "upload": "Upload recording",
-      "uploadHint": "MP4, WebM or MOV video of the meeting",
+      "uploadHint": "MP4, WebM or MOV video of the meeting · up to {{max}} MB",
       "replace": "Replace recording",
       "download": "Download",
+      "downloadFailed": "The recording could not be downloaded.",
       "openWebex": "Open Webex recording",
       "loading": {
         "title": "Preparing playback"
@@ -2589,6 +2596,7 @@
       "body": "Choose a page from the tree to start reading."
     },
     "versions": {
+      "unknownAuthor": "A former member",
       "title": "Version history",
       "subtitle": "Every save creates an immutable snapshot. Select one to view it, or compare it with the version before.",
       "empty": "No earlier versions.",

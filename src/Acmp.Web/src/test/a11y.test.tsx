@@ -22,6 +22,7 @@ import type { TopicSummary } from '../api/topics';
 vi.mock('../api/members', () => ({
   useMembers: vi.fn(),
   useSetVotingEligibility: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useStreamLabel: () => (code: string) => code, // AC-168: the backlog names streams through the taxonomy
 }));
 import { useMembers } from '../api/members';
 const mockUseMembers = useMembers as unknown as Mock;

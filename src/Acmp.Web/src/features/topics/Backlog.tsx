@@ -27,6 +27,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStreamLabel } from '../../api/members';
 import { useBacklog, type BacklogParams, type TopicSummary } from '../../api/topics';
 import { AREAS } from '../../nav/navModel';
 import { Segmented } from '../../components/ui/Segmented';
@@ -340,6 +341,7 @@ function Age({ days, breached }: { days: number; breached: boolean }) {
 
 function TopicsTable({ rows, sort, onSort, prefs }: { rows: TopicSummary[]; sort: { by: string; dir: SortDir }; onSort: (id: string) => void; prefs: ColumnPrefs }) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel(); // AC-168: localized names, never codes
   const columns: Column<TopicSummary>[] = [
     { id: 'key', header: t('topics.col.key'), width: '112px', cell: (r) => <span className="bk-key">{r.key}</span> },
     {
@@ -358,7 +360,7 @@ function TopicsTable({ rows, sort, onSort, prefs }: { rows: TopicSummary[]; sort
       id: 'streams',
       header: t('topics.col.streams'),
       width: '150px',
-      cell: (r) => <span className="bk-streams">{r.streams.map((s) => <Tag key={s}>{s}</Tag>)}</span>,
+      cell: (r) => <span className="bk-streams">{r.streams.map((s) => <Tag key={s}>{streamLabel(s)}</Tag>)}</span>,
     },
     { id: 'owner', header: t('topics.col.owner'), width: '140px', cell: (r) => <Owner id={r.ownerId} name={r.ownerName} /> },
     { id: 'status', header: t('topics.col.status'), width: '104px', sortable: true, cell: (r) => <StatusChip tone={statusTone(r.status)} label={t(`topics.status.${r.status}`)} size="sm" /> },
@@ -385,6 +387,7 @@ function TopicsTable({ rows, sort, onSort, prefs }: { rows: TopicSummary[]; sort
 
 function TopicsList({ rows }: { rows: TopicSummary[] }) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel();
   return (
     <div className="bk-list">
       {rows.map((r) => {
@@ -405,7 +408,7 @@ function TopicsList({ rows }: { rows: TopicSummary[] }) {
               <span className="bk-list-meta">
                 <span>{t(`topics.type.${r.type}`)}</span>
                 <Owner id={r.ownerId} name={r.ownerName} />
-                {r.streams.map((s) => <Tag key={s}>{s}</Tag>)}
+                {r.streams.map((s) => <Tag key={s}>{streamLabel(s)}</Tag>)}
               </span>
             </span>
             <span className="bk-list-side">

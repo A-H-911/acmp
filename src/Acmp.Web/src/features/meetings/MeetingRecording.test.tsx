@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { render, screen, cleanup, within } from '@testing-library/react';
+import { render, screen, cleanup, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -17,10 +17,17 @@ vi.mock('../../api/meetings', async () => {
     useRecordingUrl: vi.fn(),
     useUploadMeetingRecording: vi.fn(),
     useDeleteMeetingRecording: vi.fn(),
+    downloadMeetingRecording: vi.fn(),
   };
 });
+// AC-169: the limits hook reads GET /api/uploads/limits; here it answers with the shipped defaults.
+vi.mock('../../api/uploads', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../../api/uploads')>();
+  return { ...real, useUploadLimits: () => real.DEFAULT_UPLOAD_LIMITS };
+});
 
-import { useMeetingDetail, useRecordingUrl, useUploadMeetingRecording, useDeleteMeetingRecording } from '../../api/meetings';
+import { useMeetingDetail, useRecordingUrl, useUploadMeetingRecording, useDeleteMeetingRecording, downloadMeetingRecording } from '../../api/meetings';
+import { ApiError } from '../../api/apiClient';
 
 const mockDetail = useMeetingDetail as unknown as Mock;
 const mockUrl = useRecordingUrl as unknown as Mock;
@@ -54,7 +61,7 @@ function renderTab(roles: CommitteeRole[]) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockUrl.mockReturnValue({ data: undefined });
-  mockUpload.mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false });
+  mockUpload.mockReturnValue({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false, isError: false });
   mockDelete.mockReturnValue({ mutate: vi.fn(), isPending: false });
 });
 afterEach(cleanup);
@@ -111,7 +118,7 @@ describe('MeetingRecording', () => {
   // indistinguishable from a working one until someone tries to upload.
   it('starts the upload with the chosen file', async () => {
     const mutate = vi.fn();
-    mockUpload.mockReturnValue({ mutate, isPending: false, isError: false });
+    mockUpload.mockReturnValue({ mutateAsync: mutate.mockResolvedValue({}), isPending: false, isError: false });
     mockDetail.mockReturnValue({ data: meeting(null) });
     const user = userEvent.setup();
     renderTab(['secretary']);
@@ -122,12 +129,12 @@ describe('MeetingRecording', () => {
     const file = new File(['x'], 'board.mp4', { type: 'video/mp4' });
     await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), file);
 
-    expect(mutate).toHaveBeenCalledWith(file);
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ file }));
   });
 
   it('offers Replace on an existing recording and re-opens the picker', async () => {
     const mutate = vi.fn();
-    mockUpload.mockReturnValue({ mutate, isPending: false, isError: false });
+    mockUpload.mockReturnValue({ mutateAsync: mutate.mockResolvedValue({}), isPending: false, isError: false });
     mockDetail.mockReturnValue({ data: meeting(uploaded) });
     mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
     const user = userEvent.setup();
@@ -137,7 +144,76 @@ describe('MeetingRecording', () => {
     const file = new File(['y'], 'board-v2.mp4', { type: 'video/mp4' });
     await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), file);
 
-    expect(mutate).toHaveBeenCalledWith(file);
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ file }));
+  });
+
+  // AC-166: the page states the server's limit and refuses a larger file before sending any bytes.
+  it('states the limit and refuses an over-limit recording in the browser', async () => {
+    const mutate = vi.fn();
+    mockUpload.mockReturnValue({ mutateAsync: mutate, isPending: false, isError: false });
+    mockDetail.mockReturnValue({ data: meeting(null) });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    expect(screen.getByText(/up to 2,048 MB/)).toBeInTheDocument();
+    const big = new File(['x'], 'huge.mp4', { type: 'video/mp4' });
+    Object.defineProperty(big, 'size', { value: 2 * 1024 ** 3 + 1 });
+    await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), big);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/2,048 MB or smaller/);
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  // AC-166: a running upload shows its percentage, and Replace, Delete and Download wait for it (a download link
+  // followed mid-upload could unload the page and abort the upload).
+  it('shows the percentage while a replacement uploads and locks Replace, Delete and Download', async () => {
+    let report: (p: number) => void = () => {};
+    mockUpload.mockReturnValue({
+      mutateAsync: vi.fn(({ onProgress }: { onProgress: (p: number) => void }) => { report = onProgress; return new Promise(() => {}); }),
+      isPending: false, isError: false,
+    });
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), new File(['y'], 'board-v2.mp4', { type: 'video/mp4' }));
+    act(() => report(55));
+
+    expect(screen.getByRole('progressbar', { name: 'board-v2.mp4' })).toHaveAttribute('aria-valuenow', '55');
+    expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /replace/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /download/i })).toBeDisabled();
+  });
+
+  // AC-166 / DEF-173: a refused REPLACE shows the server's translated reason (it used to show nothing).
+  it('shows the server reason when a replacement is refused', async () => {
+    mockUpload.mockReturnValue({
+      mutateAsync: vi.fn().mockRejectedValue(new ApiError(400, { title: 'Bad', errors: [{ errorCode: 'FILE_TYPE_NOT_ALLOWED' }] } as never)),
+      isPending: false, isError: false,
+    });
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['secretary']);
+
+    await user.upload(screen.getByLabelText(/upload/i, { selector: 'input[type="file"]' }), new File(['y'], 'board-v2.mp4', { type: 'video/mp4' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('That file type isn’t allowed.');
+  });
+
+  // AC-165: Download mints its link on click (never the player's cached one) and shows a failure.
+  it('downloads through a link fetched on click and shows a failure', async () => {
+    (downloadMeetingRecording as unknown as Mock).mockRejectedValueOnce(new ApiError(403));
+    mockDetail.mockReturnValue({ data: meeting(uploaded) });
+    mockUrl.mockReturnValue({ data: { url: 'https://minio.test/signed' } });
+    const user = userEvent.setup();
+    renderTab(['auditor']);
+
+    await user.click(screen.getByRole('button', { name: /download/i }));
+
+    expect(downloadMeetingRecording).toHaveBeenCalledWith('MTG-2026-001');
+    expect(await screen.findByRole('alert')).toHaveTextContent('The recording could not be downloaded.');
   });
 
   // Backing out of the delete confirm had never run. A recording is the meeting's only durable

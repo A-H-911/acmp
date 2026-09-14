@@ -177,8 +177,11 @@ while IFS="$(printf '\t')" read -r user role first last email pw; do
     # nothing about. But say so when it still looks seeded, because a re-run does NOT repair
     # identity, and "ahammo Seeded" reaching a governance record is the failure roster mode exists
     # to prevent. The app derives a member's displayed name from Keycloak's `name` claim and
-    # refreshes it on EVERY login (CommitteeMember.SyncFromClaims), so fixing it in Keycloak and
-    # logging in again is the remedy.
+    # refreshes the MEMBER record on every login (CommitteeMember.SyncFromClaims), so fixing it in
+    # Keycloak and logging in again corrects the name shown FROM THEN ON. It does NOT rewrite names
+    # already recorded: every module stores the actor's name on the record at write time (comments,
+    # attachments, history, minutes, ballots), so a placeholder that has acted stays on those rows
+    # (DEF-177). Use roster mode before anyone acts.
     detail="$(api GET "/users/$uid" | sed '$d')"
     case "$detail" in
       *'"lastName":"Seeded"'*|*'@example.invalid'*)

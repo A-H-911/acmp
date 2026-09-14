@@ -6,6 +6,7 @@ import { Dialog } from '../../components/ui/Dialog';
 import { Field, Input } from '../../components/ui/Field';
 import { InvitedCredential } from '../../components/ui/InvitedCredential';
 import { Icon } from '../../components/icons';
+import { numberLocale } from '../../lib/numberFmt';
 import './meetings.css';
 
 /*
@@ -26,7 +27,7 @@ import './meetings.css';
 // so the expiry instant reads the way the rest of the app writes dates.
 function useDateFmt() {
   const { i18n } = useTranslation();
-  return (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  return (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 }
 
 export function GuestPresenterInvite({

@@ -53,6 +53,12 @@ jobs:
       # client from that same file on presence rather than on this flag. So the identity side already
       # existed on every run; only the app-side DI registration was off.
       KEYCLOAK_ADMIN_ENABLED: 'true'
+      # AC-164 / AC-165 (DEC-192 r5): presign download links for the BROWSER's origin, not minio:9000 (which the
+      # runner cannot resolve), so the E2E specs can catch a real download and check its saved name. nginx
+      # already forwards /acmp-topics/ and /acmp-recordings/ to MinIO with the Host preserved (DW-108), so a link
+      # signed for localhost:8088 validates. Same shell-env-over-env-file mechanism as the two settings above.
+      MINIO_PUBLIC_ENDPOINT: 'localhost:8088'
+      MINIO_PUBLIC_SECURE: 'false'
     defaults:
       run:
         working-directory: src/Acmp.Web

@@ -99,6 +99,41 @@ public class TopicReaderTests
         url.Should().Be("https://storage.example/presigned");
     }
 
+    [Fact] // AC-164: the committee's Download - same scoped lookup, a download link under the ORIGINAL name
+    public async Task GetMaterialDownloadUrl_names_the_original_file_and_the_guest_url_stays_inline()
+    {
+        await using var db = Db();
+        var topic = NewTopic();
+        var attachment = topic.AddAttachment("تقرير المراجعة.pdf", "application/pdf", 2048, "key-1", "kc-sec", "Secretary", Now);
+        db.Topics.Add(topic);
+        await db.SaveChangesAsync();
+
+        var files = Substitute.For<IFileStore>();
+        files.GetDownloadUrlAsync(Arg.Any<string>(), "key-1", "تقرير المراجعة.pdf", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns("https://storage.example/download");
+        files.GetPreSignedUrlAsync(Arg.Any<string>(), "key-1", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns("https://storage.example/inline");
+
+        (await Reader(db, files).GetMaterialDownloadUrlAsync(topic.PublicId, attachment.PublicId)).Should().Be("https://storage.example/download");
+        (await Reader(db, files).GetMaterialUrlAsync(topic.PublicId, attachment.PublicId)).Should().Be("https://storage.example/inline",
+            "the guest presenter's Open keeps the inline link (AC-164: unchanged)");
+    }
+
+    [Fact]
+    public async Task GetMaterialDownloadUrl_refuses_an_attachment_that_belongs_to_a_different_topic()
+    {
+        await using var db = Db();
+        var mine = NewTopic();
+        var theirs = NewTopic("TOP-2026-010");
+        var other = theirs.AddAttachment("x.pdf", "application/pdf", 1, "key-x", "kc-sec", "Secretary", Now);
+        db.Topics.AddRange(mine, theirs);
+        await db.SaveChangesAsync();
+        var files = Substitute.For<IFileStore>();
+
+        (await Reader(db, files).GetMaterialDownloadUrlAsync(mine.PublicId, other.PublicId)).Should().BeNull();
+        await files.DidNotReceiveWithAnyArgs().GetDownloadUrlAsync(default!, default!, default!, default);
+    }
+
     // NFR-027 - "time-limited, <= 1 h expiry". The second of the two pre-sign call sites in the product;
     // the test above and every other one here pass Arg.Any<TimeSpan>(), so UrlLifetime was unguarded.
     [Fact]

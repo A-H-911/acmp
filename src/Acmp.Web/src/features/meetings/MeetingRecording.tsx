@@ -9,7 +9,10 @@ import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bytes } from '../../lib/numberFmt';
-import { useMeetingDetail, useRecordingUrl, useUploadMeetingRecording, useDeleteMeetingRecording } from '../../api/meetings';
+import { useMeetingDetail, useRecordingUrl, useUploadMeetingRecording, useDeleteMeetingRecording, downloadMeetingRecording } from '../../api/meetings';
+import { useUploadLimits, toMb } from '../../api/uploads';
+import { ApiError, localizedValidationMessage } from '../../api/apiClient';
+import { UploadProgress } from '../../components/ui/UploadProgress';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { Icon } from '../../components/icons';
 import { Button } from '../../components/ui/Button';
@@ -39,17 +42,54 @@ export function MeetingRecording() {
   const urlQuery = useRecordingUrl(key, rec?.source === 'Uploaded');
   const inputRef = useRef<HTMLInputElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // AC-166 / DEF-173: the limit is the server's (AC-169), refused here before any bytes are sent; the upload
+  // shows a percentage, its failure shows the server's translated reason in BOTH views, and nothing else can
+  // start while it runs.
+  const limits = useUploadLimits();
+  const maxMb = toMb(limits.recordingMaxBytes);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadFailed, setDownloadFailed] = useState(false);
 
   if (!meeting) return null; // shell owns loading/error
 
-  const pick = (list: FileList | null) => {
+  const pick = async (list: FileList | null) => {
     const file = list?.[0];
-    if (file) uploadHook.mutate(file);
+    if (!file || uploading) return;
+    if (file.size > limits.recordingMaxBytes) {
+      setError(t('submit.err.fileSize', { max: maxMb }));
+      return;
+    }
+    setError(null);
+    setUploading(file.name);
+    setPct(0);
+    try {
+      await uploadHook.mutateAsync({ file, onProgress: setPct });
+    } catch (e) {
+      setError((e instanceof ApiError ? localizedValidationMessage(e.problem) : undefined) ?? t('meetings.recording.error'));
+    } finally {
+      setUploading(null);
+    }
   };
+
+  // AC-165: the download link is minted on click and saves under the original name; a failure is shown.
+  const download = async () => {
+    setDownloadFailed(false);
+    try {
+      await downloadMeetingRecording(meeting.key);
+    } catch {
+      setDownloadFailed(true);
+    }
+  };
+  const busy = uploading !== null;
+  const progress = uploading ? <UploadProgress name={uploading} pct={pct} /> : null;
+  const errorLine = error ? <p className="mt-rec-error" role="alert">{error}</p> : null;
 
   const heading = <h1 className="mt-rec-h1">{t('meetings.recording.title')}</h1>;
   const hiddenInput = (
-    <input ref={inputRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="visually-hidden" aria-label={t('meetings.recording.upload')} onChange={(e) => pick(e.target.files)} />
+    <input ref={inputRef} type="file" accept={limits.recordingContentTypes.join(',')} className="visually-hidden" aria-label={t('meetings.recording.upload')}
+      onChange={(e) => { void pick(e.target.files); e.target.value = ''; }} />
   );
 
   // A recording exists → design player card (uploaded video or Webex link) + footer (source · meta · actions).
@@ -85,24 +125,27 @@ export function MeetingRecording() {
               {rec.sizeBytes ? <span className="mt-rec-size"><Bytes value={rec.sizeBytes} /></span> : null}
             </div>
             <div className="mt-rec-actions">
-              {uploaded && src && (
-                <a className="btn btn-ghost btn-sm mt-rec-dl" href={src} download={rec.fileName ?? undefined}>
+              {uploaded && (
+                <Button variant="ghost" size="sm" className="mt-rec-dl" onClick={() => void download()} disabled={busy}>
                   <Icon name="download" size={15} aria-hidden /> {t('meetings.recording.download')}
-                </a>
+                </Button>
               )}
               {canManage && (
-                <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()} loading={uploadHook.isPending}>
+                <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()} loading={busy}>
                   <Icon name="upload" size={15} aria-hidden /> {t('meetings.recording.replace')}
                 </Button>
               )}
               {canManage && (
-                <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>
+                <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)} disabled={busy}>
                   <Icon name="trash" size={15} aria-hidden /> {t('meetings.recording.delete')}
                 </Button>
               )}
             </div>
           </div>
         </div>
+        {progress}
+        {errorLine}
+        {downloadFailed && <p className="mt-rec-error" role="alert">{t('meetings.recording.downloadFailed')}</p>}
         {canManage && hiddenInput}
         {canManage && (
           <Dialog
@@ -133,12 +176,13 @@ export function MeetingRecording() {
         {heading}
         <div className="mt-rec-drop">
           <div className="mt-rec-drop-ic" aria-hidden="true"><Icon name="upload" size={22} /></div>
-          <Button variant="primary" onClick={() => inputRef.current?.click()} loading={uploadHook.isPending}>
+          <Button variant="primary" onClick={() => inputRef.current?.click()} loading={busy}>
             {t('meetings.recording.upload')}
           </Button>
-          <p className="mt-rec-drop-hint">{t('meetings.recording.uploadHint')}</p>
+          <p className="mt-rec-drop-hint">{t('meetings.recording.uploadHint', { max: maxMb })}</p>
           {hiddenInput}
-          {uploadHook.isError && <p className="mt-rec-error" role="alert">{t('meetings.recording.error')}</p>}
+          {progress}
+          {errorLine}
         </div>
       </div>
     );

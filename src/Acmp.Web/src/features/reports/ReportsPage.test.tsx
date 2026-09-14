@@ -16,6 +16,8 @@ vi.mock('../../api/actions', async (o) => ({ ...(await o<typeof import('../../ap
 vi.mock('../../api/risks', async (o) => ({ ...(await o<typeof import('../../api/risks')>()), useRisksRegister: vi.fn() }));
 vi.mock('../../api/dependencies', async (o) => ({ ...(await o<typeof import('../../api/dependencies')>()), useDependenciesRegister: vi.fn() }));
 vi.mock('html-to-image', () => ({ toPng: vi.fn() }));
+// AC-168: the filter shows each stream's NAME; the value stays the code the topics carry.
+vi.mock('../../api/members', () => ({ useStreamLabel: () => (c: string) => ({ identity: 'Identity & Access', payments: 'Payments' } as Record<string, string>)[c] ?? c }));
 
 import { useBacklog } from '../../api/topics';
 import { useDecisionsRegister } from '../../api/decisions';
@@ -82,8 +84,9 @@ describe('ReportsPage (P12-PR3 shell)', () => {
     setup();
     const select = screen.getByRole('combobox');
     expect(select).toHaveValue('all');
-    expect(screen.getByRole('option', { name: 'identity' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'payments' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Identity & Access' })).toHaveValue('identity');
+    expect(screen.getByRole('option', { name: 'Payments' })).toHaveValue('payments');
+    expect(screen.queryByRole('option', { name: 'identity' })).toBeNull();
   });
 
   it('narrows the data when a stream is selected', async () => {

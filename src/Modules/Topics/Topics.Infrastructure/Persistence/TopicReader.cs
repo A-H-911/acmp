@@ -89,21 +89,31 @@ public sealed class TopicReader : ITopicReader
         return new TopicBrief(topic.PublicId, topic.Key, topic.Title, topic.Description, materials);
     }
 
-    public async Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default)
+    public Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
+        MaterialUrlAsync(topicId, attachmentId, download: false, ct);
+
+    // AC-164: the committee's Download - the same scoped lookup, a link that saves under the original name.
+    public Task<string?> GetMaterialDownloadUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
+        MaterialUrlAsync(topicId, attachmentId, download: true, ct);
+
+    private async Task<string?> MaterialUrlAsync(Guid topicId, Guid attachmentId, bool download, CancellationToken ct)
     {
         // ONE query joining both ids. Looking the attachment up alone and comparing its topic afterwards
         // would work, but it invites a later refactor to drop the comparison; this way the scope IS the
         // lookup and there is nothing to forget.
         // The pre-signed URL is the actual file. Scoping the lookup by visibility keeps "the scope IS
         // the lookup" property this method was already written around.
-        var storageKey = await _db.Topics.AsNoTracking()
+        var hit = await _db.Topics.AsNoTracking()
             .VisibleTo(await _visibility.ResolveAsync(ct))
             .Where(t => t.PublicId == topicId)
             .SelectMany(t => t.Attachments)
             .Where(a => a.PublicId == attachmentId)
-            .Select(a => a.StorageKey)
+            .Select(a => new { a.StorageKey, a.FileName })
             .FirstOrDefaultAsync(ct);
 
-        return storageKey is null ? null : await _files.GetPreSignedUrlAsync(_bucket, storageKey, UrlLifetime, ct);
+        if (hit is null) return null;
+        return download
+            ? await _files.GetDownloadUrlAsync(_bucket, hit.StorageKey, hit.FileName, UrlLifetime, ct)
+            : await _files.GetPreSignedUrlAsync(_bucket, hit.StorageKey, UrlLifetime, ct);
     }
 }

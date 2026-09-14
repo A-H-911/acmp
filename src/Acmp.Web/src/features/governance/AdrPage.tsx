@@ -25,6 +25,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon, type IconName } from '../../components/icons';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
 import { statusTone, exportMarkdown, downloadMarkdown } from './adrMeta';
+import { numberLocale } from '../../lib/numberFmt';
 import './governance.css';
 
 export function AdrPage() {
@@ -53,7 +54,7 @@ function AdrDetailView({ adr }: { adr: AdrDetail }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const pick = (l: LocalizedText | null) => (l ? (lang === 'ar' ? l.ar : l.en) : '');
-  const fmtDate = (iso: string | null) => (iso ? new Intl.DateTimeFormat(lang, { dateStyle: 'medium' }).format(new Date(iso)) : '—');
+  const fmtDate = (iso: string | null) => (iso ? new Intl.DateTimeFormat(numberLocale(lang), { dateStyle: 'medium' }).format(new Date(iso)) : '—');
 
   const onExport = () => {
     const md = exportMarkdown(adr, lang, {

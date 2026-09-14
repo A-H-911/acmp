@@ -21,6 +21,7 @@ import { Button } from '../../components/ui/Button';
 import { Icon } from '../../components/icons';
 import { MarkdownView } from '../../components/ui/MarkdownView';
 import { diffLines, diffStat } from './wikiDiff';
+import { numberLocale } from '../../lib/numberFmt';
 
 /** U+2212 MINUS SIGN, not a hyphen: it is the same width as `+` so the gutter stays a column. */
 const MINUS = '−';
@@ -44,8 +45,11 @@ export function WikiVersionHistory({ open, onClose, document }: Props) {
   // Versions are sorted newest-first, so a version's PREDECESSOR is the next element along.
   const predecessorOf = (v: DocumentVersion) => versions[versions.indexOf(v) + 1] ?? null;
 
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
-  const savedBy = (v: DocumentVersion) => members.data?.find((m) => m.keycloakUserId === v.savedByUserId)?.fullName ?? v.savedByUserId;
+  const fmtDate = (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  // AC-168 (DEF-178): a member the directory no longer lists is named by a translated placeholder, never
+  // their raw user id.
+  const savedBy = (v: DocumentVersion) =>
+    members.data?.find((m) => m.keycloakUserId === v.savedByUserId)?.fullName ?? t('wiki.versions.unknownAuthor');
 
   return (
     <Dialog
@@ -73,7 +77,7 @@ export function WikiVersionHistory({ open, onClose, document }: Props) {
               }}
             >
               <span className="wiki-version-num">v{v.version}</span>
-              <span className="wiki-version-meta">{fmtDate(v.savedAt)} · {savedBy(v)}</span>
+              <span className="wiki-version-meta">{fmtDate(v.savedAt)} · <bdi>{savedBy(v)}</bdi></span>
             </button>
           ))}
         </div>

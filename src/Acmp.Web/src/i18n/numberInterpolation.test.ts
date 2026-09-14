@@ -23,10 +23,10 @@ describe('number interpolation through the live i18n instance', () => {
     await i18n.changeLanguage(original);
   });
 
-  it('renders a number handed to t() in Arabic-Indic digits', () => {
+  it('renders a number handed to t() in Latin digits in Arabic too (AC-167)', () => {
     const out = i18n.t('meetings.attendanceSummary', { present: 12, total: 20, needed: 7 });
-    expect(out).toMatch(AR_DIGITS);
-    expect(out).not.toMatch(LATIN_DIGITS);
+    expect(out).toMatch(LATIN_DIGITS);
+    expect(out).not.toMatch(AR_DIGITS);
   });
 
   it('leaves a STRING placeholder alone — an entity key is not a quantity', () => {
@@ -69,8 +69,8 @@ describe('number interpolation through the live i18n instance', () => {
 
   it('formats every numeric placeholder in a multi-placeholder string, not just the first', () => {
     const out = i18n.t('topics.showing', { shown: 25, total: 1300 });
-    expect(out).not.toMatch(LATIN_DIGITS);
-    // 1300 must be grouped in Arabic-Indic too — proves options reach the formatter, not just digits.
-    expect(out).toContain('١٬٣٠٠');
+    expect(out).not.toMatch(AR_DIGITS);
+    // 1300 must be GROUPED - proves the formatter ran on it, not just that digits passed through.
+    expect(out).toContain('1,300');
   });
 });

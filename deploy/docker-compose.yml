@@ -236,7 +236,9 @@ services:
       # Browser-reachable host used to presign the URLs a browser opens - recording playback (ADR-0014) and topic attachments (AC-163); via nginx /acmp-recordings/ and /acmp-topics/.
       # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
       Minio__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-}
-      Minio__PublicSecure: "true"
+      # https by default (the ngrok/TLS profiles). The E2E job serves the SPA over plain http on :8088 and sets
+      # false so a presigned link is http://localhost:8088/acmp-topics/... - reachable by the test browser (AC-164).
+      Minio__PublicSecure: ${MINIO_PUBLIC_SECURE:-true}
       # Bundled Keycloak realm (ADR-0015). Issuer must match the SPA's exactly; RequireHttpsMetadata
       # is false only for the in-stack http dev profile — set true behind TLS in prod (P18).
       Authentication__Keycloak__Authority: "${KEYCLOAK_AUTHORITY:-http://keycloak.localhost:8085/realms/acmp}"

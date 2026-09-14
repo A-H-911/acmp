@@ -49,9 +49,16 @@ describe('WikiReadingView (P15e)', () => {
     expect(screen.getByText('Governance')).toBeInTheDocument(); // breadcrumb category
   });
 
-  it('falls back to the raw owner id when no member matches', () => {
+  // AC-168: this used to fall back to the raw owner id - the reader's copy of the bug the version history had.
+  it('names an owner the directory no longer lists with a placeholder, never the raw id, isolated for bidi', () => {
     setup({ ownerUserId: 'kc-unknown' });
-    expect(screen.getByText('kc-unknown')).toBeInTheDocument();
+    expect(screen.queryByText('kc-unknown')).not.toBeInTheDocument();
+    expect(screen.getByText('A former member').tagName).toBe('BDI');
+  });
+
+  it('isolates the author name from the meta line around it', () => {
+    setup();
+    expect(screen.getByText('Khalid Ahmed').tagName).toBe('BDI');
   });
 
   it('shows History to a non-manager but hides the lifecycle actions (m18)', () => {

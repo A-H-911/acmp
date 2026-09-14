@@ -17,7 +17,12 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useNavigate: () => navigateSpy };
 });
 
-vi.mock('../../api/topics', () => ({ useSubmitTopic: vi.fn(), uploadTopicAttachment: vi.fn(), MAX_ATTACHMENT_BYTES: 100 * 1024 * 1024 }));
+vi.mock('../../api/topics', () => ({ useSubmitTopic: vi.fn(), uploadTopicAttachment: vi.fn() }));
+// AC-169: the limits hook reads GET /api/uploads/limits; here it answers with the shipped defaults.
+vi.mock('../../api/uploads', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../../api/uploads')>();
+  return { ...real, useUploadLimits: () => real.DEFAULT_UPLOAD_LIMITS };
+});
 import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
 
 // Stub the react-query-backed TemplatePicker to a plain apply button (covered in

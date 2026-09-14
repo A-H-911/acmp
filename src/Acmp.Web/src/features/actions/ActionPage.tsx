@@ -25,6 +25,7 @@ import { statusTone, progressColorDetail } from './actionMeta';
 import { cssVars } from '../../lib/cssVars';
 import { ActionActions } from './ActionActions';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
+import { numberLocale } from '../../lib/numberFmt';
 import './actions.css';
 
 export function ActionPage() {
@@ -48,7 +49,7 @@ export function ActionPage() {
 
   const act = data;
   const pick = (l: LocalizedText | null) => (l ? (i18n.language === 'ar' ? l.ar : l.en) : '');
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(iso));
+  const fmtDate = (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium' }).format(new Date(iso));
 
   const facts = [
     { label: t('actions.fact.owner'), value: act.ownerName || t('actions.unassigned') },

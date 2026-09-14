@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import './upload-progress.css';
 import { cssVars } from '../../lib/cssVars';
 import { Pct } from '../../lib/numberFmt';
 

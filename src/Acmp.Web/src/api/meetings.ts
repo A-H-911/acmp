@@ -8,7 +8,8 @@
  * ['meetings','detail',key] so the builder re-renders from the server's truth.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from './apiClient';
+import { api, apiUpload } from './apiClient';
+import { startDownload } from '../lib/download';
 import type { PagedResult, TopicSummary } from './topics';
 
 /** Meeting type + mode (wire = enum names; localized in the UI). */
@@ -184,16 +185,26 @@ export function useMeetingDetail(key: string | undefined) {
 
 /** FR-056: upload a meeting recording file (multipart). No Content-Type header — the browser sets the
  *  multipart boundary; the field name `file` matches the server's IFormFile. Returns the RecordingDto. */
-export function uploadMeetingRecording(meetingKey: string, file: File): Promise<RecordingDto> {
+// AC-166 / DEF-173: through apiUpload (XMLHttpRequest) so the page can show a percentage - a 2 GB recording takes
+// minutes to an hour, and an unchanging page is abandoned (DEF-171).
+export function uploadMeetingRecording(meetingKey: string, file: File, onProgress?: (pct: number) => void): Promise<RecordingDto> {
   const form = new FormData();
   form.append('file', file);
-  return api<RecordingDto>(`/meetings/${meetingKey}/recording`, { method: 'POST', body: form });
+  return apiUpload<RecordingDto>(`/meetings/${meetingKey}/recording`, form, onProgress);
+}
+
+/** AC-165: DOWNLOADS the recording under its original name. The link is minted ON CLICK (not reused from the
+ *  player's cached URL, which expires - DEF-174) and signed with an attachment disposition, so it saves in place
+ *  instead of opening in the same tab, cloud included. */
+export async function downloadMeetingRecording(meetingKey: string): Promise<void> {
+  const { url } = await api<{ url: string }>(`/meetings/${meetingKey}/recording/url?download=true`);
+  startDownload(url);
 }
 
 export function useUploadMeetingRecording(key: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (file: File) => uploadMeetingRecording(key!, file),
+    mutationFn: ({ file, onProgress }: { file: File; onProgress?: (pct: number) => void }) => uploadMeetingRecording(key!, file, onProgress),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['meetings', 'detail', key] });
       qc.invalidateQueries({ queryKey: ['meetings', 'recording-url', key] }); // drop the stale presigned URL after replace
