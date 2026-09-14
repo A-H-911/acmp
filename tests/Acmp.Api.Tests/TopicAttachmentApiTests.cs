@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Acmp.Modules.Topics.Application.Contracts;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
 using FluentAssertions;
@@ -193,5 +194,9 @@ public sealed class TopicAttachmentKestrelLimitTests : IDisposable
         var over = await submitter.PostAsync($"/api/topics/{topic.Id}/attachments", TopicAttachmentHttp.Pdf(Max + 512 * 1024));
         over.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         (await over.Content.ReadAsStringAsync()).Should().Contain("FILE_TOO_LARGE");
+
+        // ...and the refused file left nothing behind: the topic still lists only the one stored at the maximum.
+        var detail = await submitter.GetFromJsonAsync<TopicDetailDto>($"/api/topics/{topic.Key}");
+        detail!.Attachments.Should().ContainSingle().Which.SizeBytes.Should().Be(Max);
     }
 }
