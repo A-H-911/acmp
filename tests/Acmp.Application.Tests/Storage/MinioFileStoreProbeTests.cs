@@ -100,6 +100,48 @@ public class MinioFileStoreProbeTests
         await client.Received(3).StatObjectAsync(Arg.Any<StatObjectArgs>(), Arg.Any<CancellationToken>());
     }
 
+    // DEF-170: the SAME SDK null-dereference on the bucket check every upload makes first (BucketExists, also a
+    // HEAD) - DEF-125's fix covered only StatObject, and CI hit this one on PR #412.
+    private static IMinioClient BucketProbeThrowing(params Exception[] perCall)
+    {
+        var client = Substitute.For<IMinioClient>();
+        var calls = 0;
+        client.BucketExistsAsync(Arg.Any<BucketExistsArgs>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                var i = calls++;
+                if (i < perCall.Length && perCall[i] is { } ex) throw ex;
+                return Task.FromResult(true);
+            });
+        return client;
+    }
+
+    [Fact]
+    public async Task An_upload_retries_a_transient_null_reference_on_the_bucket_check_and_then_writes()
+    {
+        var client = BucketProbeThrowing(new NullReferenceException());
+
+        await Store(client).UploadAsync(Bucket, Key, new MemoryStream(new byte[] { 1 }), "video/mp4");
+
+        await client.Received(2).BucketExistsAsync(Arg.Any<BucketExistsArgs>(), Arg.Any<CancellationToken>());
+        await client.Received(1).PutObjectAsync(Arg.Any<PutObjectArgs>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task An_unrecoverable_bucket_check_throws_the_named_exception_and_writes_nothing()
+    {
+        var client = BucketProbeThrowing(
+            new NullReferenceException(), new NullReferenceException(), new NullReferenceException());
+
+        var act = () => Store(client).UploadAsync(Bucket, Key, new MemoryStream(new byte[] { 1 }), "video/mp4");
+
+        var thrown = await act.Should().ThrowAsync<ObjectStoreProbeException>();
+        thrown.Which.Bucket.Should().Be(Bucket);
+        thrown.Which.ObjectName.Should().Be(Key);
+        thrown.Which.Attempts.Should().Be(3);
+        await client.DidNotReceive().PutObjectAsync(Arg.Any<PutObjectArgs>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact] // The happy path, so the retry loop is proven not to have broken the ordinary answer.
     public async Task A_present_object_is_true_on_the_first_call()
     {
