@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, within, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -81,8 +81,8 @@ describe('TopicDetail (P5b)', () => {
     mutate = vi.fn();
     mockAddComment.mockReturnValue({ mutate, isPending: false });
     mockUpload.mockReset();
-    uploadMutate = vi.fn();
-    mockUpload.mockReturnValue({ mutate: uploadMutate, isPending: false });
+    uploadMutate = vi.fn().mockResolvedValue({});
+    mockUpload.mockReturnValue({ mutateAsync: uploadMutate, isPending: false });
     mockPrepare.mockReset();
     prepareMutate = vi.fn();
     mockPrepare.mockReturnValue({ mutate: prepareMutate, isPending: false });
@@ -252,6 +252,46 @@ describe('TopicDetail (P5b)', () => {
     await user.upload(screen.getByLabelText(/Drop files/i), big);
     expect(screen.getByRole('alert')).toHaveTextContent(/100 MB or smaller/);
     expect(uploadMutate).not.toHaveBeenCalled();
+  });
+
+  // DEF-167: the drop hint states the real maximum, not the 50 MB it said before AC-162.
+  it('states the 100 MB maximum in the drop hint', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    expect(screen.getByText(/up to 100 MB/)).toBeInTheDocument();
+    expect(screen.queryByText(/50 MB/)).toBeNull();
+  });
+
+  // DEF-168: a long upload says what it is uploading and ignores new files until it finishes.
+  it('shows the upload in progress, ignores another file meanwhile, and clears when it lands', async () => {
+    let land: (v: unknown) => void = () => {};
+    uploadMutate.mockReturnValue(new Promise((r) => { land = r; }));
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    const first = new File(['x'], 'design.pdf', { type: 'application/pdf' });
+    await user.upload(screen.getByLabelText(/Drop files/i), first);
+    expect(screen.getByRole('status')).toHaveTextContent('Uploading design.pdf…');
+    fireEvent.drop(screen.getByText(/Drop files here/).closest('.sub-drop')!, { dataTransfer: { files: [new File(['y'], 'second.pdf', { type: 'application/pdf' })] } });
+    expect(uploadMutate).toHaveBeenCalledTimes(1);
+    land({});
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+  });
+
+  // DEF-168 / DEF-169: a refused upload is shown - uat's handler-less 400 has no problem body, so the
+  // generic translated message is what the user sees.
+  it('shows a failed upload with the translated message', async () => {
+    uploadMutate.mockRejectedValue(new ApiError(400));
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    await user.upload(screen.getByLabelText(/Drop files/i), new File(['x'], 'design.pdf', { type: 'application/pdf' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The file couldn’t be attached. Check the file and try again.');
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   // WBS-40.12 / AC-163: the open control is live and opens that attachment of THIS topic.

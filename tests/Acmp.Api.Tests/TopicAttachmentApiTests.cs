@@ -1,6 +1,9 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.Sockets;
+using System.Text;
 using Acmp.Modules.Topics.Application.Contracts;
 using Acmp.Shared.Application.Abstractions;
 using Acmp.Shared.Infrastructure.Audit;
@@ -10,6 +13,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Acmp.Api.Tests;
 
@@ -165,14 +170,33 @@ public class TopicAttachmentDownloadApiTests : IClassFixture<AcmpWebApplicationF
 // limit at all, which is how Kestrel's 30,000,000-byte default refused valid files for months with every test
 // green; so this class hosts the API on Kestrel over a loopback socket. Its own host (not the shared fixture):
 // the server kind is fixed when the host starts.
+// ONE Kestrel-hosted class, run ALONE (measured, both): this host binds a fixed port, so a second Kestrel class in
+// parallel fails to start; and UseSerilog points the process-wide static Log.Logger at whichever host started
+// last, so while other hosts start in parallel this host's log events go to THEIR logger and the DEF-169 test
+// sees nothing. A non-parallel collection runs after every parallel one, with no other host alive.
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class KestrelHostCollection
+{
+    public const string Name = "Kestrel host, run alone";
+}
+
+[Collection(KestrelHostCollection.Name)]
 public sealed class TopicAttachmentKestrelLimitTests : IDisposable
 {
+    private sealed class Capture : ILogEventSink
+    {
+        public ConcurrentQueue<LogEvent> Events { get; } = new();
+        public void Emit(LogEvent logEvent) => Events.Enqueue(logEvent);
+    }
+
     private const long Max = 100L * 1024 * 1024;
+    private readonly Capture _sink = new();
     private readonly WebApplicationFactory<Program> _app;
 
     public TopicAttachmentKestrelLimitTests()
     {
-        _app = TopicAttachmentHttp.WithFakeStore(new AcmpWebApplicationFactory());
+        _app = TopicAttachmentHttp.WithFakeStore(new AcmpWebApplicationFactory())
+            .WithWebHostBuilder(b => b.ConfigureTestServices(s => s.AddSingleton<ILogEventSink>(_sink)));
         _app.UseKestrel(0);
         _app.StartServer();
     }
@@ -198,5 +222,44 @@ public sealed class TopicAttachmentKestrelLimitTests : IDisposable
         // ...and the refused file left nothing behind: the topic still lists only the one stored at the maximum.
         var detail = await submitter.GetFromJsonAsync<TopicDetailDto>($"/api/topics/{topic.Key}");
         detail!.Attachments.Should().ContainSingle().Which.SizeBytes.Should().Be(Max);
+    }
+
+    // DEF-169: on uat every large upload ended in a 400 before the handler ran, and the reason was logged below the
+    // level production keeps, so nothing said why. appsettings.json now keeps Microsoft.AspNetCore.Http.
+    // RequestDelegateFactory at Debug; this proves, with the SHIPPED configuration (no override here), that an
+    // upload whose body ends early leaves its reason in the log. Real Kestrel: TestServer cannot cut a body short.
+    [Fact]
+    public async Task An_upload_whose_body_ends_early_logs_why_it_was_refused()
+    {
+        var client = TopicAttachmentHttp.Client(_app, "Member", "kc-submitter");
+        var topic = await TopicAttachmentHttp.SubmitAsync(client);
+
+        // Declare 4 MB, send 1 MB, let the server start reading, hang up - what a reloaded page does to an upload
+        // in flight. (Hanging up before the server reads at all is a different failure: a 500, not uat's 400.)
+        const string boundary = "----def169";
+        var head = Encoding.ASCII.GetBytes($"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"a.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.7\n");
+        using (var tcp = new TcpClient())
+        {
+            await tcp.ConnectAsync("127.0.0.1", client.BaseAddress!.Port);
+            var stream = tcp.GetStream();
+            await stream.WriteAsync(Encoding.ASCII.GetBytes(
+                $"POST /api/topics/{topic.Id}/attachments HTTP/1.1\r\nHost: localhost\r\n" +
+                $"{TestAuthHandler.RolesHeader}: Member\r\n{TestAuthHandler.SubHeader}: kc-submitter\r\n" +
+                $"Content-Type: multipart/form-data; boundary={boundary}\r\nContent-Length: {4 * 1024 * 1024}\r\n\r\n"));
+            await stream.WriteAsync(head);
+            await stream.WriteAsync(new byte[1024 * 1024]);
+            await Task.Delay(300);
+        }
+
+        LogEvent? reason = null;
+        for (var i = 0; i < 50 && reason is null; i++)
+        {
+            reason = _sink.Events.FirstOrDefault(e =>
+                e.Properties.TryGetValue("SourceContext", out var s) && s.ToString().Contains("RequestDelegateFactory"));
+            if (reason is null) await Task.Delay(100);
+        }
+
+        reason.Should().NotBeNull("the refusal's reason must reach the sinks production keeps; captured: " + string.Join(" | ", _sink.Events.Select(e => $"{e.Level} {(e.Properties.TryGetValue("SourceContext", out var c) ? c : null)} {e.RenderMessage()}").TakeLast(12)));
+        (reason!.Exception?.Message ?? reason.RenderMessage()).Should().Contain("Unexpected end of request content");
     }
 }

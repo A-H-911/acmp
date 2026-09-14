@@ -1634,7 +1634,7 @@
     "fSystems": "الأنظمة المتأثرة",
     "fSystemsPh": "اكتب نظامًا واضغط Enter…",
     "dropFiles": "أفلت الملفات هنا أو انقر للرفع",
-    "dropHint": "PDF, PNG, JPEG, SVG, DOCX · حتى 50 م.ب",
+    "dropHint": "PDF, PNG, JPEG, SVG, DOCX · حتى {{max}} م.ب",
     "guardTitle": "المغادرة دون تقديم؟",
     "guardBody": "لم يُقدَّم هذا الموضوع إلى اللجنة بعد. مسودتك محفوظة على هذا الجهاز، يمكنك إكمالها لاحقًا.",
     "keepEditing": "متابعة التحرير",
@@ -1760,7 +1760,8 @@
       "empty": "لا مرفقات بعد. أفلت الملفات لإضافتها.",
       "download": "تنزيل",
       "downloadFile": "تنزيل {{name}}",
-      "openFailed": "تعذّر فتح الملف."
+      "openFailed": "تعذّر فتح الملف.",
+      "uploading": "جارٍ رفع {{name}}…"
     },
     "votes": {
       "emptyTitle": "لا تصويتات بعد",

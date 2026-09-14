@@ -19,7 +19,7 @@ public sealed class MinioFileStore : IFileStore
 
     public async Task<string> UploadAsync(string bucket, string objectName, Stream content, string contentType, CancellationToken ct = default)
     {
-        await EnsureBucketAsync(bucket, ct);
+        await EnsureBucketAsync(bucket, objectName, ct);
         await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectName)
@@ -59,17 +59,29 @@ public sealed class MinioFileStore : IFileStore
     // a recording exists.
     private const int ProbeAttempts = 3;
 
-    public async Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default)
-    {
-        for (var attempt = 1; ; attempt++)
+    public Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default) =>
+        ProbeAsync(bucket, objectName, async () =>
         {
             try
             {
                 await _client.StatObjectAsync(new StatObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
                 return true;
             }
+            // Well-known to the SDK, so never the null-dereference: answered at once, never retried.
             catch (ObjectNotFoundException) { return false; }
             catch (BucketNotFoundException) { return false; }
+        }, ct);
+
+    // DEF-125 / DEF-170: every HEAD probe goes through here - StatObject (above) AND BucketExists (the bucket
+    // check on every upload, which DEF-125's fix missed and CI hit on PR #412).
+    private static async Task<T> ProbeAsync<T>(string bucket, string objectName, Func<Task<T>> probe, CancellationToken ct)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await probe();
+            }
             catch (NullReferenceException ex)
             {
                 // Narrow ON PURPOSE: this is the one signature DEF-125 diagnosed, not a guess at which
@@ -93,11 +105,11 @@ public sealed class MinioFileStore : IFileStore
     // fires; the catch is for a tightened policy where even the probe is denied. Swallowing a denial here
     // is safe because it decides nothing: PutObject immediately after is the real authority and its own
     // failure surfaces to the caller.
-    private async Task EnsureBucketAsync(string bucket, CancellationToken ct)
+    private async Task EnsureBucketAsync(string bucket, string objectName, CancellationToken ct)
     {
         try
         {
-            if (await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket), ct))
+            if (await ProbeAsync(bucket, objectName, () => _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket), ct), ct))
                 return;
             await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket), ct);
         }

@@ -21,7 +21,7 @@ import {
   useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, type TopicDetail as Topic,
   MAX_ATTACHMENT_BYTES, openTopicAttachment,
 } from '../../api/topics';
-import { ApiError } from '../../api/apiClient';
+import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { Dialog } from '../../components/ui/Dialog';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusChip } from '../../components/ui/StatusChip';
@@ -462,15 +462,31 @@ function Attachments({ topic }: { topic: Topic }) {
   const [over, setOver] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [openFailed, setOpenFailed] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const maxMb = MAX_ATTACHMENT_BYTES / (1024 * 1024);
 
   // AC-162: refuse an over-maximum file HERE, as the submit page does - the server's own body limit would
   // otherwise refuse it with nothing the page can translate (DEF-166).
-  const onFiles = (list: FileList | null) => {
-    if (!list) return;
+  // DEF-168: a 100 MB upload takes minutes, so the tab says what it is uploading, shows a failure, and ignores
+  // new files until it is done - before, it looked identical whether the upload was running or had failed.
+  // ponytail: an indeterminate "Uploading x" line, not a percentage - fetch reports no upload progress.
+  const onFiles = async (list: FileList | null) => {
+    if (!list || uploading) return;
     const files = Array.from(list);
     const ok = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
-    setFileError(ok.length < files.length ? t('submit.err.fileSize', { max: MAX_ATTACHMENT_BYTES / (1024 * 1024) }) : null);
-    for (const f of ok) upload.mutate({ topicId: topic.id, file: f });
+    setFileError(ok.length < files.length ? t('submit.err.fileSize', { max: maxMb }) : null);
+    setUploadError(null);
+    for (const f of ok) {
+      setUploading(f.name);
+      try {
+        await upload.mutateAsync({ topicId: topic.id, file: f });
+      } catch (e) {
+        setUploadError((e instanceof ApiError ? localizedValidationMessage(e.problem) : undefined) ?? t('submit.uploadError'));
+        break;
+      }
+    }
+    setUploading(null);
   };
 
   // WBS-40.12 / AC-163: the URL is fetched on click; a refusal must be visible, not a silent no-op.
@@ -493,12 +509,14 @@ function Attachments({ topic }: { topic: Topic }) {
       >
         <input ref={inputRef} type="file" multiple aria-label={t('submit.dropFiles')} className="visually-hidden" onChange={(e) => onFiles(e.target.files)} />
         <div className="sub-drop-ic" aria-hidden="true"><Icon name="upload" size={19} /></div>
-        <button type="button" className="sub-drop-btn" onClick={() => inputRef.current?.click()} disabled={upload.isPending}>
+        <button type="button" className="sub-drop-btn" onClick={() => inputRef.current?.click()} disabled={uploading !== null}>
           {t('submit.dropFiles')}
         </button>
-        <div className="sub-drop-hint">{t('submit.dropHint')}</div>
+        <div className="sub-drop-hint">{t('submit.dropHint', { max: maxMb })}</div>
       </div>
+      {uploading && <p className="bk-muted" role="status" aria-live="polite">{t('detail.attach.uploading', { name: uploading })}</p>}
       {fileError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{fileError}</p>}
+      {uploadError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{uploadError}</p>}
       {topic.attachments.length === 0 ? (
         <p className="bk-muted dt-attach-empty">{t('detail.attach.empty')}</p>
       ) : (

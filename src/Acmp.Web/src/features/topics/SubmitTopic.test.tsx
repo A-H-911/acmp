@@ -170,6 +170,12 @@ describe('SubmitTopic (P5b)', () => {
     expect(screen.getByText(/100 MB or smaller/)).toBeInTheDocument();
   });
 
+  // DEF-167: the drop hint states the real maximum, not the 50 MB it said before AC-162.
+  it('states the 100 MB maximum in the drop hint', () => {
+    setup();
+    expect(screen.getByText(/up to 100 MB/)).toBeInTheDocument();
+  });
+
   it('uploads attached files after the topic is created', async () => {
     const user = userEvent.setup();
     setup();
