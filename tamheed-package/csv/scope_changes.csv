@@ -498,3 +498,14 @@ SC-069,DEC-188,"**`FR-134` MOVES Deferred → Approved WITH ITS STATEMENT AMENDE
 **DEFAULTS (`DEC-188` g5):** Hangfire sends a MediatR command to a handler in the Notifications module, unit-tested away from Hangfire; three read contracts in `Acmp.Shared.Contracts` implemented by Actions, Decisions and Meetings; counts only, with a link to the dashboard; nothing when every count is zero; one per member per period, checked against the Notifications module's own table; crons default to 07:30 daily and 08:00 Monday; no audit row; the preferences group is Notifications.
 
 **APPLICATION ORDER (`LL-042`, `SC-068`'s precedent):** this row Approved and `WBS-40.4` amended → `AC-161` written `Proposed` → the OPERATOR approves `AC-161`'s text and `FR-134`'s new statement → `AC-161` Approved and `FR-134` Approved in one batch → both re-read → this row `Merged`. `AC-161` is graded after the build, by its own verification clause.",1,Merged,,
+SC-070,DEC-190,"**`AC-162` REPLACES `AC-105` (WHICH IS SUPERSEDED); `AC-163` IS ADDED UNDER `FR-006`; `WBS-40.12` IS AMENDED; `DW-108` IS ACTIVATED INTO THIS UNIT. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `AC-105` is Approved and frozen, and `DEC-190` a2 changes its default; a frozen criterion is replaced, never edited. `WBS-40.12` had no criterion (`DEC-180` i1), and `DEC-190` a4 gives it one. `DEF-154`, `DEF-166` and `DW-108` join the unit by a5/a6.
+
+**`WBS-40.12`:** an append-only amendment. Its original text is kept as the record of what was scoped.
+
+**DEVIATIONS AND HISTORIC TEXT.** `FR-165`'s aside *""retrieval of an attachment by a committee member is a separate capability that does not exist anywhere in the product today""* becomes historic when this lands; its requirement clause (materials listed and not openable from the preview) is untouched, so the row is not amended. `AC-135` names *""BOTH call sites""* for the one-hour ceiling; this adds a third, held to the same ceiling by its own test.
+
+**HOW THE ROWS CLOSE.** `WBS-40.12` is done-claimed on `AC-163`. `DEF-154` and `DEF-166` close Fixed when `AC-162` is Met, which needs its one-time uat measurement (the operator's word at the time). `DW-108` closes Done with the nginx location in the PR, inspected, not run.
+
+**APPLICATION ORDER (`LL-042`, `SC-069`'s precedent):** this row Approved, `WBS-40.12` amended and `DW-108` Activated → `AC-162` and `AC-163` written `Proposed` → the OPERATOR approves both texts → `AC-162` and `AC-163` Approved and `AC-105` Superseded (superseded_by `AC-162`) in one batch → all three re-read → this row `Merged`. Both criteria are graded after the build, by their own verification clauses.",1,Merged,,
