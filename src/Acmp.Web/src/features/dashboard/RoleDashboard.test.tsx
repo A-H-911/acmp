@@ -81,6 +81,13 @@ describe('RoleDashboard — role gating', () => {
     expect(screen.queryByRole('heading', { name: 'Votes awaiting approval' })).not.toBeInTheDocument();
   });
 
+  // AC-168: the name is INSIDE a translated sentence, so it is isolated with FSI...PDI rather than an element;
+  // "مساء الخير، E2E Secretary" reordered the Latin name against the Arabic greeting.
+  it('isolates the signed-in name inside the greeting', () => {
+    setup();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('⁨Omar⁩');
+  });
+
   it('falls back to the committee variant for a non-dashboard role (auditor)', () => {
     mockAuth.mockReturnValue(authFor(['auditor']));
     setup();

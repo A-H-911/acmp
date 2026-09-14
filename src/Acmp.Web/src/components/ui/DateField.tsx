@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DatePicker } from './DatePicker';
 import { Icon } from '../icons';
+import { numberLocale } from '../../lib/numberFmt';
 
 interface DateFieldProps {
   /** Selected date as ISO yyyy-mm-dd (Gregorian). */
@@ -33,15 +34,15 @@ export function DateField({ value, onChange, placeholder, labels, id, ariaLabel,
   const panelRef = useRef<HTMLDivElement>(null);
 
   const { weekdayLabels, monthLabels } = useMemo(() => {
-    const wd = new Intl.DateTimeFormat(lang, { weekday: 'narrow' });
-    const mo = new Intl.DateTimeFormat(lang, { month: 'long' });
+    const wd = new Intl.DateTimeFormat(numberLocale(lang), { weekday: 'narrow' });
+    const mo = new Intl.DateTimeFormat(numberLocale(lang), { month: 'long' });
     return {
       weekdayLabels: Array.from({ length: 7 }, (_, i) => wd.format(new Date(Date.UTC(2023, 0, 1 + i)))),
       monthLabels: Array.from({ length: 12 }, (_, i) => mo.format(new Date(Date.UTC(2023, i, 1)))),
     };
   }, [lang]);
 
-  const display = value ? new Intl.DateTimeFormat(lang, { dateStyle: 'medium' }).format(new Date(`${value}T00:00:00`)) : '';
+  const display = value ? new Intl.DateTimeFormat(numberLocale(lang), { dateStyle: 'medium' }).format(new Date(`${value}T00:00:00`)) : '';
 
   useEffect(() => {
     if (!open) return;

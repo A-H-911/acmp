@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
+﻿using Acmp.Modules.Meetings.Application;
+using Acmp.Modules.Meetings.Application.Features.AgendaBuilder;
 using Acmp.Modules.Meetings.Application.Features.CancelMeeting;
 using Acmp.Modules.Meetings.Application.Features.ConductMeeting;
 using Acmp.Modules.Meetings.Application.Features.DeleteRecording;
@@ -13,6 +14,7 @@ using Acmp.Modules.Meetings.Application.Features.UploadRecording;
 using Acmp.Modules.Meetings.Domain.Enums;
 using Acmp.Shared.Authorization;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Acmp.Api.Endpoints;
 
@@ -24,6 +26,13 @@ public static class MeetingsEndpoints
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/meetings").WithTags("Meetings").RequireAuthorization();
+
+        // AC-166 / DEF-173: the recording endpoint's own body limit FOLLOWS the configured maximum plus the same
+        // multipart margin as attachments, so a file within the maximum is never cut off by the server's limit and
+        // one just over it reaches the validator's FILE_TOO_LARGE instead of a bare 413. It used to be a 2 GiB
+        // constant with no margin, so config could not raise it (the DEF-166 shape).
+        var recordingLimit = app.ServiceProvider.GetRequiredService<IOptions<MeetingRecordingOptions>>().Value.MaxSizeBytes
+            + TopicEndpoints.AttachmentMultipartMargin;
 
         // Reads — any authenticated committee member (committee-wide read).
         group.MapGet("/", async (ISender sender, CancellationToken ct) =>
@@ -57,15 +66,16 @@ public static class MeetingsEndpoints
         }).RequireAuthorization(Policies.MinutesCapture).DisableAntiforgery()
           .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Upload)
           // Recordings are large video: raise this endpoint's Kestrel body + multipart limits above the
-          // 28.6 MB / 128 MB defaults (nginx client_max_body_size is raised in parallel). Matches the app cap.
+          // 28.6 MB / 128 MB defaults (nginx client_max_body_size, 2100m, is raised in parallel).
           .WithMetadata(
-              new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(RecordingUploadMaxBytes),
-              new Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute { MultipartBodyLengthLimit = RecordingUploadMaxBytes });
+              new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(recordingLimit),
+              new Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute { MultipartBodyLengthLimit = recordingLimit });
 
         // Playback: mint a short-lived presigned MinIO URL for an uploaded recording (Chairman, Secretary, Auditor).
-        group.MapGet("/{key}/recording/url", async (string key, ISender sender, CancellationToken ct) =>
+        // AC-165: ?download=true returns a link that saves under the original name; the player uses the plain one.
+        group.MapGet("/{key}/recording/url", async (string key, bool? download, ISender sender, CancellationToken ct) =>
         {
-            var url = await sender.Send(new GetRecordingUrlQuery(key), ct);
+            var url = await sender.Send(new GetRecordingUrlQuery(key, download == true), ct);
             return url is null ? Results.NotFound() : Results.Ok(new { url });
         });
 
@@ -159,10 +169,6 @@ public static class MeetingsEndpoints
 
         return app;
     }
-
-    // Per-endpoint upload ceiling for recordings (matches MeetingRecordingOptions default = 2 GB). If the
-    // operator raises the app cap above this, raise here + nginx client_max_body_size too.
-    private const long RecordingUploadMaxBytes = 2L * 1024 * 1024 * 1024;
 
     public sealed record ReasonBody(string Reason);
     public sealed record AddAgendaItemBody(Guid TopicId, string TopicKey, string TopicTitle, bool Urgent,

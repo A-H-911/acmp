@@ -16,11 +16,13 @@
 import { useContext, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStreamLabel } from '../../api/members';
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
   useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, type TopicDetail as Topic,
-  MAX_ATTACHMENT_BYTES, openTopicAttachment,
+  downloadTopicAttachment,
 } from '../../api/topics';
+import { useUploadLimits, toMb } from '../../api/uploads';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { Dialog } from '../../components/ui/Dialog';
 import { Tabs } from '../../components/ui/Tabs';
@@ -32,15 +34,16 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials, TOPIC_TYPE_VALUES, TOPIC_SOURCE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
-import { UploadProgress } from './UploadProgress';
+import { UploadProgress } from '../../components/ui/UploadProgress';
 import { AcmpAuthContext, hasRole } from '../../auth/AcmpAuthContext';
+import { numberLocale } from '../../lib/numberFmt';
 import './topics.css';
 
 const TABS = ['overview', 'comments', 'attachments', 'votes', 'history'] as const;
 
 function useDateFmt() {
   const { i18n } = useTranslation();
-  return (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  return (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 }
 
 export function TopicDetail() {
@@ -438,6 +441,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 
 function Overview({ topic }: { topic: Topic }) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel(); // AC-168: localized names, never codes
   return (
     <div className="dt-overview">
       <Section label={t('detail.sec.description')}><p className="dt-body">{topic.description}</p></Section>
@@ -445,7 +449,7 @@ function Overview({ topic }: { topic: Topic }) {
       <Section label={t('detail.sec.source')}><p className="dt-body">{t(`topics.source.${topic.source}`)}</p></Section>
       <div className="dt-two">
         <Section label={t('detail.sec.streams')}>
-          <div className="bk-streams">{topic.streams.length ? topic.streams.map((s) => <Tag key={s} tone="info">{s}</Tag>) : <span className="bk-muted">—</span>}</div>
+          <div className="bk-streams">{topic.streams.length ? topic.streams.map((s) => <Tag key={s} tone="info">{streamLabel(s)}</Tag>) : <span className="bk-muted">—</span>}</div>
         </Section>
         <Section label={t('detail.sec.systems')}>
           <div className="bk-streams">{topic.systems.length ? topic.systems.map((s) => <Tag key={s}>{s}</Tag>) : <span className="bk-muted">—</span>}</div>
@@ -466,7 +470,9 @@ function Attachments({ topic }: { topic: Topic }) {
   const [uploading, setUploading] = useState<string | null>(null);
   const [pct, setPct] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const maxMb = MAX_ATTACHMENT_BYTES / (1024 * 1024);
+  // AC-169: the limit this tab states and checks is the server's (GET /api/uploads/limits), never a copy.
+  const limits = useUploadLimits();
+  const maxMb = toMb(limits.attachmentMaxBytes);
 
   // AC-162: refuse an over-maximum file HERE, as the submit page does - the server's own body limit would
   // otherwise refuse it with nothing the page can translate (DEF-166).
@@ -475,7 +481,7 @@ function Attachments({ topic }: { topic: Topic }) {
   const onFiles = async (list: FileList | null) => {
     if (!list || uploading) return;
     const files = Array.from(list);
-    const ok = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
+    const ok = files.filter((f) => f.size <= limits.attachmentMaxBytes);
     setFileError(ok.length < files.length ? t('submit.err.fileSize', { max: maxMb }) : null);
     setUploadError(null);
     for (const f of ok) {
@@ -491,11 +497,12 @@ function Attachments({ topic }: { topic: Topic }) {
     setUploading(null);
   };
 
-  // WBS-40.12 / AC-163: the URL is fetched on click; a refusal must be visible, not a silent no-op.
-  const open = async (attachmentId: string) => {
+  // AC-164: Download saves the file under its original name; the URL is fetched on click, and a refusal must
+  // be visible, not a silent no-op.
+  const download = async (attachmentId: string) => {
     setOpenFailed(null);
     try {
-      await openTopicAttachment(topic.id, attachmentId);
+      await downloadTopicAttachment(topic.id, attachmentId);
     } catch {
       setOpenFailed(attachmentId);
     }
@@ -509,7 +516,10 @@ function Attachments({ topic }: { topic: Topic }) {
         onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
       >
-        <input ref={inputRef} type="file" multiple aria-label={t('submit.dropFiles')} className="visually-hidden" onChange={(e) => onFiles(e.target.files)} />
+        {/* AC-169: only the allowed types are offered, and the value is cleared so re-picking the same file after a
+            failure starts a new attempt (DEF-179). */}
+        <input ref={inputRef} type="file" multiple accept={limits.attachmentContentTypes.join(',')} aria-label={t('submit.dropFiles')} className="visually-hidden"
+          onChange={(e) => { void onFiles(e.target.files); e.target.value = ''; }} />
         <div className="sub-drop-ic" aria-hidden="true"><Icon name="upload" size={19} /></div>
         <button type="button" className="sub-drop-btn" onClick={() => inputRef.current?.click()} disabled={uploading !== null}>
           {t('submit.dropFiles')}
@@ -528,11 +538,11 @@ function Attachments({ topic }: { topic: Topic }) {
               <span className="sub-file-ic" aria-hidden="true"><Icon name="doc" size={15} /></span>
               <span className="sub-file-main">
                 <span className="sub-file-name" dir="ltr">{a.fileName}</span>
-                <span className="sub-file-meta">{a.uploadedByName} · {fmt(a.uploadedAt)}</span>
+                <span className="sub-file-meta"><bdi>{a.uploadedByName}</bdi> · {fmt(a.uploadedAt)}</span>
                 {openFailed === a.id && <span className="field-error" role="alert">{t('detail.attach.openFailed')}</span>}
               </span>
               <button type="button" className="dt-attach-dl" aria-label={t('detail.attach.downloadFile', { name: a.fileName })}
-                title={t('detail.attach.download')} onClick={() => open(a.id)}>
+                title={t('detail.attach.download')} onClick={() => download(a.id)}>
                 <Icon name="download" size={14} aria-hidden />
               </button>
             </li>
@@ -613,7 +623,7 @@ function History({ topic }: { topic: Topic }) {
               {h.from ? `${t(`topics.status.${h.from}`)} → ${t(`topics.status.${h.to}`)}` : t(`topics.status.${h.to}`)}
               {h.reason && <span className="dt-tl-reason"> — {h.reason}</span>}
             </div>
-            <div className="dt-tl-meta">{h.actorName} · {fmt(h.occurredAt)}</div>
+            <div className="dt-tl-meta"><bdi>{h.actorName}</bdi> · {fmt(h.occurredAt)}</div>
           </div>
         </li>
       ))}

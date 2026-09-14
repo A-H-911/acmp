@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Kanban } from './Kanban';
 import { renderWithAuth } from '../../test/render';
@@ -9,7 +9,7 @@ import type { Member } from '../../api/members';
 
 vi.mock('../../api/topics', () => ({ useAcceptTopic: vi.fn(), useReturnTopic: vi.fn(), useMoveTopicPriority: vi.fn() }));
 import { useAcceptTopic, useReturnTopic, useMoveTopicPriority } from '../../api/topics';
-vi.mock('../../api/members', () => ({ useMembers: vi.fn() }));
+vi.mock('../../api/members', () => ({ useMembers: vi.fn(), useStreamLabel: () => (c: string) => ({ identity: 'Identity & Access' } as Record<string, string>)[c] ?? c }));
 import { useMembers } from '../../api/members';
 
 const mockAccept = useAcceptTopic as unknown as Mock;
@@ -62,6 +62,12 @@ describe('Kanban (P5b)', () => {
     expect(screen.getByRole('region', { name: /Returned, 0/ })).toBeInTheDocument();
   });
 
+  it('shows a card\'s stream by its name, never its code (AC-168)', () => {
+    renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
+    expect(within(screen.getByRole('group', { name: /TOP-2026-101/ })).getByText('Identity & Access')).toBeInTheDocument();
+    expect(screen.queryByText('identity')).toBeNull();
+  });
+
   it('announces the column count in the reader digits, not just on screen (DEF-111 / NFR-037)', async () => {
     /*
      * The accessible name is what a screen-reader user HEARS. It used to be a template literal
@@ -77,8 +83,9 @@ describe('Kanban (P5b)', () => {
       renderWithAuth(<Kanban rows={ROWS} />, { roles: ['secretary'] });
       const names = screen.getAllByRole('region').map((r) => r.getAttribute('aria-label') ?? '');
       expect(names.length).toBeGreaterThan(0);
-      expect(names.some((n) => /[٠-٩]/.test(n))).toBe(true);
-      expect(names.every((n) => !/[0-9]/.test(n))).toBe(true);
+      // AC-167: the heard count uses the same (Latin) digits as the visible one - never Arabic-Indic.
+      expect(names.some((n) => /[0-9]/.test(n))).toBe(true);
+      expect(names.every((n) => !/[٠-٩]/.test(n))).toBe(true);
     } finally {
       await i18n.changeLanguage('en');
     }

@@ -25,6 +25,7 @@ public class TopicAttachmentUrlTests
         public IFileStore Files { get; } = Substitute.For<IFileStore>();
         public IAuditSink Audit { get; } = Substitute.For<IAuditSink>();
         public TimeSpan? Expiry { get; private set; }
+        public string? DownloadName { get; private set; }
 
         public Rig()
         {
@@ -34,8 +35,9 @@ public class TopicAttachmentUrlTests
             user.UserId.Returns("kc-sec");
             Db = new TopicsDbContext(new DbContextOptionsBuilder<TopicsDbContext>()
                 .UseInMemoryDatabase("attach-url-" + Guid.NewGuid()).Options, clock, user);
-            Files.GetPreSignedUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
-                .Returns(ci => { Expiry = ci.ArgAt<TimeSpan>(2); return "https://storage.example/presigned"; });
+            // AC-164: the committee path mints a DOWNLOAD link, carrying the original file name.
+            Files.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+                .Returns(ci => { DownloadName = ci.ArgAt<string>(2); Expiry = ci.ArgAt<TimeSpan>(3); return "https://storage.example/presigned"; });
         }
 
         public Task<string?> RunAsync(Guid topicId, Guid attachmentId, TopicVisibilityScope scope)
@@ -69,6 +71,8 @@ public class TopicAttachmentUrlTests
         var url = await rig.RunAsync(topic.PublicId, attachment.PublicId, Member);
 
         url.Should().Be("https://storage.example/presigned");
+        rig.DownloadName.Should().Be("deck.pdf", "AC-164: the file downloads under its ORIGINAL name, not the storage key");
+        await rig.Files.DidNotReceiveWithAnyArgs().GetPreSignedUrlAsync(default!, default!, default, default);
         rig.Expiry.Should().NotBeNull("the reader must pass an explicit expiry, never the store's default");
         rig.Expiry!.Value.Should().BePositive().And.BeLessThanOrEqualTo(TimeSpan.FromHours(1), "NFR-027 / AC-135 cap presigned URLs at 1 h");
         await rig.Audit.Received(1).EmitEnrichedAsync("Topics.AttachmentAccessed", "TopicAttachment",
@@ -83,7 +87,7 @@ public class TopicAttachmentUrlTests
 
         (await rig.RunAsync(topic.PublicId, attachment.PublicId, Member)).Should().BeNull();
 
-        await rig.Files.DidNotReceiveWithAnyArgs().GetPreSignedUrlAsync(default!, default!, default, default);
+        await rig.Files.DidNotReceiveWithAnyArgs().GetDownloadUrlAsync(default!, default!, default!, default, default);
         rig.Audit.ReceivedCalls().Should().BeEmpty();
     }
 

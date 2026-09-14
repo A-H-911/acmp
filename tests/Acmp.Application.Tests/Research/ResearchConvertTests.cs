@@ -49,6 +49,8 @@ public class ResearchConvertTests
         // FR-159 widened the port with the /session reads. This double exercises the RESEARCH
         // conversion path, which uses neither, so they answer "nothing here" rather than pretending.
         public Task<TopicBrief?> GetBriefAsync(Guid id, CancellationToken ct = default) => Task.FromResult<TopicBrief?>(null);
+        public Task<string?> GetMaterialDownloadUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
+            Task.FromResult<string?>(null);
         public Task<string?> GetMaterialUrlAsync(Guid topicId, Guid attachmentId, CancellationToken ct = default) =>
             Task.FromResult<string?>(null);
         // WBS-26.1 widened the port again, for SoD-4's recorder-vs-owner check. Same reasoning as above:

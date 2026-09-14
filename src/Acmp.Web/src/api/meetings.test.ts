@@ -5,10 +5,11 @@ import {
   useAddAgendaItem, useRemoveAgendaItem, useMoveAgendaItem, useSetTimebox,
   useAssignPresenter, usePublishAgenda, useStartMeeting, useEndMeeting,
   useMarkAttendance, useCaptureDiscussion, useRecordActualTime,
-  useRecordingUrl, useDeleteMeetingRecording, useUploadMeetingRecording,
+  useRecordingUrl, useDeleteMeetingRecording, useUploadMeetingRecording, downloadMeetingRecording,
 } from './meetings';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
+import { FakeXhr, installFakeXhr } from '../test/fakeXhr';
 
 /* Real meetings hooks vs a stubbed fetch — assert URL/method/body + cache invalidation. */
 afterEach(() => vi.unstubAllGlobals());
@@ -210,15 +211,21 @@ describe('live-meeting mutations (invalidate detail only)', () => {
 });
 
 describe('recording (FR-056)', () => {
-  it('useUploadMeetingRecording POSTs the multipart file and invalidates the detail + presigned-url keys', async () => {
-    const spy = stubFetch(() => ({ jsonBody: { source: 'Uploaded', fileName: 'r.mp4', contentType: 'video/mp4', sizeBytes: 3 } }));
+  // AC-166: the upload goes through apiUpload (XHR) so the page can show a percentage.
+  it('useUploadMeetingRecording POSTs the multipart file with progress and invalidates the detail + presigned-url keys', async () => {
+    installFakeXhr();
     const { client, wrapper } = makeQueryWrapper();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const seen: number[] = [];
     const { result } = renderHook(() => useUploadMeetingRecording('MTG-2026-002'), { wrapper });
-    result.current.mutate(new File(['abc'], 'r.mp4', { type: 'video/mp4' }));
+    result.current.mutate({ file: new File(['abc'], 'r.mp4', { type: 'video/mp4' }), onProgress: (p) => seen.push(p) });
+    await waitFor(() => expect(FakeXhr.last).toBeDefined());
+    expect(FakeXhr.last!.url).toBe('/api/meetings/MTG-2026-002/recording');
+    expect(FakeXhr.last!.method).toBe('POST');
+    FakeXhr.last!.progress(3, 4);
+    FakeXhr.last!.respond(200, { source: 'Uploaded', fileName: 'r.mp4', contentType: 'video/mp4', sizeBytes: 3 });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(urlOf(spy)).toBe('/api/meetings/MTG-2026-002/recording');
-    expect(methodOf(spy)).toBe('POST');
+    expect(seen).toEqual([75]);
     expect((result.current.data as { source: string }).source).toBe('Uploaded');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'detail', 'MTG-2026-002'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'recording-url', 'MTG-2026-002'] });
@@ -252,5 +259,19 @@ describe('recording (FR-056)', () => {
     expect(methodOf(spy)).toBe('DELETE');
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'detail', 'MTG-2026-002'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['meetings', 'recording-url', 'MTG-2026-002'] });
+  });
+});
+
+// AC-165: Download mints its link ON CLICK with ?download=true (never the player's cached URL) and follows it
+// in place, so the recording saves under its original name instead of opening in the same tab.
+describe('downloadMeetingRecording (AC-165)', () => {
+  it('asks for the download link and follows it without opening a window', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { url: 'https://s3.example/rec.mp4?X-Amz-Signature=1' } }));
+    const clicked: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { clicked.push(this.href); });
+    await downloadMeetingRecording('MTG-2026-002');
+    expect(String(spy.mock.calls.at(-1)![0])).toBe('/api/meetings/MTG-2026-002/recording/url?download=true');
+    expect(clicked).toEqual(['https://s3.example/rec.mp4?X-Amz-Signature=1']);
+    click.mockRestore();
   });
 });

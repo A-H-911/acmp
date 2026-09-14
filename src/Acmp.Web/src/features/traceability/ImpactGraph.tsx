@@ -10,6 +10,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStreamLabel } from '../../api/members';
 import { Icon } from '../../components/icons';
 import type { ImpactGraph as ImpactGraphDto, ImpactGraphNode } from '../../api/traceability';
 import { GRAPH_FOCUS_TYPES, hrefFor, typeColor } from './traceMeta';
@@ -159,6 +160,7 @@ interface NodeProps {
 
 function GraphNode({ ln, roving, refCb, onKeyDown, onActivate }: NodeProps) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel();
   const { node } = ln;
   return (
     <button
@@ -184,7 +186,7 @@ function GraphNode({ ln, roving, refCb, onKeyDown, onActivate }: NodeProps) {
       <span className="ig-node-title">{node.title}</span>
       <span className="ig-node-meta">
         <span className="ig-node-type">{t(`trace.type.${node.type}`)}</span>
-        {ln.crossStream && node.streams.length > 0 && <span className="ig-node-stream">{node.streams.join(', ')}</span>}
+        {ln.crossStream && node.streams.length > 0 && <span className="ig-node-stream">{node.streams.map(streamLabel).join(', ')}</span>}
       </span>
     </button>
   );

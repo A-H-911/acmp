@@ -64,4 +64,27 @@ public sealed class MinioFileStoreTests : IAsyncLifetime
         await _store.DeleteAsync(Bucket, "mtg/one.mp4");
         (await _store.ExistsAsync(Bucket, "mtg/one.mp4")).Should().BeFalse();
     }
+
+    // AC-164 / AC-165: a DOWNLOAD link, FETCHED from the real object store. The disposition is signed into the
+    // query; this proves the signature survives the SDK's encoding of a non-ASCII value and that the store
+    // answers with the attachment disposition and the original Arabic name - the part a unit test cannot see.
+    [Fact]
+    public async Task A_download_link_is_answered_with_an_attachment_disposition_carrying_the_arabic_name()
+    {
+        await _store.UploadAsync(Bucket, "topics/abc.pdf", Bytes("%PDF-1.7 real bytes"), "application/pdf");
+
+        var url = await _store.GetDownloadUrlAsync(Bucket, "topics/abc.pdf", "تقرير المراجعة.pdf", TimeSpan.FromMinutes(10));
+        using var http = new HttpClient();
+        using var response = await http.GetAsync(url);
+
+        response.IsSuccessStatusCode.Should().BeTrue($"the signed URL must be accepted, got {(int)response.StatusCode}");
+        var disposition = response.Content.Headers.ContentDisposition!;
+        disposition.DispositionType.Should().Be("attachment");
+        disposition.FileNameStar.Should().Be("تقرير المراجعة.pdf");
+        (await response.Content.ReadAsStringAsync()).Should().Be("%PDF-1.7 real bytes");
+
+        // The inline link for the same object carries no disposition - the guest's Open is unchanged.
+        using var inline = await http.GetAsync(await _store.GetPreSignedUrlAsync(Bucket, "topics/abc.pdf", TimeSpan.FromMinutes(10)));
+        inline.Content.Headers.ContentDisposition.Should().BeNull();
+    }
 }

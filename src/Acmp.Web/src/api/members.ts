@@ -8,6 +8,7 @@
  * identity store. The server enforces who may call them; this module never decides that.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { api } from './apiClient';
 
 // DEF-046: minimal-API body binding answers 415 Unsupported Media Type without this — the invite
@@ -50,6 +51,21 @@ export function useStreams() {
     // on it expiring — otherwise a freshly added stream would be invisible for up to five minutes.
     staleTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * AC-168 (DEF-178): a stream is SHOWN by its localized name, never its code. Topics carry codes (the ABAC key),
+ * so a list that rendered `smart-cities` beside Arabic text was showing the key. Falls back to the code only
+ * while the taxonomy is loading or for a code the taxonomy no longer has.
+ */
+export function useStreamLabel(): (code: string) => string {
+  const { data } = useStreams();
+  const { i18n } = useTranslation();
+  const arabic = i18n.language?.startsWith('ar') ?? false;
+  return (code) => {
+    const s = data?.find((x) => x.code === code);
+    return s ? streamName(s, arabic) : code;
+  };
 }
 
 /**

@@ -30,6 +30,7 @@ import { SupersedeDialog } from './SupersedeDialog';
 import { ConvertToAdrDialog } from './ConvertToAdrDialog';
 import { CreateActionDialog } from '../actions/CreateActionDialog';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
+import { numberLocale } from '../../lib/numberFmt';
 import './decisions.css';
 
 export function DecisionPage() {
@@ -58,7 +59,7 @@ export function DecisionPage() {
   const decn = data;
   // Content is mirrored to both columns (en === ar), so a straight per-language pick is enough.
   const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en);
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  const fmtDate = (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
   const superseded = decn.status === 'Superseded';
   const isActive = decn.status === 'Issued';
   const canSupersede = isActive && hasRole(auth, 'chairman');

@@ -17,6 +17,7 @@ import {
   type NotificationItem,
 } from '../../api/notifications';
 import { notifType, notifKey } from '../../api/notifPresentation';
+import { numberLocale } from '../../lib/numberFmt';
 
 type Tab = 'unread' | 'all';
 const SKELETON_ROWS = [0, 1, 2, 3];
@@ -44,7 +45,7 @@ export function NotificationCenter({ open, onClose }: { open: boolean; onClose: 
 
   const localize = (en: string, ar: string) => (i18n.language === 'ar' ? ar : en);
   const fmtTime = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+    new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   const openLink = (n: NotificationItem) => {
     if (!n.isRead) markRead.mutate(n.id);

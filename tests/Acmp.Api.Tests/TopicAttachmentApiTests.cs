@@ -13,8 +13,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace Acmp.Api.Tests;
 
@@ -27,6 +29,9 @@ internal static class TopicAttachmentHttp
             => Task.FromResult($"{bucket}/{objectName}");
         public Task<string> GetPreSignedUrlAsync(string bucket, string objectName, TimeSpan expiry, CancellationToken ct = default)
             => Task.FromResult($"https://minio.test/{bucket}/{objectName}");
+        // AC-164/165: the download link names the file, so a test can tell it from the inline one.
+        public Task<string> GetDownloadUrlAsync(string bucket, string objectName, string downloadFileName, TimeSpan expiry, CancellationToken ct = default)
+            => Task.FromResult($"https://minio.test/{bucket}/{objectName}?download={Uri.EscapeDataString(downloadFileName)}");
         public Task<bool> ExistsAsync(string bucket, string objectName, CancellationToken ct = default) => Task.FromResult(true);
         public Task DeleteAsync(string bucket, string objectName, CancellationToken ct = default) => Task.CompletedTask;
     }
@@ -115,7 +120,8 @@ public class TopicAttachmentDownloadApiTests : IClassFixture<AcmpWebApplicationF
             .GetAsync($"/api/topics/{topic.Id}/attachments/{attachmentId}/url");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await response.Content.ReadFromJsonAsync<UrlResult>())!.Url.Should().StartWith("https://minio.test/");
+        // AC-164: a DOWNLOAD link that saves under the original name (the fake store names it in the URL).
+        (await response.Content.ReadFromJsonAsync<UrlResult>())!.Url.Should().StartWith("https://minio.test/").And.EndWith("?download=spec.pdf");
         (await AccessRowsAsync()).Should().Be(before + 1);
     }
 
@@ -171,9 +177,9 @@ public class TopicAttachmentDownloadApiTests : IClassFixture<AcmpWebApplicationF
 // green; so this class hosts the API on Kestrel over a loopback socket. Its own host (not the shared fixture):
 // the server kind is fixed when the host starts.
 // ONE Kestrel-hosted class, run ALONE (measured, both): this host binds a fixed port, so a second Kestrel class in
-// parallel fails to start; and UseSerilog points the process-wide static Log.Logger at whichever host started
-// last, so while other hosts start in parallel this host's log events go to THEIR logger and the DEF-169 test
-// sees nothing. A non-parallel collection runs after every parallel one, with no other host alive.
+// parallel fails to start. A non-parallel collection runs after every parallel one. (Running alone was ALSO meant to
+// keep the static Serilog logger pointed at this host; it did not always - see the constructor, which no longer
+// relies on it.)
 [CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class KestrelHostCollection
 {
@@ -193,10 +199,20 @@ public sealed class TopicAttachmentKestrelLimitTests : IDisposable
     private readonly Capture _sink = new();
     private readonly WebApplicationFactory<Program> _app;
 
+    // The capture must not depend on the PROCESS-WIDE static logger. UseSerilog's ILoggerFactory writes through
+    // Log.Logger, and ANY other host built or disposed in this process re-points it (a disposal calls
+    // Log.CloseAndFlush, which leaves a silent logger): under the full solution run the DEF-169 test once saw only
+    // this host's start-up lines and none of its own requests. Binding the factory to THIS host's logger keeps the
+    // shipped configuration - appsettings.json's RequestDelegateFactory Debug override lives in that logger -
+    // and removes the shared state instead of lowering the odds of hitting it.
     public TopicAttachmentKestrelLimitTests()
     {
         _app = TopicAttachmentHttp.WithFakeStore(new AcmpWebApplicationFactory())
-            .WithWebHostBuilder(b => b.ConfigureTestServices(s => s.AddSingleton<ILogEventSink>(_sink)));
+            .WithWebHostBuilder(b => b.ConfigureTestServices(s =>
+            {
+                s.AddSingleton<ILogEventSink>(_sink);
+                s.AddSingleton<ILoggerFactory>(sp => new SerilogLoggerFactory(sp.GetRequiredService<Serilog.ILogger>()));
+            }));
         _app.UseKestrel(0);
         _app.StartServer();
     }

@@ -26,6 +26,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Icon } from '../../components/icons';
+import { numberLocale } from '../../lib/numberFmt';
 import {
   useAgendaProjection,
   useMeetingDetail,
@@ -68,8 +69,8 @@ export function Calendar() {
   const daysInMonth = new Date(year, m + 1, 0).getDate();
   const isThisMonth = offset === 0;
 
-  const monthLabel = new Intl.DateTimeFormat(i18n.language, { month: 'long', year: 'numeric' }).format(month);
-  const weekdayFmt = new Intl.DateTimeFormat(i18n.language, { weekday: 'short' });
+  const monthLabel = new Intl.DateTimeFormat(numberLocale(i18n.language), { month: 'long', year: 'numeric' }).format(month);
+  const weekdayFmt = new Intl.DateTimeFormat(numberLocale(i18n.language), { weekday: 'short' });
   // 2024-09-01 is a Sunday → seed locale-aware short weekday names, Sunday-first (Gregorian).
   const weekdays = Array.from({ length: 7 }, (_, i) => weekdayFmt.format(new Date(2024, 8, 1 + i)));
 

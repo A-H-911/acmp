@@ -33,6 +33,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { useAuth, hasRole } from '../../auth/AcmpAuthContext';
 import { cssVars } from '../../lib/cssVars';
+import { numberLocale } from '../../lib/numberFmt';
 import './voting.css';
 
 const ABSTAIN = 'Abstain';
@@ -77,7 +78,7 @@ function VoteView({ vote, cacheKey, userId, canManage, lang }: ViewProps) {
   const closeVote = useCloseVote(cacheKey);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const fmtDate = (iso: string) => new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  const fmtDate = (iso: string) => new Intl.DateTimeFormat(numberLocale(lang), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   // Eligible base = ballots not recused; cast = those with a choice. Live tally is derived while Open;
   // the frozen server tally is authoritative once Closed.

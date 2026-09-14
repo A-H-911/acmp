@@ -2,18 +2,20 @@
  * NFR-037's NUMBER half (DW-068 / WBS-24.4). The date half was already locale-aware; every number a
  * user reads was not, so an Arabic screen rendered ١٤ يونيو ٢٠٢٦ beside a Latin "12" in the same row.
  *
- * `ar-u-nu-arab` is pinned for the same reason `p15Date.formatDmy` pins it: bare `ar` resolves to
- * Latin digits under Node's ICU and Arabic-Indic in a browser, so an unpinned formatter renders one
- * thing in the test runner and another on screen — and the test would agree with itself either way.
+ * AC-167 (DEC-192 r2, superseding AC-147): LATIN digits in BOTH languages - dates, times and every
+ * quantity. The numbering system is PINNED (`ar-u-nu-latn`) rather than left to the bare `ar` tag, because
+ * what bare `ar` resolves to is an ICU/CLDR default that has changed between versions (ICU 78 gives Latin;
+ * this file used to assert a browser gives Arabic-Indic) - a pin renders the same everywhere. Every `Intl`
+ * formatter in the SPA takes its locale from numberLocale(); numberLocale.guard.test.ts enforces it.
  */
 import { useTranslation } from 'react-i18next';
 
 /**
- * The BCP-47 tag to format with. Arabic pins its numbering system; everything else takes `en`.
+ * The BCP-47 tag to format with. Arabic pins Latin digits (AC-167); everything else takes `en`.
  * Exported because ANY `Intl` formatter that emits digits needs it — `RelativeTimeFormat` does.
  */
 export function numberLocale(lang: string | undefined): string {
-  return lang?.startsWith('ar') ? 'ar-u-nu-arab' : 'en';
+  return lang?.startsWith('ar') ? 'ar-u-nu-latn' : 'en';
 }
 
 /** Locale-appropriate digits and separators for any number a user reads. */
@@ -37,11 +39,14 @@ export function formatPercent(value: number, lang: string | undefined): string {
  * Bytes rounded to the unit a person reads. Replaces three separate implementations — SessionPage's
  * (locale-aware) and MeetingRecording's and SubmitTopic's (both Latin-only, which is the defect).
  *
- * ponytail: the unit suffix stays the ASCII symbol the mockups draw (INV-014). `style: 'unit'` would
- * localize it to "ميغابايت" and change EN copy too — a design change, not this row's work.
+ * AC-168 (DEF-178): the unit is the one the mockups draw in each language - `KB`/`MB` in English and
+ * `ك.ب`/`م.ب` in Arabic (ACMP Backlog & Topic.dc.html; ar.json already writes `م.ب`). This comment used to say
+ * the mockups draw ASCII units in both; they do not.
  */
+const BYTE_UNITS = { en: ['B', 'KB', 'MB', 'GB'], ar: ['ب', 'ك.ب', 'م.ب', 'ج.ب'] } as const;
+
 export function formatBytes(bytes: number, lang: string | undefined): string {
-  const units = ['B', 'KB', 'MB', 'GB'];
+  const units = lang?.startsWith('ar') ? BYTE_UNITS.ar : BYTE_UNITS.en;
   let value = Math.max(0, bytes);
   let unit = 0;
   while (value >= 1024 && unit < units.length - 1) {

@@ -27,13 +27,14 @@ import { Icon } from '../../components/icons';
 import { agendaTone } from './agendaStatus';
 import { meetingTone, isConcluded } from './meetingStatus';
 import { MeetingsCalendar } from './MeetingsCalendar';
+import { numberLocale } from '../../lib/numberFmt';
 import './meetings.css';
 
 type ViewMode = 'list' | 'calendar';
 
 function useDateFmt() {
   const { i18n } = useTranslation();
-  return (iso: string) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+  return (iso: string) => new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 }
 
 export function MeetingsList() {

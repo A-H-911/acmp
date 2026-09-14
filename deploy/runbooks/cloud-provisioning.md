@@ -211,6 +211,13 @@ ACMP_KC_INTERNAL_URL=http://localhost/kc \
 on-prem published port and does not exist in the cloud topology. Idempotent; every account is
 created with a temporary password and `UPDATE_PASSWORD` pending.
 
+**This default (pair mode) creates PLACEHOLDER people:** `chairman`, `secretary`, `member`, `auditor`, each with the
+last name `Seeded`. For real people, use **roster mode** - set `ACMP_SEED_ROSTER=/path/roster.csv` (columns
+`username,first,last,email,role,password`; UTF-8, Arabic names are fine) and run the same command. Choose the
+mode BEFORE anyone uses the environment: ACMP records the acting person's name on every record they create, and
+renaming an account in Keycloak later changes the name shown from then on, not the names already recorded
+(DEF-177).
+
 ---
 
 ## 8. Verify the backup schedule

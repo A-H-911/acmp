@@ -14,6 +14,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStreamLabel } from '../../api/members';
 import { Num, Pct } from '../../lib/numberFmt';
 import { toPng } from 'html-to-image';
 import { useBacklog } from '../../api/topics';
@@ -29,12 +30,14 @@ import {
   buildView, viewToCsv, applyStreamFilter,
 } from './reportViews';
 import { cssVars } from '../../lib/cssVars';
+import { numberLocale } from '../../lib/numberFmt';
 import './reports.css';
 
 const ALL = 500;
 
 export function ReportsPage() {
   const { t, i18n } = useTranslation();
+  const streamLabel = useStreamLabel();
   const [view, setView] = useState<ReportView>('executive');
   const [stream, setStream] = useState('all');
 
@@ -88,7 +91,7 @@ export function ReportsPage() {
 
   const updatedAt = Math.max(0, ...reads.map((r) => (r as { dataUpdatedAt?: number }).dataUpdatedAt ?? 0));
   const updatedLabel = updatedAt > 0
-    ? t('reports.updated', { time: new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' }).format(new Date(updatedAt)) })
+    ? t('reports.updated', { time: new Intl.DateTimeFormat(numberLocale(i18n.language), { hour: '2-digit', minute: '2-digit' }).format(new Date(updatedAt)) })
     : '';
 
   return (
@@ -126,7 +129,7 @@ export function ReportsPage() {
               <span className="rpt-filter-l">{t('reports.filter.stream')}</span>
               <select value={stream} onChange={(e) => setStream(e.target.value)}>
                 <option value="all">{t('reports.filter.allStreams')}</option>
-                {streamOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                {streamOptions.map((s) => <option key={s} value={s}>{streamLabel(s)}</option>)}
               </select>
             </label>
           )}

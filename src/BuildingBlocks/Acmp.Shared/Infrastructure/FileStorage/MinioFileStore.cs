@@ -37,6 +37,16 @@ public sealed class MinioFileStore : IFileStore
             .WithObject(objectName)
             .WithExpiry((int)expiry.TotalSeconds));
 
+    // AC-164 / AC-165 (DEF-172, DEF-174): the same presign with `response-content-disposition` signed into the
+    // query, so S3/MinIO answer with Content-Disposition: attachment and the ORIGINAL name. Works cross-origin,
+    // which an <a download> attribute does not (browsers ignore it on another origin - DEF-174 in the cloud).
+    public Task<string> GetDownloadUrlAsync(string bucket, string objectName, string downloadFileName, TimeSpan expiry, CancellationToken ct = default) =>
+        _presigner.Client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
+            .WithBucket(bucket)
+            .WithObject(objectName)
+            .WithExpiry((int)expiry.TotalSeconds)
+            .WithHeaders(new Dictionary<string, string> { ["response-content-disposition"] = AttachmentDisposition.For(downloadFileName) }));
+
     // DEF-125. THE PROBE RETRIES BECAUSE THE SDK DESTROYS THE ERROR, AND THAT IS THE WHOLE REASON.
     // Minio.MinioClient.ParseErrorNoContent ends with `response.Exception.GetType()` and NEVER null-checks
     // it — verified in the SDK's own source at tag 6.0.5, which this project pins, AND at 7.0.0, the latest
@@ -147,6 +157,18 @@ public sealed class ObjectStoreProbeException : Exception
     public string ObjectName { get; }
 
     public int Attempts { get; }
+}
+
+// AC-164: an RFC 6266 attachment disposition. `filename*` (RFC 5987, UTF-8, percent-encoded) carries the real
+// name, Arabic included; the quoted `filename` is an ASCII fallback for clients that ignore `filename*`, with
+// anything outside printable ASCII - and the quote and backslash that would break the quoting - replaced by '_'.
+public static class AttachmentDisposition
+{
+    public static string For(string fileName)
+    {
+        var ascii = new string(fileName.Select(c => c is < ' ' or > '~' or '"' or '\\' ? '_' : c).ToArray());
+        return $"attachment; filename=\"{ascii}\"; filename*=UTF-8''{Uri.EscapeDataString(fileName)}";
+    }
 }
 
 // Holds the IMinioClient used for presigning — the public-endpoint client when configured (browser-reachable

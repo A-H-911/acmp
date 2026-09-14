@@ -19,11 +19,18 @@ vi.mock('../../api/topics', () => ({
   useTopicDetail: vi.fn(), useAddTopicComment: vi.fn(), useUploadTopicAttachment: vi.fn(),
   usePrepareTopic: vi.fn(), useReactivateTopic: vi.fn(), useCloseTopic: vi.fn(), useReopenTopic: vi.fn(),
   useConvertTopic: vi.fn(), useReclassifyTopic: vi.fn(),
-  MAX_ATTACHMENT_BYTES: 100 * 1024 * 1024, openTopicAttachment: vi.fn(),
+  downloadTopicAttachment: vi.fn(),
 }));
+// AC-169: the limits hook reads GET /api/uploads/limits; here it answers with the shipped defaults.
+vi.mock('../../api/uploads', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../../api/uploads')>();
+  return { ...real, useUploadLimits: () => real.DEFAULT_UPLOAD_LIMITS };
+});
+// AC-168: streams are shown by name; the taxonomy query is stubbed so the page test stays query-free.
+vi.mock('../../api/members', () => ({ useStreamLabel: () => (code: string) => (code === 'identity' ? 'Identity & Access' : code) }));
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
-  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, openTopicAttachment,
+  useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, downloadTopicAttachment,
 } from '../../api/topics';
 
 const mockDetail = useTopicDetail as unknown as Mock;
@@ -304,8 +311,8 @@ describe('TopicDetail (P5b)', () => {
   });
 
   // WBS-40.12 / AC-163: the open control is live and opens that attachment of THIS topic.
-  it('opens an attachment through the topic-scoped URL when its download control is clicked', async () => {
-    (openTopicAttachment as unknown as Mock).mockResolvedValue(undefined);
+  it('downloads an attachment through the topic-scoped URL when its download control is clicked (AC-164)', async () => {
+    (downloadTopicAttachment as unknown as Mock).mockResolvedValue(undefined);
     result({ data: TOPIC });
     const user = userEvent.setup();
     setup();
@@ -313,18 +320,46 @@ describe('TopicDetail (P5b)', () => {
     const button = screen.getByRole('button', { name: 'Download eval.pdf' });
     expect(button).toBeEnabled();
     await user.click(button);
-    expect(openTopicAttachment).toHaveBeenCalledWith('g1', 'a1');
+    expect(downloadTopicAttachment).toHaveBeenCalledWith('g1', 'a1');
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it('shows that the file could not be opened when the URL is refused', async () => {
-    (openTopicAttachment as unknown as Mock).mockRejectedValue(new ApiError(404));
+  it('shows that the file could not be downloaded when the URL is refused', async () => {
+    (downloadTopicAttachment as unknown as Mock).mockRejectedValue(new ApiError(404));
     result({ data: TOPIC });
     const user = userEvent.setup();
     setup();
     await user.click(screen.getByRole('tab', { name: /Attachments/ }));
     await user.click(screen.getByRole('button', { name: 'Download eval.pdf' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('That file could not be opened.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('That file could not be downloaded.');
+  });
+
+  // AC-168: in any language, a stream is its NAME (never its code), and the uploader's name is bidi-isolated.
+  it('shows streams by name and isolates the uploader and actor names', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    expect(screen.getByText('Identity & Access')).toBeInTheDocument();
+    expect(screen.queryByText('identity')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    expect(screen.getByText('Omar H', { selector: 'bdi' })).toBeInTheDocument();
+  });
+
+  // AC-169: the picker offers only the server's allowed types, and re-picking the same file starts again.
+  it('offers only the allowed types and clears the picker so the same file can be picked again', async () => {
+    result({ data: TOPIC });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('tab', { name: /Attachments/ }));
+    const input = screen.getByLabelText(/Drop files/i) as HTMLInputElement;
+    expect(input.accept).toContain('application/pdf');
+    expect(input.accept).not.toContain('video/');
+    const file = new File(['x'], 'design.pdf', { type: 'application/pdf' });
+    await user.upload(input, file);
+    expect(input.value).toBe('');
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+    await user.upload(input, file);
+    expect(uploadMutate).toHaveBeenCalledTimes(2);
   });
 
   it('renders the Votes tab as an honest empty state (Voting → P9)', async () => {

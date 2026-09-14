@@ -6,6 +6,7 @@
  */
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStreamLabel } from '../../api/members';
 import { Icon } from '../../components/icons';
 import type { ImpactGraph } from '../../api/traceability';
 import { hrefFor } from './traceMeta';
@@ -20,9 +21,10 @@ interface Props {
 
 export function ImpactGraphList({ graph, focusKey, highlight }: Props) {
   const { t } = useTranslation();
+  const streamLabel = useStreamLabel();
   const rows = buildListRows(graph, highlight);
   const focusNode = graph.nodes.find((n) => n.id === graph.focusId && n.tier === 0);
-  const focusStream = focusNode?.streams.length ? focusNode.streams.join(', ') : '—';
+  const focusStream = focusNode?.streams.length ? focusNode.streams.map(streamLabel).join(', ') : '—';
 
   return (
     <div className="igl">
@@ -54,7 +56,7 @@ export function ImpactGraphList({ graph, focusKey, highlight }: Props) {
                 <span className="igl-blocked"><Icon name="lock" size={9} aria-hidden /> {t('trace.graph.blocked')}</span>
               )}
               {r.crossStream && r.node.streams.length > 0 && (
-                <span className="igl-stream">{r.node.streams.join(', ')}</span>
+                <span className="igl-stream">{r.node.streams.map(streamLabel).join(', ')}</span>
               )}
               {href && <Icon name="chevron" size={14} className="igl-chev dir-flip" aria-label={t('trace.graph.goTo')} />}
             </>

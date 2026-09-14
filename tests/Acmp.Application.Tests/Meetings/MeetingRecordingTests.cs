@@ -162,6 +162,31 @@ public class MeetingRecordingTests
         url.Should().Be("https://minio.test/signed");
     }
 
+    // AC-165: Download=true mints a link that SAVES under the original file name, same audit row; the player's
+    // link stays inline.
+    [Fact]
+    public async Task Recording_download_url_names_the_original_file_and_is_audited_like_playback()
+    {
+        var (db, _) = NewDb();
+        var meeting = SeedMeeting(db);
+        meeting.AttachUploadedRecording("acmp-recordings/MTG-2026-001/abc.mp4", "جلسة اللجنة.mp4", "video/mp4", 10);
+        await db.SaveChangesAsync();
+
+        TimeSpan? expiry = null;
+        var files = Substitute.For<IFileStore>();
+        files.GetDownloadUrlAsync("acmp-recordings", "acmp-recordings/MTG-2026-001/abc.mp4", "جلسة اللجنة.mp4", Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(ci => { expiry = ci.ArgAt<TimeSpan>(3); return "https://minio.test/download"; });
+        var audit = Substitute.For<IAuditSink>();
+
+        var url = await new GetRecordingUrlHandler(db, files, Buckets, audit).Handle(new GetRecordingUrlQuery(meeting.Key, Download: true), CancellationToken.None);
+
+        url.Should().Be("https://minio.test/download");
+        expiry!.Value.Should().BePositive().And.BeLessThanOrEqualTo(TimeSpan.FromHours(1));
+        await files.DidNotReceiveWithAnyArgs().GetPreSignedUrlAsync(default!, default!, default, default);
+        await audit.Received(1).EmitEnrichedAsync("Meetings.RecordingAccessed", Arg.Any<string>(), meeting.PublicId.ToString(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
     // NFR-027 - "time-limited, <= 1 h expiry". Until this test the ceiling was a VALUE, not a property:
     // every other test here passes Arg.Any<TimeSpan>(), so raising Ttl to FromHours(4) broke nothing.
     // A presigned URL is a bearer-less capability for its whole TTL, so the ceiling is the control.

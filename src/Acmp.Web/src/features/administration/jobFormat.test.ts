@@ -26,16 +26,16 @@ describe('formatRelative', () => {
     expect(ar).toMatch(/[؀-ۿ]/); // contains Arabic script
   });
 
-  it('renders its DIGITS in Arabic-Indic too, not just its words (NFR-037)', () => {
+  it('renders its DIGITS in Latin in Arabic too, not just its words (AC-167)', () => {
     /*
      * ⚠ FIVE hours, deliberately — NOT two. Arabic has a DUAL form, so `-2 hour` renders "قبل ساعتين"
      * with no digit in it at all, and an assertion written on it passes whether or not the numbering
      * system is pinned. A hollow pass, caught by mutating the pin away and watching it stay green.
-     * Five takes the plural: "قبل ٥ ساعات" pinned, "قبل 5 ساعات" unpinned.
+     * Five takes the plural, so a digit is there to assert (AC-167: Latin).
      */
     const ar = formatRelative(at(-5 * 3600), 'ar', NOW);
-    expect(ar).toMatch(/[٠-٩]/);
-    expect(ar).not.toMatch(/[0-9]/);
+    expect(ar).toMatch(/5/);
+    expect(ar).not.toMatch(/[٠-٩]/);
   });
 });
 

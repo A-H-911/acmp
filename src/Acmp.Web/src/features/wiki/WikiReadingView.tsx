@@ -36,8 +36,8 @@ export function WikiReadingView({ document, canManage, onEdit, onHistory }: Prop
 
   const pick = (l: LocalizedText) => (i18n.language === 'ar' ? l.ar : l.en);
   const fmtDate = (iso: string) => formatDmy(iso, i18n.language);
-  // Read-time minutes localized so the Arabic locale renders Arabic-Indic digits (design "قراءة ٤ دقائق").
-  const author = members.data?.find((m) => m.keycloakUserId === document.ownerUserId)?.fullName ?? document.ownerUserId;
+  // AC-168: a member the directory no longer lists is named by a translated placeholder, never their raw user id.
+  const author = members.data?.find((m) => m.keycloakUserId === document.ownerUserId)?.fullName ?? t('wiki.versions.unknownAuthor');
   const body = pick(document.body);
   const canPublish = canManage && document.status === 'Draft';
   const canArchive = canManage && document.status !== 'Archived';
@@ -82,7 +82,7 @@ export function WikiReadingView({ document, canManage, onEdit, onHistory }: Prop
       <div className="wiki-meta">
         <span className="wiki-meta-author">
           <span className="wiki-meta-avatar" aria-hidden="true">{initials(author)}</span>
-          {author}
+          <bdi>{author}</bdi>
         </span>
         <span className="wiki-meta-dot" aria-hidden="true" />
         <span>{t('wiki.updated')} {fmtDate(document.updatedAt ?? document.createdAt)}</span>

@@ -29,6 +29,7 @@ import { Icon, type IconName } from '../../components/icons';
 import { MeetingGate } from './MeetingGate';
 import { MeetingWorkspace } from './MeetingWorkspace';
 import { meetingTone, lifecyclePhase } from './meetingStatus';
+import { numberLocale } from '../../lib/numberFmt';
 import './meetings.css';
 
 /** Mode → glyph: in-person reads as people, hybrid/remote as video. */
@@ -75,7 +76,7 @@ export function MeetingPage() {
   const agendaStatus = meeting.agenda?.status;
   const agendaPublished = agendaStatus === 'Published' || agendaStatus === 'Locked';
   const phase = lifecyclePhase(meeting.status, agendaPublished);
-  const when = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(meeting.scheduledStart));
+  const when = new Intl.DateTimeFormat(numberLocale(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(meeting.scheduledStart));
 
   return (
     <section className="page mt-shell">

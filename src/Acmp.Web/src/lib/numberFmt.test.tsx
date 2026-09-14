@@ -20,10 +20,10 @@ describe('<Num>', () => {
     expect(screen.getByText('12,345')).toBeInTheDocument();
   });
 
-  it('renders Arabic-Indic digits in Arabic', async () => {
+  it('renders Latin digits in Arabic too (AC-167)', async () => {
     await i18n.changeLanguage('ar');
     render(<Num value={12345} />);
-    expect(screen.getByText('١٢٬٣٤٥')).toBeInTheDocument();
+    expect(screen.getByText('12,345')).toBeInTheDocument();
   });
 
   it('passes Intl options straight through as props', async () => {
@@ -34,17 +34,13 @@ describe('<Num>', () => {
 });
 
 describe('<Pct>', () => {
-  it('renders the Arabic percent sign, not an ASCII one', async () => {
+  it('renders Latin digits and the % sign in Arabic (AC-167)', async () => {
     await i18n.changeLanguage('ar');
     const { container } = render(<Pct value={87} />);
-    /*
-     * ⚠ Matched on CONTENT, not with an exact string, because Intl appends U+061C (ARABIC LETTER
-     * MARK) after the sign — an invisible bidi control it adds on purpose. `getByText('٨٧٪')` finds
-     * nothing, and the failure looks exactly like the sign being wrong.
-     */
-    expect(container.textContent).toContain('٪');
-    expect(container.textContent).not.toContain('%');
-    expect(container.textContent).toContain('٨٧');
+    // Matched on CONTENT: Intl wraps the sign in invisible bidi marks (U+200E) on purpose.
+    expect(container.textContent).toContain('87');
+    expect(container.textContent).toContain('%');
+    expect(container.textContent).not.toMatch(/[٠-٩٪]/);
   });
 
   it('renders the ASCII sign in English', async () => {
@@ -55,9 +51,9 @@ describe('<Pct>', () => {
 });
 
 describe('<Bytes>', () => {
-  it('renders the numeral in the reader digits and leaves the unit symbol alone', async () => {
+  it('renders Latin digits with the Arabic unit in Arabic (AC-167, AC-168)', async () => {
     await i18n.changeLanguage('ar');
     render(<Bytes value={1_572_864} />);
-    expect(screen.getByText('١٫٥ MB')).toBeInTheDocument();
+    expect(screen.getByText('1.5 م.ب')).toBeInTheDocument();
   });
 });

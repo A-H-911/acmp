@@ -22,7 +22,9 @@ namespace Acmp.Modules.Meetings.Application.Features.GetRecordingUrl;
 // can stream the recording for its whole TTL, with no further authentication. That is why minting one is an
 // ACCESS EVENT worth auditing even though the request looks like a read, and why the role gate belongs here
 // and not only on the upload.
-public sealed record GetRecordingUrlQuery(string Key) : IRequest<string?>, IAuthorizedRequest
+// AC-165: Download=true mints a link that SAVES under the original file name (a signed attachment
+// disposition), minted at the click; the player keeps the inline link. Same roles, same audit row.
+public sealed record GetRecordingUrlQuery(string Key, bool Download = false) : IRequest<string?>, IAuthorizedRequest
 {
     // The three roles NFR-025 names, and no others. Deliberately NOT the upload set (Secretary/Chairman):
     // the Auditor may read what they must review but may not add or remove recordings.
@@ -52,13 +54,16 @@ public sealed class GetRecordingUrlHandler : IRequestHandler<GetRecordingUrlQuer
     {
         var meeting = await _db.Meetings
             .Where(m => m.Key == request.Key)
-            .Select(m => new { m.PublicId, m.RecordingObjectKey })
+            .Select(m => new { m.PublicId, m.RecordingObjectKey, m.RecordingFileName })
             .FirstOrDefaultAsync(ct);
 
         if (meeting is null || string.IsNullOrEmpty(meeting.RecordingObjectKey))
             return null;
 
-        var url = await _files.GetPreSignedUrlAsync(_bucket, meeting.RecordingObjectKey, Ttl, ct);
+        var url = request.Download
+            ? await _files.GetDownloadUrlAsync(_bucket, meeting.RecordingObjectKey,
+                meeting.RecordingFileName ?? Path.GetFileName(meeting.RecordingObjectKey), Ttl, ct)
+            : await _files.GetPreSignedUrlAsync(_bucket, meeting.RecordingObjectKey, Ttl, ct);
 
         // NFR-025: audited AFTER the URL is successfully minted, so the row means "a capability was handed
         // out" rather than "someone asked". A 404 for a meeting with no recording grants nothing and is not

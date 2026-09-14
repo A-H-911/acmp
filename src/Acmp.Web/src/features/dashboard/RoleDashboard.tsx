@@ -34,6 +34,8 @@ import type { LocalizedText } from '../../api/actions';
 import { StatusChip, type StatusTone } from '../../components/ui/StatusChip';
 import { Icon } from '../../components/icons';
 import { DashCard, SegmentBar, StatTiles, KeyList, DashState } from './dashboardCards';
+import { numberLocale } from '../../lib/numberFmt';
+import { isolate } from '../../lib/bidi';
 import {
   backlogByBucket, backlogByUrgency, nextScheduledMeeting, actionStatusCounts,
   overdueBeyondThreshold, deferredAtLeastTwice, slaBreached, daysOverdue,
@@ -45,7 +47,7 @@ const ALL = 500;
 
 const pickText = (l: LocalizedText, lang: string) => (lang === 'ar' ? l.ar : l.en);
 const fmtDateTime = (iso: string, lang: string) =>
-  new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
+  new Intl.DateTimeFormat(numberLocale(lang), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 
 const AGENDA_TONE: Record<string, StatusTone> = { Draft: 'warn', Published: 'success' };
 const EXPOSURE_TONE: Record<RiskExposure, StatusTone> = { Low: 'neutral', Medium: 'warn', High: 'danger', Critical: 'danger' };
@@ -58,13 +60,13 @@ export default function RoleDashboard() {
   const now = new Date();
   const hour = now.getHours();
   const greetKey = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-  const dateLabel = new Intl.DateTimeFormat(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(now);
+  const dateLabel = new Intl.DateTimeFormat(numberLocale(i18n.language), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(now);
 
   return (
     <section className="page dash">
       <header className="dash-head">
         <div>
-          <h1 className="dash-greeting">{t(`dashboard.greeting.${greetKey}`, { name: displayName })}</h1>
+          <h1 className="dash-greeting">{t(`dashboard.greeting.${greetKey}`, { name: isolate(displayName) })}</h1>
           <p className="dash-sub">{t(`dashboard.sub.${variant}`)}</p>
         </div>
         <span className="dash-today"><Icon name="calendar" size={14} aria-hidden />{dateLabel}</span>

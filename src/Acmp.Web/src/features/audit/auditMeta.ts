@@ -11,6 +11,7 @@
  * with a Denied/Failure outcome overriding to danger.
  */
 import type { StatusTone } from '../../components/ui/StatusChip';
+import { numberLocale } from '../../lib/numberFmt';
 
 // Verb keyword → tone, mirroring the design's auditVerbMeta semantics (create=success,
 // update=info, vote=scheduled, lock=neutral, supersede=warn, role/denial=danger). Matched
@@ -53,7 +54,7 @@ export function formatTimestamp(iso: string, lang: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   const opts: Intl.DateTimeFormatOptions = { calendar: 'gregory', numberingSystem: 'latn' };
-  const date = new Intl.DateTimeFormat(lang === 'ar' ? 'ar' : 'en-GB', { ...opts, day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+  const date = new Intl.DateTimeFormat(lang === 'ar' ? numberLocale(lang) : 'en-GB', { ...opts, day: '2-digit', month: 'short', year: 'numeric' }).format(d);
   const time = new Intl.DateTimeFormat('en-GB', { ...opts, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d);
   return `${date} · ${time}`;
 }

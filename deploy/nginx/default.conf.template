@@ -98,7 +98,10 @@ server {
         set $recordings_upstream "minio:9000";
         proxy_pass http://$recordings_upstream;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        # AC-164 / AC-165: $http_host, NOT $host. The link is SigV4-signed over the Host the browser sends, port
+        # included; $host drops the port, so on any non-default port (the E2E stack on :8088, an on-prem box on a
+        # custom port) MinIO answered SignatureDoesNotMatch. On 80/443 the two are identical.
+        proxy_set_header Host $http_host;
         chunked_transfer_encoding off;
         proxy_buffering off;
     }
@@ -112,7 +115,10 @@ server {
         set $topics_upstream "minio:9000";
         proxy_pass http://$topics_upstream;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        # AC-164 / AC-165: $http_host, NOT $host. The link is SigV4-signed over the Host the browser sends, port
+        # included; $host drops the port, so on any non-default port (the E2E stack on :8088, an on-prem box on a
+        # custom port) MinIO answered SignatureDoesNotMatch. On 80/443 the two are identical.
+        proxy_set_header Host $http_host;
         chunked_transfer_encoding off;
         proxy_buffering off;
     }
