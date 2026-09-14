@@ -509,3 +509,12 @@ SC-070,DEC-190,"**`AC-162` REPLACES `AC-105` (WHICH IS SUPERSEDED); `AC-163` IS 
 **HOW THE ROWS CLOSE.** `WBS-40.12` is done-claimed on `AC-163`. `DEF-154` and `DEF-166` close Fixed when `AC-162` is Met, which needs its one-time uat measurement (the operator's word at the time). `DW-108` closes Done with the nginx location in the PR, inspected, not run.
 
 **APPLICATION ORDER (`LL-042`, `SC-069`'s precedent):** this row Approved, `WBS-40.12` amended and `DW-108` Activated → `AC-162` and `AC-163` written `Proposed` → the OPERATOR approves both texts → `AC-162` and `AC-163` Approved and `AC-105` Superseded (superseded_by `AC-162`) in one batch → all three re-read → this row `Merged`. Both criteria are graded after the build, by their own verification clauses.",1,Merged,,
+SC-071,DEC-192,"**`AC-164` REPLACES `AC-163` AND `AC-167` REPLACES `AC-147` (BOTH SUPERSEDED); `AC-165`, `AC-166`, `AC-168` AND `AC-169` ARE ADDED; `WBS-40.29` IS ADDED TO CARRY THE UNIT. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `AC-163` and `AC-147` are Approved and frozen. `DEC-192` r1 changes what Download does (`AC-163` says the browser *opens* the file) and r2 changes which digits Arabic uses (`AC-147` says Arabic-Indic); a frozen criterion is replaced, never edited. The other four criteria cover defects that no criterion describes (`DEF-173`, `DEF-174`, `DEF-176`, `DEF-178`, `DEF-179`, `DEF-180`).
+
+**DEVIATIONS AND HISTORIC TEXT.** `NFR-037`'s *locale-appropriate formatting* is kept; under r2 the locale-appropriate digit for Arabic in this product is Latin. Code comments that say bare `ar` renders Arabic-Indic (`numberFmt.tsx`, `p15Date.ts`, `jobFormat.ts`) and the tests that pin Arabic-Indic output change with the build. `DEC-190` a7's *""the button opens the link as the guest page does""* becomes historic for the committee button; the guest path is unchanged.
+
+**HOW THE ROWS CLOSE.** `WBS-40.29` is done-claimed on `AC-164`..`AC-169` Met; the defects close Fixed as their criteria are graded; `DEF-177` closes Fixed on the documentation change (`DEC-192` r3).
+
+**APPLICATION ORDER (`LL-042`, `SC-070`'s precedent):** this row Approved and `WBS-40.29` Approved -> `AC-164`..`AC-169` written `Proposed` -> the OPERATOR approves the texts -> the six Approved and `AC-163` / `AC-147` Superseded (superseded_by `AC-164` / `AC-167`, retired_in 1) in one batch -> all re-read -> this row `Merged`.",1,Merged,,
