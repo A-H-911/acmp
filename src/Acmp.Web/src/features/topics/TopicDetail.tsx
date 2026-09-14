@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import {
   useTopicDetail, useAddTopicComment, useUploadTopicAttachment, usePrepareTopic,
   useReactivateTopic, useCloseTopic, useReopenTopic, useConvertTopic, useReclassifyTopic, type TopicDetail as Topic,
+  MAX_ATTACHMENT_BYTES, openTopicAttachment,
 } from '../../api/topics';
 import { ApiError } from '../../api/apiClient';
 import { Dialog } from '../../components/ui/Dialog';
@@ -459,10 +460,27 @@ function Attachments({ topic }: { topic: Topic }) {
   const upload = useUploadTopicAttachment(topic.key);
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [openFailed, setOpenFailed] = useState<string | null>(null);
 
+  // AC-162: refuse an over-maximum file HERE, as the submit page does - the server's own body limit would
+  // otherwise refuse it with nothing the page can translate (DEF-166).
   const onFiles = (list: FileList | null) => {
     if (!list) return;
-    for (const f of Array.from(list)) upload.mutate({ topicId: topic.id, file: f });
+    const files = Array.from(list);
+    const ok = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
+    setFileError(ok.length < files.length ? t('submit.err.fileSize', { max: MAX_ATTACHMENT_BYTES / (1024 * 1024) }) : null);
+    for (const f of ok) upload.mutate({ topicId: topic.id, file: f });
+  };
+
+  // WBS-40.12 / AC-163: the URL is fetched on click; a refusal must be visible, not a silent no-op.
+  const open = async (attachmentId: string) => {
+    setOpenFailed(null);
+    try {
+      await openTopicAttachment(topic.id, attachmentId);
+    } catch {
+      setOpenFailed(attachmentId);
+    }
   };
 
   return (
@@ -480,6 +498,7 @@ function Attachments({ topic }: { topic: Topic }) {
         </button>
         <div className="sub-drop-hint">{t('submit.dropHint')}</div>
       </div>
+      {fileError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{fileError}</p>}
       {topic.attachments.length === 0 ? (
         <p className="bk-muted dt-attach-empty">{t('detail.attach.empty')}</p>
       ) : (
@@ -490,9 +509,10 @@ function Attachments({ topic }: { topic: Topic }) {
               <span className="sub-file-main">
                 <span className="sub-file-name" dir="ltr">{a.fileName}</span>
                 <span className="sub-file-meta">{a.uploadedByName} · {fmt(a.uploadedAt)}</span>
+                {openFailed === a.id && <span className="field-error" role="alert">{t('detail.attach.openFailed')}</span>}
               </span>
-              {/* Download needs a presigned-URL endpoint not exposed in this DTO yet → inert, flagged. */}
-              <button type="button" className="dt-attach-dl" aria-label={t('detail.attach.download')} disabled title={t('topics.comingSoon')}>
+              <button type="button" className="dt-attach-dl" aria-label={t('detail.attach.downloadFile', { name: a.fileName })}
+                title={t('detail.attach.download')} onClick={() => open(a.id)}>
                 <Icon name="download" size={14} aria-hidden />
               </button>
             </li>

@@ -20,7 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useBlocker } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bytes, Num } from '../../lib/numberFmt';
-import { useSubmitTopic, uploadTopicAttachment } from '../../api/topics';
+import { useSubmitTopic, uploadTopicAttachment, MAX_ATTACHMENT_BYTES } from '../../api/topics';
 import { ApiError, localizedValidationMessage } from '../../api/apiClient';
 import { AREAS } from '../../nav/navModel';
 import { Field, Input, Textarea } from '../../components/ui/Field';
@@ -42,10 +42,9 @@ const TYPES: { v: string; icon: IconName }[] = [
 const URGENCIES = ['Normal', 'Urgent', 'Critical'];
 const STEPS = ['type', 'justification', 'scope', 'attachments', 'urgency'];
 const MAX_TITLE = 120;
-// MUST track TopicAttachmentOptions.MaxSizeBytes (AC-049's 50 MB default). This constant is an
-// ENFORCED client cap, not a hint: files above it are rejected before upload, so a value below the
-// server's makes the server's default unreachable through the UI - which is exactly what 25 MB did.
-const MAX_FILE_BYTES = 50 * 1024 * 1024;
+// The ENFORCED client cap (AC-162), not a hint: files above it are rejected before upload, so a value below
+// the server's makes the server's default unreachable through the UI - which is exactly what 25 MB did.
+const MAX_FILE_BYTES = MAX_ATTACHMENT_BYTES;
 const DRAFT_KEY = 'acmp-topic-draft-v1';
 const SOURCE_DEFAULT = 'CommitteeMember';
 

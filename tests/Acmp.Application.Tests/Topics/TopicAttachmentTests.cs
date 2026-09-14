@@ -38,8 +38,19 @@ public class TopicAttachmentTests
         var ok = new AttachFileToTopicCommand(Guid.NewGuid(), "a.pdf", "application/pdf", 1024, Stream.Null);
         v.Validate(ok).IsValid.Should().BeTrue();
 
-        v.Validate(ok with { SizeBytes = 60L * 1024 * 1024 }).IsValid.Should().BeFalse();   // > 50 MB
+        var over = v.Validate(ok with { SizeBytes = 100L * 1024 * 1024 + 1 });   // one byte over 100 MB
+        over.IsValid.Should().BeFalse();
+        over.Errors.Should().ContainSingle().Which.ErrorCode.Should().Be("FILE_TOO_LARGE");
         v.Validate(ok with { ContentType = "application/x-msdownload" }).IsValid.Should().BeFalse();
+    }
+
+    [Fact] // AC-162 (DEC-190 a2, DEF-154): NFR-011's 100 MB is the default, and a file AT it is accepted.
+    public void The_default_maximum_is_100_MB_and_a_file_at_it_is_valid()
+    {
+        new TopicAttachmentOptions().MaxSizeBytes.Should().Be(100L * 1024 * 1024);
+        new AttachFileToTopicValidator(Options)
+            .Validate(new AttachFileToTopicCommand(Guid.NewGuid(), "a.pdf", "application/pdf", 100L * 1024 * 1024, Stream.Null))
+            .IsValid.Should().BeTrue();
     }
 
     [Fact]

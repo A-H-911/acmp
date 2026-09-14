@@ -1758,7 +1758,9 @@
     "noHistory": "No history yet.",
     "attach": {
       "empty": "No attachments yet. Drop files to add them.",
-      "download": "Download"
+      "download": "Download",
+      "downloadFile": "Download {{name}}",
+      "openFailed": "That file could not be opened."
     },
     "votes": {
       "emptyTitle": "No votes yet",

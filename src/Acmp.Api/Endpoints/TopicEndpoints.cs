@@ -1,4 +1,5 @@
-﻿using Acmp.Modules.Topics.Application.Features.AcceptTopic;
+﻿using Acmp.Modules.Topics.Application;
+using Acmp.Modules.Topics.Application.Features.AcceptTopic;
 using Acmp.Modules.Topics.Application.Features.AddTopicComment;
 using Acmp.Modules.Topics.Application.Features.AttachFileToTopic;
 using Acmp.Modules.Topics.Application.Features.CloseTopic;
@@ -6,6 +7,7 @@ using Acmp.Modules.Topics.Application.Features.ConvertResearchToTopic;
 using Acmp.Modules.Topics.Application.Features.ConvertTopic;
 using Acmp.Modules.Topics.Application.Features.DeferTopic;
 using Acmp.Modules.Topics.Application.Features.GetBacklog;
+using Acmp.Modules.Topics.Application.Features.GetTopicAttachmentUrl;
 using Acmp.Modules.Topics.Application.Features.GetTopicDetail;
 using Acmp.Modules.Topics.Application.Features.MoveTopicPriority;
 using Acmp.Modules.Topics.Application.Features.PrepareTopic;
@@ -20,6 +22,7 @@ using Acmp.Modules.Topics.Application.Features.UpdateTopic;
 using Acmp.Modules.Topics.Domain.Enums;
 using Acmp.Shared.Authorization;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Acmp.Api.Endpoints;
 
@@ -172,7 +175,13 @@ public static class TopicEndpoints
             return Results.Created($"/api/topics/{id}/comments/{commentId}", new { id = commentId });
         });
 
-        // AC-049/050: attach a file (multipart). Size/MIME validated in the handler.
+        // AC-162: attach a file (multipart). Size/MIME validated in the handler. DEF-166: without its own
+        // limit this endpoint ran on Kestrel's 30,000,000-byte default, which refused a valid file below
+        // the configured maximum with a bare 413 before the validator ran. The limit follows the CONFIGURED
+        // maximum plus a multipart margin, so a file just over the maximum still reaches the validator and
+        // gets FILE_TOO_LARGE (nginx admits 2100m in parallel).
+        var uploadLimit = app.ServiceProvider.GetRequiredService<IOptions<TopicAttachmentOptions>>().Value.MaxSizeBytes
+            + AttachmentMultipartMargin;
         group.MapPost("/{id:guid}/attachments", async (Guid id, IFormFile file, ISender sender, CancellationToken ct) =>
         {
             await using var stream = file.OpenReadStream();
@@ -180,11 +189,27 @@ public static class TopicEndpoints
                 file.ContentType, file.Length, stream), ct);
             return Results.Created($"/api/topics/{id}/attachments/{dto.Id}", dto);
         }).DisableAntiforgery()
-          .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Upload);
+          .RequireRateLimiting(Acmp.Api.Infrastructure.RateLimitPolicies.Upload)
+          .WithMetadata(
+              new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(uploadLimit),
+              new Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute { MultipartBodyLengthLimit = uploadLimit });
+
+        // WBS-40.12 / AC-163: open an attachment - a short-lived pre-signed URL handed to the browser, never
+        // the bytes (ADR-0014 / NFR-027). 404 for an attachment the caller cannot read, not on this topic, or
+        // not there at all: one answer, so the response cannot probe a Restricted topic (FR-163).
+        group.MapGet("/{id:guid}/attachments/{attachmentId:guid}/url", async (Guid id, Guid attachmentId, ISender sender, CancellationToken ct) =>
+        {
+            var url = await sender.Send(new GetTopicAttachmentUrlQuery(id, attachmentId), ct);
+            return url is null ? Results.NotFound() : Results.Ok(new AttachmentUrlResponse(url));
+        });
 
         return app;
     }
 
+    // AC-162's 1 MiB allowance for the multipart envelope around the file itself.
+    public const long AttachmentMultipartMargin = 1024 * 1024;
+
+    public sealed record AttachmentUrlResponse(string Url);
     public sealed record AcceptTopicBody(Guid OwnerId, string OwnerName);
     public sealed record ReasonBody(string Reason);
     // FR-030: ReasonBody is not reused here — conversion needs the TARGET TYPE as well, and the reason is

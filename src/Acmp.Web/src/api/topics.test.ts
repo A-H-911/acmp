@@ -18,6 +18,8 @@ import {
   useAddTopicComment,
   useUploadTopicAttachment,
   uploadTopicAttachment,
+  openTopicAttachment,
+  MAX_ATTACHMENT_BYTES,
   useConvertResearchToTopic,
 } from './topics';
 import { ApiError } from './apiClient';
@@ -367,6 +369,28 @@ describe('topic mutations', () => {
     expect((init as RequestInit).body).toBeInstanceOf(FormData);
     const headers = (init as RequestInit).headers as Record<string, string> | undefined;
     expect(headers?.['Content-Type']).toBeUndefined(); // browser sets the multipart boundary
+  });
+
+  // WBS-40.12 / AC-163: the URL is fetched on click from the topic-scoped route and opened in a new tab.
+  it('openTopicAttachment fetches the topic-scoped URL and opens it without an opener', async () => {
+    const spy = stubFetch(() => ({ jsonBody: { url: 'https://storage.example/presigned' } }));
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    await openTopicAttachment('t1', 'a1');
+    expect(urlOf(spy)).toBe('/api/topics/t1/attachments/a1/url');
+    expect(open).toHaveBeenCalledWith('https://storage.example/presigned', '_blank', 'noopener,noreferrer');
+  });
+
+  it('openTopicAttachment rejects on a 404 and opens nothing', async () => {
+    stubFetch(() => ({ status: 404, jsonBody: {} }));
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    await expect(openTopicAttachment('t1', 'gone')).rejects.toBeInstanceOf(ApiError);
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('the attachment maximum is the 100 MB NFR-011 grants (AC-162)', () => {
+    expect(MAX_ATTACHMENT_BYTES).toBe(100 * 1024 * 1024);
   });
 
   it('useUploadTopicAttachment invalidates the detail query on success', async () => {

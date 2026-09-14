@@ -233,7 +233,7 @@ services:
       Minio__Endpoint: "minio:9000"
       Minio__AccessKey: ${MINIO_ROOT_USER}
       Minio__Secure: "false"
-      # Browser-reachable host used ONLY to presign recording playback URLs (ADR-0014); via nginx /acmp-recordings/.
+      # Browser-reachable host used to presign the URLs a browser opens - recording playback (ADR-0014) and topic attachments (AC-163); via nginx /acmp-recordings/ and /acmp-topics/.
       # Empty => presign with the internal client. Set MINIO_PUBLIC_ENDPOINT=acmp.ngrok.dev for the ngrok profile.
       Minio__PublicEndpoint: ${MINIO_PUBLIC_ENDPOINT:-}
       Minio__PublicSecure: "true"
