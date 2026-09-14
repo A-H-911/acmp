@@ -8,6 +8,7 @@ import { AcmpAuthContext } from '../../auth/AcmpAuthContext';
 import { makeAuth } from '../../test/render';
 import { ApiError } from '../../api/apiClient';
 import type { TopicDetail as Topic } from '../../api/topics';
+import i18n from '../../i18n';
 
 // The traceability panel (which replaced the P5 empty relationships sidebar) has its own test; stub
 // it here so this page test stays isolated from the panel's query providers.
@@ -343,6 +344,29 @@ describe('TopicDetail (P5b)', () => {
     expect(screen.queryByText('identity')).toBeNull();
     await user.click(screen.getByRole('tab', { name: /Attachments/ }));
     expect(screen.getByText('Omar H', { selector: 'bdi' })).toBeInTheDocument();
+  });
+
+  // AC-168, IN ARABIC: the attachment and history lines are "name · date" in an RTL page - the name must be isolated
+  // so the Latin name and the Latin-digit date cannot reorder against each other, and the date carries Latin digits.
+  it('in Arabic, isolates the uploader and actor beside Latin-digit dates on the attachment and history lines', async () => {
+    await i18n.changeLanguage('ar');
+    try {
+      result({ data: TOPIC });
+      const user = userEvent.setup();
+      setup();
+      await user.click(screen.getByRole('tab', { name: /المرفقات/ }));
+      const uploader = screen.getByText('Omar H', { selector: 'bdi' });
+      const attachLine = uploader.parentElement!.textContent!;
+      expect(attachLine).toMatch(/Omar H · .*2026/);
+      expect(attachLine).not.toMatch(/[٠-٩]/);
+
+      await user.click(screen.getByRole('tab', { name: /السجل/ }));
+      const actor = screen.getByText('Khalid A', { selector: 'bdi' });
+      expect(actor.parentElement!.textContent).toMatch(/2026/);
+      expect(actor.parentElement!.textContent).not.toMatch(/[٠-٩]/);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   // AC-169: the picker offers only the server's allowed types, and re-picking the same file starts again.

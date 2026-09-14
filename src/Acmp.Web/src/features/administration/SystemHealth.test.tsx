@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { screen } from '@testing-library/react';
 import { SystemHealth } from './SystemHealth';
 import { renderWithAuth } from '../../test/render';
+import i18n from '../../i18n';
 import type { SystemHealth as SystemHealthDto } from '../../api/systemHealth';
 
 vi.mock('../../api/systemHealth', () => ({ useSystemHealth: vi.fn() }));
@@ -44,6 +45,21 @@ describe('SystemHealth (NR-08)', () => {
     // AC-168: a translated status and a formatted duration; the server's English diagnostic is the tooltip.
     const line = screen.getByText(/120 ms · Responding with problems/);
     expect(line).toHaveAttribute('title', 'slow');
+  });
+
+  // AC-168, IN ARABIC: the duration and the state are translated and the duration's digits are Latin; the
+  // server's English diagnostic stays out of the text (it is the tooltip).
+  it('in Arabic, shows a translated state and a Latin-digit duration, never the English diagnostic', async () => {
+    await i18n.changeLanguage('ar');
+    try {
+      health({ data: dto([{ name: 'sqlserver', status: 'Degraded', description: 'slow', durationMs: 120 }], 'Degraded') });
+      renderWithAuth(<SystemHealth />, { roles: ['administrator'] });
+      const line = screen.getByText(/120 مل[.]ث · يستجيب مع وجود مشكلات/);
+      expect(line).toHaveAttribute('title', 'slow');
+      expect(line.textContent).not.toMatch(/[٠-٩]|slow|ms|Responding/);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
   });
 
   it('reflects an unhealthy check as a down core service', () => {
