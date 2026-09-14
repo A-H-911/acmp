@@ -378,7 +378,7 @@ export function SubmitTopic() {
           <fieldset id="sec-attachments" className="sub-fieldset">
             <legend className="sub-legend">{t('submit.sec.attachments')}</legend>
             <p className="sub-sub">{t('submit.sec.attachmentsHelp')}</p>
-            <FileDrop onFiles={addFiles} hint={t('submit.dropHint')} label={t('submit.dropFiles')} />
+            <FileDrop onFiles={addFiles} hint={t('submit.dropHint', { max: MAX_FILE_BYTES / (1024 * 1024) })} label={t('submit.dropFiles')} />
             {fileError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{fileError}</p>}
             {files.length > 0 && (
               <ul className="sub-files">
