@@ -5,7 +5,7 @@
  * by Guid id (/{id}/…) — so summaries/detail both carry `id` for write calls.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from './apiClient';
+import { api, apiUpload } from './apiClient';
 
 export interface TopicSummary {
   id: string;
@@ -156,10 +156,10 @@ export async function openTopicAttachment(topicId: string, attachmentId: string)
 
 /** Upload one staged file to a created topic (AC-049/050). Multipart — no Content-Type header so the
  *  browser sets the boundary; the field name is `file` to match the IFormFile parameter. */
-export function uploadTopicAttachment(topicId: string, file: File): Promise<unknown> {
+export function uploadTopicAttachment(topicId: string, file: File, onProgress?: (pct: number) => void): Promise<unknown> {
   const form = new FormData();
   form.append('file', file);
-  return api<unknown>(`/topics/${topicId}/attachments`, { method: 'POST', body: form });
+  return apiUpload<unknown>(`/topics/${topicId}/attachments`, form, onProgress);
 }
 
 /** Upload a file to an EXISTING topic from the detail screen's Attachments tab; invalidates the
@@ -167,7 +167,8 @@ export function uploadTopicAttachment(topicId: string, file: File): Promise<unkn
 export function useUploadTopicAttachment(key: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ topicId, file }: { topicId: string; file: File }) => uploadTopicAttachment(topicId, file),
+    mutationFn: ({ topicId, file, onProgress }: { topicId: string; file: File; onProgress?: (pct: number) => void }) =>
+      uploadTopicAttachment(topicId, file, onProgress),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['topics', 'detail', key] }),
   });
 }

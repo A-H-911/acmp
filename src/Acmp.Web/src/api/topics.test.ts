@@ -24,6 +24,7 @@ import {
 } from './topics';
 import { ApiError } from './apiClient';
 import { makeQueryWrapper, stubFetch, lastBody } from '../test/queryHarness';
+import { FakeXhr, installFakeXhr } from '../test/fakeXhr';
 
 /*
  * Real topic hooks against a stubbed fetch. The screen tests mock these hooks, so
@@ -361,14 +362,20 @@ describe('topic mutations', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });
 
-  it('uploadTopicAttachment sends multipart FormData with no JSON Content-Type', async () => {
-    const spy = stubFetch(() => ({ jsonBody: {} }));
-    await uploadTopicAttachment('abc', new File(['x'], 'spec.pdf', { type: 'application/pdf' }));
-    const [url, init] = spy.mock.calls.at(-1)!;
-    expect(url).toBe('/api/topics/abc/attachments');
-    expect((init as RequestInit).body).toBeInstanceOf(FormData);
-    const headers = (init as RequestInit).headers as Record<string, string> | undefined;
-    expect(headers?.['Content-Type']).toBeUndefined(); // browser sets the multipart boundary
+  it('uploadTopicAttachment sends the file as multipart FormData and reports progress (DEF-171)', async () => {
+    installFakeXhr();
+    const seen: number[] = [];
+    const file = new File(['x'], 'spec.pdf', { type: 'application/pdf' });
+    const done = uploadTopicAttachment('abc', file, (p) => seen.push(p));
+    const xhr = FakeXhr.last!;
+    expect(xhr.url).toBe('/api/topics/abc/attachments');
+    expect(xhr.body).toBeInstanceOf(FormData);
+    expect((xhr.body as FormData).get('file')).toBe(file);
+    expect(xhr.headers['Content-Type']).toBeUndefined(); // browser sets the multipart boundary
+    xhr.progress(1, 2);
+    xhr.respond(201, {});
+    await done;
+    expect(seen).toEqual([50]);
   });
 
   // WBS-40.12 / AC-163: the URL is fetched on click from the topic-scoped route and opened in a new tab.
@@ -394,11 +401,13 @@ describe('topic mutations', () => {
   });
 
   it('useUploadTopicAttachment invalidates the detail query on success', async () => {
-    stubFetch(() => ({ jsonBody: {} }));
+    installFakeXhr();
     const { client, wrapper } = makeQueryWrapper();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => useUploadTopicAttachment('TOP-2026-001'), { wrapper });
     result.current.mutate({ topicId: 'abc', file: new File(['x'], 'a.pdf') });
+    await waitFor(() => expect(FakeXhr.last).toBeDefined());
+    FakeXhr.last!.respond(201, {});
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['topics', 'detail', 'TOP-2026-001'] });
   });

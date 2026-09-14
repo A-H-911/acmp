@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, within, cleanup, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, within, cleanup, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import axe from 'axe-core';
@@ -238,7 +238,7 @@ describe('TopicDetail (P5b)', () => {
     expect(screen.getByText('eval.pdf')).toBeInTheDocument(); // existing attachment listed in the tab
     const file = new File(['x'], 'design.pdf', { type: 'application/pdf' });
     await user.upload(screen.getByLabelText(/Drop files/i), file);
-    expect(uploadMutate).toHaveBeenCalledWith({ topicId: 'g1', file });
+    expect(uploadMutate).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'g1', file }));
   });
 
   // AC-162: the Attachments tab refuses an over-maximum file in the browser, as the submit page does.
@@ -267,7 +267,11 @@ describe('TopicDetail (P5b)', () => {
   // DEF-168: a long upload says what it is uploading and ignores new files until it finishes.
   it('shows the upload in progress, ignores another file meanwhile, and clears when it lands', async () => {
     let land: (v: unknown) => void = () => {};
-    uploadMutate.mockReturnValue(new Promise((r) => { land = r; }));
+    let report: (p: number) => void = () => {};
+    uploadMutate.mockImplementation(({ onProgress }: { onProgress?: (p: number) => void }) => {
+      report = onProgress ?? report;
+      return new Promise((r) => { land = r; });
+    });
     result({ data: TOPIC });
     const user = userEvent.setup();
     setup();
@@ -275,6 +279,11 @@ describe('TopicDetail (P5b)', () => {
     const first = new File(['x'], 'design.pdf', { type: 'application/pdf' });
     await user.upload(screen.getByLabelText(/Drop files/i), first);
     expect(screen.getByRole('status')).toHaveTextContent('Uploading design.pdf…');
+    // DEF-171: the percentage the XHR reports reaches the bar.
+    expect(screen.getByRole('progressbar', { name: 'design.pdf' })).toHaveAttribute('aria-valuenow', '0');
+    act(() => report(64));
+    expect(screen.getByRole('progressbar', { name: 'design.pdf' })).toHaveAttribute('aria-valuenow', '64');
+    expect(screen.getByText('64%')).toBeInTheDocument();
     fireEvent.drop(screen.getByText(/Drop files here/).closest('.sub-drop')!, { dataTransfer: { files: [new File(['y'], 'second.pdf', { type: 'application/pdf' })] } });
     expect(uploadMutate).toHaveBeenCalledTimes(1);
     land({});
@@ -494,7 +503,7 @@ describe('TopicDetail (P5b)', () => {
 
     fireEvent.drop(zone, { dataTransfer: { files: [file] } });
 
-    expect(uploadMutate).toHaveBeenCalledWith({ topicId: 'g1', file });
+    expect(uploadMutate).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'g1', file }));
     expect(zone).not.toHaveClass('over');
     await user.click(within(zone).getByRole('button'));
   });

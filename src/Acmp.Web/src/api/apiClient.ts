@@ -100,6 +100,43 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 /**
+ * A multipart upload that reports progress (DEF-171). `fetch` reports no upload progress, so a 100 MB file
+ * at a slow uplink showed an unchanging line for minutes and users abandoned uploads that were working
+ * (uat, 2026-09-14). XMLHttpRequest's `upload.onprogress` is the one browser API that does. Same token,
+ * language header and ApiError projection as `api`; a transport failure or abort rejects as ApiError(0).
+ */
+export function apiUpload<T>(path: string, body: FormData, onProgress?: (pct: number) => void): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/api${path}`);
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.setRequestHeader('Accept-Language', i18n.language);
+    const token = getToken();
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && e.total > 0) onProgress(Math.floor((e.loaded / e.total) * 100));
+      };
+    }
+    const parse = (): unknown => {
+      try {
+        return xhr.responseText ? JSON.parse(xhr.responseText) : undefined;
+      } catch {
+        return undefined; // Non-JSON body - fall back to the status code.
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) return resolve(parse() as T);
+      const reason = xhr.getResponseHeader('X-Acmp-Auth-Reason');
+      reject(new ApiError(xhr.status, parse() as ProblemDetails | undefined, (reason as AuthRefusal | null) ?? undefined));
+    };
+    xhr.onerror = () => reject(new ApiError(0));
+    xhr.onabort = () => reject(new ApiError(0));
+    xhr.send(body);
+  });
+}
+
+/**
  * A file download from an AUTHORIZED endpoint (WBS-24.6, the audit export).
  *
  * ⚠ WHY THIS EXISTS RATHER THAN AN `<a href>`. A plain link cannot carry the bearer token, so pointing

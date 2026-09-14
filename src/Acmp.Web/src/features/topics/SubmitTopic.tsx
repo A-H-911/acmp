@@ -28,6 +28,7 @@ import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { StreamPicker } from '../../components/ui/StreamPicker';
+import { UploadProgress } from './UploadProgress';
 import { TokenInput } from '../../components/ui/TokenInput';
 import { Icon, type IconName } from '../../components/icons';
 import { TemplatePicker } from '../templates/TemplatePicker';
@@ -78,6 +79,9 @@ export function SubmitTopic() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [fileError, setFileError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // DEF-171: the uploads run after the topic is created and can take minutes; say which one and how far.
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>(loadDraft() ? 'saved' : 'idle');
   const [activeStep, setActiveStep] = useState('type');
 
@@ -179,8 +183,10 @@ export function SubmitTopic() {
       const res = await submit.mutateAsync({ ...form, source: SOURCE_DEFAULT, tags: [] });
       let uploadError: string | undefined;
       for (const file of files) {
+        setUploading(file.name);
+        setPct(0);
         try {
-          await uploadTopicAttachment(res.id, file);
+          await uploadTopicAttachment(res.id, file, setPct);
         } catch (e) {
           // AC-049 (BL-016): surface the FIRST locale-aware upload rejection (size/MIME/content mismatch)
           // rather than swallowing it. The topic is already created, so keep the user here to see the error
@@ -188,6 +194,7 @@ export function SubmitTopic() {
           if (!uploadError) uploadError = (e instanceof ApiError ? localizedValidationMessage(e.problem) : undefined) ?? t('submit.uploadError');
         }
       }
+      setUploading(null);
       localStorage.removeItem(DRAFT_KEY);
       if (uploadError) { setSubmitError(uploadError); return; }
       leaveTo(`/topics/${res.key}`);
@@ -429,9 +436,10 @@ export function SubmitTopic() {
               <Icon name="infoCircle" size={14} aria-hidden /> {t('submit.autosaveNote')}
             </span>
             {submitError && <span className="field-error sub-foot-err" role="alert">{submitError}</span>}
+            {uploading && <UploadProgress name={uploading} pct={pct} />}
             <div className="sub-foot-actions">
-              <Button type="button" variant="secondary" onClick={saveDraftAndLeave}>{t('submit.saveDraft')}</Button>
-              <Button type="submit" loading={submit.isPending}>{t('submit.submit')}</Button>
+              <Button type="button" variant="secondary" onClick={saveDraftAndLeave} disabled={uploading !== null}>{t('submit.saveDraft')}</Button>
+              <Button type="submit" loading={submit.isPending || uploading !== null}>{t('submit.submit')}</Button>
             </div>
           </div>
         </form>
