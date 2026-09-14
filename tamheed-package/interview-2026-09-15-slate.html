@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Interview 2026-09-15 - the next unit, WBS-41.1, two lessons, ASM-011, OQ-079/080</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>Interview 2026-09-15 - the next unit, WBS-41.1, two lessons, ASM-011, OQ-079/080</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>91e2e2efce22459b0346e1a7d7227b7a2ec6564543b9a6701a834d79723767e7</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>Interview of 2026-09-15. Every record below is quoted from the store by the generator; this paragraph is the
+only text on the page that is not.</p>
+<ol>
+<li><b>WBS-41.1's verdict</b> is on the separate page <code>tamheed-package/slice-review-slate.html</code> (SL-044).
+WBS-41.1 carries no acceptance criterion by design; its done-claim evidence is <code>PE-1111</code>, quoted here.
+WBS-41.2 is on that page too but is not asked: its own text keeps it at Review until the first Dependabot PR after
+PR-B's merge is read, and no Dependabot PR has opened since.</li>
+<li><b>The next unit of work.</b> Nothing in the decision register names one after <code>DEC-193</code>. The candidates
+are the SL-043 items still Approved (quoted below), plus <code>DEF-129</code>, the E2E flake that recurred on four
+recent PR runs.</li>
+<li><b>Two lessons</b> awaiting confirmation: <code>LL-082</code>, <code>LL-083</code>.</li>
+<li><b>ASM-011</b>, past its validation date, and <b>OQ-079 / OQ-080</b>, which have no resolver.</li>
+</ol>
+</div>
+<h2>PE-1111  [progress_entries]</h2>
+<pre>id: PE-1111
+event_type: work-done
+entry: WBS-41.1 done-claimed (Review) with NO_CRITERION_BY_DESIGN citing DEC-182 in the same batch (DEC-180 i3). #407 squash-merged -&gt; 96f63beb (PR runs CI 34719819213, Security 34719819034, E2E 34719819051; main CI 34720322599, Security 34720322630). Dispatch on main: run 34720343284, success; the guard passed ON THE RUNNER (authenticated tags/list 200 through the operator's Write grant, anonymous 401), pushed ghcr.io/a-h-911/acmp-sqlserver-fts-private@sha256:9572cc8270b26b6b3d1b9cc206c9ef5d06b543aec585f12157992eb7450f81b2 tagged df-fe7ed88b... (the committed Dockerfile's sha256, unchanged since the first publish) and run-34720343284; post-push anonymous read 401. After-probe from this machine: anonymous token endpoint 401 (gitleaks 200), anonymous manifest GET of the digest 403, API visibility=private. DEC-183 g3's unverified claim measured true. THE DIGEST DIFFERS from the first publish's (9f695f30, same Dockerfile hash): two builds of one file on one day already produced different images, which is ADR-0047 e3's premise showing itself, and why the pin records the digest and not the file. This digest is WBS-41.2's pin. Stated plainly on the row: the VERIFY clause's pre-main --ref attempt was never made and can no longer be asked as written. DEF-163 stays Open for the public first package (DEC-183 g1, OQ-081).
+subject_id: WBS-41.1
+actor: claude-opus-5
+phase_id: PH-7
+slice_id: SL-044
+occurred_at: 2026-09-12T21:50:20Z</pre>
+<h2>WBS-40.6  [wbs_items]</h2>
+<pre>id: WBS-40.6
+title: `DW-071`: EXTEND THE axe SWEEP FROM THREE ROUTES TO FIFTY-TWO. `NFR-032` (Must) requires every non-decorative image, icon and data visualization to carry alt text or an ARIA label in BOTH languages and targets zero axe failures; the instrument exists and covers three routes of fifty-two.
+
+**BUILD.** The sweep across the full route set, in both EN and AR, with the ratio itself asserted so a new route cannot silently make it worse — the row's own point is that every shipped route moves the denominator.
+
+**DONE-CLAIMED WHEN** the scan covers the routes the application actually serves, runs in both locales, and fails on a route that is added without being included.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-071 (Activated 2026-08-20 under DEC-067, never scheduled); DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.7  [wbs_items]</h2>
+<pre>id: WBS-40.7
+title: `DW-070`: AN INSTRUMENT THAT CAN ACTUALLY PRESS A KEY. `NFR-031` (Must) requires 100% of interactive elements to be reachable and operable by keyboard, with an alternative for drag-and-drop. The second clause IS built and verified (`AC-043`'s move-up/move-down buttons, axe-scanned with the wcag22aa tag set so target-size bites). The FIRST clause has no instrument at all: axe-core is static analysis of the rendered DOM — it never presses Tab, never follows focus, and cannot tell reachable from unreachable. Neither the jsdom pass nor the live Playwright sweep issues a single keypress.
+
+**BUILD.** A keyboard walkthrough in Playwright, which can press keys, covering the primary flows and every drag affordance's alternative.
+
+**DONE-CLAIMED WHEN** a control made unreachable by a deliberate mutation fails the new test — the guard is new, so it is proven by forcing its refusal, not by passing.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-070; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.8  [wbs_items]</h2>
+<pre>id: WBS-40.8
+title: `DW-072`: THE SECOND CONTRAST THRESHOLD AND THE FOUR STATES. `NFR-033` (Must) names 4.5:1 for body text AND 3:1 for large text and UI components, across normal, hover, focused and disabled. `contrast.test.ts` asserts 20 token pairs at 4.5:1 in both palettes, with a real anti-vacuity guard — and NOT ONE pair uses 3:1, and the four states are absent from the pair table entirely.
+
+**BUILD.** 3:1 cases (border-on-background, focus ring, disabled state) added to the existing test, which already runs in CI and already fails on a body-text regression.
+
+⚠ **DO NOT UNDERSELL WHAT IS THERE**: this test was once falsely green because a plain `indexOf` matched its selector inside a prose comment and returned the LIGHT palette for every dark case, for the file's whole life until 2026-08-10. Whatever is added inherits that lesson — the guard must be unable to pass by comparing nothing to nothing.
+
+**DONE-CLAIMED WHEN** both thresholds and all four states have cases, and a deliberately failing token is refused.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-072; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.9  [wbs_items]</h2>
+<pre>id: WBS-40.9
+title: `DW-041`: THE MANUAL WCAG 2.2 AA PASS axe CANNOT PERFORM. `NFR-030` (Must) claims all UI components conform to AA at 100% of applicable criteria; axe-core runs across ~40 component suites and a dedicated `a11y.test.tsx`, and every one is axe-clean — which is genuinely strong and is a different property. axe cannot judge whether alt text is MEANINGFUL, whether focus order is LOGICAL, whether an error message is ACTIONABLE, or whether a reading sequence works in Arabic RTL.
+
+**BUILD.** A keyboard-and-screen-reader pass over the primary flows in EN and RTL against the AA checklist, recording what it finds per criterion. Sized by the row itself as a day or two, not a project.
+
+⚠ **DO NOT ADD AN ACCEPTANCE CRITERION FOR `NFR-030` TO CLOSE THIS.** A `Partial` verdict holds package readiness false permanently (acs-met counts by `retired_in` and needs the latest verdict Met), which is why the row exists instead of an AC.
+
+**DONE-CLAIMED WHEN** the pass is run and its findings recorded — including findings of conformance, so a later reader can tell a clean result from an unrun one.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-041; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.10  [wbs_items]</h2>
+<pre>id: WBS-40.10
+title: `DW-067`: PUT THE OTHER TWO ENGINES IN THE BROWSER MATRIX. `NFR-061` (Must) names Chrome, Edge, Firefox and Safari at N and N-1 — eight cells. `playwright.config.ts` defines exactly two projects, chromium and msedge, which share one engine, so neither non-Blink engine has ever been exercised. WebKit is the one that matters most here, because it is likeliest to differ on the CSS logical properties and RTL behaviour `INV-009` makes non-negotiable.
+
+**BUILD.** firefox and webkit projects. ⚠ **THE COST IS NOT THE CONFIG**: the e2e workflow already runs seven services with a real Keycloak per PR, and tripling the matrix triples that wall clock — decide what runs per-PR versus nightly rather than tripling by default. N-1 pinning is harder still and the requirement's own verification clause allows a manual pre-release check for it.
+
+**DONE-CLAIMED WHEN** an RTL or logical-property regression that only reproduces on WebKit is caught by the suite.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-067; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.11  [wbs_items]</h2>
+<pre>id: WBS-40.11
+title: `DW-075`: MOUNT `ToastProvider` AND ADOPT IT. Measured again 2026-09-08: the provider is referenced only by `Toast.tsx` itself and `overlays.test.tsx`, so `useToast()` would throw from any real screen. It is correct, covered and unreachable — a green suite over a component nobody mounts says nothing about whether the app has toasts.
+
+**BUILD.** Mount it in the app shell (a few lines), then the actual work: decide WHICH existing ad-hoc confirmations and failure notices become toasts, and localise `regionLabel`, which currently defaults to the untranslated English 'Notifications'.
+
+⚠ The PNG export's inline `.rpt-card-note` was the right call for one button and is the SECOND ad-hoc treatment; this item exists so there is no third.
+
+**DONE-CLAIMED WHEN** the provider is mounted, at least the existing ad-hoc treatments are reconciled, and the region label is translated in both bundles.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-075; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.13  [wbs_items]</h2>
+<pre>id: WBS-40.13
+title: `DW-094`: RENDER SoD-4's CONFLICT FLAG THE WAY SoD-2's IS ALREADY RENDERED. Measured 2026-09-08: `RecordedByConflictedActor` is persisted, on `DecisionDetailDto` at `DecisionDtos.cs:48`, and emitted as a distinct audit event asserted as a row — and appears NOWHERE in `src/Acmp.Web/src`. SoD-2's counterpart runs end to end into `MeetingMinutes.tsx:125` with a component test and an e2e spec. Two warn-and-audit rules at the same recorded strength, visible to different audiences.
+
+⚠ **CHECK THE DECISIONS `.dc.html` IN `ACMP product context/` FIRST** (`INV-014`): if it draws no such badge, this is a no-reference composition and must be flagged as one rather than invented quietly.
+
+⚠ **THIS IS PARITY OF PRESENTATION, NOT A HALF-BUILT CONTROL.** The rule is complete at the strength `DEC-095` d1 set.
+
+**DONE-CLAIMED WHEN** a reader of the decision detail screen sees the conflict the audit log already records, with the `.dc.html` question answered either way in writing.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-094; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.14  [wbs_items]</h2>
+<pre>id: WBS-40.14
+title: `DW-004`: CONFLICT-OF-INTEREST TRACKING PER VOTE. Today a partial conflict signal already exists and is server-computed — SoD-4's `RecordedByConflictedActor` marks the RECORDER of a decision. This item is the per-VOTE dimension on top of it: whether the member casting a vote has a declared interest in the topic.
+
+**BUILD.** A declared-interest concept attached to a member and a topic, evaluated at vote time, recorded on the vote and audited. ⚠ Votes are always attributed in this product (a hard constraint), so this adds a reason alongside an attribution rather than any form of anonymity.
+
+⚠ Sequence it AFTER `WBS-40.13`, which establishes how a conflict is presented, so the two do not invent two treatments for the same idea.
+
+**DONE-CLAIMED WHEN** a vote by a conflicted member is recorded as such, surfaced where SoD-4's flag is surfaced, and asserted as an audit row.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-004; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.15  [wbs_items]</h2>
+<pre>id: WBS-40.15
+title: `DW-006`: THE INVARIANT EXCEPTION-REQUEST WORKFLOW. A team asks the committee for a time-boxed exception to an architecture invariant, and the committee rules on it. Nothing in the product records or tracks such a request today — the invariant rows are the governance record and they have no exception path.
+
+**BUILD.** Request intake, committee ruling, an expiry on the granted exception, and the audit trail through all three. ⚠ This is a governance object, not a form: it needs a lifecycle, an authorization model (who may request, who may grant) and a place in traceability, which is why it is `L`.
+
+**DONE-CLAIMED WHEN** an exception can be requested, ruled on, and seen to EXPIRE — the expiry being the clause that makes it an exception rather than a silent amendment to the invariant.
+phase_id: PH-7
+slice_id: SL-043
+effort: L
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-006; DEC-150 d4/d8, operator interview 2026-09-08 (the operator stated the demand its trigger names). Scoped by SC-056.</pre>
+<h2>WBS-40.16  [wbs_items]</h2>
+<pre>id: WBS-40.16
+title: `DW-007`: TRACEABILITY-MATRIX EXPORT (CSV/Excel). The matrix itself is built — the SPA has a traceability surface with typed edges — so this is the export of it.
+
+⛔ **NEVER `PageSize.Clamp` AN EXPORT.** A clamped export is the failure this project already records: it produces a file that looks complete and is not, and no reader can tell.
+
+**BUILD.** A full export of the matrix in the format the audit and export paths already use, with the same authorization as reading the matrix.
+
+**DONE-CLAIMED WHEN** the exported row count equals the matrix's own count on a data set larger than any page size, proven by the assertion rather than by inspection.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-007; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.17  [wbs_items]</h2>
+<pre>id: WBS-40.17
+title: `DW-010`: BULK TOPIC OPERATIONS — defer multiple topics, reassign owner across a selection.
+
+⚠ **NOT A UI CHANGE.** Every one of these already exists as a single-topic operation carrying its own authorization guard and its own audit entry. The question this item answers is what happens to those per-item guarantees under a selection: each act must still be individually authorized and individually audited, and a partial failure must not leave the caller guessing which half applied.
+
+**DONE-CLAIMED WHEN** a bulk act over N topics produces N audit rows, refuses the subset the caller may not touch rather than the whole request or the whole set, and reports precisely what it did.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-010; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.18  [wbs_items]</h2>
+<pre>id: WBS-40.18
+title: `DW-001` / `FR-036`: A PLANNED START AND SPAN ON TOPICS, AND THEN THE TIMELINE BARS. The domain change comes first and is the reason this is `L`.
+
+⛔ **DO NOT READ `Timeline.tsx` AS THE FEATURE.** It is a deliberate, honest SHELL and its own header says so: topics carry no planned start or span in the Topics API, so it renders the design's gantt chrome — a Topic column, six week columns, one row per real topic — with every cell empty. This row was once closed in error on file existence alone and reversed after the file was read.
+
+**BUILD.** A planned start and span (or target date) on the Topic aggregate and its API, then the real bars: created → target → scheduled → decided, with pan and zoom.
+
+**DONE-CLAIMED WHEN** bars are drawn from persisted topic dates rather than mock spans, and a topic with no planned dates renders honestly rather than pretending.
+phase_id: PH-7
+slice_id: SL-043
+effort: L
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-001 (FR-036); DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.19  [wbs_items]</h2>
+<pre>id: WBS-40.19
+title: `DW-014`: PROJECT MEMBER EMAIL THROUGH THE MEMBERSHIP SEAM, THEN THE WEBEX HALVES. The seam extension comes first and is this row's own stated trigger.
+
+**MEASURED 2026-09-08**: `ICommitteeDirectory` projects `CommitteeRecipient(UserId, FullName)` and `CommitteeMemberRef(PublicId, AccessExpiresAt)` — no email anywhere in the contract. Email is persisted in Membership and never projected, so the trigger had not fired.
+
+**BUILD.** (a) member email projected through the seam, with the module boundary respected — Membership owns the data and no other module reads its tables; (b) Webex per-user DM cards and meeting auto-invitations; (c) attendance auto-populated by matching a Webex attendee's email to a member.
+
+⚠ **THIS IS READING AN ADDRESS, NOT SENDING TO ONE.** `DW-012` is closed Won't-do (`DEC-150` d5): ACMP never sends email, and invitations here ride the Webex API. If any part of (b) turns out to require SMTP, STOP and raise it — that would cross a closed ruling.
+
+**DONE-CLAIMED WHEN** attendance populates from a real Webex roster and no SMTP path was introduced.
+phase_id: PH-7
+slice_id: SL-043
+effort: L
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-014; DEC-150 d4/d8, operator interview 2026-09-08. Trigger re-measured 2026-09-08: ICommitteeDirectory still projects no email. Scoped by SC-056.</pre>
+<h2>WBS-40.20  [wbs_items]</h2>
+<pre>id: WBS-40.20
+title: `DW-073`: PIN THE KEYCLOAK SESSION LIFESPANS SO `NFR-023` RESTS ON A CHOICE. The idle half of `AC-139`'s verdict is solid — thirty-minute app-side detection, mutation-tested, fully covered. The ABSOLUTE half holds only because `ssoSessionMaxLifespan` happens to default to 36000 s (ten hours), measured once on the live realm on 2026-08-13; `realm-export.json` sets neither that key nor `ssoSessionIdleTimeout`, and nothing in the repository would fail if the default moved past twenty-four hours.
+
+**BUILD.** Both values pinned explicitly, with a check that reads them so a version bump cannot move them silently.
+
+⚠ **`realm-export.json` REACHES FRESH STACKS ONLY** — pinning it fixes new environments and does nothing for the running ones; `reconcile.sh` is the only seam to those, and both must be done.
+⚠ **SETTLE THE 30-versus-60 QUESTION FIRST**: `OQ-003`'s resolution names a 60-minute idle timeout while the realm and the app both implement 30. Pin the intended number, not whichever is read first.
+
+**DONE-CLAIMED WHEN** both values are set in the export AND applied to the running realms, and a deliberately wrong value is refused by the check.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-073; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.21  [wbs_items]</h2>
+<pre>id: WBS-40.21
+title: `DW-074`: TLS ON THE TWO INTERNAL HOPS `NFR-019` NAMES. Measured: the cloud nginx template proxies to `http://keycloak:8080/` and `http://api:8080`, the dev template does the same, and `KeycloakAdmin__BaseUrl` defaults to plaintext in both compose files — so everything behind the reverse proxy speaks unencrypted HTTP over the Docker network.
+
+✅ **WHAT IS ALREADY RIGHT AND MUST NOT BE REDONE**: the public edge is exactly at the requirement's floor (TLSv1.2 + TLSv1.3, certbot-published certificates), and the app-to-SQL-Server hop carries `Encrypt=True`. The Tarseem hop the requirement names has no endpoint and now never will (`DW-011` closed). So the work is the Keycloak and api hops only.
+
+⚠ **TWO THINGS MAKE THIS LARGER THAN A CONFIG EDIT.** A certificate story for service-to-service traffic — who issues, who rotates, what each container trusts — which the certbot flow does not extend to, because those certificates are for a public hostname while these services address each other by compose service name. And the VERSION FLOOR is unpinned on every internal hop, so even after TLS lands, the *disable TLS 1.0 and 1.1* clause would still rest on image defaults — `DW-073`'s shape exactly.
+
+**DONE-CLAIMED WHEN** both hops are encrypted with an explicit minimum version, and a rotation path exists rather than a one-off certificate.
+phase_id: PH-7
+slice_id: SL-043
+effort: L
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-074; DEC-066 keeps NFR-019 as written; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.22  [wbs_items]</h2>
+<pre>id: WBS-40.22
+title: `DW-083`: MAKE STARTING AND STOPPING A VISUAL-VERIFY HARNESS ONE OPERATION. Six vite dev servers plus six npx parents survived thirteen days on ports 5199, 5201, 5233, 5241, 4173 and 8124; they held a native rolldown binding open, so `npm ci` failed with EPERM and one run gutted `node_modules` from 171 packages to 35 partway through. Killing exactly those twelve restored a clean install, verified by running it.
+
+**WHY A CHECKLIST CANNOT FIX IT**: trap 28 guards the FILES and a file-level check runs clean over a machine with six leaked servers — the working tree was clean the whole time. And the failure does not present as leaked processes; it presents as an opaque Windows EPERM in an unrelated session days later.
+
+**BUILD.** A committed start/stop helper that kills the pid it launched (a trap or finally), or a fixed port with a pre-flight kill, so a crashed session cannot leave one behind. Measured 2026-09-08: no committed harness exists today, so this creates the shared place the teardown can live.
+
+⚠ **IT MUST FAIL LOUDLY**: a sweep that finds no leaked servers and one that cannot see them look identical.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-083; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.24  [wbs_items]</h2>
+<pre>id: WBS-40.24
+title: `DW-095`: COMPLETE `C-INS-01` — THE THREE ANOMALY SIGNALS THAT WERE NEVER DECLINED AND NEVER SCHEDULED, PLUS THE RECORDINGS HALF. The control names five signals; `WBS-26.2` built two (bulk export volume, Restricted-topic access) and `AC-157` records the gap in its own exclusions.
+
+⚠ **THE ASYMMETRY THAT CREATED THIS ROW**: two signals were declined IN WRITING with reasons, and became `DW-087` and `DW-092`. The other three were never argued against at all, so they left no trace — an absence produces no output to be suspicious of.
+
+**BUILD, IN THE ORDER THEIR DATA READINESS SUGGESTS.** (1) **Atypical access to RECORDINGS** — nearest: `Meetings.RecordingAccessed` already records successful access and `AnomalyDetector` is the obvious home; only the rule is missing. (2) **Role grants and delegations** — `C-AUDIT-05` already requires these to emit high-importance events feeding `C-INS-01`, so verify the data exists before assuming it. (3) **Bursts of authz denials** — `AuthorizationBehavior` and `AuditingAuthorizationResultHandler` already audit refusals. (4) **Off-hours privileged actions** — ⛔ needs a DEFINITION of off-hours before it can be detected at all; that is a committee question, so raise an `OQ-` before building.
+
+**DONE-CLAIMED WHEN** each signal has a rule and a threshold basis recorded as derived or provisional — the same treatment the first two received.
+phase_id: PH-7
+slice_id: SL-043
+effort: L
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-095; DEC-150 d4/d8, operator interview 2026-09-08 (ruling (a): complete C-INS-01). Scoped by SC-056.</pre>
+<h2>WBS-40.25  [wbs_items]</h2>
+<pre>id: WBS-40.25
+title: `DW-099`: THE xunit 2.5.3 → 2.9.3 AND runner 2.5.3 → 2.8.2 BUMP, IN ITS OWN PR.
+
+✅ **THE HAZARD IS NARROWER THAN THE ROW'S FIRST DRAFT CLAIMED, AND THE ROW CORRECTS ITSELF**: the suite ALREADY contains a red-detector for gross loss of isolation — the naive share-everything `WBS-27.2` failed 72 of 445 tests, and the 287→47 host reduction was accepted BECAUSE the suite refused the version without `Reset()`.
+
+**WHAT THE PR MUST CARRY** (`LL-047`: decide what a negative means before running it). (a) The existing 445 tests are the primary control and are free. (b) ⭐ **THE ONE THAT MATTERS, AND IT IS ONE NUMBER**: compare the host-construction count against `WBS-27.2`'s measured 47 — drift toward 287, or down toward 1, means the per-test class allocation changed, and that is invisible to pass/fail. (c) Compare suite duration on matched events.
+
+⚠ **A SLOWER SUITE AFTER THIS BUMP MUST NOT BE ATTRIBUTED TO `DEF-109` WITHOUT CHECKING THE RUNNER FIRST**: parallelism defaults are exactly what a runner minor series touches, and this project reads duration as a `DEF-109` signal.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-099; held back from #361 by DEC-131 d1; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.26  [wbs_items]</h2>
+<pre>id: WBS-40.26
+title: `DW-101`: CLOSE THE TWO HOLES THAT MAKE READINESS RULES PASS ON A MISSING SUBJECT. Quoted from the tool: `defects-closed` at slice scope reports open defects with no `found_in` that are INVISIBLE to slice scope; `acs-slice-bound` reports active ACs bound to no slice, invisible to phase and slice exit views.
+
+⚠ **THE ROUND THAT ACTIVATED THIS ROW MADE THE HOLE ONE WIDER**: `DEF-149` was filed on 2026-09-08 with a null `found_in`. The agent offered to set it in that round's writes and the operator chose Activate instead — which is the stricter reading, because the row's own text says an agent guessing a home converts an honest null into a confident wrong binding, invisible afterwards because a bound row looks exactly like a correctly bound one. So `DEF-149`'s `found_in` is still null ON PURPOSE and is part of this item.
+
+✅ **NOTHING BLOCKING IS HIDDEN TODAY** — measured: every invisible defect is medium or low, and `defects-closed` blocks on critical/high only. The hole is latent.
+
+⚠ **THE REAL EXPOSURE IS THE NEXT ROW, NOT THESE.** A future critical or high defect filed with a null `found_in` would be invisible to every slice and phase `defects-closed` while package scope still catches it — so a slice could be declared ready over a blocking defect. **That asymmetry is at least as much a tamheed-side question (should a null `found_in` be refused at write time for critical/high?) as a data question here**, and this item should answer it as a question before it backfills anything.
+
+**DONE-CLAIMED WHEN** each defect and AC is bound DELIBERATELY — with the genuinely non-slice-scoped ones recorded as such rather than assigned — and the write-time question is answered either way.
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-101; DEC-140 d2 had chosen to record rather than backfill; DEC-150 d4/d9 reversed that to Activate, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.27  [wbs_items]</h2>
+<pre>id: WBS-40.27
+title: `DW-102`: THE SECOND WEEKLY DEPENDABOT OBSERVATION THAT DISCHARGES `ADR-0046` d2. Whether the `version-update:semver-major` ignore actually suppresses a `2022-latest` → `2025-latest` tag move on `mcr.microsoft.com/mssql/server` is NOT known and NOT claimed — the ADR says it is VERIFIED, not assumed, because a rule whose effect is assumed is `LL-060`'s instrument that fires and never tells.
+
+**WHAT DISCHARGES IT.** Two consecutive weekly docker-ecosystem runs after `#376` landed on `main` with NO PR proposing a major for that image, recorded here with the run dates. The first is done; the second is due the week of 2026-09-14.
+
+**WHAT FALSIFIES IT.** A 2025 PR appears: close it unmerged, tighten the ignore to a `versions` range (e.g. `&gt;= 2025`), and record the amendment on `ADR-0046` as its d2 requires.
+
+⚠ This is the one item in the slice whose completion is a DATE rather than a build — it is scheduled here so it is visible to readiness instead of living only in the deferred-work register.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-102; ADR-0046 d2 requires the verification; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>WBS-40.28  [wbs_items]</h2>
+<pre>id: WBS-40.28
+title: `DW-065`: OBSERVE TRACE COMPLETENESS ACROSS MODULE ENDPOINTS — DURING THE SAME RUN AS THE `DEC-150` d7 NFR VERIFICATION, NOT AS A SEPARATE STACK. This row's trigger is *the next time an ACMP stack is running for any reason*, so it fires by its own terms the moment that run starts.
+
+**WHAT IS ALREADY SETTLED AND MUST NOT BE RE-DERIVED**: `AC-133` records all four span kinds instrumented with the custom span mutation-proven; `DEF-099` (OTLP posting to a path Seq answers 404 on, silently, in every environment) is Fixed; and the worker's missing `OTEL_` variables were supplied by `#300`, with worker span production confirmed by growth under ZERO api traffic.
+
+**WHAT IS STILL UNOBSERVED, AND IT IS ONE THING**: PARENTING across modules. Registration proves spans are CREATED, not that they JOIN one trace — which is the part code inspection cannot answer.
+
+**DONE-CLAIMED WHEN** a single trace is shown carrying the handler span, the SqlClient span for its DB work, and — for a request that enqueues — the hangfire.dispatch span, correctly PARENTED rather than merely present, over AUTHENTICATED traffic that actually exercises module endpoints (the 2026-08-20 observation was unauthenticated, which is why it did not close this).
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-065; DEC-150 d4/d7, operator interview 2026-09-08 (Activate — fold into the prod run). Scoped by SC-056.</pre>
+<h2>DEF-129  [defects]</h2>
+<pre>id: DEF-129
+title: `ac011-guest-scope.spec.ts`'s LIVE-EXPIRY TEST FLAKED GREEN ON ONE RUN AND HARD-FAILED ON THE NEXT, BOTH TIMES TIMING OUT IN `captureBearer` — AND THE FIRST RUN'S WARNING WAS INVISIBLE BECAUSE THE RUN PASSED.
+
+WHAT FAILED, MEASURED. `e2e/ac011-guest-scope.spec.ts:169` — *"AC-011 — a guest whose meeting window has already passed is refused, live"*. It fails at line 202, inside `captureBearer` (`e2e/apiHelpers.ts:27`): `TimeoutError: page.waitForRequest: Timeout 20000ms exceeded while waiting for event "request"`. The awaited predicate is `r.url().includes('/api/') &amp;&amp; !!r.headers()['authorization']`, raced against `page.goto('/session')`.
+
+⭐⭐ **THE ESCALATION IS THE FINDING, AND IT IS ONLY VISIBLE BY COMPARING TWO RUNS.** `playwright.config.ts` sets `retries: 1` in CI, so each test gets two attempts.
+• **Run `33573024075`** (PR `#340`, head `e8682094`, 2026-09-02): **`99 passed` + `1 flaky`** — THIS test failed its first attempt and passed on retry. The run's conclusion was **success**, and `1 flaky` on a green run is a line nobody reads.
+• **Run `33660158592`** (PR `#341`, head `dba8d483`, 2026-09-02): **`101 passed` + `1 failed`** — the same test, both attempts exhausted.
+**A green run carried the evidence of the next run's failure.** That is `DEF-126`'s family in a new place: a control reporting success while already holding the signal.
+
+⚠⚠ **THE COMMIT CANNOT BE THE CAUSE.** `dba8d483` changes `.gitignore` and `AGENTS.md` and nothing else — no source, no test, no infrastructure. The same is true of `e8682094`, a CSS-only diff. Neither could reach this test.
+
+**THE MECHANISM, STATED AS A READING OF THE TEST AND EXPLICITLY NOT AS A DIAGNOSIS (`LL-029`). NO VARIABLE HAS BEEN ISOLATED.** `captureBearer` requires the SPA to issue at least one `/api/` request CARRYING an `Authorization` header within 20 seconds of navigating to `/session`. The subject here is a guest **whose access window has already elapsed** — the fixture asserts that precondition explicitly before proceeding. So the harness depends on an expired guest's SPA still making an authenticated call: if the client short-circuits, renders the refusal from cached state, or is merely slow past 20 s, no such request appears and the timeout fires **without anything being wrong with the product**. ⛔ **Equally consistent with a slow runner**, and nothing here distinguishes the two. The test's own comment shows the author was alive to the surrounding subtlety — it records that `page.request` does not attach the header and that an earlier version therefore passed while proving nothing — but the 20-second wait itself was never identified as a dependency on client behaviour.
+
+⛔ **WHAT IS NOT CLAIMED.** No product fault is asserted. `AC-011` is `Met` and this row does not disturb that verdict: the criterion's substance — an elapsed guest window refused at the API with `x-acmp-auth-reason: access_expired` — is not what failed; the harness never got as far as asserting it. **NOT RE-RUN**: a re-run is the operator's call (`DEC-110` d1's reading), and on the evidence above a re-run would most likely go green and teach nothing, which is exactly the accumulation `DEC-103` d1 wrote end conditions to escape.
+
+**SEVERITY `medium`, CHOSEN ON THE FAULT AND NOT ON ITS NUISANCE.** Nothing in the product is known to be broken and no `Met` criterion is falsified, so it is not `high`. It is more than `low` because it **blocks PRs**: `e2e` is one of nine required status checks, so a test that fails both attempts makes a branch unmergeable, and this one has now degraded across two consecutive runs rather than appearing once.
+
+**WHAT WOULD MOVE THIS ROW.** Either (a) evidence that the expired-guest SPA reliably issues an authenticated `/api/` call — in which case the 20-second bound is simply too tight under load and the fix is the bound; or (b) evidence that it sometimes does not — in which case `captureBearer` is the wrong instrument for this subject and the bearer should be obtained by a route that does not depend on client behaviour. ⚠ **The two remedies are opposite, and choosing between them without isolating the variable is what `LL-029` forbids.** The captured `trace.zip` and `error-context.md` in the run's `test-results/` artifact are where that evidence already sits, uncollected.
+
+⚠⚠ **2026-09-05 — THE PARAGRAPH DIRECTLY ABOVE IS FALSIFIED IN BOTH OF ITS PARTS. IT IS LEFT STANDING RATHER THAN REWRITTEN, BECAUSE A CORRECTION IS ONLY LEGIBLE BESIDE THE CLAIM IT REPLACES — AND BECAUSE RE-AUTHORING AN END CONDITION IS THE OPERATOR'S, NOT MINE (`DEC-134` d1).**
+**(1) *"The two remedies are opposite"* — `PE-883` REJECTED BOTH.** Reading the GUEST stream (`1-trace`) of run `33933554121`'s artefact *alone*: 50 requests in the guest context, **0** to `/api/`, **0** carrying `Authorization`, the whole span `00:41:11.039`→`00:41:12.059` = **ONE SECOND**, ending on `POST …/realms/acmp/protocol/openid-connect/token` → **`status=-1`**, then silence for the remaining ~20 s of the wait. **(a)** a longer bound cannot help when the token POST never returns; **(b)** `captureBearer` reports exactly the truth and is an accurate messenger for an upstream fault. **The fault is the guest's PKCE token exchange hanging against Keycloak — a third thing neither branch named.** ⚠ ONE occurrence, and **WHY it hung is NOT isolated** (`LL-029`): `status=-1` is consistent with a hang and with an abort.
+**(2) *"…is where that evidence already sits, uncollected"* — IT WAS COLLECTED.** The artefact had been downloaded; the single discriminating step was to read `1-trace.network` alone instead of merging it with the Secretary's stream (`DEF-139`, withdrawn — the guest context was traced all along).
+⭐ **`WBS-29`/`SL-038` REMOVED THE REASON THE NEXT OCCURRENCE COULD BE SILENT ON THE SERVER SIDE.** The `e2e` job's stack-log capture ran under `if: failure()`, so it **SKIPPED on exactly the flaked-green runs this row's own headline says carry the signal** (measured: run `33933554121`, job `101220601640`, step 12 SUCCESS / step 13 SKIPPED). It is now unconditional (`!cancelled()`) and **proven to deliver on a GREEN run** — E2E `33988347895`, job `101365942353`, artefact `keycloak-logs` 5,354 bytes, `keycloak.log` **50 lines**. Keycloak's own view of that token exchange is captured from the next occurrence onward. ⛔ **This adds an instrument; it does not diagnose the row.**
+severity: medium
+lifecycle_status: Open
+found_in: SL-035
+custom_attributes: {"failing_test": "e2e/ac011-guest-scope.spec.ts:169 - 'AC-011 - a guest whose meeting window has already passed is refused, live'; fails at line 202 in captureBearer (e2e/apiHelpers.ts:27).", "signature": "TimeoutError: page.waitForRequest: Timeout 20000ms exceeded while waiting for event 'request'. Predicate: url contains /api/ AND an authorization header is present. Raced against page.goto('/session').", "escalation": "retries:1 in CI. Run 33573024075 (PR #340, head e8682094): 99 passed + 1 FLAKY - failed attempt 1, passed on retry, run conclusion SUCCESS. Run 33660158592 (PR #341, head dba8d483): 101 passed + 1 FAILED - both attempts. Same test both times.", "commit_cannot_be_the_cause": "dba8d483 touches only .gitignore and AGENTS.md; e8682094 is a CSS-only diff. Neither reaches this test.", "mechanism_is_a_reading_not_a_diagnosis": "captureBearer needs the SPA to issue an authenticated /api/ call within 20s of navigating to /session, and the subject is a guest whose window has ALREADY elapsed. If the client short-circuits or is slow past 20s, no such request appears and the timeout fires with nothing wrong in the product. Equally consistent with a slow runner. NO VARIABLE ISOLATED (LL-029).", "not_re_run": "A re-run is the operator's call. On this evidence it would most likely go green and teach nothing.", "evidence_not_yet_collected": "trace.zip and error-context.md under test-results/ in run 33660158592's artifacts, plus the same for the flaky attempt on 33573024075.", "blocks": "e2e is one of nine required status checks, so both-attempts-failed makes a branch unmergeable. PR #341 is blocked by this AND by DEF-109 on the same push."}
+last_referenced: 2026-09-05T21:50:05Z</pre>
+<h2>LL-082  [lessons]</h2>
+<pre>id: LL-082
+title: `TestServer` ENFORCES NO REQUEST-BODY LIMIT, SO AN UPLOAD TEST HOSTED ON IT CANNOT SEE KESTREL'S. A SIZE LIMIT IS PROVED ONLY ON THE SERVER THAT ENFORCES IT: HOST THE API ON REAL KESTREL (`WebApplicationFactory.UseKestrel`) FOR ANY TEST WHOSE SUBJECT IS HOW LARGE A REQUEST MAY BE.
+statement: THE INSTANCE. `DEF-166`, measured 2026-09-13. The topic-attachment endpoint ran on Kestrel's default 30,000,000-byte (~28.6 MiB) request-body limit, so a valid 35 MB file was refused with a bare 413 before the validator ran, while the application's own cap was 50 MB and the browser's check also said 50 MB. `AC-105` had been graded Met on the validator, the browser check and a content-mismatch E2E. Every HTTP test of the path ran on `TestServer`, which enforces no body limit, and no test sent a body above a few kilobytes, so the whole suite was green over a refusal no user could get past. `DEF-154`'s own text had located the limit at the wrong layer (the application's 50 MB) for the same reason: it was read from configuration, and a framework default is not in configuration. Found by a throwaway probe that hosted `AcmpWebApplicationFactory` on real Kestrel and posted 20 MB and 35 MB. The fix's test (`TopicAttachmentKestrelLimitTests`) hosts the API on Kestrel over a loopback socket; removing the endpoint's size metadata turns it red with the exact connection reset.
+recommendation: (1) For any test whose subject is a request-size limit (upload caps, body limits, form limits), host the API on real Kestrel (`WebApplicationFactory.UseKestrel(0)` + `StartServer()`); `TestServer` passes every size. (2) Send a body that actually crosses the limit being claimed, not a small body with a large declared size. (3) When reading limits from configuration, list the framework defaults that apply when nothing is configured (Kestrel `MaxRequestBodySize` 30,000,000; `FormOptions.MultipartBodyLengthLimit` 128 MB; nginx `client_max_body_size` 1m) - an absent setting is still a limit. (4) Keep one Kestrel-hosted test per endpoint that raises its own limit, with a mutation control (remove the metadata, see it go red).
+rationale: A test host that removes a production constraint cannot report on that constraint, and its pass reads like proof. The recording endpoint had raised its own limits since P13 and said so in a comment, which made the attachment endpoint's silence look like a choice rather than an omission.
+kind: improve
+category: process
+impact_if_followed: A size limit is proved on the server that enforces it, and a missing per-endpoint limit fails a test instead of a user.
+impact_if_ignored: Upload limits go on being graded Met from tests that could not have seen them, and the first user with a large file finds the real ceiling.
+lifecycle_status: Proposed
+pinned: 0</pre>
+<h2>LL-083  [lessons]</h2>
+<pre>id: LL-083
+title: A BACKSLASH-U ESCAPE TYPED INTO A TOOL PARAMETER ARRIVES AS THE RAW CHARACTER, BECAUSE THE PARAMETER IS JSON-DECODED BEFORE THE TOOL SEES IT. FOR AN INVISIBLE OR BIDI-CONTROL CHARACTER THAT PUTS AN UNREADABLE BYTE IN SOURCE: WRITE SUCH ESCAPES WITH A SCRIPT THAT BUILDS THE BACKSLASH FROM ITS CODE POINT, AND GREP FOR THE RAW CHARACTER AFTERWARDS.
+statement: THE INSTANCE. `WBS-40.29`, 2026-09-14/15. `lib/bidi.ts` was written with Write and a template holding the U+2068 / U+2069 escapes; the file on disk held the raw FIRST STRONG ISOLATE / POP DIRECTIONAL ISOLATE characters, so the source read as a bare `${s}` in any editor while doing the right thing. The same happened in `bidi.test.ts`, a dashboard test and the Arabic-view spec (all merged in #414), and later in a commit message whose text read 'written as  /  escapes'. Two repair attempts failed the same way: a `node -e` replace whose replacement text passed through three decoders (the parameter's JSON, the shell's double quotes, the JavaScript string) and put the raw character straight back - the script even reported 'escaped 2' per file. What worked: a script with NO backslash in its source, building the escape as String.fromCharCode(92) + 'u2068', then `grep -P` for U+2068/U+2069 returning nothing as the control. Found only because a later grep printed the invisible characters themselves; no gate, lint or test notices a raw isolate (the code is correct either way).
+recommendation: (1) Never type a backslash-u escape into a Write/Edit/Bash parameter expecting it to land as six characters; for a character you must name, build it from its code point (String.fromCharCode) in the code you write, or let a script write the escape using String.fromCharCode(92). (2) After writing anything that should contain an invisible, bidi-control or zero-width character, run grep -P for that code point over the files touched - raw is invisible, so only a byte-level check sees it. (3) A tool report of 'replaced N' is not evidence the bytes changed; read the bytes (od -c) or grep for the result. (4) The same applies to commit messages and package text: spell such characters by name (U+2068), not by escape.
+rationale: Tool parameters are JSON: a backslash-u there is decoded, the same as in any JSON string. The failure is silent because the raw character is invisible and behaves correctly at run time, so every test passes and a reviewer sees nothing.
+kind: improve
+category: process
+impact_if_followed: Invisible characters never enter source by accident, and a repair is confirmed at the byte level rather than by a script's own count.
+impact_if_ignored: Source carries characters no reviewer can see - the next person to edit `${s}` in an isolate template cannot tell it is not a bare interpolation, and a bidi control in the wrong place is a Trojan-Source-shaped hazard.
+lifecycle_status: Proposed
+pinned: 0</pre>
+<h2>ASM-011  [assumptions]</h2>
+<pre>id: ASM-011
+title: The urgency SLA thresholds (Critical: 3 days in status, Urgent: 7 days, Normal: 21 days) are acceptable starting values; the committee will adjust them via configuration after PH-1 pilot. [Marked `[unverified]` in FR-038; must be validated with committee.]
+statement: The urgency SLA thresholds (Critical: 3 days in status, Urgent: 7 days, Normal: 21 days) are acceptable starting values; the committee will adjust them via configuration after PH-1 pilot. [Marked `[unverified]` in FR-038; must be validated with committee.]
+risk_if_wrong: If false: SLA thresholds must be redesigned before PH-1 go-live; aging indicator calibration changes.
+validation_date: 2026-08-17
+lifecycle_status: Proposed
+custom_attributes: {"v1": {"ID": "ASM-011", "Assumption": "The urgency SLA thresholds (Critical: 3 days in status, Urgent: 7 days, Normal: 21 days) are acceptable starting values; the committee will adjust them via configuration after PH-1 pilot. [Marked `[unverified]` in FR-038; must be validated with committee.]", "Basis": "The urgency SLA thresholds (Critical 3d / Urgent 7d / Normal 21d) are proposed as acceptable starting values to be tuned via configuration after the PH-1 pilot; marked `[unverified]` in FR-038 pending committee validation.", "Risk if wrong": "If false: SLA thresholds must be redesigned before PH-1 go-live; aging indicator calibration changes.", "Status": "Proposed", "Owner": "Secretary"}}
+last_referenced: 2026-08-20T20:56:09Z</pre>
+<h2>OQ-079  [open_questions]</h2>
+<pre>id: OQ-079
+title: What retention period applies to each record class, once legal defines them - and is every immutable class confirmed exempt from any future purge?
+question: `DOC-011` carries this as **`OQ-DATA-004`**, quoted from `SEC-084`: *"Future retention periods per record class once legal defines them; confirm immutable classes (votes/decisions/ADRs/MoM/audit) are ALWAYS exempt from purge and that any purge job excludes held records."*
+
+⚠⚠ WHY THIS IS A REGISTER ROW AS OF 2026-08-27 AND WAS NOT BEFORE. It existed ONLY as a doc-local label inside a narrative document, so it was invisible to `open-questions-resolved`, to `open-questions-overdue` and to every readiness view - the `DEF-101` shape, a prose-only identifier, except that this one is LOAD-BEARING. `AC-149`, `AC-150` and `AC-151` (all `Met`, 2026-08-27) state their boundaries by leaning on this question being open: each says in terms that v1 ships NO period and that the criterion evidences the MECHANISM rather than a value. **The stated scope of three Met verdicts rested on a question the register could not see.** Found by sweeping the `open_questions` register for retention and getting ZERO rows against a control of 78, immediately after writing those verdicts.
+
+WHAT IS ALREADY SETTLED AND IS NOT IN QUESTION HERE. `DEC-013` is Approved canon - keep all records, no auto-purge in v1, retention configurable, immutable classes protected - and is reopenable only via a new ADR. `SEC-080` states periods are *"configurable but unset in v1"*, so shipping none is CORRECT rather than an omission. `SEC-089` places retention ENFORCEMENT in **Phase 2**, so a purge job today would VIOLATE `NFR-059`/`NFR-060` rather than complete them.
+
+WHAT IS ACTUALLY BEING ASKED, and only legal or compliance can answer it: the PERIOD per record class. The mechanism to hold the answer now exists - `WBS-24.5` built the `Configuration` store `SEC-103` specifies, with an audited Administrator-only write - so answering this is a data entry, not a build. ⚠ The second clause is a REVIEW rather than a value: confirming that votes, decisions, ADRs, minutes and the audit log stay exempt from any purge that is ever built, and that a purge would exclude legally-held records.
+
+⚠ THE CROSS-REFERENCE ONLY RUNS ONE WAY, deliberately and not by oversight. `AC-149`/`150`/`151` cannot cite this row: approved acceptance criteria are immutable in this store and refuse edits outright. So this row names them instead, and a reader arriving from any of those criteria has to arrive through the requirement or through here.
+owner: Operator
+due_by: 2026-11-30
+lifecycle_status: Proposed
+source_kind: brief
+source_span: SEC-084 (DOC-011 section 26, Audit &amp; Records Management) - carried there as OQ-DATA-004; SEC-080; NFR-059; NFR-060; FR-155
+custom_attributes: {"was": "OQ-DATA-004, doc-local in DOC-011 SEC-084", "blocks": "nothing today - v1 shipping no period is canon (SEC-080)", "unblocked_by": "WBS-24.5 built the Configuration store, so an answer is data entry rather than a build", "depends_on": "legal/compliance", "cited_by": "AC-149, AC-150, AC-151 - which cannot cite back, because approved ACs are immutable"}</pre>
+<h2>OQ-080  [open_questions]</h2>
+<pre>id: OQ-080
+title: What is the legal-hold workflow - who places and releases a hold, at what granularity, and how does it interact with any future retention or purge?
+question: `DOC-011` carries this as **`OQ-DATA-003`**, quoted from `SEC-084`: *"Legal-hold workflow (who places/releases, granularity: per-record vs per-meeting/topic-graph) and its interaction with future retention."*
+
+WHAT THE ARCHITECTURE ALREADY ASSERTS, which is what makes the gap matter. `SEC-080` states that *"any record (or a meeting/topic and its graph) can be flagged **on legal hold**; a hold **overrides any future retention/purge** - held records cannot be deleted/superseded-away regardless of policy"* - and marks it `[unverified - confirm hold workflow with legal]`. `SEC-083` separately requires recordings and transcripts to be *"legal-hold capable"*. ⚠ **No legal-hold mechanism exists in the product.** There is no hold flag, no place/release path and no audit of either, and `WBS-24.5` did NOT build one - `AC-151` names legal hold as explicitly out of scope rather than quietly covered.
+
+⚠⚠ WHY THIS IS A REGISTER ROW AS OF 2026-08-27. Like `OQ-079` it existed only as a doc-local label and was invisible to every readiness view. It is recorded now because a `Met` verdict (`AC-151`) names it as a boundary, and a boundary that cites an invisible question is a boundary nobody can check.
+
+WHY IT IS NOT URGENT, stated so the row is not read as an alarm. Nothing purges and nothing can purge - `SEC-089` places enforcement in Phase 2 - so a hold has nothing to override yet. **A hold matters exactly when a purge exists, and neither does.** ⚠ That is also the trap: if a purge is ever built WITHOUT the hold mechanism, the guarantee `SEC-080` asserts becomes false silently, because nothing in the product enforces it and no test asserts it. **Whoever builds enforcement must answer this FIRST, not alongside.**
+
+⚠ THE ANSWER IS NOT PURELY A LEGAL ONE. The granularity question - per record, or per meeting/topic and its whole graph - is an architectural decision with a real cost difference, and `SEC-080` says the hold lifecycle is itself an audited privileged action. Expect an `ADR-` rather than a one-line answer.
+owner: Operator
+due_by: 2026-11-30
+lifecycle_status: Proposed
+source_kind: brief
+source_span: SEC-084 (DOC-011 section 26, Audit &amp; Records Management) - carried there as OQ-DATA-003; SEC-080; SEC-083
+custom_attributes: {"was": "OQ-DATA-003, doc-local in DOC-011 SEC-084", "asserted_but_unbuilt": "SEC-080 states holds override any future purge; no hold flag, place/release path or audit exists in the product", "blocks": "nothing today - no purge exists to override", "must_precede": "any retention ENFORCEMENT work (Phase 2, SEC-089) - building a purge without the hold makes SEC-080's guarantee silently false", "cited_by": "AC-151 as an explicit out-of-scope boundary"}</pre>
+</body></html>
