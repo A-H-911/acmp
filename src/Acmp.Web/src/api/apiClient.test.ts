@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { api, ApiError, setTokenGetter, localizedValidationMessage, type ProblemDetails } from './apiClient';
+import { api, apiUpload, ApiError, setTokenGetter, localizedValidationMessage, type ProblemDetails } from './apiClient';
+import { FakeXhr, installFakeXhr } from '../test/fakeXhr';
 import { stubFetch } from '../test/queryHarness';
 import i18n from '../i18n';
 
@@ -110,5 +111,55 @@ describe('localizedValidationMessage (BL-016)', () => {
 
   it('returns the title when there are no field errors', () => {
     expect(localizedValidationMessage({ title: 'Nope' })).toBe('Nope');
+  });
+});
+
+// DEF-171: the upload path reports progress, and fails exactly the way api() does.
+describe('apiUpload() - XHR upload with progress', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    setTokenGetter(() => undefined);
+  });
+
+  it('posts the form with the token and language, reports whole percentages, and resolves the JSON body', async () => {
+    installFakeXhr();
+    setTokenGetter(() => 'tok-9');
+    const seen: number[] = [];
+    const form = new FormData();
+    const done = apiUpload<{ id: string }>('/topics/t1/attachments', form, (p) => seen.push(p));
+    const xhr = FakeXhr.last!;
+    expect(xhr.method).toBe('POST');
+    expect(xhr.url).toBe('/api/topics/t1/attachments');
+    expect(xhr.body).toBe(form);
+    expect(xhr.headers.Authorization).toBe('Bearer tok-9');
+    expect(xhr.headers['Accept-Language']).toBe(i18n.language);
+    expect(xhr.headers['Content-Type']).toBeUndefined(); // the browser sets the multipart boundary
+    xhr.progress(25, 100);
+    xhr.progress(999, 1000);
+    xhr.respond(201, { id: 'a1' });
+    await expect(done).resolves.toEqual({ id: 'a1' });
+    expect(seen).toEqual([25, 99]);
+  });
+
+  it('rejects a refusal as ApiError with the problem and the auth reason', async () => {
+    installFakeXhr();
+    const done = apiUpload('/x', new FormData());
+    FakeXhr.last!.respond(400, { title: 'Bad', errors: [{ errorCode: 'FILE_TOO_LARGE' }] }, { 'X-Acmp-Auth-Reason': 'roles_changed' });
+    const err = (await done.catch((e: unknown) => e)) as ApiError;
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.status).toBe(400);
+    expect(err.problem?.errors?.[0].errorCode).toBe('FILE_TOO_LARGE');
+    expect(err.authRefusal).toBe('roles_changed');
+  });
+
+  it('rejects an empty-body refusal and a transport failure as ApiError without a problem', async () => {
+    installFakeXhr();
+    const empty = apiUpload('/x', new FormData());
+    FakeXhr.last!.respond(400);
+    await expect(empty).rejects.toMatchObject({ status: 400, problem: undefined });
+
+    const dropped = apiUpload('/x', new FormData());
+    FakeXhr.last!.fail();
+    await expect(dropped).rejects.toMatchObject({ status: 0 });
   });
 });

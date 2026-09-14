@@ -32,6 +32,7 @@ import { LoadingState, ErrorState, EmptyState } from '../../components/states';
 import { Icon } from '../../components/icons';
 import { statusTone, initials, TOPIC_TYPE_VALUES, TOPIC_SOURCE_VALUES } from './topicMeta';
 import { TraceabilityPanel } from '../traceability/TraceabilityPanel';
+import { UploadProgress } from './UploadProgress';
 import { AcmpAuthContext, hasRole } from '../../auth/AcmpAuthContext';
 import './topics.css';
 
@@ -463,14 +464,14 @@ function Attachments({ topic }: { topic: Topic }) {
   const [fileError, setFileError] = useState<string | null>(null);
   const [openFailed, setOpenFailed] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const maxMb = MAX_ATTACHMENT_BYTES / (1024 * 1024);
 
   // AC-162: refuse an over-maximum file HERE, as the submit page does - the server's own body limit would
   // otherwise refuse it with nothing the page can translate (DEF-166).
-  // DEF-168: a 100 MB upload takes minutes, so the tab says what it is uploading, shows a failure, and ignores
-  // new files until it is done - before, it looked identical whether the upload was running or had failed.
-  // ponytail: an indeterminate "Uploading x" line, not a percentage - fetch reports no upload progress.
+  // DEF-168 / DEF-171: a 100 MB upload takes minutes, so the tab says what it is uploading and how far it has
+  // got, shows a failure, and ignores new files until it is done.
   const onFiles = async (list: FileList | null) => {
     if (!list || uploading) return;
     const files = Array.from(list);
@@ -479,8 +480,9 @@ function Attachments({ topic }: { topic: Topic }) {
     setUploadError(null);
     for (const f of ok) {
       setUploading(f.name);
+      setPct(0);
       try {
-        await upload.mutateAsync({ topicId: topic.id, file: f });
+        await upload.mutateAsync({ topicId: topic.id, file: f, onProgress: setPct });
       } catch (e) {
         setUploadError((e instanceof ApiError ? localizedValidationMessage(e.problem) : undefined) ?? t('submit.uploadError'));
         break;
@@ -514,7 +516,7 @@ function Attachments({ topic }: { topic: Topic }) {
         </button>
         <div className="sub-drop-hint">{t('submit.dropHint', { max: maxMb })}</div>
       </div>
-      {uploading && <p className="bk-muted" role="status" aria-live="polite">{t('detail.attach.uploading', { name: uploading })}</p>}
+      {uploading && <UploadProgress name={uploading} pct={pct} />}
       {fileError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{fileError}</p>}
       {uploadError && <p className="field-error" role="alert"><Icon name="alertCircle" size={13} aria-hidden />{uploadError}</p>}
       {topic.attachments.length === 0 ? (

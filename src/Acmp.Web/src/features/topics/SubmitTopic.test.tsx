@@ -187,7 +187,30 @@ describe('SubmitTopic (P5b)', () => {
     const file = new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' });
     await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file);
     await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
-    await waitFor(() => expect(mockUpload).toHaveBeenCalledWith('g1', file)); // res.id from mutateAsync
+    await waitFor(() => expect(mockUpload).toHaveBeenCalledWith('g1', file, expect.any(Function))); // res.id from mutateAsync
+  });
+
+  // DEF-171: after the topic is created the uploads can take minutes, so the page says which file and how far.
+  it('shows the running upload with its percentage while attachments go up after submit', async () => {
+    let land: (v: unknown) => void = () => {};
+    mockUpload.mockImplementation((_id: string, _f: File, onProgress?: (p: number) => void) => {
+      onProgress?.(37);
+      return new Promise((r) => { land = r; });
+    });
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Arch\. Decision/ }));
+    await user.type(screen.getByLabelText(/Title/), 'Adopt Keycloak');
+    await user.type(screen.getByLabelText(/Description/), 'Consolidate IdP.');
+    await user.type(screen.getByLabelText(/Why now/), 'Reduces sprawl.');
+    await user.click(screen.getByRole('button', { name: 'Core' }));
+    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, new File([new Uint8Array(8)], 'spec.pdf', { type: 'application/pdf' }));
+    await user.click(screen.getByRole('button', { name: 'Submit for triage' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Uploading spec.pdf…');
+    expect(screen.getByRole('progressbar', { name: 'spec.pdf' })).toHaveAttribute('aria-valuenow', '37');
+    land({});
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith('/topics/TOP-2026-002'));
+    expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
   // The OTHER arm of the leave guard. "Keep editing" was covered; actually LEAVING was not, and it
