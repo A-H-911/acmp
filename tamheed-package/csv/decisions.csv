@@ -1777,3 +1777,12 @@ DEC-201,"OPERATOR RULING, 2026-09-15 (`DEF-191`): THE DASHBOARD'S HOVERED KEYED-
 j1 - **FIX IT IN THIS PR** (operator: *""Fix it in this PR""*; the other options were a separate unit after `WBS-40.8`, or folding it into `WBS-40.9`'s manual contrast pass). The hover opacity on `.dash-keylist a` is replaced with a hover background (the subtle fill), and the row joins the opacity test's named list. No new sweep. No criterion changes: `AC-173`'s guard still exempts hover; `DEF-191` closes Fixed with `WBS-40.8`.
 
 j2 - **PUSH TO PR #417 NOW** (operator: *""Push to PR #417""*): the three `AC-173` commits and the slate commit pushed; the option stated that the `DEF-191` fix lands on the same PR as a further commit.",Options were put without a recommendation (`DEC-140` d3).,Approved,,,,clarification,Operator ruling 2026-09-15 over def191-slate.html (digest 3438672e); DEF-191.,,2026-09-15T18:00:56Z
+DEC-202,"OPERATOR VERDICTS, 2026-09-15: `WBS-40.8` IMPLEMENTED; `DW-072` DONE; `LL-084` AND `LL-085` APPROVED.","Asked over `tamheed-package/slice-review-slate.html` (SL-043, 1 item at Review) and `tamheed-package/lesson-docket.html` (LL-084, LL-085), both generated at digest `d7a30eeb`, after PR #417 was squash-merged to `34749987` with main's CI (35003088225) and Security (35003088297) green, `AC-172` Met (AV-268) and `AC-173` Met (AV-269), and `DEF-186`..`DEF-191` Fixed.
+
+k1 - **`WBS-40.8` IMPLEMENTED** (operator: *""Implemented""*; the other option was sending it back).
+
+k2 - **`DW-072` DONE** (operator: *""Done""*; the other option was leaving it as it was, Activated), closed by `WBS-40.8`.
+
+k3 - **`LL-084` APPROVED** (operator: *""Approve""*): a scanner can drop a whole script without saying so - count what the rule evaluated per language and give the Arabic leg its own subject clause.
+
+k4 - **`LL-085` APPROVED** (operator: *""Approve""*): when a control passes where the arithmetic says it must fail, suspect the instrument - wait for CSS transitions before measuring, and never count an 'incomplete' result as evaluated.",Verdicts are the operator's (`DEC-079` d3); options were put without a recommendation (`DEC-140` d3). `handoff_emit` runs in the same round so the approved lessons bind (`DEF-107`).,Approved,,,,clarification,Operator verdicts 2026-09-15 over slice-review-slate.html and lesson-docket.html (digest d7a30eeb).,,
