@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AC-173 - the six opacity-dimmed states, as a criterion</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>AC-173 - the six opacity-dimmed states, as a criterion</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>6bffa5c641c59d60cb9d1e5cd8ca3e03124022b6c9d2e84cd45c12780cee216b</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>AC-173 approval, 2026-09-15. Every record and file excerpt below is quoted by the generator. This paragraph is
+the only text on the page that is not.</p>
+<p>The question: approve <code>AC-173</code>'s text as written (Proposed, below), or change it. It writes down
+<code>DEC-200</code> i1 (quoted) as a criterion, with two changes the agent made after checking its own draft's premises
+against the code (quoted below):</p>
+<ul>
+<li>Impact-graph nodes dim when the <em>blocked</em> or <em>cross-stream</em> highlight is on
+(<code>graphLayout.ts</code>), not when a node is selected.</li>
+<li>Superseded minutes are never on screen. The minutes page shows the first version in its list, the list is ordered
+newest first, and superseding publishes a successor at the next version. So the sweep has no state to open there, even
+though <code>DEC-200</code> i1 says the sweep opens each state. <code>AC-173</code> covers that rule with the unit test
+alone, and says so in its text.</li>
+</ul>
+<p>On approval, in one batch: <code>AC-173</code> Approved, and <code>WBS-40.8</code> takes the text written inside
+<code>SC-075</code>. Both are then re-read, <code>SC-075</code> is set Merged, and the build starts. PR #417 stays open
+meanwhile.</p>
+</div>
+<h2>AC-173  [acceptance-criterion]</h2>
+<pre>id: AC-173
+title: **Given** the SPA in the E2E stack, and a record put - through the API, or the UI where the state is a view - into five of the six states `DEF-190` names: a deprecated or superseded ADR, a retired invariant, a superseded decision, a closed vote, the Actions register with the Overdue filter on, and the impact graph with its blocked or cross-stream highlight on &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule reports ZERO violations on each of those states in the LIGHT and the DARK theme and in English and in Arabic, in both browser projects, and each check first proves the state rendered (the state's own marker is on the page) and that the rule evaluated the formerly dimmed element; **And** none of the six states dims its content with CSS `opacity`: each is muted with design tokens whose pairs the token contrast test holds at AA (`ADR-0045`: AA governs); **And** a unit test reads every stylesheet and fails, naming the rule, when a rule sets `opacity` between 0 and 1 on anything other than a disabled control (`DEC-199` h2), a hover or drag state, an animation keyframe or a decorative icon - any other exception listed in the test with its reason. The sixth state, SUPERSEDED MINUTES, is never on screen - the minutes page shows the newest version and superseding always publishes a successor - so the sweep has no state to open and its rule is covered by the unit test alone. **Verified by** the sweep and the unit test in CI; and a control in which one of the swept rules gets its `opacity` back and both the sweep and the unit test fail, naming the state and the rule.
+statement: **Given** the SPA in the E2E stack, and a record put - through the API, or the UI where the state is a view - into five of the six states `DEF-190` names: a deprecated or superseded ADR, a retired invariant, a superseded decision, a closed vote, the Actions register with the Overdue filter on, and the impact graph with its blocked or cross-stream highlight on &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule reports ZERO violations on each of those states in the LIGHT and the DARK theme and in English and in Arabic, in both browser projects, and each check first proves the state rendered (the state's own marker is on the page) and that the rule evaluated the formerly dimmed element; **And** none of the six states dims its content with CSS `opacity`: each is muted with design tokens whose pairs the token contrast test holds at AA (`ADR-0045`: AA governs); **And** a unit test reads every stylesheet and fails, naming the rule, when a rule sets `opacity` between 0 and 1 on anything other than a disabled control (`DEC-199` h2), a hover or drag state, an animation keyframe or a decorative icon - any other exception listed in the test with its reason. The sixth state, SUPERSEDED MINUTES, is never on screen - the minutes page shows the newest version and superseding always publishes a successor - so the sweep has no state to open and its rule is covered by the unit test alone. **Verified by** the sweep and the unit test in CI; and a control in which one of the swept rules gets its `opacity` back and both the sweep and the unit test fail, naming the state and the rule.
+requirement_id: NFR-033
+slice_id: SL-043
+lifecycle_status: Proposed
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-200 i1; DEF-190; written before the build per SC-075.
+custom_attributes: {"premise_check_2026_09_15":"Before the operator saw it, the agent checked the draft's premises and changed two: (1) graph nodes dim when the blocked or cross-stream highlight toggle is on (graphLayout.ts: dim = anyHi &amp;&amp; !isFocus &amp;&amp; !matches), not when 'a node is highlighted'; (2) superseded minutes are never displayed - MeetingMinutes renders list.data[0], GetMinutesForMeeting orders by Version descending, and SupersedeMinutes publishes a successor at Version+1 - so .mom-doc-muted is unreachable and the sweep cannot open that state, contrary to DEC-200 i1's 'the sweep opens each of them'."}</pre>
+<h2>DEC-200  [decision]</h2>
+<pre>id: DEC-200
+title: OPERATOR RULING, 2026-09-15 (`DEF-190`): THE SIX OTHER STATES THAT DIM TEXT WITH CSS `opacity` ARE FIXED IN `WBS-40.8`'S PULL REQUEST, AND THE ACCESSIBILITY SWEEP OPENS EACH OF THEM; THE BRANCH IS PUSHED AND ITS PR OPENED NOW.
+decision: Asked over `tamheed-package/def190-slate.html` (13 blocks, digest `3e7630f9`), after `WBS-40.8`'s sweep found `DEF-188` (the Administration tiles, fixed on the branch) and a scan for the same device found six more states (`DEF-190`) that the sweep never opens.
+
+i1 - **FIX ALL SIX AND SWEEP THE STATES** (operator: *"Fix six + sweep the states"*; the other options were fixing the six with a unit guard only, a separate unit after `WBS-40.8`, or folding them into `WBS-40.9`'s manual contrast pass). Each of the six - a retired ADR or invariant body, a superseded decision body, superseded minutes, the Overdue filter's 'On' label, a closed vote's 'closed at' line, the impact graph's dimmed nodes - is muted with design tokens instead of `opacity` (`ADR-0045`: AA governs where a design cannot meet both); a unit test forbids the device outside the states WCAG exempts; and the E2E sweep puts a record into each state and runs axe's `color-contrast` rule on it in the light and dark themes and in EN and AR. The criterion is written first (`AC-173`, `SC-075`).
+
+i2 - **PUSH AND OPEN THE PR NOW** (operator: *"Push and open the PR"*): `feat/wbs-40.8-contrast` pushed and PR #417 opened; the `DEF-190` work lands as further commits on the same PR.
+rationale: Options were put without a recommendation (`DEC-140` d3). The agent stated in the option that it had not checked the API could put every state in place; it checked afterwards and found endpoints for each (ADR deprecate/supersede, invariant retire/supersede, decision supersede, minutes supersede, vote close); the Overdue filter and the graph highlight are UI steps.
+lifecycle_status: Approved
+source_kind: clarification
+source_span: Operator ruling 2026-09-15 over def190-slate.html (digest 3e7630f9); DEF-188, DEF-190.</pre>
+<h2>SC-075  [scope-change]</h2>
+<pre>id: SC-075
+decision_ref: DEC-200
+description: **`WBS-40.8` ALSO FIXES `DEF-190`, UNDER A NEW CRITERION `AC-173`. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.8`'s approved text and `AC-172` cover the manifest routes as the sweep opens them; the six states `DEF-190` names (retired and superseded records, a closed vote, the Overdue filter, the graph highlight) are outside both. `DEC-200` i1 adds them to this unit.
+
+**THE NEW TEXT OF `WBS-40.8`, applied after `AC-173` is approved:** the current text, with its last sentence replaced by: *It also fixes `DEF-190` (`DEC-200`): the six states that dimmed text with CSS `opacity` - a retired ADR or invariant body, a superseded decision body, superseded minutes, the Overdue filter's 'On' label, a closed vote's 'closed at' line, the impact graph's dimmed nodes - are muted with design tokens instead; a unit test forbids the device outside the states WCAG exempts; and the sweep opens each state in the four theme and language modes. **DONE-CLAIMED WHEN** `AC-172` and `AC-173` are Met.*
+
+**HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` and `AC-173` Met; `DEF-188` and `DEF-190` close Fixed with it.
+
+**APPLICATION ORDER (`LL-042`, `SC-074`'s precedent):** this row Approved -&gt; `AC-173` written `Proposed` -&gt; the OPERATOR approves its text -&gt; `AC-173` Approved and `WBS-40.8`'s text applied in one batch -&gt; both re-read -&gt; this row `Merged`.
+iteration: 1
+lifecycle_status: Approved</pre>
+<h2>DEF-190  [defect]</h2>
+<pre>id: DEF-190
+title: SIX MORE STATES DIM TEXT WITH CSS `opacity` BELOW WCAG AA, ON SCREENS THE CONTRAST SWEEP OPENS ONLY IN THEIR DEFAULT STATE. The device `DEF-188` fixed on the Administration tiles is used for six other live (not disabled) states; the sweep's seeded records never reach them, so axe has not seen them. Computed 2026-09-15 by group opacity over the page behind (the method reproduces axe's measured 2.91 and 3.64 on `DEF-188`'s chip to 0.02), light / dark: (1) `.adr-body-muted` 0.62 - a Superseded/Deprecated ADR's body AND a retired invariant's (`AdrPage`, `InvariantPage`): `--text-2` 2.81 / 3.55, `--text-3` 2.61 / 2.72, `--accent` 2.94 / 3.61; (2) `.dec-body-muted` 0.62 - a superseded decision's body (`DecisionPage`): same figures; (3) `.mom-doc-muted` 0.72 - superseded minutes (`MeetingMinutes`): `--text-2` 3.43 / 4.36, `--text-3` 3.14 / 3.24; (4) `.act-toggle-on` 0.7 - the 10px 'On' label in the active 'Overdue' filter on `/actions`: `--accent` on `--primary-tint` 3.12 / 3.99; (5) `.vote-closed-sub` 0.85 - a closed vote's 'closed at' line on the success fill (`VotePage`): 4.08 light (dark 5.48 passes); (6) `.ig-node--dim` 0.3 - impact-graph nodes outside the active highlight (`ImpactGraph`): 1.59-2.36 in both. `--text` itself stays above 4.5 under 0.62. Each is a design choice to say 'retired' or 'secondary'; whether each is fixed, and how (tokens instead of opacity, as `DEF-188`; or seeding those states into the sweep), is not settled.
+severity: medium
+lifecycle_status: Open
+found_in: SL-043
+custom_attributes: {"found_by":"platform scan for opacity on non-disabled selectors after DEF-188, 2026-09-15 (grep opacity over src/**/*.css; disabled/hover/animation uses excluded as exempt or non-text)","measured":"scratch opacity-ratios.mjs over tokens.css (light palette and [data-theme=dark]); not yet measured by axe because no seeded record is in these states","related":"NFR-033, AC-172, DEF-188, ADR-0045, DEC-199 h2 (disabled controls are exempt; these are not disabled).","ruled_2026_09_15":"DEC-200 i1: fixed in WBS-40.8's PR with tokens, a unit guard, and the sweep opening each state (SC-075, AC-173 Proposed).","minutes_unreachable":"Item (3) is never on screen: MeetingMinutes shows list.data[0], the list is ordered by Version descending, and SupersedeMinutes publishes a successor at Version+1 - a superseded version is never the one displayed. Its rule is dead styling for the current UI; AC-173 covers it by the unit test only."}</pre>
+<h2>WBS-40.8  [wbs-item]</h2>
+<pre>id: WBS-40.8
+title: `DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR. The token-pair test gains the 3:1 threshold for every border token against every surface it can be painted on, in both palettes, and for the focus ring; the normal, hover and focused states; the disabled exemption, recorded (`DEC-199` h2); and `--text-3` paired with every surface it is painted on. The border tokens are raised, same hue (`DEC-199` h1, `ADR-0045`) - a visible restyle of every card, table and divider line: light `--border-soft` `#848688`, `--border` `#7d7f83`, `--border-strong` `#71757a`; dark `--border-soft` `#666c72`, `--border` `#6c7279`, `--border-strong` `#747d85`. The light palette's `--text-3` becomes `#626a75` (`DEF-186`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-172` is Met.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-072; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.
+custom_attributes: {"title_before_sc073":"`DW-072`: THE SECOND CONTRAST THRESHOLD AND THE FOUR STATES. `NFR-033` (Must) names 4.5:1 for body text AND 3:1 for large text and UI components, across normal, hover, focused and disabled. `contrast.test.ts` asserts 20 token pairs at 4.5:1 in both palettes, with a real anti-vacuity guard — and NOT ONE pair uses 3:1, and the four states are absent from the pair table entirely.\n\n**BUILD.** 3:1 cases (border-on-background, focus ring, disabled state) added to the existing test, which already runs in CI and already fails on a body-text regression.\n\n⚠ **DO NOT UNDERSELL WHAT IS THERE**: this test was once falsely green because a plain `indexOf` matched its selector inside a prose comment and returned the LIGHT palette for every dark case, for the file's whole life until 2026-08-10. Whatever is added inherits that lesson — the guard must be unable to pass by comparing nothing to nothing.\n\n**DONE-CLAIMED WHEN** both thresholds and all four states have cases, and a deliberately failing token is refused.","amended_2026_09_15":"Title replaced by SC-073 (DEC-198) on the operator approving AC-171: the rendered contrast check NFR-033 names (via axe color-contrast, the engine Lighthouse runs) and DEF-186's fix were added. Previous title kept in title_before_sc073.","title_before_sc074":"`DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR; the token-pair test gains the 3:1 threshold for UI components (borders, focus ring, disabled controls) and the normal, hover, focused and disabled states, and pairs `--text-3` with every surface it is painted on; the light palette's `--text-3` becomes `#626a75` (`DEF-186`, `ADR-0045`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-171` is Met.","amended_2026_09_15_sc074":"Title replaced by SC-074 (DEC-199) on the operator approving AC-172 (which replaces AC-171): all border tokens raised to 3:1, the disabled exemption recorded. Previous title kept in title_before_sc074."}
+last_referenced: 2026-09-15T14:01:28Z</pre>
+<h2>src/Acmp.Web/src/features/meetings/MeetingMinutes.tsx:48-50</h2>
+<pre>  const list = useMinutesForMeeting(meeting?.id);
+  const head = list.data?.[0];
+  const detail = useMinutes(head?.key, head?.version);</pre>
+<h2>src/Modules/Meetings/Meetings.Application/Features/GetMinutesForMeeting/GetMinutesForMeeting.cs:24-28</h2>
+<pre>    {
+        var rows = await _db.Minutes.AsNoTracking()
+            .Where(m =&gt; m.MeetingId == request.MeetingId)
+            .OrderByDescending(m =&gt; m.Version)
+            .ToListAsync(ct);</pre>
+<h2>src/Modules/Meetings/Meetings.Application/Features/SupersedeMinutes/SupersedeMinutes.cs:15-16</h2>
+<pre>// W10 (AC-036): correct a published (or approved) MoM. In ONE transaction: build the corrected successor
+// already Published under the SAME key with Version+1, then flip the prior to Superseded with a back-link.</pre>
+<h2>src/Modules/Meetings/Meetings.Application/Features/SupersedeMinutes/SupersedeMinutes.cs:73-74</h2>
+<pre>        var successor = MinutesOfMeeting.PublishedCorrection(prior.Key, prior.MeetingId, prior.MeetingKey,
+            prior.MeetingTitle, prior.Version + 1, request.Summary, sub, name, now);</pre>
+<h2>src/Acmp.Web/src/features/traceability/graphLayout.ts:124-132</h2>
+<pre>  const anyHi = hi.blocked || hi.cross;
+  const laidNodes: LaidOutNode[] = nodes.map((n) =&gt; {
+    const key = nodeKey(n.type, n.id);
+    const p = posByKey.get(key)!;
+    const isFocus = n.id === graph.focusId &amp;&amp; n.tier === 0;
+    const crossStream = crossKeys.has(key);
+    const hit: LaidOutNode['hit'] = hi.blocked &amp;&amp; n.blocked ? 'blocked' : hi.cross &amp;&amp; crossStream ? 'cross' : null;
+    const matches = hit !== null;
+    return { key, node: n, x: p.x, y: p.y, col: p.col, isFocus, crossStream, dim: anyHi &amp;&amp; !isFocus &amp;&amp; !matches, hit: isFocus ? null : hit };</pre>
+</body></html>
