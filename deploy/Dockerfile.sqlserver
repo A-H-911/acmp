@@ -24,7 +24,7 @@
 # how #135 failed. mssql-server-fts pulls in mssql-server itself, so with a mismatched repo a
 # mssql-server built for another Ubuntu release is installed OVER this base (the 22.04 build
 # links liblber-2.5.so.0, which 24.04 does not ship). See DW-078 / PE-606.
-FROM mcr.microsoft.com/mssql/server:2022-latest@sha256:ba4c8329f48fb8f02e1416be6a930ebfd71268caee78aa985f3af4315e457c89
+FROM mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090
 USER root
 # ⚠⚠ DEF-140: THE FIRST LINE OF THE RUN BLOCK IS A FIX, NOT TIDYING — IT REMOVES THE ONLY THIRD-PARTY
 # DEPENDENCY IN THIS BUILD THAT EVER STALLED IT, AND THE BUILD NEVER READ IT. On the 24.04 base the
